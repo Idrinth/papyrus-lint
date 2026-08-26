@@ -27,6 +27,21 @@ h1 {
   text-align: center;
 }
 
+.indentation-setting {
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+}
+
+.indentation-setting select,
+.indentation-setting input {
+  padding: 0.25em 0.5em;
+}
+
+.indentation-setting input {
+  width: 4em;
+}
+
 .drop-zone {
   margin-top: 2em;
   width: 100%;

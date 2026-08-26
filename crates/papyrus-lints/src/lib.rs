@@ -8,6 +8,7 @@
 pub mod comma_spacing;
 pub mod config;
 pub mod forbidden_functions;
+pub mod indentation;
 pub mod trailing_whitespace;
 pub mod unused_getter;
 
@@ -38,6 +39,9 @@ pub fn lint(source: &str, _config: &Config) -> Vec<Diagnostic> {
 }
 
 /// Applies every automatic fix to `source` and returns the repaired text.
+pub fn repair(source: &str, indentation: indentation::Indentation) -> String {
+    let source = indentation::repair(source, indentation);
+    trailing_whitespace::repair(&source)
 pub fn repair(source: &str) -> String {
     trailing_whitespace::repair(&comma_spacing::repair(source))
 }
