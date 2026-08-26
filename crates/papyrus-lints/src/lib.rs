@@ -54,28 +54,72 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     config: &Config,
     external: &mut E,
 ) -> Vec<Diagnostic> {
-    let mut diagnostics = trailing_whitespace::check(source);
-    diagnostics.extend(comma_spacing::check(source));
-    diagnostics.extend(forbidden_functions::check(source));
-    diagnostics.extend(slow_functions::check(source));
-    diagnostics.extend(unused_getter::check(source));
-    diagnostics.extend(float_int_conversion::check(source));
-    diagnostics.extend(unused_property::check(source));
-    diagnostics.extend(strict_boolean::check(source));
-    diagnostics.extend(numeric_comparison::check(source));
-    diagnostics.extend(semicolon::check(source, config.semicolon_style()));
-    diagnostics.extend(indentation::check(source, config.indentation_unit()));
-    diagnostics.extend(argument_types::check_with(source, external));
+    let rules = &config.rules;
+    let mut diagnostics = Vec::new();
+    if rules.trailing_whitespace {
+        diagnostics.extend(trailing_whitespace::check(source));
+    }
+    if rules.comma_spacing {
+        diagnostics.extend(comma_spacing::check(source));
+    }
+    if rules.forbidden_functions {
+        diagnostics.extend(forbidden_functions::check(source));
+    }
+    if rules.slow_functions {
+        diagnostics.extend(slow_functions::check(source));
+    }
+    if rules.unused_getter {
+        diagnostics.extend(unused_getter::check(source));
+    }
+    if rules.float_int_conversion {
+        diagnostics.extend(float_int_conversion::check(source));
+    }
+    if rules.unused_property {
+        diagnostics.extend(unused_property::check(source));
+    }
+    if rules.strict_boolean {
+        diagnostics.extend(strict_boolean::check(source));
+    }
+    if rules.numeric_comparison {
+        diagnostics.extend(numeric_comparison::check(source));
+    }
+    if rules.semicolon {
+        diagnostics.extend(semicolon::check(source, config.semicolon_style()));
+    }
+    if rules.indentation {
+        diagnostics.extend(indentation::check(source, config.indentation_unit()));
+    }
+    if rules.argument_types {
+        diagnostics.extend(argument_types::check_with(source, external));
+    }
     diagnostics
 }
 
 /// Applies every automatic fix to `source`, including the semicolon and
 /// indentation style selected by `config`, and returns the repaired text.
+/// A ruleset disabled via `config.rules` has its fix skipped too.
 pub fn repair(source: &str, config: &Config) -> String {
-    let source = semicolon::repair(source, config.semicolon_style());
-    let source = indentation::repair(&source, config.indentation_unit());
-    let source = comma_spacing::repair(&source);
-    trailing_whitespace::repair(&source)
+    let rules = &config.rules;
+    let source = if rules.semicolon {
+        semicolon::repair(source, config.semicolon_style())
+    } else {
+        source.to_string()
+    };
+    let source = if rules.indentation {
+        indentation::repair(&source, config.indentation_unit())
+    } else {
+        source
+    };
+    let source = if rules.comma_spacing {
+        comma_spacing::repair(&source)
+    } else {
+        source
+    };
+    if rules.trailing_whitespace {
+        trailing_whitespace::repair(&source)
+    } else {
+        source
+    }
 }
 
 #[cfg(test)]
@@ -92,11 +136,45 @@ mod tests {
     }
 
     #[test]
+    fn lint_skips_disabled_rules() {
+        let source = "Foo(1,2)   \n";
+        let config = Config::default();
+        let baseline = lint(source, &config);
+        assert_eq!(baseline.len(), 2);
+
+        let config = Config {
+            rules: config::Rules {
+                trailing_whitespace: false,
+                comma_spacing: false,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+        assert!(lint(source, &config).is_empty());
+    }
+
+    #[test]
+    fn repair_skips_disabled_rules() {
+        let source = "Call(1,2)  \r\n";
+        let config = Config {
+            rules: config::Rules {
+                trailing_whitespace: false,
+                comma_spacing: false,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+
+        assert_eq!(repair(source, &config), source);
+    }
+
+    #[test]
     fn repair_honors_configured_semicolon_and_indentation_style() {
         let config = Config {
             semicolon: true,
             indentation: config::Indentation::Space,
             indentation_width: 2,
+            ..Config::default()
         };
         let source = "Function Run()\nIf ready\nDoThing()\nEndIf\nEndFunction\n";
 

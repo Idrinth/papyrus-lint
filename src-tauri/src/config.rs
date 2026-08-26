@@ -111,6 +111,7 @@ mod tests {
             semicolon: true,
             indentation: Indentation::Space,
             indentation_width: 2,
+            ..papyrus_lints::Config::default()
         };
 
         save_config(dir.path(), &config).expect("saving should succeed");
