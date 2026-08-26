@@ -43,7 +43,7 @@ pub enum Keyword {
 
 impl Keyword {
     /// Attempt to map a lowercased word to a keyword.
-    pub fn from_str(word_lower: &str) -> Option<Keyword> {
+    pub fn from_word(word_lower: &str) -> Option<Keyword> {
         use Keyword::*;
         Some(match word_lower {
             "scriptname" => ScriptName,

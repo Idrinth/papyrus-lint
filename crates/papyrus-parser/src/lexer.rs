@@ -381,7 +381,7 @@ impl<'a> Lexer<'a> {
         }
 
         let lower = text.to_ascii_lowercase();
-        let kind = match Keyword::from_str(&lower) {
+        let kind = match Keyword::from_word(&lower) {
             Some(kw) => TokenKind::Keyword(kw),
             None => TokenKind::Identifier(text),
         };
