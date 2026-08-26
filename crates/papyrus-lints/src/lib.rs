@@ -6,6 +6,7 @@
 //! parse cleanly.
 
 pub mod forbidden_functions;
+pub mod semicolon;
 pub mod trailing_whitespace;
 pub mod unused_getter;
 
@@ -30,4 +31,17 @@ pub fn lint(source: &str) -> Vec<Diagnostic> {
 /// Applies every automatic fix to `source` and returns the repaired text.
 pub fn repair(source: &str) -> String {
     trailing_whitespace::repair(source)
+}
+
+/// Runs every lint, including the configured semicolon rule.
+pub fn lint_with_semicolons(source: &str, style: semicolon::Style) -> Vec<Diagnostic> {
+    let mut diagnostics = lint(source);
+    diagnostics.extend(semicolon::check(source, style));
+    diagnostics
+}
+
+/// Applies every automatic fix, including the configured semicolon fix.
+pub fn repair_with_semicolons(source: &str, style: semicolon::Style) -> String {
+    let repaired = semicolon::repair(source, style);
+    trailing_whitespace::repair(&repaired)
 }

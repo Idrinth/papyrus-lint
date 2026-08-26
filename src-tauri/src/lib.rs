@@ -2,7 +2,24 @@ pub mod archlist;
 pub mod function_table;
 pub mod script_locator;
 
+use serde::Deserialize;
 use std::path::PathBuf;
+
+#[derive(Clone, Copy, Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum SemicolonStyle {
+    Require,
+    Forbid,
+}
+
+impl From<SemicolonStyle> for papyrus_lints::semicolon::Style {
+    fn from(value: SemicolonStyle) -> Self {
+        match value {
+            SemicolonStyle::Require => Self::Require,
+            SemicolonStyle::Forbid => Self::Forbid,
+        }
+    }
+}
 
 /// Parses the `.archlist` file at `path` and returns the resolved paths it lists.
 #[tauri::command]
@@ -34,21 +51,31 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
 
 /// Reads the `.psc` file at `path` and runs every lint rule against it.
 #[tauri::command]
-fn lint_psc_file(path: String) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+fn lint_psc_file(
+    path: String,
+    semicolon_style: SemicolonStyle,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    Ok(papyrus_lints::lint(&source))
+    Ok(papyrus_lints::lint_with_semicolons(
+        &source,
+        semicolon_style.into(),
+    ))
 }
 
 /// Reads the `.psc` file at `path`, applies every automatic fix, writes the
 /// repaired source back to disk, and returns the diagnostics that remain.
 #[tauri::command]
-fn repair_psc_file(path: String) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+fn repair_psc_file(
+    path: String,
+    semicolon_style: SemicolonStyle,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    let repaired = papyrus_lints::repair(&source);
+    let style = semicolon_style.into();
+    let repaired = papyrus_lints::repair_with_semicolons(&source, style);
     if repaired != source {
         std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
     }
-    Ok(papyrus_lints::lint(&repaired))
+    Ok(papyrus_lints::lint_with_semicolons(&repaired, style))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
