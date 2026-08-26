@@ -1,6 +1,10 @@
 # papyrus-lint
 A linter for Bethesda's papyrus language to improve code quality.
 
+## Implemented Lints
+
+- **Trailing whitespace**: flag lines that end with trailing spaces or tabs.
+
 ## Planned Lints
 
 - **Strict boolean check**: flag comparisons and conditions that rely on implicit boolean conversion instead of explicit boolean values.
@@ -9,7 +13,6 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Getter usage without saving result**: flag calls to getter functions whose return value is discarded instead of stored or used.
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
 - **Formatting checks**: enforce consistent indentation and require a space after commas.
-- **Trailing whitespace**: flag lines that end with trailing spaces or tabs.
 
 ## Planned Automatic Fixes
 

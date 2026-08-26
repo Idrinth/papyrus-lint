@@ -23,6 +23,7 @@ tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 papyrus-parser = { path = "../crates/papyrus-parser" }
+papyrus-lints = { path = "../crates/papyrus-lints" }
 
 [dev-dependencies]
 tempfile = "3"
