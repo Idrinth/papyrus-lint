@@ -68,6 +68,14 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
 
+## Releases (`.github/workflows/release.yml`)
+
+Pushing a tag matching `v*.*.*` triggers a release job that builds the
+Tauri desktop app on Linux, macOS, and Windows (via
+`tauri-apps/tauri-action`) and attaches each platform's build output
+(installers/bundles) to a GitHub release for that tag, creating the
+release if it doesn't already exist.
+
 ## Merging
 
 Before merging a pull request, make sure its branch is up to date with
