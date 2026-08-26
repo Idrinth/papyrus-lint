@@ -18,8 +18,10 @@ parses any `.psc` (Papyrus source) files among them, and lints them.
 │       ├── main.rs           # Binary entry point, delegates to lib::run()
 │       ├── lib.rs            # Registers Tauri commands (parse_archlist_file,
 │       │                     # parse_papyrus_script, lint_papyrus_script,
-│       │                     # parse_psc_file, lint_psc_file)
+│       │                     # parse_psc_file, load_lint_config, lint_psc_file,
+│       │                     # repair_psc_file)
 │       ├── archlist.rs        # Parses .archlist files (JSON arrays of paths)
+│       ├── config.rs          # Locates/loads a project's papyrus-lint.yaml
 │       └── script_locator.rs  # Finds .psc files by name under scripts/source
 │                               # or source/scripts
 ├── rules/
@@ -35,7 +37,9 @@ parses any `.psc` (Papyrus source) files among them, and lints them.
     └── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
         ├── build.rs           # (not the AST) so they still run on scripts
         └── src/                # that don't parse cleanly.
-            ├── lib.rs                     # Diagnostic type + lint() entry point
+            ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
+            ├── config.rs                  # Config type (YAML-deserializable) passed
+            │                              # to every check/fix job
             ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
             └── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
                                              # via a build-time-generated array
@@ -97,3 +101,13 @@ frontend via the `lint_papyrus_script` and `lint_psc_file` Tauri commands.
 `repair_psc_file` Tauri command, which rewrites the `.psc` file on disk and
 returns the diagnostics that remain. See README.md for the remaining
 planned lints and fixes.
+
+`lint()` and `repair()` both take a `&papyrus_lints::Config` — deserialized
+from a project's optional `papyrus-lint.yaml`/`.yml` file (default:
+`semicolon: false`, `indentation: tab`) — so it's available to every
+check/fix job. `src-tauri/src/config.rs` locates that file next to the
+dropped `.archlist` file and is exposed via the `load_lint_config` Tauri
+command; the frontend loads it once per drop and passes it into every
+`lint_psc_file`/`repair_psc_file` call. No lint currently reads it — it's
+wired through in preparation for the configurable semicolon/indentation
+lints in README.md's "Planned Lints".
