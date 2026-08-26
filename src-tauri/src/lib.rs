@@ -24,6 +24,13 @@ fn lint_papyrus_script(source: &str) -> Vec<papyrus_lints::Diagnostic> {
     papyrus_lints::lint(source)
 }
 
+/// Reads the `.psc` file at `path` and parses it into a `Script` AST.
+#[tauri::command]
+fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
+    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    papyrus_parser::parse(&source).map_err(|err| err.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -31,7 +38,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             parse_archlist_file,
             parse_papyrus_script,
-            lint_papyrus_script
+            lint_papyrus_script,
+            parse_psc_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

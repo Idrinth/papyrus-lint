@@ -6,11 +6,41 @@ let dropZoneErrorEl: HTMLElement | null;
 let resultEl: HTMLElement | null;
 let resultTitleEl: HTMLElement | null;
 let resultListEl: HTMLElement | null;
+let pscResultEl: HTMLElement | null;
+let pscResultListEl: HTMLElement | null;
 
 const ARCHLIST_EXTENSION = ".archlist";
+const PSC_EXTENSION = ".psc";
 
 function isArchlistPath(path: string): boolean {
   return path.toLowerCase().endsWith(ARCHLIST_EXTENSION);
+}
+
+function isPscPath(path: string): boolean {
+  return path.toLowerCase().endsWith(PSC_EXTENSION);
+}
+
+interface PapyrusScript {
+  name: string;
+}
+
+interface PscParseOutcome {
+  path: string;
+  ok: boolean;
+  detail: string;
+}
+
+async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
+  return Promise.all(
+    paths.map(async (path) => {
+      try {
+        const script = await invoke<PapyrusScript>("parse_psc_file", { path });
+        return { path, ok: true, detail: `parsed as "${script.name}"` };
+      } catch (error) {
+        return { path, ok: false, detail: String(error) };
+      }
+    }),
+  );
 }
 
 function showError(message: string) {
@@ -42,6 +72,27 @@ function showResult(path: string, entries: string[]) {
   resultEl.removeAttribute("hidden");
 }
 
+function showPscResults(outcomes: PscParseOutcome[]) {
+  if (!pscResultEl || !pscResultListEl) {
+    return;
+  }
+
+  if (outcomes.length === 0) {
+    pscResultEl.setAttribute("hidden", "");
+    return;
+  }
+
+  pscResultListEl.replaceChildren(
+    ...outcomes.map(({ path, ok, detail }) => {
+      const item = document.createElement("li");
+      item.textContent = `${path}: ${detail}`;
+      item.classList.add(ok ? "psc-result__item--ok" : "psc-result__item--error");
+      return item;
+    }),
+  );
+  pscResultEl.removeAttribute("hidden");
+}
+
 async function handleDroppedPaths(paths: string[]) {
   const archlistPath = paths.find(isArchlistPath);
 
@@ -56,6 +107,9 @@ async function handleDroppedPaths(paths: string[]) {
     });
     clearError();
     showResult(archlistPath, entries);
+
+    const outcomes = await parsePscFiles(entries.filter(isPscPath));
+    showPscResults(outcomes);
   } catch (error) {
     showError("Failed to read that .archlist file. Please try again.");
     console.error(error);
@@ -68,6 +122,8 @@ window.addEventListener("DOMContentLoaded", () => {
   resultEl = document.querySelector("#archlist-result");
   resultTitleEl = document.querySelector("#archlist-result-title");
   resultListEl = document.querySelector("#archlist-result-list");
+  pscResultEl = document.querySelector("#psc-result");
+  pscResultListEl = document.querySelector("#psc-result-list");
 
   getCurrentWebview().onDragDropEvent((event) => {
     if (event.payload.type === "over") {
