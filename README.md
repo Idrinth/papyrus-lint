@@ -19,6 +19,28 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
 - **Formatting checks**: enforce consistent indentation and require a space after commas.
 
+## Configuration
+
+Lint/fix behavior is configured via an optional YAML file named
+`papyrus-lint.yaml` (or `papyrus-lint.yml`), placed next to the
+`.archlist` file you drop into the app. Any key it omits falls back to
+its default:
+
+```yaml
+semicolon: false
+indentation: tab
+```
+
+- `semicolon`: whether lines are required to end in a semicolon (`true`)
+  or must not (`false`). Drives the planned "Semicolon at end of line"
+  lint below.
+- `indentation`: the expected indentation style, `tab` or `space`. Drives
+  the planned indentation checks/fix below.
+
+No lint currently reads this configuration — it's read and passed to
+every check/fix job in preparation for the planned lints that will use
+it.
+
 ## Implemented Automatic Fixes
 
 - **Trailing whitespace**: automatically strip trailing spaces or tabs from the end of lines.
