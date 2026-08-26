@@ -13,6 +13,7 @@ pub mod forbidden_functions;
 pub mod indentation;
 pub mod numeric_comparison;
 pub mod semicolon;
+pub mod slow_functions;
 pub mod strict_boolean;
 pub mod trailing_whitespace;
 pub mod unused_getter;
@@ -56,6 +57,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     let mut diagnostics = trailing_whitespace::check(source);
     diagnostics.extend(comma_spacing::check(source));
     diagnostics.extend(forbidden_functions::check(source));
+    diagnostics.extend(slow_functions::check(source));
     diagnostics.extend(unused_getter::check(source));
     diagnostics.extend(float_int_conversion::check(source));
     diagnostics.extend(unused_property::check(source));
