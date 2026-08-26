@@ -1,4 +1,5 @@
 pub mod archlist;
+pub mod config;
 pub mod function_table;
 pub mod script_locator;
 
@@ -21,8 +22,11 @@ fn parse_papyrus_script(source: &str) -> Result<papyrus_parser::ast::Script, Str
 }
 
 #[tauri::command]
-fn lint_papyrus_script(source: &str) -> Vec<papyrus_lints::Diagnostic> {
-    papyrus_lints::lint(source)
+fn lint_papyrus_script(
+    source: &str,
+    config: papyrus_lints::Config,
+) -> Vec<papyrus_lints::Diagnostic> {
+    papyrus_lints::lint(source, &config)
 }
 
 /// Reads the `.psc` file at `path` and parses it into a `Script` AST.
@@ -32,15 +36,29 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
     papyrus_parser::parse(&source).map_err(|err| err.to_string())
 }
 
-/// Reads the `.psc` file at `path` and runs every lint rule against it.
+/// Looks for a papyrus-lint YAML config file in `dir` (conventionally the
+/// directory containing the `.archlist` file) and returns the lint
+/// configuration it describes, falling back to the default configuration
+/// if `dir` has no config file.
 #[tauri::command]
-fn lint_psc_file(path: String) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    Ok(papyrus_lints::lint(&source))
+fn load_lint_config(dir: String) -> Result<papyrus_lints::Config, String> {
+    config::load_config(&PathBuf::from(dir))
 }
 
-/// Reads the `.psc` file at `path`, applies every automatic fix, writes the
-/// repaired source back to disk, and returns the diagnostics that remain.
+/// Reads the `.psc` file at `path` and runs every lint rule against it,
+/// honoring `config`.
+#[tauri::command]
+fn lint_psc_file(
+    path: String,
+    config: papyrus_lints::Config,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    Ok(papyrus_lints::lint(&source, &config))
+}
+
+/// Reads the `.psc` file at `path`, applies every automatic fix (honoring
+/// `config`), writes the repaired source back to disk, and returns the
+/// diagnostics that remain.
 #[tauri::command]
 fn repair_psc_file(
     path: String,
@@ -48,10 +66,14 @@ fn repair_psc_file(
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair(&source, indentation);
+    config: papyrus_lints::Config,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let repaired = papyrus_lints::repair(&source, &config);
     if repaired != source {
         std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
     }
-    Ok(papyrus_lints::lint(&repaired))
+    Ok(papyrus_lints::lint(&repaired, &config))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -63,6 +85,7 @@ pub fn run() {
             parse_papyrus_script,
             lint_papyrus_script,
             parse_psc_file,
+            load_lint_config,
             lint_psc_file,
             repair_psc_file
         ])
