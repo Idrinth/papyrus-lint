@@ -97,6 +97,10 @@ fn repair_psc_file(
         std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
     }
     Ok(papyrus_lints::lint_with_semicolons(&repaired, style))
+    indentation: papyrus_lints::indentation::Indentation,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let repaired = papyrus_lints::repair(&source, indentation);
     config: papyrus_lints::Config,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;

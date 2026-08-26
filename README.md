@@ -4,6 +4,7 @@ A linter for Bethesda's papyrus language to improve code quality.
 ## Implemented Lints
 
 - **Trailing whitespace**: flag lines that end with trailing spaces or tabs.
+- **Space after comma**: require whitespace after commas in argument lists.
 - **Forbidden/discouraged function usage**: flag calls to functions listed
   in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls),
   with a configurable severity and an explanatory message per entry.
@@ -18,7 +19,8 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Strict boolean check**: flag comparisons and conditions that rely on implicit boolean conversion instead of explicit boolean values.
 - **Strict numeric type check**: flag implicit conversions/comparisons between different numeric types (e.g. Int vs Float).
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
-- **Formatting checks**: enforce consistent indentation and require a space after commas.
+- **Formatting checks**: require a space after commas.
+- **Formatting checks**: enforce consistent indentation.
 
 ## Configuration
 
@@ -47,8 +49,14 @@ it.
 - **Trailing whitespace**: automatically strip trailing spaces or tabs from the end of lines.
 - **Semicolon at end of line**: add required semicolons or remove terminal
   semicolons without discarding comment text.
+- **Indentation**: automatically re-indent blocks using tabs or a configured
+  number of spaces.
+
+## Planned Automatic Fixes
+
+- **Space after comma**: automatically insert a space after commas that lack one.
+- **Space after comma**: automatically insert a space after unspaced commas in argument lists.
 
 ## Planned Automatic Fixes
 
 - **Indentation**: automatically re-indent lines to match the configured indentation style.
-- **Space after comma**: automatically insert a space after commas that lack one.

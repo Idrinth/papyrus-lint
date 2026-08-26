@@ -17,6 +17,15 @@
         <option value="forbid">Remove where possible</option>
         <option value="require">Add to non-empty lines</option>
       </select>
+      <div class="indentation-setting">
+        Indentation
+        <select id="indentation-style" aria-label="Indentation style">
+          <option value="tabs">Tabs</option>
+          <option value="spaces">Spaces</option>
+        </select>
+        <label for="indentation-width">Width</label>
+        <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
+      </div>
 
       <div id="drop-zone" class="drop-zone">
         <p class="drop-zone__hint">Drag and drop an .archlist file here to get started</p>
