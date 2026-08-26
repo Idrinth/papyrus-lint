@@ -1,0 +1,68 @@
+# Forbidden/discouraged function calls for the papyrus-lint "slow function
+# usage" rule.
+#
+# Each entry:
+#   script:   the script (native/global or object) the function is defined on
+#   function: the function name, as written in Papyrus source
+#   level:    severity of the finding - one of: error, warning, info
+#   message:  explanation shown to the user, including a suggested alternative
+
+- script: Game
+  function: GetPlayer
+  level: error
+  message: A call to this function leads to significant performance drops and is likely easier handled with an `Actor Property PlayerRef Auto` addition without any drawbacks
+
+- script: Game
+  function: GetFormFromFile
+  level: warning
+  message: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly
+
+- script: Game
+  function: GetModByName
+  level: warning
+  message: Looking up a mod's load order index is unnecessary overhead when called repeatedly; resolve it once, cache the result, and reuse it
+
+- script: Utility
+  function: Wait
+  level: warning
+  message: Waiting inside a script blocks the calling thread and can cause stutter or stack overflow on busy save games; prefer RegisterForSingleUpdate/OnUpdate for delayed logic instead of blocking
+
+- script: Utility
+  function: WaitMenuMode
+  level: warning
+  message: Waiting inside a script blocks the calling thread; prefer an event-driven approach such as RegisterForMenu or RegisterForSingleUpdate instead of blocking
+
+- script: Debug
+  function: TraceStack
+  level: warning
+  message: TraceStack walks and prints the full script call stack, which is a heavy diagnostic operation; only use it temporarily while debugging and remove it before shipping
+
+- script: Debug
+  function: Trace
+  level: info
+  message: Trace calls left in shipped scripts add overhead and clutter the Papyrus log for end users; remove them or guard them behind a debug flag before release
+
+- script: Debug
+  function: Notification
+  level: info
+  message: Calling Notification from inside a loop or a recurring event (e.g. OnUpdate) spams the player and queues expensive UI work every call; throttle or remove repeated calls
+
+- script: ObjectReference
+  function: GetLinkedRef
+  level: warning
+  message: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly
+
+- script: ScriptObject
+  function: RegisterForUpdate
+  level: warning
+  message: RegisterForUpdate creates a recurring timer that keeps firing until explicitly cancelled and can stack duplicate timers if called more than once; prefer RegisterForSingleUpdate and re-register only when the next tick is actually needed
+
+- script: StorageUtil
+  function: SetIntValue
+  level: warning
+  message: StorageUtil persists data in a global hashtable keyed by string, which is significantly slower than a native script variable or Property; only use it when a script/actor-scoped variable is not feasible
+
+- script: StorageUtil
+  function: GetIntValue
+  level: warning
+  message: Looking values up by string key in StorageUtil's global hashtable on every call is expensive; cache the retrieved value in a local variable instead of calling this repeatedly
