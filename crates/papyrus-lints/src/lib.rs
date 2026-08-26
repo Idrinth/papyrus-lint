@@ -24,3 +24,8 @@ pub fn lint(source: &str) -> Vec<Diagnostic> {
     diagnostics.extend(forbidden_functions::check(source));
     diagnostics
 }
+
+/// Applies every automatic fix to `source` and returns the repaired text.
+pub fn repair(source: &str) -> String {
+    trailing_whitespace::repair(source)
+}

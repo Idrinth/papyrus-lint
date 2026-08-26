@@ -24,3 +24,28 @@ fn does_not_flag_crlf_line_endings_or_tab_indentation() {
     // have trailing whitespace, only leading tabs, so they must not appear.
     assert!(!diagnostics.iter().any(|d| d.line == 10));
 }
+
+#[test]
+fn repair_clears_all_trailing_whitespace_diagnostics() {
+    let repaired = papyrus_lints::trailing_whitespace::repair(FIXTURE);
+    assert!(papyrus_lints::trailing_whitespace::check(&repaired).is_empty());
+}
+
+#[test]
+fn repair_only_changes_the_flagged_lines() {
+    let repaired = papyrus_lints::trailing_whitespace::repair(FIXTURE);
+
+    let original_lines: Vec<&str> = FIXTURE.lines().collect();
+    let repaired_lines: Vec<&str> = repaired.lines().collect();
+    assert_eq!(original_lines.len(), repaired_lines.len());
+
+    let flagged_lines = [24, 26, 28];
+    for (index, (original, fixed)) in original_lines.iter().zip(&repaired_lines).enumerate() {
+        let line_number = index + 1;
+        if flagged_lines.contains(&line_number) {
+            assert_ne!(original, fixed, "line {line_number} should have been repaired");
+        } else {
+            assert_eq!(original, fixed, "line {line_number} should be unchanged");
+        }
+    }
+}

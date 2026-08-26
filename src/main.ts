@@ -8,6 +8,7 @@ let resultTitleEl: HTMLElement | null;
 let resultListEl: HTMLElement | null;
 let pscResultEl: HTMLElement | null;
 let pscResultListEl: HTMLElement | null;
+let currentPscOutcomes: PscParseOutcome[] = [];
 
 const ARCHLIST_EXTENSION = ".archlist";
 const PSC_EXTENSION = ".psc";
@@ -37,6 +38,8 @@ interface PscParseOutcome {
   findings: Diagnostic[];
 }
 
+const TRAILING_WHITESPACE_MESSAGE = "Line contains trailing whitespace";
+
 async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", { path });
@@ -44,6 +47,14 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
     console.error(error);
     return [];
   }
+}
+
+async function repairPscFile(path: string): Promise<Diagnostic[]> {
+  return invoke<Diagnostic[]>("repair_psc_file", { path });
+}
+
+function hasTrailingWhitespaceFindings(findings: Diagnostic[]): boolean {
+  return findings.some((finding) => finding.message === TRAILING_WHITESPACE_MESSAGE);
 }
 
 async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
@@ -96,7 +107,7 @@ function showResult(path: string, entries: string[]) {
   resultEl.removeAttribute("hidden");
 }
 
-function showPscResults(outcomes: PscParseOutcome[]) {
+function renderPscResults(outcomes: PscParseOutcome[]) {
   if (!pscResultEl || !pscResultListEl) {
     return;
   }
@@ -107,10 +118,23 @@ function showPscResults(outcomes: PscParseOutcome[]) {
   }
 
   pscResultListEl.replaceChildren(
-    ...outcomes.map(({ path, ok, detail, findings }) => {
+    ...outcomes.map((outcome) => {
+      const { path, ok, detail, findings } = outcome;
       const item = document.createElement("li");
-      item.textContent = `${path}: ${detail}`;
       item.classList.add(ok ? "psc-result__item--ok" : "psc-result__item--error");
+
+      const summary = document.createElement("span");
+      summary.textContent = `${path}: ${detail}`;
+      item.append(summary);
+
+      if (hasTrailingWhitespaceFindings(findings)) {
+        const fixButton = document.createElement("button");
+        fixButton.type = "button";
+        fixButton.textContent = "Fix trailing whitespace";
+        fixButton.classList.add("psc-result__fix-button");
+        fixButton.addEventListener("click", () => void handleFixClick(path, outcome, fixButton));
+        item.append(fixButton);
+      }
 
       if (findings.length > 0) {
         const findingsList = document.createElement("ul");
@@ -135,6 +159,17 @@ function showPscResults(outcomes: PscParseOutcome[]) {
   pscResultEl.removeAttribute("hidden");
 }
 
+async function handleFixClick(path: string, outcome: PscParseOutcome, button: HTMLButtonElement) {
+  button.disabled = true;
+  try {
+    outcome.findings = await repairPscFile(path);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    renderPscResults(currentPscOutcomes);
+  }
+}
+
 async function handleDroppedPaths(paths: string[]) {
   const archlistPath = paths.find(isArchlistPath);
 
@@ -150,8 +185,8 @@ async function handleDroppedPaths(paths: string[]) {
     clearError();
     showResult(archlistPath, entries);
 
-    const outcomes = await parsePscFiles(entries.filter(isPscPath));
-    showPscResults(outcomes);
+    currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
+    renderPscResults(currentPscOutcomes);
   } catch (error) {
     showError("Failed to read that .archlist file. Please try again.");
     console.error(error);
