@@ -8,6 +8,7 @@
 pub mod argument_types;
 pub mod comma_spacing;
 pub mod config;
+pub mod cyclomatic_complexity;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod indentation;
@@ -91,6 +92,13 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.argument_types {
         diagnostics.extend(argument_types::check_with(source, external));
+    }
+    if rules.cyclomatic_complexity {
+        diagnostics.extend(cyclomatic_complexity::check(
+            source,
+            config.cyclomatic_complexity_warning,
+            config.cyclomatic_complexity_error,
+        ));
     }
     diagnostics
 }

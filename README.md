@@ -45,6 +45,11 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Slow function usage**: flag calls to functions listed in
   `rules/slow-functions.yaml` that have a faster equivalent available, and
   suggest the quicker alternative.
+- **Cyclomatic complexity**: flag functions/events whose cyclomatic
+  complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and
+  short-circuiting `&&`/`||` operator) exceeds a configurable threshold,
+  as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or
+  an `[error]` above `cyclomatic_complexity_error` (default 20).
 
 ## Configuration
 
@@ -57,6 +62,8 @@ its default:
 semicolon: false
 indentation: tab
 indentation_width: 4
+cyclomatic_complexity_warning: 10
+cyclomatic_complexity_error: 20
 rules:
   trailing_whitespace: true
   comma_spacing: true
@@ -70,6 +77,7 @@ rules:
   argument_types: true
   numeric_comparison: true
   indentation: true
+  cyclomatic_complexity: true
 ```
 
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
@@ -78,6 +86,10 @@ rules:
   by the "Formatting checks" lint and the indentation automatic fix.
 - `indentation_width`: the number of spaces per indentation level, used
   only when `indentation` is `space`.
+- `cyclomatic_complexity_warning` / `cyclomatic_complexity_error`: the
+  cyclomatic complexity a function/event can reach before the
+  "Cyclomatic complexity" lint flags it as a `[warning]` or an `[error]`,
+  respectively.
 - `rules`: per-lint enable/disable switches, each defaulting to `true`.
   Setting one to `false` turns that lint (and its automatic fix, if it
   has one) off entirely; every key under `rules` can be omitted
@@ -85,7 +97,8 @@ rules:
   listed above: `trailing_whitespace`, `comma_spacing`,
   `forbidden_functions`, `slow_functions`, `unused_getter`, `unused_property`,
   `semicolon`, `float_int_conversion`, `strict_boolean`,
-  `argument_types`, `numeric_comparison`, and `indentation`.
+  `argument_types`, `numeric_comparison`, `indentation`, and
+  `cyclomatic_complexity`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
