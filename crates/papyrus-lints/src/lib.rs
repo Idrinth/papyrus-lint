@@ -5,6 +5,7 @@
 //! (rather than the parsed AST) so they still run on scripts that don't
 //! parse cleanly.
 
+pub mod forbidden_functions;
 pub mod trailing_whitespace;
 
 use serde::Serialize;
@@ -19,5 +20,7 @@ pub struct Diagnostic {
 
 /// Runs every lint rule against `source` and returns all diagnostics found.
 pub fn lint(source: &str) -> Vec<Diagnostic> {
-    trailing_whitespace::check(source)
+    let mut diagnostics = trailing_whitespace::check(source);
+    diagnostics.extend(forbidden_functions::check(source));
+    diagnostics
 }

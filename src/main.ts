@@ -24,10 +24,26 @@ interface PapyrusScript {
   name: string;
 }
 
+interface Diagnostic {
+  line: number;
+  column: number;
+  message: string;
+}
+
 interface PscParseOutcome {
   path: string;
   ok: boolean;
   detail: string;
+  findings: Diagnostic[];
+}
+
+async function lintPscFile(path: string): Promise<Diagnostic[]> {
+  try {
+    return await invoke<Diagnostic[]>("lint_psc_file", { path });
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
@@ -35,12 +51,20 @@ async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
     paths.map(async (path) => {
       try {
         const script = await invoke<PapyrusScript>("parse_psc_file", { path });
-        return { path, ok: true, detail: `parsed as "${script.name}"` };
+        const findings = await lintPscFile(path);
+        return { path, ok: true, detail: `parsed as "${script.name}"`, findings };
       } catch (error) {
-        return { path, ok: false, detail: String(error) };
+        return { path, ok: false, detail: String(error), findings: [] };
       }
     }),
   );
+}
+
+// Diagnostic messages are prefixed with `[level] ` by the lints that care
+// about severity (e.g. `forbidden_functions`); others have no prefix.
+function levelOf(message: string): "error" | "warning" | "info" | null {
+  const match = /^\[(error|warning|info)\]/.exec(message);
+  return match ? (match[1] as "error" | "warning" | "info") : null;
 }
 
 function showError(message: string) {
@@ -83,10 +107,28 @@ function showPscResults(outcomes: PscParseOutcome[]) {
   }
 
   pscResultListEl.replaceChildren(
-    ...outcomes.map(({ path, ok, detail }) => {
+    ...outcomes.map(({ path, ok, detail, findings }) => {
       const item = document.createElement("li");
       item.textContent = `${path}: ${detail}`;
       item.classList.add(ok ? "psc-result__item--ok" : "psc-result__item--error");
+
+      if (findings.length > 0) {
+        const findingsList = document.createElement("ul");
+        findingsList.classList.add("psc-result__findings");
+        findingsList.replaceChildren(
+          ...findings.map((finding) => {
+            const findingItem = document.createElement("li");
+            findingItem.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
+            const level = levelOf(finding.message);
+            if (level) {
+              findingItem.classList.add(`psc-result__finding--${level}`);
+            }
+            return findingItem;
+          }),
+        );
+        item.append(findingsList);
+      }
+
       return item;
     }),
   );
