@@ -76,8 +76,11 @@ async function loadLintConfig(archlistPath: string): Promise<LintConfig> {
 
 async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
-    return await invoke<Diagnostic[]>("lint_psc_file", { path, semicolonStyle: semicolonStyle() });
-    return await invoke<Diagnostic[]>("lint_psc_file", { path, config: currentLintConfig });
+    return await invoke<Diagnostic[]>("lint_psc_file", {
+      path,
+      semicolonStyle: semicolonStyle(),
+      config: currentLintConfig,
+    });
   } catch (error) {
     console.error(error);
     return [];
@@ -85,13 +88,16 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
 }
 
 async function repairPscFile(path: string): Promise<Diagnostic[]> {
-  return invoke<Diagnostic[]>("repair_psc_file", { path, semicolonStyle: semicolonStyle() });
   const indentation: Indentation =
     indentationStyleEl?.value === "spaces"
       ? { Spaces: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)) }
       : "Tabs";
-  return invoke<Diagnostic[]>("repair_psc_file", { path, indentation });
-  return invoke<Diagnostic[]>("repair_psc_file", { path, config: currentLintConfig });
+  return invoke<Diagnostic[]>("repair_psc_file", {
+    path,
+    semicolonStyle: semicolonStyle(),
+    indentation,
+    config: currentLintConfig,
+  });
 }
 
 function hasFixableFindings(findings: Diagnostic[]): boolean {
@@ -178,12 +184,6 @@ function renderPscResults(outcomes: PscParseOutcome[]) {
         fixButton.addEventListener("click", () => void handleFixClick(path, outcome, fixButton));
         item.append(fixButton);
       }
-      const fixButton = document.createElement("button");
-      fixButton.type = "button";
-      fixButton.textContent = "Apply fixes";
-      fixButton.classList.add("psc-result__fix-button");
-      fixButton.addEventListener("click", () => void handleFixClick(path, outcome, fixButton));
-      item.append(fixButton);
 
       if (findings.length > 0) {
         const findingsList = document.createElement("ul");

@@ -19,7 +19,6 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Strict boolean check**: flag comparisons and conditions that rely on implicit boolean conversion instead of explicit boolean values.
 - **Strict numeric type check**: flag implicit conversions/comparisons between different numeric types (e.g. Int vs Float).
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
-- **Formatting checks**: require a space after commas.
 - **Formatting checks**: enforce consistent indentation.
 
 ## Configuration
@@ -35,28 +34,20 @@ indentation: tab
 ```
 
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
-  or must not (`false`). Drives the planned "Semicolon at end of line"
-  lint below.
-- `indentation`: the expected indentation style, `tab` or `space`. Drives
-  the planned indentation checks/fix below.
+  or must not (`false`). Not currently read by the "Semicolon at end of
+  line" lint/fix, which instead use the style selected in the app's UI.
+- `indentation`: the expected indentation style, `tab` or `space`. Not
+  currently read by the indentation automatic fix, which instead uses
+  the style/width selected in the app's UI.
 
 No lint currently reads this configuration — it's read and passed to
-every check/fix job in preparation for the planned lints that will use
-it.
+every check/fix job in preparation for a future lint that will use it.
 
 ## Implemented Automatic Fixes
 
 - **Trailing whitespace**: automatically strip trailing spaces or tabs from the end of lines.
+- **Space after comma**: automatically insert a space after unspaced commas in argument lists.
 - **Semicolon at end of line**: add required semicolons or remove terminal
   semicolons without discarding comment text.
 - **Indentation**: automatically re-indent blocks using tabs or a configured
   number of spaces.
-
-## Planned Automatic Fixes
-
-- **Space after comma**: automatically insert a space after commas that lack one.
-- **Space after comma**: automatically insert a space after unspaced commas in argument lists.
-
-## Planned Automatic Fixes
-
-- **Indentation**: automatically re-indent lines to match the configured indentation style.
