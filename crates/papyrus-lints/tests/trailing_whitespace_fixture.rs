@@ -43,7 +43,10 @@ fn repair_only_changes_the_flagged_lines() {
     for (index, (original, fixed)) in original_lines.iter().zip(&repaired_lines).enumerate() {
         let line_number = index + 1;
         if flagged_lines.contains(&line_number) {
-            assert_ne!(original, fixed, "line {line_number} should have been repaired");
+            assert_ne!(
+                original, fixed,
+                "line {line_number} should have been repaired"
+            );
         } else {
             assert_eq!(original, fixed, "line {line_number} should be unchanged");
         }
