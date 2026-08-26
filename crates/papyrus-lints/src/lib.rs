@@ -11,6 +11,7 @@ pub mod config;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod indentation;
+pub mod numeric_comparison;
 pub mod semicolon;
 pub mod strict_boolean;
 pub mod trailing_whitespace;
@@ -60,6 +61,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     diagnostics.extend(float_int_conversion::check(source));
     diagnostics.extend(unused_property::check(source));
     diagnostics.extend(strict_boolean::check(source));
+    diagnostics.extend(numeric_comparison::check(source));
     diagnostics.extend(semicolon::check(source, config.semicolon_style()));
     diagnostics.extend(argument_types::check_with(source, external));
     diagnostics
