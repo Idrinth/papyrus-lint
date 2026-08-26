@@ -24,13 +24,9 @@ interface PapyrusScript {
   name: string;
 }
 
-type LintLevel = "error" | "warning" | "info";
-
-interface LintFinding {
+interface Diagnostic {
   line: number;
-  level: LintLevel;
-  script: string;
-  function: string;
+  column: number;
   message: string;
 }
 
@@ -38,12 +34,12 @@ interface PscParseOutcome {
   path: string;
   ok: boolean;
   detail: string;
-  findings: LintFinding[];
+  findings: Diagnostic[];
 }
 
-async function lintPscFile(path: string): Promise<LintFinding[]> {
+async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
-    return await invoke<LintFinding[]>("lint_psc_file", { path });
+    return await invoke<Diagnostic[]>("lint_psc_file", { path });
   } catch (error) {
     console.error(error);
     return [];
@@ -62,6 +58,13 @@ async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
       }
     }),
   );
+}
+
+// Diagnostic messages are prefixed with `[level] ` by the lints that care
+// about severity (e.g. `forbidden_functions`); others have no prefix.
+function levelOf(message: string): "error" | "warning" | "info" | null {
+  const match = /^\[(error|warning|info)\]/.exec(message);
+  return match ? (match[1] as "error" | "warning" | "info") : null;
 }
 
 function showError(message: string) {
@@ -115,8 +118,11 @@ function showPscResults(outcomes: PscParseOutcome[]) {
         findingsList.replaceChildren(
           ...findings.map((finding) => {
             const findingItem = document.createElement("li");
-            findingItem.textContent = `line ${finding.line}: [${finding.level}] ${finding.script}.${finding.function} — ${finding.message}`;
-            findingItem.classList.add(`psc-result__finding--${finding.level}`);
+            findingItem.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
+            const level = levelOf(finding.message);
+            if (level) {
+              findingItem.classList.add(`psc-result__finding--${level}`);
+            }
             return findingItem;
           }),
         );

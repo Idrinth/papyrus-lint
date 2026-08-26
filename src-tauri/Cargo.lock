@@ -2419,7 +2419,9 @@ dependencies = [
 name = "papyrus-lints"
 version = "0.1.0"
 dependencies = [
+ "papyrus-parser",
  "serde",
+ "serde_yaml",
 ]
 
 [[package]]
@@ -2427,7 +2429,6 @@ name = "papyrus-parser"
 version = "0.1.0"
 dependencies = [
  "serde",
- "serde_yaml",
 ]
 
 [[package]]
