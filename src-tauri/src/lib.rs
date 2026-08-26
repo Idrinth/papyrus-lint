@@ -39,6 +39,18 @@ fn lint_psc_file(path: String) -> Result<Vec<papyrus_lints::Diagnostic>, String>
     Ok(papyrus_lints::lint(&source))
 }
 
+/// Reads the `.psc` file at `path`, applies every automatic fix, writes the
+/// repaired source back to disk, and returns the diagnostics that remain.
+#[tauri::command]
+fn repair_psc_file(path: String) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let repaired = papyrus_lints::repair(&source);
+    if repaired != source {
+        std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
+    }
+    Ok(papyrus_lints::lint(&repaired))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -48,7 +60,8 @@ pub fn run() {
             parse_papyrus_script,
             lint_papyrus_script,
             parse_psc_file,
-            lint_psc_file
+            lint_psc_file,
+            repair_psc_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
