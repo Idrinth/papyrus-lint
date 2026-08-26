@@ -104,10 +104,15 @@ planned lints and fixes.
 
 `lint()` and `repair()` both take a `&papyrus_lints::Config` — deserialized
 from a project's optional `papyrus-lint.yaml`/`.yml` file (default:
-`semicolon: false`, `indentation: tab`) — so it's available to every
-check/fix job. `src-tauri/src/config.rs` locates that file next to the
-dropped `.archlist` file and is exposed via the `load_lint_config` Tauri
-command; the frontend loads it once per drop and passes it into every
-`lint_psc_file`/`repair_psc_file` call. No lint currently reads it — it's
-wired through in preparation for the configurable semicolon/indentation
-lints in README.md's "Planned Lints".
+`semicolon: false`, `indentation: tab`, `indentation_width: 4`) — so it's
+available to every check/fix job, and it now drives the semicolon and
+indentation fixers directly (via `Config::semicolon_style()`/
+`Config::indentation_unit()`) rather than those being passed separately.
+`src-tauri/src/config.rs` locates that file next to the dropped
+`.archlist` file and exposes `load_lint_config`/`save_lint_config` Tauri
+commands. The frontend treats the config file as the source of truth for
+its formatting controls (trailing semicolons, indentation style/width):
+it loads the config for the most recently opened project on startup
+(remembered via `localStorage`) and after every archlist drop, applies it
+to those controls, and writes any change made to them straight back to
+the file via `save_lint_config`.

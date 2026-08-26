@@ -37,17 +37,22 @@ its default:
 ```yaml
 semicolon: false
 indentation: tab
+indentation_width: 4
 ```
 
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
-  or must not (`false`). Not currently read by the "Semicolon at end of
-  line" lint/fix, which instead use the style selected in the app's UI.
-- `indentation`: the expected indentation style, `tab` or `space`. Not
-  currently read by the indentation automatic fix, which instead uses
-  the style/width selected in the app's UI.
+  or must not (`false`). Read by the "Semicolon at end of line" lint/fix.
+- `indentation`: the expected indentation style, `tab` or `space`. Read
+  by the indentation automatic fix.
+- `indentation_width`: the number of spaces per indentation level, used
+  only when `indentation` is `space`.
 
-No lint currently reads this configuration — it's read and passed to
-every check/fix job in preparation for a future lint that will use it.
+The app's formatting controls (trailing semicolons, indentation style,
+indentation width) are backed by this file: on startup it reads the
+config file for the most recently opened project and pre-selects those
+controls accordingly, and any change made to them is written straight
+back to the file, so the project's formatting settings persist between
+sessions and can be shared/committed alongside the project.
 
 ## Implemented Automatic Fixes
 
