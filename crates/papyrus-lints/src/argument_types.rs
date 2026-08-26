@@ -154,7 +154,10 @@ fn walk_stmt<E: ExternalSignatures>(
             else_body,
             ..
         } => {
-            for IfBranch { condition, body } in branches {
+            for IfBranch {
+                condition, body, ..
+            } in branches
+            {
                 walk_expr(condition, env, locals, external, diagnostics);
                 for stmt in body {
                     walk_stmt(stmt, env, locals, external, diagnostics);

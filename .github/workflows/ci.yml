@@ -10,11 +10,11 @@ jobs:
     name: Frontend (typecheck & build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -23,7 +23,7 @@ jobs:
       - name: Build
         run: npm run build
 
-  rust:
+  rust-build:
     name: Rust (fmt, clippy, check)
     runs-on: ubuntu-latest
     steps:
@@ -50,3 +50,29 @@ jobs:
 
       - name: Check
         run: cargo check --manifest-path src-tauri/Cargo.toml
+
+  rust-test:
+    name: Rust test (${{ matrix.crate }})
+    needs: rust-build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        crate: [src-tauri, crates/papyrus-parser, crates/papyrus-lints]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Tauri Linux dependencies
+        if: matrix.crate == 'src-tauri'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ matrix.crate }}
+
+      - name: Test
+        run: cargo test --manifest-path ${{ matrix.crate }}/Cargo.toml
