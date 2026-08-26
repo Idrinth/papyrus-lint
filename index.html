@@ -12,33 +12,15 @@
     <main class="container">
       <h1>papyrus-lint</h1>
 
-      <div class="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/src/assets/vite.svg" class="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img
-            src="/src/assets/tauri.svg"
-            class="logo tauri"
-            alt="Tauri logo"
-          />
-        </a>
-        <a href="https://www.typescriptlang.org/docs" target="_blank">
-          <img
-            src="/src/assets/typescript.svg"
-            class="logo typescript"
-            alt="typescript logo"
-          />
-        </a>
+      <div id="drop-zone" class="drop-zone">
+        <p class="drop-zone__hint">Drag and drop an .archlist file here to get started</p>
+        <p id="drop-zone-error" class="drop-zone__error" aria-live="polite"></p>
       </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
 
-      <form class="row" id="greet-form">
-        <label for="greet-input">Name</label>
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg" aria-live="polite"></p>
+      <div id="archlist-result" class="archlist-result" hidden>
+        <h2 id="archlist-result-title"></h2>
+        <ul id="archlist-result-list"></ul>
+      </div>
     </main>
   </body>
 </html>
