@@ -84,7 +84,10 @@ pub enum Stmt {
         value: Expr,
         line: usize,
     },
-    Expr(Expr),
+    Expr {
+        expr: Expr,
+        line: usize,
+    },
     Return {
         value: Option<Expr>,
         line: usize,

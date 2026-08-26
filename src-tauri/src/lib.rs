@@ -26,6 +26,27 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
     papyrus_parser::parse(&source).map_err(|err| err.to_string())
 }
 
+/// Parses Papyrus source and runs the forbidden-function lint against it,
+/// returning any findings.
+#[tauri::command]
+fn lint_papyrus_script(
+    source: &str,
+) -> Result<Vec<papyrus_parser::lints::forbidden_functions::Finding>, String> {
+    let script = papyrus_parser::parse(source).map_err(|e| e.to_string())?;
+    Ok(papyrus_parser::lints::forbidden_functions::lint_forbidden_functions(&script))
+}
+
+/// Reads the `.psc` file at `path`, parses it, and runs the
+/// forbidden-function lint against it, returning any findings.
+#[tauri::command]
+fn lint_psc_file(
+    path: String,
+) -> Result<Vec<papyrus_parser::lints::forbidden_functions::Finding>, String> {
+    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let script = papyrus_parser::parse(&source).map_err(|err| err.to_string())?;
+    Ok(papyrus_parser::lints::forbidden_functions::lint_forbidden_functions(&script))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -33,7 +54,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             parse_archlist_file,
             parse_papyrus_script,
-            parse_psc_file
+            parse_psc_file,
+            lint_papyrus_script,
+            lint_psc_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

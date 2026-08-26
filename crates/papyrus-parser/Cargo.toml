@@ -4,9 +4,14 @@ version = "0.1.0"
 description = "Lexer, AST, and parser for Bethesda's Papyrus scripting language"
 authors = ["Idrinth"]
 edition = "2021"
+build = "build.rs"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+
+[build-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
 
 [dev-dependencies]
 serde_json = "1"

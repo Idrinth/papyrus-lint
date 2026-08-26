@@ -24,10 +24,30 @@ interface PapyrusScript {
   name: string;
 }
 
+type LintLevel = "error" | "warning" | "info";
+
+interface LintFinding {
+  line: number;
+  level: LintLevel;
+  script: string;
+  function: string;
+  message: string;
+}
+
 interface PscParseOutcome {
   path: string;
   ok: boolean;
   detail: string;
+  findings: LintFinding[];
+}
+
+async function lintPscFile(path: string): Promise<LintFinding[]> {
+  try {
+    return await invoke<LintFinding[]>("lint_psc_file", { path });
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
@@ -35,9 +55,10 @@ async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
     paths.map(async (path) => {
       try {
         const script = await invoke<PapyrusScript>("parse_psc_file", { path });
-        return { path, ok: true, detail: `parsed as "${script.name}"` };
+        const findings = await lintPscFile(path);
+        return { path, ok: true, detail: `parsed as "${script.name}"`, findings };
       } catch (error) {
-        return { path, ok: false, detail: String(error) };
+        return { path, ok: false, detail: String(error), findings: [] };
       }
     }),
   );
@@ -83,10 +104,25 @@ function showPscResults(outcomes: PscParseOutcome[]) {
   }
 
   pscResultListEl.replaceChildren(
-    ...outcomes.map(({ path, ok, detail }) => {
+    ...outcomes.map(({ path, ok, detail, findings }) => {
       const item = document.createElement("li");
       item.textContent = `${path}: ${detail}`;
       item.classList.add(ok ? "psc-result__item--ok" : "psc-result__item--error");
+
+      if (findings.length > 0) {
+        const findingsList = document.createElement("ul");
+        findingsList.classList.add("psc-result__findings");
+        findingsList.replaceChildren(
+          ...findings.map((finding) => {
+            const findingItem = document.createElement("li");
+            findingItem.textContent = `line ${finding.line}: [${finding.level}] ${finding.script}.${finding.function} — ${finding.message}`;
+            findingItem.classList.add(`psc-result__finding--${finding.level}`);
+            return findingItem;
+          }),
+        );
+        item.append(findingsList);
+      }
+
       return item;
     }),
   );

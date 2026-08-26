@@ -1,6 +1,12 @@
 # papyrus-lint
 A linter for Bethesda's papyrus language to improve code quality.
 
+## Implemented Lints
+
+- **Forbidden/discouraged function usage**: flag calls to functions listed
+  in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls),
+  with a configurable severity and an explanatory message per entry.
+
 ## Planned Lints
 
 - **Strict boolean check**: flag comparisons and conditions that rely on implicit boolean conversion instead of explicit boolean values.

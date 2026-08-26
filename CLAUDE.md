@@ -21,13 +21,20 @@ parses any `.psc` (Papyrus source) files among them.
 │       ├── archlist.rs        # Parses .archlist files (JSON arrays of paths)
 │       └── script_locator.rs  # Finds .psc files by name under scripts/source
 │                               # or source/scripts
+├── rules/
+│   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
+│                                  # compiled into Rust by papyrus-parser's build.rs
 └── crates/
-    └── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
-        └── src/               # for the Papyrus language. No lint rules live
-            ├── lexer.rs        # here yet — this is the parsing foundation
-            ├── token.rs        # the lints described in README.md will be
-            ├── ast.rs          # built on top of.
-            └── parser.rs
+    └── papyrus-parser/       # Standalone Rust crate: lexer, AST, parser, and
+        ├── build.rs           # lints for the Papyrus language.
+        └── src/
+            ├── lexer.rs
+            ├── token.rs
+            ├── ast.rs
+            ├── parser.rs
+            └── lints/
+                └── forbidden_functions.rs  # Reads rules/forbidden-functions.yaml
+                                              # via a build-time-generated array
 ```
 
 `papyrus-parser` is a separate crate (not yet a Cargo workspace member,
@@ -56,5 +63,12 @@ on all pull requests.
 The parser (`crates/papyrus-parser`) understands scripts, imports,
 properties (including full get/set property blocks), variables, functions
 (including native/global/event functions and states), and expressions with
-standard precedence. No lint rules are implemented yet — see README.md for
-the planned lint list.
+standard precedence.
+
+One lint is implemented: "forbidden/discouraged function usage"
+(`crates/papyrus-parser/src/lints/forbidden_functions.rs`), driven by
+`rules/forbidden-functions.yaml`. `crates/papyrus-parser/build.rs` compiles
+that YAML into a static Rust array at build time, so linting never parses
+YAML at runtime. It's exposed to the frontend via the `lint_papyrus_script`
+and `lint_psc_file` Tauri commands. See README.md for the remaining planned
+lints.
