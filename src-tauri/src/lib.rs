@@ -1,4 +1,5 @@
 pub mod archlist;
+pub mod script_locator;
 
 use std::path::PathBuf;
 
