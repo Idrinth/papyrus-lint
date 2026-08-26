@@ -68,6 +68,26 @@ h1 {
   word-break: break-all;
 }
 
+.psc-result {
+  margin-top: 2em;
+  width: 100%;
+  max-width: 32em;
+  text-align: left;
+}
+
+.psc-result ul {
+  padding-left: 1.25em;
+  word-break: break-all;
+}
+
+.psc-result__item--ok {
+  color: #2f8f3f;
+}
+
+.psc-result__item--error {
+  color: #d83939;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
@@ -75,6 +95,14 @@ h1 {
   }
 
   .drop-zone__error {
+    color: #ff6b6b;
+  }
+
+  .psc-result__item--ok {
+    color: #6bd67f;
+  }
+
+  .psc-result__item--error {
     color: #ff6b6b;
   }
 }
