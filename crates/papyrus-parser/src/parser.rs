@@ -525,19 +525,32 @@ impl Parser {
 
     fn parse_if(&mut self) -> PResult<Stmt> {
         let line = self.current().line;
+        let col = self.current().col;
         self.expect_keyword(Keyword::If)?;
         let mut branches = Vec::new();
         let condition = self.parse_expr()?;
         self.expect_terminator()?;
         let body = self.parse_block(&[Keyword::ElseIf, Keyword::Else, Keyword::EndIf])?;
-        branches.push(IfBranch { condition, body });
+        branches.push(IfBranch {
+            condition,
+            body,
+            line,
+            col,
+        });
 
         while self.at_keyword(Keyword::ElseIf) {
+            let line = self.current().line;
+            let col = self.current().col;
             self.advance();
             let condition = self.parse_expr()?;
             self.expect_terminator()?;
             let body = self.parse_block(&[Keyword::ElseIf, Keyword::Else, Keyword::EndIf])?;
-            branches.push(IfBranch { condition, body });
+            branches.push(IfBranch {
+                condition,
+                body,
+                line,
+                col,
+            });
         }
 
         let else_body = if self.at_keyword(Keyword::Else) {
@@ -560,6 +573,7 @@ impl Parser {
 
     fn parse_while(&mut self) -> PResult<Stmt> {
         let line = self.current().line;
+        let col = self.current().col;
         self.expect_keyword(Keyword::While)?;
         let condition = self.parse_expr()?;
         self.expect_terminator()?;
@@ -570,6 +584,7 @@ impl Parser {
             condition,
             body,
             line,
+            col,
         })
     }
 

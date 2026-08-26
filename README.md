@@ -13,10 +13,16 @@ A linter for Bethesda's papyrus language to improve code quality.
   is discarded.
 - **Semicolon at end of line**: require a trailing semicolon on each non-empty
   line or forbid terminal semicolons, according to the selected setting.
+- **Strict boolean check**: flag `If`/`ElseIf`/`While` conditions that aren't
+  already a `Bool` value or expression, instead of relying on Papyrus's
+  implicit conversion to boolean. Only conditions whose type can be
+  determined locally (locals, parameters, properties, literals, casts, and
+  comparison/logical expressions) are checked; a condition that depends on
+  a function call or a member access is left unflagged rather than risk a
+  false positive.
 
 ## Planned Lints
 
-- **Strict boolean check**: flag comparisons and conditions that rely on implicit boolean conversion instead of explicit boolean values.
 - **Strict numeric type check**: flag implicit conversions/comparisons between different numeric types (e.g. Int vs Float).
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
 - **Formatting checks**: enforce consistent indentation.
