@@ -19,6 +19,11 @@ fn parse_papyrus_script(source: &str) -> Result<papyrus_parser::ast::Script, Str
     papyrus_parser::parse(source).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn lint_papyrus_script(source: &str) -> Vec<papyrus_lints::Diagnostic> {
+    papyrus_lints::lint(source)
+}
+
 /// Reads the `.psc` file at `path` and parses it into a `Script` AST.
 #[tauri::command]
 fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
@@ -26,25 +31,11 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
     papyrus_parser::parse(&source).map_err(|err| err.to_string())
 }
 
-/// Parses Papyrus source and runs the forbidden-function lint against it,
-/// returning any findings.
+/// Reads the `.psc` file at `path` and runs every lint rule against it.
 #[tauri::command]
-fn lint_papyrus_script(
-    source: &str,
-) -> Result<Vec<papyrus_parser::lints::forbidden_functions::Finding>, String> {
-    let script = papyrus_parser::parse(source).map_err(|e| e.to_string())?;
-    Ok(papyrus_parser::lints::forbidden_functions::lint_forbidden_functions(&script))
-}
-
-/// Reads the `.psc` file at `path`, parses it, and runs the
-/// forbidden-function lint against it, returning any findings.
-#[tauri::command]
-fn lint_psc_file(
-    path: String,
-) -> Result<Vec<papyrus_parser::lints::forbidden_functions::Finding>, String> {
+fn lint_psc_file(path: String) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    let script = papyrus_parser::parse(&source).map_err(|err| err.to_string())?;
-    Ok(papyrus_parser::lints::forbidden_functions::lint_forbidden_functions(&script))
+    Ok(papyrus_lints::lint(&source))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -54,8 +45,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             parse_archlist_file,
             parse_papyrus_script,
-            parse_psc_file,
             lint_papyrus_script,
+            parse_psc_file,
             lint_psc_file
         ])
         .run(tauri::generate_context!())

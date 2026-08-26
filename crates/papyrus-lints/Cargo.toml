@@ -1,7 +1,7 @@
 [package]
-name = "papyrus-parser"
+name = "papyrus-lints"
 version = "0.1.0"
-description = "Lexer, AST, and parser for Bethesda's Papyrus scripting language"
+description = "Lint rules for Bethesda's Papyrus scripting language"
 authors = ["Idrinth"]
 edition = "2021"
 

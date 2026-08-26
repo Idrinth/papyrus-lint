@@ -493,7 +493,7 @@ impl Parser {
         }
 
         self.expect_terminator()?;
-        Ok(Stmt::Expr { expr: target, line })
+        Ok(Stmt::Expr(target))
     }
 
     /// Disambiguates a local variable declaration (`Type name = ...`) from an
