@@ -5,6 +5,7 @@
 //! (rather than the parsed AST) so they still run on scripts that don't
 //! parse cleanly.
 
+pub mod comma_spacing;
 pub mod forbidden_functions;
 pub mod trailing_whitespace;
 pub mod unused_getter;
@@ -22,6 +23,7 @@ pub struct Diagnostic {
 /// Runs every lint rule against `source` and returns all diagnostics found.
 pub fn lint(source: &str) -> Vec<Diagnostic> {
     let mut diagnostics = trailing_whitespace::check(source);
+    diagnostics.extend(comma_spacing::check(source));
     diagnostics.extend(forbidden_functions::check(source));
     diagnostics.extend(unused_getter::check(source));
     diagnostics
@@ -29,5 +31,18 @@ pub fn lint(source: &str) -> Vec<Diagnostic> {
 
 /// Applies every automatic fix to `source` and returns the repaired text.
 pub fn repair(source: &str) -> String {
-    trailing_whitespace::repair(source)
+    trailing_whitespace::repair(&comma_spacing::repair(source))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn combined_repair_applies_comma_spacing_and_trailing_whitespace() {
+        let repaired = repair("Call(1,2)  \r\n");
+
+        assert_eq!(repaired, "Call(1, 2)\r\n");
+        assert!(lint(&repaired).is_empty());
+    }
 }
