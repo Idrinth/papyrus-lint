@@ -8,7 +8,24 @@
 //! semicolon: false
 //! indentation: tab
 //! indentation_width: 4
+//! rules:
+//!   trailing_whitespace: true
+//!   comma_spacing: true
+//!   forbidden_functions: true
+//!   unused_getter: true
+//!   unused_property: true
+//!   semicolon: true
+//!   float_int_conversion: true
+//!   strict_boolean: true
+//!   argument_types: true
+//!   numeric_comparison: true
+//!   indentation: true
 //! ```
+//!
+//! Every entry under `rules` is enabled by default; set one to `false` to
+//! disable that lint (and its automatic fix, if it has one) entirely. As
+//! with the top-level keys, `rules` and any key within it may be omitted
+//! and falls back to `true`.
 
 use std::fmt;
 
@@ -41,6 +58,9 @@ pub struct Config {
     /// The number of spaces per indentation level, used only when
     /// `indentation` is [`Indentation::Space`].
     pub indentation_width: usize,
+    /// Per-ruleset enable/disable switches. Every ruleset is enabled by
+    /// default; see [`Rules`].
+    pub rules: Rules,
 }
 
 impl Default for Config {
@@ -49,6 +69,56 @@ impl Default for Config {
             semicolon: false,
             indentation: Indentation::default(),
             indentation_width: 4,
+            rules: Rules::default(),
+        }
+    }
+}
+
+/// Individual enable/disable switches for each lint ruleset, all `true`
+/// (enabled) by default. A ruleset set to `false` here is skipped by both
+/// [`crate::lint`]/[`crate::lint_with_external_arguments`] and, for
+/// rulesets with an automatic fix, [`crate::repair`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Rules {
+    /// The "Trailing whitespace" lint/fix.
+    pub trailing_whitespace: bool,
+    /// The "Space after comma" lint/fix.
+    pub comma_spacing: bool,
+    /// The "Forbidden/discouraged function usage" lint.
+    pub forbidden_functions: bool,
+    /// The "Getter usage without saving result" lint.
+    pub unused_getter: bool,
+    /// The "Unused script properties" lint.
+    pub unused_property: bool,
+    /// The "Semicolon at end of line" lint/fix.
+    pub semicolon: bool,
+    /// The "Implicit Float-to-Int conversion" lint.
+    pub float_int_conversion: bool,
+    /// The "Strict boolean check" lint.
+    pub strict_boolean: bool,
+    /// The "Argument type check" lint.
+    pub argument_types: bool,
+    /// The "Strict numeric type check" lint.
+    pub numeric_comparison: bool,
+    /// The "Formatting checks"/"Indentation" lint/fix.
+    pub indentation: bool,
+}
+
+impl Default for Rules {
+    fn default() -> Self {
+        Self {
+            trailing_whitespace: true,
+            comma_spacing: true,
+            forbidden_functions: true,
+            unused_getter: true,
+            unused_property: true,
+            semicolon: true,
+            float_int_conversion: true,
+            strict_boolean: true,
+            argument_types: true,
+            numeric_comparison: true,
+            indentation: true,
         }
     }
 }
@@ -126,6 +196,50 @@ mod tests {
     fn empty_document_yields_defaults() {
         assert_eq!(parse("").unwrap(), Config::default());
         assert_eq!(parse("   \n").unwrap(), Config::default());
+    }
+
+    #[test]
+    fn all_rules_default_to_enabled() {
+        let config = Config::default();
+        assert_eq!(config.rules, Rules::default());
+        assert!(config.rules.trailing_whitespace);
+        assert!(config.rules.comma_spacing);
+        assert!(config.rules.forbidden_functions);
+        assert!(config.rules.unused_getter);
+        assert!(config.rules.unused_property);
+        assert!(config.rules.semicolon);
+        assert!(config.rules.float_int_conversion);
+        assert!(config.rules.strict_boolean);
+        assert!(config.rules.argument_types);
+        assert!(config.rules.numeric_comparison);
+        assert!(config.rules.indentation);
+    }
+
+    #[test]
+    fn parses_individual_rule_overrides() {
+        let config = parse("rules:\n  trailing_whitespace: false\n  indentation: false\n").unwrap();
+
+        assert!(!config.rules.trailing_whitespace);
+        assert!(!config.rules.indentation);
+        // Omitted rule keys still default to enabled.
+        assert!(config.rules.comma_spacing);
+        assert!(config.rules.semicolon);
+    }
+
+    #[test]
+    fn rules_round_trip_through_yaml() {
+        let config = Config {
+            rules: Rules {
+                trailing_whitespace: false,
+                argument_types: false,
+                ..Rules::default()
+            },
+            ..Config::default()
+        };
+
+        let yaml = to_yaml(&config).unwrap();
+
+        assert_eq!(parse(&yaml).unwrap(), config);
     }
 
     #[test]
@@ -238,6 +352,7 @@ mod tests {
             semicolon: true,
             indentation: Indentation::Space,
             indentation_width: 2,
+            ..Config::default()
         };
 
         let yaml = to_yaml(&config).unwrap();

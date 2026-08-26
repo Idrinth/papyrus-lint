@@ -112,10 +112,14 @@ planned lints and fixes.
 
 `lint()` and `repair()` both take a `&papyrus_lints::Config` — deserialized
 from a project's optional `papyrus-lint.yaml`/`.yml` file (default:
-`semicolon: false`, `indentation: tab`, `indentation_width: 4`) — so it's
-available to every check/fix job, and it now drives the semicolon and
-indentation fixers directly (via `Config::semicolon_style()`/
-`Config::indentation_unit()`) rather than those being passed separately.
+`semicolon: false`, `indentation: tab`, `indentation_width: 4`, and a
+`rules` map with every ruleset enabled) — so it's available to every
+check/fix job, and it now drives the semicolon and indentation fixers
+directly (via `Config::semicolon_style()`/`Config::indentation_unit()`)
+rather than those being passed separately. `Config::rules` (see
+`config.rs`) lets a project disable any individual ruleset by name; both
+`lint_with_external_arguments()` and `repair()` skip a disabled ruleset's
+check/fix.
 `src-tauri/src/config.rs` locates that file next to the dropped
 `.archlist` file and exposes `load_lint_config`/`save_lint_config` Tauri
 commands. The frontend treats the config file as the source of truth for

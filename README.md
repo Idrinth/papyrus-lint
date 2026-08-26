@@ -58,6 +58,18 @@ its default:
 semicolon: false
 indentation: tab
 indentation_width: 4
+rules:
+  trailing_whitespace: true
+  comma_spacing: true
+  forbidden_functions: true
+  unused_getter: true
+  unused_property: true
+  semicolon: true
+  float_int_conversion: true
+  strict_boolean: true
+  argument_types: true
+  numeric_comparison: true
+  indentation: true
 ```
 
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
@@ -66,6 +78,14 @@ indentation_width: 4
   by the "Formatting checks" lint and the indentation automatic fix.
 - `indentation_width`: the number of spaces per indentation level, used
   only when `indentation` is `space`.
+- `rules`: per-lint enable/disable switches, each defaulting to `true`.
+  Setting one to `false` turns that lint (and its automatic fix, if it
+  has one) off entirely; every key under `rules` can be omitted
+  individually and falls back to `true`. The key names match the lints
+  listed above: `trailing_whitespace`, `comma_spacing`,
+  `forbidden_functions`, `unused_getter`, `unused_property`,
+  `semicolon`, `float_int_conversion`, `strict_boolean`,
+  `argument_types`, `numeric_comparison`, and `indentation`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
