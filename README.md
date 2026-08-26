@@ -11,6 +11,8 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Getter usage without saving result**: flag standalone calls to functions
   whose names begin with `Get` (case-insensitively), because their return value
   is discarded.
+- **Unused script properties**: flag `Property` declarations whose name is
+  never referenced anywhere else in the script.
 - **Semicolon at end of line**: require a trailing semicolon on each non-empty
   line or forbid terminal semicolons, according to the selected setting.
 - **Strict boolean check**: flag `If`/`ElseIf`/`While` conditions that aren't
