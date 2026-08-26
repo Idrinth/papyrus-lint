@@ -88,6 +88,22 @@ h1 {
   color: #d83939;
 }
 
+.psc-result__fix-button {
+  margin-left: 0.75em;
+  padding: 0.15em 0.6em;
+  border: 1px solid #396cd8;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #396cd8;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.psc-result__fix-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .psc-result__findings {
   margin: 0.25em 0 0.5em;
   font-size: 0.9em;
@@ -130,5 +146,10 @@ h1 {
 
   .psc-result__finding--warning {
     color: #e0b23c;
+  }
+
+  .psc-result__fix-button {
+    border-color: #24c8db;
+    color: #24c8db;
   }
 }
