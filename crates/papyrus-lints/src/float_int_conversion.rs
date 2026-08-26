@@ -22,14 +22,48 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         return Vec::new();
     };
 
-    let functions: HashMap<String, &FunctionDecl> = script
+    let mut functions: HashMap<String, &FunctionDecl> = script
         .functions
         .iter()
         .map(|function| (function.name.to_lowercase(), function))
         .collect();
+    for state in &script.states {
+        for function in &state.functions {
+            functions
+                .entry(function.name.to_lowercase())
+                .or_insert(function);
+        }
+    }
 
     let mut env = TypeEnv::for_script(&script);
     let mut diagnostics = Vec::new();
+
+    for variable in &script.variables {
+        if let Some(value) = &variable.value {
+            check_declaration(
+                &variable.type_name,
+                &variable.name,
+                value,
+                variable.line,
+                &env,
+                &mut diagnostics,
+            );
+            walk_expr(value, &env, &functions, variable.line, &mut diagnostics);
+        }
+    }
+    for property in &script.properties {
+        if let Some(value) = &property.value {
+            check_declaration(
+                &property.type_name,
+                &property.name,
+                value,
+                property.line,
+                &env,
+                &mut diagnostics,
+            );
+            walk_expr(value, &env, &functions, property.line, &mut diagnostics);
+        }
+    }
 
     for function in &script.functions {
         env.with_function_scope(function, |scoped| {
@@ -73,16 +107,14 @@ fn check_body(
         match stmt {
             Stmt::VarDecl(decl) => {
                 if let Some(value) = &decl.value {
-                    if narrows_to_int(&decl.type_name, value, env) {
-                        diagnostics.push(Diagnostic {
-                            line: decl.line,
-                            column: 1,
-                            message: format!(
-                                "Float value assigned to Int variable '{}' without an explicit 'as Int' cast",
-                                decl.name
-                            ),
-                        });
-                    }
+                    check_declaration(
+                        &decl.type_name,
+                        &decl.name,
+                        value,
+                        decl.line,
+                        env,
+                        diagnostics,
+                    );
                     walk_expr(value, env, functions, decl.line, diagnostics);
                 }
             }
@@ -186,7 +218,14 @@ fn walk_expr(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if let Expr::Call { callee, args } = expr {
-        if let Expr::Identifier(name) = &**callee {
+        let resolved_name = match &**callee {
+            Expr::Identifier(name) => Some(name.as_str()),
+            Expr::Member { object, property } if matches!(**object, Expr::Self_) => {
+                Some(property.as_str())
+            }
+            _ => None,
+        };
+        if let Some(name) = resolved_name {
             if let Some(function) = functions.get(&name.to_lowercase()) {
                 for (arg, param) in args.iter().zip(&function.params) {
                     if narrows_to_int(&param.type_name, arg, env) {
@@ -224,6 +263,27 @@ fn walk_expr(
         Expr::NewArray { size, .. } => walk_expr(size, env, functions, line, diagnostics),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent | Expr::Call { .. } => {
         }
+    }
+}
+
+/// Flags `value` when it narrows a Float into an Int-typed declaration
+/// (a variable, script-level variable, or property) named `name`.
+fn check_declaration(
+    type_name: &TypeName,
+    name: &str,
+    value: &Expr,
+    line: usize,
+    env: &TypeEnv,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if narrows_to_int(type_name, value, env) {
+        diagnostics.push(Diagnostic {
+            line,
+            column: 1,
+            message: format!(
+                "Float value assigned to Int variable '{name}' without an explicit 'as Int' cast"
+            ),
+        });
     }
 }
 
@@ -347,10 +407,37 @@ mod tests {
     #[test]
     fn flags_narrowing_nested_inside_a_call_argument() {
         let diagnostics = check(
-            "ScriptName Example\n\nFunction Add(Int amount)\nEndFunction\n\nFunction Outer(Float amount)\nEndFunction\n\nFunction Test()\n    Float f = 1.5\n    Outer(f)\n    Add(f)\nEndFunction\n",
+            "ScriptName Example\n\nInt Function Add(Int amount)\n    Return 0\nEndFunction\n\nFunction Outer(Float amount)\nEndFunction\n\nFunction Test()\n    Float f = 1.5\n    Outer(Add(f))\nEndFunction\n",
         );
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("'Add'"));
+    }
+
+    #[test]
+    fn flags_float_literal_in_script_level_variable_and_property() {
+        let diagnostics =
+            check("ScriptName Example\n\nInt _count = 1.5\nInt Property Total = 2.5 Auto\n");
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics.iter().any(|d| d.message.contains("'_count'")));
+        assert!(diagnostics.iter().any(|d| d.message.contains("'Total'")));
+    }
+
+    #[test]
+    fn flags_float_argument_passed_via_self_qualified_call() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Add(Int amount)\nEndFunction\n\nFunction Test()\n    Float f = 1.5\n    self.Add(f)\nEndFunction\n",
+        );
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'amount'"));
+    }
+
+    #[test]
+    fn flags_float_argument_passed_to_state_function() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Float f = 1.5\n    Add(f)\nEndFunction\n\nState Active\n    Function Add(Int amount)\n    EndFunction\nEndState\n",
+        );
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'amount'"));
     }
 
     #[test]
