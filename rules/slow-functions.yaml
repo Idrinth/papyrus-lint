@@ -1,0 +1,15 @@
+# Slow function calls for the papyrus-lint "slow function usage" rule
+# (see the "Planned Lints" section of README.md).
+#
+# Each entry:
+#   object:      the script (native/global or object) the function is defined on
+#   function:    the function name, as written in Papyrus source
+#   replacement: the faster call to use instead
+
+- object: GlobalVariable
+  function: GetValueInt
+  replacement: GetValue() As Int
+
+- object: GlobalVariable
+  function: SetValueInt
+  replacement: SetValue(value As Float)
