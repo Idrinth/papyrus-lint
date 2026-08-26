@@ -8,6 +8,7 @@
 pub mod argument_types;
 pub mod comma_spacing;
 pub mod config;
+pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod indentation;
 pub mod semicolon;
@@ -56,6 +57,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     diagnostics.extend(comma_spacing::check(source));
     diagnostics.extend(forbidden_functions::check(source));
     diagnostics.extend(unused_getter::check(source));
+    diagnostics.extend(float_int_conversion::check(source));
     diagnostics.extend(unused_property::check(source));
     diagnostics.extend(strict_boolean::check(source));
     diagnostics.extend(semicolon::check(source, config.semicolon_style()));

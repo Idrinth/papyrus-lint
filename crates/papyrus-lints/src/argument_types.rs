@@ -143,7 +143,7 @@ fn walk_stmt<E: ExternalSignatures>(
             walk_expr(target, env, locals, external, diagnostics);
             walk_expr(value, env, locals, external, diagnostics);
         }
-        Stmt::Expr(expr) => walk_expr(expr, env, locals, external, diagnostics),
+        Stmt::Expr { value, .. } => walk_expr(value, env, locals, external, diagnostics),
         Stmt::Return { value, .. } => {
             if let Some(value) = value {
                 walk_expr(value, env, locals, external, diagnostics);
