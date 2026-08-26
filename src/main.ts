@@ -39,6 +39,15 @@ interface PscParseOutcome {
   findings: Diagnostic[];
 }
 
+interface LintConfig {
+  semicolon: boolean;
+  indentation: "tab" | "space";
+}
+
+const DEFAULT_LINT_CONFIG: LintConfig = { semicolon: false, indentation: "tab" };
+
+let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
+
 const TRAILING_WHITESPACE_MESSAGE = "Line contains trailing whitespace";
 type SemicolonStyle = "require" | "forbid";
 
@@ -46,9 +55,26 @@ function semicolonStyle(): SemicolonStyle {
   return (semicolonStyleEl?.value as SemicolonStyle | undefined) ?? "forbid";
 }
 
+function dirnameOf(path: string): string {
+  const index = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
+  return index === -1 ? path : path.slice(0, index);
+}
+
+// Looks for a papyrus-lint YAML config file next to the dropped .archlist
+// file, falling back to the default configuration if none is found.
+async function loadLintConfig(archlistPath: string): Promise<LintConfig> {
+  try {
+    return await invoke<LintConfig>("load_lint_config", { dir: dirnameOf(archlistPath) });
+  } catch (error) {
+    console.error(error);
+    return DEFAULT_LINT_CONFIG;
+  }
+}
+
 async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", { path, semicolonStyle: semicolonStyle() });
+    return await invoke<Diagnostic[]>("lint_psc_file", { path, config: currentLintConfig });
   } catch (error) {
     console.error(error);
     return [];
@@ -57,6 +83,7 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
 
 async function repairPscFile(path: string): Promise<Diagnostic[]> {
   return invoke<Diagnostic[]>("repair_psc_file", { path, semicolonStyle: semicolonStyle() });
+  return invoke<Diagnostic[]>("repair_psc_file", { path, config: currentLintConfig });
 }
 
 function hasFixableFindings(findings: Diagnostic[]): boolean {
@@ -193,6 +220,7 @@ async function handleDroppedPaths(paths: string[]) {
     clearError();
     showResult(archlistPath, entries);
 
+    currentLintConfig = await loadLintConfig(archlistPath);
     currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
     renderPscResults(currentPscOutcomes);
   } catch (error) {
