@@ -65,8 +65,9 @@ impl Config {
     }
 
     /// The indentation unit this configuration selects, for use with
-    /// [`crate::indentation::repair`]. `indentation_width` is clamped to
-    /// `1..=16` to match the range accepted by the UI.
+    /// [`crate::indentation::check`]/[`crate::indentation::repair`].
+    /// `indentation_width` is clamped to `1..=16` to match the range
+    /// accepted by the UI.
     pub fn indentation_unit(&self) -> crate::indentation::Indentation {
         match self.indentation {
             Indentation::Tab => crate::indentation::Indentation::Tabs,
