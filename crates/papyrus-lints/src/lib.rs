@@ -8,8 +8,8 @@
 pub mod comma_spacing;
 pub mod config;
 pub mod forbidden_functions;
-pub mod semicolon;
 pub mod indentation;
+pub mod semicolon;
 pub mod trailing_whitespace;
 pub mod unused_getter;
 
@@ -40,11 +40,34 @@ pub fn lint(source: &str, _config: &Config) -> Vec<Diagnostic> {
 }
 
 /// Applies every automatic fix to `source` and returns the repaired text.
-pub fn repair(source: &str, indentation: indentation::Indentation) -> String {
+///
+/// See [`lint`] for `config`.
+pub fn repair(source: &str, indentation: indentation::Indentation, _config: &Config) -> String {
     let source = indentation::repair(source, indentation);
+    let source = comma_spacing::repair(&source);
     trailing_whitespace::repair(&source)
-pub fn repair(source: &str) -> String {
-    trailing_whitespace::repair(&comma_spacing::repair(source))
+}
+
+/// Runs every lint, including the configured semicolon rule.
+pub fn lint_with_semicolons(
+    source: &str,
+    style: semicolon::Style,
+    config: &Config,
+) -> Vec<Diagnostic> {
+    let mut diagnostics = lint(source, config);
+    diagnostics.extend(semicolon::check(source, style));
+    diagnostics
+}
+
+/// Applies every automatic fix, including the configured semicolon fix.
+pub fn repair_with_semicolons(
+    source: &str,
+    style: semicolon::Style,
+    indentation: indentation::Indentation,
+    config: &Config,
+) -> String {
+    let repaired = semicolon::repair(source, style);
+    repair(&repaired, indentation, config)
 }
 
 #[cfg(test)]
@@ -53,26 +76,10 @@ mod tests {
 
     #[test]
     fn combined_repair_applies_comma_spacing_and_trailing_whitespace() {
-        let repaired = repair("Call(1,2)  \r\n");
+        let config = Config::default();
+        let repaired = repair("Call(1,2)  \r\n", indentation::Indentation::Tabs, &config);
 
         assert_eq!(repaired, "Call(1, 2)\r\n");
-        assert!(lint(&repaired).is_empty());
+        assert!(lint(&repaired, &config).is_empty());
     }
-///
-/// See [`lint`] for `config`.
-pub fn repair(source: &str, _config: &Config) -> String {
-    trailing_whitespace::repair(source)
-}
-
-/// Runs every lint, including the configured semicolon rule.
-pub fn lint_with_semicolons(source: &str, style: semicolon::Style) -> Vec<Diagnostic> {
-    let mut diagnostics = lint(source);
-    diagnostics.extend(semicolon::check(source, style));
-    diagnostics
-}
-
-/// Applies every automatic fix, including the configured semicolon fix.
-pub fn repair_with_semicolons(source: &str, style: semicolon::Style) -> String {
-    let repaired = semicolon::repair(source, style);
-    trailing_whitespace::repair(&repaired)
 }

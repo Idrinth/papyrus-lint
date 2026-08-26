@@ -58,57 +58,45 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
 /// configuration it describes, falling back to the default configuration
 /// if `dir` has no config file.
 #[tauri::command]
-fn lint_psc_file(
-    path: String,
-    semicolon_style: SemicolonStyle,
-) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    Ok(papyrus_lints::lint_with_semicolons(
-        &source,
-        semicolon_style.into(),
-    ))
 fn load_lint_config(dir: String) -> Result<papyrus_lints::Config, String> {
     config::load_config(&PathBuf::from(dir))
 }
 
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
-/// honoring `config`.
+/// honoring `config` and the configured `semicolon_style`.
 #[tauri::command]
 fn lint_psc_file(
     path: String,
+    semicolon_style: SemicolonStyle,
     config: papyrus_lints::Config,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    Ok(papyrus_lints::lint(&source, &config))
+    Ok(papyrus_lints::lint_with_semicolons(
+        &source,
+        semicolon_style.into(),
+        &config,
+    ))
 }
 
 /// Reads the `.psc` file at `path`, applies every automatic fix (honoring
-/// `config`), writes the repaired source back to disk, and returns the
-/// diagnostics that remain.
+/// `config`, `semicolon_style`, and `indentation`), writes the repaired
+/// source back to disk, and returns the diagnostics that remain.
 #[tauri::command]
 fn repair_psc_file(
     path: String,
     semicolon_style: SemicolonStyle,
-) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    let style = semicolon_style.into();
-    let repaired = papyrus_lints::repair_with_semicolons(&source, style);
-    if repaired != source {
-        std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
-    }
-    Ok(papyrus_lints::lint_with_semicolons(&repaired, style))
     indentation: papyrus_lints::indentation::Indentation,
-) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    let repaired = papyrus_lints::repair(&source, indentation);
     config: papyrus_lints::Config,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    let repaired = papyrus_lints::repair(&source, &config);
+    let style = semicolon_style.into();
+    let repaired = papyrus_lints::repair_with_semicolons(&source, style, indentation, &config);
     if repaired != source {
         std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
     }
-    Ok(papyrus_lints::lint(&repaired, &config))
+    Ok(papyrus_lints::lint_with_semicolons(
+        &repaired, style, &config,
+    ))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
