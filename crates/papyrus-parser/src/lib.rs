@@ -213,7 +213,10 @@ EndFunction
             "ScriptName Example\n\nFunction Test()\n    self.Items[0].DoThing(1, 2)\nEndFunction\n";
         let script = parse(src).unwrap();
         match &script.functions[0].body[0] {
-            Stmt::Expr(Expr::Call { callee, args, .. }) => {
+            Stmt::Expr {
+                value: Expr::Call { callee, args, .. },
+                ..
+            } => {
                 assert_eq!(args.len(), 2);
                 match &**callee {
                     Expr::Member { property, .. } => assert_eq!(property, "DoThing"),

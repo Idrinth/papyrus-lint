@@ -67,7 +67,7 @@ fn check_body(body: &[Stmt], env: &TypeEnv, diagnostics: &mut Vec<Diagnostic>) {
                 check_condition(condition, *line, *col, env, diagnostics);
                 check_body(body, env, diagnostics);
             }
-            Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr(_) | Stmt::Return { .. } => {}
+            Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
         }
     }
 }
