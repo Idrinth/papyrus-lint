@@ -5,10 +5,13 @@
 //! (rather than the parsed AST) so they still run on scripts that don't
 //! parse cleanly.
 
+pub mod config;
 pub mod forbidden_functions;
 pub mod trailing_whitespace;
 
 use serde::Serialize;
+
+pub use config::Config;
 
 /// A single lint finding, pointing at the 1-indexed line and column it applies to.
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -19,13 +22,20 @@ pub struct Diagnostic {
 }
 
 /// Runs every lint rule against `source` and returns all diagnostics found.
-pub fn lint(source: &str) -> Vec<Diagnostic> {
+///
+/// `config` carries the project's lint configuration (see [`Config`]), read
+/// from its YAML config file. No rule reads it yet — it's threaded through
+/// ready for the configurable "Semicolon at end of line" and
+/// indentation lints listed as "Planned Lints" in README.md.
+pub fn lint(source: &str, _config: &Config) -> Vec<Diagnostic> {
     let mut diagnostics = trailing_whitespace::check(source);
     diagnostics.extend(forbidden_functions::check(source));
     diagnostics
 }
 
 /// Applies every automatic fix to `source` and returns the repaired text.
-pub fn repair(source: &str) -> String {
+///
+/// See [`lint`] for `config`.
+pub fn repair(source: &str, _config: &Config) -> String {
     trailing_whitespace::repair(source)
 }
