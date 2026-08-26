@@ -5,6 +5,7 @@
 //! (rather than the parsed AST) so they still run on scripts that don't
 //! parse cleanly.
 
+pub mod comma_spacing;
 pub mod config;
 pub mod forbidden_functions;
 pub mod trailing_whitespace;
@@ -30,12 +31,28 @@ pub struct Diagnostic {
 /// indentation lints listed as "Planned Lints" in README.md.
 pub fn lint(source: &str, _config: &Config) -> Vec<Diagnostic> {
     let mut diagnostics = trailing_whitespace::check(source);
+    diagnostics.extend(comma_spacing::check(source));
     diagnostics.extend(forbidden_functions::check(source));
     diagnostics.extend(unused_getter::check(source));
     diagnostics
 }
 
 /// Applies every automatic fix to `source` and returns the repaired text.
+pub fn repair(source: &str) -> String {
+    trailing_whitespace::repair(&comma_spacing::repair(source))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn combined_repair_applies_comma_spacing_and_trailing_whitespace() {
+        let repaired = repair("Call(1,2)  \r\n");
+
+        assert_eq!(repaired, "Call(1, 2)\r\n");
+        assert!(lint(&repaired).is_empty());
+    }
 ///
 /// See [`lint`] for `config`.
 pub fn repair(source: &str, _config: &Config) -> String {
