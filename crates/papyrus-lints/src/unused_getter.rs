@@ -164,4 +164,15 @@ mod tests {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 2);
     }
+
+    #[test]
+    fn flags_the_final_getter_in_a_getter_chain() {
+        let diagnostics = check(
+            "Function Test()\n  Game.GetPlayer().GetActorBase().GetAV(\"health\")\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 2);
+        assert!(diagnostics[0].message.contains("GetAV"));
+    }
 }
