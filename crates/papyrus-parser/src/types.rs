@@ -329,6 +329,8 @@ EndFunction
         let call = Expr::Call {
             callee: Box::new(Expr::Identifier("DoThing".to_string())),
             args: Vec::new(),
+            line: 1,
+            col: 1,
         };
         assert_eq!(infer_type(&call, &env), None);
     }

@@ -214,7 +214,7 @@ EndFunction
         let script = parse(src).unwrap();
         match &script.functions[0].body[0] {
             Stmt::Expr {
-                value: Expr::Call { callee, args },
+                value: Expr::Call { callee, args, .. },
                 ..
             } => {
                 assert_eq!(args.len(), 2);

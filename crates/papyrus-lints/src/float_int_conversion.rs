@@ -221,7 +221,7 @@ fn walk_expr(
     line: usize,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if let Expr::Call { callee, args } = expr {
+    if let Expr::Call { callee, args, .. } = expr {
         let resolved_name = match &**callee {
             Expr::Identifier(name) => Some(name.as_str()),
             Expr::Member { object, property } if matches!(**object, Expr::Self_) => {

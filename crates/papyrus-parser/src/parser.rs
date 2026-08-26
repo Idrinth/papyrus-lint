@@ -756,12 +756,16 @@ impl Parser {
                     };
                 }
                 TokenKind::LParen => {
+                    let line = self.current().line;
+                    let col = self.current().col;
                     self.advance();
                     let args = self.parse_args()?;
                     self.expect(TokenKind::RParen)?;
                     expr = Expr::Call {
                         callee: Box::new(expr),
                         args,
+                        line,
+                        col,
                     };
                 }
                 _ => break,

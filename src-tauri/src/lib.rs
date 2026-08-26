@@ -54,22 +54,33 @@ fn save_lint_config(dir: String, config: papyrus_lints::Config) -> Result<(), St
 }
 
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
-/// honoring the semicolon style `config` selects.
+/// honoring the semicolon style `config` selects. `root` is the project
+/// root (conventionally the directory containing the `.archlist` file); it
+/// lets the "Argument type check" lint resolve calls to functions declared
+/// on other scripts under `root`.
 #[tauri::command]
 fn lint_psc_file(
     path: String,
+    root: String,
     config: papyrus_lints::Config,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
-    Ok(papyrus_lints::lint(&source, &config))
+    let mut function_table = function_table::FunctionTable::new(PathBuf::from(root));
+    Ok(papyrus_lints::lint_with_external_arguments(
+        &source,
+        &config,
+        &mut function_table,
+    ))
 }
 
 /// Reads the `.psc` file at `path`, applies every automatic fix (honoring
 /// the semicolon and indentation style `config` selects), writes the
 /// repaired source back to disk, and returns the diagnostics that remain.
+/// See [`lint_psc_file`] for `root`.
 #[tauri::command]
 fn repair_psc_file(
     path: String,
+    root: String,
     config: papyrus_lints::Config,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
@@ -77,7 +88,12 @@ fn repair_psc_file(
     if repaired != source {
         std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
     }
-    Ok(papyrus_lints::lint(&repaired, &config))
+    let mut function_table = function_table::FunctionTable::new(PathBuf::from(root));
+    Ok(papyrus_lints::lint_with_external_arguments(
+        &repaired,
+        &config,
+        &mut function_table,
+    ))
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
