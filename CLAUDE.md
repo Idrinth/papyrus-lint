@@ -80,14 +80,20 @@ standard precedence.
 Two lints are implemented in `crates/papyrus-lints`:
 
 - **Trailing whitespace** (`trailing_whitespace.rs`): flags lines ending in
-  spaces or tabs.
+  spaces or tabs, and can also repair them via its `repair()` function,
+  which strips the trailing spaces/tabs from each line while preserving
+  line endings (`\n`/`\r\n`) and a missing final newline.
 - **Forbidden/discouraged function usage** (`forbidden_functions.rs`):
   flags calls to functions listed in `rules/forbidden-functions.yaml`.
   That YAML is compiled into a static Rust array by
   `crates/papyrus-lints/build.rs` at build time, so linting never parses
   YAML at runtime.
 
-Both work on lexer tokens/raw text rather than the parsed AST, so they
-still run on scripts that don't parse cleanly. They're exposed to the
+Both lints work on lexer tokens/raw text rather than the parsed AST, so
+they still run on scripts that don't parse cleanly. They're exposed to the
 frontend via the `lint_papyrus_script` and `lint_psc_file` Tauri commands.
-See README.md for the remaining planned lints.
+`papyrus_lints::repair()` aggregates every available automatic fix
+(currently just trailing whitespace) and is exposed via the
+`repair_psc_file` Tauri command, which rewrites the `.psc` file on disk and
+returns the diagnostics that remain. See README.md for the remaining
+planned lints and fixes.

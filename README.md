@@ -19,8 +19,11 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
 - **Formatting checks**: enforce consistent indentation and require a space after commas.
 
+## Implemented Automatic Fixes
+
+- **Trailing whitespace**: automatically strip trailing spaces or tabs from the end of lines.
+
 ## Planned Automatic Fixes
 
 - **Indentation**: automatically re-indent lines to match the configured indentation style.
 - **Space after comma**: automatically insert a space after commas that lack one.
-- **Trailing whitespace**: automatically strip trailing spaces or tabs from the end of lines.
