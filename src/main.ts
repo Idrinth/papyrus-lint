@@ -41,36 +41,77 @@ interface PscParseOutcome {
   findings: Diagnostic[];
 }
 
-type Indentation = "Tabs" | { Spaces: number };
 interface LintConfig {
   semicolon: boolean;
   indentation: "tab" | "space";
+  indentation_width: number;
 }
 
-const DEFAULT_LINT_CONFIG: LintConfig = { semicolon: false, indentation: "tab" };
+const DEFAULT_LINT_CONFIG: LintConfig = { semicolon: false, indentation: "tab", indentation_width: 4 };
+const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
 
 let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
+let currentProjectDir: string | null = null;
 
 const TRAILING_WHITESPACE_MESSAGE = "Line contains trailing whitespace";
-type SemicolonStyle = "require" | "forbid";
-
-function semicolonStyle(): SemicolonStyle {
-  return (semicolonStyleEl?.value as SemicolonStyle | undefined) ?? "forbid";
-}
 
 function dirnameOf(path: string): string {
   const index = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
   return index === -1 ? path : path.slice(0, index);
 }
 
-// Looks for a papyrus-lint YAML config file next to the dropped .archlist
-// file, falling back to the default configuration if none is found.
-async function loadLintConfig(archlistPath: string): Promise<LintConfig> {
+// Looks for a papyrus-lint YAML config file in `dir`, falling back to the
+// default configuration if none is found.
+async function loadLintConfig(dir: string): Promise<LintConfig> {
   try {
-    return await invoke<LintConfig>("load_lint_config", { dir: dirnameOf(archlistPath) });
+    return await invoke<LintConfig>("load_lint_config", { dir });
   } catch (error) {
     console.error(error);
     return DEFAULT_LINT_CONFIG;
+  }
+}
+
+// Persists `config` to `dir`'s papyrus-lint YAML config file so the
+// formatting selected in the UI is remembered for next time.
+async function saveLintConfig(dir: string, config: LintConfig): Promise<void> {
+  try {
+    await invoke("save_lint_config", { dir, config });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Reflects `config` onto the formatting controls without firing their
+// `change` listeners (assigning `.value` does not dispatch `change`).
+function applyLintConfigToUI(config: LintConfig) {
+  if (semicolonStyleEl) {
+    semicolonStyleEl.value = config.semicolon ? "require" : "forbid";
+  }
+  if (indentationStyleEl) {
+    indentationStyleEl.value = config.indentation === "space" ? "spaces" : "tabs";
+  }
+  if (indentationWidthEl) {
+    indentationWidthEl.value = String(config.indentation_width);
+    indentationWidthEl.disabled = config.indentation !== "space";
+  }
+}
+
+// Reads the formatting controls' current values into a LintConfig.
+function lintConfigFromUI(): LintConfig {
+  const indentation = indentationStyleEl?.value === "spaces" ? "space" : "tab";
+  return {
+    semicolon: semicolonStyleEl?.value === "require",
+    indentation,
+    indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
+  };
+}
+
+// Called whenever a formatting control changes: updates the in-memory
+// config and, if a project directory is known, persists it to disk.
+function handleLintConfigChanged() {
+  currentLintConfig = lintConfigFromUI();
+  if (currentProjectDir) {
+    void saveLintConfig(currentProjectDir, currentLintConfig);
   }
 }
 
@@ -78,7 +119,6 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", {
       path,
-      semicolonStyle: semicolonStyle(),
       config: currentLintConfig,
     });
   } catch (error) {
@@ -88,14 +128,8 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
 }
 
 async function repairPscFile(path: string): Promise<Diagnostic[]> {
-  const indentation: Indentation =
-    indentationStyleEl?.value === "spaces"
-      ? { Spaces: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)) }
-      : "Tabs";
   return invoke<Diagnostic[]>("repair_psc_file", {
     path,
-    semicolonStyle: semicolonStyle(),
-    indentation,
     config: currentLintConfig,
   });
 }
@@ -219,6 +253,32 @@ async function handleFixClick(path: string, outcome: PscParseOutcome, button: HT
   }
 }
 
+// Remembers `dir` as the last project opened, so its config file can be
+// read again the next time the app starts.
+function rememberProjectDir(dir: string) {
+  try {
+    localStorage.setItem(LAST_PROJECT_DIR_KEY, dir);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function lastProjectDir(): string | null {
+  try {
+    return localStorage.getItem(LAST_PROJECT_DIR_KEY);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+async function useProjectDir(dir: string) {
+  currentProjectDir = dir;
+  currentLintConfig = await loadLintConfig(dir);
+  applyLintConfigToUI(currentLintConfig);
+  rememberProjectDir(dir);
+}
+
 async function handleDroppedPaths(paths: string[]) {
   const archlistPath = paths.find(isArchlistPath);
 
@@ -234,7 +294,7 @@ async function handleDroppedPaths(paths: string[]) {
     clearError();
     showResult(archlistPath, entries);
 
-    currentLintConfig = await loadLintConfig(archlistPath);
+    await useProjectDir(dirnameOf(archlistPath));
     currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
     renderPscResults(currentPscOutcomes);
   } catch (error) {
@@ -254,11 +314,20 @@ window.addEventListener("DOMContentLoaded", () => {
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
+
+  semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
   indentationStyleEl?.addEventListener("change", () => {
     if (indentationWidthEl) {
       indentationWidthEl.disabled = indentationStyleEl?.value !== "spaces";
     }
+    handleLintConfigChanged();
   });
+  indentationWidthEl?.addEventListener("change", handleLintConfigChanged);
+
+  const lastDir = lastProjectDir();
+  if (lastDir) {
+    void useProjectDir(lastDir);
+  }
 
   getCurrentWebview().onDragDropEvent((event) => {
     if (event.payload.type === "over") {
