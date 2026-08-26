@@ -7,6 +7,7 @@
 
 pub mod comma_spacing;
 pub mod config;
+pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod indentation;
 pub mod semicolon;
@@ -36,6 +37,7 @@ pub fn lint(source: &str, _config: &Config) -> Vec<Diagnostic> {
     diagnostics.extend(comma_spacing::check(source));
     diagnostics.extend(forbidden_functions::check(source));
     diagnostics.extend(unused_getter::check(source));
+    diagnostics.extend(float_int_conversion::check(source));
     diagnostics
 }
 

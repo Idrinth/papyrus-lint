@@ -13,11 +13,14 @@ A linter for Bethesda's papyrus language to improve code quality.
   is discarded.
 - **Semicolon at end of line**: require a trailing semicolon on each non-empty
   line or forbid terminal semicolons, according to the selected setting.
+- **Implicit Float-to-Int conversion**: flag a Float value declared, assigned,
+  returned, or passed as an argument into an Int-typed slot without an
+  explicit `as Int` cast.
 
 ## Planned Lints
 
 - **Strict boolean check**: flag comparisons and conditions that rely on implicit boolean conversion instead of explicit boolean values.
-- **Strict numeric type check**: flag implicit conversions/comparisons between different numeric types (e.g. Int vs Float).
+- **Strict numeric type check**: flag implicit comparisons between different numeric types (e.g. Int vs Float).
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
 - **Formatting checks**: enforce consistent indentation.
 
