@@ -13,6 +13,7 @@ pub mod forbidden_functions;
 pub mod indentation;
 pub mod numeric_comparison;
 pub mod semicolon;
+pub mod slow_functions;
 pub mod strict_boolean;
 pub mod trailing_whitespace;
 pub mod unused_getter;
@@ -63,6 +64,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.forbidden_functions {
         diagnostics.extend(forbidden_functions::check(source));
+    }
+    if rules.slow_functions {
+        diagnostics.extend(slow_functions::check(source));
     }
     if rules.unused_getter {
         diagnostics.extend(unused_getter::check(source));

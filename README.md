@@ -42,10 +42,9 @@ A linter for Bethesda's papyrus language to improve code quality.
   configured style/width (`indentation`/`indentation_width`) for their
   nesting depth. A script whose structure can't be identified (e.g. it
   doesn't lex cleanly) is left unchecked rather than guessed at.
-
-## Planned Lints
-
-- **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
+- **Slow function usage**: flag calls to functions listed in
+  `rules/slow-functions.yaml` that have a faster equivalent available, and
+  suggest the quicker alternative.
 
 ## Configuration
 
@@ -62,6 +61,7 @@ rules:
   trailing_whitespace: true
   comma_spacing: true
   forbidden_functions: true
+  slow_functions: true
   unused_getter: true
   unused_property: true
   semicolon: true
@@ -83,7 +83,7 @@ rules:
   has one) off entirely; every key under `rules` can be omitted
   individually and falls back to `true`. The key names match the lints
   listed above: `trailing_whitespace`, `comma_spacing`,
-  `forbidden_functions`, `unused_getter`, `unused_property`,
+  `forbidden_functions`, `slow_functions`, `unused_getter`, `unused_property`,
   `semicolon`, `float_int_conversion`, `strict_boolean`,
   `argument_types`, `numeric_comparison`, and `indentation`.
 
