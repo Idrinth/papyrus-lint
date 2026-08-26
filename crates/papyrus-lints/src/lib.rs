@@ -15,6 +15,7 @@ pub mod semicolon;
 pub mod strict_boolean;
 pub mod trailing_whitespace;
 pub mod unused_getter;
+pub mod unused_property;
 
 use serde::Serialize;
 
@@ -57,6 +58,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     diagnostics.extend(forbidden_functions::check(source));
     diagnostics.extend(unused_getter::check(source));
     diagnostics.extend(float_int_conversion::check(source));
+    diagnostics.extend(unused_property::check(source));
     diagnostics.extend(strict_boolean::check(source));
     diagnostics.extend(semicolon::check(source, config.semicolon_style()));
     diagnostics.extend(argument_types::check_with(source, external));
