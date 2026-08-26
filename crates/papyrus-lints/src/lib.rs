@@ -10,6 +10,7 @@ pub mod config;
 pub mod forbidden_functions;
 pub mod indentation;
 pub mod semicolon;
+pub mod strict_boolean;
 pub mod trailing_whitespace;
 pub mod unused_getter;
 
@@ -36,6 +37,7 @@ pub fn lint(source: &str, _config: &Config) -> Vec<Diagnostic> {
     diagnostics.extend(comma_spacing::check(source));
     diagnostics.extend(forbidden_functions::check(source));
     diagnostics.extend(unused_getter::check(source));
+    diagnostics.extend(strict_boolean::check(source));
     diagnostics
 }
 
