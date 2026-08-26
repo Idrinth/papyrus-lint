@@ -34,12 +34,15 @@ A linter for Bethesda's papyrus language to improve code quality.
   `SomeProperty.DoThing(...)`) are checked too, by resolving those scripts'
   signatures (including through `Extends`). A call whose target or argument
   type can't be determined is skipped rather than guessed at.
+- **Formatting checks**: flag lines whose indentation doesn't match the
+  configured style/width (`indentation`/`indentation_width`) for their
+  nesting depth. A script whose structure can't be identified (e.g. it
+  doesn't lex cleanly) is left unchecked rather than guessed at.
 
 ## Planned Lints
 
 - **Strict numeric type check**: flag implicit comparisons between different numeric types (e.g. Int vs Float).
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
-- **Formatting checks**: enforce consistent indentation.
 
 ## Configuration
 
@@ -57,7 +60,7 @@ indentation_width: 4
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
   or must not (`false`). Read by the "Semicolon at end of line" lint/fix.
 - `indentation`: the expected indentation style, `tab` or `space`. Read
-  by the indentation automatic fix.
+  by the "Formatting checks" lint and the indentation automatic fix.
 - `indentation_width`: the number of spaces per indentation level, used
   only when `indentation` is `space`.
 

@@ -33,9 +33,8 @@ pub struct Diagnostic {
 ///
 /// `config` carries the project's lint configuration (see [`Config`]), read
 /// from its YAML config file (and, in the desktop app, kept in sync with
-/// its UI). It selects the "Semicolon at end of line" policy checked here;
-/// the indentation it selects is only relevant to [`repair`], since there
-/// is no "one true" indentation to flag as a lint finding.
+/// its UI). It selects the "Semicolon at end of line" policy and the
+/// "Formatting checks"/"Indentation" style checked here.
 ///
 /// The "Argument type check" lint only checks calls to functions declared
 /// in `source` itself this way; see [`lint_with_external_arguments`] to
@@ -61,6 +60,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     diagnostics.extend(unused_property::check(source));
     diagnostics.extend(strict_boolean::check(source));
     diagnostics.extend(semicolon::check(source, config.semicolon_style()));
+    diagnostics.extend(indentation::check(source, config.indentation_unit()));
     diagnostics.extend(argument_types::check_with(source, external));
     diagnostics
 }
