@@ -13,6 +13,15 @@ A linter for Bethesda's papyrus language to improve code quality.
   is discarded.
 - **Semicolon at end of line**: require a trailing semicolon on each non-empty
   line or forbid terminal semicolons, according to the selected setting.
+- **Argument type check**: flag call-site arguments whose type doesn't match
+  the callee's declared parameter type (e.g. passing a `String` where an
+  `Int` is expected), allowing the implicit `Int`-to-`Float` widening
+  Papyrus itself allows. Calls to functions declared in the same script are
+  always checked; when linting a `.psc` file dropped in the app, calls to
+  functions declared on other scripts under the project root (e.g.
+  `SomeProperty.DoThing(...)`) are checked too, by resolving those scripts'
+  signatures (including through `Extends`). A call whose target or argument
+  type can't be determined is skipped rather than guessed at.
 
 ## Planned Lints
 

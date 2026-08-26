@@ -50,6 +50,10 @@ interface LintConfig {
 const DEFAULT_LINT_CONFIG: LintConfig = { semicolon: false, indentation: "tab" };
 
 let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
+// Project root (the directory containing the dropped .archlist file), so
+// the "Argument type check" lint can resolve calls to functions declared
+// on other scripts under it.
+let currentProjectRoot = "";
 
 const TRAILING_WHITESPACE_MESSAGE = "Line contains trailing whitespace";
 type SemicolonStyle = "require" | "forbid";
@@ -78,6 +82,7 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", {
       path,
+      root: currentProjectRoot,
       semicolonStyle: semicolonStyle(),
       config: currentLintConfig,
     });
@@ -94,6 +99,7 @@ async function repairPscFile(path: string): Promise<Diagnostic[]> {
       : "Tabs";
   return invoke<Diagnostic[]>("repair_psc_file", {
     path,
+    root: currentProjectRoot,
     semicolonStyle: semicolonStyle(),
     indentation,
     config: currentLintConfig,
@@ -234,6 +240,7 @@ async function handleDroppedPaths(paths: string[]) {
     clearError();
     showResult(archlistPath, entries);
 
+    currentProjectRoot = dirnameOf(archlistPath);
     currentLintConfig = await loadLintConfig(archlistPath);
     currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
     renderPscResults(currentPscOutcomes);

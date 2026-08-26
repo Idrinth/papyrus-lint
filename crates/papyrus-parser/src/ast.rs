@@ -161,6 +161,8 @@ pub enum Expr {
     Call {
         callee: Box<Expr>,
         args: Vec<Expr>,
+        line: usize,
+        col: usize,
     },
     Member {
         object: Box<Expr>,
