@@ -7,6 +7,7 @@
 
 pub mod forbidden_functions;
 pub mod trailing_whitespace;
+pub mod unused_getter;
 
 use serde::Serialize;
 
@@ -22,5 +23,6 @@ pub struct Diagnostic {
 pub fn lint(source: &str) -> Vec<Diagnostic> {
     let mut diagnostics = trailing_whitespace::check(source);
     diagnostics.extend(forbidden_functions::check(source));
+    diagnostics.extend(unused_getter::check(source));
     diagnostics
 }
