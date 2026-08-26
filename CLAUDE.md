@@ -51,6 +51,12 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
 
+## Merging
+
+Before merging a pull request, make sure its branch is up to date with
+`the-one` (the default branch). Merge or rebase `the-one` into the branch
+first if it has fallen behind, so CI runs against the current base.
+
 ## Current state
 
 The parser (`crates/papyrus-parser`) understands scripts, imports,
