@@ -51,6 +51,9 @@ const DEFAULT_LINT_CONFIG: LintConfig = { semicolon: false, indentation: "tab", 
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
 
 let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
+// The project root (the directory containing the dropped .archlist file),
+// also used by the "Argument type check" lint to resolve calls to
+// functions declared on other scripts under it.
 let currentProjectDir: string | null = null;
 
 const TRAILING_WHITESPACE_MESSAGE = "Line contains trailing whitespace";
@@ -119,6 +122,7 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", {
       path,
+      root: currentProjectDir ?? "",
       config: currentLintConfig,
     });
   } catch (error) {
@@ -130,6 +134,7 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
 async function repairPscFile(path: string): Promise<Diagnostic[]> {
   return invoke<Diagnostic[]>("repair_psc_file", {
     path,
+    root: currentProjectDir ?? "",
     config: currentLintConfig,
   });
 }

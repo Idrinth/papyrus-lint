@@ -138,6 +138,16 @@ impl FunctionTable {
     }
 }
 
+/// Lets the "Argument type check" lint (`papyrus_lints::argument_types`)
+/// resolve calls to functions declared on other scripts through this
+/// table.
+impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
+    fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>> {
+        self.lookup_function(type_name, function_name)
+            .map(|signature| signature.param_types)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -278,5 +288,26 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(table.lookup_function("A", "Anything").is_none());
+    }
+
+    #[test]
+    fn drives_the_argument_type_check_lint_across_scripts() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Greeter",
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::argument_types::check_with(
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Argument 1 to 'Greet'"));
+        assert!(diagnostics[0].message.contains("expects String"));
+        assert!(diagnostics[0].message.contains("got Int"));
     }
 }
