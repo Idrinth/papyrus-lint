@@ -2405,6 +2405,7 @@ dependencies = [
 name = "papyrus-lint"
 version = "0.1.0"
 dependencies = [
+ "papyrus-lints",
  "papyrus-parser",
  "serde",
  "serde_json",
@@ -2412,6 +2413,13 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-opener",
  "tempfile",
+]
+
+[[package]]
+name = "papyrus-lints"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

@@ -1,0 +1,12 @@
+[package]
+name = "papyrus-lints"
+version = "0.1.0"
+description = "Lint rules for Bethesda's Papyrus scripting language"
+authors = ["Idrinth"]
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"
