@@ -26,6 +26,20 @@ pub fn load_config(dir: &Path) -> Result<papyrus_lints::Config, String> {
     Ok(papyrus_lints::Config::default())
 }
 
+/// Writes `config` to `dir`'s papyrus-lint YAML config file. Overwrites
+/// whichever candidate name (`papyrus-lint.yaml`/`.yml`) already exists in
+/// `dir`, or creates `papyrus-lint.yaml` if `dir` has neither yet.
+pub fn save_config(dir: &Path, config: &papyrus_lints::Config) -> Result<(), String> {
+    let path = CONFIG_FILE_NAMES
+        .iter()
+        .map(|name| dir.join(name))
+        .find(|path| path.is_file())
+        .unwrap_or_else(|| dir.join(CONFIG_FILE_NAMES[0]));
+
+    let yaml = papyrus_lints::config::to_yaml(config).map_err(|err| err.to_string())?;
+    fs::write(&path, yaml).map_err(|err| err.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -88,5 +102,53 @@ mod tests {
         let result = load_config(dir.path());
 
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn save_creates_yaml_file_when_none_exists() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            indentation: Indentation::Space,
+            indentation_width: 2,
+        };
+
+        save_config(dir.path(), &config).expect("saving should succeed");
+
+        assert!(dir.path().join("papyrus-lint.yaml").is_file());
+        assert!(!dir.path().join("papyrus-lint.yml").exists());
+        let loaded = load_config(dir.path()).expect("loading should succeed");
+        assert_eq!(loaded, config);
+    }
+
+    #[test]
+    fn save_overwrites_existing_yaml_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(dir.path(), "papyrus-lint.yaml", "semicolon: false\n");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+
+        save_config(dir.path(), &config).expect("saving should succeed");
+
+        let loaded = load_config(dir.path()).expect("loading should succeed");
+        assert_eq!(loaded, config);
+    }
+
+    #[test]
+    fn save_prefers_existing_yml_file_over_creating_yaml() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(dir.path(), "papyrus-lint.yml", "semicolon: false\n");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+
+        save_config(dir.path(), &config).expect("saving should succeed");
+
+        assert!(!dir.path().join("papyrus-lint.yaml").exists());
+        let loaded = load_config(dir.path()).expect("loading should succeed");
+        assert_eq!(loaded, config);
     }
 }

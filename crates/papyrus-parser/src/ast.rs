@@ -73,6 +73,8 @@ pub struct StateDecl {
 pub struct IfBranch {
     pub condition: Expr,
     pub body: Vec<Stmt>,
+    pub line: usize,
+    pub col: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -101,6 +103,7 @@ pub enum Stmt {
         condition: Expr,
         body: Vec<Stmt>,
         line: usize,
+        col: usize,
     },
 }
 

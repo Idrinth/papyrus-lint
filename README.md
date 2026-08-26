@@ -16,10 +16,16 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Implicit Float-to-Int conversion**: flag a Float value declared, assigned,
   returned, or passed as an argument into an Int-typed slot without an
   explicit `as Int` cast.
+- **Strict boolean check**: flag `If`/`ElseIf`/`While` conditions that aren't
+  already a `Bool` value or expression, instead of relying on Papyrus's
+  implicit conversion to boolean. Only conditions whose type can be
+  determined locally (locals, parameters, properties, literals, casts, and
+  comparison/logical expressions) are checked; a condition that depends on
+  a function call or a member access is left unflagged rather than risk a
+  false positive.
 
 ## Planned Lints
 
-- **Strict boolean check**: flag comparisons and conditions that rely on implicit boolean conversion instead of explicit boolean values.
 - **Strict numeric type check**: flag implicit comparisons between different numeric types (e.g. Int vs Float).
 - **Slow function usage**: flag usage of functions that have a faster equivalent available, and suggest the quicker alternative.
 - **Formatting checks**: enforce consistent indentation.
@@ -34,17 +40,22 @@ its default:
 ```yaml
 semicolon: false
 indentation: tab
+indentation_width: 4
 ```
 
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
-  or must not (`false`). Not currently read by the "Semicolon at end of
-  line" lint/fix, which instead use the style selected in the app's UI.
-- `indentation`: the expected indentation style, `tab` or `space`. Not
-  currently read by the indentation automatic fix, which instead uses
-  the style/width selected in the app's UI.
+  or must not (`false`). Read by the "Semicolon at end of line" lint/fix.
+- `indentation`: the expected indentation style, `tab` or `space`. Read
+  by the indentation automatic fix.
+- `indentation_width`: the number of spaces per indentation level, used
+  only when `indentation` is `space`.
 
-No lint currently reads this configuration — it's read and passed to
-every check/fix job in preparation for a future lint that will use it.
+The app's formatting controls (trailing semicolons, indentation style,
+indentation width) are backed by this file: on startup it reads the
+config file for the most recently opened project and pre-selects those
+controls accordingly, and any change made to them is written straight
+back to the file, so the project's formatting settings persist between
+sessions and can be shared/committed alongside the project.
 
 ## Implemented Automatic Fixes
 

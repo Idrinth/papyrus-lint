@@ -165,7 +165,10 @@ fn check_body(
                 else_body,
                 line,
             } => {
-                for IfBranch { condition, body } in branches {
+                for IfBranch {
+                    condition, body, ..
+                } in branches
+                {
                     walk_expr(condition, env, functions, *line, diagnostics);
                     check_body(
                         body,
@@ -189,6 +192,7 @@ fn check_body(
                 condition,
                 body,
                 line,
+                ..
             } => {
                 walk_expr(condition, env, functions, *line, diagnostics);
                 check_body(
