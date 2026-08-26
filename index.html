@@ -12,6 +12,11 @@
     <main class="container">
       <h1>papyrus-lint</h1>
 
+      <label for="semicolon-style">Trailing semicolons</label>
+      <select id="semicolon-style">
+        <option value="forbid">Remove where possible</option>
+        <option value="require">Add to non-empty lines</option>
+      </select>
       <div class="indentation-setting">
         Indentation
         <select id="indentation-style" aria-label="Indentation style">

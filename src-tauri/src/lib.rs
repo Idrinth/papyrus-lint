@@ -3,7 +3,24 @@ pub mod config;
 pub mod function_table;
 pub mod script_locator;
 
+use serde::Deserialize;
 use std::path::PathBuf;
+
+#[derive(Clone, Copy, Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum SemicolonStyle {
+    Require,
+    Forbid,
+}
+
+impl From<SemicolonStyle> for papyrus_lints::semicolon::Style {
+    fn from(value: SemicolonStyle) -> Self {
+        match value {
+            SemicolonStyle::Require => Self::Require,
+            SemicolonStyle::Forbid => Self::Forbid,
+        }
+    }
+}
 
 /// Parses the `.archlist` file at `path` and returns the resolved paths it lists.
 #[tauri::command]
@@ -41,6 +58,15 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
 /// configuration it describes, falling back to the default configuration
 /// if `dir` has no config file.
 #[tauri::command]
+fn lint_psc_file(
+    path: String,
+    semicolon_style: SemicolonStyle,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    Ok(papyrus_lints::lint_with_semicolons(
+        &source,
+        semicolon_style.into(),
+    ))
 fn load_lint_config(dir: String) -> Result<papyrus_lints::Config, String> {
     config::load_config(&PathBuf::from(dir))
 }
@@ -62,6 +88,15 @@ fn lint_psc_file(
 #[tauri::command]
 fn repair_psc_file(
     path: String,
+    semicolon_style: SemicolonStyle,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let style = semicolon_style.into();
+    let repaired = papyrus_lints::repair_with_semicolons(&source, style);
+    if repaired != source {
+        std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
+    }
+    Ok(papyrus_lints::lint_with_semicolons(&repaired, style))
     indentation: papyrus_lints::indentation::Indentation,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
