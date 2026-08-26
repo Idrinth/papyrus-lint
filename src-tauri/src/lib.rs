@@ -14,11 +14,19 @@ fn parse_archlist_file(path: String) -> Result<Vec<String>, String> {
         .collect())
 }
 
+#[tauri::command]
+fn parse_papyrus_script(source: &str) -> Result<papyrus_parser::ast::Script, String> {
+    papyrus_parser::parse(source).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![parse_archlist_file])
+        .invoke_handler(tauri::generate_handler![
+            parse_archlist_file,
+            parse_papyrus_script
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
