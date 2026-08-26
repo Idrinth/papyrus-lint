@@ -19,6 +19,11 @@ fn parse_papyrus_script(source: &str) -> Result<papyrus_parser::ast::Script, Str
     papyrus_parser::parse(source).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn lint_papyrus_script(source: &str) -> Vec<papyrus_lints::Diagnostic> {
+    papyrus_lints::lint(source)
+}
+
 /// Reads the `.psc` file at `path` and parses it into a `Script` AST.
 #[tauri::command]
 fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
@@ -33,6 +38,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             parse_archlist_file,
             parse_papyrus_script,
+            lint_papyrus_script,
             parse_psc_file
         ])
         .run(tauri::generate_context!())
