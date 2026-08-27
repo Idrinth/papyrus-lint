@@ -1,0 +1,15 @@
+name: CodeRabbit Retry
+
+on:
+  schedule:
+    - cron: '0 * * * *' 
+  workflow_dispatch:
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Retry CodeRabbit Reviews
+        uses: idrinth/coderabbit-retry-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
