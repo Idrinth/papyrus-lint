@@ -21,6 +21,7 @@
 //!   float_int_conversion: true
 //!   strict_boolean: true
 //!   argument_types: true
+//!   return_types: true
 //!   numeric_comparison: true
 //!   indentation: true
 //!   cyclomatic_complexity: true
@@ -115,6 +116,8 @@ pub struct Rules {
     pub strict_boolean: bool,
     /// The "Argument type check" lint.
     pub argument_types: bool,
+    /// The "Return type check" lint.
+    pub return_types: bool,
     /// The "Strict numeric type check" lint.
     pub numeric_comparison: bool,
     /// The "Formatting checks"/"Indentation" lint/fix.
@@ -140,6 +143,7 @@ impl Default for Rules {
             float_int_conversion: true,
             strict_boolean: true,
             argument_types: true,
+            return_types: true,
             numeric_comparison: true,
             indentation: true,
             cyclomatic_complexity: true,
@@ -238,6 +242,7 @@ mod tests {
         assert!(config.rules.float_int_conversion);
         assert!(config.rules.strict_boolean);
         assert!(config.rules.argument_types);
+        assert!(config.rules.return_types);
         assert!(config.rules.numeric_comparison);
         assert!(config.rules.indentation);
         assert!(config.rules.cyclomatic_complexity);

@@ -117,7 +117,9 @@ fn compile_psc_file(
 /// honoring the semicolon style `config` selects. `root` is the project
 /// root (conventionally the directory containing the `.achlist` file); it
 /// lets the "Argument type check" lint resolve calls to functions declared
-/// on other scripts under `root`.
+/// on other scripts under `root`, and lets the "Return type check" lint
+/// accept a returned value whose script under `root` extends the declared
+/// return type.
 #[tauri::command]
 fn lint_psc_file(
     path: String,

@@ -41,6 +41,17 @@ A linter for Bethesda's papyrus language to improve code quality.
   argument's own script is likewise resolved from the project root to allow
   compatible subtypes. A call whose target or argument type can't be
   determined is skipped rather than guessed at.
+- **Return type check**: flag `Return` statements whose value's type doesn't
+  match the enclosing function's declared return type (e.g. returning a
+  `String` from a Function declared `Int`), allowing the implicit
+  `Int`-to-`Float` widening Papyrus itself allows, as well as returning an
+  object whose script extends (directly or transitively) the declared
+  return type (e.g. returning an `Armor` from a Function declared `Form`).
+  When linting a `.psc` file dropped in the app, a returned value's own
+  script's `Extends` chain is resolved from the project root to allow
+  compatible subtypes there too. A `Return` whose value's type can't be
+  determined, or with no declared return type, is skipped rather than
+  guessed at.
 - **Strict numeric type check**: flag implicit comparisons (`==`, `!=`,
   `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without
   an explicit cast making the comparison exact. Only comparisons whose
@@ -121,6 +132,7 @@ rules:
   float_int_conversion: true
   strict_boolean: true
   argument_types: true
+  return_types: true
   numeric_comparison: true
   indentation: true
   cyclomatic_complexity: true

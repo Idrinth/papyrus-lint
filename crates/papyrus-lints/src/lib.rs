@@ -15,6 +15,7 @@ pub mod forbidden_functions;
 pub mod fragment_code;
 pub mod indentation;
 pub mod numeric_comparison;
+pub mod return_types;
 pub mod semicolon;
 pub mod slow_functions;
 pub mod static_condition;
@@ -48,9 +49,10 @@ pub struct Diagnostic {
 /// its UI). It selects the "Semicolon at end of line" policy and the
 /// "Formatting checks"/"Indentation" style checked here.
 ///
-/// The "Argument type check" lint only checks calls to functions declared
-/// in `source` itself this way; see [`lint_with_external_arguments`] to
-/// also check calls to functions declared on other scripts.
+/// The "Argument type check" and "Return type check" lints only resolve
+/// object-type subtyping through scripts declared in `source` itself this
+/// way; see [`lint_with_external_arguments`] to also resolve it through
+/// other scripts' `Extends` chains.
 ///
 /// A line carrying a trailing `; @disable <rule-id>[, <rule-id>...]`
 /// comment (e.g. `action = 1 ; @disable float-to-int`) has diagnostics from
@@ -65,7 +67,9 @@ pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
 
 /// Like [`lint`], but resolves calls to functions declared on other
 /// scripts (e.g. `SomeProperty.DoThing(...)`) through `external`, so the
-/// "Argument type check" lint can check those call sites too. See
+/// "Argument type check" lint can check those call sites too, and so the
+/// "Return type check" lint accepts a returned value whose script extends
+/// (directly or transitively) the declared return type. See
 /// [`argument_types::ExternalSignatures`].
 pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     source: &str,
@@ -109,6 +113,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.argument_types {
         diagnostics.extend(argument_types::check_with(source, external));
+    }
+    if rules.return_types {
+        diagnostics.extend(return_types::check_with(source, external));
     }
     if rules.cyclomatic_complexity {
         diagnostics.extend(cyclomatic_complexity::check(
@@ -353,6 +360,12 @@ mod tests {
                 unreachable_statement::RULE,
                 Config::default(),
                 config_with(|c| c.rules.unreachable_statement = false),
+            ),
+            (
+                "ScriptName Example\n\nInt Function Test()\n    Return \"hi\"\nEndFunction\n",
+                return_types::RULE,
+                Config::default(),
+                config_with(|c| c.rules.return_types = false),
             ),
         ];
 
