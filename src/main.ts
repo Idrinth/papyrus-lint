@@ -31,12 +31,12 @@ let codeViewerFullscreenEl: HTMLButtonElement | null;
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
 
-const TAB_IDS = ["import", "settings", "files", "lint"] as const;
+export const TAB_IDS = ["import", "settings", "files", "lint"] as const;
 type TabId = (typeof TAB_IDS)[number];
 
 // Shows `tab`'s panel and hides the others, updating the tab buttons'
 // aria-selected/active state to match.
-function switchTab(tab: TabId) {
+export function switchTab(tab: TabId) {
   for (const id of TAB_IDS) {
     const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);
     const panel = document.querySelector<HTMLElement>(`#panel-${id}`);
@@ -49,32 +49,32 @@ function switchTab(tab: TabId) {
   }
 }
 
-function isAchlistPath(path: string): boolean {
+export function isAchlistPath(path: string): boolean {
   return path.toLowerCase().endsWith(ACHLIST_EXTENSION);
 }
 
-function isPscPath(path: string): boolean {
+export function isPscPath(path: string): boolean {
   return path.toLowerCase().endsWith(PSC_EXTENSION);
 }
 
-interface PapyrusScript {
+export interface PapyrusScript {
   name: string;
 }
 
-interface Diagnostic {
+export interface Diagnostic {
   line: number;
   column: number;
   message: string;
 }
 
-interface PscParseOutcome {
+export interface PscParseOutcome {
   path: string;
   ok: boolean;
   detail: string;
   findings: Diagnostic[];
 }
 
-interface LintRules {
+export interface LintRules {
   trailing_whitespace: boolean;
   comma_spacing: boolean;
   forbidden_functions: boolean;
@@ -90,7 +90,7 @@ interface LintRules {
   cyclomatic_complexity: boolean;
 }
 
-interface LintConfig {
+export interface LintConfig {
   semicolon: boolean;
   indentation: "tab" | "space";
   indentation_width: number;
@@ -99,7 +99,7 @@ interface LintConfig {
   rules: LintRules;
 }
 
-const DEFAULT_RULES: LintRules = {
+export const DEFAULT_RULES: LintRules = {
   trailing_whitespace: true,
   comma_spacing: true,
   forbidden_functions: true,
@@ -115,7 +115,7 @@ const DEFAULT_RULES: LintRules = {
   cyclomatic_complexity: true,
 };
 
-const DEFAULT_LINT_CONFIG: LintConfig = {
+export const DEFAULT_LINT_CONFIG: LintConfig = {
   semicolon: false,
   indentation: "tab",
   indentation_width: 4,
@@ -124,7 +124,7 @@ const DEFAULT_LINT_CONFIG: LintConfig = {
   rules: DEFAULT_RULES,
 };
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
-const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];
+export const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];
 
 let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
 // The project root (the directory containing the dropped .achlist file),
@@ -134,14 +134,14 @@ let currentProjectDir: string | null = null;
 
 const TRAILING_WHITESPACE_MESSAGE = "Line contains trailing whitespace";
 
-function dirnameOf(path: string): string {
+export function dirnameOf(path: string): string {
   const index = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
   return index === -1 ? path : path.slice(0, index);
 }
 
 // Looks for a papyrus-lint YAML config file in `dir`, falling back to the
 // default configuration if none is found.
-async function loadLintConfig(dir: string): Promise<LintConfig> {
+export async function loadLintConfig(dir: string): Promise<LintConfig> {
   try {
     return await invoke<LintConfig>("load_lint_config", { dir });
   } catch (error) {
@@ -152,7 +152,7 @@ async function loadLintConfig(dir: string): Promise<LintConfig> {
 
 // Persists `config` to `dir`'s papyrus-lint YAML config file so the
 // formatting selected in the UI is remembered for next time.
-async function saveLintConfig(dir: string, config: LintConfig): Promise<void> {
+export async function saveLintConfig(dir: string, config: LintConfig): Promise<void> {
   try {
     await invoke("save_lint_config", { dir, config });
   } catch (error) {
@@ -162,7 +162,7 @@ async function saveLintConfig(dir: string, config: LintConfig): Promise<void> {
 
 // Reflects `config` onto the formatting controls without firing their
 // `change` listeners (assigning `.value` does not dispatch `change`).
-function applyLintConfigToUI(config: LintConfig) {
+export function applyLintConfigToUI(config: LintConfig) {
   if (semicolonStyleEl) {
     semicolonStyleEl.value = config.semicolon ? "require" : "forbid";
   }
@@ -188,7 +188,7 @@ function applyLintConfigToUI(config: LintConfig) {
 }
 
 // Reads the formatting controls' current values into a LintConfig.
-function lintConfigFromUI(): LintConfig {
+export function lintConfigFromUI(): LintConfig {
   const indentation = indentationStyleEl?.value === "spaces" ? "space" : "tab";
   const rules = { ...DEFAULT_RULES };
   for (const key of RULE_KEYS) {
@@ -206,14 +206,14 @@ function lintConfigFromUI(): LintConfig {
 
 // Called whenever a formatting control changes: updates the in-memory
 // config and, if a project directory is known, persists it to disk.
-function handleLintConfigChanged() {
+export function handleLintConfigChanged() {
   currentLintConfig = lintConfigFromUI();
   if (currentProjectDir) {
     void saveLintConfig(currentProjectDir, currentLintConfig);
   }
 }
 
-async function lintPscFile(path: string): Promise<Diagnostic[]> {
+export async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", {
       path,
@@ -226,7 +226,7 @@ async function lintPscFile(path: string): Promise<Diagnostic[]> {
   }
 }
 
-async function repairPscFile(path: string): Promise<Diagnostic[]> {
+export async function repairPscFile(path: string): Promise<Diagnostic[]> {
   return invoke<Diagnostic[]>("repair_psc_file", {
     path,
     root: currentProjectDir ?? "",
@@ -244,7 +244,7 @@ function hasFixableFindings(findings: Diagnostic[]): boolean {
   );
 }
 
-async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
+export async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
   return Promise.all(
     paths.map(async (path) => {
       try {
@@ -261,15 +261,15 @@ async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
 // Diagnostic messages are prefixed with `[level] ` by the lints that care
 // about severity (e.g. `forbidden_functions`); others have no prefix and
 // are treated as the "other" severity.
-type Severity = "error" | "warning" | "info" | "other";
-const SEVERITIES: Severity[] = ["error", "warning", "info", "other"];
+export type Severity = "error" | "warning" | "info" | "other";
+export const SEVERITIES: Severity[] = ["error", "warning", "info", "other"];
 
-function levelOf(message: string): "error" | "warning" | "info" | null {
+export function levelOf(message: string): "error" | "warning" | "info" | null {
   const match = /^\[(error|warning|info)\]/.exec(message);
   return match ? (match[1] as "error" | "warning" | "info") : null;
 }
 
-function escapeAttr(text: string): string {
+export function escapeAttr(text: string): string {
   return text
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
@@ -282,6 +282,14 @@ interface CodeViewerState {
   source: string;
   findings: Diagnostic[];
 }
+// Reads and syntax-highlights `path`'s source, then opens the code viewer
+// dialog with `findings` marked on their lines. If `focusLine` is given,
+// scrolls that line into view and briefly flashes it, so a click on a
+// specific finding jumps straight to it.
+export async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: number) {
+  if (!codeViewerEl || !codeViewerTitleEl || !codeViewerBodyEl) {
+    return;
+  }
 
 let codeViewerState: CodeViewerState | null = null;
 let codeViewerMode: "view" | "edit" = "view";
@@ -460,7 +468,7 @@ async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: 
 
 // Toggles the code viewer between its default size and filling the window,
 // keeping the button's label/state in sync.
-function toggleCodeViewerFullscreen() {
+export function toggleCodeViewerFullscreen() {
   if (!codeViewerEl || !codeViewerFullscreenEl) {
     return;
   }
@@ -469,7 +477,7 @@ function toggleCodeViewerFullscreen() {
   codeViewerFullscreenEl.setAttribute("aria-label", isFullscreen ? "Exit fullscreen" : "Enter fullscreen");
 }
 
-function severityOf(message: string): Severity {
+export function severityOf(message: string): Severity {
   return levelOf(message) ?? "other";
 }
 
@@ -478,7 +486,7 @@ function severityOf(message: string): Severity {
 const activeSeverities = new Set<Severity>(SEVERITIES);
 let severityFilterEls: Partial<Record<Severity, HTMLInputElement>> = {};
 
-function showError(message: string) {
+export function showError(message: string) {
   if (dropZoneErrorEl) {
     dropZoneErrorEl.textContent = message;
   }
@@ -486,13 +494,13 @@ function showError(message: string) {
   switchTab("import");
 }
 
-function clearError() {
+export function clearError() {
   if (dropZoneErrorEl) {
     dropZoneErrorEl.textContent = "";
   }
 }
 
-function showResult(path: string, entries: string[]) {
+export function showResult(path: string, entries: string[]) {
   if (!resultEl || !resultTitleEl || !resultListEl) {
     return;
   }
@@ -514,7 +522,7 @@ function showResult(path: string, entries: string[]) {
 // entirely (a file with nothing to show isn't worth a row). Files that
 // failed to parse are always shown, since that failure is itself the
 // result worth reporting.
-function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | null {
+export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | null {
   const { path, ok, detail, findings } = outcome;
   const visibleFindings = findings.filter((finding) => activeSeverities.has(severityOf(finding.message)));
 
@@ -567,7 +575,7 @@ function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | null {
   return item;
 }
 
-function renderPscResults(outcomes: PscParseOutcome[]) {
+export function renderPscResults(outcomes: PscParseOutcome[]) {
   if (!pscResultEl || !pscResultListEl) {
     return;
   }
@@ -583,7 +591,7 @@ function renderPscResults(outcomes: PscParseOutcome[]) {
   switchTab("lint");
 }
 
-async function handleFixClick(path: string, outcome: PscParseOutcome, button: HTMLButtonElement) {
+export async function handleFixClick(path: string, outcome: PscParseOutcome, button: HTMLButtonElement) {
   button.disabled = true;
   try {
     outcome.findings = await repairPscFile(path);
@@ -596,7 +604,7 @@ async function handleFixClick(path: string, outcome: PscParseOutcome, button: HT
 
 // Remembers `dir` as the last project opened, so its config file can be
 // read again the next time the app starts.
-function rememberProjectDir(dir: string) {
+export function rememberProjectDir(dir: string) {
   try {
     localStorage.setItem(LAST_PROJECT_DIR_KEY, dir);
   } catch (error) {
@@ -604,7 +612,7 @@ function rememberProjectDir(dir: string) {
   }
 }
 
-function lastProjectDir(): string | null {
+export function lastProjectDir(): string | null {
   try {
     return localStorage.getItem(LAST_PROJECT_DIR_KEY);
   } catch (error) {
@@ -613,14 +621,14 @@ function lastProjectDir(): string | null {
   }
 }
 
-async function useProjectDir(dir: string) {
+export async function useProjectDir(dir: string) {
   currentProjectDir = dir;
   currentLintConfig = await loadLintConfig(dir);
   applyLintConfigToUI(currentLintConfig);
   rememberProjectDir(dir);
 }
 
-async function handleDroppedPaths(paths: string[]) {
+export async function handleDroppedPaths(paths: string[]) {
   const achlistPath = paths.find(isAchlistPath);
 
   if (!achlistPath) {
