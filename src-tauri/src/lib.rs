@@ -69,9 +69,9 @@ fn save_lint_config(dir: String, config: papyrus_lints::Config) -> Result<(), St
     config::save_config(&PathBuf::from(dir), &config)
 }
 
-/// Returns the PapyrusCompile.exe path to use for `dir`'s project: an
+/// Returns the PapyrusCompiler.exe path to use for `dir`'s project: an
 /// explicit override saved to its papyrus-lint config file, or, absent
-/// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompile.exe`
+/// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompiler.exe`
 /// relative to `dir` (the directory containing the `.achlist` file).
 /// Returns `null` if neither is available.
 #[tauri::command]
@@ -79,7 +79,7 @@ fn load_compiler_path(dir: String) -> Result<Option<String>, String> {
     config::resolve_compiler_path(&PathBuf::from(dir))
 }
 
-/// Persists an explicit PapyrusCompile.exe path override to `dir`'s
+/// Persists an explicit PapyrusCompiler.exe path override to `dir`'s
 /// papyrus-lint config file. Passing an empty (or blank) string clears
 /// the override, reverting to auto-detection.
 #[tauri::command]
@@ -106,7 +106,7 @@ fn compile_psc_file(
     let compiler_path = compiler_path.trim();
     if compiler_path.is_empty() {
         return Err(
-            "No PapyrusCompile.exe path is configured. Set one in the Settings tab.".to_string(),
+            "No PapyrusCompiler.exe path is configured. Set one in the Settings tab.".to_string(),
         );
     }
 

@@ -1,6 +1,6 @@
 //! Locates and loads a project's papyrus-lint YAML configuration file,
 //! producing the [`papyrus_lints::Config`] passed to every check/fix job,
-//! and the app-level settings (currently just the PapyrusCompile.exe path)
+//! and the app-level settings (currently just the PapyrusCompiler.exe path)
 //! that live in the same file alongside it.
 
 use std::fs;
@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 const CONFIG_FILE_NAMES: [&str; 2] = ["papyrus-lint.yaml", "papyrus-lint.yml"];
 
 /// The name of the compiler executable looked for during auto-detection.
-const COMPILER_EXECUTABLE_NAME: &str = "PapyrusCompile.exe";
+const COMPILER_EXECUTABLE_NAME: &str = "PapyrusCompiler.exe";
 
 /// The directory (relative to a project's `.achlist` directory) that
 /// auto-detection looks for the compiler executable under.
@@ -23,7 +23,7 @@ const COMPILER_AUTO_DETECT_DIR_NAME: &str = "Papyrus Compiler";
 /// The full contents of a project's papyrus-lint YAML config file: the
 /// lint/fix settings (flattened at the top level, unchanged from before)
 /// plus app-level settings that aren't lint-related, currently just an
-/// optional explicit PapyrusCompile.exe path override.
+/// optional explicit PapyrusCompiler.exe path override.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 struct ProjectFile {
@@ -74,7 +74,7 @@ pub fn load_config(dir: &Path) -> Result<papyrus_lints::Config, String> {
 }
 
 /// Writes `config` to `dir`'s papyrus-lint YAML config file, preserving
-/// any explicit PapyrusCompile.exe path override already stored there.
+/// any explicit PapyrusCompiler.exe path override already stored there.
 pub fn save_config(dir: &Path, config: &papyrus_lints::Config) -> Result<(), String> {
     let mut project = load_project_file(dir)?;
     project.lint = config.clone();
@@ -82,14 +82,14 @@ pub fn save_config(dir: &Path, config: &papyrus_lints::Config) -> Result<(), Str
 }
 
 /// Reads `dir`'s papyrus-lint config file and returns the explicit
-/// PapyrusCompile.exe path override it stores, if any (an empty string is
+/// PapyrusCompiler.exe path override it stores, if any (an empty string is
 /// treated the same as no override).
 pub fn load_compiler_path(dir: &Path) -> Result<Option<String>, String> {
     let path = load_project_file(dir)?.compiler_path;
     Ok(path.filter(|path| !path.trim().is_empty()))
 }
 
-/// Persists an explicit PapyrusCompile.exe path override to `dir`'s
+/// Persists an explicit PapyrusCompiler.exe path override to `dir`'s
 /// papyrus-lint config file, preserving its lint settings. `path: None`
 /// (or an empty string) clears the override, reverting to auto-detection.
 pub fn save_compiler_path(dir: &Path, path: Option<&str>) -> Result<(), String> {
@@ -101,7 +101,7 @@ pub fn save_compiler_path(dir: &Path, path: Option<&str>) -> Result<(), String> 
     save_project_file(dir, &project)
 }
 
-/// Looks for `PapyrusCompile.exe` under a `Papyrus Compiler` directory one
+/// Looks for `PapyrusCompiler.exe` under a `Papyrus Compiler` directory one
 /// level above `dir` (a project's `.achlist` directory) — the layout used
 /// by Bethesda's Creation Kit tooling, where a game's `Data` directory
 /// (typically where a project's `.achlist` lives) sits alongside a
@@ -115,7 +115,7 @@ pub fn auto_detect_compiler_path(dir: &Path) -> Option<PathBuf> {
     candidate.is_file().then_some(candidate)
 }
 
-/// Resolves the PapyrusCompile.exe path to use for `dir`'s project: an
+/// Resolves the PapyrusCompiler.exe path to use for `dir`'s project: an
 /// explicit override from its papyrus-lint config file, or, absent one,
 /// an auto-detected path (see [`auto_detect_compiler_path`]). Returns
 /// `None` if neither is available.
@@ -256,12 +256,12 @@ mod tests {
         write_config(
             dir.path(),
             "papyrus-lint.yaml",
-            "compiler_path: C:\\Tools\\PapyrusCompile.exe\n",
+            "compiler_path: C:\\Tools\\PapyrusCompiler.exe\n",
         );
 
         assert_eq!(
             load_compiler_path(dir.path()).expect("should succeed"),
-            Some("C:\\Tools\\PapyrusCompile.exe".to_string())
+            Some("C:\\Tools\\PapyrusCompiler.exe".to_string())
         );
     }
 
@@ -285,12 +285,12 @@ mod tests {
         };
         save_config(dir.path(), &config).expect("saving lint config should succeed");
 
-        save_compiler_path(dir.path(), Some("C:\\Tools\\PapyrusCompile.exe"))
+        save_compiler_path(dir.path(), Some("C:\\Tools\\PapyrusCompiler.exe"))
             .expect("saving compiler path should succeed");
 
         assert_eq!(
             load_compiler_path(dir.path()).expect("should succeed"),
-            Some("C:\\Tools\\PapyrusCompile.exe".to_string())
+            Some("C:\\Tools\\PapyrusCompiler.exe".to_string())
         );
         assert_eq!(load_config(dir.path()).expect("should succeed"), config);
     }
@@ -298,7 +298,7 @@ mod tests {
     #[test]
     fn save_config_preserves_existing_compiler_path_override() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
-        save_compiler_path(dir.path(), Some("C:\\Tools\\PapyrusCompile.exe"))
+        save_compiler_path(dir.path(), Some("C:\\Tools\\PapyrusCompiler.exe"))
             .expect("saving compiler path should succeed");
 
         let config = papyrus_lints::Config {
@@ -309,7 +309,7 @@ mod tests {
 
         assert_eq!(
             load_compiler_path(dir.path()).expect("should succeed"),
-            Some("C:\\Tools\\PapyrusCompile.exe".to_string())
+            Some("C:\\Tools\\PapyrusCompiler.exe".to_string())
         );
         assert_eq!(load_config(dir.path()).expect("should succeed"), config);
     }
@@ -317,7 +317,7 @@ mod tests {
     #[test]
     fn save_compiler_path_none_clears_override() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
-        save_compiler_path(dir.path(), Some("C:\\Tools\\PapyrusCompile.exe"))
+        save_compiler_path(dir.path(), Some("C:\\Tools\\PapyrusCompiler.exe"))
             .expect("saving compiler path should succeed");
 
         save_compiler_path(dir.path(), None).expect("clearing compiler path should succeed");
@@ -333,13 +333,13 @@ mod tests {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         let compiler_dir = root.path().join("Papyrus Compiler");
         fs::create_dir(&compiler_dir).expect("failed to create compiler dir");
-        fs::write(compiler_dir.join("PapyrusCompile.exe"), b"").expect("failed to write stub exe");
+        fs::write(compiler_dir.join("PapyrusCompiler.exe"), b"").expect("failed to write stub exe");
         let data_dir = root.path().join("Data");
         fs::create_dir(&data_dir).expect("failed to create data dir");
 
         let detected = auto_detect_compiler_path(&data_dir);
 
-        assert_eq!(detected, Some(compiler_dir.join("PapyrusCompile.exe")));
+        assert_eq!(detected, Some(compiler_dir.join("PapyrusCompiler.exe")));
     }
 
     #[test]
@@ -356,15 +356,15 @@ mod tests {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         let compiler_dir = root.path().join("Papyrus Compiler");
         fs::create_dir(&compiler_dir).expect("failed to create compiler dir");
-        fs::write(compiler_dir.join("PapyrusCompile.exe"), b"").expect("failed to write stub exe");
+        fs::write(compiler_dir.join("PapyrusCompiler.exe"), b"").expect("failed to write stub exe");
         let data_dir = root.path().join("Data");
         fs::create_dir(&data_dir).expect("failed to create data dir");
-        save_compiler_path(&data_dir, Some("C:\\Custom\\PapyrusCompile.exe"))
+        save_compiler_path(&data_dir, Some("C:\\Custom\\PapyrusCompiler.exe"))
             .expect("saving compiler path should succeed");
 
         assert_eq!(
             resolve_compiler_path(&data_dir).expect("should succeed"),
-            Some("C:\\Custom\\PapyrusCompile.exe".to_string())
+            Some("C:\\Custom\\PapyrusCompiler.exe".to_string())
         );
     }
 
@@ -373,7 +373,7 @@ mod tests {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         let compiler_dir = root.path().join("Papyrus Compiler");
         fs::create_dir(&compiler_dir).expect("failed to create compiler dir");
-        fs::write(compiler_dir.join("PapyrusCompile.exe"), b"").expect("failed to write stub exe");
+        fs::write(compiler_dir.join("PapyrusCompiler.exe"), b"").expect("failed to write stub exe");
         let data_dir = root.path().join("Data");
         fs::create_dir(&data_dir).expect("failed to create data dir");
 
@@ -381,7 +381,7 @@ mod tests {
             resolve_compiler_path(&data_dir).expect("should succeed"),
             Some(
                 compiler_dir
-                    .join("PapyrusCompile.exe")
+                    .join("PapyrusCompiler.exe")
                     .to_string_lossy()
                     .into_owned()
             )
