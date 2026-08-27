@@ -1,0 +1,293 @@
+//! Library backing the `papyrus-lint` command-line interface.
+//!
+//! ```text
+//! papyrus-lint <path-to-achlist>
+//! ```
+//!
+//! Resolves every `.psc` entry listed in the given `.achlist` file (see
+//! [`papyrus_lint_core::achlist`]), lints each against the project's
+//! `papyrus-lint.yaml`/`.yml` configuration — looked up next to the
+//! `.achlist` file, falling back to [`papyrus_lints::Config::default`] if
+//! it has none (see [`papyrus_lint_core::config`]) — and prints the
+//! diagnostics found, one per line. Calls to functions declared on other
+//! scripts under the project root are resolved the same way the desktop
+//! app resolves them (see [`papyrus_lint_core::function_table`]), so the
+//! CLI's "Argument type check"/"Return type check" results match the app's.
+//!
+//! This crate is used both by the standalone `papyrus-lint` binary
+//! (`src/main.rs`) and by the desktop app (`src-tauri`), which runs it in
+//! place of launching its GUI whenever it's given command-line arguments.
+
+use std::fs;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+
+use papyrus_lint_core::function_table::FunctionTable;
+use papyrus_lint_core::{achlist, config};
+
+pub const USAGE: &str = "Usage: papyrus-lint <path-to-achlist>\n\n\
+Lints every .psc script listed in the given .achlist file, using the\n\
+project's papyrus-lint.yaml/.yml configuration (looked up next to the\n\
+.achlist file, falling back to defaults if it has none).\n\n\
+Exit status: 0 if no problems were found, 1 if any were, 2 on a usage or\n\
+I/O error.\n";
+
+/// Runs the CLI against `args` (the program's arguments, excluding the
+/// binary name itself), writing lint output to `stdout` and usage/error
+/// text to `stderr`. Returns the process exit code: `0` if linting found
+/// no diagnostics, `1` if it found at least one, or `2` on a usage or I/O
+/// error.
+pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
+    let achlist_path = match args {
+        [path] if path != "-h" && path != "--help" => PathBuf::from(path),
+        _ => {
+            let _ = write!(stderr, "{USAGE}");
+            return 2;
+        }
+    };
+
+    let project_root = achlist_path
+        .parent()
+        .filter(|dir| !dir.as_os_str().is_empty())
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|| PathBuf::from("."));
+
+    let lint_config = match config::load_config(&project_root) {
+        Ok(config) => config,
+        Err(err) => {
+            let _ = writeln!(stderr, "error: failed to load lint config: {err}");
+            return 2;
+        }
+    };
+
+    let entries = match achlist::parse_achlist(&achlist_path) {
+        Ok(entries) => entries,
+        Err(err) => {
+            let _ = writeln!(stderr, "error: {err}");
+            return 2;
+        }
+    };
+
+    let script_paths: Vec<PathBuf> = entries
+        .into_iter()
+        .filter(|path| {
+            path.extension()
+                .and_then(|ext| ext.to_str())
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
+        })
+        .collect();
+
+    let mut function_table = FunctionTable::new(project_root);
+    let mut total_diagnostics = 0usize;
+    let mut files_with_diagnostics = 0usize;
+
+    for script_path in &script_paths {
+        let source = match fs::read_to_string(script_path) {
+            Ok(source) => source,
+            Err(err) => {
+                let _ = writeln!(
+                    stderr,
+                    "error: failed to read {}: {err}",
+                    script_path.display()
+                );
+                return 2;
+            }
+        };
+
+        let mut diagnostics =
+            papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut function_table);
+        if diagnostics.is_empty() {
+            continue;
+        }
+
+        diagnostics.sort_by_key(|d| (d.line, d.column));
+        for diagnostic in &diagnostics {
+            let _ = writeln!(
+                stdout,
+                "{}:{}:{}: [{}] {}",
+                script_path.display(),
+                diagnostic.line,
+                diagnostic.column,
+                diagnostic.rule,
+                diagnostic.message
+            );
+        }
+        files_with_diagnostics += 1;
+        total_diagnostics += diagnostics.len();
+    }
+
+    if total_diagnostics == 0 {
+        let _ = writeln!(
+            stdout,
+            "papyrus-lint: no problems found in {} script(s).",
+            script_paths.len()
+        );
+        0
+    } else {
+        let _ = writeln!(
+            stdout,
+            "papyrus-lint: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).",
+            script_paths.len()
+        );
+        1
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn write_file(path: &Path, contents: &str) {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).expect("failed to create parent dir");
+        }
+        fs::write(path, contents).expect("failed to write file");
+    }
+
+    fn run_captured(args: &[String]) -> (u8, String, String) {
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+        let code = run(args, &mut stdout, &mut stderr);
+        (
+            code,
+            String::from_utf8(stdout).expect("stdout should be utf8"),
+            String::from_utf8(stderr).expect("stderr should be utf8"),
+        )
+    }
+
+    #[test]
+    fn prints_usage_and_exits_2_with_no_arguments() {
+        let (code, _stdout, stderr) = run_captured(&[]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: papyrus-lint"));
+    }
+
+    #[test]
+    fn prints_usage_for_help_flag() {
+        let (code, _stdout, stderr) = run_captured(&["--help".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: papyrus-lint"));
+    }
+
+    #[test]
+    fn prints_usage_with_too_many_arguments() {
+        let (code, _stdout, stderr) = run_captured(&["a".to_string(), "b".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: papyrus-lint"));
+    }
+
+    #[test]
+    fn errors_when_achlist_is_missing() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let achlist_path = dir.path().join("missing.achlist");
+
+        let (code, _stdout, stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.starts_with("error:"));
+    }
+
+    #[test]
+    fn reports_no_problems_for_a_clean_project() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found in 1 script"));
+    }
+
+    #[test]
+    fn reports_diagnostics_and_exits_1_for_a_dirty_project() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
+    }
+
+    #[test]
+    fn honors_the_project_yaml_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  trailing_whitespace: false\n",
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found"));
+    }
+
+    #[test]
+    fn ignores_non_psc_entries_in_the_achlist() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(&dir.path().join("scripts/source/Example.pex"), "");
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.pex"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found in 0 script"));
+    }
+
+    #[test]
+    fn resolves_cross_script_argument_types_from_the_project_root() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Greeter.psc"),
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Greeter.psc", "scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("[argument-types]"));
+    }
+}

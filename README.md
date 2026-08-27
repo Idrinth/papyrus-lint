@@ -129,10 +129,13 @@ override saved yet.
 
 ## Command-line interface
 
-Besides the desktop app, `papyrus-lint` ships as a standalone CLI
-(`crates/papyrus-lint-cli`), for linting a project outside the app — e.g.
-in a CI pipeline. It takes the path to a project's `.achlist` file as its
-only argument:
+Besides its GUI, `papyrus-lint` can lint non-interactively from the
+command line two ways: by passing an `.achlist` path to the desktop app's
+own executable, or via the standalone `papyrus-lint` CLI binary
+(`crates/papyrus-lint-cli`) built and shipped separately for use cases —
+e.g. a CI pipeline — that shouldn't need the desktop app's binary (and its
+GUI dependencies) at all. Both accept the same argument and behave
+identically:
 
 ```
 papyrus-lint path/to/project.achlist
@@ -154,10 +157,18 @@ usage error (a missing/extra argument) or an I/O error (the `.achlist`
 file couldn't be read or parsed, or a listed `.psc` file couldn't be
 read) — so it can gate a CI step on a clean lint run.
 
-Prebuilt `papyrus-lint`/`papyrus-lint.exe` binaries for Linux, macOS, and
-Windows are attached to each [GitHub
-release](https://github.com/Idrinth/papyrus-lint/releases). To build it
-yourself instead, run `cargo build --release --manifest-path
+Launched with no arguments, the desktop app's own executable starts its
+GUI as normal; launched with an `.achlist` path (or `-h`/`--help`), it
+lints from the command line instead, exactly as described above. On
+Windows release builds the desktop executable is compiled without a
+console, so its CLI mode there is best-effort — the standalone CLI binary
+below is the reliable way to lint from a Windows console or script.
+
+Prebuilt `papyrus-lint`/`papyrus-lint.exe` standalone CLI binaries for
+Linux, macOS, and Windows are attached to each [GitHub
+release](https://github.com/Idrinth/papyrus-lint/releases), alongside the
+desktop app's own bundles. To build the standalone CLI yourself instead,
+run `cargo build --release --manifest-path
 crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
 `papyrus-lint`.
 
