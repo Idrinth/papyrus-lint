@@ -2405,6 +2405,7 @@ dependencies = [
 name = "papyrus-lint"
 version = "0.1.0"
 dependencies = [
+ "papyrus-lint-cli",
  "papyrus-lint-core",
  "papyrus-lints",
  "papyrus-parser",
@@ -2413,6 +2414,15 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-opener",
  "tempfile",
+]
+
+[[package]]
+name = "papyrus-lint-cli"
+version = "0.1.0"
+dependencies = [
+ "papyrus-lint-core",
+ "papyrus-lints",
+ "papyrus-parser",
 ]
 
 [[package]]

@@ -5,7 +5,13 @@ app and a CLI. The desktop app is a Tauri (Rust + TypeScript) app: the
 frontend lets a user drop a `.achlist` file, and the Rust backend resolves
 the listed files, parses any `.psc` (Papyrus source) files among them, and
 lints them. The CLI (`crates/papyrus-lint-cli`) does the same thing
-non-interactively, given the `.achlist` path as its one argument.
+non-interactively, given the `.achlist` path as its one argument. The
+desktop app's own executable can run either way too: launched with no
+arguments it starts the GUI as usual, launched with an `.achlist` path (or
+`-h`/`--help`) it delegates straight to the CLI's logic instead
+(`src-tauri/src/main.rs`) — the standalone `papyrus-lint` binary stays
+available separately for uses (e.g. CI) that shouldn't depend on the
+desktop app's binary at all.
 
 ## Project structure
 
@@ -22,7 +28,8 @@ non-interactively, given the `.achlist` path as its one argument.
 ├── index.html               # Frontend entry point (Vite)
 ├── src-tauri/               # Tauri desktop app shell (Rust)
 │   └── src/
-│       ├── main.rs           # Binary entry point, delegates to lib::run()
+│       ├── main.rs           # Binary entry point: no args -> lib::run() (GUI),
+│       │                     # args -> papyrus_lint_cli::run() (CLI mode)
 │       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
 │       │                     # parse_papyrus_script, lint_papyrus_script,
 │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
@@ -56,8 +63,11 @@ non-interactively, given the `.achlist` path as its one argument.
     │       └── function_table.rs   # Cross-script function signature lookup,
     │                               # for the argument/return type check lints
     └── papyrus-lint-cli/     # `papyrus-lint <achlist-path>`: lints an
-        └── src/main.rs        # achlist's scripts against its project's
-                                # papyrus-lint.yaml and prints the results
+        └── src/                # achlist's scripts against its project's
+            ├── lib.rs           # papyrus-lint.yaml and prints the results.
+            │                    # run() here is the shared logic; also
+            │                    # linked into src-tauri for its CLI mode.
+            └── main.rs          # Thin binary entry point around lib::run()
 ```
 
 `papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
@@ -65,7 +75,10 @@ non-interactively, given the `.achlist` path as its one argument.
 just path dependencies of each other and of `src-tauri`) so the lint
 engine and project-resolution logic stay reusable independent of the Tauri
 app — which is what lets `papyrus-lint-cli` link against them without
-pulling in Tauri (and its system GUI dependencies) at all.
+pulling in Tauri (and its system GUI dependencies) at all. `src-tauri`
+depends on `papyrus-lint-cli` too, purely for its `run()` function (its
+`main.rs` calls straight into it for CLI mode), not for the `papyrus-lint`
+binary target that crate also defines.
 
 ## Development
 
