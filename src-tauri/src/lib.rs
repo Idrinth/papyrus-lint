@@ -156,6 +156,29 @@ fn repair_psc_file(
     ))
 }
 
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
+        .invoke_handler(tauri::generate_handler![
+            parse_achlist_file,
+            parse_papyrus_script,
+            lint_papyrus_script,
+            parse_psc_file,
+            read_psc_file,
+            write_psc_file,
+            load_lint_config,
+            save_lint_config,
+            load_compiler_path,
+            save_compiler_path,
+            lint_psc_file,
+            repair_psc_file,
+            compile_psc_file
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -249,27 +272,4 @@ mod tests {
 
         assert!(error.contains("No PapyrusCompile.exe path is configured"));
     }
-}
-
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
-    tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![
-            parse_achlist_file,
-            parse_papyrus_script,
-            lint_papyrus_script,
-            parse_psc_file,
-            read_psc_file,
-            write_psc_file,
-            load_lint_config,
-            save_lint_config,
-            load_compiler_path,
-            save_compiler_path,
-            lint_psc_file,
-            repair_psc_file,
-            compile_psc_file
-        ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
 }
