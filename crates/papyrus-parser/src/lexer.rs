@@ -513,4 +513,74 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn reads_punctuation_single_character_operators_and_escapes() {
+        let toks = kinds(r#"()[],.: + - * / % = ! > < "tab\tquote\"slash\\unknown\q""#);
+        assert_eq!(
+            toks,
+            vec![
+                TokenKind::LParen,
+                TokenKind::RParen,
+                TokenKind::LBracket,
+                TokenKind::RBracket,
+                TokenKind::Comma,
+                TokenKind::Dot,
+                TokenKind::Colon,
+                TokenKind::Plus,
+                TokenKind::Minus,
+                TokenKind::Star,
+                TokenKind::Slash,
+                TokenKind::Percent,
+                TokenKind::Assign,
+                TokenKind::Not,
+                TokenKind::Gt,
+                TokenKind::Lt,
+                TokenKind::StringLiteral("tab\tquote\"slash\\unknownq".to_string()),
+                TokenKind::Eof,
+            ]
+        );
+    }
+
+    #[test]
+    fn supports_uppercase_hex_and_crlf_line_continuations() {
+        let tokens = Lexer::new("0Xff \\\r\nname")
+            .tokenize()
+            .expect("valid tokens");
+        assert_eq!(tokens[0].kind, TokenKind::IntLiteral(255));
+        assert_eq!(tokens[1].kind, TokenKind::Identifier("name".to_string()));
+        assert_eq!((tokens[1].line, tokens[1].col), (2, 1));
+    }
+
+    #[test]
+    fn reports_unterminated_comments_and_strings_at_their_start() {
+        for (source, message, col) in [
+            (";/ never closed", "unterminated block comment", 1),
+            ("  {never closed", "unterminated comment block", 3),
+            ("\"never closed", "unterminated string literal", 1),
+            ("\"line\nbreak", "unterminated string literal", 1),
+            ("\"trailing\\", "unterminated string literal", 1),
+        ] {
+            let error = Lexer::new(source).tokenize().unwrap_err();
+            assert_eq!(error.message, message);
+            assert_eq!((error.line, error.col), (1, col));
+        }
+    }
+
+    #[test]
+    fn reports_invalid_characters_and_numeric_literals() {
+        let unexpected = Lexer::new("Int x = @").tokenize().unwrap_err();
+        assert_eq!(unexpected.message, "unexpected character '@'");
+        assert_eq!((unexpected.line, unexpected.col), (1, 9));
+
+        let invalid_hex = Lexer::new("0x").tokenize().unwrap_err();
+        assert_eq!(invalid_hex.message, "invalid hex literal '0x'");
+
+        let overflowing_integer = Lexer::new("999999999999999999999999")
+            .tokenize()
+            .unwrap_err();
+        assert!(overflowing_integer
+            .message
+            .starts_with("invalid integer literal"));
+    }
 }
