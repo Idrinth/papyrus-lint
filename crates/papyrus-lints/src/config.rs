@@ -26,6 +26,7 @@
 //!   cyclomatic_complexity: true
 //!   unreachable_statement: true
 //!   static_condition: true
+//!   unused_local_variable: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -125,6 +126,8 @@ pub struct Rules {
     pub unreachable_statement: bool,
     /// The "Static condition" lint.
     pub static_condition: bool,
+    /// The "Unused or write-only local variables" lint.
+    pub unused_local_variable: bool,
 }
 
 impl Default for Rules {
@@ -145,6 +148,7 @@ impl Default for Rules {
             cyclomatic_complexity: true,
             unreachable_statement: true,
             static_condition: true,
+            unused_local_variable: true,
         }
     }
 }
@@ -243,6 +247,7 @@ mod tests {
         assert!(config.rules.cyclomatic_complexity);
         assert!(config.rules.unreachable_statement);
         assert!(config.rules.static_condition);
+        assert!(config.rules.unused_local_variable);
     }
 
     #[test]

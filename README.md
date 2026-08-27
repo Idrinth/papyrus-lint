@@ -68,6 +68,14 @@ A linter for Bethesda's papyrus language to improve code quality.
   that depends on an identifier, a call, `Self`/`Parent`, a member/index
   access, a cast, or a `new` array is left unflagged rather than guessed
   at.
+- **Unused or write-only local variables**: flag a local variable
+  (declared with `Type name = ...` inside a function/event) whose value is
+  never read: either it's never referenced again at all, or it's only ever
+  reassigned (`name = ...`) without that new value ever being read back.
+  Reading a variable via a compound assignment (`name += ...`, etc.) or
+  through a member/index expression built from it (`name.Foo`, `name[0]`)
+  counts as a use. Function parameters and script properties aren't
+  locals and are never flagged by this lint.
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, and indentation) never flag or change a line inside a
@@ -94,7 +102,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `forbidden-functions`, `slow-functions`, `unused-getter`, `unused-property`,
 `semicolon`, `float-to-int`, `strict-boolean`, `argument-types`,
 `numeric-comparison`, `indentation`, `cyclomatic-complexity`,
-`unreachable-statement`, and `static-condition`.
+`unreachable-statement`, `static-condition`, and `unused-local-variable`.
 
 ## Configuration
 
@@ -126,6 +134,7 @@ rules:
   cyclomatic_complexity: true
   unreachable_statement: true
   static_condition: true
+  unused_local_variable: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompile.exe`, set via the
@@ -152,8 +161,8 @@ rules:
   `forbidden_functions`, `slow_functions`, `unused_getter`, `unused_property`,
   `semicolon`, `float_int_conversion`, `strict_boolean`,
   `argument_types`, `numeric_comparison`, `indentation`,
-  `cyclomatic_complexity`, `unreachable_statement`, and
-  `static_condition`.
+  `cyclomatic_complexity`, `unreachable_statement`, `static_condition`, and
+  `unused_local_variable`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

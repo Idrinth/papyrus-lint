@@ -97,6 +97,7 @@ export interface LintRules {
   cyclomatic_complexity: boolean;
   unreachable_statement: boolean;
   static_condition: boolean;
+  unused_local_variable: boolean;
 }
 
 export interface LintConfig {
@@ -124,6 +125,7 @@ export const DEFAULT_RULES: LintRules = {
   cyclomatic_complexity: true,
   unreachable_statement: true,
   static_condition: true,
+  unused_local_variable: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {

@@ -88,6 +88,7 @@
             <label title="Flags functions/events whose cyclomatic complexity exceeds the configured warning/error thresholds above."><input type="checkbox" id="rule-cyclomatic_complexity" checked /> Cyclomatic complexity</label>
             <label title="Flags statements that follow a Return within the same block, since they can never execute."><input type="checkbox" id="rule-unreachable_statement" checked /> Unreachable statement</label>
             <label title="Flags If/ElseIf/While conditions that fold to a constant true or false regardless of any runtime state (e.g. &quot;If true&quot;, &quot;If 1 == 2&quot;)."><input type="checkbox" id="rule-static_condition" checked /> Static condition</label>
+            <label title="Flags local variables that are declared but never read again, or only ever assigned a new value without that value ever being read."><input type="checkbox" id="rule-unused_local_variable" checked /> Unused or write-only local variables</label>
           </fieldset>
         </div>
 
