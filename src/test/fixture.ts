@@ -44,6 +44,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-numeric_comparison" checked />
           <input type="checkbox" id="rule-indentation" checked />
           <input type="checkbox" id="rule-cyclomatic_complexity" checked />
+          <input type="checkbox" id="rule-unreachable_statement" checked />
         </fieldset>
       </div>
 
