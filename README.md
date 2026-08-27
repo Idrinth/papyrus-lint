@@ -6,76 +6,24 @@ A linter for Bethesda's papyrus language to improve code quality.
 
 ## Implemented Lints
 
-- **Trailing whitespace**: flag lines that end with trailing spaces or tabs.
-- **Space after comma**: require whitespace after commas in argument lists.
-- **Forbidden/discouraged function usage**: flag calls to functions listed
-  in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls),
-  with a configurable severity and an explanatory message per entry.
-- **Getter usage without saving result**: flag standalone calls to functions
-  whose names begin with `Get` (case-insensitively), because their return value
-  is discarded.
-- **Unused script properties**: flag `Property` declarations whose name is
-  never referenced anywhere else in the script.
-- **Semicolon at end of line**: require a trailing semicolon on each non-empty
-  line or forbid terminal semicolons, according to the selected setting.
-- **Implicit Float-to-Int conversion**: flag a Float value declared, assigned,
-  returned, or passed as an argument into an Int-typed slot without an
-  explicit `as Int` cast.
-- **Strict boolean check**: flag `If`/`ElseIf`/`While` conditions that aren't
-  already a `Bool` value or expression, instead of relying on Papyrus's
-  implicit conversion to boolean. Only conditions whose type can be
-  determined locally (locals, parameters, properties, literals, casts, and
-  comparison/logical expressions) are checked; a condition that depends on
-  a function call or a member access is left unflagged rather than risk a
-  false positive.
-- **Argument type check**: flag call-site arguments whose type doesn't match
-  the callee's declared parameter type (e.g. passing a `String` where an
-  `Int` is expected), allowing the implicit `Int`-to-`Float` widening
-  Papyrus itself allows, as well as passing an object whose script extends
-  (directly or transitively) the parameter's type (e.g. passing an `Armor`
-  where a `Form` is expected). Calls to functions declared in the same
-  script are always checked; when linting a `.psc` file dropped in the app,
-  calls to functions declared on other scripts under the project root (e.g.
-  `SomeProperty.DoThing(...)`) are checked too, by resolving those scripts'
-  signatures (including through `Extends`), and the `Extends` chain of an
-  argument's own script is likewise resolved from the project root to allow
-  compatible subtypes. A call whose target or argument type can't be
-  determined is skipped rather than guessed at.
-- **Strict numeric type check**: flag implicit comparisons (`==`, `!=`,
-  `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without
-  an explicit cast making the comparison exact. Only comparisons whose
-  operand types can be determined locally are checked.
-- **Formatting checks**: flag lines whose indentation doesn't match the
-  configured style/width (`indentation`/`indentation_width`) for their
-  nesting depth. A script whose structure can't be identified (e.g. it
-  doesn't lex cleanly) is left unchecked rather than guessed at.
-- **Slow function usage**: flag calls to functions listed in
-  `rules/slow-functions.yaml` that have a faster equivalent available, and
-  suggest the quicker alternative.
-- **Cyclomatic complexity**: flag functions/events whose cyclomatic
-  complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and
-  short-circuiting `&&`/`||` operator) exceeds a configurable threshold,
-  as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or
-  an `[error]` above `cyclomatic_complexity_error` (default 20).
-- **Unreachable statement**: flag statements that follow a `Return` within
-  the same block (a function/event body, an `If`/`ElseIf`/`Else` branch,
-  or a `While` body), since they can never execute.
-- **Static condition**: flag `If`/`ElseIf`/`While` conditions that fold to
-  a constant `true` or `false` (e.g. `If true`, `If 1 == 2`,
-  `If !false && 3 > 4`), regardless of any runtime state, as a
-  `[warning]`. Only conditions built entirely from literals (combined with
-  arithmetic, comparison, logical, and unary operators) are checked; one
-  that depends on an identifier, a call, `Self`/`Parent`, a member/index
-  access, a cast, or a `new` array is left unflagged rather than guessed
-  at.
-- **Unused or write-only local variables**: flag a local variable
-  (declared with `Type name = ...` inside a function/event) whose value is
-  never read: either it's never referenced again at all, or it's only ever
-  reassigned (`name = ...`) without that new value ever being read back.
-  Reading a variable via a compound assignment (`name += ...`, etc.) or
-  through a member/index expression built from it (`name.Foo`, `name[0]`)
-  counts as a use. Function parameters and script properties aren't
-  locals and are never flagged by this lint.
+| Lint | Description |
+| --- | --- |
+| **Trailing whitespace** | Flags lines that end with trailing spaces or tabs. |
+| **Space after comma** | Requires whitespace after commas in argument lists. |
+| **Forbidden/discouraged function usage** | Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. |
+| **Getter usage without saving result** | Flags standalone calls to functions whose names begin with `Get` (case-insensitively), because their return value is discarded. |
+| **Unused script properties** | Flags `Property` declarations whose name is never referenced anywhere else in the script. |
+| **Semicolon at end of line** | Requires a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting. |
+| **Implicit Float-to-Int conversion** | Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit `as Int` cast. |
+| **Strict boolean check** | Flags `If`/`ElseIf`/`While` conditions that aren't already a `Bool` value or expression, instead of relying on Papyrus's implicit conversion to boolean. Only conditions whose type can be determined locally (locals, parameters, properties, literals, casts, and comparison/logical expressions) are checked; a condition that depends on a function call or a member access is left unflagged rather than risk a false positive. |
+| **Argument type check** | Flags call-site arguments whose type doesn't match the callee's declared parameter type (e.g. passing a `String` where an `Int` is expected), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as passing an object whose script extends (directly or transitively) the parameter's type (e.g. passing an `Armor` where a `Form` is expected). Calls to functions declared in the same script are always checked; when linting a `.psc` file dropped in the app, calls to functions declared on other scripts under the project root (e.g. `SomeProperty.DoThing(...)`) are checked too, by resolving those scripts' signatures (including through `Extends`), and the `Extends` chain of an argument's own script is likewise resolved from the project root to allow compatible subtypes. A call whose target or argument type can't be determined is skipped rather than guessed at. |
+| **Strict numeric type check** | Flags implicit comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without an explicit cast making the comparison exact. Only comparisons whose operand types can be determined locally are checked. |
+| **Formatting checks** | Flags lines whose indentation doesn't match the configured style/width (`indentation`/`indentation_width`) for their nesting depth. A script whose structure can't be identified (e.g. it doesn't lex cleanly) is left unchecked rather than guessed at. |
+| **Slow function usage** | Flags calls to functions listed in `rules/slow-functions.yaml` that have a faster equivalent available, and suggests the quicker alternative. |
+| **Cyclomatic complexity** | Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`\|\|` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20). |
+| **Unreachable statement** | Flags statements that follow a `Return` within the same block (a function/event body, an `If`/`ElseIf`/`Else` branch, or a `While` body), since they can never execute. |
+| **Static condition** | Flags `If`/`ElseIf`/`While` conditions that fold to a constant `true` or `false` (e.g. `If true`, `If 1 == 2`, `If !false && 3 > 4`), regardless of any runtime state, as a `[warning]`. Only conditions built entirely from literals (combined with arithmetic, comparison, logical, and unary operators) are checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. |
+| **Unused or write-only local variables** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose value is never read: either it's never referenced again at all, or it's only ever reassigned (`name = ...`) without that new value ever being read back. Reading a variable via a compound assignment (`name += ...`, etc.) or through a member/index expression built from it (`name.Foo`, `name[0]`) counts as a use. Function parameters and script properties aren't locals and are never flagged by this lint. |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, and indentation) never flag or change a line inside a
@@ -177,12 +125,12 @@ override saved yet.
 
 ## Implemented Automatic Fixes
 
-- **Trailing whitespace**: automatically strip trailing spaces or tabs from the end of lines.
-- **Space after comma**: automatically insert a space after unspaced commas in argument lists.
-- **Semicolon at end of line**: add required semicolons or remove terminal
-  semicolons without discarding comment text.
-- **Indentation**: automatically re-indent blocks using tabs or a configured
-  number of spaces.
+| Fix | Description |
+| --- | --- |
+| **Trailing whitespace** | Automatically strips trailing spaces or tabs from the end of lines. |
+| **Space after comma** | Automatically inserts a space after unspaced commas in argument lists. |
+| **Semicolon at end of line** | Adds required semicolons or removes terminal semicolons without discarding comment text. |
+| **Indentation** | Automatically re-indents blocks using tabs or a configured number of spaces. |
 
 ## Compiling a script
 
