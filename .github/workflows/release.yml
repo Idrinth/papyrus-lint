@@ -85,13 +85,13 @@ jobs:
           mkdir -p cli-dist
           case "${{ matrix.platform }}" in
             windows-latest)
-              cp crates/papyrus-lint-cli/target/release/papyrus-lint.exe cli-dist/papyrus-lint-windows.exe
+              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe cli-dist/PapyrusLinterCLI-windows.exe
               ;;
             macos-latest)
-              cp crates/papyrus-lint-cli/target/release/papyrus-lint cli-dist/papyrus-lint-macos
+              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-macos
               ;;
             *)
-              cp crates/papyrus-lint-cli/target/release/papyrus-lint cli-dist/papyrus-lint-linux
+              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-linux
               ;;
           esac
 

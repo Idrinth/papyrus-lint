@@ -10,7 +10,7 @@ name = "papyrus_lint_cli"
 path = "src/lib.rs"
 
 [[bin]]
-name = "papyrus-lint"
+name = "PapyrusLinterCLI"
 path = "src/main.rs"
 
 [dependencies]
