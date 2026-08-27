@@ -238,7 +238,7 @@ async function writePscFile(path: string, contents: string): Promise<void> {
   await invoke("write_psc_file", { path, contents });
 }
 
-function hasFixableFindings(findings: Diagnostic[]): boolean {
+export function hasFixableFindings(findings: Diagnostic[]): boolean {
   return findings.some((finding) =>
     finding.message === TRAILING_WHITESPACE_MESSAGE || finding.message.includes("end with a semicolon"),
   );
@@ -282,14 +282,6 @@ interface CodeViewerState {
   source: string;
   findings: Diagnostic[];
 }
-// Reads and syntax-highlights `path`'s source, then opens the code viewer
-// dialog with `findings` marked on their lines. If `focusLine` is given,
-// scrolls that line into view and briefly flashes it, so a click on a
-// specific finding jumps straight to it.
-export async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: number) {
-  if (!codeViewerEl || !codeViewerTitleEl || !codeViewerBodyEl) {
-    return;
-  }
 
 let codeViewerState: CodeViewerState | null = null;
 let codeViewerMode: "view" | "edit" = "view";
@@ -443,7 +435,7 @@ function requestCloseCodeViewer() {
 // dialog with `findings` marked on their lines. If `focusLine` is given,
 // scrolls that line into view and briefly flashes it, so a click on a
 // specific finding jumps straight to it.
-async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: number) {
+export async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: number) {
   if (!codeViewerEl || !codeViewerTitleEl || !codeViewerViewEl) {
     return;
   }

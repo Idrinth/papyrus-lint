@@ -70,10 +70,21 @@ export const FIXTURE_HTML = `
   <dialog id="code-viewer" class="code-viewer">
     <div class="code-viewer__header">
       <h2 id="code-viewer-title" class="code-viewer__title"></h2>
+      <div class="code-viewer__actions">
+        <button type="button" id="code-viewer-edit" class="code-viewer__action">Edit</button>
+        <button type="button" id="code-viewer-save" class="code-viewer__action" hidden>Save</button>
+        <button type="button" id="code-viewer-cancel" class="code-viewer__action" hidden>Cancel</button>
+      </div>
       <button type="button" id="code-viewer-fullscreen" aria-label="Enter fullscreen" aria-pressed="false">⛶</button>
       <button type="button" id="code-viewer-close" aria-label="Close">&times;</button>
     </div>
-    <div id="code-viewer-body" class="code-viewer__body"></div>
+    <div id="code-viewer-body" class="code-viewer__body">
+      <div id="code-viewer-view" class="code-viewer__view"></div>
+      <div id="code-viewer-editor" class="code-viewer__editor" hidden>
+        <pre id="code-viewer-editor-highlight" class="code-viewer__editor-highlight" aria-hidden="true"><code></code></pre>
+        <textarea id="code-viewer-editor-textarea" class="code-viewer__editor-textarea" spellcheck="false"></textarea>
+      </div>
+    </div>
   </dialog>
 `;
 
