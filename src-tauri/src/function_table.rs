@@ -387,6 +387,41 @@ mod tests {
     }
 
     #[test]
+    fn resolves_an_armor_return_value_for_a_form_return_type_through_the_return_type_check_lint() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Form", "ScriptName Form\n");
+        write_script(root.path(), "Armor", "ScriptName Armor Extends Form\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::return_types::check_with(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nForm Function Test()\n    Return MyArmor\nEndFunction\n",
+            &mut table,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn still_flags_an_unrelated_return_type_through_the_return_type_check_lint() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Form", "ScriptName Form\n");
+        write_script(root.path(), "Weapon", "ScriptName Weapon Extends Form\n");
+        write_script(root.path(), "Armor", "ScriptName Armor Extends Form\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::return_types::check_with(
+            "ScriptName Example\n\nWeapon Property MyWeapon Auto\n\nArmor Function Test()\n    Return MyWeapon\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("declares return type Armor"));
+        assert!(diagnostics[0].message.contains("returns Weapon"));
+    }
+
+    #[test]
     fn drives_the_argument_type_check_lint_across_scripts() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         write_script(

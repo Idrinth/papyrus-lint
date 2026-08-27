@@ -17,6 +17,7 @@ A linter for Bethesda's papyrus language to improve code quality.
 | **Implicit Float-to-Int conversion** | Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit `as Int` cast. | |
 | **Strict boolean check** | Flags `If`/`ElseIf`/`While` conditions that aren't already a `Bool` value or expression, instead of relying on Papyrus's implicit conversion to boolean. Only conditions whose type can be determined locally (locals, parameters, properties, literals, casts, and comparison/logical expressions) are checked; a condition that depends on a function call or a member access is left unflagged rather than risk a false positive. | |
 | **Argument type check** | Flags call-site arguments whose type doesn't match the callee's declared parameter type (e.g. passing a `String` where an `Int` is expected), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as passing an object whose script extends (directly or transitively) the parameter's type (e.g. passing an `Armor` where a `Form` is expected). Calls to functions declared in the same script are always checked; when linting a `.psc` file dropped in the app, calls to functions declared on other scripts under the project root (e.g. `SomeProperty.DoThing(...)`) are checked too, by resolving those scripts' signatures (including through `Extends`), and the `Extends` chain of an argument's own script is likewise resolved from the project root to allow compatible subtypes. A call whose target or argument type can't be determined is skipped rather than guessed at. | |
+| **Return type check** | Flags `Return` statements whose value's type doesn't match the enclosing function's declared return type (e.g. returning a `String` from a Function declared `Int`), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as returning an object whose script extends (directly or transitively) the declared return type (e.g. returning an `Armor` from a Function declared `Form`). When linting a `.psc` file dropped in the app, a returned value's own script's `Extends` chain is resolved from the project root to allow compatible subtypes there too. A `Return` whose value's type can't be determined, or with no declared return type, is skipped rather than guessed at. | |
 | **Strict numeric type check** | Flags implicit comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without an explicit cast making the comparison exact. Only comparisons whose operand types can be determined locally are checked. | |
 | **Formatting checks** | Flags lines whose indentation doesn't match the configured style/width (`indentation`/`indentation_width`) for their nesting depth. A script whose structure can't be identified (e.g. it doesn't lex cleanly) is left unchecked rather than guessed at. | ✓ |
 | **Slow function usage** | Flags calls to functions listed in `rules/slow-functions.yaml` that have a faster equivalent available, and suggests the quicker alternative. | |
@@ -48,7 +49,7 @@ linting — it does not change what automatic fixes do to that line. The rule id
 lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `forbidden-functions`, `slow-functions`, `unused-getter`, `unused-property`,
 `semicolon`, `float-to-int`, `strict-boolean`, `argument-types`,
-`numeric-comparison`, `indentation`, `cyclomatic-complexity`,
+`return-types`, `numeric-comparison`, `indentation`, `cyclomatic-complexity`,
 `unreachable-statement`, `static-condition`, and `unused-local-variable`.
 
 ## Configuration
@@ -76,6 +77,7 @@ rules:
   float_int_conversion: true
   strict_boolean: true
   argument_types: true
+  return_types: true
   numeric_comparison: true
   indentation: true
   cyclomatic_complexity: true
@@ -107,7 +109,7 @@ rules:
   listed above: `trailing_whitespace`, `comma_spacing`,
   `forbidden_functions`, `slow_functions`, `unused_getter`, `unused_property`,
   `semicolon`, `float_int_conversion`, `strict_boolean`,
-  `argument_types`, `numeric_comparison`, `indentation`,
+  `argument_types`, `return_types`, `numeric_comparison`, `indentation`,
   `cyclomatic_complexity`, `unreachable_statement`, `static_condition`, and
   `unused_local_variable`.
 

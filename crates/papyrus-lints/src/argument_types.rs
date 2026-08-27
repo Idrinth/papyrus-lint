@@ -341,7 +341,7 @@ fn mismatch(
     }
 }
 
-fn format_type(type_name: &TypeName) -> String {
+pub(crate) fn format_type(type_name: &TypeName) -> String {
     if type_name.is_array {
         format!("{}[]", type_name.name)
     } else {
@@ -359,7 +359,7 @@ fn is_primitive(name: &str) -> bool {
 
 /// `None` is valid for any reference type (arrays and non-primitive
 /// object types) but not for `Int`/`Float`/`Bool`/`String`.
-fn accepts_none(param_type: &TypeName) -> bool {
+pub(crate) fn accepts_none(param_type: &TypeName) -> bool {
     param_type.is_array || !is_primitive(&param_type.name)
 }
 
@@ -369,7 +369,7 @@ fn accepts_none(param_type: &TypeName) -> bool {
 /// `Float` parameter, and passing an object whose script extends (directly
 /// or transitively) the parameter's type, per `external`'s knowledge of
 /// the scripts' `Extends` chains.
-fn is_compatible<E: ExternalSignatures>(
+pub(crate) fn is_compatible<E: ExternalSignatures>(
     param_type: &TypeName,
     arg_type: &TypeName,
     external: &mut E,
