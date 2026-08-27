@@ -30,7 +30,7 @@ h1 {
 .tabs {
   margin-top: 2em;
   width: 100%;
-  max-width: 32em;
+  max-width: clamp(32em, 60vw, 56em);
   text-align: left;
 }
 
