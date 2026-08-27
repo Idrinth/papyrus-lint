@@ -23,6 +23,8 @@ use std::process::Command;
 
 use serde::Serialize;
 
+use crate::pex_header;
+
 /// The result of running the compiler against a script.
 ///
 /// A script that fails to *compile* (a syntax error, a missing import,
@@ -35,6 +37,33 @@ pub struct CompileOutcome {
     pub success: bool,
     pub stdout: String,
     pub stderr: String,
+    /// Whether the compiling machine's Windows username/computer name
+    /// (which `PapyrusCompiler.exe` embeds in every `.pex` it writes) was
+    /// found and stripped from the compiled output. Always `false` when
+    /// `success` is `false`, since there's no `.pex` to clean.
+    pub personal_data_stripped: bool,
+}
+
+/// Strips the compiling machine's username/computer name (see
+/// [`pex_header::strip_personal_data`]) from the `.pex` file compiled from
+/// `script_path` into `output_dir`, rewriting it in place. Returns
+/// `false`, without error, if the `.pex` file can't be found/read, doesn't
+/// look like a `.pex` header, or already has no personal data to strip —
+/// none of which should fail an otherwise-successful compile.
+fn strip_pex_personal_data(script_path: &Path, output_dir: &Path) -> bool {
+    let Some(stem) = script_path.file_stem() else {
+        return false;
+    };
+    let pex_path = output_dir.join(stem).with_extension("pex");
+
+    let Ok(bytes) = std::fs::read(&pex_path) else {
+        return false;
+    };
+    let Some(patched) = pex_header::strip_personal_data(&bytes) else {
+        return false;
+    };
+
+    std::fs::write(&pex_path, patched).is_ok()
 }
 
 /// Builds the `-i` argument's value: the project root's two known source
@@ -95,10 +124,14 @@ pub fn compile_psc_file(
         .output()
         .map_err(|err| format!("failed to run {}: {err}", compiler_path.display()))?;
 
+    let success = output.status.success();
+    let personal_data_stripped = success && strip_pex_personal_data(script_path, output_dir);
+
     Ok(CompileOutcome {
-        success: output.status.success(),
+        success,
         stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
         stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+        personal_data_stripped,
     })
 }
 
@@ -133,6 +166,42 @@ mod tests {
 
         assert!(outcome.success);
         assert_eq!(outcome.stdout.trim(), "compiled ok");
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn success_strips_personal_data_from_the_compiled_pex() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts").join("Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("AchievementInjector.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path =
+            write_stub_compiler(root.path(), "#!/bin/sh\necho compiled ok\nexit 0\n");
+
+        // Simulate PapyrusCompiler.exe having already dropped a compiled
+        // .pex (embedding personal data) next to the stub's own stdout.
+        let pex_path = root.path().join("Scripts").join("AchievementInjector.pex");
+        let mut pex_bytes = vec![0xFA, 0x57, 0xC0, 0xDE, 3, 9];
+        pex_bytes.extend_from_slice(&1u16.to_be_bytes());
+        pex_bytes.extend_from_slice(&0u64.to_be_bytes());
+        for s in ["AchievementInjector.psc", "SomeUser", "SOME-PC"] {
+            pex_bytes.extend_from_slice(&(s.len() as u16).to_be_bytes());
+            pex_bytes.extend_from_slice(s.as_bytes());
+        }
+        fs::write(&pex_path, &pex_bytes).expect("failed to write stub pex");
+
+        let outcome = compile_psc_file(&compiler_path, &script_path).expect("should succeed");
+
+        assert!(outcome.success);
+        assert!(outcome.personal_data_stripped);
+        let patched = fs::read(&pex_path).expect("pex should still exist");
+        assert!(!contains_bytes(&patched, b"SomeUser"));
+        assert!(!contains_bytes(&patched, b"SOME-PC"));
+    }
+
+    fn contains_bytes(haystack: &[u8], needle: &[u8]) -> bool {
+        haystack.windows(needle.len()).any(|w| w == needle)
     }
 
     #[test]

@@ -80,6 +80,7 @@ export interface CompileOutcome {
   success: boolean;
   stdout: string;
   stderr: string;
+  personal_data_stripped: boolean;
 }
 
 export interface LintRules {
@@ -697,7 +698,11 @@ export async function handleCompileClick(path: string, button: HTMLButtonElement
   button.textContent = "Compiling…";
   try {
     const outcome = await compilePscFile(path);
-    const output = [outcome.stdout, outcome.stderr].filter((text) => text.trim().length > 0).join("\n");
+    const lines = [outcome.stdout, outcome.stderr].filter((text) => text.trim().length > 0);
+    if (outcome.personal_data_stripped) {
+      lines.push("Removed your username/computer name from the compiled script.");
+    }
+    const output = lines.join("\n");
     showCompileOutput(
       outputEl,
       output || (outcome.success ? "Compiled successfully." : "Compilation failed."),

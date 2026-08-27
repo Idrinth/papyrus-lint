@@ -237,3 +237,11 @@ and a reported error (a syntax error, a missing import, etc.) are visible
 without checking a log file. If no compiler path is configured or
 auto-detected, or the executable itself can't be run, that's reported the
 same way rather than silently doing nothing.
+
+`PapyrusCompiler.exe` embeds the compiling machine's Windows username and
+computer name into every `.pex` it writes, right next to the source file
+name in its header. On a successful compile, Papyrus Lint reads that
+header back out of the resulting `.pex` and blanks both fields in place,
+so a script compiled locally and then shared (e.g. bundled into a mod)
+doesn't leak who built it or what machine they built it on. A note is
+added to the compile output when this happens.
