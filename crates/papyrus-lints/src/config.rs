@@ -8,6 +8,8 @@
 //! semicolon: false
 //! indentation: tab
 //! indentation_width: 4
+//! cyclomatic_complexity_warning: 10
+//! cyclomatic_complexity_error: 20
 //! rules:
 //!   trailing_whitespace: true
 //!   comma_spacing: true
@@ -21,6 +23,7 @@
 //!   argument_types: true
 //!   numeric_comparison: true
 //!   indentation: true
+//!   cyclomatic_complexity: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -59,6 +62,12 @@ pub struct Config {
     /// The number of spaces per indentation level, used only when
     /// `indentation` is [`Indentation::Space`].
     pub indentation_width: usize,
+    /// The cyclomatic complexity a function/event can reach before the
+    /// "Cyclomatic complexity" lint flags it as a `[warning]`.
+    pub cyclomatic_complexity_warning: usize,
+    /// The cyclomatic complexity a function/event can reach before the
+    /// "Cyclomatic complexity" lint flags it as an `[error]`.
+    pub cyclomatic_complexity_error: usize,
     /// Per-ruleset enable/disable switches. Every ruleset is enabled by
     /// default; see [`Rules`].
     pub rules: Rules,
@@ -70,6 +79,8 @@ impl Default for Config {
             semicolon: false,
             indentation: Indentation::default(),
             indentation_width: 4,
+            cyclomatic_complexity_warning: 10,
+            cyclomatic_complexity_error: 20,
             rules: Rules::default(),
         }
     }
@@ -106,6 +117,8 @@ pub struct Rules {
     pub numeric_comparison: bool,
     /// The "Formatting checks"/"Indentation" lint/fix.
     pub indentation: bool,
+    /// The "Cyclomatic complexity" lint.
+    pub cyclomatic_complexity: bool,
 }
 
 impl Default for Rules {
@@ -123,6 +136,7 @@ impl Default for Rules {
             argument_types: true,
             numeric_comparison: true,
             indentation: true,
+            cyclomatic_complexity: true,
         }
     }
 }
@@ -218,6 +232,7 @@ mod tests {
         assert!(config.rules.argument_types);
         assert!(config.rules.numeric_comparison);
         assert!(config.rules.indentation);
+        assert!(config.rules.cyclomatic_complexity);
     }
 
     #[test]
@@ -253,6 +268,8 @@ mod tests {
         assert!(!config.semicolon);
         assert_eq!(config.indentation, Indentation::Tab);
         assert_eq!(config.indentation_width, 4);
+        assert_eq!(config.cyclomatic_complexity_warning, 10);
+        assert_eq!(config.cyclomatic_complexity_error, 20);
     }
 
     #[test]
@@ -274,6 +291,14 @@ mod tests {
         assert!(!config.semicolon);
         assert_eq!(config.indentation, Indentation::Space);
         assert_eq!(config.indentation_width, 4);
+    }
+
+    #[test]
+    fn parses_cyclomatic_complexity_thresholds() {
+        let config =
+            parse("cyclomatic_complexity_warning: 5\ncyclomatic_complexity_error: 15\n").unwrap();
+        assert_eq!(config.cyclomatic_complexity_warning, 5);
+        assert_eq!(config.cyclomatic_complexity_error, 15);
     }
 
     #[test]
