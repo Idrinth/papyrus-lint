@@ -43,6 +43,14 @@ fn read_psc_file(path: String) -> Result<String, String> {
     std::fs::read_to_string(&path).map_err(|err| err.to_string())
 }
 
+/// Writes `contents` to the `.psc` file at `path`, replacing it on disk.
+/// Used by the frontend's code viewer to persist edits made in its edit
+/// mode.
+#[tauri::command]
+fn write_psc_file(path: String, contents: String) -> Result<(), String> {
+    std::fs::write(&path, contents).map_err(|err| err.to_string())
+}
+
 /// Looks for a papyrus-lint YAML config file in `dir` (conventionally the
 /// directory containing the `.achlist` file) and returns the lint
 /// configuration it describes, falling back to the default configuration
@@ -113,6 +121,7 @@ pub fn run() {
             lint_papyrus_script,
             parse_psc_file,
             read_psc_file,
+            write_psc_file,
             load_lint_config,
             save_lint_config,
             lint_psc_file,

@@ -15,8 +15,14 @@ let currentPscOutcomes: PscParseOutcome[] = [];
 let semicolonStyleEl: HTMLSelectElement | null;
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
-let codeViewerBodyEl: HTMLElement | null;
 let codeViewerCloseEl: HTMLButtonElement | null;
+let codeViewerViewEl: HTMLElement | null;
+let codeViewerEditEl: HTMLElement | null;
+let codeViewerEditHighlightEl: HTMLElement | null;
+let codeViewerEditTextareaEl: HTMLTextAreaElement | null;
+let codeViewerEditButtonEl: HTMLButtonElement | null;
+let codeViewerSaveButtonEl: HTMLButtonElement | null;
+let codeViewerCancelButtonEl: HTMLButtonElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
@@ -162,6 +168,10 @@ async function repairPscFile(path: string): Promise<Diagnostic[]> {
   });
 }
 
+async function writePscFile(path: string, contents: string): Promise<void> {
+  await invoke("write_psc_file", { path, contents });
+}
+
 function hasFixableFindings(findings: Diagnostic[]): boolean {
   return findings.some((finding) =>
     finding.message === TRAILING_WHITESPACE_MESSAGE || finding.message.includes("end with a semicolon"),
@@ -201,24 +211,34 @@ function escapeAttr(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
-// Reads and syntax-highlights `path`'s source, then opens the code viewer
-// dialog with `findings` marked on their lines. If `focusLine` is given,
-// scrolls that line into view and briefly flashes it, so a click on a
-// specific finding jumps straight to it.
-async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: number) {
-  if (!codeViewerEl || !codeViewerTitleEl || !codeViewerBodyEl) {
-    return;
+interface CodeViewerState {
+  path: string;
+  source: string;
+  findings: Diagnostic[];
+}
+
+let codeViewerState: CodeViewerState | null = null;
+let codeViewerMode: "view" | "edit" = "view";
+
+function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warning" | "info" | "flagged" | null {
+  if (!lineFindings || lineFindings.length === 0) {
+    return null;
   }
+  const levels = lineFindings.map((finding) => levelOf(finding.message));
+  if (levels.includes("error")) return "error";
+  if (levels.includes("warning")) return "warning";
+  if (levels.includes("info")) return "info";
+  // Lints like trailing-whitespace don't tag a severity level; still mark
+  // their line so the finding is visible in the viewer.
+  return "flagged";
+}
 
-  codeViewerTitleEl.textContent = path;
-  codeViewerBodyEl.textContent = "Loading…";
-  codeViewerEl.showModal();
-
-  let source: string;
-  try {
-    source = await invoke<string>("read_psc_file", { path });
-  } catch (error) {
-    codeViewerBodyEl.textContent = `Failed to read file: ${String(error)}`;
+// Renders `source`'s syntax-highlighted, read-only table view with
+// `findings` marked on their lines. If `focusLine` is given, scrolls that
+// line into view and briefly flashes it, so a click on a specific finding
+// jumps straight to it.
+function renderCodeViewerView(source: string, findings: Diagnostic[], focusLine?: number) {
+  if (!codeViewerViewEl) {
     return;
   }
 
@@ -227,19 +247,6 @@ async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: 
     const forLine = findingsByLine.get(finding.line) ?? [];
     forLine.push(finding);
     findingsByLine.set(finding.line, forLine);
-  }
-
-  function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warning" | "info" | "flagged" | null {
-    if (!lineFindings || lineFindings.length === 0) {
-      return null;
-    }
-    const levels = lineFindings.map((finding) => levelOf(finding.message));
-    if (levels.includes("error")) return "error";
-    if (levels.includes("warning")) return "warning";
-    if (levels.includes("info")) return "info";
-    // Lints like trailing-whitespace don't tag a severity level; still mark
-    // their line so the finding is visible in the viewer.
-    return "flagged";
   }
 
   const lines = highlightPapyrusLines(source);
@@ -259,13 +266,130 @@ async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: 
     );
   });
 
-  codeViewerBodyEl.innerHTML = `<table class="code-viewer__table"><tbody>${rows.join("")}</tbody></table>`;
+  codeViewerViewEl.innerHTML = `<table class="code-viewer__table"><tbody>${rows.join("")}</tbody></table>`;
 
   if (focusLine) {
-    const row = codeViewerBodyEl.querySelector<HTMLElement>(`#code-viewer-line-${focusLine}`);
+    const row = codeViewerViewEl.querySelector<HTMLElement>(`#code-viewer-line-${focusLine}`);
     row?.scrollIntoView({ block: "center" });
     row?.classList.add("code-viewer__line--flash");
   }
+}
+
+// Shows the view-mode table or the edit-mode textarea/highlight overlay,
+// toggling the header's Edit/Save/Cancel buttons to match.
+function setCodeViewerMode(mode: "view" | "edit") {
+  codeViewerMode = mode;
+  if (codeViewerViewEl) codeViewerViewEl.hidden = mode !== "view";
+  if (codeViewerEditEl) codeViewerEditEl.hidden = mode !== "edit";
+  if (codeViewerEditButtonEl) codeViewerEditButtonEl.hidden = mode !== "view";
+  if (codeViewerSaveButtonEl) codeViewerSaveButtonEl.hidden = mode !== "edit";
+  if (codeViewerCancelButtonEl) codeViewerCancelButtonEl.hidden = mode !== "edit";
+}
+
+// Re-renders the edit mode's syntax-highlighted overlay from the
+// textarea's current value, keeping it in sync as the user types.
+function updateCodeViewerEditHighlight() {
+  const code = codeViewerEditHighlightEl?.querySelector("code");
+  if (!code || !codeViewerEditTextareaEl) {
+    return;
+  }
+  code.innerHTML = highlightPapyrusLines(codeViewerEditTextareaEl.value).join("\n");
+}
+
+function isCodeViewerEditDirty(): boolean {
+  return (
+    codeViewerMode === "edit" &&
+    codeViewerState !== null &&
+    codeViewerEditTextareaEl !== null &&
+    codeViewerEditTextareaEl.value !== codeViewerState.source
+  );
+}
+
+function enterCodeViewerEditMode() {
+  if (!codeViewerState || !codeViewerEditTextareaEl) {
+    return;
+  }
+  codeViewerEditTextareaEl.value = codeViewerState.source;
+  updateCodeViewerEditHighlight();
+  setCodeViewerMode("edit");
+  codeViewerEditTextareaEl.focus();
+}
+
+function cancelCodeViewerEditMode() {
+  if (isCodeViewerEditDirty() && !window.confirm("Discard unsaved changes?")) {
+    return;
+  }
+  setCodeViewerMode("view");
+}
+
+async function saveCodeViewerEdits() {
+  if (!codeViewerState || !codeViewerEditTextareaEl || !codeViewerSaveButtonEl) {
+    return;
+  }
+  const { path } = codeViewerState;
+  const contents = codeViewerEditTextareaEl.value;
+
+  codeViewerSaveButtonEl.disabled = true;
+  try {
+    await writePscFile(path, contents);
+    const findings = await lintPscFile(path);
+    codeViewerState = { path, source: contents, findings };
+
+    const outcome = currentPscOutcomes.find((candidate) => candidate.path === path);
+    if (outcome) {
+      outcome.findings = findings;
+      renderPscResults(currentPscOutcomes);
+    }
+
+    renderCodeViewerView(codeViewerState.source, codeViewerState.findings);
+    setCodeViewerMode("view");
+  } catch (error) {
+    console.error(error);
+    const originalLabel = codeViewerSaveButtonEl.textContent;
+    codeViewerSaveButtonEl.textContent = "Save failed";
+    window.setTimeout(() => {
+      if (codeViewerSaveButtonEl) {
+        codeViewerSaveButtonEl.textContent = originalLabel;
+      }
+    }, 2000);
+  } finally {
+    codeViewerSaveButtonEl.disabled = false;
+  }
+}
+
+// Closes the code viewer, confirming first if edit mode has unsaved changes.
+function requestCloseCodeViewer() {
+  if (isCodeViewerEditDirty() && !window.confirm("Discard unsaved changes?")) {
+    return;
+  }
+  codeViewerEl?.close();
+}
+
+// Reads and syntax-highlights `path`'s source, then opens the code viewer
+// dialog with `findings` marked on their lines. If `focusLine` is given,
+// scrolls that line into view and briefly flashes it, so a click on a
+// specific finding jumps straight to it.
+async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: number) {
+  if (!codeViewerEl || !codeViewerTitleEl || !codeViewerViewEl) {
+    return;
+  }
+
+  codeViewerState = null;
+  setCodeViewerMode("view");
+  codeViewerTitleEl.textContent = path;
+  codeViewerViewEl.textContent = "Loading…";
+  codeViewerEl.showModal();
+
+  let source: string;
+  try {
+    source = await invoke<string>("read_psc_file", { path });
+  } catch (error) {
+    codeViewerViewEl.textContent = `Failed to read file: ${String(error)}`;
+    return;
+  }
+
+  codeViewerState = { path, source, findings };
+  renderCodeViewerView(source, findings, focusLine);
 }
 
 function severityOf(message: string): Severity {
@@ -456,13 +580,36 @@ window.addEventListener("DOMContentLoaded", () => {
   indentationWidthEl = document.querySelector("#indentation-width");
   codeViewerEl = document.querySelector("#code-viewer");
   codeViewerTitleEl = document.querySelector("#code-viewer-title");
-  codeViewerBodyEl = document.querySelector("#code-viewer-body");
   codeViewerCloseEl = document.querySelector("#code-viewer-close");
+  codeViewerViewEl = document.querySelector("#code-viewer-view");
+  codeViewerEditEl = document.querySelector("#code-viewer-editor");
+  codeViewerEditHighlightEl = document.querySelector("#code-viewer-editor-highlight");
+  codeViewerEditTextareaEl = document.querySelector("#code-viewer-editor-textarea");
+  codeViewerEditButtonEl = document.querySelector("#code-viewer-edit");
+  codeViewerSaveButtonEl = document.querySelector("#code-viewer-save");
+  codeViewerCancelButtonEl = document.querySelector("#code-viewer-cancel");
 
-  codeViewerCloseEl?.addEventListener("click", () => codeViewerEl?.close());
+  codeViewerCloseEl?.addEventListener("click", () => requestCloseCodeViewer());
   codeViewerEl?.addEventListener("click", (event) => {
     if (event.target === codeViewerEl) {
-      codeViewerEl?.close();
+      requestCloseCodeViewer();
+    }
+  });
+  codeViewerEl?.addEventListener("cancel", (event) => {
+    if (isCodeViewerEditDirty() && !window.confirm("Discard unsaved changes?")) {
+      event.preventDefault();
+    }
+  });
+  codeViewerEl?.addEventListener("close", () => setCodeViewerMode("view"));
+
+  codeViewerEditButtonEl?.addEventListener("click", () => enterCodeViewerEditMode());
+  codeViewerCancelButtonEl?.addEventListener("click", () => cancelCodeViewerEditMode());
+  codeViewerSaveButtonEl?.addEventListener("click", () => void saveCodeViewerEdits());
+  codeViewerEditTextareaEl?.addEventListener("input", () => updateCodeViewerEditHighlight());
+  codeViewerEditTextareaEl?.addEventListener("scroll", () => {
+    if (codeViewerEditHighlightEl && codeViewerEditTextareaEl) {
+      codeViewerEditHighlightEl.scrollTop = codeViewerEditTextareaEl.scrollTop;
+      codeViewerEditHighlightEl.scrollLeft = codeViewerEditTextareaEl.scrollLeft;
     }
   });
 
