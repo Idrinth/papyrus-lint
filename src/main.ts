@@ -12,6 +12,7 @@ let pscResultListEl: HTMLElement | null;
 let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
+let compilerPathEl: HTMLInputElement | null;
 let semicolonStyleEl: HTMLSelectElement | null;
 let cyclomaticComplexityWarningEl: HTMLInputElement | null;
 let cyclomaticComplexityErrorEl: HTMLInputElement | null;
@@ -155,6 +156,31 @@ export async function loadLintConfig(dir: string): Promise<LintConfig> {
 export async function saveLintConfig(dir: string, config: LintConfig): Promise<void> {
   try {
     await invoke("save_lint_config", { dir, config });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Returns the PapyrusCompile.exe path to use for `dir`'s project: an
+// explicit override saved to its papyrus-lint config file, or, absent
+// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompile.exe`
+// relative to `dir`. Returns an empty string if neither is available or
+// the lookup fails.
+export async function loadCompilerPath(dir: string): Promise<string> {
+  try {
+    return (await invoke<string | null>("load_compiler_path", { dir })) ?? "";
+  } catch (error) {
+    console.error(error);
+    return "";
+  }
+}
+
+// Persists an explicit PapyrusCompile.exe path override to `dir`'s
+// papyrus-lint config file. Passing an empty string clears the override,
+// reverting to auto-detection.
+export async function saveCompilerPath(dir: string, path: string): Promise<void> {
+  try {
+    await invoke("save_compiler_path", { dir, path });
   } catch (error) {
     console.error(error);
   }
@@ -617,7 +643,18 @@ export async function useProjectDir(dir: string) {
   currentProjectDir = dir;
   currentLintConfig = await loadLintConfig(dir);
   applyLintConfigToUI(currentLintConfig);
+  if (compilerPathEl) {
+    compilerPathEl.value = await loadCompilerPath(dir);
+  }
   rememberProjectDir(dir);
+}
+
+// Called when the PapyrusCompile.exe path input changes: persists it to
+// the current project's config file (if a project is loaded).
+export function handleCompilerPathChanged() {
+  if (currentProjectDir && compilerPathEl) {
+    void saveCompilerPath(currentProjectDir, compilerPathEl.value);
+  }
 }
 
 export async function handleDroppedPaths(paths: string[]) {
@@ -652,6 +689,7 @@ window.addEventListener("DOMContentLoaded", () => {
   resultListEl = document.querySelector("#achlist-result-list");
   pscResultEl = document.querySelector("#psc-result");
   pscResultListEl = document.querySelector("#psc-result-list");
+  compilerPathEl = document.querySelector("#compiler-path");
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
@@ -717,6 +755,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
   semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
   indentationStyleEl?.addEventListener("change", () => {
     if (indentationWidthEl) {

@@ -19,6 +19,7 @@ import {
   clearError,
   dirnameOf,
   escapeAttr,
+  handleCompilerPathChanged,
   handleDroppedPaths,
   handleFixClick,
   handleLintConfigChanged,
@@ -28,12 +29,14 @@ import {
   lastProjectDir,
   levelOf,
   lintConfigFromUI,
+  loadCompilerPath,
   loadLintConfig,
   openCodeViewer,
   parsePscFiles,
   rememberProjectDir,
   renderPscResults,
   repairPscFile,
+  saveCompilerPath,
   saveLintConfig,
   severityOf,
   showError,
@@ -217,6 +220,21 @@ describe("lint config UI round trip", () => {
       config: expect.objectContaining({ semicolon: true }),
     });
   });
+
+  it("handleCompilerPathChanged persists the path once a project dir is known", async () => {
+    invokeImplFor({ load_lint_config: () => DEFAULT_LINT_CONFIG, load_compiler_path: () => null });
+    await useProjectDir("/proj");
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLInputElement>("#compiler-path")!.value = "C:\\Tools\\PapyrusCompile.exe";
+    handleCompilerPathChanged();
+    await Promise.resolve();
+
+    expect(invokeMock).toHaveBeenCalledWith("save_compiler_path", {
+      dir: "/proj",
+      path: "C:\\Tools\\PapyrusCompile.exe",
+    });
+  });
 });
 
 describe("loadLintConfig / saveLintConfig", () => {
@@ -246,7 +264,7 @@ describe("loadLintConfig / saveLintConfig", () => {
 describe("useProjectDir", () => {
   it("loads the config, applies it to the UI, and remembers the directory", async () => {
     const custom: LintConfig = { ...DEFAULT_LINT_CONFIG, semicolon: true, indentation: "space" };
-    invokeImplFor({ load_lint_config: () => custom });
+    invokeImplFor({ load_lint_config: () => custom, load_compiler_path: () => null });
 
     await useProjectDir("/my/project");
 
@@ -254,6 +272,49 @@ describe("useProjectDir", () => {
     expect(document.querySelector<HTMLSelectElement>("#indentation-style")!.value).toBe("spaces");
     expect(lastProjectDir()).toBe("/my/project");
   });
+
+  it("populates the compiler path input from the backend", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompile.exe",
+    });
+
+    await useProjectDir("/my/project");
+
+    expect(document.querySelector<HTMLInputElement>("#compiler-path")!.value).toBe(
+      "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompile.exe",
+    );
+  });
+});
+
+describe("loadCompilerPath / saveCompilerPath", () => {
+  it("loadCompilerPath returns the backend's resolved path", async () => {
+    invokeImplFor({ load_compiler_path: () => "C:\\Tools\\PapyrusCompile.exe" });
+
+    await expect(loadCompilerPath("/proj")).resolves.toBe("C:\\Tools\\PapyrusCompile.exe");
+    expect(invokeMock).toHaveBeenCalledWith("load_compiler_path", { dir: "/proj" });
+  });
+
+  it("loadCompilerPath returns an empty string when the backend has none", async () => {
+    invokeImplFor({ load_compiler_path: () => null });
+
+    await expect(loadCompilerPath("/proj")).resolves.toBe("");
+  });
+
+  it("loadCompilerPath returns an empty string on failure", async () => {
+    invokeMock.mockRejectedValue(new Error("no such file"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadCompilerPath("/proj")).resolves.toBe("");
+  });
+
+  it("saveCompilerPath swallows backend errors", async () => {
+    invokeMock.mockRejectedValue(new Error("disk full"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(saveCompilerPath("/proj", "C:\\Tools\\PapyrusCompile.exe")).resolves.toBeUndefined();
+  });
+
 });
 
 describe("parsePscFiles / repairPscFile", () => {
