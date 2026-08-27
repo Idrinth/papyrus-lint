@@ -8,13 +8,13 @@
 //!
 //! `<source dir>` is the directory the `.psc` file lives in (conventionally
 //! `scripts/source` or `source/scripts` under a project's root — see
-//! [`crate::script_locator`]) and `<output dir>` is its parent, matching
+//! [`papyrus_lint_core::script_locator`]) and `<output dir>` is its parent, matching
 //! the layout Bethesda's tooling expects: a `Source` directory holding
 //! `.psc` files sits inside the `Scripts` directory that receives the
 //! compiled `.pex` output.
 //!
 //! `-i` accepts multiple import directories separated by `;`, so it's
-//! always given both of [`crate::script_locator`]'s known source
+//! always given both of [`papyrus_lint_core::script_locator`]'s known source
 //! directories under the project root, not just the one the script being
 //! compiled happens to live in — letting it import from either layout.
 
@@ -38,7 +38,7 @@ pub struct CompileOutcome {
 }
 
 /// Builds the `-i` argument's value: the project root's two known source
-/// directories (see [`crate::script_locator::CANDIDATE_DIRS`]), joined with
+/// directories (see [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`]), joined with
 /// `;` as PapyrusCompiler.exe expects for multiple import directories, so a
 /// script can import from either layout regardless of which one it lives
 /// in. Falls back to `source_dir` alone if the project root (two levels
@@ -48,7 +48,7 @@ fn import_dirs(source_dir: &Path, output_dir: &Path) -> String {
         return source_dir.display().to_string();
     };
 
-    crate::script_locator::CANDIDATE_DIRS
+    papyrus_lint_core::script_locator::CANDIDATE_DIRS
         .iter()
         .map(|dir| root.join(dir).display().to_string())
         .collect::<Vec<_>>()

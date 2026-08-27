@@ -1,10 +1,8 @@
-pub mod achlist;
 pub mod compiler;
-pub mod config;
-pub mod function_table;
-pub mod script_locator;
 
 use std::path::{Path, PathBuf};
+
+use papyrus_lint_core::{achlist, config, function_table};
 
 /// Parses the `.achlist` file at `path` and returns the resolved paths it lists.
 #[tauri::command]

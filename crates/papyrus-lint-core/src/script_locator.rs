@@ -4,9 +4,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Directories, relative to a project root, conventionally used to store
-/// Papyrus script sources. Also used by [`crate::compiler`] to build the
-/// compiler's `-i` argument.
-pub(crate) const CANDIDATE_DIRS: [&str; 2] = ["scripts/source", "source/scripts"];
+/// Papyrus script sources. Also used by the desktop app's `compiler`
+/// module to build the compiler's `-i` argument.
+pub const CANDIDATE_DIRS: [&str; 2] = ["scripts/source", "source/scripts"];
 
 /// Searches `root/scripts/source` and `root/source/scripts` for a `.psc`
 /// file matching `name`, case-insensitively. `name` may be given with or

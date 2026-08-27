@@ -124,6 +124,37 @@ except it's pre-filled with an auto-detected path (see `compiler_path`
 above) rather than a fixed default when the project has no explicit
 override saved yet.
 
+## Command-line interface
+
+Besides the desktop app, `papyrus-lint` ships as a standalone CLI
+(`crates/papyrus-lint-cli`), for linting a project outside the app — e.g.
+in a CI pipeline. It takes the path to a project's `.achlist` file as its
+only argument:
+
+```
+papyrus-lint path/to/project.achlist
+```
+
+It resolves every `.psc` entry in that `.achlist`, lints each one against
+the `papyrus-lint.yaml`/`.yml` config file next to the `.achlist` (see
+Configuration above — the same file the desktop app reads and writes,
+falling back to the documented defaults if the project has none), and
+prints each diagnostic found as `<path>:<line>:<column>: [<rule>]
+<message>`, followed by a one-line summary. Calls to functions declared on
+other scripts under the project root are resolved the same way the
+desktop app resolves them, so the CLI's "Argument type check"/"Return type
+check" results match what dropping the same `.achlist` into the app would
+report.
+
+It exits `0` if no diagnostics were found, `1` if any were, or `2` on a
+usage error (a missing/extra argument) or an I/O error (the `.achlist`
+file couldn't be read or parsed, or a listed `.psc` file couldn't be
+read) — so it can gate a CI step on a clean lint run.
+
+Build it with `cargo build --release --manifest-path
+crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
+`papyrus-lint`.
+
 ## Compiling a script
 
 Each `.psc` file listed on the Lint results tab has a "Compile" button that

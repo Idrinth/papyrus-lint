@@ -91,6 +91,10 @@ jobs:
             name: papyrus-parser
           - crate: crates/papyrus-lints
             name: papyrus-lints
+          - crate: crates/papyrus-lint-core
+            name: papyrus-lint-core
+          - crate: crates/papyrus-lint-cli
+            name: papyrus-lint-cli
     steps:
       - uses: actions/checkout@v7
 
