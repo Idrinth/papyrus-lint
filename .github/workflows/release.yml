@@ -57,7 +57,7 @@ jobs:
           workspaces: src-tauri
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - uses: tauri-apps/tauri-action@v1
         env:
