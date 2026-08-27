@@ -1,4 +1,4 @@
-# papyrus-lint
+# Papyrus Lint
 A linter for Bethesda's papyrus language to improve code quality.
 
 ## Implemented Lints

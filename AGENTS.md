@@ -1,4 +1,4 @@
-# papyrus-lint
+# Papyrus Lint
 
 A linter for Bethesda's Papyrus scripting language, packaged as a desktop
 app. The UI is a Tauri (Rust + TypeScript) app: the frontend lets a user

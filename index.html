@@ -4,13 +4,13 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>papyrus-lint</title>
+    <title>Papyrus Lint</title>
     <script type="module" src="/src/main.ts" defer></script>
   </head>
 
   <body>
     <main class="container">
-      <h1>papyrus-lint</h1>
+      <h1>Papyrus Lint</h1>
 
       <div class="tabs">
         <div class="tabs__list" role="tablist">
@@ -50,6 +50,35 @@
             <label for="indentation-width">Width</label>
             <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
           </div>
+
+          <fieldset class="settings-group">
+            <legend>Cyclomatic complexity thresholds</legend>
+            <div class="settings-group__row">
+              <label for="cyclomatic-complexity-warning">Warning at</label>
+              <input id="cyclomatic-complexity-warning" type="number" min="1" value="10" />
+            </div>
+            <div class="settings-group__row">
+              <label for="cyclomatic-complexity-error">Error at</label>
+              <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
+            </div>
+          </fieldset>
+
+          <fieldset id="lint-rules" class="settings-group">
+            <legend>Lint rules</legend>
+            <label><input type="checkbox" id="rule-trailing_whitespace" checked /> Trailing whitespace</label>
+            <label><input type="checkbox" id="rule-comma_spacing" checked /> Space after comma</label>
+            <label><input type="checkbox" id="rule-forbidden_functions" checked /> Forbidden/discouraged function usage</label>
+            <label><input type="checkbox" id="rule-slow_functions" checked /> Slow function usage</label>
+            <label><input type="checkbox" id="rule-unused_getter" checked /> Getter usage without saving result</label>
+            <label><input type="checkbox" id="rule-unused_property" checked /> Unused script properties</label>
+            <label><input type="checkbox" id="rule-semicolon" checked /> Semicolon at end of line</label>
+            <label><input type="checkbox" id="rule-float_int_conversion" checked /> Implicit Float-to-Int conversion</label>
+            <label><input type="checkbox" id="rule-strict_boolean" checked /> Strict boolean check</label>
+            <label><input type="checkbox" id="rule-argument_types" checked /> Argument type check</label>
+            <label><input type="checkbox" id="rule-numeric_comparison" checked /> Strict numeric type check</label>
+            <label><input type="checkbox" id="rule-indentation" checked /> Formatting checks / Indentation</label>
+            <label><input type="checkbox" id="rule-cyclomatic_complexity" checked /> Cyclomatic complexity</label>
+          </fieldset>
         </div>
 
         <div id="panel-files" class="tabs__panel" role="tabpanel" aria-labelledby="tab-files" hidden>
@@ -83,6 +112,15 @@
           <button type="button" id="code-viewer-save" class="code-viewer__action" hidden>Save</button>
           <button type="button" id="code-viewer-cancel" class="code-viewer__action" hidden>Cancel</button>
         </div>
+        <button
+          type="button"
+          id="code-viewer-fullscreen"
+          class="code-viewer__fullscreen"
+          aria-label="Enter fullscreen"
+          aria-pressed="false"
+        >
+          &#9974;
+        </button>
         <button type="button" id="code-viewer-close" class="code-viewer__close" aria-label="Close">
           &times;
         </button>

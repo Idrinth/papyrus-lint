@@ -159,6 +159,7 @@ fn is_float(type_name: &TypeName) -> bool {
 }
 
 /// Flags `left op right` when one side is `Int` and the other `Float`.
+/// Flagged as a `[warning]`.
 ///
 /// A side's inferred type already reflects any explicit cast it carries
 /// (`someFloat as Int` infers as `Int`), so comparing the plain inferred
@@ -183,7 +184,7 @@ fn check_comparison(
         diagnostics.push(Diagnostic {
             line,
             column: 1,
-            message: "Comparison between Int and Float without an explicit cast; \
+            message: "[warning] Comparison between Int and Float without an explicit cast; \
                       floating-point precision may make this inexact"
                 .to_string(),
             rule: RULE,
@@ -202,6 +203,7 @@ mod tests {
         );
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 4);
+        assert!(diagnostics[0].message.starts_with("[warning]"));
         assert!(diagnostics[0].message.contains("Int and Float"));
     }
 
