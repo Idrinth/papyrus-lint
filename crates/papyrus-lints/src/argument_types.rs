@@ -31,6 +31,17 @@ use crate::Diagnostic;
 /// means the function couldn't be resolved and the call site is skipped.
 pub trait ExternalSignatures {
     fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>>;
+
+    /// Whether `sub_type` inherits from `super_type`, directly or
+    /// transitively (i.e. `sub_type`'s script, or one of its ancestors'
+    /// via `Extends`, is named `super_type`). Used so e.g. an `Armor`
+    /// argument is accepted for a `Form` parameter.
+    ///
+    /// The default always says no, which keeps existing behavior for
+    /// callers that can't resolve scripts (see [`NoExternalSignatures`]).
+    fn is_subtype(&mut self, _sub_type: &str, _super_type: &str) -> bool {
+        false
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a
@@ -193,7 +204,16 @@ fn walk_expr<E: ExternalSignatures>(
             col,
         } => {
             if let Some((name, param_types)) = resolve_signature(callee, env, locals, external) {
-                check_args(*line, *col, &name, &param_types, args, env, diagnostics);
+                check_args(
+                    *line,
+                    *col,
+                    &name,
+                    &param_types,
+                    args,
+                    env,
+                    external,
+                    diagnostics,
+                );
             }
             walk_expr(callee, env, locals, external, diagnostics);
             for arg in args {
@@ -251,13 +271,14 @@ fn resolve_signature<E: ExternalSignatures>(
         .map(|params| (function_name, params))
 }
 
-fn check_args(
+fn check_args<E: ExternalSignatures>(
     line: usize,
     col: usize,
     function_name: &str,
     param_types: &[TypeName],
     args: &[Expr],
     env: &TypeEnv,
+    external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     for (index, arg) in args.iter().enumerate() {
@@ -282,7 +303,7 @@ fn check_args(
         let Some(arg_type) = infer_type(arg, env) else {
             continue;
         };
-        if !is_compatible(param_type, &arg_type) {
+        if !is_compatible(param_type, &arg_type, external) {
             diagnostics.push(mismatch(
                 line,
                 col,
@@ -340,18 +361,31 @@ fn accepts_none(param_type: &TypeName) -> bool {
 
 /// Whether an argument of type `arg_type` may be passed for a parameter
 /// declared as `param_type`. Exact matches (case-insensitively) are
-/// always compatible; the only implicit conversion Papyrus allows is
-/// widening an `Int` argument to a `Float` parameter.
-fn is_compatible(param_type: &TypeName, arg_type: &TypeName) -> bool {
+/// always compatible; Papyrus also allows widening an `Int` argument to a
+/// `Float` parameter, and passing an object whose script extends (directly
+/// or transitively) the parameter's type, per `external`'s knowledge of
+/// the scripts' `Extends` chains.
+fn is_compatible<E: ExternalSignatures>(
+    param_type: &TypeName,
+    arg_type: &TypeName,
+    external: &mut E,
+) -> bool {
     if param_type.is_array != arg_type.is_array {
         return false;
     }
     if param_type.name.eq_ignore_ascii_case(&arg_type.name) {
         return true;
     }
-    !param_type.is_array
+    if !param_type.is_array
         && param_type.name.eq_ignore_ascii_case("float")
         && arg_type.name.eq_ignore_ascii_case("int")
+    {
+        return true;
+    }
+    if param_type.is_array || is_primitive(&param_type.name) || is_primitive(&arg_type.name) {
+        return false;
+    }
+    external.is_subtype(&arg_type.name, &param_type.name)
 }
 
 #[cfg(test)]
@@ -541,6 +575,49 @@ EndFunction
                 None
             }
         }
+    }
+
+    struct FakeExternalWithSubtypes;
+
+    impl ExternalSignatures for FakeExternalWithSubtypes {
+        fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>> {
+            if type_name.eq_ignore_ascii_case("ObjectReference")
+                && function_name.eq_ignore_ascii_case("GetItemCount")
+            {
+                Some(vec![TypeName {
+                    name: "Form".to_string(),
+                    is_array: false,
+                }])
+            } else {
+                None
+            }
+        }
+
+        fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
+            sub_type.eq_ignore_ascii_case("Armor") && super_type.eq_ignore_ascii_case("Form")
+        }
+    }
+
+    #[test]
+    fn accepts_an_argument_whose_script_extends_the_parameter_type() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test(ObjectReference akRef)\n    akRef.GetItemCount(MyArmor)\nEndFunction\n",
+            &mut FakeExternalWithSubtypes,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn still_flags_an_unrelated_object_type() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nWeapon Property MyWeapon Auto\n\nFunction Test(ObjectReference akRef)\n    akRef.GetItemCount(MyWeapon)\nEndFunction\n",
+            &mut FakeExternalWithSubtypes,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("expects Form"));
+        assert!(diagnostics[0].message.contains("got Weapon"));
     }
 
     #[test]
