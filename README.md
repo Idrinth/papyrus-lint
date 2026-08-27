@@ -157,6 +157,10 @@ usage error (a missing/extra argument) or an I/O error (the `.achlist`
 file couldn't be read or parsed, or a listed `.psc` file couldn't be
 read) — so it can gate a CI step on a clean lint run.
 
+Run it with `--version`/`-V` to print its version (`papyrus-lint
+<version>`) and exit `0` instead of linting; the desktop app shows its own
+version next to its title.
+
 Launched with no arguments, the desktop app's own executable starts its
 GUI as normal; launched with an `.achlist` path (or `-h`/`--help`), it
 lints from the command line instead, exactly as described above. On

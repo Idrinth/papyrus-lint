@@ -33,6 +33,7 @@ import {
   lastProjectDir,
   levelOf,
   lintConfigFromUI,
+  loadAppVersion,
   loadCompilerPath,
   loadLintConfig,
   openCodeViewer,
@@ -222,7 +223,7 @@ describe("lint config UI round trip", () => {
 
   it("handleLintConfigChanged persists the config only once a project dir is known", async () => {
     handleLintConfigChanged();
-    expect(invokeMock).not.toHaveBeenCalled();
+    expect(invokeMock).not.toHaveBeenCalledWith("save_lint_config", expect.anything());
 
     invokeImplFor({ load_lint_config: () => DEFAULT_LINT_CONFIG });
     await useProjectDir("/proj");
@@ -301,6 +302,22 @@ describe("useProjectDir", () => {
     expect(document.querySelector<HTMLInputElement>("#compiler-path")!.value).toBe(
       "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompiler.exe",
     );
+  });
+});
+
+describe("loadAppVersion", () => {
+  it("returns the backend's reported version", async () => {
+    invokeImplFor({ get_app_version: () => "1.2.3" });
+
+    await expect(loadAppVersion()).resolves.toBe("1.2.3");
+    expect(invokeMock).toHaveBeenCalledWith("get_app_version");
+  });
+
+  it("returns an empty string on failure", async () => {
+    invokeMock.mockRejectedValue(new Error("command not found"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadAppVersion()).resolves.toBe("");
   });
 });
 

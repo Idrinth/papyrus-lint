@@ -29,16 +29,28 @@ pub const USAGE: &str = "Usage: papyrus-lint <path-to-achlist>\n\n\
 Lints every .psc script listed in the given .achlist file, using the\n\
 project's papyrus-lint.yaml/.yml configuration (looked up next to the\n\
 .achlist file, falling back to defaults if it has none).\n\n\
+Options:\n\
+  -h, --help     Show this help message\n\
+  -V, --version  Print the papyrus-lint version\n\n\
 Exit status: 0 if no problems were found, 1 if any were, 2 on a usage or\n\
 I/O error.\n";
+
+/// The crate's version, as set in `crates/papyrus-lint-cli/Cargo.toml`
+/// (kept in sync with the desktop app's version at release time). Printed
+/// by `--version`/`-V`.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Runs the CLI against `args` (the program's arguments, excluding the
 /// binary name itself), writing lint output to `stdout` and usage/error
 /// text to `stderr`. Returns the process exit code: `0` if linting found
-/// no diagnostics, `1` if it found at least one, or `2` on a usage or I/O
-/// error.
+/// no diagnostics (or `--version`/`-V` was given), `1` if it found at
+/// least one, or `2` on a usage or I/O error.
 pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
     let achlist_path = match args {
+        [flag] if flag == "--version" || flag == "-V" => {
+            let _ = writeln!(stdout, "papyrus-lint {VERSION}");
+            return 0;
+        }
         [path] if path != "-h" && path != "--help" => PathBuf::from(path),
         _ => {
             let _ = write!(stderr, "{USAGE}");
@@ -161,6 +173,22 @@ mod tests {
 
         assert_eq!(code, 2);
         assert!(stderr.contains("Usage: papyrus-lint"));
+    }
+
+    #[test]
+    fn prints_version_for_version_flag() {
+        let (code, stdout, _stderr) = run_captured(&["--version".to_string()]);
+
+        assert_eq!(code, 0);
+        assert_eq!(stdout, format!("papyrus-lint {VERSION}\n"));
+    }
+
+    #[test]
+    fn prints_version_for_short_version_flag() {
+        let (code, stdout, _stderr) = run_captured(&["-V".to_string()]);
+
+        assert_eq!(code, 0);
+        assert_eq!(stdout, format!("papyrus-lint {VERSION}\n"));
     }
 
     #[test]

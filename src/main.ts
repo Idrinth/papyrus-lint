@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { highlightPapyrusLines } from "./highlight";
 
+let appVersionEl: HTMLElement | null;
 let dropZoneEl: HTMLElement | null;
 let dropZoneErrorEl: HTMLElement | null;
 let resultEl: HTMLElement | null;
@@ -217,6 +218,17 @@ export async function saveCompilerPath(dir: string, path: string): Promise<void>
     await invoke("save_compiler_path", { dir, path });
   } catch (error) {
     console.error(error);
+  }
+}
+
+// Fetches the desktop app's version from the Rust backend, so it can be
+// shown to the user. Returns an empty string if the lookup fails.
+export async function loadAppVersion(): Promise<string> {
+  try {
+    return await invoke<string>("get_app_version");
+  } catch (error) {
+    console.error(error);
+    return "";
   }
 }
 
@@ -775,6 +787,7 @@ export async function handleDroppedPaths(paths: string[]) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  appVersionEl = document.querySelector("#app-version");
   dropZoneEl = document.querySelector("#drop-zone");
   dropZoneErrorEl = document.querySelector("#drop-zone-error");
   resultEl = document.querySelector("#achlist-result");
@@ -867,6 +880,12 @@ window.addEventListener("DOMContentLoaded", () => {
     document.querySelector<HTMLButtonElement>(`#tab-${id}`)?.addEventListener("click", () => switchTab(id));
   }
   switchTab("import");
+
+  void loadAppVersion().then((version) => {
+    if (appVersionEl && version) {
+      appVersionEl.textContent = `v${version}`;
+    }
+  });
 
   const lastDir = lastProjectDir();
   if (lastDir) {
