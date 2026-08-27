@@ -98,6 +98,7 @@ export interface LintRules {
   unreachable_statement: boolean;
   static_condition: boolean;
   unused_local_variable: boolean;
+  none_form_usage: boolean;
 }
 
 export interface LintConfig {
@@ -126,6 +127,7 @@ export const DEFAULT_RULES: LintRules = {
   unreachable_statement: true,
   static_condition: true,
   unused_local_variable: true,
+  none_form_usage: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {

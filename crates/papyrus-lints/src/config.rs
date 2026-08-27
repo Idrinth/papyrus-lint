@@ -28,6 +28,7 @@
 //!   unreachable_statement: true
 //!   static_condition: true
 //!   unused_local_variable: true
+//!   none_form_usage: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -131,6 +132,8 @@ pub struct Rules {
     pub static_condition: bool,
     /// The "Unused or write-only local variables" lint.
     pub unused_local_variable: bool,
+    /// The "None used as an existing Form" lint.
+    pub none_form_usage: bool,
 }
 
 impl Default for Rules {
@@ -153,6 +156,7 @@ impl Default for Rules {
             unreachable_statement: true,
             static_condition: true,
             unused_local_variable: true,
+            none_form_usage: true,
         }
     }
 }
@@ -253,6 +257,7 @@ mod tests {
         assert!(config.rules.unreachable_statement);
         assert!(config.rules.static_condition);
         assert!(config.rules.unused_local_variable);
+        assert!(config.rules.none_form_usage);
     }
 
     #[test]

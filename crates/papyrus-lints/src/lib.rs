@@ -14,6 +14,7 @@ pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod fragment_code;
 pub mod indentation;
+pub mod none_form_usage;
 pub mod numeric_comparison;
 pub mod return_types;
 pub mod semicolon;
@@ -133,6 +134,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.unused_local_variable {
         diagnostics.extend(unused_local_variable::check(source));
+    }
+    if rules.none_form_usage {
+        diagnostics.extend(none_form_usage::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -376,6 +380,12 @@ mod tests {
                 unused_local_variable::RULE,
                 Config::default(),
                 config_with(|c| c.rules.unused_local_variable = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    a.GetName()\nEndFunction\n",
+                none_form_usage::RULE,
+                Config::default(),
+                config_with(|c| c.rules.none_form_usage = false),
             ),
         ];
 
