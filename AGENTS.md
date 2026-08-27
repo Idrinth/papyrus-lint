@@ -2,7 +2,7 @@
 
 A linter for Bethesda's Papyrus scripting language, packaged as a desktop
 app. The UI is a Tauri (Rust + TypeScript) app: the frontend lets a user
-drop a `.archlist` file, and the Rust backend resolves the listed files,
+drop a `.achlist` file, and the Rust backend resolves the listed files,
 parses any `.psc` (Papyrus source) files among them, and lints them.
 
 ## Project structure
@@ -16,10 +16,10 @@ parses any `.psc` (Papyrus source) files among them, and lints them.
 ├── src-tauri/               # Tauri desktop app shell (Rust)
 │   └── src/
 │       ├── main.rs           # Binary entry point, delegates to lib::run()
-│       ├── lib.rs            # Registers Tauri commands (parse_archlist_file,
+│       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
 │       │                     # parse_papyrus_script, lint_papyrus_script,
 │       │                     # parse_psc_file, lint_psc_file)
-│       ├── archlist.rs        # Parses .archlist files (JSON arrays of paths)
+│       ├── achlist.rs        # Parses .achlist files (JSON arrays of paths)
 │       └── script_locator.rs  # Finds .psc files by name under scripts/source
 │                               # or source/scripts
 ├── rules/

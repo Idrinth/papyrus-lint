@@ -13,11 +13,11 @@ let indentationWidthEl: HTMLInputElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let semicolonStyleEl: HTMLSelectElement | null;
 
-const ARCHLIST_EXTENSION = ".archlist";
+const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
 
-function isArchlistPath(path: string): boolean {
-  return path.toLowerCase().endsWith(ARCHLIST_EXTENSION);
+function isAchlistPath(path: string): boolean {
+  return path.toLowerCase().endsWith(ACHLIST_EXTENSION);
 }
 
 function isPscPath(path: string): boolean {
@@ -51,7 +51,7 @@ const DEFAULT_LINT_CONFIG: LintConfig = { semicolon: false, indentation: "tab", 
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
 
 let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
-// The project root (the directory containing the dropped .archlist file),
+// The project root (the directory containing the dropped .achlist file),
 // also used by the "Argument type check" lint to resolve calls to
 // functions declared on other scripts under it.
 let currentProjectDir: string | null = null;
@@ -285,25 +285,25 @@ async function useProjectDir(dir: string) {
 }
 
 async function handleDroppedPaths(paths: string[]) {
-  const archlistPath = paths.find(isArchlistPath);
+  const achlistPath = paths.find(isAchlistPath);
 
-  if (!archlistPath) {
-    showError("Please drop a single .archlist file.");
+  if (!achlistPath) {
+    showError("Please drop a single .achlist file.");
     return;
   }
 
   try {
-    const entries = await invoke<string[]>("parse_archlist_file", {
-      path: archlistPath,
+    const entries = await invoke<string[]>("parse_achlist_file", {
+      path: achlistPath,
     });
     clearError();
-    showResult(archlistPath, entries);
+    showResult(achlistPath, entries);
 
-    await useProjectDir(dirnameOf(archlistPath));
+    await useProjectDir(dirnameOf(achlistPath));
     currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
     renderPscResults(currentPscOutcomes);
   } catch (error) {
-    showError("Failed to read that .archlist file. Please try again.");
+    showError("Failed to read that .achlist file. Please try again.");
     console.error(error);
   }
 }
@@ -311,9 +311,9 @@ async function handleDroppedPaths(paths: string[]) {
 window.addEventListener("DOMContentLoaded", () => {
   dropZoneEl = document.querySelector("#drop-zone");
   dropZoneErrorEl = document.querySelector("#drop-zone-error");
-  resultEl = document.querySelector("#archlist-result");
-  resultTitleEl = document.querySelector("#archlist-result-title");
-  resultListEl = document.querySelector("#archlist-result-list");
+  resultEl = document.querySelector("#achlist-result");
+  resultTitleEl = document.querySelector("#achlist-result-title");
+  resultListEl = document.querySelector("#achlist-result-list");
   pscResultEl = document.querySelector("#psc-result");
   pscResultListEl = document.querySelector("#psc-result-list");
   semicolonStyleEl = document.querySelector("#semicolon-style");

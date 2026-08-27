@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 
 /// Candidate config file names, checked in order, inside a project's
-/// directory (conventionally the directory containing its `.archlist`
+/// directory (conventionally the directory containing its `.achlist`
 /// file).
 const CONFIG_FILE_NAMES: [&str; 2] = ["papyrus-lint.yaml", "papyrus-lint.yml"];
 
