@@ -360,6 +360,24 @@ mod tests {
     }
 
     #[test]
+    fn does_not_flag_inside_and_guarded_branch() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Bool flag)\n    Armor a = None\n    If a != None && flag\n        a.GetName()\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_after_or_guarded_early_return() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Bool flag)\n    Armor a = None\n    If a == None || flag\n        Return\n    EndIf\n    a.GetName()\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn flags_inside_equal_none_branch() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    If a == None\n        a.GetName()\n    EndIf\nEndFunction\n",
