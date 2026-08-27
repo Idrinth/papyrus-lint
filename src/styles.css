@@ -294,7 +294,6 @@ h1 {
 }
 
 .code-viewer {
-  display: flex;
   flex-direction: column;
   width: min(64em, 92vw);
   height: min(42em, 88vh);
@@ -304,6 +303,10 @@ h1 {
   overflow: hidden;
   color: inherit;
   background-color: #f6f6f6;
+}
+
+.code-viewer[open] {
+  display: flex;
 }
 
 .code-viewer::backdrop {
