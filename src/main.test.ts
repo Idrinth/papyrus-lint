@@ -16,8 +16,10 @@ import {
   DEFAULT_RULES,
   applyLintConfigToUI,
   buildPscResultItem,
+  cancelCodeViewerEditMode,
   clearError,
   dirnameOf,
+  enterCodeViewerEditMode,
   escapeAttr,
   handleCompileClick,
   handleCompilerPathChanged,
@@ -26,6 +28,7 @@ import {
   handleLintConfigChanged,
   hasFixableFindings,
   isAchlistPath,
+  isCodeViewerEditDirty,
   isPscPath,
   lastProjectDir,
   levelOf,
@@ -37,6 +40,8 @@ import {
   rememberProjectDir,
   renderPscResults,
   repairPscFile,
+  requestCloseCodeViewer,
+  saveCodeViewerEdits,
   saveCompilerPath,
   saveLintConfig,
   severityOf,
@@ -626,6 +631,217 @@ describe("openCodeViewer", () => {
     await openCodeViewer("/a.psc", []);
 
     expect(document.querySelector("#code-viewer-view")!.textContent).toContain("permission denied");
+  });
+});
+
+describe("code viewer edit mode", () => {
+  async function openWithSource(source: string) {
+    invokeImplFor({ read_psc_file: () => source });
+    await openCodeViewer("/a.psc", []);
+  }
+
+  function textarea() {
+    return document.querySelector<HTMLTextAreaElement>("#code-viewer-editor-textarea")!;
+  }
+
+  function highlightCode() {
+    return document.querySelector("#code-viewer-editor-highlight code")!;
+  }
+
+  function panelHidden(id: string) {
+    return document.querySelector<HTMLElement>(id)!.hidden;
+  }
+
+  describe("enterCodeViewerEditMode", () => {
+    it("loads the source into the textarea, highlights it, and switches to edit mode", async () => {
+      await openWithSource('Debug.Trace("hi")\n');
+
+      enterCodeViewerEditMode();
+
+      expect(textarea().value).toBe('Debug.Trace("hi")\n');
+      expect(highlightCode().innerHTML).toContain("Debug");
+      expect(panelHidden("#code-viewer-view")).toBe(true);
+      expect(panelHidden("#code-viewer-editor")).toBe(false);
+      expect(panelHidden("#code-viewer-edit")).toBe(true);
+      expect(panelHidden("#code-viewer-save")).toBe(false);
+      expect(panelHidden("#code-viewer-cancel")).toBe(false);
+    });
+
+    it("does nothing when the code viewer hasn't finished loading", async () => {
+      // A failed read leaves codeViewerState null (openCodeViewer resets it
+      // to null up front and only repopulates it after a successful read).
+      invokeMock.mockRejectedValue(new Error("permission denied"));
+      await openCodeViewer("/a.psc", []);
+
+      enterCodeViewerEditMode();
+
+      expect(panelHidden("#code-viewer-editor")).toBe(true);
+    });
+  });
+
+  describe("isCodeViewerEditDirty", () => {
+    it("is false right after entering edit mode and true once the textarea changes", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+
+      expect(isCodeViewerEditDirty()).toBe(false);
+
+      textarea().value = "Int x = 2\n";
+      textarea().dispatchEvent(new Event("input"));
+
+      expect(isCodeViewerEditDirty()).toBe(true);
+      // The "input" listener re-highlights the edited text as it changes.
+      expect(highlightCode().innerHTML).toContain("2");
+    });
+
+    it("is false in view mode even with a stale textarea value", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      cancelCodeViewerEditMode();
+
+      expect(isCodeViewerEditDirty()).toBe(false);
+    });
+  });
+
+  describe("cancelCodeViewerEditMode", () => {
+    it("returns to view mode without confirming when there are no unsaved changes", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      const confirmSpy = vi.spyOn(window, "confirm");
+
+      cancelCodeViewerEditMode();
+
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(panelHidden("#code-viewer-view")).toBe(false);
+    });
+
+    it("stays in edit mode when the user declines to discard unsaved changes", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+      vi.spyOn(window, "confirm").mockReturnValue(false);
+
+      cancelCodeViewerEditMode();
+
+      expect(panelHidden("#code-viewer-editor")).toBe(false);
+    });
+
+    it("discards unsaved changes and returns to view mode when the user confirms", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+
+      cancelCodeViewerEditMode();
+
+      expect(panelHidden("#code-viewer-view")).toBe(false);
+    });
+  });
+
+  describe("saveCodeViewerEdits", () => {
+    it("writes the file, re-lints it, and returns to view mode", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+
+      invokeImplFor({
+        write_psc_file: () => undefined,
+        lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] changed" }],
+      });
+
+      await saveCodeViewerEdits();
+
+      expect(invokeMock).toHaveBeenCalledWith("write_psc_file", { path: "/a.psc", contents: "Int x = 2\n" });
+      expect(panelHidden("#code-viewer-view")).toBe(false);
+      expect(isCodeViewerEditDirty()).toBe(false);
+    });
+
+    it("updates the matching lint results entry when one is open", async () => {
+      // activeSeverities is module state that outlives mountFixture(), so an
+      // earlier test unchecking a severity filter would otherwise leak in.
+      const errorFilter = document.querySelector<HTMLInputElement>("#filter-error")!;
+      errorFilter.checked = true;
+      errorFilter.dispatchEvent(new Event("change"));
+
+      invokeImplFor({
+        parse_achlist_file: () => ["A.psc"],
+        load_lint_config: () => DEFAULT_LINT_CONFIG,
+        load_compiler_path: () => null,
+        parse_psc_file: () => ({ name: "A" }),
+        lint_psc_file: () => [],
+      });
+      await handleDroppedPaths(["/proj/list.achlist"]);
+      // The dropped file's outcome is keyed by the same path handed to
+      // parse_psc_file above, so the code viewer must be opened on it too.
+      invokeImplFor({ read_psc_file: () => "Int x = 1\n" });
+      await openCodeViewer("A.psc", []);
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+
+      invokeImplFor({
+        write_psc_file: () => undefined,
+        lint_psc_file: () => [{ line: 1, column: 1, message: "[error] changed" }],
+      });
+
+      await saveCodeViewerEdits();
+
+      expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+    });
+
+    it("shows a failure and stays in edit mode when writing fails", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+      invokeMock.mockRejectedValue(new Error("disk full"));
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const saveButton = document.querySelector<HTMLButtonElement>("#code-viewer-save")!;
+
+      await saveCodeViewerEdits();
+
+      expect(saveButton.textContent).toBe("Save failed");
+      expect(saveButton.disabled).toBe(false);
+      expect(panelHidden("#code-viewer-editor")).toBe(false);
+    });
+  });
+});
+
+describe("requestCloseCodeViewer", () => {
+  it("closes the dialog when there are no unsaved changes", async () => {
+    invokeImplFor({ read_psc_file: () => "Int x = 1\n" });
+    await openCodeViewer("/a.psc", []);
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+
+    requestCloseCodeViewer();
+
+    expect(dialog.hasAttribute("open")).toBe(false);
+  });
+
+  it("keeps the dialog open when the user declines to discard unsaved edit-mode changes", async () => {
+    invokeImplFor({ read_psc_file: () => "Int x = 1\n" });
+    await openCodeViewer("/a.psc", []);
+    enterCodeViewerEditMode();
+    document.querySelector<HTMLTextAreaElement>("#code-viewer-editor-textarea")!.value = "Int x = 2\n";
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+
+    requestCloseCodeViewer();
+
+    expect(dialog.hasAttribute("open")).toBe(true);
+  });
+
+  it("closes the dialog when the user confirms discarding unsaved edit-mode changes", async () => {
+    invokeImplFor({ read_psc_file: () => "Int x = 1\n" });
+    await openCodeViewer("/a.psc", []);
+    enterCodeViewerEditMode();
+    document.querySelector<HTMLTextAreaElement>("#code-viewer-editor-textarea")!.value = "Int x = 2\n";
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+
+    requestCloseCodeViewer();
+
+    expect(dialog.hasAttribute("open")).toBe(false);
   });
 });
 

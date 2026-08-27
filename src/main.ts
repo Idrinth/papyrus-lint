@@ -399,7 +399,7 @@ function updateCodeViewerEditHighlight() {
   code.innerHTML = highlightPapyrusLines(codeViewerEditTextareaEl.value).join("\n");
 }
 
-function isCodeViewerEditDirty(): boolean {
+export function isCodeViewerEditDirty(): boolean {
   return (
     codeViewerMode === "edit" &&
     codeViewerState !== null &&
@@ -408,7 +408,7 @@ function isCodeViewerEditDirty(): boolean {
   );
 }
 
-function enterCodeViewerEditMode() {
+export function enterCodeViewerEditMode() {
   if (!codeViewerState || !codeViewerEditTextareaEl) {
     return;
   }
@@ -418,14 +418,14 @@ function enterCodeViewerEditMode() {
   codeViewerEditTextareaEl.focus();
 }
 
-function cancelCodeViewerEditMode() {
+export function cancelCodeViewerEditMode() {
   if (isCodeViewerEditDirty() && !window.confirm("Discard unsaved changes?")) {
     return;
   }
   setCodeViewerMode("view");
 }
 
-async function saveCodeViewerEdits() {
+export async function saveCodeViewerEdits() {
   if (!codeViewerState || !codeViewerEditTextareaEl || !codeViewerSaveButtonEl) {
     return;
   }
@@ -461,7 +461,7 @@ async function saveCodeViewerEdits() {
 }
 
 // Closes the code viewer, confirming first if edit mode has unsaved changes.
-function requestCloseCodeViewer() {
+export function requestCloseCodeViewer() {
   if (isCodeViewerEditDirty() && !window.confirm("Discard unsaved changes?")) {
     return;
   }
