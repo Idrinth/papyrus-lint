@@ -457,8 +457,8 @@ describe("openCodeViewer", () => {
     const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
     expect(dialog.hasAttribute("open")).toBe(true);
     expect(document.querySelector("#code-viewer-title")!.textContent).toBe("/a.psc");
-    expect(document.querySelector("#code-viewer-body table")).not.toBeNull();
-    expect(document.querySelectorAll("#code-viewer-body tr")).toHaveLength(1);
+    expect(document.querySelector("#code-viewer-view table")).not.toBeNull();
+    expect(document.querySelectorAll("#code-viewer-view tr")).toHaveLength(1);
   });
 
   it("marks a line's severity from its highest-severity finding", async () => {
@@ -487,7 +487,7 @@ describe("openCodeViewer", () => {
 
     await openCodeViewer("/a.psc", []);
 
-    expect(document.querySelector("#code-viewer-body")!.textContent).toContain("permission denied");
+    expect(document.querySelector("#code-viewer-view")!.textContent).toContain("permission denied");
   });
 });
 

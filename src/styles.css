@@ -285,6 +285,27 @@ h1 {
   word-break: break-all;
 }
 
+.code-viewer__actions {
+  display: flex;
+  flex: none;
+  gap: 0.5em;
+  margin-left: auto;
+}
+
+.code-viewer__action {
+  padding: 0.2em 0.7em;
+  border: 1px solid rgba(15, 15, 15, 0.35);
+  border-radius: 6px;
+  background-color: transparent;
+  color: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.code-viewer__action:hover {
+  background-color: rgba(15, 15, 15, 0.1);
+}
+
 .code-viewer__fullscreen,
 .code-viewer__close {
   flex: none;
@@ -309,10 +330,44 @@ h1 {
 }
 
 .code-viewer__body {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
   text-align: left;
+}
+
+.code-viewer__editor {
+  position: absolute;
+  inset: 0;
+}
+
+.code-viewer__editor-highlight,
+.code-viewer__editor-textarea {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0.75em 1em;
+  border: none;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+  white-space: pre;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.code-viewer__editor-highlight {
+  pointer-events: none;
+  color: inherit;
+}
+
+.code-viewer__editor-textarea {
+  resize: none;
+  background: transparent;
+  color: transparent;
+  caret-color: currentColor;
+  outline: none;
 }
 
 .code-viewer__table {
@@ -449,6 +504,14 @@ h1 {
 
   .code-viewer__fullscreen:hover,
   .code-viewer__close:hover {
+    background-color: rgba(246, 246, 246, 0.15);
+  }
+
+  .code-viewer__action {
+    border-color: rgba(246, 246, 246, 0.35);
+  }
+
+  .code-viewer__action:hover {
     background-color: rgba(246, 246, 246, 0.15);
   }
 
