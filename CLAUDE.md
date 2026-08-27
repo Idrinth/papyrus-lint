@@ -1,9 +1,11 @@
 # Papyrus Lint
 
 A linter for Bethesda's Papyrus scripting language, packaged as a desktop
-app. The UI is a Tauri (Rust + TypeScript) app: the frontend lets a user
-drop a `.achlist` file, and the Rust backend resolves the listed files,
-parses any `.psc` (Papyrus source) files among them, and lints them.
+app and a CLI. The desktop app is a Tauri (Rust + TypeScript) app: the
+frontend lets a user drop a `.achlist` file, and the Rust backend resolves
+the listed files, parses any `.psc` (Papyrus source) files among them, and
+lints them. The CLI (`crates/papyrus-lint-cli`) does the same thing
+non-interactively, given the `.achlist` path as its one argument.
 
 ## Project structure
 
@@ -24,11 +26,8 @@ parses any `.psc` (Papyrus source) files among them, and lints them.
 │       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
 │       │                     # parse_papyrus_script, lint_papyrus_script,
 │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
-│       │                     # repair_psc_file)
-│       ├── achlist.rs        # Parses .achlist files (JSON arrays of paths)
-│       ├── config.rs          # Locates/loads a project's papyrus-lint.yaml
-│       └── script_locator.rs  # Finds .psc files by name under scripts/source
-│                               # or source/scripts
+│       │                     # repair_psc_file), built on papyrus-lint-core
+│       └── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button
 ├── rules/
 │   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
 │                                  # compiled into Rust by papyrus-lints' build.rs
@@ -39,21 +38,34 @@ parses any `.psc` (Papyrus source) files among them, and lints them.
     │       ├── token.rs
     │       ├── ast.rs
     │       └── parser.rs
-    └── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
-        ├── build.rs           # (not the AST) so they still run on scripts
-        └── src/                # that don't parse cleanly.
-            ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
-            ├── config.rs                  # Config type (YAML-deserializable) passed
-            │                              # to every check/fix job
-            ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
-            └── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
-                                             # via a build-time-generated array
+    ├── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
+    │   ├── build.rs           # (not the AST) so they still run on scripts
+    │   └── src/                # that don't parse cleanly.
+    │       ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
+    │       ├── config.rs                  # Config type (YAML-deserializable) passed
+    │       │                              # to every check/fix job
+    │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
+    │       └── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
+    │                                        # via a build-time-generated array
+    ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
+    │   └── src/               # and the CLI, independent of Tauri:
+    │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
+    │       ├── config.rs       # Locates/loads a project's papyrus-lint.yaml
+    │       ├── script_locator.rs   # Finds .psc files by name under
+    │       │                       # scripts/source or source/scripts
+    │       └── function_table.rs   # Cross-script function signature lookup,
+    │                               # for the argument/return type check lints
+    └── papyrus-lint-cli/     # `papyrus-lint <achlist-path>`: lints an
+        └── src/main.rs        # achlist's scripts against its project's
+                                # papyrus-lint.yaml and prints the results
 ```
 
-`papyrus-parser` and `papyrus-lints` are separate crates (not yet Cargo
-workspace members, just path dependencies of `src-tauri` and, for
-`papyrus-lints`, of `papyrus-parser`'s lexer) so they stay reusable
-independent of the Tauri app — e.g. for a future CLI or test harness.
+`papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
+`papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
+just path dependencies of each other and of `src-tauri`) so the lint
+engine and project-resolution logic stay reusable independent of the Tauri
+app — which is what lets `papyrus-lint-cli` link against them without
+pulling in Tauri (and its system GUI dependencies) at all.
 
 ## Development
 
@@ -76,7 +88,14 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 - Rust backend only: `cargo check` / `cargo test` from `src-tauri/`.
 - Parser crate only: `cargo test` from `crates/papyrus-parser/`.
 - Lints crate only: `cargo test` from `crates/papyrus-lints/`.
-- Rust coverage for any of the three crates above: `cargo llvm-cov
+- Shared project-resolution crate only: `cargo test` from
+  `crates/papyrus-lint-core/`.
+- CLI: `cargo run --manifest-path crates/papyrus-lint-cli/Cargo.toml --
+  <path-to-achlist>`, or `cargo build --release --manifest-path
+  crates/papyrus-lint-cli/Cargo.toml` for a standalone `papyrus-lint`
+  binary (at `crates/papyrus-lint-cli/target/release/papyrus-lint`).
+  `cargo test` from `crates/papyrus-lint-cli/` runs its tests.
+- Rust coverage for any of the five crates above: `cargo llvm-cov
   --manifest-path <crate>/Cargo.toml` (requires the
   [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) subcommand
   and the `llvm-tools-preview` rustup component).
@@ -91,7 +110,8 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 - **Rust build job**: `cargo fmt --check`, `cargo clippy -- -D warnings`,
   and `cargo check`, all run against `src-tauri/Cargo.toml`.
 - **Rust test job**: a matrix over `src-tauri`, `crates/papyrus-parser`,
-  and `crates/papyrus-lints` runs each crate's tests via `cargo llvm-cov`.
+  `crates/papyrus-lints`, `crates/papyrus-lint-core`, and
+  `crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
   Each matrix leg posts its text coverage summary to the job's step
   summary and uploads its lcov report as a `rust-coverage-<crate>`
   artifact.
@@ -151,11 +171,13 @@ rather than those being passed separately. `Config::rules` (see
 `config.rs`) lets a project disable any individual ruleset by name; both
 `lint_with_external_arguments()` and `repair()` skip a disabled ruleset's
 check/fix.
-`src-tauri/src/config.rs` locates that file next to the dropped
-`.achlist` file and exposes `load_lint_config`/`save_lint_config` Tauri
-commands. The frontend treats the config file as the source of truth for
-its formatting controls (trailing semicolons, indentation style/width):
-it loads the config for the most recently opened project on startup
+`crates/papyrus-lint-core/src/config.rs` locates that file next to the
+dropped `.achlist` file; `src-tauri/src/lib.rs` exposes it via the
+`load_lint_config`/`save_lint_config` Tauri commands, and
+`crates/papyrus-lint-cli` reads it the same way to configure a lint run.
+The frontend treats the config file as the source of truth for its
+formatting controls (trailing semicolons, indentation style/width): it
+loads the config for the most recently opened project on startup
 (remembered via `localStorage`) and after every achlist drop, applies it
 to those controls, and writes any change made to them straight back to
 the file via `save_lint_config`.

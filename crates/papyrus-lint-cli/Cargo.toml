@@ -1,0 +1,18 @@
+[package]
+name = "papyrus-lint-cli"
+version = "0.1.0"
+description = "Command-line interface for linting a project's .achlist scripts against its papyrus-lint.yaml configuration"
+authors = ["Idrinth"]
+edition = "2021"
+
+[[bin]]
+name = "papyrus-lint"
+path = "src/main.rs"
+
+[dependencies]
+papyrus-parser = { path = "../papyrus-parser" }
+papyrus-lints = { path = "../papyrus-lints" }
+papyrus-lint-core = { path = "../papyrus-lint-core" }
+
+[dev-dependencies]
+tempfile = "3"
