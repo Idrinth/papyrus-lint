@@ -16,6 +16,24 @@ let semicolonStyleEl: HTMLSelectElement | null;
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
 
+const TAB_IDS = ["import", "settings", "files", "lint"] as const;
+type TabId = (typeof TAB_IDS)[number];
+
+// Shows `tab`'s panel and hides the others, updating the tab buttons'
+// aria-selected/active state to match.
+function switchTab(tab: TabId) {
+  for (const id of TAB_IDS) {
+    const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);
+    const panel = document.querySelector<HTMLElement>(`#panel-${id}`);
+    const active = id === tab;
+    button?.setAttribute("aria-selected", String(active));
+    button?.classList.toggle("tabs__tab--active", active);
+    if (panel) {
+      panel.hidden = !active;
+    }
+  }
+}
+
 function isAchlistPath(path: string): boolean {
   return path.toLowerCase().endsWith(ACHLIST_EXTENSION);
 }
@@ -171,6 +189,7 @@ function showError(message: string) {
     dropZoneErrorEl.textContent = message;
   }
   resultEl?.setAttribute("hidden", "");
+  switchTab("import");
 }
 
 function clearError() {
@@ -193,6 +212,7 @@ function showResult(path: string, entries: string[]) {
     }),
   );
   resultEl.removeAttribute("hidden");
+  switchTab("files");
 }
 
 function renderPscResults(outcomes: PscParseOutcome[]) {
@@ -245,6 +265,7 @@ function renderPscResults(outcomes: PscParseOutcome[]) {
     }),
   );
   pscResultEl.removeAttribute("hidden");
+  switchTab("lint");
 }
 
 async function handleFixClick(path: string, outcome: PscParseOutcome, button: HTMLButtonElement) {
@@ -328,6 +349,11 @@ window.addEventListener("DOMContentLoaded", () => {
     handleLintConfigChanged();
   });
   indentationWidthEl?.addEventListener("change", handleLintConfigChanged);
+
+  for (const id of TAB_IDS) {
+    document.querySelector<HTMLButtonElement>(`#tab-${id}`)?.addEventListener("click", () => switchTab(id));
+  }
+  switchTab("import");
 
   const lastDir = lastProjectDir();
   if (lastDir) {

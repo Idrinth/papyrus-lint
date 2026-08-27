@@ -12,34 +12,59 @@
     <main class="container">
       <h1>papyrus-lint</h1>
 
-      <label for="semicolon-style">Trailing semicolons</label>
-      <select id="semicolon-style">
-        <option value="forbid">Remove where possible</option>
-        <option value="require">Add to non-empty lines</option>
-      </select>
-      <div class="indentation-setting">
-        Indentation
-        <select id="indentation-style" aria-label="Indentation style">
-          <option value="tabs">Tabs</option>
-          <option value="spaces">Spaces</option>
-        </select>
-        <label for="indentation-width">Width</label>
-        <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
-      </div>
+      <div class="tabs">
+        <div class="tabs__list" role="tablist">
+          <button type="button" id="tab-import" class="tabs__tab" role="tab" aria-controls="panel-import" aria-selected="true">
+            Import
+          </button>
+          <button type="button" id="tab-settings" class="tabs__tab" role="tab" aria-controls="panel-settings" aria-selected="false">
+            Settings
+          </button>
+          <button type="button" id="tab-files" class="tabs__tab" role="tab" aria-controls="panel-files" aria-selected="false">
+            Files
+          </button>
+          <button type="button" id="tab-lint" class="tabs__tab" role="tab" aria-controls="panel-lint" aria-selected="false">
+            Lint results
+          </button>
+        </div>
 
-      <div id="drop-zone" class="drop-zone">
-        <p class="drop-zone__hint">Drag and drop an .achlist file here to get started</p>
-        <p id="drop-zone-error" class="drop-zone__error" aria-live="polite"></p>
-      </div>
+        <div id="panel-import" class="tabs__panel" role="tabpanel" aria-labelledby="tab-import">
+          <div id="drop-zone" class="drop-zone">
+            <p class="drop-zone__hint">Drag and drop an .achlist file here to get started</p>
+            <p id="drop-zone-error" class="drop-zone__error" aria-live="polite"></p>
+          </div>
+        </div>
 
-      <div id="achlist-result" class="achlist-result" hidden>
-        <h2 id="achlist-result-title"></h2>
-        <ul id="achlist-result-list"></ul>
-      </div>
+        <div id="panel-settings" class="tabs__panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+          <label for="semicolon-style">Trailing semicolons</label>
+          <select id="semicolon-style">
+            <option value="forbid">Remove where possible</option>
+            <option value="require">Add to non-empty lines</option>
+          </select>
+          <div class="indentation-setting">
+            Indentation
+            <select id="indentation-style" aria-label="Indentation style">
+              <option value="tabs">Tabs</option>
+              <option value="spaces">Spaces</option>
+            </select>
+            <label for="indentation-width">Width</label>
+            <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
+          </div>
+        </div>
 
-      <div id="psc-result" class="psc-result" hidden>
-        <h2>Parsed scripts</h2>
-        <ul id="psc-result-list"></ul>
+        <div id="panel-files" class="tabs__panel" role="tabpanel" aria-labelledby="tab-files" hidden>
+          <div id="achlist-result" class="achlist-result" hidden>
+            <h2 id="achlist-result-title"></h2>
+            <ul id="achlist-result-list"></ul>
+          </div>
+        </div>
+
+        <div id="panel-lint" class="tabs__panel" role="tabpanel" aria-labelledby="tab-lint" hidden>
+          <div id="psc-result" class="psc-result" hidden>
+            <h2>Parsed scripts</h2>
+            <ul id="psc-result-list"></ul>
+          </div>
+        </div>
       </div>
     </main>
   </body>
