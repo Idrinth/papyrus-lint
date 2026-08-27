@@ -14,7 +14,7 @@ pub const RULE: &str = "unreachable-statement";
 
 /// Checks `source` for statements that follow a `Return` in the same
 /// block (a function/event body, an `If`/`ElseIf`/`Else` branch, or a
-/// `While` body).
+/// `While` body). Flagged as a `[warning]`.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
@@ -45,8 +45,8 @@ fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
             diagnostics.push(Diagnostic {
                 line: stmt_line(stmt),
                 column: 1,
-                message: "Unreachable statement: this can never execute because the block \
-                          already returned above it"
+                message: "[warning] Unreachable statement: this can never execute because the \
+                          block already returned above it"
                     .to_string(),
                 rule: RULE,
             });
@@ -94,6 +94,7 @@ mod tests {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 5);
         assert_eq!(diagnostics[0].rule, RULE);
+        assert!(diagnostics[0].message.starts_with("[warning]"));
     }
 
     #[test]
