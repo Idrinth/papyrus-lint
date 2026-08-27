@@ -4,6 +4,26 @@
 
 A linter for Bethesda's papyrus language to improve code quality.
 
+## What is a linter?
+
+A linter is a tool that scans source code for patterns that are likely to be
+mistakes, bad practice, or inconsistent style, without actually running the
+code. It works from heuristics — recognizable patterns known to often cause
+problems — rather than proving that a given line is definitely wrong.
+Because of that, a linter can produce **false positives**: diagnostics on
+code that is actually fine, especially for patterns the checks intentionally
+can't fully resolve (see e.g. "Strict boolean check" or "None used as an
+existing Form" below, which skip anything they can't determine with
+confidence rather than guess). It's normal to disagree with an individual
+diagnostic and dismiss it.
+
+Treat every diagnostic here as **advice, not a guaranteed defect report**: a
+suggestion worth a second look, not proof the code is broken. Use your own
+judgment for whether a flagged line needs changing, and use the
+[`; @disable`](#disabling-a-lint-on-a-specific-line) comment below to
+silence a specific rule on a specific line when you've decided it doesn't
+apply.
+
 ## Implemented Lints
 
 | Lint | Description | Auto-Fix |
