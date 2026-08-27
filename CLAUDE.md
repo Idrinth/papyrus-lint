@@ -121,11 +121,16 @@ on all pull requests.
 
 ## Releases (`.github/workflows/release.yml`)
 
-Pushing a tag matching `v*.*.*` triggers a release job that builds the
-Tauri desktop app on Linux, macOS, and Windows (via
-`tauri-apps/tauri-action`) and attaches each platform's build output
-(installers/bundles) to a GitHub release for that tag, creating the
-release if it doesn't already exist.
+Pushing a tag matching `v*.*.*` triggers a release job that syncs the
+tag's version into `src-tauri/tauri.conf.json`, `package.json`,
+`src-tauri/Cargo.toml`, and `crates/papyrus-lint-cli/Cargo.toml`, then
+builds the Tauri desktop app on Linux, macOS, and Windows (via
+`tauri-apps/tauri-action`) and the `papyrus-lint` CLI binary (via `cargo
+build --release --manifest-path crates/papyrus-lint-cli/Cargo.toml`) on
+each platform, attaching each platform's desktop bundle and CLI binary
+(`papyrus-lint-linux`/`papyrus-lint-macos`/`papyrus-lint-windows.exe`) to
+a GitHub release for that tag, creating the release if it doesn't already
+exist.
 
 ## Merging
 

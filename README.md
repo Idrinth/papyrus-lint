@@ -154,7 +154,10 @@ usage error (a missing/extra argument) or an I/O error (the `.achlist`
 file couldn't be read or parsed, or a listed `.psc` file couldn't be
 read) — so it can gate a CI step on a clean lint run.
 
-Build it with `cargo build --release --manifest-path
+Prebuilt `papyrus-lint`/`papyrus-lint.exe` binaries for Linux, macOS, and
+Windows are attached to each [GitHub
+release](https://github.com/Idrinth/papyrus-lint/releases). To build it
+yourself instead, run `cargo build --release --manifest-path
 crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
 `papyrus-lint`.
 
