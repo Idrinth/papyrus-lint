@@ -328,7 +328,7 @@ fn mismatch(
         line,
         column: col,
         message: format!(
-            "Argument {} to '{}' expects {} but got {}",
+            "[error] Argument {} to '{}' expects {} but got {}",
             index + 1,
             function_name,
             format_type(param_type),
