@@ -1,9 +1,9 @@
-//! Runs `PapyrusCompile.exe` against a single `.psc` script, reproducing
+//! Runs `PapyrusCompiler.exe` against a single `.psc` script, reproducing
 //! the invocation Creation Kit tooling uses to compile one script out of
 //! its source directory:
 //!
 //! ```text
-//! PapyrusCompile.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
+//! PapyrusCompiler.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
 //! ```
 //!
 //! `<source dir>` is the directory the `.psc` file lives in (conventionally
@@ -39,7 +39,7 @@ pub struct CompileOutcome {
 
 /// Builds the `-i` argument's value: the project root's two known source
 /// directories (see [`crate::script_locator::CANDIDATE_DIRS`]), joined with
-/// `;` as PapyrusCompile.exe expects for multiple import directories, so a
+/// `;` as PapyrusCompiler.exe expects for multiple import directories, so a
 /// script can import from either layout regardless of which one it lives
 /// in. Falls back to `source_dir` alone if the project root (two levels
 /// above `source_dir`, i.e. `output_dir`'s parent) can't be determined.

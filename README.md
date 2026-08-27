@@ -24,6 +24,7 @@ A linter for Bethesda's papyrus language to improve code quality.
 | **Cyclomatic complexity** | Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`\|\|` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20). | |
 | **Unreachable statement** | Flags statements that follow a `Return` within the same block (a function/event body, an `If`/`ElseIf`/`Else` branch, or a `While` body), since they can never execute. | |
 | **Static condition** | Flags `If`/`ElseIf`/`While` conditions that fold to a constant `true` or `false` (e.g. `If true`, `If 1 == 2`, `If !false && 3 > 4`), regardless of any runtime state, as a `[warning]`. Only conditions built entirely from literals (combined with arithmetic, comparison, logical, and unary operators) are checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. | |
+| **Unused or write-only local variables** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose value is never read: either it's never referenced again at all, or it's only ever reassigned (`name = ...`) without that new value ever being read back. Reading a variable via a compound assignment (`name += ...`, etc.) or through a member/index expression built from it (`name.Foo`, `name[0]`) counts as a use. Function parameters and script properties aren't locals and are never flagged by this lint. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, and indentation) never flag or change a line inside a
@@ -49,7 +50,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `forbidden-functions`, `slow-functions`, `unused-getter`, `unused-property`,
 `semicolon`, `float-to-int`, `strict-boolean`, `argument-types`,
 `return-types`, `numeric-comparison`, `indentation`, `cyclomatic-complexity`,
-`unreachable-statement`, and `static-condition`.
+`unreachable-statement`, `static-condition`, and `unused-local-variable`.
 
 ## Configuration
 
@@ -82,11 +83,12 @@ rules:
   cyclomatic_complexity: true
   unreachable_statement: true
   static_condition: true
+  unused_local_variable: true
 ```
 
-- `compiler_path`: an explicit path to `PapyrusCompile.exe`, set via the
+- `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
   app's Settings tab. When unset (or blank), the app auto-detects it at
-  `PapyrusCompile.exe` inside a `Papyrus Compiler` directory one level
+  `PapyrusCompiler.exe` inside a `Papyrus Compiler` directory one level
   above the project's `.achlist` directory (the layout used by Bethesda's
   Creation Kit tooling, where a game's `Data` directory sits alongside a
   `Papyrus Compiler` directory in the game's install root).
@@ -108,8 +110,8 @@ rules:
   `forbidden_functions`, `slow_functions`, `unused_getter`, `unused_property`,
   `semicolon`, `float_int_conversion`, `strict_boolean`,
   `argument_types`, `return_types`, `numeric_comparison`, `indentation`,
-  `cyclomatic_complexity`, `unreachable_statement`, and
-  `static_condition`.
+  `cyclomatic_complexity`, `unreachable_statement`, `static_condition`, and
+  `unused_local_variable`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
@@ -117,7 +119,7 @@ config file for the most recently opened project and pre-selects those
 controls accordingly, and any change made to them is written straight
 back to the file, so the project's formatting settings persist between
 sessions and can be shared/committed alongside the project. The
-PapyrusCompile.exe path field on the Settings tab works the same way,
+PapyrusCompiler.exe path field on the Settings tab works the same way,
 except it's pre-filled with an auto-detected path (see `compiler_path`
 above) rather than a fixed default when the project has no explicit
 override saved yet.
@@ -125,12 +127,12 @@ override saved yet.
 ## Compiling a script
 
 Each `.psc` file listed on the Lint results tab has a "Compile" button that
-recompiles it with `PapyrusCompile.exe` (see `compiler_path` under
+recompiles it with `PapyrusCompiler.exe` (see `compiler_path` under
 Configuration above for how that executable's path is resolved), so a fix
 made in the code viewer can be tried out without leaving the app. It runs:
 
 ```
-PapyrusCompile.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
+PapyrusCompiler.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
 ```
 
 where `<source dir>` is the directory the `.psc` file lives in
@@ -139,7 +141,7 @@ project root) and `<output dir>` is its parent, matching the layout
 Bethesda's tooling expects — a `Source` directory holding `.psc` files
 inside the `Scripts` directory that receives the compiled `.pex` output.
 `-i` is given both of those conventional source directories under the
-project root, separated by `;` (PapyrusCompile.exe accepts multiple
+project root, separated by `;` (PapyrusCompiler.exe accepts multiple
 import directories that way), so the script can still resolve imports
 from the other layout even though it only lives in one of them.
 

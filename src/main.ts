@@ -97,6 +97,7 @@ export interface LintRules {
   cyclomatic_complexity: boolean;
   unreachable_statement: boolean;
   static_condition: boolean;
+  unused_local_variable: boolean;
 }
 
 export interface LintConfig {
@@ -124,6 +125,7 @@ export const DEFAULT_RULES: LintRules = {
   cyclomatic_complexity: true,
   unreachable_statement: true,
   static_condition: true,
+  unused_local_variable: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
@@ -142,7 +144,7 @@ let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
 // also used by the "Argument type check" lint to resolve calls to
 // functions declared on other scripts under it.
 let currentProjectDir: string | null = null;
-// The PapyrusCompile.exe path to use for the "Compile" button, kept in
+// The PapyrusCompiler.exe path to use for the "Compile" button, kept in
 // sync with the Settings tab's input (see handleCompilerPathChanged).
 let currentCompilerPath = "";
 
@@ -174,9 +176,9 @@ export async function saveLintConfig(dir: string, config: LintConfig): Promise<v
   }
 }
 
-// Returns the PapyrusCompile.exe path to use for `dir`'s project: an
+// Returns the PapyrusCompiler.exe path to use for `dir`'s project: an
 // explicit override saved to its papyrus-lint config file, or, absent
-// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompile.exe`
+// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompiler.exe`
 // relative to `dir`. Returns an empty string if neither is available or
 // the lookup fails.
 export async function loadCompilerPath(dir: string): Promise<string> {
@@ -188,7 +190,7 @@ export async function loadCompilerPath(dir: string): Promise<string> {
   }
 }
 
-// Persists an explicit PapyrusCompile.exe path override to `dir`'s
+// Persists an explicit PapyrusCompiler.exe path override to `dir`'s
 // papyrus-lint config file. Passing an empty string clears the override,
 // reverting to auto-detection.
 export async function saveCompilerPath(dir: string, path: string): Promise<void> {
@@ -654,7 +656,7 @@ function showCompileOutput(outputEl: HTMLElement, text: string, success: boolean
   outputEl.classList.toggle("psc-result__compile-output--error", !success);
 }
 
-// Compiles `path` via PapyrusCompile.exe when the "Compile" button is
+// Compiles `path` via PapyrusCompiler.exe when the "Compile" button is
 // clicked, reporting both a successful compile and a compiler-reported
 // failure (syntax errors, missing imports, etc.) as well as a failure to
 // run the compiler at all (e.g. no path configured).
@@ -709,7 +711,7 @@ export async function useProjectDir(dir: string) {
   rememberProjectDir(dir);
 }
 
-// Called when the PapyrusCompile.exe path input changes: updates the path
+// Called when the PapyrusCompiler.exe path input changes: updates the path
 // used by the "Compile" button and persists it to the current project's
 // config file (if a project is loaded).
 export function handleCompilerPathChanged() {
@@ -720,7 +722,7 @@ export function handleCompilerPathChanged() {
 }
 
 // Compiles the `.psc` file at `path` with the currently configured
-// PapyrusCompile.exe path, reproducing the invocation Creation Kit
+// PapyrusCompiler.exe path, reproducing the invocation Creation Kit
 // tooling uses to compile a single script out of its source directory.
 export async function compilePscFile(path: string): Promise<CompileOutcome> {
   return invoke<CompileOutcome>("compile_psc_file", {

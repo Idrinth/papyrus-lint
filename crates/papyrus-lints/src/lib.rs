@@ -23,6 +23,7 @@ pub mod strict_boolean;
 pub mod trailing_whitespace;
 pub mod unreachable_statement;
 pub mod unused_getter;
+pub mod unused_local_variable;
 pub mod unused_property;
 
 use serde::Serialize;
@@ -129,6 +130,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.static_condition {
         diagnostics.extend(static_condition::check(source));
+    }
+    if rules.unused_local_variable {
+        diagnostics.extend(unused_local_variable::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -257,12 +261,12 @@ mod tests {
         config
     }
 
-    /// `lint_with_external_arguments` gates each of the 14 rulesets behind
+    /// `lint_with_external_arguments` gates each of the 15 rulesets behind
     /// its own `if rules.<field>` check (see [`config::Rules`]). This walks
     /// every ruleset, one at a time, confirming that: (a) its own flag
     /// being on lets it fire on a source crafted to trigger it, and (b)
     /// flipping only that flag off suppresses that rule's diagnostics.
-    /// This is the only test that exercises 12 of the 14 gates (only
+    /// This is the only test that exercises 13 of the 15 gates (only
     /// `trailing_whitespace` and `comma_spacing` were previously covered,
     /// by `lint_skips_disabled_rules` above) — a gate accidentally wired to
     /// the wrong `Rules` field, or hardcoded to always run, would fail
@@ -366,6 +370,12 @@ mod tests {
                 return_types::RULE,
                 Config::default(),
                 config_with(|c| c.rules.return_types = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int i = 1\nEndFunction\n",
+                unused_local_variable::RULE,
+                Config::default(),
+                config_with(|c| c.rules.unused_local_variable = false),
             ),
         ];
 
