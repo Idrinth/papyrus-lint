@@ -50,7 +50,7 @@ import {
   type PscParseOutcome,
 } from "./main";
 
-function invokeImplFor(handlers: Record<string, (args: any) => unknown>) {
+function invokeImplFor(handlers: Record<string, (args: unknown) => unknown>) {
   invokeMock.mockImplementation((command: string, args: unknown) => {
     const handler = handlers[command];
     if (!handler) {

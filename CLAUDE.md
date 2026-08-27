@@ -61,7 +61,17 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
   `npm run build` (typecheck + build). `npm run test` runs the frontend's
   Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
   same suite instrumented with `@vitest/coverage-v8`, printing a text
-  report and writing HTML/lcov reports to `coverage/`.
+  report and writing HTML/lcov reports to `coverage/`. `npm run lint` runs
+  ESLint (flat config in `eslint.config.js`) over `src/`, using
+  `typescript-eslint`'s recommended rules plus `@vitest/eslint-plugin`'s
+  recommended rules on test files.
+  - `typescript-eslint` doesn't yet support TypeScript 7 (this repo's
+    `typescript` devDependency), so `package.json` installs it under an
+    npm alias: `typescript` resolves to the `@typescript/typescript6` shim
+    (TS 6, satisfying typescript-eslint) and the real TS 7 compiler is
+    installed separately as `@typescript/native`, which is what `tsc`
+    (used by `npm run build`) actually runs. See
+    https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build`.
 - Rust backend only: `cargo check` / `cargo test` from `src-tauri/`.
 - Parser crate only: `cargo test` from `crates/papyrus-parser/`.
@@ -73,11 +83,11 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 
 ## CI (`.github/workflows/ci.yml`)
 
-- **Frontend job**: `npm ci`, then `npm run test:coverage` (Vitest unit
-  tests, instrumented for coverage) and `npm run build` (typecheck & Vite
-  build). The text coverage summary is posted to the job's step summary
-  and the full HTML/lcov report is uploaded as the `frontend-coverage`
-  artifact.
+- **Frontend job**: `npm ci`, then `npm run lint` (ESLint), `npm run
+  test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
+  run build` (typecheck & Vite build). The text coverage summary is
+  posted to the job's step summary and the full HTML/lcov report is
+  uploaded as the `frontend-coverage` artifact.
 - **Rust build job**: `cargo fmt --check`, `cargo clippy -- -D warnings`,
   and `cargo check`, all run against `src-tauri/Cargo.toml`.
 - **Rust test job**: a matrix over `src-tauri`, `crates/papyrus-parser`,
