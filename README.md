@@ -1,4 +1,4 @@
-# Papyrus Lint
+# Papyrus Lint [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint)
 
 ![Papyrus Lint logo](resources/logo.jpg)
 
