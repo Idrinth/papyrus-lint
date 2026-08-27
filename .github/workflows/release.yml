@@ -42,6 +42,10 @@ jobs:
             const cargoPath = 'src-tauri/Cargo.toml';
             const cargo = fs.readFileSync(cargoPath, 'utf8');
             fs.writeFileSync(cargoPath, cargo.replace(/^version = \".*\"/m, \`version = \"\${version}\"\`));
+
+            const cliCargoPath = 'crates/papyrus-lint-cli/Cargo.toml';
+            const cliCargo = fs.readFileSync(cliCargoPath, 'utf8');
+            fs.writeFileSync(cliCargoPath, cliCargo.replace(/^version = \".*\"/m, \`version = \"\${version}\"\`));
           "
 
       - name: Install Tauri Linux dependencies
@@ -54,7 +58,9 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src-tauri
+          workspaces: |
+            src-tauri
+            crates/papyrus-lint-cli
 
       - name: Install frontend dependencies
         run: npm ci --ignore-scripts
@@ -68,3 +74,29 @@ jobs:
           releaseBody: "Automated release for ${{ github.ref_name }}. See the commit history for details."
           releaseDraft: false
           prerelease: false
+
+      - name: Build CLI
+        shell: bash
+        run: cargo build --release --manifest-path crates/papyrus-lint-cli/Cargo.toml
+
+      - name: Package CLI binary
+        shell: bash
+        run: |
+          mkdir -p cli-dist
+          case "${{ matrix.platform }}" in
+            windows-latest)
+              cp crates/papyrus-lint-cli/target/release/papyrus-lint.exe cli-dist/papyrus-lint-windows.exe
+              ;;
+            macos-latest)
+              cp crates/papyrus-lint-cli/target/release/papyrus-lint cli-dist/papyrus-lint-macos
+              ;;
+            *)
+              cp crates/papyrus-lint-cli/target/release/papyrus-lint cli-dist/papyrus-lint-linux
+              ;;
+          esac
+
+      - name: Upload CLI binary to release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" cli-dist/* --clobber --repo "${{ github.repository }}"
