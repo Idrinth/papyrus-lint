@@ -10,9 +10,9 @@ jobs:
     name: Frontend (typecheck & build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -47,7 +47,7 @@ jobs:
     name: Rust (fmt, clippy, check)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Tauri Linux dependencies
         run: |
@@ -86,7 +86,7 @@ jobs:
           - crate: crates/papyrus-lints
             name: papyrus-lints
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Tauri Linux dependencies
         if: matrix.crate == 'src-tauri'
