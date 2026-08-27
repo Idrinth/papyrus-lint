@@ -16,6 +16,8 @@ the full list below) before you ship, on top of the formatting/style
 issues a linter usually catches, so a mod author finds them at write time
 instead of from a bug report.
 
+![Papyrus Lint Import](resources/papyrus-lint-import.png) 
+
 ## What is a linter?
 
 A linter is a tool that scans source code for patterns that are likely to be
@@ -35,6 +37,8 @@ judgment for whether a flagged line needs changing, and use the
 [`; @disable`](#disabling-a-lint-on-a-specific-line) comment below to
 silence a specific rule on a specific line when you've decided it doesn't
 apply.
+
+![Papyrus Lint Results](resources/papyrus-lint-results.png)
 
 ## Implemented Lints
 
