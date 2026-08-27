@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { highlightPapyrusLines } from "./highlight";
 
 let dropZoneEl: HTMLElement | null;
 let dropZoneErrorEl: HTMLElement | null;
@@ -12,6 +13,10 @@ let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let semicolonStyleEl: HTMLSelectElement | null;
+let codeViewerEl: HTMLDialogElement | null;
+let codeViewerTitleEl: HTMLElement | null;
+let codeViewerBodyEl: HTMLElement | null;
+let codeViewerCloseEl: HTMLButtonElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
@@ -184,6 +189,81 @@ function levelOf(message: string): "error" | "warning" | "info" | null {
   return match ? (match[1] as "error" | "warning" | "info") : null;
 }
 
+function escapeAttr(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+// Reads and syntax-highlights `path`'s source, then opens the code viewer
+// dialog with `findings` marked on their lines. If `focusLine` is given,
+// scrolls that line into view and briefly flashes it, so a click on a
+// specific finding jumps straight to it.
+async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: number) {
+  if (!codeViewerEl || !codeViewerTitleEl || !codeViewerBodyEl) {
+    return;
+  }
+
+  codeViewerTitleEl.textContent = path;
+  codeViewerBodyEl.textContent = "Loading…";
+  codeViewerEl.showModal();
+
+  let source: string;
+  try {
+    source = await invoke<string>("read_psc_file", { path });
+  } catch (error) {
+    codeViewerBodyEl.textContent = `Failed to read file: ${String(error)}`;
+    return;
+  }
+
+  const findingsByLine = new Map<number, Diagnostic[]>();
+  for (const finding of findings) {
+    const forLine = findingsByLine.get(finding.line) ?? [];
+    forLine.push(finding);
+    findingsByLine.set(finding.line, forLine);
+  }
+
+  function severityOf(lineFindings: Diagnostic[] | undefined): "error" | "warning" | "info" | "flagged" | null {
+    if (!lineFindings || lineFindings.length === 0) {
+      return null;
+    }
+    const levels = lineFindings.map((finding) => levelOf(finding.message));
+    if (levels.includes("error")) return "error";
+    if (levels.includes("warning")) return "warning";
+    if (levels.includes("info")) return "info";
+    // Lints like trailing-whitespace don't tag a severity level; still mark
+    // their line so the finding is visible in the viewer.
+    return "flagged";
+  }
+
+  const lines = highlightPapyrusLines(source);
+  const rows = lines.map((lineHtml, index) => {
+    const lineNumber = index + 1;
+    const lineFindings = findingsByLine.get(lineNumber);
+    const severity = severityOf(lineFindings);
+    const rowClass = severity ? ` class="code-viewer__line--${severity}"` : "";
+    const title = lineFindings
+      ? ` title="${escapeAttr(lineFindings.map((f) => f.message).join("\n"))}"`
+      : "";
+    return (
+      `<tr id="code-viewer-line-${lineNumber}"${rowClass}${title}>` +
+      `<td class="code-viewer__line-number">${lineNumber}</td>` +
+      `<td class="code-viewer__line-code">${lineHtml}</td>` +
+      `</tr>`
+    );
+  });
+
+  codeViewerBodyEl.innerHTML = `<table class="code-viewer__table"><tbody>${rows.join("")}</tbody></table>`;
+
+  if (focusLine) {
+    const row = codeViewerBodyEl.querySelector<HTMLElement>(`#code-viewer-line-${focusLine}`);
+    row?.scrollIntoView({ block: "center" });
+    row?.classList.add("code-viewer__line--flash");
+  }
+}
+
 function showError(message: string) {
   if (dropZoneErrorEl) {
     dropZoneErrorEl.textContent = message;
@@ -235,6 +315,13 @@ function renderPscResults(outcomes: PscParseOutcome[]) {
       summary.textContent = `${path}: ${detail}`;
       item.append(summary);
 
+      const viewButton = document.createElement("button");
+      viewButton.type = "button";
+      viewButton.textContent = "View code";
+      viewButton.classList.add("psc-result__view-button");
+      viewButton.addEventListener("click", () => void openCodeViewer(path, outcome.findings));
+      item.append(viewButton);
+
       if (hasFixableFindings(findings)) {
         const fixButton = document.createElement("button");
         fixButton.type = "button";
@@ -251,10 +338,12 @@ function renderPscResults(outcomes: PscParseOutcome[]) {
           ...findings.map((finding) => {
             const findingItem = document.createElement("li");
             findingItem.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
+            findingItem.classList.add("psc-result__finding");
             const level = levelOf(finding.message);
             if (level) {
               findingItem.classList.add(`psc-result__finding--${level}`);
             }
+            findingItem.addEventListener("click", () => void openCodeViewer(path, outcome.findings, finding.line));
             return findingItem;
           }),
         );
@@ -340,6 +429,17 @@ window.addEventListener("DOMContentLoaded", () => {
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
+  codeViewerEl = document.querySelector("#code-viewer");
+  codeViewerTitleEl = document.querySelector("#code-viewer-title");
+  codeViewerBodyEl = document.querySelector("#code-viewer-body");
+  codeViewerCloseEl = document.querySelector("#code-viewer-close");
+
+  codeViewerCloseEl?.addEventListener("click", () => codeViewerEl?.close());
+  codeViewerEl?.addEventListener("click", (event) => {
+    if (event.target === codeViewerEl) {
+      codeViewerEl?.close();
+    }
+  });
 
   semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
   indentationStyleEl?.addEventListener("change", () => {
