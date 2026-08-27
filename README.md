@@ -1,6 +1,6 @@
 # Papyrus Lint [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint)
 
-![Papyrus Lint logo](resources/logo.jpg)
+![Papyrus Lint logo](resources/logo-small.jpg)
 
 **Papyrus Lint catches bugs that CreationKit's compiler lets through.**
 `PapyrusCompiler.exe` only checks that a script is syntactically valid — it
