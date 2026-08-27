@@ -68,6 +68,28 @@ fn save_lint_config(dir: String, config: papyrus_lints::Config) -> Result<(), St
     config::save_config(&PathBuf::from(dir), &config)
 }
 
+/// Returns the PapyrusCompile.exe path to use for `dir`'s project: an
+/// explicit override saved to its papyrus-lint config file, or, absent
+/// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompile.exe`
+/// relative to `dir` (the directory containing the `.achlist` file).
+/// Returns `null` if neither is available.
+#[tauri::command]
+fn load_compiler_path(dir: String) -> Result<Option<String>, String> {
+    config::resolve_compiler_path(&PathBuf::from(dir))
+}
+
+/// Persists an explicit PapyrusCompile.exe path override to `dir`'s
+/// papyrus-lint config file. Passing an empty (or blank) string clears
+/// the override, reverting to auto-detection.
+#[tauri::command]
+fn save_compiler_path(dir: String, path: String) -> Result<(), String> {
+    let path = path.trim();
+    config::save_compiler_path(
+        &PathBuf::from(dir),
+        if path.is_empty() { None } else { Some(path) },
+    )
+}
+
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
 /// honoring the semicolon style `config` selects. `root` is the project
 /// root (conventionally the directory containing the `.achlist` file); it
@@ -124,6 +146,8 @@ pub fn run() {
             write_psc_file,
             load_lint_config,
             save_lint_config,
+            load_compiler_path,
+            save_compiler_path,
             lint_psc_file,
             repair_psc_file
         ])

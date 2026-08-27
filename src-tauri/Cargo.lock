@@ -2409,6 +2409,7 @@ dependencies = [
  "papyrus-parser",
  "serde",
  "serde_json",
+ "serde_yaml",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",

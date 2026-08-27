@@ -89,6 +89,7 @@ Lint/fix behavior is configured via an optional YAML file named
 its default:
 
 ```yaml
+compiler_path: null
 semicolon: false
 indentation: tab
 indentation_width: 4
@@ -110,6 +111,12 @@ rules:
   cyclomatic_complexity: true
 ```
 
+- `compiler_path`: an explicit path to `PapyrusCompile.exe`, set via the
+  app's Settings tab. When unset (or blank), the app auto-detects it at
+  `PapyrusCompile.exe` inside a `Papyrus Compiler` directory one level
+  above the project's `.achlist` directory (the layout used by Bethesda's
+  Creation Kit tooling, where a game's `Data` directory sits alongside a
+  `Papyrus Compiler` directory in the game's install root).
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
   or must not (`false`). Read by the "Semicolon at end of line" lint/fix.
 - `indentation`: the expected indentation style, `tab` or `space`. Read
@@ -135,7 +142,11 @@ indentation width) are backed by this file: on startup it reads the
 config file for the most recently opened project and pre-selects those
 controls accordingly, and any change made to them is written straight
 back to the file, so the project's formatting settings persist between
-sessions and can be shared/committed alongside the project.
+sessions and can be shared/committed alongside the project. The
+PapyrusCompile.exe path field on the Settings tab works the same way,
+except it's pre-filled with an auto-detected path (see `compiler_path`
+above) rather than a fixed default when the project has no explicit
+override saved yet.
 
 ## Implemented Automatic Fixes
 
