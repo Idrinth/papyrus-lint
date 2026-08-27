@@ -277,19 +277,20 @@ h1 {
   margin: 0.4em 0 0.5em;
   padding: 0.5em 0.75em;
   border-radius: 6px;
+  border-left: 3px solid transparent;
   font-size: 0.85em;
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .psc-result__compile-output--ok {
-  background-color: rgba(47, 143, 63, 0.12);
-  color: #2f8f3f;
+  border-left-color: #1f6b2f;
+  color: #1f6b2f;
 }
 
 .psc-result__compile-output--error {
-  background-color: rgba(216, 57, 57, 0.12);
-  color: #d83939;
+  border-left-color: #b02a2a;
+  color: #b02a2a;
 }
 
 .code-viewer {
@@ -549,12 +550,12 @@ h1 {
   }
 
   .psc-result__compile-output--ok {
-    background-color: rgba(107, 214, 127, 0.15);
+    border-left-color: #6bd67f;
     color: #6bd67f;
   }
 
   .psc-result__compile-output--error {
-    background-color: rgba(255, 107, 107, 0.15);
+    border-left-color: #ff6b6b;
     color: #ff6b6b;
   }
 
