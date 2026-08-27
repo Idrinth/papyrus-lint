@@ -73,20 +73,20 @@
 
           <fieldset id="lint-rules" class="settings-group">
             <legend>Lint rules</legend>
-            <label><input type="checkbox" id="rule-trailing_whitespace" checked /> Trailing whitespace</label>
-            <label><input type="checkbox" id="rule-comma_spacing" checked /> Space after comma</label>
-            <label><input type="checkbox" id="rule-forbidden_functions" checked /> Forbidden/discouraged function usage</label>
-            <label><input type="checkbox" id="rule-slow_functions" checked /> Slow function usage</label>
-            <label><input type="checkbox" id="rule-unused_getter" checked /> Getter usage without saving result</label>
-            <label><input type="checkbox" id="rule-unused_property" checked /> Unused script properties</label>
-            <label><input type="checkbox" id="rule-semicolon" checked /> Semicolon at end of line</label>
-            <label><input type="checkbox" id="rule-float_int_conversion" checked /> Implicit Float-to-Int conversion</label>
-            <label><input type="checkbox" id="rule-strict_boolean" checked /> Strict boolean check</label>
-            <label><input type="checkbox" id="rule-argument_types" checked /> Argument type check</label>
-            <label><input type="checkbox" id="rule-numeric_comparison" checked /> Strict numeric type check</label>
-            <label><input type="checkbox" id="rule-indentation" checked /> Formatting checks / Indentation</label>
-            <label><input type="checkbox" id="rule-cyclomatic_complexity" checked /> Cyclomatic complexity</label>
-            <label><input type="checkbox" id="rule-unreachable_statement" checked /> Unreachable statement</label>
+            <label title="Flags lines that end with trailing spaces or tabs."><input type="checkbox" id="rule-trailing_whitespace" checked /> Trailing whitespace</label>
+            <label title="Requires whitespace after commas in argument lists."><input type="checkbox" id="rule-comma_spacing" checked /> Space after comma</label>
+            <label title="Flags calls to functions marked as forbidden or discouraged (e.g. slow or blocking native calls), with an explanatory message per function."><input type="checkbox" id="rule-forbidden_functions" checked /> Forbidden/discouraged function usage</label>
+            <label title="Flags calls to functions that have a faster equivalent available, and suggests the quicker alternative."><input type="checkbox" id="rule-slow_functions" checked /> Slow function usage</label>
+            <label title="Flags standalone calls to functions whose names begin with &quot;Get&quot;, since their return value is discarded."><input type="checkbox" id="rule-unused_getter" checked /> Getter usage without saving result</label>
+            <label title="Flags Property declarations whose name is never referenced anywhere else in the script."><input type="checkbox" id="rule-unused_property" checked /> Unused script properties</label>
+            <label title="Requires a trailing semicolon on each non-empty line, or forbids terminal semicolons, according to the &quot;Trailing semicolons&quot; setting above."><input type="checkbox" id="rule-semicolon" checked /> Semicolon at end of line</label>
+            <label title="Flags a Float value assigned, returned, or passed where an Int is expected without an explicit &quot;as Int&quot; cast."><input type="checkbox" id="rule-float_int_conversion" checked /> Implicit Float-to-Int conversion</label>
+            <label title="Flags If/ElseIf/While conditions that aren't already a Bool value or expression, instead of relying on implicit conversion to boolean."><input type="checkbox" id="rule-strict_boolean" checked /> Strict boolean check</label>
+            <label title="Flags call-site arguments whose type doesn't match the callee's declared parameter type (e.g. passing a String where an Int is expected)."><input type="checkbox" id="rule-argument_types" checked /> Argument type check</label>
+            <label title="Flags implicit comparisons (==, !=, <, <=, >, >=) between an Int and a Float value without an explicit cast making the comparison exact."><input type="checkbox" id="rule-numeric_comparison" checked /> Strict numeric type check</label>
+            <label title="Flags lines whose indentation doesn't match the configured style/width for their nesting depth."><input type="checkbox" id="rule-indentation" checked /> Formatting checks / Indentation</label>
+            <label title="Flags functions/events whose cyclomatic complexity exceeds the configured warning/error thresholds above."><input type="checkbox" id="rule-cyclomatic_complexity" checked /> Cyclomatic complexity</label>
+            <label title="Flags statements that follow a Return within the same block, since they can never execute."><input type="checkbox" id="rule-unreachable_statement" checked /> Unreachable statement</label>
           </fieldset>
         </div>
 
