@@ -45,6 +45,9 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-indentation" checked />
           <input type="checkbox" id="rule-cyclomatic_complexity" checked />
           <input type="checkbox" id="rule-unreachable_statement" checked />
+          <input type="checkbox" id="rule-static_condition" checked />
+          <input type="checkbox" id="rule-unused_local_variable" checked />
+          <input type="checkbox" id="rule-none_form_usage" checked />
         </fieldset>
       </div>
 
@@ -107,6 +110,9 @@ function polyfillDialog() {
       this.removeAttribute("open");
       this.dispatchEvent(new Event("close"));
     };
+  }
+  if (!HTMLElement.prototype.scrollIntoView) {
+    HTMLElement.prototype.scrollIntoView = function () {};
   }
 }
 

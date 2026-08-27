@@ -896,3 +896,160 @@ describe("toggleCodeViewerFullscreen", () => {
     expect(button.getAttribute("aria-pressed")).toBe("false");
   });
 });
+
+describe("wired DOM interactions", () => {
+  it("drives the tab and settings controls through their registered listeners", async () => {
+    invokeMock.mockResolvedValue(undefined);
+
+    document.querySelector<HTMLButtonElement>("#tab-settings")!.click();
+    expect(document.querySelector<HTMLElement>("#panel-settings")!.hidden).toBe(false);
+
+    const indentation = document.querySelector<HTMLSelectElement>("#indentation-style")!;
+    indentation.value = "spaces";
+    indentation.dispatchEvent(new Event("change"));
+    expect(document.querySelector<HTMLInputElement>("#indentation-width")!.disabled).toBe(false);
+
+    for (const selector of [
+      "#compiler-path",
+      "#semicolon-style",
+      "#indentation-width",
+      "#cyclomatic-complexity-warning",
+      "#cyclomatic-complexity-error",
+      "#rule-trailing_whitespace",
+    ]) {
+      document.querySelector<HTMLElement>(selector)!.dispatchEvent(new Event("change"));
+    }
+    await Promise.resolve();
+  });
+
+  it("handles all drag/drop event variants", async () => {
+    const registration = onDragDropEventMock.mock.calls[onDragDropEventMock.mock.calls.length - 1];
+    expect(registration).toBeDefined();
+    const listener = registration![0] as (event: { payload: { type: string; paths: string[] } }) => void;
+    const dropZone = document.querySelector<HTMLElement>("#drop-zone")!;
+
+    listener({ payload: { type: "over", paths: [] } });
+    expect(dropZone.classList.contains("drop-zone--active")).toBe(true);
+    listener({ payload: { type: "cancel", paths: [] } });
+    expect(dropZone.classList.contains("drop-zone--active")).toBe(false);
+
+    invokeImplFor({
+      parse_achlist_file: () => [],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+    });
+    listener({ payload: { type: "drop", paths: ["/proj/list.achlist"] } });
+    await vi.waitFor(() => expect(invokeMock).toHaveBeenCalledWith("parse_achlist_file", { path: "/proj/list.achlist" }));
+  });
+
+  it("wires result action buttons and finding links", async () => {
+    const outcome: PscParseOutcome = {
+      path: "/a.psc",
+      ok: true,
+      detail: "parsed",
+      findings: [{ line: 1, column: 1, message: "Line contains trailing whitespace" }],
+    };
+    const item = buildPscResultItem(outcome)!;
+    document.body.append(item);
+
+    invokeImplFor({
+      read_psc_file: () => "Int x = 1 ",
+      repair_psc_file: () => [],
+      compile_psc_file: () => ({ success: true, stdout: "ok", stderr: "" }),
+    });
+    item.querySelector<HTMLButtonElement>(".psc-result__view-button")!.click();
+    item.querySelector<HTMLElement>(".psc-result__finding")!.click();
+    item.querySelector<HTMLButtonElement>(".psc-result__fix-button")!.click();
+    item.querySelector<HTMLButtonElement>(".psc-result__compile-button")!.click();
+
+    await vi.waitFor(() => expect(invokeMock).toHaveBeenCalledWith("repair_psc_file", expect.anything()));
+    await vi.waitFor(() => expect(item.querySelector(".psc-result__compile-output")!.textContent).toBe("ok"));
+  });
+
+  it("wires code viewer buttons, input, scrolling, backdrop, cancel, and close", async () => {
+    invokeImplFor({ read_psc_file: () => "Int x = 1\n" });
+    await openCodeViewer("/a.psc", []);
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+    const textarea = document.querySelector<HTMLTextAreaElement>("#code-viewer-editor-textarea")!;
+    const highlight = document.querySelector<HTMLElement>("#code-viewer-editor-highlight")!;
+
+    document.querySelector<HTMLButtonElement>("#code-viewer-edit")!.click();
+    textarea.value = "Int x = 2\n";
+    textarea.dispatchEvent(new Event("input"));
+    textarea.scrollTop = 12;
+    textarea.scrollLeft = 7;
+    textarea.dispatchEvent(new Event("scroll"));
+    expect(highlight.scrollTop).toBe(12);
+    expect(highlight.scrollLeft).toBe(7);
+
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    const cancelEvent = new Event("cancel", { cancelable: true });
+    dialog.dispatchEvent(cancelEvent);
+    expect(cancelEvent.defaultPrevented).toBe(true);
+    dialog.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(dialog.open).toBe(true);
+
+    vi.mocked(window.confirm).mockReturnValue(true);
+    document.querySelector<HTMLButtonElement>("#code-viewer-cancel")!.click();
+    document.querySelector<HTMLButtonElement>("#code-viewer-fullscreen")!.click();
+    dialog.dispatchEvent(new Event("close"));
+    expect(dialog.classList.contains("code-viewer--fullscreen")).toBe(false);
+    document.querySelector<HTMLButtonElement>("#code-viewer-close")!.click();
+  });
+});
+
+describe("remaining failure and defensive paths", () => {
+  it("lintPscFile logs backend failures and returns no diagnostics", async () => {
+    invokeMock.mockRejectedValue(new Error("lint failed"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(import("./main").then(({ lintPscFile }) => lintPscFile("/a.psc"))).resolves.toEqual([]);
+  });
+
+  it("rememberProjectDir tolerates unavailable storage", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => rememberProjectDir("/proj")).not.toThrow();
+  });
+
+  it("reports repair failures without rejecting", async () => {
+    invokeMock.mockRejectedValue(new Error("repair failed"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const button = document.createElement("button");
+    const outcome: PscParseOutcome = { path: "/a.psc", ok: true, detail: "parsed", findings: [] };
+    await expect(handleFixClick("/a.psc", outcome, button)).resolves.toBeUndefined();
+    expect(button.disabled).toBe(true);
+  });
+
+  it("restores the remembered project and displays the app version on startup", async () => {
+    localStorage.setItem("papyrus-lint:last-project-dir", "/remembered");
+    invokeImplFor({
+      get_app_version: () => "1.2.3",
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+    });
+    const version = document.createElement("span");
+    version.id = "app-version";
+    document.body.append(version);
+
+    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
+    await vi.waitFor(() => expect(version.textContent).toBe("v1.2.3"));
+    expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/remembered" });
+  });
+
+  it("resets a failed save label after the timeout", async () => {
+    vi.useFakeTimers();
+    invokeImplFor({ read_psc_file: () => "old" });
+    await openCodeViewer("/a.psc", []);
+    enterCodeViewerEditMode();
+    document.querySelector<HTMLTextAreaElement>("#code-viewer-editor-textarea")!.value = "new";
+    invokeMock.mockRejectedValue(new Error("disk full"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await saveCodeViewerEdits();
+    vi.runAllTimers();
+    expect(document.querySelector<HTMLButtonElement>("#code-viewer-save")!.textContent).toBe("Save");
+    vi.useRealTimers();
+  });
+});
