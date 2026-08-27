@@ -1,4 +1,5 @@
 pub mod compiler;
+pub mod pex_header;
 
 use std::path::{Path, PathBuf};
 

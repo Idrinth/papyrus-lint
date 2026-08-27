@@ -34,7 +34,10 @@ desktop app's binary at all.
 │       │                     # parse_papyrus_script, lint_papyrus_script,
 │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
 │       │                     # repair_psc_file), built on papyrus-lint-core
-│       └── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button
+│       ├── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button,
+│       │                     # then strips personal data from the compiled .pex
+│       └── pex_header.rs      # Parses a compiled .pex file's header just far
+│                             # enough to blank its userName/machineName fields
 ├── rules/
 │   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
 │                                  # compiled into Rust by papyrus-lints' build.rs
