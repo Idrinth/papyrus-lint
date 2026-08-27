@@ -14,7 +14,7 @@ pub const RULE: &str = "strict-boolean";
 ///
 /// A condition whose type can't be determined locally (a function call or a
 /// member access on another script, for instance) is left unflagged rather
-/// than risk a false positive.
+/// than risk a false positive. Flagged as a `[warning]`.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
@@ -99,7 +99,9 @@ fn check_condition(
     diagnostics.push(Diagnostic {
         line,
         column,
-        message: format!("Condition must be a boolean value or expression, found '{found}'"),
+        message: format!(
+            "[warning] Condition must be a boolean value or expression, found '{found}'"
+        ),
         rule: RULE,
     });
 }
@@ -116,6 +118,7 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 2);
         assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 5));
+        assert!(diagnostics[0].message.starts_with("[warning]"));
         assert!(diagnostics[0].message.contains("Int"));
         assert_eq!((diagnostics[1].line, diagnostics[1].column), (6, 5));
     }

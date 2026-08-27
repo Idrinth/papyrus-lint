@@ -22,7 +22,7 @@ use crate::Diagnostic;
 pub const RULE: &str = "unused-local-variable";
 
 /// Checks `source` for local variable declarations whose value is never
-/// read anywhere in their enclosing function.
+/// read anywhere in their enclosing function. Flagged as a `[warning]`.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
@@ -75,11 +75,14 @@ fn check_function(function: &FunctionDecl, diagnostics: &mut Vec<Diagnostic>) {
 
         let message = if info.written_after_declaration {
             format!(
-                "Local variable '{}' is assigned a value but never used",
+                "[warning] Local variable '{}' is assigned a value but never used",
                 decl.name
             )
         } else {
-            format!("Local variable '{}' is declared but never used", decl.name)
+            format!(
+                "[warning] Local variable '{}' is declared but never used",
+                decl.name
+            )
         };
 
         diagnostics.push(Diagnostic {
@@ -222,6 +225,7 @@ mod tests {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 4);
         assert_eq!(diagnostics[0].rule, RULE);
+        assert!(diagnostics[0].message.starts_with("[warning]"));
         assert!(diagnostics[0].message.contains("declared but never used"));
         assert!(diagnostics[0].message.contains("'i'"));
     }
@@ -234,6 +238,7 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 4);
+        assert!(diagnostics[0].message.starts_with("[warning]"));
         assert!(diagnostics[0]
             .message
             .contains("assigned a value but never used"));

@@ -16,7 +16,7 @@ use papyrus_parser::token::{Keyword, Token, TokenKind};
 pub const RULE: &str = "unused-property";
 
 /// Checks `source` for `Property` declarations whose name is never used
-/// anywhere else in the script.
+/// anywhere else in the script. Flagged as a `[warning]`.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let tokens = match Lexer::new(source).tokenize() {
         Ok(tokens) => tokens,
@@ -29,7 +29,10 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         .map(|decl| Diagnostic {
             line: decl.token.line,
             column: decl.token.col,
-            message: format!("Property '{}' is declared but never used", decl.name),
+            message: format!(
+                "[warning] Property '{}' is declared but never used",
+                decl.name
+            ),
             rule: RULE,
         })
         .collect()
@@ -108,6 +111,7 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 3);
+        assert!(diagnostics[0].message.starts_with("[warning]"));
         assert!(diagnostics[0].message.contains("MyValue"));
     }
 

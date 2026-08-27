@@ -30,7 +30,8 @@ pub const RULE: &str = "slow-functions";
 /// therefore done by function name alone, case-insensitively (Papyrus
 /// identifiers are case-insensitive). Every entry in
 /// `rules/slow-functions.yaml` currently has a unique function name, so
-/// this has no false matches in practice.
+/// this has no false matches in practice. Flagged as an `[info]`, since
+/// it's a performance suggestion rather than a correctness issue.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let tokens = match Lexer::new(source).tokenize() {
         Ok(tokens) => tokens,
@@ -52,7 +53,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             line: window[0].line,
             column: window[0].col,
             message: format!(
-                "{}.{} is slower than necessary; use `{}` instead",
+                "[info] {}.{} is slower than necessary; use `{}` instead",
                 rule.object, rule.function, rule.replacement
             ),
             rule: RULE,
@@ -86,6 +87,7 @@ mod tests {
         );
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 4);
+        assert!(diagnostics[0].message.starts_with("[info]"));
         assert!(diagnostics[0]
             .message
             .contains("GlobalVariable.GetValueInt"));
