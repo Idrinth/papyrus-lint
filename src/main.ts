@@ -17,6 +17,7 @@ let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
 let codeViewerBodyEl: HTMLElement | null;
 let codeViewerCloseEl: HTMLButtonElement | null;
+let codeViewerFullscreenEl: HTMLButtonElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
@@ -268,6 +269,17 @@ async function openCodeViewer(path: string, findings: Diagnostic[], focusLine?: 
   }
 }
 
+// Toggles the code viewer between its default size and filling the window,
+// keeping the button's label/state in sync.
+function toggleCodeViewerFullscreen() {
+  if (!codeViewerEl || !codeViewerFullscreenEl) {
+    return;
+  }
+  const isFullscreen = codeViewerEl.classList.toggle("code-viewer--fullscreen");
+  codeViewerFullscreenEl.setAttribute("aria-pressed", String(isFullscreen));
+  codeViewerFullscreenEl.setAttribute("aria-label", isFullscreen ? "Exit fullscreen" : "Enter fullscreen");
+}
+
 function severityOf(message: string): Severity {
   return levelOf(message) ?? "other";
 }
@@ -458,12 +470,19 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerTitleEl = document.querySelector("#code-viewer-title");
   codeViewerBodyEl = document.querySelector("#code-viewer-body");
   codeViewerCloseEl = document.querySelector("#code-viewer-close");
+  codeViewerFullscreenEl = document.querySelector("#code-viewer-fullscreen");
 
   codeViewerCloseEl?.addEventListener("click", () => codeViewerEl?.close());
+  codeViewerFullscreenEl?.addEventListener("click", toggleCodeViewerFullscreen);
   codeViewerEl?.addEventListener("click", (event) => {
     if (event.target === codeViewerEl) {
       codeViewerEl?.close();
     }
+  });
+  codeViewerEl?.addEventListener("close", () => {
+    codeViewerEl?.classList.remove("code-viewer--fullscreen");
+    codeViewerFullscreenEl?.setAttribute("aria-pressed", "false");
+    codeViewerFullscreenEl?.setAttribute("aria-label", "Enter fullscreen");
   });
 
   severityFilterEls = Object.fromEntries(
