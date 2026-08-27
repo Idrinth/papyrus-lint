@@ -168,7 +168,7 @@ Configuration above for how that executable's path is resolved), so a fix
 made in the code viewer can be tried out without leaving the app. It runs:
 
 ```
-PapyrusCompile.exe "<source dir>" -f="<script name>.psc" -i="<source dir>" -o="<output dir>"
+PapyrusCompile.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
 ```
 
 where `<source dir>` is the directory the `.psc` file lives in
@@ -176,6 +176,10 @@ where `<source dir>` is the directory the `.psc` file lives in
 project root) and `<output dir>` is its parent, matching the layout
 Bethesda's tooling expects — a `Source` directory holding `.psc` files
 inside the `Scripts` directory that receives the compiled `.pex` output.
+`-i` is given both of those conventional source directories under the
+project root, separated by `;` (PapyrusCompile.exe accepts multiple
+import directories that way), so the script can still resolve imports
+from the other layout even though it only lives in one of them.
 
 The compiler's stdout/stderr is shown beneath the button once it finishes,
 styled green on success and red on failure, so both a successful compile

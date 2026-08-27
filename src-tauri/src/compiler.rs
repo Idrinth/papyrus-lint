@@ -3,7 +3,7 @@
 //! its source directory:
 //!
 //! ```text
-//! PapyrusCompile.exe "<source dir>" -f="<script name>.psc" -i="<source dir>" -o="<output dir>"
+//! PapyrusCompile.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
 //! ```
 //!
 //! `<source dir>` is the directory the `.psc` file lives in (conventionally
@@ -12,6 +12,11 @@
 //! the layout Bethesda's tooling expects: a `Source` directory holding
 //! `.psc` files sits inside the `Scripts` directory that receives the
 //! compiled `.pex` output.
+//!
+//! `-i` accepts multiple import directories separated by `;`, so it's
+//! always given both of [`crate::script_locator`]'s known source
+//! directories under the project root, not just the one the script being
+//! compiled happens to live in — letting it import from either layout.
 
 use std::path::Path;
 use std::process::Command;
@@ -30,6 +35,24 @@ pub struct CompileOutcome {
     pub success: bool,
     pub stdout: String,
     pub stderr: String,
+}
+
+/// Builds the `-i` argument's value: the project root's two known source
+/// directories (see [`crate::script_locator::CANDIDATE_DIRS`]), joined with
+/// `;` as PapyrusCompile.exe expects for multiple import directories, so a
+/// script can import from either layout regardless of which one it lives
+/// in. Falls back to `source_dir` alone if the project root (two levels
+/// above `source_dir`, i.e. `output_dir`'s parent) can't be determined.
+fn import_dirs(source_dir: &Path, output_dir: &Path) -> String {
+    let Some(root) = output_dir.parent() else {
+        return source_dir.display().to_string();
+    };
+
+    crate::script_locator::CANDIDATE_DIRS
+        .iter()
+        .map(|dir| root.join(dir).display().to_string())
+        .collect::<Vec<_>>()
+        .join(";")
 }
 
 /// Compiles the `.psc` file at `script_path` using the compiler executable
@@ -62,11 +85,12 @@ pub fn compile_psc_file(
     let file_name = script_path
         .file_name()
         .ok_or_else(|| format!("{} has no file name", script_path.display()))?;
+    let import_dirs = import_dirs(source_dir, output_dir);
 
     let output = Command::new(compiler_path)
         .arg(source_dir)
         .arg(format!("-f={}", file_name.to_string_lossy()))
-        .arg(format!("-i={}", source_dir.display()))
+        .arg(format!("-i={import_dirs}"))
         .arg(format!("-o={}", output_dir.display()))
         .output()
         .map_err(|err| format!("failed to run {}: {err}", compiler_path.display()))?;
@@ -147,12 +171,41 @@ mod tests {
 
         let output_dir = root.path().join("Scripts");
         let expected = format!(
-            "{}\n-f=AchievementInjector.psc\n-i={}\n-o={}\n",
+            "{}\n-f=AchievementInjector.psc\n-i={};{}\n-o={}\n",
             source_dir.display(),
-            source_dir.display(),
+            root.path().join("scripts/source").display(),
+            root.path().join("source/scripts").display(),
             output_dir.display(),
         );
         assert_eq!(outcome.stdout, expected);
+    }
+
+    #[test]
+    fn import_dirs_joins_both_known_source_dirs_with_semicolon() {
+        let root = Path::new("/game/Data");
+        let source_dir = root.join("scripts/source");
+        let output_dir = source_dir.parent().expect("has a parent");
+
+        let dirs = import_dirs(&source_dir, output_dir);
+
+        assert_eq!(
+            dirs,
+            format!(
+                "{};{}",
+                root.join("scripts/source").display(),
+                root.join("source/scripts").display(),
+            )
+        );
+    }
+
+    #[test]
+    fn import_dirs_falls_back_to_source_dir_without_a_root() {
+        let source_dir = Path::new("source");
+        let output_dir = Path::new("");
+
+        let dirs = import_dirs(source_dir, output_dir);
+
+        assert_eq!(dirs, source_dir.display().to_string());
     }
 
     #[test]
