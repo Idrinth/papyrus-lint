@@ -15,9 +15,9 @@ expected of a pull request.
 ├── src-tauri/               # Tauri desktop app shell (Rust)
 │   └── src/
 │       ├── main.rs           # Binary entry point, delegates to lib::run()
-│       ├── lib.rs            # Registers Tauri commands (parse_archlist_file,
+│       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
 │       │                     # parse_papyrus_script, parse_psc_file)
-│       ├── archlist.rs        # Parses .archlist files (JSON arrays of paths)
+│       ├── achlist.rs        # Parses .achlist files (JSON arrays of paths)
 │       └── script_locator.rs  # Finds .psc files by name under scripts/source
 │                               # or source/scripts
 └── crates/
@@ -86,7 +86,7 @@ since the rule infrastructure is still taking shape.
 ## Reporting bugs and requesting features
 
 Please use GitHub Issues. Include steps to reproduce for bugs (ideally a
-minimal `.psc`/`.archlist` sample), and your OS/environment for anything
+minimal `.psc`/`.achlist` sample), and your OS/environment for anything
 related to the desktop app.
 
 ## Code of Conduct

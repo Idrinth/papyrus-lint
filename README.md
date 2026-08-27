@@ -55,7 +55,7 @@ A linter for Bethesda's papyrus language to improve code quality.
 
 Lint/fix behavior is configured via an optional YAML file named
 `papyrus-lint.yaml` (or `papyrus-lint.yml`), placed next to the
-`.archlist` file you drop into the app. Any key it omits falls back to
+`.achlist` file you drop into the app. Any key it omits falls back to
 its default:
 
 ```yaml

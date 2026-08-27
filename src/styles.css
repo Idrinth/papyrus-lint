@@ -71,14 +71,14 @@ h1 {
   color: #d83939;
 }
 
-.archlist-result {
+.achlist-result {
   margin-top: 2em;
   width: 100%;
   max-width: 32em;
   text-align: left;
 }
 
-.archlist-result ul {
+.achlist-result ul {
   padding-left: 1.25em;
   word-break: break-all;
 }

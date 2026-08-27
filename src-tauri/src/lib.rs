@@ -1,14 +1,14 @@
-pub mod archlist;
+pub mod achlist;
 pub mod config;
 pub mod function_table;
 pub mod script_locator;
 
 use std::path::PathBuf;
 
-/// Parses the `.archlist` file at `path` and returns the resolved paths it lists.
+/// Parses the `.achlist` file at `path` and returns the resolved paths it lists.
 #[tauri::command]
-fn parse_archlist_file(path: String) -> Result<Vec<String>, String> {
-    let entries = archlist::parse_archlist(&PathBuf::from(path)).map_err(|err| err.to_string())?;
+fn parse_achlist_file(path: String) -> Result<Vec<String>, String> {
+    let entries = achlist::parse_achlist(&PathBuf::from(path)).map_err(|err| err.to_string())?;
 
     Ok(entries
         .into_iter()
@@ -37,7 +37,7 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
 }
 
 /// Looks for a papyrus-lint YAML config file in `dir` (conventionally the
-/// directory containing the `.archlist` file) and returns the lint
+/// directory containing the `.achlist` file) and returns the lint
 /// configuration it describes, falling back to the default configuration
 /// if `dir` has no config file.
 #[tauri::command]
@@ -55,7 +55,7 @@ fn save_lint_config(dir: String, config: papyrus_lints::Config) -> Result<(), St
 
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
 /// honoring the semicolon style `config` selects. `root` is the project
-/// root (conventionally the directory containing the `.archlist` file); it
+/// root (conventionally the directory containing the `.achlist` file); it
 /// lets the "Argument type check" lint resolve calls to functions declared
 /// on other scripts under `root`.
 #[tauri::command]
@@ -101,7 +101,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
-            parse_archlist_file,
+            parse_achlist_file,
             parse_papyrus_script,
             lint_papyrus_script,
             parse_psc_file,
