@@ -232,13 +232,13 @@ describe("lint config UI round trip", () => {
     await useProjectDir("/proj");
     invokeMock.mockClear();
 
-    document.querySelector<HTMLInputElement>("#compiler-path")!.value = "C:\\Tools\\PapyrusCompile.exe";
+    document.querySelector<HTMLInputElement>("#compiler-path")!.value = "C:\\Tools\\PapyrusCompiler.exe";
     handleCompilerPathChanged();
     await Promise.resolve();
 
     expect(invokeMock).toHaveBeenCalledWith("save_compiler_path", {
       dir: "/proj",
-      path: "C:\\Tools\\PapyrusCompile.exe",
+      path: "C:\\Tools\\PapyrusCompiler.exe",
     });
   });
 });
@@ -282,22 +282,22 @@ describe("useProjectDir", () => {
   it("populates the compiler path input from the backend", async () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
-      load_compiler_path: () => "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompile.exe",
+      load_compiler_path: () => "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompiler.exe",
     });
 
     await useProjectDir("/my/project");
 
     expect(document.querySelector<HTMLInputElement>("#compiler-path")!.value).toBe(
-      "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompile.exe",
+      "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompiler.exe",
     );
   });
 });
 
 describe("loadCompilerPath / saveCompilerPath", () => {
   it("loadCompilerPath returns the backend's resolved path", async () => {
-    invokeImplFor({ load_compiler_path: () => "C:\\Tools\\PapyrusCompile.exe" });
+    invokeImplFor({ load_compiler_path: () => "C:\\Tools\\PapyrusCompiler.exe" });
 
-    await expect(loadCompilerPath("/proj")).resolves.toBe("C:\\Tools\\PapyrusCompile.exe");
+    await expect(loadCompilerPath("/proj")).resolves.toBe("C:\\Tools\\PapyrusCompiler.exe");
     expect(invokeMock).toHaveBeenCalledWith("load_compiler_path", { dir: "/proj" });
   });
 
@@ -318,7 +318,7 @@ describe("loadCompilerPath / saveCompilerPath", () => {
     invokeMock.mockRejectedValue(new Error("disk full"));
     vi.spyOn(console, "error").mockImplementation(() => {});
 
-    await expect(saveCompilerPath("/proj", "C:\\Tools\\PapyrusCompile.exe")).resolves.toBeUndefined();
+    await expect(saveCompilerPath("/proj", "C:\\Tools\\PapyrusCompiler.exe")).resolves.toBeUndefined();
   });
 
 });
@@ -520,13 +520,13 @@ describe("handleCompileClick", () => {
   });
 
   it("shows a failure to launch the compiler (e.g. no path configured) as an error", async () => {
-    invokeMock.mockRejectedValue(new Error("No PapyrusCompile.exe path is configured."));
+    invokeMock.mockRejectedValue(new Error("No PapyrusCompiler.exe path is configured."));
     vi.spyOn(console, "error").mockImplementation(() => {});
     const { button, outputEl } = setup();
 
     await handleCompileClick("/a.psc", button, outputEl);
 
-    expect(outputEl.textContent).toContain("No PapyrusCompile.exe path is configured.");
+    expect(outputEl.textContent).toContain("No PapyrusCompiler.exe path is configured.");
     expect(outputEl.classList.contains("psc-result__compile-output--error")).toBe(true);
     expect(button.disabled).toBe(false);
   });

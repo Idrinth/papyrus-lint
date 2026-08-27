@@ -83,9 +83,9 @@ rules:
   static_condition: true
 ```
 
-- `compiler_path`: an explicit path to `PapyrusCompile.exe`, set via the
+- `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
   app's Settings tab. When unset (or blank), the app auto-detects it at
-  `PapyrusCompile.exe` inside a `Papyrus Compiler` directory one level
+  `PapyrusCompiler.exe` inside a `Papyrus Compiler` directory one level
   above the project's `.achlist` directory (the layout used by Bethesda's
   Creation Kit tooling, where a game's `Data` directory sits alongside a
   `Papyrus Compiler` directory in the game's install root).
@@ -116,7 +116,7 @@ config file for the most recently opened project and pre-selects those
 controls accordingly, and any change made to them is written straight
 back to the file, so the project's formatting settings persist between
 sessions and can be shared/committed alongside the project. The
-PapyrusCompile.exe path field on the Settings tab works the same way,
+PapyrusCompiler.exe path field on the Settings tab works the same way,
 except it's pre-filled with an auto-detected path (see `compiler_path`
 above) rather than a fixed default when the project has no explicit
 override saved yet.
@@ -133,12 +133,12 @@ override saved yet.
 ## Compiling a script
 
 Each `.psc` file listed on the Lint results tab has a "Compile" button that
-recompiles it with `PapyrusCompile.exe` (see `compiler_path` under
+recompiles it with `PapyrusCompiler.exe` (see `compiler_path` under
 Configuration above for how that executable's path is resolved), so a fix
 made in the code viewer can be tried out without leaving the app. It runs:
 
 ```
-PapyrusCompile.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
+PapyrusCompiler.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
 ```
 
 where `<source dir>` is the directory the `.psc` file lives in
@@ -147,7 +147,7 @@ project root) and `<output dir>` is its parent, matching the layout
 Bethesda's tooling expects — a `Source` directory holding `.psc` files
 inside the `Scripts` directory that receives the compiled `.pex` output.
 `-i` is given both of those conventional source directories under the
-project root, separated by `;` (PapyrusCompile.exe accepts multiple
+project root, separated by `;` (PapyrusCompiler.exe accepts multiple
 import directories that way), so the script can still resolve imports
 from the other layout even though it only lives in one of them.
 
