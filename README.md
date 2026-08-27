@@ -60,6 +60,14 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Unreachable statement**: flag statements that follow a `Return` within
   the same block (a function/event body, an `If`/`ElseIf`/`Else` branch,
   or a `While` body), since they can never execute.
+- **Static condition**: flag `If`/`ElseIf`/`While` conditions that fold to
+  a constant `true` or `false` (e.g. `If true`, `If 1 == 2`,
+  `If !false && 3 > 4`), regardless of any runtime state, as a
+  `[warning]`. Only conditions built entirely from literals (combined with
+  arithmetic, comparison, logical, and unary operators) are checked; one
+  that depends on an identifier, a call, `Self`/`Parent`, a member/index
+  access, a cast, or a `new` array is left unflagged rather than guessed
+  at.
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, and indentation) never flag or change a line inside a
@@ -85,8 +93,8 @@ linting — it does not change what the automatic fixes in
 lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `forbidden-functions`, `slow-functions`, `unused-getter`, `unused-property`,
 `semicolon`, `float-to-int`, `strict-boolean`, `argument-types`,
-`numeric-comparison`, `indentation`, `cyclomatic-complexity`, and
-`unreachable-statement`.
+`numeric-comparison`, `indentation`, `cyclomatic-complexity`,
+`unreachable-statement`, and `static-condition`.
 
 ## Configuration
 
@@ -117,6 +125,7 @@ rules:
   indentation: true
   cyclomatic_complexity: true
   unreachable_statement: true
+  static_condition: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompile.exe`, set via the
@@ -143,7 +152,8 @@ rules:
   `forbidden_functions`, `slow_functions`, `unused_getter`, `unused_property`,
   `semicolon`, `float_int_conversion`, `strict_boolean`,
   `argument_types`, `numeric_comparison`, `indentation`,
-  `cyclomatic_complexity`, and `unreachable_statement`.
+  `cyclomatic_complexity`, `unreachable_statement`, and
+  `static_condition`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

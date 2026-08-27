@@ -87,6 +87,7 @@
             <label title="Flags lines whose indentation doesn't match the configured style/width for their nesting depth."><input type="checkbox" id="rule-indentation" checked /> Formatting checks / Indentation</label>
             <label title="Flags functions/events whose cyclomatic complexity exceeds the configured warning/error thresholds above."><input type="checkbox" id="rule-cyclomatic_complexity" checked /> Cyclomatic complexity</label>
             <label title="Flags statements that follow a Return within the same block, since they can never execute."><input type="checkbox" id="rule-unreachable_statement" checked /> Unreachable statement</label>
+            <label title="Flags If/ElseIf/While conditions that fold to a constant true or false regardless of any runtime state (e.g. &quot;If true&quot;, &quot;If 1 == 2&quot;)."><input type="checkbox" id="rule-static_condition" checked /> Static condition</label>
           </fieldset>
         </div>
 

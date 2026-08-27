@@ -96,6 +96,7 @@ export interface LintRules {
   indentation: boolean;
   cyclomatic_complexity: boolean;
   unreachable_statement: boolean;
+  static_condition: boolean;
 }
 
 export interface LintConfig {
@@ -122,6 +123,7 @@ export const DEFAULT_RULES: LintRules = {
   indentation: true,
   cyclomatic_complexity: true,
   unreachable_statement: true,
+  static_condition: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
