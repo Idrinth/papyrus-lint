@@ -130,7 +130,7 @@ fn check_body(
                             line: *line,
                             column: 1,
                             message: format!(
-                                "Float value assigned to Int {} without an explicit 'as Int' cast",
+                                "[warning] Float value assigned to Int {} without an explicit 'as Int' cast",
                                 describe_target(target)
                             ),
                         });
@@ -152,7 +152,7 @@ fn check_body(
                             line: *line,
                             column: 1,
                             message: format!(
-                                "Float value returned from Int function '{function_name}' without an explicit 'as Int' cast"
+                                "[warning] Float value returned from Int function '{function_name}' without an explicit 'as Int' cast"
                             ),
                         });
                     }
@@ -237,7 +237,7 @@ fn walk_expr(
                             line,
                             column: 1,
                             message: format!(
-                                "Float value passed as Int parameter '{}' of function '{}' without an explicit 'as Int' cast",
+                                "[warning] Float value passed as Int parameter '{}' of function '{}' without an explicit 'as Int' cast",
                                 param.name, function.name
                             ),
                         });
@@ -285,7 +285,7 @@ fn check_declaration(
             line,
             column: 1,
             message: format!(
-                "Float value assigned to Int variable '{name}' without an explicit 'as Int' cast"
+                "[warning] Float value assigned to Int variable '{name}' without an explicit 'as Int' cast"
             ),
         });
     }
