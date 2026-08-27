@@ -25,6 +25,7 @@
 //!   indentation: true
 //!   cyclomatic_complexity: true
 //!   unreachable_statement: true
+//!   static_condition: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -122,6 +123,8 @@ pub struct Rules {
     pub cyclomatic_complexity: bool,
     /// The "Unreachable statement" lint.
     pub unreachable_statement: bool,
+    /// The "Static condition" lint.
+    pub static_condition: bool,
 }
 
 impl Default for Rules {
@@ -141,6 +144,7 @@ impl Default for Rules {
             indentation: true,
             cyclomatic_complexity: true,
             unreachable_statement: true,
+            static_condition: true,
         }
     }
 }
@@ -238,6 +242,7 @@ mod tests {
         assert!(config.rules.indentation);
         assert!(config.rules.cyclomatic_complexity);
         assert!(config.rules.unreachable_statement);
+        assert!(config.rules.static_condition);
     }
 
     #[test]
