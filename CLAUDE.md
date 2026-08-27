@@ -59,18 +59,32 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 
 - Frontend: `npm install`, then `npm run dev` (Vite dev server) or
   `npm run build` (typecheck + build). `npm run test` runs the frontend's
-  Vitest unit tests (`src/**/*.test.ts`).
+  Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
+  same suite instrumented with `@vitest/coverage-v8`, printing a text
+  report and writing HTML/lcov reports to `coverage/`.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build`.
 - Rust backend only: `cargo check` / `cargo test` from `src-tauri/`.
 - Parser crate only: `cargo test` from `crates/papyrus-parser/`.
 - Lints crate only: `cargo test` from `crates/papyrus-lints/`.
+- Rust coverage for any of the three crates above: `cargo llvm-cov
+  --manifest-path <crate>/Cargo.toml` (requires the
+  [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) subcommand
+  and the `llvm-tools-preview` rustup component).
 
 ## CI (`.github/workflows/ci.yml`)
 
-- **Frontend job**: `npm ci`, then `npm run test` (Vitest unit tests) and
-  `npm run build` (typecheck & Vite build).
-- **Rust job**: `cargo fmt --check`, `cargo clippy -- -D warnings`, and
-  `cargo check`, all run against `src-tauri/Cargo.toml`.
+- **Frontend job**: `npm ci`, then `npm run test:coverage` (Vitest unit
+  tests, instrumented for coverage) and `npm run build` (typecheck & Vite
+  build). The text coverage summary is posted to the job's step summary
+  and the full HTML/lcov report is uploaded as the `frontend-coverage`
+  artifact.
+- **Rust build job**: `cargo fmt --check`, `cargo clippy -- -D warnings`,
+  and `cargo check`, all run against `src-tauri/Cargo.toml`.
+- **Rust test job**: a matrix over `src-tauri`, `crates/papyrus-parser`,
+  and `crates/papyrus-lints` runs each crate's tests via `cargo llvm-cov`.
+  Each matrix leg posts its text coverage summary to the job's step
+  summary and uploads its lcov report as a `rust-coverage-<crate>`
+  artifact.
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.

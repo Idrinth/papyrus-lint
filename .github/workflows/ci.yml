@@ -20,8 +20,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Test
-        run: npm run test
+      - name: Test with coverage
+        run: npm run test:coverage | tee coverage-output.txt
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### Frontend coverage"
+            echo '```'
+            sed -n '/% Coverage report/,$p' coverage-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: coverage/
 
       - name: Build
         run: npm run build
@@ -55,13 +72,19 @@ jobs:
         run: cargo check --manifest-path src-tauri/Cargo.toml
 
   rust-test:
-    name: Rust test (${{ matrix.crate }})
+    name: Rust test (${{ matrix.name }})
     needs: rust-build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        crate: [src-tauri, crates/papyrus-parser, crates/papyrus-lints]
+        include:
+          - crate: src-tauri
+            name: src-tauri
+          - crate: crates/papyrus-parser
+            name: papyrus-parser
+          - crate: crates/papyrus-lints
+            name: papyrus-lints
     steps:
       - uses: actions/checkout@v4
 
@@ -72,10 +95,35 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+
+      - uses: taiki-e/install-action@cargo-llvm-cov
 
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: ${{ matrix.crate }}
 
-      - name: Test
-        run: cargo test --manifest-path ${{ matrix.crate }}/Cargo.toml
+      - name: Test with coverage
+        run: cargo llvm-cov --manifest-path ${{ matrix.crate }}/Cargo.toml --no-report
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### Rust coverage — ${{ matrix.name }}"
+            echo '```'
+            cargo llvm-cov report --manifest-path ${{ matrix.crate }}/Cargo.toml --summary-only
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always()
+        run: cargo llvm-cov report --manifest-path ${{ matrix.crate }}/Cargo.toml --lcov --output-path lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-coverage-${{ matrix.name }}
+          path: lcov.info
