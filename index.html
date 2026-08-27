@@ -62,6 +62,13 @@
         <div id="panel-lint" class="tabs__panel" role="tabpanel" aria-labelledby="tab-lint" hidden>
           <div id="psc-result" class="psc-result" hidden>
             <h2>Parsed scripts</h2>
+            <fieldset id="psc-result-filters" class="psc-result__filters">
+              <legend>Show severities</legend>
+              <label><input type="checkbox" id="filter-error" checked /> Errors</label>
+              <label><input type="checkbox" id="filter-warning" checked /> Warnings</label>
+              <label><input type="checkbox" id="filter-info" checked /> Info</label>
+              <label><input type="checkbox" id="filter-other" checked /> Other</label>
+            </fieldset>
             <ul id="psc-result-list"></ul>
           </div>
         </div>
