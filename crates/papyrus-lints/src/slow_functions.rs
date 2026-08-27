@@ -18,6 +18,9 @@ pub struct SlowFunctionRule {
 
 include!(concat!(env!("OUT_DIR"), "/slow_functions_data.rs"));
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "slow-functions";
+
 /// Checks `source` for calls to functions with a faster equivalent.
 ///
 /// A call site is any identifier immediately followed by `(`. The lexer
@@ -52,6 +55,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 "{}.{} is slower than necessary; use `{}` instead",
                 rule.object, rule.function, rule.replacement
             ),
+            rule: RULE,
         });
     }
     diagnostics

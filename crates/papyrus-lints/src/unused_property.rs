@@ -12,6 +12,9 @@ use crate::Diagnostic;
 use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "unused-property";
+
 /// Checks `source` for `Property` declarations whose name is never used
 /// anywhere else in the script.
 pub fn check(source: &str) -> Vec<Diagnostic> {
@@ -27,6 +30,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             line: decl.token.line,
             column: decl.token.col,
             message: format!("Property '{}' is declared but never used", decl.name),
+            rule: RULE,
         })
         .collect()
 }

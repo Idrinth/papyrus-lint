@@ -2,6 +2,9 @@
 
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "semicolon";
+
 /// The supported trailing-semicolon policies.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Style {
@@ -31,6 +34,7 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
                 line: index + 1,
                 column: content.chars().count() + usize::from(!has_semicolon),
                 message: message.to_string(),
+                rule: RULE,
             })
         })
         .collect()

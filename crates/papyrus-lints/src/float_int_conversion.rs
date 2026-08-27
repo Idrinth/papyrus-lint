@@ -15,6 +15,9 @@ use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "float-to-int";
+
 /// Checks `source` for Float values narrowed into an Int without an
 /// explicit cast.
 pub fn check(source: &str) -> Vec<Diagnostic> {
@@ -133,6 +136,7 @@ fn check_body(
                                 "[warning] Float value assigned to Int {} without an explicit 'as Int' cast",
                                 describe_target(target)
                             ),
+                            rule: RULE,
                         });
                     }
                 }
@@ -154,6 +158,7 @@ fn check_body(
                             message: format!(
                                 "[warning] Float value returned from Int function '{function_name}' without an explicit 'as Int' cast"
                             ),
+                            rule: RULE,
                         });
                     }
                 }
@@ -240,6 +245,7 @@ fn walk_expr(
                                 "[warning] Float value passed as Int parameter '{}' of function '{}' without an explicit 'as Int' cast",
                                 param.name, function.name
                             ),
+                            rule: RULE,
                         });
                     }
                 }
@@ -287,6 +293,7 @@ fn check_declaration(
             message: format!(
                 "[warning] Float value assigned to Int variable '{name}' without an explicit 'as Int' cast"
             ),
+            rule: RULE,
         });
     }
 }

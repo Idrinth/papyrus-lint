@@ -55,6 +55,24 @@ A linter for Bethesda's papyrus language to improve code quality.
   as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or
   an `[error]` above `cyclomatic_complexity_error` (default 20).
 
+## Disabling a lint on a specific line
+
+A line carrying a trailing `; @disable <rule-id>[, <rule-id>...]` comment
+has diagnostics from the named rule(s) suppressed for that line only, e.g.:
+
+```papyrus
+action = 1 ; @disable float-to-int
+```
+
+`; @disable` with no rule ids suppresses every lint on that line. Matching
+against the directive's rule id(s) is case-insensitive. This only affects
+linting — it does not change what the automatic fixes in
+"Implemented Automatic Fixes" below do to that line. The rule ids, one per
+lint listed above, are: `trailing-whitespace`, `comma-spacing`,
+`forbidden-functions`, `slow-functions`, `unused-getter`, `unused-property`,
+`semicolon`, `float-to-int`, `strict-boolean`, `argument-types`,
+`numeric-comparison`, `indentation`, and `cyclomatic-complexity`.
+
 ## Configuration
 
 Lint/fix behavior is configured via an optional YAML file named

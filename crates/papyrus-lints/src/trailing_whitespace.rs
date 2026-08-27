@@ -2,6 +2,9 @@
 
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "trailing-whitespace";
+
 const TRAILING_WHITESPACE: [char; 2] = [' ', '\t'];
 
 /// Checks `source` for lines ending in trailing spaces or tabs.
@@ -19,6 +22,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 line: index + 1,
                 column: trimmed.chars().count() + 1,
                 message: "Line contains trailing whitespace".to_string(),
+                rule: RULE,
             })
         })
         .collect()

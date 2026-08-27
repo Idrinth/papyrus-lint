@@ -4,6 +4,9 @@ use crate::Diagnostic;
 use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Token, TokenKind};
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "unused-getter";
+
 /// Checks for calls whose function name begins with `Get` and whose result is
 /// discarded rather than assigned, returned, or used by another expression.
 pub fn check(source: &str) -> Vec<Diagnostic> {
@@ -69,6 +72,7 @@ fn check_statement(statement: &[Token]) -> Option<Diagnostic> {
             "Getter '{}' is called without using its return value",
             function.1
         ),
+        rule: RULE,
     })
 }
 

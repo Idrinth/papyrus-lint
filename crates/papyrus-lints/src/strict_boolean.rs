@@ -6,6 +6,9 @@ use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "strict-boolean";
+
 /// Checks every `If`/`ElseIf`/`While` condition in `source` and flags the
 /// ones that don't resolve to `Bool`.
 ///
@@ -97,6 +100,7 @@ fn check_condition(
         line,
         column,
         message: format!("Condition must be a boolean value or expression, found '{found}'"),
+        rule: RULE,
     });
 }
 

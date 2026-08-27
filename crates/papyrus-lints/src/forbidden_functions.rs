@@ -19,6 +19,9 @@ pub struct ForbiddenFunctionRule {
 
 include!(concat!(env!("OUT_DIR"), "/forbidden_functions_data.rs"));
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "forbidden-functions";
+
 /// Checks `source` for calls to forbidden/discouraged functions.
 ///
 /// A call site is any identifier immediately followed by `(`. The lexer
@@ -53,6 +56,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 "[{}] {}.{}: {}",
                 rule.level, rule.script, rule.function, rule.message
             ),
+            rule: RULE,
         });
     }
     diagnostics
