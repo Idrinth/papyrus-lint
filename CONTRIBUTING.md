@@ -1,4 +1,4 @@
-# Contributing to papyrus-lint
+# Contributing to Papyrus Lint
 
 Thanks for your interest in contributing! This document covers how the
 project is laid out, how to set up a development environment, and what's
