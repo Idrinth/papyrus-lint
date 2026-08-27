@@ -22,6 +22,9 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         .collect()
 }
 
+/// Flags `statement` (the tokens between two newlines) if it is nothing but
+/// a bare call to a `Get`-prefixed function, with no other operator or
+/// keyword that would consume its return value.
 fn check_statement(statement: &[Token]) -> Option<Diagnostic> {
     // A discarded expression cannot contain a statement keyword or an
     // assignment. This also excludes declarations, returns, and conditions.
