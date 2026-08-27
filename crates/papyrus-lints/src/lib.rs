@@ -243,4 +243,131 @@ mod tests {
             "Function Run();\n  If ready;\n    DoThing();\n  EndIf;\nEndFunction;\n"
         );
     }
+
+    fn config_with(tweak: impl FnOnce(&mut Config)) -> Config {
+        let mut config = Config::default();
+        tweak(&mut config);
+        config
+    }
+
+    /// `lint_with_external_arguments` gates each of the 14 rulesets behind
+    /// its own `if rules.<field>` check (see [`config::Rules`]). This walks
+    /// every ruleset, one at a time, confirming that: (a) its own flag
+    /// being on lets it fire on a source crafted to trigger it, and (b)
+    /// flipping only that flag off suppresses that rule's diagnostics.
+    /// This is the only test that exercises 12 of the 14 gates (only
+    /// `trailing_whitespace` and `comma_spacing` were previously covered,
+    /// by `lint_skips_disabled_rules` above) — a gate accidentally wired to
+    /// the wrong `Rules` field, or hardcoded to always run, would fail
+    /// here even though it wouldn't fail any other existing test.
+    #[test]
+    fn each_rule_flag_gates_only_its_own_lint() {
+        let cases: Vec<(&str, &str, Config, Config)> = vec![
+            (
+                "ScriptName Example  \n",
+                trailing_whitespace::RULE,
+                Config::default(),
+                config_with(|c| c.rules.trailing_whitespace = false),
+            ),
+            (
+                "Function Add(Int left,Int right)\n  Use(Add(1,2),3)\nEndFunction\n",
+                comma_spacing::RULE,
+                Config::default(),
+                config_with(|c| c.rules.comma_spacing = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction DoThing()\n    Game.GetPlayer()\nEndFunction\n",
+                forbidden_functions::RULE,
+                Config::default(),
+                config_with(|c| c.rules.forbidden_functions = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction DoThing(GlobalVariable akGlobal)\n    akGlobal.GetValueInt()\nEndFunction\n",
+                slow_functions::RULE,
+                Config::default(),
+                config_with(|c| c.rules.slow_functions = false),
+            ),
+            (
+                "Function Test()\n  GetValue()\nEndFunction\n",
+                unused_getter::RULE,
+                Config::default(),
+                config_with(|c| c.rules.unused_getter = false),
+            ),
+            (
+                "ScriptName Example\n\nInt Property MyValue = 1 Auto\n\nFunction DoThing()\nEndFunction\n",
+                unused_property::RULE,
+                Config::default(),
+                config_with(|c| c.rules.unused_property = false),
+            ),
+            (
+                // Default config forbids trailing semicolons, so a semicolon here violates it.
+                "ScriptName Example\n\nInt value = 1;\n",
+                semicolon::RULE,
+                Config::default(),
+                config_with(|c| c.rules.semicolon = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int x = 1.5\nEndFunction\n",
+                float_int_conversion::RULE,
+                Config::default(),
+                config_with(|c| c.rules.float_int_conversion = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Int count)\n    If count\n    EndIf\nEndFunction\n",
+                strict_boolean::RULE,
+                Config::default(),
+                config_with(|c| c.rules.strict_boolean = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(1)\nEndFunction\n",
+                argument_types::RULE,
+                Config::default(),
+                config_with(|c| c.rules.argument_types = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Int a)\n    If a == 1.0\n    EndIf\nEndFunction\n",
+                numeric_comparison::RULE,
+                Config::default(),
+                config_with(|c| c.rules.numeric_comparison = false),
+            ),
+            (
+                // Default config expects tab indentation; this uses spaces instead.
+                "Function Run()\n  If ready\nDoThing()\nEndIf\nEndFunction\n",
+                indentation::RULE,
+                Config::default(),
+                config_with(|c| c.rules.indentation = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int i = 1\nEndFunction\n",
+                cyclomatic_complexity::RULE,
+                // The default warning threshold (10) wouldn't flag this trivial
+                // function, so lower it — independent of the `rules` flag under test.
+                config_with(|c| c.cyclomatic_complexity_warning = 0),
+                config_with(|c| {
+                    c.cyclomatic_complexity_warning = 0;
+                    c.rules.cyclomatic_complexity = false;
+                }),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Return\n    Int i = 1\nEndFunction\n",
+                unreachable_statement::RULE,
+                Config::default(),
+                config_with(|c| c.rules.unreachable_statement = false),
+            ),
+        ];
+
+        for (source, rule, enabled_config, disabled_config) in cases {
+            let baseline = lint(source, &enabled_config);
+            assert!(
+                baseline.iter().any(|d| d.rule == rule),
+                "expected rule {rule:?} to fire on {source:?}, got {baseline:?}"
+            );
+
+            let with_rule_disabled = lint(source, &disabled_config);
+            assert!(
+                with_rule_disabled.iter().all(|d| d.rule != rule),
+                "disabling {rule:?} should suppress its own diagnostics, got {with_rule_disabled:?}"
+            );
+        }
+    }
 }
