@@ -1,6 +1,6 @@
 //! Enforces a configured trailing-semicolon style.
 
-use crate::Diagnostic;
+use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "semicolon";
@@ -13,11 +13,20 @@ pub enum Style {
 }
 
 /// Checks non-empty lines for the configured trailing-semicolon style.
+/// Lines inside a CreationKit fragment-code wrapper (see
+/// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers,
+/// are never flagged.
 pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
+    let protected = fragment_code::protected_lines(source);
+
     source
         .lines()
         .enumerate()
         .filter_map(|(index, line)| {
+            if protected[index + 1] {
+                return None;
+            }
+
             let content = line.trim_end_matches([' ', '\t', '\r']);
             if content.is_empty() {
                 return None;
@@ -42,21 +51,29 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
 
 /// Adds or removes terminal semicolons while retaining line endings. In
 /// forbid mode only terminal semicolons are removed, so comment text is never
-/// discarded.
+/// discarded. Lines protected by a CreationKit fragment-code wrapper (see
+/// [`fragment_code`]) are left exactly as-is.
 pub fn repair(source: &str, style: Style) -> String {
+    let protected = fragment_code::protected_lines(source);
     let mut result = String::with_capacity(source.len());
+    let mut line_number = 1usize;
 
     for line_and_ending in source.split_inclusive('\n') {
-        let (line, ending) = line_and_ending.strip_suffix("\r\n").map_or_else(
-            || {
-                line_and_ending
-                    .strip_suffix('\n')
-                    .map_or((line_and_ending, ""), |line| (line, "\n"))
-            },
-            |line| (line, "\r\n"),
-        );
-        repair_line(&mut result, line, style);
-        result.push_str(ending);
+        if protected[line_number] {
+            result.push_str(line_and_ending);
+        } else {
+            let (line, ending) = line_and_ending.strip_suffix("\r\n").map_or_else(
+                || {
+                    line_and_ending
+                        .strip_suffix('\n')
+                        .map_or((line_and_ending, ""), |line| (line, "\n"))
+                },
+                |line| (line, "\r\n"),
+            );
+            repair_line(&mut result, line, style);
+            result.push_str(ending);
+        }
+        line_number += 1;
     }
 
     result
@@ -101,6 +118,38 @@ mod tests {
         assert_eq!(
             repair(source, Style::Forbid),
             "Int value = 1  \nDebug.Trace(\"x\") ; explanation\n"
+        );
+    }
+
+    #[test]
+    fn fragment_code_wrapper_is_never_touched() {
+        let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+Scriptname Example Extends TopicInfo Hidden
+Function Fragment_0(ObjectReference akSpeakerRef)
+;BEGIN CODE
+akSpeaker.RemoveItem(x, 1, false, PlayerRef)
+;END CODE
+EndFunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+";
+        let diagnostics = check(source, Style::Require);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
+
+        let repaired = repair(source, Style::Require);
+        assert_eq!(
+            repaired,
+            "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+Scriptname Example Extends TopicInfo Hidden
+Function Fragment_0(ObjectReference akSpeakerRef)
+;BEGIN CODE
+akSpeaker.RemoveItem(x, 1, false, PlayerRef);
+;END CODE
+EndFunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+"
         );
     }
 
