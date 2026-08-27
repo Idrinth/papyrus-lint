@@ -101,6 +101,16 @@ impl Parser {
         }
     }
 
+    /// Like `expect_identifier`, but also accepts the `Length` keyword,
+    /// which is only ever meaningful as an array's `.Length` property.
+    fn expect_property_name(&mut self) -> PResult<String> {
+        if matches!(self.kind(), TokenKind::Keyword(Keyword::Length)) {
+            self.advance();
+            return Ok("Length".to_string());
+        }
+        self.expect_identifier()
+    }
+
     fn expect(&mut self, kind: TokenKind) -> PResult<Token> {
         if *self.kind() == kind {
             Ok(self.advance())
@@ -740,7 +750,7 @@ impl Parser {
             match self.kind() {
                 TokenKind::Dot => {
                     self.advance();
-                    let property = self.expect_identifier()?;
+                    let property = self.expect_property_name()?;
                     expr = Expr::Member {
                         object: Box::new(expr),
                         property,
