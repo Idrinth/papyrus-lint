@@ -62,10 +62,27 @@
         <div id="panel-lint" class="tabs__panel" role="tabpanel" aria-labelledby="tab-lint" hidden>
           <div id="psc-result" class="psc-result" hidden>
             <h2>Parsed scripts</h2>
+            <fieldset id="psc-result-filters" class="psc-result__filters">
+              <legend>Show severities</legend>
+              <label><input type="checkbox" id="filter-error" checked /> Errors</label>
+              <label><input type="checkbox" id="filter-warning" checked /> Warnings</label>
+              <label><input type="checkbox" id="filter-info" checked /> Info</label>
+              <label><input type="checkbox" id="filter-other" checked /> Other</label>
+            </fieldset>
             <ul id="psc-result-list"></ul>
           </div>
         </div>
       </div>
     </main>
+
+    <dialog id="code-viewer" class="code-viewer">
+      <div class="code-viewer__header">
+        <h2 id="code-viewer-title" class="code-viewer__title"></h2>
+        <button type="button" id="code-viewer-close" class="code-viewer__close" aria-label="Close">
+          &times;
+        </button>
+      </div>
+      <div id="code-viewer-body" class="code-viewer__body"></div>
+    </dialog>
   </body>
 </html>

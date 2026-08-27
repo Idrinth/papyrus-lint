@@ -36,6 +36,13 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
     papyrus_parser::parse(&source).map_err(|err| err.to_string())
 }
 
+/// Reads the `.psc` file at `path` and returns its raw source text, for the
+/// frontend's syntax-highlighted code viewer.
+#[tauri::command]
+fn read_psc_file(path: String) -> Result<String, String> {
+    std::fs::read_to_string(&path).map_err(|err| err.to_string())
+}
+
 /// Looks for a papyrus-lint YAML config file in `dir` (conventionally the
 /// directory containing the `.achlist` file) and returns the lint
 /// configuration it describes, falling back to the default configuration
@@ -105,6 +112,7 @@ pub fn run() {
             parse_papyrus_script,
             lint_papyrus_script,
             parse_psc_file,
+            read_psc_file,
             load_lint_config,
             save_lint_config,
             lint_psc_file,
