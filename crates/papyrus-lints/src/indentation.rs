@@ -4,7 +4,7 @@
 use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Keyword, TokenKind};
 
-use crate::Diagnostic;
+use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "indentation";
@@ -75,17 +75,24 @@ fn line_depths(source: &str) -> Option<Vec<usize>> {
 /// Checks `source` for lines whose leading whitespace doesn't match the
 /// indentation expected at their nesting depth. Blank/whitespace-only lines
 /// are never flagged. Returns no diagnostics if `source`'s structure can't
-/// be identified, since there's nothing to compare against.
+/// be identified, since there's nothing to compare against. Lines inside a
+/// CreationKit fragment-code wrapper (see [`fragment_code`]), outside of
+/// its `;BEGIN CODE`/`;END CODE` markers, are never flagged.
 pub fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
     let Some(depths) = line_depths(source) else {
         return Vec::new();
     };
+    let protected = fragment_code::protected_lines(source);
     let unit = indentation.unit();
 
     source
         .lines()
         .enumerate()
         .filter_map(|(index, line)| {
+            if protected[index + 1] {
+                return None;
+            }
+
             let content = line.trim_start_matches([' ', '\t']);
             if content.is_empty() {
                 return None;
@@ -111,7 +118,9 @@ pub fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
 }
 
 /// Replaces leading whitespace with the configured indentation while preserving
-/// line endings, blank lines, and all non-leading content.
+/// line endings, blank lines, and all non-leading content. Lines protected
+/// by a CreationKit fragment-code wrapper (see [`fragment_code`]) are left
+/// exactly as-is.
 pub fn repair(source: &str, indentation: Indentation) -> String {
     let unit = indentation.unit();
 
@@ -119,6 +128,7 @@ pub fn repair(source: &str, indentation: Indentation) -> String {
     let Some(depths) = line_depths(source) else {
         return source.to_string();
     };
+    let protected = fragment_code::protected_lines(source);
 
     let mut result = String::with_capacity(source.len());
     let mut rest = source;
@@ -129,20 +139,25 @@ pub fn repair(source: &str, indentation: Indentation) -> String {
             Some(index) => (&rest[..=index], &rest[index + 1..]),
             None => (rest, ""),
         };
-        let (line, ending) = if let Some(line) = line_and_ending.strip_suffix("\r\n") {
-            (line, "\r\n")
-        } else if let Some(line) = line_and_ending.strip_suffix('\n') {
-            (line, "\n")
-        } else {
-            (line_and_ending, "")
-        };
 
-        let content = line.trim_start_matches([' ', '\t']);
-        if !content.is_empty() {
-            result.push_str(&unit.repeat(depths[line_number]));
-            result.push_str(content);
+        if protected[line_number] {
+            result.push_str(line_and_ending);
+        } else {
+            let (line, ending) = if let Some(line) = line_and_ending.strip_suffix("\r\n") {
+                (line, "\r\n")
+            } else if let Some(line) = line_and_ending.strip_suffix('\n') {
+                (line, "\n")
+            } else {
+                (line_and_ending, "")
+            };
+
+            let content = line.trim_start_matches([' ', '\t']);
+            if !content.is_empty() {
+                result.push_str(&unit.repeat(depths[line_number]));
+                result.push_str(content);
+            }
+            result.push_str(ending);
         }
-        result.push_str(ending);
 
         rest = remainder;
         line_number += 1;
@@ -294,6 +309,43 @@ mod tests {
             let repaired = repair(SOURCE, indentation);
             assert!(check(&repaired, indentation).is_empty());
         }
+    }
+
+    #[test]
+    fn fragment_code_wrapper_is_never_reindented() {
+        // The function signature, the local variable declaration, `EndFunction`,
+        // and every wrapper/marker comment must stay exactly as CreationKit wrote
+        // them; only the actual code between `;BEGIN CODE`/`;END CODE` may be
+        // reindented to match its nesting depth.
+        let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+Scriptname Example Extends TopicInfo Hidden
+Function Fragment_0(ObjectReference akSpeakerRef)
+Actor akSpeaker = akSpeakerRef as Actor
+;BEGIN CODE
+akSpeaker.RemoveItem(x, 1, false, PlayerRef)
+;END CODE
+EndFunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+";
+        let diagnostics = check(source, Indentation::Tabs);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 6);
+
+        assert_eq!(
+            repair(source, Indentation::Tabs),
+            "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+Scriptname Example Extends TopicInfo Hidden
+Function Fragment_0(ObjectReference akSpeakerRef)
+Actor akSpeaker = akSpeakerRef as Actor
+;BEGIN CODE
+\takSpeaker.RemoveItem(x, 1, false, PlayerRef)
+;END CODE
+EndFunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+"
+        );
     }
 
     #[test]

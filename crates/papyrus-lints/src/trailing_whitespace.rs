@@ -1,18 +1,26 @@
 //! Flags lines that end with trailing spaces or tabs.
 
-use crate::Diagnostic;
+use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "trailing-whitespace";
 
 const TRAILING_WHITESPACE: [char; 2] = [' ', '\t'];
 
-/// Checks `source` for lines ending in trailing spaces or tabs.
+/// Checks `source` for lines ending in trailing spaces or tabs. Lines
+/// inside a CreationKit fragment-code wrapper (see [`fragment_code`]),
+/// outside of its `;BEGIN CODE`/`;END CODE` markers, are never flagged.
 pub fn check(source: &str) -> Vec<Diagnostic> {
+    let protected = fragment_code::protected_lines(source);
+
     source
         .lines()
         .enumerate()
         .filter_map(|(index, line)| {
+            if protected[index + 1] {
+                return None;
+            }
+
             let trimmed = line.trim_end_matches(TRAILING_WHITESPACE);
             if trimmed.len() == line.len() {
                 return None;
@@ -31,10 +39,13 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 /// Strips trailing spaces/tabs from every line of `source`, preserving each
 /// line's original ending (`\n`, `\r\n`, or none for a final line without a
 /// trailing newline) and leaving lines that have no trailing whitespace
-/// untouched.
+/// untouched. Lines protected by a CreationKit fragment-code wrapper (see
+/// [`fragment_code`]) are left exactly as-is.
 pub fn repair(source: &str) -> String {
+    let protected = fragment_code::protected_lines(source);
     let mut result = String::with_capacity(source.len());
     let mut rest = source;
+    let mut line_number = 1usize;
 
     while !rest.is_empty() {
         let (line_and_ending, remainder) = match rest.find('\n') {
@@ -42,17 +53,23 @@ pub fn repair(source: &str) -> String {
             None => (rest, ""),
         };
 
-        let (content, ending) = if let Some(stripped) = line_and_ending.strip_suffix("\r\n") {
-            (stripped, "\r\n")
-        } else if let Some(stripped) = line_and_ending.strip_suffix('\n') {
-            (stripped, "\n")
+        if protected[line_number] {
+            result.push_str(line_and_ending);
         } else {
-            (line_and_ending, "")
-        };
+            let (content, ending) = if let Some(stripped) = line_and_ending.strip_suffix("\r\n") {
+                (stripped, "\r\n")
+            } else if let Some(stripped) = line_and_ending.strip_suffix('\n') {
+                (stripped, "\n")
+            } else {
+                (line_and_ending, "")
+            };
 
-        result.push_str(content.trim_end_matches(TRAILING_WHITESPACE));
-        result.push_str(ending);
+            result.push_str(content.trim_end_matches(TRAILING_WHITESPACE));
+            result.push_str(ending);
+        }
+
         rest = remainder;
+        line_number += 1;
     }
 
     result
@@ -152,6 +169,19 @@ mod tests {
     fn repairs_multiple_lines_independently() {
         let source = "Line one \nLine two\nLine three\t\n";
         assert_eq!(repair(source), "Line one\nLine two\nLine three\n");
+    }
+
+    #[test]
+    fn fragment_code_wrapper_trailing_whitespace_is_left_alone() {
+        let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment  \nScriptname Example Extends TopicInfo Hidden\nFunction Fragment_0(ObjectReference akSpeakerRef)\n;BEGIN CODE\nakSpeaker.RemoveItem(x, 1, false, PlayerRef)  \n;END CODE\nEndFunction\t\n;END FRAGMENT CODE - Do not edit anything between this and the begin comment\n";
+        assert!(check(source).iter().all(|d| d.line == 5));
+        let repaired = repair(source);
+        assert!(repaired.starts_with(
+            ";BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment  \n"
+        ));
+        assert!(repaired.contains("EndFunction\t\n"));
+        assert!(repaired.contains("akSpeaker.RemoveItem(x, 1, false, PlayerRef)\n"));
     }
 
     #[test]

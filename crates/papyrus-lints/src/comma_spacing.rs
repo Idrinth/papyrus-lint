@@ -1,6 +1,6 @@
 //! Requires whitespace after commas in parenthesized argument lists.
 
-use crate::Diagnostic;
+use crate::{fragment_code, Diagnostic};
 use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::TokenKind;
 
@@ -8,10 +8,14 @@ use papyrus_parser::token::TokenKind;
 pub const RULE: &str = "comma-spacing";
 
 /// Checks for argument-list commas that are immediately followed by another
-/// non-whitespace character.
+/// non-whitespace character. Commas on a line protected by a CreationKit
+/// fragment-code wrapper (see [`fragment_code`]) are never flagged.
 pub fn check(source: &str) -> Vec<Diagnostic> {
+    let protected = fragment_code::protected_lines(source);
+
     comma_offsets(source)
         .into_iter()
+        .filter(|(_, line, _)| !protected[*line])
         .map(|(_, line, column)| Diagnostic {
             line,
             column,
@@ -21,10 +25,14 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         .collect()
 }
 
-/// Inserts one space after every unspaced comma in an argument list.
+/// Inserts one space after every unspaced comma in an argument list. Commas
+/// on a line protected by a CreationKit fragment-code wrapper (see
+/// [`fragment_code`]) are left exactly as-is.
 pub fn repair(source: &str) -> String {
+    let protected = fragment_code::protected_lines(source);
     let offsets: Vec<_> = comma_offsets(source)
         .into_iter()
+        .filter(|(_, line, _)| !protected[*line])
         .map(|(offset, _, _)| offset)
         .collect();
     if offsets.is_empty() {
@@ -109,6 +117,33 @@ mod tests {
         let source = "String value = \"one,two\" ; comment,here\n; / block,comment /;\nInt[] values = [1,2]\n";
         assert!(check(source).is_empty());
         assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn fragment_code_wrapper_commas_are_left_alone() {
+        let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+Function Fragment_0(ObjectReference akSpeakerRef,Actor akSpeaker)
+;BEGIN CODE
+akSpeaker.RemoveItem(x,1,false,PlayerRef)
+;END CODE
+EndFunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+";
+        let diagnostics = check(source);
+        assert!(diagnostics.iter().all(|d| d.line == 4));
+        assert_eq!(
+            repair(source),
+            "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+Function Fragment_0(ObjectReference akSpeakerRef,Actor akSpeaker)
+;BEGIN CODE
+akSpeaker.RemoveItem(x, 1, false, PlayerRef)
+;END CODE
+EndFunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+"
+        );
     }
 
     #[test]
