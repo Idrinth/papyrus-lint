@@ -1,4 +1,7 @@
 # Papyrus Lint
+
+![Papyrus Lint logo](resources/logo.jpg)
+
 A linter for Bethesda's papyrus language to improve code quality.
 
 ## Implemented Lints
