@@ -2,7 +2,19 @@
 
 ![Papyrus Lint logo](resources/logo.jpg)
 
-A linter for Bethesda's papyrus language to improve code quality.
+**Papyrus Lint catches bugs that CreationKit's compiler lets through.**
+`PapyrusCompiler.exe` only checks that a script is syntactically valid — it
+will happily compile a script that dereferences a `None` object at
+runtime, passes a `String` where an `Int` is expected, returns the wrong
+type from a function, compares an `Int` to a `Float` inexactly, or
+contains a branch or statement that can never execute. Those bugs don't
+show up until later, as a CTD, a quest stage that never advances, or a
+value that's silently wrong — often far from the line that actually
+caused them, and long after the mod author has lost the context to spot
+it. Papyrus Lint scans your `.psc` source for exactly these patterns (see
+the full list below) before you ship, on top of the formatting/style
+issues a linter usually catches, so a mod author finds them at write time
+instead of from a bug report.
 
 ## What is a linter?
 
