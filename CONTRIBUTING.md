@@ -9,37 +9,93 @@ expected of a pull request.
 ```
 .
 ├── src/                    # Frontend (TypeScript, vanilla, no framework)
-│   ├── main.ts              # Drag-and-drop UI logic, calls into Tauri commands
+│   ├── main.ts               # Drag-and-drop UI logic, calls into Tauri commands
+│   ├── highlight.ts          # Standalone Papyrus syntax highlighter for the
+│   │                         # code viewer dialog
+│   ├── main.test.ts          # Vitest unit tests for main.ts
+│   ├── highlight.test.ts     # Vitest unit tests for highlight.ts
+│   ├── test/fixture.ts       # Shared jsdom DOM fixture for main.test.ts
 │   └── styles.css
 ├── index.html               # Frontend entry point (Vite)
 ├── src-tauri/               # Tauri desktop app shell (Rust)
 │   └── src/
-│       ├── main.rs           # Binary entry point, delegates to lib::run()
+│       ├── main.rs           # Binary entry point: no args -> lib::run() (GUI),
+│       │                     # args -> papyrus_lint_cli::run() (CLI mode)
 │       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
-│       │                     # parse_papyrus_script, parse_psc_file)
-│       ├── achlist.rs        # Parses .achlist files (JSON arrays of paths)
-│       └── script_locator.rs  # Finds .psc files by name under scripts/source
-│                               # or source/scripts
+│       │                     # parse_papyrus_script, lint_papyrus_script,
+│       │                     # parse_psc_file, load_lint_config, lint_psc_file,
+│       │                     # repair_psc_file), built on papyrus-lint-core
+│       └── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button
+├── rules/
+│   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
+│                                  # compiled into Rust by papyrus-lints' build.rs
 └── crates/
-    └── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
-        └── src/               # for the Papyrus language. No lint rules live
-            ├── lexer.rs        # here yet — this is the parsing foundation
-            ├── token.rs        # the lints described in README.md will be
-            ├── ast.rs          # built on top of.
-            └── parser.rs
+    ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
+    │   └── src/               # for the Papyrus language. No lint rules live
+    │       ├── lexer.rs        # here — see papyrus-lints below.
+    │       ├── token.rs
+    │       ├── ast.rs
+    │       └── parser.rs
+    ├── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
+    │   ├── build.rs           # (not the AST) so they still run on scripts
+    │   └── src/                # that don't parse cleanly.
+    │       ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
+    │       ├── config.rs                  # Config type (YAML-deserializable) passed
+    │       │                              # to every check/fix job
+    │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
+    │       └── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
+    │                                        # via a build-time-generated array
+    ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
+    │   └── src/               # and the CLI, independent of Tauri:
+    │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
+    │       ├── config.rs       # Locates/loads a project's papyrus-lint.yaml
+    │       ├── script_locator.rs   # Finds .psc files by name under
+    │       │                       # scripts/source or source/scripts
+    │       └── function_table.rs   # Cross-script function signature lookup,
+    │                               # for the argument/return type check lints
+    └── papyrus-lint-cli/     # `papyrus-lint <achlist-path>`: lints an
+        └── src/                # achlist's scripts against its project's
+            ├── lib.rs           # papyrus-lint.yaml and prints the results.
+            │                    # run() here is the shared logic; also
+            │                    # linked into src-tauri for its CLI mode.
+            └── main.rs          # Thin binary entry point around lib::run()
 ```
 
-`papyrus-parser` is a separate crate (not yet a Cargo workspace member,
-just a path dependency of `src-tauri`) so the parsing logic stays reusable
-independent of the Tauri app — e.g. for a future CLI or test harness.
+`papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
+`papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
+just path dependencies of each other and of `src-tauri`) so the lint
+engine and project-resolution logic stay reusable independent of the Tauri
+app — which is what lets `papyrus-lint-cli` link against them without
+pulling in Tauri (and its system GUI dependencies) at all. `src-tauri`
+depends on `papyrus-lint-cli` too, purely for its `run()` function (its
+`main.rs` calls straight into it for CLI mode), not for the
+`PapyrusLinterCLI` binary target that crate also defines.
 
 ## Development setup
 
 - Frontend: `npm install`, then `npm run dev` (Vite dev server) or
-  `npm run build` (typecheck + build).
+  `npm run build` (typecheck + build). `npm run test` runs the frontend's
+  Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
+  same suite instrumented with `@vitest/coverage-v8`, printing a text
+  report and writing HTML/lcov reports to `coverage/`. `npm run lint` runs
+  ESLint (flat config in `eslint.config.js`) over `src/`.
+  - `typescript-eslint` doesn't yet support TypeScript 7 (this repo's
+    `typescript` devDependency), so `package.json` installs it under an
+    npm alias: `typescript` resolves to the `@typescript/typescript6` shim
+    (TS 6, satisfying typescript-eslint) and the real TS 7 compiler is
+    installed separately as `@typescript/native`, which is what `tsc`
+    (used by `npm run build`) actually runs. See
+    https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build`.
 - Rust backend only: `cargo check` / `cargo test` from `src-tauri/`.
 - Parser crate only: `cargo test` from `crates/papyrus-parser/`.
+- Lints crate only: `cargo test` from `crates/papyrus-lints/`.
+- Shared project-resolution crate only: `cargo test` from
+  `crates/papyrus-lint-core/`.
+- CLI: `cargo run --manifest-path crates/papyrus-lint-cli/Cargo.toml --
+  <path-to-achlist>`, or `cargo build --release --manifest-path
+  crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
+  binary. `cargo test` from `crates/papyrus-lint-cli/` runs its tests.
 
 The desktop shell is built with [Tauri](https://tauri.app/), so building it
 requires Tauri's platform prerequisites (a Rust toolchain, plus the usual
@@ -52,42 +108,57 @@ CI (`.github/workflows/ci.yml`) runs on every pull request and on pushes to
 `the-one` (the default branch — not `main`). Make sure your change passes
 the same checks locally first:
 
-- **Frontend**: `npm ci` then `npm run build` (typecheck + Vite build).
-  `npm run test` runs the Vitest unit tests; CI runs `npm run
-  test:coverage` instead, which also reports code coverage.
-- **Rust**, from `src-tauri/`:
-  - `cargo fmt -- --check`
-  - `cargo clippy --all-targets -- -D warnings`
+- **Frontend job**: `npm ci`, then `npm run lint` (ESLint), `npm run
+  test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
+  run build` (typecheck & Vite build).
+- **Rust build job**, against `src-tauri/Cargo.toml`:
+  - `cargo fmt --check`
+  - `cargo clippy -- -D warnings`
   - `cargo check`
-
-If you touched `crates/papyrus-parser` or `crates/papyrus-lints`, also run
-`cargo test` from that directory to make sure its test suite still
-passes. CI runs each crate's tests through `cargo llvm-cov` to report
-coverage; you can do the same locally with `cargo llvm-cov` (see the
-[`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) docs for
-setup).
+- **Rust test job**: a matrix over `src-tauri`, `crates/papyrus-parser`,
+  `crates/papyrus-lints`, `crates/papyrus-lint-core`, and
+  `crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
+  If you touched any of those crates, run `cargo test` (or `cargo
+  llvm-cov`, to also see coverage — see the
+  [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) docs for
+  setup) from that crate's directory to make sure its suite still passes.
 
 Keep pull requests focused on a single change, and use the PR template's
 checklist — contributions are permanent and unpaid; only open a PR once
 you're comfortable with both.
 
+Before merging (or asking a maintainer to merge) a pull request, make sure
+its branch is up to date with `the-one`. Merge or rebase `the-one` into the
+branch first if it has fallen behind, so CI has run against the current
+base.
+
 ## Code style
 
 - Rust code is formatted with `cargo fmt` and linted with `clippy`
   (warnings are treated as errors in CI). Run both before committing.
-- TypeScript is checked with `tsc` as part of `npm run build`; there is no
-  separate linter configured yet.
+- TypeScript is checked with `tsc` as part of `npm run build`, and linted
+  with ESLint (`npm run lint`) using `typescript-eslint`'s recommended
+  rules plus `@vitest/eslint-plugin`'s recommended rules on test files.
 - Match the existing style of the file you're editing (naming, module
   layout, etc.) rather than introducing a new convention.
 
 ## Adding lint rules
 
-No lint rules are implemented yet — `papyrus-parser` currently only
-provides the lexer, AST, and parser that lint rules will be built on top
-of. See the "Planned Lints" section of [README.md](README.md) for the list
-of lints this project intends to implement. If you want to work on one,
-open an issue or comment on an existing one first to avoid duplicate work,
-since the rule infrastructure is still taking shape.
+Two lints are implemented so far, in `crates/papyrus-lints`: trailing
+whitespace (`trailing_whitespace.rs`, with an automatic fix) and forbidden/
+discouraged function usage (`forbidden_functions.rs`, driven by
+`rules/forbidden-functions.yaml`). Both work on lexer tokens/raw text
+rather than the parsed AST, so they keep running on scripts that don't
+parse cleanly — follow that same approach for new lints where practical.
+See the "Planned Lints" section of [README.md](README.md) for the list of
+lints this project intends to implement next. If you want to work on one,
+open an issue or comment on an existing one first to avoid duplicate work.
+
+A lint/fix job receives a `&papyrus_lints::Config` (see
+`crates/papyrus-lints/src/config.rs`, deserialized from a project's
+optional `papyrus-lint.yaml`/`.yml`), so anything user-configurable (an
+on/off switch under `Config::rules`, a style option, etc.) should be read
+from there rather than added as a separate parameter.
 
 ## Reporting bugs and requesting features
 
