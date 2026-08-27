@@ -75,6 +75,12 @@ export interface PscParseOutcome {
   findings: Diagnostic[];
 }
 
+export interface CompileOutcome {
+  success: boolean;
+  stdout: string;
+  stderr: string;
+}
+
 export interface LintRules {
   trailing_whitespace: boolean;
   comma_spacing: boolean;
@@ -132,6 +138,9 @@ let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
 // also used by the "Argument type check" lint to resolve calls to
 // functions declared on other scripts under it.
 let currentProjectDir: string | null = null;
+// The PapyrusCompile.exe path to use for the "Compile" button, kept in
+// sync with the Settings tab's input (see handleCompilerPathChanged).
+let currentCompilerPath = "";
 
 const TRAILING_WHITESPACE_MESSAGE = "Line contains trailing whitespace";
 
@@ -571,6 +580,16 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
     item.append(fixButton);
   }
 
+  const compileButton = document.createElement("button");
+  compileButton.type = "button";
+  compileButton.textContent = "Compile";
+  compileButton.classList.add("psc-result__compile-button");
+  const compileOutputEl = document.createElement("pre");
+  compileOutputEl.classList.add("psc-result__compile-output");
+  compileOutputEl.hidden = true;
+  compileButton.addEventListener("click", () => void handleCompileClick(path, compileButton, compileOutputEl));
+  item.append(compileButton);
+
   if (visibleFindings.length > 0) {
     const findingsList = document.createElement("ul");
     findingsList.classList.add("psc-result__findings");
@@ -589,6 +608,8 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
     );
     item.append(findingsList);
   }
+
+  item.append(compileOutputEl);
 
   return item;
 }
@@ -620,6 +641,40 @@ export async function handleFixClick(path: string, outcome: PscParseOutcome, but
   }
 }
 
+// Shows `text` in `outputEl`, styling it as a success or failure so a
+// failed compile is easy to spot at a glance.
+function showCompileOutput(outputEl: HTMLElement, text: string, success: boolean) {
+  outputEl.textContent = text;
+  outputEl.hidden = false;
+  outputEl.classList.toggle("psc-result__compile-output--ok", success);
+  outputEl.classList.toggle("psc-result__compile-output--error", !success);
+}
+
+// Compiles `path` via PapyrusCompile.exe when the "Compile" button is
+// clicked, reporting both a successful compile and a compiler-reported
+// failure (syntax errors, missing imports, etc.) as well as a failure to
+// run the compiler at all (e.g. no path configured).
+export async function handleCompileClick(path: string, button: HTMLButtonElement, outputEl: HTMLElement) {
+  button.disabled = true;
+  const originalLabel = button.textContent;
+  button.textContent = "Compiling…";
+  try {
+    const outcome = await compilePscFile(path);
+    const output = [outcome.stdout, outcome.stderr].filter((text) => text.trim().length > 0).join("\n");
+    showCompileOutput(
+      outputEl,
+      output || (outcome.success ? "Compiled successfully." : "Compilation failed."),
+      outcome.success,
+    );
+  } catch (error) {
+    showCompileOutput(outputEl, String(error), false);
+    console.error(error);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalLabel;
+  }
+}
+
 // Remembers `dir` as the last project opened, so its config file can be
 // read again the next time the app starts.
 export function rememberProjectDir(dir: string) {
@@ -643,18 +698,31 @@ export async function useProjectDir(dir: string) {
   currentProjectDir = dir;
   currentLintConfig = await loadLintConfig(dir);
   applyLintConfigToUI(currentLintConfig);
+  currentCompilerPath = await loadCompilerPath(dir);
   if (compilerPathEl) {
-    compilerPathEl.value = await loadCompilerPath(dir);
+    compilerPathEl.value = currentCompilerPath;
   }
   rememberProjectDir(dir);
 }
 
-// Called when the PapyrusCompile.exe path input changes: persists it to
-// the current project's config file (if a project is loaded).
+// Called when the PapyrusCompile.exe path input changes: updates the path
+// used by the "Compile" button and persists it to the current project's
+// config file (if a project is loaded).
 export function handleCompilerPathChanged() {
+  currentCompilerPath = compilerPathEl?.value ?? "";
   if (currentProjectDir && compilerPathEl) {
     void saveCompilerPath(currentProjectDir, compilerPathEl.value);
   }
+}
+
+// Compiles the `.psc` file at `path` with the currently configured
+// PapyrusCompile.exe path, reproducing the invocation Creation Kit
+// tooling uses to compile a single script out of its source directory.
+export async function compilePscFile(path: string): Promise<CompileOutcome> {
+  return invoke<CompileOutcome>("compile_psc_file", {
+    path,
+    compilerPath: currentCompilerPath,
+  });
 }
 
 export async function handleDroppedPaths(paths: string[]) {
