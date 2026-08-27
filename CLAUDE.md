@@ -59,7 +59,7 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 
 - Frontend: `npm install`, then `npm run dev` (Vite dev server) or
   `npm run build` (typecheck + build). `npm run test` runs the frontend's
-  Vitest unit tests (`src/*.test.ts`).
+  Vitest unit tests (`src/**/*.test.ts`).
 - Full desktop app: `npm run tauri dev` / `npm run tauri build`.
 - Rust backend only: `cargo check` / `cargo test` from `src-tauri/`.
 - Parser crate only: `cargo test` from `crates/papyrus-parser/`.
