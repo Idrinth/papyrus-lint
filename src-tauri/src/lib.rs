@@ -4,6 +4,14 @@ use std::path::{Path, PathBuf};
 
 use papyrus_lint_core::{achlist, config, function_table};
 
+/// Returns the desktop app's version (from `src-tauri/Cargo.toml`, kept in
+/// sync with `package.json`/`tauri.conf.json` at release time), so the
+/// frontend can display it to the user.
+#[tauri::command]
+fn get_app_version() -> &'static str {
+    env!("CARGO_PKG_VERSION")
+}
+
 /// Parses the `.achlist` file at `path` and returns the resolved paths it lists.
 #[tauri::command]
 fn parse_achlist_file(path: String) -> Result<Vec<String>, String> {
@@ -161,6 +169,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            get_app_version,
             parse_achlist_file,
             parse_papyrus_script,
             lint_papyrus_script,
@@ -183,6 +192,11 @@ pub fn run() {
 mod tests {
     use super::*;
     use tempfile::tempdir;
+
+    #[test]
+    fn get_app_version_returns_the_crate_version() {
+        assert_eq!(get_app_version(), env!("CARGO_PKG_VERSION"));
+    }
 
     #[test]
     fn source_commands_parse_and_lint_without_touching_disk() {
