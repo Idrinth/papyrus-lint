@@ -25,12 +25,12 @@
 - script: Utility
   function: Wait
   level: warning
-  message: Waiting inside a script blocks the calling thread and can cause stutter or stack overflow on busy save games; prefer RegisterForSingleUpdate/OnUpdate for delayed logic instead of blocking
+  message: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at RegisterForSingleUpdate/OnUpdate for example
 
 - script: Utility
   function: WaitMenuMode
   level: warning
-  message: Waiting inside a script blocks the calling thread; prefer an event-driven approach such as RegisterForMenu or RegisterForSingleUpdate instead of blocking
+  message: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at RegisterForSingleUpdate/OnUpdate for example
 
 - script: Debug
   function: TraceStack
