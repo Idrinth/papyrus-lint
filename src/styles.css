@@ -210,11 +210,14 @@ h1 {
 }
 
 .code-viewer {
+  display: flex;
+  flex-direction: column;
   width: min(64em, 92vw);
   height: min(42em, 88vh);
   padding: 0;
   border: none;
   border-radius: 10px;
+  overflow: hidden;
   color: inherit;
   background-color: #f6f6f6;
 }
@@ -225,6 +228,7 @@ h1 {
 
 .code-viewer__header {
   display: flex;
+  flex: none;
   align-items: center;
   justify-content: space-between;
   gap: 1em;
@@ -257,7 +261,8 @@ h1 {
 }
 
 .code-viewer__body {
-  height: calc(100% - 3.2em);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   text-align: left;
 }
