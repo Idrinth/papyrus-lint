@@ -13,6 +13,9 @@ use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, Script, Stmt};
 
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "cyclomatic-complexity";
+
 /// Checks `source` for functions/events whose cyclomatic complexity exceeds
 /// `warning` or `error`. A function at or below `warning` is not flagged; one
 /// above `warning` but at or below `error` is flagged as `[warning]`; one
@@ -40,6 +43,7 @@ pub fn check(source: &str, warning: usize, error: usize) -> Vec<Diagnostic> {
                     "[{}] Function '{}' has a cyclomatic complexity of {} (warning: {}, error: {})",
                     level, function.name, complexity, warning, error
                 ),
+                rule: RULE,
             })
         })
         .collect()

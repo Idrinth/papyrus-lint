@@ -6,6 +6,9 @@ use papyrus_parser::token::{Keyword, TokenKind};
 
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "indentation";
+
 /// The indentation unit to use for each level of nesting.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize)]
 pub enum Indentation {
@@ -101,6 +104,7 @@ pub fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
                     "Line should be indented with {}",
                     indentation.describe(depth)
                 ),
+                rule: RULE,
             })
         })
         .collect()

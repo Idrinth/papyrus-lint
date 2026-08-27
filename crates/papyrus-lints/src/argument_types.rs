@@ -25,6 +25,9 @@ use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "argument-types";
+
 /// Resolves the parameter types of a function declared on some other
 /// script, for callers that can look such scripts up (see the module
 /// docs). Both names are matched case-insensitively; returning `None`
@@ -334,6 +337,7 @@ fn mismatch(
             format_type(param_type),
             got
         ),
+        rule: RULE,
     }
 }
 

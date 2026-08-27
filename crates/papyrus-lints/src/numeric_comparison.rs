@@ -15,6 +15,9 @@ use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "numeric-comparison";
+
 /// Checks `source` for `Int`/`Float` comparisons that aren't already made
 /// exact by an explicit cast.
 pub fn check(source: &str) -> Vec<Diagnostic> {
@@ -183,6 +186,7 @@ fn check_comparison(
             message: "Comparison between Int and Float without an explicit cast; \
                       floating-point precision may make this inexact"
                 .to_string(),
+            rule: RULE,
         });
     }
 }

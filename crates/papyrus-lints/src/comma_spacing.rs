@@ -4,6 +4,9 @@ use crate::Diagnostic;
 use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::TokenKind;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
+pub const RULE: &str = "comma-spacing";
+
 /// Checks for argument-list commas that are immediately followed by another
 /// non-whitespace character.
 pub fn check(source: &str) -> Vec<Diagnostic> {
@@ -13,6 +16,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             line,
             column,
             message: "Comma in argument list must be followed by whitespace".to_string(),
+            rule: RULE,
         })
         .collect()
 }
