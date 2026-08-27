@@ -18,6 +18,7 @@ jobs:
         uses: actions/setup-java@v6.0.0
         with:
           java-version: 21
+          distribution: temurin
           java-package: jre
       - name: Official SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v8.2.1
