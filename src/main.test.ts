@@ -37,6 +37,7 @@ import {
   loadLintConfig,
   openCodeViewer,
   parsePscFiles,
+  relativePath,
   rememberProjectDir,
   renderPscResults,
   repairPscFile,
@@ -95,6 +96,16 @@ describe("path helpers", () => {
 
   it("dirnameOf returns the whole path when there is no separator", () => {
     expect(dirnameOf("c.achlist")).toBe("c.achlist");
+  });
+
+  it("relativePath strips a matching base prefix, for either slash style", () => {
+    expect(relativePath("/proj/scripts/A.psc", "/proj")).toBe("scripts/A.psc");
+    expect(relativePath("C:\\proj\\scripts\\A.psc", "C:\\proj")).toBe("scripts\\A.psc");
+  });
+
+  it("relativePath falls back to the absolute path when base is unknown or unrelated", () => {
+    expect(relativePath("/a.psc", null)).toBe("/a.psc");
+    expect(relativePath("/elsewhere/A.psc", "/proj")).toBe("/elsewhere/A.psc");
   });
 });
 
@@ -387,6 +398,15 @@ describe("buildPscResultItem / renderPscResults", () => {
       outcome({ findings: [{ line: 1, column: 1, message: "[error] forbidden function used" }] }),
     );
     expect(unfixable!.querySelector(".psc-result__fix-button")).toBeNull();
+  });
+
+  it("shows the path relative to the current project dir, when known", async () => {
+    invokeImplFor({ load_lint_config: () => DEFAULT_LINT_CONFIG, load_compiler_path: () => null });
+    await useProjectDir("/a");
+
+    const item = buildPscResultItem(outcome({ path: "/a/b.psc", ok: false, detail: "boom" }));
+    expect(item!.textContent).toContain("b.psc: boom");
+    expect(item!.textContent).not.toContain("/a/b.psc");
   });
 
   it("always shows a compile button, even for a file with no findings", () => {
