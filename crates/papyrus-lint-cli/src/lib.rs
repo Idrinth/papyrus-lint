@@ -1,7 +1,7 @@
-//! Library backing the `papyrus-lint` command-line interface.
+//! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! papyrus-lint <path-to-achlist>
+//! PapyrusLinterCLI <path-to-achlist>
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
@@ -14,7 +14,7 @@
 //! app resolves them (see [`papyrus_lint_core::function_table`]), so the
 //! CLI's "Argument type check"/"Return type check" results match the app's.
 //!
-//! This crate is used both by the standalone `papyrus-lint` binary
+//! This crate is used both by the standalone `PapyrusLinterCLI` binary
 //! (`src/main.rs`) and by the desktop app (`src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
 
@@ -25,13 +25,13 @@ use std::path::{Path, PathBuf};
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::{achlist, config};
 
-pub const USAGE: &str = "Usage: papyrus-lint <path-to-achlist>\n\n\
+pub const USAGE: &str = "Usage: PapyrusLinterCLI <path-to-achlist>\n\n\
 Lints every .psc script listed in the given .achlist file, using the\n\
 project's papyrus-lint.yaml/.yml configuration (looked up next to the\n\
 .achlist file, falling back to defaults if it has none).\n\n\
 Options:\n\
   -h, --help     Show this help message\n\
-  -V, --version  Print the papyrus-lint version\n\n\
+  -V, --version  Print the PapyrusLinterCLI version\n\n\
 Exit status: 0 if no problems were found, 1 if any were, 2 on a usage or\n\
 I/O error.\n";
 
@@ -48,7 +48,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
     let achlist_path = match args {
         [flag] if flag == "--version" || flag == "-V" => {
-            let _ = writeln!(stdout, "papyrus-lint {VERSION}");
+            let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
             return 0;
         }
         [path] if path != "-h" && path != "--help" => PathBuf::from(path),
@@ -131,14 +131,14 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     if total_diagnostics == 0 {
         let _ = writeln!(
             stdout,
-            "papyrus-lint: no problems found in {} script(s).",
+            "PapyrusLinterCLI: no problems found in {} script(s).",
             script_paths.len()
         );
         0
     } else {
         let _ = writeln!(
             stdout,
-            "papyrus-lint: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).",
+            "PapyrusLinterCLI: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).",
             script_paths.len()
         );
         1
@@ -172,7 +172,7 @@ mod tests {
         let (code, _stdout, stderr) = run_captured(&[]);
 
         assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: papyrus-lint"));
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     }
 
     #[test]
@@ -180,7 +180,7 @@ mod tests {
         let (code, stdout, _stderr) = run_captured(&["--version".to_string()]);
 
         assert_eq!(code, 0);
-        assert_eq!(stdout, format!("papyrus-lint {VERSION}\n"));
+        assert_eq!(stdout, format!("PapyrusLinterCLI {VERSION}\n"));
     }
 
     #[test]
@@ -188,7 +188,7 @@ mod tests {
         let (code, stdout, _stderr) = run_captured(&["-V".to_string()]);
 
         assert_eq!(code, 0);
-        assert_eq!(stdout, format!("papyrus-lint {VERSION}\n"));
+        assert_eq!(stdout, format!("PapyrusLinterCLI {VERSION}\n"));
     }
 
     #[test]
@@ -196,7 +196,7 @@ mod tests {
         let (code, _stdout, stderr) = run_captured(&["--help".to_string()]);
 
         assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: papyrus-lint"));
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     }
 
     #[test]
@@ -204,7 +204,7 @@ mod tests {
         let (code, _stdout, stderr) = run_captured(&["a".to_string(), "b".to_string()]);
 
         assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: papyrus-lint"));
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     }
 
     #[test]

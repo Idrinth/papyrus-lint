@@ -9,7 +9,7 @@ non-interactively, given the `.achlist` path as its one argument. The
 desktop app's own executable can run either way too: launched with no
 arguments it starts the GUI as usual, launched with an `.achlist` path (or
 `-h`/`--help`) it delegates straight to the CLI's logic instead
-(`src-tauri/src/main.rs`) — the standalone `papyrus-lint` binary stays
+(`src-tauri/src/main.rs`) — the standalone `PapyrusLinterCLI` binary stays
 available separately for uses (e.g. CI) that shouldn't depend on the
 desktop app's binary at all.
 
@@ -77,7 +77,7 @@ engine and project-resolution logic stay reusable independent of the Tauri
 app — which is what lets `papyrus-lint-cli` link against them without
 pulling in Tauri (and its system GUI dependencies) at all. `src-tauri`
 depends on `papyrus-lint-cli` too, purely for its `run()` function (its
-`main.rs` calls straight into it for CLI mode), not for the `papyrus-lint`
+`main.rs` calls straight into it for CLI mode), not for the `PapyrusLinterCLI`
 binary target that crate also defines.
 
 ## Development
@@ -105,8 +105,8 @@ binary target that crate also defines.
   `crates/papyrus-lint-core/`.
 - CLI: `cargo run --manifest-path crates/papyrus-lint-cli/Cargo.toml --
   <path-to-achlist>`, or `cargo build --release --manifest-path
-  crates/papyrus-lint-cli/Cargo.toml` for a standalone `papyrus-lint`
-  binary (at `crates/papyrus-lint-cli/target/release/papyrus-lint`).
+  crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
+  binary (at `crates/papyrus-lint-cli/target/release/PapyrusLinterCLI`).
   `cargo test` from `crates/papyrus-lint-cli/` runs its tests.
 - Rust coverage for any of the five crates above: `cargo llvm-cov
   --manifest-path <crate>/Cargo.toml` (requires the
@@ -137,13 +137,14 @@ on all pull requests.
 Pushing a tag matching `v*.*.*` triggers a release job that syncs the
 tag's version into `src-tauri/tauri.conf.json`, `package.json`,
 `src-tauri/Cargo.toml`, and `crates/papyrus-lint-cli/Cargo.toml`, then
-builds the Tauri desktop app on Linux, macOS, and Windows (via
-`tauri-apps/tauri-action`) and the `papyrus-lint` CLI binary (via `cargo
-build --release --manifest-path crates/papyrus-lint-cli/Cargo.toml`) on
-each platform, attaching each platform's desktop bundle and CLI binary
-(`papyrus-lint-linux`/`papyrus-lint-macos`/`papyrus-lint-windows.exe`) to
-a GitHub release for that tag, creating the release if it doesn't already
-exist.
+builds the Tauri desktop app (binary name `PapyrusLinter`) on Linux,
+macOS, and Windows (via `tauri-apps/tauri-action`) and the
+`PapyrusLinterCLI` CLI binary (via `cargo build --release --manifest-path
+crates/papyrus-lint-cli/Cargo.toml`) on each platform, attaching each
+platform's desktop bundle and CLI binary
+(`PapyrusLinterCLI-linux`/`PapyrusLinterCLI-macos`/`PapyrusLinterCLI-windows.exe`)
+to a GitHub release for that tag, creating the release if it doesn't
+already exist.
 
 ## Merging
 
