@@ -122,6 +122,35 @@ impl FunctionTable {
         None
     }
 
+    /// Whether `sub_type`'s script is, or extends (directly or
+    /// transitively), `super_type`. Both names are matched
+    /// case-insensitively. Returns `false` if `sub_type`'s script (or any
+    /// ancestor along the way) can't be found or parsed before reaching
+    /// `super_type`.
+    pub fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
+        let super_lower = super_type.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(sub_type.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if name == super_lower {
+                return true;
+            }
+            if visited.contains(&name) {
+                break; // guard against a circular `Extends` chain
+            }
+            self.ensure_loaded(&name);
+
+            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
+                break;
+            };
+            current = script.extends.as_ref().map(|e| e.to_ascii_lowercase());
+            visited.push(name);
+        }
+
+        false
+    }
+
     /// Parses and caches the script named `name_lower`, if it hasn't been
     /// already.
     fn ensure_loaded(&mut self, name_lower: &str) {
@@ -145,6 +174,10 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
     fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>> {
         self.lookup_function(type_name, function_name)
             .map(|signature| signature.param_types)
+    }
+
+    fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
+        self.is_subtype(sub_type, super_type)
     }
 }
 
@@ -288,6 +321,69 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(table.lookup_function("A", "Anything").is_none());
+    }
+
+    #[test]
+    fn is_subtype_true_for_direct_and_transitive_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Form", "ScriptName Form\n");
+        write_script(root.path(), "Armor", "ScriptName Armor Extends Form\n");
+        write_script(
+            root.path(),
+            "ClothingArmor",
+            "ScriptName ClothingArmor Extends Armor\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.is_subtype("Armor", "Form"));
+        assert!(table.is_subtype("ClothingArmor", "Form"));
+        assert!(table.is_subtype("armor", "form"));
+        assert!(table.is_subtype("Form", "Form"));
+    }
+
+    #[test]
+    fn is_subtype_false_for_unrelated_or_unresolvable_types() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Form", "ScriptName Form\n");
+        write_script(root.path(), "Weapon", "ScriptName Weapon Extends Form\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.is_subtype("Form", "Weapon"));
+        assert!(!table.is_subtype("Weapon", "Armor"));
+        assert!(!table.is_subtype("Missing", "Form"));
+    }
+
+    #[test]
+    fn is_subtype_does_not_infinite_loop_on_circular_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "A", "ScriptName A Extends B\n");
+        write_script(root.path(), "B", "ScriptName B Extends A\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.is_subtype("A", "SomethingElse"));
+    }
+
+    #[test]
+    fn resolves_an_armor_argument_for_a_form_parameter_through_the_argument_type_check_lint() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Form", "ScriptName Form\n");
+        write_script(root.path(), "Armor", "ScriptName Armor Extends Form\n");
+        write_script(
+            root.path(),
+            "ObjectReference",
+            "ScriptName ObjectReference\n\nInt Function GetItemCount(Form akItem)\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::argument_types::check_with(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test(ObjectReference akRef)\n    akRef.GetItemCount(MyArmor)\nEndFunction\n",
+            &mut table,
+        );
+
+        assert!(diagnostics.is_empty());
     }
 
     #[test]

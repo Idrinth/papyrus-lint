@@ -28,12 +28,16 @@ A linter for Bethesda's papyrus language to improve code quality.
 - **Argument type check**: flag call-site arguments whose type doesn't match
   the callee's declared parameter type (e.g. passing a `String` where an
   `Int` is expected), allowing the implicit `Int`-to-`Float` widening
-  Papyrus itself allows. Calls to functions declared in the same script are
-  always checked; when linting a `.psc` file dropped in the app, calls to
-  functions declared on other scripts under the project root (e.g.
+  Papyrus itself allows, as well as passing an object whose script extends
+  (directly or transitively) the parameter's type (e.g. passing an `Armor`
+  where a `Form` is expected). Calls to functions declared in the same
+  script are always checked; when linting a `.psc` file dropped in the app,
+  calls to functions declared on other scripts under the project root (e.g.
   `SomeProperty.DoThing(...)`) are checked too, by resolving those scripts'
-  signatures (including through `Extends`). A call whose target or argument
-  type can't be determined is skipped rather than guessed at.
+  signatures (including through `Extends`), and the `Extends` chain of an
+  argument's own script is likewise resolved from the project root to allow
+  compatible subtypes. A call whose target or argument type can't be
+  determined is skipped rather than guessed at.
 - **Strict numeric type check**: flag implicit comparisons (`==`, `!=`,
   `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without
   an explicit cast making the comparison exact. Only comparisons whose
