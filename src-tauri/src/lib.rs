@@ -1,9 +1,10 @@
 pub mod achlist;
+pub mod compiler;
 pub mod config;
 pub mod function_table;
 pub mod script_locator;
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Parses the `.achlist` file at `path` and returns the resolved paths it lists.
 #[tauri::command]
@@ -90,6 +91,28 @@ fn save_compiler_path(dir: String, path: String) -> Result<(), String> {
     )
 }
 
+/// Compiles the `.psc` file at `path` using the compiler executable at
+/// `compiler_path` (see [`load_compiler_path`]/[`resolve_compiler_path`]
+/// for how the frontend obtains that path). Returns an error if
+/// `compiler_path` is blank/unconfigured or the compiler process itself
+/// couldn't be run; a script that fails to compile is still reported as
+/// `Ok`, with [`compiler::CompileOutcome::success`] false and the
+/// compiler's stdout/stderr carrying the reported errors.
+#[tauri::command]
+fn compile_psc_file(
+    path: String,
+    compiler_path: String,
+) -> Result<compiler::CompileOutcome, String> {
+    let compiler_path = compiler_path.trim();
+    if compiler_path.is_empty() {
+        return Err(
+            "No PapyrusCompile.exe path is configured. Set one in the Settings tab.".to_string(),
+        );
+    }
+
+    compiler::compile_psc_file(Path::new(compiler_path), &PathBuf::from(path))
+}
+
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
 /// honoring the semicolon style `config` selects. `root` is the project
 /// root (conventionally the directory containing the `.achlist` file); it
@@ -149,7 +172,8 @@ pub fn run() {
             load_compiler_path,
             save_compiler_path,
             lint_psc_file,
-            repair_psc_file
+            repair_psc_file,
+            compile_psc_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

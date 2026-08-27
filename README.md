@@ -159,3 +159,27 @@ override saved yet.
   semicolons without discarding comment text.
 - **Indentation**: automatically re-indent blocks using tabs or a configured
   number of spaces.
+
+## Compiling a script
+
+Each `.psc` file listed on the Lint results tab has a "Compile" button that
+recompiles it with `PapyrusCompile.exe` (see `compiler_path` under
+Configuration above for how that executable's path is resolved), so a fix
+made in the code viewer can be tried out without leaving the app. It runs:
+
+```
+PapyrusCompile.exe "<source dir>" -f="<script name>.psc" -i="<source dir>" -o="<output dir>"
+```
+
+where `<source dir>` is the directory the `.psc` file lives in
+(conventionally a `scripts/source` or `source/scripts` directory under the
+project root) and `<output dir>` is its parent, matching the layout
+Bethesda's tooling expects — a `Source` directory holding `.psc` files
+inside the `Scripts` directory that receives the compiled `.pex` output.
+
+The compiler's stdout/stderr is shown beneath the button once it finishes,
+styled green on success and red on failure, so both a successful compile
+and a reported error (a syntax error, a missing import, etc.) are visible
+without checking a log file. If no compiler path is configured or
+auto-detected, or the executable itself can't be run, that's reported the
+same way rather than silently doing nothing.

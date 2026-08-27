@@ -19,6 +19,7 @@ import {
   clearError,
   dirnameOf,
   escapeAttr,
+  handleCompileClick,
   handleCompilerPathChanged,
   handleDroppedPaths,
   handleFixClick,
@@ -383,6 +384,12 @@ describe("buildPscResultItem / renderPscResults", () => {
     expect(unfixable!.querySelector(".psc-result__fix-button")).toBeNull();
   });
 
+  it("always shows a compile button, even for a file with no findings", () => {
+    const item = buildPscResultItem(outcome({ ok: false, detail: "boom" }));
+    expect(item!.querySelector(".psc-result__compile-button")).not.toBeNull();
+    expect(item!.querySelector(".psc-result__compile-output")).not.toBeNull();
+  });
+
   it("renders one finding entry per finding, tagged with its severity", () => {
     const item = buildPscResultItem(
       outcome({
@@ -447,6 +454,76 @@ describe("handleFixClick", () => {
     await promise;
 
     expect(outcome.findings).toEqual(remaining);
+  });
+});
+
+describe("handleCompileClick", () => {
+  function setup() {
+    const button = document.createElement("button");
+    button.textContent = "Compile";
+    const outputEl = document.createElement("pre");
+    outputEl.hidden = true;
+    return { button, outputEl };
+  }
+
+  it("disables the button while compiling and restores its label afterward", async () => {
+    invokeImplFor({ compile_psc_file: () => ({ success: true, stdout: "", stderr: "" }) });
+    const { button, outputEl } = setup();
+
+    const promise = handleCompileClick("/a.psc", button, outputEl);
+    expect(button.disabled).toBe(true);
+    expect(button.textContent).toBe("Compiling…");
+    await promise;
+
+    expect(button.disabled).toBe(false);
+    expect(button.textContent).toBe("Compile");
+  });
+
+  it("shows the compiler's output and marks success", async () => {
+    invokeImplFor({
+      compile_psc_file: () => ({ success: true, stdout: "Compilation succeeded.\n", stderr: "" }),
+    });
+    const { button, outputEl } = setup();
+
+    await handleCompileClick("/a.psc", button, outputEl);
+
+    expect(outputEl.hidden).toBe(false);
+    expect(outputEl.textContent).toContain("Compilation succeeded.");
+    expect(outputEl.classList.contains("psc-result__compile-output--ok")).toBe(true);
+    expect(outputEl.classList.contains("psc-result__compile-output--error")).toBe(false);
+  });
+
+  it("shows a default success message when the compiler produced no output", async () => {
+    invokeImplFor({ compile_psc_file: () => ({ success: true, stdout: "", stderr: "" }) });
+    const { button, outputEl } = setup();
+
+    await handleCompileClick("/a.psc", button, outputEl);
+
+    expect(outputEl.textContent).toBe("Compiled successfully.");
+  });
+
+  it("marks a compiler-reported failure and shows its stderr", async () => {
+    invokeImplFor({
+      compile_psc_file: () => ({ success: false, stdout: "", stderr: "Broken.psc(3,1): error\n" }),
+    });
+    const { button, outputEl } = setup();
+
+    await handleCompileClick("/a.psc", button, outputEl);
+
+    expect(outputEl.textContent).toContain("Broken.psc(3,1): error");
+    expect(outputEl.classList.contains("psc-result__compile-output--error")).toBe(true);
+  });
+
+  it("shows a failure to launch the compiler (e.g. no path configured) as an error", async () => {
+    invokeMock.mockRejectedValue(new Error("No PapyrusCompile.exe path is configured."));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { button, outputEl } = setup();
+
+    await handleCompileClick("/a.psc", button, outputEl);
+
+    expect(outputEl.textContent).toContain("No PapyrusCompile.exe path is configured.");
+    expect(outputEl.classList.contains("psc-result__compile-output--error")).toBe(true);
+    expect(button.disabled).toBe(false);
   });
 });
 
