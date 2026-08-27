@@ -58,7 +58,7 @@ interface HighlightToken {
 // numbers, and words. Anything else (operators, punctuation, whitespace)
 // falls through unclassified.
 const TOKEN_PATTERN =
-  /;\/[\s\S]*?(?:\/;|$)|\{[^}]*\}?|;[^\n]*|"(?:\\.|[^"\\\n])*"?|0[xX][0-9a-fA-F]+|\d+\.\d+|\d+|[A-Za-z_][A-Za-z0-9_]*/g;
+  /;\/[\s\S]*?(?:\/;|$)|\{[^}]*\}?|;[^\n]*|"(?:\\.|[^"\\\n])*"?|0[xX][0-9a-fA-F]+|\d+\.\d+|\d+|[A-Za-z_]\w*/g;
 
 function classify(match: string): TokenClass {
   const first = match[0];
