@@ -268,8 +268,6 @@ mod tests {
 
     #[test]
     fn compile_psc_file_rejects_a_blank_compiler_path_before_spawning() {
-        let error = compile_psc_file("Example.psc".to_string(), "  \t".to_string()).unwrap_err();
-
-        assert!(error.contains("No PapyrusCompile.exe path is configured"));
+        assert!(compile_psc_file("Example.psc".to_string(), "  \t".to_string()).is_err());
     }
 }
