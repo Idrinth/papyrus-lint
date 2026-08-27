@@ -64,7 +64,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "papyrus-lint ${{ github.ref_name }}"
+          releaseName: "Papyrus Lint ${{ github.ref_name }}"
           releaseBody: "Automated release for ${{ github.ref_name }}. See the commit history for details."
           releaseDraft: false
           prerelease: false

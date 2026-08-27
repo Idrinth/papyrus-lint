@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "papyrus-lint",
+  "productName": "Papyrus Lint",
   "version": "0.1.0",
   "identifier": "com.idrinth.papyrus-lint",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "papyrus-lint",
+        "title": "Papyrus Lint",
         "width": 800,
         "height": 600
       }
