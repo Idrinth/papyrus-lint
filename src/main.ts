@@ -325,10 +325,10 @@ function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warn
   if (!lineFindings || lineFindings.length === 0) {
     return null;
   }
-  const levels = lineFindings.map((finding) => levelOf(finding.message));
-  if (levels.includes("error")) return "error";
-  if (levels.includes("warning")) return "warning";
-  if (levels.includes("info")) return "info";
+  const levels = new Set(lineFindings.map((finding) => levelOf(finding.message)));
+  if (levels.has("error")) return "error";
+  if (levels.has("warning")) return "warning";
+  if (levels.has("info")) return "info";
   // Lints like trailing-whitespace don't tag a severity level; still mark
   // their line so the finding is visible in the viewer.
   return "flagged";
