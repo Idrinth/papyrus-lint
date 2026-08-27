@@ -53,13 +53,19 @@ CI (`.github/workflows/ci.yml`) runs on every pull request and on pushes to
 the same checks locally first:
 
 - **Frontend**: `npm ci` then `npm run build` (typecheck + Vite build).
+  `npm run test` runs the Vitest unit tests; CI runs `npm run
+  test:coverage` instead, which also reports code coverage.
 - **Rust**, from `src-tauri/`:
   - `cargo fmt -- --check`
   - `cargo clippy --all-targets -- -D warnings`
   - `cargo check`
 
-If you touched `crates/papyrus-parser`, also run `cargo test` from that
-directory to make sure the lexer/parser test suite still passes.
+If you touched `crates/papyrus-parser` or `crates/papyrus-lints`, also run
+`cargo test` from that directory to make sure its test suite still
+passes. CI runs each crate's tests through `cargo llvm-cov` to report
+coverage; you can do the same locally with `cargo llvm-cov` (see the
+[`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) docs for
+setup).
 
 Keep pull requests focused on a single change, and use the PR template's
 checklist — contributions are permanent and unpaid; only open a PR once
