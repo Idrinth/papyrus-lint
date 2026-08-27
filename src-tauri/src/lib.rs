@@ -156,6 +156,101 @@ fn repair_psc_file(
     ))
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn source_commands_parse_and_lint_without_touching_disk() {
+        let source = "ScriptName Example\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n";
+
+        let script = parse_papyrus_script(source).expect("valid Papyrus should parse");
+        assert_eq!(script.name, "Example");
+
+        let diagnostics = lint_papyrus_script(source, papyrus_lints::Config::default());
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.rule == papyrus_lints::forbidden_functions::RULE && diagnostic.line == 4
+        }));
+    }
+
+    #[test]
+    fn psc_file_commands_round_trip_contents_and_parse_the_written_script() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let initial = "ScriptName Initial\n";
+        let replacement = "ScriptName Replacement\n";
+        std::fs::write(&path, initial).unwrap();
+
+        assert_eq!(
+            read_psc_file(path.to_string_lossy().into_owned()).unwrap(),
+            initial
+        );
+        write_psc_file(path.to_string_lossy().into_owned(), replacement.to_string()).unwrap();
+
+        let script = parse_psc_file(path.to_string_lossy().into_owned()).unwrap();
+        assert_eq!(script.name, "Replacement");
+        assert_eq!(std::fs::read_to_string(path).unwrap(), replacement);
+    }
+
+    #[test]
+    fn file_commands_report_io_errors_instead_of_panicking() {
+        let missing = tempdir().unwrap().path().join("missing.psc");
+        let path = missing.to_string_lossy().into_owned();
+
+        assert!(read_psc_file(path.clone()).is_err());
+        assert!(parse_psc_file(path.clone()).is_err());
+        assert!(lint_psc_file(
+            path.clone(),
+            missing.parent().unwrap().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+        )
+        .is_err());
+        assert!(repair_psc_file(
+            path,
+            missing.parent().unwrap().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn repair_psc_file_persists_fixes_and_returns_only_remaining_findings() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example  \n\nFunction Run()\n\tGame.GetPlayer()\nEndFunction\n",
+        )
+        .unwrap();
+
+        let diagnostics = repair_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "ScriptName Example\n\nFunction Run()\n\tGame.GetPlayer()\nEndFunction\n"
+        );
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::trailing_whitespace::RULE));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| { diagnostic.rule == papyrus_lints::forbidden_functions::RULE }));
+    }
+
+    #[test]
+    fn compile_psc_file_rejects_a_blank_compiler_path_before_spawning() {
+        let error = compile_psc_file("Example.psc".to_string(), "  \t".to_string()).unwrap_err();
+
+        assert!(error.contains("No PapyrusCompile.exe path is configured"));
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
