@@ -9,6 +9,7 @@ pub const RULE: &str = "unused-getter";
 
 /// Checks for calls whose function name begins with `Get` and whose result is
 /// discarded rather than assigned, returned, or used by another expression.
+/// Flagged as a `[warning]`.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let tokens = match Lexer::new(source).tokenize() {
         Ok(tokens) => tokens,
@@ -69,7 +70,7 @@ fn check_statement(statement: &[Token]) -> Option<Diagnostic> {
         line: function.0.line,
         column: function.0.col,
         message: format!(
-            "Getter '{}' is called without using its return value",
+            "[warning] Getter '{}' is called without using its return value",
             function.1
         ),
         rule: RULE,
