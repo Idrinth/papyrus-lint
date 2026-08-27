@@ -155,6 +155,23 @@ export function dirnameOf(path: string): string {
   return index === -1 ? path : path.slice(0, index);
 }
 
+// Formats `path` relative to `base` (the project directory containing the
+// dropped .achlist file) for display in the lint results list, so long
+// absolute paths stay readable. Falls back to the absolute path if `base`
+// isn't known yet or `path` doesn't live under it.
+export function relativePath(path: string, base: string | null): string {
+  if (!base) {
+    return path;
+  }
+  for (const sep of ["/", "\\"]) {
+    const prefix = base.endsWith(sep) ? base : `${base}${sep}`;
+    if (path.startsWith(prefix)) {
+      return path.slice(prefix.length);
+    }
+  }
+  return path;
+}
+
 // Looks for a papyrus-lint YAML config file in `dir`, falling back to the
 // default configuration if none is found.
 export async function loadLintConfig(dir: string): Promise<LintConfig> {
@@ -567,7 +584,7 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
   item.classList.add(ok ? "psc-result__item--ok" : "psc-result__item--error");
 
   const summary = document.createElement("span");
-  summary.textContent = `${path}: ${detail}`;
+  summary.textContent = `${relativePath(path, currentProjectDir)}: ${detail}`;
   item.append(summary);
 
   const viewButton = document.createElement("button");
