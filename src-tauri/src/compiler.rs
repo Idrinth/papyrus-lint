@@ -219,7 +219,9 @@ mod tests {
 
         let result = compile_psc_file(&missing_compiler, &script_path);
 
-        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .contains(&format!("failed to run {}", missing_compiler.display())));
     }
 
     #[test]
@@ -229,6 +231,29 @@ mod tests {
 
         let result = compile_psc_file(compiler_path, script_path);
 
-        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err(),
+            "could not determine the source directory of Foo.psc"
+        );
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn captures_lossy_output_from_both_streams() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts").join("Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path = write_stub_compiler(
+            root.path(),
+            "#!/bin/sh\nprintf '\\377stdout'\nprintf '\\377stderr' >&2\n",
+        );
+
+        let outcome = compile_psc_file(&compiler_path, &script_path).expect("should run");
+
+        assert!(outcome.success);
+        assert_eq!(outcome.stdout, "�stdout");
+        assert_eq!(outcome.stderr, "�stderr");
     }
 }

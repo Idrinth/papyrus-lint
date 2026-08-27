@@ -284,4 +284,139 @@ mod tests {
     fn compile_psc_file_rejects_a_blank_compiler_path_before_spawning() {
         assert!(compile_psc_file("Example.psc".to_string(), "  \t".to_string()).is_err());
     }
+
+    #[test]
+    fn achlist_command_resolves_entries_and_reports_invalid_json() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("scripts.achlist");
+        std::fs::write(&path, r#"["scripts/source/Example.psc"]"#).unwrap();
+
+        assert_eq!(
+            parse_achlist_file(path.to_string_lossy().into_owned()).unwrap(),
+            vec![dir
+                .path()
+                .join("scripts/source/Example.psc")
+                .to_string_lossy()
+                .into_owned()]
+        );
+
+        std::fs::write(&path, "not json").unwrap();
+        assert!(parse_achlist_file(path.to_string_lossy().into_owned()).is_err());
+    }
+
+    #[test]
+    fn parse_commands_report_invalid_papyrus() {
+        let invalid = "Function MissingScriptName()\nEndFunction\n";
+        assert!(parse_papyrus_script(invalid).is_err());
+
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Invalid.psc");
+        std::fs::write(&path, invalid).unwrap();
+        assert!(parse_psc_file(path.to_string_lossy().into_owned()).is_err());
+    }
+
+    #[test]
+    fn config_commands_round_trip_lint_and_compiler_settings() {
+        let dir = tempdir().unwrap();
+        let dir_string = dir.path().to_string_lossy().into_owned();
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            indentation_width: 2,
+            ..papyrus_lints::Config::default()
+        };
+
+        assert_eq!(
+            load_lint_config(dir_string.clone()).unwrap(),
+            Default::default()
+        );
+        save_lint_config(dir_string.clone(), config.clone()).unwrap();
+        assert_eq!(load_lint_config(dir_string.clone()).unwrap(), config);
+
+        save_compiler_path(dir_string.clone(), "  /tools/compiler  ".to_string()).unwrap();
+        assert_eq!(
+            load_compiler_path(dir_string.clone()).unwrap(),
+            Some("/tools/compiler".to_string())
+        );
+        save_compiler_path(dir_string.clone(), " \t ".to_string()).unwrap();
+        assert_eq!(load_compiler_path(dir_string).unwrap(), None);
+    }
+
+    #[test]
+    fn config_commands_report_invalid_yaml_and_unwritable_directories() {
+        let dir = tempdir().unwrap();
+        std::fs::write(dir.path().join("papyrus-lint.yaml"), "semicolon: [").unwrap();
+        let dir_string = dir.path().to_string_lossy().into_owned();
+
+        assert!(load_lint_config(dir_string.clone()).is_err());
+        assert!(load_compiler_path(dir_string.clone()).is_err());
+        assert!(save_compiler_path(dir_string.clone(), "compiler".to_string()).is_err());
+        assert!(save_lint_config(dir_string, Default::default()).is_err());
+
+        let missing_dir = dir.path().join("missing").to_string_lossy().into_owned();
+        assert!(save_lint_config(missing_dir, Default::default()).is_err());
+    }
+
+    #[test]
+    fn lint_psc_file_lints_source_from_disk() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+        )
+        .unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule == papyrus_lints::forbidden_functions::RULE));
+    }
+
+    #[test]
+    fn repair_does_not_rewrite_an_already_clean_file() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&path, source).unwrap();
+
+        let diagnostics = repair_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+        )
+        .unwrap();
+
+        assert!(diagnostics.is_empty());
+        assert_eq!(std::fs::read_to_string(path).unwrap(), source);
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn compile_command_trims_the_executable_path_and_returns_its_output() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let script_path = source_dir.join("Example.psc");
+        std::fs::write(&script_path, "").unwrap();
+        let compiler_path = dir.path().join("compiler.sh");
+        std::fs::write(&compiler_path, "#!/bin/sh\necho command wrapper\n").unwrap();
+        std::fs::set_permissions(&compiler_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+        let outcome = compile_psc_file(
+            script_path.to_string_lossy().into_owned(),
+            format!("  {}  ", compiler_path.display()),
+        )
+        .unwrap();
+
+        assert!(outcome.success);
+        assert_eq!(outcome.stdout, "command wrapper\n");
+    }
 }
