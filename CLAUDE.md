@@ -11,6 +11,11 @@ parses any `.psc` (Papyrus source) files among them, and lints them.
 .
 ├── src/                    # Frontend (TypeScript, vanilla, no framework)
 │   ├── main.ts              # Drag-and-drop UI logic, calls into Tauri commands
+│   ├── highlight.ts         # Standalone Papyrus syntax highlighter for the
+│   │                        # code viewer dialog
+│   ├── main.test.ts         # Vitest unit tests for main.ts
+│   ├── highlight.test.ts    # Vitest unit tests for highlight.ts
+│   ├── test/fixture.ts      # Shared jsdom DOM fixture for main.test.ts
 │   └── styles.css
 ├── index.html               # Frontend entry point (Vite)
 ├── src-tauri/               # Tauri desktop app shell (Rust)
@@ -53,7 +58,8 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 ## Development
 
 - Frontend: `npm install`, then `npm run dev` (Vite dev server) or
-  `npm run build` (typecheck + build).
+  `npm run build` (typecheck + build). `npm run test` runs the frontend's
+  Vitest unit tests (`src/*.test.ts`).
 - Full desktop app: `npm run tauri dev` / `npm run tauri build`.
 - Rust backend only: `cargo check` / `cargo test` from `src-tauri/`.
 - Parser crate only: `cargo test` from `crates/papyrus-parser/`.
@@ -61,7 +67,8 @@ independent of the Tauri app — e.g. for a future CLI or test harness.
 
 ## CI (`.github/workflows/ci.yml`)
 
-- **Frontend job**: `npm ci` then `npm run build` (typecheck & Vite build).
+- **Frontend job**: `npm ci`, then `npm run test` (Vitest unit tests) and
+  `npm run build` (typecheck & Vite build).
 - **Rust job**: `cargo fmt --check`, `cargo clippy -- -D warnings`, and
   `cargo check`, all run against `src-tauri/Cargo.toml`.
 
