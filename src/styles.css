@@ -79,6 +79,40 @@ h1 {
   width: 4em;
 }
 
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin: 1em 0 0;
+  padding: 0.5em 0.75em 0.75em;
+  border: 1px solid rgba(15, 15, 15, 0.15);
+  border-radius: 8px;
+}
+
+.settings-group legend {
+  padding: 0 0.4em;
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+.settings-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  cursor: pointer;
+}
+
+.settings-group__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.settings-group input[type="number"] {
+  width: 4em;
+  padding: 0.25em 0.5em;
+}
+
 .drop-zone {
   width: 100%;
   padding: 3em 1.5em;
@@ -369,6 +403,10 @@ h1 {
   }
 
   .psc-result__filters {
+    border-color: rgba(246, 246, 246, 0.15);
+  }
+
+  .settings-group {
     border-color: rgba(246, 246, 246, 0.15);
   }
 
