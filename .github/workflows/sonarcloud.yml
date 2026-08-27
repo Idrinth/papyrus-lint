@@ -19,8 +19,8 @@ jobs:
         with:
           java-version: 21
           java-package: jre
-      - name: Analyze with SonarCloud
-        uses: SonarSource/sonarcloud-github-action@2.2.0
+      - name: Official SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
