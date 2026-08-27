@@ -178,11 +178,24 @@ async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
 }
 
 // Diagnostic messages are prefixed with `[level] ` by the lints that care
-// about severity (e.g. `forbidden_functions`); others have no prefix.
+// about severity (e.g. `forbidden_functions`); others have no prefix and
+// are treated as the "other" severity.
+type Severity = "error" | "warning" | "info" | "other";
+const SEVERITIES: Severity[] = ["error", "warning", "info", "other"];
+
 function levelOf(message: string): "error" | "warning" | "info" | null {
   const match = /^\[(error|warning|info)\]/.exec(message);
   return match ? (match[1] as "error" | "warning" | "info") : null;
 }
+
+function severityOf(message: string): Severity {
+  return levelOf(message) ?? "other";
+}
+
+// Which severities are currently shown in the lint results list; all are
+// shown by default.
+const activeSeverities = new Set<Severity>(SEVERITIES);
+let severityFilterEls: Partial<Record<Severity, HTMLInputElement>> = {};
 
 function showError(message: string) {
   if (dropZoneErrorEl) {
@@ -215,6 +228,55 @@ function showResult(path: string, entries: string[]) {
   switchTab("files");
 }
 
+// Builds the list item for `outcome`, or null if it has no findings that
+// pass the active severity filter and should therefore be skipped
+// entirely (a file with nothing to show isn't worth a row). Files that
+// failed to parse are always shown, since that failure is itself the
+// result worth reporting.
+function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | null {
+  const { path, ok, detail, findings } = outcome;
+  const visibleFindings = findings.filter((finding) => activeSeverities.has(severityOf(finding.message)));
+
+  if (ok && visibleFindings.length === 0) {
+    return null;
+  }
+
+  const item = document.createElement("li");
+  item.classList.add(ok ? "psc-result__item--ok" : "psc-result__item--error");
+
+  const summary = document.createElement("span");
+  summary.textContent = `${path}: ${detail}`;
+  item.append(summary);
+
+  if (hasFixableFindings(findings)) {
+    const fixButton = document.createElement("button");
+    fixButton.type = "button";
+    fixButton.textContent = "Apply fixes";
+    fixButton.classList.add("psc-result__fix-button");
+    fixButton.addEventListener("click", () => void handleFixClick(path, outcome, fixButton));
+    item.append(fixButton);
+  }
+
+  if (visibleFindings.length > 0) {
+    const findingsList = document.createElement("ul");
+    findingsList.classList.add("psc-result__findings");
+    findingsList.replaceChildren(
+      ...visibleFindings.map((finding) => {
+        const findingItem = document.createElement("li");
+        findingItem.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
+        const level = levelOf(finding.message);
+        if (level) {
+          findingItem.classList.add(`psc-result__finding--${level}`);
+        }
+        return findingItem;
+      }),
+    );
+    item.append(findingsList);
+  }
+
+  return item;
+}
+
 function renderPscResults(outcomes: PscParseOutcome[]) {
   if (!pscResultEl || !pscResultListEl) {
     return;
@@ -225,45 +287,8 @@ function renderPscResults(outcomes: PscParseOutcome[]) {
     return;
   }
 
-  pscResultListEl.replaceChildren(
-    ...outcomes.map((outcome) => {
-      const { path, ok, detail, findings } = outcome;
-      const item = document.createElement("li");
-      item.classList.add(ok ? "psc-result__item--ok" : "psc-result__item--error");
-
-      const summary = document.createElement("span");
-      summary.textContent = `${path}: ${detail}`;
-      item.append(summary);
-
-      if (hasFixableFindings(findings)) {
-        const fixButton = document.createElement("button");
-        fixButton.type = "button";
-        fixButton.textContent = "Apply fixes";
-        fixButton.classList.add("psc-result__fix-button");
-        fixButton.addEventListener("click", () => void handleFixClick(path, outcome, fixButton));
-        item.append(fixButton);
-      }
-
-      if (findings.length > 0) {
-        const findingsList = document.createElement("ul");
-        findingsList.classList.add("psc-result__findings");
-        findingsList.replaceChildren(
-          ...findings.map((finding) => {
-            const findingItem = document.createElement("li");
-            findingItem.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
-            const level = levelOf(finding.message);
-            if (level) {
-              findingItem.classList.add(`psc-result__finding--${level}`);
-            }
-            return findingItem;
-          }),
-        );
-        item.append(findingsList);
-      }
-
-      return item;
-    }),
-  );
+  const items = outcomes.map(buildPscResultItem).filter((item): item is HTMLLIElement => item !== null);
+  pscResultListEl.replaceChildren(...items);
   pscResultEl.removeAttribute("hidden");
   switchTab("lint");
 }
@@ -340,6 +365,21 @@ window.addEventListener("DOMContentLoaded", () => {
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
+
+  severityFilterEls = Object.fromEntries(
+    SEVERITIES.map((severity) => [severity, document.querySelector<HTMLInputElement>(`#filter-${severity}`)]),
+  ) as Partial<Record<Severity, HTMLInputElement>>;
+  for (const severity of SEVERITIES) {
+    severityFilterEls[severity]?.addEventListener("change", () => {
+      const checked = severityFilterEls[severity]?.checked ?? true;
+      if (checked) {
+        activeSeverities.add(severity);
+      } else {
+        activeSeverities.delete(severity);
+      }
+      renderPscResults(currentPscOutcomes);
+    });
+  }
 
   semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
   indentationStyleEl?.addEventListener("change", () => {
