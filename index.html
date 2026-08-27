@@ -50,6 +50,35 @@
             <label for="indentation-width">Width</label>
             <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
           </div>
+
+          <fieldset class="settings-group">
+            <legend>Cyclomatic complexity thresholds</legend>
+            <div class="settings-group__row">
+              <label for="cyclomatic-complexity-warning">Warning at</label>
+              <input id="cyclomatic-complexity-warning" type="number" min="1" value="10" />
+            </div>
+            <div class="settings-group__row">
+              <label for="cyclomatic-complexity-error">Error at</label>
+              <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
+            </div>
+          </fieldset>
+
+          <fieldset id="lint-rules" class="settings-group">
+            <legend>Lint rules</legend>
+            <label><input type="checkbox" id="rule-trailing_whitespace" checked /> Trailing whitespace</label>
+            <label><input type="checkbox" id="rule-comma_spacing" checked /> Space after comma</label>
+            <label><input type="checkbox" id="rule-forbidden_functions" checked /> Forbidden/discouraged function usage</label>
+            <label><input type="checkbox" id="rule-slow_functions" checked /> Slow function usage</label>
+            <label><input type="checkbox" id="rule-unused_getter" checked /> Getter usage without saving result</label>
+            <label><input type="checkbox" id="rule-unused_property" checked /> Unused script properties</label>
+            <label><input type="checkbox" id="rule-semicolon" checked /> Semicolon at end of line</label>
+            <label><input type="checkbox" id="rule-float_int_conversion" checked /> Implicit Float-to-Int conversion</label>
+            <label><input type="checkbox" id="rule-strict_boolean" checked /> Strict boolean check</label>
+            <label><input type="checkbox" id="rule-argument_types" checked /> Argument type check</label>
+            <label><input type="checkbox" id="rule-numeric_comparison" checked /> Strict numeric type check</label>
+            <label><input type="checkbox" id="rule-indentation" checked /> Formatting checks / Indentation</label>
+            <label><input type="checkbox" id="rule-cyclomatic_complexity" checked /> Cyclomatic complexity</label>
+          </fieldset>
         </div>
 
         <div id="panel-files" class="tabs__panel" role="tabpanel" aria-labelledby="tab-files" hidden>

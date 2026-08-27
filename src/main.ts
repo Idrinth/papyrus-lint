@@ -13,6 +13,9 @@ let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let semicolonStyleEl: HTMLSelectElement | null;
+let cyclomaticComplexityWarningEl: HTMLInputElement | null;
+let cyclomaticComplexityErrorEl: HTMLInputElement | null;
+let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
 let codeViewerBodyEl: HTMLElement | null;
@@ -64,14 +67,57 @@ interface PscParseOutcome {
   findings: Diagnostic[];
 }
 
+interface LintRules {
+  trailing_whitespace: boolean;
+  comma_spacing: boolean;
+  forbidden_functions: boolean;
+  slow_functions: boolean;
+  unused_getter: boolean;
+  unused_property: boolean;
+  semicolon: boolean;
+  float_int_conversion: boolean;
+  strict_boolean: boolean;
+  argument_types: boolean;
+  numeric_comparison: boolean;
+  indentation: boolean;
+  cyclomatic_complexity: boolean;
+}
+
 interface LintConfig {
   semicolon: boolean;
   indentation: "tab" | "space";
   indentation_width: number;
+  cyclomatic_complexity_warning: number;
+  cyclomatic_complexity_error: number;
+  rules: LintRules;
 }
 
-const DEFAULT_LINT_CONFIG: LintConfig = { semicolon: false, indentation: "tab", indentation_width: 4 };
+const DEFAULT_RULES: LintRules = {
+  trailing_whitespace: true,
+  comma_spacing: true,
+  forbidden_functions: true,
+  slow_functions: true,
+  unused_getter: true,
+  unused_property: true,
+  semicolon: true,
+  float_int_conversion: true,
+  strict_boolean: true,
+  argument_types: true,
+  numeric_comparison: true,
+  indentation: true,
+  cyclomatic_complexity: true,
+};
+
+const DEFAULT_LINT_CONFIG: LintConfig = {
+  semicolon: false,
+  indentation: "tab",
+  indentation_width: 4,
+  cyclomatic_complexity_warning: 10,
+  cyclomatic_complexity_error: 20,
+  rules: DEFAULT_RULES,
+};
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
+const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];
 
 let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
 // The project root (the directory containing the dropped .achlist file),
@@ -120,15 +166,34 @@ function applyLintConfigToUI(config: LintConfig) {
     indentationWidthEl.value = String(config.indentation_width);
     indentationWidthEl.disabled = config.indentation !== "space";
   }
+  if (cyclomaticComplexityWarningEl) {
+    cyclomaticComplexityWarningEl.value = String(config.cyclomatic_complexity_warning);
+  }
+  if (cyclomaticComplexityErrorEl) {
+    cyclomaticComplexityErrorEl.value = String(config.cyclomatic_complexity_error);
+  }
+  for (const key of RULE_KEYS) {
+    const el = ruleEls[key];
+    if (el) {
+      el.checked = config.rules[key];
+    }
+  }
 }
 
 // Reads the formatting controls' current values into a LintConfig.
 function lintConfigFromUI(): LintConfig {
   const indentation = indentationStyleEl?.value === "spaces" ? "space" : "tab";
+  const rules = { ...DEFAULT_RULES };
+  for (const key of RULE_KEYS) {
+    rules[key] = ruleEls[key]?.checked ?? DEFAULT_RULES[key];
+  }
   return {
     semicolon: semicolonStyleEl?.value === "require",
     indentation,
     indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
+    cyclomatic_complexity_warning: Math.max(1, cyclomaticComplexityWarningEl?.valueAsNumber || 10),
+    cyclomatic_complexity_error: Math.max(1, cyclomaticComplexityErrorEl?.valueAsNumber || 20),
+    rules,
   };
 }
 
@@ -454,6 +519,11 @@ window.addEventListener("DOMContentLoaded", () => {
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
+  cyclomaticComplexityWarningEl = document.querySelector("#cyclomatic-complexity-warning");
+  cyclomaticComplexityErrorEl = document.querySelector("#cyclomatic-complexity-error");
+  ruleEls = Object.fromEntries(
+    RULE_KEYS.map((key) => [key, document.querySelector<HTMLInputElement>(`#rule-${key}`)]),
+  ) as Partial<Record<keyof LintRules, HTMLInputElement>>;
   codeViewerEl = document.querySelector("#code-viewer");
   codeViewerTitleEl = document.querySelector("#code-viewer-title");
   codeViewerBodyEl = document.querySelector("#code-viewer-body");
@@ -489,6 +559,11 @@ window.addEventListener("DOMContentLoaded", () => {
     handleLintConfigChanged();
   });
   indentationWidthEl?.addEventListener("change", handleLintConfigChanged);
+  cyclomaticComplexityWarningEl?.addEventListener("change", handleLintConfigChanged);
+  cyclomaticComplexityErrorEl?.addEventListener("change", handleLintConfigChanged);
+  for (const key of RULE_KEYS) {
+    ruleEls[key]?.addEventListener("change", handleLintConfigChanged);
+  }
 
   for (const id of TAB_IDS) {
     document.querySelector<HTMLButtonElement>(`#tab-${id}`)?.addEventListener("click", () => switchTab(id));
