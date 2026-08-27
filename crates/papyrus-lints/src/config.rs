@@ -24,6 +24,7 @@
 //!   numeric_comparison: true
 //!   indentation: true
 //!   cyclomatic_complexity: true
+//!   unreachable_statement: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -119,6 +120,8 @@ pub struct Rules {
     pub indentation: bool,
     /// The "Cyclomatic complexity" lint.
     pub cyclomatic_complexity: bool,
+    /// The "Unreachable statement" lint.
+    pub unreachable_statement: bool,
 }
 
 impl Default for Rules {
@@ -137,6 +140,7 @@ impl Default for Rules {
             numeric_comparison: true,
             indentation: true,
             cyclomatic_complexity: true,
+            unreachable_statement: true,
         }
     }
 }
@@ -233,6 +237,7 @@ mod tests {
         assert!(config.rules.numeric_comparison);
         assert!(config.rules.indentation);
         assert!(config.rules.cyclomatic_complexity);
+        assert!(config.rules.unreachable_statement);
     }
 
     #[test]

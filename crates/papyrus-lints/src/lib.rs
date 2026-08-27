@@ -19,6 +19,7 @@ pub mod semicolon;
 pub mod slow_functions;
 pub mod strict_boolean;
 pub mod trailing_whitespace;
+pub mod unreachable_statement;
 pub mod unused_getter;
 pub mod unused_property;
 
@@ -114,6 +115,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
             config.cyclomatic_complexity_warning,
             config.cyclomatic_complexity_error,
         ));
+    }
+    if rules.unreachable_statement {
+        diagnostics.extend(unreachable_statement::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));

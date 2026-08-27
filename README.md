@@ -57,6 +57,9 @@ A linter for Bethesda's papyrus language to improve code quality.
   short-circuiting `&&`/`||` operator) exceeds a configurable threshold,
   as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or
   an `[error]` above `cyclomatic_complexity_error` (default 20).
+- **Unreachable statement**: flag statements that follow a `Return` within
+  the same block (a function/event body, an `If`/`ElseIf`/`Else` branch,
+  or a `While` body), since they can never execute.
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, and indentation) never flag or change a line inside a
@@ -82,7 +85,8 @@ linting — it does not change what the automatic fixes in
 lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `forbidden-functions`, `slow-functions`, `unused-getter`, `unused-property`,
 `semicolon`, `float-to-int`, `strict-boolean`, `argument-types`,
-`numeric-comparison`, `indentation`, and `cyclomatic-complexity`.
+`numeric-comparison`, `indentation`, `cyclomatic-complexity`, and
+`unreachable-statement`.
 
 ## Configuration
 
@@ -112,6 +116,7 @@ rules:
   numeric_comparison: true
   indentation: true
   cyclomatic_complexity: true
+  unreachable_statement: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompile.exe`, set via the
@@ -137,8 +142,8 @@ rules:
   listed above: `trailing_whitespace`, `comma_spacing`,
   `forbidden_functions`, `slow_functions`, `unused_getter`, `unused_property`,
   `semicolon`, `float_int_conversion`, `strict_boolean`,
-  `argument_types`, `numeric_comparison`, `indentation`, and
-  `cyclomatic_complexity`.
+  `argument_types`, `numeric_comparison`, `indentation`,
+  `cyclomatic_complexity`, and `unreachable_statement`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
