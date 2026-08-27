@@ -53,12 +53,32 @@ interface HighlightToken {
   cls: TokenClass;
 }
 
-// Matches, in priority order: block comments (`;/ ... /;`), brace comments
-// (`{ ... }`), line comments (`; ...`), string literals, hex/decimal
-// numbers, and words. Anything else (operators, punctuation, whitespace)
-// falls through unclassified.
-const TOKEN_PATTERN =
-  /;\/[\s\S]*?(?:\/;|$)|\{[^}]*\}?|;[^\n]*|"(?:\\.|[^"\\\n])*"?|0[xX][0-9a-fA-F]+|\d+\.\d+|\d+|[A-Za-z_][A-Za-z0-9_]*/g;
+// Tried in priority order at each position: block comments (`;/ ... /;`),
+// brace comments (`{ ... }`), line comments (`; ...`), string literals,
+// hex/decimal numbers, and words. Anything else (operators, punctuation,
+// whitespace) falls through unclassified. Kept as separate sticky (`y`)
+// patterns, rather than one combined alternation, so each stays simple
+// enough for static analysis to reason about.
+const TOKEN_PATTERNS = [
+  /;\/[\s\S]*?(?:\/;|$)/y,
+  /\{[^}]*\}?/y,
+  /;[^\n]*/y,
+  /"(?:\\.|[^"\\\n])*"?/y,
+  /0[xX][0-9a-fA-F]+/y,
+  /\d+(?:\.\d+)?/y,
+  /[A-Za-z_]\w*/y,
+];
+
+function matchTokenAt(source: string, index: number): string | null {
+  for (const pattern of TOKEN_PATTERNS) {
+    pattern.lastIndex = index;
+    const match = pattern.exec(source);
+    if (match) {
+      return match[0];
+    }
+  }
+  return null;
+}
 
 function classify(match: string): TokenClass {
   const first = match[0];
@@ -86,13 +106,19 @@ function classify(match: string): TokenClass {
 function tokenize(source: string): HighlightToken[] {
   const tokens: HighlightToken[] = [];
   let lastIndex = 0;
-  for (const match of source.matchAll(TOKEN_PATTERN)) {
-    const index = match.index ?? 0;
+  let index = 0;
+  while (index < source.length) {
+    const match = matchTokenAt(source, index);
+    if (!match) {
+      index++;
+      continue;
+    }
     if (index > lastIndex) {
       tokens.push({ text: source.slice(lastIndex, index), cls: null });
     }
-    tokens.push({ text: match[0], cls: classify(match[0]) });
-    lastIndex = index + match[0].length;
+    tokens.push({ text: match, cls: classify(match) });
+    index += match.length;
+    lastIndex = index;
   }
   if (lastIndex < source.length) {
     tokens.push({ text: source.slice(lastIndex), cls: null });
