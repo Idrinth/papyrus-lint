@@ -55,6 +55,14 @@ A linter for Bethesda's papyrus language to improve code quality.
   as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or
   an `[error]` above `cyclomatic_complexity_error` (default 20).
 
+The formatting lints/fixes (trailing whitespace, space after comma,
+semicolon, and indentation) never flag or change a line inside a
+CreationKit-generated `;BEGIN FRAGMENT CODE`/`;END FRAGMENT CODE` block,
+except the actual script code between a `;BEGIN CODE`/`;END CODE` pair
+within it. Reformatting the rest of that block (fragment headers, the
+generated function signature, `EndFunction`, or the markers themselves)
+would make CreationKit fail to recognize the fragment.
+
 ## Disabling a lint on a specific line
 
 A line carrying a trailing `; @disable <rule-id>[, <rule-id>...]` comment

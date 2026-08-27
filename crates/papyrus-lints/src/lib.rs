@@ -12,6 +12,7 @@ pub mod cyclomatic_complexity;
 mod disable_comments;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
+pub mod fragment_code;
 pub mod indentation;
 pub mod numeric_comparison;
 pub mod semicolon;
