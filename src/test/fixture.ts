@@ -90,6 +90,7 @@ export const FIXTURE_HTML = `
       <div id="code-viewer-editor" class="code-viewer__editor" hidden>
         <pre id="code-viewer-editor-highlight" class="code-viewer__editor-highlight" aria-hidden="true"><code></code></pre>
         <textarea id="code-viewer-editor-textarea" class="code-viewer__editor-textarea" spellcheck="false"></textarea>
+        <ul id="code-viewer-autocomplete" class="code-viewer__autocomplete" role="listbox" hidden></ul>
       </div>
     </div>
   </dialog>
