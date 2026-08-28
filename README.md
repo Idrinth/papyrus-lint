@@ -62,6 +62,7 @@ apply.
 | **Unused or write-only local variables** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose value is never read: either it's never referenced again at all, or it's only ever reassigned (`name = ...`) without that new value ever being read back. Reading a variable via a compound assignment (`name += ...`, etc.) or through a member/index expression built from it (`name.Foo`, `name[0]`) counts as a use. Function parameters and script properties aren't locals and are never flagged by this lint. | |
 | **None used as an existing Form** | Flags a member/method access (`a.GetName()`, `a.Name`) on a local variable that's still known to be `None` (e.g. `Armor a = None` followed directly by `a.GetName()`), since that crashes the script at runtime. Tracks a variable as `None` from its declaration/assignment until it's reassigned something else, narrowing through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) and through a `While` loop's condition (this language has no `break`/`continue`, so the loop can only exit once its condition is false). A branch that unconditionally `Return`s doesn't carry its state past the `If`, covering the common `If x == None` / `Return` guard idiom. Anything less direct is left unflagged rather than guessed at. | |
 | **Local variable shadowing** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose name matches (case-insensitively) a `Property` declared on the same script, since referencing that name inside the function then reads the local rather than the property. When linting a `.psc` file dropped in the app, a local that instead shadows a property declared on a parent script (resolved through `Extends`) is flagged too. | |
+| **Whitespace interrupting property/method chaining** | Flags, as an `[error]`, a space or tab immediately before or after a `.` member/method access (e.g. `SomeProperty . DoThing()`), since it interrupts the chain for no benefit. A `.` inside a `Float` literal (e.g. `1.5`) is never flagged. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, and indentation) never flag or change a line inside a
@@ -88,8 +89,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `semicolon`, `float-to-int`, `strict-boolean`, `argument-types`,
 `return-types`, `function-override`, `numeric-comparison`, `indentation`,
 `cyclomatic-complexity`, `unreachable-statement`, `static-condition`,
-`unused-local-variable`, `none-form-usage`, and
-`local-variable-shadowing`.
+`unused-local-variable`, `none-form-usage`,
+`local-variable-shadowing`, and `chain-whitespace`.
 
 ## Configuration
 
@@ -128,6 +129,7 @@ rules:
   unused_local_variable: true
   none_form_usage: true
   local_variable_shadowing: true
+  chain_whitespace: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -163,8 +165,8 @@ rules:
   `semicolon`, `float_int_conversion`, `strict_boolean`,
   `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
   `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
-  `static_condition`, `unused_local_variable`, `none_form_usage`, and
-  `local_variable_shadowing`.
+  `static_condition`, `unused_local_variable`, `none_form_usage`,
+  `local_variable_shadowing`, and `chain_whitespace`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

@@ -6,6 +6,7 @@
 //! parse cleanly.
 
 pub mod argument_types;
+pub mod chain_whitespace;
 pub mod comma_spacing;
 pub mod config;
 pub mod cyclomatic_complexity;
@@ -170,6 +171,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.none_form_usage {
         diagnostics.extend(none_form_usage::check(source));
+    }
+    if rules.chain_whitespace {
+        diagnostics.extend(chain_whitespace::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -442,6 +446,12 @@ mod tests {
                 local_variable_shadowing::RULE,
                 Config::default(),
                 config_with(|c| c.rules.local_variable_shadowing = false),
+            ),
+            (
+                "SomeProperty . DoThing()\n",
+                chain_whitespace::RULE,
+                Config::default(),
+                config_with(|c| c.rules.chain_whitespace = false),
             ),
         ];
 

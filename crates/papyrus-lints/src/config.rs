@@ -33,6 +33,7 @@
 //!   unused_local_variable: true
 //!   none_form_usage: true
 //!   local_variable_shadowing: true
+//!   chain_whitespace: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -155,6 +156,8 @@ pub struct Rules {
     pub none_form_usage: bool,
     /// The "Local variable shadowing" lint.
     pub local_variable_shadowing: bool,
+    /// The "Whitespace interrupting property/method chaining" lint.
+    pub chain_whitespace: bool,
 }
 
 impl Default for Rules {
@@ -180,6 +183,7 @@ impl Default for Rules {
             unused_local_variable: true,
             none_form_usage: true,
             local_variable_shadowing: true,
+            chain_whitespace: true,
         }
     }
 }
@@ -295,6 +299,7 @@ mod tests {
         assert!(config.rules.unused_local_variable);
         assert!(config.rules.none_form_usage);
         assert!(config.rules.local_variable_shadowing);
+        assert!(config.rules.chain_whitespace);
     }
 
     #[test]
