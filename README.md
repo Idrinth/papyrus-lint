@@ -192,6 +192,8 @@ PapyrusLinterCLI path/to/project.achlist
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
+PapyrusLinterCLI --json path/to/project.achlist
+PapyrusLinterCLI --json fix path/to/project.achlist
 ```
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
@@ -213,6 +215,37 @@ indentation settings) to each resolved script first, rewriting a script on
 disk only if it changed, before reporting whatever diagnostics remain the
 same way — the same repair the desktop app's "Fix" button applies to a
 single script.
+
+Given the `--json` flag (combinable with `fix`, in either argument order),
+the CLI prints a single JSON document to stdout instead of the plain-text
+lines and summary, so editor plugins and other tooling can consume the
+report without scraping text:
+
+```json
+{
+  "files": [
+    {
+      "path": "scripts/source/Example.psc",
+      "diagnostics": [
+        { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": null, "message": "Line contains trailing whitespace" }
+      ]
+    }
+  ],
+  "scripts_checked": 1,
+  "files_with_diagnostics": 1,
+  "total_diagnostics": 1,
+  "files_fixed": null,
+  "success": false
+}
+```
+
+Every resolved script gets a `files` entry, even one with no diagnostics,
+so a consumer can clear stale diagnostics for a file that's since become
+clean. `level` is `"error"`, `"warning"`, `"info"`, or `null` for a
+diagnostic whose lint always represents a firm violation (see
+`Diagnostic::level`). `files_fixed` is only present (non-`null`) when run
+with the `fix` subcommand. `success` reports whether the run would exit
+`0`.
 
 It exits `0` if no diagnostics were found (or none of the ones found
 counted as a failure — see `fail_on_warning`/`fail_on_info` under

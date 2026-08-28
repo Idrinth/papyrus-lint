@@ -2423,6 +2423,8 @@ dependencies = [
  "papyrus-lint-core",
  "papyrus-lints",
  "papyrus-parser",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
