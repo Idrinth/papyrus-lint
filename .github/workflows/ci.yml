@@ -62,6 +62,37 @@ jobs:
       - name: Build
         run: npm run build
 
+  vscode-extension:
+    name: VS Code extension (test & compile)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode-extension
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+        working-directory: .
+
+      - name: Test
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Compile
+        run: npm run compile
+
   rust-build:
     name: Rust (fmt, clippy, check)
     runs-on: ubuntu-latest
