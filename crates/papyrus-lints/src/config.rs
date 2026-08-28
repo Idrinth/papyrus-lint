@@ -29,6 +29,7 @@
 //!   static_condition: true
 //!   unused_local_variable: true
 //!   none_form_usage: true
+//!   local_variable_shadowing: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -134,6 +135,8 @@ pub struct Rules {
     pub unused_local_variable: bool,
     /// The "None used as an existing Form" lint.
     pub none_form_usage: bool,
+    /// The "Local variable shadowing" lint.
+    pub local_variable_shadowing: bool,
 }
 
 impl Default for Rules {
@@ -157,6 +160,7 @@ impl Default for Rules {
             static_condition: true,
             unused_local_variable: true,
             none_form_usage: true,
+            local_variable_shadowing: true,
         }
     }
 }
@@ -258,6 +262,7 @@ mod tests {
         assert!(config.rules.static_condition);
         assert!(config.rules.unused_local_variable);
         assert!(config.rules.none_form_usage);
+        assert!(config.rules.local_variable_shadowing);
     }
 
     #[test]

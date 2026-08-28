@@ -45,6 +45,18 @@ pub trait ExternalSignatures {
     fn is_subtype(&mut self, _sub_type: &str, _super_type: &str) -> bool {
         false
     }
+
+    /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
+    /// or transitively), declares a property named `property_name`. Both
+    /// names are matched case-insensitively. Used by the "Local variable
+    /// shadowing" lint (`crate::local_variable_shadowing`) to check a local
+    /// variable against a parent script's properties.
+    ///
+    /// The default always says no, which keeps existing behavior for
+    /// callers that can't resolve scripts (see [`NoExternalSignatures`]).
+    fn has_property(&mut self, _type_name: &str, _property_name: &str) -> bool {
+        false
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a

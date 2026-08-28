@@ -101,6 +101,7 @@ export interface LintRules {
   static_condition: boolean;
   unused_local_variable: boolean;
   none_form_usage: boolean;
+  local_variable_shadowing: boolean;
 }
 
 export interface LintConfig {
@@ -130,6 +131,7 @@ export const DEFAULT_RULES: LintRules = {
   static_condition: true,
   unused_local_variable: true,
   none_form_usage: true,
+  local_variable_shadowing: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
