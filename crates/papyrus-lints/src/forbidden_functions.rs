@@ -125,6 +125,18 @@ mod tests {
     }
 
     #[test]
+    fn flags_code_before_an_inline_comment_but_ignores_calls_in_comment_text() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction DoThing()\n    Actor a = Game.GetPlayer(); artificially slow Game.GetPlayer()\n    ; Game.GetPlayer() is forbidden\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 4);
+        assert_eq!(diagnostics[0].column, 20);
+        assert!(diagnostics[0].message.contains("Game.GetPlayer"));
+    }
+
+    #[test]
     fn flags_unqualified_call() {
         let diagnostics = check(
             "ScriptName Example extends ObjectReference\n\nFunction DoThing()\n    GetLinkedRef()\nEndFunction\n",
