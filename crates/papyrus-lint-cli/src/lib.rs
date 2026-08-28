@@ -2,6 +2,7 @@
 //!
 //! ```text
 //! PapyrusLinterCLI <path-to-achlist-or-psc>
+//! PapyrusLinterCLI fix <path-to-achlist-or-psc>
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
@@ -16,6 +17,11 @@
 //! (see [`papyrus_lint_core::function_table`]), so the CLI's "Argument
 //! type check"/"Return type check" results match the app's.
 //!
+//! With the `fix` subcommand, every automatic fix (see
+//! [`papyrus_lints::repair`]) is applied to each resolved script first,
+//! rewriting it on disk if it changed, before the (now possibly smaller)
+//! set of remaining diagnostics is reported the same way.
+//!
 //! This crate is used both by the standalone `PapyrusLinterCLI` binary
 //! (`src/main.rs`) and by the desktop app (`src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
@@ -27,11 +33,15 @@ use std::path::{Path, PathBuf};
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::{achlist, config};
 
-pub const USAGE: &str = "Usage: PapyrusLinterCLI <path-to-achlist-or-psc>\n\n\
+pub const USAGE: &str = "Usage: PapyrusLinterCLI <path-to-achlist-or-psc>\n       \
+PapyrusLinterCLI fix <path-to-achlist-or-psc>\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
 configuration (looked up next to the input file, falling back to\n\
 defaults if it has none).\n\n\
+With the `fix` subcommand, applies every automatic fix (see README.md)\n\
+to those scripts first, rewriting each one on disk if it changed, then\n\
+reports whatever diagnostics remain the same way.\n\n\
 Options:\n\
   -h, --help     Show this help message\n\
   -V, --version  Print the PapyrusLinterCLI version\n\n\
@@ -54,12 +64,13 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// (both `false` by default); an `[error]`-level diagnostic, or one with no
 /// level tag, always counts. Diagnostics are still printed either way.
 pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
-    let input_path = match args {
+    let (fix, input_path) = match args {
         [flag] if flag == "--version" || flag == "-V" => {
             let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
             return 0;
         }
-        [path] if path != "-h" && path != "--help" => PathBuf::from(path),
+        [sub, path] if sub == "fix" => (true, PathBuf::from(path)),
+        [path] if path != "-h" && path != "--help" && path != "fix" => (false, PathBuf::from(path)),
         _ => {
             let _ = write!(stderr, "{USAGE}");
             return 2;
@@ -109,6 +120,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let mut function_table = FunctionTable::new(project_root);
     let mut total_diagnostics = 0usize;
     let mut files_with_diagnostics = 0usize;
+    let mut files_fixed = 0usize;
     let mut should_fail = false;
 
     for script_path in &script_paths {
@@ -122,6 +134,24 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
                 );
                 return 2;
             }
+        };
+
+        let source = if fix {
+            let repaired = papyrus_lints::repair(&source, &lint_config);
+            if repaired != source {
+                if let Err(err) = fs::write(script_path, &repaired) {
+                    let _ = writeln!(
+                        stderr,
+                        "error: failed to write {}: {err}",
+                        script_path.display()
+                    );
+                    return 2;
+                }
+                files_fixed += 1;
+            }
+            repaired
+        } else {
+            source
         };
 
         let mut diagnostics =
@@ -147,17 +177,23 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         total_diagnostics += diagnostics.len();
     }
 
+    let fixed_suffix = if fix {
+        format!(" ({files_fixed} script(s) fixed.)")
+    } else {
+        String::new()
+    };
+
     if total_diagnostics == 0 {
         let _ = writeln!(
             stdout,
-            "PapyrusLinterCLI: no problems found in {} script(s).",
+            "PapyrusLinterCLI: no problems found in {} script(s).{fixed_suffix}",
             script_paths.len()
         );
         0
     } else {
         let _ = writeln!(
             stdout,
-            "PapyrusLinterCLI: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).",
+            "PapyrusLinterCLI: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).{fixed_suffix}",
             script_paths.len()
         );
         if should_fail {
@@ -409,6 +445,75 @@ mod tests {
         let script_path = dir.path().join("Missing.psc");
 
         let (code, _stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.starts_with("error:"));
+    }
+
+    #[test]
+    fn fix_rewrites_fixable_issues_and_reports_the_rest() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "fix".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(
+            fs::read_to_string(dir.path().join("scripts/source/Example.psc")).unwrap(),
+            "ScriptName Example\n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n"
+        );
+        assert_eq!(code, 1);
+        assert!(!stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("Game.GetPlayer"));
+        assert!(stdout.contains("(1 script(s) fixed.)"));
+    }
+
+    #[test]
+    fn fix_does_not_rewrite_an_already_clean_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "fix".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n"
+        );
+        assert!(stdout.contains("(0 script(s) fixed.)"));
+    }
+
+    #[test]
+    fn prints_usage_when_fix_is_given_without_a_path() {
+        let (code, _stdout, stderr) = run_captured(&["fix".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn fix_errors_when_the_achlist_is_missing() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let achlist_path = dir.path().join("missing.achlist");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
 
         assert_eq!(code, 2);
         assert!(stderr.starts_with("error:"));

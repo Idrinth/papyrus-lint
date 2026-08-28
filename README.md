@@ -190,6 +190,8 @@ accept the same argument and behave identically:
 ```
 PapyrusLinterCLI path/to/project.achlist
 PapyrusLinterCLI path/to/Example.psc
+PapyrusLinterCLI fix path/to/project.achlist
+PapyrusLinterCLI fix path/to/Example.psc
 ```
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
@@ -205,12 +207,19 @@ desktop app resolves them, so the CLI's "Argument type check"/"Return type
 check" results match what dropping the same `.achlist` into the app would
 report.
 
+Prefixed with the `fix` subcommand, it applies every automatic fix (the
+"Auto-Fix" lints in the table above, using the same config's semicolon and
+indentation settings) to each resolved script first, rewriting a script on
+disk only if it changed, before reporting whatever diagnostics remain the
+same way — the same repair the desktop app's "Fix" button applies to a
+single script.
+
 It exits `0` if no diagnostics were found (or none of the ones found
 counted as a failure — see `fail_on_warning`/`fail_on_info` under
 Configuration above), `1` if any did, or `2` on a usage error (a
-missing/extra argument) or an I/O error (the `.achlist` or `.psc` file
-couldn't be read or parsed) — so it can gate a CI step on a clean lint
-run.
+missing/extra argument) or an I/O error (the `.achlist` or `.psc` file, or
+one being fixed, couldn't be read/written/parsed) — so it can gate a CI
+step on a clean lint run.
 
 Run it with `--version`/`-V` to print its version (`PapyrusLinterCLI
 <version>`) and exit `0` instead of linting; the desktop app shows its own
