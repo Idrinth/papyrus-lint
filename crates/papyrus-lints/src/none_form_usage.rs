@@ -5,8 +5,12 @@
 //!
 //! This works from the parsed AST, tracking which local variables are
 //! definitely `None` as it walks each function body in order. A variable
-//! becomes known-`None` when declared or assigned a literal `None`, and
-//! stops being tracked as soon as it's assigned anything else. `If`/`Else`
+//! becomes known-`None` when declared or assigned a literal `None`, or
+//! when it's declared without an initializer at all and its type isn't one
+//! of the primitive value types (`Int`/`Float`/`Bool`/`String`) — object-typed
+//! locals (`Form` and its subtypes) default to `None` until assigned, unlike
+//! primitives which get a non-`None` zero value. It stops being tracked as
+//! soon as it's assigned anything else. `If`/`Else`
 //! branches are narrowed using the branch's own condition when it's a
 //! direct `None` check (`x == None`, `x != None`, `!x`, or a bare `x`,
 //! optionally combined with `&&`/`||`), and a branch that unconditionally
@@ -21,7 +25,7 @@
 use std::collections::HashSet;
 
 use papyrus_parser::ast::{
-    AssignOp, BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp,
+    AssignOp, BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName, UnaryOp,
 };
 
 use crate::Diagnostic;
@@ -60,6 +64,8 @@ fn walk_body(body: &[Stmt], none_vars: &mut HashSet<String>, diagnostics: &mut V
                 if let Some(value) = &decl.value {
                     check_expr(value, none_vars, diagnostics, decl.line);
                     record_write(&decl.name, value, none_vars);
+                } else if is_object_type(&decl.type_name) {
+                    none_vars.insert(decl.name.to_lowercase());
                 } else {
                     none_vars.remove(&decl.name.to_lowercase());
                 }
@@ -103,6 +109,19 @@ fn walk_body(body: &[Stmt], none_vars: &mut HashSet<String>, diagnostics: &mut V
             }
         }
     }
+}
+
+/// Whether `type_name` is an object type (`Form` or one of its subtypes,
+/// i.e. any script/native type other than the primitives) rather than one
+/// of Papyrus's primitive value types. Object-typed locals default to
+/// `None` when declared without an initializer; primitives get a non-`None`
+/// zero value (`0`, `0.0`, `False`, `""`) instead.
+fn is_object_type(type_name: &TypeName) -> bool {
+    !type_name.is_array
+        && !matches!(
+            type_name.name.to_lowercase().as_str(),
+            "int" | "float" | "bool" | "string"
+        )
 }
 
 /// Updates `none_vars` for a plain `name = value` write (a declaration's
@@ -425,9 +444,37 @@ mod tests {
     }
 
     #[test]
-    fn does_not_flag_uninitialized_declaration() {
+    fn flags_uninitialized_form_declaration() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a\n    a.GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
+    fn does_not_flag_uninitialized_declaration_after_assignment() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Armor a\n    a = Game.GetPlayer() as Armor\n    a.GetName()\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_uninitialized_primitive_declarations() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int i\n    Float f\n    Bool b\n    String s\n    Debug.Trace(s)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_uninitialized_array_declaration() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Armor[] a\n    Debug.Trace(a)\nEndFunction\n",
         );
 
         assert!(diagnostics.is_empty());
