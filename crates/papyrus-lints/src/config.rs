@@ -156,7 +156,7 @@ pub struct Rules {
     pub none_form_usage: bool,
     /// The "Local variable shadowing" lint.
     pub local_variable_shadowing: bool,
-    /// The "Whitespace interrupting property/method chaining" lint.
+    /// The "Whitespace interrupting property/method chaining" lint/fix.
     pub chain_whitespace: bool,
 }
 
