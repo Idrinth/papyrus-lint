@@ -16,21 +16,28 @@ use std::collections::HashMap;
 
 use papyrus_parser::ast::{AssignOp, Expr, FunctionDecl, Script, Stmt, VariableDecl};
 
-use crate::Diagnostic;
+use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-local-variable";
 
 /// Checks `source` for local variable declarations whose value is never
 /// read anywhere in their enclosing function. Flagged as a `[warning]`.
+///
+/// A declaration inside a CreationKit fragment-code wrapper (see
+/// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers, is
+/// never flagged: it's CreationKit-generated boilerplate the user can't
+/// edit or remove, so whether it's read from their own code isn't
+/// something they can act on.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
     };
+    let protected = fragment_code::protected_lines(source);
 
     let mut diagnostics = Vec::new();
     for function in all_functions(&script) {
-        check_function(function, &mut diagnostics);
+        check_function(function, &protected, &mut diagnostics);
     }
     diagnostics
 }
@@ -52,7 +59,7 @@ struct Usage {
     written_after_declaration: bool,
 }
 
-fn check_function(function: &FunctionDecl, diagnostics: &mut Vec<Diagnostic>) {
+fn check_function(function: &FunctionDecl, protected: &[bool], diagnostics: &mut Vec<Diagnostic>) {
     let decls = collect_var_decls(&function.body);
     if decls.is_empty() {
         return;
@@ -65,6 +72,10 @@ fn check_function(function: &FunctionDecl, diagnostics: &mut Vec<Diagnostic>) {
     walk_body(&function.body, &mut usage);
 
     for decl in decls {
+        if protected.get(decl.line).copied().unwrap_or(false) {
+            continue;
+        }
+
         let info = usage
             .get(&decl.name.to_lowercase())
             .copied()
@@ -336,5 +347,23 @@ mod tests {
     #[test]
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_generated_local_declared_in_a_fragment_wrapper() {
+        let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment\n;NEXT FRAGMENT INDEX 0\nScriptname IDR__TIF__05000235 Extends TopicInfo Hidden\n\n;BEGIN FRAGMENT Fragment_0\nFunction Fragment_0(ObjectReference akSpeakerRef)\nActor akSpeaker = akSpeakerRef as Actor\n;BEGIN CODE\nPlayerRef.RemoveItem(Gold001, 5)\n;END CODE\nEndFunction\n;END FRAGMENT\n\n;END FRAGMENT CODE - Do not edit anything between this and the begin comment\nActor Property PlayerRef Auto\nMiscObject Property Gold001 Auto\n";
+
+        assert!(check(source).is_empty());
+    }
+
+    #[test]
+    fn still_flags_an_unused_local_declared_inside_the_code_block() {
+        let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment\nScriptname Example Extends TopicInfo Hidden\nFunction Fragment_0(ObjectReference akSpeakerRef)\n;BEGIN CODE\nInt total = 1\n;END CODE\nEndFunction\n;END FRAGMENT CODE - Do not edit anything between this and the begin comment\n";
+
+        let diagnostics = check(source);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
     }
 }

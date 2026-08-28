@@ -17,7 +17,7 @@ use std::collections::HashSet;
 use papyrus_parser::ast::{FunctionDecl, Script, Stmt, VariableDecl};
 
 use crate::argument_types::{ExternalSignatures, NoExternalSignatures};
-use crate::Diagnostic;
+use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "local-variable-shadowing";
@@ -27,6 +27,10 @@ pub const RULE: &str = "local-variable-shadowing";
 /// checked this way, since resolving parent scripts to files requires
 /// filesystem access this crate deliberately doesn't have; see
 /// [`check_with`] for that. Flagged as a `[warning]`.
+///
+/// A declaration inside a CreationKit fragment-code wrapper (see
+/// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers, is
+/// never flagged, since it's generated boilerplate the user can't edit.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }
@@ -38,6 +42,7 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
     };
+    let protected = fragment_code::protected_lines(source);
 
     let own_properties: HashSet<String> = script
         .properties
@@ -48,6 +53,9 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
     let mut diagnostics = Vec::new();
     for function in all_functions(&script) {
         for decl in collect_var_decls(&function.body) {
+            if protected.get(decl.line).copied().unwrap_or(false) {
+                continue;
+            }
             diagnostics.extend(check_decl(decl, &script, &own_properties, external));
         }
     }
@@ -255,6 +263,14 @@ mod tests {
         );
 
         assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_generated_local_shadowing_a_property_in_a_fragment_wrapper() {
+        let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment\nScriptname Example Extends TopicInfo Hidden\nFunction Fragment_0(ObjectReference akSpeakerRef)\nActor akSpeaker = akSpeakerRef as Actor\n;BEGIN CODE\nakSpeaker.RemoveItem(Gold001, 5)\n;END CODE\nEndFunction\n;END FRAGMENT CODE - Do not edit anything between this and the begin comment\nActor Property akSpeaker Auto\n";
+
+        assert!(check(source).is_empty());
     }
 
     #[test]
