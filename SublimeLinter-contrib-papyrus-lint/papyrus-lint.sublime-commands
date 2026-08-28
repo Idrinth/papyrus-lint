@@ -1,0 +1,6 @@
+[
+    {
+        "caption": "PapyrusLint: Fix Current File",
+        "command": "papyrus_lint_fix"
+    }
+]
