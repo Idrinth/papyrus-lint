@@ -429,6 +429,34 @@ h1 {
   outline: none;
 }
 
+.code-viewer__autocomplete {
+  position: absolute;
+  z-index: 5;
+  margin: 0;
+  padding: 0.25em 0;
+  min-width: 12em;
+  max-height: 12em;
+  overflow-y: auto;
+  list-style: none;
+  background: #fff;
+  border: 1px solid rgba(15, 15, 15, 0.2);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(15, 15, 15, 0.25);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.85em;
+  text-align: left;
+}
+
+.code-viewer__autocomplete-item {
+  padding: 0.2em 0.6em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.code-viewer__autocomplete-item--active {
+  background-color: rgba(36, 132, 219, 0.18);
+}
+
 .code-viewer__table {
   width: 100%;
   border-collapse: collapse;
@@ -628,5 +656,14 @@ h1 {
 
   .cm-type {
     color: #4ec9b0;
+  }
+
+  .code-viewer__autocomplete {
+    background: #2f2f2f;
+    border-color: rgba(246, 246, 246, 0.25);
+  }
+
+  .code-viewer__autocomplete-item--active {
+    background-color: rgba(36, 200, 219, 0.2);
   }
 }

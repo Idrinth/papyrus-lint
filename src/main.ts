@@ -1,6 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { highlightPapyrusLines } from "./highlight";
+import {
+  type CompletionQuery,
+  type Member,
+  completionInsertText,
+  completionLabel,
+  completionQueryAt,
+  filterMembers,
+} from "./autocomplete";
 
 let appVersionEl: HTMLElement | null;
 let dropZoneEl: HTMLElement | null;
@@ -29,6 +37,7 @@ let codeViewerEditButtonEl: HTMLButtonElement | null;
 let codeViewerSaveButtonEl: HTMLButtonElement | null;
 let codeViewerCancelButtonEl: HTMLButtonElement | null;
 let codeViewerFullscreenEl: HTMLButtonElement | null;
+let codeViewerAutocompleteEl: HTMLUListElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
@@ -315,6 +324,23 @@ async function writePscFile(path: string, contents: string): Promise<void> {
   await invoke("write_psc_file", { path, contents });
 }
 
+// Fetches every function/property available on an object of type
+// `typeName` (including those inherited via Extends), for the code
+// viewer's `.`-triggered autocompletion. `root` is the project root (the
+// directory containing the dropped .achlist file), the same as every other
+// command that resolves scripts across a project.
+export async function listScriptMembers(typeName: string): Promise<Member[]> {
+  try {
+    return await invoke<Member[]>("list_script_members", {
+      root: currentProjectDir ?? "",
+      typeName,
+    });
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
 export function hasFixableFindings(findings: Diagnostic[]): boolean {
   return findings.some((finding) =>
     finding.message === TRAILING_WHITESPACE_MESSAGE || finding.message.includes("end with a semicolon"),
@@ -362,6 +388,15 @@ interface CodeViewerState {
 
 let codeViewerState: CodeViewerState | null = null;
 let codeViewerMode: "view" | "edit" = "view";
+
+// The autocompletion dropdown's currently pending query/results, if any is
+// showing. `autocompleteRequestId` guards against a stale
+// `listScriptMembers` response (from an earlier keystroke) overwriting a
+// newer one that resolves first.
+let autocompleteQuery: CompletionQuery | null = null;
+let autocompleteMembers: Member[] = [];
+let autocompleteSelectedIndex = 0;
+let autocompleteRequestId = 0;
 
 function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warning" | "info" | "flagged" | null {
   if (!lineFindings || lineFindings.length === 0) {
@@ -422,6 +457,9 @@ function renderCodeViewerView(source: string, findings: Diagnostic[], focusLine?
 // toggling the header's Edit/Save/Cancel buttons to match.
 function setCodeViewerMode(mode: "view" | "edit") {
   codeViewerMode = mode;
+  if (mode !== "edit") {
+    hideAutocomplete();
+  }
   if (codeViewerViewEl) codeViewerViewEl.hidden = mode !== "view";
   if (codeViewerEditEl) codeViewerEditEl.hidden = mode !== "edit";
   if (codeViewerEditButtonEl) codeViewerEditButtonEl.hidden = mode !== "view";
@@ -437,6 +475,172 @@ function updateCodeViewerEditHighlight() {
     return;
   }
   code.innerHTML = highlightPapyrusLines(codeViewerEditTextareaEl.value).join("\n");
+}
+
+// Measures where the text caret currently renders inside `textarea`, using
+// a hidden, identically-styled mirror element (the standard technique for
+// this - a real caret rectangle isn't exposed by the DOM). Coordinates are
+// relative to the textarea's own box, matching where the autocompletion
+// dropdown (its sibling, absolutely positioned within the same container)
+// should be placed.
+function caretPixelPosition(textarea: HTMLTextAreaElement): { top: number; left: number } {
+  const computed = window.getComputedStyle(textarea);
+  const mirror = document.createElement("div");
+  mirror.style.position = "absolute";
+  mirror.style.visibility = "hidden";
+  mirror.style.top = "0";
+  mirror.style.left = "-9999px";
+  mirror.style.whiteSpace = "pre-wrap";
+  mirror.style.wordBreak = "break-word";
+  mirror.style.boxSizing = computed.boxSizing;
+  mirror.style.width = computed.width;
+  mirror.style.padding = computed.padding;
+  mirror.style.border = `${computed.borderWidth} solid transparent`;
+  mirror.style.fontFamily = computed.fontFamily;
+  mirror.style.fontSize = computed.fontSize;
+  mirror.style.fontWeight = computed.fontWeight;
+  mirror.style.lineHeight = computed.lineHeight;
+  mirror.style.letterSpacing = computed.letterSpacing;
+
+  const caretIndex = textarea.selectionStart;
+  const marker = document.createElement("span");
+  marker.textContent = "​";
+  mirror.append(textarea.value.slice(0, caretIndex), marker, textarea.value.slice(caretIndex) || " ");
+
+  document.body.append(mirror);
+  const top = marker.offsetTop - textarea.scrollTop + marker.offsetHeight;
+  const left = marker.offsetLeft - textarea.scrollLeft;
+  mirror.remove();
+
+  return { top, left };
+}
+
+// Positions the autocompletion dropdown just below the text caret.
+function positionAutocomplete() {
+  if (!codeViewerAutocompleteEl || !codeViewerEditTextareaEl) {
+    return;
+  }
+  const { top, left } = caretPixelPosition(codeViewerEditTextareaEl);
+  codeViewerAutocompleteEl.style.top = `${top}px`;
+  codeViewerAutocompleteEl.style.left = `${left}px`;
+}
+
+// Hides the autocompletion dropdown and clears its pending query/results.
+export function hideAutocomplete() {
+  autocompleteQuery = null;
+  autocompleteMembers = [];
+  autocompleteSelectedIndex = 0;
+  if (codeViewerAutocompleteEl) {
+    codeViewerAutocompleteEl.hidden = true;
+    codeViewerAutocompleteEl.replaceChildren();
+  }
+}
+
+// Renders `autocompleteMembers` into the dropdown (with the currently
+// selected one highlighted), or hides it if there are none.
+function renderAutocomplete() {
+  if (!codeViewerAutocompleteEl) {
+    return;
+  }
+  if (autocompleteMembers.length === 0) {
+    codeViewerAutocompleteEl.hidden = true;
+    codeViewerAutocompleteEl.replaceChildren();
+    return;
+  }
+
+  codeViewerAutocompleteEl.replaceChildren(
+    ...autocompleteMembers.map((member, index) => {
+      const item = document.createElement("li");
+      item.setAttribute("role", "option");
+      item.classList.add("code-viewer__autocomplete-item");
+      item.classList.toggle("code-viewer__autocomplete-item--active", index === autocompleteSelectedIndex);
+      item.textContent = completionLabel(member);
+      // mousedown (not click), and prevented from moving focus, so
+      // accepting a completion by clicking it doesn't blur the textarea
+      // first (which would otherwise close the dropdown before the click
+      // that's meant to use it).
+      item.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        applyAutocompleteSelection(index);
+      });
+      return item;
+    }),
+  );
+  codeViewerAutocompleteEl.hidden = false;
+  positionAutocomplete();
+}
+
+// Re-evaluates the autocompletion query at the textarea's current cursor
+// position, fetching and showing matching members if the cursor is right
+// after a "receiver.prefix" whose receiver's declared type is known.
+// Hides the dropdown otherwise (including while a range is selected).
+export async function updateAutocomplete() {
+  if (!codeViewerEditTextareaEl || codeViewerMode !== "edit") {
+    hideAutocomplete();
+    return;
+  }
+  const textarea = codeViewerEditTextareaEl;
+  if (textarea.selectionStart !== textarea.selectionEnd) {
+    hideAutocomplete();
+    return;
+  }
+
+  const query = completionQueryAt(textarea.value, textarea.selectionStart);
+  if (!query) {
+    hideAutocomplete();
+    return;
+  }
+
+  const requestId = ++autocompleteRequestId;
+  const members = filterMembers(await listScriptMembers(query.receiverType), query.prefix);
+  // A later keystroke may have started a new request (or left edit mode)
+  // while this one was in flight; don't clobber it with a stale response.
+  if (requestId !== autocompleteRequestId || !codeViewerEditTextareaEl || codeViewerMode !== "edit") {
+    return;
+  }
+
+  autocompleteQuery = query;
+  autocompleteMembers = members;
+  autocompleteSelectedIndex = 0;
+  renderAutocomplete();
+}
+
+// Splices the selected member's insertion text into the textarea in place
+// of the typed prefix, then closes the dropdown.
+export function applyAutocompleteSelection(index: number) {
+  const member = autocompleteMembers[index];
+  if (!codeViewerEditTextareaEl || !autocompleteQuery || !member) {
+    return;
+  }
+  const textarea = codeViewerEditTextareaEl;
+  const { prefixStart } = autocompleteQuery;
+  textarea.setRangeText(completionInsertText(member), prefixStart, textarea.selectionStart, "end");
+  hideAutocomplete();
+  updateCodeViewerEditHighlight();
+  textarea.focus();
+}
+
+// Handles the dropdown's navigation/acceptance/dismissal keys while it's
+// open; every other key is left for the textarea to handle normally.
+export function handleAutocompleteKeydown(event: KeyboardEvent) {
+  if (autocompleteMembers.length === 0) {
+    return;
+  }
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    autocompleteSelectedIndex = (autocompleteSelectedIndex + 1) % autocompleteMembers.length;
+    renderAutocomplete();
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    autocompleteSelectedIndex = (autocompleteSelectedIndex - 1 + autocompleteMembers.length) % autocompleteMembers.length;
+    renderAutocomplete();
+  } else if (event.key === "Enter" || event.key === "Tab") {
+    event.preventDefault();
+    applyAutocompleteSelection(autocompleteSelectedIndex);
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    hideAutocomplete();
+  }
 }
 
 export function isCodeViewerEditDirty(): boolean {
@@ -824,6 +1028,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerSaveButtonEl = document.querySelector("#code-viewer-save");
   codeViewerCancelButtonEl = document.querySelector("#code-viewer-cancel");
   codeViewerFullscreenEl = document.querySelector("#code-viewer-fullscreen");
+  codeViewerAutocompleteEl = document.querySelector("#code-viewer-autocomplete");
 
   codeViewerCloseEl?.addEventListener("click", () => requestCloseCodeViewer());
   codeViewerFullscreenEl?.addEventListener("click", toggleCodeViewerFullscreen);
@@ -843,6 +1048,10 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerCancelButtonEl?.addEventListener("click", () => cancelCodeViewerEditMode());
   codeViewerSaveButtonEl?.addEventListener("click", () => void saveCodeViewerEdits());
   codeViewerEditTextareaEl?.addEventListener("input", () => updateCodeViewerEditHighlight());
+  codeViewerEditTextareaEl?.addEventListener("input", () => void updateAutocomplete());
+  codeViewerEditTextareaEl?.addEventListener("click", () => void updateAutocomplete());
+  codeViewerEditTextareaEl?.addEventListener("keydown", (event) => handleAutocompleteKeydown(event));
+  codeViewerEditTextareaEl?.addEventListener("blur", () => hideAutocomplete());
   codeViewerEditTextareaEl?.addEventListener("scroll", () => {
     if (codeViewerEditHighlightEl && codeViewerEditTextareaEl) {
       codeViewerEditHighlightEl.scrollTop = codeViewerEditTextareaEl.scrollTop;

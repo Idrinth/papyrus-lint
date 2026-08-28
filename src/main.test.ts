@@ -14,6 +14,7 @@ import { mountFixture } from "./test/fixture";
 import {
   DEFAULT_LINT_CONFIG,
   DEFAULT_RULES,
+  applyAutocompleteSelection,
   applyLintConfigToUI,
   buildPscResultItem,
   cancelCodeViewerEditMode,
@@ -21,18 +22,21 @@ import {
   dirnameOf,
   enterCodeViewerEditMode,
   escapeAttr,
+  handleAutocompleteKeydown,
   handleCompileClick,
   handleCompilerPathChanged,
   handleDroppedPaths,
   handleFixClick,
   handleLintConfigChanged,
   hasFixableFindings,
+  hideAutocomplete,
   isAchlistPath,
   isCodeViewerEditDirty,
   isPscPath,
   lastProjectDir,
   levelOf,
   lintConfigFromUI,
+  listScriptMembers,
   loadAppVersion,
   loadCompilerPath,
   loadLintConfig,
@@ -51,6 +55,7 @@ import {
   showResult,
   switchTab,
   toggleCodeViewerFullscreen,
+  updateAutocomplete,
   useProjectDir,
   type Diagnostic,
   type LintConfig,
@@ -840,6 +845,147 @@ describe("code viewer edit mode", () => {
       expect(saveButton.textContent).toBe("Save failed");
       expect(saveButton.disabled).toBe(false);
       expect(panelHidden("#code-viewer-editor")).toBe(false);
+    });
+  });
+
+  describe("autocompletion", () => {
+    const SELF_MEMBER_SCRIPT = "ScriptName Example\n\nFunction Run()\n    self.\nEndFunction\n";
+
+    function autocompleteEl() {
+      return document.querySelector<HTMLElement>("#code-viewer-autocomplete")!;
+    }
+
+    // Enters edit mode on SELF_MEMBER_SCRIPT and places the caret right
+    // after "self.", the spot autocompletion should trigger from.
+    async function openWithCursorAfterSelfDot() {
+      await openWithSource(SELF_MEMBER_SCRIPT);
+      enterCodeViewerEditMode();
+      const field = textarea();
+      const cursor = field.value.indexOf("self.") + "self.".length;
+      field.setSelectionRange(cursor, cursor);
+      return field;
+    }
+
+    it("does nothing while not in edit mode", async () => {
+      await openWithSource(SELF_MEMBER_SCRIPT);
+
+      await updateAutocomplete();
+
+      expect(autocompleteEl().hidden).toBe(true);
+    });
+
+    it("queries list_script_members for the receiver's declared type and shows the results", async () => {
+      await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [
+          {
+            kind: "function",
+            name: "GetName",
+            param_types: [],
+            return_type: { name: "String", is_array: false },
+            is_global: false,
+            is_native: true,
+            is_event: false,
+          },
+          { kind: "property", name: "TargetRef", type_name: { name: "ObjectReference", is_array: false } },
+        ],
+      });
+
+      await updateAutocomplete();
+
+      expect(invokeMock).toHaveBeenCalledWith("list_script_members", expect.objectContaining({ typeName: "Example" }));
+      expect(autocompleteEl().hidden).toBe(false);
+      expect(autocompleteEl().querySelectorAll(".code-viewer__autocomplete-item")).toHaveLength(2);
+    });
+
+    it("hides the dropdown when the cursor isn't right after a member access", async () => {
+      await openWithSource("ScriptName Example\n\nFunction Run()\n    Int i = 0\nEndFunction\n");
+      enterCodeViewerEditMode();
+      const field = textarea();
+      field.setSelectionRange(field.value.length, field.value.length);
+
+      await updateAutocomplete();
+
+      expect(autocompleteEl().hidden).toBe(true);
+    });
+
+    it("applyAutocompleteSelection splices the chosen member's insertion text in place of the typed prefix", async () => {
+      const field = await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [
+          {
+            kind: "function",
+            name: "GetName",
+            param_types: [],
+            return_type: null,
+            is_global: false,
+            is_native: false,
+            is_event: false,
+          },
+        ],
+      });
+      await updateAutocomplete();
+
+      applyAutocompleteSelection(0);
+
+      expect(field.value).toBe("ScriptName Example\n\nFunction Run()\n    self.GetName(\nEndFunction\n");
+      expect(autocompleteEl().hidden).toBe(true);
+    });
+
+    it("navigates with the arrow keys and accepts the highlighted entry on Enter", async () => {
+      const field = await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [
+          { kind: "property", name: "AProp", type_name: { name: "Int", is_array: false } },
+          { kind: "property", name: "BProp", type_name: { name: "Int", is_array: false } },
+        ],
+      });
+      await updateAutocomplete();
+
+      const downEvent = new KeyboardEvent("keydown", { key: "ArrowDown", cancelable: true });
+      handleAutocompleteKeydown(downEvent);
+      expect(downEvent.defaultPrevented).toBe(true);
+      expect(autocompleteEl().querySelector(".code-viewer__autocomplete-item--active")?.textContent).toContain(
+        "BProp",
+      );
+
+      handleAutocompleteKeydown(new KeyboardEvent("keydown", { key: "Enter", cancelable: true }));
+
+      expect(field.value).toContain("self.BProp");
+    });
+
+    it("dismisses the dropdown on Escape without touching the textarea", async () => {
+      const field = await openWithCursorAfterSelfDot();
+      const beforeEscape = field.value;
+      invokeImplFor({
+        list_script_members: () => [{ kind: "property", name: "AProp", type_name: { name: "Int", is_array: false } }],
+      });
+      await updateAutocomplete();
+
+      handleAutocompleteKeydown(new KeyboardEvent("keydown", { key: "Escape", cancelable: true }));
+
+      expect(autocompleteEl().hidden).toBe(true);
+      expect(field.value).toBe(beforeEscape);
+    });
+
+    it("hideAutocomplete clears any pending dropdown", async () => {
+      await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [{ kind: "property", name: "AProp", type_name: { name: "Int", is_array: false } }],
+      });
+      await updateAutocomplete();
+
+      hideAutocomplete();
+
+      expect(autocompleteEl().hidden).toBe(true);
+      expect(autocompleteEl().querySelectorAll(".code-viewer__autocomplete-item")).toHaveLength(0);
+    });
+
+    it("listScriptMembers logs and returns an empty list when the backend call fails", async () => {
+      invokeMock.mockRejectedValue(new Error("lookup failed"));
+      vi.spyOn(console, "error").mockImplementation(() => {});
+
+      await expect(listScriptMembers("Example")).resolves.toEqual([]);
     });
   });
 });
