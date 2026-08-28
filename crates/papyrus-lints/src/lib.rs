@@ -200,6 +200,11 @@ pub fn repair(source: &str, config: &Config) -> String {
     } else {
         source
     };
+    let source = if rules.chain_whitespace {
+        chain_whitespace::repair(&source)
+    } else {
+        source
+    };
     if rules.trailing_whitespace {
         trailing_whitespace::repair(&source)
     } else {
@@ -232,6 +237,15 @@ mod tests {
         let repaired = repair("Call(1,2)  \r\n", &config);
 
         assert_eq!(repaired, "Call(1, 2)\r\n");
+        assert!(lint(&repaired, &config).is_empty());
+    }
+
+    #[test]
+    fn combined_repair_closes_whitespace_interrupting_a_chain() {
+        let config = Config::default();
+        let repaired = repair("SomeProperty . DoThing() .Other()  \r\n", &config);
+
+        assert_eq!(repaired, "SomeProperty.DoThing().Other()\r\n");
         assert!(lint(&repaired, &config).is_empty());
     }
 
@@ -285,6 +299,20 @@ mod tests {
             rules: config::Rules {
                 trailing_whitespace: false,
                 comma_spacing: false,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+
+        assert_eq!(repair(source, &config), source);
+    }
+
+    #[test]
+    fn repair_skips_chain_whitespace_fix_when_disabled() {
+        let source = "SomeProperty . DoThing()\n";
+        let config = Config {
+            rules: config::Rules {
+                chain_whitespace: false,
                 ..config::Rules::default()
             },
             ..Config::default()
