@@ -32,7 +32,8 @@ project's papyrus-lint.yaml/.yml configuration (looked up next to the\n\
 Options:\n\
   -h, --help     Show this help message\n\
   -V, --version  Print the PapyrusLinterCLI version\n\n\
-Exit status: 0 if no problems were found, 1 if any were, 2 on a usage or\n\
+Exit status: 0 if no problems were found (or none met the configured\n\
+fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n";
 
 /// The crate's version, as set in `crates/papyrus-lint-cli/Cargo.toml`
@@ -43,8 +44,12 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Runs the CLI against `args` (the program's arguments, excluding the
 /// binary name itself), writing lint output to `stdout` and usage/error
 /// text to `stderr`. Returns the process exit code: `0` if linting found
-/// no diagnostics (or `--version`/`-V` was given), `1` if it found at
-/// least one, or `2` on a usage or I/O error.
+/// no diagnostics that count as a failure (or `--version`/`-V` was given),
+/// `1` if it found at least one, or `2` on a usage or I/O error. A
+/// `[warning]`/`[info]`-level diagnostic only counts as a failure when the
+/// project's `papyrus-lint.yaml` sets `fail_on_warning`/`fail_on_info`
+/// (both `false` by default); an `[error]`-level diagnostic, or one with no
+/// level tag, always counts. Diagnostics are still printed either way.
 pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
     let achlist_path = match args {
         [flag] if flag == "--version" || flag == "-V" => {
@@ -92,6 +97,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let mut function_table = FunctionTable::new(project_root);
     let mut total_diagnostics = 0usize;
     let mut files_with_diagnostics = 0usize;
+    let mut should_fail = false;
 
     for script_path in &script_paths {
         let source = match fs::read_to_string(script_path) {
@@ -123,6 +129,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
                 diagnostic.rule,
                 diagnostic.message
             );
+            should_fail = should_fail || lint_config.should_fail_on(diagnostic);
         }
         files_with_diagnostics += 1;
         total_diagnostics += diagnostics.len();
@@ -141,7 +148,11 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             "PapyrusLinterCLI: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).",
             script_paths.len()
         );
-        1
+        if should_fail {
+            1
+        } else {
+            0
+        }
     }
 }
 
@@ -255,6 +266,49 @@ mod tests {
         assert_eq!(code, 1);
         assert!(stdout.contains("[trailing-whitespace]"));
         assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
+    }
+
+    #[test]
+    fn does_not_fail_on_warning_level_diagnostics_by_default() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n\nInt Property MyValue = 1 Auto\n\nFunction DoThing()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("[unused-property]"));
+        assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
+    }
+
+    #[test]
+    fn fails_on_warning_level_diagnostics_when_configured() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n\nInt Property MyValue = 1 Auto\n\nFunction DoThing()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "fail_on_warning: true\n",
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("[unused-property]"));
     }
 
     #[test]

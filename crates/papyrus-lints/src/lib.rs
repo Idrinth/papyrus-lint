@@ -46,6 +46,27 @@ pub struct Diagnostic {
     pub rule: &'static str,
 }
 
+impl Diagnostic {
+    /// The severity level tagged onto the front of [`Self::message`] (e.g.
+    /// `"[warning] ..."`), if the lint that raised it tags one this way —
+    /// matching the `^\[(error|warning|info)\]` convention the frontend's
+    /// `levelOf` parses the same messages with. A lint that always
+    /// represents a firm violation (e.g. trailing whitespace) tags no
+    /// level; see [`Config::should_fail_on`], which treats that the same
+    /// as `"error"`.
+    pub fn level(&self) -> Option<&'static str> {
+        if self.message.starts_with("[error]") {
+            Some("error")
+        } else if self.message.starts_with("[warning]") {
+            Some("warning")
+        } else if self.message.starts_with("[info]") {
+            Some("info")
+        } else {
+            None
+        }
+    }
+}
+
 /// Runs every lint rule against `source` and returns all diagnostics found.
 ///
 /// `config` carries the project's lint configuration (see [`Config`]), read
@@ -185,6 +206,21 @@ pub fn repair(source: &str, config: &Config) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn diagnostic_level_parses_the_leading_tag() {
+        let tagged = |message: &str| Diagnostic {
+            line: 1,
+            column: 1,
+            message: message.to_string(),
+            rule: "some-rule",
+        };
+
+        assert_eq!(tagged("[error] boom").level(), Some("error"));
+        assert_eq!(tagged("[warning] hmm").level(), Some("warning"));
+        assert_eq!(tagged("[info] fyi").level(), Some("info"));
+        assert_eq!(tagged("Line contains trailing whitespace").level(), None);
+    }
 
     #[test]
     fn combined_repair_applies_comma_spacing_and_trailing_whitespace() {
