@@ -14,6 +14,11 @@ pub struct SlowFunctionRule {
     pub object: &'static str,
     pub function: &'static str,
     pub replacement: &'static str,
+    /// Whether `object` is a native singleton (e.g. `Game`, `Utility`)
+    /// always called through its literal script name, rather than a base
+    /// type (e.g. `GlobalVariable`) called through a variable of some
+    /// subclass. See `check` for how this is used.
+    pub global: bool,
 }
 
 include!(concat!(env!("OUT_DIR"), "/slow_functions_data.rs"));
@@ -28,10 +33,14 @@ pub const RULE: &str = "slow-functions";
 /// `akGlobal.GetValueInt()` — a call's qualifier can't generally be
 /// resolved back to the script that declares the function; matching is
 /// therefore done by function name alone, case-insensitively (Papyrus
-/// identifiers are case-insensitive). Every entry in
-/// `rules/slow-functions.yaml` currently has a unique function name, so
-/// this has no false matches in practice. Flagged as an `[info]`, since
-/// it's a performance suggestion rather than a correctness issue.
+/// identifiers are case-insensitive). Flagged as an `[info]`, since it's a
+/// performance suggestion rather than a correctness issue.
+///
+/// The exception is a rule whose `object` is a native singleton
+/// (`global: true` in the YAML, e.g. `Utility`) rather than a base type
+/// used through a variable: those scripts are never subclassed, so a
+/// qualified call to one of their functions is only a real match when the
+/// qualifier is literally that script's name.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let tokens = match Lexer::new(source).tokenize() {
         Ok(tokens) => tokens,
@@ -39,7 +48,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     };
 
     let mut diagnostics = Vec::new();
-    for window in tokens.windows(2) {
+    for (i, window) in tokens.windows(2).enumerate() {
         let TokenKind::Identifier(name) = &window[0].kind else {
             continue;
         };
@@ -49,6 +58,9 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         let Some(rule) = find_rule(name) else {
             continue;
         };
+        if rule.global && !qualifier_matches(&tokens, i, rule.object) {
+            continue;
+        }
         diagnostics.push(Diagnostic {
             line: window[0].line,
             column: window[0].col,
@@ -60,6 +72,25 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         });
     }
     diagnostics
+}
+
+/// Whether the call at `tokens[call_index]` is qualified with `object`
+/// (case-insensitively), i.e. preceded by `object.`.
+fn qualifier_matches(
+    tokens: &[papyrus_parser::token::Token],
+    call_index: usize,
+    object: &str,
+) -> bool {
+    if call_index < 2 {
+        return false;
+    }
+    if !matches!(tokens[call_index - 1].kind, TokenKind::Dot) {
+        return false;
+    }
+    let TokenKind::Identifier(qualifier) = &tokens[call_index - 2].kind else {
+        return false;
+    };
+    qualifier.eq_ignore_ascii_case(object)
 }
 
 fn find_rule(name: &str) -> Option<&'static SlowFunctionRule> {

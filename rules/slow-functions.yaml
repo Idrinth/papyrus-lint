@@ -5,6 +5,11 @@
 #   object:      the script (native/global or object) the function is defined on
 #   function:    the function name, as written in Papyrus source
 #   replacement: the faster call to use instead
+#   global:      true if `object` is a native singleton that's always called
+#                through its literal name (e.g. `Game`, `Utility`) rather
+#                than a base type called through a variable of some
+#                subclass (e.g. `GlobalVariable`). Defaults to false. See
+#                `rules/forbidden-functions.yaml` for the full rationale.
 
 - object: GlobalVariable
   function: GetValueInt
