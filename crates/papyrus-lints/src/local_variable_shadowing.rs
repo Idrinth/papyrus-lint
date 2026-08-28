@@ -173,6 +173,22 @@ mod tests {
     }
 
     #[test]
+    fn flags_variables_in_every_nested_control_flow_body() {
+        let diagnostics = check(
+            "ScriptName Example\n\nInt Property MyValue Auto\n\nFunction Test()\n    If true\n        While true\n            Int MyValue = 1\n        EndWhile\n    ElseIf false\n        Int myvalue = 2\n    Else\n        Int MYVALUE = 3\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 3);
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.line)
+                .collect::<Vec<_>>(),
+            vec![8, 11, 13]
+        );
+    }
+
+    #[test]
     fn checks_functions_declared_in_states_too() {
         let diagnostics = check(
             "ScriptName Example\n\nInt Property MyValue Auto\n\nState Active\n    Function Test()\n        Int MyValue = 1\n    EndFunction\nEndState\n",
