@@ -162,7 +162,10 @@ crates/papyrus-lint-cli/Cargo.toml`) on each platform, attaching each
 platform's desktop bundle and CLI binary
 (`PapyrusLinterCLI-linux`/`PapyrusLinterCLI-macos`/`PapyrusLinterCLI-windows.exe`)
 to a GitHub release for that tag, creating the release if it doesn't
-already exist.
+already exist. A separate `editor-plugins` job, gated on that release job,
+then packages the VS Code extension into a `.vsix` (via `@vscode/vsce`)
+and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip`, and
+attaches both to the same release.
 
 ## Merging
 

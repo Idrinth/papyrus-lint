@@ -107,3 +107,33 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.ref_name }}" cli-dist/* --clobber --repo "${{ github.repository }}"
+
+  editor-plugins:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Package VS Code extension
+        working-directory: vscode-extension
+        run: |
+          npm ci
+          npx @vscode/vsce package --out ../plugin-dist/papyrus-lint-vscode-${{ github.ref_name }}.vsix
+
+      - name: Package SublimeLinter plugin
+        run: |
+          mkdir -p plugin-dist
+          zip -r "plugin-dist/SublimeLinter-contrib-papyrus-lint-${{ github.ref_name }}.zip" SublimeLinter-contrib-papyrus-lint -x '*.gitignore'
+
+      - name: Upload editor plugins to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" plugin-dist/* --clobber --repo "${{ github.repository }}"

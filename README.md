@@ -274,6 +274,14 @@ run `cargo build --release --manifest-path
 crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
 `PapyrusLinterCLI`.
 
+Each release also attaches a packaged copy of the two editor plugins: the
+VS Code extension as a `.vsix` file (install via "Install from VSIX..." in
+VS Code, or `code --install-extension <file>`) and the SublimeLinter
+plugin as a `.zip` of the `SublimeLinter-contrib-papyrus-lint` directory
+(extract it into Sublime Text's `Packages/` directory). Both still depend
+on the standalone `PapyrusLinterCLI` binary above being installed and on
+`PATH` (or configured via each plugin's settings).
+
 ## Compiling a script
 
 Each `.psc` file listed on the Lint results tab has a "Compile" button that
