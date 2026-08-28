@@ -1,18 +1,20 @@
 //! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! PapyrusLinterCLI <path-to-achlist>
+//! PapyrusLinterCLI <path-to-achlist-or-psc>
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
-//! [`papyrus_lint_core::achlist`]), lints each against the project's
-//! `papyrus-lint.yaml`/`.yml` configuration — looked up next to the
-//! `.achlist` file, falling back to [`papyrus_lints::Config::default`] if
-//! it has none (see [`papyrus_lint_core::config`]) — and prints the
-//! diagnostics found, one per line. Calls to functions declared on other
-//! scripts under the project root are resolved the same way the desktop
-//! app resolves them (see [`papyrus_lint_core::function_table`]), so the
-//! CLI's "Argument type check"/"Return type check" results match the app's.
+//! [`papyrus_lint_core::achlist`]) — or, if given a single `.psc` file
+//! directly, treats that file as the achlist's sole entry — lints each
+//! against the project's `papyrus-lint.yaml`/`.yml` configuration —
+//! looked up next to the input file, falling back to
+//! [`papyrus_lints::Config::default`] if it has none (see
+//! [`papyrus_lint_core::config`]) — and prints the diagnostics found, one
+//! per line. Calls to functions declared on other scripts under the
+//! project root are resolved the same way the desktop app resolves them
+//! (see [`papyrus_lint_core::function_table`]), so the CLI's "Argument
+//! type check"/"Return type check" results match the app's.
 //!
 //! This crate is used both by the standalone `PapyrusLinterCLI` binary
 //! (`src/main.rs`) and by the desktop app (`src-tauri`), which runs it in
@@ -25,10 +27,11 @@ use std::path::{Path, PathBuf};
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::{achlist, config};
 
-pub const USAGE: &str = "Usage: PapyrusLinterCLI <path-to-achlist>\n\n\
-Lints every .psc script listed in the given .achlist file, using the\n\
-project's papyrus-lint.yaml/.yml configuration (looked up next to the\n\
-.achlist file, falling back to defaults if it has none).\n\n\
+pub const USAGE: &str = "Usage: PapyrusLinterCLI <path-to-achlist-or-psc>\n\n\
+Lints every .psc script listed in the given .achlist file, or a single\n\
+.psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
+configuration (looked up next to the input file, falling back to\n\
+defaults if it has none).\n\n\
 Options:\n\
   -h, --help     Show this help message\n\
   -V, --version  Print the PapyrusLinterCLI version\n\n\
@@ -51,7 +54,7 @@ pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// (both `false` by default); an `[error]`-level diagnostic, or one with no
 /// level tag, always counts. Diagnostics are still printed either way.
 pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
-    let achlist_path = match args {
+    let input_path = match args {
         [flag] if flag == "--version" || flag == "-V" => {
             let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
             return 0;
@@ -63,7 +66,12 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         }
     };
 
-    let project_root = achlist_path
+    let is_psc_file = input_path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"));
+
+    let project_root = input_path
         .parent()
         .filter(|dir| !dir.as_os_str().is_empty())
         .map(Path::to_path_buf)
@@ -77,22 +85,26 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         }
     };
 
-    let entries = match achlist::parse_achlist(&achlist_path) {
-        Ok(entries) => entries,
-        Err(err) => {
-            let _ = writeln!(stderr, "error: {err}");
-            return 2;
-        }
-    };
+    let script_paths: Vec<PathBuf> = if is_psc_file {
+        vec![input_path]
+    } else {
+        let entries = match achlist::parse_achlist(&input_path) {
+            Ok(entries) => entries,
+            Err(err) => {
+                let _ = writeln!(stderr, "error: {err}");
+                return 2;
+            }
+        };
 
-    let script_paths: Vec<PathBuf> = entries
-        .into_iter()
-        .filter(|path| {
-            path.extension()
-                .and_then(|ext| ext.to_str())
-                .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
-        })
-        .collect();
+        entries
+            .into_iter()
+            .filter(|path| {
+                path.extension()
+                    .and_then(|ext| ext.to_str())
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
+            })
+            .collect()
+    };
 
     let mut function_table = FunctionTable::new(project_root);
     let mut total_diagnostics = 0usize;
@@ -348,6 +360,58 @@ mod tests {
 
         assert_eq!(code, 0);
         assert!(stdout.contains("no problems found in 0 script"));
+    }
+
+    #[test]
+    fn lints_a_single_psc_file_passed_directly() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
+    }
+
+    #[test]
+    fn reports_no_problems_for_a_clean_single_psc_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, stdout, _stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found in 1 script"));
+    }
+
+    #[test]
+    fn honors_the_project_yaml_config_for_a_single_psc_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  trailing_whitespace: false\n",
+        );
+
+        let (code, stdout, _stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found"));
+    }
+
+    #[test]
+    fn errors_when_the_given_psc_file_is_missing() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Missing.psc");
+
+        let (code, _stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.starts_with("error:"));
     }
 
     #[test]
