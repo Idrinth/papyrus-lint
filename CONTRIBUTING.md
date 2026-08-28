@@ -29,6 +29,9 @@ expected of a pull request.
 ├── rules/
 │   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
 │                                  # compiled into Rust by papyrus-lints' build.rs
+├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
+│   └── linter.py                          # runs PapyrusLinterCLI against a saved
+│                                           # .psc file and parses its output
 └── crates/
     ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
     │   └── src/               # for the Papyrus language. No lint rules live
