@@ -94,6 +94,7 @@ export interface LintRules {
   float_int_conversion: boolean;
   strict_boolean: boolean;
   argument_types: boolean;
+  function_override: boolean;
   numeric_comparison: boolean;
   indentation: boolean;
   cyclomatic_complexity: boolean;
@@ -124,6 +125,7 @@ export const DEFAULT_RULES: LintRules = {
   float_int_conversion: true,
   strict_boolean: true,
   argument_types: true,
+  function_override: true,
   numeric_comparison: true,
   indentation: true,
   cyclomatic_complexity: true,

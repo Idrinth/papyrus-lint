@@ -41,6 +41,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-float_int_conversion" checked />
           <input type="checkbox" id="rule-strict_boolean" checked />
           <input type="checkbox" id="rule-argument_types" checked />
+          <input type="checkbox" id="rule-function_override" checked />
           <input type="checkbox" id="rule-numeric_comparison" checked />
           <input type="checkbox" id="rule-indentation" checked />
           <input type="checkbox" id="rule-cyclomatic_complexity" checked />

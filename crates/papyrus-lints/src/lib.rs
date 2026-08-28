@@ -13,6 +13,7 @@ mod disable_comments;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod fragment_code;
+pub mod function_override;
 pub mod indentation;
 pub mod local_variable_shadowing;
 pub mod none_form_usage;
@@ -55,7 +56,9 @@ pub struct Diagnostic {
 /// The "Argument type check" and "Return type check" lints only resolve
 /// object-type subtyping through scripts declared in `source` itself this
 /// way; see [`lint_with_external_arguments`] to also resolve it through
-/// other scripts' `Extends` chains.
+/// other scripts' `Extends` chains. The "Inherited function override" lint
+/// can never find anything to flag this way, since it always needs to
+/// resolve `source`'s own `Extends` chain.
 ///
 /// A line carrying a trailing `; @disable <rule-id>[, <rule-id>...]`
 /// comment (e.g. `action = 1 ; @disable float-to-int`) has diagnostics from
@@ -70,9 +73,11 @@ pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
 
 /// Like [`lint`], but resolves calls to functions declared on other
 /// scripts (e.g. `SomeProperty.DoThing(...)`) through `external`, so the
-/// "Argument type check" lint can check those call sites too, and so the
+/// "Argument type check" lint can check those call sites too, so the
 /// "Return type check" lint accepts a returned value whose script extends
-/// (directly or transitively) the declared return type. See
+/// (directly or transitively) the declared return type, and so the
+/// "Inherited function override" lint can resolve `source`'s own `Extends`
+/// chain to flag a function that overrides an inherited one. See
 /// [`argument_types::ExternalSignatures`].
 pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     source: &str,
@@ -122,6 +127,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.local_variable_shadowing {
         diagnostics.extend(local_variable_shadowing::check_with(source, external));
+    }
+    if rules.function_override {
+        diagnostics.extend(function_override::check_with(source, external));
     }
     if rules.cyclomatic_complexity {
         diagnostics.extend(cyclomatic_complexity::check(
@@ -269,15 +277,17 @@ mod tests {
         config
     }
 
-    /// `lint_with_external_arguments` gates each of the 15 rulesets behind
-    /// its own `if rules.<field>` check (see [`config::Rules`]). This walks
-    /// every ruleset, one at a time, confirming that: (a) its own flag
-    /// being on lets it fire on a source crafted to trigger it, and (b)
-    /// flipping only that flag off suppresses that rule's diagnostics.
-    /// This is the only test that exercises 13 of the 15 gates (only
-    /// `trailing_whitespace` and `comma_spacing` were previously covered,
-    /// by `lint_skips_disabled_rules` above) — a gate accidentally wired to
-    /// the wrong `Rules` field, or hardcoded to always run, would fail
+    /// `lint_with_external_arguments` gates each ruleset behind its own `if
+    /// rules.<field>` check (see [`config::Rules`]). This walks every
+    /// ruleset except `function_override`, one at a time, confirming that:
+    /// (a) its own flag being on lets it fire on a source crafted to
+    /// trigger it, and (b) flipping only that flag off suppresses that
+    /// rule's diagnostics. `function_override` can never fire through bare
+    /// `lint()` (it always needs an `external` resolver for the script's
+    /// `Extends` chain), so its gate is exercised separately by
+    /// `function_override_flag_gates_only_its_own_lint`, below — a gate
+    /// accidentally wired to the wrong `Rules` field, or hardcoded to
+    /// always run, would fail
     /// here even though it wouldn't fail any other existing test.
     #[test]
     fn each_rule_flag_gates_only_its_own_lint() {
@@ -412,5 +422,47 @@ mod tests {
                 "disabling {rule:?} should suppress its own diagnostics, got {with_rule_disabled:?}"
             );
         }
+    }
+
+    struct FakeExternalWithParentFunction;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithParentFunction {
+        fn lookup(
+            &mut self,
+            type_name: &str,
+            function_name: &str,
+        ) -> Option<Vec<papyrus_parser::ast::TypeName>> {
+            if type_name.eq_ignore_ascii_case("ParentScript")
+                && function_name.eq_ignore_ascii_case("DoThing")
+            {
+                Some(Vec::new())
+            } else {
+                None
+            }
+        }
+    }
+
+    /// See the note on `each_rule_flag_gates_only_its_own_lint` above:
+    /// `function_override` needs `lint_with_external_arguments`'s
+    /// `external` resolver to ever fire, so its own `rules.function_override`
+    /// gate is checked here instead of in that loop.
+    #[test]
+    fn function_override_flag_gates_only_its_own_lint() {
+        let source = "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n";
+
+        let enabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithParentFunction,
+        );
+        assert!(enabled.iter().any(|d| d.rule == function_override::RULE));
+
+        let disabled_config = config_with(|c| c.rules.function_override = false);
+        let disabled = lint_with_external_arguments(
+            source,
+            &disabled_config,
+            &mut FakeExternalWithParentFunction,
+        );
+        assert!(disabled.iter().all(|d| d.rule != function_override::RULE));
     }
 }

@@ -546,6 +546,50 @@ mod tests {
     }
 
     #[test]
+    fn drives_the_function_override_lint_across_scripts() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "ParentScript",
+            "ScriptName ParentScript\n\nFunction DoThing()\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::function_override::check_with(
+            "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'DoThing'"));
+        assert!(diagnostics[0].message.contains("'ParentScript'"));
+    }
+
+    #[test]
+    fn finds_an_override_inherited_transitively_through_the_function_override_lint() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Grandparent",
+            "ScriptName Grandparent\n\nFunction DoThing()\nEndFunction\n",
+        );
+        write_script(
+            root.path(),
+            "Middle",
+            "ScriptName Middle Extends Grandparent\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::function_override::check_with(
+            "ScriptName Example Extends Middle\n\nFunction DoThing()\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'DoThing'"));
+    }
+
+    #[test]
     fn drives_the_argument_type_check_lint_across_scripts() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         write_script(
