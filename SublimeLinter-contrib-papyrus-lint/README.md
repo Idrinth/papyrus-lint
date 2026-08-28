@@ -53,3 +53,12 @@ saved `.psc` file with no unsaved changes) that runs `PapyrusLinterCLI
 fix` against the file, applying every automatic fix (see the main
 project's README) and rewriting it on disk if anything changed, then
 reloads the file and re-lints it.
+
+## Testing
+
+The tests provide lightweight substitutes for the Sublime Text and
+SublimeLinter APIs, so they can run with a standard Python installation:
+
+```sh
+python -m unittest discover -s tests -v
+```
