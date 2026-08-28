@@ -10,7 +10,7 @@
 //! result, so looking up functions while linting many other files stays
 //! fast.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::PathBuf;
 
@@ -43,11 +43,13 @@ impl FunctionSignature {
     }
 }
 
-/// The functions declared directly on one script, plus the name of the
-/// script it extends (if any), so a lookup can walk the inheritance chain.
+/// The functions and properties declared directly on one script, plus the
+/// name of the script it extends (if any), so a lookup can walk the
+/// inheritance chain.
 struct ScriptFunctions {
     extends: Option<String>,
     functions: HashMap<String, FunctionSignature>,
+    properties: HashSet<String>,
 }
 
 impl ScriptFunctions {
@@ -57,10 +59,16 @@ impl ScriptFunctions {
             .iter()
             .map(|f| (f.name.to_ascii_lowercase(), FunctionSignature::from_decl(f)))
             .collect();
+        let properties = script
+            .properties
+            .iter()
+            .map(|p| p.name.to_ascii_lowercase())
+            .collect();
 
         ScriptFunctions {
             extends: script.extends.clone(),
             functions,
+            properties,
         }
     }
 }
@@ -151,6 +159,36 @@ impl FunctionTable {
         false
     }
 
+    /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
+    /// or transitively), declares a property named `property_name`. Both
+    /// names are matched case-insensitively. Returns `false` if
+    /// `type_name`'s script (or any ancestor along the way) can't be found
+    /// or parsed before a match is found.
+    pub fn has_property(&mut self, type_name: &str, property_name: &str) -> bool {
+        let property_key = property_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break; // guard against a circular `Extends` chain
+            }
+            self.ensure_loaded(&name);
+
+            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
+                break;
+            };
+            if script.properties.contains(&property_key) {
+                return true;
+            }
+
+            current = script.extends.clone();
+            visited.push(name);
+        }
+
+        false
+    }
+
     /// Parses and caches the script named `name_lower`, if it hasn't been
     /// already.
     fn ensure_loaded(&mut self, name_lower: &str) {
@@ -178,6 +216,10 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
 
     fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
         self.is_subtype(sub_type, super_type)
+    }
+
+    fn has_property(&mut self, type_name: &str, property_name: &str) -> bool {
+        self.has_property(type_name, property_name)
     }
 }
 
@@ -364,6 +406,88 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(!table.is_subtype("A", "SomethingElse"));
+    }
+
+    #[test]
+    fn has_property_true_for_a_property_declared_directly_on_the_type() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nInt Property MyValue Auto\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.has_property("Foo", "MyValue"));
+        assert!(table.has_property("foo", "myvalue"));
+    }
+
+    #[test]
+    fn has_property_true_for_a_property_inherited_through_extends_chain() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Grandparent",
+            "ScriptName Grandparent\n\nBool Property IsAwesome Auto\n",
+        );
+        write_script(
+            root.path(),
+            "Middle",
+            "ScriptName Middle Extends Grandparent\n",
+        );
+        write_script(root.path(), "Child", "ScriptName Child Extends Middle\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.has_property("Child", "IsAwesome"));
+    }
+
+    #[test]
+    fn has_property_false_for_unrelated_or_unresolvable_types() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nInt Property MyValue Auto\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.has_property("Foo", "DoesNotExist"));
+        assert!(!table.has_property("Missing", "Anything"));
+    }
+
+    #[test]
+    fn has_property_does_not_infinite_loop_on_circular_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "A", "ScriptName A Extends B\n");
+        write_script(root.path(), "B", "ScriptName B Extends A\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.has_property("A", "Anything"));
+    }
+
+    #[test]
+    fn flags_a_local_variable_shadowing_a_parent_property_through_the_shadowing_lint() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "BaseScript",
+            "ScriptName BaseScript\n\nInt Property MyValue Auto\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::local_variable_shadowing::check_with(
+            "ScriptName Example Extends BaseScript\n\nFunction Test()\n    Int MyValue = 1\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("inherited from a parent script"));
     }
 
     #[test]

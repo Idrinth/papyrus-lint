@@ -15,6 +15,7 @@ pub mod forbidden_functions;
 pub mod fragment_code;
 pub mod function_override;
 pub mod indentation;
+pub mod local_variable_shadowing;
 pub mod none_form_usage;
 pub mod numeric_comparison;
 pub mod return_types;
@@ -123,6 +124,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.return_types {
         diagnostics.extend(return_types::check_with(source, external));
+    }
+    if rules.local_variable_shadowing {
+        diagnostics.extend(local_variable_shadowing::check_with(source, external));
     }
     if rules.function_override {
         diagnostics.extend(function_override::check_with(source, external));
@@ -396,6 +400,12 @@ mod tests {
                 none_form_usage::RULE,
                 Config::default(),
                 config_with(|c| c.rules.none_form_usage = false),
+            ),
+            (
+                "ScriptName Example\n\nInt Property MyValue Auto\n\nFunction Test()\n    Int MyValue = 1\n    Debug.Trace(MyValue)\nEndFunction\n",
+                local_variable_shadowing::RULE,
+                Config::default(),
+                config_with(|c| c.rules.local_variable_shadowing = false),
             ),
         ];
 

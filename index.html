@@ -91,6 +91,7 @@
             <label title="Flags If/ElseIf/While conditions that fold to a constant true or false regardless of any runtime state (e.g. &quot;If true&quot;, &quot;If 1 == 2&quot;)."><input type="checkbox" id="rule-static_condition" checked /> Static condition</label>
             <label title="Flags local variables that are declared but never read again, or only ever assigned a new value without that value ever being read."><input type="checkbox" id="rule-unused_local_variable" checked /> Unused or write-only local variables</label>
             <label title="Flags a member/method access (e.g. a.GetName()) on a local variable that's still known to be None at that point, since that crashes the script."><input type="checkbox" id="rule-none_form_usage" checked /> None used as an existing Form</label>
+            <label title="Flags a local variable whose name matches a Property declared on the same script or a parent script, since referencing that name then reads the local rather than the property."><input type="checkbox" id="rule-local_variable_shadowing" checked /> Local variable shadowing</label>
           </fieldset>
         </div>
 
