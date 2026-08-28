@@ -10,6 +10,8 @@
 //! indentation_width: 4
 //! cyclomatic_complexity_warning: 10
 //! cyclomatic_complexity_error: 20
+//! fail_on_warning: false
+//! fail_on_info: false
 //! rules:
 //!   trailing_whitespace: true
 //!   comma_spacing: true
@@ -41,6 +43,8 @@
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
+
+use crate::Diagnostic;
 
 /// The indentation style a project expects, for the "Formatting checks"/
 /// "Indentation" lint and automatic fix described in README.md.
@@ -75,6 +79,15 @@ pub struct Config {
     /// The cyclomatic complexity a function/event can reach before the
     /// "Cyclomatic complexity" lint flags it as an `[error]`.
     pub cyclomatic_complexity_error: usize,
+    /// Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level
+    /// diagnostic as a reason to exit non-zero. `false` by default, so a
+    /// project only fails a lint run on `[error]`-level (and untagged)
+    /// diagnostics unless it opts in. Has no effect on the desktop app,
+    /// which always shows every diagnostic regardless of severity.
+    pub fail_on_warning: bool,
+    /// Like [`Self::fail_on_warning`], but for `[info]`-level diagnostics.
+    /// `false` by default.
+    pub fail_on_info: bool,
     /// Per-ruleset enable/disable switches. Every ruleset is enabled by
     /// default; see [`Rules`].
     pub rules: Rules,
@@ -88,6 +101,8 @@ impl Default for Config {
             indentation_width: 4,
             cyclomatic_complexity_warning: 10,
             cyclomatic_complexity_error: 20,
+            fail_on_warning: false,
+            fail_on_info: false,
             rules: Rules::default(),
         }
     }
@@ -190,6 +205,18 @@ impl Config {
             Indentation::Space => {
                 crate::indentation::Indentation::Spaces(self.indentation_width.clamp(1, 16))
             }
+        }
+    }
+
+    /// Whether `diagnostic` should count as a reason for the CLI to exit
+    /// non-zero, per [`Self::fail_on_warning`]/[`Self::fail_on_info`]. An
+    /// `[error]`-level diagnostic, or one tagged with no level at all (see
+    /// [`Diagnostic::level`]), always counts.
+    pub fn should_fail_on(&self, diagnostic: &Diagnostic) -> bool {
+        match diagnostic.level() {
+            Some("warning") => self.fail_on_warning,
+            Some("info") => self.fail_on_info,
+            _ => true,
         }
     }
 }
@@ -305,6 +332,8 @@ mod tests {
         assert_eq!(config.indentation_width, 4);
         assert_eq!(config.cyclomatic_complexity_warning, 10);
         assert_eq!(config.cyclomatic_complexity_error, 20);
+        assert!(!config.fail_on_warning);
+        assert!(!config.fail_on_info);
     }
 
     #[test]
@@ -334,6 +363,57 @@ mod tests {
             parse("cyclomatic_complexity_warning: 5\ncyclomatic_complexity_error: 15\n").unwrap();
         assert_eq!(config.cyclomatic_complexity_warning, 5);
         assert_eq!(config.cyclomatic_complexity_error, 15);
+    }
+
+    #[test]
+    fn parses_fail_on_flags() {
+        let config = parse("fail_on_warning: true\nfail_on_info: true\n").unwrap();
+        assert!(config.fail_on_warning);
+        assert!(config.fail_on_info);
+    }
+
+    #[test]
+    fn should_fail_on_honors_fail_on_flags() {
+        let error = Diagnostic {
+            line: 1,
+            column: 1,
+            message: "[error] boom".to_string(),
+            rule: "some-rule",
+        };
+        let warning = Diagnostic {
+            line: 1,
+            column: 1,
+            message: "[warning] hmm".to_string(),
+            rule: "some-rule",
+        };
+        let info = Diagnostic {
+            line: 1,
+            column: 1,
+            message: "[info] fyi".to_string(),
+            rule: "some-rule",
+        };
+        let untagged = Diagnostic {
+            line: 1,
+            column: 1,
+            message: "Line contains trailing whitespace".to_string(),
+            rule: "some-rule",
+        };
+
+        let default_config = Config::default();
+        assert!(default_config.should_fail_on(&error));
+        assert!(!default_config.should_fail_on(&warning));
+        assert!(!default_config.should_fail_on(&info));
+        assert!(default_config.should_fail_on(&untagged));
+
+        let opted_in = Config {
+            fail_on_warning: true,
+            fail_on_info: true,
+            ..Config::default()
+        };
+        assert!(opted_in.should_fail_on(&error));
+        assert!(opted_in.should_fail_on(&warning));
+        assert!(opted_in.should_fail_on(&info));
+        assert!(opted_in.should_fail_on(&untagged));
     }
 
     #[test]

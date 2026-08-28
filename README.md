@@ -105,6 +105,8 @@ indentation: tab
 indentation_width: 4
 cyclomatic_complexity_warning: 10
 cyclomatic_complexity_error: 20
+fail_on_warning: false
+fail_on_info: false
 rules:
   trailing_whitespace: true
   comma_spacing: true
@@ -144,6 +146,14 @@ rules:
   cyclomatic complexity a function/event can reach before the
   "Cyclomatic complexity" lint flags it as a `[warning]` or an `[error]`,
   respectively.
+- `fail_on_warning` / `fail_on_info`: whether the command-line interface
+  (see below) treats a `[warning]`-level or `[info]`-level diagnostic,
+  respectively, as a reason to exit non-zero. Both default to `false`, so
+  by default only `[error]`-level diagnostics (and diagnostics from lints
+  that don't tag a severity level at all, e.g. trailing whitespace) fail a
+  CLI run; `[warning]`/`[info]`-level diagnostics are still printed either
+  way. Has no effect on the desktop app, which always lists every
+  diagnostic regardless of severity.
 - `rules`: per-lint enable/disable switches, each defaulting to `true`.
   Setting one to `false` turns that lint (and its automatic fix, if it
   has one) off entirely; every key under `rules` can be omitted
@@ -192,10 +202,12 @@ desktop app resolves them, so the CLI's "Argument type check"/"Return type
 check" results match what dropping the same `.achlist` into the app would
 report.
 
-It exits `0` if no diagnostics were found, `1` if any were, or `2` on a
-usage error (a missing/extra argument) or an I/O error (the `.achlist`
-file couldn't be read or parsed, or a listed `.psc` file couldn't be
-read) — so it can gate a CI step on a clean lint run.
+It exits `0` if no diagnostics were found (or none of the ones found
+counted as a failure — see `fail_on_warning`/`fail_on_info` under
+Configuration above), `1` if any did, or `2` on a usage error (a
+missing/extra argument) or an I/O error (the `.achlist` file couldn't be
+read or parsed, or a listed `.psc` file couldn't be read) — so it can gate
+a CI step on a clean lint run.
 
 Run it with `--version`/`-V` to print its version (`PapyrusLinterCLI
 <version>`) and exit `0` instead of linting; the desktop app shows its own
