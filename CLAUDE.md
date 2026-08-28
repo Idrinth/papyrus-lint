@@ -41,6 +41,12 @@ desktop app's binary at all.
 ├── rules/
 │   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
 │                                  # compiled into Rust by papyrus-lints' build.rs
+├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
+│   ├── linter.py                          # runs PapyrusLinterCLI against a saved
+│   ├── messages.json                      # .psc file and parses its output
+│   ├── messages/install.txt               # into SublimeLinter diagnostics; kept
+│   ├── README.md                          # here for development but installed/
+│   └── LICENSE                            # distributed as its own package.
 └── crates/
     ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
     │   └── src/               # for the Papyrus language. No lint rules live
