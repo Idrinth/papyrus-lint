@@ -95,7 +95,8 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test": "tsc -p tsconfig.test.json && node --test test/*.test.cjs"
   },
   "devDependencies": {
     "@types/node": "^20",

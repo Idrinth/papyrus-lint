@@ -1,33 +1,9 @@
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { normalizeDiagnostic, parseReport, type JsonDiagnostic, type JsonReport } from './diagnostics';
 
 const PAPYRUS_LANGUAGE_ID = 'papyrus';
-
-/** Mirrors `papyrus_lint_cli::JsonDiagnostic` (see `crates/papyrus-lint-cli/src/lib.rs`). */
-interface JsonDiagnostic {
-  line: number;
-  column: number;
-  rule: string;
-  level: 'error' | 'warning' | 'info' | null;
-  message: string;
-}
-
-/** Mirrors `papyrus_lint_cli::JsonFileReport`. */
-interface JsonFileReport {
-  path: string;
-  diagnostics: JsonDiagnostic[];
-}
-
-/** Mirrors `papyrus_lint_cli::JsonReport`, as printed by `PapyrusLinterCLI --json`. */
-interface JsonReport {
-  files: JsonFileReport[];
-  scripts_checked: number;
-  files_with_diagnostics: number;
-  total_diagnostics: number;
-  files_fixed: number | null;
-  success: boolean;
-}
 
 interface CliResult {
   /** The process exit code, or `-1` if the CLI executable itself couldn't be launched. */
@@ -62,11 +38,11 @@ function runCli(args: string[], cwd: string): Promise<CliResult> {
   });
 }
 
-function severityOf(level: JsonDiagnostic['level']): vscode.DiagnosticSeverity {
+function severityOf(level: ReturnType<typeof normalizeDiagnostic>['level']): vscode.DiagnosticSeverity {
   switch (level) {
     case 'warning':
       return vscode.DiagnosticSeverity.Warning;
-    case 'info':
+    case 'information':
       return vscode.DiagnosticSeverity.Information;
     default:
       return vscode.DiagnosticSeverity.Error;
@@ -74,21 +50,17 @@ function severityOf(level: JsonDiagnostic['level']): vscode.DiagnosticSeverity {
 }
 
 function toDiagnostic(entry: JsonDiagnostic): vscode.Diagnostic {
-  const line = Math.max(entry.line - 1, 0);
-  const column = Math.max(entry.column - 1, 0);
-  const range = new vscode.Range(line, column, line, column + 1);
-  const diagnostic = new vscode.Diagnostic(range, entry.message, severityOf(entry.level));
+  const normalized = normalizeDiagnostic(entry);
+  const range = new vscode.Range(
+    normalized.line,
+    normalized.column,
+    normalized.line,
+    normalized.column + 1,
+  );
+  const diagnostic = new vscode.Diagnostic(range, normalized.message, severityOf(normalized.level));
   diagnostic.source = 'papyrus-lint';
-  diagnostic.code = entry.rule;
+  diagnostic.code = normalized.rule;
   return diagnostic;
-}
-
-function parseReport(stdout: string): JsonReport | undefined {
-  try {
-    return JSON.parse(stdout) as JsonReport;
-  } catch {
-    return undefined;
-  }
 }
 
 /** Resolves the `.psc` file a command should act on: the given `uri` (e.g. from an
