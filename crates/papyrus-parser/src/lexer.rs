@@ -416,6 +416,31 @@ mod tests {
     }
 
     #[test]
+    fn keeps_code_before_an_inline_comment_and_ignores_comment_text() {
+        let toks =
+            kinds("Actor a = Game.GetPlayer(); artificially slow GetValueInt()\nInt value = 1");
+        assert_eq!(
+            toks,
+            vec![
+                TokenKind::Identifier("Actor".into()),
+                TokenKind::Identifier("a".into()),
+                TokenKind::Assign,
+                TokenKind::Identifier("Game".into()),
+                TokenKind::Dot,
+                TokenKind::Identifier("GetPlayer".into()),
+                TokenKind::LParen,
+                TokenKind::RParen,
+                TokenKind::Newline,
+                TokenKind::Identifier("Int".into()),
+                TokenKind::Identifier("value".into()),
+                TokenKind::Assign,
+                TokenKind::IntLiteral(1),
+                TokenKind::Eof,
+            ]
+        );
+    }
+
+    #[test]
     fn recognizes_block_and_brace_comments() {
         let toks = kinds("Int ;/ block \n comment /; x {doc} = 1");
         assert_eq!(
