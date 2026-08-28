@@ -180,6 +180,26 @@ mod tests {
     }
 
     #[test]
+    fn strips_a_lone_non_empty_machine_name_leaving_an_empty_username() {
+        let bytes = sample_be_header("Foo.psc", "", "SOME-PC", &[]);
+
+        let patched = strip_personal_data(&bytes).expect("should strip");
+
+        assert_eq!(patched, sample_be_header("Foo.psc", "", "", &[]));
+    }
+
+    #[test]
+    fn preserves_all_bytes_after_the_header() {
+        let trailer = [0x00, 0xFA, 0x57, 0xC0, 0xDE, 0xFF];
+        let bytes = sample_be_header("Foo.psc", "SomeUser", "SOME-PC", &trailer);
+
+        let patched = strip_personal_data(&bytes).expect("should strip");
+
+        assert!(patched.ends_with(&trailer));
+        assert_eq!(patched, sample_be_header("Foo.psc", "", "", &trailer));
+    }
+
+    #[test]
     fn returns_none_for_unrecognized_magic() {
         let bytes = vec![0, 1, 2, 3, 4, 5, 6, 7];
 
@@ -200,6 +220,16 @@ mod tests {
         let len = bytes.len();
         // Claim a userName length far longer than the remaining bytes.
         bytes[len - 4..len - 2].copy_from_slice(&0xFFFFu16.to_be_bytes());
+
+        assert!(strip_personal_data(&bytes).is_none());
+    }
+
+    #[test]
+    fn returns_none_when_the_machine_name_length_overruns_the_buffer() {
+        let mut bytes = sample_be_header("Foo.psc", "SomeUser", "SOME-PC", &[]);
+        let machine_length_offset = bytes.len() - "SOME-PC".len() - 2;
+        bytes[machine_length_offset..machine_length_offset + 2]
+            .copy_from_slice(&0xFFFFu16.to_be_bytes());
 
         assert!(strip_personal_data(&bytes).is_none());
     }
