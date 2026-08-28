@@ -70,6 +70,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Lint
+        run: npm run lint
+
       - name: Compile
         run: npm run compile
 

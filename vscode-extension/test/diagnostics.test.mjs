@@ -1,6 +1,8 @@
-const assert = require('node:assert/strict');
-const { describe, it } = require('node:test');
-const { normalizeDiagnostic, parseReport } = require('../out-test/src/diagnostics');
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import diagnostics from '../out-test/src/diagnostics.js';
+
+const { normalizeDiagnostic, parseReport } = diagnostics;
 
 describe('parseReport', () => {
   const report = {
