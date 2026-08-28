@@ -43,9 +43,16 @@ jobs:
             const cargo = fs.readFileSync(cargoPath, 'utf8');
             fs.writeFileSync(cargoPath, cargo.replace(/^version = \".*\"/m, \`version = \"\${version}\"\`));
 
-            const cliCargoPath = 'crates/papyrus-lint-cli/Cargo.toml';
-            const cliCargo = fs.readFileSync(cliCargoPath, 'utf8');
-            fs.writeFileSync(cliCargoPath, cliCargo.replace(/^version = \".*\"/m, \`version = \"\${version}\"\`));
+            const cratesCargoPaths = [
+              'crates/papyrus-lint-cli/Cargo.toml',
+              'crates/papyrus-parser/Cargo.toml',
+              'crates/papyrus-lints/Cargo.toml',
+              'crates/papyrus-lint-core/Cargo.toml',
+            ];
+            for (const cratePath of cratesCargoPaths) {
+              const crateCargo = fs.readFileSync(cratePath, 'utf8');
+              fs.writeFileSync(cratePath, crateCargo.replace(/^version = \".*\"/m, \`version = \"\${version}\"\`));
+            }
           "
 
       - name: Install Tauri Linux dependencies
