@@ -180,22 +180,25 @@ override saved yet.
 ## Command-line interface
 
 Besides its GUI, Papyrus Lint can lint non-interactively from the
-command line two ways: by passing an `.achlist` path to the desktop app's
-own executable (`PapyrusLinter`), or via the standalone `PapyrusLinterCLI`
-binary (`crates/papyrus-lint-cli`) built and shipped separately for use
-cases — e.g. a CI pipeline — that shouldn't need the desktop app's binary
-(and its GUI dependencies) at all. Both accept the same argument and
-behave identically:
+command line two ways: by passing an `.achlist` (or a single `.psc`) path
+to the desktop app's own executable (`PapyrusLinter`), or via the
+standalone `PapyrusLinterCLI` binary (`crates/papyrus-lint-cli`) built and
+shipped separately for use cases — e.g. a CI pipeline — that shouldn't
+need the desktop app's binary (and its GUI dependencies) at all. Both
+accept the same argument and behave identically:
 
 ```
 PapyrusLinterCLI path/to/project.achlist
+PapyrusLinterCLI path/to/Example.psc
 ```
 
-It resolves every `.psc` entry in that `.achlist`, lints each one against
-the `papyrus-lint.yaml`/`.yml` config file next to the `.achlist` (see
+Given an `.achlist` path, it resolves every `.psc` entry listed in it.
+Given a single `.psc` path directly, it lints just that file, treating it
+as the achlist's sole entry. Either way, each script is linted against
+the `papyrus-lint.yaml`/`.yml` config file next to the input path (see
 Configuration above — the same file the desktop app reads and writes,
 falling back to the documented defaults if the project has none), and
-prints each diagnostic found as `<path>:<line>:<column>: [<rule>]
+each diagnostic found is printed as `<path>:<line>:<column>: [<rule>]
 <message>`, followed by a one-line summary. Calls to functions declared on
 other scripts under the project root are resolved the same way the
 desktop app resolves them, so the CLI's "Argument type check"/"Return type
@@ -205,17 +208,18 @@ report.
 It exits `0` if no diagnostics were found (or none of the ones found
 counted as a failure — see `fail_on_warning`/`fail_on_info` under
 Configuration above), `1` if any did, or `2` on a usage error (a
-missing/extra argument) or an I/O error (the `.achlist` file couldn't be
-read or parsed, or a listed `.psc` file couldn't be read) — so it can gate
-a CI step on a clean lint run.
+missing/extra argument) or an I/O error (the `.achlist` or `.psc` file
+couldn't be read or parsed) — so it can gate a CI step on a clean lint
+run.
 
 Run it with `--version`/`-V` to print its version (`PapyrusLinterCLI
 <version>`) and exit `0` instead of linting; the desktop app shows its own
 version next to its title.
 
 Launched with no arguments, the desktop app's own executable starts its
-GUI as normal; launched with an `.achlist` path (or `-h`/`--help`), it
-lints from the command line instead, exactly as described above. On
+GUI as normal; launched with an `.achlist` or `.psc` path (or
+`-h`/`--help`), it lints from the command line instead, exactly as
+described above. On
 Windows release builds the desktop executable is compiled without a
 console, so its CLI mode there is best-effort — the standalone CLI binary
 below is the reliable way to lint from a Windows console or script.

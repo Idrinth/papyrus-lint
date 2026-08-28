@@ -6,11 +6,11 @@ use std::io;
 use std::process::ExitCode;
 
 /// Launched with no arguments, this binary starts the desktop app, same as
-/// always. Launched with an `.achlist` path (or `-h`/`--help`), it lints
-/// non-interactively instead, exactly like the standalone `PapyrusLinterCLI`
-/// binary (`crates/papyrus-lint-cli`), which stays available on its
-/// own for use cases (e.g. a CI pipeline) that shouldn't depend on the
-/// desktop app's binary at all.
+/// always. Launched with an `.achlist` path (or a single `.psc` path, or
+/// `-h`/`--help`), it lints non-interactively instead, exactly like the
+/// standalone `PapyrusLinterCLI` binary (`crates/papyrus-lint-cli`), which
+/// stays available on its own for use cases (e.g. a CI pipeline) that
+/// shouldn't depend on the desktop app's binary at all.
 ///
 /// On Windows release builds this binary is compiled without a console
 /// (see the `windows_subsystem` attribute above), so its CLI mode is
