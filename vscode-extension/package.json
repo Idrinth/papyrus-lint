@@ -1,0 +1,58 @@
+{
+  "name": "papyrus-lint-vscode",
+  "displayName": "Papyrus Lint",
+  "description": "Lints Bethesda Papyrus (.psc) scripts using PapyrusLinterCLI.",
+  "version": "0.1.0",
+  "publisher": "idrinth",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/idrinth/papyrus-lint.git",
+    "directory": "vscode-extension"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:papyrus"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "papyrus",
+        "extensions": [
+          ".psc"
+        ],
+        "aliases": [
+          "Papyrus"
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "Papyrus Lint",
+      "properties": {
+        "papyrusLint.cliPath": {
+          "type": "string",
+          "default": "PapyrusLinterCLI",
+          "description": "Path to the PapyrusLinterCLI executable used to lint .psc files."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/vscode": "^1.85.0",
+    "eslint": "^10.9.1",
+    "typescript": "^5.4.0"
+  }
+}

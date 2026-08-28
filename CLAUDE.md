@@ -41,6 +41,11 @@ desktop app's binary at all.
 ├── rules/
 │   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
 │                                  # compiled into Rust by papyrus-lints' build.rs
+├── vscode-extension/        # VS Code extension (TypeScript): surfaces lint
+│   ├── package.json          # diagnostics for .psc files by shelling out to
+│   └── src/                  # PapyrusLinterCLI. Currently a bare scaffold —
+│       └── extension.ts      # activate()/deactivate() register an empty
+│                              # diagnostic collection; no linting logic yet.
 └── crates/
     ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
     │   └── src/               # for the Papyrus language. No lint rules live
@@ -111,6 +116,10 @@ binary target that crate also defines.
   crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
   binary (at `crates/papyrus-lint-cli/target/release/PapyrusLinterCLI`).
   `cargo test` from `crates/papyrus-lint-cli/` runs its tests.
+- VS Code extension (`vscode-extension/`): `npm install`, then `npm run
+  watch` (or `npm run compile` for a one-off build) and F5 in VS Code to
+  launch an Extension Development Host. Not part of the root npm
+  workspace — it has its own `package.json`/`tsconfig.json`.
 - Rust coverage for any of the five crates above: `cargo llvm-cov
   --manifest-path <crate>/Cargo.toml` (requires the
   [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) subcommand
