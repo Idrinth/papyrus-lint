@@ -14,13 +14,15 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::PathBuf;
 
-use papyrus_parser::ast::{FunctionDecl, Script, TypeName};
+use serde::Serialize;
+
+use papyrus_parser::ast::{FunctionDecl, PropertyDecl, Script, TypeName};
 
 use crate::script_locator::find_psc_file;
 
 /// The parameter and return types of a single function, as declared on a
 /// script.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct FunctionSignature {
     pub name: String,
     pub param_types: Vec<TypeName>,
@@ -43,13 +45,48 @@ impl FunctionSignature {
     }
 }
 
+/// The declared type of a single property, as declared on a script.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct PropertySignature {
+    pub name: String,
+    pub type_name: TypeName,
+}
+
+impl PropertySignature {
+    fn from_decl(decl: &PropertyDecl) -> Self {
+        PropertySignature {
+            name: decl.name.clone(),
+            type_name: decl.type_name.clone(),
+        }
+    }
+}
+
+/// A single function or property available on a script type, as returned
+/// by [`FunctionTable::list_members`] to drive editor autocompletion.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum Member {
+    Function(FunctionSignature),
+    Property(PropertySignature),
+}
+
+impl Member {
+    /// The member's declared name, in its original case.
+    pub fn name(&self) -> &str {
+        match self {
+            Member::Function(signature) => &signature.name,
+            Member::Property(signature) => &signature.name,
+        }
+    }
+}
+
 /// The functions and properties declared directly on one script, plus the
 /// name of the script it extends (if any), so a lookup can walk the
 /// inheritance chain.
 struct ScriptFunctions {
     extends: Option<String>,
     functions: HashMap<String, FunctionSignature>,
-    properties: HashSet<String>,
+    properties: HashMap<String, PropertySignature>,
 }
 
 impl ScriptFunctions {
@@ -62,7 +99,7 @@ impl ScriptFunctions {
         let properties = script
             .properties
             .iter()
-            .map(|p| p.name.to_ascii_lowercase())
+            .map(|p| (p.name.to_ascii_lowercase(), PropertySignature::from_decl(p)))
             .collect();
 
         ScriptFunctions {
@@ -178,7 +215,7 @@ impl FunctionTable {
             let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
                 break;
             };
-            if script.properties.contains(&property_key) {
+            if script.properties.contains_key(&property_key) {
                 return true;
             }
 
@@ -187,6 +224,46 @@ impl FunctionTable {
         }
 
         false
+    }
+
+    /// Lists every function and property available on an object of type
+    /// `type_name`, including those inherited via `Extends`. A member
+    /// declared on `type_name` itself (or an ancestor closer to it) shadows
+    /// a same-named member further up the chain, so each name appears at
+    /// most once. Returns an empty list if `type_name`'s script can't be
+    /// found or parsed. Members are returned in no particular order.
+    pub fn list_members(&mut self, type_name: &str) -> Vec<Member> {
+        let mut seen = HashSet::new();
+        let mut members = Vec::new();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break; // guard against a circular `Extends` chain
+            }
+            self.ensure_loaded(&name);
+
+            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
+                break;
+            };
+
+            for signature in script.functions.values() {
+                if seen.insert(signature.name.to_ascii_lowercase()) {
+                    members.push(Member::Function(signature.clone()));
+                }
+            }
+            for signature in script.properties.values() {
+                if seen.insert(signature.name.to_ascii_lowercase()) {
+                    members.push(Member::Property(signature.clone()));
+                }
+            }
+
+            current = script.extends.clone();
+            visited.push(name);
+        }
+
+        members
     }
 
     /// Parses and caches the script named `name_lower`, if it hasn't been
@@ -467,6 +544,115 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(!table.has_property("A", "Anything"));
+    }
+
+    #[test]
+    fn list_members_includes_functions_and_properties_declared_directly_on_the_type() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nInt Property MyValue Auto\n\nInt Function Bar(Float a)\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("Foo");
+
+        assert_eq!(members.len(), 2);
+        assert!(members.iter().any(|m| matches!(
+            m,
+            Member::Function(signature) if signature.name == "Bar"
+        )));
+        assert!(members.iter().any(|m| matches!(
+            m,
+            Member::Property(signature) if signature.name == "MyValue"
+        )));
+    }
+
+    #[test]
+    fn list_members_includes_members_inherited_through_extends_chain() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Grandparent",
+            "ScriptName Grandparent\n\nBool Property IsAwesome Auto\n\nFunction DoThing()\nEndFunction\n",
+        );
+        write_script(
+            root.path(),
+            "Middle",
+            "ScriptName Middle Extends Grandparent\n\nFunction DoOtherThing()\nEndFunction\n",
+        );
+        write_script(root.path(), "Child", "ScriptName Child Extends Middle\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("Child");
+
+        let names: HashSet<_> = members.iter().map(Member::name).collect();
+        assert_eq!(
+            names,
+            HashSet::from(["IsAwesome", "DoThing", "DoOtherThing"])
+        );
+    }
+
+    #[test]
+    fn list_members_lets_a_closer_declaration_shadow_an_ancestors_member_of_the_same_name() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Base",
+            "ScriptName Base\n\nFunction DoThing()\nEndFunction\n",
+        );
+        write_script(
+            root.path(),
+            "Child",
+            "ScriptName Child Extends Base\n\nBool Function DoThing()\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("Child");
+
+        let matches: Vec<_> = members
+            .iter()
+            .filter(|m| m.name().eq_ignore_ascii_case("DoThing"))
+            .collect();
+        assert_eq!(matches.len(), 1);
+        assert!(matches!(
+            matches[0],
+            Member::Function(signature) if signature.return_type == Some(TypeName {
+                name: "Bool".to_string(),
+                is_array: false,
+            })
+        ));
+    }
+
+    #[test]
+    fn list_members_is_empty_for_an_unresolvable_type() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.list_members("Missing").is_empty());
+    }
+
+    #[test]
+    fn list_members_does_not_infinite_loop_on_circular_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "A",
+            "ScriptName A Extends B\n\nFunction DoA()\nEndFunction\n",
+        );
+        write_script(
+            root.path(),
+            "B",
+            "ScriptName B Extends A\n\nFunction DoB()\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("A");
+        let names: HashSet<_> = members.iter().map(Member::name).collect();
+
+        assert_eq!(names, HashSet::from(["DoA", "DoB"]));
     }
 
     #[test]

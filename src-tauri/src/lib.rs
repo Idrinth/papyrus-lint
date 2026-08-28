@@ -165,6 +165,15 @@ fn repair_psc_file(
     ))
 }
 
+/// Lists every function and property available on an object of type
+/// `type_name` (including those inherited via `Extends`), for driving the
+/// code viewer's editor autocompletion. See [`lint_psc_file`] for `root`.
+#[tauri::command]
+fn list_script_members(root: String, type_name: String) -> Vec<function_table::Member> {
+    let mut function_table = function_table::FunctionTable::new(PathBuf::from(root));
+    function_table.list_members(&type_name)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -183,7 +192,8 @@ pub fn run() {
             save_compiler_path,
             lint_psc_file,
             repair_psc_file,
-            compile_psc_file
+            compile_psc_file,
+            list_script_members
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -395,6 +405,46 @@ mod tests {
 
         assert!(diagnostics.is_empty());
         assert_eq!(std::fs::read_to_string(path).unwrap(), source);
+    }
+
+    #[test]
+    fn list_script_members_reports_functions_and_properties_including_inherited_ones() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("scripts/source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::write(
+            source_dir.join("Base.psc"),
+            "ScriptName Base\n\nBool Property IsAwesome Auto\n",
+        )
+        .unwrap();
+        std::fs::write(
+            source_dir.join("Child.psc"),
+            "ScriptName Child Extends Base\n\nInt Function DoThing(Float a)\nEndFunction\n",
+        )
+        .unwrap();
+
+        let members = list_script_members(
+            dir.path().to_string_lossy().into_owned(),
+            "Child".to_string(),
+        );
+
+        let names: std::collections::HashSet<_> =
+            members.iter().map(function_table::Member::name).collect();
+        assert_eq!(
+            names,
+            std::collections::HashSet::from(["DoThing", "IsAwesome"])
+        );
+    }
+
+    #[test]
+    fn list_script_members_is_empty_for_an_unresolvable_type() {
+        let dir = tempdir().unwrap();
+
+        assert!(list_script_members(
+            dir.path().to_string_lossy().into_owned(),
+            "Missing".to_string()
+        )
+        .is_empty());
     }
 
     #[test]
