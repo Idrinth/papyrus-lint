@@ -1,6 +1,9 @@
 name: "CodeQL"
 
 on:
+  # Keep a manual trigger available so the default branch can be rescanned
+  # immediately when a language configuration has no baseline yet.
+  workflow_dispatch:
   push:
     branches: [the-one]
   pull_request:
