@@ -13,6 +13,13 @@ struct RawForbiddenRule {
     function: String,
     level: String,
     message: String,
+    /// Whether `script` is a native singleton (e.g. `Game`, `Utility`) that
+    /// is always called through its literal script name rather than
+    /// through a variable of some subclass. When true, a qualified call
+    /// only matches this rule if its qualifier is literally `script`
+    /// (case-insensitively) — see `forbidden_functions::check`.
+    #[serde(default)]
+    global: bool,
 }
 
 #[derive(serde::Deserialize)]
@@ -20,6 +27,9 @@ struct RawSlowRule {
     object: String,
     function: String,
     replacement: String,
+    /// See `RawForbiddenRule::global`.
+    #[serde(default)]
+    global: bool,
 }
 
 fn main() {
@@ -61,8 +71,8 @@ fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
             ),
         }
         generated.push_str(&format!(
-            "    ForbiddenFunctionRule {{ script: {:?}, function: {:?}, level: {:?}, message: {:?} }},\n",
-            rule.script, rule.function, rule.level, rule.message
+            "    ForbiddenFunctionRule {{ script: {:?}, function: {:?}, level: {:?}, message: {:?}, global: {:?} }},\n",
+            rule.script, rule.function, rule.level, rule.message, rule.global
         ));
     }
     generated.push_str("];\n");
@@ -100,8 +110,8 @@ fn compile_slow_functions(manifest_dir: &str, out_dir: &str) {
     generated.push_str("pub static SLOW_FUNCTIONS: &[SlowFunctionRule] = &[\n");
     for rule in &rules {
         generated.push_str(&format!(
-            "    SlowFunctionRule {{ object: {:?}, function: {:?}, replacement: {:?} }},\n",
-            rule.object, rule.function, rule.replacement
+            "    SlowFunctionRule {{ object: {:?}, function: {:?}, replacement: {:?}, global: {:?} }},\n",
+            rule.object, rule.function, rule.replacement, rule.global
         ));
     }
     generated.push_str("];\n");

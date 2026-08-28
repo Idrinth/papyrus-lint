@@ -15,6 +15,11 @@ pub struct ForbiddenFunctionRule {
     pub function: &'static str,
     pub level: &'static str,
     pub message: &'static str,
+    /// Whether `script` is a native singleton (e.g. `Game`, `Utility`)
+    /// always called through its literal script name, rather than a base
+    /// type (e.g. `ObjectReference`, `ScriptObject`) called through a
+    /// variable of some subclass. See `check` for how this is used.
+    pub global: bool,
 }
 
 include!(concat!(env!("OUT_DIR"), "/forbidden_functions_data.rs"));
@@ -29,9 +34,15 @@ pub const RULE: &str = "forbidden-functions";
 /// `akRef.GetLinkedRef()` — a call's qualifier can't generally be
 /// resolved back to the script that declares the function; matching is
 /// therefore done by function name alone, case-insensitively (Papyrus
-/// identifiers are case-insensitive). Every entry in
-/// `rules/forbidden-functions.yaml` currently has a unique function name,
-/// so this has no false matches in practice.
+/// identifiers are case-insensitive).
+///
+/// The exception is a rule whose `script` is a native singleton
+/// (`global: true` in the YAML, e.g. `Utility`) rather than a base type
+/// used through a variable: those scripts are never subclassed, so a
+/// qualified call to one of their functions is only a real match when the
+/// qualifier is literally that script's name. This is what keeps
+/// `Utility.Wait()` flagged while `MyScript.Wait()` (a same-named function
+/// on an unrelated script) is not.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let tokens = match Lexer::new(source).tokenize() {
         Ok(tokens) => tokens,
@@ -39,7 +50,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     };
 
     let mut diagnostics = Vec::new();
-    for window in tokens.windows(2) {
+    for (i, window) in tokens.windows(2).enumerate() {
         let TokenKind::Identifier(name) = &window[0].kind else {
             continue;
         };
@@ -49,6 +60,9 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         let Some(rule) = find_rule(name) else {
             continue;
         };
+        if rule.global && !qualifier_matches(&tokens, i, rule.script) {
+            continue;
+        }
         diagnostics.push(Diagnostic {
             line: window[0].line,
             column: window[0].col,
@@ -60,6 +74,25 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         });
     }
     diagnostics
+}
+
+/// Whether the call at `tokens[call_index]` is qualified with `script`
+/// (case-insensitively), i.e. preceded by `script.`.
+fn qualifier_matches(
+    tokens: &[papyrus_parser::token::Token],
+    call_index: usize,
+    script: &str,
+) -> bool {
+    if call_index < 2 {
+        return false;
+    }
+    if !matches!(tokens[call_index - 1].kind, TokenKind::Dot) {
+        return false;
+    }
+    let TokenKind::Identifier(qualifier) = &tokens[call_index - 2].kind else {
+        return false;
+    };
+    qualifier.eq_ignore_ascii_case(script)
 }
 
 fn find_rule(name: &str) -> Option<&'static ForbiddenFunctionRule> {
@@ -127,6 +160,29 @@ mod tests {
     fn does_not_crash_on_unparseable_source() {
         let diagnostics =
             check("ScriptName Example\n\nFunction DoThing()\n    Game.GetPlayer(\"unterminated\n");
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_global_singleton_call_qualified_by_its_own_name() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction DoThing()\n    Utility.Wait(1.0)\nEndFunction\n");
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Utility.Wait"));
+    }
+
+    #[test]
+    fn does_not_flag_same_named_function_on_a_different_script() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction DoThing(MyScript akOther)\n    akOther.Wait(1.0)\nEndFunction\n",
+        );
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_unqualified_call_to_a_global_singleton_function() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction DoThing()\n    Wait(1.0)\nEndFunction\n");
         assert!(diagnostics.is_empty());
     }
 }
