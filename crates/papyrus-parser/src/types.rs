@@ -31,10 +31,16 @@ impl TypeEnv {
     pub fn for_script(script: &Script) -> Self {
         let mut scope = HashMap::new();
         for property in &script.properties {
-            scope.insert(property.name.clone(), property.type_name.clone());
+            scope.insert(
+                property.name.to_ascii_lowercase(),
+                property.type_name.clone(),
+            );
         }
         for variable in &script.variables {
-            scope.insert(variable.name.clone(), variable.type_name.clone());
+            scope.insert(
+                variable.name.to_ascii_lowercase(),
+                variable.type_name.clone(),
+            );
         }
         TypeEnv {
             self_type: scalar(&script.name),
@@ -43,9 +49,11 @@ impl TypeEnv {
         }
     }
 
-    /// Looks up `name`, innermost scope first.
+    /// Looks up `name`, innermost scope first. Matched case-insensitively,
+    /// since Papyrus identifiers (like its type names) are.
     pub fn lookup(&self, name: &str) -> Option<&TypeName> {
-        self.scopes.iter().rev().find_map(|scope| scope.get(name))
+        let name = name.to_ascii_lowercase();
+        self.scopes.iter().rev().find_map(|scope| scope.get(&name))
     }
 
     /// Pushes a scope declaring `function`'s parameters and every local
@@ -58,7 +66,7 @@ impl TypeEnv {
     ) -> R {
         let mut scope = HashMap::new();
         for param in &function.params {
-            scope.insert(param.name.clone(), param.type_name.clone());
+            scope.insert(param.name.to_ascii_lowercase(), param.type_name.clone());
         }
         collect_locals(&function.body, &mut scope);
         self.scopes.push(scope);
@@ -72,7 +80,7 @@ fn collect_locals(body: &[Stmt], scope: &mut HashMap<String, TypeName>) {
     for stmt in body {
         match stmt {
             Stmt::VarDecl(decl) => {
-                scope.insert(decl.name.clone(), decl.type_name.clone());
+                scope.insert(decl.name.to_ascii_lowercase(), decl.type_name.clone());
             }
             Stmt::If {
                 branches,
@@ -187,6 +195,22 @@ mod tests {
         assert_eq!(env.lookup("Count"), Some(&scalar("Int")));
         assert_eq!(env.lookup("_cached"), Some(&scalar("float")));
         assert_eq!(env.lookup("Missing"), None);
+    }
+
+    #[test]
+    fn identifier_lookup_is_case_insensitive() {
+        let script = parse(
+            "ScriptName Example\n\nInt Property Count = 1 Auto\n\nFunction Test(Float aValue)\nEndFunction\n",
+        )
+        .unwrap();
+        let mut env = TypeEnv::for_script(&script);
+        assert_eq!(env.lookup("COUNT"), Some(&scalar("Int")));
+        assert_eq!(env.lookup("count"), Some(&scalar("Int")));
+
+        let function = &script.functions[0];
+        env.with_function_scope(function, |scoped| {
+            assert_eq!(scoped.lookup("AVALUE"), Some(&scalar("Float")));
+        });
     }
 
     #[test]
