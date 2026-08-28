@@ -8,14 +8,22 @@
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
 //! [`papyrus_lint_core::achlist`]) — or, if given a single `.psc` file
 //! directly, treats that file as the achlist's sole entry — lints each
-//! against the project's `papyrus-lint.yaml`/`.yml` configuration —
-//! looked up next to the input file, falling back to
-//! [`papyrus_lints::Config::default`] if it has none (see
+//! against the project's `papyrus-lint.yaml`/`.yml` configuration, falling
+//! back to [`papyrus_lints::Config::default`] if it has none (see
 //! [`papyrus_lint_core::config`]) — and prints the diagnostics found, one
-//! per line. Calls to functions declared on other scripts under the
-//! project root are resolved the same way the desktop app resolves them
-//! (see [`papyrus_lint_core::function_table`]), so the CLI's "Argument
-//! type check"/"Return type check" results match the app's.
+//! per line. The project root the config (and the function table below) is
+//! looked up under is the input file's parent directory for an `.achlist`
+//! (which conventionally lives next to a game's `Scripts` directory, e.g.
+//! `Data`), but two directories up for a bare `.psc` file (which
+//! conventionally lives under `<root>/scripts/source` or
+//! `<root>/source/scripts`, e.g. `Data\Scripts\Source\abc.psc` under
+//! `Data`) — matching [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`]
+//! — so editor plugins that invoke the CLI on a single saved file (see
+//! `SublimeLinter-contrib-papyrus-lint/linter.py`) still pick up the
+//! project's config. Calls to functions declared on other scripts under
+//! the project root are resolved the same way the desktop app resolves
+//! them (see [`papyrus_lint_core::function_table`]), so the CLI's
+//! "Argument type check"/"Return type check" results match the app's.
 //!
 //! With the `fix` subcommand, every automatic fix (see
 //! [`papyrus_lints::repair`]) is applied to each resolved script first,
@@ -43,8 +51,9 @@ pub const USAGE: &str = "Usage: PapyrusLinterCLI [--json] <path-to-achlist-or-ps
 PapyrusLinterCLI [--json] fix <path-to-achlist-or-psc>\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
-configuration (looked up next to the input file, falling back to\n\
-defaults if it has none).\n\n\
+configuration (looked up next to the .achlist file, or two directories\n\
+up from a bare .psc file, e.g. Data for Data\\Scripts\\Source\\abc.psc;\n\
+falling back to defaults if it has none).\n\n\
 With the `fix` subcommand, applies every automatic fix (see README.md)\n\
 to those scripts first, rewriting each one on disk if it changed, then\n\
 reports whatever diagnostics remain the same way.\n\n\
@@ -135,8 +144,14 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         .and_then(|ext| ext.to_str())
         .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"));
 
+    // A bare .psc file conventionally lives two directories under the
+    // project root (e.g. `Data\Scripts\Source\abc.psc` under `Data`, per
+    // `script_locator::CANDIDATE_DIRS`), unlike an .achlist file, which
+    // conventionally lives directly in the project root alongside it.
+    let root_ancestor_levels = if is_psc_file { 3 } else { 1 };
     let project_root = input_path
-        .parent()
+        .ancestors()
+        .nth(root_ancestor_levels)
         .filter(|dir| !dir.as_os_str().is_empty())
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."));
@@ -514,9 +529,13 @@ mod tests {
     }
 
     #[test]
-    fn honors_the_project_yaml_config_for_a_single_psc_file() {
+    fn honors_the_project_yaml_config_two_directories_above_a_single_psc_file() {
+        // Mirrors the real layout a bare .psc file is found at (e.g. an
+        // editor plugin invoking the CLI on a saved file), where the
+        // project root sits two directories above the script, at
+        // `<root>/scripts/source/Example.psc`.
         let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
+        let script_path = dir.path().join("scripts/source/Example.psc");
         write_file(&script_path, "ScriptName Example   \n");
         write_file(
             &dir.path().join("papyrus-lint.yaml"),
