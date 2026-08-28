@@ -41,4 +41,15 @@ Additionally, this linter supports the standard `executable` setting if
 
 Diagnostics are read from a `papyrus-lint.yaml`/`.yml` file placed next to
 the `.psc` file being linted, the same as the Papyrus Lint desktop app and
-CLI — see the main project's README for its format.
+CLI — see the main project's README for its format. Under the hood, this
+linter runs `PapyrusLinterCLI --json` and parses its structured JSON
+report rather than scraping plain-text output.
+
+## Fixing files
+
+This package also exposes a "PapyrusLint: Fix Current File" command (via
+the Command Palette and the editor's right-click context menu, for a
+saved `.psc` file with no unsaved changes) that runs `PapyrusLinterCLI
+fix` against the file, applying every automatic fix (see the main
+project's README) and rewriting it on disk if anything changed, then
+reloads the file and re-lints it.

@@ -1,0 +1,8 @@
+[
+    { "caption": "-", "id": "papyrus-lint-fix-separator-before" },
+    {
+        "caption": "PapyrusLint: Fix File",
+        "command": "papyrus_lint_fix"
+    },
+    { "caption": "-", "id": "papyrus-lint-fix-separator-after" }
+]
