@@ -18,6 +18,13 @@ instead of from a bug report.
 
 ![Papyrus Lint Results](resources/papyrus-lint-results.png) 
 
+## What this is NOT
+
+- A compiler
+- An editor
+- A guarantee a script is fit for purpose
+- A replacement for proper testing
+
 ## What is a linter?
 
 A linter is a tool that scans source code for patterns that are likely to be
