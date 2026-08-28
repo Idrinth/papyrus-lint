@@ -121,7 +121,8 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: vscode-extension/package-lock.json
-
+      - name: Create Destination Directory
+        run: mkdir plugin-dist
       - name: Package VS Code extension
         working-directory: vscode-extension
         run: |
