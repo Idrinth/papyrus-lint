@@ -41,6 +41,54 @@
           "description": "Path to the PapyrusLinterCLI executable used to lint .psc files."
         }
       }
+    },
+    "commands": [
+      {
+        "command": "papyrusLint.lintFile",
+        "title": "Papyrus Lint: Lint Current File",
+        "category": "Papyrus Lint"
+      },
+      {
+        "command": "papyrusLint.fixFile",
+        "title": "Papyrus Lint: Fix Current File",
+        "category": "Papyrus Lint"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "papyrusLint.lintFile",
+          "when": "editorLangId == papyrus"
+        },
+        {
+          "command": "papyrusLint.fixFile",
+          "when": "editorLangId == papyrus"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "papyrusLint.lintFile",
+          "when": "editorLangId == papyrus",
+          "group": "papyrusLint"
+        },
+        {
+          "command": "papyrusLint.fixFile",
+          "when": "editorLangId == papyrus",
+          "group": "papyrusLint"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "papyrusLint.lintFile",
+          "when": "resourceExtname == .psc",
+          "group": "papyrusLint"
+        },
+        {
+          "command": "papyrusLint.fixFile",
+          "when": "resourceExtname == .psc",
+          "group": "papyrusLint"
+        }
+      ]
     }
   },
   "scripts": {
