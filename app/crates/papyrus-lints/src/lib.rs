@@ -12,6 +12,7 @@ pub mod comma_spacing;
 pub mod config;
 pub mod cyclomatic_complexity;
 mod disable_comments;
+pub mod division_by_zero;
 pub mod exclamation_spacing;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
@@ -178,6 +179,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.static_condition {
         diagnostics.extend(static_condition::check(source));
+    }
+    if rules.division_by_zero {
+        diagnostics.extend(division_by_zero::check(source));
     }
     if rules.unused_local_variable {
         diagnostics.extend(unused_local_variable::check(source));
@@ -603,6 +607,12 @@ mod tests {
                 property_sorting::RULE,
                 config_with(|c| c.rules.property_sorting = true),
                 config_with(|c| c.rules.property_sorting = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Int a)\n    Int b = a / 0\nEndFunction\n",
+                division_by_zero::RULE,
+                Config::default(),
+                config_with(|c| c.rules.division_by_zero = false),
             ),
         ];
 
