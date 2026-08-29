@@ -210,6 +210,20 @@ mod tests {
     }
 
     #[test]
+    fn flags_script_level_variable_name() {
+        let diagnostics = check(
+            "ScriptName Example\n\nInt bad_name = 1\n",
+            IdentifierCasing::PascalCase,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 3);
+        assert_eq!(diagnostics[0].rule, RULE);
+        assert!(diagnostics[0].message.contains("Variable"));
+        assert!(diagnostics[0].message.contains("bad_name"));
+    }
+
+    #[test]
     fn flags_function_name() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction do_thing()\nEndFunction\n",
