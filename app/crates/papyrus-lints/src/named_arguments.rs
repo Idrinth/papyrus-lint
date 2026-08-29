@@ -57,6 +57,9 @@ struct LocalFunctions {
 }
 
 impl LocalFunctions {
+    /// Groups every function declared in `script` (including those inside
+    /// states) by lowercased name, resolving each to its parameters (or
+    /// `None` if declared more than once with differing signatures).
     fn from_script(script: &Script) -> Self {
         let mut grouped: HashMap<String, Vec<&FunctionDecl>> = HashMap::new();
         for function in all_functions(script) {
@@ -91,6 +94,7 @@ impl LocalFunctions {
         LocalFunctions { by_name }
     }
 
+    /// Looks up `name`'s parameters, case-insensitively.
     fn lookup(&self, name: &str) -> Option<&[ParamInfo]> {
         self.by_name.get(&name.to_ascii_lowercase())?.as_deref()
     }
@@ -127,6 +131,8 @@ pub fn check(source: &str, setting: NamedArguments) -> Vec<Diagnostic> {
     diagnostics
 }
 
+/// Recursively visits every expression reachable from `stmt`, checking any
+/// call against `locals` per [`walk_expr`].
 fn walk_stmt(
     stmt: &Stmt,
     locals: &LocalFunctions,
@@ -177,6 +183,9 @@ fn walk_stmt(
     }
 }
 
+/// Recursively visits `expr` and its subexpressions, checking each
+/// [`Expr::Call`] resolved to a local function's parameters against
+/// `setting` (see [`check_call`]).
 fn walk_expr(
     expr: &Expr,
     locals: &LocalFunctions,
@@ -233,6 +242,10 @@ fn resolve_local<'a>(
     }
 }
 
+/// Flags each of `args` that `setting` prefers to see passed by name
+/// instead of positionally, based on its matching entry in `params`. An
+/// argument already passed by name, or one beyond the declared parameter
+/// count, is never flagged.
 fn check_call(
     line: usize,
     col: usize,
