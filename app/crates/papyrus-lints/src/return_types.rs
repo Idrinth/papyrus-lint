@@ -258,7 +258,11 @@ mod tests {
     struct FakeExternalWithSubtypes;
 
     impl ExternalSignatures for FakeExternalWithSubtypes {
-        fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<TypeName>> {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
             None
         }
 

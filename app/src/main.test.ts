@@ -902,7 +902,7 @@ describe("code viewer edit mode", () => {
           {
             kind: "function",
             name: "GetName",
-            param_types: [],
+            params: [],
             return_type: { name: "String", is_array: false },
             is_global: false,
             is_native: true,
@@ -937,7 +937,7 @@ describe("code viewer edit mode", () => {
           {
             kind: "function",
             name: "GetName",
-            param_types: [],
+            params: [],
             return_type: null,
             is_global: false,
             is_native: false,

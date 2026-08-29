@@ -22,18 +22,30 @@ use std::collections::HashMap;
 
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName};
 use papyrus_parser::types::{infer_type, TypeEnv};
+use serde::Serialize;
 
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "argument-types";
 
-/// Resolves the parameter types of a function declared on some other
-/// script, for callers that can look such scripts up (see the module
+/// A declared function parameter's name and type, as needed to resolve
+/// both positional and named arguments (`func(argB = 1)`) against it.
+/// Public so an [`ExternalSignatures`] implementation (e.g. the desktop
+/// app's `FunctionTable`) can resolve another script's functions down to
+/// full parameter info, not just types.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct ParamInfo {
+    pub name: String,
+    pub type_name: TypeName,
+}
+
+/// Resolves the parameters (name and type) of a function declared on some
+/// other script, for callers that can look such scripts up (see the module
 /// docs). Both names are matched case-insensitively; returning `None`
 /// means the function couldn't be resolved and the call site is skipped.
 pub trait ExternalSignatures {
-    fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>>;
+    fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>>;
 
     /// Whether `sub_type` inherits from `super_type`, directly or
     /// transitively (i.e. `sub_type`'s script, or one of its ancestors'
@@ -64,7 +76,7 @@ pub trait ExternalSignatures {
 pub struct NoExternalSignatures;
 
 impl ExternalSignatures for NoExternalSignatures {
-    fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<TypeName>> {
+    fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<ParamInfo>> {
         None
     }
 }
@@ -107,14 +119,6 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
             .iter()
             .flat_map(|state| state.functions.iter()),
     )
-}
-
-/// A declared function parameter's name and type, as needed to resolve
-/// both positional and named arguments (`func(argB = 1)`) against it.
-#[derive(Clone, PartialEq)]
-struct ParamInfo {
-    name: String,
-    type_name: TypeName,
 }
 
 /// Parameters of the functions declared in the script being linted, keyed
@@ -268,57 +272,30 @@ fn walk_expr<E: ExternalSignatures>(
     }
 }
 
-/// A callee's resolved parameters, however much detail is available.
-/// Parameter names are only known for functions declared in the script
-/// being linted ([`LocalFunctions`]) — [`ExternalSignatures`] only
-/// resolves other scripts' functions down to their parameter types — so
-/// only [`ResolvedParams::Named`] calls can match a named argument
-/// (`func(argB = 1)`) to the parameter it fills; a named argument on a
-/// [`ResolvedParams::Positional`] call is left unchecked (see
-/// [`ResolvedParams::position_of`]).
-enum ResolvedParams {
-    Named(Vec<ParamInfo>),
-    Positional(Vec<TypeName>),
-}
-
-impl ResolvedParams {
-    fn type_at(&self, index: usize) -> Option<&TypeName> {
-        match self {
-            ResolvedParams::Named(params) => params.get(index).map(|p| &p.type_name),
-            ResolvedParams::Positional(types) => types.get(index),
-        }
-    }
-
-    fn position_of(&self, name: &str) -> Option<usize> {
-        match self {
-            ResolvedParams::Named(params) => params
-                .iter()
-                .position(|p| p.name.eq_ignore_ascii_case(name)),
-            ResolvedParams::Positional(_) => None,
-        }
-    }
-}
-
-/// Resolves `callee` to a function name and its parameters, checking the
-/// script's own functions first and falling back to `external` for
-/// anything that isn't a local call (or isn't declared locally).
+/// Resolves `callee` to a function name and its parameters (name and
+/// type), checking the script's own functions first and falling back to
+/// `external` for anything that isn't a local call (or isn't declared
+/// locally). Since [`ExternalSignatures`] resolves another script's
+/// functions down to full parameter info now too, a named argument
+/// (`func(argB = 1)`) can be matched to the parameter it fills either way
+/// (see [`check_args`]).
 fn resolve_signature<E: ExternalSignatures>(
     callee: &Expr,
     env: &TypeEnv,
     locals: &LocalFunctions,
     external: &mut E,
-) -> Option<(String, ResolvedParams)> {
+) -> Option<(String, Vec<ParamInfo>)> {
     let (object_type, function_name) = match callee {
         Expr::Identifier(name) => {
             if let Some(params) = locals.lookup(name) {
-                return Some((name.clone(), ResolvedParams::Named(params.to_vec())));
+                return Some((name.clone(), params.to_vec()));
             }
             (infer_type(&Expr::Self_, env)?, name.clone())
         }
         Expr::Member { object, property } => {
             if matches!(**object, Expr::Self_) {
                 if let Some(params) = locals.lookup(property) {
-                    return Some((property.clone(), ResolvedParams::Named(params.to_vec())));
+                    return Some((property.clone(), params.to_vec()));
                 }
             }
             (infer_type(object, env)?, property.clone())
@@ -331,14 +308,14 @@ fn resolve_signature<E: ExternalSignatures>(
     }
     external
         .lookup(&object_type.name, &function_name)
-        .map(|params| (function_name, ResolvedParams::Positional(params)))
+        .map(|params| (function_name, params))
 }
 
 fn check_args<E: ExternalSignatures>(
     line: usize,
     col: usize,
     function_name: &str,
-    params: &ResolvedParams,
+    params: &[ParamInfo],
     args: &[Expr],
     env: &TypeEnv,
     external: &mut E,
@@ -347,14 +324,17 @@ fn check_args<E: ExternalSignatures>(
     for (index, arg) in args.iter().enumerate() {
         let (param_index, arg) = match arg {
             Expr::NamedArg { name, value } => {
-                let Some(param_index) = params.position_of(name) else {
+                let Some(param_index) = params
+                    .iter()
+                    .position(|p| p.name.eq_ignore_ascii_case(name))
+                else {
                     continue;
                 };
                 (param_index, value.as_ref())
             }
             _ => (index, arg),
         };
-        let Some(param_type) = params.type_at(param_index) else {
+        let Some(param_type) = params.get(param_index).map(|p| &p.type_name) else {
             break;
         };
 
@@ -660,12 +640,25 @@ EndFunction
     }
 
     #[test]
-    fn skips_a_named_argument_on_a_call_resolved_through_external_signatures() {
-        // `FakeExternal` only resolves types, not parameter names, so a
-        // named argument on a call to another script's function can't be
-        // matched to the parameter it fills and is left unchecked.
+    fn checks_a_named_argument_on_a_call_resolved_through_external_signatures() {
+        // `FakeExternal` resolves full parameter info (including names) for
+        // another script's function, so a named argument on such a call can
+        // be matched to the parameter it fills just like a local one.
         let diagnostics = check_with(
-            "ScriptName Example\n\nFunction Test(Actor akActor)\n    akActor.MoveTo(akRef = 1)\nEndFunction\n",
+            "ScriptName Example\n\nFunction Test(Actor akActor)\n    akActor.MoveTo(akTarget = 1)\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Argument 1 to 'MoveTo'"));
+        assert!(diagnostics[0].message.contains("expects ObjectReference"));
+        assert!(diagnostics[0].message.contains("got Int"));
+    }
+
+    #[test]
+    fn skips_an_unrecognized_named_argument_on_a_call_resolved_through_external_signatures() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(Actor akActor)\n    akActor.MoveTo(notAParam = 1)\nEndFunction\n",
             &mut FakeExternal,
         );
 
@@ -681,13 +674,16 @@ EndFunction
     struct FakeExternal;
 
     impl ExternalSignatures for FakeExternal {
-        fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>> {
+        fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
             if type_name.eq_ignore_ascii_case("Actor")
                 && function_name.eq_ignore_ascii_case("MoveTo")
             {
-                Some(vec![TypeName {
-                    name: "ObjectReference".to_string(),
-                    is_array: false,
+                Some(vec![ParamInfo {
+                    name: "akTarget".to_string(),
+                    type_name: TypeName {
+                        name: "ObjectReference".to_string(),
+                        is_array: false,
+                    },
                 }])
             } else {
                 None
@@ -698,13 +694,16 @@ EndFunction
     struct FakeExternalWithSubtypes;
 
     impl ExternalSignatures for FakeExternalWithSubtypes {
-        fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>> {
+        fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
             if type_name.eq_ignore_ascii_case("ObjectReference")
                 && function_name.eq_ignore_ascii_case("GetItemCount")
             {
-                Some(vec![TypeName {
-                    name: "Form".to_string(),
-                    is_array: false,
+                Some(vec![ParamInfo {
+                    name: "akItem".to_string(),
+                    type_name: TypeName {
+                        name: "Form".to_string(),
+                        is_array: false,
+                    },
                 }])
             } else {
                 None

@@ -22,10 +22,15 @@ export interface TypeNameRef {
   is_array: boolean;
 }
 
+export interface ParamRef {
+  name: string;
+  type_name: TypeNameRef;
+}
+
 export interface FunctionMember {
   kind: "function";
   name: string;
-  param_types: TypeNameRef[];
+  params: ParamRef[];
   return_type: TypeNameRef | null;
   is_global: boolean;
   is_native: boolean;
@@ -169,7 +174,9 @@ export function completionLabel(member: Member): string {
   if (member.kind === "property") {
     return `${member.name}: ${member.type_name.name}${member.type_name.is_array ? "[]" : ""}`;
   }
-  const params = member.param_types.map((type) => type.name + (type.is_array ? "[]" : "")).join(", ");
+  const params = member.params
+    .map((param) => `${param.type_name.name}${param.type_name.is_array ? "[]" : ""} ${param.name}`)
+    .join(", ");
   const returns = member.return_type ? ` -> ${member.return_type.name}${member.return_type.is_array ? "[]" : ""}` : "";
   return `${member.name}(${params})${returns}`;
 }

@@ -62,12 +62,12 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use papyrus_parser::ast::TypeName;
+    use crate::argument_types::ParamInfo;
 
     struct FakeExternal;
 
     impl ExternalSignatures for FakeExternal {
-        fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>> {
+        fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
             if type_name.eq_ignore_ascii_case("ParentScript")
                 && function_name.eq_ignore_ascii_case("DoThing")
             {
