@@ -16,7 +16,7 @@ Papyrus syntax package installed in Sublime Text.
    `SublimeLinter-contrib-papyrus-lint`) or by cloning/copying this
    directory into your Sublime Text `Packages` directory.
 4. Make sure `PapyrusLinterCLI` (or `PapyrusLinterCLI.exe` on Windows) is on
-   your `PATH`, or a project you build/download it from
+   your `PATH`. You can build it from this repository or download it from
    [the releases page](https://github.com/Idrinth/papyrus-lint/releases) —
    or via `cargo build --release --manifest-path
    crates/papyrus-lint-cli/Cargo.toml` in this repository.
@@ -39,9 +39,10 @@ Additionally, this linter supports the standard `executable` setting if
 }
 ```
 
-Diagnostics are read from a `papyrus-lint.yaml`/`.yml` file placed next to
-the `.psc` file being linted, the same as the Papyrus Lint desktop app and
-CLI — see the main project's README for its format. Under the hood, this
+Lint configuration is read from `papyrus-lint.yaml`/`.yml` in the project
+root inferred by the CLI (two directories above a `.psc` in the conventional
+`Scripts/Source` or `Source/Scripts` layout). See the main project's README
+for the configuration format. Under the hood, this
 linter runs `PapyrusLinterCLI --json` and parses its structured JSON
 report rather than scraping plain-text output.
 

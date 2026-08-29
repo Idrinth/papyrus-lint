@@ -27,11 +27,14 @@ expected of a pull request.
 │       │                     # repair_psc_file), built on papyrus-lint-core
 │       └── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button
 ├── rules/
-│   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
-│                                  # compiled into Rust by papyrus-lints' build.rs
-├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
-│   └── linter.py                          # runs PapyrusLinterCLI against a saved
-│                                           # .psc file and parses its output
+│   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
+│   └── slow-functions.yaml       # Slow calls and faster alternatives; both are
+│                                  # compiled in by papyrus-lints/build.rs
+├── SublimeLinter-contrib-papyrus-lint/  # SublimeLinter integration, commands,
+│                                           # and Python unit tests
+├── vscode-extension/        # VS Code integration for linting/fixing .psc files
+│   ├── src/                 # Extension and diagnostic conversion logic
+│   └── test/                # Node-based unit tests
 └── crates/
     ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
     │   └── src/               # for the Papyrus language. No lint rules live
@@ -56,7 +59,7 @@ expected of a pull request.
     │       │                       # scripts/source or source/scripts
     │       └── function_table.rs   # Cross-script function signature lookup,
     │                               # for the argument/return type check lints
-    └── papyrus-lint-cli/     # `papyrus-lint <achlist-path>`: lints an
+    └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
         └── src/                # achlist's scripts against its project's
             ├── lib.rs           # papyrus-lint.yaml and prints the results.
             │                    # run() here is the shared logic; also
@@ -111,6 +114,8 @@ CI (`.github/workflows/ci.yml`) runs on every pull request and on pushes to
 `the-one` (the default branch — not `main`). Make sure your change passes
 the same checks locally first:
 
+- **Sublime Text extension job**: runs `python -m unittest discover -s
+  SublimeLinter-contrib-papyrus-lint/tests -v`.
 - **Frontend job**: `npm ci`, then `npm run lint` (ESLint), `npm run
   test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
   run build` (typecheck & Vite build).
@@ -118,6 +123,8 @@ the same checks locally first:
   - `cargo fmt --check`
   - `cargo clippy -- -D warnings`
   - `cargo check`
+- **VS Code extension job**: from `vscode-extension/`, runs `npm test`,
+  `npm run lint`, and `npm run compile`.
 - **Rust test job**: a matrix over `src-tauri`, `crates/papyrus-parser`,
   `crates/papyrus-lints`, `crates/papyrus-lint-core`, and
   `crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
@@ -147,21 +154,19 @@ base.
 
 ## Adding lint rules
 
-Two lints are implemented so far, in `crates/papyrus-lints`: trailing
-whitespace (`trailing_whitespace.rs`, with an automatic fix) and forbidden/
-discouraged function usage (`forbidden_functions.rs`, driven by
-`rules/forbidden-functions.yaml`). Both work on lexer tokens/raw text
-rather than the parsed AST, so they keep running on scripts that don't
-parse cleanly — follow that same approach for new lints where practical.
-See the "Planned Lints" section of [README.md](README.md) for the list of
-lints this project intends to implement next. If you want to work on one,
-open an issue or comment on an existing one first to avoid duplicate work.
+Lint rules live in `crates/papyrus-lints/src`; the complete current set and
+each rule's behavior are documented in the [Implemented Lints
+table](README.md#implemented-lints). Rules generally inspect raw source or
+lexer tokens so they keep running on scripts that do not parse cleanly. Follow
+that approach for a new rule where practical, register its check (and optional
+repair) in `crates/papyrus-lints/src/lib.rs`, and add its enable switch and
+default in `crates/papyrus-lints/src/config.rs`.
 
-A lint/fix job receives a `&papyrus_lints::Config` (see
-`crates/papyrus-lints/src/config.rs`, deserialized from a project's
-optional `papyrus-lint.yaml`/`.yml`), so anything user-configurable (an
-on/off switch under `Config::rules`, a style option, etc.) should be read
-from there rather than added as a separate parameter.
+A lint/fix job receives a `&papyrus_lints::Config`, deserialized from a
+project's optional `papyrus-lint.yaml`/`.yml`, so user-configurable behavior
+should be read from there rather than added as a separate parameter. Add tests
+for diagnostics, disable comments, configuration, and repairs as applicable,
+and update the README's lint table, rule-id list, and configuration example.
 
 ## Reporting bugs and requesting features
 

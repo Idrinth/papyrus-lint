@@ -5,7 +5,8 @@ app and a CLI. The desktop app is a Tauri (Rust + TypeScript) app: the
 frontend lets a user drop a `.achlist` file, and the Rust backend resolves
 the listed files, parses any `.psc` (Papyrus source) files among them, and
 lints them. The CLI (`crates/papyrus-lint-cli`) does the same thing
-non-interactively, given the `.achlist` path as its one argument. The
+non-interactively for an `.achlist`, or lints one `.psc` directly; it also
+supports automatic fixes and structured JSON output. The
 desktop app's own executable can run either way too: launched with no
 arguments it starts the GUI as usual, launched with an `.achlist` path (or
 `-h`/`--help`) it delegates straight to the CLI's logic instead
@@ -39,19 +40,19 @@ desktop app's binary at all.
 │       └── pex_header.rs      # Parses a compiled .pex file's header just far
 │                             # enough to blank its userName/machineName fields
 ├── rules/
-│   └── forbidden-functions.yaml  # Data for the "forbidden function usage" lint;
-│                                  # compiled into Rust by papyrus-lints' build.rs
+│   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
+│   └── slow-functions.yaml       # Slow calls and their faster alternatives; both
+│                                  # files are compiled in by papyrus-lints/build.rs
 ├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
 │   ├── linter.py                          # runs PapyrusLinterCLI against a saved
 │   ├── messages.json                      # .psc file and parses its output
 │   ├── messages/install.txt               # into SublimeLinter diagnostics; kept
 │   ├── README.md                          # here for development but installed/
 │   └── LICENSE                            # distributed as its own package.
-├── vscode-extension/        # VS Code extension (TypeScript): surfaces lint
-│   ├── package.json          # diagnostics for .psc files by shelling out to
-│   └── src/                  # PapyrusLinterCLI. Currently a bare scaffold —
-│       └── extension.ts      # activate()/deactivate() register an empty
-│                              # diagnostic collection; no linting logic yet.
+├── vscode-extension/        # VS Code extension (TypeScript): lints and fixes
+│   ├── package.json          # .psc files by invoking PapyrusLinterCLI --json
+│   ├── src/extension.ts      # Commands, process execution, and diagnostics
+│   └── test/                 # Node-based extension unit tests
 └── crates/
     ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
     │   └── src/               # for the Papyrus language. No lint rules live
@@ -76,7 +77,7 @@ desktop app's binary at all.
     │       │                       # scripts/source or source/scripts
     │       └── function_table.rs   # Cross-script function signature lookup,
     │                               # for the argument/return type check lints
-    └── papyrus-lint-cli/     # `papyrus-lint <achlist-path>`: lints an
+    └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
         └── src/                # achlist's scripts against its project's
             ├── lib.rs           # papyrus-lint.yaml and prints the results.
             │                    # run() here is the shared logic; also
@@ -133,11 +134,14 @@ binary target that crate also defines.
 
 ## CI (`.github/workflows/ci.yml`)
 
+- **Sublime Text extension job**: runs the plugin's Python unit tests.
 - **Frontend job**: `npm ci`, then `npm run lint` (ESLint), `npm run
   test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
   run build` (typecheck & Vite build). The text coverage summary is
   posted to the job's step summary and the full HTML/lcov report is
   uploaded as the `frontend-coverage` artifact.
+- **VS Code extension job**: installs its dependencies, then runs its unit
+  tests, ESLint, and TypeScript compilation.
 - **Rust build job**: `cargo fmt --check`, `cargo clippy -- -D warnings`,
   and `cargo check`, all run against `src-tauri/Cargo.toml`.
 - **Rust test job**: a matrix over `src-tauri`, `crates/papyrus-parser`,
@@ -154,7 +158,7 @@ on all pull requests.
 
 Pushing a tag matching `v*.*.*` triggers a release job that syncs the
 tag's version into `src-tauri/tauri.conf.json`, `package.json`,
-`src-tauri/Cargo.toml`, and `crates/papyrus-lint-cli/Cargo.toml`, then
+`src-tauri/Cargo.toml`, and all four reusable crates' `Cargo.toml` files, then
 builds the Tauri desktop app (binary name `PapyrusLinter`) on Linux,
 macOS, and Windows (via `tauri-apps/tauri-action`) and the
 `PapyrusLinterCLI` CLI binary (via `cargo build --release --manifest-path
@@ -162,8 +166,8 @@ crates/papyrus-lint-cli/Cargo.toml`) on each platform, attaching each
 platform's desktop bundle and CLI binary
 (`PapyrusLinterCLI-linux`/`PapyrusLinterCLI-macos`/`PapyrusLinterCLI-windows.exe`)
 to a GitHub release for that tag, creating the release if it doesn't
-already exist. A separate `editor-plugins` job, gated on that release job,
-then packages the VS Code extension into a `.vsix` (via `@vscode/vsce`)
+already exist. A separate `editor-plugins` job runs independently,
+packages the VS Code extension into a `.vsix` (via `@vscode/vsce`)
 and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip`, and
 attaches both to the same release.
 
@@ -180,44 +184,18 @@ properties (including full get/set property blocks), variables, functions
 (including native/global/event functions and states), and expressions with
 standard precedence.
 
-Two lints are implemented in `crates/papyrus-lints`:
+`crates/papyrus-lints` currently implements all rules listed in the
+[README's Implemented Lints table](README.md#implemented-lints). Rules inspect
+raw source or lexer tokens rather than requiring a successfully parsed AST.
+Automatic repair is available for trailing whitespace, comma spacing,
+semicolons, indentation, and whitespace around member-access dots. The
+desktop app, standalone CLI, and editor extensions all use the same lint and
+repair engine.
 
-- **Trailing whitespace** (`trailing_whitespace.rs`): flags lines ending in
-  spaces or tabs, and can also repair them via its `repair()` function,
-  which strips the trailing spaces/tabs from each line while preserving
-  line endings (`\n`/`\r\n`) and a missing final newline.
-- **Forbidden/discouraged function usage** (`forbidden_functions.rs`):
-  flags calls to functions listed in `rules/forbidden-functions.yaml`.
-  That YAML is compiled into a static Rust array by
-  `crates/papyrus-lints/build.rs` at build time, so linting never parses
-  YAML at runtime.
-
-Both lints work on lexer tokens/raw text rather than the parsed AST, so
-they still run on scripts that don't parse cleanly. They're exposed to the
-frontend via the `lint_papyrus_script` and `lint_psc_file` Tauri commands.
-`papyrus_lints::repair()` aggregates every available automatic fix
-(currently just trailing whitespace) and is exposed via the
-`repair_psc_file` Tauri command, which rewrites the `.psc` file on disk and
-returns the diagnostics that remain. See README.md for the remaining
-planned lints and fixes.
-
-`lint()` and `repair()` both take a `&papyrus_lints::Config` — deserialized
-from a project's optional `papyrus-lint.yaml`/`.yml` file (default:
-`semicolon: false`, `indentation: tab`, `indentation_width: 4`, and a
-`rules` map with every ruleset enabled) — so it's available to every
-check/fix job, and it now drives the semicolon and indentation fixers
-directly (via `Config::semicolon_style()`/`Config::indentation_unit()`)
-rather than those being passed separately. `Config::rules` (see
-`config.rs`) lets a project disable any individual ruleset by name; both
-`lint_with_external_arguments()` and `repair()` skip a disabled ruleset's
-check/fix.
-`crates/papyrus-lint-core/src/config.rs` locates that file next to the
-dropped `.achlist` file; `src-tauri/src/lib.rs` exposes it via the
-`load_lint_config`/`save_lint_config` Tauri commands, and
-`crates/papyrus-lint-cli` reads it the same way to configure a lint run.
-The frontend treats the config file as the source of truth for its
-formatting controls (trailing semicolons, indentation style/width): it
-loads the config for the most recently opened project on startup
-(remembered via `localStorage`) and after every achlist drop, applies it
-to those controls, and writes any change made to them straight back to
-the file via `save_lint_config`.
+Project configuration is read from an optional `papyrus-lint.yaml` or
+`papyrus-lint.yml` in the project root. An achlist's parent is the project
+root; for a bare `.psc` in a conventional `Scripts/Source` or
+`Source/Scripts` tree, the CLI infers the root two directories above it.
+Configuration controls formatting, lint enablement, complexity thresholds, CLI failure
+levels, and the compiler path. See the [README configuration
+reference](README.md#configuration) for the complete schema and defaults.
