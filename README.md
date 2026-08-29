@@ -70,6 +70,7 @@ apply.
 | **None used as an existing Form** | Flags a member/method access (`a.GetName()`, `a.Name`) on a local variable that's still known to be `None` (e.g. `Armor a = None` followed directly by `a.GetName()`), since that crashes the script at runtime. Tracks a variable as `None` from its declaration/assignment until it's reassigned something else, narrowing through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) and through a `While` loop's condition (this language has no `break`/`continue`, so the loop can only exit once its condition is false). A branch that unconditionally `Return`s doesn't carry its state past the `If`, covering the common `If x == None` / `Return` guard idiom. Anything less direct is left unflagged rather than guessed at. | |
 | **Local variable shadowing** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose name matches (case-insensitively) a `Property` declared on the same script, since referencing that name inside the function then reads the local rather than the property. When linting a `.psc` file dropped in the app, a local that instead shadows a property declared on a parent script (resolved through `Extends`) is flagged too. | |
 | **Whitespace interrupting property/method chaining** | Flags, as an `[error]`, a space or tab immediately before or after a `.` member/method access (e.g. `SomeProperty . DoThing()`), since it interrupts the chain for no benefit. A `.` inside a `Float` literal (e.g. `1.5`) is never flagged. The fix closes the gap on whichever side(s) have it, without reaching across a newline (a chain continued onto another physical line is left alone). | ✓ |
+| **Identifier casing** | Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured `identifier_casing` style: `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. `ScriptName` itself is never checked, since it must match the script's filename regardless of casing style. A parameter has no location of its own, so it's reported on its enclosing function's line. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, and chain whitespace) never flag or change a line inside a
@@ -97,7 +98,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `return-types`, `function-override`, `numeric-comparison`, `indentation`,
 `cyclomatic-complexity`, `unreachable-statement`, `static-condition`,
 `unused-local-variable`, `none-form-usage`,
-`local-variable-shadowing`, and `chain-whitespace`.
+`local-variable-shadowing`, `chain-whitespace`, and `identifier-casing`.
 
 ## Configuration
 
@@ -111,6 +112,7 @@ compiler_path: null
 semicolon: false
 indentation: tab
 indentation_width: 4
+identifier_casing: PascalCase
 cyclomatic_complexity_warning: 10
 cyclomatic_complexity_error: 20
 fail_on_warning: false
@@ -137,6 +139,7 @@ rules:
   none_form_usage: true
   local_variable_shadowing: true
   chain_whitespace: true
+  identifier_casing: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -151,6 +154,9 @@ rules:
   by the "Formatting checks" lint and the indentation automatic fix.
 - `indentation_width`: the number of spaces per indentation level, used
   only when `indentation` is `space`.
+- `identifier_casing`: the casing style declared identifiers must match:
+  `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. Read by the
+  "Identifier casing" lint.
 - `cyclomatic_complexity_warning` / `cyclomatic_complexity_error`: the
   cyclomatic complexity a function/event can reach before the
   "Cyclomatic complexity" lint flags it as a `[warning]` or an `[error]`,
@@ -173,7 +179,7 @@ rules:
   `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
   `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
   `static_condition`, `unused_local_variable`, `none_form_usage`,
-  `local_variable_shadowing`, and `chain_whitespace`.
+  `local_variable_shadowing`, `chain_whitespace`, and `identifier_casing`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
