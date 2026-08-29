@@ -44,6 +44,7 @@
 //!   named_arguments: true
 //!   operator_spacing: true
 //!   property_sorting: false
+//!   unchecked_cast: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -255,6 +256,8 @@ pub struct Rules {
     /// The "Property sorting" lint/fix. Unlike every other field here,
     /// this defaults to `false`: see [`crate::property_sorting`].
     pub property_sorting: bool,
+    /// The "Unchecked cast" lint.
+    pub unchecked_cast: bool,
 }
 
 impl Default for Rules {
@@ -288,6 +291,7 @@ impl Default for Rules {
             named_arguments: true,
             operator_spacing: true,
             property_sorting: false,
+            unchecked_cast: true,
         }
     }
 }
@@ -415,6 +419,7 @@ mod tests {
         // Unlike every rule above, sorting reorders a script's structure,
         // so this one defaults to disabled until a project opts in.
         assert!(!config.rules.property_sorting);
+        assert!(config.rules.unchecked_cast);
     }
 
     #[test]
