@@ -134,14 +134,21 @@ binary target that crate also defines.
 
 ## CI (`.github/workflows/ci.yml`)
 
-- **Sublime Text extension job**: runs the plugin's Python unit tests.
+- **Sublime Text extension job**: runs the plugin's Python unit tests via
+  `coverage run -m unittest discover`, scoped to `commands.py`/`linter.py`
+  (test files themselves are omitted). The text summary is posted to the
+  job's step summary and an lcov report is uploaded as the
+  `sublime-extension-coverage` artifact.
 - **Frontend job**: `npm ci`, then `npm run lint` (ESLint), `npm run
   test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
   run build` (typecheck & Vite build). The text coverage summary is
   posted to the job's step summary and the full HTML/lcov report is
   uploaded as the `frontend-coverage` artifact.
-- **VS Code extension job**: installs its dependencies, then runs its unit
-  tests, ESLint, and TypeScript compilation.
+- **VS Code extension job**: installs its dependencies, then runs `npm run
+  test:coverage` (the Node test runner's built-in coverage, via
+  `--experimental-test-coverage`), ESLint, and TypeScript compilation. The
+  text coverage summary is posted to the job's step summary and an lcov
+  report is uploaded as the `vscode-extension-coverage` artifact.
 - **Rust build job**: `cargo fmt --check`, `cargo clippy -- -D warnings`,
   and `cargo check`, all run against `src-tauri/Cargo.toml`.
 - **Rust test job**: a matrix over `src-tauri`, `crates/papyrus-parser`,

@@ -19,8 +19,35 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Test
-        run: python -m unittest discover -s SublimeLinter-contrib-papyrus-lint/tests -v
+      - name: Install dependencies
+        run: pip install coverage
+
+      - name: Test with coverage
+        run: |
+          coverage run --source=SublimeLinter-contrib-papyrus-lint \
+            --omit='SublimeLinter-contrib-papyrus-lint/tests/*' \
+            -m unittest discover -s SublimeLinter-contrib-papyrus-lint/tests -v
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### Sublime Text extension coverage"
+            echo '```'
+            coverage report -m
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always()
+        run: coverage lcov -o lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sublime-extension-coverage
+          path: lcov.info
 
   frontend:
     name: Frontend (typecheck & build)
@@ -84,8 +111,25 @@ jobs:
         run: npm ci --ignore-scripts
         working-directory: .
 
-      - name: Test
-        run: npm test
+      - name: Test with coverage
+        run: npm run test:coverage | tee coverage-output.txt
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### VS Code extension coverage"
+            echo '```'
+            sed -n '/start of coverage report/,/end of coverage report/p' coverage-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension-coverage
+          path: vscode-extension/lcov.info
 
       - name: Lint
         run: npm run lint
