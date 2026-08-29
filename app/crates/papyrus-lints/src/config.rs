@@ -42,6 +42,7 @@
 //!   identifier_casing: true
 //!   type_casing: true
 //!   named_arguments: true
+//!   operator_spacing: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -245,6 +246,8 @@ pub struct Rules {
     pub type_casing: bool,
     /// The "Prefer named arguments" lint.
     pub named_arguments: bool,
+    /// The "Spacing around logical/comparison operators" lint/fix.
+    pub operator_spacing: bool,
 }
 
 impl Default for Rules {
@@ -276,6 +279,7 @@ impl Default for Rules {
             identifier_casing: true,
             type_casing: true,
             named_arguments: true,
+            operator_spacing: true,
         }
     }
 }
@@ -399,6 +403,7 @@ mod tests {
         assert!(config.rules.identifier_casing);
         assert!(config.rules.type_casing);
         assert!(config.rules.named_arguments);
+        assert!(config.rules.operator_spacing);
     }
 
     #[test]
