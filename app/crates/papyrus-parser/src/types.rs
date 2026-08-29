@@ -272,6 +272,18 @@ EndFunction
     }
 
     #[test]
+    fn infers_named_argument_type_from_its_value() {
+        let script = parse("ScriptName Example\n").unwrap();
+        let env = TypeEnv::for_script(&script);
+        let argument = Expr::NamedArg {
+            name: "amount".to_string(),
+            value: Box::new(Expr::Literal(Literal::Float(1.5))),
+        };
+
+        assert_eq!(infer_type(&argument, &env), Some(scalar("Float")));
+    }
+
+    #[test]
     fn comparisons_and_boolean_ops_always_yield_bool() {
         let script = parse("ScriptName Example\n").unwrap();
         let env = TypeEnv::for_script(&script);
