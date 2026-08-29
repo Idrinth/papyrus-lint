@@ -21,11 +21,15 @@ let pscResultListEl: HTMLElement | null;
 let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
 let typeCasingStyleEl: HTMLSelectElement | null;
+let identifierCasingStyleEl: HTMLSelectElement | null;
+let namedArgumentsStyleEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let compilerPathEl: HTMLInputElement | null;
 let semicolonStyleEl: HTMLSelectElement | null;
 let cyclomaticComplexityWarningEl: HTMLInputElement | null;
 let cyclomaticComplexityErrorEl: HTMLInputElement | null;
+let failOnWarningEl: HTMLInputElement | null;
+let failOnInfoEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
@@ -104,7 +108,9 @@ export interface LintRules {
   float_int_conversion: boolean;
   strict_boolean: boolean;
   argument_types: boolean;
+  return_types: boolean;
   function_override: boolean;
+  argument_naming: boolean;
   numeric_comparison: boolean;
   indentation: boolean;
   cyclomatic_complexity: boolean;
@@ -114,18 +120,29 @@ export interface LintRules {
   none_form_usage: boolean;
   local_variable_shadowing: boolean;
   chain_whitespace: boolean;
+  exclamation_spacing: boolean;
+  identifier_casing: boolean;
   type_casing: boolean;
+  named_arguments: boolean;
+  operator_spacing: boolean;
+  property_sorting: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
+export type IdentifierCasingStyle = "camelCase" | "PascalCase" | "snake_case" | "CONSTANT_CASE";
+export type NamedArgumentsStyle = "always" | "instead_of_defaults" | "never";
 
 export interface LintConfig {
   semicolon: boolean;
   indentation: "tab" | "space";
   indentation_width: number;
+  identifier_casing: IdentifierCasingStyle;
   cyclomatic_complexity_warning: number;
   cyclomatic_complexity_error: number;
   type_casing: TypeCasingStyle;
+  named_arguments: NamedArgumentsStyle;
+  fail_on_warning: boolean;
+  fail_on_info: boolean;
   rules: LintRules;
 }
 
@@ -140,7 +157,9 @@ export const DEFAULT_RULES: LintRules = {
   float_int_conversion: true,
   strict_boolean: true,
   argument_types: true,
+  return_types: true,
   function_override: true,
+  argument_naming: true,
   numeric_comparison: true,
   indentation: true,
   cyclomatic_complexity: true,
@@ -150,16 +169,25 @@ export const DEFAULT_RULES: LintRules = {
   none_form_usage: true,
   local_variable_shadowing: true,
   chain_whitespace: true,
+  exclamation_spacing: true,
+  identifier_casing: true,
   type_casing: true,
+  named_arguments: true,
+  operator_spacing: true,
+  property_sorting: false,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
   semicolon: false,
   indentation: "tab",
   indentation_width: 4,
+  identifier_casing: "PascalCase",
   cyclomatic_complexity_warning: 10,
   cyclomatic_complexity_error: 20,
   type_casing: "PascalCase",
+  named_arguments: "never",
+  fail_on_warning: false,
+  fail_on_info: false,
   rules: DEFAULT_RULES,
 };
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
@@ -277,6 +305,18 @@ export function applyLintConfigToUI(config: LintConfig) {
   if (typeCasingStyleEl) {
     typeCasingStyleEl.value = config.type_casing;
   }
+  if (identifierCasingStyleEl) {
+    identifierCasingStyleEl.value = config.identifier_casing;
+  }
+  if (namedArgumentsStyleEl) {
+    namedArgumentsStyleEl.value = config.named_arguments;
+  }
+  if (failOnWarningEl) {
+    failOnWarningEl.checked = config.fail_on_warning;
+  }
+  if (failOnInfoEl) {
+    failOnInfoEl.checked = config.fail_on_info;
+  }
   for (const key of RULE_KEYS) {
     const el = ruleEls[key];
     if (el) {
@@ -296,9 +336,14 @@ export function lintConfigFromUI(): LintConfig {
     semicolon: semicolonStyleEl?.value === "require",
     indentation,
     indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
+    identifier_casing:
+      (identifierCasingStyleEl?.value as IdentifierCasingStyle | undefined) ?? "PascalCase",
     cyclomatic_complexity_warning: Math.max(1, cyclomaticComplexityWarningEl?.valueAsNumber || 10),
     cyclomatic_complexity_error: Math.max(1, cyclomaticComplexityErrorEl?.valueAsNumber || 20),
     type_casing: (typeCasingStyleEl?.value as TypeCasingStyle | undefined) ?? "PascalCase",
+    named_arguments: (namedArgumentsStyleEl?.value as NamedArgumentsStyle | undefined) ?? "never",
+    fail_on_warning: failOnWarningEl?.checked ?? false,
+    fail_on_info: failOnInfoEl?.checked ?? false,
     rules,
   };
 }
@@ -1027,8 +1072,12 @@ window.addEventListener("DOMContentLoaded", () => {
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
   typeCasingStyleEl = document.querySelector("#type-casing-style");
+  identifierCasingStyleEl = document.querySelector("#identifier-casing-style");
+  namedArgumentsStyleEl = document.querySelector("#named-arguments-style");
   cyclomaticComplexityWarningEl = document.querySelector("#cyclomatic-complexity-warning");
   cyclomaticComplexityErrorEl = document.querySelector("#cyclomatic-complexity-error");
+  failOnWarningEl = document.querySelector("#fail-on-warning");
+  failOnInfoEl = document.querySelector("#fail-on-info");
   ruleEls = Object.fromEntries(
     RULE_KEYS.map((key) => [key, document.querySelector<HTMLInputElement>(`#rule-${key}`)]),
   ) as Partial<Record<keyof LintRules, HTMLInputElement>>;
@@ -1104,8 +1153,12 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   indentationWidthEl?.addEventListener("change", handleLintConfigChanged);
   typeCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
+  identifierCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
+  namedArgumentsStyleEl?.addEventListener("change", handleLintConfigChanged);
   cyclomaticComplexityWarningEl?.addEventListener("change", handleLintConfigChanged);
   cyclomaticComplexityErrorEl?.addEventListener("change", handleLintConfigChanged);
+  failOnWarningEl?.addEventListener("change", handleLintConfigChanged);
+  failOnInfoEl?.addEventListener("change", handleLintConfigChanged);
   for (const key of RULE_KEYS) {
     ruleEls[key]?.addEventListener("change", handleLintConfigChanged);
   }

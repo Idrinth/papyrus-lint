@@ -65,6 +65,19 @@
             <option value="lowercase">lowercase</option>
             <option value="UPPERCASE">UPPERCASE</option>
           </select>
+          <label for="identifier-casing-style">Identifier casing</label>
+          <select id="identifier-casing-style">
+            <option value="camelCase">camelCase</option>
+            <option value="PascalCase">PascalCase</option>
+            <option value="snake_case">snake_case</option>
+            <option value="CONSTANT_CASE">CONSTANT_CASE</option>
+          </select>
+          <label for="named-arguments-style">Prefer named arguments</label>
+          <select id="named-arguments-style">
+            <option value="never">Never</option>
+            <option value="instead_of_defaults">Instead of defaults</option>
+            <option value="always">Always</option>
+          </select>
 
           <fieldset class="settings-group">
             <legend>Cyclomatic complexity thresholds</legend>
@@ -76,6 +89,12 @@
               <label for="cyclomatic-complexity-error">Error at</label>
               <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
             </div>
+          </fieldset>
+
+          <fieldset class="settings-group">
+            <legend>CLI failure levels</legend>
+            <label title="Whether the CLI treats a [warning]-level diagnostic as a reason to exit non-zero. Has no effect on the desktop app, which always lists every diagnostic regardless of severity."><input type="checkbox" id="fail-on-warning" /> Fail on warning</label>
+            <label title="Whether the CLI treats an [info]-level diagnostic as a reason to exit non-zero. Has no effect on the desktop app, which always lists every diagnostic regardless of severity."><input type="checkbox" id="fail-on-info" /> Fail on info</label>
           </fieldset>
 
           <fieldset id="lint-rules" class="settings-group">
@@ -90,7 +109,9 @@
             <label title="Flags a Float value assigned, returned, or passed where an Int is expected without an explicit &quot;as Int&quot; cast."><input type="checkbox" id="rule-float_int_conversion" checked /> Implicit Float-to-Int conversion</label>
             <label title="Flags If/ElseIf/While conditions that aren't already a Bool value or expression, instead of relying on implicit conversion to boolean."><input type="checkbox" id="rule-strict_boolean" checked /> Strict boolean check</label>
             <label title="Flags call-site arguments whose type doesn't match the callee's declared parameter type (e.g. passing a String where an Int is expected)."><input type="checkbox" id="rule-argument_types" checked /> Argument type check</label>
+            <label title="Flags Return statements whose value's type doesn't match the enclosing function's declared return type, allowing the implicit Int-to-Float widening Papyrus itself allows."><input type="checkbox" id="rule-return_types" checked /> Return type check</label>
             <label title="Flags a function declared on this script that shares its name with one declared on the script's Extends chain, since the local declaration overrides the inherited one."><input type="checkbox" id="rule-function_override" checked /> Inherited function override</label>
+            <label title="Flags, as a [warning], a function parameter name that doesn't match the corresponding parameter of the same-named function declared on the script it Extends, since named-argument calls resolve against the declared type of the reference they're called through."><input type="checkbox" id="rule-argument_naming" checked /> Argument naming consistency</label>
             <label title="Flags implicit comparisons (==, !=, <, <=, >, >=) between an Int and a Float value without an explicit cast making the comparison exact."><input type="checkbox" id="rule-numeric_comparison" checked /> Strict numeric type check</label>
             <label title="Flags lines whose indentation doesn't match the configured style/width for their nesting depth."><input type="checkbox" id="rule-indentation" checked /> Formatting checks / Indentation</label>
             <label title="Flags functions/events whose cyclomatic complexity exceeds the configured warning/error thresholds above."><input type="checkbox" id="rule-cyclomatic_complexity" checked /> Cyclomatic complexity</label>
@@ -100,7 +121,12 @@
             <label title="Flags a member/method access (e.g. a.GetName()) on a local variable that's still known to be None at that point, since that crashes the script."><input type="checkbox" id="rule-none_form_usage" checked /> None used as an existing Form</label>
             <label title="Flags a local variable whose name matches a Property declared on the same script or a parent script, since referencing that name then reads the local rather than the property."><input type="checkbox" id="rule-local_variable_shadowing" checked /> Local variable shadowing</label>
             <label title="Flags a space or tab immediately before or after a &quot;.&quot; member/method access (e.g. &quot;SomeProperty . DoThing()&quot;), since it interrupts the chain for no benefit."><input type="checkbox" id="rule-chain_whitespace" checked /> Whitespace interrupting property/method chaining</label>
+            <label title="Flags, as a [warning], a ! negation operator not followed by exactly one space (e.g. !bReady or !  bReady)."><input type="checkbox" id="rule-exclamation_spacing" checked /> Exclamation mark spacing</label>
+            <label title="Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't follow the &quot;Identifier casing&quot; setting above. ScriptName itself is never checked here."><input type="checkbox" id="rule-identifier_casing" checked /> Identifier casing</label>
             <label title="Flags a script's declared type name (the identifier following ScriptName) if it doesn't follow the &quot;Type name casing&quot; setting above."><input type="checkbox" id="rule-type_casing" checked /> Type name casing</label>
+            <label title="Flags, as a [warning], a positional call argument that the &quot;Prefer named arguments&quot; setting above prefers to see passed by Papyrus's named-argument syntax instead (func(argB = 1))."><input type="checkbox" id="rule-named_arguments" checked /> Prefer named arguments</label>
+            <label title="Requires, as a [warning], exactly one space on either side of &&, ||, ==, !=, >, <, >=, and <=."><input type="checkbox" id="rule-operator_spacing" checked /> Spacing around logical/comparison operators</label>
+            <label title="Flags, as a [warning], a Property declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after ScriptName. Disabled by default, since reordering a script's declared properties is a more invasive change than the rest of these lints."><input type="checkbox" id="rule-property_sorting" /> Property sorting</label>
           </fieldset>
         </div>
 

@@ -200,9 +200,13 @@ describe("lint config UI round trip", () => {
       semicolon: true,
       indentation: "space",
       indentation_width: 8,
+      identifier_casing: "snake_case",
       cyclomatic_complexity_warning: 5,
       cyclomatic_complexity_error: 15,
       type_casing: "camelCase",
+      named_arguments: "always",
+      fail_on_warning: true,
+      fail_on_info: true,
       rules: { ...DEFAULT_RULES, forbidden_functions: false, indentation: false },
     };
 
@@ -227,6 +231,31 @@ describe("lint config UI round trip", () => {
     expect(config.indentation_width).toBe(16);
     expect(config.cyclomatic_complexity_warning).toBe(1);
     expect(config.cyclomatic_complexity_error).toBe(1);
+  });
+
+  it("applies and reads back identifier casing, named arguments, and fail-on-level settings", () => {
+    applyLintConfigToUI({
+      ...DEFAULT_LINT_CONFIG,
+      identifier_casing: "CONSTANT_CASE",
+      named_arguments: "instead_of_defaults",
+      fail_on_warning: true,
+      fail_on_info: true,
+    });
+
+    expect(document.querySelector<HTMLSelectElement>("#identifier-casing-style")!.value).toBe(
+      "CONSTANT_CASE",
+    );
+    expect(document.querySelector<HTMLSelectElement>("#named-arguments-style")!.value).toBe(
+      "instead_of_defaults",
+    );
+    expect(document.querySelector<HTMLInputElement>("#fail-on-warning")!.checked).toBe(true);
+    expect(document.querySelector<HTMLInputElement>("#fail-on-info")!.checked).toBe(true);
+
+    const config = lintConfigFromUI();
+    expect(config.identifier_casing).toBe("CONSTANT_CASE");
+    expect(config.named_arguments).toBe("instead_of_defaults");
+    expect(config.fail_on_warning).toBe(true);
+    expect(config.fail_on_info).toBe(true);
   });
 
   it("handleLintConfigChanged persists the config only once a project dir is known", async () => {
@@ -1080,9 +1109,14 @@ describe("wired DOM interactions", () => {
       "#compiler-path",
       "#semicolon-style",
       "#indentation-width",
+      "#identifier-casing-style",
+      "#named-arguments-style",
       "#cyclomatic-complexity-warning",
       "#cyclomatic-complexity-error",
+      "#fail-on-warning",
+      "#fail-on-info",
       "#rule-trailing_whitespace",
+      "#rule-property_sorting",
     ]) {
       document.querySelector<HTMLElement>(selector)!.dispatchEvent(new Event("change"));
     }

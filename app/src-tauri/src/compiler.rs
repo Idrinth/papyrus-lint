@@ -151,6 +151,29 @@ mod tests {
         path
     }
 
+    /// Executing a script file immediately after writing and chmod'ing it
+    /// (as every test here does with its stub compiler) occasionally hits
+    /// `ETXTBSY`/"Text file busy" under CI's tmpfs when many tests spawn
+    /// processes concurrently, even though the file's own write handle has
+    /// already been closed. Retries a couple of times before giving up,
+    /// since that's an environmental race unrelated to what these tests
+    /// actually check.
+    #[cfg(unix)]
+    fn compile_stub_with_retry(
+        compiler_path: &Path,
+        script_path: &Path,
+    ) -> Result<CompileOutcome, String> {
+        for attempt in 0.. {
+            match compile_psc_file(compiler_path, script_path) {
+                Err(err) if attempt < 5 && err.contains("Text file busy") => {
+                    std::thread::sleep(std::time::Duration::from_millis(20));
+                }
+                result => return result,
+            }
+        }
+        unreachable!()
+    }
+
     #[test]
     #[cfg(unix)]
     fn success_reports_captured_stdout() {
@@ -162,7 +185,8 @@ mod tests {
         let compiler_path =
             write_stub_compiler(root.path(), "#!/bin/sh\necho compiled ok\nexit 0\n");
 
-        let outcome = compile_psc_file(&compiler_path, &script_path).expect("should succeed");
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("should succeed");
 
         assert!(outcome.success);
         assert_eq!(outcome.stdout.trim(), "compiled ok");
@@ -191,7 +215,8 @@ mod tests {
         }
         fs::write(&pex_path, &pex_bytes).expect("failed to write stub pex");
 
-        let outcome = compile_psc_file(&compiler_path, &script_path).expect("should succeed");
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("should succeed");
 
         assert!(outcome.success);
         assert!(outcome.personal_data_stripped);
@@ -217,7 +242,8 @@ mod tests {
             "#!/bin/sh\necho compilation failed >&2\nexit 1\n",
         );
 
-        let outcome = compile_psc_file(&compiler_path, &script_path).expect("should still be Ok");
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("should still be Ok");
 
         assert!(!outcome.success);
         assert_eq!(outcome.stderr.trim(), "compilation failed");
@@ -236,7 +262,8 @@ mod tests {
             "#!/bin/sh\nfor arg in \"$@\"; do echo \"$arg\"; done\n",
         );
 
-        let outcome = compile_psc_file(&compiler_path, &script_path).expect("should succeed");
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("should succeed");
 
         let output_dir = root.path().join("Scripts");
         let expected = format!(
@@ -319,7 +346,7 @@ mod tests {
             "#!/bin/sh\nprintf '\\377stdout'\nprintf '\\377stderr' >&2\n",
         );
 
-        let outcome = compile_psc_file(&compiler_path, &script_path).expect("should run");
+        let outcome = compile_stub_with_retry(&compiler_path, &script_path).expect("should run");
 
         assert!(outcome.success);
         assert_eq!(outcome.stdout, "�stdout");
