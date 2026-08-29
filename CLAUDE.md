@@ -210,3 +210,9 @@ root; for a bare `.psc` in a conventional `Scripts/Source` or
 Configuration controls formatting, lint enablement, complexity thresholds, CLI failure
 levels, and the compiler path. See the [README configuration
 reference](README.md#configuration) for the complete schema and defaults.
+
+## Keeping agent instructions synchronized
+
+`AGENTS.md` and `CLAUDE.md` must contain the same project guidance. Whenever
+one file is updated, make the equivalent update to the other file in the same
+change and verify that the two files remain identical.
