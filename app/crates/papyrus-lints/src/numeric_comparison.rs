@@ -130,6 +130,7 @@ fn walk_expr(expr: &Expr, env: &TypeEnv, line: usize, diagnostics: &mut Vec<Diag
         }
         Expr::Cast { value, .. } => walk_expr(value, env, line, diagnostics),
         Expr::NewArray { size, .. } => walk_expr(size, env, line, diagnostics),
+        Expr::NamedArg { value, .. } => walk_expr(value, env, line, diagnostics),
         Expr::Literal(_)
         | Expr::Identifier(_)
         | Expr::Self_

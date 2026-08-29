@@ -170,6 +170,13 @@ pub enum Expr {
         line: usize,
         col: usize,
     },
+    /// A named argument in a call's argument list (`func(argB = 1)`),
+    /// Papyrus's syntax for passing an argument by parameter name instead
+    /// of by position. Only ever appears as an element of `Call.args`.
+    NamedArg {
+        name: String,
+        value: Box<Expr>,
+    },
     Member {
         object: Box<Expr>,
         property: String,

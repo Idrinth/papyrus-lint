@@ -236,7 +236,25 @@ fn walk_expr(
         };
         if let Some(name) = resolved_name {
             if let Some(function) = functions.get(&name.to_lowercase()) {
-                for (arg, param) in args.iter().zip(&function.params) {
+                for (index, arg) in args.iter().enumerate() {
+                    let (arg, param) = match arg {
+                        Expr::NamedArg { name, value } => {
+                            let Some(param) = function
+                                .params
+                                .iter()
+                                .find(|p| p.name.eq_ignore_ascii_case(name))
+                            else {
+                                continue;
+                            };
+                            (value.as_ref(), param)
+                        }
+                        _ => {
+                            let Some(param) = function.params.get(index) else {
+                                break;
+                            };
+                            (arg, param)
+                        }
+                    };
                     if narrows_to_int(&param.type_name, arg, env) {
                         diagnostics.push(Diagnostic {
                             line,
@@ -271,6 +289,7 @@ fn walk_expr(
         }
         Expr::Cast { value, .. } => walk_expr(value, env, functions, line, diagnostics),
         Expr::NewArray { size, .. } => walk_expr(size, env, functions, line, diagnostics),
+        Expr::NamedArg { value, .. } => walk_expr(value, env, functions, line, diagnostics),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent | Expr::Call { .. } => {
         }
     }
@@ -401,6 +420,16 @@ mod tests {
     fn flags_float_argument_passed_to_int_parameter_of_local_function() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Add(Int amount)\nEndFunction\n\nFunction Test()\n    Float f = 1.5\n    Add(f)\nEndFunction\n",
+        );
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'amount'"));
+        assert!(diagnostics[0].message.contains("'Add'"));
+    }
+
+    #[test]
+    fn flags_float_argument_passed_via_named_argument() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Add(Int first, Int amount)\nEndFunction\n\nFunction Test()\n    Float f = 1.5\n    Add(1, amount = f)\nEndFunction\n",
         );
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("'amount'"));

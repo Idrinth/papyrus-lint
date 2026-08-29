@@ -310,6 +310,7 @@ fn check_expr(
         }
         Expr::Cast { value, .. } => check_expr(value, none_vars, diagnostics, line),
         Expr::NewArray { size, .. } => check_expr(size, none_vars, diagnostics, line),
+        Expr::NamedArg { value, .. } => check_expr(value, none_vars, diagnostics, line),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
     }
 }

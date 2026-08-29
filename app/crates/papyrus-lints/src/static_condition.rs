@@ -113,7 +113,8 @@ fn eval_const(expr: &Expr) -> Option<Literal> {
         | Expr::Member { .. }
         | Expr::Index { .. }
         | Expr::Cast { .. }
-        | Expr::NewArray { .. } => None,
+        | Expr::NewArray { .. }
+        | Expr::NamedArg { .. } => None,
     }
 }
 
