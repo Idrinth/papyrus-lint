@@ -595,6 +595,27 @@ mod tests {
     }
 
     #[test]
+    fn list_members_stops_at_a_circular_extends_chain() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "A",
+            "ScriptName A Extends B\n\nFunction FromA()\nEndFunction\n",
+        );
+        write_script(
+            root.path(),
+            "B",
+            "ScriptName B Extends A\n\nFunction FromB()\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("A");
+
+        let names: HashSet<_> = members.iter().map(Member::name).collect();
+        assert_eq!(names, HashSet::from(["FromA", "FromB"]));
+    }
+
+    #[test]
     fn list_members_lets_a_closer_declaration_shadow_an_ancestors_member_of_the_same_name() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         write_script(
