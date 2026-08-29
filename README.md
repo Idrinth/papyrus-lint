@@ -49,19 +49,19 @@ apply.
 
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
-| **Trailing whitespace** | Flags lines that end with trailing spaces or tabs. | ✓ |
-| **Space after comma** | Requires whitespace after commas in argument lists. | ✓ |
+| **Trailing whitespace** | Flags, as a `[warning]`, lines that end with trailing spaces or tabs. | ✓ |
+| **Space after comma** | Requires, as a `[warning]`, whitespace after commas in argument lists. | ✓ |
 | **Forbidden/discouraged function usage** | Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. | |
 | **Getter usage without saving result** | Flags standalone calls to functions whose names begin with `Get` (case-insensitively), because their return value is discarded. | |
 | **Unused script properties** | Flags `Property` declarations whose name is never referenced anywhere else in the script. | |
-| **Semicolon at end of line** | Requires a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting. | ✓ |
+| **Semicolon at end of line** | Requires, as a `[warning]`, a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting. | ✓ |
 | **Implicit Float-to-Int conversion** | Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit `as Int` cast. | |
 | **Strict boolean check** | Flags `If`/`ElseIf`/`While` conditions that aren't already a `Bool` value or expression, instead of relying on Papyrus's implicit conversion to boolean. Only conditions whose type can be determined locally (locals, parameters, properties, literals, casts, and comparison/logical expressions) are checked; a condition that depends on a function call or a member access is left unflagged rather than risk a false positive. | |
 | **Argument type check** | Flags call-site arguments whose type doesn't match the callee's declared parameter type (e.g. passing a `String` where an `Int` is expected), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as passing an object whose script extends (directly or transitively) the parameter's type (e.g. passing an `Armor` where a `Form` is expected). Calls to functions declared in the same script are always checked; when linting a `.psc` file dropped in the app, calls to functions declared on other scripts under the project root (e.g. `SomeProperty.DoThing(...)`) are checked too, by resolving those scripts' signatures (including through `Extends`), and the `Extends` chain of an argument's own script is likewise resolved from the project root to allow compatible subtypes. A call whose target or argument type can't be determined is skipped rather than guessed at. | |
 | **Return type check** | Flags `Return` statements whose value's type doesn't match the enclosing function's declared return type (e.g. returning a `String` from a Function declared `Int`), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as returning an object whose script extends (directly or transitively) the declared return type (e.g. returning an `Armor` from a Function declared `Form`). When linting a `.psc` file dropped in the app, a returned value's own script's `Extends` chain is resolved from the project root to allow compatible subtypes there too. A `Return` whose value's type can't be determined, or with no declared return type, is skipped rather than guessed at. | |
 | **Inherited function override** | Flags, as an `[info]`, a function declared on this script that shares its name with a function declared on the script it `Extends` (directly or transitively) — the local declaration silently replaces the inherited one. This is often intentional (e.g. overriding an `Event OnInit()` handler), so it's informational rather than a warning. Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked (state-based override is a separate mechanism from `Extends`). | |
 | **Strict numeric type check** | Flags implicit comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without an explicit cast making the comparison exact. Only comparisons whose operand types can be determined locally are checked. | |
-| **Formatting checks** | Flags lines whose indentation doesn't match the configured style/width (`indentation`/`indentation_width`) for their nesting depth. A script whose structure can't be identified (e.g. it doesn't lex cleanly) is left unchecked rather than guessed at. | ✓ |
+| **Formatting checks** | Flags, as a `[warning]`, lines whose indentation doesn't match the configured style/width (`indentation`/`indentation_width`) for their nesting depth. A script whose structure can't be identified (e.g. it doesn't lex cleanly) is left unchecked rather than guessed at. | ✓ |
 | **Slow function usage** | Flags calls to functions listed in `rules/slow-functions.yaml` that have a faster equivalent available, and suggests the quicker alternative. | |
 | **Cyclomatic complexity** | Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`\|\|` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20). | |
 | **Unreachable statement** | Flags statements that follow a `Return` within the same block (a function/event body, an `If`/`ElseIf`/`Else` branch, or a `While` body), since they can never execute. | |
@@ -71,7 +71,7 @@ apply.
 | **Local variable shadowing** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose name matches (case-insensitively) a `Property` declared on the same script, since referencing that name inside the function then reads the local rather than the property. When linting a `.psc` file dropped in the app, a local that instead shadows a property declared on a parent script (resolved through `Extends`) is flagged too. | |
 | **Whitespace interrupting property/method chaining** | Flags, as an `[error]`, a space or tab immediately before or after a `.` member/method access (e.g. `SomeProperty . DoThing()`), since it interrupts the chain for no benefit. A `.` inside a `Float` literal (e.g. `1.5`) is never flagged. The fix closes the gap on whichever side(s) have it, without reaching across a newline (a chain continued onto another physical line is left alone). | ✓ |
 | **Identifier casing** | Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured `identifier_casing` style: `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. `ScriptName` itself is never checked by this lint (see "Type name casing" below). A parameter has no location of its own, so it's reported on its enclosing function's line. | |
-| **Type name casing** | Flags a script's declared type name (the identifier following `ScriptName`) if it doesn't follow the configured `type_casing` convention (`PascalCase`, `camelCase`, `lowercase`, or `UPPERCASE`). Only the script's own declared name is checked, never its `Extends` target, since that type is declared (and presumably already checked) in another script. Note that a script's `ScriptName` must match its `.psc` filename, so renaming it to satisfy this lint means renaming the file too. | |
+| **Type name casing** | Flags, as a `[warning]`, a script's declared type name (the identifier following `ScriptName`) if it doesn't follow the configured `type_casing` convention (`PascalCase`, `camelCase`, `lowercase`, or `UPPERCASE`). Only the script's own declared name is checked, never its `Extends` target, since that type is declared (and presumably already checked) in another script. Note that a script's `ScriptName` must match its `.psc` filename, so renaming it to satisfy this lint means renaming the file too. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, and chain whitespace) never flag or change a line inside a
@@ -172,11 +172,10 @@ rules:
 - `fail_on_warning` / `fail_on_info`: whether the command-line interface
   (see below) treats a `[warning]`-level or `[info]`-level diagnostic,
   respectively, as a reason to exit non-zero. Both default to `false`, so
-  by default only `[error]`-level diagnostics (and diagnostics from lints
-  that don't tag a severity level at all, e.g. trailing whitespace) fail a
-  CLI run; `[warning]`/`[info]`-level diagnostics are still printed either
-  way. Has no effect on the desktop app, which always lists every
-  diagnostic regardless of severity.
+  by default only `[error]`-level diagnostics fail a CLI run;
+  `[warning]`/`[info]`-level diagnostics are still printed either way. Has
+  no effect on the desktop app, which always lists every diagnostic
+  regardless of severity.
 - `rules`: per-lint enable/disable switches, each defaulting to `true`.
   Setting one to `false` turns that lint (and its automatic fix, if it
   has one) off entirely; every key under `rules` can be omitted
@@ -252,7 +251,7 @@ report without scraping text:
     {
       "path": "scripts/source/Example.psc",
       "diagnostics": [
-        { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": null, "message": "Line contains trailing whitespace" }
+        { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": "warning", "message": "[warning] Line contains trailing whitespace" }
       ]
     }
   ],
@@ -260,17 +259,18 @@ report without scraping text:
   "files_with_diagnostics": 1,
   "total_diagnostics": 1,
   "files_fixed": null,
-  "success": false
+  "success": true
 }
 ```
 
 Every resolved script gets a `files` entry, even one with no diagnostics,
 so a consumer can clear stale diagnostics for a file that's since become
-clean. `level` is `"error"`, `"warning"`, `"info"`, or `null` for a
-diagnostic whose lint always represents a firm violation (see
-`Diagnostic::level`). `files_fixed` is only present (non-`null`) when run
-with the `fix` subcommand. `success` reports whether the run would exit
-`0`.
+clean. `level` is `"error"`, `"warning"`, `"info"`, or (in practice, never
+from a built-in lint) `null` — see `Diagnostic::level`. `files_fixed` is
+only present (non-`null`) when run with the `fix` subcommand. `success`
+reports whether the run would exit `0`; here it's `true` because a
+`[warning]`-level diagnostic doesn't fail the run under the default
+`fail_on_warning: false`.
 
 It exits `0` if no diagnostics were found (or none of the ones found
 counted as a failure — see `fail_on_warning`/`fail_on_info` under

@@ -141,7 +141,9 @@ describe("escapeAttr", () => {
 
 describe("hasFixableFindings", () => {
   it("is true for trailing whitespace findings", () => {
-    expect(hasFixableFindings([{ line: 1, column: 1, message: "Line contains trailing whitespace" }])).toBe(true);
+    expect(
+      hasFixableFindings([{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]),
+    ).toBe(true);
   });
 
   it("is true for semicolon findings", () => {
@@ -413,7 +415,7 @@ describe("buildPscResultItem / renderPscResults", () => {
 
   it("shows a fix button only when findings are auto-fixable", () => {
     const fixable = buildPscResultItem(
-      outcome({ findings: [{ line: 1, column: 1, message: "Line contains trailing whitespace" }] }),
+      outcome({ findings: [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }] }),
     );
     expect(fixable!.querySelector(".psc-result__fix-button")).not.toBeNull();
 
@@ -662,7 +664,7 @@ describe("openCodeViewer", () => {
   it("flags a line whose finding has no severity prefix", async () => {
     invokeImplFor({ read_psc_file: () => "line one\n" });
 
-    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "Line contains trailing whitespace" }]);
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "No recognized level prefix here" }]);
 
     const row = document.querySelector("#code-viewer-line-1")!;
     expect(row.classList.contains("code-viewer__line--flagged")).toBe(true);
@@ -1094,7 +1096,7 @@ describe("wired DOM interactions", () => {
       path: "/a.psc",
       ok: true,
       detail: "parsed",
-      findings: [{ line: 1, column: 1, message: "Line contains trailing whitespace" }],
+      findings: [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }],
     };
     const item = buildPscResultItem(outcome)!;
     document.body.append(item);

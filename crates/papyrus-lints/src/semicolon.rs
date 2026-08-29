@@ -34,8 +34,8 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
 
             let has_semicolon = content.ends_with(';');
             let message = match (style, has_semicolon) {
-                (Style::Require, false) => "Line should end with a semicolon",
-                (Style::Forbid, true) => "Line should not end with a semicolon",
+                (Style::Require, false) => "[warning] Line should end with a semicolon",
+                (Style::Forbid, true) => "[warning] Line should not end with a semicolon",
                 _ => return None,
             };
 

@@ -174,7 +174,7 @@ let currentProjectDir: string | null = null;
 // sync with the Settings tab's input (see handleCompilerPathChanged).
 let currentCompilerPath = "";
 
-const TRAILING_WHITESPACE_MESSAGE = "Line contains trailing whitespace";
+const TRAILING_WHITESPACE_MESSAGE = "[warning] Line contains trailing whitespace";
 
 export function dirnameOf(path: string): string {
   const index = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
@@ -374,9 +374,9 @@ export async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]>
   );
 }
 
-// Diagnostic messages are prefixed with `[level] ` by the lints that care
-// about severity (e.g. `forbidden_functions`); others have no prefix and
-// are treated as the "other" severity.
+// Diagnostic messages are prefixed with `[level] `; every built-in lint
+// tags one, but a message with no recognized prefix still falls back to
+// the "other" severity rather than being misclassified.
 export type Severity = "error" | "warning" | "info" | "other";
 export const SEVERITIES: Severity[] = ["error", "warning", "info", "other"];
 
@@ -419,8 +419,9 @@ function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warn
   if (levels.has("error")) return "error";
   if (levels.has("warning")) return "warning";
   if (levels.has("info")) return "info";
-  // Lints like trailing-whitespace don't tag a severity level; still mark
-  // their line so the finding is visible in the viewer.
+  // No recognized level prefix (not expected from any built-in lint, but
+  // possible from a malformed diagnostic); still mark the line so the
+  // finding is visible in the viewer.
   return "flagged";
 }
 

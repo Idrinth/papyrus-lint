@@ -406,7 +406,7 @@ mod tests {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         write_file(
             &dir.path().join("scripts/source/Example.psc"),
-            "ScriptName Example   \n",
+            "ScriptName Example\n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
         );
         write_file(
             &dir.path().join("sources.achlist"),
@@ -417,8 +417,8 @@ mod tests {
         let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
 
         assert_eq!(code, 1);
-        assert!(stdout.contains("[trailing-whitespace]"));
-        assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
+        assert!(stdout.contains("[forbidden-functions]"));
+        assert!(stdout.contains("problem(s) found in 1 of 1 script(s)"));
     }
 
     #[test]
@@ -511,7 +511,7 @@ mod tests {
 
         let (code, stdout, _stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
 
-        assert_eq!(code, 1);
+        assert_eq!(code, 0);
         assert!(stdout.contains("[trailing-whitespace]"));
         assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
     }
@@ -669,13 +669,13 @@ mod tests {
             achlist_path.to_string_lossy().into_owned(),
         ]);
 
-        assert_eq!(code, 1);
+        assert_eq!(code, 0);
         assert_eq!(stderr, "");
         assert!(!stdout.contains("PapyrusLinterCLI:"));
 
         let report: serde_json::Value =
             serde_json::from_str(&stdout).expect("stdout should be a single JSON document");
-        assert_eq!(report["success"], false);
+        assert_eq!(report["success"], true);
         assert_eq!(report["scripts_checked"], 1);
         assert_eq!(report["files_with_diagnostics"], 1);
         assert_eq!(report["total_diagnostics"], 1);
@@ -689,6 +689,7 @@ mod tests {
             .expect("diagnostics should be an array");
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0]["rule"], "trailing-whitespace");
+        assert_eq!(diagnostics[0]["level"], "warning");
         assert_eq!(diagnostics[0]["line"], 1);
     }
 

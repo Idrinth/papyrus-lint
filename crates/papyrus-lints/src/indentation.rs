@@ -108,7 +108,7 @@ pub fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
                 line: index + 1,
                 column: 1,
                 message: format!(
-                    "Line should be indented with {}",
+                    "[warning] Line should be indented with {}",
                     indentation.describe(depth)
                 ),
                 rule: RULE,
@@ -255,14 +255,20 @@ mod tests {
         assert_eq!(diagnostics.len(), 3);
         assert_eq!(diagnostics[0].line, 2);
         assert_eq!(diagnostics[0].column, 1);
-        assert_eq!(diagnostics[0].message, "Line should be indented with 1 tab");
+        assert_eq!(
+            diagnostics[0].message,
+            "[warning] Line should be indented with 1 tab"
+        );
         assert_eq!(diagnostics[1].line, 3);
         assert_eq!(
             diagnostics[1].message,
-            "Line should be indented with 2 tabs"
+            "[warning] Line should be indented with 2 tabs"
         );
         assert_eq!(diagnostics[2].line, 4);
-        assert_eq!(diagnostics[2].message, "Line should be indented with 1 tab");
+        assert_eq!(
+            diagnostics[2].message,
+            "[warning] Line should be indented with 1 tab"
+        );
     }
 
     #[test]
@@ -273,15 +279,15 @@ mod tests {
         assert_eq!(diagnostics.len(), 3);
         assert_eq!(
             diagnostics[0].message,
-            "Line should be indented with 2 spaces"
+            "[warning] Line should be indented with 2 spaces"
         );
         assert_eq!(
             diagnostics[1].message,
-            "Line should be indented with 4 spaces"
+            "[warning] Line should be indented with 4 spaces"
         );
         assert_eq!(
             diagnostics[2].message,
-            "Line should be indented with 2 spaces"
+            "[warning] Line should be indented with 2 spaces"
         );
     }
 

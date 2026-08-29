@@ -51,12 +51,13 @@ pub struct Diagnostic {
 
 impl Diagnostic {
     /// The severity level tagged onto the front of [`Self::message`] (e.g.
-    /// `"[warning] ..."`), if the lint that raised it tags one this way —
-    /// matching the `^\[(error|warning|info)\]` convention the frontend's
-    /// `levelOf` parses the same messages with. A lint that always
-    /// represents a firm violation (e.g. trailing whitespace) tags no
-    /// level; see [`Config::should_fail_on`], which treats that the same
-    /// as `"error"`.
+    /// `"[warning] ..."`), matching the `^\[(error|warning|info)\]`
+    /// convention the frontend's `levelOf` parses the same messages with.
+    /// Every built-in lint tags one; `None` only arises from a diagnostic
+    /// raised outside this crate's own rules (e.g. a malformed
+    /// `forbidden-functions.yaml` entry, which `build.rs` rejects before it
+    /// gets this far) — see [`Config::should_fail_on`], which treats that
+    /// case the same as `"error"`.
     pub fn level(&self) -> Option<&'static str> {
         if self.message.starts_with("[error]") {
             Some("error")
@@ -236,7 +237,7 @@ mod tests {
         assert_eq!(tagged("[error] boom").level(), Some("error"));
         assert_eq!(tagged("[warning] hmm").level(), Some("warning"));
         assert_eq!(tagged("[info] fyi").level(), Some("info"));
-        assert_eq!(tagged("Line contains trailing whitespace").level(), None);
+        assert_eq!(tagged("No recognized level prefix here").level(), None);
     }
 
     #[test]
