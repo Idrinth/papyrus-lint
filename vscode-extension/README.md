@@ -8,7 +8,7 @@ for `.psc` files directly in the editor, by shelling out to
 
 - Lints a `.psc` file automatically whenever it's opened or saved, by
   running `PapyrusLinterCLI --json <file>` and turning its
-  [`JsonReport`](../crates/papyrus-lint-cli/src/lib.rs) into
+  [`JsonReport`](../app/crates/papyrus-lint-cli/src/lib.rs) into
   `vscode.Diagnostic`s (severity taken from each diagnostic's `level`;
   `rule` is shown as the diagnostic's code).
 - **Papyrus Lint: Lint Current File** — re-lints on demand, from the

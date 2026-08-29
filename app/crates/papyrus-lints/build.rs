@@ -41,7 +41,7 @@ fn main() {
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
-    let yaml_path = Path::new(manifest_dir).join("../../rules/forbidden-functions.yaml");
+    let yaml_path = Path::new(manifest_dir).join("../../../rules/forbidden-functions.yaml");
     println!("cargo:rerun-if-changed={}", yaml_path.display());
 
     let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
@@ -87,7 +87,7 @@ fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
 }
 
 fn compile_slow_functions(manifest_dir: &str, out_dir: &str) {
-    let yaml_path = Path::new(manifest_dir).join("../../rules/slow-functions.yaml");
+    let yaml_path = Path::new(manifest_dir).join("../../../rules/slow-functions.yaml");
     println!("cargo:rerun-if-changed={}", yaml_path.display());
 
     let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {

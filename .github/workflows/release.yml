@@ -45,10 +45,10 @@ jobs:
             fs.writeFileSync(cargoPath, cargo.replace(/^version = \".*\"/m, \`version = \"\${version}\"\`));
 
             const cratesCargoPaths = [
-              'crates/papyrus-lint-cli/Cargo.toml',
-              'crates/papyrus-parser/Cargo.toml',
-              'crates/papyrus-lints/Cargo.toml',
-              'crates/papyrus-lint-core/Cargo.toml',
+              'app/crates/papyrus-lint-cli/Cargo.toml',
+              'app/crates/papyrus-parser/Cargo.toml',
+              'app/crates/papyrus-lints/Cargo.toml',
+              'app/crates/papyrus-lint-core/Cargo.toml',
             ];
             for (const cratePath of cratesCargoPaths) {
               const crateCargo = fs.readFileSync(cratePath, 'utf8');
@@ -68,7 +68,7 @@ jobs:
         with:
           workspaces: |
             app/src-tauri
-            crates/papyrus-lint-cli
+            app/crates/papyrus-lint-cli
 
       - name: Install frontend dependencies
         working-directory: app
@@ -87,7 +87,7 @@ jobs:
 
       - name: Build CLI
         shell: bash
-        run: cargo build --release --manifest-path crates/papyrus-lint-cli/Cargo.toml
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
 
       - name: Package CLI binary
         shell: bash
@@ -95,13 +95,13 @@ jobs:
           mkdir -p cli-dist
           case "${{ matrix.platform }}" in
             windows-latest)
-              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe cli-dist/PapyrusLinterCLI-windows.exe
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe cli-dist/PapyrusLinterCLI-windows.exe
               ;;
             macos-latest)
-              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-macos
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-macos
               ;;
             *)
-              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-linux
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-linux
               ;;
           esac
 

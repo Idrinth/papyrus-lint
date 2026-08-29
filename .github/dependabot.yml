@@ -11,12 +11,12 @@ updates:
       interval: "weekly"
 
   - package-ecosystem: "cargo"
-    directory: "/crates/papyrus-parser"
+    directory: "/app/crates/papyrus-parser"
     schedule:
       interval: "weekly"
 
   - package-ecosystem: "cargo"
-    directory: "/crates/papyrus-lints"
+    directory: "/app/crates/papyrus-lints"
     schedule:
       interval: "weekly"
 

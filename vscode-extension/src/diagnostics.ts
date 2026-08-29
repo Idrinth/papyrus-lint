@@ -1,4 +1,4 @@
-/** Mirrors `papyrus_lint_cli::JsonDiagnostic` (see `crates/papyrus-lint-cli/src/lib.rs`). */
+/** Mirrors `papyrus_lint_cli::JsonDiagnostic` (see `app/crates/papyrus-lint-cli/src/lib.rs`). */
 export interface JsonDiagnostic {
   line: number;
   column: number;
