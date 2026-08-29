@@ -28,6 +28,7 @@
 //!   argument_types: true
 //!   return_types: true
 //!   function_override: true
+//!   argument_naming: true
 //!   numeric_comparison: true
 //!   indentation: true
 //!   cyclomatic_complexity: true
@@ -215,6 +216,8 @@ pub struct Rules {
     pub return_types: bool,
     /// The "Inherited function override" lint.
     pub function_override: bool,
+    /// The "Argument naming consistency" lint.
+    pub argument_naming: bool,
     /// The "Strict numeric type check" lint.
     pub numeric_comparison: bool,
     /// The "Formatting checks"/"Indentation" lint/fix.
@@ -256,6 +259,7 @@ impl Default for Rules {
             argument_types: true,
             return_types: true,
             function_override: true,
+            argument_naming: true,
             numeric_comparison: true,
             indentation: true,
             cyclomatic_complexity: true,
@@ -377,6 +381,7 @@ mod tests {
         assert!(config.rules.argument_types);
         assert!(config.rules.return_types);
         assert!(config.rules.function_override);
+        assert!(config.rules.argument_naming);
         assert!(config.rules.numeric_comparison);
         assert!(config.rules.indentation);
         assert!(config.rules.cyclomatic_complexity);
