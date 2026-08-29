@@ -78,6 +78,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-named_arguments" checked />
           <input type="checkbox" id="rule-operator_spacing" checked />
           <input type="checkbox" id="rule-property_sorting" />
+          <input type="checkbox" id="rule-unchecked_form_parameter" />
         </fieldset>
       </div>
 

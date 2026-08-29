@@ -32,6 +32,7 @@ pub mod static_condition;
 pub mod strict_boolean;
 pub mod trailing_whitespace;
 pub mod type_casing;
+pub mod unchecked_form_parameter;
 pub mod unreachable_statement;
 pub mod unused_getter;
 pub mod unused_local_variable;
@@ -205,6 +206,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.property_sorting {
         diagnostics.extend(property_sorting::check(source));
+    }
+    if rules.unchecked_form_parameter {
+        diagnostics.extend(unchecked_form_parameter::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -603,6 +607,12 @@ mod tests {
                 property_sorting::RULE,
                 config_with(|c| c.rules.property_sorting = true),
                 config_with(|c| c.rules.property_sorting = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Armor akArmor)\n    akArmor.GetName()\nEndFunction\n",
+                unchecked_form_parameter::RULE,
+                config_with(|c| c.rules.unchecked_form_parameter = true),
+                config_with(|c| c.rules.unchecked_form_parameter = false),
             ),
         ];
 
