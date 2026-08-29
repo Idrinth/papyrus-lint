@@ -8,24 +8,28 @@ expected of a pull request.
 
 ```
 .
-├── src/                    # Frontend (TypeScript, vanilla, no framework)
-│   ├── main.ts               # Drag-and-drop UI logic, calls into Tauri commands
-│   ├── highlight.ts          # Standalone Papyrus syntax highlighter for the
-│   │                         # code viewer dialog
-│   ├── main.test.ts          # Vitest unit tests for main.ts
-│   ├── highlight.test.ts     # Vitest unit tests for highlight.ts
-│   ├── test/fixture.ts       # Shared jsdom DOM fixture for main.test.ts
-│   └── styles.css
-├── index.html               # Frontend entry point (Vite)
-├── src-tauri/               # Tauri desktop app shell (Rust)
-│   └── src/
-│       ├── main.rs           # Binary entry point: no args -> lib::run() (GUI),
-│       │                     # args -> papyrus_lint_cli::run() (CLI mode)
-│       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
-│       │                     # parse_papyrus_script, lint_papyrus_script,
-│       │                     # parse_psc_file, load_lint_config, lint_psc_file,
-│       │                     # repair_psc_file), built on papyrus-lint-core
-│       └── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button
+├── app/                     # The desktop app: Tauri (Rust + TypeScript) shell
+│   │                        # and its frontend, with their npm/cargo config
+│   ├── src/                  # Frontend (TypeScript, vanilla, no framework)
+│   │   ├── main.ts              # Drag-and-drop UI logic, calls into Tauri commands
+│   │   ├── highlight.ts         # Standalone Papyrus syntax highlighter for the
+│   │   │                        # code viewer dialog
+│   │   ├── main.test.ts         # Vitest unit tests for main.ts
+│   │   ├── highlight.test.ts    # Vitest unit tests for highlight.ts
+│   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for main.test.ts
+│   │   └── styles.css
+│   ├── index.html            # Frontend entry point (Vite)
+│   ├── package.json          # npm scripts/deps for the frontend and Tauri CLI
+│   └── src-tauri/            # Tauri desktop app shell (Rust)
+│       └── src/
+│           ├── main.rs           # Binary entry point: no args -> lib::run() (GUI),
+│           │                     # args -> papyrus_lint_cli::run() (CLI mode)
+│           ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
+│           │                     # parse_papyrus_script, lint_papyrus_script,
+│           │                     # parse_psc_file, load_lint_config, lint_psc_file,
+│           │                     # repair_psc_file), built on papyrus-lint-core
+│           └── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button
+├── resources/                # Images used by README.md (logo, screenshots)
 ├── rules/
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
 │   └── slow-functions.yaml       # Slow calls and faster alternatives; both are
@@ -63,37 +67,37 @@ expected of a pull request.
         └── src/                # achlist's scripts against its project's
             ├── lib.rs           # papyrus-lint.yaml and prints the results.
             │                    # run() here is the shared logic; also
-            │                    # linked into src-tauri for its CLI mode.
+            │                    # linked into app/src-tauri for its CLI mode.
             └── main.rs          # Thin binary entry point around lib::run()
 ```
 
 `papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
 `papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
-just path dependencies of each other and of `src-tauri`) so the lint
+just path dependencies of each other and of `app/src-tauri`) so the lint
 engine and project-resolution logic stay reusable independent of the Tauri
 app — which is what lets `papyrus-lint-cli` link against them without
-pulling in Tauri (and its system GUI dependencies) at all. `src-tauri`
+pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
 depends on `papyrus-lint-cli` too, purely for its `run()` function (its
 `main.rs` calls straight into it for CLI mode), not for the
 `PapyrusLinterCLI` binary target that crate also defines.
 
 ## Development setup
 
-- Frontend: `npm install`, then `npm run dev` (Vite dev server) or
+- Frontend (`app/`): `npm install`, then `npm run dev` (Vite dev server) or
   `npm run build` (typecheck + build). `npm run test` runs the frontend's
   Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
   same suite instrumented with `@vitest/coverage-v8`, printing a text
   report and writing HTML/lcov reports to `coverage/`. `npm run lint` runs
   ESLint (flat config in `eslint.config.js`) over `src/`.
   - `typescript-eslint` doesn't yet support TypeScript 7 (this repo's
-    `typescript` devDependency), so `package.json` installs it under an
+    `typescript` devDependency), so `app/package.json` installs it under an
     npm alias: `typescript` resolves to the `@typescript/typescript6` shim
     (TS 6, satisfying typescript-eslint) and the real TS 7 compiler is
     installed separately as `@typescript/native`, which is what `tsc`
     (used by `npm run build`) actually runs. See
     https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0.
-- Full desktop app: `npm run tauri dev` / `npm run tauri build`.
-- Rust backend only: `cargo check` / `cargo test` from `src-tauri/`.
+- Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
+- Rust backend only: `cargo check` / `cargo test` from `app/src-tauri/`.
 - Parser crate only: `cargo test` from `crates/papyrus-parser/`.
 - Lints crate only: `cargo test` from `crates/papyrus-lints/`.
 - Shared project-resolution crate only: `cargo test` from
@@ -116,16 +120,16 @@ the same checks locally first:
 
 - **Sublime Text extension job**: runs `python -m unittest discover -s
   SublimeLinter-contrib-papyrus-lint/tests -v`.
-- **Frontend job**: `npm ci`, then `npm run lint` (ESLint), `npm run
-  test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
+- **Frontend job**: from `app/`, `npm ci`, then `npm run lint` (ESLint), `npm
+  run test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
   run build` (typecheck & Vite build).
-- **Rust build job**, against `src-tauri/Cargo.toml`:
+- **Rust build job**, against `app/src-tauri/Cargo.toml`:
   - `cargo fmt --check`
   - `cargo clippy -- -D warnings`
   - `cargo check`
 - **VS Code extension job**: from `vscode-extension/`, runs `npm test`,
   `npm run lint`, and `npm run compile`.
-- **Rust test job**: a matrix over `src-tauri`, `crates/papyrus-parser`,
+- **Rust test job**: a matrix over `app/src-tauri`, `crates/papyrus-parser`,
   `crates/papyrus-lints`, `crates/papyrus-lint-core`, and
   `crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
   If you touched any of those crates, run `cargo test` (or `cargo

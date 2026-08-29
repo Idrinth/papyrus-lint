@@ -25,10 +25,10 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
-papyrus-parser = { path = "../crates/papyrus-parser" }
-papyrus-lints = { path = "../crates/papyrus-lints" }
-papyrus-lint-core = { path = "../crates/papyrus-lint-core" }
-papyrus-lint-cli = { path = "../crates/papyrus-lint-cli" }
+papyrus-parser = { path = "../../crates/papyrus-parser" }
+papyrus-lints = { path = "../../crates/papyrus-lints" }
+papyrus-lint-core = { path = "../../crates/papyrus-lint-core" }
+papyrus-lint-cli = { path = "../../crates/papyrus-lint-cli" }
 
 [dev-dependencies]
 tempfile = "3"
