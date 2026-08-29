@@ -13,6 +13,7 @@ pub mod config;
 pub mod cyclomatic_complexity;
 mod disable_comments;
 pub mod exclamation_spacing;
+pub mod explicit_return;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod fragment_code;
@@ -205,6 +206,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.property_sorting {
         diagnostics.extend(property_sorting::check(source));
+    }
+    if rules.explicit_return {
+        diagnostics.extend(explicit_return::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -603,6 +607,12 @@ mod tests {
                 property_sorting::RULE,
                 config_with(|c| c.rules.property_sorting = true),
                 config_with(|c| c.rules.property_sorting = false),
+            ),
+            (
+                "ScriptName Example\n\nInt Function Test()\n    Int i = 1\nEndFunction\n",
+                explicit_return::RULE,
+                Config::default(),
+                config_with(|c| c.rules.explicit_return = false),
             ),
         ];
 
