@@ -24,6 +24,19 @@ function cliPath(): string {
   return vscode.workspace.getConfiguration('papyrusLint').get<string>('cliPath', 'PapyrusLinterCLI');
 }
 
+/** The `papyrusLint.configPath` setting, or `undefined` if unset/blank, in which case
+ * the CLI falls back to its own papyrus-lint.yaml/.yml discovery from the project root. */
+function configPath(): string | undefined {
+  const configured = vscode.workspace.getConfiguration('papyrusLint').get<string>('configPath', '');
+  return configured.trim() === '' ? undefined : configured;
+}
+
+/** Prepends `--config <path>` to `args` when `papyrusLint.configPath` is set. */
+function withConfigOverride(args: string[]): string[] {
+  const override = configPath();
+  return override ? ['--config', override, ...args] : args;
+}
+
 function runCli(args: string[], cwd: string): Promise<CliResult> {
   return new Promise((resolve) => {
     execFile(cliPath(), args, { cwd, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
@@ -101,12 +114,15 @@ class PapyrusLinter {
   }
 
   async lint(uri: vscode.Uri): Promise<void> {
-    const result = await runCli(['--json', uri.fsPath], path.dirname(uri.fsPath));
+    const result = await runCli(withConfigOverride(['--json', uri.fsPath]), path.dirname(uri.fsPath));
     this.applyResult(uri, result);
   }
 
   async fix(uri: vscode.Uri): Promise<void> {
-    const result = await runCli(['fix', '--json', uri.fsPath], path.dirname(uri.fsPath));
+    const result = await runCli(
+      withConfigOverride(['fix', '--json', uri.fsPath]),
+      path.dirname(uri.fsPath),
+    );
     const report = this.applyResult(uri, result);
     if (!report) {
       return;

@@ -20,10 +20,11 @@ class FakeLintMatch:
 
 
 class FakeLinter:
-    def __init__(self):
+    def __init__(self, settings=None):
         self.logger = Mock()
         self.notify_failure = Mock()
         self.name = 'papyrus-lint'
+        self.settings = settings if settings is not None else {}
 
 
 class FakePermanentError(Exception):
@@ -61,10 +62,24 @@ class PapyrusLintTests(unittest.TestCase):
 
     def test_command_and_selector_target_saved_papyrus_files(self):
         self.assertEqual(
-            self.linter.cmd, ('PapyrusLinterCLI', '--json', '${file}')
+            self.linter.cmd(), ['PapyrusLinterCLI', '--json', '${file}']
         )
         self.assertEqual(self.linter.executable, 'PapyrusLinterCLI')
         self.assertEqual(self.linter.defaults['selector'], 'source.papyrus')
+        self.assertEqual(self.linter.defaults['config_path'], '')
+
+    def test_cmd_inserts_config_flag_when_config_path_is_set(self):
+        self.linter.settings = {'config_path': '/project/custom-lint.yaml'}
+
+        self.assertEqual(
+            self.linter.cmd(),
+            ['PapyrusLinterCLI', '--json', '--config', '/project/custom-lint.yaml', '${file}'],
+        )
+
+    def test_cmd_ignores_a_blank_config_path(self):
+        self.linter.settings = {'config_path': '   '}
+
+        self.assertEqual(self.linter.cmd(), ['PapyrusLinterCLI', '--json', '${file}'])
 
     def test_find_errors_converts_every_diagnostic(self):
         report = {

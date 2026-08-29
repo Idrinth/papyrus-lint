@@ -134,6 +134,46 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
 
         self.assertEqual(command._executable(), 'PapyrusLinterCLI')
 
+    def test_config_path_defaults_to_empty(self):
+        settings = Mock()
+        settings.get.return_value = {'papyrus-lint': {}}
+        module, _ = load_commands_module(settings)
+        command = module.PapyrusLintFixCommand(self.view)
+
+        self.assertEqual(command._config_path(), '')
+
+    def test_config_path_is_trimmed(self):
+        settings = Mock()
+        settings.get.return_value = {'papyrus-lint': {'config_path': '  /project/custom.yaml  '}}
+        module, _ = load_commands_module(settings)
+        command = module.PapyrusLintFixCommand(self.view)
+
+        self.assertEqual(command._config_path(), '/project/custom.yaml')
+
+    def test_fix_inserts_config_flag_when_configured(self):
+        settings = Mock()
+        settings.get.return_value = {
+            'papyrus-lint': {'config_path': '/project/custom.yaml'}
+        }
+        module, _ = load_commands_module(settings)
+        command = module.PapyrusLintFixCommand(self.view)
+        result = Mock(returncode=0)
+
+        with patch.object(module.subprocess, 'run', return_value=result) as run:
+            command.run(None)
+
+        run.assert_called_once_with(
+            (
+                'PapyrusLinterCLI',
+                'fix',
+                '--config',
+                '/project/custom.yaml',
+                '/scripts/Example.psc',
+            ),
+            capture_output=True,
+            startupinfo=None,
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -35,6 +35,12 @@
 //! document (see [`JsonReport`]) instead of the plain-text format, so
 //! editor plugins and other tooling can consume it without scraping text.
 //!
+//! With `--config <path>` (combinable with `fix`/`--json` in any order),
+//! lint configuration is loaded directly from `<path>` instead of being
+//! discovered from the project root, letting a caller (e.g. an editor
+//! plugin with its own configured override) point at a config file with
+//! any name, anywhere on disk.
+//!
 //! This crate is used both by the standalone `PapyrusLinterCLI` binary
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
@@ -47,8 +53,9 @@ use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::{achlist, config};
 use serde::Serialize;
 
-pub const USAGE: &str = "Usage: PapyrusLinterCLI [--json] <path-to-achlist-or-psc>\n       \
-PapyrusLinterCLI [--json] fix <path-to-achlist-or-psc>\n\n\
+pub const USAGE: &str =
+    "Usage: PapyrusLinterCLI [--json] [--config <path>] <path-to-achlist-or-psc>\n       \
+PapyrusLinterCLI [--json] [--config <path>] fix <path-to-achlist-or-psc>\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
 configuration (looked up next to the .achlist file, or two directories\n\
@@ -58,9 +65,11 @@ With the `fix` subcommand, applies every automatic fix (see README.md)\n\
 to those scripts first, rewriting each one on disk if it changed, then\n\
 reports whatever diagnostics remain the same way.\n\n\
 Options:\n\
-  -h, --help     Show this help message\n\
-  -V, --version  Print the PapyrusLinterCLI version\n\
-  --json         Print the report to stdout as JSON instead of plain text\n\n\
+  -h, --help       Show this help message\n\
+  -V, --version    Print the PapyrusLinterCLI version\n\
+  --json           Print the report to stdout as JSON instead of plain text\n\
+  --config <path>  Load lint configuration from this file instead of\n\
+                   discovering papyrus-lint.yaml/.yml from the project root\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n";
@@ -120,11 +129,22 @@ pub struct JsonReport {
 /// level tag, always counts. Diagnostics are still printed either way.
 pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
     let json = args.iter().any(|arg| arg == "--json");
-    let args: Vec<String> = args
-        .iter()
-        .filter(|arg| arg.as_str() != "--json")
-        .cloned()
-        .collect();
+
+    let mut config_path: Option<PathBuf> = None;
+    let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
+    let mut input = args.iter().filter(|arg| arg.as_str() != "--json").cloned();
+    while let Some(arg) = input.next() {
+        if arg == "--config" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            config_path = Some(PathBuf::from(value));
+        } else {
+            positional_and_flags.push(arg);
+        }
+    }
+    let args = positional_and_flags;
 
     let (fix, input_path) = match args.as_slice() {
         [flag] if flag == "--version" || flag == "-V" => {
@@ -156,7 +176,10 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         .map(Path::to_path_buf)
         .unwrap_or_else(|| PathBuf::from("."));
 
-    let lint_config = match config::load_config(&project_root) {
+    let lint_config = match config_path.as_deref().map_or_else(
+        || config::load_config(&project_root),
+        config::load_config_from_path,
+    ) {
         Ok(config) => config,
         Err(err) => {
             let _ = writeln!(stderr, "error: failed to load lint config: {err}");
@@ -795,6 +818,104 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|d| d["message"].as_str().unwrap().contains("Game.GetPlayer")));
+    }
+
+    #[test]
+    fn config_flag_overrides_project_root_discovery() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        // A project-root config that would otherwise apply, and an
+        // unrelated override file elsewhere that should win instead.
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  trailing_whitespace: true\n",
+        );
+        let override_path = dir.path().join("overrides/custom.yaml");
+        write_file(&override_path, "rules:\n  trailing_whitespace: false\n");
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--config".to_string(),
+            override_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found"));
+    }
+
+    #[test]
+    fn config_flag_combines_with_fix_and_json_in_any_order() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let override_path = dir.path().join("overrides/custom.yaml");
+        write_file(&override_path, "rules:\n  trailing_whitespace: false\n");
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--json".to_string(),
+            "fix".to_string(),
+            "--config".to_string(),
+            override_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        // trailing_whitespace was disabled by the overriding config, so
+        // fix should leave the trailing whitespace in place untouched.
+        assert_eq!(
+            fs::read_to_string(dir.path().join("scripts/source/Example.psc")).unwrap(),
+            "ScriptName Example   \n"
+        );
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(report["success"], true);
+        assert_eq!(report["total_diagnostics"], 0);
+    }
+
+    #[test]
+    fn config_flag_errors_when_the_override_file_is_missing() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let missing_config = dir.path().join("missing.yaml");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--config".to_string(),
+            missing_config.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.starts_with("error: failed to load lint config:"));
+    }
+
+    #[test]
+    fn config_flag_without_a_value_prints_usage() {
+        let (code, _stdout, stderr) = run_captured(&["--config".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     }
 
     #[test]

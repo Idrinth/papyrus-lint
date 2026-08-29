@@ -225,6 +225,7 @@ PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
 PapyrusLinterCLI --json path/to/project.achlist
 PapyrusLinterCLI --json fix path/to/project.achlist
+PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
 ```
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
@@ -240,6 +241,13 @@ other scripts under the project root are resolved the same way the
 desktop app resolves them, so the CLI's "Argument type check"/"Return type
 check" results match what dropping the same `.achlist` into the app would
 report.
+
+Given `--config <path>` (combinable with `fix`/`--json`, in any argument
+order), the CLI loads lint configuration directly from `<path>` instead
+of discovering `papyrus-lint.yaml`/`.yml` from the project root — useful
+when a config file lives somewhere other than that project root, or isn't
+named `papyrus-lint.yaml`/`.yml`. Both editor plugins expose this as a
+`config_path`/`configPath` setting (see their own READMEs).
 
 Prefixed with the `fix` subcommand, it applies every automatic fix (the
 "Auto-Fix" lints in the table above, using the same config's semicolon and

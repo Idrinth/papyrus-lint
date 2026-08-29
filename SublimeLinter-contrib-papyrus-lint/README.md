@@ -46,6 +46,21 @@ for the configuration format. Under the hood, this
 linter runs `PapyrusLinterCLI --json` and parses its structured JSON
 report rather than scraping plain-text output.
 
+To use a config file somewhere other than that inferred project root, set
+`config_path` (either as a linter setting, or per-project) to its path;
+this linter (and the fix command below) then passes it to the CLI via
+`--config`, overriding the CLI's own discovery:
+
+```json
+{
+    "linters": {
+        "papyrus-lint": {
+            "config_path": "/path/to/papyrus-lint.yaml"
+        }
+    }
+}
+```
+
 ## Fixing files
 
 This package also exposes a "PapyrusLint: Fix Current File" command (via

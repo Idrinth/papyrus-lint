@@ -31,6 +31,12 @@ class PapyrusLintFixCommand(sublime_plugin.TextCommand):
             return
 
         executable = self._executable()
+        command = [executable, 'fix']
+        config_path = self._config_path()
+        if config_path:
+            command += ['--config', config_path]
+        command.append(file_name)
+
         startupinfo = None
         if os.name == 'nt':
             startupinfo = subprocess.STARTUPINFO()
@@ -38,7 +44,7 @@ class PapyrusLintFixCommand(sublime_plugin.TextCommand):
 
         try:
             result = subprocess.run(
-                (executable, 'fix', file_name),
+                tuple(command),
                 capture_output=True,
                 startupinfo=startupinfo,
             )
@@ -61,6 +67,12 @@ class PapyrusLintFixCommand(sublime_plugin.TextCommand):
         self.view.run_command('sublime_linter_lint')
 
     def _executable(self):
+        return self._linter_settings().get('executable') or 'PapyrusLinterCLI'
+
+    def _config_path(self):
+        return (self._linter_settings().get('config_path') or '').strip()
+
+    @staticmethod
+    def _linter_settings():
         settings = sublime.load_settings('SublimeLinter.sublime-settings')
-        linter_settings = settings.get('linters', {}).get('papyrus-lint', {})
-        return linter_settings.get('executable') or 'PapyrusLinterCLI'
+        return settings.get('linters', {}).get('papyrus-lint', {})

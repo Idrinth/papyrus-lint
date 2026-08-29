@@ -21,15 +21,36 @@ class PapyrusLint(Linter):
     once it's saved (there's no `on_stdin` here). It's run with `--json`
     so diagnostics are parsed from PapyrusLinterCLI's structured report
     (see `JsonReport` in app/crates/papyrus-lint-cli/src/lib.rs) instead of
-    scraping its plain-text output.
+    scraping its plain-text output. The `config_path` setting (see
+    `defaults` below) passes `--config <path>` to the CLI, overriding its
+    project-root `papyrus-lint.yaml`/`.yml` discovery.
     """
 
-    cmd = ('PapyrusLinterCLI', '--json', '${file}')
     executable = 'PapyrusLinterCLI'
 
     defaults = {
         'selector': 'source.papyrus',
+        # An explicit papyrus-lint config file path, passed to the CLI via
+        # `--config` when set. Empty (the default) leaves the CLI to
+        # discover papyrus-lint.yaml/.yml from the project root as usual.
+        'config_path': '',
     }
+
+    def cmd(self):
+        """Builds the command, inserting `--config <path>` when configured.
+
+        `config_path` (see `defaults` above) is this linter's own setting,
+        not one of SublimeLinter's built-ins, so it's read directly from
+        `self.settings` here rather than via a `${...}` substitution in a
+        static `cmd` tuple, which would leave a stray empty argument when
+        unset.
+        """
+        command = ['PapyrusLinterCLI', '--json']
+        config_path = (self.settings.get('config_path') or '').strip()
+        if config_path:
+            command += ['--config', config_path]
+        command.append('${file}')
+        return command
 
     def find_errors(self, output):
         """Parse `PapyrusLinterCLI --json`'s report instead of a regex.
