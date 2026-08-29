@@ -158,6 +158,7 @@ pub fn infer_type(expr: &Expr, env: &TypeEnv) -> Option<TypeName> {
             let base = infer_type(object, env)?;
             base.is_array.then(|| scalar(&base.name))
         }
+        Expr::NamedArg { value, .. } => infer_type(value, env),
         Expr::Member { .. } | Expr::Call { .. } => None,
     }
 }

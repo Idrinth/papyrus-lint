@@ -107,6 +107,7 @@ fn expr_complexity(expr: &Expr) -> usize {
         Expr::Index { object, index } => expr_complexity(object) + expr_complexity(index),
         Expr::Cast { value, .. } => expr_complexity(value),
         Expr::NewArray { size, .. } => expr_complexity(size),
+        Expr::NamedArg { value, .. } => expr_complexity(value),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => 0,
     }
 }

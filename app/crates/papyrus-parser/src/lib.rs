@@ -228,6 +228,51 @@ EndFunction
     }
 
     #[test]
+    fn parses_named_arguments_in_call() {
+        let src = "ScriptName Example\n\nFunction MyFunction(Int argA = 0, Int argB = 0)\nEndFunction\n\nEvent OnUpdate()\n    MyFunction(argB = 1)\nEndEvent\n";
+        let script = parse(src).unwrap();
+        match &script.functions[1].body[0] {
+            Stmt::Expr {
+                value: Expr::Call { args, .. },
+                ..
+            } => {
+                assert_eq!(args.len(), 1);
+                match &args[0] {
+                    Expr::NamedArg { name, value } => {
+                        assert_eq!(name, "argB");
+                        assert_eq!(**value, Expr::Literal(Literal::Int(1)));
+                    }
+                    other => panic!("expected NamedArg, got {:?}", other),
+                }
+            }
+            other => panic!("expected call expression statement, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn parses_mixed_positional_and_named_arguments_in_call() {
+        let src = "ScriptName Example\n\nFunction Greet(String greeting, String name)\nEndFunction\n\nFunction Test()\n    Greet(\"Hi\", name = \"World\")\nEndFunction\n";
+        let script = parse(src).unwrap();
+        match &script.functions[1].body[0] {
+            Stmt::Expr {
+                value: Expr::Call { args, .. },
+                ..
+            } => {
+                assert_eq!(args.len(), 2);
+                assert_eq!(args[0], Expr::Literal(Literal::String("Hi".to_string())));
+                match &args[1] {
+                    Expr::NamedArg { name, value } => {
+                        assert_eq!(name, "name");
+                        assert_eq!(**value, Expr::Literal(Literal::String("World".to_string())));
+                    }
+                    other => panic!("expected NamedArg, got {:?}", other),
+                }
+            }
+            other => panic!("expected call expression statement, got {:?}", other),
+        }
+    }
+
+    #[test]
     fn parses_cast_and_new_array() {
         let src = r#"
 ScriptName Example

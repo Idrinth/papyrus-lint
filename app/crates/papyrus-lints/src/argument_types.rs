@@ -109,14 +109,23 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     )
 }
 
-/// Parameter types of the functions declared in the script being linted,
-/// keyed by lowercased name. A name declared more than once (e.g.
-/// overridden in a state) with differing signatures is stored as `None`,
-/// since which declaration applies at a given call site can't be
-/// determined here — such calls are then skipped rather than checked
+/// A declared function parameter's name and type, as needed to resolve
+/// both positional and named arguments (`func(argB = 1)`) against it.
+#[derive(Clone, PartialEq)]
+struct ParamInfo {
+    name: String,
+    type_name: TypeName,
+}
+
+/// Parameters of the functions declared in the script being linted, keyed
+/// by lowercased name. A name declared more than once (e.g. overridden in
+/// a state) with a differing signature (including differing parameter
+/// names, since those decide how a named argument is resolved) is stored
+/// as `None`, since which declaration applies at a given call site can't
+/// be determined here — such calls are then skipped rather than checked
 /// against a possibly-wrong signature.
 struct LocalFunctions {
-    by_name: HashMap<String, Option<Vec<TypeName>>>,
+    by_name: HashMap<String, Option<Vec<ParamInfo>>>,
 }
 
 impl LocalFunctions {
@@ -132,14 +141,21 @@ impl LocalFunctions {
         let by_name = grouped
             .into_iter()
             .map(|(name, decls)| {
-                let first: Vec<TypeName> = decls[0]
+                let first: Vec<ParamInfo> = decls[0]
                     .params
                     .iter()
-                    .map(|p| p.type_name.clone())
+                    .map(|p| ParamInfo {
+                        name: p.name.clone(),
+                        type_name: p.type_name.clone(),
+                    })
                     .collect();
-                let consistent = decls
-                    .iter()
-                    .all(|decl| decl.params.iter().map(|p| &p.type_name).eq(first.iter()));
+                let consistent = decls.iter().all(|decl| {
+                    decl.params.len() == first.len()
+                        && decl.params.iter().zip(&first).all(|(p, expected)| {
+                            p.name.eq_ignore_ascii_case(&expected.name)
+                                && p.type_name == expected.type_name
+                        })
+                });
                 (name, consistent.then_some(first))
             })
             .collect();
@@ -147,7 +163,7 @@ impl LocalFunctions {
         LocalFunctions { by_name }
     }
 
-    fn lookup(&self, name: &str) -> Option<&[TypeName]> {
+    fn lookup(&self, name: &str) -> Option<&[ParamInfo]> {
         self.by_name.get(&name.to_ascii_lowercase())?.as_deref()
     }
 }
@@ -218,12 +234,12 @@ fn walk_expr<E: ExternalSignatures>(
             line,
             col,
         } => {
-            if let Some((name, param_types)) = resolve_signature(callee, env, locals, external) {
+            if let Some((name, params)) = resolve_signature(callee, env, locals, external) {
                 check_args(
                     *line,
                     *col,
                     &name,
-                    &param_types,
+                    &params,
                     args,
                     env,
                     external,
@@ -247,30 +263,62 @@ fn walk_expr<E: ExternalSignatures>(
         }
         Expr::Cast { value, .. } => walk_expr(value, env, locals, external, diagnostics),
         Expr::NewArray { size, .. } => walk_expr(size, env, locals, external, diagnostics),
+        Expr::NamedArg { value, .. } => walk_expr(value, env, locals, external, diagnostics),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
     }
 }
 
-/// Resolves `callee` to a function name and its parameter types, checking
-/// the script's own functions first and falling back to `external` for
+/// A callee's resolved parameters, however much detail is available.
+/// Parameter names are only known for functions declared in the script
+/// being linted ([`LocalFunctions`]) — [`ExternalSignatures`] only
+/// resolves other scripts' functions down to their parameter types — so
+/// only [`ResolvedParams::Named`] calls can match a named argument
+/// (`func(argB = 1)`) to the parameter it fills; a named argument on a
+/// [`ResolvedParams::Positional`] call is left unchecked (see
+/// [`ResolvedParams::position_of`]).
+enum ResolvedParams {
+    Named(Vec<ParamInfo>),
+    Positional(Vec<TypeName>),
+}
+
+impl ResolvedParams {
+    fn type_at(&self, index: usize) -> Option<&TypeName> {
+        match self {
+            ResolvedParams::Named(params) => params.get(index).map(|p| &p.type_name),
+            ResolvedParams::Positional(types) => types.get(index),
+        }
+    }
+
+    fn position_of(&self, name: &str) -> Option<usize> {
+        match self {
+            ResolvedParams::Named(params) => params
+                .iter()
+                .position(|p| p.name.eq_ignore_ascii_case(name)),
+            ResolvedParams::Positional(_) => None,
+        }
+    }
+}
+
+/// Resolves `callee` to a function name and its parameters, checking the
+/// script's own functions first and falling back to `external` for
 /// anything that isn't a local call (or isn't declared locally).
 fn resolve_signature<E: ExternalSignatures>(
     callee: &Expr,
     env: &TypeEnv,
     locals: &LocalFunctions,
     external: &mut E,
-) -> Option<(String, Vec<TypeName>)> {
+) -> Option<(String, ResolvedParams)> {
     let (object_type, function_name) = match callee {
         Expr::Identifier(name) => {
             if let Some(params) = locals.lookup(name) {
-                return Some((name.clone(), params.to_vec()));
+                return Some((name.clone(), ResolvedParams::Named(params.to_vec())));
             }
             (infer_type(&Expr::Self_, env)?, name.clone())
         }
         Expr::Member { object, property } => {
             if matches!(**object, Expr::Self_) {
                 if let Some(params) = locals.lookup(property) {
-                    return Some((property.clone(), params.to_vec()));
+                    return Some((property.clone(), ResolvedParams::Named(params.to_vec())));
                 }
             }
             (infer_type(object, env)?, property.clone())
@@ -283,21 +331,30 @@ fn resolve_signature<E: ExternalSignatures>(
     }
     external
         .lookup(&object_type.name, &function_name)
-        .map(|params| (function_name, params))
+        .map(|params| (function_name, ResolvedParams::Positional(params)))
 }
 
 fn check_args<E: ExternalSignatures>(
     line: usize,
     col: usize,
     function_name: &str,
-    param_types: &[TypeName],
+    params: &ResolvedParams,
     args: &[Expr],
     env: &TypeEnv,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     for (index, arg) in args.iter().enumerate() {
-        let Some(param_type) = param_types.get(index) else {
+        let (param_index, arg) = match arg {
+            Expr::NamedArg { name, value } => {
+                let Some(param_index) = params.position_of(name) else {
+                    continue;
+                };
+                (param_index, value.as_ref())
+            }
+            _ => (index, arg),
+        };
+        let Some(param_type) = params.type_at(param_index) else {
             break;
         };
 
@@ -307,7 +364,7 @@ fn check_args<E: ExternalSignatures>(
                     line,
                     col,
                     function_name,
-                    index,
+                    param_index,
                     param_type,
                     "None",
                 ));
@@ -323,7 +380,7 @@ fn check_args<E: ExternalSignatures>(
                 line,
                 col,
                 function_name,
-                index,
+                param_index,
                 param_type,
                 &format_type(&arg_type),
             ));
@@ -565,6 +622,51 @@ EndFunction
     fn does_not_flag_calls_beyond_the_declared_parameter_count() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(\"hi\", 1)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn checks_a_named_argument_against_its_matching_parameter() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction MyFunction(Int argA = 0, String argB = \"\")\nEndFunction\n\nEvent OnUpdate()\n    MyFunction(argB = 1)\nEndEvent\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("Argument 2 to 'MyFunction'"));
+        assert!(diagnostics[0].message.contains("expects String"));
+        assert!(diagnostics[0].message.contains("got Int"));
+    }
+
+    #[test]
+    fn allows_a_correctly_typed_named_argument() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction MyFunction(Int argA = 0, Int argB = 0)\nEndFunction\n\nEvent OnUpdate()\n    MyFunction(argB = 1)\nEndEvent\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn skips_an_unrecognized_named_argument() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction MyFunction(Int argA = 0)\nEndFunction\n\nEvent OnUpdate()\n    MyFunction(argC = 1)\nEndEvent\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn skips_a_named_argument_on_a_call_resolved_through_external_signatures() {
+        // `FakeExternal` only resolves types, not parameter names, so a
+        // named argument on a call to another script's function can't be
+        // matched to the parameter it fills and is left unchecked.
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(Actor akActor)\n    akActor.MoveTo(akRef = 1)\nEndFunction\n",
+            &mut FakeExternal,
         );
 
         assert!(diagnostics.is_empty());

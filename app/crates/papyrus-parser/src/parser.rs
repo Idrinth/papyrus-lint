@@ -36,6 +36,11 @@ impl Parser {
         &self.current().kind
     }
 
+    fn peek_kind(&self, offset: usize) -> &TokenKind {
+        let idx = (self.pos + offset).min(self.tokens.len() - 1);
+        &self.tokens[idx].kind
+    }
+
     fn is_eof(&self) -> bool {
         matches!(self.kind(), TokenKind::Eof)
     }
@@ -790,7 +795,7 @@ impl Parser {
             return Ok(args);
         }
         loop {
-            args.push(self.parse_expr()?);
+            args.push(self.parse_arg()?);
             if matches!(self.kind(), TokenKind::Comma) {
                 self.advance();
                 continue;
@@ -798,6 +803,24 @@ impl Parser {
             break;
         }
         Ok(args)
+    }
+
+    /// Parses one call argument: either a plain expression, or a named
+    /// argument (`name = value`), Papyrus's syntax for passing an argument
+    /// by parameter name instead of by position.
+    fn parse_arg(&mut self) -> PResult<Expr> {
+        if let TokenKind::Identifier(name) = self.kind().clone() {
+            if matches!(self.peek_kind(1), TokenKind::Assign) {
+                self.advance();
+                self.advance();
+                let value = self.parse_expr()?;
+                return Ok(Expr::NamedArg {
+                    name,
+                    value: Box::new(value),
+                });
+            }
+        }
+        self.parse_expr()
     }
 
     fn parse_primary(&mut self) -> PResult<Expr> {
