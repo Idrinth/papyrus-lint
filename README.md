@@ -117,17 +117,29 @@ Lint/fix behavior is configured via an optional YAML file named
 its default:
 
 ```yaml
+# Path to PapyrusCompiler.exe, or null to auto-detect it
 compiler_path: null
+# true, false
 semicolon: false
+# tab, space
 indentation: tab
+# Non-negative integer; used only when indentation is space
 indentation_width: 4
+# camelCase, PascalCase, snake_case, CONSTANT_CASE
 identifier_casing: PascalCase
+# Non-negative integer
 cyclomatic_complexity_warning: 10
+# Non-negative integer
 cyclomatic_complexity_error: 20
+# PascalCase, camelCase, lowercase, UPPERCASE
 type_casing: PascalCase
+# always, instead_of_defaults, never
 named_arguments: never
+# true, false
 fail_on_warning: false
+# true, false
 fail_on_info: false
+# Each rule accepts true or false
 rules:
   trailing_whitespace: true
   comma_spacing: true
