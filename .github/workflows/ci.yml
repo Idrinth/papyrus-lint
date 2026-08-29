@@ -227,3 +227,59 @@ jobs:
         with:
           name: rust-coverage-${{ matrix.name }}
           path: lcov.info
+
+  coverage-comment:
+    name: Coverage summary comment
+    if: always() && github.event_name == 'pull_request'
+    needs: [sublime-extension, frontend, vscode-extension, rust-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: coverage-artifacts
+
+      - name: Build coverage summary
+        run: python3 .github/scripts/coverage_summary.py coverage-artifacts > coverage-summary.md
+
+      - name: Publish coverage summary
+        run: cat coverage-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post coverage comment
+        # Forked PRs get a read-only GITHUB_TOKEN, so posting the comment
+        # can fail there; the step summary above still carries the report.
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- coverage-summary-comment -->';
+            const body = fs.readFileSync('coverage-summary.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
