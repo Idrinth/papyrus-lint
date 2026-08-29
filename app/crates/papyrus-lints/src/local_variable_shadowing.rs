@@ -137,7 +137,7 @@ fn collect_var_decls(body: &[Stmt]) -> Vec<&VariableDecl> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use papyrus_parser::ast::TypeName;
+    use crate::argument_types::ParamInfo;
 
     #[test]
     fn flags_local_variable_shadowing_own_property() {
@@ -232,7 +232,7 @@ mod tests {
     struct FakeExternalWithProperty;
 
     impl ExternalSignatures for FakeExternalWithProperty {
-        fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<TypeName>> {
+        fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<ParamInfo>> {
             None
         }
 

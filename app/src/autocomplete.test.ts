@@ -110,7 +110,7 @@ describe("filterMembers", () => {
     {
       kind: "function",
       name: "GetName",
-      param_types: [],
+      params: [],
       return_type: { name: "String", is_array: false },
       is_global: false,
       is_native: true,
@@ -119,7 +119,7 @@ describe("filterMembers", () => {
     {
       kind: "function",
       name: "getActorValue",
-      param_types: [{ name: "String", is_array: false }],
+      params: [{ name: "avName", type_name: { name: "String", is_array: false } }],
       return_type: { name: "Float", is_array: false },
       is_global: false,
       is_native: true,
@@ -149,17 +149,17 @@ describe("completionLabel", () => {
     expect(completionLabel(member)).toBe("TargetRef: ObjectReference");
   });
 
-  it("labels a function with its parameters and return type", () => {
+  it("labels a function with its parameters (name and type) and return type", () => {
     const member: Member = {
       kind: "function",
       name: "GetActorValue",
-      param_types: [{ name: "String", is_array: false }],
+      params: [{ name: "avName", type_name: { name: "String", is_array: false } }],
       return_type: { name: "Float", is_array: false },
       is_global: false,
       is_native: true,
       is_event: false,
     };
-    expect(completionLabel(member)).toBe("GetActorValue(String) -> Float");
+    expect(completionLabel(member)).toBe("GetActorValue(String avName) -> Float");
   });
 
   it("marks an array-typed property/parameter with []", () => {
@@ -169,26 +169,26 @@ describe("completionLabel", () => {
     const fn: Member = {
       kind: "function",
       name: "Sum",
-      param_types: [{ name: "Int", is_array: true }],
+      params: [{ name: "values", type_name: { name: "Int", is_array: true } }],
       return_type: { name: "Int", is_array: true },
       is_global: true,
       is_native: false,
       is_event: false,
     };
-    expect(completionLabel(fn)).toBe("Sum(Int[]) -> Int[]");
+    expect(completionLabel(fn)).toBe("Sum(Int[] values) -> Int[]");
   });
 
   it("labels a function with no return type without an arrow", () => {
     const member: Member = {
       kind: "function",
       name: "Wait",
-      param_types: [{ name: "Float", is_array: false }],
+      params: [{ name: "duration", type_name: { name: "Float", is_array: false } }],
       return_type: null,
       is_global: true,
       is_native: true,
       is_event: false,
     };
-    expect(completionLabel(member)).toBe("Wait(Float)");
+    expect(completionLabel(member)).toBe("Wait(Float duration)");
   });
 });
 
@@ -202,7 +202,7 @@ describe("completionInsertText", () => {
     const member: Member = {
       kind: "function",
       name: "GetName",
-      param_types: [],
+      params: [],
       return_type: { name: "String", is_array: false },
       is_global: false,
       is_native: true,

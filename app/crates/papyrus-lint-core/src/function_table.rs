@@ -1,14 +1,14 @@
-//! Builds a lookup table of function signatures (parameter and return
-//! types) for Papyrus object types, by locating and parsing their source
-//! scripts on demand.
+//! Builds a lookup table of function signatures (parameter names and
+//! types, plus the return type) for Papyrus object types, by locating and
+//! parsing their source scripts on demand.
 //!
 //! Resolving a call like `SomeObject.SomeFunction(...)` requires knowing
-//! the argument and return types declared on `SomeObject`'s script — and,
-//! since Papyrus scripts inherit via `Extends`, potentially on any of its
-//! ancestors too. [`FunctionTable`] finds and parses those scripts (using
-//! [`crate::script_locator`]) at most once per type name and caches the
-//! result, so looking up functions while linting many other files stays
-//! fast.
+//! the argument names/types and return type declared on `SomeObject`'s
+//! script — and, since Papyrus scripts inherit via `Extends`, potentially
+//! on any of its ancestors too. [`FunctionTable`] finds and parses those
+//! scripts (using [`crate::script_locator`]) at most once per type name
+//! and caches the result, so looking up functions while linting many
+//! other files stays fast.
 
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -16,16 +16,17 @@ use std::path::PathBuf;
 
 use serde::Serialize;
 
+use papyrus_lints::argument_types::ParamInfo;
 use papyrus_parser::ast::{FunctionDecl, PropertyDecl, Script, TypeName};
 
 use crate::script_locator::find_psc_file;
 
-/// The parameter and return types of a single function, as declared on a
-/// script.
+/// The parameters (name and type) and return type of a single function, as
+/// declared on a script.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct FunctionSignature {
     pub name: String,
-    pub param_types: Vec<TypeName>,
+    pub params: Vec<ParamInfo>,
     pub return_type: Option<TypeName>,
     pub is_global: bool,
     pub is_native: bool,
@@ -36,7 +37,14 @@ impl FunctionSignature {
     fn from_decl(decl: &FunctionDecl) -> Self {
         FunctionSignature {
             name: decl.name.clone(),
-            param_types: decl.params.iter().map(|p| p.type_name.clone()).collect(),
+            params: decl
+                .params
+                .iter()
+                .map(|p| ParamInfo {
+                    name: p.name.clone(),
+                    type_name: p.type_name.clone(),
+                })
+                .collect(),
             return_type: decl.return_type.clone(),
             is_global: decl.is_global,
             is_native: decl.is_native,
@@ -286,9 +294,9 @@ impl FunctionTable {
 /// resolve calls to functions declared on other scripts through this
 /// table.
 impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
-    fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<TypeName>> {
+    fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
         self.lookup_function(type_name, function_name)
-            .map(|signature| signature.param_types)
+            .map(|signature| signature.params)
     }
 
     fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
@@ -335,15 +343,21 @@ mod tests {
             })
         );
         assert_eq!(
-            signature.param_types,
+            signature.params,
             vec![
-                TypeName {
-                    name: "Float".to_string(),
-                    is_array: false,
+                ParamInfo {
+                    name: "a".to_string(),
+                    type_name: TypeName {
+                        name: "Float".to_string(),
+                        is_array: false,
+                    },
                 },
-                TypeName {
-                    name: "String".to_string(),
-                    is_array: false,
+                ParamInfo {
+                    name: "b".to_string(),
+                    type_name: TypeName {
+                        name: "String".to_string(),
+                        is_array: false,
+                    },
                 },
             ]
         );
@@ -808,6 +822,27 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
         let diagnostics = papyrus_lints::argument_types::check_with(
             "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Argument 1 to 'Greet'"));
+        assert!(diagnostics[0].message.contains("expects String"));
+        assert!(diagnostics[0].message.contains("got Int"));
+    }
+
+    #[test]
+    fn drives_a_named_argument_check_across_scripts_through_the_argument_type_check_lint() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Greeter",
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::argument_types::check_with(
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(name = 1)\nEndFunction\n",
             &mut table,
         );
 

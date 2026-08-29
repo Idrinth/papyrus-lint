@@ -539,7 +539,7 @@ mod tests {
             &mut self,
             type_name: &str,
             function_name: &str,
-        ) -> Option<Vec<papyrus_parser::ast::TypeName>> {
+        ) -> Option<Vec<argument_types::ParamInfo>> {
             if type_name.eq_ignore_ascii_case("ParentScript")
                 && function_name.eq_ignore_ascii_case("DoThing")
             {
