@@ -425,7 +425,7 @@ h1 {
   resize: none;
   background: transparent;
   color: transparent;
-  caret-color: currentColor;
+  caret-color: #0f0f0f;
   outline: none;
 }
 
@@ -665,5 +665,9 @@ h1 {
 
   .code-viewer__autocomplete-item--active {
     background-color: rgba(36, 200, 219, 0.2);
+  }
+
+  .code-viewer__editor-textarea {
+    caret-color: #f6f6f6;
   }
 }
