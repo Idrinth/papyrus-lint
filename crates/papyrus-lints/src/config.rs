@@ -8,6 +8,7 @@
 //! semicolon: false
 //! indentation: tab
 //! indentation_width: 4
+//! identifier_casing: PascalCase
 //! cyclomatic_complexity_warning: 10
 //! cyclomatic_complexity_error: 20
 //! fail_on_warning: false
@@ -34,6 +35,7 @@
 //!   none_form_usage: true
 //!   local_variable_shadowing: true
 //!   chain_whitespace: true
+//!   identifier_casing: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -57,6 +59,61 @@ pub enum Indentation {
     Space,
 }
 
+/// The casing style a project expects declared identifiers (functions,
+/// events, properties, states, parameters, and local variables) to use,
+/// for the "Identifier casing" lint described in README.md. `ScriptName`
+/// itself is never checked, since it must match the script's filename
+/// regardless of casing style.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub enum IdentifierCasing {
+    #[serde(rename = "camelCase")]
+    CamelCase,
+    #[default]
+    #[serde(rename = "PascalCase")]
+    PascalCase,
+    #[serde(rename = "snake_case")]
+    SnakeCase,
+    #[serde(rename = "CONSTANT_CASE")]
+    ConstantCase,
+}
+
+impl IdentifierCasing {
+    /// The name of this style, matching its YAML value.
+    pub fn label(self) -> &'static str {
+        match self {
+            IdentifierCasing::CamelCase => "camelCase",
+            IdentifierCasing::PascalCase => "PascalCase",
+            IdentifierCasing::SnakeCase => "snake_case",
+            IdentifierCasing::ConstantCase => "CONSTANT_CASE",
+        }
+    }
+
+    /// Whether `name` conforms to this casing style.
+    pub fn matches(self, name: &str) -> bool {
+        let mut chars = name.chars();
+        let Some(first) = chars.next() else {
+            return true;
+        };
+
+        match self {
+            IdentifierCasing::CamelCase => {
+                first.is_ascii_lowercase() && chars.all(|c| c.is_ascii_alphanumeric())
+            }
+            IdentifierCasing::PascalCase => {
+                first.is_ascii_uppercase() && chars.all(|c| c.is_ascii_alphanumeric())
+            }
+            IdentifierCasing::SnakeCase => {
+                first.is_ascii_lowercase()
+                    && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_')
+            }
+            IdentifierCasing::ConstantCase => {
+                first.is_ascii_uppercase()
+                    && chars.all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_')
+            }
+        }
+    }
+}
+
 /// Configuration for the lint/fix jobs, deserialized from a project's YAML
 /// config file and, in the desktop app, kept in sync with the formatting
 /// controls in the UI (loaded on startup, saved back to the file whenever
@@ -74,6 +131,9 @@ pub struct Config {
     /// The number of spaces per indentation level, used only when
     /// `indentation` is [`Indentation::Space`].
     pub indentation_width: usize,
+    /// The casing style enforced by the "Identifier casing" lint. See
+    /// [`IdentifierCasing`].
+    pub identifier_casing: IdentifierCasing,
     /// The cyclomatic complexity a function/event can reach before the
     /// "Cyclomatic complexity" lint flags it as a `[warning]`.
     pub cyclomatic_complexity_warning: usize,
@@ -100,6 +160,7 @@ impl Default for Config {
             semicolon: false,
             indentation: Indentation::default(),
             indentation_width: 4,
+            identifier_casing: IdentifierCasing::default(),
             cyclomatic_complexity_warning: 10,
             cyclomatic_complexity_error: 20,
             fail_on_warning: false,
@@ -158,6 +219,8 @@ pub struct Rules {
     pub local_variable_shadowing: bool,
     /// The "Whitespace interrupting property/method chaining" lint/fix.
     pub chain_whitespace: bool,
+    /// The "Identifier casing" lint.
+    pub identifier_casing: bool,
 }
 
 impl Default for Rules {
@@ -184,6 +247,7 @@ impl Default for Rules {
             none_form_usage: true,
             local_variable_shadowing: true,
             chain_whitespace: true,
+            identifier_casing: true,
         }
     }
 }
@@ -300,6 +364,7 @@ mod tests {
         assert!(config.rules.none_form_usage);
         assert!(config.rules.local_variable_shadowing);
         assert!(config.rules.chain_whitespace);
+        assert!(config.rules.identifier_casing);
     }
 
     #[test]
@@ -335,10 +400,82 @@ mod tests {
         assert!(!config.semicolon);
         assert_eq!(config.indentation, Indentation::Tab);
         assert_eq!(config.indentation_width, 4);
+        assert_eq!(config.identifier_casing, IdentifierCasing::PascalCase);
         assert_eq!(config.cyclomatic_complexity_warning, 10);
         assert_eq!(config.cyclomatic_complexity_error, 20);
         assert!(!config.fail_on_warning);
         assert!(!config.fail_on_info);
+    }
+
+    #[test]
+    fn parses_identifier_casing_values() {
+        assert_eq!(
+            parse("identifier_casing: camelCase\n")
+                .unwrap()
+                .identifier_casing,
+            IdentifierCasing::CamelCase
+        );
+        assert_eq!(
+            parse("identifier_casing: PascalCase\n")
+                .unwrap()
+                .identifier_casing,
+            IdentifierCasing::PascalCase
+        );
+        assert_eq!(
+            parse("identifier_casing: snake_case\n")
+                .unwrap()
+                .identifier_casing,
+            IdentifierCasing::SnakeCase
+        );
+        assert_eq!(
+            parse("identifier_casing: CONSTANT_CASE\n")
+                .unwrap()
+                .identifier_casing,
+            IdentifierCasing::ConstantCase
+        );
+    }
+
+    #[test]
+    fn rejects_unknown_identifier_casing_value() {
+        assert!(parse("identifier_casing: kebab-case\n").is_err());
+    }
+
+    #[test]
+    fn identifier_casing_matches_conforming_names() {
+        assert!(IdentifierCasing::CamelCase.matches("myValue"));
+        assert!(IdentifierCasing::CamelCase.matches("x"));
+        assert!(!IdentifierCasing::CamelCase.matches("MyValue"));
+        assert!(!IdentifierCasing::CamelCase.matches("my_value"));
+
+        assert!(IdentifierCasing::PascalCase.matches("MyValue"));
+        assert!(!IdentifierCasing::PascalCase.matches("myValue"));
+        assert!(!IdentifierCasing::PascalCase.matches("My_Value"));
+
+        assert!(IdentifierCasing::SnakeCase.matches("my_value"));
+        assert!(IdentifierCasing::SnakeCase.matches("my_value_2"));
+        assert!(!IdentifierCasing::SnakeCase.matches("MyValue"));
+        assert!(!IdentifierCasing::SnakeCase.matches("My_Value"));
+
+        assert!(IdentifierCasing::ConstantCase.matches("MY_VALUE"));
+        assert!(!IdentifierCasing::ConstantCase.matches("my_value"));
+        assert!(!IdentifierCasing::ConstantCase.matches("MyValue"));
+    }
+
+    #[test]
+    fn identifier_casing_round_trips_through_yaml() {
+        for style in [
+            IdentifierCasing::CamelCase,
+            IdentifierCasing::PascalCase,
+            IdentifierCasing::SnakeCase,
+            IdentifierCasing::ConstantCase,
+        ] {
+            let config = Config {
+                identifier_casing: style,
+                ..Config::default()
+            };
+            let yaml = to_yaml(&config).unwrap();
+            assert_eq!(parse(&yaml).unwrap(), config);
+        }
     }
 
     #[test]

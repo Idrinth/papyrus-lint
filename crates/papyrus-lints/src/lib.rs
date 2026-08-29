@@ -15,6 +15,7 @@ pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod fragment_code;
 pub mod function_override;
+pub mod identifier_casing;
 pub mod indentation;
 pub mod local_variable_shadowing;
 pub mod none_form_usage;
@@ -174,6 +175,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.chain_whitespace {
         diagnostics.extend(chain_whitespace::check(source));
+    }
+    if rules.identifier_casing {
+        diagnostics.extend(identifier_casing::check(source, config.identifier_casing));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -480,6 +484,12 @@ mod tests {
                 chain_whitespace::RULE,
                 Config::default(),
                 config_with(|c| c.rules.chain_whitespace = false),
+            ),
+            (
+                "ScriptName Example\n\nInt Property bad_name = 1 Auto\n",
+                identifier_casing::RULE,
+                Config::default(),
+                config_with(|c| c.rules.identifier_casing = false),
             ),
         ];
 
