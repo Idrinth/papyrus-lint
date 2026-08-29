@@ -56,14 +56,69 @@ fn load_project_file(dir: &Path) -> Result<ProjectFile, String> {
     serde_yaml::from_str(&contents).map_err(|err| err.to_string())
 }
 
+/// The explanatory comment shown above each top-level key in the README's
+/// [configuration reference](../../../../README.md#configuration), in the
+/// same order `ProjectFile`/`papyrus_lints::Config` declare their fields.
+/// Kept in sync with that table so a saved config file documents itself
+/// the same way.
+const FIELD_COMMENTS: &[(&str, &str)] = &[
+    (
+        "compiler_path",
+        "# Path to PapyrusCompiler.exe, or null to auto-detect it",
+    ),
+    ("semicolon", "# true, false"),
+    ("indentation", "# tab, space"),
+    (
+        "indentation_width",
+        "# Non-negative integer; used only when indentation is space",
+    ),
+    (
+        "identifier_casing",
+        "# camelCase, PascalCase, snake_case, CONSTANT_CASE",
+    ),
+    ("cyclomatic_complexity_warning", "# Non-negative integer"),
+    ("cyclomatic_complexity_error", "# Non-negative integer"),
+    (
+        "type_casing",
+        "# PascalCase, camelCase, lowercase, UPPERCASE",
+    ),
+    ("named_arguments", "# always, instead_of_defaults, never"),
+    ("fail_on_warning", "# true, false"),
+    ("fail_on_info", "# true, false"),
+    ("rules", "# Each rule accepts true or false"),
+];
+
+/// Inserts [`FIELD_COMMENTS`] above their matching top-level key in `yaml`.
+/// Only unindented `key:` lines are matched, so the `rules:` block's own
+/// nested keys are left alone, matching the single comment the README
+/// shows above `rules:` itself rather than one per rule.
+fn with_field_comments(yaml: &str) -> String {
+    let mut out = String::with_capacity(yaml.len() + FIELD_COMMENTS.len() * 32);
+    for line in yaml.lines() {
+        if !line.starts_with(' ') {
+            if let Some(key) = line.split(':').next() {
+                if let Some((_, comment)) = FIELD_COMMENTS.iter().find(|(name, _)| *name == key) {
+                    out.push_str(comment);
+                    out.push('\n');
+                }
+            }
+        }
+        out.push_str(line);
+        out.push('\n');
+    }
+    out
+}
+
 /// Writes `project` to `dir`'s papyrus-lint YAML config file. Overwrites
 /// whichever candidate name (`papyrus-lint.yaml`/`.yml`) already exists in
-/// `dir`, or creates `papyrus-lint.yaml` if `dir` has neither yet.
+/// `dir`, or creates `papyrus-lint.yaml` if `dir` has neither yet. Each
+/// top-level key is preceded by the same explanatory comment the README
+/// shows for it (see [`FIELD_COMMENTS`]).
 fn save_project_file(dir: &Path, project: &ProjectFile) -> Result<(), String> {
     let path = existing_config_path(dir).unwrap_or_else(|| dir.join(CONFIG_FILE_NAMES[0]));
 
     let yaml = serde_yaml::to_string(project).map_err(|err| err.to_string())?;
-    fs::write(&path, yaml).map_err(|err| err.to_string())
+    fs::write(&path, with_field_comments(&yaml)).map_err(|err| err.to_string())
 }
 
 /// Looks for a papyrus-lint config file in `dir` and parses it into a
@@ -264,6 +319,26 @@ mod tests {
         assert!(!dir.path().join("papyrus-lint.yml").exists());
         let loaded = load_config(dir.path()).expect("loading should succeed");
         assert_eq!(loaded, config);
+    }
+
+    #[test]
+    fn save_annotates_top_level_keys_with_explanatory_comments() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+
+        save_config(dir.path(), &config).expect("saving should succeed");
+
+        let contents = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+            .expect("failed to read saved config file");
+        assert!(contents.contains("# true, false\nsemicolon: true\n"));
+        assert!(contents.contains("# tab, space\nindentation: tab\n"));
+        assert!(contents.contains("# Each rule accepts true or false\nrules:\n"));
+        // Nested rule keys aren't individually commented, matching the
+        // README's example, which only comments the `rules:` block itself.
+        assert!(!contents.contains("trailing_whitespace:\n  #"));
     }
 
     #[test]
