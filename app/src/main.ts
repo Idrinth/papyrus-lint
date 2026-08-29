@@ -116,6 +116,7 @@ export interface LintRules {
   cyclomatic_complexity: boolean;
   unreachable_statement: boolean;
   static_condition: boolean;
+  division_by_zero: boolean;
   unused_local_variable: boolean;
   none_form_usage: boolean;
   local_variable_shadowing: boolean;
@@ -166,6 +167,7 @@ export const DEFAULT_RULES: LintRules = {
   cyclomatic_complexity: true,
   unreachable_statement: true,
   static_condition: true,
+  division_by_zero: true,
   unused_local_variable: true,
   none_form_usage: true,
   local_variable_shadowing: true,
