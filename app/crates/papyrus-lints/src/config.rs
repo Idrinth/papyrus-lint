@@ -38,6 +38,7 @@
 //!   none_form_usage: true
 //!   local_variable_shadowing: true
 //!   chain_whitespace: true
+//!   exclamation_spacing: true
 //!   identifier_casing: true
 //!   type_casing: true
 //!   named_arguments: true
@@ -241,6 +242,8 @@ pub struct Rules {
     pub local_variable_shadowing: bool,
     /// The "Whitespace interrupting property/method chaining" lint/fix.
     pub chain_whitespace: bool,
+    /// The "Exclamation mark spacing" lint/fix.
+    pub exclamation_spacing: bool,
     /// The "Identifier casing" lint.
     pub identifier_casing: bool,
     /// The "Type name casing" lint.
@@ -279,6 +282,7 @@ impl Default for Rules {
             none_form_usage: true,
             local_variable_shadowing: true,
             chain_whitespace: true,
+            exclamation_spacing: true,
             identifier_casing: true,
             type_casing: true,
             named_arguments: true,
@@ -403,6 +407,7 @@ mod tests {
         assert!(config.rules.none_form_usage);
         assert!(config.rules.local_variable_shadowing);
         assert!(config.rules.chain_whitespace);
+        assert!(config.rules.exclamation_spacing);
         assert!(config.rules.identifier_casing);
         assert!(config.rules.type_casing);
         assert!(config.rules.named_arguments);

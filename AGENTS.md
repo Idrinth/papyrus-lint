@@ -200,9 +200,10 @@ standard precedence.
 raw source or lexer tokens rather than requiring a successfully parsed AST.
 Automatic repair is available for trailing whitespace, comma spacing,
 semicolons, indentation, whitespace around member-access dots, spacing
-around logical/comparison operators, and property sorting (disabled by
-default; see the README). The desktop app, standalone CLI, and editor
-extensions all use the same lint and repair engine.
+around `!` negation, spacing around logical/comparison operators, and
+property sorting (disabled by default; see the README). The desktop app,
+standalone CLI, and editor extensions all use the same lint and repair
+engine.
 
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. An achlist's parent is the project
