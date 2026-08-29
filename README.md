@@ -205,7 +205,7 @@ override saved yet.
 Besides its GUI, Papyrus Lint can lint non-interactively from the
 command line two ways: by passing an `.achlist` (or a single `.psc`) path
 to the desktop app's own executable (`PapyrusLinter`), or via the
-standalone `PapyrusLinterCLI` binary (`crates/papyrus-lint-cli`) built and
+standalone `PapyrusLinterCLI` binary (`app/crates/papyrus-lint-cli`) built and
 shipped separately for use cases — e.g. a CI pipeline — that shouldn't
 need the desktop app's binary (and its GUI dependencies) at all. Both
 accept the same argument and behave identically:
@@ -296,7 +296,7 @@ for Linux, macOS, and Windows are attached to each [GitHub
 release](https://github.com/Idrinth/papyrus-lint/releases), alongside the
 desktop app's own bundles. To build the standalone CLI yourself instead,
 run `cargo build --release --manifest-path
-crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
+app/crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
 `PapyrusLinterCLI`.
 
 Each release also attaches a packaged copy of the two editor plugins: the

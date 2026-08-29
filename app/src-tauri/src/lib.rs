@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use papyrus_lint_core::{achlist, config, function_table};
 
-/// Returns the desktop app's version (from `src-tauri/Cargo.toml`, kept in
+/// Returns the desktop app's version (from `app/src-tauri/Cargo.toml`, kept in
 /// sync with `package.json`/`tauri.conf.json` at release time), so the
 /// frontend can display it to the user.
 #[tauri::command]

@@ -1,10 +1,10 @@
 // A small, self-contained Papyrus syntax highlighter for the code viewer.
 //
-// It mirrors the token grammar of crates/papyrus-parser/src/lexer.rs closely
+// It mirrors the token grammar of app/crates/papyrus-parser/src/lexer.rs closely
 // enough for display purposes (comments, strings, numbers, keywords) without
 // needing to go through Tauri to re-tokenize on the Rust side.
 
-// Keeps in sync with `Keyword::from_word` in crates/papyrus-parser/src/token.rs.
+// Keeps in sync with `Keyword::from_word` in app/crates/papyrus-parser/src/token.rs.
 // Exported so autocomplete.ts's declaration scanner can avoid mistaking a
 // keyword for a type/identifier pair (e.g. "If bReady" or "Return akRef").
 export const KEYWORDS = new Set([

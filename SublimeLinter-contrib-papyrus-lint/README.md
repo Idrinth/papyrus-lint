@@ -19,7 +19,7 @@ Papyrus syntax package installed in Sublime Text.
    your `PATH`. You can build it from this repository or download it from
    [the releases page](https://github.com/Idrinth/papyrus-lint/releases) —
    or via `cargo build --release --manifest-path
-   crates/papyrus-lint-cli/Cargo.toml` in this repository.
+   app/crates/papyrus-lint-cli/Cargo.toml` in this repository.
 
 ## Settings
 

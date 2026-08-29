@@ -21,6 +21,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: app/package-lock.json
 
       - name: Sync app version with release tag
         shell: bash
@@ -29,25 +30,25 @@ jobs:
             const fs = require('fs');
             const version = process.env.GITHUB_REF_NAME.replace(/^v/, '');
 
-            const confPath = 'src-tauri/tauri.conf.json';
+            const confPath = 'app/src-tauri/tauri.conf.json';
             const conf = JSON.parse(fs.readFileSync(confPath, 'utf8'));
             conf.version = version;
             fs.writeFileSync(confPath, JSON.stringify(conf, null, 2) + '\n');
 
-            const pkgPath = 'package.json';
+            const pkgPath = 'app/package.json';
             const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
             pkg.version = version;
             fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 
-            const cargoPath = 'src-tauri/Cargo.toml';
+            const cargoPath = 'app/src-tauri/Cargo.toml';
             const cargo = fs.readFileSync(cargoPath, 'utf8');
             fs.writeFileSync(cargoPath, cargo.replace(/^version = \".*\"/m, \`version = \"\${version}\"\`));
 
             const cratesCargoPaths = [
-              'crates/papyrus-lint-cli/Cargo.toml',
-              'crates/papyrus-parser/Cargo.toml',
-              'crates/papyrus-lints/Cargo.toml',
-              'crates/papyrus-lint-core/Cargo.toml',
+              'app/crates/papyrus-lint-cli/Cargo.toml',
+              'app/crates/papyrus-parser/Cargo.toml',
+              'app/crates/papyrus-lints/Cargo.toml',
+              'app/crates/papyrus-lint-core/Cargo.toml',
             ];
             for (const cratePath of cratesCargoPaths) {
               const crateCargo = fs.readFileSync(cratePath, 'utf8');
@@ -66,16 +67,18 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: |
-            src-tauri
-            crates/papyrus-lint-cli
+            app/src-tauri
+            app/crates/papyrus-lint-cli
 
       - name: Install frontend dependencies
+        working-directory: app
         run: npm ci --ignore-scripts
 
       - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          projectPath: app
           tagName: ${{ github.ref_name }}
           releaseName: "Papyrus Lint ${{ github.ref_name }}"
           releaseBody: "Automated release for ${{ github.ref_name }}. See the commit history for details."
@@ -84,7 +87,7 @@ jobs:
 
       - name: Build CLI
         shell: bash
-        run: cargo build --release --manifest-path crates/papyrus-lint-cli/Cargo.toml
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
 
       - name: Package CLI binary
         shell: bash
@@ -92,13 +95,13 @@ jobs:
           mkdir -p cli-dist
           case "${{ matrix.platform }}" in
             windows-latest)
-              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe cli-dist/PapyrusLinterCLI-windows.exe
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe cli-dist/PapyrusLinterCLI-windows.exe
               ;;
             macos-latest)
-              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-macos
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-macos
               ;;
             *)
-              cp crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-linux
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-linux
               ;;
           esac
 

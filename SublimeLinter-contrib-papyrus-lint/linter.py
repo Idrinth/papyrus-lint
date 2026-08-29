@@ -6,7 +6,7 @@ import re
 from SublimeLinter.lint import Linter, LintMatch, PermanentError
 
 # Strips a diagnostic message's leading "[error]"/"[warning]"/"[info]" tag
-# (see crates/papyrus-lints/src/lib.rs Diagnostic::level) before it's shown
+# (see app/crates/papyrus-lints/src/lib.rs Diagnostic::level) before it's shown
 # in Sublime, since `level` is already surfaced as its own JSON field.
 _LEVEL_TAG = re.compile(r'^\[(?:error|warning|info)\]\s*')
 
@@ -20,7 +20,7 @@ class PapyrusLint(Linter):
     `.yml` configuration next to it, so this linter only checks a script
     once it's saved (there's no `on_stdin` here). It's run with `--json`
     so diagnostics are parsed from PapyrusLinterCLI's structured report
-    (see `JsonReport` in crates/papyrus-lint-cli/src/lib.rs) instead of
+    (see `JsonReport` in app/crates/papyrus-lint-cli/src/lib.rs) instead of
     scraping its plain-text output.
     """
 
@@ -37,7 +37,7 @@ class PapyrusLint(Linter):
         `output` is the single JSON document PapyrusLinterCLI prints to
         stdout: a `{"files": [{"path", "diagnostics": [...]}], ...}`
         report (see `JsonReport`/`JsonFileReport`/`JsonDiagnostic` in
-        crates/papyrus-lint-cli/src/lib.rs). Since this linter always
+        app/crates/papyrus-lint-cli/src/lib.rs). Since this linter always
         invokes PapyrusLinterCLI with a single `.psc` file argument, that
         report only ever contains one file entry; every diagnostic across
         every entry is yielded regardless, so this still works if that

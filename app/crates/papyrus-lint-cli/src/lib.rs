@@ -36,7 +36,7 @@
 //! editor plugins and other tooling can consume it without scraping text.
 //!
 //! This crate is used both by the standalone `PapyrusLinterCLI` binary
-//! (`src/main.rs`) and by the desktop app (`src-tauri`), which runs it in
+//! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
 
 use std::fs;

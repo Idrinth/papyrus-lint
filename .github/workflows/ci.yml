@@ -52,6 +52,9 @@ jobs:
   frontend:
     name: Frontend (typecheck & build)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
     steps:
       - uses: actions/checkout@v7
 
@@ -59,6 +62,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: app/package-lock.json
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
@@ -84,7 +88,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
-          path: coverage/
+          path: app/coverage/
 
       - name: Build
         run: npm run build
@@ -104,12 +108,8 @@ jobs:
           cache: npm
           cache-dependency-path: vscode-extension/package-lock.json
 
-      - name: Install root dependencies
-        run: npm ci --ignore-scripts
-
       - name: Install dependencies
         run: npm ci --ignore-scripts
-        working-directory: .
 
       - name: Test with coverage
         run: npm run test:coverage | tee coverage-output.txt
@@ -154,16 +154,16 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src-tauri
+          workspaces: app/src-tauri
 
       - name: Check formatting
-        run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+        run: cargo fmt --manifest-path app/src-tauri/Cargo.toml -- --check
 
       - name: Clippy
-        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+        run: cargo clippy --manifest-path app/src-tauri/Cargo.toml --all-targets -- -D warnings
 
       - name: Check
-        run: cargo check --manifest-path src-tauri/Cargo.toml
+        run: cargo check --manifest-path app/src-tauri/Cargo.toml
 
   rust-test:
     name: Rust test (${{ matrix.name }})
@@ -173,21 +173,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - crate: src-tauri
+          - crate: app/src-tauri
             name: src-tauri
-          - crate: crates/papyrus-parser
+          - crate: app/crates/papyrus-parser
             name: papyrus-parser
-          - crate: crates/papyrus-lints
+          - crate: app/crates/papyrus-lints
             name: papyrus-lints
-          - crate: crates/papyrus-lint-core
+          - crate: app/crates/papyrus-lint-core
             name: papyrus-lint-core
-          - crate: crates/papyrus-lint-cli
+          - crate: app/crates/papyrus-lint-cli
             name: papyrus-lint-cli
     steps:
       - uses: actions/checkout@v7
 
       - name: Install Tauri Linux dependencies
-        if: matrix.crate == 'src-tauri'
+        if: matrix.crate == 'app/src-tauri'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
