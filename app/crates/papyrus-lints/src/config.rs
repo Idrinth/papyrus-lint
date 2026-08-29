@@ -12,6 +12,7 @@
 //! cyclomatic_complexity_warning: 10
 //! cyclomatic_complexity_error: 20
 //! type_casing: PascalCase
+//! named_arguments: never
 //! fail_on_warning: false
 //! fail_on_info: false
 //! rules:
@@ -38,6 +39,7 @@
 //!   chain_whitespace: true
 //!   identifier_casing: true
 //!   type_casing: true
+//!   named_arguments: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -146,6 +148,10 @@ pub struct Config {
     /// (the identifier following `ScriptName`), checked by the "Type name
     /// casing" lint.
     pub type_casing: crate::type_casing::Style,
+    /// How strongly the "Prefer named arguments" lint prefers Papyrus's
+    /// named-argument call syntax (`func(argB = 1)`) over positional
+    /// arguments. See [`crate::named_arguments::NamedArguments`].
+    pub named_arguments: crate::named_arguments::NamedArguments,
     /// Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level
     /// diagnostic as a reason to exit non-zero. `false` by default, so a
     /// project only fails a lint run on `[error]`-level (and untagged)
@@ -170,6 +176,7 @@ impl Default for Config {
             cyclomatic_complexity_warning: 10,
             cyclomatic_complexity_error: 20,
             type_casing: crate::type_casing::Style::default(),
+            named_arguments: crate::named_arguments::NamedArguments::default(),
             fail_on_warning: false,
             fail_on_info: false,
             rules: Rules::default(),
@@ -230,6 +237,8 @@ pub struct Rules {
     pub identifier_casing: bool,
     /// The "Type name casing" lint.
     pub type_casing: bool,
+    /// The "Prefer named arguments" lint.
+    pub named_arguments: bool,
 }
 
 impl Default for Rules {
@@ -258,6 +267,7 @@ impl Default for Rules {
             chain_whitespace: true,
             identifier_casing: true,
             type_casing: true,
+            named_arguments: true,
         }
     }
 }
@@ -378,6 +388,7 @@ mod tests {
         assert!(config.rules.chain_whitespace);
         assert!(config.rules.identifier_casing);
         assert!(config.rules.type_casing);
+        assert!(config.rules.named_arguments);
     }
 
     #[test]
@@ -417,6 +428,10 @@ mod tests {
         assert_eq!(config.cyclomatic_complexity_warning, 10);
         assert_eq!(config.cyclomatic_complexity_error, 20);
         assert_eq!(config.type_casing, crate::type_casing::Style::PascalCase);
+        assert_eq!(
+            config.named_arguments,
+            crate::named_arguments::NamedArguments::Never
+        );
         assert!(!config.fail_on_warning);
         assert!(!config.fail_on_info);
     }
@@ -594,6 +609,45 @@ mod tests {
     #[test]
     fn rejects_unknown_type_casing_value() {
         assert!(parse("type_casing: snake_case\n").is_err());
+    }
+
+    #[test]
+    fn parses_named_arguments_values() {
+        assert_eq!(
+            parse("named_arguments: always\n").unwrap().named_arguments,
+            crate::named_arguments::NamedArguments::Always
+        );
+        assert_eq!(
+            parse("named_arguments: instead_of_defaults\n")
+                .unwrap()
+                .named_arguments,
+            crate::named_arguments::NamedArguments::InsteadOfDefaults
+        );
+        assert_eq!(
+            parse("named_arguments: never\n").unwrap().named_arguments,
+            crate::named_arguments::NamedArguments::Never
+        );
+    }
+
+    #[test]
+    fn rejects_unknown_named_arguments_value() {
+        assert!(parse("named_arguments: sometimes\n").is_err());
+    }
+
+    #[test]
+    fn named_arguments_round_trips_through_yaml() {
+        for setting in [
+            crate::named_arguments::NamedArguments::Always,
+            crate::named_arguments::NamedArguments::InsteadOfDefaults,
+            crate::named_arguments::NamedArguments::Never,
+        ] {
+            let config = Config {
+                named_arguments: setting,
+                ..Config::default()
+            };
+            let yaml = to_yaml(&config).unwrap();
+            assert_eq!(parse(&yaml).unwrap(), config);
+        }
     }
 
     #[test]
