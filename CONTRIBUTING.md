@@ -6,7 +6,7 @@ expected of a pull request.
 
 ## Project structure
 
-```
+```text
 .
 ├── app/                     # The desktop app: Tauri (Rust + TypeScript) shell
 │   │                        # and its frontend, with their npm/cargo config
