@@ -41,6 +41,7 @@
 //!   identifier_casing: true
 //!   type_casing: true
 //!   named_arguments: true
+//!   operator_spacing: true
 //!   property_sorting: false
 //! ```
 //!
@@ -246,6 +247,8 @@ pub struct Rules {
     pub type_casing: bool,
     /// The "Prefer named arguments" lint.
     pub named_arguments: bool,
+    /// The "Spacing around logical/comparison operators" lint/fix.
+    pub operator_spacing: bool,
     /// The "Property sorting" lint/fix. Unlike every other field here,
     /// this defaults to `false`: see [`crate::property_sorting`].
     pub property_sorting: bool,
@@ -279,6 +282,7 @@ impl Default for Rules {
             identifier_casing: true,
             type_casing: true,
             named_arguments: true,
+            operator_spacing: true,
             property_sorting: false,
         }
     }
@@ -402,6 +406,7 @@ mod tests {
         assert!(config.rules.identifier_casing);
         assert!(config.rules.type_casing);
         assert!(config.rules.named_arguments);
+        assert!(config.rules.operator_spacing);
         // Unlike every rule above, sorting reorders a script's structure,
         // so this one defaults to disabled until a project opts in.
         assert!(!config.rules.property_sorting);

@@ -22,6 +22,7 @@ pub mod local_variable_shadowing;
 pub mod named_arguments;
 pub mod none_form_usage;
 pub mod numeric_comparison;
+pub mod operator_spacing;
 pub mod property_sorting;
 pub mod return_types;
 pub mod semicolon;
@@ -186,6 +187,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     if rules.chain_whitespace {
         diagnostics.extend(chain_whitespace::check(source));
     }
+    if rules.operator_spacing {
+        diagnostics.extend(operator_spacing::check(source));
+    }
     if rules.named_arguments {
         diagnostics.extend(named_arguments::check(source, config.named_arguments));
     }
@@ -230,6 +234,11 @@ pub fn repair(source: &str, config: &Config) -> String {
     };
     let source = if rules.chain_whitespace {
         chain_whitespace::repair(&source)
+    } else {
+        source
+    };
+    let source = if rules.operator_spacing {
+        operator_spacing::repair(&source)
     } else {
         source
     };
@@ -508,6 +517,12 @@ mod tests {
                 chain_whitespace::RULE,
                 Config::default(),
                 config_with(|c| c.rules.chain_whitespace = false),
+            ),
+            (
+                "If a==b\nEndIf\n",
+                operator_spacing::RULE,
+                Config::default(),
+                config_with(|c| c.rules.operator_spacing = false),
             ),
             (
                 "ScriptName Example\n\nInt Property bad_name = 1 Auto\n",
