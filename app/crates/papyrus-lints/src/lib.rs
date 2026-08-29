@@ -5,6 +5,7 @@
 //! (rather than the parsed AST) so they still run on scripts that don't
 //! parse cleanly.
 
+pub mod argument_naming;
 pub mod argument_types;
 pub mod chain_whitespace;
 pub mod comma_spacing;
@@ -101,9 +102,11 @@ pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
 /// scripts (e.g. `SomeProperty.DoThing(...)`) through `external`, so the
 /// "Argument type check" lint can check those call sites too, so the
 /// "Return type check" lint accepts a returned value whose script extends
-/// (directly or transitively) the declared return type, and so the
+/// (directly or transitively) the declared return type, so the
 /// "Inherited function override" lint can resolve `source`'s own `Extends`
-/// chain to flag a function that overrides an inherited one. See
+/// chain to flag a function that overrides an inherited one, and so the
+/// "Argument naming consistency" lint can compare an overriding function's
+/// parameter names against the inherited declaration's. See
 /// [`argument_types::ExternalSignatures`].
 pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     source: &str,
@@ -156,6 +159,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.function_override {
         diagnostics.extend(function_override::check_with(source, external));
+    }
+    if rules.argument_naming {
+        diagnostics.extend(argument_naming::check_with(source, external));
     }
     if rules.cyclomatic_complexity {
         diagnostics.extend(cyclomatic_complexity::check(
@@ -572,5 +578,54 @@ mod tests {
             &mut FakeExternalWithParentFunction,
         );
         assert!(disabled.iter().all(|d| d.rule != function_override::RULE));
+    }
+
+    struct FakeExternalWithRenamedParentParam;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithRenamedParentParam {
+        fn lookup(
+            &mut self,
+            type_name: &str,
+            function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
+            if type_name.eq_ignore_ascii_case("ParentScript")
+                && function_name.eq_ignore_ascii_case("DoThing")
+            {
+                Some(vec![argument_types::ParamInfo {
+                    name: "akTarget".to_string(),
+                    type_name: papyrus_parser::ast::TypeName {
+                        name: "ObjectReference".to_string(),
+                        is_array: false,
+                    },
+                }])
+            } else {
+                None
+            }
+        }
+    }
+
+    /// Like `function_override_flag_gates_only_its_own_lint` above:
+    /// `argument_naming` also needs `lint_with_external_arguments`'s
+    /// `external` resolver to ever fire, so its own `rules.argument_naming`
+    /// gate is checked here instead of in the main loop.
+    #[test]
+    fn argument_naming_flag_gates_only_its_own_lint() {
+        let source =
+            "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef)\nEndFunction\n";
+
+        let enabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithRenamedParentParam,
+        );
+        assert!(enabled.iter().any(|d| d.rule == argument_naming::RULE));
+
+        let disabled_config = config_with(|c| c.rules.argument_naming = false);
+        let disabled = lint_with_external_arguments(
+            source,
+            &disabled_config,
+            &mut FakeExternalWithRenamedParentParam,
+        );
+        assert!(disabled.iter().all(|d| d.rule != argument_naming::RULE));
     }
 }

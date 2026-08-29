@@ -811,6 +811,27 @@ mod tests {
     }
 
     #[test]
+    fn drives_the_argument_naming_lint_across_scripts() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "ParentScript",
+            "ScriptName ParentScript\n\nFunction DoThing(ObjectReference akTarget)\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::argument_naming::check_with(
+            "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef)\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Parameter 1 of 'DoThing'"));
+        assert!(diagnostics[0].message.contains("named 'akRef'"));
+        assert!(diagnostics[0].message.contains("names it 'akTarget'"));
+    }
+
+    #[test]
     fn drives_the_argument_type_check_lint_across_scripts() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         write_script(
