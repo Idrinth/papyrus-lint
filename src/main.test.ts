@@ -543,6 +543,24 @@ describe("handleCompileClick", () => {
     expect(outputEl.classList.contains("psc-result__compile-output--error")).toBe(false);
   });
 
+  it("reports when personal data was stripped from the compiled script", async () => {
+    invokeImplFor({
+      compile_psc_file: () => ({
+        success: true,
+        stdout: "Compilation succeeded.\n",
+        stderr: "",
+        personal_data_stripped: true,
+      }),
+    });
+    const { button, outputEl } = setup();
+
+    await handleCompileClick("/a.psc", button, outputEl);
+
+    expect(outputEl.textContent).toBe(
+      "Compilation succeeded.\n\nRemoved your username/computer name from the compiled script.",
+    );
+  });
+
   it("shows a default success message when the compiler produced no output", async () => {
     invokeImplFor({ compile_psc_file: () => ({ success: true, stdout: "", stderr: "" }) });
     const { button, outputEl } = setup();
