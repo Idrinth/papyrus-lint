@@ -1,0 +1,64 @@
+name: General feedback
+description: Share your experience using Papyrus Lint
+title: "[Feedback] "
+labels:
+  - feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to share feedback! We're interested in
+        the whole experience of using Papyrus Lint, from getting it
+        installed to using it day to day. Fill in whichever sections are
+        relevant — you don't need to answer every question.
+  - type: dropdown
+    id: interface
+    attributes:
+      label: Which interface did you use?
+      options:
+        - Desktop app (GUI)
+        - CLI (PapyrusLinterCLI)
+        - VS Code extension
+        - Sublime Text plugin
+        - More than one
+    validations:
+      required: true
+  - type: textarea
+    id: install
+    attributes:
+      label: Installation
+      description: >
+        How did installation/setup go? Did anything block you, confuse you,
+        or take longer than expected (downloading, finding the right build,
+        configuring your editor, setting up `papyrus-lint.yaml`, etc.)?
+      placeholder: e.g. "Download and setup was straightforward" or describe what went wrong.
+    validations:
+      required: false
+  - type: textarea
+    id: first-use
+    attributes:
+      label: First use
+      description: >
+        What was it like the first time you actually linted a script or
+        `.achlist`? Was the output clear? Did the diagnostics make sense?
+        Was anything surprising, confusing, or missing?
+    validations:
+      required: false
+  - type: textarea
+    id: repeated-use
+    attributes:
+      label: Repeated/ongoing use
+      description: >
+        Now that it's part of your workflow, how's it going? Does it fit
+        naturally into how you work (editor integration, CI, auto-fix,
+        re-running after edits)? Anything that's become annoying or that
+        you'd want to change about day-to-day use?
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Anything else?
+      description: Other thoughts, comparisons to other tools, screenshots, etc.
+    validations:
+      required: false

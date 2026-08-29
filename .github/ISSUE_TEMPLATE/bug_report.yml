@@ -1,0 +1,93 @@
+name: Bug / error report
+description: Report incorrect behavior, a false positive/negative, or a crash
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem! The most useful thing you can give
+        us is **example Papyrus code that reproduces it** — we turn these
+        into test fixtures, so even a small snippet is a big help.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect to happen, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: example-code
+    attributes:
+      label: Example code
+      description: >
+        Please paste the smallest `.psc` snippet (or attach the file) that
+        reproduces the issue, if possible. This lets us add it directly as
+        a fixture and confirm the fix against it. If you can't share the
+        actual script, a minimized/anonymized example that still triggers
+        the problem works too.
+      render: papyrus
+      placeholder: |
+        Scriptname MyScript extends Quest
+
+        Function DoSomething()
+          ; the line(s) that trigger the issue
+        EndFunction
+    validations:
+      required: false
+  - type: textarea
+    id: actual-output
+    attributes:
+      label: Actual output
+      description: >
+        What Papyrus Lint reported (diagnostic message, exit code, JSON
+        output, stack trace, etc.), or what it failed to report.
+    validations:
+      required: false
+  - type: textarea
+    id: expected-output
+    attributes:
+      label: Expected output
+      description: What should have been reported (or not reported) instead.
+    validations:
+      required: false
+  - type: dropdown
+    id: interface
+    attributes:
+      label: How are you running Papyrus Lint?
+      options:
+        - Desktop app (GUI)
+        - CLI (PapyrusLinterCLI)
+        - VS Code extension
+        - Sublime Text plugin
+        - Other / not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Papyrus Lint version
+      description: Version number, or commit hash if built from source.
+    validations:
+      required: false
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Windows 11, macOS 14, Ubuntu 24.04
+    validations:
+      required: false
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant papyrus-lint.yaml (if any)
+      render: yaml
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+    validations:
+      required: false
