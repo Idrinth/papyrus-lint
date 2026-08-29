@@ -41,12 +41,16 @@
 //!   identifier_casing: true
 //!   type_casing: true
 //!   named_arguments: true
+//!   property_sorting: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
 //! disable that lint (and its automatic fix, if it has one) entirely. As
 //! with the top-level keys, `rules` and any key within it may be omitted
-//! and falls back to `true`.
+//! and falls back to its default. `property_sorting` is the one
+//! exception: it defaults to `false`, since reordering a script's
+//! declared properties is a more invasive change than the rest of these
+//! rules, so a project has to opt in explicitly.
 
 use std::fmt;
 
@@ -242,6 +246,9 @@ pub struct Rules {
     pub type_casing: bool,
     /// The "Prefer named arguments" lint.
     pub named_arguments: bool,
+    /// The "Property sorting" lint/fix. Unlike every other field here,
+    /// this defaults to `false`: see [`crate::property_sorting`].
+    pub property_sorting: bool,
 }
 
 impl Default for Rules {
@@ -272,6 +279,7 @@ impl Default for Rules {
             identifier_casing: true,
             type_casing: true,
             named_arguments: true,
+            property_sorting: false,
         }
     }
 }
@@ -394,6 +402,9 @@ mod tests {
         assert!(config.rules.identifier_casing);
         assert!(config.rules.type_casing);
         assert!(config.rules.named_arguments);
+        // Unlike every rule above, sorting reorders a script's structure,
+        // so this one defaults to disabled until a project opts in.
+        assert!(!config.rules.property_sorting);
     }
 
     #[test]

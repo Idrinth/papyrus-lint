@@ -199,9 +199,9 @@ standard precedence.
 [README's Implemented Lints table](README.md#implemented-lints). Rules inspect
 raw source or lexer tokens rather than requiring a successfully parsed AST.
 Automatic repair is available for trailing whitespace, comma spacing,
-semicolons, indentation, and whitespace around member-access dots. The
-desktop app, standalone CLI, and editor extensions all use the same lint and
-repair engine.
+semicolons, indentation, whitespace around member-access dots, and property
+sorting (disabled by default; see the README). The desktop app, standalone
+CLI, and editor extensions all use the same lint and repair engine.
 
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. An achlist's parent is the project

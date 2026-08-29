@@ -22,6 +22,7 @@ pub mod local_variable_shadowing;
 pub mod named_arguments;
 pub mod none_form_usage;
 pub mod numeric_comparison;
+pub mod property_sorting;
 pub mod return_types;
 pub mod semicolon;
 pub mod slow_functions;
@@ -194,6 +195,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     if rules.type_casing {
         diagnostics.extend(type_casing::check(source, config.type_casing));
     }
+    if rules.property_sorting {
+        diagnostics.extend(property_sorting::check(source));
+    }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
     diagnostics
@@ -211,6 +215,11 @@ pub fn repair(source: &str, config: &Config) -> String {
     };
     let source = if rules.indentation {
         indentation::repair(&source, config.indentation_unit())
+    } else {
+        source
+    };
+    let source = if rules.property_sorting {
+        property_sorting::repair(&source)
     } else {
         source
     };
@@ -520,6 +529,12 @@ mod tests {
                     c.named_arguments = named_arguments::NamedArguments::Always;
                     c.rules.named_arguments = false;
                 }),
+            ),
+            (
+                "ScriptName Example\n\nInt Property Zulu = 1 Auto\nActor Property Alpha Auto\n",
+                property_sorting::RULE,
+                config_with(|c| c.rules.property_sorting = true),
+                config_with(|c| c.rules.property_sorting = false),
             ),
         ];
 

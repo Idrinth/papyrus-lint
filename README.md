@@ -74,6 +74,7 @@ apply.
 | **Identifier casing** | Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured `identifier_casing` style: `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. `ScriptName` itself is never checked by this lint (see "Type name casing" below). A parameter has no location of its own, so it's reported on its enclosing function's line. | |
 | **Type name casing** | Flags, as a `[warning]`, a script's declared type name (the identifier following `ScriptName`) if it doesn't follow the configured `type_casing` convention (`PascalCase`, `camelCase`, `lowercase`, or `UPPERCASE`). Only the script's own declared name is checked, never its `Extends` target, since that type is declared (and presumably already checked) in another script. Note that a script's `ScriptName` must match its `.psc` filename case-insensitively, so a substantive rename to satisfy this lint means renaming the file too — a case-only change does not. | |
 | **Prefer named arguments** | Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting. | |
+| **Property sorting** | Flags, as a `[warning]`, a `Property` declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the `ScriptName` line, before any variable, function, or state declaration (an `Import` isn't tracked closely enough to count against this). Disabled by default, since reordering a script's declared properties is a more invasive change than the rest of these lints; a project opts in via `rules.property_sorting`. The fix relocates each property's own declaration lines (its full `Property`/`EndProperty` block, for a non-auto property) as a group right after `ScriptName`, in sorted order; a documentation comment placed directly above a property is left behind rather than moved with it. | ✓ |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, and chain whitespace) never flag or change a line inside a
@@ -101,8 +102,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `return-types`, `function-override`, `argument-naming`, `numeric-comparison`,
 `indentation`, `cyclomatic-complexity`, `unreachable-statement`,
 `static-condition`, `unused-local-variable`, `none-form-usage`,
-`local-variable-shadowing`, `chain-whitespace`, `identifier-casing`, and
-`type-casing`.
+`local-variable-shadowing`, `chain-whitespace`, `identifier-casing`,
+`type-casing`, `named-arguments`, and `property-sorting`.
 
 ## Configuration
 
@@ -149,6 +150,7 @@ rules:
   identifier_casing: true
   type_casing: true
   named_arguments: true
+  property_sorting: false
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -184,18 +186,20 @@ rules:
   `[warning]`/`[info]`-level diagnostics are still printed either way. Has
   no effect on the desktop app, which always lists every diagnostic
   regardless of severity.
-- `rules`: per-lint enable/disable switches, each defaulting to `true`.
-  Setting one to `false` turns that lint (and its automatic fix, if it
-  has one) off entirely; every key under `rules` can be omitted
-  individually and falls back to `true`. The key names match the lints
-  listed above: `trailing_whitespace`, `comma_spacing`,
+- `rules`: per-lint enable/disable switches. Setting one to `false` turns
+  that lint (and its automatic fix, if it has one) off entirely; every
+  key under `rules` can be omitted individually and falls back to its
+  default. Every key defaults to `true` except `property_sorting`, which
+  defaults to `false` since reordering a script's declared properties is
+  a more invasive change than the rest of these lints. The key names
+  match the lints listed above: `trailing_whitespace`, `comma_spacing`,
   `forbidden_functions`, `slow_functions`, `unused_getter`, `unused_property`,
   `semicolon`, `float_int_conversion`, `strict_boolean`,
   `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
   `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
   `static_condition`, `unused_local_variable`, `none_form_usage`,
   `local_variable_shadowing`, `chain_whitespace`, `identifier_casing`,
-  `type_casing`, and `named_arguments`.
+  `type_casing`, `named_arguments`, and `property_sorting`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
