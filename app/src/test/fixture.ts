@@ -34,8 +34,21 @@ export const FIXTURE_HTML = `
           <option value="lowercase">lowercase</option>
           <option value="UPPERCASE">UPPERCASE</option>
         </select>
+        <select id="identifier-casing-style">
+          <option value="camelCase">camelCase</option>
+          <option value="PascalCase">PascalCase</option>
+          <option value="snake_case">snake_case</option>
+          <option value="CONSTANT_CASE">CONSTANT_CASE</option>
+        </select>
+        <select id="named-arguments-style">
+          <option value="never">Never</option>
+          <option value="instead_of_defaults">Instead of defaults</option>
+          <option value="always">Always</option>
+        </select>
         <input id="cyclomatic-complexity-warning" type="number" min="1" value="10" />
         <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
+        <input type="checkbox" id="fail-on-warning" />
+        <input type="checkbox" id="fail-on-info" />
         <fieldset id="lint-rules">
           <input type="checkbox" id="rule-trailing_whitespace" checked />
           <input type="checkbox" id="rule-comma_spacing" checked />
@@ -47,7 +60,9 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-float_int_conversion" checked />
           <input type="checkbox" id="rule-strict_boolean" checked />
           <input type="checkbox" id="rule-argument_types" checked />
+          <input type="checkbox" id="rule-return_types" checked />
           <input type="checkbox" id="rule-function_override" checked />
+          <input type="checkbox" id="rule-argument_naming" checked />
           <input type="checkbox" id="rule-numeric_comparison" checked />
           <input type="checkbox" id="rule-indentation" checked />
           <input type="checkbox" id="rule-cyclomatic_complexity" checked />
@@ -57,7 +72,12 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-none_form_usage" checked />
           <input type="checkbox" id="rule-local_variable_shadowing" checked />
           <input type="checkbox" id="rule-chain_whitespace" checked />
+          <input type="checkbox" id="rule-exclamation_spacing" checked />
+          <input type="checkbox" id="rule-identifier_casing" checked />
           <input type="checkbox" id="rule-type_casing" checked />
+          <input type="checkbox" id="rule-named_arguments" checked />
+          <input type="checkbox" id="rule-operator_spacing" checked />
+          <input type="checkbox" id="rule-property_sorting" />
         </fieldset>
       </div>
 
