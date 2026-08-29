@@ -58,6 +58,13 @@
             <label for="indentation-width">Width</label>
             <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
           </div>
+          <label for="type-casing-style">Type name casing</label>
+          <select id="type-casing-style">
+            <option value="PascalCase">PascalCase</option>
+            <option value="camelCase">camelCase</option>
+            <option value="lowercase">lowercase</option>
+            <option value="UPPERCASE">UPPERCASE</option>
+          </select>
 
           <fieldset class="settings-group">
             <legend>Cyclomatic complexity thresholds</legend>
@@ -93,6 +100,7 @@
             <label title="Flags a member/method access (e.g. a.GetName()) on a local variable that's still known to be None at that point, since that crashes the script."><input type="checkbox" id="rule-none_form_usage" checked /> None used as an existing Form</label>
             <label title="Flags a local variable whose name matches a Property declared on the same script or a parent script, since referencing that name then reads the local rather than the property."><input type="checkbox" id="rule-local_variable_shadowing" checked /> Local variable shadowing</label>
             <label title="Flags a space or tab immediately before or after a &quot;.&quot; member/method access (e.g. &quot;SomeProperty . DoThing()&quot;), since it interrupts the chain for no benefit."><input type="checkbox" id="rule-chain_whitespace" checked /> Whitespace interrupting property/method chaining</label>
+            <label title="Flags a script's declared type name (the identifier following ScriptName) if it doesn't follow the &quot;Type name casing&quot; setting above."><input type="checkbox" id="rule-type_casing" checked /> Type name casing</label>
           </fieldset>
         </div>
 

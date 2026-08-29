@@ -200,6 +200,7 @@ describe("lint config UI round trip", () => {
       indentation_width: 8,
       cyclomatic_complexity_warning: 5,
       cyclomatic_complexity_error: 15,
+      type_casing: "camelCase",
       rules: { ...DEFAULT_RULES, forbidden_functions: false, indentation: false },
     };
 

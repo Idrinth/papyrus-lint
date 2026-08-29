@@ -26,6 +26,7 @@ pub mod slow_functions;
 pub mod static_condition;
 pub mod strict_boolean;
 pub mod trailing_whitespace;
+pub mod type_casing;
 pub mod unreachable_statement;
 pub mod unused_getter;
 pub mod unused_local_variable;
@@ -178,6 +179,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.identifier_casing {
         diagnostics.extend(identifier_casing::check(source, config.identifier_casing));
+    }
+    if rules.type_casing {
+        diagnostics.extend(type_casing::check(source, config.type_casing));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -490,6 +494,12 @@ mod tests {
                 identifier_casing::RULE,
                 Config::default(),
                 config_with(|c| c.rules.identifier_casing = false),
+            ),
+            (
+                "ScriptName myExample\n",
+                type_casing::RULE,
+                Config::default(),
+                config_with(|c| c.rules.type_casing = false),
             ),
         ];
 
