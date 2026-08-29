@@ -96,7 +96,8 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "lint": "eslint src test",
-    "test": "tsc -p tsconfig.test.json && node --test test/*.test.mjs"
+    "test": "tsc -p tsconfig.test.json && node --test test/*.test.mjs",
+    "test:coverage": "tsc -p tsconfig.test.json && node --test --experimental-test-coverage --test-reporter=tap --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=lcov.info test/*.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
