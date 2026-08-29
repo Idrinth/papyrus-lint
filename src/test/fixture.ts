@@ -28,6 +28,12 @@ export const FIXTURE_HTML = `
           <option value="spaces">Spaces</option>
         </select>
         <input id="indentation-width" type="number" min="1" max="16" value="4" disabled />
+        <select id="type-casing-style">
+          <option value="PascalCase">PascalCase</option>
+          <option value="camelCase">camelCase</option>
+          <option value="lowercase">lowercase</option>
+          <option value="UPPERCASE">UPPERCASE</option>
+        </select>
         <input id="cyclomatic-complexity-warning" type="number" min="1" value="10" />
         <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
         <fieldset id="lint-rules">
@@ -51,6 +57,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-none_form_usage" checked />
           <input type="checkbox" id="rule-local_variable_shadowing" checked />
           <input type="checkbox" id="rule-chain_whitespace" checked />
+          <input type="checkbox" id="rule-type_casing" checked />
         </fieldset>
       </div>
 

@@ -10,6 +10,7 @@
 //! indentation_width: 4
 //! cyclomatic_complexity_warning: 10
 //! cyclomatic_complexity_error: 20
+//! type_casing: PascalCase
 //! fail_on_warning: false
 //! fail_on_info: false
 //! rules:
@@ -34,6 +35,7 @@
 //!   none_form_usage: true
 //!   local_variable_shadowing: true
 //!   chain_whitespace: true
+//!   type_casing: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -80,6 +82,10 @@ pub struct Config {
     /// The cyclomatic complexity a function/event can reach before the
     /// "Cyclomatic complexity" lint flags it as an `[error]`.
     pub cyclomatic_complexity_error: usize,
+    /// The casing convention required of a script's declared type name
+    /// (the identifier following `ScriptName`), checked by the "Type name
+    /// casing" lint.
+    pub type_casing: crate::type_casing::Style,
     /// Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level
     /// diagnostic as a reason to exit non-zero. `false` by default, so a
     /// project only fails a lint run on `[error]`-level (and untagged)
@@ -102,6 +108,7 @@ impl Default for Config {
             indentation_width: 4,
             cyclomatic_complexity_warning: 10,
             cyclomatic_complexity_error: 20,
+            type_casing: crate::type_casing::Style::default(),
             fail_on_warning: false,
             fail_on_info: false,
             rules: Rules::default(),
@@ -158,6 +165,8 @@ pub struct Rules {
     pub local_variable_shadowing: bool,
     /// The "Whitespace interrupting property/method chaining" lint/fix.
     pub chain_whitespace: bool,
+    /// The "Type name casing" lint.
+    pub type_casing: bool,
 }
 
 impl Default for Rules {
@@ -184,6 +193,7 @@ impl Default for Rules {
             none_form_usage: true,
             local_variable_shadowing: true,
             chain_whitespace: true,
+            type_casing: true,
         }
     }
 }
@@ -300,6 +310,7 @@ mod tests {
         assert!(config.rules.none_form_usage);
         assert!(config.rules.local_variable_shadowing);
         assert!(config.rules.chain_whitespace);
+        assert!(config.rules.type_casing);
     }
 
     #[test]
@@ -337,6 +348,7 @@ mod tests {
         assert_eq!(config.indentation_width, 4);
         assert_eq!(config.cyclomatic_complexity_warning, 10);
         assert_eq!(config.cyclomatic_complexity_error, 20);
+        assert_eq!(config.type_casing, crate::type_casing::Style::PascalCase);
         assert!(!config.fail_on_warning);
         assert!(!config.fail_on_info);
     }
@@ -429,6 +441,20 @@ mod tests {
     #[test]
     fn rejects_unknown_indentation_value() {
         assert!(parse("indentation: eight-spaces\n").is_err());
+    }
+
+    #[test]
+    fn parses_type_casing_style() {
+        let config = parse("type_casing: camelCase\n").unwrap();
+        assert_eq!(config.type_casing, crate::type_casing::Style::CamelCase);
+
+        let config = parse("type_casing: UPPERCASE\n").unwrap();
+        assert_eq!(config.type_casing, crate::type_casing::Style::Uppercase);
+    }
+
+    #[test]
+    fn rejects_unknown_type_casing_value() {
+        assert!(parse("type_casing: snake_case\n").is_err());
     }
 
     #[test]

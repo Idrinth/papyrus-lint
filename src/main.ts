@@ -20,6 +20,7 @@ let pscResultEl: HTMLElement | null;
 let pscResultListEl: HTMLElement | null;
 let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
+let typeCasingStyleEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let compilerPathEl: HTMLInputElement | null;
 let semicolonStyleEl: HTMLSelectElement | null;
@@ -113,7 +114,10 @@ export interface LintRules {
   none_form_usage: boolean;
   local_variable_shadowing: boolean;
   chain_whitespace: boolean;
+  type_casing: boolean;
 }
+
+export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
 
 export interface LintConfig {
   semicolon: boolean;
@@ -121,6 +125,7 @@ export interface LintConfig {
   indentation_width: number;
   cyclomatic_complexity_warning: number;
   cyclomatic_complexity_error: number;
+  type_casing: TypeCasingStyle;
   rules: LintRules;
 }
 
@@ -145,6 +150,7 @@ export const DEFAULT_RULES: LintRules = {
   none_form_usage: true,
   local_variable_shadowing: true,
   chain_whitespace: true,
+  type_casing: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
@@ -153,6 +159,7 @@ export const DEFAULT_LINT_CONFIG: LintConfig = {
   indentation_width: 4,
   cyclomatic_complexity_warning: 10,
   cyclomatic_complexity_error: 20,
+  type_casing: "PascalCase",
   rules: DEFAULT_RULES,
 };
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
@@ -267,6 +274,9 @@ export function applyLintConfigToUI(config: LintConfig) {
   if (cyclomaticComplexityErrorEl) {
     cyclomaticComplexityErrorEl.value = String(config.cyclomatic_complexity_error);
   }
+  if (typeCasingStyleEl) {
+    typeCasingStyleEl.value = config.type_casing;
+  }
   for (const key of RULE_KEYS) {
     const el = ruleEls[key];
     if (el) {
@@ -288,6 +298,7 @@ export function lintConfigFromUI(): LintConfig {
     indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
     cyclomatic_complexity_warning: Math.max(1, cyclomaticComplexityWarningEl?.valueAsNumber || 10),
     cyclomatic_complexity_error: Math.max(1, cyclomaticComplexityErrorEl?.valueAsNumber || 20),
+    type_casing: (typeCasingStyleEl?.value as TypeCasingStyle | undefined) ?? "PascalCase",
     rules,
   };
 }
@@ -1014,6 +1025,7 @@ window.addEventListener("DOMContentLoaded", () => {
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
+  typeCasingStyleEl = document.querySelector("#type-casing-style");
   cyclomaticComplexityWarningEl = document.querySelector("#cyclomatic-complexity-warning");
   cyclomaticComplexityErrorEl = document.querySelector("#cyclomatic-complexity-error");
   ruleEls = Object.fromEntries(
@@ -1090,6 +1102,7 @@ window.addEventListener("DOMContentLoaded", () => {
     handleLintConfigChanged();
   });
   indentationWidthEl?.addEventListener("change", handleLintConfigChanged);
+  typeCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
   cyclomaticComplexityWarningEl?.addEventListener("change", handleLintConfigChanged);
   cyclomaticComplexityErrorEl?.addEventListener("change", handleLintConfigChanged);
   for (const key of RULE_KEYS) {
