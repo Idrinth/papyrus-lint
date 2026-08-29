@@ -18,6 +18,7 @@ pub mod function_override;
 pub mod identifier_casing;
 pub mod indentation;
 pub mod local_variable_shadowing;
+pub mod named_arguments;
 pub mod none_form_usage;
 pub mod numeric_comparison;
 pub mod return_types;
@@ -177,6 +178,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.chain_whitespace {
         diagnostics.extend(chain_whitespace::check(source));
+    }
+    if rules.named_arguments {
+        diagnostics.extend(named_arguments::check(source, config.named_arguments));
     }
     if rules.identifier_casing {
         diagnostics.extend(identifier_casing::check(source, config.identifier_casing));
@@ -501,6 +505,15 @@ mod tests {
                 type_casing::RULE,
                 Config::default(),
                 config_with(|c| c.rules.type_casing = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(\"hi\")\nEndFunction\n",
+                named_arguments::RULE,
+                config_with(|c| c.named_arguments = named_arguments::NamedArguments::Always),
+                config_with(|c| {
+                    c.named_arguments = named_arguments::NamedArguments::Always;
+                    c.rules.named_arguments = false;
+                }),
             ),
         ];
 
