@@ -100,7 +100,7 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
             line: name_token.line,
             column: name_token.col,
             message: format!(
-                "Script name '{name}' does not follow the configured {} casing",
+                "[warning] Script name '{name}' does not follow the configured {} casing",
                 style.label()
             ),
             rule: RULE,

@@ -12,7 +12,10 @@ fn flags_only_the_property_lines_with_trailing_spaces() {
     assert_eq!(flagged_lines, vec![24, 26, 28]);
 
     for diagnostic in &diagnostics {
-        assert_eq!(diagnostic.message, "Line contains trailing whitespace");
+        assert_eq!(
+            diagnostic.message,
+            "[warning] Line contains trailing whitespace"
+        );
     }
 }
 

@@ -19,7 +19,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         .map(|(_, line, column)| Diagnostic {
             line,
             column,
-            message: "Comma in argument list must be followed by whitespace".to_string(),
+            message: "[warning] Comma in argument list must be followed by whitespace".to_string(),
             rule: RULE,
         })
         .collect()

@@ -29,7 +29,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             Some(Diagnostic {
                 line: index + 1,
                 column: trimmed.chars().count() + 1,
-                message: "Line contains trailing whitespace".to_string(),
+                message: "[warning] Line contains trailing whitespace".to_string(),
                 rule: RULE,
             })
         })

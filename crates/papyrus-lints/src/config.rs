@@ -288,8 +288,10 @@ impl Config {
 
     /// Whether `diagnostic` should count as a reason for the CLI to exit
     /// non-zero, per [`Self::fail_on_warning`]/[`Self::fail_on_info`]. An
-    /// `[error]`-level diagnostic, or one tagged with no level at all (see
-    /// [`Diagnostic::level`]), always counts.
+    /// `[error]`-level diagnostic always counts, as does one tagged with no
+    /// level at all (see [`Diagnostic::level`]) — which no built-in lint
+    /// produces, but is treated conservatively as a failure if one ever
+    /// does.
     pub fn should_fail_on(&self, diagnostic: &Diagnostic) -> bool {
         match diagnostic.level() {
             Some("warning") => self.fail_on_warning,
@@ -549,7 +551,7 @@ mod tests {
         let untagged = Diagnostic {
             line: 1,
             column: 1,
-            message: "Line contains trailing whitespace".to_string(),
+            message: "No recognized level prefix here".to_string(),
             rule: "some-rule",
         };
 
