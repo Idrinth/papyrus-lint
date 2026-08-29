@@ -488,6 +488,30 @@ mod tests {
     }
 
     #[test]
+    fn reports_an_invalid_project_yaml_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules: definitely-not-a-rule-set\n",
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.starts_with("error: failed to load lint config:"));
+    }
+
+    #[test]
     fn ignores_non_psc_entries_in_the_achlist() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         write_file(&dir.path().join("scripts/source/Example.pex"), "");
@@ -501,6 +525,27 @@ mod tests {
 
         assert_eq!(code, 0);
         assert!(stdout.contains("no problems found in 0 script"));
+    }
+
+    #[test]
+    fn recognizes_uppercase_psc_extensions_in_the_achlist() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.PSC"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.PSC"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
     }
 
     #[test]
@@ -750,5 +795,29 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|d| d["message"].as_str().unwrap().contains("Game.GetPlayer")));
+    }
+
+    #[test]
+    fn json_flag_can_precede_the_fix_subcommand() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--json".to_string(),
+            "fix".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n"
+        );
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(report["files_fixed"], 1);
+        assert_eq!(report["total_diagnostics"], 0);
+        assert_eq!(report["success"], true);
     }
 }
