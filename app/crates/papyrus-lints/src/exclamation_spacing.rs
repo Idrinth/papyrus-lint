@@ -156,6 +156,28 @@ mod tests {
     }
 
     #[test]
+    fn ignores_exclamation_marks_in_strings_and_comments() {
+        let source = "\
+String message = \"Look!NoSpace\"
+; !comment
+{/ !documentation /}
+;/ !block
+comment /;
+";
+        assert!(check(source).is_empty());
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn malformed_source_is_left_unchanged() {
+        // Lints inspect incomplete scripts where possible, but a lexer error
+        // must not lead to a partial or incorrectly positioned edit.
+        let source = "If !bReady\n    String message = \"unterminated\n";
+        assert!(check(source).is_empty());
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
     fn ignores_negation_with_nothing_but_a_newline_after_it() {
         // Inserting a space here would just be trailing whitespace, which
         // the "Trailing whitespace" fix would strip right back off in the
@@ -167,6 +189,13 @@ mod tests {
     #[test]
     fn ignores_negation_with_only_trailing_whitespace_after_it() {
         assert!(check("If !   \nEndIf\n").is_empty());
+    }
+
+    #[test]
+    fn ignores_negation_with_only_trailing_whitespace_before_crlf() {
+        let source = "If !\t  \r\nEndIf\r\n";
+        assert!(check(source).is_empty());
+        assert_eq!(repair(source), source);
     }
 
     #[test]
