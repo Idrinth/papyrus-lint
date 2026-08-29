@@ -34,3 +34,7 @@ output is scoped to for a single-file invocation.
 
 - `papyrusLint.cliPath`: path to the `PapyrusLinterCLI` executable
   (defaults to `PapyrusLinterCLI`, i.e. resolved from `PATH`).
+- `papyrusLint.configPath`: path to a papyrus-lint config file to pass to
+  the CLI via `--config`, overriding the `papyrus-lint.yaml`/`.yml` it
+  would otherwise discover from the project root. Leave empty (the
+  default) to use that discovery as normal.

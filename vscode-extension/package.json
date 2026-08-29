@@ -39,6 +39,11 @@
           "type": "string",
           "default": "PapyrusLinterCLI",
           "description": "Path to the PapyrusLinterCLI executable used to lint .psc files."
+        },
+        "papyrusLint.configPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a papyrus-lint config file to use instead of the one PapyrusLinterCLI would otherwise discover from the project root. Leave empty to use the default discovery."
         }
       }
     },

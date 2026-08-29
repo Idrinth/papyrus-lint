@@ -73,6 +73,22 @@ pub fn load_config(dir: &Path) -> Result<papyrus_lints::Config, String> {
     Ok(load_project_file(dir)?.lint)
 }
 
+/// Reads and parses an explicit config file at `path`, bypassing the
+/// `papyrus-lint.yaml`/`.yml` discovery [`load_config`] does in a project
+/// directory. Used for an explicit override (e.g. a `--config` CLI flag,
+/// or an editor plugin's configured path) that names a config file
+/// directly, which need not be called `papyrus-lint.yaml`/`.yml` or live
+/// in the project root. Returns an error if `path` doesn't exist or fails
+/// to parse.
+pub fn load_config_from_path(path: &Path) -> Result<papyrus_lints::Config, String> {
+    let contents = fs::read_to_string(path).map_err(|err| err.to_string())?;
+    if contents.trim().is_empty() {
+        return Ok(papyrus_lints::Config::default());
+    }
+    let project: ProjectFile = serde_yaml::from_str(&contents).map_err(|err| err.to_string())?;
+    Ok(project.lint)
+}
+
 /// Writes `config` to `dir`'s papyrus-lint YAML config file, preserving
 /// any explicit PapyrusCompiler.exe path override already stored there.
 pub fn save_config(dir: &Path, config: &papyrus_lints::Config) -> Result<(), String> {
@@ -179,6 +195,47 @@ mod tests {
         let config = load_config(dir.path()).expect("loading should succeed");
 
         assert!(config.semicolon);
+    }
+
+    #[test]
+    fn load_config_from_path_reads_an_explicit_file_regardless_of_name() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        fs::write(&path, "semicolon: true\nindentation: space\n")
+            .expect("failed to write test config file");
+
+        let config = load_config_from_path(&path).expect("loading should succeed");
+
+        assert!(config.semicolon);
+        assert_eq!(config.indentation, Indentation::Space);
+    }
+
+    #[test]
+    fn load_config_from_path_returns_defaults_for_an_empty_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        fs::write(&path, "").expect("failed to write test config file");
+
+        let config = load_config_from_path(&path).expect("loading should succeed");
+
+        assert_eq!(config, papyrus_lints::Config::default());
+    }
+
+    #[test]
+    fn load_config_from_path_errors_when_the_file_is_missing() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("missing.yaml");
+
+        assert!(load_config_from_path(&path).is_err());
+    }
+
+    #[test]
+    fn load_config_from_path_errors_on_invalid_yaml() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        fs::write(&path, "semicolon: [not a bool\n").expect("failed to write test config file");
+
+        assert!(load_config_from_path(&path).is_err());
     }
 
     #[test]
