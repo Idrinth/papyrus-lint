@@ -13,7 +13,10 @@ pub const RULE: &str = "exclamation-spacing";
 /// separately) whose following characters, on the same line, aren't exactly
 /// one plain space. Always reported as a `[warning]`. A `!` on a line
 /// protected by a CreationKit fragment-code wrapper (see [`fragment_code`])
-/// is never flagged.
+/// is never flagged, and neither is a `!` with nothing but a line ending (or
+/// end of file) after it — inserting a space there would just be trailing
+/// whitespace, which the "Trailing whitespace" fix would strip right back
+/// off, so there's nothing this lint can usefully require.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let protected = fragment_code::protected_lines(source);
     let tokens = match Lexer::new(source).tokenize() {
@@ -30,7 +33,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         }
         let offset = line_starts[token.line - 1] + token.col - 1;
         let (start, end) = whitespace_run(bytes, offset);
-        if !is_single_space(bytes, start, end) {
+        if !at_end_of_line(bytes, end) && !is_single_space(bytes, start, end) {
             diagnostics.push(Diagnostic {
                 line: token.line,
                 column: token.col,
@@ -46,7 +49,8 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 /// it's exactly one space, closing the gap [`check`] flags (inserting a
 /// space where there was none, and collapsing a longer run of spaces/tabs
 /// down to one). A `!` on a line protected by a CreationKit fragment-code
-/// wrapper (see [`fragment_code`]) is left exactly as-is.
+/// wrapper (see [`fragment_code`]), or with nothing but a line ending/end of
+/// file after it, is left exactly as-is — see [`check`].
 pub fn repair(source: &str) -> String {
     let protected = fragment_code::protected_lines(source);
     let Ok(tokens) = Lexer::new(source).tokenize() else {
@@ -62,7 +66,7 @@ pub fn repair(source: &str) -> String {
         }
         let offset = line_starts[token.line - 1] + token.col - 1;
         let (start, end) = whitespace_run(bytes, offset);
-        if !is_single_space(bytes, start, end) {
+        if !at_end_of_line(bytes, end) && !is_single_space(bytes, start, end) {
             ranges.push((start, end));
         }
     }
@@ -95,6 +99,13 @@ fn whitespace_run(bytes: &[u8], offset: usize) -> (usize, usize) {
 
 fn is_single_space(bytes: &[u8], start: usize, end: usize) -> bool {
     end - start == 1 && bytes.get(start) == Some(&b' ')
+}
+
+/// Whether `end` sits at the end of the line (a `\n`/`\r`) or end of file,
+/// meaning the whitespace run examined by [`whitespace_run`] found nothing
+/// but a line ending after it.
+fn at_end_of_line(bytes: &[u8], end: usize) -> bool {
+    !matches!(bytes.get(end), Some(byte) if *byte != b'\n' && *byte != b'\r')
 }
 
 fn line_starts(source: &str) -> Vec<usize> {
@@ -142,6 +153,25 @@ mod tests {
     #[test]
     fn ignores_not_equal_operator() {
         assert!(check("If a != b\nEndIf\n").is_empty());
+    }
+
+    #[test]
+    fn ignores_negation_with_nothing_but_a_newline_after_it() {
+        // Inserting a space here would just be trailing whitespace, which
+        // the "Trailing whitespace" fix would strip right back off in the
+        // combined `repair()` pipeline (it runs after this one), so this
+        // lint has nothing useful to say about it.
+        assert!(check("If !\nEndIf\n").is_empty());
+    }
+
+    #[test]
+    fn ignores_negation_with_only_trailing_whitespace_after_it() {
+        assert!(check("If !   \nEndIf\n").is_empty());
+    }
+
+    #[test]
+    fn ignores_negation_at_end_of_file_with_no_trailing_newline() {
+        assert!(check("If !").is_empty());
     }
 
     #[test]
@@ -199,6 +229,24 @@ EndFunction
     #[test]
     fn repair_leaves_not_equal_operator_alone() {
         let source = "If a != b\nEndIf\n";
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_negation_with_nothing_but_a_newline_after_it_alone() {
+        let source = "If !\nEndIf\n";
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_negation_with_only_trailing_whitespace_after_it_alone() {
+        let source = "If !   \nEndIf\n";
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_negation_at_end_of_file_with_no_trailing_newline_alone() {
+        let source = "If !";
         assert_eq!(repair(source), source);
     }
 

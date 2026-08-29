@@ -373,6 +373,21 @@ mod tests {
     }
 
     #[test]
+    fn combined_repair_does_not_fight_trailing_whitespace_over_a_line_ending_negation() {
+        // A `!` with nothing but a line ending after it would need a
+        // trailing space to satisfy exclamation-spacing, but the trailing
+        // whitespace fix runs after it and would strip that space right
+        // back off; exclamation-spacing leaves it alone rather than
+        // fighting that fix on every `repair()` call.
+        let config = Config::default();
+        let source = "If !\nEndIf\n";
+        let repaired = repair(source, &config);
+
+        assert_eq!(repaired, source);
+        assert!(repair(&repaired, &config) == repaired);
+    }
+
+    #[test]
     fn repair_honors_configured_semicolon_and_indentation_style() {
         let config = Config {
             semicolon: true,
