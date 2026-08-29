@@ -12,6 +12,7 @@ pub mod comma_spacing;
 pub mod config;
 pub mod cyclomatic_complexity;
 mod disable_comments;
+pub mod exclamation_spacing;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod fragment_code;
@@ -185,6 +186,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     if rules.chain_whitespace {
         diagnostics.extend(chain_whitespace::check(source));
     }
+    if rules.exclamation_spacing {
+        diagnostics.extend(exclamation_spacing::check(source));
+    }
     if rules.named_arguments {
         diagnostics.extend(named_arguments::check(source, config.named_arguments));
     }
@@ -221,6 +225,11 @@ pub fn repair(source: &str, config: &Config) -> String {
     };
     let source = if rules.chain_whitespace {
         chain_whitespace::repair(&source)
+    } else {
+        source
+    };
+    let source = if rules.exclamation_spacing {
+        exclamation_spacing::repair(&source)
     } else {
         source
     };
@@ -338,6 +347,29 @@ mod tests {
         };
 
         assert_eq!(repair(source, &config), source);
+    }
+
+    #[test]
+    fn repair_skips_exclamation_spacing_fix_when_disabled() {
+        let source = "If !bReady\nEndIf\n";
+        let config = Config {
+            rules: config::Rules {
+                exclamation_spacing: false,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+
+        assert_eq!(repair(source, &config), source);
+    }
+
+    #[test]
+    fn combined_repair_fixes_exclamation_spacing() {
+        let config = Config::default();
+        let repaired = repair("If !bReady\nEndIf\n", &config);
+
+        assert_eq!(repaired, "If ! bReady\nEndIf\n");
+        assert!(lint(&repaired, &config).is_empty());
     }
 
     #[test]
@@ -499,6 +531,12 @@ mod tests {
                 chain_whitespace::RULE,
                 Config::default(),
                 config_with(|c| c.rules.chain_whitespace = false),
+            ),
+            (
+                "If !bReady\nEndIf\n",
+                exclamation_spacing::RULE,
+                Config::default(),
+                config_with(|c| c.rules.exclamation_spacing = false),
             ),
             (
                 "ScriptName Example\n\nInt Property bad_name = 1 Auto\n",

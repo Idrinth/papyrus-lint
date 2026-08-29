@@ -71,12 +71,13 @@ apply.
 | **None used as an existing Form** | Flags a member/method access (`a.GetName()`, `a.Name`) on a local variable that's still known to be `None` (e.g. `Armor a = None` followed directly by `a.GetName()`), since that crashes the script at runtime. Tracks a variable as `None` from its declaration/assignment until it's reassigned something else, narrowing through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) and through a `While` loop's condition (this language has no `break`/`continue`, so the loop can only exit once its condition is false). A branch that unconditionally `Return`s doesn't carry its state past the `If`, covering the common `If x == None` / `Return` guard idiom. Anything less direct is left unflagged rather than guessed at. | |
 | **Local variable shadowing** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose name matches (case-insensitively) a `Property` declared on the same script, since referencing that name inside the function then reads the local rather than the property. When linting a `.psc` file dropped in the app, a local that instead shadows a property declared on a parent script (resolved through `Extends`) is flagged too. | |
 | **Whitespace interrupting property/method chaining** | Flags, as an `[error]`, a space or tab immediately before or after a `.` member/method access (e.g. `SomeProperty . DoThing()`), since it interrupts the chain for no benefit. A `.` inside a `Float` literal (e.g. `1.5`) is never flagged. The fix closes the gap on whichever side(s) have it, without reaching across a newline (a chain continued onto another physical line is left alone). | ✓ |
+| **Exclamation mark spacing** | Flags, as a `[warning]`, a `!` negation operator not followed by exactly one space (e.g. `!bReady` or `!  bReady`), since a bit of breathing room makes the negation easier to spot. Never flags `!=`, which the lexer tokenizes separately. The fix inserts a space where there is none and collapses a longer run of spaces/tabs down to one. | ✓ |
 | **Identifier casing** | Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured `identifier_casing` style: `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. `ScriptName` itself is never checked by this lint (see "Type name casing" below). A parameter has no location of its own, so it's reported on its enclosing function's line. | |
 | **Type name casing** | Flags, as a `[warning]`, a script's declared type name (the identifier following `ScriptName`) if it doesn't follow the configured `type_casing` convention (`PascalCase`, `camelCase`, `lowercase`, or `UPPERCASE`). Only the script's own declared name is checked, never its `Extends` target, since that type is declared (and presumably already checked) in another script. Note that a script's `ScriptName` must match its `.psc` filename case-insensitively, so a substantive rename to satisfy this lint means renaming the file too — a case-only change does not. | |
 | **Prefer named arguments** | Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
-semicolon, indentation, and chain whitespace) never flag or change a line inside a
+semicolon, indentation, chain whitespace, and exclamation mark spacing) never flag or change a line inside a
 CreationKit-generated `;BEGIN FRAGMENT CODE`/`;END FRAGMENT CODE` block,
 except the actual script code between a `;BEGIN CODE`/`;END CODE` pair
 within it. Reformatting the rest of that block (fragment headers, the
@@ -101,8 +102,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `return-types`, `function-override`, `argument-naming`, `numeric-comparison`,
 `indentation`, `cyclomatic-complexity`, `unreachable-statement`,
 `static-condition`, `unused-local-variable`, `none-form-usage`,
-`local-variable-shadowing`, `chain-whitespace`, `identifier-casing`, and
-`type-casing`.
+`local-variable-shadowing`, `chain-whitespace`, `exclamation-spacing`,
+`identifier-casing`, and `type-casing`.
 
 ## Configuration
 
@@ -146,6 +147,7 @@ rules:
   none_form_usage: true
   local_variable_shadowing: true
   chain_whitespace: true
+  exclamation_spacing: true
   identifier_casing: true
   type_casing: true
   named_arguments: true
@@ -194,8 +196,8 @@ rules:
   `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
   `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
   `static_condition`, `unused_local_variable`, `none_form_usage`,
-  `local_variable_shadowing`, `chain_whitespace`, `identifier_casing`,
-  `type_casing`, and `named_arguments`.
+  `local_variable_shadowing`, `chain_whitespace`, `exclamation_spacing`,
+  `identifier_casing`, `type_casing`, and `named_arguments`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
