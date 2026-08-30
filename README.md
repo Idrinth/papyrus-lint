@@ -140,9 +140,11 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 ## Configuration
 
 Lint/fix behavior is configured via an optional YAML file named
-`papyrus-lint.yaml` (or `papyrus-lint.yml`), placed next to the
-`.achlist` file you drop into the app. Any key it omits falls back to
-its default:
+`papyrus-lint.yaml` (or `papyrus-lint.yml`), placed at the project root:
+next to the `.achlist` file you drop into the app, or, for a single
+`.psc` file dropped directly, two directories above it (e.g. `Data` for
+`Data/Scripts/Source/abc.psc`). Any key it omits falls back to its
+default:
 
 ```yaml
 # Path to PapyrusCompiler.exe, or null to auto-detect it

@@ -47,6 +47,7 @@ import {
   loadScriptRoots,
   openCodeViewer,
   parsePscFiles,
+  projectDirForPscPath,
   relativePath,
   rememberProjectDir,
   renderPscResults,
@@ -822,9 +823,14 @@ describe("showError / clearError / showResult", () => {
 });
 
 describe("handleDroppedPaths", () => {
-  it("rejects a drop with no .achlist file", async () => {
-    await handleDroppedPaths(["/scripts/A.psc"]);
+  it("rejects a drop with no .achlist file and more than one file", async () => {
+    await handleDroppedPaths(["/scripts/A.psc", "/scripts/B.psc"]);
     expect(document.querySelector("#drop-zone-error")!.textContent).toContain(".achlist");
+  });
+
+  it("rejects a drop of a single file that's neither .achlist nor .psc", async () => {
+    await handleDroppedPaths(["/scripts/readme.txt"]);
+    expect(document.querySelector("#drop-zone-error")!.textContent).toContain(".psc");
   });
 
   it("parses the achlist, loads project config, and lints each .psc entry", async () => {
@@ -851,6 +857,31 @@ describe("handleDroppedPaths", () => {
     await handleDroppedPaths(["/proj/list.achlist"]);
 
     expect(document.querySelector("#drop-zone-error")!.textContent).toContain("Failed to read");
+  });
+
+  it("lints a single dropped .psc file, resolving the project root two directories up", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [],
+    });
+
+    await handleDroppedPaths(["/proj/scripts/source/A.psc"]);
+
+    expect(document.querySelector("#achlist-result-title")!.textContent).toBe(
+      "Loaded /proj/scripts/source/A.psc",
+    );
+    expect(lastProjectDir()).toBe("/proj");
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc" });
+  });
+});
+
+describe("projectDirForPscPath", () => {
+  it("resolves the project root two directories above the script's own directory", () => {
+    expect(projectDirForPscPath("/proj/scripts/source/A.psc")).toBe("/proj");
+    expect(projectDirForPscPath("C:\\proj\\scripts\\source\\A.psc")).toBe("C:\\proj");
   });
 });
 

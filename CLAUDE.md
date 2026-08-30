@@ -2,9 +2,10 @@
 
 A linter for Bethesda's Papyrus scripting language, packaged as a desktop
 app and a CLI. The desktop app is a Tauri (Rust + TypeScript) app: the
-frontend lets a user drop a `.achlist` file, and the Rust backend resolves
-the listed files, parses any `.psc` (Papyrus source) files among them, and
-lints them. The CLI (`app/crates/papyrus-lint-cli`) does the same thing
+frontend lets a user drop a `.achlist` file, or a single `.psc` file
+directly, and the Rust backend resolves the achlist's listed files (or
+just the single dropped `.psc`), parses whichever `.psc` (Papyrus source)
+files result, and lints them. The CLI (`app/crates/papyrus-lint-cli`) does the same thing
 non-interactively for an `.achlist`, or lints one `.psc` directly; it also
 supports automatic fixes and structured JSON output. The
 desktop app's own executable can run either way too: launched with no
