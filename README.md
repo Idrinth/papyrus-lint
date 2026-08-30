@@ -398,7 +398,12 @@ on the standalone `PapyrusLinterCLI` binary above being installed and on
 Each `.psc` file listed on the Lint results tab has a "Compile" button that
 recompiles it with `PapyrusCompiler.exe` (see `compiler_path` under
 Configuration above for how that executable's path is resolved), so a fix
-made in the code viewer can be tried out without leaving the app. It runs:
+made in the code viewer can be tried out without leaving the app. The code
+viewer's editor has the same capability built in: alongside "Save" and
+"Cancel", a "Save & Compile" button writes the edited script to disk and
+then immediately recompiles it, showing the result beneath the editor —
+so a fix can be saved and verified in one step, without reopening the
+file from the Lint results list. Either button runs:
 
 ```
 PapyrusCompiler.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
@@ -416,12 +421,13 @@ multiple import directories that way), so the script can still resolve
 imports from the other layout, or a configured additional root, even
 though it only lives in one of them.
 
-The compiler's stdout/stderr is shown beneath the button once it finishes,
-styled green on success and red on failure, so both a successful compile
-and a reported error (a syntax error, a missing import, etc.) are visible
-without checking a log file. If no compiler path is configured or
-auto-detected, or the executable itself can't be run, that's reported the
-same way rather than silently doing nothing.
+The compiler's stdout/stderr is shown once it finishes (beneath the
+"Compile" button on the Lint results list, or beneath the editor for
+"Save & Compile"), styled green on success and red on failure, so both a
+successful compile and a reported error (a syntax error, a missing
+import, etc.) are visible without checking a log file. If no compiler
+path is configured or auto-detected, or the executable itself can't be
+run, that's reported the same way rather than silently doing nothing.
 
 `PapyrusCompiler.exe` embeds the compiling machine's Windows username and
 computer name into every `.pex` it writes, right next to the source file
