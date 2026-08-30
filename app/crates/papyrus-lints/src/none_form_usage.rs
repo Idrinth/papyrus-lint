@@ -10,7 +10,10 @@
 //! of the primitive value types (`Int`/`Float`/`Bool`/`String`) — object-typed
 //! locals (`Form` and its subtypes) default to `None` until assigned, unlike
 //! primitives which get a non-`None` zero value. It stops being tracked as
-//! soon as it's assigned anything else. `If`/`Else`
+//! soon as it's assigned anything else, except that assigning it another
+//! identifier makes it inherit that identifier's own tracked state instead
+//! (so `a = b` keeps `a` known-`None` when `b` still is, rather than
+//! clearing it). `If`/`Else`
 //! branches are narrowed using the branch's own condition when it's a
 //! direct `None` check (`x == None`, `x != None`, `!x`, or a bare `x`,
 //! optionally combined with `&&`/`||`), and a branch that unconditionally
@@ -126,10 +129,18 @@ pub(crate) fn is_object_type(type_name: &TypeName) -> bool {
 
 /// Updates `none_vars` for a plain `name = value` write (a declaration's
 /// initializer or a `Stmt::Assign` with [`AssignOp::Assign`]): known-`None`
-/// if `value` is the `None` literal, known-not-`None` otherwise.
+/// if `value` is the `None` literal, known-not-`None` otherwise — except
+/// when `value` is itself an identifier, in which case `name` inherits
+/// that identifier's current tracked state (aliasing a known-`None`
+/// variable makes the target known-`None` too, rather than clearing it).
 fn record_write(name: &str, value: &Expr, none_vars: &mut HashSet<String>) {
     let key = name.to_lowercase();
-    if matches!(value, Expr::Literal(Literal::None)) {
+    let becomes_none = match value {
+        Expr::Literal(Literal::None) => true,
+        Expr::Identifier(source) => none_vars.contains(&source.to_lowercase()),
+        _ => false,
+    };
+    if becomes_none {
         none_vars.insert(key);
     } else {
         none_vars.remove(&key);
@@ -510,6 +521,26 @@ mod tests {
         );
 
         assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_use_after_aliasing_a_still_none_variable() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    Armor b\n    b = a\n    b.GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 7);
+        assert!(diagnostics[0].message.contains("'b'"));
+    }
+
+    #[test]
+    fn does_not_flag_aliasing_a_known_not_none_variable() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Armor a = Game.GetPlayer() as Armor\n    Armor b = None\n    b = a\n    b.GetName()\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
     }
 
     #[test]
