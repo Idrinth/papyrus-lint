@@ -140,3 +140,107 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.ref_name }}" plugin-dist/* --clobber --repo "${{ github.repository }}"
+
+  release-notes:
+    name: Write release notes
+    needs: [release, editor-plugins]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Determine previous tag
+        id: prev_tag
+        run: |
+          PREV=$(git tag --sort=-v:refname \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+            | grep -v -F -x "${{ github.ref_name }}" \
+            | head -n1)
+          echo "prev=$PREV" >> "$GITHUB_OUTPUT"
+
+      - name: Build changelist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CURRENT="${{ github.ref_name }}"
+          PREV="${{ steps.prev_tag.outputs.prev }}"
+          if [ -n "$PREV" ]; then
+            RANGE="$PREV..$CURRENT"
+          else
+            RANGE="$CURRENT"
+          fi
+
+          echo "## Changes" > changelist.md
+          echo >> changelist.md
+
+          declare -A SEEN
+          for sha in $(git log "$RANGE" --pretty=format:%H); do
+            PRS=$(gh api "repos/${{ github.repository }}/commits/$sha/pulls" \
+              --jq '.[] | "\(.number)\t\(.title)\t\(.html_url)"' 2>/dev/null || true)
+            while IFS=$'\t' read -r number title url; do
+              [ -z "$number" ] && continue
+              if [ -z "${SEEN[$number]:-}" ]; then
+                SEEN[$number]=1
+                echo "- [$title]($url)" >> changelist.md
+              fi
+            done <<< "$PRS"
+          done
+
+      - name: Resolve tagged commit SHA
+        id: tag_sha
+        run: echo "sha=$(git rev-list -n1 ${{ github.ref_name }})" >> "$GITHUB_OUTPUT"
+
+      - name: Find CI coverage run for tagged commit
+        id: ci_run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${{ steps.tag_sha.outputs.sha }}&status=completed" \
+            --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download coverage artifacts
+        if: steps.ci_run.outputs.run_id != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download "${{ steps.ci_run.outputs.run_id }}" \
+            --repo "${{ github.repository }}" \
+            -D coverage-artifacts \
+            -p '*coverage*'
+
+      - name: Build coverage summary
+        run: |
+          if [ -d coverage-artifacts ]; then
+            python3 .github/scripts/coverage_summary.py coverage-artifacts | tail -n +2 > coverage.md
+          else
+            echo "_Coverage data unavailable: no successful CI run found for this commit._" > coverage.md
+          fi
+
+      - name: Assemble release notes
+        run: |
+          CURRENT="${{ github.ref_name }}"
+          PREV="${{ steps.prev_tag.outputs.prev }}"
+          {
+            cat changelist.md
+            echo
+            cat coverage.md
+            echo
+            if [ -n "$PREV" ]; then
+              echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREV...$CURRENT"
+            fi
+          } > release-notes.md
+
+      - name: Update release notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --notes-file release-notes.md \
+            --repo "${{ github.repository }}"
