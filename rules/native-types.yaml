@@ -1,0 +1,173 @@
+# Fallback knowledge of the native (engine-defined) Papyrus class hierarchy,
+# for papyrus-lint-core's `FunctionTable::is_subtype` (used by the
+# "Argument type check"/"Return type check" lints).
+#
+# Types like `Form`, `ObjectReference`, `Actor`, `MagicItem`, or `Spell` are
+# defined by the game engine itself: their `Extends` relationship comes from
+# a `.psc` source file the game ships (e.g. `Actor.psc extends
+# ObjectReference`), not from anything in the mod project being linted. Most
+# projects don't carry copies of those engine scripts under their own
+# `scripts/source`/`source/scripts`, so the linter can't find them to parse
+# an `Extends` chain from — without this table, a perfectly legal upcast
+# (e.g. passing an `Actor` where an `ObjectReference` is expected) would be
+# flagged as a type mismatch.
+#
+# Each entry:
+#   type:    a native engine type name
+#   extends: that type's immediate parent in the native class hierarchy
+#
+# Deliberately not exhaustive: this only needs to cover the common types
+# shared by Skyrim and Fallout 4. A type not listed here (including one the
+# linter simply has no data for, e.g. a game-specific or SKSE/F4SE-added
+# type) resolves to "unknown, don't guess", same as before this table
+# existed.
+
+- type: ObjectReference
+  extends: Form
+
+- type: Actor
+  extends: ObjectReference
+
+- type: Hazard
+  extends: ObjectReference
+
+- type: MagicItem
+  extends: Form
+
+- type: Spell
+  extends: MagicItem
+
+- type: Scroll
+  extends: MagicItem
+
+- type: Ingredient
+  extends: MagicItem
+
+- type: Potion
+  extends: MagicItem
+
+- type: Ammo
+  extends: Form
+
+- type: Armor
+  extends: Form
+
+- type: Book
+  extends: Form
+
+- type: Cell
+  extends: Form
+
+- type: Class
+  extends: Form
+
+- type: CombatStyle
+  extends: Form
+
+- type: EncounterZone
+  extends: Form
+
+- type: EquipSlot
+  extends: Form
+
+- type: Eyes
+  extends: Form
+
+- type: Faction
+  extends: Form
+
+- type: Flora
+  extends: Form
+
+- type: FormList
+  extends: Form
+
+- type: Furniture
+  extends: Form
+
+- type: GlobalVariable
+  extends: Form
+
+- type: HeadPart
+  extends: Form
+
+- type: Idle
+  extends: Form
+
+- type: ImageSpaceModifier
+  extends: Form
+
+- type: Key
+  extends: Form
+
+- type: Keyword
+  extends: Form
+
+- type: LeveledActor
+  extends: Form
+
+- type: LeveledItem
+  extends: Form
+
+- type: LeveledSpell
+  extends: Form
+
+- type: Location
+  extends: Form
+
+- type: LocationRefType
+  extends: Form
+
+- type: Message
+  extends: Form
+
+- type: MiscObject
+  extends: Form
+
+- type: MusicType
+  extends: Form
+
+- type: Outfit
+  extends: Form
+
+- type: Package
+  extends: Form
+
+- type: Perk
+  extends: Form
+
+- type: Quest
+  extends: Form
+
+- type: Race
+  extends: Form
+
+- type: Shout
+  extends: Form
+
+- type: SoulGem
+  extends: Form
+
+- type: Static
+  extends: Form
+
+- type: TextureSet
+  extends: Form
+
+- type: Topic
+  extends: Form
+
+- type: TopicInfo
+  extends: Form
+
+- type: VisualEffect
+  extends: Form
+
+- type: Weapon
+  extends: Form
+
+- type: WordOfPower
+  extends: Form
+
+- type: WorldSpace
+  extends: Form

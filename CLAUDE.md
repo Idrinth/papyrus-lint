@@ -68,7 +68,9 @@ desktop app's binary at all.
 │       │       │                       # for the argument/return type check lints
 │       │       └── native_types.rs     # Fallback Extends hierarchy for native
 │       │                               # engine types (Actor, ObjectReference,
-│       │                               # Form, ...) with no .psc in the project
+│       │                               # Form, ...) with no .psc in the project;
+│       │                               # reads rules/native-types.yaml via a
+│       │                               # build-time-generated array (build.rs)
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           └── src/                # achlist's scripts against its project's
 │               ├── lib.rs           # papyrus-lint.yaml and prints the results.
@@ -78,8 +80,11 @@ desktop app's binary at all.
 ├── resources/                # Images used by README.md (logo, screenshots)
 ├── rules/
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
-│   └── slow-functions.yaml       # Slow calls and their faster alternatives; both
-│                                  # files are compiled in by papyrus-lints/build.rs
+│   ├── slow-functions.yaml       # Slow calls and their faster alternatives; both
+│   │                              # files are compiled in by papyrus-lints/build.rs
+│   └── native-types.yaml         # Native engine class hierarchy fallback (see
+│                                  # papyrus-lint-core/src/native_types.rs above);
+│                                  # compiled in by papyrus-lint-core/build.rs
 ├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
 │   ├── linter.py                          # runs PapyrusLinterCLI against a saved
 │   ├── messages.json                      # .psc file and parses its output
