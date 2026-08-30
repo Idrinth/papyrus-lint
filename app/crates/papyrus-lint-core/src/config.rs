@@ -29,6 +29,8 @@ const COMPILER_AUTO_DETECT_DIR_NAME: &str = "Papyrus Compiler";
 struct ProjectFile {
     #[serde(skip_serializing_if = "Option::is_none")]
     compiler_path: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    additional_script_roots: Vec<String>,
     #[serde(flatten)]
     lint: papyrus_lints::Config,
 }
@@ -65,6 +67,11 @@ const FIELD_COMMENTS: &[(&str, &str)] = &[
     (
         "compiler_path",
         "# Path to PapyrusCompiler.exe, or null to auto-detect it",
+    ),
+    (
+        "additional_script_roots",
+        "# Extra directories (relative to the project root, or absolute) to search\n\
+         # for .psc files, besides scripts/source and source/scripts",
     ),
     ("semicolon", "# true, false"),
     ("indentation", "# tab, space"),
@@ -169,6 +176,34 @@ pub fn save_compiler_path(dir: &Path, path: Option<&str>) -> Result<(), String> 
         .map(str::trim)
         .filter(|path| !path.is_empty())
         .map(str::to_owned);
+    save_project_file(dir, &project)
+}
+
+/// Reads `dir`'s papyrus-lint config file and returns the additional script
+/// root directories it lists, if any (see [`crate::script_locator`] for how
+/// they're used alongside the conventional `scripts/source`/`source/scripts`
+/// directories to resolve cross-script lookups and the compiler's `-i`
+/// argument). Empty (or blank) entries are dropped. Returns an empty `Vec`
+/// if `dir` has no config file or it declares none.
+pub fn load_script_roots(dir: &Path) -> Result<Vec<String>, String> {
+    let roots = load_project_file(dir)?.additional_script_roots;
+    Ok(roots
+        .into_iter()
+        .map(|root| root.trim().to_string())
+        .filter(|root| !root.is_empty())
+        .collect())
+}
+
+/// Persists `roots` as `dir`'s papyrus-lint config file's additional script
+/// root directories, preserving its lint settings and compiler path
+/// override. Empty (or blank) entries are dropped before saving.
+pub fn save_script_roots(dir: &Path, roots: &[String]) -> Result<(), String> {
+    let mut project = load_project_file(dir)?;
+    project.additional_script_roots = roots
+        .iter()
+        .map(|root| root.trim().to_string())
+        .filter(|root| !root.is_empty())
+        .collect();
     save_project_file(dir, &project)
 }
 
@@ -457,6 +492,96 @@ mod tests {
         assert_eq!(
             load_compiler_path(dir.path()).expect("should succeed"),
             None
+        );
+    }
+
+    #[test]
+    fn load_script_roots_returns_empty_when_unset() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert_eq!(
+            load_script_roots(dir.path()).expect("should succeed"),
+            Vec::<String>::new()
+        );
+    }
+
+    #[test]
+    fn save_and_load_script_roots_round_trips_without_disturbing_lint_settings() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+        save_config(dir.path(), &config).expect("saving lint config should succeed");
+
+        save_script_roots(
+            dir.path(),
+            &[
+                "../SharedScripts".to_string(),
+                "/abs/OtherScripts".to_string(),
+            ],
+        )
+        .expect("saving script roots should succeed");
+
+        assert_eq!(
+            load_script_roots(dir.path()).expect("should succeed"),
+            vec![
+                "../SharedScripts".to_string(),
+                "/abs/OtherScripts".to_string()
+            ]
+        );
+        assert_eq!(load_config(dir.path()).expect("should succeed"), config);
+    }
+
+    #[test]
+    fn save_script_roots_drops_blank_entries() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        save_script_roots(
+            dir.path(),
+            &[
+                "  ".to_string(),
+                "../SharedScripts".to_string(),
+                String::new(),
+            ],
+        )
+        .expect("saving script roots should succeed");
+
+        assert_eq!(
+            load_script_roots(dir.path()).expect("should succeed"),
+            vec!["../SharedScripts".to_string()]
+        );
+    }
+
+    #[test]
+    fn save_script_roots_empty_clears_existing_roots() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        save_script_roots(dir.path(), &["../SharedScripts".to_string()])
+            .expect("saving script roots should succeed");
+
+        save_script_roots(dir.path(), &[]).expect("clearing script roots should succeed");
+
+        assert_eq!(
+            load_script_roots(dir.path()).expect("should succeed"),
+            Vec::<String>::new()
+        );
+    }
+
+    #[test]
+    fn save_config_preserves_existing_script_roots() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        save_script_roots(dir.path(), &["../SharedScripts".to_string()])
+            .expect("saving script roots should succeed");
+
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+        save_config(dir.path(), &config).expect("saving lint config should succeed");
+
+        assert_eq!(
+            load_script_roots(dir.path()).expect("should succeed"),
+            vec!["../SharedScripts".to_string()]
         );
     }
 

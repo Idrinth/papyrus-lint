@@ -39,7 +39,18 @@
 //! lint configuration is loaded directly from `<path>` instead of being
 //! discovered from the project root, letting a caller (e.g. an editor
 //! plugin with its own configured override) point at a config file with
-//! any name, anywhere on disk.
+//! any name, anywhere on disk. This also skips the project root's own
+//! `additional_script_roots` (see below), since that config file is no
+//! longer being read at all.
+//!
+//! With one or more `--script-root <path>` flags (combinable with
+//! `fix`/`--json`/`--config` in any order), each given directory (resolved
+//! relative to the project root unless already absolute) is searched
+//! alongside `scripts/source`/`source/scripts` and the project's configured
+//! `additional_script_roots` (see [`papyrus_lint_core::config::load_script_roots`])
+//! when resolving cross-script lookups — useful for a script that imports
+//! from a shared library location outside the project without adding it to
+//! the project's own config file.
 //!
 //! This crate is used both by the standalone `PapyrusLinterCLI` binary
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
@@ -55,8 +66,8 @@ use papyrus_lint_core::{achlist, config};
 use serde::Serialize;
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json] [--config <path>] <path-to-achlist-or-psc>\n       \
-PapyrusLinterCLI [--json] [--config <path>] fix <path-to-achlist-or-psc>\n\n\
+    "Usage: PapyrusLinterCLI [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc>\n       \
+PapyrusLinterCLI [--json] [--config <path>] [--script-root <path>]... fix <path-to-achlist-or-psc>\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
 configuration (looked up next to the .achlist file, or two directories\n\
@@ -66,11 +77,17 @@ With the `fix` subcommand, applies every automatic fix (see README.md)\n\
 to those scripts first, rewriting each one on disk if it changed, then\n\
 reports whatever diagnostics remain the same way.\n\n\
 Options:\n\
-  -h, --help       Show this help message\n\
-  -V, --version    Print the PapyrusLinterCLI version\n\
-  --json           Print the report to stdout as JSON instead of plain text\n\
-  --config <path>  Load lint configuration from this file instead of\n\
-                   discovering papyrus-lint.yaml/.yml from the project root\n\n\
+  -h, --help              Show this help message\n\
+  -V, --version           Print the PapyrusLinterCLI version\n\
+  --json                  Print the report to stdout as JSON instead of plain text\n\
+  --config <path>         Load lint configuration from this file instead of\n\
+                          discovering papyrus-lint.yaml/.yml from the project root\n\
+                          (also disables the project root's additional_script_roots;\n\
+                          use --script-root to add any back explicitly)\n\
+  --script-root <path>    An extra directory (relative to the project root,\n\
+                          or absolute) to search for .psc files, besides\n\
+                          scripts/source, source/scripts, and the project's\n\
+                          configured additional_script_roots. Repeatable.\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n";
@@ -132,6 +149,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let json = args.iter().any(|arg| arg == "--json");
 
     let mut config_path: Option<PathBuf> = None;
+    let mut cli_script_roots: Vec<String> = Vec::new();
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
     let mut input = args.iter().filter(|arg| arg.as_str() != "--json").cloned();
     while let Some(arg) = input.next() {
@@ -141,6 +159,12 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
                 return 2;
             };
             config_path = Some(PathBuf::from(value));
+        } else if arg == "--script-root" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            cli_script_roots.push(value);
         } else {
             positional_and_flags.push(arg);
         }
@@ -188,6 +212,23 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         }
     };
 
+    // `--config` bypasses discovering the project root's own
+    // papyrus-lint.yaml/.yml entirely (see USAGE), so its
+    // additional_script_roots is skipped too in that case; `--script-root`
+    // still applies on top either way.
+    let mut additional_script_roots = if config_path.is_some() {
+        Vec::new()
+    } else {
+        match config::load_script_roots(&project_root) {
+            Ok(roots) => roots,
+            Err(err) => {
+                let _ = writeln!(stderr, "error: failed to load lint config: {err}");
+                return 2;
+            }
+        }
+    };
+    additional_script_roots.extend(cli_script_roots);
+
     let script_paths: Vec<PathBuf> = if is_psc_file {
         vec![input_path]
     } else {
@@ -209,7 +250,8 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             .collect()
     };
 
-    let mut function_table = FunctionTable::new(project_root);
+    let mut function_table =
+        FunctionTable::new_with_additional_roots(project_root, additional_script_roots);
     let mut total_diagnostics = 0usize;
     let mut files_with_diagnostics = 0usize;
     let mut files_fixed = 0usize;
@@ -741,6 +783,113 @@ mod tests {
 
         assert_eq!(code, 1);
         assert!(stdout.contains("[argument-types]"));
+    }
+
+    #[test]
+    fn resolves_cross_script_argument_types_from_the_projects_configured_script_root() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let shared_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &shared_dir.path().join("Greeter.psc"),
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            &format!(
+                "additional_script_roots:\n  - {}\n",
+                shared_dir.path().display()
+            ),
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("[argument-types]"));
+    }
+
+    #[test]
+    fn resolves_cross_script_argument_types_from_a_script_root_flag() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let shared_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &shared_dir.path().join("Greeter.psc"),
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--script-root".to_string(),
+            shared_dir.path().to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("[argument-types]"));
+    }
+
+    #[test]
+    fn script_root_flag_without_a_value_prints_usage() {
+        let (code, _stdout, stderr) = run_captured(&["--script-root".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn config_flag_skips_the_project_roots_additional_script_roots() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let shared_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &shared_dir.path().join("Greeter.psc"),
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            &format!(
+                "additional_script_roots:\n  - {}\n",
+                shared_dir.path().display()
+            ),
+        );
+        let override_path = dir.path().join("overrides/custom.yaml");
+        write_file(&override_path, "");
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--config".to_string(),
+            override_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        // Greeter can't be resolved (the project root's own config, which
+        // declares the shared_dir root, is bypassed by --config), so the
+        // "Argument type check" lint has nothing to flag.
+        assert_eq!(code, 0);
+        assert!(!stdout.contains("[argument-types]"));
     }
 
     #[test]

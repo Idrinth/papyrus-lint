@@ -25,6 +25,7 @@ let identifierCasingStyleEl: HTMLSelectElement | null;
 let namedArgumentsStyleEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let compilerPathEl: HTMLInputElement | null;
+let scriptRootsEl: HTMLTextAreaElement | null;
 let semicolonStyleEl: HTMLSelectElement | null;
 let cyclomaticComplexityWarningEl: HTMLInputElement | null;
 let cyclomaticComplexityErrorEl: HTMLInputElement | null;
@@ -216,6 +217,11 @@ let currentProjectDir: string | null = null;
 // The PapyrusCompiler.exe path to use for the "Compile" button, kept in
 // sync with the Settings tab's input (see handleCompilerPathChanged).
 let currentCompilerPath = "";
+// Extra directories (besides scripts/source and source/scripts under the
+// project root) to search for .psc files when resolving cross-script
+// lookups, kept in sync with the Settings tab's textarea (see
+// handleScriptRootsChanged).
+let currentScriptRoots: string[] = [];
 
 const TRAILING_WHITESPACE_MESSAGE = "[warning] Line contains trailing whitespace";
 
@@ -282,6 +288,27 @@ export async function loadCompilerPath(dir: string): Promise<string> {
 export async function saveCompilerPath(dir: string, path: string): Promise<void> {
   try {
     await invoke("save_compiler_path", { dir, path });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Returns `dir`'s configured additional script root directories, if any.
+// Returns an empty array if none are configured or the lookup fails.
+export async function loadScriptRoots(dir: string): Promise<string[]> {
+  try {
+    return await invoke<string[]>("load_script_roots", { dir });
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+// Persists `roots` as `dir`'s configured additional script root
+// directories.
+export async function saveScriptRoots(dir: string, roots: string[]): Promise<void> {
+  try {
+    await invoke("save_script_roots", { dir, roots });
   } catch (error) {
     console.error(error);
   }
@@ -378,6 +405,7 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
       path,
       root: currentProjectDir ?? "",
       config: currentLintConfig,
+      additionalRoots: currentScriptRoots,
     });
   } catch (error) {
     console.error(error);
@@ -390,6 +418,7 @@ export async function repairPscFile(path: string): Promise<Diagnostic[]> {
     path,
     root: currentProjectDir ?? "",
     config: currentLintConfig,
+    additionalRoots: currentScriptRoots,
   });
 }
 
@@ -407,6 +436,7 @@ export async function listScriptMembers(typeName: string): Promise<Member[]> {
     return await invoke<Member[]>("list_script_members", {
       root: currentProjectDir ?? "",
       typeName,
+      additionalRoots: currentScriptRoots,
     });
   } catch (error) {
     console.error(error);
@@ -1057,6 +1087,8 @@ export async function useProjectDir(dir: string) {
   if (compilerPathEl) {
     compilerPathEl.value = currentCompilerPath;
   }
+  currentScriptRoots = await loadScriptRoots(dir);
+  applyScriptRootsToUI(currentScriptRoots);
   rememberProjectDir(dir);
 }
 
@@ -1070,6 +1102,33 @@ export function handleCompilerPathChanged() {
   }
 }
 
+// Splits the additional script roots textarea's value into one directory
+// per non-blank line.
+export function scriptRootsFromUI(): string[] {
+  return (scriptRootsEl?.value ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+// Reflects `roots` onto the additional script roots textarea, one per line.
+export function applyScriptRootsToUI(roots: string[]) {
+  if (scriptRootsEl) {
+    scriptRootsEl.value = roots.join("\n");
+  }
+}
+
+// Called when the additional script roots textarea changes: updates the
+// roots used to resolve cross-script lookups/the compiler's -i argument,
+// and persists them to the current project's config file (if a project is
+// loaded).
+export function handleScriptRootsChanged() {
+  currentScriptRoots = scriptRootsFromUI();
+  if (currentProjectDir) {
+    void saveScriptRoots(currentProjectDir, currentScriptRoots);
+  }
+}
+
 // Compiles the `.psc` file at `path` with the currently configured
 // PapyrusCompiler.exe path, reproducing the invocation Creation Kit
 // tooling uses to compile a single script out of its source directory.
@@ -1077,6 +1136,7 @@ export async function compilePscFile(path: string): Promise<CompileOutcome> {
   return invoke<CompileOutcome>("compile_psc_file", {
     path,
     compilerPath: currentCompilerPath,
+    additionalRoots: currentScriptRoots,
   });
 }
 
@@ -1114,6 +1174,7 @@ window.addEventListener("DOMContentLoaded", () => {
   pscResultEl = document.querySelector("#psc-result");
   pscResultListEl = document.querySelector("#psc-result-list");
   compilerPathEl = document.querySelector("#compiler-path");
+  scriptRootsEl = document.querySelector("#script-roots");
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
@@ -1202,6 +1263,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
+  scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);
   semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
   indentationStyleEl?.addEventListener("change", () => {
     if (indentationWidthEl) {

@@ -129,6 +129,7 @@ impl ScriptFunctions {
 /// don't retry the filesystem or parser.
 pub struct FunctionTable {
     root: PathBuf,
+    additional_roots: Vec<String>,
     scripts: HashMap<String, Option<ScriptFunctions>>,
 }
 
@@ -138,6 +139,18 @@ impl FunctionTable {
     pub fn new(root: PathBuf) -> Self {
         FunctionTable {
             root,
+            additional_roots: Vec::new(),
+            scripts: HashMap::new(),
+        }
+    }
+
+    /// Creates an empty table that also searches `additional_roots` (see
+    /// [`crate::config::load_script_roots`]/[`crate::script_locator::find_psc_file`])
+    /// alongside `scripts/source` / `source/scripts` under `root`.
+    pub fn new_with_additional_roots(root: PathBuf, additional_roots: Vec<String>) -> Self {
+        FunctionTable {
+            root,
+            additional_roots,
             scripts: HashMap::new(),
         }
     }
@@ -289,7 +302,8 @@ impl FunctionTable {
     /// `MyMissingScript.DoThing()`.
     pub fn script_exists(&mut self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
-        find_psc_file(&self.root, &name_lower).is_some() || crate::native_globals::is_known(&name_lower)
+        find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some()
+            || crate::native_globals::is_known(&name_lower)
     }
 
     /// Parses and caches the script named `name_lower`, if it hasn't been
@@ -299,7 +313,7 @@ impl FunctionTable {
             return;
         }
 
-        let script = find_psc_file(&self.root, name_lower)
+        let script = find_psc_file(&self.root, name_lower, &self.additional_roots)
             .and_then(|path| read_psc_source(&path).ok())
             .and_then(|source| papyrus_parser::parse(&source).ok())
             .map(|script| ScriptFunctions::from_script(&script));
@@ -438,6 +452,27 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(table.lookup_function("Foo", "DoesNotExist").is_none());
+    }
+
+    #[test]
+    fn new_with_additional_roots_resolves_a_script_outside_the_conventional_dirs() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let shared = tempfile::tempdir().expect("failed to create temp dir");
+        fs::write(
+            shared.path().join("Shared.psc"),
+            "ScriptName Shared\n\nInt Function DoThing()\nEndFunction\n",
+        )
+        .expect("failed to write shared script");
+
+        let mut table = FunctionTable::new_with_additional_roots(
+            root.path().to_path_buf(),
+            vec![shared.path().to_string_lossy().into_owned()],
+        );
+
+        let signature = table
+            .lookup_function("Shared", "DoThing")
+            .expect("function should be found via the additional root");
+        assert_eq!(signature.name, "DoThing");
     }
 
     #[test]
