@@ -46,6 +46,7 @@
 //!   operator_spacing: true
 //!   property_sorting: false
 //!   unchecked_form_parameter: false
+//!   unchecked_cast: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -266,6 +267,8 @@ pub struct Rules {
     /// [`Self::property_sorting`], this defaults to `false`: see
     /// [`crate::unchecked_form_parameter`].
     pub unchecked_form_parameter: bool,
+    /// The "Unchecked cast" lint.
+    pub unchecked_cast: bool,
 }
 
 impl Default for Rules {
@@ -301,6 +304,7 @@ impl Default for Rules {
             operator_spacing: true,
             property_sorting: false,
             unchecked_form_parameter: false,
+            unchecked_cast: true,
         }
     }
 }
@@ -433,6 +437,7 @@ mod tests {
         // possibly-None Form and defer the check to a caller or a later
         // branch.
         assert!(!config.rules.unchecked_form_parameter);
+        assert!(config.rules.unchecked_cast);
     }
 
     #[test]
