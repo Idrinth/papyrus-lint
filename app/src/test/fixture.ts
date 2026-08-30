@@ -19,6 +19,7 @@ export const FIXTURE_HTML = `
 
       <div id="panel-settings" class="tabs__panel" role="tabpanel" hidden>
         <input id="compiler-path" type="text" />
+        <textarea id="script-roots"></textarea>
         <select id="semicolon-style">
           <option value="forbid">Remove where possible</option>
           <option value="require">Add to non-empty lines</option>

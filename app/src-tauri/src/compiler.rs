@@ -16,7 +16,11 @@
 //! `-i` accepts multiple import directories separated by `;`, so it's
 //! always given both of [`papyrus_lint_core::script_locator`]'s known source
 //! directories under the project root, not just the one the script being
-//! compiled happens to live in — letting it import from either layout.
+//! compiled happens to live in — letting it import from either layout —
+//! plus any of the project's configured `additional_script_roots` (see
+//! [`papyrus_lint_core::config::load_script_roots`]), so a script that
+//! imports from a shared library location outside those two conventional
+//! directories still compiles.
 
 use std::path::Path;
 use std::process::Command;
@@ -67,25 +71,37 @@ fn strip_pex_personal_data(script_path: &Path, output_dir: &Path) -> bool {
 }
 
 /// Builds the `-i` argument's value: the project root's two known source
-/// directories (see [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`]), joined with
-/// `;` as PapyrusCompiler.exe expects for multiple import directories, so a
-/// script can import from either layout regardless of which one it lives
-/// in. Falls back to `source_dir` alone if the project root (two levels
-/// above `source_dir`, i.e. `output_dir`'s parent) can't be determined.
-fn import_dirs(source_dir: &Path, output_dir: &Path) -> String {
+/// directories (see [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`])
+/// plus `additional_roots` (the project's configured
+/// `additional_script_roots`, resolved relative to the project root unless
+/// already absolute), joined with `;` as PapyrusCompiler.exe expects for
+/// multiple import directories, so a script can import from either
+/// conventional layout, or a configured additional root, regardless of
+/// which one it lives in. Falls back to `source_dir` alone if the project
+/// root (two levels above `source_dir`, i.e. `output_dir`'s parent) can't
+/// be determined.
+fn import_dirs(source_dir: &Path, output_dir: &Path, additional_roots: &[String]) -> String {
     let Some(root) = output_dir.parent() else {
         return source_dir.display().to_string();
     };
 
     papyrus_lint_core::script_locator::CANDIDATE_DIRS
         .iter()
-        .map(|dir| root.join(dir).display().to_string())
+        .map(|dir| root.join(dir))
+        .chain(papyrus_lint_core::script_locator::resolve_additional_roots(
+            root,
+            additional_roots,
+        ))
+        .map(|dir| dir.display().to_string())
         .collect::<Vec<_>>()
         .join(";")
 }
 
 /// Compiles the `.psc` file at `script_path` using the compiler executable
-/// at `compiler_path`.
+/// at `compiler_path`. `additional_roots` are the project's configured
+/// `additional_script_roots` (see
+/// [`papyrus_lint_core::config::load_script_roots`]), included in the `-i`
+/// argument alongside the two conventional source directories.
 ///
 /// Returns `Err` when the compiler process itself couldn't be run or its
 /// arguments couldn't be determined (executable missing or not
@@ -95,6 +111,7 @@ fn import_dirs(source_dir: &Path, output_dir: &Path) -> String {
 pub fn compile_psc_file(
     compiler_path: &Path,
     script_path: &Path,
+    additional_roots: &[String],
 ) -> Result<CompileOutcome, String> {
     let source_dir = script_path
         .parent()
@@ -114,7 +131,7 @@ pub fn compile_psc_file(
     let file_name = script_path
         .file_name()
         .ok_or_else(|| format!("{} has no file name", script_path.display()))?;
-    let import_dirs = import_dirs(source_dir, output_dir);
+    let import_dirs = import_dirs(source_dir, output_dir, additional_roots);
 
     let output = Command::new(compiler_path)
         .arg(source_dir)
@@ -164,7 +181,7 @@ mod tests {
         script_path: &Path,
     ) -> Result<CompileOutcome, String> {
         for attempt in 0.. {
-            match compile_psc_file(compiler_path, script_path) {
+            match compile_psc_file(compiler_path, script_path, &[]) {
                 Err(err) if attempt < 5 && err.contains("Text file busy") => {
                     std::thread::sleep(std::time::Duration::from_millis(20));
                 }
@@ -338,7 +355,7 @@ mod tests {
         let source_dir = root.join("scripts/source");
         let output_dir = source_dir.parent().expect("has a parent");
 
-        let dirs = import_dirs(&source_dir, output_dir);
+        let dirs = import_dirs(&source_dir, output_dir, &[]);
 
         assert_eq!(
             dirs,
@@ -351,11 +368,38 @@ mod tests {
     }
 
     #[test]
+    fn import_dirs_appends_additional_script_roots() {
+        let root = Path::new("/game/Data");
+        let source_dir = root.join("scripts/source");
+        let output_dir = source_dir.parent().expect("has a parent");
+
+        let dirs = import_dirs(
+            &source_dir,
+            output_dir,
+            &[
+                "../SharedScripts".to_string(),
+                "/abs/OtherScripts".to_string(),
+            ],
+        );
+
+        assert_eq!(
+            dirs,
+            format!(
+                "{};{};{};{}",
+                root.join("scripts/source").display(),
+                root.join("source/scripts").display(),
+                root.join("../SharedScripts").display(),
+                Path::new("/abs/OtherScripts").display(),
+            )
+        );
+    }
+
+    #[test]
     fn import_dirs_falls_back_to_source_dir_without_a_root() {
         let source_dir = Path::new("source");
         let output_dir = Path::new("");
 
-        let dirs = import_dirs(source_dir, output_dir);
+        let dirs = import_dirs(source_dir, output_dir, &[]);
 
         assert_eq!(dirs, source_dir.display().to_string());
     }
@@ -369,7 +413,7 @@ mod tests {
         fs::write(&script_path, "").expect("failed to write stub script");
         let missing_compiler = root.path().join("does-not-exist.exe");
 
-        let result = compile_psc_file(&missing_compiler, &script_path);
+        let result = compile_psc_file(&missing_compiler, &script_path, &[]);
 
         assert!(result
             .unwrap_err()
@@ -381,7 +425,7 @@ mod tests {
         let compiler_path = Path::new("compiler");
         let script_path = Path::new("Foo.psc");
 
-        let result = compile_psc_file(compiler_path, script_path);
+        let result = compile_psc_file(compiler_path, script_path, &[]);
 
         assert_eq!(
             result.unwrap_err(),

@@ -84,6 +84,22 @@ h1 {
   box-sizing: border-box;
 }
 
+.script-roots-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  margin-bottom: 1em;
+}
+
+.script-roots-setting textarea {
+  padding: 0.25em 0.5em;
+  width: 100%;
+  max-width: 32em;
+  box-sizing: border-box;
+  font-family: inherit;
+  resize: vertical;
+}
+
 .indentation-setting {
   display: flex;
   gap: 0.5em;
