@@ -13,6 +13,7 @@
 //! cyclomatic_complexity_error: 20
 //! type_casing: PascalCase
 //! named_arguments: never
+//! min_wait_interval: 0.1
 //! fail_on_warning: false
 //! fail_on_info: false
 //! rules:
@@ -50,6 +51,7 @@
 //!   unchecked_form_parameter: false
 //!   unchecked_cast: true
 //!   unresolved_script: true
+//!   short_wait_interval: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -138,7 +140,7 @@ impl IdentifierCasing {
 /// config file and, in the desktop app, kept in sync with the formatting
 /// controls in the UI (loaded on startup, saved back to the file whenever
 /// they change). Fields absent from the YAML fall back to their default.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
     /// Whether lines are required to end in a semicolon (`true`) or must
@@ -168,6 +170,11 @@ pub struct Config {
     /// named-argument call syntax (`func(argB = 1)`) over positional
     /// arguments. See [`crate::named_arguments::NamedArguments`].
     pub named_arguments: crate::named_arguments::NamedArguments,
+    /// The interval/duration argument a `Utility.Wait`, `RegisterForUpdate`,
+    /// `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or
+    /// `RegisterForSingleUpdateGameTime` call can go below before the
+    /// "Short wait/update interval" lint flags it as a `[warning]`.
+    pub min_wait_interval: f64,
     /// Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level
     /// diagnostic as a reason to exit non-zero. `false` by default, so a
     /// project only fails a lint run on `[error]`-level (and untagged)
@@ -193,6 +200,7 @@ impl Default for Config {
             cyclomatic_complexity_error: 20,
             type_casing: crate::type_casing::Style::default(),
             named_arguments: crate::named_arguments::NamedArguments::default(),
+            min_wait_interval: 0.1,
             fail_on_warning: false,
             fail_on_info: false,
             rules: Rules::default(),
@@ -278,6 +286,8 @@ pub struct Rules {
     pub unchecked_cast: bool,
     /// The "Unresolved script reference" lint.
     pub unresolved_script: bool,
+    /// The "Short wait/update interval" lint.
+    pub short_wait_interval: bool,
 }
 
 impl Default for Rules {
@@ -317,6 +327,7 @@ impl Default for Rules {
             unchecked_form_parameter: false,
             unchecked_cast: true,
             unresolved_script: true,
+            short_wait_interval: true,
         }
     }
 }
@@ -453,6 +464,7 @@ mod tests {
         assert!(!config.rules.unchecked_form_parameter);
         assert!(config.rules.unchecked_cast);
         assert!(config.rules.unresolved_script);
+        assert!(config.rules.short_wait_interval);
     }
 
     #[test]
@@ -496,6 +508,7 @@ mod tests {
             config.named_arguments,
             crate::named_arguments::NamedArguments::Never
         );
+        assert_eq!(config.min_wait_interval, 0.1);
         assert!(!config.fail_on_warning);
         assert!(!config.fail_on_info);
     }
@@ -598,6 +611,12 @@ mod tests {
             parse("cyclomatic_complexity_warning: 5\ncyclomatic_complexity_error: 15\n").unwrap();
         assert_eq!(config.cyclomatic_complexity_warning, 5);
         assert_eq!(config.cyclomatic_complexity_error, 15);
+    }
+
+    #[test]
+    fn parses_min_wait_interval() {
+        let config = parse("min_wait_interval: 0.25\n").unwrap();
+        assert_eq!(config.min_wait_interval, 0.25);
     }
 
     #[test]

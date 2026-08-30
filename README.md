@@ -72,6 +72,7 @@ apply.
 | --- | --- | --- |
 | **Forbidden/discouraged function usage** | Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. | |
 | **Slow function usage** | Flags calls to functions listed in `rules/slow-functions.yaml` that have a faster equivalent available, and suggests the quicker alternative. | |
+| **Short wait/update interval** | Flags, as a `[warning]`, a call to `Utility.Wait`, `RegisterForUpdate`, `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` whose interval argument folds to a compile-time-constant number below the configurable `min_wait_interval` (default `0.1`), since an interval that short runs far more often than is typically useful and can add up to meaningful performance overhead. `Utility.Wait` is only matched when qualified by that literal script name, the same way the "Forbidden/discouraged function usage" lint treats native singletons; the `RegisterFor*` family matches unqualified or through any receiver. Only an argument built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. | |
 
 ### Reliability
 
@@ -140,7 +141,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `local-variable-shadowing`, `chain-whitespace`, `exclamation-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
-`unchecked-cast`, and `unresolved-script`.
+`unchecked-cast`, `unresolved-script`, and `short-wait-interval`.
 
 ## Configuration
 
@@ -173,6 +174,8 @@ cyclomatic_complexity_error: 20
 type_casing: PascalCase
 # always, instead_of_defaults, never
 named_arguments: never
+# Non-negative number
+min_wait_interval: 0.1
 # true, false
 fail_on_warning: false
 # true, false
@@ -212,6 +215,7 @@ rules:
   unchecked_form_parameter: false
   unchecked_cast: true
   unresolved_script: true
+  short_wait_interval: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -251,6 +255,11 @@ rules:
 - `named_arguments`: how strongly a positional call argument should be
   passed by name instead, one of `always`, `instead_of_defaults`, or
   `never` (the default). Read by the "Prefer named arguments" lint.
+- `min_wait_interval`: the interval/duration argument a `Utility.Wait`,
+  `RegisterForUpdate`, `RegisterForSingleUpdate`,
+  `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` call
+  can go below before the "Short wait/update interval" lint flags it as a
+  `[warning]`. Defaults to `0.1`.
 - `fail_on_warning` / `fail_on_info`: whether the command-line interface
   (see below) treats a `[warning]`-level or `[info]`-level diagnostic,
   respectively, as a reason to exit non-zero. Both default to `false`, so
@@ -275,7 +284,7 @@ rules:
   `local_variable_shadowing`, `chain_whitespace`, `exclamation_spacing`,
   `identifier_casing`, `type_casing`, `named_arguments`, `operator_spacing`,
   `property_sorting`, `explicit_return`, `unchecked_form_parameter`,
-  `unchecked_cast`, and `unresolved_script`.
+  `unchecked_cast`, `unresolved_script`, and `short_wait_interval`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
