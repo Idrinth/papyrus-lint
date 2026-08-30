@@ -13,6 +13,7 @@ pub mod config;
 pub mod cyclomatic_complexity;
 mod disable_comments;
 pub mod division_by_zero;
+pub mod empty_body;
 pub mod exclamation_spacing;
 pub mod explicit_return;
 pub mod float_int_conversion;
@@ -189,6 +190,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.division_by_zero {
         diagnostics.extend(division_by_zero::check(source));
+    }
+    if rules.empty_body {
+        diagnostics.extend(empty_body::check(source));
     }
     if rules.unused_local_variable {
         diagnostics.extend(unused_local_variable::check(source));
@@ -647,6 +651,12 @@ mod tests {
                 division_by_zero::RULE,
                 Config::default(),
                 config_with(|c| c.rules.division_by_zero = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    While true\n    EndWhile\nEndFunction\n",
+                empty_body::RULE,
+                Config::default(),
+                config_with(|c| c.rules.empty_body = false),
             ),
         ];
 
