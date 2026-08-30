@@ -64,8 +64,11 @@ desktop app's binary at all.
 │       │       ├── config.rs       # Locates/loads a project's papyrus-lint.yaml
 │       │       ├── script_locator.rs   # Finds .psc files by name under
 │       │       │                       # scripts/source or source/scripts
-│       │       └── function_table.rs   # Cross-script function signature lookup,
-│       │                               # for the argument/return type check lints
+│       │       ├── function_table.rs   # Cross-script function signature lookup,
+│       │       │                       # for the argument/return type check lints
+│       │       └── native_types.rs     # Fallback Extends hierarchy for native
+│       │                               # engine types (Actor, ObjectReference,
+│       │                               # Form, ...) with no .psc in the project
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           └── src/                # achlist's scripts against its project's
 │               ├── lib.rs           # papyrus-lint.yaml and prints the results.
