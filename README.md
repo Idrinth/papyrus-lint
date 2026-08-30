@@ -78,6 +78,7 @@ apply.
 | **Prefer named arguments** | Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting. | |
 | **Spacing around logical/comparison operators** | Requires, as a `[warning]`, exactly one space on either side of `&&`, `\|\|`, `==`, `!=`, `>`, `<`, `>=`, and `<=`. A side whose whitespace reaches a newline (the operator opens or closes a statement continued across physical lines) is left unchecked on that side. The fix normalizes each flagged side to a single space, without reaching across a newline. | ✓ |
 | **Property sorting** | Flags, as a `[warning]`, a `Property` declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the `ScriptName` line, before any variable, function, or state declaration (an `Import` isn't tracked closely enough to count against this). Disabled by default, since reordering a script's declared properties is a more invasive change than the rest of these lints; a project opts in via `rules.property_sorting`. The fix relocates each property's own declaration lines (its full `Property`/`EndProperty` block, for a non-auto property) as a group right after `ScriptName`, in sorted order; a documentation comment placed directly above a property is left behind rather than moved with it. | ✓ |
+| **Explicit return on every path** | Flags, as an `[error]`, a typed function/event with a code path that falls off the end of its body without a `Return`, since Papyrus then silently returns that type's default value (`0`, `""`, `False`, or `None`) instead of one the author chose. A `Return` with no value still counts as long as it's reached (`return_types` covers a value's actual type); an `If` only counts when every branch, including an `Else`, returns, and a `While` loop is never assumed to guarantee one since it may run zero times. A native function has no body to inspect and is never flagged. | |
 | **Form parameter used without a None check** | Flags, as a `[warning]`, a member/method access (`akForm.GetName()`) on a `Form`-typed function parameter that hasn't yet been confirmed non-`None` in that path, since a caller can always pass in `None` and dereferencing it crashes the script at runtime. Tracks a parameter as unconfirmed from the start of its function until it's narrowed through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) or a `While` loop's condition, the same way "None used as an existing Form" above narrows its own state, or until it's reassigned to anything else. A branch that unconditionally `Return`s doesn't carry its state past the `If`, covering the common `If x == None` / `Return` guard idiom. Passing the parameter on as an argument to another call isn't flagged, only a direct member/method access is. Disabled by default, since many scripts intentionally accept a possibly-`None` Form and defer the check to a caller or a later branch; a project opts in via `rules.unchecked_form_parameter`. | |
 | **Unchecked cast** | Flags, as a `[warning]`, a member/method access on the result of an `as` cast (e.g. `(akRef as Actor).GetActorValue("Health")`) before that result has been checked against `None`, since a cast that doesn't match the underlying Form's actual type evaluates to `None` at runtime rather than raising an error, so dereferencing it immediately crashes the script. Tracks a local variable as an unchecked cast result from its declaration/assignment from an `as` expression until it's reassigned something else, clearing it the moment a direct `None` check on it (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) is evaluated, regardless of which branch is ultimately taken — this lint only cares whether the possibility of `None` was ever considered, not which branch handles it. A cast used directly inline (`(value as Type).Member`) is always flagged, since there's no way to check it in between. | |
 
@@ -110,7 +111,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `static-condition`, `division-by-zero`, `unused-local-variable`, `none-form-usage`,
 `local-variable-shadowing`, `chain-whitespace`, `exclamation-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
-`property-sorting`, `unchecked-form-parameter`, and `unchecked-cast`.
+`property-sorting`, `explicit-return`, `unchecked-form-parameter`, and
+`unchecked-cast`.
 
 ## Configuration
 
@@ -173,6 +175,7 @@ rules:
   named_arguments: true
   operator_spacing: true
   property_sorting: false
+  explicit_return: true
   unchecked_form_parameter: false
   unchecked_cast: true
 ```
@@ -223,10 +226,11 @@ rules:
   `semicolon`, `float_int_conversion`, `strict_boolean`,
   `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
   `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
-  `static_condition`, `unused_local_variable`, `none_form_usage`,
+  `static_condition`, `division_by_zero`, `unused_local_variable`, `none_form_usage`,
   `local_variable_shadowing`, `chain_whitespace`, `exclamation_spacing`,
   `identifier_casing`, `type_casing`, `named_arguments`, `operator_spacing`,
-  `property_sorting`, `unchecked_form_parameter`, and `unchecked_cast`.
+  `property_sorting`, `explicit_return`, `unchecked_form_parameter`, and
+  `unchecked_cast`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

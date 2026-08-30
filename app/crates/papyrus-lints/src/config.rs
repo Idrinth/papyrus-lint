@@ -45,6 +45,7 @@
 //!   named_arguments: true
 //!   operator_spacing: true
 //!   property_sorting: false
+//!   explicit_return: true
 //!   unchecked_form_parameter: false
 //!   unchecked_cast: true
 //! ```
@@ -263,6 +264,8 @@ pub struct Rules {
     /// The "Property sorting" lint/fix. Unlike every other field here,
     /// this defaults to `false`: see [`crate::property_sorting`].
     pub property_sorting: bool,
+    /// The "Explicit return on every path" lint.
+    pub explicit_return: bool,
     /// The "Form parameter used without a None check" lint. Like
     /// [`Self::property_sorting`], this defaults to `false`: see
     /// [`crate::unchecked_form_parameter`].
@@ -303,6 +306,7 @@ impl Default for Rules {
             named_arguments: true,
             operator_spacing: true,
             property_sorting: false,
+            explicit_return: true,
             unchecked_form_parameter: false,
             unchecked_cast: true,
         }
@@ -433,6 +437,7 @@ mod tests {
         // Unlike every rule above, sorting reorders a script's structure,
         // so this one defaults to disabled until a project opts in.
         assert!(!config.rules.property_sorting);
+        assert!(config.rules.explicit_return);
         // Also disabled by default: many scripts intentionally accept a
         // possibly-None Form and defer the check to a caller or a later
         // branch.

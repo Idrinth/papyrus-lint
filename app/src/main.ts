@@ -127,6 +127,7 @@ export interface LintRules {
   named_arguments: boolean;
   operator_spacing: boolean;
   property_sorting: boolean;
+  explicit_return: boolean;
   unchecked_form_parameter: boolean;
   unchecked_cast: boolean;
 }
@@ -179,6 +180,7 @@ export const DEFAULT_RULES: LintRules = {
   named_arguments: true,
   operator_spacing: true,
   property_sorting: false,
+  explicit_return: true,
   unchecked_form_parameter: false,
   unchecked_cast: true,
 };
