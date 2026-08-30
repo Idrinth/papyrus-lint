@@ -39,9 +39,6 @@ desktop app's binary at all.
 │   │       │                     # parse_papyrus_script, lint_papyrus_script,
 │   │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
 │   │       │                     # repair_psc_file), built on papyrus-lint-core
-│   │       ├── ast_cache.rs      # Disk-backed cache of parsed .psc ASTs, keyed by
-│   │       │                     # content MD5 + mtime + linter version, so
-│   │       │                     # parse_psc_file skips reparsing unchanged files
 │   │       ├── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button,
 │   │       │                     # then strips personal data from the compiled .pex
 │   │       └── pex_header.rs      # Parses a compiled .pex file's header just far
@@ -65,6 +62,9 @@ desktop app's binary at all.
 │       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
 │       │   └── src/               # and the CLI, independent of Tauri:
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
+│       │       ├── ast_cache.rs    # Disk-backed cache of parsed .psc ASTs, keyed by
+│       │       │                   # content MD5 + mtime + linter version, shared by
+│       │       │                   # the desktop app and the CLI (via function_table.rs)
 │       │       ├── config.rs       # Locates/loads a project's papyrus-lint.yaml
 │       │       ├── script_locator.rs   # Finds .psc files by name under
 │       │       │                       # scripts/source or source/scripts
@@ -256,19 +256,25 @@ Configuration controls formatting, lint enablement, complexity thresholds, CLI f
 levels, and the compiler path. See the [README configuration
 reference](README.md#configuration) for the complete schema and defaults.
 
-The desktop app's `parse_psc_file` command caches each file's parsed AST
-on disk (`app/src-tauri/src/ast_cache.rs`), in an `ast-cache` directory next
-to the app's own executable. A cached entry is only reused when its stored
-MD5 of the file's content and the file's last-modified timestamp still
-match, and the linter version that wrote the entry is at or above a
-`MIN_COMPATIBLE_VERSION` constant (currently `1.11.0`) rather than an exact
-match against the running version — so an ordinary app update doesn't
-discard an otherwise still-valid cache, and `MIN_COMPATIBLE_VERSION` only
-needs bumping when a release actually changes the cache entry layout or the
-AST shape it embeds. Any mismatch, or any I/O/(de)serialization failure
-reading the cache, falls back to a fresh parse, so a stale or corrupt cache
-never surfaces as a lint error. This cache is GUI-only — the CLI and editor
-extensions always parse fresh.
+The desktop app's `parse_psc_file` command, and both the app's and the
+CLI's cross-script lookups (`papyrus-lint-core`'s `function_table.rs`,
+used to resolve the "Argument type check"/"Return type check" lints
+across scripts), cache each parsed `.psc` AST on disk
+(`app/crates/papyrus-lint-core/src/ast_cache.rs`), in an `ast-cache`
+directory next to the running executable — the desktop app's own binary,
+or `PapyrusLinterCLI`'s, whichever process is doing the parsing. A cached
+entry is only reused when its stored MD5 of the file's content and the
+file's last-modified timestamp still match, and the linter version that
+wrote the entry is at or above a `MIN_COMPATIBLE_VERSION` constant
+(currently `1.11.0`) rather than an exact match against the running
+version — so an ordinary app update doesn't discard an otherwise
+still-valid cache, and `MIN_COMPATIBLE_VERSION` only needs bumping when a
+release actually changes the cache entry layout or the AST shape it
+embeds. Any mismatch, or any I/O/(de)serialization failure reading the
+cache, falls back to a fresh parse, so a stale or corrupt cache never
+surfaces as a lint error. Since it lives in `papyrus-lint-core`, the same
+cache backs the editor extensions too, which invoke `PapyrusLinterCLI` as
+a subprocess.
 
 ## Keeping agent instructions synchronized
 

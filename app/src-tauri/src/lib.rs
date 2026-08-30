@@ -1,11 +1,10 @@
-mod ast_cache;
 pub mod compiler;
 pub mod pex_header;
 
 use std::path::{Path, PathBuf};
 
 use papyrus_lint_core::source_encoding::read_psc_source;
-use papyrus_lint_core::{achlist, config, function_table};
+use papyrus_lint_core::{achlist, ast_cache, config, function_table};
 
 /// Returns the desktop app's version (from `app/src-tauri/Cargo.toml`, kept in
 /// sync with `package.json`/`tauri.conf.json` at release time), so the

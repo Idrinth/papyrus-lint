@@ -2420,7 +2420,6 @@ dependencies = [
 name = "papyrus-lint"
 version = "0.1.0"
 dependencies = [
- "md5",
  "papyrus-lint-cli",
  "papyrus-lint-core",
  "papyrus-lints",
@@ -2449,6 +2448,7 @@ name = "papyrus-lint-core"
 version = "0.1.0"
 dependencies = [
  "encoding_rs",
+ "md5",
  "papyrus-lints",
  "papyrus-parser",
  "serde",
