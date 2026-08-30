@@ -35,6 +35,7 @@ pub mod strict_boolean;
 pub mod trailing_whitespace;
 pub mod type_casing;
 pub mod unchecked_cast;
+pub mod unchecked_form_parameter;
 pub mod unreachable_statement;
 pub mod unused_getter;
 pub mod unused_local_variable;
@@ -214,6 +215,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.explicit_return {
         diagnostics.extend(explicit_return::check(source));
+    }
+    if rules.unchecked_form_parameter {
+        diagnostics.extend(unchecked_form_parameter::check(source));
     }
     if rules.unchecked_cast {
         diagnostics.extend(unchecked_cast::check(source));
@@ -621,6 +625,12 @@ mod tests {
                 explicit_return::RULE,
                 Config::default(),
                 config_with(|c| c.rules.explicit_return = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Armor akArmor)\n    akArmor.GetName()\nEndFunction\n",
+                unchecked_form_parameter::RULE,
+                config_with(|c| c.rules.unchecked_form_parameter = true),
+                config_with(|c| c.rules.unchecked_form_parameter = false),
             ),
             (
                 "ScriptName Example\n\nFunction Test(ObjectReference akRef)\n    (akRef as Actor).GetActorValue(\"Health\")\nEndFunction\n",

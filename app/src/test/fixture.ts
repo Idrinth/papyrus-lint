@@ -80,6 +80,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-operator_spacing" checked />
           <input type="checkbox" id="rule-property_sorting" />
           <input type="checkbox" id="rule-explicit_return" checked />
+          <input type="checkbox" id="rule-unchecked_form_parameter" />
           <input type="checkbox" id="rule-unchecked_cast" checked />
         </fieldset>
       </div>
