@@ -46,6 +46,7 @@
 //!   operator_spacing: true
 //!   property_sorting: false
 //!   explicit_return: true
+//!   unchecked_cast: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -261,6 +262,8 @@ pub struct Rules {
     pub property_sorting: bool,
     /// The "Explicit return on every path" lint.
     pub explicit_return: bool,
+    /// The "Unchecked cast" lint.
+    pub unchecked_cast: bool,
 }
 
 impl Default for Rules {
@@ -296,6 +299,7 @@ impl Default for Rules {
             operator_spacing: true,
             property_sorting: false,
             explicit_return: true,
+            unchecked_cast: true,
         }
     }
 }
@@ -425,6 +429,7 @@ mod tests {
         // so this one defaults to disabled until a project opts in.
         assert!(!config.rules.property_sorting);
         assert!(config.rules.explicit_return);
+        assert!(config.rules.unchecked_cast);
     }
 
     #[test]

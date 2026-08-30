@@ -128,6 +128,7 @@ export interface LintRules {
   operator_spacing: boolean;
   property_sorting: boolean;
   explicit_return: boolean;
+  unchecked_cast: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -179,6 +180,7 @@ export const DEFAULT_RULES: LintRules = {
   operator_spacing: true,
   property_sorting: false,
   explicit_return: true,
+  unchecked_cast: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {

@@ -1,0 +1,48 @@
+name: Feature request
+description: Suggest an idea for Papyrus Lint
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! We care most about the **benefit**
+        you're after, not a specific implementation — that gives us room to
+        find the best way to deliver it.
+  - type: textarea
+    id: benefit
+    attributes:
+      label: What benefit are you looking for?
+      description: >
+        What are you trying to achieve, and what's stopping you from doing
+        it today? Focus on the outcome or problem, not a proposed solution.
+      placeholder: >
+        e.g. "I want to catch X before I compile, because right now I only
+        find out about it at runtime and it costs me a lot of debugging time."
+    validations:
+      required: true
+  - type: textarea
+    id: current-workaround
+    attributes:
+      label: How are you handling this today, if at all?
+      description: Any workaround, manual process, or other tool you use instead.
+    validations:
+      required: false
+  - type: textarea
+    id: solution-idea
+    attributes:
+      label: Do you have an idea of what this could look like?
+      description: >
+        Optional. If you have a specific idea for how this could work, share
+        it here — but it's fine to leave this blank and let us figure out
+        the best approach for the benefit above.
+    validations:
+      required: false
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Anything else that helps us understand the request (screenshots, links, examples).
+    validations:
+      required: false
