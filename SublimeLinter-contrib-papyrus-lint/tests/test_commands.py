@@ -79,6 +79,25 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
         )
         self.sublime.error_message.assert_not_called()
 
+    def test_windows_fix_hides_the_cli_window(self):
+        startupinfo = Mock(dwFlags=4)
+        self.module.subprocess.STARTUPINFO = Mock(return_value=startupinfo)
+        self.module.subprocess.STARTF_USESHOWWINDOW = 2
+
+        with (
+            patch.object(self.module.os, 'name', 'nt'),
+            patch.object(
+                self.module.subprocess,
+                'run',
+                return_value=Mock(returncode=0),
+            ) as run,
+        ):
+            self.command.run(None)
+
+        self.module.subprocess.STARTUPINFO.assert_called_once_with()
+        self.assertEqual(startupinfo.dwFlags, 6)
+        self.assertIs(run.call_args.kwargs['startupinfo'], startupinfo)
+
     def test_usage_or_io_failure_shows_decoded_stderr(self):
         result = Mock(returncode=2, stderr=b'bad arguments\xff')
         with patch.object(self.module.subprocess, 'run', return_value=result):
