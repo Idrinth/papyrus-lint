@@ -57,6 +57,12 @@
 //! from a shared library location outside the project without adding it to
 //! the project's own config file.
 //!
+//! With `--output <path>` (combinable with `fix`/`--json`/`--config`/
+//! `--script-root` in any order), the report (plain text or JSON, per
+//! `--json`) is written to `<path>` instead of stdout, so it can be stored
+//! without piping. Usage/error text still goes to stderr either way, and
+//! the exit code is unaffected.
+//!
 //! This crate is used both by the standalone `PapyrusLinterCLI` binary
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
@@ -130,8 +136,8 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc>\n       \
-PapyrusLinterCLI [--json] [--config <path>] [--script-root <path>]... fix <path-to-achlist-or-psc>\n\n\
+    "Usage: PapyrusLinterCLI [--json] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
+PapyrusLinterCLI [--json] [--config <path>] [--script-root <path>]... [--output <path>] fix <path-to-achlist-or-psc>\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
 configuration (looked up next to the .achlist file, or two directories\n\
@@ -151,7 +157,9 @@ Options:\n\
   --script-root <path>    An extra directory (relative to the project root,\n\
                           or absolute) to search for .psc files, besides\n\
                           scripts/source, source/scripts, and the project's\n\
-                          configured additional_script_roots. Repeatable.\n\n\
+                          configured additional_script_roots. Repeatable.\n\
+  --output <path>         Write the report (plain text or JSON, per --json) to\n\
+                          this file instead of stdout.\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n";
@@ -213,6 +221,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let json = args.iter().any(|arg| arg == "--json");
 
     let mut config_path: Option<PathBuf> = None;
+    let mut output_path: Option<PathBuf> = None;
     let mut cli_script_roots: Vec<String> = Vec::new();
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
     let mut input = args.iter().filter(|arg| arg.as_str() != "--json").cloned();
@@ -229,6 +238,12 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
                 return 2;
             };
             cli_script_roots.push(value);
+        } else if arg == "--output" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            output_path = Some(PathBuf::from(value));
         } else {
             positional_and_flags.push(arg);
         }
@@ -325,6 +340,9 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let mut files_fixed = 0usize;
     let mut should_fail = false;
     let mut json_files: Vec<JsonFileReport> = Vec::new();
+    // Buffered so `--output <path>` can redirect the whole report to a file
+    // instead of stdout, without duplicating the printing logic below.
+    let mut report_buf: Vec<u8> = Vec::new();
 
     for script_path in &script_paths {
         let source = match read_psc_source(script_path) {
@@ -365,7 +383,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             should_fail = should_fail || lint_config.should_fail_on(diagnostic);
             if !json {
                 let _ = writeln!(
-                    stdout,
+                    report_buf,
                     "{}:{}:{}: [{}] {}",
                     script_path.display(),
                     diagnostic.line,
@@ -410,7 +428,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             success,
         };
         let _ = writeln!(
-            stdout,
+            report_buf,
             "{}",
             serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
         );
@@ -423,17 +441,30 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
 
         if total_diagnostics == 0 {
             let _ = writeln!(
-                stdout,
+                report_buf,
                 "PapyrusLinterCLI: no problems found in {} script(s).{fixed_suffix}",
                 script_paths.len()
             );
         } else {
             let _ = writeln!(
-                stdout,
+                report_buf,
                 "PapyrusLinterCLI: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).{fixed_suffix}",
                 script_paths.len()
             );
         }
+    }
+
+    if let Some(output_path) = output_path {
+        if let Err(err) = fs::write(&output_path, &report_buf) {
+            let _ = writeln!(
+                stderr,
+                "error: failed to write {}: {err}",
+                output_path.display()
+            );
+            return 2;
+        }
+    } else {
+        let _ = stdout.write_all(&report_buf);
     }
 
     if success {
@@ -1235,5 +1266,128 @@ mod tests {
         assert_eq!(report["files_fixed"], 1);
         assert_eq!(report["total_diagnostics"], 0);
         assert_eq!(report["success"], true);
+    }
+
+    #[test]
+    fn output_flag_writes_the_plain_text_report_to_a_file_instead_of_stdout() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("report.txt");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(stdout.is_empty());
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        assert!(contents.contains("[trailing-whitespace]"));
+        assert!(contents.contains("1 problem(s) found in 1 of 1 script(s)"));
+    }
+
+    #[test]
+    fn output_flag_writes_the_json_report_to_a_file_instead_of_stdout() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("report.json");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--json".to_string(),
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(stdout.is_empty());
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        let report: serde_json::Value =
+            serde_json::from_str(&contents).expect("output file should contain a JSON document");
+        assert_eq!(report["success"], true);
+        assert_eq!(report["total_diagnostics"], 1);
+    }
+
+    #[test]
+    fn output_flag_combines_with_fix() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("report.txt");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "fix".to_string(),
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.is_empty());
+        assert_eq!(
+            fs::read_to_string(dir.path().join("scripts/source/Example.psc")).unwrap(),
+            "ScriptName Example\n"
+        );
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        assert!(contents.contains("no problems found in 1 script"));
+        assert!(contents.contains("(1 script(s) fixed.)"));
+    }
+
+    #[test]
+    fn output_flag_errors_when_the_directory_does_not_exist() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("missing-dir/report.txt");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.starts_with("error: failed to write"));
+    }
+
+    #[test]
+    fn output_flag_without_a_value_prints_usage() {
+        let (code, _stdout, stderr) = run_captured(&["--output".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     }
 }

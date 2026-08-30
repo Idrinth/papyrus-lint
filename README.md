@@ -304,6 +304,8 @@ PapyrusLinterCLI --json path/to/project.achlist
 PapyrusLinterCLI --json fix path/to/project.achlist
 PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
 PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
+PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
+PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
 ```
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
@@ -341,6 +343,13 @@ searched for `.psc` files alongside `scripts/source`/`source/scripts` and
 the project's configured `additional_script_roots` (see Configuration
 above) — letting a caller add a script root for a single run without
 editing the project's config file.
+
+Given `--output <path>` (combinable with `fix`/`--json`/`--config`/
+`--script-root`, in any argument order), the report — plain text or JSON,
+whichever `--json` selects — is written to `<path>` instead of stdout, so
+it can be stored directly without piping the command's output to a file.
+Usage/error text still goes to stderr either way, and the exit status is
+unaffected.
 
 Each `.psc` file is decoded as UTF-8 when it's valid UTF-8, or as
 Windows-1252 (CP1252) — the Creation Kit/Papyrus compiler's own default
