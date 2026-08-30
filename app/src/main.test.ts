@@ -45,6 +45,7 @@ import {
   loadLintConfig,
   loadStoredTheme,
   loadScriptRoots,
+  matchesFilenameFilter,
   openCodeViewer,
   parsePscFiles,
   projectDirForPscPath,
@@ -140,6 +141,39 @@ describe("severity helpers", () => {
   it("severityOf falls back to 'other' when there is no level prefix", () => {
     expect(severityOf("[error] boom")).toBe("error");
     expect(severityOf("no prefix here")).toBe("other");
+  });
+});
+
+describe("matchesFilenameFilter", () => {
+  it("matches everything when the pattern is empty or blank", () => {
+    expect(matchesFilenameFilter("Scripts/MyQuest.psc", "")).toBe(true);
+    expect(matchesFilenameFilter("Scripts/MyQuest.psc", "   ")).toBe(true);
+  });
+
+  it("matches a plain pattern as a case-insensitive substring", () => {
+    expect(matchesFilenameFilter("Scripts/MyQuest.psc", "quest")).toBe(true);
+    expect(matchesFilenameFilter("Scripts/MyQuest.psc", "QUEST")).toBe(true);
+    expect(matchesFilenameFilter("Scripts/MyQuest.psc", "dialogue")).toBe(false);
+  });
+
+  it("treats * as matching any run of characters", () => {
+    expect(matchesFilenameFilter("Scripts/MyQuestScript.psc", "*quest*")).toBe(true);
+    expect(matchesFilenameFilter("Scripts/MyQuestScript.psc", "My*Script.psc")).toBe(true);
+    expect(matchesFilenameFilter("Scripts/OtherScript.psc", "My*Script.psc")).toBe(false);
+  });
+
+  it("treats % as matching any run of characters, same as *", () => {
+    expect(matchesFilenameFilter("Scripts/MyQuestScript.psc", "%quest%")).toBe(true);
+  });
+
+  it("treats ? as matching exactly one character", () => {
+    expect(matchesFilenameFilter("Scripts/Quest1.psc", "Quest?.psc")).toBe(true);
+    expect(matchesFilenameFilter("Scripts/Quest12.psc", "Quest?.psc")).toBe(false);
+  });
+
+  it("escapes regex-special characters in the literal parts of the pattern", () => {
+    expect(matchesFilenameFilter("Scripts/A+B.psc", "A+B")).toBe(true);
+    expect(matchesFilenameFilter("Scripts/AB.psc", "A+B")).toBe(false);
   });
 });
 
@@ -684,6 +718,28 @@ describe("buildPscResultItem / renderPscResults", () => {
     // The only finding is filtered out, and the file itself parsed cleanly,
     // so it should be skipped entirely.
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(0);
+  });
+
+  it("renderPscResults respects the filename filter input, typed live", () => {
+    const filterInput = document.querySelector<HTMLInputElement>("#filename-filter")!;
+    filterInput.value = "*quest*";
+    filterInput.dispatchEvent(new Event("input"));
+
+    try {
+      renderPscResults([
+        outcome({ path: "/MyQuestScript.psc", ok: false, detail: "boom" }),
+        outcome({ path: "/OtherScript.psc", ok: false, detail: "boom" }),
+      ]);
+
+      const items = document.querySelectorAll("#psc-result-list > li");
+      expect(items).toHaveLength(1);
+      expect(items[0].textContent).toContain("MyQuestScript.psc");
+    } finally {
+      // currentFilenameFilter is module state that outlives mountFixture(),
+      // so it must be cleared here or it would leak into later tests.
+      filterInput.value = "";
+      filterInput.dispatchEvent(new Event("input"));
+    }
   });
 });
 
