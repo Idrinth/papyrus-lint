@@ -23,8 +23,8 @@ Papyrus syntax package installed in Sublime Text.
 
 ## Settings
 
-- SublimeLinter settings: http://www.sublimelinter.com/en/stable/settings.html
-- Linter settings: http://www.sublimelinter.com/en/stable/linter_settings.html
+- [SublimeLinter settings](http://www.sublimelinter.com/en/stable/settings.html)
+- [Linter settings](http://www.sublimelinter.com/en/stable/linter_settings.html)
 
 Additionally, this linter supports the standard `executable` setting if
 `PapyrusLinterCLI` isn't on your `PATH`:
