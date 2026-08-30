@@ -2,6 +2,10 @@
 
 ![Papyrus Lint logo](resources/logo-small.jpg)
 
+[Discord](https://discord.gg/idrinth) |
+[NexusMods](https://www.nexusmods.com/skyrimspecialedition/mods/189862) |
+[GitHub](https://github.com/idrinth/papyrus-lint)
+
 **Papyrus Lint catches bugs that CreationKit's compiler lets through.**
 `PapyrusCompiler.exe` only checks that a script is syntactically valid — it
 will happily compile a script that dereferences a `None` object at
