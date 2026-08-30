@@ -299,6 +299,28 @@ fn check_expr(
                 check_expr(arg, none_vars, diagnostics, line);
             }
         }
+        Expr::Binary {
+            left,
+            op: BinaryOp::And,
+            right,
+        } => {
+            check_expr(left, none_vars, diagnostics, line);
+            // Short-circuit: `right` only evaluates once `left` is truthy.
+            let mut narrowed = none_vars.clone();
+            narrow_for_truthy(left, &mut narrowed);
+            check_expr(right, &narrowed, diagnostics, line);
+        }
+        Expr::Binary {
+            left,
+            op: BinaryOp::Or,
+            right,
+        } => {
+            check_expr(left, none_vars, diagnostics, line);
+            // Short-circuit: `right` only evaluates once `left` is falsy.
+            let mut narrowed = none_vars.clone();
+            narrow_for_falsy(left, &mut narrowed);
+            check_expr(right, &narrowed, diagnostics, line);
+        }
         Expr::Binary { left, right, .. } => {
             check_expr(left, none_vars, diagnostics, line);
             check_expr(right, none_vars, diagnostics, line);
@@ -493,5 +515,14 @@ mod tests {
     #[test]
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_short_circuited_and_guard_on_a_property() {
+        let diagnostics = check(
+            "Scriptname ShortCircuitProbe extends Quest\n\nQuest Property QA Auto\n\nFunction Probe()\n\tQA = None\n\tif (QA && QA.IsRunning())\n\t\tDebug.Trace(\"x\")\n\tendif\n\tif (QA != None)\n\t\tQA.SetStage(2)\n\tendif\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
     }
 }
