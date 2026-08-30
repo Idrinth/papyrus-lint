@@ -99,9 +99,30 @@ fn save_compiler_path(dir: String, path: String) -> Result<(), String> {
     )
 }
 
+/// Returns `dir`'s configured additional script root directories (see
+/// [`papyrus_lint_core::script_locator`]), if any. These are searched
+/// alongside the conventional `scripts/source`/`source/scripts` directories
+/// when resolving cross-script lookups (the "Argument type check"/"Return
+/// type check" lints, autocompletion) and are appended to the compiler's
+/// `-i` argument.
+#[tauri::command]
+fn load_script_roots(dir: String) -> Result<Vec<String>, String> {
+    config::load_script_roots(&PathBuf::from(dir))
+}
+
+/// Persists `roots` as `dir`'s configured additional script root
+/// directories.
+#[tauri::command]
+fn save_script_roots(dir: String, roots: Vec<String>) -> Result<(), String> {
+    config::save_script_roots(&PathBuf::from(dir), &roots)
+}
+
 /// Compiles the `.psc` file at `path` using the compiler executable at
 /// `compiler_path` (see [`load_compiler_path`]/[`resolve_compiler_path`]
-/// for how the frontend obtains that path). Returns an error if
+/// for how the frontend obtains that path). `additional_roots` are the
+/// project's configured additional script roots (see
+/// [`load_script_roots`]), included in the compiler's `-i` argument
+/// alongside the two conventional source directories. Returns an error if
 /// `compiler_path` is blank/unconfigured or the compiler process itself
 /// couldn't be run; a script that fails to compile is still reported as
 /// `Ok`, with [`compiler::CompileOutcome::success`] false and the
@@ -110,6 +131,7 @@ fn save_compiler_path(dir: String, path: String) -> Result<(), String> {
 fn compile_psc_file(
     path: String,
     compiler_path: String,
+    additional_roots: Vec<String>,
 ) -> Result<compiler::CompileOutcome, String> {
     let compiler_path = compiler_path.trim();
     if compiler_path.is_empty() {
@@ -118,7 +140,11 @@ fn compile_psc_file(
         );
     }
 
-    compiler::compile_psc_file(Path::new(compiler_path), &PathBuf::from(path))
+    compiler::compile_psc_file(
+        Path::new(compiler_path),
+        &PathBuf::from(path),
+        &additional_roots,
+    )
 }
 
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
@@ -127,15 +153,21 @@ fn compile_psc_file(
 /// lets the "Argument type check" lint resolve calls to functions declared
 /// on other scripts under `root`, and lets the "Return type check" lint
 /// accept a returned value whose script under `root` extends the declared
-/// return type.
+/// return type. `additional_roots` are the project's configured additional
+/// script roots (see [`load_script_roots`]), searched the same way
+/// alongside `root`'s conventional source directories.
 #[tauri::command]
 fn lint_psc_file(
     path: String,
     root: String,
     config: papyrus_lints::Config,
+    additional_roots: Vec<String>,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
-    let mut function_table = function_table::FunctionTable::new(PathBuf::from(root));
+    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
+        PathBuf::from(root),
+        additional_roots,
+    );
     Ok(papyrus_lints::lint_with_external_arguments(
         &source,
         &config,
@@ -146,19 +178,23 @@ fn lint_psc_file(
 /// Reads the `.psc` file at `path`, applies every automatic fix (honoring
 /// the semicolon and indentation style `config` selects), writes the
 /// repaired source back to disk, and returns the diagnostics that remain.
-/// See [`lint_psc_file`] for `root`.
+/// See [`lint_psc_file`] for `root`/`additional_roots`.
 #[tauri::command]
 fn repair_psc_file(
     path: String,
     root: String,
     config: papyrus_lints::Config,
+    additional_roots: Vec<String>,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair(&source, &config);
     if repaired != source {
         std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
     }
-    let mut function_table = function_table::FunctionTable::new(PathBuf::from(root));
+    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
+        PathBuf::from(root),
+        additional_roots,
+    );
     Ok(papyrus_lints::lint_with_external_arguments(
         &repaired,
         &config,
@@ -168,10 +204,18 @@ fn repair_psc_file(
 
 /// Lists every function and property available on an object of type
 /// `type_name` (including those inherited via `Extends`), for driving the
-/// code viewer's editor autocompletion. See [`lint_psc_file`] for `root`.
+/// code viewer's editor autocompletion. See [`lint_psc_file`] for
+/// `root`/`additional_roots`.
 #[tauri::command]
-fn list_script_members(root: String, type_name: String) -> Vec<function_table::Member> {
-    let mut function_table = function_table::FunctionTable::new(PathBuf::from(root));
+fn list_script_members(
+    root: String,
+    type_name: String,
+    additional_roots: Vec<String>,
+) -> Vec<function_table::Member> {
+    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
+        PathBuf::from(root),
+        additional_roots,
+    );
     function_table.list_members(&type_name)
 }
 
@@ -191,6 +235,8 @@ pub fn run() {
             save_lint_config,
             load_compiler_path,
             save_compiler_path,
+            load_script_roots,
+            save_script_roots,
             lint_psc_file,
             repair_psc_file,
             compile_psc_file,
@@ -254,12 +300,14 @@ mod tests {
             path.clone(),
             missing.parent().unwrap().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
         )
         .is_err());
         assert!(repair_psc_file(
             path,
             missing.parent().unwrap().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
         )
         .is_err());
     }
@@ -278,6 +326,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
         )
         .unwrap();
 
@@ -295,7 +344,9 @@ mod tests {
 
     #[test]
     fn compile_psc_file_rejects_a_blank_compiler_path_before_spawning() {
-        assert!(compile_psc_file("Example.psc".to_string(), "  \t".to_string()).is_err());
+        assert!(
+            compile_psc_file("Example.psc".to_string(), "  \t".to_string(), Vec::new()).is_err()
+        );
     }
 
     #[test]
@@ -354,7 +405,17 @@ mod tests {
             Some("/tools/compiler".to_string())
         );
         save_compiler_path(dir_string.clone(), " \t ".to_string()).unwrap();
-        assert_eq!(load_compiler_path(dir_string).unwrap(), None);
+        assert_eq!(load_compiler_path(dir_string.clone()).unwrap(), None);
+
+        assert_eq!(
+            load_script_roots(dir_string.clone()).unwrap(),
+            Vec::<String>::new()
+        );
+        save_script_roots(dir_string.clone(), vec!["../SharedScripts".to_string()]).unwrap();
+        assert_eq!(
+            load_script_roots(dir_string).unwrap(),
+            vec!["../SharedScripts".to_string()]
+        );
     }
 
     #[test]
@@ -366,6 +427,10 @@ mod tests {
         assert!(load_lint_config(dir_string.clone()).is_err());
         assert!(load_compiler_path(dir_string.clone()).is_err());
         assert!(save_compiler_path(dir_string.clone(), "compiler".to_string()).is_err());
+        assert!(load_script_roots(dir_string.clone()).is_err());
+        assert!(
+            save_script_roots(dir_string.clone(), vec!["../SharedScripts".to_string()]).is_err()
+        );
         assert!(save_lint_config(dir_string, Default::default()).is_err());
 
         let missing_dir = dir.path().join("missing").to_string_lossy().into_owned();
@@ -386,6 +451,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
         )
         .unwrap();
 
@@ -405,6 +471,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
         )
         .unwrap();
 
@@ -431,6 +498,7 @@ mod tests {
         let members = list_script_members(
             dir.path().to_string_lossy().into_owned(),
             "Child".to_string(),
+            Vec::new(),
         );
 
         let names: std::collections::HashSet<_> =
@@ -442,12 +510,32 @@ mod tests {
     }
 
     #[test]
+    fn list_script_members_resolves_a_type_via_an_additional_script_root() {
+        let dir = tempdir().unwrap();
+        let shared = tempdir().unwrap();
+        std::fs::write(
+            shared.path().join("Shared.psc"),
+            "ScriptName Shared\n\nInt Property MyValue Auto\n",
+        )
+        .unwrap();
+
+        let members = list_script_members(
+            dir.path().to_string_lossy().into_owned(),
+            "Shared".to_string(),
+            vec![shared.path().to_string_lossy().into_owned()],
+        );
+
+        assert_eq!(members.len(), 1);
+    }
+
+    #[test]
     fn list_script_members_is_empty_for_an_unresolvable_type() {
         let dir = tempdir().unwrap();
 
         assert!(list_script_members(
             dir.path().to_string_lossy().into_owned(),
-            "Missing".to_string()
+            "Missing".to_string(),
+            Vec::new(),
         )
         .is_empty());
     }
@@ -469,6 +557,7 @@ mod tests {
         let outcome = compile_psc_file(
             script_path.to_string_lossy().into_owned(),
             format!("  {}  ", compiler_path.display()),
+            Vec::new(),
         )
         .unwrap();
 

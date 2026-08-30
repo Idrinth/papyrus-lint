@@ -16,6 +16,7 @@ import {
   DEFAULT_RULES,
   applyAutocompleteSelection,
   applyLintConfigToUI,
+  applyScriptRootsToUI,
   buildPscResultItem,
   cancelCodeViewerEditMode,
   clearError,
@@ -28,6 +29,7 @@ import {
   handleDroppedPaths,
   handleFixClick,
   handleLintConfigChanged,
+  handleScriptRootsChanged,
   hasFixableFindings,
   hideAutocomplete,
   isAchlistPath,
@@ -40,6 +42,7 @@ import {
   loadAppVersion,
   loadCompilerPath,
   loadLintConfig,
+  loadScriptRoots,
   openCodeViewer,
   parsePscFiles,
   relativePath,
@@ -50,6 +53,8 @@ import {
   saveCodeViewerEdits,
   saveCompilerPath,
   saveLintConfig,
+  saveScriptRoots,
+  scriptRootsFromUI,
   severityOf,
   showError,
   showResult,
@@ -290,6 +295,49 @@ describe("lint config UI round trip", () => {
       path: "C:\\Tools\\PapyrusCompiler.exe",
     });
   });
+
+  it("handleScriptRootsChanged persists the roots once a project dir is known", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+    });
+    await useProjectDir("/proj");
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLTextAreaElement>("#script-roots")!.value =
+      "../SharedScripts\n\n  /abs/OtherScripts  \n";
+    handleScriptRootsChanged();
+    await Promise.resolve();
+
+    expect(invokeMock).toHaveBeenCalledWith("save_script_roots", {
+      dir: "/proj",
+      roots: ["../SharedScripts", "/abs/OtherScripts"],
+    });
+  });
+});
+
+describe("scriptRootsFromUI / applyScriptRootsToUI", () => {
+  it("scriptRootsFromUI splits non-blank lines and trims whitespace", () => {
+    document.querySelector<HTMLTextAreaElement>("#script-roots")!.value =
+      "  ../SharedScripts  \n\n/abs/OtherScripts\n";
+
+    expect(scriptRootsFromUI()).toEqual(["../SharedScripts", "/abs/OtherScripts"]);
+  });
+
+  it("scriptRootsFromUI returns an empty array for a blank textarea", () => {
+    document.querySelector<HTMLTextAreaElement>("#script-roots")!.value = "   \n  \n";
+
+    expect(scriptRootsFromUI()).toEqual([]);
+  });
+
+  it("applyScriptRootsToUI joins roots with newlines", () => {
+    applyScriptRootsToUI(["../SharedScripts", "/abs/OtherScripts"]);
+
+    expect(document.querySelector<HTMLTextAreaElement>("#script-roots")!.value).toBe(
+      "../SharedScripts\n/abs/OtherScripts",
+    );
+  });
 });
 
 describe("loadLintConfig / saveLintConfig", () => {
@@ -319,7 +367,11 @@ describe("loadLintConfig / saveLintConfig", () => {
 describe("useProjectDir", () => {
   it("loads the config, applies it to the UI, and remembers the directory", async () => {
     const custom: LintConfig = { ...DEFAULT_LINT_CONFIG, semicolon: true, indentation: "space" };
-    invokeImplFor({ load_lint_config: () => custom, load_compiler_path: () => null });
+    invokeImplFor({
+      load_lint_config: () => custom,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+    });
 
     await useProjectDir("/my/project");
 
@@ -332,12 +384,27 @@ describe("useProjectDir", () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompiler.exe",
+      load_script_roots: () => [],
     });
 
     await useProjectDir("/my/project");
 
     expect(document.querySelector<HTMLInputElement>("#compiler-path")!.value).toBe(
       "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompiler.exe",
+    );
+  });
+
+  it("populates the script roots textarea from the backend", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => ["../SharedScripts", "/abs/OtherScripts"],
+    });
+
+    await useProjectDir("/my/project");
+
+    expect(document.querySelector<HTMLTextAreaElement>("#script-roots")!.value).toBe(
+      "../SharedScripts\n/abs/OtherScripts",
     );
   });
 });
@@ -385,7 +452,39 @@ describe("loadCompilerPath / saveCompilerPath", () => {
 
     await expect(saveCompilerPath("/proj", "C:\\Tools\\PapyrusCompiler.exe")).resolves.toBeUndefined();
   });
+});
 
+describe("loadScriptRoots / saveScriptRoots", () => {
+  it("loadScriptRoots returns the backend's configured roots", async () => {
+    invokeImplFor({ load_script_roots: () => ["../SharedScripts", "/abs/OtherScripts"] });
+
+    await expect(loadScriptRoots("/proj")).resolves.toEqual(["../SharedScripts", "/abs/OtherScripts"]);
+    expect(invokeMock).toHaveBeenCalledWith("load_script_roots", { dir: "/proj" });
+  });
+
+  it("loadScriptRoots returns an empty array on failure", async () => {
+    invokeMock.mockRejectedValue(new Error("no such file"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadScriptRoots("/proj")).resolves.toEqual([]);
+  });
+
+  it("saveScriptRoots forwards the roots to the backend", async () => {
+    invokeImplFor({ save_script_roots: () => undefined });
+
+    await expect(saveScriptRoots("/proj", ["../SharedScripts"])).resolves.toBeUndefined();
+    expect(invokeMock).toHaveBeenCalledWith("save_script_roots", {
+      dir: "/proj",
+      roots: ["../SharedScripts"],
+    });
+  });
+
+  it("saveScriptRoots swallows backend errors", async () => {
+    invokeMock.mockRejectedValue(new Error("disk full"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(saveScriptRoots("/proj", ["../SharedScripts"])).resolves.toBeUndefined();
+  });
 });
 
 describe("parsePscFiles / repairPscFile", () => {
@@ -422,6 +521,7 @@ describe("parsePscFiles / repairPscFile", () => {
       path: "/scripts/MyScript.psc",
       root: expect.any(String),
       config: expect.anything(),
+      additionalRoots: expect.anything(),
     });
   });
 });
@@ -455,7 +555,11 @@ describe("buildPscResultItem / renderPscResults", () => {
   });
 
   it("shows the path relative to the current project dir, when known", async () => {
-    invokeImplFor({ load_lint_config: () => DEFAULT_LINT_CONFIG, load_compiler_path: () => null });
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+    });
     await useProjectDir("/a");
 
     const item = buildPscResultItem(outcome({ path: "/a/b.psc", ok: false, detail: "boom" }));
@@ -861,6 +965,7 @@ describe("code viewer edit mode", () => {
         parse_achlist_file: () => ["A.psc"],
         load_lint_config: () => DEFAULT_LINT_CONFIG,
         load_compiler_path: () => null,
+        load_script_roots: () => [],
         parse_psc_file: () => ({ name: "A" }),
         lint_psc_file: () => [],
       });
@@ -1138,6 +1243,7 @@ describe("wired DOM interactions", () => {
       parse_achlist_file: () => [],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_script_roots: () => [],
     });
     listener({ payload: { type: "drop", paths: ["/proj/list.achlist"] } });
     await vi.waitFor(() => expect(invokeMock).toHaveBeenCalledWith("parse_achlist_file", { path: "/proj/list.achlist" }));
@@ -1229,6 +1335,7 @@ describe("remaining failure and defensive paths", () => {
       get_app_version: () => "1.2.3",
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_script_roots: () => [],
     });
     const version = document.createElement("span");
     version.id = "app-version";

@@ -8,13 +8,15 @@ use std::path::{Path, PathBuf};
 /// module to build the compiler's `-i` argument.
 pub const CANDIDATE_DIRS: [&str; 2] = ["scripts/source", "source/scripts"];
 
-/// Searches `root/scripts/source` and `root/source/scripts` for a `.psc`
-/// file matching `name`, case-insensitively. `name` may be given with or
-/// without the `.psc` extension.
+/// Searches `root/scripts/source`, `root/source/scripts`, and then each of
+/// `additional_roots` (in order) for a `.psc` file matching `name`,
+/// case-insensitively. `name` may be given with or without the `.psc`
+/// extension. Each entry in `additional_roots` is resolved relative to
+/// `root` unless it's already absolute (see [`resolve_additional_roots`]).
 ///
-/// Returns the path to the first match found, or `None` if neither
-/// location contains a matching file.
-pub fn find_psc_file(root: &Path, name: &str) -> Option<PathBuf> {
+/// Returns the path to the first match found, or `None` if none of those
+/// locations contains a matching file.
+pub fn find_psc_file(root: &Path, name: &str, additional_roots: &[String]) -> Option<PathBuf> {
     let name_lower = name.to_ascii_lowercase();
     let target = if name_lower.ends_with(".psc") {
         name_lower
@@ -22,8 +24,13 @@ pub fn find_psc_file(root: &Path, name: &str) -> Option<PathBuf> {
         format!("{name_lower}.psc")
     };
 
-    for dir in CANDIDATE_DIRS {
-        let Ok(entries) = fs::read_dir(root.join(dir)) else {
+    let dirs = CANDIDATE_DIRS
+        .iter()
+        .map(|dir| root.join(dir))
+        .chain(resolve_additional_roots(root, additional_roots));
+
+    for dir in dirs {
+        let Ok(entries) = fs::read_dir(&dir) else {
             continue;
         };
 
@@ -43,6 +50,25 @@ pub fn find_psc_file(root: &Path, name: &str) -> Option<PathBuf> {
     None
 }
 
+/// Resolves each of `roots` against `root`: an absolute entry is used as-is,
+/// a relative one is joined onto `root`. Used to turn a project's
+/// user-configured `additional_script_roots` (see
+/// [`crate::config::load_script_roots`]) into directories to search
+/// alongside [`CANDIDATE_DIRS`].
+pub fn resolve_additional_roots(root: &Path, roots: &[String]) -> Vec<PathBuf> {
+    roots
+        .iter()
+        .map(|entry| {
+            let path = Path::new(entry);
+            if path.is_absolute() {
+                path.to_path_buf()
+            } else {
+                root.join(path)
+            }
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -60,7 +86,7 @@ mod tests {
         fs::create_dir_all(&source_dir).expect("failed to create source dir");
         let expected = write_file(&source_dir, "Foo.psc");
 
-        let result = find_psc_file(root.path(), "Foo.psc");
+        let result = find_psc_file(root.path(), "Foo.psc", &[]);
 
         assert_eq!(result, Some(expected));
     }
@@ -72,7 +98,7 @@ mod tests {
         fs::create_dir_all(&source_dir).expect("failed to create source dir");
         let expected = write_file(&source_dir, "Foo.psc");
 
-        let result = find_psc_file(root.path(), "fOO.PSC");
+        let result = find_psc_file(root.path(), "fOO.PSC", &[]);
 
         assert_eq!(result, Some(expected));
     }
@@ -84,7 +110,7 @@ mod tests {
         fs::create_dir_all(&source_dir).expect("failed to create source dir");
         let expected = write_file(&source_dir, "Foo.psc");
 
-        let result = find_psc_file(root.path(), "foo");
+        let result = find_psc_file(root.path(), "foo", &[]);
 
         assert_eq!(result, Some(expected));
     }
@@ -99,7 +125,7 @@ mod tests {
         let expected = write_file(&scripts_source, "Foo.psc");
         write_file(&source_scripts, "Foo.psc");
 
-        let result = find_psc_file(root.path(), "Foo.psc");
+        let result = find_psc_file(root.path(), "Foo.psc", &[]);
 
         assert_eq!(result, Some(expected));
     }
@@ -111,7 +137,7 @@ mod tests {
         fs::create_dir_all(&source_dir).expect("failed to create source dir");
         write_file(&source_dir, "Bar.psc");
 
-        let result = find_psc_file(root.path(), "Foo.psc");
+        let result = find_psc_file(root.path(), "Foo.psc", &[]);
 
         assert_eq!(result, None);
     }
@@ -120,8 +146,94 @@ mod tests {
     fn returns_none_when_neither_directory_exists() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
 
-        let result = find_psc_file(root.path(), "Foo.psc");
+        let result = find_psc_file(root.path(), "Foo.psc", &[]);
 
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn finds_match_in_an_additional_root_relative_to_the_project_root() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let shared_dir = root.path().join("../SharedScripts");
+        fs::create_dir_all(&shared_dir).expect("failed to create shared dir");
+        write_file(&shared_dir, "Foo.psc");
+
+        let result = find_psc_file(root.path(), "Foo.psc", &["../SharedScripts".to_string()]);
+
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn finds_match_in_an_absolute_additional_root() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let shared = tempfile::tempdir().expect("failed to create temp dir");
+        let expected = write_file(shared.path(), "Foo.psc");
+
+        let result = find_psc_file(
+            root.path(),
+            "Foo.psc",
+            &[shared.path().to_string_lossy().into_owned()],
+        );
+
+        assert_eq!(result, Some(expected));
+    }
+
+    #[test]
+    fn prefers_candidate_dirs_over_additional_roots() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let scripts_source = root.path().join("scripts/source");
+        let shared = tempfile::tempdir().expect("failed to create temp dir");
+        fs::create_dir_all(&scripts_source).expect("failed to create scripts/source dir");
+        let expected = write_file(&scripts_source, "Foo.psc");
+        write_file(shared.path(), "Foo.psc");
+
+        let result = find_psc_file(
+            root.path(),
+            "Foo.psc",
+            &[shared.path().to_string_lossy().into_owned()],
+        );
+
+        assert_eq!(result, Some(expected));
+    }
+
+    #[test]
+    fn searches_additional_roots_in_order() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let first = tempfile::tempdir().expect("failed to create temp dir");
+        let second = tempfile::tempdir().expect("failed to create temp dir");
+        let expected = write_file(first.path(), "Foo.psc");
+        write_file(second.path(), "Foo.psc");
+
+        let result = find_psc_file(
+            root.path(),
+            "Foo.psc",
+            &[
+                first.path().to_string_lossy().into_owned(),
+                second.path().to_string_lossy().into_owned(),
+            ],
+        );
+
+        assert_eq!(result, Some(expected));
+    }
+
+    #[test]
+    fn resolve_additional_roots_joins_relative_and_keeps_absolute_paths() {
+        let root = Path::new("/game/Data");
+
+        let resolved = resolve_additional_roots(
+            root,
+            &[
+                "../SharedScripts".to_string(),
+                "/abs/OtherScripts".to_string(),
+            ],
+        );
+
+        assert_eq!(
+            resolved,
+            vec![
+                root.join("../SharedScripts"),
+                PathBuf::from("/abs/OtherScripts"),
+            ]
+        );
     }
 }

@@ -124,6 +124,9 @@ its default:
 ```yaml
 # Path to PapyrusCompiler.exe, or null to auto-detect it
 compiler_path: null
+# Extra directories (relative to the project root, or absolute) to search
+# for .psc files, besides scripts/source and source/scripts
+additional_script_roots: []
 # true, false
 semicolon: false
 # tab, space
@@ -186,6 +189,17 @@ rules:
   above the project's `.achlist` directory (the layout used by Bethesda's
   Creation Kit tooling, where a game's `Data` directory sits alongside a
   `Papyrus Compiler` directory in the game's install root).
+- `additional_script_roots`: extra directories, besides the conventional
+  `scripts/source` and `source/scripts` under the project root, to search
+  for `.psc` files — set via the app's Settings tab, one per line. Each
+  entry is resolved relative to the project root unless it's already an
+  absolute path. Searched (after the two conventional directories, in the
+  order listed) when resolving cross-script lookups for the "Argument type
+  check"/"Return type check"/"Function override" lints and autocompletion,
+  and appended to the compiler's `-i` argument (see Compiling a script
+  below) — useful when a script imports from a shared library location
+  outside the project. The CLI also accepts one or more `--script-root
+  <path>` flags on top of this setting (see Command-line interface below).
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
   or must not (`false`). Read by the "Semicolon at end of line" lint/fix.
 - `indentation`: the expected indentation style, `tab` or `space`. Read
@@ -241,7 +255,9 @@ sessions and can be shared/committed alongside the project. The
 PapyrusCompiler.exe path field on the Settings tab works the same way,
 except it's pre-filled with an auto-detected path (see `compiler_path`
 above) rather than a fixed default when the project has no explicit
-override saved yet.
+override saved yet. The additional script roots textarea (see
+`additional_script_roots` above) works the same way too, one directory per
+line.
 
 ## Command-line interface
 
@@ -261,6 +277,7 @@ PapyrusLinterCLI fix path/to/Example.psc
 PapyrusLinterCLI --json path/to/project.achlist
 PapyrusLinterCLI --json fix path/to/project.achlist
 PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
+PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
 ```
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
@@ -282,7 +299,18 @@ order), the CLI loads lint configuration directly from `<path>` instead
 of discovering `papyrus-lint.yaml`/`.yml` from the project root — useful
 when a config file lives somewhere other than that project root, or isn't
 named `papyrus-lint.yaml`/`.yml`. Both editor plugins expose this as a
-`config_path`/`configPath` setting (see their own READMEs).
+`config_path`/`configPath` setting (see their own READMEs). Since the
+project root's own config file is bypassed entirely in that case, so is
+its `additional_script_roots`; use `--script-root` (below) to add any back
+explicitly.
+
+Given one or more `--script-root <path>` flags (combinable with
+`fix`/`--json`/`--config`, in any argument order), each given directory
+(resolved relative to the project root unless already absolute) is
+searched for `.psc` files alongside `scripts/source`/`source/scripts` and
+the project's configured `additional_script_roots` (see Configuration
+above) — letting a caller add a script root for a single run without
+editing the project's config file.
 
 Each `.psc` file is decoded as UTF-8 when it's valid UTF-8, or as
 Windows-1252 (CP1252) — the Creation Kit/Papyrus compiler's own default
@@ -380,9 +408,11 @@ project root) and `<output dir>` is its parent, matching the layout
 Bethesda's tooling expects — a `Source` directory holding `.psc` files
 inside the `Scripts` directory that receives the compiled `.pex` output.
 `-i` is given both of those conventional source directories under the
-project root, separated by `;` (PapyrusCompiler.exe accepts multiple
-import directories that way), so the script can still resolve imports
-from the other layout even though it only lives in one of them.
+project root, plus any configured `additional_script_roots` (see
+Configuration above), separated by `;` (PapyrusCompiler.exe accepts
+multiple import directories that way), so the script can still resolve
+imports from the other layout, or a configured additional root, even
+though it only lives in one of them.
 
 The compiler's stdout/stderr is shown beneath the button once it finishes,
 styled green on success and red on failure, so both a successful compile
