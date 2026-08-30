@@ -32,13 +32,11 @@ jobs:
             build-mode: none
             name: javascript-typescript
             category: "/language:javascript-typescript"
-          # Rust analysis is split into two matrix legs, scoped by
-          # CodeQL config to app/src-tauri and app/crates respectively
-          # (see .github/codeql/rust-*.yml), so the two halves run on
-          # separate runners in parallel instead of one runner scanning
-          # the whole rust codebase sequentially. Each leg gets its own
-          # category so both sets of results are kept in Code Scanning
-          # rather than one overwriting the other.
+          # Rust analysis is split into one matrix leg per crate, scoped by
+          # CodeQL config (see .github/codeql/rust-*.yml), so every crate is
+          # scanned on a separate runner in parallel. Each leg gets its own
+          # category so all sets of results are kept in Code Scanning rather
+          # than one overwriting another.
           - language: rust
             build-mode: none
             name: rust-app
@@ -46,9 +44,24 @@ jobs:
             config-file: .github/codeql/rust-app.yml
           - language: rust
             build-mode: none
-            name: rust-crates
-            category: "/language:rust-crates"
-            config-file: .github/codeql/rust-crates.yml
+            name: rust-papyrus-parser
+            category: "/language:rust-papyrus-parser"
+            config-file: .github/codeql/rust-papyrus-parser.yml
+          - language: rust
+            build-mode: none
+            name: rust-papyrus-lints
+            category: "/language:rust-papyrus-lints"
+            config-file: .github/codeql/rust-papyrus-lints.yml
+          - language: rust
+            build-mode: none
+            name: rust-papyrus-lint-core
+            category: "/language:rust-papyrus-lint-core"
+            config-file: .github/codeql/rust-papyrus-lint-core.yml
+          - language: rust
+            build-mode: none
+            name: rust-papyrus-lint-cli
+            category: "/language:rust-papyrus-lint-cli"
+            config-file: .github/codeql/rust-papyrus-lint-cli.yml
 
     steps:
       - name: Checkout repository
