@@ -869,12 +869,61 @@ describe("showError / clearError / showResult", () => {
   });
 
   it("showResult lists the entries and switches to the files tab", () => {
-    showResult("/a.achlist", ["one.psc", "two.psc"]);
+    showResult("/proj/a.achlist", ["/proj/one.psc", "/proj/two.psc"], "/proj");
 
-    expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /a.achlist");
+    expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/a.achlist");
     expect(document.querySelectorAll("#achlist-result-list > li")).toHaveLength(2);
     expect(document.querySelector("#achlist-result")!.hasAttribute("hidden")).toBe(false);
     expect(document.querySelector<HTMLElement>("#panel-files")!.hidden).toBe(false);
+  });
+
+  it("showResult displays entries relative to the given base directory", () => {
+    showResult("/proj/a.achlist", ["/proj/scripts/source/one.psc", "/proj/readme.txt"], "/proj");
+
+    const items = document.querySelectorAll("#achlist-result-list > li span");
+    expect(items[0].textContent).toBe("scripts/source/one.psc");
+    expect(items[1].textContent).toBe("readme.txt");
+  });
+
+  it("showResult falls back to the absolute path when no base directory is known", () => {
+    showResult("/proj/a.achlist", ["/proj/one.psc"], null);
+
+    expect(document.querySelector("#achlist-result-list > li span")!.textContent).toBe("/proj/one.psc");
+  });
+
+  it("showResult adds a View button only for .psc entries", () => {
+    showResult("/proj/a.achlist", ["/proj/one.psc", "/proj/readme.txt"], "/proj");
+
+    const rows = document.querySelectorAll("#achlist-result-list > li");
+    expect(rows[0].querySelector(".achlist-result__view-button")).not.toBeNull();
+    expect(rows[1].querySelector(".achlist-result__view-button")).toBeNull();
+  });
+
+  it("showResult's View button opens the code viewer for that .psc file, marking its current findings", async () => {
+    invokeImplFor({
+      parse_achlist_file: () => ["one.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "One" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] risky" }],
+      read_psc_file: () => 'Debug.Trace("hi")',
+    });
+
+    // Populates currentPscOutcomes (via the lint pass) so the View button
+    // rendered by showResult below has real findings to look up.
+    await handleDroppedPaths(["/proj/a.achlist"]);
+
+    document.querySelector<HTMLButtonElement>(".achlist-result__view-button")!.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+    expect(dialog.hasAttribute("open")).toBe(true);
+    expect(document.querySelector("#code-viewer-title")!.textContent).toBe("one.psc");
+    expect(document.querySelector("#code-viewer-line-1")!.classList.contains("code-viewer__line--warning")).toBe(
+      true,
+    );
   });
 });
 
@@ -931,6 +980,48 @@ describe("handleDroppedPaths", () => {
     );
     expect(lastProjectDir()).toBe("/proj");
     expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc" });
+  });
+
+  it("clears previous findings before re-rendering, so re-dropping the same achlist can't show stale diagnostics while it reloads", async () => {
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] stale finding" }],
+    });
+    await handleDroppedPaths(["/proj/list.achlist"]);
+
+    let resolveLint: (findings: Diagnostic[]) => void = () => {};
+    const pendingLint = new Promise<Diagnostic[]>((resolve) => {
+      resolveLint = resolve;
+    });
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => pendingLint,
+      read_psc_file: () => 'Debug.Trace("hi")',
+    });
+
+    const secondDrop = handleDroppedPaths(["/proj/list.achlist"]);
+    // Let the re-render happen, but not the re-lint pass, which is still
+    // blocked on pendingLint.
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+    }
+
+    document.querySelector<HTMLButtonElement>(".achlist-result__view-button")!.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(document.querySelectorAll("#code-viewer-view .code-viewer__line--warning")).toHaveLength(0);
+
+    resolveLint([]);
+    await secondDrop;
   });
 });
 
