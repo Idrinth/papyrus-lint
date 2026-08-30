@@ -911,6 +911,48 @@ describe("handleDroppedPaths", () => {
     expect(lastProjectDir()).toBe("/proj");
     expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc" });
   });
+
+  it("clears previous findings before re-rendering, so re-dropping the same achlist can't show stale diagnostics while it reloads", async () => {
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] stale finding" }],
+    });
+    await handleDroppedPaths(["/proj/list.achlist"]);
+
+    let resolveLint: (findings: Diagnostic[]) => void = () => {};
+    const pendingLint = new Promise<Diagnostic[]>((resolve) => {
+      resolveLint = resolve;
+    });
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => pendingLint,
+      read_psc_file: () => 'Debug.Trace("hi")',
+    });
+
+    const secondDrop = handleDroppedPaths(["/proj/list.achlist"]);
+    // Let the re-render happen, but not the re-lint pass, which is still
+    // blocked on pendingLint.
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+    }
+
+    document.querySelector<HTMLButtonElement>(".achlist-result__view-button")!.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(document.querySelectorAll("#code-viewer-view .code-viewer__line--warning")).toHaveLength(0);
+
+    resolveLint([]);
+    await secondDrop;
+  });
 });
 
 describe("projectDirForPscPath", () => {

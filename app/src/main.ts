@@ -1251,6 +1251,10 @@ export async function handleDroppedPaths(paths: string[]) {
         path: achlistPath,
       });
       clearError();
+      // Cleared before rendering so a View click during the parse/lint
+      // pass below can't show a previous drop's stale findings for a
+      // path that happens to match one of this drop's entries.
+      currentPscOutcomes = [];
       showResult(achlistPath, entries, dirnameOf(achlistPath));
 
       await useProjectDir(dirnameOf(achlistPath));
@@ -1266,6 +1270,7 @@ export async function handleDroppedPaths(paths: string[]) {
   if (paths.length === 1 && isPscPath(paths[0])) {
     const pscPath = paths[0];
     clearError();
+    currentPscOutcomes = [];
     showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
 
     await useProjectDir(projectDirForPscPath(pscPath));
