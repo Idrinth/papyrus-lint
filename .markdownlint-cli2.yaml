@@ -1,0 +1,9 @@
+config:
+  # The main README contains wide reference tables that are more readable
+  # without manually wrapping every cell.
+  MD013: false
+  # Angle-bracket placeholders document command-line arguments rather than
+  # representing HTML elements.
+  MD033: false
+  # The bold opening sentence in the main README is a tagline, not a heading.
+  MD036: false

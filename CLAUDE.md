@@ -169,6 +169,8 @@ binary target that crate also defines.
   run build` (typecheck & Vite build). The text coverage summary is
   posted to the job's step summary and the full HTML/lcov report is
   uploaded as the `frontend-coverage` artifact.
+- **Markdown job**: runs markdownlint-cli2 against every `README.md` in the
+  repository, using the root `.markdownlint-cli2.yaml` configuration.
 - **VS Code extension job**: installs its dependencies, then runs `npm run
   test:coverage` (the Node test runner's built-in coverage, via
   `--experimental-test-coverage`), ESLint, and TypeScript compilation. The

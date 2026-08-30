@@ -16,7 +16,7 @@ the full list below) before you ship, on top of the formatting/style
 issues a linter usually catches, so a mod author finds them at write time
 instead of from a bug report.
 
-![Papyrus Lint Results](resources/papyrus-lint-results.png) 
+![Papyrus Lint Results](resources/papyrus-lint-results.png)
 
 ## What this is NOT
 
@@ -293,7 +293,7 @@ shipped separately for use cases — e.g. a CI pipeline — that shouldn't
 need the desktop app's binary (and its GUI dependencies) at all. Both
 accept the same argument and behave identically:
 
-```
+```text
 PapyrusLinterCLI path/to/project.achlist
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI fix path/to/project.achlist
@@ -427,7 +427,7 @@ then immediately recompiles it, showing the result beneath the editor —
 so a fix can be saved and verified in one step, without reopening the
 file from the Lint results list. Either button runs:
 
-```
+```text
 PapyrusCompiler.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
 ```
 
