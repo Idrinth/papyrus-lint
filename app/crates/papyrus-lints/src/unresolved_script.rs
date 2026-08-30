@@ -220,6 +220,82 @@ mod tests {
     }
 
     #[test]
+    fn finds_missing_scripts_in_nested_control_flow_and_expressions() {
+        let diagnostics = check_with(
+            r#"
+ScriptName Example
+
+Function Test()
+    Int[] values = new Int[MissingSize.Get()]
+    values[MissingIndex.Get()] = MissingValue.Get()
+    If MissingCondition.Get() && !MissingGuard.Get()
+        MissingBody.Run(MissingArgument.Get())
+    ElseIf MissingAlternative.Get()
+        Return
+    Else
+        While MissingLoop.Get()
+            values[0] = (MissingCast.Get() as Int)
+        EndWhile
+    EndIf
+EndFunction
+"#,
+            &mut FakeExternal,
+        );
+
+        let mut missing_scripts: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| {
+                diagnostic
+                    .message
+                    .strip_prefix("[warning] Script '")
+                    .and_then(|message| message.strip_suffix("' could not be located"))
+                    .unwrap()
+            })
+            .collect();
+        missing_scripts.sort_unstable();
+
+        assert_eq!(
+            missing_scripts,
+            [
+                "MissingAlternative",
+                "MissingArgument",
+                "MissingBody",
+                "MissingCast",
+                "MissingCondition",
+                "MissingGuard",
+                "MissingIndex",
+                "MissingLoop",
+                "MissingSize",
+                "MissingValue",
+            ]
+        );
+    }
+
+    #[test]
+    fn finds_missing_scripts_in_return_values_and_state_functions() {
+        let diagnostics = check_with(
+            r#"
+ScriptName Example
+
+Int Function GetValue()
+    Return MissingReturn.Get()
+EndFunction
+
+State Active
+    Function Run()
+        MissingState.Run()
+    EndFunction
+EndState
+"#,
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0].message.contains("MissingReturn"));
+        assert!(diagnostics[1].message.contains("MissingState"));
+    }
+
+    #[test]
     fn does_not_flag_a_call_through_a_local_variable_property_or_self() {
         let diagnostics = check_with(
             r#"
