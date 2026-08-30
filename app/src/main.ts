@@ -52,7 +52,7 @@ let themeSelectEl: HTMLSelectElement | null;
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
 
-export const TAB_IDS = ["import", "settings", "files", "lint"] as const;
+export const TAB_IDS = ["import", "settings", "files", "lint", "contact"] as const;
 type TabId = (typeof TAB_IDS)[number];
 
 // Shows `tab`'s panel and hides the others, updating the tab buttons'

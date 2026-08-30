@@ -17,6 +17,7 @@ export const FIXTURE_HTML = `
         <button type="button" id="tab-settings" class="tabs__tab" role="tab" aria-selected="false">Settings</button>
         <button type="button" id="tab-files" class="tabs__tab" role="tab" aria-selected="false">Files</button>
         <button type="button" id="tab-lint" class="tabs__tab" role="tab" aria-selected="false">Lint results</button>
+        <button type="button" id="tab-contact" class="tabs__tab" role="tab" aria-selected="false">Contact</button>
       </div>
 
       <div id="panel-import" class="tabs__panel" role="tabpanel">
@@ -112,6 +113,14 @@ export const FIXTURE_HTML = `
           </fieldset>
           <ul id="psc-result-list"></ul>
         </div>
+      </div>
+
+      <div id="panel-contact" class="tabs__panel" role="tabpanel" hidden>
+        <ul class="contact-list">
+          <li><a href="https://discord.gg/idrinth">Discord</a></li>
+          <li><a href="https://www.nexusmods.com/skyrimspecialedition/mods/189862">NexusMods</a></li>
+          <li><a href="https://github.com/idrinth/papyrus-lint">GitHub</a></li>
+        </ul>
       </div>
     </div>
   </main>
