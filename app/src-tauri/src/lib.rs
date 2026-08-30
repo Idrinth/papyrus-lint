@@ -1,3 +1,4 @@
+mod ast_cache;
 pub mod compiler;
 pub mod pex_header;
 
@@ -38,11 +39,22 @@ fn lint_papyrus_script(
     papyrus_lints::lint(source, &config)
 }
 
-/// Reads the `.psc` file at `path` and parses it into a `Script` AST.
+/// Reads the `.psc` file at `path` and parses it into a `Script` AST,
+/// reusing a disk-backed cache (see [`ast_cache`]) keyed by `path`'s
+/// content and modification time when the file hasn't changed since it was
+/// last parsed.
 #[tauri::command]
 fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
-    let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
-    papyrus_parser::parse(&source).map_err(|err| err.to_string())
+    let path = Path::new(&path);
+    let source = read_psc_source(path).map_err(|err| err.to_string())?;
+
+    if let Some(cached) = ast_cache::get(path, &source) {
+        return Ok(cached);
+    }
+
+    let script = papyrus_parser::parse(&source).map_err(|err| err.to_string())?;
+    ast_cache::put(path, &source, &script);
+    Ok(script)
 }
 
 /// Reads the `.psc` file at `path` and returns its raw source text, for the
@@ -286,6 +298,21 @@ mod tests {
         let script = parse_psc_file(path.to_string_lossy().into_owned()).unwrap();
         assert_eq!(script.name, "Replacement");
         assert_eq!(std::fs::read_to_string(path).unwrap(), replacement);
+    }
+
+    #[test]
+    fn parse_psc_file_reflects_edits_made_between_calls_instead_of_a_stale_cache_entry() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let path_string = path.to_string_lossy().into_owned();
+
+        std::fs::write(&path, "ScriptName Initial\n").unwrap();
+        let first = parse_psc_file(path_string.clone()).unwrap();
+        assert_eq!(first.name, "Initial");
+
+        std::fs::write(&path, "ScriptName Changed\n").unwrap();
+        let second = parse_psc_file(path_string).unwrap();
+        assert_eq!(second.name, "Changed");
     }
 
     #[test]
