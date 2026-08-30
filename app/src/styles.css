@@ -125,6 +125,19 @@ h1 {
   padding: 1.5em 0;
 }
 
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.contact-list a {
+  color: var(--color-accent-toggle);
+}
+
 .compiler-path-setting {
   display: flex;
   flex-direction: column;

@@ -162,7 +162,11 @@ Options:\n\
                           this file instead of stdout.\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
-I/O error.\n";
+I/O error.\n\n\
+Contact:\n\
+  Discord    https://discord.gg/idrinth\n\
+  NexusMods  https://www.nexusmods.com/skyrimspecialedition/mods/189862\n\
+  GitHub     https://github.com/idrinth/papyrus-lint\n";
 
 /// The crate's version, as set in `crates/papyrus-lint-cli/Cargo.toml`
 /// (kept in sync with the desktop app's version at release time). Printed

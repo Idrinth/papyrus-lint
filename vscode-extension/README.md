@@ -38,3 +38,9 @@ output is scoped to for a single-file invocation.
   the CLI via `--config`, overriding the `papyrus-lint.yaml`/`.yml` it
   would otherwise discover from the project root. Leave empty (the
   default) to use that discovery as normal.
+
+## Contact
+
+- Discord: <https://discord.gg/idrinth>
+- NexusMods: <https://www.nexusmods.com/skyrimspecialedition/mods/189862>
+- GitHub: <https://github.com/idrinth/papyrus-lint>
