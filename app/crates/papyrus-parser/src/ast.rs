@@ -1,14 +1,14 @@
 //! AST node definitions for a parsed Papyrus script.
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TypeName {
     pub name: String,
     pub is_array: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Script {
     pub name: String,
     pub extends: Option<String>,
@@ -21,7 +21,7 @@ pub struct Script {
     pub states: Vec<StateDecl>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PropertyDecl {
     pub type_name: TypeName,
     pub name: String,
@@ -33,7 +33,7 @@ pub struct PropertyDecl {
     pub line: usize,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct VariableDecl {
     pub type_name: TypeName,
     pub name: String,
@@ -42,14 +42,14 @@ pub struct VariableDecl {
     pub line: usize,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Param {
     pub type_name: TypeName,
     pub name: String,
     pub default: Option<Expr>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDecl {
     pub name: String,
     pub return_type: Option<TypeName>,
@@ -61,7 +61,7 @@ pub struct FunctionDecl {
     pub line: usize,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StateDecl {
     pub name: String,
     pub is_auto: bool,
@@ -69,7 +69,7 @@ pub struct StateDecl {
     pub line: usize,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct IfBranch {
     pub condition: Expr,
     pub body: Vec<Stmt>,
@@ -77,7 +77,7 @@ pub struct IfBranch {
     pub col: usize,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Stmt {
     VarDecl(VariableDecl),
     Assign {
@@ -107,7 +107,7 @@ pub enum Stmt {
     },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AssignOp {
     Assign,
     AddAssign,
@@ -117,7 +117,7 @@ pub enum AssignOp {
     ModAssign,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BinaryOp {
     Add,
     Sub,
@@ -134,13 +134,13 @@ pub enum BinaryOp {
     Or,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UnaryOp {
     Neg,
     Not,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Literal {
     Int(i64),
     Float(f64),
@@ -149,7 +149,7 @@ pub enum Literal {
     None,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Expr {
     Literal(Literal),
     Identifier(String),

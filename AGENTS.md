@@ -38,6 +38,9 @@ desktop app's binary at all.
 │   │       │                     # parse_papyrus_script, lint_papyrus_script,
 │   │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
 │   │       │                     # repair_psc_file), built on papyrus-lint-core
+│   │       ├── ast_cache.rs      # Disk-backed cache of parsed .psc ASTs, keyed by
+│   │       │                     # content MD5 + mtime + linter version, so
+│   │       │                     # parse_psc_file skips reparsing unchanged files
 │   │       ├── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button,
 │   │       │                     # then strips personal data from the compiled .pex
 │   │       └── pex_header.rs      # Parses a compiled .pex file's header just far
@@ -249,6 +252,15 @@ root; for a bare `.psc` in a conventional `Scripts/Source` or
 Configuration controls formatting, lint enablement, complexity thresholds, CLI failure
 levels, and the compiler path. See the [README configuration
 reference](README.md#configuration) for the complete schema and defaults.
+
+The desktop app's `parse_psc_file` command caches each file's parsed AST
+on disk (`app/src-tauri/src/ast_cache.rs`), in an `ast-cache` directory next
+to the app's own executable. A cached entry is only reused when its stored
+MD5 of the file's content, the file's last-modified timestamp, and the
+running linter version all still match; any mismatch, or any I/O/
+(de)serialization failure reading the cache, falls back to a fresh parse,
+so a stale or corrupt cache never surfaces as a lint error. This cache is
+GUI-only — the CLI and editor extensions always parse fresh.
 
 ## Keeping agent instructions synchronized
 
