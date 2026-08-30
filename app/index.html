@@ -2,6 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("papyrus-lint:theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+        } catch (error) {
+          // localStorage unavailable (e.g. disabled); fall back to the
+          // system theme via the CSS media query.
+        }
+      })();
+    </script>
     <link rel="stylesheet" href="/src/styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Papyrus Lint</title>
@@ -9,6 +22,15 @@
   </head>
 
   <body>
+    <div class="theme-switch">
+      <label for="theme-select" class="visually-hidden">Color theme</label>
+      <select id="theme-select">
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </div>
+
     <main class="container">
       <h1>Papyrus Lint <span id="app-version" class="app-version"></span></h1>
 
