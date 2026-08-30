@@ -139,6 +139,7 @@
             <label title="Flags, as an [error], a typed function/event with a code path that falls off the end of its body without a Return, since Papyrus then silently returns that type's default value (0, &quot;&quot;, False, or None) instead of one the author chose."><input type="checkbox" id="rule-explicit_return" checked /> Explicit return on every path</label>
             <label title="Flags a member/method access (e.g. akForm.GetName()) on a Form-typed function parameter that hasn't yet been confirmed non-None by a direct None check. Disabled by default, since many scripts intentionally accept a possibly-None Form and defer the check to a caller or a later branch."><input type="checkbox" id="rule-unchecked_form_parameter" /> Form parameter used without a None check</label>
             <label title="Flags a member/method access on the result of an &quot;as&quot; cast (e.g. (akRef as Actor).GetName()) before it's been checked against None, since a cast that doesn't match the underlying Form's actual type evaluates to None at runtime."><input type="checkbox" id="rule-unchecked_cast" checked /> Unchecked cast</label>
+            <label title="Flags, as a [warning], a static/global call through a script name (e.g. MyMissingScript.DoThing()) whose script can't be located under the project or recognized as a native singleton script like Game or Utility."><input type="checkbox" id="rule-unresolved_script" checked /> Unresolved script reference</label>
           </fieldset>
         </div>
 

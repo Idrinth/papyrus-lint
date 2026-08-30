@@ -131,6 +131,7 @@ export interface LintRules {
   explicit_return: boolean;
   unchecked_form_parameter: boolean;
   unchecked_cast: boolean;
+  unresolved_script: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -184,6 +185,7 @@ export const DEFAULT_RULES: LintRules = {
   explicit_return: true,
   unchecked_form_parameter: false,
   unchecked_cast: true,
+  unresolved_script: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {

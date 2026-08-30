@@ -153,4 +153,28 @@ EndFunction
         assert_eq!(repaired, "Show(\"é\", value)\n");
         assert_eq!(repair(&repaired), repaired);
     }
+
+    #[test]
+    fn allows_a_trailing_comma_before_a_closing_parenthesis() {
+        let source = "Use(value,)\n";
+        assert!(check(source).is_empty());
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn an_unmatched_closing_parenthesis_does_not_create_argument_context() {
+        let source = ") first,second\nUse(first,second)\n";
+        let diagnostics = check(source);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!((diagnostics[0].line, diagnostics[0].column), (2, 10));
+        assert_eq!(repair(source), ") first,second\nUse(first, second)\n");
+    }
+
+    #[test]
+    fn invalid_source_is_left_unchanged() {
+        let source = "Use(\"unterminated,value)\n";
+        assert!(check(source).is_empty());
+        assert_eq!(repair(source), source);
+    }
 }

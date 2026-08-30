@@ -1,0 +1,11 @@
+name: "CodeQL rust config: app/src-tauri"
+
+# Splits the rust CodeQL analysis in two so it can run in parallel (see
+# .github/workflows/codeql.yml) — this half covers the Tauri shell only.
+# Trade-off: analysis that depends on data flowing between app/src-tauri
+# and app/crates (which app/src-tauri depends on) is not visible to this
+# half, since app/crates is excluded here and analyzed as its own database.
+paths:
+  - app/src-tauri
+paths-ignore:
+  - app/crates

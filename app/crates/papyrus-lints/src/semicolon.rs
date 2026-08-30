@@ -161,4 +161,27 @@ EndFunction
             assert!(check(&repaired, style).is_empty());
         }
     }
+
+    #[test]
+    fn require_ignores_whitespace_only_lines_and_preserves_it() {
+        let source = " \t\r\nvalue\t\n";
+        let diagnostics = check(source, Style::Require);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!((diagnostics[0].line, diagnostics[0].column), (2, 6));
+        assert_eq!(repair(source, Style::Require), " \t\r\nvalue;\t\n");
+    }
+
+    #[test]
+    fn diagnostic_columns_count_characters_instead_of_utf8_bytes() {
+        let diagnostics = check("String greeting = \"hé\"\n", Style::Require);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].column, 23);
+    }
+
+    #[test]
+    fn repair_handles_a_final_line_without_a_newline() {
+        assert_eq!(repair("value", Style::Require), "value;");
+        assert_eq!(repair("value;", Style::Forbid), "value");
+    }
 }
