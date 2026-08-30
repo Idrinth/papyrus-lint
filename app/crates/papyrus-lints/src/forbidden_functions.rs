@@ -192,6 +192,14 @@ mod tests {
     }
 
     #[test]
+    fn does_not_flag_global_function_called_on_an_expression_result() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction DoThing()\n    GetUtility().Wait(1.0)\nEndFunction\n",
+        );
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn does_not_flag_unqualified_call_to_a_global_singleton_function() {
         let diagnostics =
             check("ScriptName Example\n\nFunction DoThing()\n    Wait(1.0)\nEndFunction\n");
