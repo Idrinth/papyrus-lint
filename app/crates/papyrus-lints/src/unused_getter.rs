@@ -22,9 +22,13 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         .collect()
 }
 
-/// Flags `statement` (the tokens between two newlines) if it is nothing but
-/// a bare call to a `Get`-prefixed function, with no other operator or
-/// keyword that would consume its return value.
+/// Flags `statement` (the tokens between two newlines) if any top-level
+/// operand of its expression is nothing but a bare call to a
+/// `Get`-prefixed function, with no keyword or assignment that would
+/// consume the statement's overall result. A top-level operand whose value
+/// only feeds a comparison, arithmetic, or logical operator is still
+/// flagged, since the operator's own result is then itself discarded (e.g.
+/// `GetDistance(target) > 0` on its own line).
 fn check_statement(statement: &[Token]) -> Option<Diagnostic> {
     // A discarded expression cannot contain a statement keyword or an
     // assignment. This also excludes declarations, returns, and conditions.
@@ -43,18 +47,23 @@ fn check_statement(statement: &[Token]) -> Option<Diagnostic> {
         return None;
     }
 
-    if has_top_level_operator(statement) {
-        return None;
-    }
+    top_level_operands(statement)
+        .into_iter()
+        .find_map(check_operand)
+}
 
-    let last = statement.last()?;
+/// Checks whether `operand` (one top-level operand of a discarded
+/// expression statement, as split out by [`top_level_operands`]) is itself
+/// nothing but a call to a `Get`-prefixed function.
+fn check_operand(operand: &[Token]) -> Option<Diagnostic> {
+    let last = operand.last()?;
     if !matches!(last.kind, TokenKind::RParen) {
         return None;
     }
 
-    let open_index = matching_open_paren(statement, statement.len() - 1)?;
+    let open_index = matching_open_paren(operand, operand.len() - 1)?;
     let function = open_index.checked_sub(1).and_then(|index| {
-        let token = &statement[index];
+        let token = &operand[index];
         match &token.kind {
             TokenKind::Identifier(name) => Some((token, name)),
             _ => None,
@@ -80,11 +89,18 @@ fn check_statement(statement: &[Token]) -> Option<Diagnostic> {
     })
 }
 
-fn has_top_level_operator(tokens: &[Token]) -> bool {
+/// Splits `tokens` into the operands of any top-level comparison,
+/// arithmetic, or logical operator (i.e. one at parenthesis/bracket depth
+/// zero), dropping the operators themselves. A statement with no such
+/// operator yields a single operand equal to the whole statement,
+/// preserving the previous (pre-operator-aware) behavior for a bare call.
+fn top_level_operands(tokens: &[Token]) -> Vec<&[Token]> {
+    let mut operands = Vec::new();
+    let mut start = 0;
     let mut paren_depth: usize = 0;
     let mut bracket_depth: usize = 0;
 
-    for token in tokens {
+    for (index, token) in tokens.iter().enumerate() {
         match token.kind {
             TokenKind::LParen => paren_depth += 1,
             TokenKind::RParen => paren_depth = paren_depth.saturating_sub(1),
@@ -106,13 +122,20 @@ fn has_top_level_operator(tokens: &[Token]) -> bool {
             | TokenKind::Not
                 if paren_depth == 0 && bracket_depth == 0 =>
             {
-                return true;
+                if index > start {
+                    operands.push(&tokens[start..index]);
+                }
+                start = index + 1;
             }
             _ => {}
         }
     }
 
-    false
+    if start < tokens.len() {
+        operands.push(&tokens[start..]);
+    }
+
+    operands
 }
 
 fn matching_open_paren(tokens: &[Token], close_index: usize) -> Option<usize> {
@@ -150,10 +173,33 @@ mod tests {
     #[test]
     fn ignores_getter_results_that_are_used() {
         let diagnostics = check(
-            "Function Test()\n  Int value = GetValue()\n  value = GetValue()\n  Return GetValue()\n  UseValue(GetValue())\n  GetValue().UseValue()\n  Bool equal = other == GetValue()\n  other == GetValue()\n  !GetValue()\n  If GetValue()\n  EndIf\nEndFunction\n",
+            "Function Test()\n  Int value = GetValue()\n  value = GetValue()\n  Return GetValue()\n  UseValue(GetValue())\n  GetValue().UseValue()\n  Bool equal = other == GetValue()\n  If GetValue()\n  EndIf\nEndFunction\n",
         );
 
         assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_a_getter_whose_result_only_feeds_a_discarded_comparison() {
+        // The comparison consumes GetDistance's return value, but the
+        // comparison's own result is then discarded too, since the
+        // statement is neither an assignment, a return, nor a condition.
+        let diagnostics = check(
+            "ScriptName ABC extends Actor\n\nActor Property B Auto\n\nFunction A()\n   GetDistance(B) > 0\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 6);
+        assert!(diagnostics[0].message.contains("GetDistance"));
+    }
+
+    #[test]
+    fn flags_getters_discarded_through_a_negation_or_equality_check() {
+        let diagnostics =
+            check("Function Test()\n  !GetValue()\n  other == GetValue()\nEndFunction\n");
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics.iter().all(|d| d.message.contains("GetValue")));
     }
 
     #[test]
