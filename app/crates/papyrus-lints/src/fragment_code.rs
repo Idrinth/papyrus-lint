@@ -110,4 +110,29 @@ Actor Property PlayerRef  Auto
         let source = ";BEGIN CODE\nInt x = 1\n;END CODE\n";
         assert!(protected_lines(source).iter().all(|&p| !p));
     }
+
+    #[test]
+    fn marker_matching_is_case_insensitive_and_allows_indentation() {
+        let source = "  ;begin fragment code\nwrapper\n\t;begin code\nbody\n  ;end code\nwrapper\n ;end fragment code\noutside\n";
+        let protected = protected_lines(source);
+
+        for line in [1, 2, 3, 5, 6, 7] {
+            assert!(protected[line], "expected line {line} to be protected");
+        }
+        for line in [4, 8] {
+            assert!(!protected[line], "expected line {line} to be editable");
+        }
+    }
+
+    #[test]
+    fn unmatched_end_markers_do_not_protect_ordinary_source() {
+        let source = ";END CODE\nInt x = 1\n;END FRAGMENT CODE\nInt y = 2\n";
+        assert!(protected_lines(source).iter().all(|&line| !line));
+    }
+
+    #[test]
+    fn unterminated_wrapper_protects_every_remaining_line() {
+        let protected = protected_lines("outside\n;BEGIN FRAGMENT CODE\nwrapper\n");
+        assert_eq!(protected, vec![false, false, true, true]);
+    }
 }

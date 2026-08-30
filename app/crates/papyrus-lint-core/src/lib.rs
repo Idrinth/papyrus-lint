@@ -11,6 +11,7 @@
 pub mod achlist;
 pub mod config;
 pub mod function_table;
+mod native_globals;
 mod native_types;
 pub mod script_locator;
 pub mod source_encoding;

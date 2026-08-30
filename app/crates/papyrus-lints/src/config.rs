@@ -48,6 +48,7 @@
 //!   explicit_return: true
 //!   unchecked_form_parameter: false
 //!   unchecked_cast: true
+//!   unresolved_script: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -272,6 +273,8 @@ pub struct Rules {
     pub unchecked_form_parameter: bool,
     /// The "Unchecked cast" lint.
     pub unchecked_cast: bool,
+    /// The "Unresolved script reference" lint.
+    pub unresolved_script: bool,
 }
 
 impl Default for Rules {
@@ -309,6 +312,7 @@ impl Default for Rules {
             explicit_return: true,
             unchecked_form_parameter: false,
             unchecked_cast: true,
+            unresolved_script: true,
         }
     }
 }
@@ -443,6 +447,7 @@ mod tests {
         // branch.
         assert!(!config.rules.unchecked_form_parameter);
         assert!(config.rules.unchecked_cast);
+        assert!(config.rules.unresolved_script);
     }
 
     #[test]

@@ -81,6 +81,7 @@ apply.
 | **Explicit return on every path** | Flags, as an `[error]`, a typed function/event with a code path that falls off the end of its body without a `Return`, since Papyrus then silently returns that type's default value (`0`, `""`, `False`, or `None`) instead of one the author chose. A `Return` with no value still counts as long as it's reached (`return_types` covers a value's actual type); an `If` only counts when every branch, including an `Else`, returns, and a `While` loop is never assumed to guarantee one since it may run zero times. A native function has no body to inspect and is never flagged. | |
 | **Form parameter used without a None check** | Flags, as a `[warning]`, a member/method access (`akForm.GetName()`) on a `Form`-typed function parameter that hasn't yet been confirmed non-`None` in that path, since a caller can always pass in `None` and dereferencing it crashes the script at runtime. Tracks a parameter as unconfirmed from the start of its function until it's narrowed through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) or a `While` loop's condition, the same way "None used as an existing Form" above narrows its own state, or until it's reassigned to anything else. A branch that unconditionally `Return`s doesn't carry its state past the `If`, covering the common `If x == None` / `Return` guard idiom. Passing the parameter on as an argument to another call isn't flagged, only a direct member/method access is. Disabled by default, since many scripts intentionally accept a possibly-`None` Form and defer the check to a caller or a later branch; a project opts in via `rules.unchecked_form_parameter`. | |
 | **Unchecked cast** | Flags, as a `[warning]`, a member/method access on the result of an `as` cast (e.g. `(akRef as Actor).GetActorValue("Health")`) before that result has been checked against `None`, since a cast that doesn't match the underlying Form's actual type evaluates to `None` at runtime rather than raising an error, so dereferencing it immediately crashes the script. Tracks a local variable as an unchecked cast result from its declaration/assignment from an `as` expression until it's reassigned something else, clearing it the moment a direct `None` check on it (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) is evaluated, regardless of which branch is ultimately taken — this lint only cares whether the possibility of `None` was ever considered, not which branch handles it. A cast used directly inline (`(value as Type).Member`) is always flagged, since there's no way to check it in between. | |
+| **Unresolved script reference** | Flags, as a `[warning]`, a call through Papyrus's static/global call syntax (e.g. `MyMissingScript.DoThing()`) whose target script can't be found, since a call through a script that doesn't exist can never compile. Only a call whose object is a bare identifier not already known as a local variable, parameter, or property is considered a script reference at all — one resolved through a variable or property is left to the "Argument type check"/"Return type check" lints instead. Only checked when linting a `.psc` file dropped in the app, by resolving the name against `.psc` files under the project root the same way the argument/return type checks do, falling back to a list of common native singleton scripts (`Game`, `Utility`, `Debug`, `Math`, `StringUtil`, `Input`, `UI`, `StorageUtil`) in `rules/native-globals.yaml` that the game ships compiled with no project-side source. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, chain whitespace, exclamation mark spacing, and
@@ -111,8 +112,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `static-condition`, `division-by-zero`, `unused-local-variable`, `none-form-usage`,
 `local-variable-shadowing`, `chain-whitespace`, `exclamation-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
-`property-sorting`, `explicit-return`, `unchecked-form-parameter`, and
-`unchecked-cast`.
+`property-sorting`, `explicit-return`, `unchecked-form-parameter`,
+`unchecked-cast`, and `unresolved-script`.
 
 ## Configuration
 
@@ -181,6 +182,7 @@ rules:
   explicit_return: true
   unchecked_form_parameter: false
   unchecked_cast: true
+  unresolved_script: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -243,8 +245,8 @@ rules:
   `static_condition`, `division_by_zero`, `unused_local_variable`, `none_form_usage`,
   `local_variable_shadowing`, `chain_whitespace`, `exclamation_spacing`,
   `identifier_casing`, `type_casing`, `named_arguments`, `operator_spacing`,
-  `property_sorting`, `explicit_return`, `unchecked_form_parameter`, and
-  `unchecked_cast`.
+  `property_sorting`, `explicit_return`, `unchecked_form_parameter`,
+  `unchecked_cast`, and `unresolved_script`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

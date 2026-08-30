@@ -1,0 +1,6 @@
+name: "CodeQL rust config: papyrus-parser"
+
+# Scope this database to one crate so each Rust crate can be analyzed in
+# parallel by its own matrix leg in .github/workflows/codeql.yml.
+paths:
+  - app/crates/papyrus-parser

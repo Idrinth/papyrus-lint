@@ -292,6 +292,19 @@ impl FunctionTable {
         members
     }
 
+    /// Whether a script named `type_name` can be located at all: either
+    /// found under the project root (regardless of whether it parses
+    /// cleanly), or known as a native singleton script always called
+    /// through its literal name (e.g. `Game`, `Utility`, `Debug`; see
+    /// [`crate::native_globals`]). Matched case-insensitively. Used by the
+    /// "Unresolved script reference" lint
+    /// (`papyrus_lints::unresolved_script`) to flag a call like
+    /// `MyMissingScript.DoThing()`.
+    pub fn script_exists(&mut self, type_name: &str) -> bool {
+        let name_lower = type_name.to_ascii_lowercase();
+        find_psc_file(&self.root, &name_lower).is_some() || crate::native_globals::is_known(&name_lower)
+    }
+
     /// Parses and caches the script named `name_lower`, if it hasn't been
     /// already.
     fn ensure_loaded(&mut self, name_lower: &str) {
@@ -323,6 +336,10 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
 
     fn has_property(&mut self, type_name: &str, property_name: &str) -> bool {
         self.has_property(type_name, property_name)
+    }
+
+    fn script_exists(&mut self, type_name: &str) -> bool {
+        self.script_exists(type_name)
     }
 }
 
@@ -968,6 +985,58 @@ EndFunction
         assert!(diagnostics[0].message.contains("Argument 1 to 'Greet'"));
         assert!(diagnostics[0].message.contains("expects String"));
         assert!(diagnostics[0].message.contains("got Int"));
+    }
+
+    #[test]
+    fn script_exists_true_for_a_script_found_under_the_project_root() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Foo", "ScriptName Foo\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.script_exists("Foo"));
+        assert!(table.script_exists("foo"));
+    }
+
+    #[test]
+    fn script_exists_true_for_a_known_native_singleton_script() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.script_exists("Game"));
+        assert!(table.script_exists("utility"));
+        assert!(table.script_exists("Debug"));
+    }
+
+    #[test]
+    fn script_exists_false_for_a_script_that_cannot_be_found() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.script_exists("MyMissingScript"));
+    }
+
+    #[test]
+    fn drives_the_unresolved_script_lint_across_scripts() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Greeter",
+            "ScriptName Greeter\n\nFunction Greet()\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::unresolved_script::check_with(
+            "ScriptName Example\n\nFunction Test()\n    Greeter.Greet()\n    Utility.Wait(1.0)\n    MyMissingScript.DoThing()\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("Script 'MyMissingScript' could not be located"));
     }
 
     #[test]

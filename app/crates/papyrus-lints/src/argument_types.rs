@@ -69,6 +69,21 @@ pub trait ExternalSignatures {
     fn has_property(&mut self, _type_name: &str, _property_name: &str) -> bool {
         false
     }
+
+    /// Whether a script named `type_name` can be located at all — either
+    /// under the project root or as a known native singleton script (e.g.
+    /// `Game`, `Utility`, `Debug`). Used by the "Unresolved script
+    /// reference" lint (`crate::unresolved_script`) to flag a call like
+    /// `MyMissingScript.DoThing()`.
+    ///
+    /// The default always says yes, since a caller that can't resolve
+    /// scripts (see [`NoExternalSignatures`]) has no way to tell a missing
+    /// script from a legitimate one it just doesn't track — the same
+    /// "unknown, don't guess" approach used by [`Self::is_subtype`] and
+    /// [`Self::has_property`] above.
+    fn script_exists(&mut self, _type_name: &str) -> bool {
+        true
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a
