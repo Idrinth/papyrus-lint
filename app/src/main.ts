@@ -18,6 +18,7 @@ let resultTitleEl: HTMLElement | null;
 let resultListEl: HTMLElement | null;
 let pscResultEl: HTMLElement | null;
 let pscResultListEl: HTMLElement | null;
+let filenameFilterEl: HTMLInputElement | null;
 let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
 let typeCasingStyleEl: HTMLSelectElement | null;
@@ -913,6 +914,36 @@ export function severityOf(message: string): Severity {
 const activeSeverities = new Set<Severity>(SEVERITIES);
 let severityFilterEls: Partial<Record<Severity, HTMLInputElement>> = {};
 
+// The current filename search pattern; an empty string matches every file.
+let currentFilenameFilter = "";
+
+// Tests whether `path` matches the user's filename search `pattern`,
+// treating "*" and "%" as "match any run of characters" and "?" as "match
+// exactly one character", the same way a shell glob or a SQL LIKE pattern
+// would. Matching is case-insensitive and unanchored, so a plain pattern
+// with no wildcards (e.g. "quest") behaves as a substring search, letting
+// the user search the lint results by only part of a filename. An empty
+// (or all-whitespace) pattern matches every path.
+export function matchesFilenameFilter(path: string, pattern: string): boolean {
+  const trimmed = pattern.trim();
+  if (trimmed.length === 0) {
+    return true;
+  }
+  const regexSource = trimmed
+    .split(/([*%?])/)
+    .map((part) => {
+      if (part === "*" || part === "%") {
+        return ".*";
+      }
+      if (part === "?") {
+        return ".";
+      }
+      return part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    })
+    .join("");
+  return new RegExp(regexSource, "i").test(path);
+}
+
 export function showError(message: string) {
   if (dropZoneErrorEl) {
     dropZoneErrorEl.textContent = message;
@@ -951,6 +982,11 @@ export function showResult(path: string, entries: string[]) {
 // result worth reporting.
 export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | null {
   const { path, ok, detail, findings } = outcome;
+
+  if (!matchesFilenameFilter(relativePath(path, currentProjectDir), currentFilenameFilter)) {
+    return null;
+  }
+
   const visibleFindings = findings.filter((finding) => activeSeverities.has(severityOf(finding.message)));
 
   if (ok && visibleFindings.length === 0) {
@@ -1265,6 +1301,7 @@ window.addEventListener("DOMContentLoaded", () => {
   resultListEl = document.querySelector("#achlist-result-list");
   pscResultEl = document.querySelector("#psc-result");
   pscResultListEl = document.querySelector("#psc-result-list");
+  filenameFilterEl = document.querySelector("#filename-filter");
   compilerPathEl = document.querySelector("#compiler-path");
   scriptRootsEl = document.querySelector("#script-roots");
   semicolonStyleEl = document.querySelector("#semicolon-style");
@@ -1356,6 +1393,11 @@ window.addEventListener("DOMContentLoaded", () => {
       renderPscResults(currentPscOutcomes);
     });
   }
+
+  filenameFilterEl?.addEventListener("input", () => {
+    currentFilenameFilter = filenameFilterEl?.value ?? "";
+    renderPscResults(currentPscOutcomes);
+  });
 
   compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
   scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);

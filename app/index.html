@@ -175,6 +175,14 @@
         <div id="panel-lint" class="tabs__panel" role="tabpanel" aria-labelledby="tab-lint" hidden>
           <div id="psc-result" class="psc-result" hidden>
             <h2>Parsed scripts</h2>
+            <div class="psc-result__search">
+              <label for="filename-filter">Filter by filename</label>
+              <input
+                id="filename-filter"
+                type="text"
+                placeholder="e.g. *quest*.psc or MyScript?.psc (* or % = any text, ? = one character)"
+              />
+            </div>
             <fieldset id="psc-result-filters" class="psc-result__filters">
               <legend>Show severities</legend>
               <label><input type="checkbox" id="filter-error" checked /> Errors</label>

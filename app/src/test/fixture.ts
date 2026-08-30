@@ -103,6 +103,7 @@ export const FIXTURE_HTML = `
 
       <div id="panel-lint" class="tabs__panel" role="tabpanel" hidden>
         <div id="psc-result" class="psc-result" hidden>
+          <input id="filename-filter" type="text" />
           <fieldset id="psc-result-filters">
             <input type="checkbox" id="filter-error" checked />
             <input type="checkbox" id="filter-warning" checked />

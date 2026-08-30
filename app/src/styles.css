@@ -249,6 +249,20 @@ h1 {
   word-break: break-all;
 }
 
+.psc-result__search {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  margin-bottom: 1em;
+}
+
+.psc-result__search input {
+  padding: 0.25em 0.5em;
+  width: 100%;
+  max-width: 32em;
+  box-sizing: border-box;
+}
+
 .psc-result__filters {
   display: flex;
   flex-wrap: wrap;
