@@ -178,8 +178,12 @@ impl FunctionTable {
 
     /// Whether `sub_type`'s script is, or extends (directly or
     /// transitively), `super_type`. Both names are matched
-    /// case-insensitively. Returns `false` if `sub_type`'s script (or any
-    /// ancestor along the way) can't be found or parsed before reaching
+    /// case-insensitively. When a type along the way isn't a script in the
+    /// project (e.g. a native engine type like `Actor` or `ObjectReference`,
+    /// whose own `Extends` chain isn't declared anywhere in the project),
+    /// falls back to [`crate::native_types::parent_of`] for it rather than
+    /// giving up; returns `false` only once neither the project nor that
+    /// fallback can say what a type in the chain extends before reaching
     /// `super_type`.
     pub fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
         let super_lower = super_type.to_ascii_lowercase();
@@ -195,10 +199,10 @@ impl FunctionTable {
             }
             self.ensure_loaded(&name);
 
-            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
-                break;
+            current = match self.scripts.get(&name).and_then(Option::as_ref) {
+                Some(script) => script.extends.as_ref().map(|e| e.to_ascii_lowercase()),
+                None => crate::native_types::parent_of(&name).map(str::to_string),
             };
-            current = script.extends.as_ref().map(|e| e.to_ascii_lowercase());
             visited.push(name);
         }
 
@@ -491,6 +495,40 @@ mod tests {
     }
 
     #[test]
+    fn is_subtype_resolves_native_engine_types_with_no_project_script() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        // None of `Actor`, `ObjectReference`, `Form`, `Spell` or `MagicItem`
+        // have a `.psc` anywhere under `root` (typical for a mod project,
+        // which doesn't ship copies of the game's own scripts), so this can
+        // only pass via the native type fallback.
+        assert!(table.is_subtype("Actor", "ObjectReference"));
+        assert!(table.is_subtype("Actor", "Form"));
+        assert!(table.is_subtype("Spell", "Form"));
+        assert!(!table.is_subtype("Form", "Actor"));
+        assert!(!table.is_subtype("Spell", "ObjectReference"));
+    }
+
+    #[test]
+    fn is_subtype_falls_back_to_native_types_past_a_project_scripts_extends_chain() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        // `MyQuestScript` is a project script, but the `Quest` it extends is
+        // the native engine type and has no `.psc` under `root`.
+        write_script(
+            root.path(),
+            "MyQuestScript",
+            "ScriptName MyQuestScript Extends Quest\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.is_subtype("MyQuestScript", "Quest"));
+        assert!(table.is_subtype("MyQuestScript", "Form"));
+    }
+
+    #[test]
     fn is_subtype_does_not_infinite_loop_on_circular_extends() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         write_script(root.path(), "A", "ScriptName A Extends B\n");
@@ -711,6 +749,50 @@ mod tests {
         assert!(diagnostics[0]
             .message
             .contains("inherited from a parent script"));
+    }
+
+    #[test]
+    fn accepts_an_actor_argument_for_an_object_reference_parameter_with_no_native_scripts_in_project(
+    ) {
+        // Regression test: `Actor`/`ObjectReference`/`Form`/`Spell` are
+        // native engine types with no `.psc` under `root` (the project
+        // ships none of the game's own scripts), so this can only pass via
+        // `FunctionTable::is_subtype`'s native type fallback.
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "UpcastProbe",
+            "ScriptName UpcastProbe extends Quest\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::argument_types::check_with(
+            r#"
+ScriptName UpcastProbe extends Quest
+
+ObjectReference Property AnObjRef Auto
+Actor           Property AnActor  Auto
+Form            Property AForm    Auto
+Spell           Property ASpell   Auto
+
+Function Takes(ObjectReference akRef)
+EndFunction
+
+Function Probe()
+    Takes(AnObjRef)
+    Takes(AnActor)
+    Takes(AForm)
+    Takes(ASpell)
+EndFunction
+"#,
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0].message.contains("Takes"));
+        assert!(diagnostics[0].message.contains("got Form"));
+        assert!(diagnostics[1].message.contains("Takes"));
+        assert!(diagnostics[1].message.contains("got Spell"));
     }
 
     #[test]

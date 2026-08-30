@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Shared achlist/config/script-resolution logic used by both the Papyrus Lint desktop app and its CLI"
 authors = ["Idrinth"]
 edition = "2021"
+build = "build.rs"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -12,6 +13,10 @@ serde_yaml = "0.9"
 encoding_rs = "0.8"
 papyrus-parser = { path = "../papyrus-parser" }
 papyrus-lints = { path = "../papyrus-lints" }
+
+[build-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
 
 [dev-dependencies]
 tempfile = "3"
