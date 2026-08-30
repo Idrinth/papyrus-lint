@@ -2,6 +2,14 @@
 // main.ts's DOMContentLoaded handler looks up by id. Kept in one place so
 // tests build the same structure main.ts expects to wire up.
 export const FIXTURE_HTML = `
+  <div class="theme-switch">
+    <select id="theme-select">
+      <option value="system">System</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </div>
+
   <main class="container">
     <div class="tabs">
       <div class="tabs__list" role="tablist">
