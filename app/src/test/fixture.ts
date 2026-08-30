@@ -57,6 +57,7 @@ export const FIXTURE_HTML = `
         </select>
         <input id="cyclomatic-complexity-warning" type="number" min="1" value="10" />
         <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
+        <input id="min-wait-interval" type="number" min="0" step="0.01" value="0.1" />
         <input type="checkbox" id="fail-on-warning" />
         <input type="checkbox" id="fail-on-info" />
         <fieldset id="lint-rules">
@@ -92,6 +93,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-explicit_return" checked />
           <input type="checkbox" id="rule-unchecked_form_parameter" />
           <input type="checkbox" id="rule-unchecked_cast" checked />
+          <input type="checkbox" id="rule-short_wait_interval" checked />
         </fieldset>
       </div>
 

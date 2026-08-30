@@ -30,6 +30,7 @@ let scriptRootsEl: HTMLTextAreaElement | null;
 let semicolonStyleEl: HTMLSelectElement | null;
 let cyclomaticComplexityWarningEl: HTMLInputElement | null;
 let cyclomaticComplexityErrorEl: HTMLInputElement | null;
+let minWaitIntervalEl: HTMLInputElement | null;
 let failOnWarningEl: HTMLInputElement | null;
 let failOnInfoEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
@@ -136,6 +137,7 @@ export interface LintRules {
   unchecked_form_parameter: boolean;
   unchecked_cast: boolean;
   unresolved_script: boolean;
+  short_wait_interval: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -151,6 +153,7 @@ export interface LintConfig {
   cyclomatic_complexity_error: number;
   type_casing: TypeCasingStyle;
   named_arguments: NamedArgumentsStyle;
+  min_wait_interval: number;
   fail_on_warning: boolean;
   fail_on_info: boolean;
   rules: LintRules;
@@ -190,6 +193,7 @@ export const DEFAULT_RULES: LintRules = {
   unchecked_form_parameter: false,
   unchecked_cast: true,
   unresolved_script: true,
+  short_wait_interval: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
@@ -201,6 +205,7 @@ export const DEFAULT_LINT_CONFIG: LintConfig = {
   cyclomatic_complexity_error: 20,
   type_casing: "PascalCase",
   named_arguments: "never",
+  min_wait_interval: 0.1,
   fail_on_warning: false,
   fail_on_info: false,
   rules: DEFAULT_RULES,
@@ -347,6 +352,9 @@ export function applyLintConfigToUI(config: LintConfig) {
   if (cyclomaticComplexityErrorEl) {
     cyclomaticComplexityErrorEl.value = String(config.cyclomatic_complexity_error);
   }
+  if (minWaitIntervalEl) {
+    minWaitIntervalEl.value = String(config.min_wait_interval);
+  }
   if (typeCasingStyleEl) {
     typeCasingStyleEl.value = config.type_casing;
   }
@@ -387,6 +395,12 @@ export function lintConfigFromUI(): LintConfig {
     cyclomatic_complexity_error: Math.max(1, cyclomaticComplexityErrorEl?.valueAsNumber || 20),
     type_casing: (typeCasingStyleEl?.value as TypeCasingStyle | undefined) ?? "PascalCase",
     named_arguments: (namedArgumentsStyleEl?.value as NamedArgumentsStyle | undefined) ?? "never",
+    min_wait_interval: Math.max(
+      0,
+      minWaitIntervalEl && Number.isFinite(minWaitIntervalEl.valueAsNumber)
+        ? minWaitIntervalEl.valueAsNumber
+        : 0.1,
+    ),
     fail_on_warning: failOnWarningEl?.checked ?? false,
     fail_on_info: failOnInfoEl?.checked ?? false,
     rules,
@@ -1338,6 +1352,7 @@ window.addEventListener("DOMContentLoaded", () => {
   namedArgumentsStyleEl = document.querySelector("#named-arguments-style");
   cyclomaticComplexityWarningEl = document.querySelector("#cyclomatic-complexity-warning");
   cyclomaticComplexityErrorEl = document.querySelector("#cyclomatic-complexity-error");
+  minWaitIntervalEl = document.querySelector("#min-wait-interval");
   failOnWarningEl = document.querySelector("#fail-on-warning");
   failOnInfoEl = document.querySelector("#fail-on-info");
   ruleEls = Object.fromEntries(
@@ -1440,6 +1455,7 @@ window.addEventListener("DOMContentLoaded", () => {
   namedArgumentsStyleEl?.addEventListener("change", handleLintConfigChanged);
   cyclomaticComplexityWarningEl?.addEventListener("change", handleLintConfigChanged);
   cyclomaticComplexityErrorEl?.addEventListener("change", handleLintConfigChanged);
+  minWaitIntervalEl?.addEventListener("change", handleLintConfigChanged);
   failOnWarningEl?.addEventListener("change", handleLintConfigChanged);
   failOnInfoEl?.addEventListener("change", handleLintConfigChanged);
   for (const key of RULE_KEYS) {

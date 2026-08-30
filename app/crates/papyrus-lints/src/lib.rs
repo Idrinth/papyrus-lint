@@ -29,6 +29,7 @@ pub mod operator_spacing;
 pub mod property_sorting;
 pub mod return_types;
 pub mod semicolon;
+pub mod short_wait_interval;
 pub mod slow_functions;
 pub mod static_condition;
 pub mod strict_boolean;
@@ -225,6 +226,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.unchecked_cast {
         diagnostics.extend(unchecked_cast::check(source));
+    }
+    if rules.short_wait_interval {
+        diagnostics.extend(short_wait_interval::check(source, config.min_wait_interval));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -647,6 +651,12 @@ mod tests {
                 division_by_zero::RULE,
                 Config::default(),
                 config_with(|c| c.rules.division_by_zero = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Utility.Wait(0.01)\nEndFunction\n",
+                short_wait_interval::RULE,
+                Config::default(),
+                config_with(|c| c.rules.short_wait_interval = false),
             ),
         ];
 
