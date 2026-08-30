@@ -192,8 +192,12 @@ fn check_expr(
         } => {
             check_expr(left, unchecked, diagnostics, line);
             // Short-circuit: `right` only evaluates once `left` is truthy.
+            // `narrow_for_truthy` can insert any identifier a `None` check
+            // names, so restrict back to `unchecked`'s own parameters —
+            // it must never grow to cover locals or reassigned parameters.
             let mut narrowed = unchecked.clone();
             narrow_for_truthy(left, &mut narrowed);
+            narrowed.retain(|name| unchecked.contains(name));
             check_expr(right, &narrowed, diagnostics, line);
         }
         Expr::Binary {
@@ -205,6 +209,7 @@ fn check_expr(
             // Short-circuit: `right` only evaluates once `left` is falsy.
             let mut narrowed = unchecked.clone();
             narrow_for_falsy(left, &mut narrowed);
+            narrowed.retain(|name| unchecked.contains(name));
             check_expr(right, &narrowed, diagnostics, line);
         }
         Expr::Binary { left, right, .. } => {
@@ -352,6 +357,15 @@ mod tests {
     fn does_not_flag_short_circuited_and_guard() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Armor akArmor)\n    If akArmor && akArmor.GetName() == \"\"\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_local_variable_narrowed_via_short_circuit_and() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    Armor localArmor\n    If localArmor == None && localArmor.GetName() == \"\"\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
         );
 
         assert!(diagnostics.is_empty());
