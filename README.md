@@ -110,7 +110,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `static-condition`, `division-by-zero`, `unused-local-variable`, `none-form-usage`,
 `local-variable-shadowing`, `chain-whitespace`, `exclamation-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
-`property-sorting`, and `unchecked-cast`.
+`property-sorting`, `explicit-return`, and `unchecked-cast`.
 
 ## Configuration
 
