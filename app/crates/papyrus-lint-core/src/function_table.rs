@@ -302,7 +302,8 @@ impl FunctionTable {
     /// `MyMissingScript.DoThing()`.
     pub fn script_exists(&mut self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
-        find_psc_file(&self.root, &name_lower).is_some() || crate::native_globals::is_known(&name_lower)
+        find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some()
+            || crate::native_globals::is_known(&name_lower)
     }
 
     /// Parses and caches the script named `name_lower`, if it hasn't been
