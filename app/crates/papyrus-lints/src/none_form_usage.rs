@@ -48,7 +48,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     diagnostics
 }
 
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
+pub(crate) fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     script.functions.iter().chain(
         script
             .states
@@ -116,7 +116,7 @@ fn walk_body(body: &[Stmt], none_vars: &mut HashSet<String>, diagnostics: &mut V
 /// of Papyrus's primitive value types. Object-typed locals default to
 /// `None` when declared without an initializer; primitives get a non-`None`
 /// zero value (`0`, `0.0`, `False`, `""`) instead.
-fn is_object_type(type_name: &TypeName) -> bool {
+pub(crate) fn is_object_type(type_name: &TypeName) -> bool {
     !type_name.is_array
         && !matches!(
             type_name.name.to_lowercase().as_str(),
@@ -182,7 +182,7 @@ fn handle_if(
 
 /// Whether `body` unconditionally exits its enclosing function, judged
 /// (conservatively) by its last statement being a `Return`.
-fn diverges(body: &[Stmt]) -> bool {
+pub(crate) fn diverges(body: &[Stmt]) -> bool {
     matches!(body.last(), Some(Stmt::Return { .. }))
 }
 
@@ -227,7 +227,7 @@ fn none_literal_compare(
 
 /// Narrows `state` to reflect `condition` having evaluated `true`,
 /// recursing into `&&` operands (both must hold).
-fn narrow_for_truthy(condition: &Expr, state: &mut HashSet<String>) {
+pub(crate) fn narrow_for_truthy(condition: &Expr, state: &mut HashSet<String>) {
     if let Some((name, means_none)) = none_check(condition) {
         if means_none {
             state.insert(name);
@@ -249,7 +249,7 @@ fn narrow_for_truthy(condition: &Expr, state: &mut HashSet<String>) {
 
 /// Narrows `state` to reflect `condition` having evaluated `false`,
 /// recursing into `||` operands (both must have been false).
-fn narrow_for_falsy(condition: &Expr, state: &mut HashSet<String>) {
+pub(crate) fn narrow_for_falsy(condition: &Expr, state: &mut HashSet<String>) {
     if let Some((name, means_none)) = none_check(condition) {
         if means_none {
             state.remove(&name);

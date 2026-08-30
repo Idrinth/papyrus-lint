@@ -45,16 +45,20 @@
 //!   named_arguments: true
 //!   operator_spacing: true
 //!   property_sorting: false
+//!   unchecked_form_parameter: false
 //!   unchecked_cast: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
 //! disable that lint (and its automatic fix, if it has one) entirely. As
 //! with the top-level keys, `rules` and any key within it may be omitted
-//! and falls back to its default. `property_sorting` is the one
-//! exception: it defaults to `false`, since reordering a script's
-//! declared properties is a more invasive change than the rest of these
-//! rules, so a project has to opt in explicitly.
+//! and falls back to its default. `property_sorting` and
+//! `unchecked_form_parameter` are the exceptions: they default to
+//! `false`. `property_sorting` reorders a script's declared properties, a
+//! more invasive change than the rest of these rules; `unchecked_form_parameter`
+//! defaults off because many scripts intentionally accept a possibly-`None`
+//! Form and defer the check to a caller or a later branch. Both need a
+//! project to opt in explicitly.
 
 use std::fmt;
 
@@ -259,6 +263,10 @@ pub struct Rules {
     /// The "Property sorting" lint/fix. Unlike every other field here,
     /// this defaults to `false`: see [`crate::property_sorting`].
     pub property_sorting: bool,
+    /// The "Form parameter used without a None check" lint. Like
+    /// [`Self::property_sorting`], this defaults to `false`: see
+    /// [`crate::unchecked_form_parameter`].
+    pub unchecked_form_parameter: bool,
     /// The "Unchecked cast" lint.
     pub unchecked_cast: bool,
 }
@@ -295,6 +303,7 @@ impl Default for Rules {
             named_arguments: true,
             operator_spacing: true,
             property_sorting: false,
+            unchecked_form_parameter: false,
             unchecked_cast: true,
         }
     }
@@ -424,6 +433,10 @@ mod tests {
         // Unlike every rule above, sorting reorders a script's structure,
         // so this one defaults to disabled until a project opts in.
         assert!(!config.rules.property_sorting);
+        // Also disabled by default: many scripts intentionally accept a
+        // possibly-None Form and defer the check to a caller or a later
+        // branch.
+        assert!(!config.rules.unchecked_form_parameter);
         assert!(config.rules.unchecked_cast);
     }
 
