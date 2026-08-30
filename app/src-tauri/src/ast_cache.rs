@@ -3,9 +3,18 @@
 //! relinting an achlist) skips re-parsing it. Entries live as one JSON file
 //! per source path in an `ast-cache` directory next to the app's own
 //! executable, and are invalidated by the source file's last-modified
-//! timestamp, an MD5 of its content, and the running linter version -- if
-//! any of the three has changed since the entry was written, it's treated
-//! as a miss and the caller re-parses.
+//! timestamp, an MD5 of its content, and the linter version that wrote the
+//! entry -- if any of the three is no longer valid, it's treated as a miss
+//! and the caller re-parses.
+//!
+//! The version check is a minimum-compatible-version check against
+//! [`MIN_COMPATIBLE_VERSION`], not an exact match against the running
+//! linter's own version: an entry written by any release at or after
+//! `MIN_COMPATIBLE_VERSION` is accepted, so an ordinary app update doesn't
+//! discard an otherwise still-valid cache. Bump `MIN_COMPATIBLE_VERSION`
+//! only when a release actually changes the on-disk `CacheEntry` layout or
+//! the `papyrus_parser::ast::Script` shape it embeds in a way that would
+//! break reading older entries.
 //!
 //! Caching is a pure optimization: any I/O or (de)serialization failure
 //! here is swallowed and simply falls through to a fresh parse, never
@@ -18,12 +27,38 @@ use serde::{Deserialize, Serialize};
 
 const CACHE_DIR_NAME: &str = "ast-cache";
 
+/// The oldest linter release whose AST cache entries the running binary
+/// still accepts. See the module docs above for when to bump this.
+const MIN_COMPATIBLE_VERSION: &str = "1.11.0";
+
 #[derive(Serialize, Deserialize)]
 struct CacheEntry {
     modified_unix_secs: u64,
     content_md5: String,
     linter_version: String,
     ast: papyrus_parser::ast::Script,
+}
+
+/// Parses a `major.minor.patch` version string into a comparable tuple.
+/// Returns `None` for anything that doesn't parse that way, so a malformed
+/// or unexpected version string is treated as incompatible rather than
+/// panicking.
+fn parse_version(version: &str) -> Option<(u64, u64, u64)> {
+    let mut parts = version.split('.');
+    let major = parts.next()?.parse().ok()?;
+    let minor = parts.next()?.parse().ok()?;
+    let patch = parts.next()?.parse().ok()?;
+    Some((major, minor, patch))
+}
+
+/// Whether a cache entry written by `version` is still readable by this
+/// binary, i.e. `version >= MIN_COMPATIBLE_VERSION`. Either version failing
+/// to parse is treated as incompatible.
+fn is_compatible_version(version: &str) -> bool {
+    let Some(min) = parse_version(MIN_COMPATIBLE_VERSION) else {
+        return false;
+    };
+    parse_version(version).is_some_and(|v| v >= min)
 }
 
 /// The `ast-cache` directory alongside the running executable (the app's
@@ -51,7 +86,7 @@ fn get_in(dir: &Path, source_path: &Path, source: &str) -> Option<papyrus_parser
     let raw = std::fs::read(cache_file_path(dir, source_path)).ok()?;
     let entry: CacheEntry = serde_json::from_slice(&raw).ok()?;
 
-    if entry.linter_version != env!("CARGO_PKG_VERSION")
+    if !is_compatible_version(&entry.linter_version)
         || entry.modified_unix_secs != file_modified_unix_secs(source_path)?
         || entry.content_md5 != format!("{:x}", md5::compute(source.as_bytes()))
     {
@@ -61,14 +96,20 @@ fn get_in(dir: &Path, source_path: &Path, source: &str) -> Option<papyrus_parser
     Some(entry.ast)
 }
 
-fn put_in(dir: &Path, source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) {
+fn put_in(
+    dir: &Path,
+    source_path: &Path,
+    source: &str,
+    ast: &papyrus_parser::ast::Script,
+    linter_version: &str,
+) {
     let Some(modified_unix_secs) = file_modified_unix_secs(source_path) else {
         return;
     };
     let entry = CacheEntry {
         modified_unix_secs,
         content_md5: format!("{:x}", md5::compute(source.as_bytes())),
-        linter_version: env!("CARGO_PKG_VERSION").to_string(),
+        linter_version: linter_version.to_string(),
         ast: ast.clone(),
     };
     let Ok(serialized) = serde_json::to_vec(&entry) else {
@@ -82,9 +123,9 @@ fn put_in(dir: &Path, source_path: &Path, source: &str, ast: &papyrus_parser::as
 
 /// Returns the cached AST for `source_path` if the on-disk cache has a
 /// still-valid entry for `source`'s current content, `source_path`'s
-/// modification time, and the running linter version. Returns `None` on any
-/// cache miss, mismatch, or error -- the caller should parse `source` fresh
-/// in that case.
+/// modification time, and a linter version at or above
+/// [`MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss, mismatch, or
+/// error -- the caller should parse `source` fresh in that case.
 pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
     get_in(&cache_dir()?, source_path, source)
 }
@@ -94,7 +135,7 @@ pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Scri
 /// directory) is silently ignored.
 pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) {
     if let Some(dir) = cache_dir() {
-        put_in(&dir, source_path, source, ast);
+        put_in(&dir, source_path, source, ast, env!("CARGO_PKG_VERSION"));
     }
 }
 
@@ -102,6 +143,10 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
 mod tests {
     use super::*;
     use tempfile::tempdir;
+
+    /// A version at the minimum compatible threshold, used by tests that
+    /// don't care about version compatibility itself.
+    const COMPATIBLE_VERSION: &str = MIN_COMPATIBLE_VERSION;
 
     fn sample_ast() -> papyrus_parser::ast::Script {
         papyrus_parser::parse("ScriptName Example\n").unwrap()
@@ -116,7 +161,27 @@ mod tests {
         std::fs::write(&source_path, source).unwrap();
 
         let ast = sample_ast();
-        put_in(cache_dir.path(), &source_path, source, &ast);
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &ast,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
+    }
+
+    #[test]
+    fn get_is_a_hit_when_the_cached_version_is_newer_than_the_minimum_compatible_version() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let ast = sample_ast();
+        put_in(cache_dir.path(), &source_path, source, &ast, "9.9.9");
 
         assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
     }
@@ -142,7 +207,13 @@ mod tests {
         let original = "ScriptName Example\n";
         std::fs::write(&source_path, original).unwrap();
 
-        put_in(cache_dir.path(), &source_path, original, &sample_ast());
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            original,
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
 
         let changed = "ScriptName Renamed\n";
         assert_eq!(get_in(cache_dir.path(), &source_path, changed), None);
@@ -156,7 +227,13 @@ mod tests {
         let source = "ScriptName Example\n";
         std::fs::write(&source_path, source).unwrap();
 
-        put_in(cache_dir.path(), &source_path, source, &sample_ast());
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
 
         let filetime_now = std::time::SystemTime::now() + std::time::Duration::from_secs(120);
         std::fs::write(&source_path, source).unwrap();
@@ -167,7 +244,7 @@ mod tests {
     }
 
     #[test]
-    fn get_is_a_miss_when_the_cached_linter_version_differs() {
+    fn get_is_a_miss_when_the_cached_version_is_older_than_the_minimum_compatible_version() {
         let cache_dir = tempdir().unwrap();
         let project_dir = tempdir().unwrap();
         let source_path = project_dir.path().join("Example.psc");
@@ -177,7 +254,7 @@ mod tests {
         let entry = CacheEntry {
             modified_unix_secs: file_modified_unix_secs(&source_path).unwrap(),
             content_md5: format!("{:x}", md5::compute(source.as_bytes())),
-            linter_version: "0.0.0-not-the-running-version".to_string(),
+            linter_version: "1.10.1".to_string(),
             ast: sample_ast(),
         };
         std::fs::create_dir_all(cache_dir.path()).unwrap();
@@ -188,6 +265,47 @@ mod tests {
         .unwrap();
 
         assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    }
+
+    #[test]
+    fn get_is_a_miss_when_the_cached_version_does_not_parse() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let entry = CacheEntry {
+            modified_unix_secs: file_modified_unix_secs(&source_path).unwrap(),
+            content_md5: format!("{:x}", md5::compute(source.as_bytes())),
+            linter_version: "not-a-version".to_string(),
+            ast: sample_ast(),
+        };
+        std::fs::create_dir_all(cache_dir.path()).unwrap();
+        std::fs::write(
+            cache_file_path(cache_dir.path(), &source_path),
+            serde_json::to_vec(&entry).unwrap(),
+        )
+        .unwrap();
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    }
+
+    #[test]
+    fn parse_version_rejects_malformed_strings() {
+        assert_eq!(parse_version("1.11.0"), Some((1, 11, 0)));
+        assert_eq!(parse_version("1.11"), None);
+        assert_eq!(parse_version("1.11.x"), None);
+        assert_eq!(parse_version(""), None);
+    }
+
+    #[test]
+    fn is_compatible_version_accepts_the_minimum_and_anything_newer() {
+        assert!(is_compatible_version(MIN_COMPATIBLE_VERSION));
+        assert!(is_compatible_version("1.11.1"));
+        assert!(is_compatible_version("2.0.0"));
+        assert!(!is_compatible_version("1.10.99"));
+        assert!(!is_compatible_version("not-a-version"));
     }
 
     #[test]
@@ -215,7 +333,13 @@ mod tests {
         let source = "ScriptName Example\n";
         std::fs::write(&source_path, source).unwrap();
 
-        put_in(&nested_cache_dir, &source_path, source, &sample_ast());
+        put_in(
+            &nested_cache_dir,
+            &source_path,
+            source,
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
 
         assert!(nested_cache_dir.is_dir());
         assert!(get_in(&nested_cache_dir, &source_path, source).is_some());
@@ -232,8 +356,20 @@ mod tests {
 
         let ast_a = papyrus_parser::parse("ScriptName A\n").unwrap();
         let ast_b = papyrus_parser::parse("ScriptName B\n").unwrap();
-        put_in(cache_dir.path(), &path_a, "ScriptName A\n", &ast_a);
-        put_in(cache_dir.path(), &path_b, "ScriptName B\n", &ast_b);
+        put_in(
+            cache_dir.path(),
+            &path_a,
+            "ScriptName A\n",
+            &ast_a,
+            COMPATIBLE_VERSION,
+        );
+        put_in(
+            cache_dir.path(),
+            &path_b,
+            "ScriptName B\n",
+            &ast_b,
+            COMPATIBLE_VERSION,
+        );
 
         assert_eq!(
             get_in(cache_dir.path(), &path_a, "ScriptName A\n"),
