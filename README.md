@@ -1,10 +1,6 @@
-# Papyrus Lint [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint)
+# Papyrus Lint [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint) [![Discord Server](https://img.shields.io/badge/discord-server-5865F2?logo=discord)](link=https://discord.gg/idrinth) [![NexusMods](https://img.shields.io/badge/nexusmods-page-yellow)](https://www.nexusmods.com/skyrimspecialedition/mods/189862) [![GitHub](https://img.shields.io/badge/github-repo-white?logo=github)](https://github.com/idrinth/papyrus-lint)
 
 ![Papyrus Lint logo](resources/logo-small.jpg)
-
-[Discord](https://discord.gg/idrinth) |
-[NexusMods](https://www.nexusmods.com/skyrimspecialedition/mods/189862) |
-[GitHub](https://github.com/idrinth/papyrus-lint)
 
 **Papyrus Lint catches bugs that CreationKit's compiler lets through.**
 `PapyrusCompiler.exe` only checks that a script is syntactically valid — it
