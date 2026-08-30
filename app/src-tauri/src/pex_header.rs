@@ -215,6 +215,15 @@ mod tests {
     }
 
     #[test]
+    fn returns_none_when_the_source_file_name_overruns_the_buffer() {
+        let mut bytes = BE_MAGIC.to_vec();
+        bytes.extend_from_slice(&[0; STRINGS_START - BE_MAGIC.len()]);
+        bytes.extend_from_slice(&0xFFFFu16.to_be_bytes());
+
+        assert!(strip_personal_data(&bytes).is_none());
+    }
+
+    #[test]
     fn returns_none_when_a_string_length_overruns_the_buffer() {
         let mut bytes = sample_be_header("Foo.psc", "", "", &[]);
         let len = bytes.len();

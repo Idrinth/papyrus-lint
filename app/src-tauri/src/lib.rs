@@ -248,6 +248,7 @@ mod tests {
         let path = missing.to_string_lossy().into_owned();
 
         assert!(read_psc_file(path.clone()).is_err());
+        assert!(write_psc_file(path.clone(), "ScriptName Example\n".to_string()).is_err());
         assert!(parse_psc_file(path.clone()).is_err());
         assert!(lint_psc_file(
             path.clone(),
@@ -314,6 +315,9 @@ mod tests {
 
         std::fs::write(&path, "not json").unwrap();
         assert!(parse_achlist_file(path.to_string_lossy().into_owned()).is_err());
+
+        let missing = dir.path().join("missing.achlist");
+        assert!(parse_achlist_file(missing.to_string_lossy().into_owned()).is_err());
     }
 
     #[test]

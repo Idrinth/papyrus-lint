@@ -190,6 +190,7 @@ mod tests {
 
         assert!(outcome.success);
         assert_eq!(outcome.stdout.trim(), "compiled ok");
+        assert!(!outcome.personal_data_stripped);
     }
 
     #[test]
@@ -247,6 +248,61 @@ mod tests {
 
         assert!(!outcome.success);
         assert_eq!(outcome.stderr.trim(), "compilation failed");
+        assert!(!outcome.personal_data_stripped);
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn failed_compile_does_not_modify_an_existing_pex() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts").join("Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Broken.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path = write_stub_compiler(root.path(), "#!/bin/sh\nexit 1\n");
+
+        let pex_path = root.path().join("Scripts").join("Broken.pex");
+        let mut pex_bytes = vec![0xFA, 0x57, 0xC0, 0xDE, 3, 9];
+        pex_bytes.extend_from_slice(&1u16.to_be_bytes());
+        pex_bytes.extend_from_slice(&0u64.to_be_bytes());
+        for s in ["Broken.psc", "SomeUser", "SOME-PC"] {
+            pex_bytes.extend_from_slice(&(s.len() as u16).to_be_bytes());
+            pex_bytes.extend_from_slice(s.as_bytes());
+        }
+        fs::write(&pex_path, &pex_bytes).expect("failed to write existing pex");
+
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("compiler should run");
+
+        assert!(!outcome.success);
+        assert!(!outcome.personal_data_stripped);
+        assert_eq!(
+            fs::read(pex_path).expect("pex should remain readable"),
+            pex_bytes
+        );
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn successful_compile_ignores_an_invalid_pex() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts").join("Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path = write_stub_compiler(root.path(), "#!/bin/sh\nexit 0\n");
+        let pex_path = root.path().join("Scripts").join("Example.pex");
+        fs::write(&pex_path, b"not a pex").expect("failed to write invalid pex");
+
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("compiler should run");
+
+        assert!(outcome.success);
+        assert!(!outcome.personal_data_stripped);
+        assert_eq!(
+            fs::read(pex_path).expect("pex should remain readable"),
+            b"not a pex"
+        );
     }
 
     #[test]
