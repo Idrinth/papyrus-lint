@@ -12,3 +12,4 @@ pub mod achlist;
 pub mod config;
 pub mod function_table;
 pub mod script_locator;
+pub mod source_encoding;

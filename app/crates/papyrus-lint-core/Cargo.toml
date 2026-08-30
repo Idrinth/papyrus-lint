@@ -9,6 +9,7 @@ edition = "2021"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
+encoding_rs = "0.8"
 papyrus-parser = { path = "../papyrus-parser" }
 papyrus-lints = { path = "../papyrus-lints" }
 

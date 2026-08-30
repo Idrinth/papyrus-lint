@@ -11,13 +11,14 @@
 //! other files stays fast.
 
 use std::collections::{HashMap, HashSet};
-use std::fs;
 use std::path::PathBuf;
 
 use serde::Serialize;
 
 use papyrus_lints::argument_types::ParamInfo;
 use papyrus_parser::ast::{FunctionDecl, PropertyDecl, Script, TypeName};
+
+use crate::source_encoding::read_psc_source;
 
 use crate::script_locator::find_psc_file;
 
@@ -282,7 +283,7 @@ impl FunctionTable {
         }
 
         let script = find_psc_file(&self.root, name_lower)
-            .and_then(|path| fs::read_to_string(path).ok())
+            .and_then(|path| read_psc_source(&path).ok())
             .and_then(|source| papyrus_parser::parse(&source).ok())
             .map(|script| ScriptFunctions::from_script(&script));
 
@@ -311,6 +312,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
     use std::path::Path;
 
     fn write_script(dir: &Path, name: &str, contents: &str) {

@@ -50,6 +50,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use papyrus_lint_core::function_table::FunctionTable;
+use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{achlist, config};
 use serde::Serialize;
 
@@ -216,7 +217,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let mut json_files: Vec<JsonFileReport> = Vec::new();
 
     for script_path in &script_paths {
-        let source = match fs::read_to_string(script_path) {
+        let source = match read_psc_source(script_path) {
             Ok(source) => source,
             Err(err) => {
                 let _ = writeln!(
@@ -614,6 +615,29 @@ mod tests {
 
         assert_eq!(code, 0);
         assert!(stdout.contains("no problems found"));
+    }
+
+    #[test]
+    fn decodes_a_cp1252_encoded_script_instead_of_failing_the_whole_run() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        fs::create_dir_all(script_path.parent().unwrap()).expect("failed to create parent dir");
+        // "; caf\xE9" in Windows-1252 (0xE9 is "é"), which is not valid
+        // UTF-8 on its own.
+        let mut contents = b"ScriptName Example\n\n; caf".to_vec();
+        contents.push(0xE9);
+        contents.push(b'\n');
+        fs::write(&script_path, &contents).expect("failed to write test file");
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stdout.contains("no problems found in 1 script"));
     }
 
     #[test]
