@@ -52,6 +52,7 @@ import {
   renderPscResults,
   repairPscFile,
   requestCloseCodeViewer,
+  saveAndCompileCodeViewerEdits,
   saveCodeViewerEdits,
   saveCompilerPath,
   saveLintConfig,
@@ -1066,6 +1067,87 @@ describe("code viewer edit mode", () => {
       expect(saveButton.textContent).toBe("Save failed");
       expect(saveButton.disabled).toBe(false);
       expect(panelHidden("#code-viewer-editor")).toBe(false);
+    });
+  });
+
+  describe("saveAndCompileCodeViewerEdits", () => {
+    function compileOutputEl() {
+      return document.querySelector<HTMLElement>("#code-viewer-compile-output")!;
+    }
+
+    it("saves the file and shows the compiler's output", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+
+      invokeImplFor({
+        write_psc_file: () => undefined,
+        lint_psc_file: () => [],
+        compile_psc_file: () => ({ success: true, stdout: "Compilation succeeded.\n", stderr: "" }),
+      });
+
+      await saveAndCompileCodeViewerEdits();
+
+      expect(invokeMock).toHaveBeenCalledWith("write_psc_file", { path: "/a.psc", contents: "Int x = 2\n" });
+      expect(invokeMock).toHaveBeenCalledWith("compile_psc_file", expect.objectContaining({ path: "/a.psc" }));
+      expect(compileOutputEl().hidden).toBe(false);
+      expect(compileOutputEl().textContent).toContain("Compilation succeeded.");
+      expect(compileOutputEl().classList.contains("psc-result__compile-output--ok")).toBe(true);
+      expect(panelHidden("#code-viewer-view")).toBe(false);
+    });
+
+    it("marks a compiler-reported failure", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+      invokeImplFor({
+        write_psc_file: () => undefined,
+        lint_psc_file: () => [],
+        compile_psc_file: () => ({ success: false, stdout: "", stderr: "Broken.psc(3,1): error\n" }),
+      });
+      const button = document.querySelector<HTMLButtonElement>("#code-viewer-save-compile")!;
+
+      await saveAndCompileCodeViewerEdits();
+
+      expect(compileOutputEl().textContent).toContain("Broken.psc(3,1): error");
+      expect(compileOutputEl().classList.contains("psc-result__compile-output--error")).toBe(true);
+      expect(button.disabled).toBe(false);
+      expect(button.textContent).toBe("Save & Compile");
+    });
+
+    it("does not compile, and reports a failure, when saving fails", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+      invokeMock.mockRejectedValue(new Error("disk full"));
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      const button = document.querySelector<HTMLButtonElement>("#code-viewer-save-compile")!;
+
+      await saveAndCompileCodeViewerEdits();
+
+      expect(button.textContent).toBe("Save failed");
+      expect(button.disabled).toBe(false);
+      expect(panelHidden("#code-viewer-editor")).toBe(false);
+      expect(invokeMock).not.toHaveBeenCalledWith("compile_psc_file", expect.anything());
+      expect(compileOutputEl().hidden).toBe(true);
+    });
+
+    it("clears a previous compile result when editing starts again", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+      invokeImplFor({
+        write_psc_file: () => undefined,
+        lint_psc_file: () => [],
+        compile_psc_file: () => ({ success: true, stdout: "ok", stderr: "" }),
+      });
+      await saveAndCompileCodeViewerEdits();
+      expect(compileOutputEl().hidden).toBe(false);
+
+      enterCodeViewerEditMode();
+
+      expect(compileOutputEl().hidden).toBe(true);
+      expect(compileOutputEl().textContent).toBe("");
     });
   });
 

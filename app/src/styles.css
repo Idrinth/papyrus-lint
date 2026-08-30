@@ -460,16 +460,37 @@ h1 {
 }
 
 .code-viewer__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  text-align: left;
+}
+
+.code-viewer__stage {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  text-align: left;
 }
 
 .code-viewer__editor {
   position: absolute;
   inset: 0;
+}
+
+.code-viewer__compile-output {
+  flex: none;
+  margin: 0;
+  padding: 0.5em 1em;
+  max-height: 8em;
+  overflow: auto;
+  border-top: 1px solid var(--color-border);
+  border-left: 3px solid transparent;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.8em;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .code-viewer__editor-highlight,

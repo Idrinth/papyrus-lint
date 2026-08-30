@@ -41,7 +41,9 @@ let codeViewerEditHighlightEl: HTMLElement | null;
 let codeViewerEditTextareaEl: HTMLTextAreaElement | null;
 let codeViewerEditButtonEl: HTMLButtonElement | null;
 let codeViewerSaveButtonEl: HTMLButtonElement | null;
+let codeViewerSaveCompileButtonEl: HTMLButtonElement | null;
 let codeViewerCancelButtonEl: HTMLButtonElement | null;
+let codeViewerCompileOutputEl: HTMLElement | null;
 let codeViewerFullscreenEl: HTMLButtonElement | null;
 let codeViewerAutocompleteEl: HTMLUListElement | null;
 let themeSelectEl: HTMLSelectElement | null;
@@ -568,6 +570,7 @@ function setCodeViewerMode(mode: "view" | "edit") {
   if (codeViewerEditEl) codeViewerEditEl.hidden = mode !== "edit";
   if (codeViewerEditButtonEl) codeViewerEditButtonEl.hidden = mode !== "view";
   if (codeViewerSaveButtonEl) codeViewerSaveButtonEl.hidden = mode !== "edit";
+  if (codeViewerSaveCompileButtonEl) codeViewerSaveCompileButtonEl.hidden = mode !== "edit";
   if (codeViewerCancelButtonEl) codeViewerCancelButtonEl.hidden = mode !== "edit";
 }
 
@@ -762,6 +765,7 @@ export function enterCodeViewerEditMode() {
   }
   codeViewerEditTextareaEl.value = codeViewerState.source;
   updateCodeViewerEditHighlight();
+  hideCompileOutput(codeViewerCompileOutputEl);
   setCodeViewerMode("edit");
   codeViewerEditTextareaEl.focus();
 }
@@ -773,27 +777,39 @@ export function cancelCodeViewerEditMode() {
   setCodeViewerMode("view");
 }
 
-export async function saveCodeViewerEdits() {
-  if (!codeViewerState || !codeViewerEditTextareaEl || !codeViewerSaveButtonEl) {
+// Writes the editor's current contents to disk, re-lints the file, and
+// refreshes both the code viewer's view mode and the Lint results list to
+// match, switching the viewer back to view mode. Shared by the plain Save
+// button and the Save & Compile button below; throws (without touching any
+// UI) if the write itself fails, leaving the caller to report that.
+async function persistCodeViewerEdits(): Promise<void> {
+  if (!codeViewerState || !codeViewerEditTextareaEl) {
     return;
   }
   const { path } = codeViewerState;
   const contents = codeViewerEditTextareaEl.value;
 
+  await writePscFile(path, contents);
+  const findings = await lintPscFile(path);
+  codeViewerState = { path, source: contents, findings };
+
+  const outcome = currentPscOutcomes.find((candidate) => candidate.path === path);
+  if (outcome) {
+    outcome.findings = findings;
+    renderPscResults(currentPscOutcomes);
+  }
+
+  renderCodeViewerView(codeViewerState.source, codeViewerState.findings);
+  setCodeViewerMode("view");
+}
+
+export async function saveCodeViewerEdits() {
+  if (!codeViewerState || !codeViewerEditTextareaEl || !codeViewerSaveButtonEl) {
+    return;
+  }
   codeViewerSaveButtonEl.disabled = true;
   try {
-    await writePscFile(path, contents);
-    const findings = await lintPscFile(path);
-    codeViewerState = { path, source: contents, findings };
-
-    const outcome = currentPscOutcomes.find((candidate) => candidate.path === path);
-    if (outcome) {
-      outcome.findings = findings;
-      renderPscResults(currentPscOutcomes);
-    }
-
-    renderCodeViewerView(codeViewerState.source, codeViewerState.findings);
-    setCodeViewerMode("view");
+    await persistCodeViewerEdits();
   } catch (error) {
     console.error(error);
     const originalLabel = codeViewerSaveButtonEl.textContent;
@@ -806,6 +822,39 @@ export async function saveCodeViewerEdits() {
   } finally {
     codeViewerSaveButtonEl.disabled = false;
   }
+}
+
+// Saves the editor's contents (as saveCodeViewerEdits does) and, if that
+// succeeds, immediately compiles the saved file, showing the compiler's
+// output beneath the code viewer's view/editor area.
+export async function saveAndCompileCodeViewerEdits() {
+  if (!codeViewerState || !codeViewerEditTextareaEl || !codeViewerSaveCompileButtonEl) {
+    return;
+  }
+  const { path } = codeViewerState;
+  const originalLabel = codeViewerSaveCompileButtonEl.textContent;
+
+  codeViewerSaveCompileButtonEl.disabled = true;
+  try {
+    await persistCodeViewerEdits();
+  } catch (error) {
+    console.error(error);
+    codeViewerSaveCompileButtonEl.textContent = "Save failed";
+    window.setTimeout(() => {
+      if (codeViewerSaveCompileButtonEl) {
+        codeViewerSaveCompileButtonEl.textContent = originalLabel;
+      }
+    }, 2000);
+    codeViewerSaveCompileButtonEl.disabled = false;
+    return;
+  }
+
+  if (codeViewerCompileOutputEl) {
+    codeViewerSaveCompileButtonEl.textContent = "Compiling…";
+    await compileAndShowOutput(path, codeViewerCompileOutputEl);
+  }
+  codeViewerSaveCompileButtonEl.disabled = false;
+  codeViewerSaveCompileButtonEl.textContent = originalLabel;
 }
 
 // Closes the code viewer, confirming first if edit mode has unsaved changes.
@@ -827,6 +876,7 @@ export async function openCodeViewer(path: string, findings: Diagnostic[], focus
 
   codeViewerState = null;
   setCodeViewerMode("view");
+  hideCompileOutput(codeViewerCompileOutputEl);
   codeViewerTitleEl.textContent = path;
   codeViewerViewEl.textContent = "Loading…";
   codeViewerEl.showModal();
@@ -1000,14 +1050,24 @@ function showCompileOutput(outputEl: HTMLElement, text: string, success: boolean
   outputEl.classList.toggle("psc-result__compile-output--error", !success);
 }
 
-// Compiles `path` via PapyrusCompiler.exe when the "Compile" button is
-// clicked, reporting both a successful compile and a compiler-reported
+// Hides and clears a previous compile result, if any is showing (e.g. from
+// an earlier file in the same code viewer session).
+function hideCompileOutput(outputEl: HTMLElement | null) {
+  if (!outputEl) {
+    return;
+  }
+  outputEl.hidden = true;
+  outputEl.textContent = "";
+  outputEl.classList.remove("psc-result__compile-output--ok", "psc-result__compile-output--error");
+}
+
+// Compiles `path` via PapyrusCompiler.exe and shows the result in
+// `outputEl`, reporting both a successful compile and a compiler-reported
 // failure (syntax errors, missing imports, etc.) as well as a failure to
-// run the compiler at all (e.g. no path configured).
-export async function handleCompileClick(path: string, button: HTMLButtonElement, outputEl: HTMLElement) {
-  button.disabled = true;
-  const originalLabel = button.textContent;
-  button.textContent = "Compiling…";
+// run the compiler at all (e.g. no path configured). Shared by the "Compile"
+// button on the Lint results list and the code viewer's "Save & Compile"
+// button.
+async function compileAndShowOutput(path: string, outputEl: HTMLElement): Promise<void> {
   try {
     const outcome = await compilePscFile(path);
     const lines = [outcome.stdout, outcome.stderr].filter((text) => text.trim().length > 0);
@@ -1023,6 +1083,17 @@ export async function handleCompileClick(path: string, button: HTMLButtonElement
   } catch (error) {
     showCompileOutput(outputEl, String(error), false);
     console.error(error);
+  }
+}
+
+// Compiles `path` via PapyrusCompiler.exe when the "Compile" button is
+// clicked.
+export async function handleCompileClick(path: string, button: HTMLButtonElement, outputEl: HTMLElement) {
+  button.disabled = true;
+  const originalLabel = button.textContent;
+  button.textContent = "Compiling…";
+  try {
+    await compileAndShowOutput(path, outputEl);
   } finally {
     button.disabled = false;
     button.textContent = originalLabel;
@@ -1197,7 +1268,9 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerEditTextareaEl = document.querySelector("#code-viewer-editor-textarea");
   codeViewerEditButtonEl = document.querySelector("#code-viewer-edit");
   codeViewerSaveButtonEl = document.querySelector("#code-viewer-save");
+  codeViewerSaveCompileButtonEl = document.querySelector("#code-viewer-save-compile");
   codeViewerCancelButtonEl = document.querySelector("#code-viewer-cancel");
+  codeViewerCompileOutputEl = document.querySelector("#code-viewer-compile-output");
   codeViewerFullscreenEl = document.querySelector("#code-viewer-fullscreen");
   codeViewerAutocompleteEl = document.querySelector("#code-viewer-autocomplete");
   themeSelectEl = document.querySelector("#theme-select");
@@ -1230,6 +1303,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerEditButtonEl?.addEventListener("click", () => enterCodeViewerEditMode());
   codeViewerCancelButtonEl?.addEventListener("click", () => cancelCodeViewerEditMode());
   codeViewerSaveButtonEl?.addEventListener("click", () => void saveCodeViewerEdits());
+  codeViewerSaveCompileButtonEl?.addEventListener("click", () => void saveAndCompileCodeViewerEdits());
   codeViewerEditTextareaEl?.addEventListener("input", () => updateCodeViewerEditHighlight());
   codeViewerEditTextareaEl?.addEventListener("input", () => void updateAutocomplete());
   codeViewerEditTextareaEl?.addEventListener("click", () => void updateAutocomplete());
