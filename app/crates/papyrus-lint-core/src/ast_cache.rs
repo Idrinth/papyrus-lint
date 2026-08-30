@@ -1,11 +1,14 @@
-//! Disk-backed cache of parsed `.psc` ASTs for the desktop app, so reopening
-//! an unchanged script (e.g. switching between files in the code viewer, or
-//! relinting an achlist) skips re-parsing it. Entries live as one JSON file
-//! per source path in an `ast-cache` directory next to the app's own
-//! executable, and are invalidated by the source file's last-modified
-//! timestamp, an MD5 of its content, and the linter version that wrote the
-//! entry -- if any of the three is no longer valid, it's treated as a miss
-//! and the caller re-parses.
+//! Disk-backed cache of parsed `.psc` ASTs, shared by the desktop app and
+//! the CLI, so reopening an unchanged script (e.g. switching between files
+//! in the code viewer, relinting an achlist, or resolving the same
+//! cross-script lookup across separate CLI invocations) skips re-parsing
+//! it. Entries live as one JSON file per source path in an `ast-cache`
+//! directory next to the running executable -- the desktop app's own
+//! binary, or `PapyrusLinterCLI`'s, whichever process is doing the parsing
+//! -- and are invalidated by the source file's last-modified timestamp, an
+//! MD5 of its content, and the linter version that wrote the entry -- if
+//! any of the three is no longer valid, it's treated as a miss and the
+//! caller re-parses.
 //!
 //! The version check is a minimum-compatible-version check against
 //! [`MIN_COMPATIBLE_VERSION`], not an exact match against the running

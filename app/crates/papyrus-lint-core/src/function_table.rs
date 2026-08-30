@@ -307,15 +307,26 @@ impl FunctionTable {
     }
 
     /// Parses and caches the script named `name_lower`, if it hasn't been
-    /// already.
+    /// already. Reuses the on-disk [`crate::ast_cache`] when the script's
+    /// content and modification time haven't changed since it was last
+    /// parsed, so repeatedly resolving the same cross-script lookup (across
+    /// separate CLI invocations, or separate desktop app commands) skips
+    /// re-parsing it.
     fn ensure_loaded(&mut self, name_lower: &str) {
         if self.scripts.contains_key(name_lower) {
             return;
         }
 
         let script = find_psc_file(&self.root, name_lower, &self.additional_roots)
-            .and_then(|path| read_psc_source(&path).ok())
-            .and_then(|source| papyrus_parser::parse(&source).ok())
+            .and_then(|path| {
+                let source = read_psc_source(&path).ok()?;
+                if let Some(cached) = crate::ast_cache::get(&path, &source) {
+                    return Some(cached);
+                }
+                let parsed = papyrus_parser::parse(&source).ok()?;
+                crate::ast_cache::put(&path, &source, &parsed);
+                Some(parsed)
+            })
             .map(|script| ScriptFunctions::from_script(&script));
 
         self.scripts.insert(name_lower.to_string(), script);

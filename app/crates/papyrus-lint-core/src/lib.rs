@@ -9,6 +9,7 @@
 //! scripts without pulling in the desktop app.
 
 pub mod achlist;
+pub mod ast_cache;
 pub mod config;
 pub mod function_table;
 mod native_globals;
