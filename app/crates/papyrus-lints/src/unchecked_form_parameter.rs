@@ -18,7 +18,7 @@
 
 use std::collections::HashSet;
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Stmt};
+use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Stmt};
 
 use crate::none_form_usage::{
     all_functions, diverges, is_object_type, narrow_for_falsy, narrow_for_truthy,
@@ -185,6 +185,28 @@ fn check_expr(
                 check_expr(arg, unchecked, diagnostics, line);
             }
         }
+        Expr::Binary {
+            left,
+            op: BinaryOp::And,
+            right,
+        } => {
+            check_expr(left, unchecked, diagnostics, line);
+            // Short-circuit: `right` only evaluates once `left` is truthy.
+            let mut narrowed = unchecked.clone();
+            narrow_for_truthy(left, &mut narrowed);
+            check_expr(right, &narrowed, diagnostics, line);
+        }
+        Expr::Binary {
+            left,
+            op: BinaryOp::Or,
+            right,
+        } => {
+            check_expr(left, unchecked, diagnostics, line);
+            // Short-circuit: `right` only evaluates once `left` is falsy.
+            let mut narrowed = unchecked.clone();
+            narrow_for_falsy(left, &mut narrowed);
+            check_expr(right, &narrowed, diagnostics, line);
+        }
         Expr::Binary { left, right, .. } => {
             check_expr(left, unchecked, diagnostics, line);
             check_expr(right, unchecked, diagnostics, line);
@@ -324,5 +346,14 @@ mod tests {
     #[test]
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_short_circuited_and_guard() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    If akArmor && akArmor.GetName() == \"\"\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
     }
 }
