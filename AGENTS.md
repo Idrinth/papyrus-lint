@@ -259,11 +259,16 @@ reference](README.md#configuration) for the complete schema and defaults.
 The desktop app's `parse_psc_file` command caches each file's parsed AST
 on disk (`app/src-tauri/src/ast_cache.rs`), in an `ast-cache` directory next
 to the app's own executable. A cached entry is only reused when its stored
-MD5 of the file's content, the file's last-modified timestamp, and the
-running linter version all still match; any mismatch, or any I/O/
-(de)serialization failure reading the cache, falls back to a fresh parse,
-so a stale or corrupt cache never surfaces as a lint error. This cache is
-GUI-only — the CLI and editor extensions always parse fresh.
+MD5 of the file's content and the file's last-modified timestamp still
+match, and the linter version that wrote the entry is at or above a
+`MIN_COMPATIBLE_VERSION` constant (currently `1.11.0`) rather than an exact
+match against the running version — so an ordinary app update doesn't
+discard an otherwise still-valid cache, and `MIN_COMPATIBLE_VERSION` only
+needs bumping when a release actually changes the cache entry layout or the
+AST shape it embeds. Any mismatch, or any I/O/(de)serialization failure
+reading the cache, falls back to a fresh parse, so a stale or corrupt cache
+never surfaces as a lint error. This cache is GUI-only — the CLI and editor
+extensions always parse fresh.
 
 ## Keeping agent instructions synchronized
 
