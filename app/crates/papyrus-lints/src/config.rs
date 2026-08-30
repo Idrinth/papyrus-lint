@@ -36,6 +36,7 @@
 //!   unreachable_statement: true
 //!   static_condition: true
 //!   division_by_zero: true
+//!   empty_body: true
 //!   unused_local_variable: true
 //!   none_form_usage: true
 //!   local_variable_shadowing: true
@@ -252,6 +253,8 @@ pub struct Rules {
     pub static_condition: bool,
     /// The "Division by zero" lint.
     pub division_by_zero: bool,
+    /// The "Empty loop/conditional body" lint.
+    pub empty_body: bool,
     /// The "Unused or write-only local variables" lint.
     pub unused_local_variable: bool,
     /// The "None used as an existing Form" lint.
@@ -309,6 +312,7 @@ impl Default for Rules {
             unreachable_statement: true,
             static_condition: true,
             division_by_zero: true,
+            empty_body: true,
             unused_local_variable: true,
             none_form_usage: true,
             local_variable_shadowing: true,
@@ -440,6 +444,7 @@ mod tests {
         assert!(config.rules.unreachable_statement);
         assert!(config.rules.static_condition);
         assert!(config.rules.division_by_zero);
+        assert!(config.rules.empty_body);
         assert!(config.rules.unused_local_variable);
         assert!(config.rules.none_form_usage);
         assert!(config.rules.local_variable_shadowing);
