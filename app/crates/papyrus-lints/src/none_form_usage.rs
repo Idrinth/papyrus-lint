@@ -9,7 +9,13 @@
 //! when it's declared without an initializer at all and its type isn't one
 //! of the primitive value types (`Int`/`Float`/`Bool`/`String`) — object-typed
 //! locals (`Form` and its subtypes) default to `None` until assigned, unlike
-//! primitives which get a non-`None` zero value. It stops being tracked as
+//! primitives which get a non-`None` zero value. Script-level `Auto`/
+//! `AutoReadOnly` properties get the same treatment: an object-typed one
+//! with no explicit initializer (or an explicit `= None`) isn't guaranteed
+//! to be filled in until something outside the script (the CK's Property
+//! Manager, another script's `PropertyGet`/`PropertySet`, `OnInit`, …) sets
+//! it, so each function starts out treating it as possibly `None` too,
+//! same as an uninitialized local. It stops being tracked as
 //! soon as it's assigned anything else, except that assigning it another
 //! identifier makes it inherit that identifier's own tracked state instead
 //! (so `a = b` keeps `a` known-`None` when `b` still is, rather than
@@ -43,12 +49,30 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         return Vec::new();
     };
 
+    let default_none_properties = default_none_properties(&script);
+
     let mut diagnostics = Vec::new();
     for function in all_functions(&script) {
-        let mut none_vars = HashSet::new();
+        let mut none_vars = default_none_properties.clone();
         walk_body(&function.body, &mut none_vars, &mut diagnostics);
     }
     diagnostics
+}
+
+/// Script-level `Auto`/`AutoReadOnly` properties that default to `None`
+/// until something outside the script (or a later statement) sets them:
+/// object-typed ones with no explicit initializer, or an explicit `= None`.
+/// Every function starts out treating these the same as an uninitialized
+/// local of the same type.
+fn default_none_properties(script: &Script) -> HashSet<String> {
+    script
+        .properties
+        .iter()
+        .filter(|property| property.is_auto || property.is_auto_read_only)
+        .filter(|property| is_object_type(&property.type_name))
+        .filter(|property| matches!(&property.value, None | Some(Expr::Literal(Literal::None))))
+        .map(|property| property.name.to_lowercase())
+        .collect()
 }
 
 pub(crate) fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
@@ -541,6 +565,81 @@ mod tests {
         );
 
         assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_unguarded_use_of_an_uninitialized_auto_property() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 6);
+        assert!(diagnostics[0].message.contains("'MyArmor'"));
+    }
+
+    #[test]
+    fn flags_unguarded_use_of_an_auto_property_explicitly_defaulted_to_none() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor = None Auto\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn does_not_flag_auto_property_guarded_by_a_none_check() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    If MyArmor != None\n        MyArmor.GetName()\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_auto_property_reassigned_before_use() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    MyArmor = Game.GetPlayer() as Armor\n    MyArmor.GetName()\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_auto_read_only_property_with_a_non_none_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor = Game.GetPlayer() as Armor AutoReadOnly\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_full_property_without_an_auto_keyword() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor\n    Armor Function Get()\n        Return None\n    EndFunction\nEndProperty\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_uninitialized_primitive_auto_property() {
+        let diagnostics = check(
+            "ScriptName Example\n\nInt Property MyCount Auto\n\nFunction Test()\n    Debug.Trace(MyCount as String)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn each_function_starts_fresh_for_a_default_none_property() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction First()\n    MyArmor = Game.GetPlayer() as Armor\nEndFunction\n\nFunction Second()\n    MyArmor.GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 10);
     }
 
     #[test]
