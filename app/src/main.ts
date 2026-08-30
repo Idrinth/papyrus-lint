@@ -927,7 +927,12 @@ export function clearError() {
   }
 }
 
-export function showResult(path: string, entries: string[]) {
+// `base` is the project root (the directory containing the dropped
+// .achlist file, or the inferred root for a bare .psc), used to shorten
+// each entry to a path relative to it so long absolute paths stay
+// readable; entries outside `base` (or when it isn't known) fall back to
+// their absolute path, per relativePath().
+export function showResult(path: string, entries: string[], base: string | null) {
   if (!resultEl || !resultTitleEl || !resultListEl) {
     return;
   }
@@ -936,7 +941,23 @@ export function showResult(path: string, entries: string[]) {
   resultListEl.replaceChildren(
     ...entries.map((entry) => {
       const item = document.createElement("li");
-      item.textContent = entry;
+
+      const label = document.createElement("span");
+      label.textContent = relativePath(entry, base);
+      item.append(label);
+
+      if (isPscPath(entry)) {
+        const viewButton = document.createElement("button");
+        viewButton.type = "button";
+        viewButton.textContent = "View";
+        viewButton.classList.add("achlist-result__view-button");
+        viewButton.addEventListener("click", () => {
+          const outcome = currentPscOutcomes.find((candidate) => candidate.path === entry);
+          void openCodeViewer(entry, outcome?.findings ?? []);
+        });
+        item.append(viewButton);
+      }
+
       return item;
     }),
   );
@@ -1230,7 +1251,7 @@ export async function handleDroppedPaths(paths: string[]) {
         path: achlistPath,
       });
       clearError();
-      showResult(achlistPath, entries);
+      showResult(achlistPath, entries, dirnameOf(achlistPath));
 
       await useProjectDir(dirnameOf(achlistPath));
       currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
@@ -1245,7 +1266,7 @@ export async function handleDroppedPaths(paths: string[]) {
   if (paths.length === 1 && isPscPath(paths[0])) {
     const pscPath = paths[0];
     clearError();
-    showResult(pscPath, [pscPath]);
+    showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
 
     await useProjectDir(projectDirForPscPath(pscPath));
     currentPscOutcomes = await parsePscFiles([pscPath]);

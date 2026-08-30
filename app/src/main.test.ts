@@ -813,12 +813,47 @@ describe("showError / clearError / showResult", () => {
   });
 
   it("showResult lists the entries and switches to the files tab", () => {
-    showResult("/a.achlist", ["one.psc", "two.psc"]);
+    showResult("/proj/a.achlist", ["/proj/one.psc", "/proj/two.psc"], "/proj");
 
-    expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /a.achlist");
+    expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/a.achlist");
     expect(document.querySelectorAll("#achlist-result-list > li")).toHaveLength(2);
     expect(document.querySelector("#achlist-result")!.hasAttribute("hidden")).toBe(false);
     expect(document.querySelector<HTMLElement>("#panel-files")!.hidden).toBe(false);
+  });
+
+  it("showResult displays entries relative to the given base directory", () => {
+    showResult("/proj/a.achlist", ["/proj/scripts/source/one.psc", "/proj/readme.txt"], "/proj");
+
+    const items = document.querySelectorAll("#achlist-result-list > li span");
+    expect(items[0].textContent).toBe("scripts/source/one.psc");
+    expect(items[1].textContent).toBe("readme.txt");
+  });
+
+  it("showResult falls back to the absolute path when no base directory is known", () => {
+    showResult("/proj/a.achlist", ["/proj/one.psc"], null);
+
+    expect(document.querySelector("#achlist-result-list > li span")!.textContent).toBe("/proj/one.psc");
+  });
+
+  it("showResult adds a View button only for .psc entries", () => {
+    showResult("/proj/a.achlist", ["/proj/one.psc", "/proj/readme.txt"], "/proj");
+
+    const rows = document.querySelectorAll("#achlist-result-list > li");
+    expect(rows[0].querySelector(".achlist-result__view-button")).not.toBeNull();
+    expect(rows[1].querySelector(".achlist-result__view-button")).toBeNull();
+  });
+
+  it("showResult's View button opens the code viewer for that .psc file", async () => {
+    invokeImplFor({ read_psc_file: () => 'Debug.Trace("hi")' });
+
+    showResult("/proj/a.achlist", ["/proj/one.psc"], "/proj");
+    document.querySelector<HTMLButtonElement>(".achlist-result__view-button")!.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+    expect(dialog.hasAttribute("open")).toBe(true);
+    expect(document.querySelector("#code-viewer-title")!.textContent).toBe("/proj/one.psc");
   });
 });
 
