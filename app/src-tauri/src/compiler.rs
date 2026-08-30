@@ -434,6 +434,35 @@ mod tests {
     }
 
     #[test]
+    fn errors_when_source_directory_has_no_parent_output_directory() {
+        let result = compile_psc_file(Path::new("compiler"), Path::new("/Foo.psc"), &[]);
+
+        assert_eq!(
+            result.unwrap_err(),
+            "could not determine an output directory above /"
+        );
+    }
+
+    #[test]
+    fn errors_when_script_path_has_no_file_name() {
+        let result = compile_psc_file(
+            Path::new("compiler"),
+            Path::new("/game/Scripts/Source/.."),
+            &[],
+        );
+
+        assert_eq!(
+            result.unwrap_err(),
+            "/game/Scripts/Source/.. has no file name"
+        );
+    }
+
+    #[test]
+    fn personal_data_stripping_skips_paths_without_a_file_stem() {
+        assert!(!strip_pex_personal_data(Path::new("/"), Path::new("/tmp")));
+    }
+
+    #[test]
     #[cfg(unix)]
     fn captures_lossy_output_from_both_streams() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
