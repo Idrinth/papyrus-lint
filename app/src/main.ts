@@ -122,6 +122,7 @@ export interface LintRules {
   unreachable_statement: boolean;
   static_condition: boolean;
   division_by_zero: boolean;
+  empty_body: boolean;
   unused_local_variable: boolean;
   none_form_usage: boolean;
   local_variable_shadowing: boolean;
@@ -176,6 +177,7 @@ export const DEFAULT_RULES: LintRules = {
   unreachable_statement: true,
   static_condition: true,
   division_by_zero: true,
+  empty_body: true,
   unused_local_variable: true,
   none_form_usage: true,
   local_variable_shadowing: true,
