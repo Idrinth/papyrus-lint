@@ -843,17 +843,31 @@ describe("showError / clearError / showResult", () => {
     expect(rows[1].querySelector(".achlist-result__view-button")).toBeNull();
   });
 
-  it("showResult's View button opens the code viewer for that .psc file", async () => {
-    invokeImplFor({ read_psc_file: () => 'Debug.Trace("hi")' });
+  it("showResult's View button opens the code viewer for that .psc file, marking its current findings", async () => {
+    invokeImplFor({
+      parse_achlist_file: () => ["one.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "One" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] risky" }],
+      read_psc_file: () => 'Debug.Trace("hi")',
+    });
 
-    showResult("/proj/a.achlist", ["/proj/one.psc"], "/proj");
+    // Populates currentPscOutcomes (via the lint pass) so the View button
+    // rendered by showResult below has real findings to look up.
+    await handleDroppedPaths(["/proj/a.achlist"]);
+
     document.querySelector<HTMLButtonElement>(".achlist-result__view-button")!.click();
     await Promise.resolve();
     await Promise.resolve();
 
     const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
     expect(dialog.hasAttribute("open")).toBe(true);
-    expect(document.querySelector("#code-viewer-title")!.textContent).toBe("/proj/one.psc");
+    expect(document.querySelector("#code-viewer-title")!.textContent).toBe("one.psc");
+    expect(document.querySelector("#code-viewer-line-1")!.classList.contains("code-viewer__line--warning")).toBe(
+      true,
+    );
   });
 });
 
