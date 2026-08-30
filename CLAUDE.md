@@ -207,7 +207,17 @@ to a GitHub release for that tag, creating the release if it doesn't
 already exist. A separate `editor-plugins` job runs independently,
 packages the VS Code extension into a `.vsix` (via `@vscode/vsce`)
 and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip`, and
-attaches both to the same release.
+attaches both to the same release. A final `release-notes` job (after
+both `release` and `editor-plugins` succeed) overwrites the release's
+title and body — replacing the generic body `tauri-apps/tauri-action`
+set on the `release` job — with the tag name as the title; a changelist
+of the merged pull requests between the previous and current tag,
+resolved per commit via the "list pull requests associated with a
+commit" GitHub API and linked with the PR title as text; the current
+code coverage (aggregated the same way as CI's coverage-comment job,
+via `.github/scripts/coverage_summary.py`, from the lcov artifacts of
+the most recent successful `ci.yml` run for the tagged commit); and a
+link to the full changelist (`.../compare/<previous-tag>...<tag>`).
 
 ## Merging
 
