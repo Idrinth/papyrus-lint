@@ -13,7 +13,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze (${{ matrix.language }})
+    name: Analyze (${{ matrix.name }})
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -26,10 +26,29 @@ jobs:
         include:
           - language: actions
             build-mode: none
+            name: actions
+            category: "/language:actions"
           - language: javascript-typescript
             build-mode: none
+            name: javascript-typescript
+            category: "/language:javascript-typescript"
+          # Rust analysis is split into two matrix legs, scoped by
+          # CodeQL config to app/src-tauri and app/crates respectively
+          # (see .github/codeql/rust-*.yml), so the two halves run on
+          # separate runners in parallel instead of one runner scanning
+          # the whole rust codebase sequentially. Each leg gets its own
+          # category so both sets of results are kept in Code Scanning
+          # rather than one overwriting the other.
           - language: rust
             build-mode: none
+            name: rust-app
+            category: "/language:rust-app"
+            config-file: .github/codeql/rust-app.yml
+          - language: rust
+            build-mode: none
+            name: rust-crates
+            category: "/language:rust-crates"
+            config-file: .github/codeql/rust-crates.yml
 
     steps:
       - name: Checkout repository
@@ -40,8 +59,9 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
+          config-file: ${{ matrix.config-file }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
-          category: "/language:${{ matrix.language }}"
+          category: ${{ matrix.category }}
