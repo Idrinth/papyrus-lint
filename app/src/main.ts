@@ -1211,28 +1211,49 @@ export async function compilePscFile(path: string): Promise<CompileOutcome> {
   });
 }
 
+// A bare `.psc` file conventionally lives two directories under the project
+// root (e.g. `Data/Scripts/Source/abc.psc` under `Data`), matching
+// papyrus-lint-cli's handling of a `.psc` path given directly (see its
+// `root_ancestor_levels`) so a project's `papyrus-lint.yaml` and
+// cross-script lookups are still found for a script dropped on its own,
+// without an `.achlist`.
+export function projectDirForPscPath(path: string): string {
+  return dirnameOf(dirnameOf(dirnameOf(path)));
+}
+
 export async function handleDroppedPaths(paths: string[]) {
   const achlistPath = paths.find(isAchlistPath);
 
-  if (!achlistPath) {
-    showError("Please drop a single .achlist file.");
+  if (achlistPath) {
+    try {
+      const entries = await invoke<string[]>("parse_achlist_file", {
+        path: achlistPath,
+      });
+      clearError();
+      showResult(achlistPath, entries);
+
+      await useProjectDir(dirnameOf(achlistPath));
+      currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
+      renderPscResults(currentPscOutcomes);
+    } catch (error) {
+      showError("Failed to read that .achlist file. Please try again.");
+      console.error(error);
+    }
     return;
   }
 
-  try {
-    const entries = await invoke<string[]>("parse_achlist_file", {
-      path: achlistPath,
-    });
+  if (paths.length === 1 && isPscPath(paths[0])) {
+    const pscPath = paths[0];
     clearError();
-    showResult(achlistPath, entries);
+    showResult(pscPath, [pscPath]);
 
-    await useProjectDir(dirnameOf(achlistPath));
-    currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
+    await useProjectDir(projectDirForPscPath(pscPath));
+    currentPscOutcomes = await parsePscFiles([pscPath]);
     renderPscResults(currentPscOutcomes);
-  } catch (error) {
-    showError("Failed to read that .achlist file. Please try again.");
-    console.error(error);
+    return;
   }
+
+  showError("Please drop a single .achlist or .psc file.");
 }
 
 window.addEventListener("DOMContentLoaded", () => {
