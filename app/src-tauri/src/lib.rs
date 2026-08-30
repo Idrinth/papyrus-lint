@@ -3,6 +3,7 @@ pub mod pex_header;
 
 use std::path::{Path, PathBuf};
 
+use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{achlist, config, function_table};
 
 /// Returns the desktop app's version (from `app/src-tauri/Cargo.toml`, kept in
@@ -40,7 +41,7 @@ fn lint_papyrus_script(
 /// Reads the `.psc` file at `path` and parses it into a `Script` AST.
 #[tauri::command]
 fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
-    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
     papyrus_parser::parse(&source).map_err(|err| err.to_string())
 }
 
@@ -48,7 +49,7 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
 /// frontend's syntax-highlighted code viewer.
 #[tauri::command]
 fn read_psc_file(path: String) -> Result<String, String> {
-    std::fs::read_to_string(&path).map_err(|err| err.to_string())
+    read_psc_source(Path::new(&path)).map_err(|err| err.to_string())
 }
 
 /// Writes `contents` to the `.psc` file at `path`, replacing it on disk.
@@ -133,7 +134,7 @@ fn lint_psc_file(
     root: String,
     config: papyrus_lints::Config,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
     let mut function_table = function_table::FunctionTable::new(PathBuf::from(root));
     Ok(papyrus_lints::lint_with_external_arguments(
         &source,
@@ -152,7 +153,7 @@ fn repair_psc_file(
     root: String,
     config: papyrus_lints::Config,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = std::fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair(&source, &config);
     if repaired != source {
         std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;

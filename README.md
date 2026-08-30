@@ -284,6 +284,11 @@ when a config file lives somewhere other than that project root, or isn't
 named `papyrus-lint.yaml`/`.yml`. Both editor plugins expose this as a
 `config_path`/`configPath` setting (see their own READMEs).
 
+Each `.psc` file is decoded as UTF-8 when it's valid UTF-8, or as
+Windows-1252 (CP1252) — the Creation Kit/Papyrus compiler's own default
+encoding for the language — otherwise, so a script saved in either
+encoding lints correctly instead of aborting the whole run.
+
 Prefixed with the `fix` subcommand, it applies every automatic fix (the
 "Auto-Fix" lints in the table above, using the same config's semicolon and
 indentation settings) to each resolved script first, rewriting a script on
