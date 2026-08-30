@@ -1,0 +1,30 @@
+# Native (engine-defined) Papyrus scripts that are always referenced by
+# their literal type name (e.g. `Game.GetPlayer()`, `Utility.Wait(1.0)`)
+# rather than through a variable or property of that type, for
+# papyrus-lint-core's `FunctionTable::script_exists` (used by the
+# "Unresolved script reference" lint).
+#
+# These native singleton scripts are shipped compiled with the game, so a
+# typical mod project carries no `.psc` source for them under its own
+# `scripts/source`/`source/scripts` — without this list, a perfectly
+# ordinary call like `Game.GetPlayer()` or `Utility.Wait(1.0)` would be
+# flagged as calling a script that doesn't exist.
+#
+# Each entry:
+#   script: a native engine script name, always called through its
+#           literal name
+#
+# Deliberately not exhaustive: this only needs to cover the common
+# singleton scripts shared by Skyrim and Fallout 4. A script not listed
+# here (including a SKSE/F4SE plugin or community function library) is
+# simply looked up under the project's own scripts instead, same as any
+# other script name.
+
+- script: Game
+- script: Utility
+- script: Debug
+- script: Math
+- script: StringUtil
+- script: Input
+- script: UI
+- script: StorageUtil

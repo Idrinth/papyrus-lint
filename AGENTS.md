@@ -66,11 +66,18 @@ desktop app's binary at all.
 │       │       │                       # scripts/source or source/scripts
 │       │       ├── function_table.rs   # Cross-script function signature lookup,
 │       │       │                       # for the argument/return type check lints
-│       │       └── native_types.rs     # Fallback Extends hierarchy for native
-│       │                               # engine types (Actor, ObjectReference,
-│       │                               # Form, ...) with no .psc in the project;
-│       │                               # reads rules/native-types.yaml via a
-│       │                               # build-time-generated array (build.rs)
+│       │       │                       # and script_exists() for the unresolved
+│       │       │                       # script reference lint
+│       │       ├── native_types.rs     # Fallback Extends hierarchy for native
+│       │       │                       # engine types (Actor, ObjectReference,
+│       │       │                       # Form, ...) with no .psc in the project;
+│       │       │                       # reads rules/native-types.yaml via a
+│       │       │                       # build-time-generated array (build.rs)
+│       │       └── native_globals.rs   # Known native singleton scripts (Game,
+│       │                               # Utility, Debug, ...) always called by
+│       │                               # literal name, with no .psc in the
+│       │                               # project; reads rules/native-globals.yaml
+│       │                               # via a build-time-generated array (build.rs)
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           └── src/                # achlist's scripts against its project's
 │               ├── lib.rs           # papyrus-lint.yaml and prints the results.
@@ -82,8 +89,11 @@ desktop app's binary at all.
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
 │   ├── slow-functions.yaml       # Slow calls and their faster alternatives; both
 │   │                              # files are compiled in by papyrus-lints/build.rs
-│   └── native-types.yaml         # Native engine class hierarchy fallback (see
-│                                  # papyrus-lint-core/src/native_types.rs above);
+│   ├── native-types.yaml         # Native engine class hierarchy fallback (see
+│   │                              # papyrus-lint-core/src/native_types.rs above);
+│   │                              # compiled in by papyrus-lint-core/build.rs
+│   └── native-globals.yaml       # Native singleton scripts always called by
+│                                  # literal name (see native_globals.rs above);
 │                                  # compiled in by papyrus-lint-core/build.rs
 ├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
 │   ├── linter.py                          # runs PapyrusLinterCLI against a saved

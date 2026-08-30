@@ -37,6 +37,7 @@ pub mod type_casing;
 pub mod unchecked_cast;
 pub mod unchecked_form_parameter;
 pub mod unreachable_statement;
+pub mod unresolved_script;
 pub mod unused_getter;
 pub mod unused_local_variable;
 pub mod unused_property;
@@ -160,6 +161,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.return_types {
         diagnostics.extend(return_types::check_with(source, external));
+    }
+    if rules.unresolved_script {
+        diagnostics.extend(unresolved_script::check_with(source, external));
     }
     if rules.local_variable_shadowing {
         diagnostics.extend(local_variable_shadowing::check_with(source, external));
@@ -701,6 +705,48 @@ mod tests {
             &mut FakeExternalWithParentFunction,
         );
         assert!(disabled.iter().all(|d| d.rule != function_override::RULE));
+    }
+
+    struct FakeExternalWithMissingScript;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithMissingScript {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
+            None
+        }
+
+        fn script_exists(&mut self, type_name: &str) -> bool {
+            type_name.eq_ignore_ascii_case("KnownScript")
+        }
+    }
+
+    /// Like `function_override_flag_gates_only_its_own_lint` above:
+    /// `unresolved_script` also needs `lint_with_external_arguments`'s
+    /// `external` resolver to ever fire, so its own
+    /// `rules.unresolved_script` gate is checked here instead of in the
+    /// main loop.
+    #[test]
+    fn unresolved_script_flag_gates_only_its_own_lint() {
+        let source =
+            "ScriptName Example\n\nFunction Test()\n    MissingScript.DoThing()\nEndFunction\n";
+
+        let enabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithMissingScript,
+        );
+        assert!(enabled.iter().any(|d| d.rule == unresolved_script::RULE));
+
+        let disabled_config = config_with(|c| c.rules.unresolved_script = false);
+        let disabled = lint_with_external_arguments(
+            source,
+            &disabled_config,
+            &mut FakeExternalWithMissingScript,
+        );
+        assert!(disabled.iter().all(|d| d.rule != unresolved_script::RULE));
     }
 
     struct FakeExternalWithRenamedParentParam;
