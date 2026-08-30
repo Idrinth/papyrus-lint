@@ -311,9 +311,13 @@ Given a single `.psc` path directly, it lints just that file, treating it
 as the achlist's sole entry. Either way, each script is linted against
 the project's `papyrus-lint.yaml`/`.yml` config file (see Configuration
 above). For an `.achlist`, the project root is its containing directory; for
-a bare `.psc` in a conventional `Scripts/Source` or `Source/Scripts` tree,
-the root is inferred two directories above it. If no config exists there,
-the documented defaults apply. Each diagnostic found is printed as `<path>:<line>:<column>: [<rule>]
+a bare `.psc`, the root is found by walking up from the file for a
+`Scripts/Source` or `Source/Scripts` directory pair (matched
+case-insensitively) and taking the directory above it — so it's found
+correctly even for a script nested further still, e.g. a namespaced
+`Scripts/Source/User/MyScript.psc`, not just the conventional two
+directories up. If no config exists there, the documented defaults apply.
+Each diagnostic found is printed as `<path>:<line>:<column>: [<rule>]
 <message>`, followed by a one-line summary. Calls to functions declared on
 other scripts under the project root are resolved the same way the
 desktop app resolves them, so the CLI's "Argument type check"/"Return type
