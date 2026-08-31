@@ -28,6 +28,7 @@ export const FIXTURE_HTML = `
 
       <div id="panel-settings" class="tabs__panel" role="tabpanel" hidden>
         <input id="compiler-path" type="text" />
+        <input id="compile-check" type="checkbox" />
         <textarea id="script-roots"></textarea>
         <select id="semicolon-style">
           <option value="forbid">Remove where possible</option>

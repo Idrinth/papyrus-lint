@@ -26,6 +26,7 @@ let identifierCasingStyleEl: HTMLSelectElement | null;
 let namedArgumentsStyleEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let compilerPathEl: HTMLInputElement | null;
+let compileCheckEl: HTMLInputElement | null;
 let scriptRootsEl: HTMLTextAreaElement | null;
 let semicolonStyleEl: HTMLSelectElement | null;
 let cyclomaticComplexityWarningEl: HTMLInputElement | null;
@@ -235,6 +236,10 @@ let currentProjectDir: string | null = null;
 // The PapyrusCompiler.exe path to use for the "Compile" button, kept in
 // sync with the Settings tab's input (see handleCompilerPathChanged).
 let currentCompilerPath = "";
+// Whether linting also runs PapyrusCompiler.exe against a dropped .psc,
+// kept in sync with the Settings tab's checkbox (see
+// handleCompileCheckChanged).
+let currentCompileCheck = false;
 // Extra directories (besides scripts/source and source/scripts under the
 // project root) to search for .psc files when resolving cross-script
 // lookups, kept in sync with the Settings tab's textarea (see
@@ -376,6 +381,27 @@ export async function saveCompilerPath(dir: string, path: string): Promise<void>
   }
 }
 
+// Returns whether `dir`'s project runs PapyrusCompiler.exe against a
+// dropped .psc as part of linting it. Returns false if the lookup fails.
+export async function loadCompileCheck(dir: string): Promise<boolean> {
+  try {
+    return await invoke<boolean>("load_compile_check", { dir });
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+// Persists whether `dir`'s project runs PapyrusCompiler.exe against a
+// dropped .psc as part of linting it.
+export async function saveCompileCheck(dir: string, enabled: boolean): Promise<void> {
+  try {
+    await invoke("save_compile_check", { dir, enabled });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // Returns `dir`'s configured additional script root directories, if any.
 // Returns an empty array if none are configured or the lookup fails.
 export async function loadScriptRoots(dir: string): Promise<string[]> {
@@ -498,6 +524,8 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
       root: currentProjectDir ?? "",
       config: currentLintConfig,
       additionalRoots: currentScriptRoots,
+      compilerPath: currentCompilerPath,
+      compileCheck: currentCompileCheck,
     });
   } catch (error) {
     console.error(error);
@@ -511,6 +539,8 @@ export async function repairPscFile(path: string): Promise<Diagnostic[]> {
     root: currentProjectDir ?? "",
     config: currentLintConfig,
     additionalRoots: currentScriptRoots,
+    compilerPath: currentCompilerPath,
+    compileCheck: currentCompileCheck,
   });
 }
 
@@ -1303,6 +1333,10 @@ export async function useProjectDir(dir: string) {
   if (compilerPathEl) {
     compilerPathEl.value = currentCompilerPath;
   }
+  currentCompileCheck = await loadCompileCheck(dir);
+  if (compileCheckEl) {
+    compileCheckEl.checked = currentCompileCheck;
+  }
   currentScriptRoots = await loadScriptRoots(dir);
   applyScriptRootsToUI(currentScriptRoots);
   rememberProjectDir(dir);
@@ -1315,6 +1349,17 @@ export function handleCompilerPathChanged() {
   currentCompilerPath = compilerPathEl?.value ?? "";
   if (currentProjectDir && compilerPathEl) {
     void saveCompilerPath(currentProjectDir, compilerPathEl.value);
+  }
+}
+
+// Called when the "Also check with PapyrusCompiler.exe while linting"
+// checkbox changes: updates whether lintPscFile/repairPscFile include
+// compiler-reported errors, and persists the choice to the current
+// project's config file (if a project is loaded).
+export function handleCompileCheckChanged() {
+  currentCompileCheck = compileCheckEl?.checked ?? false;
+  if (currentProjectDir) {
+    void saveCompileCheck(currentProjectDir, currentCompileCheck);
   }
 }
 
@@ -1418,6 +1463,7 @@ window.addEventListener("DOMContentLoaded", () => {
   pscResultListEl = document.querySelector("#psc-result-list");
   filenameFilterEl = document.querySelector("#filename-filter");
   compilerPathEl = document.querySelector("#compiler-path");
+  compileCheckEl = document.querySelector("#compile-check");
   scriptRootsEl = document.querySelector("#script-roots");
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
@@ -1516,6 +1562,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
+  compileCheckEl?.addEventListener("change", handleCompileCheckChanged);
   scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);
   semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
   indentationStyleEl?.addEventListener("change", () => {
