@@ -3,11 +3,11 @@
 //! its source directory:
 //!
 //! ```text
-//! PapyrusCompiler.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
+//! PapyrusCompiler.exe "<script path>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>" -f="TESV_Papyrus_Flags.flg"
 //! ```
 //!
-//! `<source dir>` is the directory the `.psc` file lives in (conventionally
-//! `scripts/source` or `source/scripts` under a project's root — see
+//! `<script path>` names the `.psc` file being compiled. Its parent is
+//! conventionally `scripts/source` or `source/scripts` under a project's root — see
 //! [`papyrus_lint_core::script_locator`]) and `<output dir>` is its parent, matching
 //! the layout Bethesda's tooling expects: a `Source` directory holding
 //! `.psc` files sits inside the `Scripts` directory that receives the
@@ -133,11 +133,24 @@ pub fn compile_psc_file(
         .ok_or_else(|| format!("{} has no file name", script_path.display()))?;
     let import_dirs = import_dirs(source_dir, output_dir, additional_roots);
 
-    let output = Command::new(compiler_path)
-        .arg(source_dir)
+    let mut command = Command::new(compiler_path);
+    command
+        .arg(script_path)
         .arg(format!("-f={}", file_name.to_string_lossy()))
         .arg(format!("-i={import_dirs}"))
         .arg(format!("-o={}", output_dir.display()))
+        .arg("-f=TESV_Papyrus_Flags.flg");
+
+    // The flags file is distributed beside PapyrusCompiler.exe and the
+    // compiler resolves its relative path from the process working directory.
+    if let Some(compiler_dir) = compiler_path
+        .parent()
+        .filter(|dir| !dir.as_os_str().is_empty())
+    {
+        command.current_dir(compiler_dir);
+    }
+
+    let output = command
         .output()
         .map_err(|err| format!("failed to run {}: {err}", compiler_path.display()))?;
 
@@ -340,13 +353,31 @@ mod tests {
 
         let output_dir = root.path().join("Scripts");
         let expected = format!(
-            "{}\n-f=AchievementInjector.psc\n-i={};{}\n-o={}\n",
-            source_dir.display(),
+            "{}\n-f=AchievementInjector.psc\n-i={};{}\n-o={}\n-f=TESV_Papyrus_Flags.flg\n",
+            script_path.display(),
             root.path().join("scripts/source").display(),
             root.path().join("source/scripts").display(),
             output_dir.display(),
         );
         assert_eq!(outcome.stdout, expected);
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn runs_from_the_compiler_directory() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let compiler_dir = root.path().join("Papyrus Compiler");
+        let source_dir = root.path().join("Data/Scripts/Source");
+        fs::create_dir_all(&compiler_dir).expect("failed to create compiler dir");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path = write_stub_compiler(&compiler_dir, "#!/bin/sh\npwd\n");
+
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("should succeed");
+
+        assert_eq!(outcome.stdout.trim(), compiler_dir.display().to_string());
     }
 
     #[test]
