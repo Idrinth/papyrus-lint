@@ -220,9 +220,9 @@ export type Theme = "system" | "light" | "dark";
 const THEMES: Theme[] = ["system", "light", "dark"];
 
 let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
-// The project root (the directory containing the dropped .achlist file),
-// also used by the "Argument type check" lint to resolve calls to
-// functions declared on other scripts under it.
+// The project root (see projectDirForAchlist/projectDirForPscPath), also
+// used by the "Argument type check" lint to resolve calls to functions
+// declared on other scripts under it.
 let currentProjectDir: string | null = null;
 // The PapyrusCompiler.exe path to use for the "Compile" button, kept in
 // sync with the Settings tab's input (see handleCompilerPathChanged).
@@ -240,10 +240,75 @@ export function dirnameOf(path: string): string {
   return index === -1 ? path : path.slice(0, index);
 }
 
-// Formats `path` relative to `base` (the project directory containing the
-// dropped .achlist file) for display in the lint results list, so long
-// absolute paths stay readable. Falls back to the absolute path if `base`
-// isn't known yet or `path` doesn't live under it.
+function basenameOf(path: string): string {
+  const index = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
+  return index === -1 ? path : path.slice(index + 1);
+}
+
+// `path` itself, followed by each of its ancestor directories up to the
+// root (where dirnameOf stops changing anything), mirroring Rust's
+// `Path::ancestors()`.
+function ancestorsOf(path: string): string[] {
+  const ancestors = [path];
+  let current = path;
+  for (;;) {
+    const parent = dirnameOf(current);
+    if (parent === current) {
+      return ancestors;
+    }
+    ancestors.push(parent);
+    current = parent;
+  }
+}
+
+// (outer, inner) pairs, mirroring papyrus-lint-cli's `CANDIDATE_DIRS`
+// (`scripts/source`, `source/scripts`).
+const CANDIDATE_DIR_PAIRS: readonly (readonly [string, string])[] = [
+  ["scripts", "source"],
+  ["source", "scripts"],
+];
+
+// Mirrors papyrus-lint-cli's `find_candidate_pair_root`: walks up `path`'s
+// ancestors looking for a `scripts/source`/`source/scripts` directory pair
+// (matched case-insensitively), and returns the directory above that pair,
+// or null if no such pair appears anywhere in `path`'s ancestry.
+export function findCandidatePairRoot(path: string): string | null {
+  const ancestors = ancestorsOf(path);
+  for (let i = 1; i < ancestors.length - 1; i++) {
+    const innerName = basenameOf(ancestors[i]).toLowerCase();
+    const outerName = basenameOf(ancestors[i + 1]).toLowerCase();
+    const matches = CANDIDATE_DIR_PAIRS.some(([outer, inner]) => outer === outerName && inner === innerName);
+    if (matches) {
+      return dirnameOf(ancestors[i + 1]);
+    }
+  }
+  return null;
+}
+
+// Finds the project root for a dropped `.achlist`: tries each of its
+// resolved `.psc` entries' own position under a `scripts/source`/
+// `source/scripts` directory pair first (see findCandidatePairRoot), so a
+// project whose `.achlist` doesn't live in the project root itself (e.g. it
+// was dropped next to a game's `Data` directory while the project lives in
+// a subfolder) still resolves correctly. Falls back to the achlist's own
+// parent directory (the conventional layout) if none of its entries match.
+export function projectDirForAchlist(achlistPath: string, entries: string[]): string {
+  for (const entry of entries) {
+    if (!isPscPath(entry)) {
+      continue;
+    }
+    const root = findCandidatePairRoot(entry);
+    if (root) {
+      return root;
+    }
+  }
+  return dirnameOf(achlistPath);
+}
+
+// Formats `path` relative to `base` (the project root; see
+// projectDirForAchlist/projectDirForPscPath) for display in the lint
+// results list, so long absolute paths stay readable. Falls back to the
+// absolute path if `base` isn't known yet or `path` doesn't live under it.
 export function relativePath(path: string, base: string | null): string {
   if (!base) {
     return path;
@@ -447,8 +512,8 @@ async function writePscFile(path: string, contents: string): Promise<void> {
 
 // Fetches every function/property available on an object of type
 // `typeName` (including those inherited via Extends), for the code
-// viewer's `.`-triggered autocompletion. `root` is the project root (the
-// directory containing the dropped .achlist file), the same as every other
+// viewer's `.`-triggered autocompletion. `root` is the project root (see
+// projectDirForAchlist/projectDirForPscPath), the same as every other
 // command that resolves scripts across a project.
 export async function listScriptMembers(typeName: string): Promise<Member[]> {
   try {
@@ -974,11 +1039,10 @@ export function clearError() {
   }
 }
 
-// `base` is the project root (the directory containing the dropped
-// .achlist file, or the inferred root for a bare .psc), used to shorten
-// each entry to a path relative to it so long absolute paths stay
-// readable; entries outside `base` (or when it isn't known) fall back to
-// their absolute path, per relativePath().
+// `base` is the project root (see projectDirForAchlist/projectDirForPscPath),
+// used to shorten each entry to a path relative to it so long absolute
+// paths stay readable; entries outside `base` (or when it isn't known)
+// fall back to their absolute path, per relativePath().
 export function showResult(path: string, entries: string[], base: string | null) {
   if (!resultEl || !resultTitleEl || !resultListEl) {
     return;
@@ -1307,9 +1371,10 @@ export async function handleDroppedPaths(paths: string[]) {
       // pass below can't show a previous drop's stale findings for a
       // path that happens to match one of this drop's entries.
       currentPscOutcomes = [];
-      showResult(achlistPath, entries, dirnameOf(achlistPath));
+      const projectDir = projectDirForAchlist(achlistPath, entries);
+      showResult(achlistPath, entries, projectDir);
 
-      await useProjectDir(dirnameOf(achlistPath));
+      await useProjectDir(projectDir);
       currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
       renderPscResults(currentPscOutcomes);
     } catch (error) {

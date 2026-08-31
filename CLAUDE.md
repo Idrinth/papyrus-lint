@@ -249,17 +249,20 @@ standalone CLI, and editor extensions all use the same lint and repair
 engine.
 
 Project configuration is read from an optional `papyrus-lint.yaml` or
-`papyrus-lint.yml` in the project root. For the desktop app, an achlist's
-parent is the project root. The CLI is more forgiving of an achlist that
-doesn't live in the project root itself (e.g. dropped next to a game's
-`Data` directory while the project lives in a subfolder): it first tries to
-find the root from where the achlist's own resolved scripts sit under a
-`Scripts/Source` or `Source/Scripts` pair, falling back to the achlist's
-parent only if none of them do. A bare `.psc` given directly is resolved
-the same way, walking up from the file itself, falling back to two
-directories above it if no such pair is found at all. Configuration
-controls formatting, lint enablement, complexity thresholds, CLI failure
-levels, and the compiler path. See the [README configuration
+`papyrus-lint.yml` in the project root. Both the desktop app and the CLI are
+forgiving of an achlist that doesn't live in the project root itself (e.g.
+dropped next to a game's `Data` directory while the project lives in a
+subfolder): each first tries to find the root from where the achlist's own
+resolved scripts sit under a `Scripts/Source` or `Source/Scripts` pair
+(`projectDirForAchlist` in `app/src/main.ts`; `find_candidate_pair_root` in
+`papyrus-lint-cli`), falling back to the achlist's own parent directory (the
+conventional layout) only if none of them do. The CLI resolves a bare `.psc`
+given directly the same way, walking up from the file itself and falling
+back to two directories above it if no such pair is found at all; the
+desktop app's frontend still uses that simpler fixed "two directories up"
+rule for a bare `.psc` dropped directly (`projectDirForPscPath`).
+Configuration controls formatting, lint enablement, complexity thresholds,
+CLI failure levels, and the compiler path. See the [README configuration
 reference](README.md#configuration) for the complete schema and defaults.
 
 The desktop app's `parse_psc_file` command, and both the app's and the
