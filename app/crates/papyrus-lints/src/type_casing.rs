@@ -62,6 +62,33 @@ impl Style {
                 .all(char::is_uppercase),
         }
     }
+
+    /// Returns the case-only rewrite of `name` for this convention.
+    fn apply(self, name: &str) -> String {
+        match self {
+            Style::Lowercase => name.to_lowercase(),
+            Style::Uppercase => name.to_uppercase(),
+            Style::PascalCase | Style::CamelCase => {
+                let mut result = String::with_capacity(name.len());
+                let mut first_letter = true;
+
+                for character in name.chars() {
+                    if character.is_alphabetic() && first_letter {
+                        if self == Style::PascalCase {
+                            result.extend(character.to_uppercase());
+                        } else {
+                            result.extend(character.to_lowercase());
+                        }
+                        first_letter = false;
+                    } else {
+                        result.push(character);
+                    }
+                }
+
+                result
+            }
+        }
+    }
 }
 
 /// `Some(true)`/`Some(false)` for the name's first alphabetic character
@@ -107,6 +134,56 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
         }];
     }
     Vec::new()
+}
+
+/// Rewrites the declared `ScriptName` identifier to match `style` when letter
+/// casing alone can do so. Only the declaration is changed; references to
+/// other types (including the `Extends` target) are left untouched. A repair
+/// that would add or remove characters is skipped so the declaration remains
+/// compatible with its filename. Invalid source is returned verbatim.
+pub fn repair(source: &str, style: Style) -> String {
+    let Ok(tokens) = Lexer::new(source).tokenize() else {
+        return source.to_string();
+    };
+
+    let mut tokens = tokens.into_iter();
+    while let Some(token) = tokens.next() {
+        if token.kind != TokenKind::Keyword(Keyword::ScriptName) {
+            continue;
+        }
+        let Some(name_token) = tokens.next() else {
+            return source.to_string();
+        };
+        let TokenKind::Identifier(name) = &name_token.kind else {
+            return source.to_string();
+        };
+        let replacement = style.apply(name);
+        // PascalCase/camelCase also prohibit underscores, but removing one
+        // would be a substantive rename and break the required
+        // filename/ScriptName match. Only apply a repair when changing case
+        // alone can make the declaration conform.
+        if replacement == *name || !style.matches(&replacement) {
+            return source.to_string();
+        }
+
+        let line_start = if name_token.line == 1 {
+            0
+        } else {
+            source
+                .bytes()
+                .enumerate()
+                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1))
+                .nth(name_token.line - 2)
+                .unwrap_or(0)
+        };
+        let start = line_start + name_token.col - 1;
+        let end = start + name.len();
+        let mut repaired = source.to_string();
+        repaired.replace_range(start..end, &replacement);
+        return repaired;
+    }
+
+    source.to_string()
 }
 
 #[cfg(test)]
@@ -205,5 +282,55 @@ mod tests {
             Style::PascalCase
         )
         .is_empty());
+    }
+
+    #[test]
+    fn repair_applies_each_configured_style() {
+        assert_eq!(
+            repair("ScriptName myQuestScript\n", Style::PascalCase),
+            "ScriptName MyQuestScript\n"
+        );
+        assert_eq!(
+            repair("ScriptName MyQuestScript\n", Style::CamelCase),
+            "ScriptName myQuestScript\n"
+        );
+        assert_eq!(
+            repair("ScriptName MyQuestScript\n", Style::Lowercase),
+            "ScriptName myquestscript\n"
+        );
+        assert_eq!(
+            repair("ScriptName MyQuestScript\n", Style::Uppercase),
+            "ScriptName MYQUESTSCRIPT\n"
+        );
+    }
+
+    #[test]
+    fn repair_changes_only_the_declared_name_and_is_idempotent() {
+        let source = "ScriptName myScript Extends badly_cased_parent\r\n";
+        let repaired = repair(source, Style::PascalCase);
+
+        assert_eq!(
+            repaired,
+            "ScriptName MyScript Extends badly_cased_parent\r\n"
+        );
+        assert_eq!(repair(&repaired, Style::PascalCase), repaired);
+    }
+
+    #[test]
+    fn repair_does_not_make_a_substantive_rename() {
+        for style in [Style::PascalCase, Style::CamelCase] {
+            let source = "ScriptName my_questScript\n";
+            assert_eq!(repair(source, style), source);
+        }
+    }
+
+    #[test]
+    fn repair_leaves_invalid_or_declaration_free_source_unchanged() {
+        for source in [
+            "Function Foo()\nEndFunction\n",
+            "ScriptName Example \"unterminated\n",
+        ] {
+            assert_eq!(repair(source, Style::PascalCase), source);
+        }
     }
 }
