@@ -52,6 +52,7 @@
 //!   unchecked_cast: true
 //!   unresolved_script: true
 //!   short_wait_interval: true
+//!   state_function_signature: true
 //!   goto_state: true
 //! ```
 //!
@@ -289,6 +290,8 @@ pub struct Rules {
     pub unresolved_script: bool,
     /// The "Short wait/update interval" lint.
     pub short_wait_interval: bool,
+    /// The "State function signature mismatch" lint.
+    pub state_function_signature: bool,
     /// The "GoToState state reference" lint.
     pub goto_state: bool,
 }
@@ -331,6 +334,7 @@ impl Default for Rules {
             unchecked_cast: true,
             unresolved_script: true,
             short_wait_interval: true,
+            state_function_signature: true,
             goto_state: true,
         }
     }
@@ -469,6 +473,7 @@ mod tests {
         assert!(config.rules.unchecked_cast);
         assert!(config.rules.unresolved_script);
         assert!(config.rules.short_wait_interval);
+        assert!(config.rules.state_function_signature);
         assert!(config.rules.goto_state);
     }
 
