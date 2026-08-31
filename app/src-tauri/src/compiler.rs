@@ -3,7 +3,7 @@
 //! its source directory:
 //!
 //! ```text
-//! PapyrusCompiler.exe "<script path>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>" -f="TESV_Papyrus_Flags.flg"
+//! PapyrusCompiler.exe "<script path>" -i="<source dir 1>;<source dir 2>" -o="<output dir>" -f="TESV_Papyrus_Flags.flg"
 //! ```
 //!
 //! `<script path>` names the `.psc` file being compiled. Its parent is
@@ -136,7 +136,6 @@ pub fn compile_psc_file(
     let mut command = Command::new(compiler_path);
     command
         .arg(script_path)
-        .arg(format!("-f={}", file_name.to_string_lossy()))
         .arg(format!("-i={import_dirs}"))
         .arg(format!("-o={}", output_dir.display()))
         .arg("-f=TESV_Papyrus_Flags.flg");
