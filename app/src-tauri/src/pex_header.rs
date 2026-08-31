@@ -215,6 +215,30 @@ mod tests {
     }
 
     #[test]
+    fn returns_none_when_even_the_magic_is_truncated() {
+        assert!(strip_personal_data(&BE_MAGIC[..BE_MAGIC.len() - 1]).is_none());
+    }
+
+    #[test]
+    fn returns_none_when_the_username_length_is_missing() {
+        let mut bytes = BE_MAGIC.to_vec();
+        bytes.extend_from_slice(&[0; STRINGS_START - BE_MAGIC.len()]);
+        push_be_string(&mut bytes, "Foo.psc");
+
+        assert!(strip_personal_data(&bytes).is_none());
+    }
+
+    #[test]
+    fn returns_none_when_the_machine_name_length_is_missing() {
+        let mut bytes = BE_MAGIC.to_vec();
+        bytes.extend_from_slice(&[0; STRINGS_START - BE_MAGIC.len()]);
+        push_be_string(&mut bytes, "Foo.psc");
+        push_be_string(&mut bytes, "SomeUser");
+
+        assert!(strip_personal_data(&bytes).is_none());
+    }
+
+    #[test]
     fn returns_none_when_the_source_file_name_overruns_the_buffer() {
         let mut bytes = BE_MAGIC.to_vec();
         bytes.extend_from_slice(&[0; STRINGS_START - BE_MAGIC.len()]);

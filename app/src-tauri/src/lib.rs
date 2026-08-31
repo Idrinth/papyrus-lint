@@ -315,6 +315,17 @@ mod tests {
     }
 
     #[test]
+    fn parse_psc_file_reuses_a_valid_cached_script() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Cached.psc");
+        let path_string = path.to_string_lossy().into_owned();
+        std::fs::write(&path, "ScriptName Cached\n").unwrap();
+
+        assert_eq!(parse_psc_file(path_string.clone()).unwrap().name, "Cached");
+        assert_eq!(parse_psc_file(path_string).unwrap().name, "Cached");
+    }
+
+    #[test]
     fn file_commands_report_io_errors_instead_of_panicking() {
         let missing = tempdir().unwrap().path().join("missing.psc");
         let path = missing.to_string_lossy().into_owned();
@@ -373,6 +384,27 @@ mod tests {
         assert!(
             compile_psc_file("Example.psc".to_string(), "  \t".to_string(), Vec::new()).is_err()
         );
+    }
+
+    #[test]
+    fn compile_psc_file_reports_a_spawn_error_from_the_compiler_module() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let script_path = source_dir.join("Example.psc");
+        std::fs::write(&script_path, "ScriptName Example\n").unwrap();
+
+        let error = compile_psc_file(
+            script_path.to_string_lossy().into_owned(),
+            dir.path()
+                .join("missing-compiler")
+                .to_string_lossy()
+                .into_owned(),
+            Vec::new(),
+        )
+        .unwrap_err();
+
+        assert!(error.contains("failed to run"));
     }
 
     #[test]
