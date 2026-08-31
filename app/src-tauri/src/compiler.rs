@@ -352,7 +352,7 @@ mod tests {
 
         let output_dir = root.path().join("Scripts");
         let expected = format!(
-            "{}\n-f=AchievementInjector.psc\n-i={};{}\n-o={}\n-f=TESV_Papyrus_Flags.flg\n",
+            "{}\n-i={};{}\n-o={}\n-f=TESV_Papyrus_Flags.flg\n",
             script_path.display(),
             root.path().join("scripts/source").display(),
             root.path().join("source/scripts").display(),
