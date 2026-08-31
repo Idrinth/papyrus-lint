@@ -141,6 +141,8 @@ export interface LintRules {
   short_wait_interval: boolean;
   state_function_signature: boolean;
   goto_state: boolean;
+  too_many_states: boolean;
+  multiple_auto_states: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -200,6 +202,8 @@ export const DEFAULT_RULES: LintRules = {
   short_wait_interval: true,
   state_function_signature: true,
   goto_state: true,
+  too_many_states: true,
+  multiple_auto_states: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {

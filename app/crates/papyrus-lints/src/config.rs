@@ -54,6 +54,8 @@
 //!   short_wait_interval: true
 //!   state_function_signature: true
 //!   goto_state: true
+//!   too_many_states: true
+//!   multiple_auto_states: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -294,6 +296,10 @@ pub struct Rules {
     pub state_function_signature: bool,
     /// The "GoToState state reference" lint.
     pub goto_state: bool,
+    /// The "Total named state count" lint.
+    pub too_many_states: bool,
+    /// The "Multiple Auto states" lint.
+    pub multiple_auto_states: bool,
 }
 
 impl Default for Rules {
@@ -336,6 +342,8 @@ impl Default for Rules {
             short_wait_interval: true,
             state_function_signature: true,
             goto_state: true,
+            too_many_states: true,
+            multiple_auto_states: true,
         }
     }
 }
@@ -475,6 +483,8 @@ mod tests {
         assert!(config.rules.short_wait_interval);
         assert!(config.rules.state_function_signature);
         assert!(config.rules.goto_state);
+        assert!(config.rules.too_many_states);
+        assert!(config.rules.multiple_auto_states);
     }
 
     #[test]

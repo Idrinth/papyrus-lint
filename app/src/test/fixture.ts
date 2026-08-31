@@ -97,6 +97,8 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-unchecked_cast" checked />
           <input type="checkbox" id="rule-short_wait_interval" checked />
           <input type="checkbox" id="rule-goto_state" checked />
+          <input type="checkbox" id="rule-too_many_states" checked />
+          <input type="checkbox" id="rule-multiple_auto_states" checked />
         </fieldset>
       </div>
 

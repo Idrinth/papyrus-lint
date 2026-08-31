@@ -99,6 +99,23 @@ pub trait ExternalSignatures {
     fn has_state(&mut self, _type_name: &str, _state_name: &str) -> bool {
         true
     }
+
+    /// Every named `State` declared anywhere in `type_name`'s own
+    /// `Extends` ancestry — starting at `type_name`'s own script, then
+    /// each further ancestor it extends — as `(name, is_auto)` pairs. Used
+    /// by the "Total named state count"/"Multiple Auto states" lint pair
+    /// (`crate::state_count`) to tally a script's full inheritance chain
+    /// against the engine's per-script limits.
+    ///
+    /// The default returns nothing, unlike [`Self::has_state`]'s
+    /// conservative `true`: a caller that can't resolve the ancestor chain
+    /// (see [`NoExternalSignatures`]) has no way to tell an over-limit
+    /// ancestry from one it just doesn't track, and guessing "yes" here
+    /// would mean guessing at an unbounded number of fabricated states
+    /// rather than a single boolean, so it stays silent instead.
+    fn ancestor_states(&mut self, _type_name: &str) -> Vec<(String, bool)> {
+        Vec::new()
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a
