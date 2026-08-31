@@ -2,7 +2,7 @@ ScriptName TypeD Extends TypeC
 
 TypeD Property d Auto;
 
-TypeA Function GetAsA()
+TypeC Function GetAsA()
 return self
 EndFunction
 

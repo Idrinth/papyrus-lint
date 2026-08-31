@@ -10,14 +10,11 @@
 //! - `TypeC.GetC` (declared `Form Function`) returning its `TypeC`-typed
 //!   `c` property, requiring the chain `TypeC -> Armor -> Form` to resolve
 //!   through the native fallback past `Armor`;
+//! - `TypeD.GetAsA` (declared `TypeC Function`) returning `self` (`TypeD`),
+//!   a direct project-to-project subtype;
 //! - `TypeD.GetD` (declared `Armor Function`) returning its `TypeD`-typed
 //!   `d` property, requiring the transitive chain `TypeD -> TypeC -> Armor`
-//!   across two project scripts;
-//! - `TypeD.GetAsA` (declared `TypeA Function`) returning `self` (`TypeD`),
-//!   which must still be flagged: `TypeD` and `TypeA` are unrelated
-//!   hierarchies (both eventually reach `Form`, but neither extends the
-//!   other), so resolving the shared native fallback must not be mistaken
-//!   for an actual subtype relationship.
+//!   across two project scripts plus the native fallback past `Armor`.
 
 use std::path::PathBuf;
 
@@ -51,17 +48,13 @@ fn accepts_returns_through_a_project_and_native_extends_chain() {
 }
 
 #[test]
-fn accepts_a_transitively_resolved_return_but_flags_an_unrelated_type() {
+fn accepts_returns_through_a_transitive_project_and_native_extends_chain() {
     let mut table = table();
 
     let diagnostics = papyrus_lints::return_types::check_with(TYPED, &mut table);
 
-    assert_eq!(
-        diagnostics.len(),
-        1,
-        "expected only the TypeA/TypeD mismatch to be flagged, got {diagnostics:?}"
+    assert!(
+        diagnostics.is_empty(),
+        "expected no return-type diagnostics for typed.psc, got {diagnostics:?}"
     );
-    assert!(diagnostics[0].message.contains("'GetAsA'"));
-    assert!(diagnostics[0].message.contains("declares return type TypeA"));
-    assert!(diagnostics[0].message.contains("returns TypeD"));
 }
