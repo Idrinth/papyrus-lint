@@ -105,16 +105,21 @@ struct ScriptFunctions {
     extends: Option<String>,
     functions: HashMap<String, FunctionSignature>,
     properties: HashMap<String, PropertySignature>,
-    states: HashSet<String>,
+    /// Each named `State` declared directly on this script, lowercased,
+    /// mapped to whether it's marked `Auto`. Used by [`FunctionTable::has_state`]
+    /// and [`FunctionTable::ancestor_states`].
+    states: HashMap<String, bool>,
 }
 
 impl ScriptFunctions {
     fn from_script(script: &Script) -> Self {
-        let states = script
-            .states
-            .iter()
-            .map(|state| state.name.to_ascii_lowercase())
-            .collect();
+        let mut states: HashMap<String, bool> = HashMap::new();
+        for state in &script.states {
+            let is_auto = states
+                .entry(state.name.to_ascii_lowercase())
+                .or_insert(false);
+            *is_auto |= state.is_auto;
+        }
         let mut functions: HashMap<String, FunctionSignature> = script
             .functions
             .iter()
@@ -305,7 +310,7 @@ impl FunctionTable {
             let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
                 break;
             };
-            if script.states.contains(&state_key) {
+            if script.states.contains_key(&state_key) {
                 return true;
             }
 
@@ -314,6 +319,51 @@ impl FunctionTable {
         }
 
         false
+    }
+
+    /// Every named `State` declared anywhere in `type_name`'s own
+    /// `Extends` ancestry — `type_name`'s own script, then each further
+    /// ancestor it extends — as `(name, is_auto)` pairs. Both a script's
+    /// own casing (not lowercased) and every declaration it makes are
+    /// included; a script (or an ancestor along the way) that can't be
+    /// found or parsed simply ends the walk there rather than failing the
+    /// whole lookup, mirroring [`Self::has_state`]. Used by the "Total
+    /// named state count"/"Multiple Auto states" lint pair
+    /// (`papyrus_lints::state_count`) to tally a script's full inheritance
+    /// chain against the engine's per-script limits.
+    pub fn ancestor_states(&mut self, type_name: &str) -> Vec<(String, bool)> {
+        let mut result = Vec::new();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break; // guard against a circular `Extends` chain
+            }
+            self.ensure_loaded(&name);
+
+            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
+                break;
+            };
+            result.extend(
+                script
+                    .states
+                    .iter()
+                    .map(|(name, &is_auto)| (name.clone(), is_auto)),
+            );
+
+            // Lowercased, unlike the other walks in this file: those only
+            // ever check for a match or stop at the first one found, so a
+            // casing mismatch against `visited` costs at most a redundant
+            // extra step. This walk instead accumulates every step's
+            // states, where the same mismatch would double-count an
+            // ancestor's states whenever its `Extends` target's declared
+            // casing doesn't match `visited`'s.
+            current = script.extends.as_ref().map(|e| e.to_ascii_lowercase());
+            visited.push(name);
+        }
+
+        result
     }
 
     /// Lists every function and property available on an object of type
@@ -420,6 +470,10 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
 
     fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
         self.has_state(type_name, state_name)
+    }
+
+    fn ancestor_states(&mut self, type_name: &str) -> Vec<(String, bool)> {
+        self.ancestor_states(type_name)
     }
 }
 
@@ -826,6 +880,63 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(!table.has_state("A", "Anything"));
+    }
+
+    #[test]
+    fn ancestor_states_includes_the_types_own_and_inherited_states() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Base",
+            "ScriptName Base\n\nAuto State Idle\nEndState\n",
+        );
+        write_script(
+            root.path(),
+            "Child",
+            "ScriptName Child Extends Base\n\nState Active\nEndState\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let mut states = table.ancestor_states("Child");
+        states.sort();
+
+        assert_eq!(
+            states,
+            vec![("active".to_string(), false), ("idle".to_string(), true)]
+        );
+    }
+
+    #[test]
+    fn ancestor_states_is_empty_for_an_unresolvable_type() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.ancestor_states("Missing").is_empty());
+    }
+
+    #[test]
+    fn ancestor_states_does_not_infinite_loop_on_circular_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "A",
+            "ScriptName A Extends B\n\nState FromA\nEndState\n",
+        );
+        write_script(
+            root.path(),
+            "B",
+            "ScriptName B Extends A\n\nState FromB\nEndState\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let mut states = table.ancestor_states("A");
+        states.sort();
+
+        assert_eq!(
+            states,
+            vec![("froma".to_string(), false), ("fromb".to_string(), false)]
+        );
     }
 
     #[test]

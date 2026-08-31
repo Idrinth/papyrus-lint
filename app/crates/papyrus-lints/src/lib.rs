@@ -33,6 +33,7 @@ pub mod return_types;
 pub mod semicolon;
 pub mod short_wait_interval;
 pub mod slow_functions;
+pub mod state_count;
 pub mod state_function_signature;
 pub mod static_condition;
 pub mod strict_boolean;
@@ -116,9 +117,11 @@ pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
 /// "Return type check" lint accepts a returned value whose script extends
 /// (directly or transitively) the declared return type, so the
 /// "Inherited function override" lint can resolve `source`'s own `Extends`
-/// chain to flag a function that overrides an inherited one, and so the
+/// chain to flag a function that overrides an inherited one, so the
 /// "Argument naming consistency" lint can compare an overriding function's
-/// parameter names against the inherited declaration's. See
+/// parameter names against the inherited declaration's, and so the "Total
+/// named state count"/"Multiple Auto states" lint pair can tally `State`s
+/// declared anywhere in `source`'s ancestry alongside its own. See
 /// [`argument_types::ExternalSignatures`].
 pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     source: &str,
@@ -241,6 +244,14 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.goto_state {
         diagnostics.extend(goto_state::check_with(source, external));
+    }
+    if rules.too_many_states {
+        diagnostics.extend(state_count::check_too_many_states_with(source, external));
+    }
+    if rules.multiple_auto_states {
+        diagnostics.extend(state_count::check_multiple_auto_states_with(
+            source, external,
+        ));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -512,6 +523,13 @@ mod tests {
     /// here even though it wouldn't fail any other existing test.
     #[test]
     fn each_rule_flag_gates_only_its_own_lint() {
+        let many_states_source: String = {
+            let mut source = "ScriptName Example\n\n".to_string();
+            for index in 0..128 {
+                source.push_str(&format!("State State{index}\nEndState\n"));
+            }
+            source
+        };
         let cases: Vec<(&str, &str, Config, Config)> = vec![
             (
                 "ScriptName Example  \n",
@@ -720,6 +738,18 @@ mod tests {
                 goto_state::RULE,
                 Config::default(),
                 config_with(|c| c.rules.goto_state = false),
+            ),
+            (
+                many_states_source.as_str(),
+                state_count::TOO_MANY_STATES_RULE,
+                Config::default(),
+                config_with(|c| c.rules.too_many_states = false),
+            ),
+            (
+                "ScriptName Example\n\nAuto State Idle\nEndState\n\nAuto State Active\nEndState\n",
+                state_count::MULTIPLE_AUTO_STATES_RULE,
+                Config::default(),
+                config_with(|c| c.rules.multiple_auto_states = false),
             ),
         ];
 
