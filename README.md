@@ -477,7 +477,7 @@ so a fix can be saved and verified in one step, without reopening the
 file from the Lint results list. Either button runs:
 
 ```text
-PapyrusCompiler.exe "<script path>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>" -f="TESV_Papyrus_Flags.flg"
+PapyrusCompiler.exe "<script path>" -i="<source dir 1>;<source dir 2>" -o="<output dir>" -f="TESV_Papyrus_Flags.flg"
 ```
 
 where `<script path>` is the path to the `.psc` file, whose parent directory
