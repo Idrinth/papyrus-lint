@@ -445,8 +445,8 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             should_fail = should_fail || lint_config.should_fail_on(diagnostic);
         }
         diagnostics.retain(|diagnostic| {
-            !((quiet_warnings && diagnostic.level() == Some("warning"))
-                || (quiet_info && diagnostic.level() == Some("info")))
+            !((quiet_warnings && diagnostic.level() == "warning")
+                || (quiet_info && diagnostic.level() == "info"))
         });
 
         for diagnostic in &diagnostics {
