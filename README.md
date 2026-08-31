@@ -316,6 +316,7 @@ accept the same argument and behave identically:
 
 ```text
 PapyrusLinterCLI path/to/project.achlist
+PapyrusLinterCLI init
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
@@ -326,6 +327,10 @@ PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
 PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
 PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
 ```
+
+`PapyrusLinterCLI init` creates a `papyrus-lint.yaml` containing all default
+settings in the current working directory. It refuses to overwrite an existing
+`papyrus-lint.yaml` or `papyrus-lint.yml` file.
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
 Given a single `.psc` path directly, it lints just that file, treating it

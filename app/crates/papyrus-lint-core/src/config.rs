@@ -4,6 +4,8 @@
 //! that live in the same file alongside it.
 
 use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
@@ -126,6 +128,30 @@ fn save_project_file(dir: &Path, project: &ProjectFile) -> Result<(), String> {
 
     let yaml = serde_yaml::to_string(project).map_err(|err| err.to_string())?;
     fs::write(&path, with_field_comments(&yaml)).map_err(|err| err.to_string())
+}
+
+/// Creates `papyrus-lint.yaml` in `dir` with the default project
+/// configuration. Refuses to replace either supported config filename, so
+/// an existing project configuration cannot be lost accidentally.
+pub fn initialize_default_config(dir: &Path) -> Result<PathBuf, String> {
+    if let Some(path) = existing_config_path(dir) {
+        return Err(format!("config already exists at {}", path.display()));
+    }
+
+    let path = dir.join(CONFIG_FILE_NAMES[0]);
+    // `ProjectFile` omits empty app-only settings during ordinary saves, but
+    // an initialized file should serve as a complete, discoverable template.
+    let lint_yaml = papyrus_lints::config::to_yaml(&papyrus_lints::Config::default())
+        .map_err(|err| err.to_string())?;
+    let yaml = format!("compiler_path: null\nadditional_script_roots: []\n{lint_yaml}");
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)
+        .map_err(|err| err.to_string())?;
+    file.write_all(with_field_comments(&yaml).as_bytes())
+        .map_err(|err| err.to_string())?;
+    Ok(path)
 }
 
 /// Looks for a papyrus-lint config file in `dir` and parses it into a

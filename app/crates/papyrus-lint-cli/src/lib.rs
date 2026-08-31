@@ -3,6 +3,7 @@
 //! ```text
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] <path-to-achlist-or-psc>
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix <path-to-achlist-or-psc>
+//! PapyrusLinterCLI init
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
@@ -160,6 +161,7 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 pub const USAGE: &str =
     "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
 PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] fix <path-to-achlist-or-psc>\n\n\
+PapyrusLinterCLI init\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
 configuration (looked up next to the .achlist file, or two directories\n\
@@ -168,6 +170,8 @@ falling back to defaults if it has none).\n\n\
 With the `fix` subcommand, applies every automatic fix (see README.md)\n\
 to those scripts first, rewriting each one on disk if it changed, then\n\
 reports whatever diagnostics remain the same way.\n\n\
+With the `init` subcommand, creates a default papyrus-lint.yaml in the\n\
+current working directory without overwriting an existing config.\n\n\
 Options:\n\
   -h, --help              Show this help message\n\
   -V, --version           Print the PapyrusLinterCLI version\n\
@@ -247,6 +251,20 @@ pub struct JsonReport {
 /// level tag, always counts. Diagnostics are printed regardless of whether
 /// they affect the exit code unless their level is hidden by a quiet flag.
 pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
+    if args == ["init"] {
+        let current_dir = match std::env::current_dir() {
+            Ok(dir) => dir,
+            Err(err) => {
+                let _ = writeln!(
+                    stderr,
+                    "error: failed to determine current directory: {err}"
+                );
+                return 2;
+            }
+        };
+        return initialize_config(&current_dir, stdout, stderr);
+    }
+
     let json = args.iter().any(|arg| arg == "--json");
     let quiet_warnings = args.iter().any(|arg| arg == "--quiet-warnings");
     let quiet_info = args.iter().any(|arg| arg == "--quiet-info");
@@ -525,6 +543,19 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     }
 }
 
+fn initialize_config(dir: &Path, stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
+    match config::initialize_default_config(dir) {
+        Ok(path) => {
+            let _ = writeln!(stdout, "Created {}", path.display());
+            0
+        }
+        Err(err) => {
+            let _ = writeln!(stderr, "error: failed to initialize config: {err}");
+            2
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -621,6 +652,41 @@ mod tests {
 
         assert_eq!(code, 2);
         assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn init_creates_a_default_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = initialize_config(dir.path(), &mut stdout, &mut stderr);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(String::from_utf8(stdout)
+            .unwrap()
+            .contains("papyrus-lint.yaml"));
+        let config = config::load_config(dir.path()).expect("config should load");
+        assert_eq!(config, papyrus_lints::Config::default());
+    }
+
+    #[test]
+    fn init_refuses_to_overwrite_an_existing_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("papyrus-lint.yml");
+        write_file(&path, "semicolon: true\n");
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = initialize_config(dir.path(), &mut stdout, &mut stderr);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(String::from_utf8(stderr)
+            .unwrap()
+            .contains("config already exists"));
+        assert_eq!(fs::read_to_string(path).unwrap(), "semicolon: true\n");
     }
 
     #[test]
