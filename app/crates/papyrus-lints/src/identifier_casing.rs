@@ -11,7 +11,11 @@
 //! A parameter has no line of its own in the AST, so it's reported on its
 //! enclosing function's line.
 
+use std::collections::HashMap;
+
 use papyrus_parser::ast::{FunctionDecl, StateDecl, Stmt};
+use papyrus_parser::lexer::Lexer;
+use papyrus_parser::token::{Keyword, TokenKind};
 
 use crate::config::IdentifierCasing;
 use crate::{fragment_code, Diagnostic};
@@ -62,6 +66,205 @@ pub fn check(source: &str, style: IdentifierCasing) -> Vec<Diagnostic> {
     }
 
     diagnostics
+}
+
+/// Renames every non-conforming declaration and its references to `style`.
+///
+/// Papyrus identifiers are case-insensitive, so references are matched that
+/// way too. Tokens in comments and strings are naturally excluded by the
+/// lexer, and CreationKit-owned fragment wrapper lines are left untouched.
+/// If the source cannot be parsed or tokenized, it is returned unchanged.
+pub fn repair(source: &str, style: IdentifierCasing) -> String {
+    let Ok(script) = papyrus_parser::parse(source) else {
+        return source.to_string();
+    };
+    let protected = fragment_code::protected_lines(source);
+    let mut renames = HashMap::new();
+
+    for variable in &script.variables {
+        collect_name(
+            &variable.name,
+            variable.line,
+            style,
+            &protected,
+            &mut renames,
+        );
+    }
+    for property in &script.properties {
+        collect_name(
+            &property.name,
+            property.line,
+            style,
+            &protected,
+            &mut renames,
+        );
+    }
+    for state in &script.states {
+        collect_state_names(state, style, &protected, &mut renames);
+    }
+    for function in &script.functions {
+        collect_function_names(function, style, &protected, &mut renames);
+    }
+    if renames.is_empty() {
+        return source.to_string();
+    }
+
+    let Ok(tokens) = Lexer::new(source).tokenize() else {
+        return source.to_string();
+    };
+    let mut replacements: Vec<(usize, usize, String)> = Vec::new();
+    let line_offsets = line_offsets(source);
+    let mut follows_script_name = false;
+
+    for token in tokens {
+        match token.kind {
+            TokenKind::Keyword(Keyword::ScriptName) => follows_script_name = true,
+            TokenKind::Identifier(name) => {
+                if follows_script_name {
+                    follows_script_name = false;
+                    continue;
+                }
+                if protected.get(token.line).copied().unwrap_or(false) {
+                    continue;
+                }
+                if let Some(replacement) = renames.get(&name.to_ascii_lowercase()) {
+                    let start = line_offsets[token.line - 1] + token.col - 1;
+                    replacements.push((start, start + name.len(), replacement.clone()));
+                }
+            }
+            TokenKind::Newline => follows_script_name = false,
+            _ => {}
+        }
+    }
+
+    let mut repaired = source.to_string();
+    for (start, end, replacement) in replacements.into_iter().rev() {
+        repaired.replace_range(start..end, &replacement);
+    }
+    repaired
+}
+
+fn collect_state_names(
+    state: &StateDecl,
+    style: IdentifierCasing,
+    protected: &[bool],
+    renames: &mut HashMap<String, String>,
+) {
+    collect_name(&state.name, state.line, style, protected, renames);
+    for function in &state.functions {
+        collect_function_names(function, style, protected, renames);
+    }
+}
+
+fn collect_function_names(
+    function: &FunctionDecl,
+    style: IdentifierCasing,
+    protected: &[bool],
+    renames: &mut HashMap<String, String>,
+) {
+    collect_name(&function.name, function.line, style, protected, renames);
+    for param in &function.params {
+        collect_name(&param.name, function.line, style, protected, renames);
+    }
+    for stmt in &function.body {
+        collect_stmt_names(stmt, style, protected, renames);
+    }
+}
+
+fn collect_stmt_names(
+    stmt: &Stmt,
+    style: IdentifierCasing,
+    protected: &[bool],
+    renames: &mut HashMap<String, String>,
+) {
+    match stmt {
+        Stmt::VarDecl(decl) => collect_name(&decl.name, decl.line, style, protected, renames),
+        Stmt::If {
+            branches,
+            else_body,
+            ..
+        } => {
+            for stmt in branches
+                .iter()
+                .flat_map(|branch| &branch.body)
+                .chain(else_body)
+            {
+                collect_stmt_names(stmt, style, protected, renames);
+            }
+        }
+        Stmt::While { body, .. } => {
+            for stmt in body {
+                collect_stmt_names(stmt, style, protected, renames);
+            }
+        }
+        Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
+    }
+}
+
+fn collect_name(
+    name: &str,
+    line: usize,
+    style: IdentifierCasing,
+    protected: &[bool],
+    renames: &mut HashMap<String, String>,
+) {
+    if !protected.get(line).copied().unwrap_or(false) && !style.matches(name) {
+        renames.insert(name.to_ascii_lowercase(), convert_name(name, style));
+    }
+}
+
+fn convert_name(name: &str, style: IdentifierCasing) -> String {
+    let chars: Vec<char> = name.chars().collect();
+    let mut words = Vec::new();
+    let mut start = 0;
+    for i in 0..=chars.len() {
+        let boundary = i == chars.len()
+            || chars[i] == '_'
+            || (i > start && chars[i].is_ascii_uppercase() && chars[i - 1].is_ascii_lowercase())
+            || (i > start
+                && i + 1 < chars.len()
+                && chars[i - 1].is_ascii_uppercase()
+                && chars[i].is_ascii_uppercase()
+                && chars[i + 1].is_ascii_lowercase());
+        if boundary {
+            if start < i {
+                words.push(
+                    chars[start..i]
+                        .iter()
+                        .collect::<String>()
+                        .to_ascii_lowercase(),
+                );
+            }
+            start = i + usize::from(i < chars.len() && chars[i] == '_');
+        }
+    }
+    match style {
+        IdentifierCasing::SnakeCase => words.join("_"),
+        IdentifierCasing::ConstantCase => words.join("_").to_ascii_uppercase(),
+        IdentifierCasing::CamelCase | IdentifierCasing::PascalCase => words
+            .into_iter()
+            .enumerate()
+            .map(|(index, word)| {
+                if index == 0 && style == IdentifierCasing::CamelCase {
+                    word
+                } else {
+                    let mut chars = word.chars();
+                    chars
+                        .next()
+                        .map(|c| c.to_ascii_uppercase())
+                        .into_iter()
+                        .chain(chars)
+                        .collect()
+                }
+            })
+            .collect(),
+    }
+}
+
+fn line_offsets(source: &str) -> Vec<usize> {
+    std::iter::once(0)
+        .chain(source.match_indices('\n').map(|(index, _)| index + 1))
+        .collect()
 }
 
 fn check_state(
@@ -353,5 +556,52 @@ EndFunction
             IdentifierCasing::PascalCase,
         );
         assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn repair_renames_declarations_and_references() {
+        let source = "ScriptName Example\n\nInt Property max_count Auto\n\nFunction add_value(Int item_count)\n    Int new_total = max_count + item_count\n    max_count = new_total\nEndFunction\n";
+
+        assert_eq!(
+            repair(source, IdentifierCasing::CamelCase),
+            "ScriptName Example\n\nInt Property maxCount Auto\n\nFunction addValue(Int itemCount)\n    Int newTotal = maxCount + itemCount\n    maxCount = newTotal\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_supports_every_casing_style() {
+        assert_eq!(
+            convert_name("HTTP_responseCode", IdentifierCasing::CamelCase),
+            "httpResponseCode"
+        );
+        assert_eq!(
+            convert_name("HTTP_responseCode", IdentifierCasing::PascalCase),
+            "HttpResponseCode"
+        );
+        assert_eq!(
+            convert_name("HTTPResponseCode", IdentifierCasing::SnakeCase),
+            "http_response_code"
+        );
+        assert_eq!(
+            convert_name("HTTPResponseCode", IdentifierCasing::ConstantCase),
+            "HTTP_RESPONSE_CODE"
+        );
+    }
+
+    #[test]
+    fn repair_leaves_script_name_comments_strings_and_fragment_wrapper_untouched() {
+        let source = ";BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment\nScriptName bad_name\nFunction generated_name()\n;BEGIN CODE\nInt user_value = 1 ; user_value\nString text_value = \"user_value\"\nuser_value = 2\n;END CODE\nEndFunction\n;END FRAGMENT CODE - Do not edit anything between this and the begin comment\n";
+        let repaired = repair(source, IdentifierCasing::PascalCase);
+
+        assert!(repaired.contains("ScriptName bad_name\nFunction generated_name()"));
+        assert!(repaired.contains("Int UserValue = 1 ; user_value"));
+        assert!(repaired.contains("String TextValue = \"user_value\""));
+        assert!(repaired.contains("UserValue = 2"));
+    }
+
+    #[test]
+    fn repair_returns_unparseable_source_unchanged() {
+        let source = "ScriptName Example\nFunction bad_name(\n";
+        assert_eq!(repair(source, IdentifierCasing::PascalCase), source);
     }
 }

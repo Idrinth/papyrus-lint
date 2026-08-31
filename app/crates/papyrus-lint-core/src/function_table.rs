@@ -105,10 +105,16 @@ struct ScriptFunctions {
     extends: Option<String>,
     functions: HashMap<String, FunctionSignature>,
     properties: HashMap<String, PropertySignature>,
+    states: HashSet<String>,
 }
 
 impl ScriptFunctions {
     fn from_script(script: &Script) -> Self {
+        let states = script
+            .states
+            .iter()
+            .map(|state| state.name.to_ascii_lowercase())
+            .collect();
         let mut functions: HashMap<String, FunctionSignature> = script
             .functions
             .iter()
@@ -139,6 +145,7 @@ impl ScriptFunctions {
             extends: script.extends.clone(),
             functions,
             properties,
+            states,
         }
     }
 }
@@ -276,6 +283,39 @@ impl FunctionTable {
         false
     }
 
+    /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
+    /// or transitively), declares a `State` block named `state_name`. Both
+    /// names are matched case-insensitively. Returns `false` if
+    /// `type_name`'s script (or any ancestor along the way) can't be found
+    /// or parsed before a match is found. Used by the "GoToState state
+    /// reference" lint (`papyrus_lints::goto_state`) to flag a
+    /// `GoToState("Name")` call whose target state can't be resolved
+    /// anywhere in the script's own ancestry.
+    pub fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
+        let state_key = state_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break; // guard against a circular `Extends` chain
+            }
+            self.ensure_loaded(&name);
+
+            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
+                break;
+            };
+            if script.states.contains(&state_key) {
+                return true;
+            }
+
+            current = script.extends.clone();
+            visited.push(name);
+        }
+
+        false
+    }
+
     /// Lists every function and property available on an object of type
     /// `type_name`, including those inherited via `Extends`. A member
     /// declared on `type_name` itself (or an ancestor closer to it) shadows
@@ -376,6 +416,10 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
 
     fn script_exists(&mut self, type_name: &str) -> bool {
         self.script_exists(type_name)
+    }
+
+    fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
+        self.has_state(type_name, state_name)
     }
 }
 
@@ -721,6 +765,67 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(!table.has_property("A", "Anything"));
+    }
+
+    #[test]
+    fn has_state_true_for_a_state_declared_directly_on_the_type() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nState Active\nEndState\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.has_state("Foo", "Active"));
+        assert!(table.has_state("foo", "active"));
+    }
+
+    #[test]
+    fn has_state_true_for_a_state_declared_on_an_ancestor() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Grandparent",
+            "ScriptName Grandparent\n\nState Active\nEndState\n",
+        );
+        write_script(
+            root.path(),
+            "Middle",
+            "ScriptName Middle Extends Grandparent\n",
+        );
+        write_script(root.path(), "Child", "ScriptName Child Extends Middle\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.has_state("Child", "Active"));
+    }
+
+    #[test]
+    fn has_state_false_for_unrelated_or_unresolvable_types() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nState Active\nEndState\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.has_state("Foo", "DoesNotExist"));
+        assert!(!table.has_state("Missing", "Anything"));
+    }
+
+    #[test]
+    fn has_state_does_not_infinite_loop_on_circular_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "A", "ScriptName A Extends B\n");
+        write_script(root.path(), "B", "ScriptName B Extends A\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.has_state("A", "Anything"));
     }
 
     #[test]

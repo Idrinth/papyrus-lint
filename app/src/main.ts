@@ -139,6 +139,8 @@ export interface LintRules {
   unchecked_cast: boolean;
   unresolved_script: boolean;
   short_wait_interval: boolean;
+  state_function_signature: boolean;
+  goto_state: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -196,6 +198,8 @@ export const DEFAULT_RULES: LintRules = {
   unchecked_cast: true,
   unresolved_script: true,
   short_wait_interval: true,
+  state_function_signature: true,
+  goto_state: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {

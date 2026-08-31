@@ -57,8 +57,8 @@ apply.
 | **Formatting checks** | Flags, as a `[warning]`, lines whose indentation doesn't match the configured style/width (`indentation`/`indentation_width`) for their nesting depth. A script whose structure can't be identified (e.g. it doesn't lex cleanly) is left unchecked rather than guessed at. | ✓ |
 | **Whitespace interrupting property/method chaining** | Flags, as an `[error]`, a space or tab immediately before or after a `.` member/method access (e.g. `SomeProperty . DoThing()`), since it interrupts the chain for no benefit. A `.` inside a `Float` literal (e.g. `1.5`) is never flagged. The fix closes the gap on whichever side(s) have it, without reaching across a newline (a chain continued onto another physical line is left alone). | ✓ |
 | **Exclamation mark spacing** | Flags, as a `[warning]`, a `!` negation operator not followed by exactly one space (e.g. `!bReady` or `!  bReady`), since a bit of breathing room makes the negation easier to spot. Never flags `!=`, which the lexer tokenizes separately. The fix inserts a space where there is none and collapses a longer run of spaces/tabs down to one. | ✓ |
-| **Identifier casing** | Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured `identifier_casing` style: `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. `ScriptName` itself is never checked by this lint (see "Type name casing" below). A parameter has no location of its own, so it's reported on its enclosing function's line. | |
 | **Type name casing** | Flags, as a `[warning]`, a script's declared type name (the identifier following `ScriptName`) if it doesn't follow the configured `type_casing` convention (`PascalCase`, `camelCase`, `lowercase`, or `UPPERCASE`). Only the script's own declared name is checked and fixed, never its `Extends` target, since that type is declared (and presumably already checked) in another script. The fix only changes letter casing, preserving the name's characters so it remains compatible with its `.psc` filename; a violation that would require a substantive rename (such as removing an underscore for `PascalCase`) is left for the user to rename together with the file. | ✓ |
+| **Identifier casing** | Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured `identifier_casing` style: `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. `ScriptName` itself is never checked by this lint (see "Type name casing" below). A parameter has no location of its own, so it's reported on its enclosing function's line. The automatic fix renames each flagged declaration and its references. | ✓ |
 | **Spacing around logical/comparison operators** | Requires, as a `[warning]`, exactly one space on either side of `&&`, `\|\|`, `==`, `!=`, `>`, `<`, `>=`, and `<=`. A side whose whitespace reaches a newline (the operator opens or closes a statement continued across physical lines) is left unchecked on that side. The fix normalizes each flagged side to a single space, without reaching across a newline. | ✓ |
 | **Property sorting** | Flags, as a `[warning]`, a `Property` declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the `ScriptName` line, before any variable, function, or state declaration (an `Import` isn't tracked closely enough to count against this). Disabled by default, since reordering a script's declared properties is a more invasive change than the rest of these lints; a project opts in via `rules.property_sorting`. The fix relocates each property's own declaration lines (its full `Property`/`EndProperty` block, for a non-auto property) as a group right after `ScriptName`, in sorted order; a documentation comment placed directly above a property is left behind rather than moved with it. | ✓ |
 
@@ -80,9 +80,11 @@ apply.
 | **Return type check** | Flags `Return` statements whose value's type doesn't match the enclosing function's declared return type (e.g. returning a `String` from a Function declared `Int`), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as returning an object whose script extends (directly or transitively) the declared return type (e.g. returning an `Armor` from a Function declared `Form`, or an `Actor` from a Function declared `ObjectReference`). When linting a `.psc` file dropped in the app, a returned value's own script's `Extends` chain is resolved from the project root to allow compatible subtypes there too, with the same native-type fallback used by the argument type check for engine types like `Actor`/`ObjectReference`/`Form`. A `Return` whose value's type can't be determined, or with no declared return type, is skipped rather than guessed at. | |
 | **Inherited function override** | Flags, as an `[info]`, a function declared on this script that shares its name with a function declared on the script it `Extends` (directly or transitively) — the local declaration silently replaces the inherited one. This is often intentional (e.g. overriding an `Event OnInit()` handler), so it's informational rather than a warning. Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked (state-based override is a separate mechanism from `Extends`). | |
 | **Argument naming consistency** | Flags, as a `[warning]`, a function declared on this script whose parameter name doesn't match (case-insensitively) the corresponding parameter of the same-named function declared on the script it `Extends` (directly or transitively) — since Papyrus resolves a named-argument call against the declared type of the reference it's called through, a renamed parameter on an override can silently misdirect (or fail to compile) a caller using the parent's names. Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked, and only parameter positions present on both declarations are compared. | |
+| **State function signature mismatch** | Flags, as an `[error]`, a function or event declared inside a `State` block whose parameter count/types or return type doesn't match the same-named declaration in the script's "empty state" (the one declared directly on the script, outside any `State` block) — Papyrus requires these to match identically for the state version to be recognized as an override of the empty-state one at all, rather than becoming a distinct, effectively unreachable function. Only compared against an empty-state declaration already present on the script being linted; a state function may instead validly match one declared on a parent script (per the language spec), which this lint has no way to resolve, so that case is left unflagged. | |
 | **Strict numeric type check** | Flags implicit comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without an explicit cast making the comparison exact. Only comparisons whose operand types can be determined locally are checked. | |
 | **Explicit return on every path** | Flags, as an `[error]`, a typed function/event with a code path that falls off the end of its body without a `Return`, since Papyrus then silently returns that type's default value (`0`, `""`, `False`, or `None`) instead of one the author chose. A `Return` with no value still counts as long as it's reached (`return_types` covers a value's actual type); an `If` only counts when every branch, including an `Else`, returns, and a `While` loop is never assumed to guarantee one since it may run zero times. A native function has no body to inspect and is never flagged. | |
 | **Unresolved script reference** | Flags, as a `[warning]`, a call through Papyrus's static/global call syntax (e.g. `MyMissingScript.DoThing()`) whose target script can't be found, since a call through a script that doesn't exist can never compile. Only a call whose object is a bare identifier not already known as a local variable, parameter, or property is considered a script reference at all — one resolved through a variable or property is left to the "Argument type check"/"Return type check" lints instead. Only checked when linting a `.psc` file dropped in the app, by resolving the name against `.psc` files under the project root the same way the argument/return type checks do, falling back to a list of common native singleton scripts (`Game`, `Utility`, `Debug`, `Math`, `StringUtil`, `Input`, `UI`, `StorageUtil`) in `rules/native-globals.yaml` that the game ships compiled with no project-side source. | |
+| **GoToState state reference** | Flags, as a `[warning]`, a `GoToState("Name")` call (bare or `self.GoToState(...)`) whose target isn't declared as a `State` on this script, since a typo'd or renamed state name still compiles — the engine just silently falls back through its state resolution algorithm instead of raising an error, so the call quietly never takes effect. `GoToState("")`, which switches back to the empty state, is always valid. Only a literal string argument is checked; one built from anything else is left unflagged rather than guessed at. A target undeclared on this script is only flagged when this script has no `Extends` target at all, since it may otherwise be declared on a script further up that (unresolved) `Extends` chain — a legitimate way to forward-declare a state for a not-yet-written child script to implement. When linting a `.psc` file dropped in the app, that chain is resolved from the project root too, the same way the argument/return type checks resolve their own, so a target declared on an ancestor script is recognized rather than flagged. | |
 
 ### Bugprone
 
@@ -137,7 +139,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `local-variable-shadowing`, `chain-whitespace`, `exclamation-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
-`unchecked-cast`, `unresolved-script`, and `short-wait-interval`.
+`unchecked-cast`, `unresolved-script`, `short-wait-interval`,
+`state-function-signature`, and `goto-state`.
 
 ## Configuration
 
@@ -212,6 +215,8 @@ rules:
   unchecked_cast: true
   unresolved_script: true
   short_wait_interval: true
+  state_function_signature: true
+  goto_state: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -376,7 +381,16 @@ single script.
 Given the `--json` flag (combinable with `fix`, in either argument order),
 the CLI prints a single JSON document to stdout instead of the plain-text
 lines and summary, so editor plugins and other tooling can consume the
-report without scraping text:
+report without scraping text. The output contract is published as a
+[JSON Schema](papyrus-lint-report.schema.json) using JSON Schema Draft 2020-12,
+so integrations can generate types and validate saved or streamed reports:
+
+```console
+PapyrusLinterCLI --json --output report.json path/to/project.achlist
+npx ajv-cli validate --spec=draft2020 -s papyrus-lint-report.schema.json -d report.json
+```
+
+An example valid report is:
 
 ```json
 {

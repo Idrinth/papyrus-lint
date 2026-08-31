@@ -74,6 +74,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-return_types" checked />
           <input type="checkbox" id="rule-function_override" checked />
           <input type="checkbox" id="rule-argument_naming" checked />
+          <input type="checkbox" id="rule-state_function_signature" checked />
           <input type="checkbox" id="rule-numeric_comparison" checked />
           <input type="checkbox" id="rule-indentation" checked />
           <input type="checkbox" id="rule-cyclomatic_complexity" checked />
@@ -95,6 +96,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-unchecked_form_parameter" />
           <input type="checkbox" id="rule-unchecked_cast" checked />
           <input type="checkbox" id="rule-short_wait_interval" checked />
+          <input type="checkbox" id="rule-goto_state" checked />
         </fieldset>
       </div>
 
