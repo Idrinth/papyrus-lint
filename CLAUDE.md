@@ -71,7 +71,10 @@ desktop app's binary at all.
 │       │       ├── function_table.rs   # Cross-script function signature lookup,
 │       │       │                       # for the argument/return type check lints
 │       │       │                       # and script_exists() for the unresolved
-│       │       │                       # script reference lint
+│       │       │                       # script reference lint; each signature
+│       │       │                       # tracks the State block it came from (if
+│       │       │                       # any), preferring the empty state's own
+│       │       │                       # declaration over a same-named override
 │       │       ├── native_types.rs     # Fallback Extends hierarchy for native
 │       │       │                       # engine types (Actor, ObjectReference,
 │       │       │                       # Form, ...) with no .psc in the project;
@@ -236,7 +239,14 @@ first if it has fallen behind, so CI runs against the current base.
 The parser (`app/crates/papyrus-parser`) understands scripts, imports,
 properties (including full get/set property blocks), variables, functions
 (including native/global/event functions and states), and expressions with
-standard precedence.
+standard precedence. Each parsed `FunctionDecl` records the name of the
+`State` block it was declared in (`None` for a function/event declared
+directly on the script, i.e. the "empty state"), so downstream tooling can
+tell a state override apart from its base declaration; `papyrus-lint-core`'s
+`function_table.rs` carries that same `state` field through into its
+cross-script function signatures, and includes a function declared only
+inside a state (with no matching empty-state declaration) rather than
+silently dropping it.
 
 `app/crates/papyrus-lints` currently implements all rules listed in the
 [README's Implemented Lints table](README.md#implemented-lints). Rules inspect

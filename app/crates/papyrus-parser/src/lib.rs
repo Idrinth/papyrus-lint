@@ -315,9 +315,21 @@ EndState
         assert_eq!(script.states.len(), 2);
         assert_eq!(script.states[0].name, "Idle");
         assert!(script.states[0].is_auto);
+        assert_eq!(script.states[0].functions[0].state.as_deref(), Some("Idle"));
         assert_eq!(script.states[1].name, "Active");
         assert!(!script.states[1].is_auto);
         assert!(script.states[1].functions[0].is_event);
+        assert_eq!(
+            script.states[1].functions[0].state.as_deref(),
+            Some("Active")
+        );
+    }
+
+    #[test]
+    fn empty_state_functions_carry_no_state_name() {
+        let src = "ScriptName Example\n\nFunction DoThing()\nEndFunction\n";
+        let script = parse(src).unwrap();
+        assert_eq!(script.functions[0].state, None);
     }
 
     #[test]

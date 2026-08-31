@@ -59,6 +59,13 @@ pub struct FunctionDecl {
     pub is_event: bool,
     pub body: Vec<Stmt>,
     pub line: usize,
+    /// The name of the `State` block this function/event is declared in, or
+    /// `None` when it's declared directly on the script (the "empty state";
+    /// see [`StateDecl`]). Per the language's state machine, a function
+    /// declared inside a state is an override: the current state's version
+    /// runs in place of the empty state's identically-named, same-signature
+    /// version whenever the script is in (or falls back through) that state.
+    pub state: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

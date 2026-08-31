@@ -350,6 +350,10 @@ impl Parser {
         self.expect_keyword(Keyword::EndState)?;
         self.expect_terminator()?;
 
+        for function in &mut functions {
+            function.state = Some(name.clone());
+        }
+
         Ok(StateDecl {
             name,
             is_auto,
@@ -410,6 +414,7 @@ impl Parser {
             is_event,
             body,
             line,
+            state: None,
         })
     }
 
