@@ -68,7 +68,8 @@ pub fn check(source: &str, style: IdentifierCasing) -> Vec<Diagnostic> {
     diagnostics
 }
 
-/// Renames every non-conforming declaration and its references to `style`.
+/// Renames every non-conforming declaration and its references to `style`
+/// when doing so does not add, remove, or move underscores.
 ///
 /// Papyrus identifiers are case-insensitive, so references are matched that
 /// way too. Tokens in comments and strings are naturally excluded by the
@@ -209,8 +210,21 @@ fn collect_name(
     renames: &mut HashMap<String, String>,
 ) {
     if !protected.get(line).copied().unwrap_or(false) && !style.matches(name) {
-        renames.insert(name.to_ascii_lowercase(), convert_name(name, style));
+        let replacement = convert_name(name, style);
+        // Underscores are often a meaningful, externally-visible part of a
+        // Papyrus identifier.  In particular, removing one can turn a name
+        // such as `DFO_VampireFeed` into a different identifier rather than
+        // merely correcting its letter case. Leave these substantive renames
+        // to the user and only apply an automatic fix when every underscore
+        // remains in exactly the same position.
+        if underscore_offsets(name).eq(underscore_offsets(&replacement)) {
+            renames.insert(name.to_ascii_lowercase(), replacement);
+        }
     }
+}
+
+fn underscore_offsets(name: &str) -> impl Iterator<Item = usize> + '_ {
+    name.match_indices('_').map(|(offset, _)| offset)
 }
 
 fn convert_name(name: &str, style: IdentifierCasing) -> String {
@@ -560,11 +574,25 @@ EndFunction
 
     #[test]
     fn repair_renames_declarations_and_references() {
-        let source = "ScriptName Example\n\nInt Property max_count Auto\n\nFunction add_value(Int item_count)\n    Int new_total = max_count + item_count\n    max_count = new_total\nEndFunction\n";
+        let source = "ScriptName Example\n\nInt Property MaxCount Auto\n\nFunction AddValue(Int ItemCount)\n    Int NewTotal = MaxCount + ItemCount\n    MaxCount = NewTotal\nEndFunction\n";
 
         assert_eq!(
             repair(source, IdentifierCasing::CamelCase),
             "ScriptName Example\n\nInt Property maxCount Auto\n\nFunction addValue(Int itemCount)\n    Int newTotal = maxCount + itemCount\n    maxCount = newTotal\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_never_adds_removes_or_moves_underscores() {
+        let source = "ScriptName Example\n\nFunction DFO_VampireFeed()\n    DFO_VampireFeed()\nEndFunction\n";
+
+        assert_eq!(repair(source, IdentifierCasing::CamelCase), source);
+        assert_eq!(
+            repair(
+                "ScriptName Example\n\nFunction HTTPResponseCode()\nEndFunction\n",
+                IdentifierCasing::SnakeCase,
+            ),
+            "ScriptName Example\n\nFunction HTTPResponseCode()\nEndFunction\n"
         );
     }
 
@@ -590,12 +618,12 @@ EndFunction
 
     #[test]
     fn repair_leaves_script_name_comments_strings_and_fragment_wrapper_untouched() {
-        let source = ";BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment\nScriptName bad_name\nFunction generated_name()\n;BEGIN CODE\nInt user_value = 1 ; user_value\nString text_value = \"user_value\"\nuser_value = 2\n;END CODE\nEndFunction\n;END FRAGMENT CODE - Do not edit anything between this and the begin comment\n";
+        let source = ";BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment\nScriptName bad_name\nFunction generated_name()\n;BEGIN CODE\nInt userValue = 1 ; userValue\nString textValue = \"userValue\"\nuserValue = 2\n;END CODE\nEndFunction\n;END FRAGMENT CODE - Do not edit anything between this and the begin comment\n";
         let repaired = repair(source, IdentifierCasing::PascalCase);
 
         assert!(repaired.contains("ScriptName bad_name\nFunction generated_name()"));
-        assert!(repaired.contains("Int UserValue = 1 ; user_value"));
-        assert!(repaired.contains("String TextValue = \"user_value\""));
+        assert!(repaired.contains("Int UserValue = 1 ; userValue"));
+        assert!(repaired.contains("String TextValue = \"userValue\""));
         assert!(repaired.contains("UserValue = 2"));
     }
 
