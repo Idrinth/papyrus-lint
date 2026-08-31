@@ -24,6 +24,7 @@ import {
   dirnameOf,
   enterCodeViewerEditMode,
   escapeAttr,
+  findCandidatePairRoot,
   handleAutocompleteKeydown,
   handleCompileClick,
   handleCompilerPathChanged,
@@ -48,6 +49,7 @@ import {
   matchesFilenameFilter,
   openCodeViewer,
   parsePscFiles,
+  projectDirForAchlist,
   projectDirForPscPath,
   relativePath,
   rememberProjectDir,
@@ -956,6 +958,36 @@ describe("handleDroppedPaths", () => {
     expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "readme.txt" });
   });
 
+  it("resolves the project root from a resolved script's own position when the achlist itself lives elsewhere", async () => {
+    // Users sometimes drop the .achlist somewhere other than the project
+    // root (e.g. next to a game's Data directory) while the actual
+    // project, including its papyrus-lint.yaml, lives deeper:
+    //
+    //   /proj/list.achlist
+    //   /proj/somefolder/otherfolder/scripts/source/AType.psc
+    //   /proj/somefolder/otherfolder/source/scripts/BType.psc
+    //
+    // The achlist's own parent directory ("/proj") isn't the real project
+    // root, so it must instead be found from the resolved scripts' own
+    // position under their scripts/source or source/scripts pair.
+    invokeImplFor({
+      parse_achlist_file: () => [
+        "/proj/somefolder/otherfolder/scripts/source/AType.psc",
+        "/proj/somefolder/otherfolder/source/scripts/BType.psc",
+      ],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "AType" }),
+      lint_psc_file: () => [],
+    });
+
+    await handleDroppedPaths(["/proj/list.achlist"]);
+
+    expect(lastProjectDir()).toBe("/proj/somefolder/otherfolder");
+    expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/proj/somefolder/otherfolder" });
+  });
+
   it("shows an error when the achlist itself fails to parse", async () => {
     invokeMock.mockRejectedValue(new Error("bad json"));
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -1030,6 +1062,56 @@ describe("projectDirForPscPath", () => {
   it("resolves the project root two directories above the script's own directory", () => {
     expect(projectDirForPscPath("/proj/scripts/source/A.psc")).toBe("/proj");
     expect(projectDirForPscPath("C:\\proj\\scripts\\source\\A.psc")).toBe("C:\\proj");
+  });
+});
+
+describe("findCandidatePairRoot", () => {
+  it("finds the root above a scripts/source pair", () => {
+    expect(findCandidatePairRoot("/proj/scripts/source/A.psc")).toBe("/proj");
+  });
+
+  it("finds the root above a source/scripts pair", () => {
+    expect(findCandidatePairRoot("/proj/source/scripts/A.psc")).toBe("/proj");
+  });
+
+  it("matches case-insensitively and across backslash paths", () => {
+    expect(findCandidatePairRoot("C:\\proj\\Scripts\\Source\\A.psc")).toBe("C:\\proj");
+  });
+
+  it("finds the root for a script nested under a namespaced subfolder", () => {
+    expect(findCandidatePairRoot("/proj/scripts/source/User/A.psc")).toBe("/proj");
+  });
+
+  it("returns null when no scripts/source or source/scripts pair is present", () => {
+    expect(findCandidatePairRoot("/proj/other/A.psc")).toBeNull();
+  });
+});
+
+describe("projectDirForAchlist", () => {
+  it("resolves the conventional layout where the achlist already lives in the project root", () => {
+    expect(projectDirForAchlist("/proj/list.achlist", ["/proj/scripts/source/A.psc"])).toBe("/proj");
+  });
+
+  it("falls back to a resolved entry's own scripts/source position when the achlist lives elsewhere", () => {
+    expect(
+      projectDirForAchlist("/proj/list.achlist", [
+        "/proj/somefolder/otherfolder/scripts/source/AType.psc",
+        "/proj/somefolder/otherfolder/source/scripts/BType.psc",
+      ]),
+    ).toBe("/proj/somefolder/otherfolder");
+  });
+
+  it("falls back to the achlist's parent directory when no entry matches the convention", () => {
+    expect(projectDirForAchlist("/proj/list.achlist", ["/proj/other/A.psc"])).toBe("/proj");
+  });
+
+  it("ignores non-.psc entries when looking for a matching script position", () => {
+    expect(
+      projectDirForAchlist("/proj/list.achlist", [
+        "/proj/readme.txt",
+        "/proj/somefolder/scripts/source/A.psc",
+      ]),
+    ).toBe("/proj/somefolder");
   });
 });
 
