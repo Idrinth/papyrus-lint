@@ -12,17 +12,23 @@
 //! back to [`papyrus_lints::Config::default`] if it has none (see
 //! [`papyrus_lint_core::config`]) — and prints the diagnostics found, one
 //! per line. The project root the config (and the function table below) is
-//! looked up under is the input file's parent directory for an `.achlist`
-//! (which conventionally lives next to a game's `Scripts` directory, e.g.
-//! `Data`); for a bare `.psc` file, it's found by walking up from the file
-//! for a `scripts/source`/`source/scripts` directory pair (matching
+//! looked up under is found by walking up from a resolved `.psc` file's own
+//! position for a `scripts/source`/`source/scripts` directory pair (matching
 //! [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`], case-insensitively)
 //! and taking the directory above that pair, e.g. `Data` for
 //! `Data\Scripts\Source\abc.psc` — which also finds the right root for a
 //! script nested further still, e.g. a namespaced
-//! `Data\Scripts\Source\User\abc.psc` — falling back to two directories up
-//! if no such pair is found in the path at all. This is what lets editor
-//! plugins that invoke the CLI on a single saved file (see
+//! `Data\Scripts\Source\User\abc.psc`. For a bare `.psc` file given directly,
+//! that walk starts from the file itself, falling back to two directories up
+//! if no such pair is found in the path at all. For an `.achlist`, the same
+//! walk is tried against each of its resolved `.psc` entries first, so a
+//! project whose `.achlist` sits somewhere other than the project root (e.g.
+//! a user drops it next to a game's `Data` directory while the actual
+//! project, and its `papyrus-lint.yaml`, live in a subfolder alongside the
+//! `scripts/source`/`source/scripts` tree) still finds the right root;
+//! falling back to the achlist's own parent directory (the previous, simpler
+//! rule) only if none of its entries match that layout. This is what lets
+//! editor plugins that invoke the CLI on a single saved file (see
 //! `SublimeLinter-contrib-papyrus-lint/linter.py`) still pick up the
 //! project's config regardless of how the project organizes its scripts
 //! under `scripts/source`. Calls to functions declared on other scripts under
@@ -77,26 +83,26 @@ use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{achlist, config};
 use serde::Serialize;
 
-/// Finds the project root for a bare `.psc` file given directly on the
-/// command line (as opposed to one resolved from an `.achlist`, whose root
-/// is simply the achlist's own parent directory regardless of how deeply
-/// nested the scripts it lists are).
-///
 /// Walks up `psc_path`'s ancestors looking for a directory pair matching
 /// one of [`CANDIDATE_DIRS`] (`scripts/source` or `source/scripts`,
 /// matched case-insensitively), and returns the directory above that pair
-/// as the root. This still finds the right root for a script nested
-/// further still, e.g. a namespaced Fallout 4 script at
-/// `<root>/Scripts/Source/User/MyScript.psc` — unlike a naive "two
-/// directories up" rule, which would land on `Scripts` instead of `<root>`
-/// for that layout and then fail to discover the project's config or
-/// resolve any cross-script lookups against it.
+/// as the project root, or `None` if no such pair appears anywhere in
+/// `psc_path`'s ancestry.
 ///
-/// Falls back to the previous fixed "two directories up" behavior when no
-/// such pair is found in the path at all (e.g. a `.psc` passed from
-/// outside any conventionally-named scripts/source tree), so that case is
-/// unaffected.
-fn find_psc_project_root(psc_path: &Path) -> PathBuf {
+/// This finds the right root for a script nested further still, e.g. a
+/// namespaced Fallout 4 script at `<root>/Scripts/Source/User/MyScript.psc`
+/// — unlike a naive "two directories up" rule, which would land on
+/// `Scripts` instead of `<root>` for that layout and then fail to discover
+/// the project's config or resolve any cross-script lookups against it.
+///
+/// Used both for a bare `.psc` file given directly on the command line (see
+/// [`find_psc_project_root`]) and, per script, for one resolved from an
+/// `.achlist` file (see [`run`]) — so an achlist whose own parent directory
+/// isn't the real project root (e.g. it was dropped next to a game's `Data`
+/// directory while the project itself lives in a subfolder) still resolves
+/// to the right root, as long as at least one of its entries sits under a
+/// conventionally-named `scripts/source`/`source/scripts` tree.
+fn find_candidate_pair_root(psc_path: &Path) -> Option<PathBuf> {
     let candidate_pairs: Vec<(&str, &str)> = CANDIDATE_DIRS
         .iter()
         .filter_map(|dir| dir.split_once('/'))
@@ -122,17 +128,31 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 
         if matches_candidate {
             if let Some(root) = ancestors[i + 1].parent() {
-                return root.to_path_buf();
+                return Some(root.to_path_buf());
             }
         }
     }
 
-    psc_path
-        .ancestors()
-        .nth(3)
-        .filter(|dir| !dir.as_os_str().is_empty())
-        .map(Path::to_path_buf)
-        .unwrap_or_else(|| PathBuf::from("."))
+    None
+}
+
+/// Finds the project root for a bare `.psc` file given directly on the
+/// command line.
+///
+/// Tries [`find_candidate_pair_root`] first, falling back to the previous
+/// fixed "two directories up" behavior when no `scripts/source`/
+/// `source/scripts` pair is found in the path at all (e.g. a `.psc` passed
+/// from outside any conventionally-named scripts/source tree), so that case
+/// is unaffected.
+fn find_psc_project_root(psc_path: &Path) -> PathBuf {
+    find_candidate_pair_root(psc_path).unwrap_or_else(|| {
+        psc_path
+            .ancestors()
+            .nth(3)
+            .filter(|dir| !dir.as_os_str().is_empty())
+            .map(Path::to_path_buf)
+            .unwrap_or_else(|| PathBuf::from("."))
+    })
 }
 
 pub const USAGE: &str =
@@ -272,20 +292,49 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         .and_then(|ext| ext.to_str())
         .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"));
 
-    // An .achlist file conventionally lives directly in the project root
-    // alongside it, unlike a bare .psc file, which is found by walking up
-    // for a `scripts/source`/`source/scripts` directory pair (see
-    // `find_psc_project_root`) so it still works when the script is
-    // nested deeper still, e.g. under a namespaced subfolder.
+    let script_paths: Vec<PathBuf> = if is_psc_file {
+        vec![input_path.clone()]
+    } else {
+        let entries = match achlist::parse_achlist(&input_path) {
+            Ok(entries) => entries,
+            Err(err) => {
+                let _ = writeln!(stderr, "error: {err}");
+                return 2;
+            }
+        };
+
+        entries
+            .into_iter()
+            .filter(|path| {
+                path.extension()
+                    .and_then(|ext| ext.to_str())
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
+            })
+            .collect()
+    };
+
+    // A bare .psc file's project root is found by walking up for a
+    // `scripts/source`/`source/scripts` directory pair (see
+    // `find_psc_project_root`) so it still works when the script is nested
+    // deeper still, e.g. under a namespaced subfolder. An .achlist's own
+    // entries are tried the same way first, so a project whose .achlist
+    // doesn't live in the project root still resolves correctly; only if
+    // none of its resolved scripts sit under such a pair do we fall back to
+    // the achlist's own parent directory (the conventional layout).
     let project_root = if is_psc_file {
         find_psc_project_root(&input_path)
     } else {
-        input_path
-            .ancestors()
-            .nth(1)
-            .filter(|dir| !dir.as_os_str().is_empty())
-            .map(Path::to_path_buf)
-            .unwrap_or_else(|| PathBuf::from("."))
+        script_paths
+            .iter()
+            .find_map(|path| find_candidate_pair_root(path))
+            .unwrap_or_else(|| {
+                input_path
+                    .ancestors()
+                    .nth(1)
+                    .filter(|dir| !dir.as_os_str().is_empty())
+                    .map(Path::to_path_buf)
+                    .unwrap_or_else(|| PathBuf::from("."))
+            })
     };
 
     let lint_config = match config_path.as_deref().map_or_else(
@@ -315,27 +364,6 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         }
     };
     additional_script_roots.extend(cli_script_roots);
-
-    let script_paths: Vec<PathBuf> = if is_psc_file {
-        vec![input_path]
-    } else {
-        let entries = match achlist::parse_achlist(&input_path) {
-            Ok(entries) => entries,
-            Err(err) => {
-                let _ = writeln!(stderr, "error: {err}");
-                return 2;
-            }
-        };
-
-        entries
-            .into_iter()
-            .filter(|path| {
-                path.extension()
-                    .and_then(|ext| ext.to_str())
-                    .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
-            })
-            .collect()
-    };
 
     let mut function_table =
         FunctionTable::new_with_additional_roots(project_root, additional_script_roots);
@@ -783,6 +811,53 @@ mod tests {
 
         assert_eq!(code, 0);
         assert!(stdout.contains("no problems found"));
+    }
+
+    #[test]
+    fn finds_the_project_root_from_script_position_when_the_achlist_lives_elsewhere() {
+        // Users sometimes drop the .achlist somewhere other than the
+        // project root (e.g. next to a game's Data directory) while the
+        // actual project, including its papyrus-lint.yaml, lives deeper:
+        //
+        //   achlist
+        //   somefolder/
+        //     otherfolder/
+        //       papyrus-lint.yaml
+        //       scripts/source/AType.psc
+        //       source/scripts/BType.psc
+        //
+        // The achlist's own parent directory (the top-level one) has no
+        // config file at all, so the project root must instead be found
+        // from the resolved scripts' own position under their
+        // scripts/source or source/scripts pair.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let project_root = dir.path().join("somefolder/otherfolder");
+        write_file(
+            &project_root.join("scripts/source/AType.psc"),
+            "ScriptName AType   \n",
+        );
+        write_file(
+            &project_root.join("source/scripts/BType.psc"),
+            "ScriptName BType   \n",
+        );
+        write_file(
+            &project_root.join("papyrus-lint.yaml"),
+            "rules:\n  trailing_whitespace: false\n",
+        );
+        write_file(
+            &dir.path().join("achlist"),
+            r#"["somefolder/otherfolder/scripts/source/AType.psc", "somefolder/otherfolder/source/scripts/BType.psc"]"#,
+        );
+        let achlist_path = dir.path().join("achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        // If the project root were (wrongly) taken as the achlist's own
+        // parent directory, papyrus-lint.yaml wouldn't be found and the
+        // trailing-whitespace lint (disabled by that config) would fire on
+        // both scripts instead.
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found in 2 script"));
     }
 
     #[test]
