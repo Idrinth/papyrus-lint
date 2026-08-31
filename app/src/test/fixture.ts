@@ -30,6 +30,7 @@ export const FIXTURE_HTML = `
         <output id="detected-script-roots">No project loaded</output>
         <output id="used-configuration-file">No project loaded</output>
         <input id="compiler-path" type="text" />
+        <input id="compile-check" type="checkbox" />
         <textarea id="script-roots"></textarea>
         <select id="semicolon-style">
           <option value="forbid">Remove where possible</option>

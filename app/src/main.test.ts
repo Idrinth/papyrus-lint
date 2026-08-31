@@ -28,6 +28,7 @@ import {
   findCandidatePairRoot,
   handleAutocompleteKeydown,
   handleCompileClick,
+  handleCompileCheckChanged,
   handleCompilerPathChanged,
   handleDroppedPaths,
   handleFixClick,
@@ -43,6 +44,7 @@ import {
   lintConfigFromUI,
   listScriptMembers,
   loadAppVersion,
+  loadCompileCheck,
   loadCompilerPath,
   loadLintConfig,
   loadProjectInfo,
@@ -60,6 +62,7 @@ import {
   requestCloseCodeViewer,
   saveAndCompileCodeViewerEdits,
   saveCodeViewerEdits,
+  saveCompileCheck,
   saveCompilerPath,
   saveLintConfig,
   saveScriptRoots,
@@ -389,7 +392,11 @@ describe("lint config UI round trip", () => {
   });
 
   it("handleCompilerPathChanged persists the path once a project dir is known", async () => {
-    invokeImplFor({ load_lint_config: () => DEFAULT_LINT_CONFIG, load_compiler_path: () => null });
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+    });
     await useProjectDir("/proj");
     invokeMock.mockClear();
 
@@ -403,10 +410,28 @@ describe("lint config UI round trip", () => {
     });
   });
 
+  it("handleCompileCheckChanged persists the setting once a project dir is known", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+    await useProjectDir("/proj");
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLInputElement>("#compile-check")!.checked = true;
+    handleCompileCheckChanged();
+    await Promise.resolve();
+
+    expect(invokeMock).toHaveBeenCalledWith("save_compile_check", { dir: "/proj", enabled: true });
+  });
+
   it("handleScriptRootsChanged persists the roots once a project dir is known", async () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
     });
     await useProjectDir("/proj");
@@ -477,6 +502,7 @@ describe("useProjectDir", () => {
     invokeImplFor({
       load_lint_config: () => custom,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
     });
 
@@ -491,6 +517,7 @@ describe("useProjectDir", () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => "C:\\Games\\Skyrim\\Papyrus Compiler\\PapyrusCompiler.exe",
+      load_compile_check: () => false,
       load_script_roots: () => [],
     });
 
@@ -501,10 +528,24 @@ describe("useProjectDir", () => {
     );
   });
 
+  it("populates the compile-check checkbox from the backend", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => true,
+      load_script_roots: () => [],
+    });
+
+    await useProjectDir("/my/project");
+
+    expect(document.querySelector<HTMLInputElement>("#compile-check")!.checked).toBe(true);
+  });
+
   it("populates the script roots textarea from the backend", async () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => ["../SharedScripts", "/abs/OtherScripts"],
     });
 
@@ -604,6 +645,36 @@ describe("loadCompilerPath / saveCompilerPath", () => {
   });
 });
 
+describe("loadCompileCheck / saveCompileCheck", () => {
+  it("loadCompileCheck returns the backend's stored setting", async () => {
+    invokeImplFor({ load_compile_check: () => true });
+
+    await expect(loadCompileCheck("/proj")).resolves.toBe(true);
+    expect(invokeMock).toHaveBeenCalledWith("load_compile_check", { dir: "/proj" });
+  });
+
+  it("loadCompileCheck returns false on failure", async () => {
+    invokeMock.mockRejectedValue(new Error("no such file"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadCompileCheck("/proj")).resolves.toBe(false);
+  });
+
+  it("saveCompileCheck forwards the setting to the backend", async () => {
+    invokeImplFor({ save_compile_check: () => undefined });
+
+    await expect(saveCompileCheck("/proj", true)).resolves.toBeUndefined();
+    expect(invokeMock).toHaveBeenCalledWith("save_compile_check", { dir: "/proj", enabled: true });
+  });
+
+  it("saveCompileCheck swallows backend errors", async () => {
+    invokeMock.mockRejectedValue(new Error("disk full"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(saveCompileCheck("/proj", true)).resolves.toBeUndefined();
+  });
+});
+
 describe("loadScriptRoots / saveScriptRoots", () => {
   it("loadScriptRoots returns the backend's configured roots", async () => {
     invokeImplFor({ load_script_roots: () => ["../SharedScripts", "/abs/OtherScripts"] });
@@ -662,6 +733,29 @@ describe("parsePscFiles / repairPscFile", () => {
     expect(outcome.findings).toEqual([]);
   });
 
+  it("lint_psc_file forwards the currently configured compiler path and compile-check setting", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => "C:\\Tools\\PapyrusCompiler.exe",
+      load_compile_check: () => true,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "MyScript" }),
+      lint_psc_file: () => [],
+    });
+    await useProjectDir("/proj");
+
+    await parsePscFiles(["/scripts/MyScript.psc"]);
+
+    expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", {
+      path: "/scripts/MyScript.psc",
+      root: "/proj",
+      config: expect.anything(),
+      additionalRoots: expect.anything(),
+      compilerPath: "C:\\Tools\\PapyrusCompiler.exe",
+      compileCheck: true,
+    });
+  });
+
   it("repairPscFile forwards to the repair_psc_file command", async () => {
     const remaining: Diagnostic[] = [{ line: 1, column: 1, message: "[error] still broken" }];
     invokeImplFor({ repair_psc_file: () => remaining });
@@ -672,6 +766,8 @@ describe("parsePscFiles / repairPscFile", () => {
       root: expect.any(String),
       config: expect.anything(),
       additionalRoots: expect.anything(),
+      compilerPath: expect.any(String),
+      compileCheck: expect.any(Boolean),
     });
   });
 });
@@ -708,6 +804,7 @@ describe("buildPscResultItem / renderPscResults", () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
     });
     await useProjectDir("/a");
@@ -952,6 +1049,7 @@ describe("showError / clearError / showResult", () => {
       parse_achlist_file: () => ["one.psc"],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
       parse_psc_file: () => ({ name: "One" }),
       lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] risky" }],
@@ -1022,6 +1120,7 @@ describe("handleDroppedPaths", () => {
       ],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
       parse_psc_file: () => ({ name: "AType" }),
       lint_psc_file: () => [],
@@ -1046,6 +1145,7 @@ describe("handleDroppedPaths", () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
       parse_psc_file: () => ({ name: "A" }),
       lint_psc_file: () => [],
@@ -1065,6 +1165,7 @@ describe("handleDroppedPaths", () => {
       parse_achlist_file: () => ["A.psc"],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
       parse_psc_file: () => ({ name: "A" }),
       lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] stale finding" }],
@@ -1079,6 +1180,7 @@ describe("handleDroppedPaths", () => {
       parse_achlist_file: () => ["A.psc"],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
       parse_psc_file: () => ({ name: "A" }),
       lint_psc_file: () => pendingLint,
@@ -1355,6 +1457,7 @@ describe("code viewer edit mode", () => {
         parse_achlist_file: () => ["A.psc"],
         load_lint_config: () => DEFAULT_LINT_CONFIG,
         load_compiler_path: () => null,
+        load_compile_check: () => false,
         load_script_roots: () => [],
         parse_psc_file: () => ({ name: "A" }),
         lint_psc_file: () => [],
@@ -1790,6 +1893,7 @@ describe("wired DOM interactions", () => {
       parse_achlist_file: () => [],
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
     });
     listener({ payload: { type: "drop", paths: ["/proj/list.achlist"] } });
@@ -1882,6 +1986,7 @@ describe("remaining failure and defensive paths", () => {
       get_app_version: () => "1.2.3",
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
+      load_compile_check: () => false,
       load_script_roots: () => [],
     });
     const version = document.createElement("span");

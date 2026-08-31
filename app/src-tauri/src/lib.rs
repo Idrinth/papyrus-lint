@@ -1,3 +1,4 @@
+pub mod compile_diagnostics;
 pub mod compiler;
 pub mod pex_header;
 
@@ -116,6 +117,21 @@ fn save_compiler_path(dir: String, path: String) -> Result<(), String> {
     )
 }
 
+/// Returns whether `dir`'s project enables running PapyrusCompiler.exe as
+/// part of linting a dropped `.psc` (see [`lint_psc_file`]/
+/// [`compiler::check_psc_file`]), `false` by default.
+#[tauri::command]
+fn load_compile_check(dir: String) -> Result<bool, String> {
+    config::load_compile_check(&PathBuf::from(dir))
+}
+
+/// Persists whether `dir`'s project runs PapyrusCompiler.exe as part of
+/// linting a dropped `.psc`.
+#[tauri::command]
+fn save_compile_check(dir: String, enabled: bool) -> Result<(), String> {
+    config::save_compile_check(&PathBuf::from(dir), enabled)
+}
+
 /// Returns `dir`'s configured additional script root directories (see
 /// [`papyrus_lint_core::script_locator`]), if any. These are searched
 /// alongside the conventional `scripts/source`/`source/scripts` directories
@@ -180,6 +196,44 @@ fn compile_psc_file(
     )
 }
 
+/// Runs every lint rule against `source` (via `function_table`, for
+/// cross-script lookups), then, if `compile_check` is set and
+/// `compiler_path` isn't blank, also runs PapyrusCompiler.exe against the
+/// script at `path` (into a throwaway temporary directory — see
+/// [`compiler::check_psc_file`]) and appends any errors it reports (see
+/// [`compile_diagnostics::parse_compile_errors`]) to the result, so a
+/// syntax mistake the compiler itself rejects but the lint engine's own,
+/// more forgiving parser doesn't still shows up as a diagnostic. A
+/// compiler that can't be run at all (a missing/misconfigured
+/// `compiler_path`) is silently left out rather than failing the whole
+/// lint — the engine's own diagnostics are still worth reporting either
+/// way.
+fn lint_with_compile_check(
+    path: &Path,
+    source: &str,
+    config: &papyrus_lints::Config,
+    function_table: &mut function_table::FunctionTable,
+    additional_roots: &[String],
+    compiler_path: &str,
+    compile_check: bool,
+) -> Vec<papyrus_lints::Diagnostic> {
+    let mut diagnostics =
+        papyrus_lints::lint_with_external_arguments(source, config, function_table);
+
+    let compiler_path = compiler_path.trim();
+    if compile_check && !compiler_path.is_empty() {
+        if let Ok(outcome) =
+            compiler::check_psc_file(Path::new(compiler_path), path, additional_roots)
+        {
+            if !outcome.success {
+                diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
+            }
+        }
+    }
+
+    diagnostics
+}
+
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
 /// honoring the semicolon style `config` selects. `root` is the project
 /// root (conventionally the directory containing the `.achlist` file); it
@@ -188,36 +242,48 @@ fn compile_psc_file(
 /// accept a returned value whose script under `root` extends the declared
 /// return type. `additional_roots` are the project's configured additional
 /// script roots (see [`load_script_roots`]), searched the same way
-/// alongside `root`'s conventional source directories.
+/// alongside `root`'s conventional source directories. `compiler_path` and
+/// `compile_check` (see [`load_compiler_path`]/[`load_compile_check`])
+/// control whether PapyrusCompiler.exe's own errors are merged in too —
+/// see [`lint_with_compile_check`].
 #[tauri::command]
 fn lint_psc_file(
     path: String,
     root: String,
     config: papyrus_lints::Config,
     additional_roots: Vec<String>,
+    compiler_path: String,
+    compile_check: bool,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
-        additional_roots,
+        additional_roots.clone(),
     );
-    Ok(papyrus_lints::lint_with_external_arguments(
+    Ok(lint_with_compile_check(
+        Path::new(&path),
         &source,
         &config,
         &mut function_table,
+        &additional_roots,
+        &compiler_path,
+        compile_check,
     ))
 }
 
 /// Reads the `.psc` file at `path`, applies every automatic fix (honoring
 /// the semicolon and indentation style `config` selects), writes the
 /// repaired source back to disk, and returns the diagnostics that remain.
-/// See [`lint_psc_file`] for `root`/`additional_roots`.
+/// See [`lint_psc_file`] for `root`/`additional_roots`/`compiler_path`/
+/// `compile_check`.
 #[tauri::command]
 fn repair_psc_file(
     path: String,
     root: String,
     config: papyrus_lints::Config,
     additional_roots: Vec<String>,
+    compiler_path: String,
+    compile_check: bool,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair(&source, &config);
@@ -226,12 +292,16 @@ fn repair_psc_file(
     }
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
-        additional_roots,
+        additional_roots.clone(),
     );
-    Ok(papyrus_lints::lint_with_external_arguments(
+    Ok(lint_with_compile_check(
+        Path::new(&path),
         &repaired,
         &config,
         &mut function_table,
+        &additional_roots,
+        &compiler_path,
+        compile_check,
     ))
 }
 
@@ -268,6 +338,8 @@ pub fn run() {
             save_lint_config,
             load_compiler_path,
             save_compiler_path,
+            load_compile_check,
+            save_compile_check,
             load_script_roots,
             load_project_info,
             save_script_roots,
@@ -361,6 +433,8 @@ mod tests {
             missing.parent().unwrap().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            String::new(),
+            false,
         )
         .is_err());
         assert!(repair_psc_file(
@@ -368,6 +442,8 @@ mod tests {
             missing.parent().unwrap().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            String::new(),
+            false,
         )
         .is_err());
     }
@@ -387,6 +463,8 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            String::new(),
+            false,
         )
         .unwrap();
 
@@ -488,6 +566,12 @@ mod tests {
         save_compiler_path(dir_string.clone(), " \t ".to_string()).unwrap();
         assert_eq!(load_compiler_path(dir_string.clone()).unwrap(), None);
 
+        assert!(!load_compile_check(dir_string.clone()).unwrap());
+        save_compile_check(dir_string.clone(), true).unwrap();
+        assert!(load_compile_check(dir_string.clone()).unwrap());
+        save_compile_check(dir_string.clone(), false).unwrap();
+        assert!(!load_compile_check(dir_string.clone()).unwrap());
+
         assert_eq!(
             load_script_roots(dir_string.clone()).unwrap(),
             Vec::<String>::new()
@@ -539,6 +623,8 @@ mod tests {
         assert!(load_lint_config(dir_string.clone()).is_err());
         assert!(load_compiler_path(dir_string.clone()).is_err());
         assert!(save_compiler_path(dir_string.clone(), "compiler".to_string()).is_err());
+        assert!(load_compile_check(dir_string.clone()).is_err());
+        assert!(save_compile_check(dir_string.clone(), true).is_err());
         assert!(load_script_roots(dir_string.clone()).is_err());
         assert!(
             save_script_roots(dir_string.clone(), vec!["../SharedScripts".to_string()]).is_err()
@@ -564,6 +650,8 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            String::new(),
+            false,
         )
         .unwrap();
 
@@ -584,11 +672,137 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            String::new(),
+            false,
         )
         .unwrap();
 
         assert!(diagnostics.is_empty());
         assert_eq!(std::fs::read_to_string(path).unwrap(), source);
+    }
+
+    #[test]
+    fn lint_psc_file_ignores_compile_check_when_disabled() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            "/does/not/matter".to_string(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn lint_psc_file_ignores_compile_check_when_no_compiler_path_is_set() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            "   ".to_string(),
+            true,
+        )
+        .unwrap();
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn lint_psc_file_merges_in_compiler_reported_errors_when_enabled() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        let compiler_path = dir.path().join("compiler.sh");
+        std::fs::write(
+            &compiler_path,
+            "#!/bin/sh\necho \"Example.psc(3,4): no viable alternative at character ';'\" >&2\nexit 1\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&compiler_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            compiler_path.to_string_lossy().into_owned(),
+            true,
+        )
+        .unwrap();
+
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.rule == compile_diagnostics::RULE
+                && diagnostic.line == 3
+                && diagnostic.column == 4
+        }));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn lint_psc_file_omits_compiler_diagnostics_when_the_compiler_reports_success() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        let compiler_path = dir.path().join("compiler.sh");
+        std::fs::write(&compiler_path, "#!/bin/sh\nexit 0\n").unwrap();
+        std::fs::set_permissions(&compiler_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            compiler_path.to_string_lossy().into_owned(),
+            true,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|d| d.rule != compile_diagnostics::RULE));
+    }
+
+    #[test]
+    fn lint_psc_file_does_not_fail_when_the_configured_compiler_cannot_be_run() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            dir.path()
+                .join("missing-compiler")
+                .to_string_lossy()
+                .into_owned(),
+            true,
+        )
+        .unwrap();
+
+        assert!(diagnostics.is_empty());
     }
 
     #[test]
