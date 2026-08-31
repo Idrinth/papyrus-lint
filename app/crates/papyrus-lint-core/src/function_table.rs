@@ -32,6 +32,14 @@ pub struct FunctionSignature {
     pub is_global: bool,
     pub is_native: bool,
     pub is_event: bool,
+    /// The name of the `State` block this signature was resolved from, or
+    /// `None` when it comes from the script's empty state — either because
+    /// it's declared directly on the script, or because no state overrides
+    /// it (see [`ScriptFunctions::from_script`], which prefers the empty
+    /// state's declaration whenever both exist, since that's the signature
+    /// every ordinary call site resolves against per the language's state
+    /// machine).
+    pub state: Option<String>,
 }
 
 impl FunctionSignature {
@@ -50,6 +58,7 @@ impl FunctionSignature {
             is_global: decl.is_global,
             is_native: decl.is_native,
             is_event: decl.is_event,
+            state: decl.state.clone(),
         }
     }
 }
@@ -100,11 +109,26 @@ struct ScriptFunctions {
 
 impl ScriptFunctions {
     fn from_script(script: &Script) -> Self {
-        let functions = script
+        let mut functions: HashMap<String, FunctionSignature> = script
             .functions
             .iter()
             .map(|f| (f.name.to_ascii_lowercase(), FunctionSignature::from_decl(f)))
             .collect();
+        // A function declared only inside a `State` block (with no
+        // matching declaration in the empty state) is still a real,
+        // callable member of the script, so it belongs in the function
+        // list too — callers just haven't declared its canonical empty
+        // state version. A same-named empty state declaration always wins
+        // over a state override here, since that's the signature every
+        // ordinary (not-in-that-state) call site actually resolves
+        // against.
+        for state in &script.states {
+            for f in &state.functions {
+                functions
+                    .entry(f.name.to_ascii_lowercase())
+                    .or_insert_with(|| FunctionSignature::from_decl(f));
+            }
+        }
         let properties = script
             .properties
             .iter()
@@ -409,6 +433,42 @@ mod tests {
                 },
             ]
         );
+        assert_eq!(signature.state, None);
+    }
+
+    #[test]
+    fn finds_a_function_declared_only_inside_a_state() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nState Loud\n    Int Function Bar(Float a)\n    EndFunction\nEndState\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let signature = table
+            .lookup_function("Foo", "Bar")
+            .expect("state-declared function should be found");
+
+        assert_eq!(signature.name, "Bar");
+        assert_eq!(signature.state.as_deref(), Some("Loud"));
+    }
+
+    #[test]
+    fn prefers_the_empty_state_signature_over_a_same_named_state_override() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nInt Function Bar()\n    Return 1\nEndFunction\n\nState Loud\n    Int Function Bar()\n        Return 2\n    EndFunction\nEndState\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let signature = table
+            .lookup_function("Foo", "Bar")
+            .expect("function should be found");
+
+        assert_eq!(signature.state, None);
     }
 
     #[test]
@@ -683,6 +743,24 @@ mod tests {
         assert!(members.iter().any(|m| matches!(
             m,
             Member::Property(signature) if signature.name == "MyValue"
+        )));
+    }
+
+    #[test]
+    fn list_members_includes_a_function_declared_only_inside_a_state() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nState Loud\n    Function Bar()\n    EndFunction\nEndState\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("Foo");
+
+        assert!(members.iter().any(|m| matches!(
+            m,
+            Member::Function(signature) if signature.name == "Bar" && signature.state.as_deref() == Some("Loud")
         )));
     }
 
