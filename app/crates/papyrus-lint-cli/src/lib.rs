@@ -529,6 +529,42 @@ mod tests {
     }
 
     #[test]
+    fn candidate_pair_root_recognizes_every_supported_directory_order() {
+        let root = Path::new("project");
+
+        assert_eq!(
+            find_candidate_pair_root(&root.join("scripts/source/Example.psc")),
+            Some(root.to_path_buf())
+        );
+        assert_eq!(
+            find_candidate_pair_root(&root.join("source/scripts/Example.psc")),
+            Some(root.to_path_buf())
+        );
+    }
+
+    #[test]
+    fn candidate_pair_root_is_case_insensitive_and_supports_nested_scripts() {
+        let script = Path::new("project/SCRIPTS/Source/User/Example.psc");
+
+        assert_eq!(
+            find_candidate_pair_root(script),
+            Some(PathBuf::from("project"))
+        );
+    }
+
+    #[test]
+    fn psc_project_root_uses_the_legacy_fallback_without_a_candidate_pair() {
+        assert_eq!(
+            find_psc_project_root(Path::new("project/custom/source/Example.psc")),
+            PathBuf::from("project")
+        );
+        assert_eq!(
+            find_psc_project_root(Path::new("Example.psc")),
+            PathBuf::from(".")
+        );
+    }
+
+    #[test]
     fn prints_usage_and_exits_2_with_no_arguments() {
         let (code, _stdout, stderr) = run_captured(&[]);
 
