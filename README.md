@@ -417,12 +417,12 @@ Run it with `--version`/`-V` to print its version (`PapyrusLinterCLI
 version next to its title.
 
 Launched with no arguments, the desktop app's own executable starts its
-GUI as normal; launched with an `.achlist` or `.psc` path (or
-`-h`/`--help`), it lints from the command line instead, exactly as
-described above. On
-Windows release builds the desktop executable is compiled without a
-console, so its CLI mode there is best-effort — the standalone CLI binary
-below is the reliable way to lint from a Windows console or script.
+GUI as normal; launched with any arguments, including an `.achlist` or `.psc`
+path (or `-h`/`--help`), it routes all of them through the same CLI
+implementation described above. Windows release builds use the console
+subsystem so shells wait for CLI-mode completion and can reliably capture
+plain-text or JSON stdout and stderr; when launched without arguments, the
+executable detaches that console before starting the GUI.
 
 Prebuilt `PapyrusLinterCLI`/`PapyrusLinterCLI.exe` standalone CLI binaries
 for Linux, macOS, and Windows are attached to each [GitHub
