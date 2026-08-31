@@ -1,8 +1,8 @@
 //! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! PapyrusLinterCLI [--json] <path-to-achlist-or-psc>
-//! PapyrusLinterCLI [--json] fix <path-to-achlist-or-psc>
+//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] <path-to-achlist-or-psc>
+//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix <path-to-achlist-or-psc>
 //! PapyrusLinterCLI init
 //! ```
 //!
@@ -46,6 +46,8 @@
 //! order), the diagnostics report is printed to stdout as a single JSON
 //! document (see [`JsonReport`]) instead of the plain-text format, so
 //! editor plugins and other tooling can consume it without scraping text.
+//! `--quiet-warnings` and `--quiet-info` omit diagnostics of the corresponding
+//! severity from either report format without changing the process exit code.
 //!
 //! With `--config <path>` (combinable with `fix`/`--json` in any order),
 //! lint configuration is loaded directly from `<path>` instead of being
@@ -157,8 +159,8 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
-PapyrusLinterCLI [--json] [--config <path>] [--script-root <path>]... [--output <path>] fix <path-to-achlist-or-psc>\n       \
+    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
+PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] fix <path-to-achlist-or-psc>\n\n\
 PapyrusLinterCLI init\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
@@ -174,6 +176,8 @@ Options:\n\
   -h, --help              Show this help message\n\
   -V, --version           Print the PapyrusLinterCLI version\n\
   --json                  Print the report to stdout as JSON instead of plain text\n\
+  --quiet-warnings        Hide warning-level diagnostics from the report\n\
+  --quiet-info            Hide info-level diagnostics from the report\n\
   --config <path>         Load lint configuration from this file instead of\n\
                           discovering papyrus-lint.yaml/.yml from the project root\n\
                           (also disables the project root's additional_script_roots;\n\
@@ -244,7 +248,8 @@ pub struct JsonReport {
 /// `[warning]`/`[info]`-level diagnostic only counts as a failure when the
 /// project's `papyrus-lint.yaml` sets `fail_on_warning`/`fail_on_info`
 /// (both `false` by default); an `[error]`-level diagnostic, or one with no
-/// level tag, always counts. Diagnostics are still printed either way.
+/// level tag, always counts. Diagnostics are printed regardless of whether
+/// they affect the exit code unless their level is hidden by a quiet flag.
 pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
     if args == ["init"] {
         let current_dir = match std::env::current_dir() {
@@ -261,12 +266,17 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     }
 
     let json = args.iter().any(|arg| arg == "--json");
+    let quiet_warnings = args.iter().any(|arg| arg == "--quiet-warnings");
+    let quiet_info = args.iter().any(|arg| arg == "--quiet-info");
 
     let mut config_path: Option<PathBuf> = None;
     let mut output_path: Option<PathBuf> = None;
     let mut cli_script_roots: Vec<String> = Vec::new();
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
-    let mut input = args.iter().filter(|arg| arg.as_str() != "--json").cloned();
+    let mut input = args
+        .iter()
+        .filter(|arg| !matches!(arg.as_str(), "--json" | "--quiet-warnings" | "--quiet-info"))
+        .cloned();
     while let Some(arg) = input.next() {
         if arg == "--config" {
             let Some(value) = input.next() else {
@@ -429,8 +439,17 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut function_table);
         diagnostics.sort_by_key(|d| (d.line, d.column));
 
+        // Quiet flags only affect presentation. A hidden diagnostic still
+        // participates in the configured failure threshold and exit code.
         for diagnostic in &diagnostics {
             should_fail = should_fail || lint_config.should_fail_on(diagnostic);
+        }
+        diagnostics.retain(|diagnostic| {
+            !((quiet_warnings && diagnostic.level() == Some("warning"))
+                || (quiet_info && diagnostic.level() == Some("info")))
+        });
+
+        for diagnostic in &diagnostics {
             if !json {
                 let _ = writeln!(
                     report_buf,
@@ -761,6 +780,69 @@ mod tests {
 
         assert_eq!(code, 1);
         assert!(stdout.contains("[unused-property]"));
+    }
+
+    #[test]
+    fn quiet_warnings_hides_warnings_without_changing_the_exit_code() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "fail_on_warning: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--quiet-warnings".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 1);
+        assert!(stderr.is_empty());
+        assert!(!stdout.contains("[warning]"));
+        assert!(stdout.contains("no problems found in 1 script"));
+    }
+
+    #[test]
+    fn quiet_info_hides_info_diagnostics_from_json_without_changing_the_exit_code() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n\nGlobalVariable Property Value Auto\n\nFunction Test()\n    Value.GetValueInt()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "fail_on_info: true\n",
+        );
+
+        let (unfiltered_code, unfiltered_stdout, _) = run_captured(&[
+            "--json".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+        let unfiltered: serde_json::Value = serde_json::from_str(&unfiltered_stdout).unwrap();
+        assert_eq!(unfiltered_code, 1);
+        assert!(unfiltered["files"][0]["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|diagnostic| diagnostic["level"] == "info"));
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--json".to_string(),
+            "--quiet-info".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 1);
+        assert!(stderr.is_empty());
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(report["success"], false);
+        let diagnostics = report["files"][0]["diagnostics"].as_array().unwrap();
+        assert_eq!(report["total_diagnostics"], diagnostics.len());
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic["level"] != "info"));
     }
 
     #[test]
