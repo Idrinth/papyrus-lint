@@ -42,6 +42,10 @@ pub const RULE: &str = "slow-functions";
 /// qualified call to one of their functions is only a real match when the
 /// qualifier is literally that script's name.
 pub fn check(source: &str) -> Vec<Diagnostic> {
+    check_with_rules(source, SLOW_FUNCTIONS)
+}
+
+fn check_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> Vec<Diagnostic> {
     let tokens = match Lexer::new(source).tokenize() {
         Ok(tokens) => tokens,
         Err(_) => return Vec::new(),
@@ -55,7 +59,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         if !matches!(window[1].kind, TokenKind::LParen) {
             continue;
         }
-        let Some(rule) = find_rule(name) else {
+        let Some(rule) = find_rule(rules, name) else {
             continue;
         };
         if rule.global && !qualifier_matches(&tokens, i, rule.object) {
@@ -93,8 +97,8 @@ fn qualifier_matches(
     qualifier.eq_ignore_ascii_case(object)
 }
 
-fn find_rule(name: &str) -> Option<&'static SlowFunctionRule> {
-    SLOW_FUNCTIONS
+fn find_rule(rules: &'static [SlowFunctionRule], name: &str) -> Option<&'static SlowFunctionRule> {
+    rules
         .iter()
         .find(|rule| rule.function.eq_ignore_ascii_case(name))
 }
@@ -102,6 +106,13 @@ fn find_rule(name: &str) -> Option<&'static SlowFunctionRule> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    static GLOBAL_RULES: &[SlowFunctionRule] = &[SlowFunctionRule {
+        object: "Utility",
+        function: "Wait",
+        replacement: "WaitMenuMode",
+        global: true,
+    }];
 
     #[test]
     fn compiled_rules_are_loaded_from_yaml() {
@@ -132,6 +143,31 @@ mod tests {
         );
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("SetValueInt"));
+    }
+
+    #[test]
+    fn flags_code_before_an_inline_comment_but_ignores_calls_in_comment_text() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction DoThing(GlobalVariable akGlobal)\n    akGlobal.GetValueInt() ; akGlobal.GetValueInt()\n    ; akGlobal.GetValueInt()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 14));
+    }
+
+    #[test]
+    fn global_rule_requires_its_literal_qualifier_case_insensitively() {
+        let diagnostics = check_with_rules(
+            "Utility.Wait(1.0)\nutility.wait(1.0)\nakOther.Wait(1.0)\nWait(1.0)\nGetUtility().Wait(1.0)\n",
+            GLOBAL_RULES,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(diagnostics[0].line, 1);
+        assert_eq!(diagnostics[1].line, 2);
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.message.contains("Utility.Wait")));
     }
 
     #[test]
