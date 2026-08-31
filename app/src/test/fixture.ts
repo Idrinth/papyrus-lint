@@ -27,6 +27,8 @@ export const FIXTURE_HTML = `
       </div>
 
       <div id="panel-settings" class="tabs__panel" role="tabpanel" hidden>
+        <output id="detected-script-roots">No project loaded</output>
+        <output id="used-configuration-file">No project loaded</output>
         <input id="compiler-path" type="text" />
         <input id="compile-check" type="checkbox" />
         <textarea id="script-roots"></textarea>

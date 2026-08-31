@@ -69,6 +69,17 @@ pub fn resolve_additional_roots(root: &Path, roots: &[String]) -> Vec<PathBuf> {
         .collect()
 }
 
+/// Returns the existing source directories that will be searched for scripts.
+/// Conventional project directories come first, followed by configured roots.
+pub fn detected_script_roots(root: &Path, additional_roots: &[String]) -> Vec<PathBuf> {
+    CANDIDATE_DIRS
+        .iter()
+        .map(|dir| root.join(dir))
+        .chain(resolve_additional_roots(root, additional_roots))
+        .filter(|path| path.is_dir())
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -234,6 +245,20 @@ mod tests {
                 root.join("../SharedScripts"),
                 PathBuf::from("/abs/OtherScripts"),
             ]
+        );
+    }
+
+    #[test]
+    fn detected_script_roots_returns_only_existing_search_directories() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let conventional = root.path().join("scripts/source");
+        let additional = root.path().join("shared");
+        fs::create_dir_all(&conventional).expect("failed to create conventional root");
+        fs::create_dir_all(&additional).expect("failed to create additional root");
+
+        assert_eq!(
+            detected_script_roots(root.path(), &["shared".to_string(), "missing".to_string()]),
+            vec![conventional, additional]
         );
     }
 }

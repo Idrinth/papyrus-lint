@@ -3,11 +3,11 @@
 //! its source directory:
 //!
 //! ```text
-//! PapyrusCompiler.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
+//! PapyrusCompiler.exe "<script path>" -i="<source dir 1>;<source dir 2>" -o="<output dir>" -f="TESV_Papyrus_Flags.flg"
 //! ```
 //!
-//! `<source dir>` is the directory the `.psc` file lives in (conventionally
-//! `scripts/source` or `source/scripts` under a project's root — see
+//! `<script path>` names the `.psc` file being compiled. Its parent is
+//! conventionally `scripts/source` or `source/scripts` under a project's root — see
 //! [`papyrus_lint_core::script_locator`]) and `<output dir>` is its parent, matching
 //! the layout Bethesda's tooling expects: a `Source` directory holding
 //! `.psc` files sits inside the `Scripts` directory that receives the
@@ -20,9 +20,11 @@
 //! plus any of the project's configured `additional_script_roots` (see
 //! [`papyrus_lint_core::config::load_script_roots`]), so a script that
 //! imports from a shared library location outside those two conventional
-//! directories still compiles.
+//! directories still compiles. The compiler is run with its own containing
+//! directory as the working directory, so it can resolve the bundled
+//! `TESV_Papyrus_Flags.flg` the trailing `-f` argument names by its
+//! relative path.
 
-use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -71,17 +73,17 @@ fn strip_pex_personal_data(script_path: &Path, output_dir: &Path) -> bool {
     std::fs::write(&pex_path, patched).is_ok()
 }
 
-/// Resolves the source directory (`script_path`'s parent), the
+/// Resolves the source directory (`script_path`'s parent) and the
 /// conventional output directory (that source directory's own parent —
 /// the project's real `Scripts` directory, matching the layout described
-/// at the top of this module), and `script_path`'s bare file name.
+/// at the top of this module).
 ///
 /// The conventional output directory is always used to resolve the
 /// project root for the `-i` argument (see [`import_dirs`]), even for
 /// [`check_psc_file`], which actually writes its compiled output
 /// elsewhere — the root two levels above `source_dir` doesn't depend on
 /// where the compiled `.pex` ends up.
-fn resolve_locations(script_path: &Path) -> Result<(&Path, PathBuf, &OsStr), String> {
+fn resolve_locations(script_path: &Path) -> Result<(&Path, PathBuf), String> {
     let source_dir = script_path
         .parent()
         .filter(|dir| !dir.as_os_str().is_empty())
@@ -100,10 +102,7 @@ fn resolve_locations(script_path: &Path) -> Result<(&Path, PathBuf, &OsStr), Str
             )
         })?
         .to_path_buf();
-    let file_name = script_path
-        .file_name()
-        .ok_or_else(|| format!("{} has no file name", script_path.display()))?;
-    Ok((source_dir, output_dir, file_name))
+    Ok((source_dir, output_dir))
 }
 
 /// Builds the `-i` argument's value: `root`'s two known source directories
@@ -132,23 +131,35 @@ fn import_dirs(source_dir: &Path, root: Option<&Path>, additional_roots: &[Strin
         .join(";")
 }
 
-/// Runs `compiler_path` against `file_name` (inside `source_dir`),
-/// searching `import_dirs` and writing whatever it compiles into
-/// `output_dir`. `personal_data_stripped` is always `false` on the
+/// Runs `compiler_path` against `script_path`, searching `import_dirs` and
+/// writing whatever it compiles into `output_dir`. Run with the compiler
+/// executable's own directory as the working directory, so it can resolve
+/// the bundled `TESV_Papyrus_Flags.flg` (distributed beside
+/// `PapyrusCompiler.exe`) that the fixed trailing `-f` argument names by
+/// its relative path. `personal_data_stripped` is always `false` on the
 /// returned [`CompileOutcome`] — stripping (when wanted) is the caller's
 /// job, since it depends on where the `.pex` actually landed.
 fn run_compiler(
     compiler_path: &Path,
-    source_dir: &Path,
-    file_name: &OsStr,
+    script_path: &Path,
     import_dirs: &str,
     output_dir: &Path,
 ) -> Result<CompileOutcome, String> {
-    let output = Command::new(compiler_path)
-        .arg(source_dir)
-        .arg(format!("-f={}", file_name.to_string_lossy()))
+    let mut command = Command::new(compiler_path);
+    command
+        .arg(script_path)
         .arg(format!("-i={import_dirs}"))
         .arg(format!("-o={}", output_dir.display()))
+        .arg("-f=TESV_Papyrus_Flags.flg");
+
+    if let Some(compiler_dir) = compiler_path
+        .parent()
+        .filter(|dir| !dir.as_os_str().is_empty())
+    {
+        command.current_dir(compiler_dir);
+    }
+
+    let output = command
         .output()
         .map_err(|err| format!("failed to run {}: {err}", compiler_path.display()))?;
 
@@ -176,16 +187,10 @@ pub fn compile_psc_file(
     script_path: &Path,
     additional_roots: &[String],
 ) -> Result<CompileOutcome, String> {
-    let (source_dir, output_dir, file_name) = resolve_locations(script_path)?;
+    let (source_dir, output_dir) = resolve_locations(script_path)?;
     let import_dirs = import_dirs(source_dir, output_dir.parent(), additional_roots);
 
-    let mut outcome = run_compiler(
-        compiler_path,
-        source_dir,
-        file_name,
-        &import_dirs,
-        &output_dir,
-    )?;
+    let mut outcome = run_compiler(compiler_path, script_path, &import_dirs, &output_dir)?;
     outcome.personal_data_stripped =
         outcome.success && strip_pex_personal_data(script_path, &output_dir);
     Ok(outcome)
@@ -206,18 +211,12 @@ pub fn check_psc_file(
     script_path: &Path,
     additional_roots: &[String],
 ) -> Result<CompileOutcome, String> {
-    let (source_dir, output_dir, file_name) = resolve_locations(script_path)?;
+    let (source_dir, output_dir) = resolve_locations(script_path)?;
     let import_dirs = import_dirs(source_dir, output_dir.parent(), additional_roots);
 
     let temp_dir = tempfile::tempdir()
         .map_err(|err| format!("failed to create a temporary output directory: {err}"))?;
-    run_compiler(
-        compiler_path,
-        source_dir,
-        file_name,
-        &import_dirs,
-        temp_dir.path(),
-    )
+    run_compiler(compiler_path, script_path, &import_dirs, temp_dir.path())
 }
 
 #[cfg(test)]
@@ -408,13 +407,31 @@ mod tests {
 
         let output_dir = root.path().join("Scripts");
         let expected = format!(
-            "{}\n-f=AchievementInjector.psc\n-i={};{}\n-o={}\n",
-            source_dir.display(),
+            "{}\n-i={};{}\n-o={}\n-f=TESV_Papyrus_Flags.flg\n",
+            script_path.display(),
             root.path().join("scripts/source").display(),
             root.path().join("source/scripts").display(),
             output_dir.display(),
         );
         assert_eq!(outcome.stdout, expected);
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn runs_from_the_compiler_directory() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let compiler_dir = root.path().join("Papyrus Compiler");
+        let source_dir = root.path().join("Data/Scripts/Source");
+        fs::create_dir_all(&compiler_dir).expect("failed to create compiler dir");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path = write_stub_compiler(&compiler_dir, "#!/bin/sh\npwd\n");
+
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("should succeed");
+
+        assert_eq!(outcome.stdout.trim(), compiler_dir.display().to_string());
     }
 
     #[test]
@@ -505,20 +522,6 @@ mod tests {
         assert_eq!(
             result.unwrap_err(),
             "could not determine an output directory above /"
-        );
-    }
-
-    #[test]
-    fn errors_when_script_path_has_no_file_name() {
-        let result = compile_psc_file(
-            Path::new("compiler"),
-            Path::new("/game/Scripts/Source/.."),
-            &[],
-        );
-
-        assert_eq!(
-            result.unwrap_err(),
-            "/game/Scripts/Source/.. has no file name"
         );
     }
 

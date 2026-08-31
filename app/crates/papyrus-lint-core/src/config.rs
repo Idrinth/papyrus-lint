@@ -57,6 +57,12 @@ fn existing_config_path(dir: &Path) -> Option<PathBuf> {
         .find(|path| path.is_file())
 }
 
+/// Returns the configuration file selected for `dir`, if the project has
+/// either of the supported configuration file names.
+pub fn config_file_path(dir: &Path) -> Option<PathBuf> {
+    existing_config_path(dir)
+}
+
 /// Reads and parses `dir`'s papyrus-lint config file, if it has one.
 /// Returns [`ProjectFile::default`] if `dir` has none of the candidate
 /// file names.
