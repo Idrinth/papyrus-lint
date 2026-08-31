@@ -32,6 +32,7 @@ pub mod return_types;
 pub mod semicolon;
 pub mod short_wait_interval;
 pub mod slow_functions;
+pub mod state_function_signature;
 pub mod static_condition;
 pub mod strict_boolean;
 pub mod trailing_whitespace;
@@ -175,6 +176,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.argument_naming {
         diagnostics.extend(argument_naming::check_with(source, external));
+    }
+    if rules.state_function_signature {
+        diagnostics.extend(state_function_signature::check(source));
     }
     if rules.cyclomatic_complexity {
         diagnostics.extend(cyclomatic_complexity::check(
@@ -667,6 +671,12 @@ mod tests {
                 short_wait_interval::RULE,
                 Config::default(),
                 config_with(|c| c.rules.short_wait_interval = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nState Loud\n    Function Greet(Int name)\n    EndFunction\nEndState\n",
+                state_function_signature::RULE,
+                Config::default(),
+                config_with(|c| c.rules.state_function_signature = false),
             ),
         ];
 
