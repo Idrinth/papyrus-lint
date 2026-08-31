@@ -84,6 +84,21 @@ pub trait ExternalSignatures {
     fn script_exists(&mut self, _type_name: &str) -> bool {
         true
     }
+
+    /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
+    /// or transitively), declares a `State` block named `state_name`. Both
+    /// names are matched case-insensitively. Used by the "GoToState state
+    /// reference" lint (`crate::goto_state`) to flag a `GoToState("Name")`
+    /// call whose target state can't be found anywhere in the script's own
+    /// ancestry.
+    ///
+    /// The default always says yes, mirroring [`Self::script_exists`],
+    /// since a caller that can't resolve the ancestor chain (see
+    /// [`NoExternalSignatures`]) has no way to tell a missing state from one
+    /// it just doesn't track.
+    fn has_state(&mut self, _type_name: &str, _state_name: &str) -> bool {
+        true
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a

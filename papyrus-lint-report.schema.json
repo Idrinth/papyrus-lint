@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/papyrus-lint-report.schema.json",
+  "title": "Papyrus Lint CLI report",
+  "description": "The JSON document emitted by PapyrusLinterCLI --json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "files",
+    "scripts_checked",
+    "files_with_diagnostics",
+    "total_diagnostics",
+    "files_fixed",
+    "success"
+  ],
+  "properties": {
+    "files": {
+      "description": "Every resolved Papyrus script, including scripts with no diagnostics.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/fileReport"
+      }
+    },
+    "scripts_checked": {
+      "description": "The number of resolved Papyrus scripts checked by this run.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "files_with_diagnostics": {
+      "description": "The number of checked scripts that produced at least one diagnostic.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "total_diagnostics": {
+      "description": "The total number of diagnostics across all files.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "files_fixed": {
+      "description": "The number of scripts changed by automatic fixes, or null when the fix subcommand was not used.",
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "success": {
+      "description": "Whether the lint result exits successfully under the configured failure thresholds.",
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "fileReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "diagnostics"
+      ],
+      "properties": {
+        "path": {
+          "description": "The resolved script path as displayed by the CLI.",
+          "type": "string",
+          "minLength": 1
+        },
+        "diagnostics": {
+          "description": "The diagnostics reported for this script, or an empty array when it is clean.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line",
+        "column",
+        "rule",
+        "level",
+        "message"
+      ],
+      "properties": {
+        "line": {
+          "description": "The 1-indexed source line where the diagnostic starts.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "description": "The 1-indexed source column where the diagnostic starts.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "rule": {
+          "description": "The stable, hyphenated identifier of the lint rule.",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "level": {
+          "description": "The diagnostic severity, or null for an unclassified external diagnostic.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "error",
+            "warning",
+            "info",
+            null
+          ]
+        },
+        "message": {
+          "description": "The human-readable diagnostic message, including its severity prefix when classified.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

@@ -20,6 +20,7 @@ pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod fragment_code;
 pub mod function_override;
+pub mod goto_state;
 pub mod identifier_casing;
 pub mod indentation;
 pub mod local_variable_shadowing;
@@ -237,6 +238,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.short_wait_interval {
         diagnostics.extend(short_wait_interval::check(source, config.min_wait_interval));
+    }
+    if rules.goto_state {
+        diagnostics.extend(goto_state::check_with(source, external));
     }
     let disables = disable_comments::Disables::scan(source);
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
@@ -677,6 +681,12 @@ mod tests {
                 state_function_signature::RULE,
                 Config::default(),
                 config_with(|c| c.rules.state_function_signature = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    GoToState(\"Missing\")\nEndFunction\n",
+                goto_state::RULE,
+                Config::default(),
+                config_with(|c| c.rules.goto_state = false),
             ),
         ];
 
