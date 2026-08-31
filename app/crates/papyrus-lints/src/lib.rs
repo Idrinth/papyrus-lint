@@ -292,6 +292,11 @@ pub fn repair(source: &str, config: &Config) -> String {
     } else {
         source
     };
+    let source = if rules.type_casing {
+        type_casing::repair(&source, config.type_casing)
+    } else {
+        source
+    };
     if rules.trailing_whitespace {
         trailing_whitespace::repair(&source)
     } else {
@@ -429,6 +434,29 @@ mod tests {
 
         assert_eq!(repaired, "If ! bReady\nEndIf\n");
         assert!(lint(&repaired, &config).is_empty());
+    }
+
+    #[test]
+    fn combined_repair_fixes_configured_type_casing() {
+        let config = Config::default();
+        let repaired = repair("ScriptName myScript\n", &config);
+
+        assert_eq!(repaired, "ScriptName MyScript\n");
+        assert!(lint(&repaired, &config).is_empty());
+    }
+
+    #[test]
+    fn repair_skips_type_casing_fix_when_disabled() {
+        let source = "ScriptName myScript\n";
+        let config = Config {
+            rules: config::Rules {
+                type_casing: false,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+
+        assert_eq!(repair(source, &config), source);
     }
 
     #[test]
