@@ -32,7 +32,7 @@ const CACHE_DIR_NAME: &str = "ast-cache";
 
 /// The oldest linter release whose AST cache entries the running binary
 /// still accepts. See the module docs above for when to bump this.
-const MIN_COMPATIBLE_VERSION: &str = "1.11.0";
+const MIN_COMPATIBLE_VERSION: &str = "1.13.0";
 
 #[derive(Serialize, Deserialize)]
 struct CacheEntry {
@@ -305,9 +305,9 @@ mod tests {
     #[test]
     fn is_compatible_version_accepts_the_minimum_and_anything_newer() {
         assert!(is_compatible_version(MIN_COMPATIBLE_VERSION));
-        assert!(is_compatible_version("1.11.1"));
+        assert!(is_compatible_version("1.13.1"));
         assert!(is_compatible_version("2.0.0"));
-        assert!(!is_compatible_version("1.10.99"));
+        assert!(!is_compatible_version("1.12.99"));
         assert!(!is_compatible_version("not-a-version"));
     }
 
