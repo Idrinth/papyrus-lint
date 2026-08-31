@@ -128,9 +128,6 @@ pub fn compile_psc_file(
             source_dir.display()
         )
     })?;
-    let file_name = script_path
-        .file_name()
-        .ok_or_else(|| format!("{} has no file name", script_path.display()))?;
     let import_dirs = import_dirs(source_dir, output_dir, additional_roots);
 
     let mut command = Command::new(compiler_path);
