@@ -271,6 +271,69 @@ mod tests {
     }
 
     #[test]
+    fn folds_every_literal_kind_and_unary_negation() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    If 1\n    EndIf\n    If 0.0\n    EndIf\n    If \"text\"\n    EndIf\n    If None\n    EndIf\n    If -1 < 0\n    EndIf\n    If -1.5 < 0.0\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 6);
+        let outcomes: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.contains("always true"))
+            .collect();
+        assert_eq!(outcomes, vec![true, false, true, false, true, true]);
+    }
+
+    #[test]
+    fn folds_arithmetic_string_and_comparison_operators() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    If 1 + 2 == 3\n    EndIf\n    If 5 - 2 == 3\n    EndIf\n    If 2 * 3 == 6\n    EndIf\n    If 8 / 2 == 4\n    EndIf\n    If 7 % 4 == 3\n    EndIf\n    If 1 + 0.5 == 1.5\n    EndIf\n    If \"foo\" + \"bar\" == \"foobar\"\n    EndIf\n    If 2 >= 2\n    EndIf\n    If 2 <= 3\n    EndIf\n    If 2 != 3\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 10);
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.message.contains("always true")));
+    }
+
+    #[test]
+    fn literal_equality_handles_bool_none_and_incompatible_values() {
+        assert_eq!(
+            literal_eq(&Literal::Bool(true), &Literal::Bool(false)),
+            Some(false)
+        );
+        assert_eq!(literal_eq(&Literal::None, &Literal::None), Some(true));
+        assert_eq!(literal_eq(&Literal::None, &Literal::Int(1)), Some(false));
+        assert_eq!(literal_eq(&Literal::Int(1), &Literal::None), Some(false));
+        assert_eq!(
+            literal_eq(&Literal::String("1".into()), &Literal::Int(1)),
+            None
+        );
+    }
+
+    #[test]
+    fn invalid_constant_operations_are_not_folded() {
+        assert_eq!(eval_unary(UnaryOp::Neg, &Literal::Bool(true)), None);
+        assert_eq!(as_number(&Literal::String("nope".into())), None);
+        assert_eq!(
+            eval_binary(
+                &Literal::String("left".into()),
+                BinaryOp::Add,
+                &Literal::Int(1),
+            ),
+            None
+        );
+        assert_eq!(
+            eval_binary(&Literal::Int(1), BinaryOp::Div, &Literal::Int(0)),
+            None
+        );
+        assert_eq!(
+            eval_binary(&Literal::Int(1), BinaryOp::Mod, &Literal::Int(0)),
+            None
+        );
+    }
+
+    #[test]
     fn flags_constant_while_condition() {
         let diagnostics =
             check("ScriptName Example\n\nFunction Test()\n    While 1 > 0\n        Return\n    EndWhile\nEndFunction\n");
