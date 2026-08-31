@@ -285,7 +285,7 @@ or `PapyrusLinterCLI`'s, whichever process is doing the parsing. A cached
 entry is only reused when its stored MD5 of the file's content and the
 file's last-modified timestamp still match, and the linter version that
 wrote the entry is at or above a `MIN_COMPATIBLE_VERSION` constant
-(currently `1.11.0`) rather than an exact match against the running
+(currently `1.13.0`) rather than an exact match against the running
 version — so an ordinary app update doesn't discard an otherwise
 still-valid cache, and `MIN_COMPATIBLE_VERSION` only needs bumping when a
 release actually changes the cache entry layout or the AST shape it
