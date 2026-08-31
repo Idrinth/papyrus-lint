@@ -634,6 +634,16 @@ function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warn
   return "flagged";
 }
 
+function findingsGroupedByLine(findings: Diagnostic[]): Map<number, Diagnostic[]> {
+  const findingsByLine = new Map<number, Diagnostic[]>();
+  for (const finding of findings) {
+    const forLine = findingsByLine.get(finding.line) ?? [];
+    forLine.push(finding);
+    findingsByLine.set(finding.line, forLine);
+  }
+  return findingsByLine;
+}
+
 // Renders `source`'s syntax-highlighted, read-only table view with
 // `findings` marked on their lines. If `focusLine` is given, scrolls that
 // line into view and briefly flashes it, so a click on a specific finding
@@ -643,12 +653,7 @@ function renderCodeViewerView(source: string, findings: Diagnostic[], focusLine?
     return;
   }
 
-  const findingsByLine = new Map<number, Diagnostic[]>();
-  for (const finding of findings) {
-    const forLine = findingsByLine.get(finding.line) ?? [];
-    forLine.push(finding);
-    findingsByLine.set(finding.line, forLine);
-  }
+  const findingsByLine = findingsGroupedByLine(findings);
 
   const lines = highlightPapyrusLines(source);
   const rows = lines.map((lineHtml, index) => {
@@ -698,7 +703,33 @@ function updateCodeViewerEditHighlight() {
   if (!code || !codeViewerEditTextareaEl) {
     return;
   }
-  code.innerHTML = highlightPapyrusLines(codeViewerEditTextareaEl.value).join("\n");
+  const findings = codeViewerState?.findings ?? [];
+  const findingsByLine = findingsGroupedByLine(findings);
+  code.innerHTML = highlightPapyrusLines(codeViewerEditTextareaEl.value)
+    .map((lineHtml, index) => {
+      const lineFindings = findingsByLine.get(index + 1);
+      const severity = lineSeverityOf(lineFindings);
+      const lineClass = severity
+        ? `code-viewer__editor-line code-viewer__line--${severity}`
+        : "code-viewer__editor-line";
+      const title = lineFindings
+        ? ` title="${escapeAttr(lineFindings.map((finding) => finding.message).join("\n"))}"`
+        : "";
+      return `<span class="${lineClass}"${title}>${lineHtml}</span>`;
+    })
+    .join("\n");
+
+  // The textarea sits above the non-interactive highlighting layer, so
+  // expose all current lint messages through its tooltip and accessible
+  // description as well as through the per-line colours underneath it.
+  const diagnosticSummary = findings
+    .map((finding) => `Line ${finding.line}, column ${finding.column}: ${finding.message}`)
+    .join("\n");
+  codeViewerEditTextareaEl.title = diagnosticSummary;
+  codeViewerEditTextareaEl.setAttribute(
+    "aria-label",
+    diagnosticSummary ? `Papyrus source editor. Linter findings:\n${diagnosticSummary}` : "Papyrus source editor. No linter findings.",
+  );
 }
 
 // Measures where the text caret currently renders inside `textarea`, using

@@ -1204,9 +1204,9 @@ describe("openCodeViewer", () => {
 });
 
 describe("code viewer edit mode", () => {
-  async function openWithSource(source: string) {
+  async function openWithSource(source: string, findings: Diagnostic[] = []) {
     invokeImplFor({ read_psc_file: () => source });
-    await openCodeViewer("/a.psc", []);
+    await openCodeViewer("/a.psc", findings);
   }
 
   function textarea() {
@@ -1234,6 +1234,23 @@ describe("code viewer edit mode", () => {
       expect(panelHidden("#code-viewer-edit")).toBe(true);
       expect(panelHidden("#code-viewer-save")).toBe(false);
       expect(panelHidden("#code-viewer-cancel")).toBe(false);
+    });
+
+    it("keeps linter severities and messages visible in the editor", async () => {
+      await openWithSource("line one\nline two\n", [
+        { line: 2, column: 3, message: "[warning] risky edit" },
+        { line: 2, column: 5, message: "[error] broken edit" },
+      ]);
+
+      enterCodeViewerEditMode();
+
+      const lines = highlightCode().querySelectorAll(".code-viewer__editor-line");
+      expect(lines).toHaveLength(3);
+      expect(lines[1].classList.contains("code-viewer__line--error")).toBe(true);
+      expect(lines[1].getAttribute("title")).toContain("[warning] risky edit");
+      expect(lines[1].getAttribute("title")).toContain("[error] broken edit");
+      expect(textarea().title).toContain("Line 2, column 3: [warning] risky edit");
+      expect(textarea().getAttribute("aria-label")).toContain("Line 2, column 5: [error] broken edit");
     });
 
     it("does nothing when the code viewer hasn't finished loading", async () => {
