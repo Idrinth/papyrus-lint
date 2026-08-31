@@ -1316,6 +1316,7 @@ describe("code viewer edit mode", () => {
     });
 
     it("shows a failure and stays in edit mode when writing fails", async () => {
+      vi.useFakeTimers();
       await openWithSource("Int x = 1\n");
       enterCodeViewerEditMode();
       textarea().value = "Int x = 2\n";
@@ -1328,6 +1329,10 @@ describe("code viewer edit mode", () => {
       expect(saveButton.textContent).toBe("Save failed");
       expect(saveButton.disabled).toBe(false);
       expect(panelHidden("#code-viewer-editor")).toBe(false);
+
+      vi.advanceTimersByTime(2000);
+      expect(saveButton.textContent).toBe("Save");
+      vi.useRealTimers();
     });
   });
 
@@ -1377,6 +1382,7 @@ describe("code viewer edit mode", () => {
     });
 
     it("does not compile, and reports a failure, when saving fails", async () => {
+      vi.useFakeTimers();
       await openWithSource("Int x = 1\n");
       enterCodeViewerEditMode();
       textarea().value = "Int x = 2\n";
@@ -1391,6 +1397,10 @@ describe("code viewer edit mode", () => {
       expect(panelHidden("#code-viewer-editor")).toBe(false);
       expect(invokeMock).not.toHaveBeenCalledWith("compile_psc_file", expect.anything());
       expect(compileOutputEl().hidden).toBe(true);
+
+      vi.advanceTimersByTime(2000);
+      expect(button.textContent).toBe("Save & Compile");
+      vi.useRealTimers();
     });
 
     it("clears a previous compile result when editing starts again", async () => {
@@ -1473,6 +1483,26 @@ describe("code viewer edit mode", () => {
       expect(autocompleteEl().hidden).toBe(true);
     });
 
+    it("hides the dropdown when text is selected", async () => {
+      const field = await openWithCursorAfterSelfDot();
+      field.setSelectionRange(0, 4);
+
+      await updateAutocomplete();
+
+      expect(invokeMock).not.toHaveBeenCalledWith("list_script_members", expect.anything());
+      expect(autocompleteEl().hidden).toBe(true);
+    });
+
+    it("hides and clears the dropdown when the backend has no matching members", async () => {
+      await openWithCursorAfterSelfDot();
+      invokeImplFor({ list_script_members: () => [] });
+
+      await updateAutocomplete();
+
+      expect(autocompleteEl().hidden).toBe(true);
+      expect(autocompleteEl().children).toHaveLength(0);
+    });
+
     it("applyAutocompleteSelection splices the chosen member's insertion text in place of the typed prefix", async () => {
       const field = await openWithCursorAfterSelfDot();
       invokeImplFor({
@@ -1516,6 +1546,52 @@ describe("code viewer edit mode", () => {
       handleAutocompleteKeydown(new KeyboardEvent("keydown", { key: "Enter", cancelable: true }));
 
       expect(field.value).toContain("self.BProp");
+    });
+
+    it("wraps upward, accepts with Tab, and ignores unrelated keys", async () => {
+      const field = await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [
+          { kind: "property", name: "AProp", type_name: { name: "Int", is_array: false } },
+          { kind: "property", name: "BProp", type_name: { name: "Int", is_array: false } },
+        ],
+      });
+      await updateAutocomplete();
+
+      const unrelated = new KeyboardEvent("keydown", { key: "Shift", cancelable: true });
+      handleAutocompleteKeydown(unrelated);
+      expect(unrelated.defaultPrevented).toBe(false);
+
+      handleAutocompleteKeydown(new KeyboardEvent("keydown", { key: "ArrowUp", cancelable: true }));
+      expect(autocompleteEl().querySelector(".code-viewer__autocomplete-item--active")?.textContent).toContain(
+        "BProp",
+      );
+      handleAutocompleteKeydown(new KeyboardEvent("keydown", { key: "Tab", cancelable: true }));
+      expect(field.value).toContain("self.BProp");
+    });
+
+    it("accepts a completion when its dropdown item is clicked", async () => {
+      const field = await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [
+          { kind: "property", name: "Target", type_name: { name: "ObjectReference", is_array: false } },
+        ],
+      });
+      await updateAutocomplete();
+
+      autocompleteEl()
+        .querySelector<HTMLButtonElement>(".code-viewer__autocomplete-item")!
+        .dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+
+      expect(field.value).toContain("self.Target");
+      expect(autocompleteEl().hidden).toBe(true);
+    });
+
+    it("ignores selection and navigation requests when no completion is available", () => {
+      applyAutocompleteSelection(99);
+      const event = new KeyboardEvent("keydown", { key: "ArrowDown", cancelable: true });
+      handleAutocompleteKeydown(event);
+      expect(event.defaultPrevented).toBe(false);
     });
 
     it("dismisses the dropdown on Escape without touching the textarea", async () => {
