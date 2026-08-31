@@ -83,6 +83,7 @@ apply.
 | **Strict numeric type check** | Flags implicit comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without an explicit cast making the comparison exact. Only comparisons whose operand types can be determined locally are checked. | |
 | **Explicit return on every path** | Flags, as an `[error]`, a typed function/event with a code path that falls off the end of its body without a `Return`, since Papyrus then silently returns that type's default value (`0`, `""`, `False`, or `None`) instead of one the author chose. A `Return` with no value still counts as long as it's reached (`return_types` covers a value's actual type); an `If` only counts when every branch, including an `Else`, returns, and a `While` loop is never assumed to guarantee one since it may run zero times. A native function has no body to inspect and is never flagged. | |
 | **Unresolved script reference** | Flags, as a `[warning]`, a call through Papyrus's static/global call syntax (e.g. `MyMissingScript.DoThing()`) whose target script can't be found, since a call through a script that doesn't exist can never compile. Only a call whose object is a bare identifier not already known as a local variable, parameter, or property is considered a script reference at all — one resolved through a variable or property is left to the "Argument type check"/"Return type check" lints instead. Only checked when linting a `.psc` file dropped in the app, by resolving the name against `.psc` files under the project root the same way the argument/return type checks do, falling back to a list of common native singleton scripts (`Game`, `Utility`, `Debug`, `Math`, `StringUtil`, `Input`, `UI`, `StorageUtil`) in `rules/native-globals.yaml` that the game ships compiled with no project-side source. | |
+| **GoToState state reference** | Flags, as a `[warning]`, a `GoToState("Name")` call (bare or `self.GoToState(...)`) whose target isn't declared as a `State` on this script, since a typo'd or renamed state name still compiles — the engine just silently falls back through its state resolution algorithm instead of raising an error, so the call quietly never takes effect. `GoToState("")`, which switches back to the empty state, is always valid. Only a literal string argument is checked; one built from anything else is left unflagged rather than guessed at. A target undeclared on this script is only flagged when this script has no `Extends` target at all, since it may otherwise be declared on a script further up that (unresolved) `Extends` chain — a legitimate way to forward-declare a state for a not-yet-written child script to implement. When linting a `.psc` file dropped in the app, that chain is resolved from the project root too, the same way the argument/return type checks resolve their own, so a target declared on an ancestor script is recognized rather than flagged. | |
 
 ### Bugprone
 
@@ -137,7 +138,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `local-variable-shadowing`, `chain-whitespace`, `exclamation-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
-`unchecked-cast`, `unresolved-script`, and `short-wait-interval`.
+`unchecked-cast`, `unresolved-script`, `short-wait-interval`, and
+`goto-state`.
 
 ## Configuration
 
@@ -212,6 +214,7 @@ rules:
   unchecked_cast: true
   unresolved_script: true
   short_wait_interval: true
+  goto_state: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
