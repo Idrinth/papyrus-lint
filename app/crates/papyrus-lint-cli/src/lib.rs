@@ -206,7 +206,7 @@ pub struct JsonDiagnostic {
     pub line: usize,
     pub column: usize,
     pub rule: &'static str,
-    pub level: Option<&'static str>,
+    pub level: &'static str,
     pub message: String,
 }
 

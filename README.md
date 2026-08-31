@@ -421,8 +421,9 @@ An example valid report is:
 
 Every resolved script gets a `files` entry, even one with no diagnostics,
 so a consumer can clear stale diagnostics for a file that's since become
-clean. `level` is `"error"`, `"warning"`, `"info"`, or (in practice, never
-from a built-in lint) `null` — see `Diagnostic::level`. `files_fixed` is
+clean. `level` is always `"error"`, `"warning"`, or `"info"`. Every built-in lint
+sets a level; an untagged external diagnostic is conservatively reported as
+`"error"` — see `Diagnostic::level`. `files_fixed` is
 only present (non-`null`) when run with the `fix` subcommand. `success`
 reports whether the run would exit `0`; here it's `true` because a
 `[warning]`-level diagnostic doesn't fail the run under the default

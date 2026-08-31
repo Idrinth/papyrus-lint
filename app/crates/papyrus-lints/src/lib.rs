@@ -68,20 +68,18 @@ impl Diagnostic {
     /// The severity level tagged onto the front of [`Self::message`] (e.g.
     /// `"[warning] ..."`), matching the `^\[(error|warning|info)\]`
     /// convention the frontend's `levelOf` parses the same messages with.
-    /// Every built-in lint tags one; `None` only arises from a diagnostic
-    /// raised outside this crate's own rules (e.g. a malformed
-    /// `forbidden-functions.yaml` entry, which `build.rs` rejects before it
-    /// gets this far) — see [`Config::should_fail_on`], which treats that
-    /// case the same as `"error"`.
-    pub fn level(&self) -> Option<&'static str> {
+    /// Every built-in lint tags one. Untagged diagnostics are classified as
+    /// errors so every diagnostic has a level and an accidentally omitted tag
+    /// cannot make a potentially serious finding less visible.
+    pub fn level(&self) -> &'static str {
         if self.message.starts_with("[error]") {
-            Some("error")
+            "error"
         } else if self.message.starts_with("[warning]") {
-            Some("warning")
+            "warning"
         } else if self.message.starts_with("[info]") {
-            Some("info")
+            "info"
         } else {
-            None
+            "error"
         }
     }
 }
@@ -328,10 +326,10 @@ mod tests {
             rule: "some-rule",
         };
 
-        assert_eq!(tagged("[error] boom").level(), Some("error"));
-        assert_eq!(tagged("[warning] hmm").level(), Some("warning"));
-        assert_eq!(tagged("[info] fyi").level(), Some("info"));
-        assert_eq!(tagged("No recognized level prefix here").level(), None);
+        assert_eq!(tagged("[error] boom").level(), "error");
+        assert_eq!(tagged("[warning] hmm").level(), "warning");
+        assert_eq!(tagged("[info] fyi").level(), "info");
+        assert_eq!(tagged("No recognized level prefix here").level(), "error");
     }
 
     #[test]

@@ -374,14 +374,12 @@ impl Config {
 
     /// Whether `diagnostic` should count as a reason for the CLI to exit
     /// non-zero, per [`Self::fail_on_warning`]/[`Self::fail_on_info`]. An
-    /// `[error]`-level diagnostic always counts, as does one tagged with no
-    /// level at all (see [`Diagnostic::level`]) — which no built-in lint
-    /// produces, but is treated conservatively as a failure if one ever
-    /// does.
+    /// `[error]`-level diagnostic always counts. Untagged diagnostics are
+    /// classified as errors by [`Diagnostic::level`] and therefore count too.
     pub fn should_fail_on(&self, diagnostic: &Diagnostic) -> bool {
         match diagnostic.level() {
-            Some("warning") => self.fail_on_warning,
-            Some("info") => self.fail_on_info,
+            "warning" => self.fail_on_warning,
+            "info" => self.fail_on_info,
             _ => true,
         }
     }
