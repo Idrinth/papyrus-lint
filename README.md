@@ -477,10 +477,11 @@ so a fix can be saved and verified in one step, without reopening the
 file from the Lint results list. Either button runs:
 
 ```text
-PapyrusCompiler.exe "<source dir>" -f="<script name>.psc" -i="<source dir 1>;<source dir 2>" -o="<output dir>"
+PapyrusCompiler.exe "<script path>" -i="<source dir 1>;<source dir 2>" -o="<output dir>" -f="TESV_Papyrus_Flags.flg"
 ```
 
-where `<source dir>` is the directory the `.psc` file lives in
+where `<script path>` is the path to the `.psc` file, whose parent directory
+is the source directory
 (conventionally a `scripts/source` or `source/scripts` directory under the
 project root) and `<output dir>` is its parent, matching the layout
 Bethesda's tooling expects — a `Source` directory holding `.psc` files
@@ -491,6 +492,9 @@ Configuration above), separated by `;` (PapyrusCompiler.exe accepts
 multiple import directories that way), so the script can still resolve
 imports from the other layout, or a configured additional root, even
 though it only lives in one of them.
+The compiler is run with its containing directory as the working directory,
+allowing it to resolve the bundled `TESV_Papyrus_Flags.flg` passed by the final
+`-f` argument.
 
 The compiler's stdout/stderr is shown once it finishes (beneath the
 "Compile" button on the Lint results list, or beneath the editor for
