@@ -217,6 +217,23 @@ h1 {
   padding: 0.25em 0.5em;
 }
 
+.settings-information {
+  margin-top: 0;
+}
+
+.settings-information__field {
+  display: grid;
+  grid-template-columns: minmax(11em, auto) 1fr;
+  gap: 0.75em;
+}
+
+.settings-information__field output {
+  min-width: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  opacity: 0.75;
+}
+
 .drop-zone {
   width: 100%;
   padding: 3em 1.5em;

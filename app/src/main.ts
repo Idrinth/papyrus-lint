@@ -27,6 +27,8 @@ let namedArgumentsStyleEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let compilerPathEl: HTMLInputElement | null;
 let scriptRootsEl: HTMLTextAreaElement | null;
+let detectedScriptRootsEl: HTMLOutputElement | null;
+let usedConfigurationFileEl: HTMLOutputElement | null;
 let semicolonStyleEl: HTMLSelectElement | null;
 let cyclomaticComplexityWarningEl: HTMLInputElement | null;
 let cyclomaticComplexityErrorEl: HTMLInputElement | null;
@@ -101,6 +103,11 @@ export interface CompileOutcome {
   stdout: string;
   stderr: string;
   personal_data_stripped: boolean;
+}
+
+export interface ProjectInfo {
+  detected_script_roots: string[];
+  used_configuration_file: string | null;
 }
 
 export interface LintRules {
@@ -384,6 +391,26 @@ export async function loadScriptRoots(dir: string): Promise<string[]> {
   } catch (error) {
     console.error(error);
     return [];
+  }
+}
+
+export async function loadProjectInfo(dir: string): Promise<ProjectInfo> {
+  try {
+    return await invoke<ProjectInfo>("load_project_info", { dir });
+  } catch (error) {
+    console.error(error);
+    return { detected_script_roots: [], used_configuration_file: null };
+  }
+}
+
+export function applyProjectInfoToUI(info: ProjectInfo) {
+  if (detectedScriptRootsEl) {
+    detectedScriptRootsEl.textContent = info.detected_script_roots.length
+      ? info.detected_script_roots.join("\n")
+      : "None detected";
+  }
+  if (usedConfigurationFileEl) {
+    usedConfigurationFileEl.textContent = info.used_configuration_file ?? "None (using defaults)";
   }
 }
 
@@ -1305,6 +1332,7 @@ export async function useProjectDir(dir: string) {
   }
   currentScriptRoots = await loadScriptRoots(dir);
   applyScriptRootsToUI(currentScriptRoots);
+  applyProjectInfoToUI(await loadProjectInfo(dir));
   rememberProjectDir(dir);
 }
 
@@ -1419,6 +1447,8 @@ window.addEventListener("DOMContentLoaded", () => {
   filenameFilterEl = document.querySelector("#filename-filter");
   compilerPathEl = document.querySelector("#compiler-path");
   scriptRootsEl = document.querySelector("#script-roots");
+  detectedScriptRootsEl = document.querySelector("#detected-script-roots");
+  usedConfigurationFileEl = document.querySelector("#used-configuration-file");
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");

@@ -61,6 +61,17 @@
         </div>
 
         <div id="panel-settings" class="tabs__panel" role="tabpanel" aria-labelledby="tab-settings" hidden>
+          <fieldset class="settings-group settings-information">
+            <legend>Project information</legend>
+            <div class="settings-information__field">
+              <span>Detected Script Roots</span>
+              <output id="detected-script-roots">No project loaded</output>
+            </div>
+            <div class="settings-information__field">
+              <span>Used Configuration File</span>
+              <output id="used-configuration-file">No project loaded</output>
+            </div>
+          </fieldset>
           <div class="compiler-path-setting">
             <label for="compiler-path">PapyrusCompiler.exe path</label>
             <input
