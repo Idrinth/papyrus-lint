@@ -40,7 +40,13 @@ desktop app's binary at all.
 │   │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
 │   │       │                     # repair_psc_file), built on papyrus-lint-core
 │   │       ├── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button,
-│   │       │                     # then strips personal data from the compiled .pex
+│   │       │                     # then strips personal data from the compiled .pex;
+│   │       │                     # also compiles into a throwaway temp dir (never
+│   │       │                     # touching the project's real output) for the
+│   │       │                     # compile_check lint setting, below
+│   │       ├── compile_diagnostics.rs # Parses PapyrusCompiler.exe's own reported
+│   │       │                     # errors, from compiler.rs's temp-dir compile, into
+│   │       │                     # lint Diagnostics for the compile_check setting
 │   │       └── pex_header.rs      # Parses a compiled .pex file's header just far
 │   │                             # enough to blank its userName/machineName fields
 │   └── crates/
@@ -272,7 +278,14 @@ back to two directories above it if no such pair is found at all; the
 desktop app's frontend still uses that simpler fixed "two directories up"
 rule for a bare `.psc` dropped directly (`projectDirForPscPath`).
 Configuration controls formatting, lint enablement, complexity thresholds,
-CLI failure levels, and the compiler path. See the [README configuration
+CLI failure levels, and the compiler path. It also controls whether the
+desktop app's `lint_psc_file`/`repair_psc_file` commands additionally run
+PapyrusCompiler.exe against a dropped `.psc` as part of linting it
+(`compile_check`, off by default), merging in any errors it reports (see
+`app/src-tauri/src/compile_diagnostics.rs`) alongside the lint engine's
+own; unlike the "Compile"/"Save & Compile" buttons, this always compiles
+into a throwaway temporary directory rather than the project's real
+output directory. See the [README configuration
 reference](README.md#configuration) for the complete schema and defaults.
 
 The desktop app's `parse_psc_file` command, and both the app's and the

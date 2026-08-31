@@ -80,6 +80,9 @@
               placeholder="Auto-detected from ../Papyrus Compiler if left blank"
             />
           </div>
+          <label title="Also runs PapyrusCompiler.exe (into a throwaway temporary directory, so your project's real compiled output is never touched) against a dropped .psc as part of linting it, reporting any errors it finds alongside the lint engine's own findings. Requires a PapyrusCompiler.exe path above.">
+            <input type="checkbox" id="compile-check" /> Also check with PapyrusCompiler.exe while linting
+          </label>
           <div class="script-roots-setting">
             <label for="script-roots">Additional script roots</label>
             <textarea

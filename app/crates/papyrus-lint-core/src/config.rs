@@ -33,6 +33,18 @@ struct ProjectFile {
     compiler_path: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     additional_script_roots: Vec<String>,
+    /// Whether the desktop app also runs PapyrusCompiler.exe (at
+    /// `compiler_path`, above) against a dropped `.psc` as part of linting
+    /// it, surfacing any errors it reports as additional `[error]`
+    /// diagnostics alongside the lint engine's own findings. `false` by
+    /// default: it's opt-in since it requires a configured compiler path
+    /// and is slower than the lint engine's own, dependency-free checks.
+    /// Compiles to a throwaway temporary directory rather than the
+    /// project's real output directory, so enabling it never touches (or
+    /// requires write access to) the project's actual compiled `.pex`
+    /// output.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    compile_check: bool,
     #[serde(flatten)]
     lint: papyrus_lints::Config,
 }
@@ -80,6 +92,13 @@ const FIELD_COMMENTS: &[(&str, &str)] = &[
         "additional_script_roots",
         "# Extra directories (relative to the project root, or absolute) to search\n\
          # for .psc files, besides scripts/source and source/scripts",
+    ),
+    (
+        "compile_check",
+        "# true, false; also runs PapyrusCompiler.exe (into a throwaway temporary\n\
+         # directory) as part of linting a dropped .psc, reporting its errors\n\
+         # alongside the lint engine's own. Requires compiler_path to be set/\n\
+         # auto-detected",
     ),
     ("semicolon", "# true, false"),
     ("indentation", "# tab, space"),
@@ -149,7 +168,9 @@ pub fn initialize_default_config(dir: &Path) -> Result<PathBuf, String> {
     // an initialized file should serve as a complete, discoverable template.
     let lint_yaml = papyrus_lints::config::to_yaml(&papyrus_lints::Config::default())
         .map_err(|err| err.to_string())?;
-    let yaml = format!("compiler_path: null\nadditional_script_roots: []\n{lint_yaml}");
+    let yaml = format!(
+        "compiler_path: null\nadditional_script_roots: []\ncompile_check: false\n{lint_yaml}"
+    );
     let mut file = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -208,6 +229,23 @@ pub fn save_compiler_path(dir: &Path, path: Option<&str>) -> Result<(), String> 
         .map(str::trim)
         .filter(|path| !path.is_empty())
         .map(str::to_owned);
+    save_project_file(dir, &project)
+}
+
+/// Reads `dir`'s papyrus-lint config file and returns whether it enables
+/// running PapyrusCompiler.exe as part of linting a `.psc`, surfacing any
+/// errors it reports alongside the lint engine's own findings. `false`
+/// (the default) if `dir` has no config file or doesn't set the key.
+pub fn load_compile_check(dir: &Path) -> Result<bool, String> {
+    Ok(load_project_file(dir)?.compile_check)
+}
+
+/// Persists whether the desktop app runs PapyrusCompiler.exe as part of
+/// linting a `.psc` to `dir`'s papyrus-lint config file, preserving its
+/// other settings.
+pub fn save_compile_check(dir: &Path, enabled: bool) -> Result<(), String> {
+    let mut project = load_project_file(dir)?;
+    project.compile_check = enabled;
     save_project_file(dir, &project)
 }
 
@@ -525,6 +563,56 @@ mod tests {
             load_compiler_path(dir.path()).expect("should succeed"),
             None
         );
+    }
+
+    #[test]
+    fn load_compile_check_defaults_to_false_when_unset() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert!(!load_compile_check(dir.path()).expect("should succeed"));
+    }
+
+    #[test]
+    fn save_and_load_compile_check_round_trips_without_disturbing_lint_settings() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+        save_config(dir.path(), &config).expect("saving lint config should succeed");
+        save_compiler_path(dir.path(), Some("C:\\Tools\\PapyrusCompiler.exe"))
+            .expect("saving compiler path should succeed");
+
+        save_compile_check(dir.path(), true).expect("saving compile check should succeed");
+
+        assert!(load_compile_check(dir.path()).expect("should succeed"));
+        assert_eq!(load_config(dir.path()).expect("should succeed"), config);
+        assert_eq!(
+            load_compiler_path(dir.path()).expect("should succeed"),
+            Some("C:\\Tools\\PapyrusCompiler.exe".to_string())
+        );
+    }
+
+    #[test]
+    fn save_compile_check_false_clears_it() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        save_compile_check(dir.path(), true).expect("saving compile check should succeed");
+
+        save_compile_check(dir.path(), false).expect("clearing compile check should succeed");
+
+        assert!(!load_compile_check(dir.path()).expect("should succeed"));
+    }
+
+    #[test]
+    fn saved_config_omits_compile_check_when_disabled() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        save_config(dir.path(), &papyrus_lints::Config::default())
+            .expect("saving lint config should succeed");
+
+        let contents = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+            .expect("failed to read saved config file");
+        assert!(!contents.contains("compile_check"));
     }
 
     #[test]
