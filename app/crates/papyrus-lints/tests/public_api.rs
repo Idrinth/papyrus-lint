@@ -28,12 +28,15 @@ fn repair_is_idempotent_and_clears_fixable_diagnostics() {
 
     assert_eq!(
         repaired,
-        "ScriptName Example\r\n\r\nFunction Run(Int left, Int right)\r\nEndFunction\r\n"
+        "ScriptName Example\r\n\r\nFunction Run(Int Left, Int Right)\r\nEndFunction\r\n"
     );
     assert_eq!(repair(&repaired, &config), repaired);
-    assert!(lint(&repaired, &config)
-        .iter()
-        .all(|diagnostic| { !matches!(diagnostic.rule, "trailing-whitespace" | "comma-spacing") }));
+    assert!(lint(&repaired, &config).iter().all(|diagnostic| {
+        !matches!(
+            diagnostic.rule,
+            "trailing-whitespace" | "comma-spacing" | "identifier-casing"
+        )
+    }));
 }
 
 #[test]

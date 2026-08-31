@@ -244,10 +244,15 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
 /// A ruleset disabled via `config.rules` has its fix skipped too.
 pub fn repair(source: &str, config: &Config) -> String {
     let rules = &config.rules;
-    let source = if rules.semicolon {
-        semicolon::repair(source, config.semicolon_style())
+    let source = if rules.identifier_casing {
+        identifier_casing::repair(source, config.identifier_casing)
     } else {
         source.to_string()
+    };
+    let source = if rules.semicolon {
+        semicolon::repair(&source, config.semicolon_style())
+    } else {
+        source
     };
     let source = if rules.indentation {
         indentation::repair(&source, config.indentation_unit())
