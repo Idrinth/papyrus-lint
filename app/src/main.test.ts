@@ -16,6 +16,7 @@ import {
   DEFAULT_RULES,
   applyAutocompleteSelection,
   applyLintConfigToUI,
+  applyProjectInfoToUI,
   applyTheme,
   applyScriptRootsToUI,
   buildPscResultItem,
@@ -44,6 +45,7 @@ import {
   loadAppVersion,
   loadCompilerPath,
   loadLintConfig,
+  loadProjectInfo,
   loadStoredTheme,
   loadScriptRoots,
   matchesFilenameFilter,
@@ -510,6 +512,49 @@ describe("useProjectDir", () => {
 
     expect(document.querySelector<HTMLTextAreaElement>("#script-roots")!.value).toBe(
       "../SharedScripts\n/abs/OtherScripts",
+    );
+  });
+
+  it("shows detected script roots and the configuration file", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_script_roots: () => [],
+      load_project_info: () => ({
+        detected_script_roots: ["/my/project/scripts/source", "/shared/scripts"],
+        used_configuration_file: "/my/project/papyrus-lint.yml",
+      }),
+    });
+
+    await useProjectDir("/my/project");
+
+    expect(document.querySelector("#detected-script-roots")!.textContent).toBe(
+      "/my/project/scripts/source\n/shared/scripts",
+    );
+    expect(document.querySelector("#used-configuration-file")!.textContent).toBe(
+      "/my/project/papyrus-lint.yml",
+    );
+  });
+});
+
+describe("loadProjectInfo / applyProjectInfoToUI", () => {
+  it("loads project information from the backend", async () => {
+    const info = {
+      detected_script_roots: ["/project/scripts/source"],
+      used_configuration_file: "/project/papyrus-lint.yaml",
+    };
+    invokeImplFor({ load_project_info: () => info });
+
+    await expect(loadProjectInfo("/project")).resolves.toEqual(info);
+    expect(invokeMock).toHaveBeenCalledWith("load_project_info", { dir: "/project" });
+  });
+
+  it("shows explicit empty-state messages", () => {
+    applyProjectInfoToUI({ detected_script_roots: [], used_configuration_file: null });
+
+    expect(document.querySelector("#detected-script-roots")!.textContent).toBe("None detected");
+    expect(document.querySelector("#used-configuration-file")!.textContent).toBe(
+      "None (using defaults)",
     );
   });
 });

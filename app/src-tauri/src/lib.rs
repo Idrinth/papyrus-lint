@@ -4,7 +4,13 @@ pub mod pex_header;
 use std::path::{Path, PathBuf};
 
 use papyrus_lint_core::source_encoding::read_psc_source;
-use papyrus_lint_core::{achlist, ast_cache, config, function_table};
+use papyrus_lint_core::{achlist, ast_cache, config, function_table, script_locator};
+
+#[derive(Debug, PartialEq, serde::Serialize)]
+struct ProjectInfo {
+    detected_script_roots: Vec<String>,
+    used_configuration_file: Option<String>,
+}
 
 /// Returns the desktop app's version (from `app/src-tauri/Cargo.toml`, kept in
 /// sync with `package.json`/`tauri.conf.json` at release time), so the
@@ -119,6 +125,22 @@ fn save_compiler_path(dir: String, path: String) -> Result<(), String> {
 #[tauri::command]
 fn load_script_roots(dir: String) -> Result<Vec<String>, String> {
     config::load_script_roots(&PathBuf::from(dir))
+}
+
+/// Reports the project paths discovered by the backend for display in the
+/// Settings tab. Only script search directories that exist are included.
+#[tauri::command]
+fn load_project_info(dir: String) -> Result<ProjectInfo, String> {
+    let root = PathBuf::from(dir);
+    let additional_roots = config::load_script_roots(&root)?;
+    Ok(ProjectInfo {
+        detected_script_roots: script_locator::detected_script_roots(&root, &additional_roots)
+            .into_iter()
+            .map(|path| path.to_string_lossy().into_owned())
+            .collect(),
+        used_configuration_file: config::config_file_path(&root)
+            .map(|path| path.to_string_lossy().into_owned()),
+    })
 }
 
 /// Persists `roots` as `dir`'s configured additional script root
@@ -247,6 +269,7 @@ pub fn run() {
             load_compiler_path,
             save_compiler_path,
             load_script_roots,
+            load_project_info,
             save_script_roots,
             lint_psc_file,
             repair_psc_file,
@@ -473,6 +496,37 @@ mod tests {
         assert_eq!(
             load_script_roots(dir_string).unwrap(),
             vec!["../SharedScripts".to_string()]
+        );
+    }
+
+    #[test]
+    fn project_info_reports_detected_roots_and_configuration_file() {
+        let dir = tempdir().unwrap();
+        let scripts = dir.path().join("scripts/source");
+        let shared = dir.path().join("shared");
+        std::fs::create_dir_all(&scripts).unwrap();
+        std::fs::create_dir_all(&shared).unwrap();
+        std::fs::write(
+            dir.path().join("papyrus-lint.yml"),
+            "additional_script_roots:\n  - shared\n",
+        )
+        .unwrap();
+
+        let info = load_project_info(dir.path().to_string_lossy().into_owned()).unwrap();
+        assert_eq!(
+            info,
+            ProjectInfo {
+                detected_script_roots: vec![
+                    scripts.to_string_lossy().into_owned(),
+                    shared.to_string_lossy().into_owned(),
+                ],
+                used_configuration_file: Some(
+                    dir.path()
+                        .join("papyrus-lint.yml")
+                        .to_string_lossy()
+                        .into_owned()
+                ),
+            }
         );
     }
 
