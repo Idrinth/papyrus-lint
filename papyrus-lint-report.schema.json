@@ -100,16 +100,12 @@
           "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
         },
         "level": {
-          "description": "The diagnostic severity, or null for an unclassified external diagnostic.",
-          "type": [
-            "string",
-            "null"
-          ],
+          "description": "The diagnostic severity. Untagged external diagnostics are classified as errors.",
+          "type": "string",
           "enum": [
             "error",
             "warning",
-            "info",
-            null
+            "info"
           ]
         },
         "message": {
