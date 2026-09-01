@@ -46,6 +46,7 @@ pub mod unresolved_script;
 pub mod unused_getter;
 pub mod unused_local_variable;
 pub mod unused_property;
+pub mod useless_downcast;
 
 use serde::Serialize;
 
@@ -91,12 +92,12 @@ impl Diagnostic {
 /// its UI). It selects the "Semicolon at end of line" policy and the
 /// "Formatting checks"/"Indentation" style checked here.
 ///
-/// The "Argument type check" and "Return type check" lints only resolve
-/// object-type subtyping through scripts declared in `source` itself this
-/// way; see [`lint_with_external_arguments`] to also resolve it through
-/// other scripts' `Extends` chains. The "Inherited function override" lint
-/// can never find anything to flag this way, since it always needs to
-/// resolve `source`'s own `Extends` chain.
+/// The "Argument type check", "Return type check", and "Useless downcast"
+/// lints only resolve object-type subtyping through scripts declared in
+/// `source` itself this way; see [`lint_with_external_arguments`] to also
+/// resolve it through other scripts' `Extends` chains. The "Inherited
+/// function override" lint can never find anything to flag this way, since
+/// it always needs to resolve `source`'s own `Extends` chain.
 ///
 /// A line carrying a trailing `; @disable <rule-id>[, <rule-id>...]`
 /// comment (e.g. `action = 1 ; @disable float-to-int`) has diagnostics from
@@ -117,9 +118,11 @@ pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
 /// "Inherited function override" lint can resolve `source`'s own `Extends`
 /// chain to flag a function that overrides an inherited one, so the
 /// "Argument naming consistency" lint can compare an overriding function's
-/// parameter names against the inherited declaration's, and so the "Total
+/// parameter names against the inherited declaration's, so the "Total
 /// named state count"/"Multiple Auto states" lint pair can tally `State`s
-/// declared anywhere in `source`'s ancestry alongside its own. See
+/// declared anywhere in `source`'s ancestry alongside its own, and so the
+/// "Useless downcast" lint recognizes a cast to an ancestor of the value's
+/// script (not just an exact-type match). See
 /// [`argument_types::ExternalSignatures`].
 pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     source: &str,
@@ -236,6 +239,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.unchecked_cast {
         diagnostics.extend(unchecked_cast::check(source));
+    }
+    if rules.useless_downcast {
+        diagnostics.extend(useless_downcast::check_with(source, external));
     }
     if rules.short_wait_interval {
         diagnostics.extend(short_wait_interval::check(source, config.min_wait_interval));
@@ -706,6 +712,12 @@ mod tests {
                 unchecked_cast::RULE,
                 Config::default(),
                 config_with(|c| c.rules.unchecked_cast = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Actor akActor)\n    Foo(akActor as Actor)\nEndFunction\n",
+                useless_downcast::RULE,
+                Config::default(),
+                config_with(|c| c.rules.useless_downcast = false),
             ),
             (
                 "ScriptName Example\n\nFunction Test(Int a)\n    Int b = a / 0\nEndFunction\n",

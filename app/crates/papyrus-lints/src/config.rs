@@ -50,6 +50,7 @@
 //!   explicit_return: true
 //!   unchecked_form_parameter: false
 //!   unchecked_cast: true
+//!   useless_downcast: true
 //!   unresolved_script: true
 //!   short_wait_interval: true
 //!   state_function_signature: true
@@ -288,6 +289,8 @@ pub struct Rules {
     pub unchecked_form_parameter: bool,
     /// The "Unchecked cast" lint.
     pub unchecked_cast: bool,
+    /// The "Useless downcast" lint.
+    pub useless_downcast: bool,
     /// The "Unresolved script reference" lint.
     pub unresolved_script: bool,
     /// The "Short wait/update interval" lint.
@@ -338,6 +341,7 @@ impl Default for Rules {
             explicit_return: true,
             unchecked_form_parameter: false,
             unchecked_cast: true,
+            useless_downcast: true,
             unresolved_script: true,
             short_wait_interval: true,
             state_function_signature: true,
@@ -477,6 +481,7 @@ mod tests {
         // branch.
         assert!(!config.rules.unchecked_form_parameter);
         assert!(config.rules.unchecked_cast);
+        assert!(config.rules.useless_downcast);
         assert!(config.rules.unresolved_script);
         assert!(config.rules.short_wait_interval);
         assert!(config.rules.state_function_signature);

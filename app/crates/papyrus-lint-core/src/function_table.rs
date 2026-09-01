@@ -1153,6 +1153,25 @@ EndFunction
     }
 
     #[test]
+    fn flags_a_cast_to_a_native_ancestor_type_through_the_useless_downcast_lint() {
+        // Regression test: `Actor`/`ObjectReference` are native engine types
+        // with no `.psc` under `root`, so this can only pass via
+        // `FunctionTable::is_subtype`'s native type fallback.
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let diagnostics = papyrus_lints::useless_downcast::check_with(
+            "ScriptName Example\n\nFunction Test(Actor dude)\n    Foo(dude as ObjectReference)\nEndFunction\n",
+            &mut table,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("'Actor' already extends 'ObjectReference'"));
+    }
+
+    #[test]
     fn resolves_an_armor_argument_for_a_form_parameter_through_the_argument_type_check_lint() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         write_script(root.path(), "Form", "ScriptName Form\n");
