@@ -301,7 +301,7 @@ jobs:
       - name: Rename files for easier usage
         run: |
           cd nexus-dist
-          mv *.setup.exe ../setup.exe
+          mv ./*setup.exe ../setup.exe
           mv SublimeLinter* ../sublime.zip
           mv PapyrusLinterCLI-windows.exe ../cli.exe
 
