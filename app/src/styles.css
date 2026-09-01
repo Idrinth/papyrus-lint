@@ -568,6 +568,11 @@ h1 {
   color: inherit;
 }
 
+.code-viewer__editor-line {
+  display: block;
+  min-width: 100%;
+}
+
 .code-viewer__editor-textarea {
   resize: none;
   background: transparent;
