@@ -51,22 +51,63 @@ pub fn find_psc_file(root: &Path, name: &str, additional_roots: &[String]) -> Op
 }
 
 /// Resolves each of `roots` against `root`: an absolute entry is used as-is,
-/// a relative one is joined onto `root`. Used to turn a project's
+/// a relative one is joined onto `root`. A root ending in `source/scripts`
+/// or `scripts/source` is followed by its counterpart beneath the same
+/// parent, so projects containing both layouts need only configure or infer
+/// one of them. Used to turn a project's
 /// user-configured `additional_script_roots` (see
 /// [`crate::config::load_script_roots`]) into directories to search
 /// alongside [`CANDIDATE_DIRS`].
 pub fn resolve_additional_roots(root: &Path, roots: &[String]) -> Vec<PathBuf> {
-    roots
-        .iter()
-        .map(|entry| {
+    let mut resolved = Vec::new();
+
+    for entry in roots {
+        let path = {
             let path = Path::new(entry);
             if path.is_absolute() {
                 path.to_path_buf()
             } else {
                 root.join(path)
             }
-        })
-        .collect()
+        };
+
+        if !resolved.contains(&path) {
+            resolved.push(path.clone());
+        }
+
+        let components = path
+            .file_name()
+            .and_then(|component| component.to_str())
+            .zip(
+                path.parent()
+                    .and_then(Path::file_name)
+                    .and_then(|component| component.to_str()),
+            );
+        let Some(pair_root) = path.parent().and_then(Path::parent) else {
+            continue;
+        };
+        let counterpart = match components {
+            Some((scripts, source))
+                if scripts.eq_ignore_ascii_case("scripts")
+                    && source.eq_ignore_ascii_case("source") =>
+            {
+                pair_root.join("scripts/source")
+            }
+            Some((source, scripts))
+                if source.eq_ignore_ascii_case("source")
+                    && scripts.eq_ignore_ascii_case("scripts") =>
+            {
+                pair_root.join("source/scripts")
+            }
+            _ => continue,
+        };
+
+        if !resolved.contains(&counterpart) {
+            resolved.push(counterpart);
+        }
+    }
+
+    resolved
 }
 
 /// Returns the existing source directories that will be searched for scripts.
@@ -228,6 +269,30 @@ mod tests {
     }
 
     #[test]
+    fn searches_scripts_source_beside_an_added_source_scripts_root() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let scripts_source = root.path().join("shared/scripts/source");
+        fs::create_dir_all(&scripts_source).expect("failed to create scripts/source dir");
+        let expected = write_file(&scripts_source, "Foo.psc");
+
+        let result = find_psc_file(root.path(), "Foo.psc", &["shared/source/scripts".into()]);
+
+        assert_eq!(result, Some(expected));
+    }
+
+    #[test]
+    fn searches_source_scripts_beside_an_added_scripts_source_root() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_scripts = root.path().join("shared/source/scripts");
+        fs::create_dir_all(&source_scripts).expect("failed to create source/scripts dir");
+        let expected = write_file(&source_scripts, "Foo.psc");
+
+        let result = find_psc_file(root.path(), "Foo.psc", &["shared/scripts/source".into()]);
+
+        assert_eq!(result, Some(expected));
+    }
+
+    #[test]
     fn resolve_additional_roots_joins_relative_and_keeps_absolute_paths() {
         let root = Path::new("/game/Data");
 
@@ -244,6 +309,27 @@ mod tests {
             vec![
                 root.join("../SharedScripts"),
                 PathBuf::from("/abs/OtherScripts"),
+            ]
+        );
+    }
+
+    #[test]
+    fn resolve_additional_roots_adds_counterparts_without_duplicates() {
+        let root = Path::new("/game/Data");
+
+        let resolved = resolve_additional_roots(
+            root,
+            &[
+                "Shared/source/scripts".to_string(),
+                "Shared/scripts/source".to_string(),
+            ],
+        );
+
+        assert_eq!(
+            resolved,
+            vec![
+                root.join("Shared/source/scripts"),
+                root.join("Shared/scripts/source"),
             ]
         );
     }
