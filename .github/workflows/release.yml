@@ -291,87 +291,76 @@ jobs:
       - name: Zip default config
         run: |
           cd nexus-dist
-          zip papyrus-lint-config.zip papyrus-lint.yaml
+          zip ../config.zip papyrus-lint.yaml
 
-      - name: Post changelog to Nexus
+      - name: Zip vscode plugin
         run: |
-          set -euo pipefail
-          version="${{ github.ref_name }}"
-          version="${version#v}"
-          jq -n --arg version "$version" --rawfile changelog nexus-changelog.md \
-              '{version: $version, changelog: $changelog}' \
-            | curl -sS -f -X POST "$NEXUS_API/mods/$MOD_ID/changelogs" \
-                -H "apikey: $NEXUSMODS_API_KEY" \
-                -H "Content-Type: application/json" \
-                --data-binary @- > /dev/null
+          cd nexus-dist
+          zip ../vscode.zip papyrus-lint-vscode-*.vsix
 
-      - name: Upload files to Nexus
+      - name: Rename files for easier usage
         run: |
-          set -euo pipefail
-          version="${{ github.ref_name }}"
-          version="${version#v}"
+          cd nexus-dist
+          mv ./*setup.exe ../setup.exe
+          mv SublimeLinter* ../sublime.zip
+          mv PapyrusLinterCLI-windows.exe ../cli.exe
 
-          # $1 group_id, $2 file path, $3 mod-file display name, $4 file_category,
-          # $5 (optional) extra "key":value pairs merged into the create-version request
-          upload_file() {
-            local group_id="$1" file="$2" name="$3" category="$4" extra="${5:-}"
-            local filename size md5hex md5b64 create_resp upload_id presigned_url state body
-
-            filename=$(basename "$file")
-            size=$(stat -c%s "$file")
-            md5hex=$(md5sum "$file" | cut -d' ' -f1)
-            md5b64=$(openssl dgst -md5 -binary "$file" | base64)
-
-            echo "Uploading $filename (group $group_id)..."
-
-            create_resp=$(jq -n --arg fn "$filename" --argjson sz "$size" --arg md5 "$md5hex" \
-                '{filename: $fn, size_bytes: $sz, md5: $md5}' \
-              | curl -sS -f -X POST "$NEXUS_API/uploads" \
-                  -H "apikey: $NEXUSMODS_API_KEY" \
-                  -H "Content-Type: application/json" \
-                  --data-binary @-)
-            upload_id=$(echo "$create_resp" | jq -r '.data.id')
-            presigned_url=$(echo "$create_resp" | jq -r '.data.presigned_url')
-
-            curl -sS -f -X PUT "$presigned_url" \
-              -H "Content-Disposition: attachment; filename=\"$filename\"" \
-              -H "Content-MD5: $md5b64" \
-              --data-binary "@$file" > /dev/null
-
-            curl -sS -f -X POST "$NEXUS_API/uploads/$upload_id/finalise" \
-              -H "apikey: $NEXUSMODS_API_KEY" > /dev/null
-
-            state=""
-            for _ in $(seq 1 30); do
-              state=$(curl -sS -f "$NEXUS_API/uploads/$upload_id" \
-                -H "apikey: $NEXUSMODS_API_KEY" | jq -r '.data.state')
-              [ "$state" = "available" ] && break
-              sleep 5
-            done
-            if [ "$state" != "available" ]; then
-              echo "::error::Upload of $filename never became available (last state: $state)"
-              exit 1
-            fi
-
-            body=$(jq -n --arg uid "$upload_id" --arg name "$name" --arg version "$version" --arg cat "$category" \
-              '{upload_id: $uid, name: $name, version: $version, file_category: $cat}')
-            if [ -n "$extra" ]; then
-              body=$(echo "$body" | jq ". + {$extra}")
-            fi
-
-            curl -sS -f -X POST "$NEXUS_API/mod-files/$group_id/versions" \
-              -H "apikey: $NEXUSMODS_API_KEY" \
-              -H "Content-Type: application/json" \
-              --data-binary "$body" > /dev/null
-          }
-
-          setup_exe=$(ls nexus-dist/*setup.exe)
-          sublime_zip=$(ls nexus-dist/SublimeLinter-contrib-papyrus-lint-*.zip)
-          vscode_vsix=$(ls nexus-dist/papyrus-lint-vscode-*.vsix)
-
-          upload_file 7873554 "$setup_exe" "PapyrusLinter (Windows)" main \
-            '"primary_mod_manager_download":true,"update_mod_version":true'
-          upload_file 7890633 nexus-dist/PapyrusLinterCLI-windows.exe "PapyrusLinterCLI (Windows)" main
-          upload_file 7881441 nexus-dist/papyrus-lint-config.zip "Papyrus Lint Default Config" miscellaneous
-          upload_file 7881339 "$sublime_zip" "SublimeLinter Plugin" optional
-          upload_file 7881354 "$vscode_vsix" "Papyrus Lint Vscode Extension" optional
+      - name: Upload to NexusMods (setup)
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.9
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: "7873554"
+          filename: setup.exe
+          version: ${${{ github.ref_name }}#v}
+          category: main
+          display_name: "PapyrusLinter (Windows)"
+          mod_id: $MOD_ID
+          changelog: < nexus-changelog.md
+          update_mod_version: true
+          allow_mod_manager_download: false
+          primary_mod_manager_download: true
+          description: "Windows GUI executable, for other operating systems see github release."
+      - name: Upload to NexusMods (cli)
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.9
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: "7890633"
+          filename: cli.exe
+          version: ${${{ github.ref_name }}#v}
+          category: main
+          display_name: "PapyrusLinterCLI (Windows)"
+          allow_mod_manager_download: false
+          description: "Windows CLI executable, for other operating systems see github release."
+      - name: Upload to NexusMods (config)
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.9
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: "7881441"
+          filename: config.zip
+          version: ${${{ github.ref_name }}#v}
+          category: miscellaneous
+          display_name: "Papyrus Lint Default Config"
+          allow_mod_manager_download: true
+          description: "If you want to create your own presets start from here."
+      - name: Upload to NexusMods (vscode)
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.9
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: "7881354"
+          filename: vscode.zip
+          version: ${${{ github.ref_name }}#v}
+          category: optional
+          display_name: "Papyrus Lint Vscode Extension"
+          allow_mod_manager_download: false
+          description: "Requires one of the executables from main."
+      - name: Upload to NexusMods (sublime)
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.9
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: "7881339"
+          filename: sublime.zip
+          version: ${${{ github.ref_name }}#v}
+          category: optional
+          display_name: "Papyrus Lint SublimeLinter Plugin"
+          allow_mod_manager_download: false
+          description: "Requires one of the executables from main."
