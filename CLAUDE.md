@@ -232,7 +232,33 @@ commit" GitHub API and linked with the PR title as text; the current
 code coverage (aggregated the same way as CI's coverage-comment job,
 via `.github/scripts/coverage_summary.py`, from the lcov artifacts of
 the most recent successful `ci.yml` run for the tagged commit); and a
-link to the full changelist (`.../compare/<previous-tag>...<tag>`).
+link to the full changelist (`.../compare/<previous-tag>...<tag>`). It
+also builds a plain-text version of the same PR changelist (titles only,
+no PR numbers or links) and uploads it as the `nexus-changelog` artifact
+for the `nexus-upload` job below.
+
+A final `nexus-upload` job (after `release`, `editor-plugins`, and
+`release-notes` all succeed) publishes the release to the project's
+[Nexus Mods page](https://www.nexusmods.com/skyrimspecialedition/mods/189862)
+via the Nexus Mods API, authenticating with the `NEXUSMODS_API_KEY` repo
+secret. It downloads the already-built assets straight off the GitHub
+release (rather than rebuilding anything) — the Windows installer
+(`*setup.exe`), `PapyrusLinterCLI-windows.exe`, the generated
+`papyrus-lint.yaml` (zipped locally, since Nexus expects it as an
+archive), the SublimeLinter plugin `.zip`, and the VS Code extension
+`.vsix` — and posts the `nexus-changelog` artifact's content as a
+changelog entry for the tag's version (`POST /mods/{id}/changelogs`).
+Each of the five files is then uploaded as a new version of its
+corresponding Nexus mod file (`POST /uploads`, a `PUT` of the file to the
+returned presigned URL with matching `Content-MD5`, `POST
+/uploads/{id}/finalise`, then `POST /mod-files/{id}/versions` once the
+upload reports `available`): the two executables as `main` files, the
+editor plugins as `optional`, and the zipped config as `miscellaneous`.
+The setup.exe upload also sets `primary_mod_manager_download` and
+`update_mod_version`, since it's the mod's primary download and drives
+the mod-level version shown on the page. The Nexus API has no endpoint
+to update a mod's page description, so `nexuspage.bbcode` is not synced
+by this job and still needs to be pasted onto the mod page by hand.
 
 ## Merging
 

@@ -182,6 +182,7 @@ jobs:
 
           echo "## Changes" > changelist.md
           echo >> changelist.md
+          : > nexus-changelog.md
 
           declare -A SEEN
           for sha in $(git log "$RANGE" --pretty=format:%H); do
@@ -192,9 +193,17 @@ jobs:
               if [ -z "${SEEN[$number]:-}" ]; then
                 SEEN[$number]=1
                 echo "- [#$number]($url) $title" >> changelist.md
+                echo "- $title" >> nexus-changelog.md
               fi
             done <<< "$PRS"
           done
+
+      - name: Upload Nexus changelog
+        uses: actions/upload-artifact@v7
+        with:
+          name: nexus-changelog
+          path: nexus-changelog.md
+          retention-days: 1
 
       - name: Resolve tagged commit SHA
         id: tag_sha
@@ -249,3 +258,120 @@ jobs:
             --title "${{ github.ref_name }}" \
             --notes-file release-notes.md \
             --repo "${{ github.repository }}"
+
+  nexus-upload:
+    name: Publish release to Nexus Mods
+    needs: [release, editor-plugins, release-notes]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      NEXUSMODS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+      NEXUS_API: https://api.nexusmods.com/v3
+      MOD_ID: "189862"
+    steps:
+      - name: Download Nexus changelog
+        uses: actions/download-artifact@v7
+        with:
+          name: nexus-changelog
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir nexus-dist \
+            -p '*setup.exe' \
+            -p 'PapyrusLinterCLI-windows.exe' \
+            -p 'papyrus-lint.yaml' \
+            -p 'SublimeLinter-contrib-papyrus-lint-*.zip' \
+            -p 'papyrus-lint-vscode-*.vsix'
+
+      - name: Zip default config
+        run: |
+          cd nexus-dist
+          zip papyrus-lint-config.zip papyrus-lint.yaml
+
+      - name: Post changelog to Nexus
+        run: |
+          set -euo pipefail
+          version="${{ github.ref_name }}"
+          version="${version#v}"
+          jq -n --arg version "$version" --rawfile changelog nexus-changelog.md \
+              '{version: $version, changelog: $changelog}' \
+            | curl -sS -f -X POST "$NEXUS_API/mods/$MOD_ID/changelogs" \
+                -H "apikey: $NEXUSMODS_API_KEY" \
+                -H "Content-Type: application/json" \
+                --data-binary @- > /dev/null
+
+      - name: Upload files to Nexus
+        run: |
+          set -euo pipefail
+          version="${{ github.ref_name }}"
+          version="${version#v}"
+
+          # $1 group_id, $2 file path, $3 mod-file display name, $4 file_category,
+          # $5 (optional) extra "key":value pairs merged into the create-version request
+          upload_file() {
+            local group_id="$1" file="$2" name="$3" category="$4" extra="${5:-}"
+            local filename size md5hex md5b64 create_resp upload_id presigned_url state body
+
+            filename=$(basename "$file")
+            size=$(stat -c%s "$file")
+            md5hex=$(md5sum "$file" | cut -d' ' -f1)
+            md5b64=$(openssl dgst -md5 -binary "$file" | base64)
+
+            echo "Uploading $filename (group $group_id)..."
+
+            create_resp=$(jq -n --arg fn "$filename" --argjson sz "$size" --arg md5 "$md5hex" \
+                '{filename: $fn, size_bytes: $sz, md5: $md5}' \
+              | curl -sS -f -X POST "$NEXUS_API/uploads" \
+                  -H "apikey: $NEXUSMODS_API_KEY" \
+                  -H "Content-Type: application/json" \
+                  --data-binary @-)
+            upload_id=$(echo "$create_resp" | jq -r '.data.id')
+            presigned_url=$(echo "$create_resp" | jq -r '.data.presigned_url')
+
+            curl -sS -f -X PUT "$presigned_url" \
+              -H "Content-Disposition: attachment; filename=\"$filename\"" \
+              -H "Content-MD5: $md5b64" \
+              --data-binary "@$file" > /dev/null
+
+            curl -sS -f -X POST "$NEXUS_API/uploads/$upload_id/finalise" \
+              -H "apikey: $NEXUSMODS_API_KEY" > /dev/null
+
+            state=""
+            for _ in $(seq 1 30); do
+              state=$(curl -sS -f "$NEXUS_API/uploads/$upload_id" \
+                -H "apikey: $NEXUSMODS_API_KEY" | jq -r '.data.state')
+              [ "$state" = "available" ] && break
+              sleep 5
+            done
+            if [ "$state" != "available" ]; then
+              echo "::error::Upload of $filename never became available (last state: $state)"
+              exit 1
+            fi
+
+            body=$(jq -n --arg uid "$upload_id" --arg name "$name" --arg version "$version" --arg cat "$category" \
+              '{upload_id: $uid, name: $name, version: $version, file_category: $cat}')
+            if [ -n "$extra" ]; then
+              body=$(echo "$body" | jq ". + {$extra}")
+            fi
+
+            curl -sS -f -X POST "$NEXUS_API/mod-files/$group_id/versions" \
+              -H "apikey: $NEXUSMODS_API_KEY" \
+              -H "Content-Type: application/json" \
+              --data-binary "$body" > /dev/null
+          }
+
+          setup_exe=$(ls nexus-dist/*setup.exe)
+          sublime_zip=$(ls nexus-dist/SublimeLinter-contrib-papyrus-lint-*.zip)
+          vscode_vsix=$(ls nexus-dist/papyrus-lint-vscode-*.vsix)
+
+          upload_file 7873554 "$setup_exe" "PapyrusLinter (Windows)" main \
+            '"primary_mod_manager_download":true,"update_mod_version":true'
+          upload_file 7890633 nexus-dist/PapyrusLinterCLI-windows.exe "PapyrusLinterCLI (Windows)" main
+          upload_file 7881441 nexus-dist/papyrus-lint-config.zip "Papyrus Lint Default Config" miscellaneous
+          upload_file 7881339 "$sublime_zip" "SublimeLinter Plugin" optional
+          upload_file 7881354 "$vscode_vsix" "Papyrus Lint Vscode Extension" optional
