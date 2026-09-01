@@ -2,7 +2,8 @@
 
 This package provides an interface to
 [Papyrus Lint](https://github.com/Idrinth/papyrus-lint)'s standalone
-`PapyrusLinterCLI` binary for [SublimeLinter](http://sublimelinter.com).
+`PapyrusLinterCLI` binary or the desktop app's `PapyrusLinter` executable for
+[SublimeLinter](http://sublimelinter.com).
 It will be used with files that have the `source.papyrus` scope, i.e. a
 Papyrus syntax package installed in Sublime Text.
 
@@ -16,7 +17,9 @@ Papyrus syntax package installed in Sublime Text.
    `SublimeLinter-contrib-papyrus-lint`) or by cloning/copying this
    directory into your Sublime Text `Packages` directory.
 4. Make sure `PapyrusLinterCLI` (or `PapyrusLinterCLI.exe` on Windows) is on
-   your `PATH`. You can build it from this repository or download it from
+   your `PATH`, or configure the installed desktop app's `PapyrusLinter`
+   executable as described below. You can build the standalone CLI from this
+   repository or download it from
    [the releases page](https://github.com/Idrinth/papyrus-lint/releases) —
    or via `cargo build --release --manifest-path
    app/crates/papyrus-lint-cli/Cargo.toml` in this repository.
@@ -26,14 +29,16 @@ Papyrus syntax package installed in Sublime Text.
 - [SublimeLinter settings](http://www.sublimelinter.com/en/stable/settings.html)
 - [Linter settings](http://www.sublimelinter.com/en/stable/linter_settings.html)
 
-Additionally, this linter supports the standard `executable` setting if
-`PapyrusLinterCLI` isn't on your `PATH`:
+By default, the linter runs `PapyrusLinterCLI` from your `PATH`. Its standard
+`executable` setting can instead select either a standalone CLI at another
+location or the desktop app's `PapyrusLinter` executable; both lint and fix
+commands honor this setting:
 
 ```json
 {
     "linters": {
         "papyrus-lint": {
-            "executable": "/path/to/PapyrusLinterCLI"
+            "executable": "/path/to/PapyrusLinter"
         }
     }
 }
