@@ -151,6 +151,7 @@ export interface LintRules {
   goto_state: boolean;
   too_many_states: boolean;
   multiple_auto_states: boolean;
+  conflicting_script_versions: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -212,6 +213,7 @@ export const DEFAULT_RULES: LintRules = {
   goto_state: true,
   too_many_states: true,
   multiple_auto_states: true,
+  conflicting_script_versions: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {

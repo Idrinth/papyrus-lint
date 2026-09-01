@@ -170,6 +170,16 @@ pub struct FunctionTable {
 }
 
 impl FunctionTable {
+    /// Project root searched by this table.
+    pub fn root(&self) -> &std::path::Path {
+        &self.root
+    }
+
+    /// Additional search roots, in resolution order.
+    pub fn additional_roots(&self) -> &[String] {
+        &self.additional_roots
+    }
+
     /// Creates an empty table that resolves script names against
     /// `scripts/source` / `source/scripts` under `root`.
     pub fn new(root: PathBuf) -> Self {

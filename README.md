@@ -87,6 +87,7 @@ apply.
 | **GoToState state reference** | Flags, as a `[warning]`, a `GoToState("Name")` call (bare or `self.GoToState(...)`) whose target isn't declared as a `State` on this script, since a typo'd or renamed state name still compiles — the engine just silently falls back through its state resolution algorithm instead of raising an error, so the call quietly never takes effect. `GoToState("")`, which switches back to the empty state, is always valid. Only a literal string argument is checked; one built from anything else is left unflagged rather than guessed at. A target undeclared on this script is only flagged when this script has no `Extends` target at all, since it may otherwise be declared on a script further up that (unresolved) `Extends` chain — a legitimate way to forward-declare a state for a not-yet-written child script to implement. When linting a `.psc` file dropped in the app, that chain is resolved from the project root too, the same way the argument/return type checks resolve their own, so a target declared on an ancestor script is recognized rather than flagged. | |
 | **Total named state count** | Flags, as an `[error]`, a script whose named `State` blocks, combined with every `State` declared anywhere in its `Extends` ancestry (a same-named state declared more than once along the way counts once), exceed 127 — the [CreationKit wiki's State Reference](https://ck.uesp.net/wiki/State_Reference) documents a hard engine limit of 128 states including the empty state, past which the game and CK refuse to load the script. Only the script's own declared states are counted when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too, the same way the argument/return type checks resolve their own. | |
 | **Multiple Auto states** | Flags, as an `[error]`, a script whose `State` blocks, combined with every `State` declared anywhere in its `Extends` ancestry (as above), include more than one marked `Auto`. The engine itself tolerates a parent and a child each declaring their own `Auto` state (the child's simply takes precedence at startup), but relying on that precedence is fragile — which one actually applies silently depends on which script the instance is, and removing the child's `Auto` state later silently switches its startup state back to the parent's — so this lint flags the combination outright. Only the script's own declared states are considered when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too. | |
+| **Conflicting script versions** | Flags, as a `[warning]`, a `.psc` file when another script search directory contains a case-insensitively same-named file with different contents (determined by MD5), since which version Papyrus resolves can depend on search-directory order. Byte-identical copies are ignored. Only available when linting a file with project context in the desktop app or CLI. | |
 
 ### Bugprone
 
@@ -143,7 +144,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
 `unchecked-cast`, `unresolved-script`, `short-wait-interval`,
-`state-function-signature`, and `goto-state`.
+`state-function-signature`, `goto-state`, and `conflicting-script-versions`.
 
 ## Configuration
 
@@ -227,6 +228,7 @@ rules:
   goto_state: true
   too_many_states: true
   multiple_auto_states: true
+  conflicting_script_versions: true
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the

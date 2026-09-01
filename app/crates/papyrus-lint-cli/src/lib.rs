@@ -458,6 +458,13 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
 
         let mut diagnostics =
             papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut function_table);
+        if lint_config.rules.conflicting_script_versions {
+            diagnostics.extend(papyrus_lint_core::script_locator::conflicting_script_versions(
+                script_path,
+                function_table.root(),
+                function_table.additional_roots(),
+            ));
+        }
         diagnostics.sort_by_key(|d| (d.line, d.column));
 
         // Quiet flags only affect presentation. A hidden diagnostic still
