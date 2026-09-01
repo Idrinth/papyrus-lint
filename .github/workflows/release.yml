@@ -311,11 +311,9 @@ jobs:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7873554"
           filename: setup.exe
-          version: ${${{ github.ref_name }}#v}
+          version: ${{ github.ref_name }}
           category: main
           display_name: "PapyrusLinter (Windows)"
-          mod_id: $MOD_ID
-          changelog: < nexus-changelog.md
           update_mod_version: true
           allow_mod_manager_download: false
           primary_mod_manager_download: true
@@ -326,7 +324,7 @@ jobs:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7890633"
           filename: cli.exe
-          version: ${${{ github.ref_name }}#v}
+          version: ${{ github.ref_name }}
           category: main
           display_name: "PapyrusLinterCLI (Windows)"
           allow_mod_manager_download: false
@@ -337,7 +335,7 @@ jobs:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881441"
           filename: config.zip
-          version: ${${{ github.ref_name }}#v}
+          version: ${{ github.ref_name }}
           category: miscellaneous
           display_name: "Papyrus Lint Default Config"
           allow_mod_manager_download: true
@@ -348,7 +346,7 @@ jobs:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881354"
           filename: vscode.zip
-          version: ${${{ github.ref_name }}#v}
+          version: ${{ github.ref_name }}
           category: optional
           display_name: "Papyrus Lint Vscode Extension"
           allow_mod_manager_download: false
@@ -359,7 +357,7 @@ jobs:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881339"
           filename: sublime.zip
-          version: ${${{ github.ref_name }}#v}
+          version: ${{ github.ref_name }}
           category: optional
           display_name: "Papyrus Lint SublimeLinter Plugin"
           allow_mod_manager_download: false
