@@ -1,0 +1,307 @@
+[b]Papyrus Lint catches bugs that CreationKit's compiler lets through.[/b]
+PapyrusCompiler.exe only checks that a script is syntactically valid — it will happily compile a script that dereferences a None object at runtime, passes a String where an Int is expected, returns the wrong type from a function, compares an Int to a Float inexactly, or contains a branch or statement that can never execute. Those bugs don't show up until later, as a CTD, a quest stage that never advances, or a value that's silently wrong — often far from the line that actually caused them, and long after the mod author has lost the context to spot it. Papyrus Lint scans your .psc source for exactly these patterns (see the full list below) before you ship, on top of the formatting/style issues a linter usually catches, so a mod author finds them at write time instead of from a bug report.
+[heading]Simple Example[/heading]
+[code]Function DoSomething(Actor a, Actor b, Form SomeItem)
+    a.RemoveItem(SomeItem, 1, b);
+EndFunction[/code]
+This compiles, but the likely desired version is:
+[code]Function DoSomething(Actor a, Actor b, Form SomeItem)
+    a.RemoveItem(SomeItem, 1, false, b);
+EndFunction [/code]
+This would be found by the Strict Boolean Rule.
+[heading]What this is NOT[/heading]
+[list]
+[*]A compiler[/*]
+[*]An editor[/*]
+[*]A guarantee a script is fit for purpose[/*]
+[*]A replacement for proper testing[/*]
+[/list]
+[heading]What is a linter?[/heading]
+A linter is a tool that scans source code for patterns that are likely to be mistakes, bad practice, or inconsistent style, without actually running the code. It works from heuristics — recognizable patterns known to often cause problems — rather than proving that a given line is definitely wrong. Because of that, a linter can produce [b]false positives[/b]: diagnostics on code that is actually fine, especially for patterns the checks intentionally can't fully resolve (see e.g. "Strict boolean check" or "None used as an existing Form" below, which skip anything they can't determine with confidence rather than guess). It's normal to disagree with an individual diagnostic and dismiss it.
+
+Treat every diagnostic here as [b]advice, not a guaranteed defect report[/b]: a suggestion worth a second look, not proof the code is broken. Use your own judgment for whether a flagged line needs changing, and use the disable comment below to silence a specific rule on a specific line when you've decided it doesn't apply.
+[heading]How is this tested?[/heading]
+Testing uses three steps to make sure everything is working as intended. Step one is automatic test coverage, currently covering 15422 of 16250 lines(~94,9%). Step two are testprojects I'm running manually and automatically in the GUI, that make sure the lints actually catch what they are intended to without too much noise. Lastly I'm running the tool on actual projects of mine and check every lint result - this is part of my workflow by now and has provided value to me.
+[heading]Implemented Lints[/heading]
+More detailed explanation of the rules and their implementation is available on the GitHub README: [url=https://github.com/Idrinth/papyrus-lint]https://github.com/Idrinth/papyrus-lint[/url]
+[size=4][b]Formatting[/b][/size]
+[table][tr][th]Lint[/th]
+[th]Description[/th]
+[th]Auto-Fix[/th]
+[/tr]
+[tr][td][b]Trailing whitespace[/b][/td]
+[td]Flags lines that end with trailing spaces or tabs.[/td]
+[td]✓[/td]
+[/tr]
+[tr][td][b]Space after comma[/b][/td]
+[td]Requires whitespace after commas in argument lists.[/td]
+[td]✓[/td]
+[/tr]
+[tr][td][b]Semicolon at end of line[/b][/td]
+[td]Requires a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting.[/td]
+[td]✓[/td]
+[/tr]
+[tr][td][b]Formatting checks[/b][/td]
+[td]Flags lines whose indentation doesn't match the configured style/width.[/td]
+[td]✓[/td]
+[/tr]
+[tr][td][b]Whitespace interrupting property/method chaining[/b][/td]
+[td]Flags a space or tab immediately before or after a  member/method access.[/td]
+[td]✓[/td]
+[/tr]
+[tr][td][b]Exclamation mark spacing[/b][/td]
+[td]Flags a negation operator not followed by exactly one space.[/td]
+[td]✓[/td]
+[/tr]
+[tr][td][b]Identifier casing[/b][/td]
+[td]Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured style.[/td]
+[td]✓ [/td]
+[/tr]
+[tr][td][b]Type name casing[/b][/td]
+[td]Flags a script's declared type name if it doesn't follow the configured convention.[/td]
+[td]✓ [/td]
+[/tr]
+[tr][td][b]Spacing around logical/comparison operators[/b][/td]
+[td]Requires exactly one space on either side of logical operators.[/td]
+[td]✓[/td]
+[/tr]
+[tr][td][b]Property sorting[/b][/td]
+[td]Flag declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the ScriptName line, before any variable, function, or state declaration.[/td]
+[td]✓[/td]
+[/tr]
+[/table]
+[size=4][b]Performance[/b][/size]
+[table][tr][th]Lint[/th]
+[th]Description[/th]
+[th]Auto-Fix[/th]
+[/tr]
+[tr][td][b]Forbidden/discouraged function usage[/b][/td]
+[td]Flags calls to functions that are usually unintentional performance bottlenecks.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Slow function usage[/b][/td]
+[td]Flags calls to functions that have a faster equivalent available, and suggests the quicker alternative.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Short wait/update intervals[/b][/td]
+[td]Flags Waits and RegisterFor(Single)Update(GameTime) if the time is smaller than a configured amount.[/td]
+[td][/td]
+[/tr]
+[/table]
+[b][size=4]Reliability[/size][/b]
+[table][tr][th]Lint[/th]
+[th]Description[/th]
+[th]Auto-Fix[/th]
+[/tr]
+[tr][td][b]Getter usage without saving result[/b][/td]
+[td]Flags standalone calls to functions whose names begin with Get if the returned value is unused.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Strict boolean check[/b][/td]
+[td]Flags conditions that rely on Papyrus treated a none-boolean as a boolean.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Argument type check[/b][/td]
+[td]Flags call-site arguments whose type doesn't match the callee's declared parameter type.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Return type check[/b][/td]
+[td]Flags  statements whose value's type doesn't match the enclosing function's declared return type.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Inherited function override[/b][/td]
+[td]Informs about a function declared on this script that shares its name with a function declared on the script it.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Argument naming consistency[/b][/td]
+[td]Flag a function declared on this script whose parameter name doesn't match (case-insensitively) the corresponding parameter of the same-named function declared on the script it Extends.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Strict numeric type check[/b][/td]
+[td]Flags implicit comparisons between ints and floats that rely on Papyrus doing type conversions.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Explicit return on every path[/b][/td]
+[td]Flags a typed function/event with a code path that falls off the end of its body without a Return.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Unresolved script reference[/b][/td]
+[td]Flags script name references that can't be resolved against the configured source directories.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Empty loop/conditional body[/b][/td]
+[td]Flags seemingly useless loops and conditional bodies, since they are likely a mistake.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]GoToState state reference [/b][/td]
+[td]Flags states that are undefined, likely because of typos.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Total named state count [/b][/td]
+[td]Flags a file if the number of states exceeds the possible 128.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Multiple Auto states[/b][/td]
+[td]Flags a script including ancestors that has multiple Auto states, making it hard to reason about.[/td]
+[td][/td]
+[/tr]
+[/table]
+[size=4][b]Bugprone[/b][/size]
+[table][tr][th]Lint[/th]
+[th]Description[/th]
+[th]Auto-Fix[/th]
+[/tr]
+[tr][td][b]Implicit Float-to-Int conversion[/b][/td]
+[td]Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit as Int cast.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Unreachable statement[/b][/td]
+[td]Flags statements that follow a Return.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Static condition[/b][/td]
+[td]Flags conditions that resolve the same every time due to this likely being a mistake.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Division by zero[/b][/td]
+[td]Flags divisions by zero where they are likely to happen.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]None used as an existing Form[/b][/td]
+[td]Flags a member/method access on a local variable or script-level property that's still known to be None.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Local variable shadowing[/b][/td]
+[td]Flags a local variable whose name matches (case-insensitively) a Propertydeclared on the same script.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Form parameter used without a None check[/b][/td]
+[td]Flags a member/method access on a Form-typed function parameter that hasn't yet been confirmed non-None in that path.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Unchecked cast[/b][/td]
+[td]Flags a member/method access on the result of an As cast before that result has been checked against None.[/td]
+[td][/td]
+[/tr]
+[/table]
+[size=4][b]Other[/b][/size]
+[table][tr][th]Lint[/th]
+[th]Description[/th]
+[th]Auto-Fix[/th]
+[/tr]
+[tr][td][b]Unused script properties[/b][/td]
+[td]Flags  Property declarations whose name is never referenced anywhere else in the script.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Cyclomatic complexity[/b][/td]
+[td]Flags functions/events whose cyclomatic complexity exceeds a configurable threshold.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Unused or write-only local variables[/b][/td]
+[td]Flags a local variable inside a function/event) whose value is never read: either it's never referenced again at all.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Prefer named arguments[/b][/td]
+[td]Flags a positional call argument that the configured setting prefers to see passed by Papyrus's named-argument syntax instead.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Useless downcast[/b][/td]
+[td]Flags a cast to a parent type that has no actual value and just makes reading a bit harder.[/td]
+[td][/td]
+[/tr]
+[/table]
+The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
+[heading]Configuration file[/heading]
+All settings following are the default, the file will automatically be loaded from a directory two levels above the psc file(s). This means it is in your Data directory in any normal installation.
+[code]# Path to PapyrusCompiler.exe, or null to auto-detect it
+compiler_path: null
+# Extra directories (relative to the project root, or absolute) to search
+# for .psc files, besides scripts/source and source/scripts
+additional_script_roots: []
+# true, false; also runs PapyrusCompiler.exe (into a throwaway temporary
+# directory) as part of linting a dropped .psc, reporting its errors
+# alongside the lint engine's own. Requires compiler_path to be set/
+# auto-detected
+compile_check: false
+# true, false
+semicolon: false
+# tab, space
+indentation: tab
+# Non-negative integer; used only when indentation is space
+indentation_width: 4
+# camelCase, PascalCase, snake_case, CONSTANT_CASE
+identifier_casing: PascalCase
+# Non-negative integer
+cyclomatic_complexity_warning: 10
+# Non-negative integer
+cyclomatic_complexity_error: 20
+# PascalCase, camelCase, lowercase, UPPERCASE
+type_casing: PascalCase
+# always, instead_of_defaults, never
+named_arguments: never
+# Non-negative number
+min_wait_interval: 0.1
+# true, false
+fail_on_warning: false
+# true, false
+fail_on_info: false
+# Each rule accepts true or false
+rules:
+  trailing_whitespace: true
+  comma_spacing: true
+  forbidden_functions: true
+  slow_functions: true
+  unused_getter: true
+  unused_property: true
+  semicolon: true
+  float_int_conversion: true
+  strict_boolean: true
+  argument_types: true
+  return_types: true
+  function_override: true
+  argument_naming: true
+  numeric_comparison: true
+  indentation: true
+  cyclomatic_complexity: true
+  unreachable_statement: true
+  static_condition: true
+  division_by_zero: true
+  unused_local_variable: true
+  none_form_usage: true
+  local_variable_shadowing: true
+  chain_whitespace: true
+  exclamation_spacing: true
+  identifier_casing: true
+  type_casing: true
+  named_arguments: true
+  operator_spacing: true
+  property_sorting: false
+  explicit_return: true
+  unchecked_form_parameter: false
+  unchecked_cast: true
+  unresolved_script: true
+  short_wait_interval: true
+  state_function_signature: true
+  goto_state: true
+  too_many_states: true
+  multiple_auto_states: true[/code]
+
+[heading]CLI[/heading]
+A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.
+[code]PapyrusLinter init
+PapyrusLinter path/to/project.achlist
+PapyrusLinter path/to/Example.psc
+PapyrusLinter fix path/to/project.achlist
+PapyrusLinter fix path/to/Example.psc
+PapyrusLinter --json path/to/project.achlist
+PapyrusLinter --json fix path/to/project.achlist
+PapyrusLinter --config path/to/papyrus-lint.yaml path/to/Example.psc
+PapyrusLinter --script-root path/to/SharedScripts path/to/project.achlist
+PapyrusLinter --output path/to/report.txt path/to/project.achlist
+PapyrusLinter --json --output path/to/report.json path/to/project.achlist[/code]
+
+[heading]Usage of AI[/heading]
+This tool is almost entirely coded by AI. I have tested it and reviewed code changes, but have rarely coded parts myself.
+
+[heading]Supported Games[/heading]
+I support [u][b]ONLY[/b][/u] Skyrim Special Edition/Anniversary Edition here. I don't own any other Papyrus using game and can not support these games because of that. Code is available [url=https://github.com/Idrinth/papyrus-lint]on Github[/url] under the MIT license, so you can create your own forks for other games if desired.
