@@ -369,9 +369,9 @@ jobs:
           sublime_zip=$(ls nexus-dist/SublimeLinter-contrib-papyrus-lint-*.zip)
           vscode_vsix=$(ls nexus-dist/papyrus-lint-vscode-*.vsix)
 
-          upload_file 7873554 "$setup_exe" "PapyrusLinter Setup" main \
+          upload_file 7873554 "$setup_exe" "PapyrusLinter (Windows)" main \
             '"primary_mod_manager_download":true,"update_mod_version":true'
-          upload_file 7890633 nexus-dist/PapyrusLinterCLI-windows.exe "PapyrusLinterCLI" main
-          upload_file 7881441 nexus-dist/papyrus-lint-config.zip "Default Config" miscellaneous
+          upload_file 7890633 nexus-dist/PapyrusLinterCLI-windows.exe "PapyrusLinterCLI (Windows)" main
+          upload_file 7881441 nexus-dist/papyrus-lint-config.zip "Papyrus Lint Default Config" miscellaneous
           upload_file 7881339 "$sublime_zip" "SublimeLinter Plugin" optional
-          upload_file 7881354 "$vscode_vsix" "VS Code Extension" optional
+          upload_file 7881354 "$vscode_vsix" "Papyrus Lint Vscode Extension" optional
