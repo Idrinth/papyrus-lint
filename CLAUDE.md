@@ -314,7 +314,8 @@ a subprocess.
 one file is updated, make the equivalent update to the other file in the same
 change and verify that the two files remain identical.
 
-Whenever `README.md` is updated, make the corresponding content update to
-`nexuspage.bbcode` in the same change. Preserve the Nexus page's existing style:
-keep its descriptions shorter and more concise than the README rather than
-copying the README's longer explanations verbatim.
+Whenever the documented lints in `README.md` are updated, make the corresponding
+lint update to `nexuspage.bbcode` in the same change. Preserve the Nexus page's
+existing style: keep its lint descriptions shorter and more concise than the
+README rather than copying the README's longer explanations verbatim. Other
+README changes do not need to be synchronized to the Nexus page.
