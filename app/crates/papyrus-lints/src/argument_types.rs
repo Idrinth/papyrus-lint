@@ -85,6 +85,15 @@ pub trait ExternalSignatures {
         true
     }
 
+    /// Whether a declared type can be resolved to a project script, a
+    /// known native engine type, or one of Papyrus's primitive types.
+    /// Used by the "Unresolved script reference" lint for `Extends` and
+    /// type annotations. The default remains conservative for callers
+    /// without project resolution.
+    fn type_exists(&mut self, _type_name: &str) -> bool {
+        true
+    }
+
     /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
     /// or transitively), declares a `State` block named `state_name`. Both
     /// names are matched case-insensitively. Used by the "GoToState state

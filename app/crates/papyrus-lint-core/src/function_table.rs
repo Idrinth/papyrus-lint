@@ -468,6 +468,15 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
         self.script_exists(type_name)
     }
 
+    fn type_exists(&mut self, type_name: &str) -> bool {
+        let name_lower = type_name.to_ascii_lowercase();
+        matches!(
+            name_lower.as_str(),
+            "int" | "float" | "bool" | "string" | "var"
+        ) || crate::native_types::is_known(&name_lower)
+            || self.script_exists(type_name)
+    }
+
     fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
         self.has_state(type_name, state_name)
     }
