@@ -453,15 +453,19 @@ mod tests {
 
     #[test]
     fn import_dirs_appends_additional_script_roots() {
-        let root = Path::new("/game/Data");
+        let project = tempfile::tempdir().expect("failed to create project directory");
+        let root = project.path().join("Data");
         let source_dir = root.join("scripts/source");
+        let relative_root = root.join("../SharedScripts");
+        let absolute_root = tempfile::tempdir().expect("failed to create absolute script root");
+        fs::create_dir_all(&relative_root).expect("failed to create relative script root");
 
         let dirs = import_dirs(
             &source_dir,
-            Some(root),
+            Some(&root),
             &[
                 "../SharedScripts".to_string(),
-                "/abs/OtherScripts".to_string(),
+                absolute_root.path().to_string_lossy().into_owned(),
             ],
         );
 
@@ -471,8 +475,8 @@ mod tests {
                 "{};{};{};{}",
                 root.join("scripts/source").display(),
                 root.join("source/scripts").display(),
-                root.join("../SharedScripts").display(),
-                Path::new("/abs/OtherScripts").display(),
+                relative_root.display(),
+                absolute_root.path().display(),
             )
         );
     }
