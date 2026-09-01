@@ -22,6 +22,14 @@ fn run_cli(args: &[&str]) -> Output {
         .expect("failed to run PapyrusLinterCLI")
 }
 
+fn run_cli_in(args: &[&str], current_dir: &Path) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_PapyrusLinterCLI"))
+        .args(args)
+        .current_dir(current_dir)
+        .output()
+        .expect("failed to run PapyrusLinterCLI")
+}
+
 #[test]
 fn help_is_written_to_stderr_with_the_usage_error_status() {
     let output = run_cli(&["--help"]);
@@ -82,4 +90,68 @@ fn fix_mode_rewrites_a_script_through_the_binary_entry_point() {
     assert!(String::from_utf8(output.stdout)
         .expect("stdout should be UTF-8")
         .contains("(1 script(s) fixed.)"));
+}
+
+#[test]
+fn init_creates_a_config_in_the_process_working_directory() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+
+    let output = run_cli_in(&["init"], dir.path());
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stdout).expect("stdout should be UTF-8"),
+        format!(
+            "Created {}\n",
+            dir.path().join("papyrus-lint.yaml").display()
+        )
+    );
+    let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+        .expect("init should create papyrus-lint.yaml");
+    assert!(config.contains("trailing_whitespace: true"));
+}
+
+#[test]
+fn output_flag_redirects_json_without_writing_to_stdout() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let report_path = dir.path().join("reports/lint.json");
+    write_file(&script, "ScriptName Example   \n");
+    fs::create_dir_all(report_path.parent().unwrap()).expect("failed to create reports directory");
+
+    let output = run_cli(&[
+        "--json",
+        "--output",
+        &report_path.to_string_lossy(),
+        &script.to_string_lossy(),
+    ]);
+
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(report_path).expect("JSON report should be written"),
+    )
+    .expect("output file should contain JSON");
+    assert_eq!(report["scripts_checked"], 1);
+    assert_eq!(report["total_diagnostics"], 1);
+    assert_eq!(
+        report["files"][0]["diagnostics"][0]["rule"],
+        "trailing-whitespace"
+    );
+}
+
+#[test]
+fn missing_script_reports_an_io_error_on_stderr() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let missing_script = dir.path().join("scripts/source/Missing.psc");
+
+    let output = run_cli(&[&missing_script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.starts_with("error: failed to read "));
+    assert!(stderr.contains("Missing.psc"));
 }
