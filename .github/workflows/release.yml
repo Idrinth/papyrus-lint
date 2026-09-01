@@ -105,7 +105,12 @@ jobs:
               ;;
           esac
 
-      - name: Upload CLI binary to release
+      - name: Generate default configuration
+        if: matrix.platform == 'ubuntu-latest'
+        working-directory: cli-dist
+        run: ../app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI init
+
+      - name: Upload CLI and default configuration to release
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
