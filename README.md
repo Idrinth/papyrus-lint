@@ -16,6 +16,25 @@ the full list below) before you ship, on top of the formatting/style
 issues a linter usually catches, so a mod author finds them at write time
 instead of from a bug report.
 
+## Simple Example
+
+```papyrus
+Function DoSomething(Actor a, Actor b, Form SomeItem)
+    a.RemoveItem(SomeItem, 1, b);
+EndFunction
+```
+
+This compiles, but the likely desired version is:
+
+```papyrus
+Function DoSomething(Actor a, Actor b, Form SomeItem)
+    a.RemoveItem(SomeItem, 1, false, b);
+EndFunction
+```
+
+The strict boolean check identifies this issue because the first call passes
+the `Actor` value `b` to a `Bool` parameter.
+
 ![Papyrus Lint Results](resources/papyrus-lint-results.png)
 
 ## What this is NOT
