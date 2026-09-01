@@ -393,6 +393,27 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     };
     additional_script_roots.extend(cli_script_roots);
 
+    // Every directory represented by the achlist is a source root too. This
+    // matters for achlists whose entries are grouped into arbitrary source
+    // directories rather than either of the two conventional layouts: a
+    // script in one listed directory must still be able to resolve a script
+    // type from another listed directory.
+    if !is_psc_file {
+        for script_path in &script_paths {
+            let Some(parent) = script_path.parent() else {
+                continue;
+            };
+            let root = parent
+                .strip_prefix(&project_root)
+                .unwrap_or(parent)
+                .to_string_lossy()
+                .into_owned();
+            if !additional_script_roots.contains(&root) {
+                additional_script_roots.push(root);
+            }
+        }
+    }
+
     let mut function_table =
         FunctionTable::new_with_additional_roots(project_root, additional_script_roots);
     let mut total_diagnostics = 0usize;
@@ -1198,6 +1219,32 @@ mod tests {
         let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
 
         assert_eq!(code, 1);
+        assert!(stdout.contains("[argument-types]"));
+    }
+
+    #[test]
+    fn resolves_cross_script_types_from_every_directory_listed_in_the_achlist() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("source/dir/one/Greeter.psc"),
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("source/dir/two/Example.psc"),
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["source/dir/one/Greeter.psc", "source/dir/two/Example.psc"]"#,
+        );
+
+        let (code, stdout, stderr) = run_captured(&[dir
+            .path()
+            .join("sources.achlist")
+            .to_string_lossy()
+            .into_owned()]);
+
+        assert_eq!(code, 1, "stderr: {stderr}");
         assert!(stdout.contains("[argument-types]"));
     }
 
