@@ -2,14 +2,16 @@ SublimeLinter-contrib-papyrus-lint
 ===================================
 
 This plugin lints Papyrus (.psc) files with the standalone PapyrusLinterCLI
-binary from https://github.com/Idrinth/papyrus-lint.
+binary or the desktop app's PapyrusLinter executable from
+https://github.com/Idrinth/papyrus-lint.
 
 Before this plugin does anything, you need:
 
 1. The base SublimeLinter package installed.
 2. A syntax package that assigns Papyrus files the `source.papyrus` scope
    (e.g. one of the Papyrus syntax packages available via Package Control).
-3. The `PapyrusLinterCLI` binary on your PATH, or its full path configured
-   via this linter's "executable" setting in your SublimeLinter settings.
+3. The `PapyrusLinterCLI` binary on your PATH, or the full path to either
+   executable configured via this linter's "executable" setting in your
+   SublimeLinter settings.
 
 See this package's README.md for configuration details.

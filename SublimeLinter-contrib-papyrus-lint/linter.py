@@ -12,7 +12,7 @@ _LEVEL_TAG = re.compile(r'^\[(?:error|warning|info)\]\s*')
 
 
 class PapyrusLint(Linter):
-    """Runs the standalone `PapyrusLinterCLI` binary against a `.psc` file.
+    """Runs a Papyrus Lint executable against a `.psc` file.
 
     `PapyrusLinterCLI` (from https://github.com/Idrinth/papyrus-lint) reads
     the file straight off disk rather than accepting it on stdin, and uses
@@ -45,7 +45,8 @@ class PapyrusLint(Linter):
         static `cmd` tuple, which would leave a stray empty argument when
         unset.
         """
-        command = ['PapyrusLinterCLI', '--json']
+        executable = self.settings.get('executable') or self.executable
+        command = [executable, '--json']
         config_path = (self.settings.get('config_path') or '').strip()
         if config_path:
             command += ['--config', config_path]

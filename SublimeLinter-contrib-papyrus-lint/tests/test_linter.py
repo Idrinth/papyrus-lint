@@ -81,6 +81,13 @@ class PapyrusLintTests(unittest.TestCase):
 
         self.assertEqual(self.linter.cmd(), ['PapyrusLinterCLI', '--json', '${file}'])
 
+    def test_cmd_uses_configured_executable(self):
+        self.linter.settings = {'executable': '/tools/PapyrusLinter'}
+
+        self.assertEqual(
+            self.linter.cmd(), ['/tools/PapyrusLinter', '--json', '${file}']
+        )
+
     def test_find_errors_converts_every_diagnostic(self):
         report = {
             'files': [
