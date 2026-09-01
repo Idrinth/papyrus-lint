@@ -177,4 +177,106 @@ EndFunction
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 6);
     }
+
+    #[test]
+    fn reports_the_concrete_type_for_each_non_boolean_condition() {
+        let diagnostics = check(
+            r#"ScriptName Example
+
+Function Test(String text, Float ratio, Form target)
+    If text
+    EndIf
+    If ratio
+    EndIf
+    If target
+    EndIf
+EndFunction
+"#,
+        );
+
+        assert_eq!(diagnostics.len(), 3);
+        assert!(diagnostics[0].message.contains("found 'String'"));
+        assert!(diagnostics[1].message.contains("found 'Float'"));
+        assert!(diagnostics[2].message.contains("found 'Form'"));
+    }
+
+    #[test]
+    fn reports_array_conditions_with_array_notation() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int[] values)\n    If values\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 4);
+        assert!(diagnostics[0].message.contains("found 'Int[]'"));
+    }
+
+    #[test]
+    fn resolves_script_properties_and_function_locals() {
+        let diagnostics = check(
+            r#"ScriptName Example
+
+Int Property Count Auto
+
+Function Test()
+    String label = "ready"
+    If Count
+    EndIf
+    While label
+    EndWhile
+EndFunction
+"#,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(diagnostics[0].line, 7);
+        assert!(diagnostics[0].message.contains("found 'Int'"));
+        assert_eq!(diagnostics[1].line, 9);
+        assert!(diagnostics[1].message.contains("found 'String'"));
+    }
+
+    #[test]
+    fn function_parameters_do_not_leak_into_the_next_function() {
+        let diagnostics = check(
+            r#"ScriptName Example
+
+Function First(Int value)
+EndFunction
+
+Function Second()
+    If value
+    EndIf
+EndFunction
+"#,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn checks_conditions_inside_else_bodies() {
+        let diagnostics = check(
+            r#"ScriptName Example
+
+Function Test(Bool ready, Int attempts)
+    If ready
+    Else
+        While attempts
+        EndWhile
+    EndIf
+EndFunction
+"#,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!((diagnostics[0].line, diagnostics[0].column), (6, 9));
+    }
+
+    #[test]
+    fn invalid_source_returns_no_diagnostics() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test(Int count)\n    If count\nEndFunction\n");
+
+        assert!(diagnostics.is_empty());
+    }
 }
