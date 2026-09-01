@@ -51,6 +51,9 @@ fn parse_version(version: &str) -> Option<(u64, u64, u64)> {
     let major = parts.next()?.parse().ok()?;
     let minor = parts.next()?.parse().ok()?;
     let patch = parts.next()?.parse().ok()?;
+    if parts.next().is_some() {
+        return None;
+    }
     Some((major, minor, patch))
 }
 
@@ -303,6 +306,14 @@ mod tests {
     }
 
     #[test]
+    fn parse_version_requires_exactly_three_numeric_components() {
+        assert_eq!(parse_version("1.13.0.1"), None);
+        assert_eq!(parse_version("1.13.0-beta"), None);
+        assert_eq!(parse_version("v1.13.0"), None);
+        assert_eq!(parse_version("18446744073709551616.0.0"), None);
+    }
+
+    #[test]
     fn is_compatible_version_accepts_the_minimum_and_anything_newer() {
         assert!(is_compatible_version(MIN_COMPATIBLE_VERSION));
         assert!(is_compatible_version("1.13.1"));
@@ -382,6 +393,23 @@ mod tests {
             get_in(cache_dir.path(), &path_b, "ScriptName B\n"),
             Some(ast_b)
         );
+    }
+
+    #[test]
+    fn cache_file_path_is_stable_and_does_not_expose_the_source_filename() {
+        let cache_dir = Path::new("/tmp/cache");
+        let source_path = Path::new("/projects/private/MyScript.psc");
+
+        let first = cache_file_path(cache_dir, source_path);
+        let second = cache_file_path(cache_dir, source_path);
+
+        assert_eq!(first, second);
+        assert_eq!(first.parent(), Some(cache_dir));
+        assert_eq!(
+            first.extension().and_then(|value| value.to_str()),
+            Some("json")
+        );
+        assert!(!first.to_string_lossy().contains("MyScript"));
     }
 
     #[test]
