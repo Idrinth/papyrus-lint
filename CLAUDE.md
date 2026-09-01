@@ -313,3 +313,8 @@ a subprocess.
 `AGENTS.md` and `CLAUDE.md` must contain the same project guidance. Whenever
 one file is updated, make the equivalent update to the other file in the same
 change and verify that the two files remain identical.
+
+Whenever `README.md` is updated, make the corresponding content update to
+`nexuspage.bbcode` in the same change. Preserve the Nexus page's existing style:
+keep its descriptions shorter and more concise than the README rather than
+copying the README's longer explanations verbatim.
