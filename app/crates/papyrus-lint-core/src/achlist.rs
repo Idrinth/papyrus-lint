@@ -175,6 +175,31 @@ mod tests {
     }
 
     #[test]
+    fn preserves_absolute_entries() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let absolute = dir.path().join("elsewhere/Foo.psc");
+        let contents = serde_json::to_string(&vec![absolute.to_string_lossy()])
+            .expect("failed to serialize achlist");
+        let achlist_path = write_achlist(dir.path(), "sources.achlist", &contents);
+
+        let result = parse_achlist(&achlist_path).expect("parsing should succeed");
+
+        assert_eq!(result, vec![absolute]);
+    }
+
+    #[test]
+    fn does_not_strip_data_without_a_following_separator() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let data_dir = root.path().join("Data");
+        fs::create_dir_all(&data_dir).expect("failed to create Data dir");
+        let achlist_path = write_achlist(&data_dir, "sources.achlist", r#"["Data"]"#);
+
+        let result = parse_achlist(&achlist_path).expect("parsing should succeed");
+
+        assert_eq!(result, vec![data_dir.join("Data")]);
+    }
+
+    #[test]
     fn errors_on_missing_file() {
         let missing_path = PathBuf::from("/nonexistent/path/does-not-exist.achlist");
 

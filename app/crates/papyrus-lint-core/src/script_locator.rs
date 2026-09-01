@@ -163,6 +163,33 @@ mod tests {
     }
 
     #[test]
+    fn ignores_a_directory_with_the_target_filename() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("scripts/source");
+        fs::create_dir_all(source_dir.join("Foo.psc"))
+            .expect("failed to create misleading directory");
+
+        let result = find_psc_file(root.path(), "Foo.psc", &[]);
+
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn skips_non_directory_search_roots() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let additional_root = root.path().join("not-a-directory");
+        fs::write(&additional_root, "content").expect("failed to create regular file");
+
+        let result = find_psc_file(
+            root.path(),
+            "Foo.psc",
+            &[additional_root.to_string_lossy().into_owned()],
+        );
+
+        assert_eq!(result, None);
+    }
+
+    #[test]
     fn finds_match_in_an_additional_root_relative_to_the_project_root() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         let shared_dir = root.path().join("../SharedScripts");
@@ -260,5 +287,14 @@ mod tests {
             detected_script_roots(root.path(), &["shared".to_string(), "missing".to_string()]),
             vec![conventional, additional]
         );
+    }
+
+    #[test]
+    fn detected_script_roots_excludes_regular_files() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let regular_file = root.path().join("shared");
+        fs::write(&regular_file, "content").expect("failed to create regular file");
+
+        assert!(detected_script_roots(root.path(), &["shared".to_string()]).is_empty());
     }
 }

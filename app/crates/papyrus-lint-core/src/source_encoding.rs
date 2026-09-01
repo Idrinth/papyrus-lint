@@ -48,6 +48,18 @@ mod tests {
     }
 
     #[test]
+    fn decodes_empty_input() {
+        assert_eq!(decode_psc_source(&[]), "");
+    }
+
+    #[test]
+    fn preserves_a_utf8_byte_order_mark() {
+        let bytes = b"\xEF\xBB\xBFScriptName Example";
+
+        assert_eq!(decode_psc_source(bytes), "\u{FEFF}ScriptName Example");
+    }
+
+    #[test]
     fn falls_back_to_cp1252_for_non_utf8_bytes() {
         // 0x93/0x94 are CP1252's curly double quotes; neither is valid
         // UTF-8 on its own.
