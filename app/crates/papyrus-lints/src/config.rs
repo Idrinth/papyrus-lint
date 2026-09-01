@@ -306,6 +306,8 @@ pub struct Rules {
     pub multiple_auto_states: bool,
     /// The "Conflicting script versions" project lint.
     pub conflicting_script_versions: bool,
+    /// The "Unused disable directive" lint. Defaults to `false`.
+    pub unused_disable: bool,
 }
 
 impl Default for Rules {
@@ -352,6 +354,7 @@ impl Default for Rules {
             too_many_states: true,
             multiple_auto_states: true,
             conflicting_script_versions: true,
+            unused_disable: false,
         }
     }
 }
@@ -493,6 +496,7 @@ mod tests {
         assert!(config.rules.too_many_states);
         assert!(config.rules.multiple_auto_states);
         assert!(config.rules.conflicting_script_versions);
+        assert!(!config.rules.unused_disable);
     }
 
     #[test]

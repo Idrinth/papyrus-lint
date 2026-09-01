@@ -217,6 +217,10 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags a cast to a parent type that has no actual value and just makes reading a bit harder.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Unused disable directive[/b][/td]
+[td]Flags unknown @disable rule ids and directives that suppress no diagnostic. Disabled by default.[/td]
+[td][/td]
+[/tr]
 [/table]
 The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
 [heading]Configuration file[/heading]
@@ -286,6 +290,7 @@ rules:
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false
+  unused_disable: false
   unchecked_cast: true
   unresolved_script: true
   short_wait_interval: true

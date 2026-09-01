@@ -43,10 +43,56 @@ pub mod unchecked_cast;
 pub mod unchecked_form_parameter;
 pub mod unreachable_statement;
 pub mod unresolved_script;
+pub mod unused_disable;
 pub mod unused_getter;
 pub mod unused_local_variable;
 pub mod unused_property;
 pub mod useless_downcast;
+
+const KNOWN_RULE_IDS: &[&str] = &[
+    trailing_whitespace::RULE,
+    comma_spacing::RULE,
+    forbidden_functions::RULE,
+    slow_functions::RULE,
+    unused_getter::RULE,
+    unused_property::RULE,
+    semicolon::RULE,
+    float_int_conversion::RULE,
+    strict_boolean::RULE,
+    argument_types::RULE,
+    return_types::RULE,
+    function_override::RULE,
+    argument_naming::RULE,
+    state_function_signature::RULE,
+    numeric_comparison::RULE,
+    indentation::RULE,
+    cyclomatic_complexity::RULE,
+    unreachable_statement::RULE,
+    static_condition::RULE,
+    division_by_zero::RULE,
+    empty_body::RULE,
+    unused_local_variable::RULE,
+    none_form_usage::RULE,
+    local_variable_shadowing::RULE,
+    chain_whitespace::RULE,
+    exclamation_spacing::RULE,
+    identifier_casing::RULE,
+    type_casing::RULE,
+    named_arguments::RULE,
+    operator_spacing::RULE,
+    property_sorting::RULE,
+    explicit_return::RULE,
+    unchecked_form_parameter::RULE,
+    unchecked_cast::RULE,
+    useless_downcast::RULE,
+    unresolved_script::RULE,
+    short_wait_interval::RULE,
+    goto_state::RULE,
+    state_count::TOO_MANY_STATES_RULE,
+    state_count::MULTIPLE_AUTO_STATES_RULE,
+    "conflicting-script-versions",
+    unused_disable::RULE,
+];
 
 use serde::Serialize;
 
@@ -258,7 +304,11 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
         ));
     }
     let disables = disable_comments::Disables::scan(source);
+    let unused_disables = rules
+        .unused_disable
+        .then(|| unused_disable::check(&disables, &diagnostics, KNOWN_RULE_IDS));
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
+    diagnostics.extend(unused_disables.into_iter().flatten());
     diagnostics
 }
 
@@ -397,6 +447,76 @@ mod tests {
     fn lint_bare_disable_comment_suppresses_every_rule_on_the_line() {
         let source = "Foo(1,2)   ; @disable\n";
         assert!(lint(source, &Config::default()).is_empty());
+    }
+
+    #[test]
+    fn unused_disable_defaults_to_off() {
+        let diagnostics = lint("Foo(1, 2) ; @disable made-up-rule\n", &Config::default());
+
+        assert!(diagnostics.iter().all(|d| d.rule != unused_disable::RULE));
+    }
+
+    #[test]
+    fn unused_disable_reports_unknown_and_untriggered_rule_ids() {
+        let config = Config {
+            rules: config::Rules {
+                unused_disable: true,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+        let source = "Foo(1,2) ; @disable comma-spacing, made-up, float-to-int\n";
+
+        let diagnostics = lint(source, &config);
+        let unused: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.rule == unused_disable::RULE)
+            .collect();
+
+        assert_eq!(unused.len(), 2);
+        assert!(unused
+            .iter()
+            .any(|d| d.message.contains("made-up") && d.message.contains("unknown")));
+        assert!(unused
+            .iter()
+            .any(|d| d.message.contains("float-to-int") && d.message.contains("does not produce")));
+        assert!(unused.iter().all(|d| !d.message.contains("comma-spacing")));
+    }
+
+    #[test]
+    fn unused_disable_reports_a_bare_directive_on_a_clean_line() {
+        let config = Config {
+            rules: config::Rules {
+                unused_disable: true,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+
+        let diagnostics = lint("; @disable\n", &config);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule, unused_disable::RULE);
+        assert_eq!(diagnostics[0].column, 3);
+    }
+
+    #[test]
+    fn unused_disable_columns_count_characters_instead_of_utf8_bytes() {
+        let config = Config {
+            rules: config::Rules {
+                unused_disable: true,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+
+        let diagnostics = lint("String value = \"é\" ; @disable unknown\n", &config);
+        let diagnostic = diagnostics
+            .iter()
+            .find(|d| d.rule == unused_disable::RULE)
+            .unwrap();
+
+        assert_eq!(diagnostic.column, 31);
     }
 
     #[test]

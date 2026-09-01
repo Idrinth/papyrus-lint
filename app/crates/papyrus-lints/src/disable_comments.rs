@@ -17,9 +17,16 @@ use std::collections::{HashMap, HashSet};
 
 /// Which rules are disabled on a line: every rule, or a specific set of
 /// rule ids (lowercased).
-enum LineDisable {
-    All,
-    Rules(HashSet<String>),
+#[derive(Debug)]
+pub(crate) enum LineDisable {
+    All { column: usize },
+    Rules(Vec<DisableRule>),
+}
+
+#[derive(Debug)]
+pub(crate) struct DisableRule {
+    pub(crate) id: String,
+    pub(crate) column: usize,
 }
 
 /// Maps 1-indexed line numbers to the rules disabled on that line.
@@ -40,9 +47,15 @@ impl Disables {
     pub fn is_disabled(&self, line: usize, rule: &str) -> bool {
         match self.0.get(&line) {
             None => false,
-            Some(LineDisable::All) => true,
-            Some(LineDisable::Rules(rules)) => rules.contains(&rule.to_ascii_lowercase()),
+            Some(LineDisable::All { .. }) => true,
+            Some(LineDisable::Rules(rules)) => rules
+                .iter()
+                .any(|disabled| disabled.id == rule.to_ascii_lowercase()),
         }
+    }
+
+    pub(crate) fn iter(&self) -> impl Iterator<Item = (usize, &LineDisable)> {
+        self.0.iter().map(|(&line, disable)| (line, disable))
     }
 }
 
@@ -62,15 +75,41 @@ fn parse_directive(line: &str) -> Option<LineDisable> {
 
     let rest = after.trim();
     if rest.is_empty() {
-        return Some(LineDisable::All);
+        return Some(LineDisable::All {
+            column: line[..line.len() - after.len() - "@disable".len()]
+                .chars()
+                .count()
+                + 1,
+        });
     }
 
-    let rules: HashSet<String> = rest
-        .split(|c: char| c == ',' || c.is_whitespace())
-        .filter(|s| !s.is_empty())
-        .map(str::to_ascii_lowercase)
+    let rest_offset = line.len() - rest.len();
+    let mut seen = HashSet::new();
+    let rules = rule_parts(rest)
+        .filter_map(|(offset, rule)| {
+            let id = rule.to_ascii_lowercase();
+            seen.insert(id.clone()).then_some(DisableRule {
+                id,
+                column: line[..rest_offset + offset].chars().count() + 1,
+            })
+        })
         .collect();
     Some(LineDisable::Rules(rules))
+}
+
+fn rule_parts(value: &str) -> impl Iterator<Item = (usize, &str)> {
+    let mut start = None;
+    value
+        .char_indices()
+        .chain(std::iter::once((value.len(), ',')))
+        .filter_map(move |(offset, character)| {
+            if character == ',' || character.is_whitespace() {
+                start.take().map(|start| (start, &value[start..offset]))
+            } else {
+                start.get_or_insert(offset);
+                None
+            }
+        })
 }
 
 /// Returns the text following the `;` that starts `line`'s line comment, if

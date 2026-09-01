@@ -193,6 +193,7 @@
             <label title="Flags, as a [warning], a GoToState(&quot;Name&quot;) call whose target state isn't declared on this script (and, when this script Extends another, can't be resolved anywhere in that ancestry either), since the engine silently falls back instead of raising an error."><input type="checkbox" id="rule-goto_state" checked /> GoToState state reference</label>
             <label title="Flags, as an [error], a script whose named State blocks, combined with every State declared anywhere in its Extends ancestry, exceed 127, since the engine has a hard limit of 128 states (including the empty state) and refuses to load a script past it."><input type="checkbox" id="rule-too_many_states" checked /> Total named state count</label>
             <label title="Flags, as an [error], a script whose State blocks, combined with every State declared anywhere in its Extends ancestry, include more than one marked Auto, since relying on a child's Auto state silently overriding a parent's is fragile."><input type="checkbox" id="rule-multiple_auto_states" checked /> Multiple Auto states</label>
+            <label title="Flags an @disable rule id that is unknown or does not suppress a diagnostic on its line. Disabled by default."><input type="checkbox" id="rule-unused_disable" /> Unused disable directive</label>
           </fieldset>
         </div>
 
