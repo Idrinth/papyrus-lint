@@ -54,7 +54,8 @@ pub fn find_psc_file(root: &Path, name: &str, additional_roots: &[String]) -> Op
 /// a relative one is joined onto `root`. A root ending in `source/scripts`
 /// or `scripts/source` is followed by its counterpart beneath the same
 /// parent, so projects containing both layouts need only configure or infer
-/// one of them. Used to turn a project's
+/// one of them. Paths that are not existing directories are omitted. Used to
+/// turn a project's
 /// user-configured `additional_script_roots` (see
 /// [`crate::config::load_script_roots`]) into directories to search
 /// alongside [`CANDIDATE_DIRS`].
@@ -71,7 +72,7 @@ pub fn resolve_additional_roots(root: &Path, roots: &[String]) -> Vec<PathBuf> {
             }
         };
 
-        if !resolved.contains(&path) {
+        if path.is_dir() && !resolved.contains(&path) {
             resolved.push(path.clone());
         }
 
@@ -102,7 +103,7 @@ pub fn resolve_additional_roots(root: &Path, roots: &[String]) -> Vec<PathBuf> {
             _ => continue,
         };
 
-        if !resolved.contains(&counterpart) {
+        if counterpart.is_dir() && !resolved.contains(&counterpart) {
             resolved.push(counterpart);
         }
     }
@@ -321,44 +322,46 @@ mod tests {
 
     #[test]
     fn resolve_additional_roots_joins_relative_and_keeps_absolute_paths() {
-        let root = Path::new("/game/Data");
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let relative = root.path().join("../SharedScripts");
+        let absolute = tempfile::tempdir().expect("failed to create absolute root");
+        fs::create_dir_all(&relative).expect("failed to create relative root");
 
         let resolved = resolve_additional_roots(
-            root,
+            root.path(),
             &[
                 "../SharedScripts".to_string(),
-                "/abs/OtherScripts".to_string(),
+                absolute.path().to_string_lossy().into_owned(),
             ],
         );
 
-        assert_eq!(
-            resolved,
-            vec![
-                root.join("../SharedScripts"),
-                PathBuf::from("/abs/OtherScripts"),
-            ]
-        );
+        assert_eq!(resolved, vec![relative, absolute.path().to_path_buf()]);
     }
 
     #[test]
     fn resolve_additional_roots_adds_counterparts_without_duplicates() {
-        let root = Path::new("/game/Data");
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_scripts = root.path().join("Shared/source/scripts");
+        let scripts_source = root.path().join("Shared/scripts/source");
+        fs::create_dir_all(&source_scripts).expect("failed to create source/scripts dir");
+        fs::create_dir_all(&scripts_source).expect("failed to create scripts/source dir");
 
         let resolved = resolve_additional_roots(
-            root,
+            root.path(),
             &[
                 "Shared/source/scripts".to_string(),
                 "Shared/scripts/source".to_string(),
             ],
         );
 
-        assert_eq!(
-            resolved,
-            vec![
-                root.join("Shared/source/scripts"),
-                root.join("Shared/scripts/source"),
-            ]
-        );
+        assert_eq!(resolved, vec![source_scripts, scripts_source]);
+    }
+
+    #[test]
+    fn resolve_additional_roots_omits_nonexistent_directories() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert!(resolve_additional_roots(root.path(), &["missing".to_string()]).is_empty());
     }
 
     #[test]
