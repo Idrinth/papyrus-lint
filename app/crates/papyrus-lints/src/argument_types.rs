@@ -449,7 +449,7 @@ fn is_numeric(name: &str) -> bool {
     name.eq_ignore_ascii_case("int") || name.eq_ignore_ascii_case("float")
 }
 
-fn is_primitive(name: &str) -> bool {
+pub(crate) fn is_primitive(name: &str) -> bool {
     is_numeric(name) || name.eq_ignore_ascii_case("bool") || name.eq_ignore_ascii_case("string")
 }
 
