@@ -3,6 +3,12 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use papyrus_lints::Diagnostic;
+
+/// Rule id used when multiple search roots contain different versions of
+/// the same script.
+pub const CONFLICTING_SCRIPT_VERSIONS_RULE: &str = "conflicting-script-versions";
+
 /// Directories, relative to a project root, conventionally used to store
 /// Papyrus script sources. Also used by the desktop app's `compiler`
 /// module to build the compiler's `-i` argument.
@@ -119,6 +125,64 @@ pub fn detected_script_roots(root: &Path, additional_roots: &[String]) -> Vec<Pa
         .map(|dir| root.join(dir))
         .chain(resolve_additional_roots(root, additional_roots))
         .filter(|path| path.is_dir())
+        .collect()
+}
+
+/// Warns when `script_path` has a same-named, byte-different counterpart in
+/// another script search directory.
+///
+/// Papyrus resolves a script by search-root precedence, so having multiple
+/// versions available makes the source used by the compiler dependent on its
+/// import-directory ordering. Identical copies are harmless and are ignored.
+pub fn conflicting_script_versions(
+    script_path: &Path,
+    root: &Path,
+    additional_roots: &[String],
+) -> Vec<Diagnostic> {
+    let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
+        return Vec::new();
+    };
+    let Ok(current) = fs::read(script_path) else {
+        return Vec::new();
+    };
+    let current_hash = md5::compute(&current);
+
+    let mut conflicts = Vec::new();
+    for search_root in detected_script_roots(root, additional_roots) {
+        let Ok(entries) = fs::read_dir(search_root) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let candidate = entry.path();
+            let same_name = candidate
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| name.eq_ignore_ascii_case(file_name));
+            if !same_name || !candidate.is_file() || candidate == script_path {
+                continue;
+            }
+            let Ok(contents) = fs::read(&candidate) else {
+                continue;
+            };
+            if md5::compute(contents) != current_hash && !conflicts.contains(&candidate) {
+                conflicts.push(candidate);
+            }
+        }
+    }
+
+    conflicts.sort();
+    conflicts
+        .into_iter()
+        .map(|path| Diagnostic {
+            line: 1,
+            column: 1,
+            rule: CONFLICTING_SCRIPT_VERSIONS_RULE,
+            message: format!(
+                "[warning] A different version of {} is also available at {}; script resolution may depend on search-directory order",
+                file_name,
+                path.display()
+            ),
+        })
         .collect()
 }
 
@@ -385,5 +449,39 @@ mod tests {
         fs::write(&regular_file, "content").expect("failed to create regular file");
 
         assert!(detected_script_roots(root.path(), &["shared".to_string()]).is_empty());
+    }
+
+    #[test]
+    fn warns_about_same_named_scripts_with_different_contents() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        let alternate = root.path().join("source/scripts");
+        fs::create_dir_all(&primary).expect("failed to create primary root");
+        fs::create_dir_all(&alternate).expect("failed to create alternate root");
+        let script = write_file(&primary, "Example.psc");
+        fs::write(&script, "ScriptName Example\n").expect("failed to write primary script");
+        fs::write(alternate.join("example.PSC"), "ScriptName ExampleV2\n")
+            .expect("failed to write alternate script");
+
+        let diagnostics = conflicting_script_versions(&script, root.path(), &[]);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule, CONFLICTING_SCRIPT_VERSIONS_RULE);
+        assert!(diagnostics[0].message.contains("example.PSC"));
+    }
+
+    #[test]
+    fn ignores_identical_same_named_scripts() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        let alternate = root.path().join("source/scripts");
+        fs::create_dir_all(&primary).expect("failed to create primary root");
+        fs::create_dir_all(&alternate).expect("failed to create alternate root");
+        let script = write_file(&primary, "Example.psc");
+        fs::write(&script, "same").expect("failed to write primary script");
+        fs::write(alternate.join("Example.psc"), "same")
+            .expect("failed to write alternate script");
+
+        assert!(conflicting_script_versions(&script, root.path(), &[]).is_empty());
     }
 }

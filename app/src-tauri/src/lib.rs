@@ -219,6 +219,13 @@ fn lint_with_compile_check(
 ) -> Vec<papyrus_lints::Diagnostic> {
     let mut diagnostics =
         papyrus_lints::lint_with_external_arguments(source, config, function_table);
+    if config.rules.conflicting_script_versions {
+        diagnostics.extend(script_locator::conflicting_script_versions(
+            path,
+            function_table.root(),
+            function_table.additional_roots(),
+        ));
+    }
 
     let compiler_path = compiler_path.trim();
     if compile_check && !compiler_path.is_empty() {

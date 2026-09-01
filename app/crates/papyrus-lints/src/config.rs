@@ -57,6 +57,7 @@
 //!   goto_state: true
 //!   too_many_states: true
 //!   multiple_auto_states: true
+//!   conflicting_script_versions: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -303,6 +304,8 @@ pub struct Rules {
     pub too_many_states: bool,
     /// The "Multiple Auto states" lint.
     pub multiple_auto_states: bool,
+    /// The "Conflicting script versions" project lint.
+    pub conflicting_script_versions: bool,
 }
 
 impl Default for Rules {
@@ -348,6 +351,7 @@ impl Default for Rules {
             goto_state: true,
             too_many_states: true,
             multiple_auto_states: true,
+            conflicting_script_versions: true,
         }
     }
 }
@@ -488,6 +492,7 @@ mod tests {
         assert!(config.rules.goto_state);
         assert!(config.rules.too_many_states);
         assert!(config.rules.multiple_auto_states);
+        assert!(config.rules.conflicting_script_versions);
     }
 
     #[test]
