@@ -165,3 +165,67 @@ fn deserialized_formatting_config_drives_public_repair() {
         .iter()
         .all(|diagnostic| { !matches!(diagnostic.rule, "semicolon" | "indentation") }));
 }
+
+#[test]
+fn rule_specific_disable_comment_only_suppresses_the_named_rule() {
+    let source = "ScriptName Example\n\nFunction Run(Int left,Int right) ; @disable comma-spacing   \nEndFunction\n";
+
+    let diagnostics = lint(source, &Config::default());
+
+    assert!(!diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.line == 3 && diagnostic.rule == "comma-spacing"));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.line == 3 && diagnostic.rule == "trailing-whitespace"));
+}
+
+#[test]
+fn bare_disable_comment_suppresses_all_findings_on_its_line_only() {
+    let source = "ScriptName Example\n\nFunction Run(Int left,Int right) ; @disable   \nFunction Other(Int left,Int right)\nEndFunction\n";
+
+    let diagnostics = lint(source, &Config::default());
+
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.line != 3));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.line == 4 && diagnostic.rule == "comma-spacing"));
+}
+
+#[test]
+fn repair_applies_fixes_even_to_findings_hidden_by_disable_comments() {
+    let source = "ScriptName Example\n\nFunction Run(Int left,Int right) ; @disable comma-spacing   \nEndFunction\n";
+
+    let repaired = repair(source, &Config::default());
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example\n\nFunction Run(Int Left, Int Right) ; @disable comma-spacing\nEndFunction\n"
+    );
+    assert_eq!(repair(&repaired, &Config::default()), repaired);
+}
+
+#[test]
+fn public_diagnostics_have_valid_locations_and_severity_tags() {
+    let source = "ScriptName Example  \n\nFunction Run(Int left,Int right)\nEndFunction\n";
+
+    let diagnostics = lint(source, &Config::default());
+
+    assert!(!diagnostics.is_empty());
+    for diagnostic in diagnostics {
+        assert!(diagnostic.line > 0, "{} had a zero line", diagnostic.rule);
+        assert!(
+            diagnostic.column > 0,
+            "{} had a zero column",
+            diagnostic.rule
+        );
+        assert!(
+            diagnostic
+                .message
+                .starts_with(&format!("[{}]", diagnostic.level())),
+            "{} did not have a recognized severity tag: {}",
+            diagnostic.rule,
+            diagnostic.message
+        );
+    }
+}
