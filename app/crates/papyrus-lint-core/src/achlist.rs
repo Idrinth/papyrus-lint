@@ -202,4 +202,32 @@ mod tests {
 
         assert!(matches!(result, Err(AchlistError::Json(_))));
     }
+
+    #[test]
+    fn io_error_display_includes_context_and_underlying_error() {
+        let error = AchlistError::from(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "access denied",
+        ));
+
+        assert_eq!(
+            error.to_string(),
+            "failed to read achlist file: access denied"
+        );
+        assert!(matches!(
+            error,
+            AchlistError::Io(inner) if inner.kind() == std::io::ErrorKind::PermissionDenied
+        ));
+    }
+
+    #[test]
+    fn json_error_display_includes_context_and_underlying_error() {
+        let serde_error = serde_json::from_str::<Vec<String>>("{").unwrap_err();
+        let error = AchlistError::from(serde_error);
+
+        assert!(error
+            .to_string()
+            .starts_with("failed to parse achlist file:"));
+        assert!(matches!(error, AchlistError::Json(_)));
+    }
 }
