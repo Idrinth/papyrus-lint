@@ -36,6 +36,14 @@ pub fn parent_of(type_name_lower: &str) -> Option<&'static str> {
         .map(|(_, parent)| *parent)
 }
 
+/// Whether `type_name_lower` occurs anywhere in the known native type
+/// hierarchy, including a root type such as `Form` that has no parent.
+pub fn is_known(type_name_lower: &str) -> bool {
+    NATIVE_EXTENDS
+        .iter()
+        .any(|(child, parent)| *child == type_name_lower || *parent == type_name_lower)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -56,5 +64,12 @@ mod tests {
     #[test]
     fn returns_none_for_an_unknown_type() {
         assert_eq!(parent_of("somemodsquestscript"), None);
+    }
+
+    #[test]
+    fn recognizes_children_and_root_types() {
+        assert!(is_known("actor"));
+        assert!(is_known("form"));
+        assert!(!is_known("somemodsquestscript"));
     }
 }
