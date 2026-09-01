@@ -64,7 +64,8 @@ def main() -> None:
     root = Path(sys.argv[1])
 
     lines = [MARKER, "### Coverage by module", "", "| Module | Coverage | Lines covered |", "| --- | --- | --- |"]
-    details = []
+    total_found = total_hit = 0
+    any_report = False
 
     for label, parts in MODULES:
         module_found = module_hit = 0
@@ -74,12 +75,15 @@ def main() -> None:
             result = parse_lcov(root / rel_path)
             if result is None:
                 any_missing = True
-                part_rows.append(f"| {name} | _no report_ | |")
+                part_rows.append(f"| ↳ {name} | _no report_ | |")
                 continue
             found, hit = result
+            any_report = True
             module_found += found
             module_hit += hit
-            part_rows.append(f"| {name} | {pct(hit, found)} | {hit}/{found} |")
+            total_found += found
+            total_hit += hit
+            part_rows.append(f"| ↳ {name} | {pct(hit, found)} | {hit}/{found} |")
 
         summary = pct(module_hit, module_found)
         if any_missing and module_found == 0:
@@ -87,15 +91,10 @@ def main() -> None:
         lines.append(f"| {label} | {summary} | {module_hit}/{module_found} |")
 
         if len(parts) > 1:
-            details.append(f"<details>\n<summary>{label}</summary>\n")
-            details.append("| Component | Coverage | Lines covered |")
-            details.append("| --- | --- | --- |")
-            details.extend(part_rows)
-            details.append("\n</details>\n")
+            lines.extend(part_rows)
 
-    if details:
-        lines.append("")
-        lines.extend(details)
+    total_summary = pct(total_hit, total_found) if any_report else "n/a"
+    lines.append(f"| **Total** | **{total_summary}** | **{total_hit}/{total_found}** |")
 
     lines.append("")
     lines.append("_Line coverage, aggregated from each job's lcov report. Missing reports mean that job didn't run or didn't upload one._")

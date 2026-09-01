@@ -191,7 +191,7 @@ jobs:
               [ -z "$number" ] && continue
               if [ -z "${SEEN[$number]:-}" ]; then
                 SEEN[$number]=1
-                echo "- [$title]($url)" >> changelist.md
+                echo "- [#$number]($url) $title" >> changelist.md
               fi
             done <<< "$PRS"
           done
@@ -234,11 +234,11 @@ jobs:
           {
             cat changelist.md
             echo
-            cat coverage.md
-            echo
             if [ -n "$PREV" ]; then
               echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$PREV...$CURRENT"
+              echo
             fi
+            cat coverage.md
           } > release-notes.md
 
       - name: Update release notes
