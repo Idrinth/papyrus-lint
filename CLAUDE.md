@@ -169,6 +169,9 @@ binary target that crate also defines.
 
 ## CI (`.github/workflows/ci.yml`)
 
+- **Nexus page BBCode job**: runs the dependency-free Python BBCode linter's
+  unit tests, then checks `nexuspage.bbcode` for unknown, mismatched, and
+  unclosed tags.
 - **Sublime Text extension job**: runs the plugin's Python unit tests via
   `coverage run -m unittest discover`, scoped to `commands.py`/`linter.py`
   (test files themselves are omitted). The text summary is posted to the

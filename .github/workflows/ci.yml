@@ -9,6 +9,18 @@ permissions:
   contents: read
 
 jobs:
+  bbcode:
+    name: Nexus page BBCode lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Test BBCode linter
+        run: python3 .github/scripts/test_bbcode_lint.py -v
+
+      - name: Lint Nexus Mods page
+        run: python3 .github/scripts/bbcode_lint.py nexuspage.bbcode
+
   markdown:
     name: Markdown lint
     runs-on: ubuntu-latest
