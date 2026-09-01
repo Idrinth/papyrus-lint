@@ -1249,6 +1249,40 @@ mod tests {
     }
 
     #[test]
+    fn goto_state_resolves_a_state_declared_on_a_parent_script_listed_in_the_achlist() {
+        // Regression test for https://github.com/Idrinth/papyrus-lint/issues/259:
+        // a state declared only on a script's Extends ancestor must not be
+        // flagged as missing, even when (as here) the achlist's entries
+        // don't sit under either conventional scripts/source layout.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("VahlokStateBase.psc"),
+            "Scriptname VahlokStateBase extends ObjectReference\n\nauto State Idle\nEndState\n\nState Busy\nEndState\n",
+        );
+        write_file(
+            &dir.path().join("VahlokStateChild.psc"),
+            "Scriptname VahlokStateChild extends VahlokStateBase\n\nState Extra\nEndState\n\nFunction Demo()\n    GoToState(\"Extra\")\n    GoToState(\"Idle\")\n    GoToState(\"Busy\")\n    GoToState(\"NoSuchState\")\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts.achlist"),
+            r#"["VahlokStateBase.psc", "VahlokStateChild.psc"]"#,
+        );
+
+        let (code, stdout, stderr) = run_captured(&[dir
+            .path()
+            .join("scripts.achlist")
+            .to_string_lossy()
+            .into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}, stdout: {stdout}");
+        assert!(!stdout.contains("'Extra'"));
+        assert!(!stdout.contains("'Idle'"));
+        assert!(!stdout.contains("'Busy'"));
+        assert!(stdout.contains("[goto-state]"));
+        assert!(stdout.contains("'NoSuchState'"));
+    }
+
+    #[test]
     fn resolves_cross_script_argument_types_from_the_projects_configured_script_root() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let shared_dir = tempfile::tempdir().expect("failed to create temp dir");
