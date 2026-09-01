@@ -252,6 +252,18 @@ let currentCompileCheck = false;
 // lookups, kept in sync with the Settings tab's textarea (see
 // handleScriptRootsChanged).
 let currentScriptRoots: string[] = [];
+// Source directories inferred from the entries in the currently loaded
+// achlist. These are runtime-only roots: unlike currentScriptRoots, they are
+// not displayed as user configuration or persisted to papyrus-lint.yaml.
+let currentAchlistScriptRoots: string[] = [];
+
+function effectiveScriptRoots(): string[] {
+  return [...new Set([...currentScriptRoots, ...currentAchlistScriptRoots])];
+}
+
+export function scriptRootsForAchlist(entries: string[]): string[] {
+  return [...new Set(entries.filter(isPscPath).map(dirnameOf))];
+}
 
 const TRAILING_WHITESPACE_MESSAGE = "[warning] Line contains trailing whitespace";
 
@@ -550,7 +562,7 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
       path,
       root: currentProjectDir ?? "",
       config: currentLintConfig,
-      additionalRoots: currentScriptRoots,
+      additionalRoots: effectiveScriptRoots(),
       compilerPath: currentCompilerPath,
       compileCheck: currentCompileCheck,
     });
@@ -565,7 +577,7 @@ export async function repairPscFile(path: string): Promise<Diagnostic[]> {
     path,
     root: currentProjectDir ?? "",
     config: currentLintConfig,
-    additionalRoots: currentScriptRoots,
+    additionalRoots: effectiveScriptRoots(),
     compilerPath: currentCompilerPath,
     compileCheck: currentCompileCheck,
   });
@@ -585,7 +597,7 @@ export async function listScriptMembers(typeName: string): Promise<Member[]> {
     return await invoke<Member[]>("list_script_members", {
       root: currentProjectDir ?? "",
       typeName,
-      additionalRoots: currentScriptRoots,
+      additionalRoots: effectiveScriptRoots(),
     });
   } catch (error) {
     console.error(error);
@@ -1456,7 +1468,7 @@ export async function compilePscFile(path: string): Promise<CompileOutcome> {
   return invoke<CompileOutcome>("compile_psc_file", {
     path,
     compilerPath: currentCompilerPath,
-    additionalRoots: currentScriptRoots,
+    additionalRoots: effectiveScriptRoots(),
   });
 }
 
@@ -1487,6 +1499,7 @@ export async function handleDroppedPaths(paths: string[]) {
       showResult(achlistPath, entries, projectDir);
 
       await useProjectDir(projectDir);
+      currentAchlistScriptRoots = scriptRootsForAchlist(entries);
       currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
       renderPscResults(currentPscOutcomes);
     } catch (error) {
@@ -1503,6 +1516,7 @@ export async function handleDroppedPaths(paths: string[]) {
     showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
 
     await useProjectDir(projectDirForPscPath(pscPath));
+    currentAchlistScriptRoots = [];
     currentPscOutcomes = await parsePscFiles([pscPath]);
     renderPscResults(currentPscOutcomes);
     return;

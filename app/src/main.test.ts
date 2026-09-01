@@ -67,6 +67,7 @@ import {
   saveLintConfig,
   saveScriptRoots,
   scriptRootsFromUI,
+  scriptRootsForAchlist,
   severityOf,
   showError,
   showResult,
@@ -1259,6 +1260,19 @@ describe("projectDirForAchlist", () => {
         "/proj/somefolder/scripts/source/A.psc",
       ]),
     ).toBe("/proj/somefolder");
+  });
+});
+
+describe("scriptRootsForAchlist", () => {
+  it("uses every distinct directory containing a listed Papyrus source", () => {
+    expect(
+      scriptRootsForAchlist([
+        "/proj/source/dir/one/Script1.psc",
+        "/proj/source/dir/two/Script2.PSC",
+        "/proj/source/dir/one/Script3.psc",
+        "/proj/readme.txt",
+      ]),
+    ).toEqual(["/proj/source/dir/one", "/proj/source/dir/two"]);
   });
 });
 
