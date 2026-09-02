@@ -12,8 +12,89 @@
 #   object:   the script or object type that declares the native function
 #   function: the native function's Papyrus name
 
+- object: ActiveMagicEffect
+  function: AddInventoryEventFilter
+
+- object: ActiveMagicEffect
+  function: Dispel
+
+- object: ActiveMagicEffect
+  function: GetBaseObject
+
+- object: ActiveMagicEffect
+  function: GetCasterActor
+
+- object: ActiveMagicEffect
+  function: GetTargetActor
+
+- object: ActiveMagicEffect
+  function: RegisterForAnimationEvent
+
+- object: ActiveMagicEffect
+  function: RegisterForLOS
+
+- object: ActiveMagicEffect
+  function: RegisterForSingleLOSGain
+
+- object: ActiveMagicEffect
+  function: RegisterForSingleLOSLost
+
+- object: ActiveMagicEffect
+  function: RegisterForSingleUpdate
+
+- object: ActiveMagicEffect
+  function: RegisterForSingleUpdateGameTime
+
+- object: ActiveMagicEffect
+  function: RegisterForSleep
+
+- object: ActiveMagicEffect
+  function: RegisterForTrackedStatsEvent
+
+- object: ActiveMagicEffect
+  function: RegisterForUpdate
+
+- object: ActiveMagicEffect
+  function: RegisterForUpdateGameTime
+
+- object: ActiveMagicEffect
+  function: RemoveAllInventoryEventFilters
+
+- object: ActiveMagicEffect
+  function: RemoveInventoryEventFilter
+
+- object: ActiveMagicEffect
+  function: StartObjectProfiling
+
+- object: ActiveMagicEffect
+  function: StopObjectProfiling
+
+- object: ActiveMagicEffect
+  function: UnregisterForAnimationEvent
+
+- object: ActiveMagicEffect
+  function: UnregisterForLOS
+
+- object: ActiveMagicEffect
+  function: UnregisterForSleep
+
+- object: ActiveMagicEffect
+  function: UnregisterForTrackedStatsEvent
+
+- object: ActiveMagicEffect
+  function: UnregisterForUpdate
+
+- object: ActiveMagicEffect
+  function: UnregisterForUpdateGameTime
+
 - object: Actor
   function: AddPerk
+
+- object: Actor
+  function: AddShout
+
+- object: Actor
+  function: AddSpell
 
 - object: Actor
   function: AllowBleedoutDialogue
@@ -28,9 +109,6 @@
   function: CanFlyHere
 
 - object: Actor
-  function: ChangeHeadPart
-
-- object: Actor
   function: ClearArrested
 
 - object: Actor
@@ -40,7 +118,7 @@
   function: ClearExtraArrows
 
 - object: Actor
-  function: ClearForcedLandingMarker
+  function: ClearForcedMovement
 
 - object: Actor
   function: ClearKeepOffsetFromActor
@@ -52,6 +130,9 @@
   function: DamageActorValue
 
 - object: Actor
+  function: Dismount
+
+- object: Actor
   function: DispelAllSpells
 
 - object: Actor
@@ -59,6 +140,9 @@
 
 - object: Actor
   function: DoCombatSpellApply
+
+- object: Actor
+  function: DrawWeapon
 
 - object: Actor
   function: EnableAI
@@ -85,19 +169,40 @@
   function: ForceMovementDirection
 
 - object: Actor
+  function: ForceMovementDirectionRamp
+
+- object: Actor
   function: ForceMovementRotationSpeed
+
+- object: Actor
+  function: ForceMovementRotationSpeedRamp
 
 - object: Actor
   function: ForceMovementSpeed
 
 - object: Actor
-  function: GetActorBase
+  function: ForceMovementSpeedRamp
+
+- object: Actor
+  function: ForceTargetAngle
+
+- object: Actor
+  function: ForceTargetDirection
+
+- object: Actor
+  function: ForceTargetSpeed
 
 - object: Actor
   function: GetActorValue
 
 - object: Actor
+  function: GetActorValueMax
+
+- object: Actor
   function: GetActorValuePercentage
+
+- object: Actor
+  function: GetBaseActorValue
 
 - object: Actor
   function: GetBribeAmount
@@ -124,6 +229,18 @@
   function: GetEquippedItemType
 
 - object: Actor
+  function: GetEquippedShield
+
+- object: Actor
+  function: GetEquippedShout
+
+- object: Actor
+  function: GetEquippedSpell
+
+- object: Actor
+  function: GetEquippedWeapon
+
+- object: Actor
   function: GetFactionRank
 
 - object: Actor
@@ -146,6 +263,9 @@
 
 - object: Actor
   function: GetLevel
+
+- object: Actor
+  function: GetLeveledActorBase
 
 - object: Actor
   function: GetLightLevel
@@ -175,6 +295,9 @@
   function: GetVoiceRecoveryTime
 
 - object: Actor
+  function: GetWarmthRating
+
+- object: Actor
   function: HasAssociation
 
 - object: Actor
@@ -190,10 +313,13 @@
   function: HasMagicEffectWithKeyword
 
 - object: Actor
+  function: HasParentRelationship
+
+- object: Actor
   function: HasPerk
 
 - object: Actor
-  function: IsAIEnabled
+  function: HasSpell
 
 - object: Actor
   function: IsAlarmed
@@ -206,6 +332,12 @@
 
 - object: Actor
   function: IsArrested
+
+- object: Actor
+  function: IsArrestingTarget
+
+- object: Actor
+  function: IsBeingRidden
 
 - object: Actor
   function: IsBleedingOut
@@ -227,6 +359,9 @@
 
 - object: Actor
   function: IsDoingFavor
+
+- object: Actor
+  function: IsEquipped
 
 - object: Actor
   function: IsEssential
@@ -262,6 +397,9 @@
   function: IsOverEncumbered
 
 - object: Actor
+  function: IsPlayersLastRiddenHorse
+
+- object: Actor
   function: IsPlayerTeammate
 
 - object: Actor
@@ -289,13 +427,13 @@
   function: Kill
 
 - object: Actor
-  function: KillEssential
-
-- object: Actor
   function: KillSilent
 
 - object: Actor
   function: ModActorValue
+
+- object: Actor
+  function: ModFactionRank
 
 - object: Actor
   function: MoveToPackageLocation
@@ -313,6 +451,9 @@
   function: PlayIdleWithTarget
 
 - object: Actor
+  function: PlaySubGraphAnimation
+
+- object: Actor
   function: RemoveFromAllFactions
 
 - object: Actor
@@ -322,7 +463,13 @@
   function: RemovePerk
 
 - object: Actor
-  function: ResetAI
+  function: RemoveShout
+
+- object: Actor
+  function: RemoveSpell
+
+- object: Actor
+  function: ResetHealthAndLimbs
 
 - object: Actor
   function: RestoreActorValue
@@ -334,7 +481,13 @@
   function: SendAssaultAlarm
 
 - object: Actor
+  function: SendLycanthropyStateChanged
+
+- object: Actor
   function: SendTrespassAlarm
+
+- object: Actor
+  function: SendVampirismStateChanged
 
 - object: Actor
   function: SetActorValue
@@ -344,6 +497,9 @@
 
 - object: Actor
   function: SetAllowFlying
+
+- object: Actor
+  function: SetAllowFlyingEx
 
 - object: Actor
   function: SetAlpha
@@ -374,6 +530,9 @@
 
 - object: Actor
   function: SetFactionRank
+
+- object: Actor
+  function: SetForcedLandingMarker
 
 - object: Actor
   function: SetGhost
@@ -430,6 +589,9 @@
   function: ShowBarterMenu
 
 - object: Actor
+  function: ShowGiftMenu
+
+- object: Actor
   function: StartCannibal
 
 - object: Actor
@@ -437,6 +599,12 @@
 
 - object: Actor
   function: StartDeferredKill
+
+- object: Actor
+  function: StartSneaking
+
+- object: Actor
+  function: StartVampireFeed
 
 - object: Actor
   function: StopCombat
@@ -466,28 +634,25 @@
   function: UnLockOwnedDoorsInCell
 
 - object: Actor
-  function: UpdateWeight
+  function: WillIntimidateSucceed
+
+- object: Actor
+  function: WornHasKeyword
 
 - object: ActorBase
   function: GetClass
 
 - object: ActorBase
-  function: GetCombatStyle
+  function: GetDeadCount
 
 - object: ActorBase
-  function: GetOutfit
+  function: GetGiftFilter
 
 - object: ActorBase
   function: GetRace
 
 - object: ActorBase
   function: GetSex
-
-- object: ActorBase
-  function: GetTemplate
-
-- object: ActorBase
-  function: GetVoiceType
 
 - object: ActorBase
   function: IsEssential
@@ -502,12 +667,6 @@
   function: IsUnique
 
 - object: ActorBase
-  function: SetClass
-
-- object: ActorBase
-  function: SetCombatStyle
-
-- object: ActorBase
   function: SetEssential
 
 - object: ActorBase
@@ -519,32 +678,71 @@
 - object: ActorBase
   function: SetProtected
 
-- object: ActorBase
-  function: SetVoiceType
+- object: Alias
+  function: GetOwningQuest
 
-- object: Book
-  function: GetSkill
+- object: Alias
+  function: RegisterForAnimationEvent
 
-- object: Book
-  function: GetSpell
+- object: Alias
+  function: RegisterForLOS
 
-- object: Book
-  function: IsRead
+- object: Alias
+  function: RegisterForSingleLOSGain
 
-- object: Book
-  function: SetRead
+- object: Alias
+  function: RegisterForSingleLOSLost
+
+- object: Alias
+  function: RegisterForSingleUpdate
+
+- object: Alias
+  function: RegisterForSingleUpdateGameTime
+
+- object: Alias
+  function: RegisterForSleep
+
+- object: Alias
+  function: RegisterForTrackedStatsEvent
+
+- object: Alias
+  function: RegisterForUpdate
+
+- object: Alias
+  function: RegisterForUpdateGameTime
+
+- object: Alias
+  function: StartObjectProfiling
+
+- object: Alias
+  function: StopObjectProfiling
+
+- object: Alias
+  function: UnregisterForAnimationEvent
+
+- object: Alias
+  function: UnregisterForLOS
+
+- object: Alias
+  function: UnregisterForSleep
+
+- object: Alias
+  function: UnregisterForTrackedStatsEvent
+
+- object: Alias
+  function: UnregisterForUpdate
+
+- object: Alias
+  function: UnregisterForUpdateGameTime
+
+- object: Armor
+  function: GetWarmthRating
 
 - object: Cell
   function: GetActorOwner
 
 - object: Cell
   function: GetFactionOwner
-
-- object: Cell
-  function: GetNthRef
-
-- object: Cell
-  function: GetNumRefs
 
 - object: Cell
   function: IsAttached
@@ -561,6 +759,18 @@
 - object: Cell
   function: SetFactionOwner
 
+- object: Cell
+  function: SetFogColor
+
+- object: Cell
+  function: SetFogPlanes
+
+- object: Cell
+  function: SetFogPower
+
+- object: Cell
+  function: SetPublic
+
 - object: Debug
   function: CenterOnCell
 
@@ -571,7 +781,10 @@
   function: CloseUserLog
 
 - object: Debug
-  function: DTrace
+  function: DBSendPlayerPosition
+
+- object: Debug
+  function: DebugChannelNotify
 
 - object: Debug
   function: DumpAliasData
@@ -581,6 +794,9 @@
 
 - object: Debug
   function: GetPlatformName
+
+- object: Debug
+  function: GetVersionNumber
 
 - object: Debug
   function: MessageBox
@@ -631,6 +847,9 @@
   function: ToggleCollisions
 
 - object: Debug
+  function: ToggleMenus
+
+- object: Debug
   function: Trace
 
 - object: Debug
@@ -640,40 +859,7 @@
   function: TraceUser
 
 - object: Enchantment
-  function: GetBaseEnchantment
-
-- object: Enchantment
-  function: GetKeywordRestrictions
-
-- object: Enchantment
-  function: GetNthEffectArea
-
-- object: Enchantment
-  function: GetNthEffectDuration
-
-- object: Enchantment
-  function: GetNthEffectMagicEffect
-
-- object: Enchantment
-  function: GetNthEffectMagnitude
-
-- object: Enchantment
-  function: GetNumEffects
-
-- object: Enchantment
   function: IsHostile
-
-- object: Enchantment
-  function: SetKeywordRestrictions
-
-- object: Enchantment
-  function: SetNthEffectArea
-
-- object: Enchantment
-  function: SetNthEffectDuration
-
-- object: Enchantment
-  function: SetNthEffectMagnitude
 
 - object: Faction
   function: CanPayCrimeGold
@@ -700,6 +886,12 @@
   function: GetReaction
 
 - object: Faction
+  function: GetStolenItemValueCrime
+
+- object: Faction
+  function: GetStolenItemValueNoCrime
+
+- object: Faction
   function: IsFactionInCrimeGroup
 
 - object: Faction
@@ -707,6 +899,9 @@
 
 - object: Faction
   function: ModCrimeGold
+
+- object: Faction
+  function: ModReaction
 
 - object: Faction
   function: PlayerPayCrimeGold
@@ -724,6 +919,9 @@
   function: SetCrimeGold
 
 - object: Faction
+  function: SetCrimeGoldViolent
+
+- object: Faction
   function: SetEnemy
 
 - object: Faction
@@ -736,13 +934,10 @@
   function: SetReaction
 
 - object: Form
+  function: GetFormID
+
+- object: Form
   function: GetGoldValue
-
-- object: Form
-  function: GetName
-
-- object: Form
-  function: GetType
 
 - object: Form
   function: HasKeyword
@@ -757,7 +952,10 @@
   function: RegisterForLOS
 
 - object: Form
-  function: RegisterForMenu
+  function: RegisterForSingleLOSGain
+
+- object: Form
+  function: RegisterForSingleLOSLost
 
 - object: Form
   function: RegisterForSingleUpdate
@@ -778,15 +976,6 @@
   function: RegisterForUpdateGameTime
 
 - object: Form
-  function: SendModEvent
-
-- object: Form
-  function: SetGoldValue
-
-- object: Form
-  function: SetName
-
-- object: Form
   function: StartObjectProfiling
 
 - object: Form
@@ -797,9 +986,6 @@
 
 - object: Form
   function: UnregisterForLOS
-
-- object: Form
-  function: UnregisterForMenu
 
 - object: Form
   function: UnregisterForSleep
@@ -813,6 +999,27 @@
 - object: Form
   function: UnregisterForUpdateGameTime
 
+- object: FormList
+  function: AddForm
+
+- object: FormList
+  function: Find
+
+- object: FormList
+  function: GetAt
+
+- object: FormList
+  function: GetSize
+
+- object: FormList
+  function: HasForm
+
+- object: FormList
+  function: RemoveAddedForm
+
+- object: FormList
+  function: Revert
+
 - object: Game
   function: AddAchievement
 
@@ -820,10 +1027,19 @@
   function: AddHavokBallAndSocketConstraint
 
 - object: Game
+  function: AddPerkPoints
+
+- object: Game
+  function: AdvanceSkill
+
+- object: Game
   function: CalculateFavorCost
 
 - object: Game
   function: ClearPrison
+
+- object: Game
+  function: ClearTempEffects
 
 - object: Game
   function: DisablePlayerControls
@@ -865,13 +1081,25 @@
   function: ForceThirdPerson
 
 - object: Game
-  function: GetCameraState
-
-- object: Game
   function: GetForm
 
 - object: Game
+  function: GetFormFromFile
+
+- object: Game
+  function: GetGameSettingFloat
+
+- object: Game
+  function: GetGameSettingInt
+
+- object: Game
+  function: GetGameSettingString
+
+- object: Game
   function: GetPlayer
+
+- object: Game
+  function: GetPlayerGrabbedRef
 
 - object: Game
   function: GetPlayersLastRiddenHorse
@@ -880,7 +1108,22 @@
   function: GetRealHoursPassed
 
 - object: Game
+  function: GetSunPositionX
+
+- object: Game
+  function: GetSunPositionY
+
+- object: Game
+  function: GetSunPositionZ
+
+- object: Game
   function: HideTitleSequenceMenu
+
+- object: Game
+  function: IncrementSkill
+
+- object: Game
+  function: IncrementSkillBy
 
 - object: Game
   function: IncrementStat
@@ -893,6 +1136,9 @@
 
 - object: Game
   function: IsFastTravelControlsEnabled
+
+- object: Game
+  function: IsFastTravelEnabled
 
 - object: Game
   function: IsFightingControlsEnabled
@@ -916,13 +1162,7 @@
   function: IsSneakingControlsEnabled
 
 - object: Game
-  function: IsTitleSequenceMenuOpen
-
-- object: Game
-  function: IsVATSPlaybackActive
-
-- object: Game
-  function: LoadGame
+  function: IsWordUnlocked
 
 - object: Game
   function: PlayBink
@@ -946,25 +1186,31 @@
   function: RequestAutoSave
 
 - object: Game
+  function: RequestModel
+
+- object: Game
   function: RequestSave
 
 - object: Game
-  function: SaveGame
+  function: SendWereWolfTransformation
 
 - object: Game
   function: ServeTime
 
 - object: Game
+  function: SetAllowFlyingMountLandingRequests
+
+- object: Game
   function: SetBeastForm
+
+- object: Game
+  function: SetCameraTarget
 
 - object: Game
   function: SetHudCartMode
 
 - object: Game
   function: SetInChargen
-
-- object: Game
-  function: SetMiscStat
 
 - object: Game
   function: SetPlayerAIDriven
@@ -976,6 +1222,9 @@
   function: SetSittingRotation
 
 - object: Game
+  function: SetSunGazeImageSpaceModifier
+
+- object: Game
   function: ShakeCamera
 
 - object: Game
@@ -983,6 +1232,9 @@
 
 - object: Game
   function: ShowFirstPersonGeometry
+
+- object: Game
+  function: ShowLimitedRaceMenu
 
 - object: Game
   function: ShowRaceMenu
@@ -1003,28 +1255,79 @@
   function: TriggerScreenBlood
 
 - object: Game
-  function: UpdateHairColor
+  function: UnlockWord
 
 - object: Game
-  function: UpdateThirdPerson
+  function: UsingGamepad
 
 - object: GlobalVariable
   function: GetValue
 
 - object: GlobalVariable
-  function: GetValueInt
-
-- object: GlobalVariable
-  function: Mod
-
-- object: GlobalVariable
   function: SetValue
 
-- object: GlobalVariable
-  function: SetValueInt
+- object: ImageSpaceModifier
+  function: Apply
+
+- object: ImageSpaceModifier
+  function: ApplyCrossFade
+
+- object: ImageSpaceModifier
+  function: PopTo
+
+- object: ImageSpaceModifier
+  function: Remove
+
+- object: ImageSpaceModifier
+  function: RemoveCrossFade
+
+- object: Ingredient
+  function: IsHostile
+
+- object: Ingredient
+  function: LearnAllEffects
+
+- object: Ingredient
+  function: LearnEffect
+
+- object: Ingredient
+  function: LearnNextEffect
+
+- object: Keyword
+  function: SendStoryEvent
+
+- object: Keyword
+  function: SendStoryEventAndWait
+
+- object: LeveledActor
+  function: AddForm
+
+- object: LeveledActor
+  function: Revert
+
+- object: LeveledItem
+  function: AddForm
+
+- object: LeveledItem
+  function: Revert
+
+- object: LeveledSpell
+  function: AddForm
+
+- object: LeveledSpell
+  function: Revert
+
+- object: Light
+  function: GetWarmthRating
 
 - object: Location
   function: GetKeywordData
+
+- object: Location
+  function: GetRefTypeAliveCount
+
+- object: Location
+  function: GetRefTypeDeadCount
 
 - object: Location
   function: HasCommonParent
@@ -1047,6 +1350,9 @@
 - object: Location
   function: SetKeywordData
 
+- object: MagicEffect
+  function: GetAssociatedSkill
+
 - object: Math
   function: abs
 
@@ -1066,16 +1372,16 @@
   function: cos
 
 - object: Math
+  function: DegreesToRadians
+
+- object: Math
   function: Floor
 
 - object: Math
   function: pow
 
 - object: Math
-  function: RandomFloat
-
-- object: Math
-  function: RandomInt
+  function: RadiansToDegrees
 
 - object: Math
   function: sin
@@ -1087,10 +1393,13 @@
   function: tan
 
 - object: Message
-  function: GetButtonPressed
+  function: ResetHelpMessage
 
 - object: Message
   function: Show
+
+- object: Message
+  function: ShowAsHelpMessage
 
 - object: ObjectReference
   function: Activate
@@ -1105,7 +1414,7 @@
   function: AddItem
 
 - object: ObjectReference
-  function: AddKeyIfNeeded
+  function: AddToMap
 
 - object: ObjectReference
   function: ApplyHavokImpulse
@@ -1159,9 +1468,6 @@
   function: GetActorOwner
 
 - object: ObjectReference
-  function: GetAllForms
-
-- object: ObjectReference
   function: GetAngleX
 
 - object: ObjectReference
@@ -1189,6 +1495,9 @@
   function: GetCurrentLocation
 
 - object: ObjectReference
+  function: GetCurrentScene
+
+- object: ObjectReference
   function: GetDistance
 
 - object: ObjectReference
@@ -1207,6 +1516,9 @@
   function: GetItemCount
 
 - object: ObjectReference
+  function: GetItemHealthPercent
+
+- object: ObjectReference
   function: GetKey
 
 - object: ObjectReference
@@ -1222,16 +1534,7 @@
   function: GetMass
 
 - object: ObjectReference
-  function: GetNthForm
-
-- object: ObjectReference
   function: GetNthLinkedRef
-
-- object: ObjectReference
-  function: GetNumItems
-
-- object: ObjectReference
-  function: GetNumReferenceAliases
 
 - object: ObjectReference
   function: GetOpenState
@@ -1249,9 +1552,6 @@
   function: GetPositionZ
 
 - object: ObjectReference
-  function: GetReferenceAliases
-
-- object: ObjectReference
   function: GetScale
 
 - object: ObjectReference
@@ -1264,6 +1564,12 @@
   function: GetWidth
 
 - object: ObjectReference
+  function: GetWorldSpace
+
+- object: ObjectReference
+  function: HasEffectKeyword
+
+- object: ObjectReference
   function: HasNode
 
 - object: ObjectReference
@@ -1273,6 +1579,9 @@
   function: IgnoreFriendlyHits
 
 - object: ObjectReference
+  function: InterruptCast
+
+- object: ObjectReference
   function: Is3DLoaded
 
 - object: ObjectReference
@@ -1280,6 +1589,9 @@
 
 - object: ObjectReference
   function: IsActivationBlocked
+
+- object: ObjectReference
+  function: IsDeleted
 
 - object: ObjectReference
   function: IsDisabled
@@ -1306,9 +1618,6 @@
   function: IsMapMarkerVisible
 
 - object: ObjectReference
-  function: IsOffLimits
-
-- object: ObjectReference
   function: IsOwned
 
 - object: ObjectReference
@@ -1333,7 +1642,10 @@
   function: MoveToNode
 
 - object: ObjectReference
-  function: MoveToWhenUnloaded
+  function: PlaceActorAtMe
+
+- object: ObjectReference
+  function: PlaceAtMe
 
 - object: ObjectReference
   function: PlayAnimation
@@ -1363,6 +1675,9 @@
   function: PushActorAway
 
 - object: ObjectReference
+  function: RemoveAllInventoryEventFilters
+
+- object: ObjectReference
   function: RemoveAllItems
 
 - object: ObjectReference
@@ -1376,9 +1691,6 @@
 
 - object: ObjectReference
   function: Reset
-
-- object: ObjectReference
-  function: ResetInventory
 
 - object: ObjectReference
   function: RestoreObject
@@ -1438,7 +1750,7 @@
   function: SplineTranslateTo
 
 - object: ObjectReference
-  function: SplineTranslateToRef
+  function: SplineTranslateToRefNode
 
 - object: ObjectReference
   function: StopTranslation
@@ -1448,9 +1760,6 @@
 
 - object: ObjectReference
   function: TranslateTo
-
-- object: ObjectReference
-  function: TranslateToRef
 
 - object: ObjectReference
   function: WaitFor3DLoad
@@ -1467,6 +1776,9 @@
 - object: Package
   function: GetTemplate
 
+- object: Potion
+  function: IsHostile
+
 - object: Quest
   function: CompleteAllObjectives
 
@@ -1481,27 +1793,6 @@
 
 - object: Quest
   function: GetCurrentStageID
-
-- object: Quest
-  function: GetNthAlias
-
-- object: Quest
-  function: GetNumAliases
-
-- object: Quest
-  function: GetPriority
-
-- object: Quest
-  function: GetQuestID
-
-- object: Quest
-  function: GetStage
-
-- object: Quest
-  function: GetStageDone
-
-- object: Quest
-  function: GetState
 
 - object: Quest
   function: IsActive
@@ -1520,6 +1811,9 @@
 
 - object: Quest
   function: IsRunning
+
+- object: Quest
+  function: IsStageDone
 
 - object: Quest
   function: IsStarting
@@ -1549,12 +1843,6 @@
   function: SetObjectiveFailed
 
 - object: Quest
-  function: SetPriority
-
-- object: Quest
-  function: SetStage
-
-- object: Quest
   function: Start
 
 - object: Quest
@@ -1564,13 +1852,19 @@
   function: UpdateCurrentInstanceGlobal
 
 - object: Race
-  function: GetDefaultVoiceType
+  function: ClearRaceFlag
+
+- object: Race
+  function: GetNthPlayableRace
 
 - object: Race
   function: GetNthSpell
 
 - object: Race
-  function: GetSkin
+  function: GetNumPlayableRaces
+
+- object: Race
+  function: GetRace
 
 - object: Race
   function: GetSpellCount
@@ -1579,13 +1873,25 @@
   function: IsRaceFlagSet
 
 - object: Race
-  function: SetDefaultVoiceType
-
-- object: Race
   function: SetRaceFlag
 
-- object: Race
-  function: SetSkin
+- object: ReferenceAlias
+  function: AddInventoryEventFilter
+
+- object: ReferenceAlias
+  function: Clear
+
+- object: ReferenceAlias
+  function: ForceRefTo
+
+- object: ReferenceAlias
+  function: GetReference
+
+- object: ReferenceAlias
+  function: RemoveAllInventoryEventFilters
+
+- object: ReferenceAlias
+  function: RemoveInventoryEventFilter
 
 - object: Scene
   function: ForceStart
@@ -1600,13 +1906,13 @@
   function: IsPlaying
 
 - object: Scene
-  function: Pause
-
-- object: Scene
   function: Start
 
 - object: Scene
   function: Stop
+
+- object: Scroll
+  function: Cast
 
 - object: Sound
   function: Play
@@ -1636,33 +1942,6 @@
   function: Cast
 
 - object: Spell
-  function: GetCastTime
-
-- object: Spell
-  function: GetEffectiveMagickaCost
-
-- object: Spell
-  function: GetEquipType
-
-- object: Spell
-  function: GetNthEffectArea
-
-- object: Spell
-  function: GetNthEffectDuration
-
-- object: Spell
-  function: GetNthEffectMagicEffect
-
-- object: Spell
-  function: GetNthEffectMagnitude
-
-- object: Spell
-  function: GetNumEffects
-
-- object: Spell
-  function: GetPerk
-
-- object: Spell
   function: IsHostile
 
 - object: Spell
@@ -1672,55 +1951,34 @@
   function: RemoteCast
 
 - object: Spell
-  function: SetEquipType
-
-- object: Spell
-  function: SetNthEffectArea
-
-- object: Spell
-  function: SetNthEffectDuration
-
-- object: Spell
-  function: SetNthEffectMagnitude
-
-- object: Spell
   function: Unload
 
 - object: Topic
   function: Add
 
-- object: Topic
-  function: GetName
+- object: TopicInfo
+  function: GetOwningQuest
 
 - object: Utility
   function: CaptureFrameRate
 
 - object: Utility
-  function: CreateAliasArray
-
-- object: Utility
-  function: CreateBoolArray
-
-- object: Utility
-  function: CreateFloatArray
-
-- object: Utility
-  function: CreateFormArray
-
-- object: Utility
-  function: CreateIntArray
-
-- object: Utility
-  function: CreateObjectReferenceArray
-
-- object: Utility
-  function: CreateStringArray
+  function: EndFrameRateCapture
 
 - object: Utility
   function: GameTimeToString
 
 - object: Utility
+  function: GetAverageFrameRate
+
+- object: Utility
   function: GetBudgetCount
+
+- object: Utility
+  function: GetBudgetName
+
+- object: Utility
+  function: GetCurrentBudget
 
 - object: Utility
   function: GetCurrentGameTime
@@ -1732,19 +1990,10 @@
   function: GetCurrentRealTime
 
 - object: Utility
-  function: GetINIBool
+  function: GetMaxFrameRate
 
 - object: Utility
-  function: GetINIFloat
-
-- object: Utility
-  function: GetINIInt
-
-- object: Utility
-  function: GetINIString
-
-- object: Utility
-  function: GetWaitingItemCount
+  function: GetMinFrameRate
 
 - object: Utility
   function: IsInMenuMode
@@ -1771,6 +2020,9 @@
   function: SetINIString
 
 - object: Utility
+  function: StartFrameRateCapture
+
+- object: Utility
   function: Wait
 
 - object: Utility
@@ -1787,6 +2039,3 @@
 
 - object: Weapon
   function: Fire
-
-- object: WordOfPower
-  function: GetName
