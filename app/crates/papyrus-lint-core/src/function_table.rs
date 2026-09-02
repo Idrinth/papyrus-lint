@@ -166,6 +166,13 @@ impl ScriptFunctions {
 pub struct FunctionTable {
     root: PathBuf,
     additional_roots: Vec<String>,
+    /// Scripts resolvable directly by name (lowercased file stem -> path),
+    /// bypassing directory search entirely. Populated by
+    /// [`Self::with_known_scripts`] from an explicit list of paths (e.g. an
+    /// `.achlist`'s own entries) rather than from a directory scan, so
+    /// registering a script this way never exposes any other file that
+    /// happens to sit alongside it.
+    known_scripts: HashMap<String, PathBuf>,
     scripts: HashMap<String, Option<ScriptFunctions>>,
 }
 
@@ -186,6 +193,7 @@ impl FunctionTable {
         FunctionTable {
             root,
             additional_roots: Vec::new(),
+            known_scripts: HashMap::new(),
             scripts: HashMap::new(),
         }
     }
@@ -197,8 +205,36 @@ impl FunctionTable {
         FunctionTable {
             root,
             additional_roots,
+            known_scripts: HashMap::new(),
             scripts: HashMap::new(),
         }
+    }
+
+    /// Registers each of `paths` as directly resolvable by name (its file
+    /// stem, matched case-insensitively), without scanning its containing
+    /// directory. Intended for a set of scripts named explicitly rather
+    /// than discovered by directory search — e.g. an `.achlist`'s own
+    /// entries, which may live in arbitrary directories outside
+    /// `scripts/source`/`source/scripts` and not share a directory with
+    /// each other at all. Consulted before `additional_roots`/the
+    /// conventional directories in [`Self::ensure_loaded`]/
+    /// [`Self::script_exists`], so cross-script resolution among these
+    /// paths works without treating their parent directories as search
+    /// roots (which would also expose every other file in them). When two
+    /// given paths share a file stem, the first one wins, matching a
+    /// directory search's own first-match-wins order; a real conflict
+    /// between such paths is instead reported by
+    /// [`crate::script_locator::conflicting_script_versions_among`].
+    pub fn with_known_scripts(mut self, paths: &[PathBuf]) -> Self {
+        for path in paths {
+            let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
+                continue;
+            };
+            self.known_scripts
+                .entry(stem.to_ascii_lowercase())
+                .or_insert_with(|| path.clone());
+        }
+        self
     }
 
     /// Looks up the signature of `function_name` as callable on an object
@@ -426,22 +462,36 @@ impl FunctionTable {
     /// `MyMissingScript.DoThing()`.
     pub fn script_exists(&mut self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
-        find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some()
+        self.known_scripts.contains_key(&name_lower)
+            || find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some()
             || crate::native_globals::is_known(&name_lower)
     }
 
     /// Parses and caches the script named `name_lower`, if it hasn't been
-    /// already. Reuses the on-disk [`crate::ast_cache`] when the script's
-    /// content and modification time haven't changed since it was last
-    /// parsed, so repeatedly resolving the same cross-script lookup (across
-    /// separate CLI invocations, or separate desktop app commands) skips
-    /// re-parsing it.
+    /// already. Checks [`Self::known_scripts`] first (an O(1) lookup, and
+    /// never a directory scan), falling back to [`find_psc_file`] for
+    /// anything not registered that way. Reuses the on-disk
+    /// [`crate::ast_cache`] when the script's content and modification time
+    /// haven't changed since it was last parsed, so repeatedly resolving the
+    /// same cross-script lookup (across separate CLI invocations, or
+    /// separate desktop app commands) skips re-parsing it.
     fn ensure_loaded(&mut self, name_lower: &str) {
         if self.scripts.contains_key(name_lower) {
             return;
         }
 
-        let script = find_psc_file(&self.root, name_lower, &self.additional_roots)
+        // `name_lower` is only actually lowercased on a lookup's initial
+        // call; walking further up an `Extends` chain re-enters this with
+        // the parent's name cased exactly as written in `Extends ParentName`
+        // (see e.g. `lookup_function`'s loop). `find_psc_file` tolerates
+        // that by lowercasing internally before matching a directory entry,
+        // so `known_scripts` (a plain, already-lowercased-keyed map) has to
+        // do the same explicitly here.
+        let script = self
+            .known_scripts
+            .get(&name_lower.to_ascii_lowercase())
+            .cloned()
+            .or_else(|| find_psc_file(&self.root, name_lower, &self.additional_roots))
             .and_then(|path| {
                 let source = read_psc_source(&path).ok()?;
                 if let Some(cached) = crate::ast_cache::get(&path, &source) {
@@ -661,6 +711,99 @@ mod tests {
             .lookup_function("Shared", "DoThing")
             .expect("function should be found via the additional root");
         assert_eq!(signature.name, "DoThing");
+    }
+
+    #[test]
+    fn with_known_scripts_resolves_a_script_named_explicitly_without_a_directory_scan() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let mod_a = tempfile::tempdir().expect("failed to create temp dir");
+        let mod_b = tempfile::tempdir().expect("failed to create temp dir");
+        let base_path = mod_a.path().join("Base.psc");
+        let child_path = mod_b.path().join("Child.psc");
+        fs::write(
+            &base_path,
+            "ScriptName Base\n\nInt Function DoThing()\nEndFunction\n",
+        )
+        .expect("failed to write base script");
+        fs::write(&child_path, "ScriptName Child Extends Base\n")
+            .expect("failed to write child script");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf())
+            .with_known_scripts(&[base_path, child_path]);
+
+        let signature = table
+            .lookup_function("Child", "DoThing")
+            .expect("function inherited via a known script should be found");
+        assert_eq!(signature.name, "DoThing");
+    }
+
+    #[test]
+    fn with_known_scripts_does_not_expose_other_files_in_the_same_directory() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let shared_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let listed_path = shared_dir.path().join("Listed.psc");
+        fs::write(&listed_path, "ScriptName Listed\n").expect("failed to write listed script");
+        fs::write(
+            shared_dir.path().join("Unlisted.psc"),
+            "ScriptName Unlisted\n",
+        )
+        .expect("failed to write unlisted sibling script");
+
+        let mut table =
+            FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[listed_path]);
+
+        assert!(table.script_exists("Listed"));
+        assert!(!table.script_exists("Unlisted"));
+    }
+
+    #[test]
+    fn with_known_scripts_lets_the_first_listed_path_win_for_a_duplicate_stem() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let first_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let second_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let first = first_dir.path().join("Example.psc");
+        let second = second_dir.path().join("Example.psc");
+        fs::write(
+            &first,
+            "ScriptName Example\n\nFunction FromFirst()\nEndFunction\n",
+        )
+        .expect("failed to write first script");
+        fs::write(
+            &second,
+            "ScriptName Example\n\nFunction FromSecond()\nEndFunction\n",
+        )
+        .expect("failed to write second script");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf())
+            .with_known_scripts(&[first.clone(), second]);
+
+        assert!(table.lookup_function("Example", "FromFirst").is_some());
+        assert!(table.lookup_function("Example", "FromSecond").is_none());
+    }
+
+    #[test]
+    fn known_scripts_take_precedence_over_a_same_named_script_under_the_conventional_directories() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nFunction FromConventionalDir()\nEndFunction\n",
+        );
+        let shared = tempfile::tempdir().expect("failed to create temp dir");
+        let known_path = shared.path().join("Foo.psc");
+        fs::write(
+            &known_path,
+            "ScriptName Foo\n\nFunction FromKnownScript()\nEndFunction\n",
+        )
+        .expect("failed to write known script");
+
+        let mut table =
+            FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[known_path]);
+
+        assert!(table.lookup_function("Foo", "FromKnownScript").is_some());
+        assert!(table
+            .lookup_function("Foo", "FromConventionalDir")
+            .is_none());
     }
 
     #[test]

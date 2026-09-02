@@ -328,6 +328,22 @@ given directly the same way, walking up from the file itself and falling
 back to two directories above it if no such pair is found at all; the
 desktop app's frontend still uses that simpler fixed "two directories up"
 rule for a bare `.psc` dropped directly (`projectDirForPscPath`).
+
+The CLI resolves cross-script lookups among an achlist's own entries by
+registering each listed `.psc` directly with the `FunctionTable`
+(`FunctionTable::with_known_scripts` in `papyrus-lint-core`), rather than
+treating every listed entry's parent directory as a generic search root.
+This matters for achlists whose entries are grouped into arbitrary source
+directories rather than either conventional layout: a script in one listed
+directory can still resolve a script type declared in another listed
+directory, without making every *other*, unlisted file that happens to sit
+in either directory resolvable too, and without scanning either directory
+at all — both of which mattered a great deal on a modlist-sized achlist
+(hundreds of listed files across as many directories; see
+[#311](https://github.com/Idrinth/papyrus-lint/issues/311)). A same-named
+collision between two such listed entries (as opposed to one found via a
+directory scan) is instead reported by
+`script_locator::conflicting_script_versions_among`.
 Configuration controls formatting, lint enablement, complexity thresholds,
 CLI failure levels, and the compiler path. It also controls whether the
 desktop app's `lint_psc_file`/`repair_psc_file` commands additionally run

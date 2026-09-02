@@ -186,6 +186,65 @@ pub fn conflicting_script_versions(
         .collect()
 }
 
+/// Warns when `script_path` has a same-named, byte-different counterpart
+/// among `known_scripts` — other scripts named explicitly (e.g. an
+/// `.achlist`'s own entries) rather than discovered by directory search.
+///
+/// Complements [`conflicting_script_versions`], which only scans `root`'s
+/// conventional and configured search directories: two `.achlist` entries
+/// can share a file name while living in directories that were never (and,
+/// to keep resolution scoped to what was actually listed, deliberately
+/// aren't) treated as search roots for one another. `known_scripts` should
+/// generally be pre-filtered to only the paths sharing `script_path`'s file
+/// name (see [`crate::function_table::FunctionTable::with_known_scripts`]
+/// for the matching resolution side of this), so checking every script in a
+/// large achlist stays proportional to how many of them actually collide by
+/// name rather than to the achlist's full size.
+pub fn conflicting_script_versions_among(
+    script_path: &Path,
+    known_scripts: &[PathBuf],
+) -> Vec<Diagnostic> {
+    let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
+        return Vec::new();
+    };
+    let Ok(current) = fs::read(script_path) else {
+        return Vec::new();
+    };
+    let current_hash = md5::compute(&current);
+
+    let mut conflicts = Vec::new();
+    for candidate in known_scripts {
+        let same_name = candidate
+            .file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.eq_ignore_ascii_case(file_name));
+        if !same_name || candidate == script_path {
+            continue;
+        }
+        let Ok(contents) = fs::read(candidate) else {
+            continue;
+        };
+        if md5::compute(contents) != current_hash && !conflicts.contains(candidate) {
+            conflicts.push(candidate.clone());
+        }
+    }
+
+    conflicts.sort();
+    conflicts
+        .into_iter()
+        .map(|path| Diagnostic {
+            line: 1,
+            column: 1,
+            rule: CONFLICTING_SCRIPT_VERSIONS_RULE,
+            message: format!(
+                "[warning] A different version of {} is also available at {}; script resolution may depend on search-directory order",
+                file_name,
+                path.display()
+            ),
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -540,5 +599,57 @@ mod tests {
         fs::write(&script, "primary").expect("failed to write primary script");
 
         assert!(conflicting_script_versions(&script, root.path(), &[]).is_empty());
+    }
+
+    #[test]
+    fn conflicting_script_versions_among_flags_a_same_named_known_script_with_different_content() {
+        let dir_a = tempfile::tempdir().expect("failed to create temp dir");
+        let dir_b = tempfile::tempdir().expect("failed to create temp dir");
+        let script = write_file(dir_a.path(), "Example.psc");
+        fs::write(&script, "ScriptName Example\n").expect("failed to write first script");
+        let other = write_file(dir_b.path(), "example.PSC");
+        fs::write(&other, "ScriptName ExampleV2\n").expect("failed to write second script");
+
+        let diagnostics = conflicting_script_versions_among(&script, std::slice::from_ref(&other));
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("example.PSC"));
+        assert!(diagnostics[0]
+            .message
+            .contains(&other.display().to_string()));
+    }
+
+    #[test]
+    fn conflicting_script_versions_among_ignores_identical_known_scripts() {
+        let dir_a = tempfile::tempdir().expect("failed to create temp dir");
+        let dir_b = tempfile::tempdir().expect("failed to create temp dir");
+        let script = write_file(dir_a.path(), "Example.psc");
+        fs::write(&script, "same").expect("failed to write first script");
+        let other = write_file(dir_b.path(), "Example.psc");
+        fs::write(&other, "same").expect("failed to write second script");
+
+        assert!(conflicting_script_versions_among(&script, &[other]).is_empty());
+    }
+
+    #[test]
+    fn conflicting_script_versions_among_ignores_the_script_itself_and_unrelated_names() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script = write_file(dir.path(), "Example.psc");
+        fs::write(&script, "content").expect("failed to write script");
+        let unrelated = write_file(dir.path(), "Other.psc");
+        fs::write(&unrelated, "different").expect("failed to write unrelated script");
+
+        assert!(
+            conflicting_script_versions_among(&script, &[script.clone(), unrelated]).is_empty()
+        );
+    }
+
+    #[test]
+    fn conflicting_script_versions_among_returns_empty_for_an_unreadable_script_path() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert!(
+            conflicting_script_versions_among(&root.path().join("Missing.psc"), &[]).is_empty()
+        );
     }
 }
