@@ -156,6 +156,27 @@ class PapyrusLinter {
     );
   }
 
+  /** Applies just the named `rule`'s automatic fix, and only on `line` (1-based, matching
+   * the CLI's `--line`/the JSON diagnostics' own line numbers), leaving every other issue
+   * in the file untouched. Used by the "Fix this issue" quick fix on a single diagnostic. */
+  async fixIssue(uri: vscode.Uri, rule: string, line: number): Promise<void> {
+    const result = await runCli(
+      withConfigOverride(['fix', '--type', rule, '--line', String(line), '--json', uri.fsPath]),
+      path.dirname(uri.fsPath),
+    );
+    const report = this.applyResult(uri, result);
+    if (!report) {
+      return;
+    }
+
+    const fixedCount = report.files_fixed ?? 0;
+    void vscode.window.showInformationMessage(
+      fixedCount > 0
+        ? `Papyrus Lint: fixed "${rule}" on line ${line} of ${path.basename(uri.fsPath)}.`
+        : `Papyrus Lint: "${rule}" on line ${line} of ${path.basename(uri.fsPath)} has no automatic fix.`,
+    );
+  }
+
   clear(uri: vscode.Uri): void {
     this.diagnostics.delete(uri);
   }
@@ -198,6 +219,36 @@ class PapyrusLinter {
   }
 }
 
+const FIX_ISSUE_COMMAND = 'papyrusLint.fixIssue';
+
+/** Offers a "Fix this issue" quick fix for each papyrus-lint diagnostic under the
+ * cursor/selection, filtering the CLI's fix down to that diagnostic's own rule and
+ * line so fixing one issue never touches any other. */
+class PapyrusFixIssueActionProvider implements vscode.CodeActionProvider {
+  static readonly providedCodeActionKinds = [vscode.CodeActionKind.QuickFix];
+
+  provideCodeActions(
+    document: vscode.TextDocument,
+    _range: vscode.Range,
+    context: vscode.CodeActionContext,
+  ): vscode.CodeAction[] {
+    return context.diagnostics
+      .filter((diagnostic) => diagnostic.source === 'papyrus-lint' && typeof diagnostic.code === 'string')
+      .map((diagnostic) => {
+        const rule = diagnostic.code as string;
+        const line = diagnostic.range.start.line + 1;
+        const action = new vscode.CodeAction(`Fix this issue (${rule})`, vscode.CodeActionKind.QuickFix);
+        action.diagnostics = [diagnostic];
+        action.command = {
+          command: FIX_ISSUE_COMMAND,
+          title: `Fix this issue (${rule})`,
+          arguments: [document.uri, rule, line],
+        };
+        return action;
+      });
+  }
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   extensionVersion = String(context.extension.packageJSON.version);
   automaticCliStorage = context.globalStorageUri.fsPath;
@@ -233,6 +284,17 @@ export function activate(context: vscode.ExtensionContext): void {
         await linter.fix(target);
       }
     }),
+    vscode.commands.registerCommand(FIX_ISSUE_COMMAND, async (uri: vscode.Uri, rule: string, line: number) => {
+      const target = await resolveTargetUri(uri);
+      if (target) {
+        await linter.fixIssue(target, rule, line);
+      }
+    }),
+    vscode.languages.registerCodeActionsProvider(
+      { language: PAPYRUS_LANGUAGE_ID, scheme: 'file' },
+      new PapyrusFixIssueActionProvider(),
+      { providedCodeActionKinds: PapyrusFixIssueActionProvider.providedCodeActionKinds },
+    ),
   );
 }
 

@@ -57,6 +57,11 @@
         "command": "papyrusLint.fixFile",
         "title": "Papyrus Lint: Fix Current File",
         "category": "Papyrus Lint"
+      },
+      {
+        "command": "papyrusLint.fixIssue",
+        "title": "Papyrus Lint: Fix This Issue",
+        "category": "Papyrus Lint"
       }
     ],
     "menus": {
@@ -68,6 +73,10 @@
         {
           "command": "papyrusLint.fixFile",
           "when": "editorLangId == papyrus"
+        },
+        {
+          "command": "papyrusLint.fixIssue",
+          "when": "false"
         }
       ],
       "editor/context": [
