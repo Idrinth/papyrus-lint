@@ -6,6 +6,49 @@ on:
       - "v*.*.*"
 
 jobs:
+  nexus-page:
+    name: Package version-specific Nexus page
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Find CI coverage run for tagged commit
+        id: ci_run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${{ github.sha }}&status=completed" \
+            --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
+          if [ -z "$RUN_ID" ]; then
+            echo "No successful CI run found for tagged commit ${{ github.sha }}" >&2
+            exit 1
+          fi
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download coverage artifacts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download "${{ steps.ci_run.outputs.run_id }}" \
+            --repo "${{ github.repository }}" \
+            --dir coverage-artifacts \
+            --pattern '*coverage*'
+
+      - name: Generate version-specific Nexus page
+        run: |
+          python3 .github/scripts/render_nexuspage.py \
+            nexuspage.bbcode \
+            coverage-artifacts \
+            "nexuspage-${{ github.ref_name }}.bbcode"
+
+      - name: Attach Nexus page to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: nexuspage-${{ github.ref_name }}.bbcode
+
   release:
     permissions:
       contents: write
