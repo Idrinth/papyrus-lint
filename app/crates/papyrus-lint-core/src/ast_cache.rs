@@ -423,4 +423,39 @@ mod tests {
         put(&source_path, source, &ast);
         let _ = get(&source_path, source);
     }
+
+    #[test]
+    fn put_is_a_noop_when_the_source_file_does_not_exist() {
+        let cache_dir = tempdir().unwrap();
+        let missing_source = cache_dir.path().join("Missing.psc");
+
+        put_in(
+            cache_dir.path(),
+            &missing_source,
+            "ScriptName Missing\n",
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
+
+        assert!(!cache_file_path(cache_dir.path(), &missing_source).exists());
+    }
+
+    #[test]
+    fn get_is_a_miss_when_the_source_file_was_deleted() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
+        std::fs::remove_file(&source_path).unwrap();
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    }
 }
