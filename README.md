@@ -35,14 +35,18 @@ EndFunction
 The strict boolean check identifies this issue because the first call passes
 the `Actor` value `b` to a `Bool` parameter.
 
-![Papyrus Lint Results](resources/papyrus-lint-results.png)
+![Papyrus Lint Import](resources/papyrus-lint-import.png)
+
+Just drop your file or archlist here and see the results.
 
 ## What this is NOT
 
-- A compiler
-- An editor
+- A compiler (this uses the standard papyrus compile under the hood)
+- An editor(see VSCode or Sublime Text for editors supported by our plugins)
 - A guarantee a script is fit for purpose
 - A replacement for proper testing
+
+![Papyrus Lint VSCode Extension](resources/papyrus-lint-vscode.png)
 
 ## What is a linter?
 
@@ -63,6 +67,8 @@ judgment for whether a flagged line needs changing, and use the
 [`; @disable`](#disabling-a-lint-on-a-specific-line) comment below to
 silence a specific rule on a specific line when you've decided it doesn't
 apply.
+
+![Papyrus Lint Results](resources/papyrus-lint-results.png)
 
 ## Implemented Lints
 
