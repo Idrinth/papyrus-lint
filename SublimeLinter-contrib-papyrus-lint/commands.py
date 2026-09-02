@@ -6,6 +6,8 @@ import subprocess
 import sublime
 import sublime_plugin
 
+from .cli_download import ensure_release_cli
+
 
 class PapyrusLintFixCommand(sublime_plugin.TextCommand):
     """Runs `PapyrusLinterCLI fix` against the current file, then reloads it.
@@ -30,19 +32,18 @@ class PapyrusLintFixCommand(sublime_plugin.TextCommand):
         if not file_name:
             return
 
-        executable = self._executable()
-        command = [executable, 'fix']
-        config_path = self._config_path()
-        if config_path:
-            command += ['--config', config_path]
-        command.append(file_name)
-
         startupinfo = None
         if os.name == 'nt':
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
         try:
+            executable = self._executable()
+            command = [executable, 'fix']
+            config_path = self._config_path()
+            if config_path:
+                command += ['--config', config_path]
+            command.append(file_name)
             result = subprocess.run(
                 tuple(command),
                 capture_output=True,
@@ -50,7 +51,7 @@ class PapyrusLintFixCommand(sublime_plugin.TextCommand):
             )
         except OSError as err:
             sublime.error_message(
-                'PapyrusLint: failed to run "{}": {}'.format(executable, err)
+                'PapyrusLint: failed to download or run the CLI: {}'.format(err)
             )
             return
 
@@ -67,7 +68,9 @@ class PapyrusLintFixCommand(sublime_plugin.TextCommand):
         self.view.run_command('sublime_linter_lint')
 
     def _executable(self):
-        return self._linter_settings().get('executable') or 'PapyrusLinterCLI'
+        return self._linter_settings().get('executable') or ensure_release_cli(
+            sublime.cache_path()
+        )
 
     def _config_path(self):
         return (self._linter_settings().get('config_path') or '').strip()

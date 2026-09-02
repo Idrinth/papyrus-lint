@@ -1,6 +1,7 @@
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { ensureReleaseCli } from './cliDownload';
 import { normalizeDiagnostic, parseReport, type JsonDiagnostic, type JsonReport } from './diagnostics';
 
 const PAPYRUS_LANGUAGE_ID = 'papyrus';
@@ -20,8 +21,13 @@ function isPscFile(uri: vscode.Uri): boolean {
   return path.extname(uri.fsPath).toLowerCase() === '.psc';
 }
 
-function cliPath(): string {
-  return vscode.workspace.getConfiguration('papyrusLint').get<string>('cliPath', 'PapyrusLinterCLI');
+let automaticCli: Promise<string> | undefined;
+let automaticCliStorage = '';
+let extensionVersion = '';
+
+function configuredCliPath(): string | undefined {
+  const configured = vscode.workspace.getConfiguration('papyrusLint').get<string>('cliPath', '');
+  return configured.trim() || undefined;
 }
 
 /** The `papyrusLint.configPath` setting, or `undefined` if unset/blank, in which case
@@ -37,9 +43,22 @@ function withConfigOverride(args: string[]): string[] {
   return override ? ['--config', override, ...args] : args;
 }
 
-function runCli(args: string[], cwd: string): Promise<CliResult> {
+async function runCli(args: string[], cwd: string): Promise<CliResult> {
+  let executable: string;
+  try {
+    const configured = configuredCliPath();
+    if (configured) {
+      executable = configured;
+    } else {
+      automaticCli ??= ensureReleaseCli(automaticCliStorage, extensionVersion);
+      executable = await automaticCli;
+    }
+  } catch (error) {
+    automaticCli = undefined;
+    return { code: -1, stdout: '', stderr: error instanceof Error ? error.message : String(error) };
+  }
   return new Promise((resolve) => {
-    execFile(cliPath(), args, { cwd, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+    execFile(executable, args, { cwd, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error && typeof (error as NodeJS.ErrnoException).code !== 'number') {
         // The executable itself couldn't be launched (e.g. not found on PATH).
         resolve({ code: -1, stdout, stderr: error.message });
@@ -146,8 +165,8 @@ class PapyrusLinter {
   private applyResult(uri: vscode.Uri, result: CliResult): JsonReport | undefined {
     if (result.code === -1) {
       void vscode.window.showErrorMessage(
-        `Papyrus Lint: could not run "${cliPath()}". Set the "papyrusLint.cliPath" setting to its ` +
-          `location. (${result.stderr.trim()})`,
+        `Papyrus Lint: could not download or run its CLI. Set "papyrusLint.cliPath" to override it. ` +
+          `(${result.stderr.trim()})`,
       );
       return undefined;
     }
@@ -180,6 +199,8 @@ class PapyrusLinter {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
+  extensionVersion = String(context.extension.packageJSON.version);
+  automaticCliStorage = context.globalStorageUri.fsPath;
   const diagnostics = vscode.languages.createDiagnosticCollection('papyrus-lint');
   const output = vscode.window.createOutputChannel('Papyrus Lint');
   const linter = new PapyrusLinter(diagnostics, output);

@@ -37,8 +37,8 @@
       "properties": {
         "papyrusLint.cliPath": {
           "type": "string",
-          "default": "PapyrusLinterCLI",
-          "description": "Path to the PapyrusLinterCLI executable used to lint .psc files."
+          "default": "",
+          "description": "Optional path to a PapyrusLinterCLI executable. When empty, the extension downloads and uses the CLI from its matching GitHub release."
         },
         "papyrusLint.configPath": {
           "type": "string",
