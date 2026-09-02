@@ -91,6 +91,17 @@
 //! without piping. Usage/error text still goes to stderr either way, and
 //! the exit code is unaffected.
 //!
+//! With `--color <auto|always|never>` (default `auto`, combinable with
+//! every flag above), the plain-text report's diagnostic locations, rule
+//! tags, and `[error]`/`[warning]`/`[info]` level tags are colorized with
+//! ANSI escapes. `auto` colorizes only when the caller reports stdout as a
+//! terminal (see [`run`]'s `stdout_is_terminal` parameter, which both binary
+//! entry points set from `std::io::Stdout::is_terminal`), `--output` isn't
+//! used (a file isn't a terminal), and the `NO_COLOR` environment variable
+//! isn't set; `always`/`never` override that detection outright. `--json`
+//! output is never colorized, since it's meant for tooling rather than a
+//! terminal.
+//!
 //! This crate is used both by the standalone `PapyrusLinterCLI` binary
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
@@ -212,6 +223,9 @@ Options:\n\
                           configured additional_script_roots. Repeatable.\n\
   --output <path>         Write the report (plain text or JSON, per --json) to\n\
                           this file instead of stdout.\n\
+  --color <when>          Colorize the plain-text report: auto (default),\n\
+                          always, or never. auto colors only when stdout is a\n\
+                          terminal, --output isn't used, and NO_COLOR is unset.\n\
   --type <rule-id>        fix only: apply only this rule's automatic fix\n\
                           (e.g. trailing-whitespace or trailing_whitespace)\n\
                           instead of every enabled one.\n\
@@ -271,6 +285,79 @@ pub struct JsonReport {
     pub success: bool,
 }
 
+const ANSI_RESET: &str = "\x1b[0m";
+const ANSI_BOLD: &str = "\x1b[1m";
+const ANSI_DIM: &str = "\x1b[2m";
+const ANSI_RED: &str = "\x1b[31m";
+const ANSI_YELLOW: &str = "\x1b[33m";
+const ANSI_CYAN: &str = "\x1b[36m";
+const ANSI_GREEN: &str = "\x1b[32m";
+
+/// Whether/when to colorize the plain-text report, set by the `--color`
+/// flag (see [`USAGE`]). Never affects `--json` output, which is meant for
+/// tooling rather than a terminal.
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum ColorChoice {
+    Auto,
+    Always,
+    Never,
+}
+
+/// Wraps `text` in `code`/reset ANSI escapes when `use_color` is true,
+/// otherwise returns it unchanged.
+fn colorize(text: &str, code: &str, use_color: bool) -> String {
+    if use_color {
+        format!("{code}{text}{ANSI_RESET}")
+    } else {
+        text.to_string()
+    }
+}
+
+fn level_color(level: &str) -> &'static str {
+    match level {
+        "error" => ANSI_RED,
+        "warning" => ANSI_YELLOW,
+        "info" => ANSI_CYAN,
+        _ => ANSI_RESET,
+    }
+}
+
+/// Renders one diagnostic's plain-text report line (`<path>:<line>:<column>:
+/// [<rule>] <message>`), colorizing the location, the rule tag, and the
+/// `[error]`/`[warning]`/`[info]` level tag already embedded at the front of
+/// `diagnostic.message` (see [`papyrus_lints::Diagnostic::level`]) when
+/// `use_color` is true.
+fn format_diagnostic_line(
+    path_display: &str,
+    diagnostic: &papyrus_lints::Diagnostic,
+    use_color: bool,
+) -> String {
+    if !use_color {
+        return format!(
+            "{}:{}:{}: [{}] {}",
+            path_display, diagnostic.line, diagnostic.column, diagnostic.rule, diagnostic.message
+        );
+    }
+
+    let level = diagnostic.level();
+    let level_tag = format!("[{level}]");
+    let message = match diagnostic.message.strip_prefix(level_tag.as_str()) {
+        Some(rest) => format!("{}{rest}", colorize(&level_tag, level_color(level), true)),
+        None => diagnostic.message.clone(),
+    };
+
+    format!(
+        "{}: {} {}",
+        colorize(
+            &format!("{path_display}:{}:{}", diagnostic.line, diagnostic.column),
+            ANSI_BOLD,
+            true
+        ),
+        colorize(&format!("[{}]", diagnostic.rule), ANSI_DIM, true),
+        message
+    )
+}
+
 /// Runs the CLI against `args` (the program's arguments, excluding the
 /// binary name itself), writing lint output to `stdout` and usage/error
 /// text to `stderr`. Returns the process exit code: `0` if linting found
@@ -281,7 +368,20 @@ pub struct JsonReport {
 /// (both `false` by default); an `[error]`-level diagnostic, or one with no
 /// level tag, always counts. Diagnostics are printed regardless of whether
 /// they affect the exit code unless their level is hidden by a quiet flag.
-pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
+///
+/// `stdout_is_terminal` reports whether `stdout` is directly connected to an
+/// interactive terminal, used to decide `--color auto`'s coloring (see
+/// [`ColorChoice`]) — the caller (a binary's `main`) determines this via
+/// `std::io::Stdout::is_terminal` rather than `run` checking it itself,
+/// since `stdout: &mut impl Write` accepts any writer (including the
+/// in-memory buffers this crate's own tests write to), not just a real
+/// `Stdout` capable of answering that question on its own.
+pub fn run(
+    args: &[String],
+    stdout: &mut impl Write,
+    stderr: &mut impl Write,
+    stdout_is_terminal: bool,
+) -> u8 {
     if args == ["init"] {
         let current_dir = match std::env::current_dir() {
             Ok(dir) => dir,
@@ -306,6 +406,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let mut cli_script_roots: Vec<String> = Vec::new();
     let mut type_filter: Option<String> = None;
     let mut line_filter: Option<String> = None;
+    let mut color_flag: Option<String> = None;
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
     let mut input = args
         .iter()
@@ -351,11 +452,32 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             line_filter = Some(value);
         } else if let Some(value) = arg.strip_prefix("--line=") {
             line_filter = Some(value.to_string());
+        } else if arg == "--color" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            color_flag = Some(value);
+        } else if let Some(value) = arg.strip_prefix("--color=") {
+            color_flag = Some(value.to_string());
         } else {
             positional_and_flags.push(arg);
         }
     }
     let args = positional_and_flags;
+
+    let color_choice = match color_flag.as_deref() {
+        None | Some("auto") => ColorChoice::Auto,
+        Some("always") => ColorChoice::Always,
+        Some("never") => ColorChoice::Never,
+        Some(value) => {
+            let _ = writeln!(
+                stderr,
+                "error: --color must be 'auto', 'always', or 'never', got '{value}'"
+            );
+            return 2;
+        }
+    };
 
     let (fix, input_path) = match args.as_slice() {
         [flag] if flag == "--version" || flag == "-V" => {
@@ -578,6 +700,19 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         function_table = function_table.with_script_index(Arc::clone(&script_index));
     }
 
+    // `--output <path>` redirects the report to a file, which is never a
+    // terminal, so `auto` never colorizes in that case regardless of
+    // whether `stdout` itself is one. `NO_COLOR` (https://no-color.org/)
+    // is honored the same way most CLIs do: any non-empty or empty value
+    // disables auto-coloring.
+    let use_color = match color_choice {
+        ColorChoice::Always => true,
+        ColorChoice::Never => false,
+        ColorChoice::Auto => {
+            output_path.is_none() && stdout_is_terminal && std::env::var_os("NO_COLOR").is_none()
+        }
+    };
+
     let mut total_diagnostics = 0usize;
     let mut files_with_diagnostics = 0usize;
     let mut files_fixed = 0usize;
@@ -682,12 +817,8 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             if !json {
                 let _ = writeln!(
                     report_buf,
-                    "{}:{}:{}: [{}] {}",
-                    reported_path,
-                    diagnostic.line,
-                    diagnostic.column,
-                    diagnostic.rule,
-                    diagnostic.message
+                    "{}",
+                    format_diagnostic_line(&reported_path, diagnostic, use_color)
                 );
             }
         }
@@ -737,19 +868,32 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             String::new()
         };
 
-        if total_diagnostics == 0 {
-            let _ = writeln!(
-                report_buf,
+        // Green when clean, yellow when problems were found but none crossed
+        // the configured failure threshold, red when the run will exit 1.
+        let summary_color = if total_diagnostics == 0 {
+            ANSI_GREEN
+        } else if success {
+            ANSI_YELLOW
+        } else {
+            ANSI_RED
+        };
+
+        let summary = if total_diagnostics == 0 {
+            format!(
                 "PapyrusLinterCLI: no problems found in {} script(s).{fixed_suffix}",
                 script_paths.len()
-            );
+            )
         } else {
-            let _ = writeln!(
-                report_buf,
+            format!(
                 "PapyrusLinterCLI: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).{fixed_suffix}",
                 script_paths.len()
-            );
-        }
+            )
+        };
+        let _ = writeln!(
+            report_buf,
+            "{}",
+            colorize(&summary, summary_color, use_color)
+        );
     }
 
     if let Some(output_path) = output_path {
@@ -810,15 +954,22 @@ mod tests {
         fs::write(path, contents).expect("failed to write file");
     }
 
-    fn run_captured(args: &[String]) -> (u8, String, String) {
+    fn run_captured_with_terminal_stdout(
+        args: &[String],
+        stdout_is_terminal: bool,
+    ) -> (u8, String, String) {
         let mut stdout = Vec::new();
         let mut stderr = Vec::new();
-        let code = run(args, &mut stdout, &mut stderr);
+        let code = run(args, &mut stdout, &mut stderr, stdout_is_terminal);
         (
             code,
             String::from_utf8(stdout).expect("stdout should be utf8"),
             String::from_utf8(stderr).expect("stderr should be utf8"),
         )
+    }
+
+    fn run_captured(args: &[String]) -> (u8, String, String) {
+        run_captured_with_terminal_stdout(args, false)
     }
 
     #[test]
@@ -2373,6 +2524,117 @@ mod tests {
     #[test]
     fn output_flag_without_a_value_prints_usage() {
         let (code, _stdout, stderr) = run_captured(&["--output".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn plain_text_report_is_uncolored_when_stdout_is_not_a_terminal() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) =
+            run_captured_with_terminal_stdout(&[script_path.to_string_lossy().into_owned()], false);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(!stdout.contains('\x1b'));
+    }
+
+    #[test]
+    fn color_auto_colorizes_when_stdout_is_a_terminal() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) =
+            run_captured_with_terminal_stdout(&[script_path.to_string_lossy().into_owned()], true);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains('\x1b'));
+        // The rule id and level tag both still appear verbatim inside the
+        // colorized escapes, so consumers scraping for them (and the other
+        // tests here) still find them.
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("[warning]"));
+    }
+
+    #[test]
+    fn color_never_disables_color_even_on_a_terminal() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) = run_captured_with_terminal_stdout(
+            &[
+                "--color".to_string(),
+                "never".to_string(),
+                script_path.to_string_lossy().into_owned(),
+            ],
+            true,
+        );
+
+        assert_eq!(code, 0);
+        assert!(!stdout.contains('\x1b'));
+    }
+
+    #[test]
+    fn color_always_enables_color_even_without_a_terminal() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--color=always".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains('\x1b'));
+    }
+
+    #[test]
+    fn color_auto_does_not_colorize_a_file_written_via_output() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+        let output_path = dir.path().join("report.txt");
+
+        let (code, _stdout, _stderr) = run_captured_with_terminal_stdout(
+            &[
+                "--output".to_string(),
+                output_path.to_string_lossy().into_owned(),
+                script_path.to_string_lossy().into_owned(),
+            ],
+            true,
+        );
+
+        assert_eq!(code, 0);
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        assert!(!contents.contains('\x1b'));
+    }
+
+    #[test]
+    fn color_flag_rejects_an_unknown_value() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--color".to_string(),
+            "rainbow".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("--color must be"));
+    }
+
+    #[test]
+    fn color_flag_without_a_value_prints_usage() {
+        let (code, _stdout, stderr) = run_captured(&["--color".to_string()]);
 
         assert_eq!(code, 2);
         assert!(stderr.contains("Usage: PapyrusLinterCLI"));

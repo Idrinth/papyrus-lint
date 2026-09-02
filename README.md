@@ -435,6 +435,7 @@ PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
 PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
 PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
 PapyrusLinterCLI --short-paths path/to/project.achlist
+PapyrusLinterCLI --color never path/to/project.achlist
 ```
 
 `PapyrusLinterCLI init` creates a `papyrus-lint.yaml` containing all default
@@ -490,6 +491,16 @@ Given `--short-paths` (combinable with `fix`/`--json`/`--config`/
 the report has the project root stripped from its beginning, the same way
 the desktop app shortens paths in its own results list; a path that isn't
 under the project root is left unchanged.
+
+Given `--color <auto|always|never>` (default `auto`, combinable with every
+flag above), the plain-text report's diagnostic locations, rule tags, and
+`[error]`/`[warning]`/`[info]` level tags are colorized with ANSI escapes,
+and the summary line is colorized green/yellow/red for no problems/problems
+that didn't fail the run/problems that did. `auto` colorizes only when
+stdout is a real terminal, `--output` isn't used (a file is never a
+terminal), and the `NO_COLOR` environment variable isn't set; `always`/
+`never` override that detection outright. `--json` output is never
+colorized, since it's meant for tooling rather than a terminal.
 
 Each `.psc` file is decoded as UTF-8 when it's valid UTF-8, or as
 Windows-1252 (CP1252) — the Creation Kit/Papyrus compiler's own default
