@@ -7,7 +7,6 @@
 //! it still runs on scripts that don't parse cleanly.
 
 use crate::Diagnostic;
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::TokenKind;
 
 pub struct SlowFunctionRule {
@@ -46,7 +45,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 }
 
 fn check_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> Vec<Diagnostic> {
-    let tokens = match Lexer::new(source).tokenize() {
+    let tokens = match papyrus_parser::tokenize(source) {
         Ok(tokens) => tokens,
         Err(_) => return Vec::new(),
     };

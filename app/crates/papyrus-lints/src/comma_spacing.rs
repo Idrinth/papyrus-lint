@@ -1,7 +1,6 @@
 //! Requires whitespace after commas in parenthesized argument lists.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::TokenKind;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -52,7 +51,7 @@ pub fn repair(source: &str) -> String {
 }
 
 fn comma_offsets(source: &str) -> Vec<(usize, usize, usize)> {
-    let tokens = match Lexer::new(source).tokenize() {
+    let tokens = match papyrus_parser::tokenize(source) {
         Ok(tokens) => tokens,
         Err(_) => return Vec::new(),
     };

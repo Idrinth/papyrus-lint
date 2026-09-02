@@ -2,7 +2,6 @@
 //! e.g. `SomeProperty . DoThing()` instead of `SomeProperty.DoThing()`.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::TokenKind;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -19,7 +18,7 @@ const WHITESPACE: [u8; 2] = [b' ', b'\t'];
 /// are never flagged.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let protected = fragment_code::protected_lines(source);
-    let tokens = match Lexer::new(source).tokenize() {
+    let tokens = match papyrus_parser::tokenize(source) {
         Ok(tokens) => tokens,
         Err(_) => return Vec::new(),
     };
@@ -71,7 +70,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 /// line".
 pub fn repair(source: &str) -> String {
     let protected = fragment_code::protected_lines(source);
-    let Ok(tokens) = Lexer::new(source).tokenize() else {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();
     };
     let line_starts = line_starts(source);

@@ -14,7 +14,6 @@
 use std::collections::HashMap;
 
 use papyrus_parser::ast::{FunctionDecl, StateDecl, Stmt};
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Keyword, TokenKind};
 
 use crate::config::IdentifierCasing;
@@ -110,7 +109,7 @@ pub fn repair(source: &str, style: IdentifierCasing) -> String {
         return source.to_string();
     }
 
-    let Ok(tokens) = Lexer::new(source).tokenize() else {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();
     };
     let mut replacements: Vec<(usize, usize, String)> = Vec::new();

@@ -9,7 +9,6 @@
 //! negatives, never false positives.
 
 use crate::Diagnostic;
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -18,7 +17,7 @@ pub const RULE: &str = "unused-property";
 /// Checks `source` for `Property` declarations whose name is never used
 /// anywhere else in the script. Flagged as a `[warning]`.
 pub fn check(source: &str) -> Vec<Diagnostic> {
-    let tokens = match Lexer::new(source).tokenize() {
+    let tokens = match papyrus_parser::tokenize(source) {
         Ok(tokens) => tokens,
         Err(_) => return Vec::new(),
     };

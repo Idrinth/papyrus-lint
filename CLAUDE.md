@@ -55,7 +55,12 @@ desktop app's binary at all.
 │       │       ├── lexer.rs        # here — see papyrus-lints below.
 │       │       ├── token.rs
 │       │       ├── ast.rs
-│       │       └── parser.rs
+│       │       ├── parser.rs
+│       │       └── cache.rs        # In-memory memoization of parse()/tokenize()
+│       │                           # against the most recently seen source, so
+│       │                           # one lint pass over a script only lexes/
+│       │                           # parses it once no matter how many lint
+│       │                           # rules each ask for their own tokens/AST
 │       ├── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
 │       │   ├── build.rs           # (not the AST) so they still run on scripts
 │       │   └── src/                # that don't parse cleanly.
@@ -353,6 +358,21 @@ cache, falls back to a fresh parse, so a stale or corrupt cache never
 surfaces as a lint error. Since it lives in `papyrus-lint-core`, the same
 cache backs the editor extensions too, which invoke `PapyrusLinterCLI` as
 a subprocess.
+
+Independent of that disk cache, `papyrus-parser`'s own `parse()` and
+`tokenize()` entry points (`app/crates/papyrus-parser/src/cache.rs`) are
+memoized in-memory against the most recently seen source string: a single
+`papyrus_lints::lint()`/`lint_with_external_arguments()` pass over one
+script calls into them dozens of times (each AST-based lint rule calls
+`parse()`, each rule that works on raw tokens instead — e.g.
+`chain_whitespace`, `exclamation_spacing`, `indentation` — calls
+`tokenize()`) with the exact same source text, so a single-slot,
+thread-local cache keyed by content equality turns all but the first call
+into a clone instead of a re-lex/re-parse. This is deliberately simpler
+than the disk-backed `ast_cache`: it never outlives the process (or even
+the thread) and so needs no path, mtime, or version bookkeeping, since it
+only ever has to remember the one source string a lint/repair pass is
+currently working on.
 
 ## Keeping agent instructions synchronized
 

@@ -1,7 +1,6 @@
 //! Flags getter calls used as standalone statements.
 
 use crate::Diagnostic;
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -11,7 +10,7 @@ pub const RULE: &str = "unused-getter";
 /// discarded rather than assigned, returned, or used by another expression.
 /// Flagged as a `[warning]`.
 pub fn check(source: &str) -> Vec<Diagnostic> {
-    let tokens = match Lexer::new(source).tokenize() {
+    let tokens = match papyrus_parser::tokenize(source) {
         Ok(tokens) => tokens,
         Err(_) => return Vec::new(),
     };

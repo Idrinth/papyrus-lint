@@ -7,7 +7,6 @@
 //! parsed AST, so it still runs on scripts that don't parse cleanly.
 
 use crate::Diagnostic;
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::TokenKind;
 
 pub struct ForbiddenFunctionRule {
@@ -44,7 +43,7 @@ pub const RULE: &str = "forbidden-functions";
 /// `Utility.Wait()` flagged while `MyScript.Wait()` (a same-named function
 /// on an unrelated script) is not.
 pub fn check(source: &str) -> Vec<Diagnostic> {
-    let tokens = match Lexer::new(source).tokenize() {
+    let tokens = match papyrus_parser::tokenize(source) {
         Ok(tokens) => tokens,
         Err(_) => return Vec::new(),
     };

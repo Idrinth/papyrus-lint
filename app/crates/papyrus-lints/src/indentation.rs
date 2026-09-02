@@ -1,7 +1,6 @@
 //! Flags and repairs Papyrus block statements whose indentation doesn't
 //! match a configurable indentation unit.
 
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Keyword, TokenKind};
 
 use crate::{fragment_code, Diagnostic};
@@ -46,7 +45,7 @@ impl Indentation {
 fn line_depths(source: &str) -> Option<Vec<usize>> {
     let mut keywords_by_line = vec![Vec::new(); source.lines().count() + 1];
 
-    let Ok(tokens) = Lexer::new(source).tokenize() else {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return None;
     };
     for token in tokens {

@@ -17,7 +17,6 @@
 //! list is checked; one reached indirectly through a variable assigned
 //! earlier is left unflagged rather than guessed at.
 
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{IntFormat, Keyword, Token, TokenKind};
 
 use crate::Diagnostic;
@@ -28,7 +27,7 @@ pub const RULE: &str = "formid-hex-notation";
 /// Checks `source` for a non-hexadecimal FormID literal compared against
 /// `GetFormID()` or passed to `Game.GetFormFromFile`.
 pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(tokens) = Lexer::new(source).tokenize() else {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return Vec::new();
     };
 

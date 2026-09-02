@@ -25,7 +25,6 @@
 //! script that doesn't parse.
 
 use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, FunctionDecl, Literal, Script, Stmt};
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Keyword, TokenKind};
 
 use crate::Diagnostic;
@@ -186,7 +185,7 @@ fn is_numeric_literal(expr: &Expr) -> bool {
 /// `source`'s lexer tokens directly for an `Else` keyword immediately
 /// followed (modulo newlines) by `EndIf`.
 fn empty_else_diagnostics(source: &str) -> Vec<Diagnostic> {
-    let Ok(tokens) = Lexer::new(source).tokenize() else {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return Vec::new();
     };
 
