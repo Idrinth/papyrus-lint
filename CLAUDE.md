@@ -328,6 +328,27 @@ given directly the same way, walking up from the file itself and falling
 back to two directories above it if no such pair is found at all; the
 desktop app's frontend still uses that simpler fixed "two directories up"
 rule for a bare `.psc` dropped directly (`projectDirForPscPath`).
+
+By default, the CLI (and the desktop app) resolves cross-script lookups
+among an achlist's own entries by treating every listed entry's parent
+directory as a generic additional search root — which matters for achlists
+whose entries are grouped into arbitrary source directories rather than
+either conventional layout, since a script in one listed directory then
+still resolves a script type declared in another listed directory. This
+also means an unlisted file that happens to sit in one of those
+directories resolves too, and `conflicting_script_versions` scans every
+such directory in full, which got expensive on a modlist-sized achlist
+(hundreds of listed files across as many directories; see
+[#311](https://github.com/Idrinth/papyrus-lint/issues/311)). Setting the
+project's `strict_achlist_scope` to `true` switches the CLI to registering
+each listed `.psc` directly with the `FunctionTable`
+(`FunctionTable::with_known_scripts` in `papyrus-lint-core`) instead,
+scoping resolution strictly to what the achlist actually lists — cross-listed-directory
+resolution still works, but nothing unlisted leaks in, and no directory is
+scanned at all — with `script_locator::conflicting_script_versions_among`
+covering the one case directory scanning otherwise catches for free: two
+listed entries sharing a file name. It defaults to `false` so an existing
+achlist-based project's resolution/diagnostics don't change underneath it.
 Configuration controls formatting, lint enablement, complexity thresholds,
 CLI failure levels, and the compiler path. It also controls whether the
 desktop app's `lint_psc_file`/`repair_psc_file` commands additionally run

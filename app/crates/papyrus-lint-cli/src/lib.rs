@@ -76,6 +76,7 @@
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
 
+use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -393,12 +394,37 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     };
     additional_script_roots.extend(cli_script_roots);
 
-    // Every directory represented by the achlist is a source root too. This
-    // matters for achlists whose entries are grouped into arbitrary source
-    // directories rather than either of the two conventional layouts: a
-    // script in one listed directory must still be able to resolve a script
-    // type from another listed directory.
-    if !is_psc_file {
+    // `strict_achlist_scope` (off by default, and skipped along with the
+    // rest of the project root's config whenever `--config` is used) picks
+    // between two ways of letting an achlist's entries resolve each other
+    // across arbitrary, non-conventional source directories:
+    //
+    // - Off (the default): every listed entry's parent directory is added
+    //   as a generic additional root, exactly as before this option
+    //   existed. This is what an achlist-based project may already depend
+    //   on — e.g. an unlisted sibling script in the same directory as a
+    //   listed one still resolving — so normal usage sees no change at all.
+    // - On: each listed script is instead registered directly by name (see
+    //   `FunctionTable::with_known_scripts`), without treating its
+    //   directory as a root. This never makes an unlisted file that happens
+    //   to share a listed one's directory resolvable, and never requires
+    //   scanning that directory at all, which matters a great deal on a
+    //   large achlist whose entries are spread across many directories (see
+    //   #311) — but it does mean a project relying on the off behavior
+    //   above would see resolution/diagnostics change.
+    let strict_achlist_scope = if config_path.is_some() {
+        false
+    } else {
+        match config::load_strict_achlist_scope(&project_root) {
+            Ok(value) => value,
+            Err(err) => {
+                let _ = writeln!(stderr, "error: failed to load lint config: {err}");
+                return 2;
+            }
+        }
+    };
+
+    if !is_psc_file && !strict_achlist_scope {
         for script_path in &script_paths {
             let Some(parent) = script_path.parent() else {
                 continue;
@@ -416,6 +442,29 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
 
     let mut function_table =
         FunctionTable::new_with_additional_roots(project_root, additional_script_roots);
+    if strict_achlist_scope {
+        function_table = function_table.with_known_scripts(&script_paths);
+    }
+
+    // Grouped by (lowercased) file name up front so checking for a
+    // same-named achlist entry elsewhere in the list, below, stays
+    // proportional to how many scripts actually share a name rather than to
+    // the achlist's full size. Only needed in strict-scope mode: the
+    // off-by-default directory-based `conflicting_script_versions` call
+    // below already covers this (and more) via the directories just added
+    // to `additional_script_roots`.
+    let mut scripts_by_name: HashMap<String, Vec<PathBuf>> = HashMap::new();
+    if strict_achlist_scope {
+        for script_path in &script_paths {
+            if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
+                scripts_by_name
+                    .entry(name.to_ascii_lowercase())
+                    .or_default()
+                    .push(script_path.clone());
+            }
+        }
+    }
+
     let mut total_diagnostics = 0usize;
     let mut files_with_diagnostics = 0usize;
     let mut files_fixed = 0usize;
@@ -459,11 +508,35 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         let mut diagnostics =
             papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut function_table);
         if lint_config.rules.conflicting_script_versions {
-            diagnostics.extend(papyrus_lint_core::script_locator::conflicting_script_versions(
-                script_path,
-                function_table.root(),
-                function_table.additional_roots(),
-            ));
+            if strict_achlist_scope {
+                // No directories were added to `additional_script_roots` in
+                // this mode (see above), so `conflicting_script_versions`'s
+                // own directory scan would find nothing among achlist
+                // entries anyway; comparing the achlist's own listed
+                // entries directly is what actually catches a same-named
+                // collision here, without re-reporting one directory
+                // scanning might otherwise also find (e.g. two entries
+                // whose directories both also happen to be configured
+                // `additional_script_roots`).
+                if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
+                    if let Some(same_named) = scripts_by_name.get(&name.to_ascii_lowercase()) {
+                        diagnostics.extend(
+                            papyrus_lint_core::script_locator::conflicting_script_versions_among(
+                                script_path,
+                                same_named,
+                            ),
+                        );
+                    }
+                }
+            } else {
+                diagnostics.extend(
+                    papyrus_lint_core::script_locator::conflicting_script_versions(
+                        script_path,
+                        function_table.root(),
+                        function_table.additional_roots(),
+                    ),
+                );
+            }
         }
         diagnostics.sort_by_key(|d| (d.line, d.column));
 
@@ -1287,6 +1360,161 @@ mod tests {
         assert!(!stdout.contains("'Busy'"));
         assert!(stdout.contains("[goto-state]"));
         assert!(stdout.contains("'NoSuchState'"));
+    }
+
+    #[test]
+    fn achlist_resolves_an_unlisted_sibling_script_by_default_for_backward_compatibility() {
+        // `strict_achlist_scope` defaults to false, so an achlist-based
+        // project already depending on the pre-#311-fix behavior (every
+        // listed entry's directory acting as a generic search root) must
+        // see no change: `Unlisted.psc` sits right beside the listed
+        // `Example.psc`, is never itself mentioned in the achlist, and
+        // still resolves.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("mods/one/Example.psc"),
+            "ScriptName Example\n\nFunction Test()\n    Unlisted.DoThing()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("mods/one/Unlisted.psc"),
+            "ScriptName Unlisted\n\nFunction DoThing()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts.achlist"),
+            r#"["mods/one/Example.psc"]"#,
+        );
+
+        let (code, stdout, stderr) = run_captured(&[dir
+            .path()
+            .join("scripts.achlist")
+            .to_string_lossy()
+            .into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(!stdout.contains("[unresolved-script]"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn strict_achlist_scope_does_not_leak_into_an_unlisted_sibling_script() {
+        // Regression test for https://github.com/Idrinth/papyrus-lint/issues/311:
+        // with `strict_achlist_scope: true`, an achlist entry's directory
+        // must not become a generic search root, since that would silently
+        // make every *other* file in that directory resolvable too, even
+        // though it was never listed. Here `Unlisted.psc` sits right beside
+        // the listed `Example.psc` but is itself never mentioned in the
+        // achlist, so a call against its type must be reported as
+        // unresolved once strict scoping is turned on.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("mods/one/Example.psc"),
+            "ScriptName Example\n\nFunction Test()\n    Unlisted.DoThing()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("mods/one/Unlisted.psc"),
+            "ScriptName Unlisted\n\nFunction DoThing()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts.achlist"),
+            r#"["mods/one/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "strict_achlist_scope: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[dir
+            .path()
+            .join("scripts.achlist")
+            .to_string_lossy()
+            .into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stdout.contains("[unresolved-script]"), "stdout: {stdout}");
+        assert!(stdout.contains("'Unlisted'"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn strict_achlist_scope_still_flags_conflicting_versions_between_two_achlist_entries_sharing_a_file_name(
+    ) {
+        // Regression test for https://github.com/Idrinth/papyrus-lint/issues/311:
+        // with `strict_achlist_scope: true`, two achlist entries can share a
+        // file name while living in directories that are no longer scanned
+        // as search roots for one another (see the previous test), so the
+        // conflicting-script-versions check has to compare the achlist's
+        // own listed entries directly rather than relying on a directory
+        // scan to notice the collision.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("mods/one/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("mods/two/Example.psc"),
+            "ScriptName ExampleV2\n",
+        );
+        write_file(
+            &dir.path().join("scripts.achlist"),
+            r#"["mods/one/Example.psc", "mods/two/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "strict_achlist_scope: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[dir
+            .path()
+            .join("scripts.achlist")
+            .to_string_lossy()
+            .into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert_eq!(
+            stdout.matches("[conflicting-script-versions]").count(),
+            2,
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn strict_achlist_scope_does_not_double_report_a_conflict_also_visible_via_a_conventional_directory(
+    ) {
+        // Regression test: when two conflicting achlist entries also happen
+        // to sit under the project's conventional scripts/source and
+        // source/scripts directories, strict mode must report the
+        // collision once per file (via conflicting_script_versions_among),
+        // not twice (once more via the directory-based
+        // conflicting_script_versions, which strict mode must skip
+        // entirely to avoid duplicating what it already reports).
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("source/scripts/Example.psc"),
+            "ScriptName ExampleV2\n",
+        );
+        write_file(
+            &dir.path().join("scripts.achlist"),
+            r#"["scripts/source/Example.psc", "source/scripts/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "strict_achlist_scope: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[dir
+            .path()
+            .join("scripts.achlist")
+            .to_string_lossy()
+            .into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert_eq!(
+            stdout.matches("[conflicting-script-versions]").count(),
+            2,
+            "stdout: {stdout}"
+        );
     }
 
     #[test]

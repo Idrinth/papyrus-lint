@@ -191,6 +191,11 @@ additional_script_roots: []
 # alongside the lint engine's own. Requires compiler_path to be set/
 # auto-detected
 compile_check: false
+# true enables strict cross-script resolution and conflicting-script-versions
+# checks for only the achlist's listed entries. false (the default) keeps
+# parent-directory search roots. In strict mode, every .psc dependency must
+# be listed in the achlist
+strict_achlist_scope: false
 # true, false
 semicolon: false
 # tab, space
@@ -293,6 +298,22 @@ rules:
   temporary directory rather than the project's real output directory, so
   enabling this never touches (or requires write access to) the project's
   actual compiled `.pex` output — see Compiling a script below.
+- `strict_achlist_scope`: `false` by default. When an `.achlist`'s entries
+  live in arbitrary, non-conventional source directories, the CLI needs
+  some way to let those entries resolve each other for the "Argument type
+  check"/"Return type check"/"Function override" lints and
+  `conflicting_script_versions`. By default, it does this by adding every
+  listed entry's own directory as an additional search root — which means
+  a script in that directory that *isn't* itself listed in the achlist can
+  still resolve, and `conflicting_script_versions` still scans that whole
+  directory, not just the achlist's other listed entries. Setting this to
+  `true` instead resolves strictly among the achlist's own listed entries,
+  without treating their directories as search roots at all: it never lets
+  an unlisted file resolve just because it happens to sit alongside a
+  listed one, and is dramatically faster on an achlist whose entries are
+  spread across many directories (see
+  [#311](https://github.com/Idrinth/papyrus-lint/issues/311)) — but every
+  `.psc` a listed entry depends on has to be listed in the achlist itself.
 - `semicolon`: whether lines are required to end in a semicolon (`true`)
   or must not (`false`). Read by the "Semicolon at end of line" lint/fix.
 - `indentation`: the expected indentation style, `tab` or `space`. Read
@@ -425,9 +446,10 @@ of discovering `papyrus-lint.yaml`/`.yml` from the project root — useful
 when a config file lives somewhere other than that project root, or isn't
 named `papyrus-lint.yaml`/`.yml`. Both editor plugins expose this as a
 `config_path`/`configPath` setting (see their own READMEs). Since the
-project root's own config file is bypassed entirely in that case, so is
-its `additional_script_roots`; use `--script-root` (below) to add any back
-explicitly.
+project root's own config file is bypassed entirely in that case, so are
+its `additional_script_roots` and `strict_achlist_scope` (falling back to
+`false`, its default); use `--script-root` (below) to add any script roots
+back explicitly.
 
 Given one or more `--script-root <path>` flags (combinable with
 `fix`/`--json`/`--config`, in any argument order), each given directory
