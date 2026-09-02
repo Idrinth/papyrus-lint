@@ -190,17 +190,29 @@ pub fn conflicting_script_versions(
 /// Maps a script file name (case-insensitively lowercased, as returned by
 /// [`detected_script_roots`]'s directories) to every path found under those
 /// directories carrying that name. Built once by [`build_script_index`] so
-/// [`conflicting_script_versions_in_index`] can check a whole batch of
-/// scripts (e.g. an achlist's worth) against it without re-scanning the
-/// same directories once per script.
+/// both exact-name resolution and conflict checks over a whole batch of
+/// scripts (e.g. an achlist's worth) can avoid re-scanning the same roots.
 pub type ScriptIndex = HashMap<String, Vec<PathBuf>>;
+
+/// Looks up `name` in a pre-built [`ScriptIndex`], returning the first path
+/// in search-root order. `name` may be supplied with or without `.psc` and
+/// is matched case-insensitively, just like [`find_psc_file`].
+pub fn find_psc_file_in_index(index: &ScriptIndex, name: &str) -> Option<PathBuf> {
+    let name_lower = name.to_ascii_lowercase();
+    let target = if name_lower.ends_with(".psc") {
+        name_lower
+    } else {
+        format!("{name_lower}.psc")
+    };
+
+    index.get(&target).and_then(|paths| paths.first()).cloned()
+}
 
 /// Scans `root`'s conventional and configured search directories (see
 /// [`detected_script_roots`]) once, recording every `.psc` file found under
-/// them by lowercased file name. Pass the result to
-/// [`conflicting_script_versions_in_index`] for each script being checked,
-/// instead of calling [`conflicting_script_versions`] (which re-scans those
-/// same directories on every call) once per script.
+/// them by lowercased file name. Reuse the result with
+/// [`find_psc_file_in_index`] for name resolution and
+/// [`conflicting_script_versions_in_index`] for each script being checked.
 pub fn build_script_index(root: &Path, additional_roots: &[String]) -> ScriptIndex {
     let mut index: ScriptIndex = HashMap::new();
 
@@ -681,6 +693,16 @@ mod tests {
         let mut expected = vec![script, other];
         expected.sort();
         assert_eq!(matches, expected);
+    }
+
+    #[test]
+    fn indexed_lookup_is_case_insensitive_and_preserves_search_order() {
+        let first = PathBuf::from("first/Example.psc");
+        let second = PathBuf::from("second/example.PSC");
+        let index = HashMap::from([("example.psc".to_string(), vec![first.clone(), second])]);
+
+        assert_eq!(find_psc_file_in_index(&index, "EXAMPLE"), Some(first));
+        assert_eq!(find_psc_file_in_index(&index, "missing.psc"), None);
     }
 
     #[test]

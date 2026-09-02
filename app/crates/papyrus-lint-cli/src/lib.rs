@@ -92,6 +92,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::script_locator::CANDIDATE_DIRS;
@@ -574,18 +575,21 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     }
 
     // Built once up front, rather than re-scanning `function_table`'s search
-    // directories inside the loop below for every script, since a
+    // directories for every conflict check or newly resolved script, since a
     // modlist-sized achlist can list hundreds of scripts across as many
     // directories (see #311). Empty (and unused) in strict-scope mode, where
     // `scripts_by_name` above covers this instead.
-    let script_index = if lint_config.rules.conflicting_script_versions && !strict_achlist_scope {
+    let script_index = Arc::new(if !strict_achlist_scope {
         papyrus_lint_core::script_locator::build_script_index(
             function_table.root(),
             function_table.additional_roots(),
         )
     } else {
         HashMap::new()
-    };
+    });
+    if !strict_achlist_scope {
+        function_table = function_table.with_script_index(Arc::clone(&script_index));
+    }
 
     let mut total_diagnostics = 0usize;
     let mut files_with_diagnostics = 0usize;
