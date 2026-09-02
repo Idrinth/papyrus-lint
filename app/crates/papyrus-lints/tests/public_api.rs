@@ -293,3 +293,51 @@ fn disable_rule_ids_are_case_insensitive_and_accept_a_list() {
         diagnostic.line != 3 || !matches!(diagnostic.rule, "comma-spacing" | "identifier-casing")
     }));
 }
+
+#[test]
+fn public_repair_composes_all_fixable_rules_in_one_pass() {
+    let mut config = Config::default();
+    config.rules.property_sorting = true;
+    let source = "ScriptName myScript  ;\n\nInt Property zulu Auto  ;\nActor Property alpha Auto  ;\n\nFunction run(Int left,Int right)  ;\n  If !Ready&&left==right  ;\n  alpha . MoveTo(None,left)  ;\n  EndIf  ;\nEndFunction  ;\n";
+
+    let repaired = repair(source, &config);
+
+    assert_eq!(
+        repaired,
+        "ScriptName MyScript\nActor Property Alpha Auto\n\nInt Property Zulu Auto\n\nFunction Run(Int Left, Int Right)\n\tIf ! Ready && Left == Right\n\t\tAlpha.MoveTo(None, Left)\n\tEndIf\nEndFunction\n"
+    );
+    assert_eq!(repair(&repaired, &config), repaired);
+    assert!(lint(&repaired, &config).iter().all(|diagnostic| {
+        !matches!(
+            diagnostic.rule,
+            "trailing-whitespace"
+                | "comma-spacing"
+                | "semicolon"
+                | "indentation"
+                | "chain-whitespace"
+                | "exclamation-spacing"
+                | "operator-spacing"
+                | "identifier-casing"
+                | "type-casing"
+                | "property-sorting"
+        )
+    }));
+}
+
+#[test]
+fn disabling_all_fixable_rules_makes_public_repair_a_noop() {
+    let mut config = Config::default();
+    config.rules.trailing_whitespace = false;
+    config.rules.comma_spacing = false;
+    config.rules.semicolon = false;
+    config.rules.indentation = false;
+    config.rules.chain_whitespace = false;
+    config.rules.exclamation_spacing = false;
+    config.rules.operator_spacing = false;
+    config.rules.identifier_casing = false;
+    config.rules.type_casing = false;
+    config.rules.property_sorting = false;
+    let source = "ScriptName my_script  ;\n\nFunction run(Int left,Int right)  ;\n  If !ready&&left==right  ;\n  value . Call(left,right)  ;\n  EndIf  ;\nEndFunction  ;\n";
+
+    assert_eq!(repair(source, &config), source);
+}
