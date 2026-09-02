@@ -169,6 +169,8 @@ binary target that crate also defines.
 
 ## CI (`.github/workflows/ci.yml`)
 
+- **Rules YAML lint job**: runs `yamllint` against every `rules/*.yaml` file
+  so malformed rule data cannot be merged.
 - **Nexus page BBCode job**: runs the dependency-free Python BBCode linter's
   unit tests, then checks `nexuspage.bbcode` for unknown, mismatched, and
   unclosed tags.
