@@ -1404,8 +1404,12 @@ describe("handleDroppedPaths", () => {
 
   it("ignores a stale drop's straggling outcome once a newer drop has started, instead of mixing it into the newer results", async () => {
     let resolveOldLint: (findings: Diagnostic[]) => void = () => {};
+    let resolveOldLintStarted: () => void = () => {};
     const pendingOldLint = new Promise<Diagnostic[]>((resolve) => {
       resolveOldLint = resolve;
+    });
+    const oldLintStarted = new Promise<void>((resolve) => {
+      resolveOldLintStarted = resolve;
     });
     invokeImplFor({
       parse_achlist_file: (args) =>
@@ -1415,16 +1419,17 @@ describe("handleDroppedPaths", () => {
       load_compile_check: () => false,
       load_script_roots: () => [],
       parse_psc_file: (args) => ({ name: (args as { path: string }).path }),
-      lint_psc_file: (args) =>
-        (args as { path: string }).path === "Old.psc"
-          ? pendingOldLint
-          : [{ line: 1, column: 1, message: "[warning] from New" }],
+      lint_psc_file: (args) => {
+        if ((args as { path: string }).path === "Old.psc") {
+          resolveOldLintStarted();
+          return pendingOldLint;
+        }
+        return [{ line: 1, column: 1, message: "[warning] from New" }];
+      },
     });
 
     const oldDrop = handleDroppedPaths(["/proj/old.achlist"]);
-    for (let i = 0; i < 10; i++) {
-      await Promise.resolve();
-    }
+    await oldLintStarted;
 
     // A second, newer drop starts while the first one is still stuck
     // linting Old.psc.
