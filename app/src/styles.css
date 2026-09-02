@@ -601,8 +601,20 @@ h1 {
   resize: none;
   background: transparent;
   color: transparent;
+  -webkit-text-fill-color: transparent;
   caret-color: var(--color-text);
   outline: none;
+}
+
+/* WebKit (the desktop app's Linux webview) paints selected text with the
+ * default opaque foreground color instead of honoring `color: transparent`
+ * unless `-webkit-text-fill-color` is also overridden here, on the
+ * selection itself - otherwise selecting text in the textarea reveals its
+ * raw, unhighlighted content on top of the highlighted overlay beneath it. */
+.code-viewer__editor-textarea::selection {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background: var(--color-selection-bg, rgba(128, 128, 128, 0.4));
 }
 
 .code-viewer__autocomplete {
