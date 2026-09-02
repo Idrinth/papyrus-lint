@@ -44,6 +44,108 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with_rules(source, SLOW_FUNCTIONS)
 }
 
+/// Replaces slow calls with the faster expression supplied by their rule.
+///
+/// A replacement containing `(` describes the complete call. The word
+/// `value` in such a replacement is a placeholder for the original call's
+/// argument. A bare replacement names the faster function and retains the
+/// original argument list. Calls whose parentheses are unbalanced are left
+/// untouched.
+pub fn repair(source: &str) -> String {
+    repair_with_rules(source, SLOW_FUNCTIONS)
+}
+
+fn repair_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> String {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+        return source.to_string();
+    };
+    let line_starts = line_starts(source);
+    let mut replacements = Vec::new();
+
+    for (call_index, token) in tokens.iter().enumerate() {
+        let TokenKind::Identifier(name) = &token.kind else {
+            continue;
+        };
+        if !matches!(
+            tokens.get(call_index + 1).map(|token| &token.kind),
+            Some(TokenKind::LParen)
+        ) {
+            continue;
+        }
+        let Some(rule) = find_rule(rules, name) else {
+            continue;
+        };
+        if rule.global && !qualifier_matches(&tokens, call_index, rule.object) {
+            continue;
+        }
+        let Some(close_index) = matching_close_paren(&tokens, call_index + 1) else {
+            continue;
+        };
+
+        let start = token_offset(&line_starts, token);
+        let argument_start = token_offset(&line_starts, &tokens[call_index + 1]) + 1;
+        let close = token_offset(&line_starts, &tokens[close_index]);
+        let end = close + 1;
+        // An outer slow call owns its entire source range. Repair its argument
+        // recursively and don't also queue an overlapping inner edit against
+        // offsets from the original string.
+        if replacements
+            .iter()
+            .any(|(outer_start, outer_end, _)| *outer_start <= start && end <= *outer_end)
+        {
+            continue;
+        }
+        let argument = repair_with_rules(source[argument_start..close].trim(), rules);
+        let replacement = if rule.replacement.contains('(') {
+            rule.replacement.replace("value", &argument)
+        } else {
+            format!("{}({argument})", rule.replacement)
+        };
+        replacements.push((start, end, replacement));
+    }
+
+    let mut repaired = source.to_string();
+    for (start, end, replacement) in replacements.into_iter().rev() {
+        repaired.replace_range(start..end, &replacement);
+    }
+    repaired
+}
+
+fn matching_close_paren(
+    tokens: &[papyrus_parser::token::Token],
+    open_index: usize,
+) -> Option<usize> {
+    let mut depth = 0usize;
+    for (index, token) in tokens.iter().enumerate().skip(open_index) {
+        match token.kind {
+            TokenKind::LParen => depth += 1,
+            TokenKind::RParen => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn line_starts(source: &str) -> Vec<usize> {
+    std::iter::once(0)
+        .chain(
+            source
+                .bytes()
+                .enumerate()
+                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
+        )
+        .collect()
+}
+
+fn token_offset(line_starts: &[usize], token: &papyrus_parser::token::Token) -> usize {
+    line_starts[token.line - 1] + token.col - 1
+}
+
 fn check_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> Vec<Diagnostic> {
     let tokens = match papyrus_parser::tokenize(source) {
         Ok(tokens) => tokens,
@@ -107,9 +209,9 @@ mod tests {
     use super::*;
 
     static GLOBAL_RULES: &[SlowFunctionRule] = &[SlowFunctionRule {
-        object: "Utility",
-        function: "Wait",
-        replacement: "WaitMenuMode",
+        object: "ExampleGlobal",
+        function: "SlowCall",
+        replacement: "FastCall",
         global: true,
     }];
 
@@ -157,7 +259,7 @@ mod tests {
     #[test]
     fn global_rule_requires_its_literal_qualifier_case_insensitively() {
         let diagnostics = check_with_rules(
-            "Utility.Wait(1.0)\nutility.wait(1.0)\nakOther.Wait(1.0)\nWait(1.0)\nGetUtility().Wait(1.0)\n",
+            "ExampleGlobal.SlowCall(1.0)\nexampleglobal.slowcall(1.0)\nakOther.SlowCall(1.0)\nSlowCall(1.0)\nGetGlobal().SlowCall(1.0)\n",
             GLOBAL_RULES,
         );
 
@@ -166,7 +268,7 @@ mod tests {
         assert_eq!(diagnostics[1].line, 2);
         assert!(diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.message.contains("Utility.Wait")));
+            .all(|diagnostic| diagnostic.message.contains("ExampleGlobal.SlowCall")));
     }
 
     #[test]
@@ -189,5 +291,41 @@ mod tests {
             "ScriptName Example\n\nFunction DoThing()\n    akGlobal.GetValueInt(\"unterminated\n",
         );
         assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn repairs_getter_with_the_complete_replacement_expression() {
+        assert_eq!(
+            repair("value = akGlobal.GetValueInt()\n"),
+            "value = akGlobal.GetValue() As Int\n"
+        );
+    }
+
+    #[test]
+    fn repairs_setter_and_preserves_its_argument_expression() {
+        assert_eq!(
+            repair("akGlobal.SetValueInt(GetAmount(1, 2) + 3)\n"),
+            "akGlobal.SetValue(GetAmount(1, 2) + 3 As Float)\n"
+        );
+    }
+
+    #[test]
+    fn repair_obeys_global_qualifier_rules() {
+        let source = "ExampleGlobal.SlowCall(1.0)\nakOther.SlowCall(1.0)\n";
+
+        assert_eq!(
+            repair_with_rules(source, GLOBAL_RULES),
+            "ExampleGlobal.FastCall(1.0)\nakOther.SlowCall(1.0)\n"
+        );
+    }
+
+    #[test]
+    fn repairs_nested_slow_calls_and_handles_unicode_before_a_call() {
+        let source = "text = \"é\"\nakGlobal.SetValueInt(akOther.GetValueInt())\n";
+
+        assert_eq!(
+            repair(source),
+            "text = \"é\"\nakGlobal.SetValue(akOther.GetValue() As Int As Float)\n"
+        );
     }
 }

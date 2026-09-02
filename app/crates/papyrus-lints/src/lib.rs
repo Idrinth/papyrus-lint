@@ -341,6 +341,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
 /// Every other id in [`KNOWN_RULE_IDS`] can only be reported, never fixed.
 pub const FIXABLE_RULE_IDS: &[&str] = &[
     identifier_casing::RULE,
+    slow_functions::RULE,
     semicolon::RULE,
     indentation::RULE,
     property_sorting::RULE,
@@ -372,6 +373,11 @@ pub fn repair_filtered(source: &str, config: &Config, rule_filter: Option<&str>)
         identifier_casing::repair(source, config.identifier_casing)
     } else {
         source.to_string()
+    };
+    let source = if rules.slow_functions && applies(slow_functions::RULE) {
+        slow_functions::repair(&source)
+    } else {
+        source
     };
     let source = if rules.semicolon && applies(semicolon::RULE) {
         semicolon::repair(&source, config.semicolon_style())

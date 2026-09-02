@@ -39,6 +39,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             &default_config,
         ),
         (
+            "slow-functions",
+            "Value.SetValueInt(3)\n",
+            "Value.SetValue(3 As Float)\n",
+            &default_config,
+        ),
+        (
             "semicolon",
             "Int Value = 1;\n",
             "Int Value = 1\n",
@@ -463,6 +469,7 @@ fn disabling_all_fixable_rules_makes_public_repair_a_noop() {
     config.rules.identifier_casing = false;
     config.rules.type_casing = false;
     config.rules.property_sorting = false;
+    config.rules.slow_functions = false;
     let source = "ScriptName my_script  ;\n\nFunction run(Int left,Int right)  ;\n  If !ready&&left==right  ;\n  value . Call(left,right)  ;\n  EndIf  ;\nEndFunction  ;\n";
 
     assert_eq!(repair(source, &config), source);
