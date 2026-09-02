@@ -47,14 +47,19 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
         .functions
         .iter()
         .filter(|function| external.lookup(extends, &function.name).is_some())
-        .map(|function| Diagnostic {
-            line: function.line,
-            column: 1,
-            message: format!(
-                "[info] Function '{}' overrides an inherited function declared on '{}' or one of its ancestors",
-                function.name, extends
-            ),
-            rule: RULE,
+        .map(|function| {
+            let kind = if function.is_event { "Event" } else { "Function" };
+            Diagnostic {
+                line: function.line,
+                column: 1,
+                message: format!(
+                    "[info] {kind} '{}' overrides an inherited {} declared on '{}' or one of its ancestors",
+                    function.name,
+                    kind.to_ascii_lowercase(),
+                    extends
+                ),
+                rule: RULE,
+            }
         })
         .collect()
 }
@@ -164,6 +169,10 @@ mod tests {
             .map(|diagnostic| (diagnostic.line, diagnostic.column))
             .collect();
         assert_eq!(locations, vec![(3, 1), (6, 1)]);
+        assert!(diagnostics[0].message.starts_with("[info] Function 'DoThing'"));
+        assert!(diagnostics[0].message.contains("inherited function"));
+        assert!(diagnostics[1].message.starts_with("[info] Event 'DoThing'"));
+        assert!(diagnostics[1].message.contains("inherited event"));
     }
 
     #[test]
