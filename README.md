@@ -135,6 +135,7 @@ apply.
 | **Prefer named arguments** | Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting. | |
 | **Useless downcast** | Flags, as an `[info]`, an explicit `as` cast that can't actually narrow anything: either its target type exactly matches the value's already-known type, or the value's type already extends the target (directly or transitively) — e.g. `Actor dude` followed by `Foo(dude as ObjectReference)`, since `Actor` already extends `ObjectReference` and Papyrus would accept `dude` there without the cast. Only a cast whose value's type can be determined locally (locals, parameters, properties, `Self`/`Parent`, literals, and other resolvable expressions) is checked; a member access or function call result is left unflagged rather than guessed at. Primitive types (`Int`, `Float`, `Bool`, `String`) are only flagged for an exact-type cast, never treated as extending one another, so a meaningful conversion like an explicit `Int`-to-`Float` widening cast is never flagged. When linting a `.psc` file dropped in the app, a cast target that's an ancestor of the value's script (rather than an exact match) is resolved the same way the argument/return type checks resolve their own, including through the native engine type fallback for types like `Actor`/`ObjectReference`/`Form`. | |
 | **Unused disable directive** | Flags, as a `[warning]`, each rule id in an `@disable` comment that is unknown or does not suppress a diagnostic from that rule on its line. A bare `@disable` is flagged when its line has no diagnostics to suppress. Disabled by default; opt in with `rules.unused_disable`. | |
+| **Magic numbers** | Flags, as a `[warning]`, a numeric literal used directly in an expression rather than through a named constant, property, or local variable. `-1`, `0`, and `1` are never flagged, since they're near-universally used directly without losing any clarity. A literal that's the entire value given to a declaration or assignment (`Int kMaxTargets = 5`, later reassigned as `kMaxTargets = 6`) is left alone too, since naming it there already gives it the meaning this lint is after; a literal nested inside a more complex initializer (`Int kMaxTargets = 5 + 1`) is still checked. Disabled by default; opt in with `rules.magic_numbers`. The configurable `magic_numbers` setting controls how a `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/`RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call's interval argument is treated: `loose` (the default) leaves it unflagged, since a hardcoded interval there is common and usually self-explanatory; `strict` checks it like any other argument. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, chain whitespace, exclamation mark spacing, and
@@ -167,8 +168,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
 `unchecked-cast`, `unresolved-script`, `short-wait-interval`,
-`state-function-signature`, `goto-state`, `conflicting-script-versions`, and
-`unused-disable`.
+`state-function-signature`, `goto-state`, `conflicting-script-versions`,
+`unused-disable`, and `magic-numbers`.
 
 ## Configuration
 
@@ -208,6 +209,8 @@ type_casing: PascalCase
 named_arguments: never
 # Non-negative number
 min_wait_interval: 0.1
+# loose, strict
+magic_numbers: loose
 # true, false
 fail_on_warning: false
 # true, false
@@ -259,6 +262,7 @@ rules:
   multiple_auto_states: true
   conflicting_script_versions: true
   unused_disable: false
+  magic_numbers: false
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -314,6 +318,10 @@ rules:
   `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` call
   can go below before the "Short wait/update interval" lint flags it as a
   `[warning]`. Defaults to `0.1`.
+- `magic_numbers`: whether the "Magic numbers" lint also flags a
+  `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/
+  `RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call's
+  interval argument, `loose` (the default) or `strict`.
 - `fail_on_warning` / `fail_on_info`: whether the command-line interface
   (see below) treats a `[warning]`-level or `[info]`-level diagnostic,
   respectively, as a reason to exit non-zero. Both default to `false`, so
@@ -330,15 +338,18 @@ rules:
 - `rules`: per-lint enable/disable switches. Setting one to `false` turns
   that lint (and its automatic fix, if it has one) off entirely; every
   key under `rules` can be omitted individually and falls back to its
-  default. Every key defaults to `true` except `property_sorting` and
-  `unchecked_form_parameter`, and `unused_disable`, which default to `false`:
-  reordering a script's declared properties is a more invasive change than
-  the rest of these lints, many scripts intentionally accept a possibly-`None`
-  Form and defer the check to a caller or a later branch, and reporting stale
-  suppressions is opt-in to avoid surprising existing projects. The key names
-  match the lints listed above: `trailing_whitespace`, `comma_spacing`,
-  `forbidden_functions`, `formid_hex_notation`, `slow_functions`, `unused_getter`, `unused_property`,
-  `semicolon`, `float_int_conversion`, `strict_boolean`,
+  default. Every key defaults to `true` except `property_sorting`,
+  `unchecked_form_parameter`, `unused_disable`, and `magic_numbers`, which
+  default to `false`: reordering a script's declared properties is a more
+  invasive change than the rest of these lints, many scripts intentionally
+  accept a possibly-`None` Form and defer the check to a caller or a later
+  branch, reporting stale suppressions is opt-in to avoid surprising
+  existing projects, and flagging every literal number in an existing
+  script all at once is likely to be noisy until a project is ready for
+  it. The key names match the lints listed above: `trailing_whitespace`,
+  `comma_spacing`, `forbidden_functions`, `formid_hex_notation`,
+  `slow_functions`, `unused_getter`, `unused_property`, `semicolon`,
+  `float_int_conversion`, `strict_boolean`,
   `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
   `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
   `static_condition`, `division_by_zero`, `unused_local_variable`,
@@ -346,7 +357,8 @@ rules:
   `local_variable_shadowing`, `chain_whitespace`, `exclamation_spacing`,
   `identifier_casing`, `type_casing`, `named_arguments`, `operator_spacing`,
   `property_sorting`, `explicit_return`, `unchecked_form_parameter`,
-  `unchecked_cast`, `unresolved_script`, and `short_wait_interval`.
+  `unchecked_cast`, `unresolved_script`, `short_wait_interval`, and
+  `magic_numbers`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

@@ -24,6 +24,7 @@ let indentationWidthEl: HTMLInputElement | null;
 let typeCasingStyleEl: HTMLSelectElement | null;
 let identifierCasingStyleEl: HTMLSelectElement | null;
 let namedArgumentsStyleEl: HTMLSelectElement | null;
+let magicNumbersModeEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
 let compilerPathEl: HTMLInputElement | null;
 let compileCheckEl: HTMLInputElement | null;
@@ -157,11 +158,13 @@ export interface LintRules {
   multiple_auto_states: boolean;
   conflicting_script_versions: boolean;
   unused_disable: boolean;
+  magic_numbers: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
 export type IdentifierCasingStyle = "camelCase" | "PascalCase" | "snake_case" | "CONSTANT_CASE";
 export type NamedArgumentsStyle = "always" | "instead_of_defaults" | "never";
+export type MagicNumbersMode = "loose" | "strict";
 
 export interface LintConfig {
   semicolon: boolean;
@@ -173,6 +176,7 @@ export interface LintConfig {
   type_casing: TypeCasingStyle;
   named_arguments: NamedArgumentsStyle;
   min_wait_interval: number;
+  magic_numbers: MagicNumbersMode;
   fail_on_warning: boolean;
   fail_on_info: boolean;
   bool_like_int: boolean;
@@ -224,6 +228,7 @@ export const DEFAULT_RULES: LintRules = {
   multiple_auto_states: true,
   conflicting_script_versions: true,
   unused_disable: false,
+  magic_numbers: false,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
@@ -236,6 +241,7 @@ export const DEFAULT_LINT_CONFIG: LintConfig = {
   type_casing: "PascalCase",
   named_arguments: "never",
   min_wait_interval: 0.1,
+  magic_numbers: "loose",
   fail_on_warning: false,
   fail_on_info: false,
   bool_like_int: true,
@@ -517,6 +523,9 @@ export function applyLintConfigToUI(config: LintConfig) {
   if (namedArgumentsStyleEl) {
     namedArgumentsStyleEl.value = config.named_arguments;
   }
+  if (magicNumbersModeEl) {
+    magicNumbersModeEl.value = config.magic_numbers;
+  }
   if (failOnWarningEl) {
     failOnWarningEl.checked = config.fail_on_warning;
   }
@@ -557,6 +566,7 @@ export function lintConfigFromUI(): LintConfig {
         ? minWaitIntervalEl.valueAsNumber
         : 0.1,
     ),
+    magic_numbers: (magicNumbersModeEl?.value as MagicNumbersMode | undefined) ?? "loose",
     fail_on_warning: failOnWarningEl?.checked ?? false,
     fail_on_info: failOnInfoEl?.checked ?? false,
     bool_like_int: boolLikeIntEl?.checked ?? true,
@@ -1563,6 +1573,7 @@ window.addEventListener("DOMContentLoaded", () => {
   typeCasingStyleEl = document.querySelector("#type-casing-style");
   identifierCasingStyleEl = document.querySelector("#identifier-casing-style");
   namedArgumentsStyleEl = document.querySelector("#named-arguments-style");
+  magicNumbersModeEl = document.querySelector("#magic-numbers-mode");
   cyclomaticComplexityWarningEl = document.querySelector("#cyclomatic-complexity-warning");
   cyclomaticComplexityErrorEl = document.querySelector("#cyclomatic-complexity-error");
   minWaitIntervalEl = document.querySelector("#min-wait-interval");
@@ -1668,6 +1679,7 @@ window.addEventListener("DOMContentLoaded", () => {
   typeCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
   identifierCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
   namedArgumentsStyleEl?.addEventListener("change", handleLintConfigChanged);
+  magicNumbersModeEl?.addEventListener("change", handleLintConfigChanged);
   cyclomaticComplexityWarningEl?.addEventListener("change", handleLintConfigChanged);
   cyclomaticComplexityErrorEl?.addEventListener("change", handleLintConfigChanged);
   minWaitIntervalEl?.addEventListener("change", handleLintConfigChanged);

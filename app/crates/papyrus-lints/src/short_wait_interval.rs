@@ -20,8 +20,8 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "short-wait-interval";
 
-struct WaitFunction {
-    name: &'static str,
+pub(crate) struct WaitFunction {
+    pub(crate) name: &'static str,
     /// Whether `name` is a native singleton function (only `Utility.Wait`)
     /// always called through its literal script name, rather than an
     /// instance method (the `RegisterFor*` family) reachable unqualified
@@ -29,7 +29,7 @@ struct WaitFunction {
     global: bool,
 }
 
-const WAIT_FUNCTIONS: &[WaitFunction] = &[
+pub(crate) const WAIT_FUNCTIONS: &[WaitFunction] = &[
     WaitFunction {
         name: "Wait",
         global: true,
@@ -191,7 +191,10 @@ fn walk_expr(expr: &Expr, minimum: f64, diagnostics: &mut Vec<Diagnostic>) {
 /// do: a `global` rule (`Utility.Wait`) only matches when explicitly
 /// qualified by that literal script name, while a non-`global` rule (the
 /// `RegisterFor*` family) matches unqualified or through any receiver.
-fn matching_function(callee: &Expr) -> Option<&'static WaitFunction> {
+///
+/// Also used by [`crate::magic_numbers`] to exempt these same calls'
+/// interval arguments from its "loose" mode.
+pub(crate) fn matching_function(callee: &Expr) -> Option<&'static WaitFunction> {
     match callee {
         Expr::Identifier(name) => WAIT_FUNCTIONS
             .iter()

@@ -58,6 +58,10 @@ export const FIXTURE_HTML = `
           <option value="instead_of_defaults">Instead of defaults</option>
           <option value="always">Always</option>
         </select>
+        <select id="magic-numbers-mode">
+          <option value="loose">Loose</option>
+          <option value="strict">Strict</option>
+        </select>
         <input id="cyclomatic-complexity-warning" type="number" min="1" value="10" />
         <input id="cyclomatic-complexity-error" type="number" min="1" value="20" />
         <input id="min-wait-interval" type="number" min="0" step="0.01" value="0.1" />
@@ -106,6 +110,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-too_many_states" checked />
           <input type="checkbox" id="rule-multiple_auto_states" checked />
           <input type="checkbox" id="rule-unused_disable" />
+          <input type="checkbox" id="rule-magic_numbers" />
         </fieldset>
       </div>
 

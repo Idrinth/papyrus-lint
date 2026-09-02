@@ -321,6 +321,7 @@ describe("lint config UI round trip", () => {
       type_casing: "camelCase",
       named_arguments: "always",
       min_wait_interval: 0.25,
+      magic_numbers: "strict",
       fail_on_warning: true,
       fail_on_info: true,
       bool_like_int: false,
