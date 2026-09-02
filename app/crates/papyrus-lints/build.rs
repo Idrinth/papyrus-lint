@@ -1,7 +1,9 @@
-//! Compiles `rules/forbidden-functions.yaml` and `rules/slow-functions.yaml`
-//! into static Rust arrays at build time, so `forbidden_functions::check`
-//! and `slow_functions::check` never parse YAML at runtime (see
-//! `src/forbidden_functions.rs` and `src/slow_functions.rs`).
+//! Compiles `rules/forbidden-functions.yaml`, `rules/slow-functions.yaml`,
+//! and `rules/native-methods.yaml` into static Rust arrays at build time, so
+//! `forbidden_functions::check`, `slow_functions::check`, and
+//! `native_function_usage::check` never parse YAML at runtime (see
+//! `src/forbidden_functions.rs`, `src/slow_functions.rs`, and
+//! `src/native_function_usage.rs`).
 
 use std::env;
 use std::fs;
@@ -32,12 +34,19 @@ struct RawSlowRule {
     global: bool,
 }
 
+#[derive(serde::Deserialize)]
+struct RawNativeMethod {
+    object: String,
+    function: String,
+}
+
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
 
     compile_forbidden_functions(&manifest_dir, &out_dir);
     compile_slow_functions(&manifest_dir, &out_dir);
+    compile_native_methods(&manifest_dir, &out_dir);
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
@@ -117,6 +126,45 @@ fn compile_slow_functions(manifest_dir: &str, out_dir: &str) {
     generated.push_str("];\n");
 
     let dest = Path::new(out_dir).join("slow_functions_data.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated rule data to {}: {err}",
+            dest.display()
+        )
+    });
+}
+
+fn compile_native_methods(manifest_dir: &str, out_dir: &str) {
+    let yaml_path = Path::new(manifest_dir).join("../../../rules/native-methods.yaml");
+    println!("cargo:rerun-if-changed={}", yaml_path.display());
+
+    let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read native-methods rules at {}: {err}",
+            yaml_path.display()
+        )
+    });
+    let rules: Vec<RawNativeMethod> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+        panic!(
+            "failed to parse native-methods rules at {}: {err}",
+            yaml_path.display()
+        )
+    });
+
+    let mut generated = String::new();
+    generated.push_str(
+        "/// Compiled from `rules/native-methods.yaml` by `build.rs`. Do not edit by hand.\n",
+    );
+    generated.push_str("pub static NATIVE_METHODS: &[NativeMethodRule] = &[\n");
+    for rule in &rules {
+        generated.push_str(&format!(
+            "    NativeMethodRule {{ object: {:?}, function: {:?} }},\n",
+            rule.object, rule.function
+        ));
+    }
+    generated.push_str("];\n");
+
+    let dest = Path::new(out_dir).join("native_methods_data.rs");
     fs::write(&dest, generated).unwrap_or_else(|err| {
         panic!(
             "failed to write generated rule data to {}: {err}",

@@ -27,6 +27,7 @@ pub mod indentation;
 pub mod local_variable_shadowing;
 pub mod magic_numbers;
 pub mod named_arguments;
+pub mod native_function_usage;
 pub mod none_form_usage;
 pub mod numeric_comparison;
 pub mod operator_spacing;
@@ -105,6 +106,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     unused_disable::RULE,
     magic_numbers::RULE,
     variable_used_before_assignment::RULE,
+    native_function_usage::RULE,
 ];
 
 use serde::Serialize;
@@ -327,6 +329,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.magic_numbers {
         diagnostics.extend(magic_numbers::check(source, config.magic_numbers));
+    }
+    if rules.native_function_usage {
+        diagnostics.extend(native_function_usage::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules

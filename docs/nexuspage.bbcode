@@ -237,6 +237,10 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags numeric literals used directly instead of through a named constant, property, or local variable. -1, 0 and 1 are never flagged. Loose mode (default) exempts Wait/RegisterFor(Single)Update(GameTime) intervals, Strict checks them too. Disabled by default.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Non-base-game native function usage[/b][/td]
+[td]Flags a Native function/event whose name isn't one of the base game's own, a sign it needs SKSE/F4SE or another native extension. Disabled by default.[/td]
+[td][/td]
+[/tr]
 [/table]
 The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
 [heading]Configuration file[/heading]
@@ -329,7 +333,8 @@ rules:
   multiple_auto_states: true
   conflicting_script_versions: true
   unused_disable: false
-  magic_numbers: false[/code]
+  magic_numbers: false
+  native_function_usage: false[/code]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.
