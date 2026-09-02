@@ -61,6 +61,13 @@
 //! `--quiet-warnings` and `--quiet-info` omit diagnostics of the corresponding
 //! severity from either report format without changing the process exit code.
 //!
+//! With `--short-paths` (combinable with `fix`/`--json` in any order), each
+//! script's path in the report (plain text or JSON) has the project root's
+//! path stripped from its beginning, the same way the desktop app shortens
+//! paths in its own results list; a path that isn't under the project root
+//! is left unchanged. This only affects the printed report, not the paths
+//! used in usage/error text.
+//!
 //! With `--config <path>` (combinable with `fix`/`--json` in any order),
 //! lint configuration is loaded directly from `<path>` instead of being
 //! discovered from the project root, letting a caller (e.g. an editor
@@ -173,8 +180,8 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
-PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id>] [--line <n>] <path-to-achlist-or-psc>\n\n\
+    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
+PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id>] [--line <n>] <path-to-achlist-or-psc>\n\n\
 PapyrusLinterCLI init\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
@@ -192,6 +199,9 @@ Options:\n\
   --json                  Print the report to stdout as JSON instead of plain text\n\
   --quiet-warnings        Hide warning-level diagnostics from the report\n\
   --quiet-info            Hide info-level diagnostics from the report\n\
+  --short-paths           Strip the project root from each script's path in\n\
+                          the report, the same way the desktop app shortens\n\
+                          paths in its results list\n\
   --config <path>         Load lint configuration from this file instead of\n\
                           discovering papyrus-lint.yaml/.yml from the project root\n\
                           (also disables the project root's additional_script_roots;\n\
@@ -289,6 +299,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let json = args.iter().any(|arg| arg == "--json");
     let quiet_warnings = args.iter().any(|arg| arg == "--quiet-warnings");
     let quiet_info = args.iter().any(|arg| arg == "--quiet-info");
+    let short_paths = args.iter().any(|arg| arg == "--short-paths");
 
     let mut config_path: Option<PathBuf> = None;
     let mut output_path: Option<PathBuf> = None;
@@ -298,7 +309,12 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
     let mut input = args
         .iter()
-        .filter(|arg| !matches!(arg.as_str(), "--json" | "--quiet-warnings" | "--quiet-info"))
+        .filter(|arg| {
+            !matches!(
+                arg.as_str(),
+                "--json" | "--quiet-warnings" | "--quiet-info" | "--short-paths"
+            )
+        })
         .cloned();
     while let Some(arg) = input.next() {
         if arg == "--config" {
@@ -660,12 +676,14 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
                 || (quiet_info && diagnostic.level() == "info"))
         });
 
+        let reported_path = display_path(script_path, function_table.root(), short_paths);
+
         for diagnostic in &diagnostics {
             if !json {
                 let _ = writeln!(
                     report_buf,
                     "{}:{}:{}: [{}] {}",
-                    script_path.display(),
+                    reported_path,
                     diagnostic.line,
                     diagnostic.column,
                     diagnostic.rule,
@@ -676,7 +694,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
 
         if json {
             json_files.push(JsonFileReport {
-                path: script_path.display().to_string(),
+                path: reported_path,
                 diagnostics: diagnostics
                     .iter()
                     .map(|d| JsonDiagnostic {
@@ -752,6 +770,20 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     } else {
         1
     }
+}
+
+/// Formats `path` for the report: with `short_paths` set, strips
+/// `project_root` from its beginning, mirroring how the desktop app
+/// shortens paths in its own results list (see `relativePath` in
+/// `app/src/main.ts`); otherwise, or when `path` doesn't sit under
+/// `project_root`, returns it unchanged.
+fn display_path(path: &Path, project_root: &Path, short_paths: bool) -> String {
+    if short_paths {
+        if let Ok(stripped) = path.strip_prefix(project_root) {
+            return stripped.display().to_string();
+        }
+    }
+    path.display().to_string()
 }
 
 fn initialize_config(dir: &Path, stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
@@ -1054,6 +1086,76 @@ mod tests {
         assert!(diagnostics
             .iter()
             .all(|diagnostic| diagnostic["level"] != "info"));
+    }
+
+    #[test]
+    fn short_paths_strips_the_project_root_from_reported_paths() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--short-paths".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("scripts/source/Example.psc:"));
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(!stdout.contains(dir.path().to_string_lossy().as_ref()));
+    }
+
+    #[test]
+    fn short_paths_strips_the_project_root_from_json_paths() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--json".to_string(),
+            "--short-paths".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(
+            report["files"][0]["path"],
+            "scripts/source/Example.psc".replace('/', std::path::MAIN_SEPARATOR_STR)
+        );
+    }
+
+    #[test]
+    fn without_short_paths_reports_the_full_path() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains(dir.path().to_string_lossy().as_ref()));
     }
 
     #[test]
