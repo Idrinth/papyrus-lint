@@ -149,13 +149,13 @@ fn walk_declaration_value(
 
 fn is_bare_number_literal(expr: &Expr) -> bool {
     match expr {
-        Expr::Literal(Literal::Int(_) | Literal::Float(_)) => true,
+        Expr::Literal(Literal::Int { .. } | Literal::Float(_)) => true,
         Expr::Unary {
             op: UnaryOp::Neg,
             operand,
         } => matches!(
             operand.as_ref(),
-            Expr::Literal(Literal::Int(_) | Literal::Float(_))
+            Expr::Literal(Literal::Int { .. } | Literal::Float(_))
         ),
         _ => false,
     }
@@ -177,9 +177,9 @@ fn walk_expr(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     match expr {
-        Expr::Literal(Literal::Int(i)) => {
+        Expr::Literal(Literal::Int { value, .. }) => {
             if !wait_exempt {
-                flag_int(*i, line, diagnostics);
+                flag_int(*value, line, diagnostics);
             }
         }
         Expr::Literal(Literal::Float(f)) => {
@@ -191,9 +191,9 @@ fn walk_expr(
             op: UnaryOp::Neg,
             operand,
         } => match operand.as_ref() {
-            Expr::Literal(Literal::Int(i)) => {
+            Expr::Literal(Literal::Int { value, .. }) => {
                 if !wait_exempt {
-                    flag_int(-*i, line, diagnostics);
+                    flag_int(-*value, line, diagnostics);
                 }
             }
             Expr::Literal(Literal::Float(f)) => {

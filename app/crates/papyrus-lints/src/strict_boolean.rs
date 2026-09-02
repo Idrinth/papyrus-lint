@@ -106,7 +106,7 @@ fn check_body(
 /// Whether `expr` is exactly the `Int` literal `1` or `0`, the "bool-like"
 /// idiom [`check`] allows past when `allow_bool_like_int` is set.
 fn is_bool_like_int(expr: &Expr) -> bool {
-    matches!(expr, Expr::Literal(Literal::Int(0 | 1)))
+    matches!(expr, Expr::Literal(Literal::Int { value: 0 | 1, .. }))
 }
 
 fn check_condition(
