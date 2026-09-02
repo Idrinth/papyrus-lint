@@ -633,3 +633,16 @@ directory, so it never overwrites (or requires write access to) the
 project's actual compiled `.pex` output, and never needs the
 personal-data stripping described above — the compiled output is
 discarded either way.
+
+## How to help
+
+You can help the project by:
+
+- Providing examples of false positives.
+- Providing examples of false negatives.
+- Giving feedback on the existing rules.
+- Proposing new rules or adjustments to existing rules.
+- Reviewing code.
+- Writing code.
+- Writing or suggesting tests.
+- Sponsoring development.
