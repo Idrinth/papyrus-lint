@@ -4,5 +4,9 @@
         "caption": "PapyrusLint: Fix File",
         "command": "papyrus_lint_fix"
     },
+    {
+        "caption": "PapyrusLint: Fix This Issue",
+        "command": "papyrus_lint_fix_issue"
+    },
     { "caption": "-", "id": "papyrus-lint-fix-separator-after" }
 ]
