@@ -855,7 +855,13 @@ function updateCodeViewerEditHighlight() {
         : "";
       return `<span class="${lineClass}"${title}>${lineHtml}</span>`;
     })
-    .join("\n");
+    // Each line is already `display: block` (see styles.css), so it needs no
+    // separator to end up on its own line; joining with "\n" here used to add
+    // a literal newline character between spans that, because the highlight
+    // layer is `white-space: pre`, rendered as its own extra blank line on
+    // top of each blank line's own (empty, so zero-height) span - doubling
+    // up and misaligning the overlay against the textarea underneath it.
+    .join("");
 
   // The textarea sits above the non-interactive highlighting layer, so
   // expose all current lint messages through its tooltip and accessible

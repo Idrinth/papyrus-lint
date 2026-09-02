@@ -595,6 +595,15 @@ h1 {
 .code-viewer__editor-line {
   display: block;
   min-width: 100%;
+  /* A `display: block` element with no content generates no line box at all
+   * (zero height), so a blank source line's empty span would otherwise
+   * collapse instead of taking up the same vertical space as every other
+   * line - misaligning the highlight overlay against the textarea's own,
+   * always-present blank lines underneath it. `min-height` forces the box
+   * to still be there; matches `.code-viewer__editor-highlight`'s
+   * `line-height: 1.4` above, in `em` so it resolves against this element's
+   * own (inherited) font-size the same way `line-height` does. */
+  min-height: 1.4em;
 }
 
 .code-viewer__editor-textarea {
