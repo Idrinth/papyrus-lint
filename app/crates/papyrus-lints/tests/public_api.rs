@@ -2,9 +2,113 @@
 
 use papyrus_lints::{
     argument_types::{ExternalSignatures, ParamInfo},
-    lint, lint_with_external_arguments, repair, Config, Diagnostic,
+    lint, lint_with_external_arguments, repair, repair_filtered, Config, Diagnostic,
+    FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
 };
 use papyrus_parser::ast::TypeName;
+use std::collections::HashSet;
+
+#[test]
+fn published_rule_id_lists_are_unique_and_fixable_rules_are_known() {
+    let known: HashSet<_> = KNOWN_RULE_IDS.iter().copied().collect();
+    let fixable: HashSet<_> = FIXABLE_RULE_IDS.iter().copied().collect();
+
+    assert_eq!(known.len(), KNOWN_RULE_IDS.len(), "duplicate known rule id");
+    assert_eq!(
+        fixable.len(),
+        FIXABLE_RULE_IDS.len(),
+        "duplicate fixable rule id"
+    );
+    assert!(
+        fixable.is_subset(&known),
+        "every fixable rule must also be advertised as known"
+    );
+}
+
+#[test]
+fn every_published_fixable_rule_works_through_the_filtered_public_api() {
+    let mut property_config = Config::default();
+    property_config.rules.property_sorting = true;
+
+    let default_config = Config::default();
+    let cases = [
+        (
+            "identifier-casing",
+            "ScriptName Example\n\nFunction Run(Int left)\nEndFunction\n",
+            "ScriptName Example\n\nFunction Run(Int Left)\nEndFunction\n",
+            &default_config,
+        ),
+        (
+            "semicolon",
+            "Int Value = 1;\n",
+            "Int Value = 1\n",
+            &default_config,
+        ),
+        (
+            "indentation",
+            "Function Run()\n  Call()\nEndFunction\n",
+            "Function Run()\n\tCall()\nEndFunction\n",
+            &default_config,
+        ),
+        (
+            "property-sorting",
+            "ScriptName Example\n\nInt Property Zulu Auto\nActor Property Alpha Auto\n",
+            "ScriptName Example\nActor Property Alpha Auto\n\nInt Property Zulu Auto\n\n",
+            &property_config,
+        ),
+        (
+            "comma-spacing",
+            "Call(1,2)\n",
+            "Call(1, 2)\n",
+            &default_config,
+        ),
+        (
+            "chain-whitespace",
+            "Value . Call()\n",
+            "Value.Call()\n",
+            &default_config,
+        ),
+        (
+            "exclamation-spacing",
+            "If !Ready\nEndIf\n",
+            "If ! Ready\nEndIf\n",
+            &default_config,
+        ),
+        (
+            "operator-spacing",
+            "If Left==Right\nEndIf\n",
+            "If Left == Right\nEndIf\n",
+            &default_config,
+        ),
+        (
+            "type-casing",
+            "ScriptName myScript\n",
+            "ScriptName MyScript\n",
+            &default_config,
+        ),
+        (
+            "trailing-whitespace",
+            "Call()  \n",
+            "Call()\n",
+            &default_config,
+        ),
+    ];
+
+    let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();
+    let published: HashSet<_> = FIXABLE_RULE_IDS.iter().copied().collect();
+    assert_eq!(
+        exercised, published,
+        "add a filtered-repair case whenever the public fixable list changes"
+    );
+
+    for (rule, source, expected, config) in cases {
+        assert_eq!(
+            repair_filtered(source, config, Some(rule)),
+            expected,
+            "filtered repair failed for {rule}"
+        );
+    }
+}
 
 #[test]
 fn lint_reports_multiple_enabled_rules_through_the_public_api() {
