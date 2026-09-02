@@ -1608,6 +1608,26 @@ describe("code viewer edit mode", () => {
       expect(textarea().getAttribute("aria-label")).toContain("Line 2, column 5: [error] broken edit");
     });
 
+    it("renders each blank source line as its own line element with no stray whitespace between line elements", async () => {
+      // Regression test: the highlight overlay's line spans are `display:
+      // block` (styles.css), so a literal "\n" joining them used to render,
+      // under `white-space: pre`, as an extra blank line stacked on top of
+      // each blank source line's own (empty, so zero-height) span - visibly
+      // desyncing the overlay's blank lines from the textarea's underneath
+      // it. The overlay must instead emit exactly one line element per
+      // source line, back to back, with nothing textual between them.
+      await openWithSource("ScriptName Foo\n\nFunction Bar()\nEndFunction\n");
+
+      enterCodeViewerEditMode();
+
+      const lines = Array.from(highlightCode().querySelectorAll(".code-viewer__editor-line"));
+      expect(lines).toHaveLength(5);
+      expect(lines.map((line) => line.textContent)).toEqual(["ScriptName Foo", "", "Function Bar()", "EndFunction", ""]);
+      for (let i = 0; i < lines.length - 1; i++) {
+        expect(lines[i].nextSibling).toBe(lines[i + 1]);
+      }
+    });
+
     it("does nothing when the code viewer hasn't finished loading", async () => {
       // A failed read leaves codeViewerState null (openCodeViewer resets it
       // to null up front and only repopulates it after a successful read).
