@@ -18,6 +18,11 @@ for `.psc` files directly in the editor, by shelling out to
   <file>`, which applies every automatic fix (see the project README) to
   the file on disk, then reports the diagnostics (if any) that remain.
   Unsaved changes are saved first, since the CLI only reads from disk.
+- **Fix this issue** — a Quick Fix (lightbulb) offered on each individual
+  diagnostic, which runs `PapyrusLinterCLI fix --type <rule> --line <line>
+  --json <file>` to apply just that diagnostic's own rule on its own line,
+  leaving every other issue in the file untouched. Unsaved changes are
+  saved first, same as fixing the whole file.
 
 Only the currently open/selected `.psc` file is linted or fixed — not the
 whole project's `.achlist` — since that's the unit the CLI's `--json`

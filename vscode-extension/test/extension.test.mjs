@@ -23,7 +23,14 @@ function createHarness({
     set(uri, entries) { this.published.push([uri, entries]); },
   };
   const output = { lines: [], appendLine(line) { this.lines.push(line); }, dispose() {} };
+  const codeActionProviders = [];
   const vscode = {
+    CodeAction: class {
+      constructor(title, kind) {
+        Object.assign(this, { title, kind });
+      }
+    },
+    CodeActionKind: { QuickFix: 'quickfix' },
     Diagnostic: class {
       constructor(range, message, severity) {
         Object.assign(this, { range, message, severity });
@@ -41,7 +48,13 @@ function createHarness({
         return { dispose() {} };
       },
     },
-    languages: { createDiagnosticCollection: () => diagnostics },
+    languages: {
+      createDiagnosticCollection: () => diagnostics,
+      registerCodeActionsProvider(selector, provider) {
+        codeActionProviders.push({ selector, provider });
+        return { dispose() {} };
+      },
+    },
     window: {
       activeTextEditor: undefined,
       createOutputChannel: () => output,
@@ -88,7 +101,7 @@ function createHarness({
     subscriptions: [],
   };
   extension.activate(context);
-  return { commands, context, diagnostics, execCalls, listeners, messages, output, vscode };
+  return { codeActionProviders, commands, context, diagnostics, execCalls, listeners, messages, output, vscode };
 }
 
 function uri(fsPath, scheme = 'file') {
@@ -116,9 +129,13 @@ describe('extension activation and commands', () => {
   it('registers commands and lifecycle listeners', () => {
     const harness = createHarness();
 
-    assert.deepEqual([...harness.commands.keys()], ['papyrusLint.lintFile', 'papyrusLint.fixFile']);
+    assert.deepEqual(
+      [...harness.commands.keys()],
+      ['papyrusLint.lintFile', 'papyrusLint.fixFile', 'papyrusLint.fixIssue'],
+    );
     assert.deepEqual(Object.keys(harness.listeners).sort(), ['close', 'open', 'save']);
-    assert.equal(harness.context.subscriptions.length, 7);
+    assert.equal(harness.context.subscriptions.length, 9);
+    assert.equal(harness.codeActionProviders.length, 1);
   });
 
   it('lints a selected PSC with config override and publishes normalized diagnostics', async () => {
@@ -207,6 +224,66 @@ describe('extension activation and commands', () => {
     assert.deepEqual(harness.messages.information, [
       'Papyrus Lint: nothing to fix in Clean.psc. 0 issue(s) remain.',
     ]);
+  });
+
+  it('fixes a single issue by rule and line, and reports the outcome', async () => {
+    const harness = createHarness({
+      result: { error: Object.assign(new Error('lint findings'), { code: 1 }), stdout: validReport({ files_fixed: 1 }), stderr: '' },
+    });
+    const target = uri('/project/Test.psc');
+    let saves = 0;
+    harness.vscode.workspace.textDocuments.push({
+      uri: target,
+      isDirty: true,
+      async save() { saves += 1; return true; },
+    });
+
+    await harness.commands.get('papyrusLint.fixIssue')(target, 'trailing-whitespace', 3);
+
+    assert.equal(saves, 1);
+    assert.deepEqual(harness.execCalls[0].args, [
+      'fix', '--type', 'trailing-whitespace', '--line', '3', '--json', '/project/Test.psc',
+    ]);
+    assert.deepEqual(harness.messages.information, [
+      'Papyrus Lint: fixed "trailing-whitespace" on line 3 of Test.psc.',
+    ]);
+  });
+
+  it('reports when a single issue has no automatic fix', async () => {
+    const harness = createHarness({
+      result: { error: null, stdout: validReport({ files_fixed: 0 }), stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.fixIssue')(uri('/project/Test.psc'), 'forbidden-functions', 5);
+
+    assert.deepEqual(harness.messages.information, [
+      'Papyrus Lint: "forbidden-functions" on line 5 of Test.psc has no automatic fix.',
+    ]);
+  });
+
+  it('offers a quick fix command for each papyrus-lint diagnostic under the cursor', () => {
+    const harness = createHarness();
+    const [{ provider }] = harness.codeActionProviders;
+    const target = uri('/project/Test.psc');
+    const papyrusLintDiagnostic = {
+      source: 'papyrus-lint',
+      code: 'trailing-whitespace',
+      range: { start: { line: 2 } },
+    };
+    const otherSourceDiagnostic = { source: 'other-linter', code: 'rule', range: { start: { line: 0 } } };
+    const context = { diagnostics: [papyrusLintDiagnostic, otherSourceDiagnostic] };
+
+    const actions = provider.provideCodeActions({ uri: target }, {}, context);
+
+    assert.equal(actions.length, 1);
+    assert.equal(actions[0].title, 'Fix this issue (trailing-whitespace)');
+    assert.equal(actions[0].kind, harness.vscode.CodeActionKind.QuickFix);
+    assert.deepEqual(actions[0].diagnostics, [papyrusLintDiagnostic]);
+    assert.deepEqual(actions[0].command, {
+      command: 'papyrusLint.fixIssue',
+      title: 'Fix this issue (trailing-whitespace)',
+      arguments: [target, 'trailing-whitespace', 3],
+    });
   });
 
   it('downloads the matching CLI when no override is configured', async () => {
