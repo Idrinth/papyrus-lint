@@ -166,13 +166,17 @@ impl ScriptFunctions {
 pub struct FunctionTable {
     root: PathBuf,
     additional_roots: Vec<String>,
-    /// Scripts resolvable directly by name (lowercased file stem -> path),
-    /// bypassing directory search entirely. Populated by
-    /// [`Self::with_known_scripts`] from an explicit list of paths (e.g. an
-    /// `.achlist`'s own entries) rather than from a directory scan, so
-    /// registering a script this way never exposes any other file that
-    /// happens to sit alongside it.
-    known_scripts: HashMap<String, PathBuf>,
+    /// When `Some`, resolution is restricted to exactly the scripts
+    /// registered here by name (lowercased file stem -> path), plus native
+    /// singleton globals (see [`Self::script_exists`]/[`Self::ensure_loaded`])
+    /// — `root`/`additional_roots` are never scanned at all, so nothing
+    /// outside this map (or the native fallback) can resolve, not even a
+    /// same-named file sitting right next to one of these paths, or one
+    /// under the conventional `scripts/source`/`source/scripts` layout.
+    /// Populated wholesale by [`Self::with_known_scripts`] from an explicit
+    /// list of paths (e.g. an `.achlist`'s own entries). `None` (the
+    /// default) preserves ordinary directory-based resolution instead.
+    known_scripts: Option<HashMap<String, PathBuf>>,
     scripts: HashMap<String, Option<ScriptFunctions>>,
 }
 
@@ -193,7 +197,7 @@ impl FunctionTable {
         FunctionTable {
             root,
             additional_roots: Vec::new(),
-            known_scripts: HashMap::new(),
+            known_scripts: None,
             scripts: HashMap::new(),
         }
     }
@@ -205,35 +209,38 @@ impl FunctionTable {
         FunctionTable {
             root,
             additional_roots,
-            known_scripts: HashMap::new(),
+            known_scripts: None,
             scripts: HashMap::new(),
         }
     }
 
-    /// Registers each of `paths` as directly resolvable by name (its file
-    /// stem, matched case-insensitively), without scanning its containing
-    /// directory. Intended for a set of scripts named explicitly rather
-    /// than discovered by directory search — e.g. an `.achlist`'s own
-    /// entries, which may live in arbitrary directories outside
-    /// `scripts/source`/`source/scripts` and not share a directory with
-    /// each other at all. Consulted before `additional_roots`/the
-    /// conventional directories in [`Self::ensure_loaded`]/
-    /// [`Self::script_exists`], so cross-script resolution among these
-    /// paths works without treating their parent directories as search
-    /// roots (which would also expose every other file in them). When two
-    /// given paths share a file stem, the first one wins, matching a
-    /// directory search's own first-match-wins order; a real conflict
+    /// Switches this table into known-scripts mode, where only `paths` (by
+    /// file stem, matched case-insensitively) and native singleton globals
+    /// can resolve at all — `root`/`additional_roots` are never scanned
+    /// again for the rest of this table's lifetime, in [`Self::ensure_loaded`]/
+    /// [`Self::script_exists`] alike. Intended for a set of scripts named
+    /// explicitly rather than discovered by directory search — e.g. an
+    /// `.achlist`'s own entries, which may live in arbitrary directories
+    /// outside `scripts/source`/`source/scripts` and not share a directory
+    /// with each other at all: cross-script resolution among them still
+    /// works, without treating their parent directories as search roots
+    /// (which would also expose every other file in them, including one
+    /// under the conventional `scripts/source`/`source/scripts` layout).
+    /// When two given paths share a file stem, the first one wins, matching
+    /// a directory search's own first-match-wins order; a real conflict
     /// between such paths is instead reported by
     /// [`crate::script_locator::conflicting_script_versions_among`].
     pub fn with_known_scripts(mut self, paths: &[PathBuf]) -> Self {
+        let mut known = HashMap::new();
         for path in paths {
             let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
                 continue;
             };
-            self.known_scripts
+            known
                 .entry(stem.to_ascii_lowercase())
                 .or_insert_with(|| path.clone());
         }
+        self.known_scripts = Some(known);
         self
     }
 
@@ -456,25 +463,32 @@ impl FunctionTable {
     /// found under the project root (regardless of whether it parses
     /// cleanly), or known as a native singleton script always called
     /// through its literal name (e.g. `Game`, `Utility`, `Debug`; see
-    /// [`crate::native_globals`]). Matched case-insensitively. Used by the
-    /// "Unresolved script reference" lint
-    /// (`papyrus_lints::unresolved_script`) to flag a call like
-    /// `MyMissingScript.DoThing()`.
+    /// [`crate::native_globals`]). In known-scripts mode (see
+    /// [`Self::with_known_scripts`]), "found under the project root" means
+    /// registered there specifically — `root`/`additional_roots` are never
+    /// scanned. Matched case-insensitively. Used by the "Unresolved script
+    /// reference" lint (`papyrus_lints::unresolved_script`) to flag a call
+    /// like `MyMissingScript.DoThing()`.
     pub fn script_exists(&mut self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
-        self.known_scripts.contains_key(&name_lower)
-            || find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some()
-            || crate::native_globals::is_known(&name_lower)
+        let found = match &self.known_scripts {
+            Some(known) => known.contains_key(&name_lower),
+            None => find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some(),
+        };
+        found || crate::native_globals::is_known(&name_lower)
     }
 
     /// Parses and caches the script named `name_lower`, if it hasn't been
-    /// already. Checks [`Self::known_scripts`] first (an O(1) lookup, and
-    /// never a directory scan), falling back to [`find_psc_file`] for
-    /// anything not registered that way. Reuses the on-disk
-    /// [`crate::ast_cache`] when the script's content and modification time
-    /// haven't changed since it was last parsed, so repeatedly resolving the
-    /// same cross-script lookup (across separate CLI invocations, or
-    /// separate desktop app commands) skips re-parsing it.
+    /// already. In known-scripts mode (see [`Self::with_known_scripts`]),
+    /// only an O(1) lookup against the registered map is ever done; a name
+    /// not registered there simply doesn't resolve, without falling back to
+    /// [`find_psc_file`] at all. Otherwise, `name_lower` is looked up with
+    /// [`find_psc_file`] as before `with_known_scripts` existed. Reuses the
+    /// on-disk [`crate::ast_cache`] when the script's content and
+    /// modification time haven't changed since it was last parsed, so
+    /// repeatedly resolving the same cross-script lookup (across separate
+    /// CLI invocations, or separate desktop app commands) skips re-parsing
+    /// it.
     fn ensure_loaded(&mut self, name_lower: &str) {
         if self.scripts.contains_key(name_lower) {
             return;
@@ -485,13 +499,14 @@ impl FunctionTable {
         // the parent's name cased exactly as written in `Extends ParentName`
         // (see e.g. `lookup_function`'s loop). `find_psc_file` tolerates
         // that by lowercasing internally before matching a directory entry,
-        // so `known_scripts` (a plain, already-lowercased-keyed map) has to
-        // do the same explicitly here.
-        let script = self
-            .known_scripts
-            .get(&name_lower.to_ascii_lowercase())
-            .cloned()
-            .or_else(|| find_psc_file(&self.root, name_lower, &self.additional_roots))
+        // so the known-scripts map (keyed by an already-lowercased stem)
+        // has to do the same explicitly here.
+        let resolved_path = match &self.known_scripts {
+            Some(known) => known.get(&name_lower.to_ascii_lowercase()).cloned(),
+            None => find_psc_file(&self.root, name_lower, &self.additional_roots),
+        };
+
+        let script = resolved_path
             .and_then(|path| {
                 let source = read_psc_source(&path).ok()?;
                 if let Some(cached) = crate::ast_cache::get(&path, &source) {
@@ -804,6 +819,26 @@ mod tests {
         assert!(table
             .lookup_function("Foo", "FromConventionalDir")
             .is_none());
+    }
+
+    #[test]
+    fn with_known_scripts_does_not_resolve_an_unlisted_script_under_the_conventional_directory() {
+        // Regression test: known-scripts mode must not fall back to
+        // `find_psc_file` at all, not even for the project's own
+        // conventional `scripts/source` directory — otherwise a listed
+        // script and an unlisted sibling sitting in that same conventional
+        // directory would let the unlisted one resolve anyway, defeating
+        // the whole point of known-scripts mode.
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Listed", "ScriptName Listed\n");
+        write_script(root.path(), "Unlisted", "ScriptName Unlisted\n");
+        let listed_path = root.path().join("scripts/source/Listed.psc");
+
+        let mut table =
+            FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[listed_path]);
+
+        assert!(table.script_exists("Listed"));
+        assert!(!table.script_exists("Unlisted"));
     }
 
     #[test]

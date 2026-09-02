@@ -508,22 +508,34 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         let mut diagnostics =
             papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut function_table);
         if lint_config.rules.conflicting_script_versions {
-            diagnostics.extend(
-                papyrus_lint_core::script_locator::conflicting_script_versions(
-                    script_path,
-                    function_table.root(),
-                    function_table.additional_roots(),
-                ),
-            );
-            if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
-                if let Some(same_named) = scripts_by_name.get(&name.to_ascii_lowercase()) {
-                    diagnostics.extend(
-                        papyrus_lint_core::script_locator::conflicting_script_versions_among(
-                            script_path,
-                            same_named,
-                        ),
-                    );
+            if strict_achlist_scope {
+                // No directories were added to `additional_script_roots` in
+                // this mode (see above), so `conflicting_script_versions`'s
+                // own directory scan would find nothing among achlist
+                // entries anyway; comparing the achlist's own listed
+                // entries directly is what actually catches a same-named
+                // collision here, without re-reporting one directory
+                // scanning might otherwise also find (e.g. two entries
+                // whose directories both also happen to be configured
+                // `additional_script_roots`).
+                if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
+                    if let Some(same_named) = scripts_by_name.get(&name.to_ascii_lowercase()) {
+                        diagnostics.extend(
+                            papyrus_lint_core::script_locator::conflicting_script_versions_among(
+                                script_path,
+                                same_named,
+                            ),
+                        );
+                    }
                 }
+            } else {
+                diagnostics.extend(
+                    papyrus_lint_core::script_locator::conflicting_script_versions(
+                        script_path,
+                        function_table.root(),
+                        function_table.additional_roots(),
+                    ),
+                );
             }
         }
         diagnostics.sort_by_key(|d| (d.line, d.column));
@@ -1443,6 +1455,48 @@ mod tests {
         write_file(
             &dir.path().join("scripts.achlist"),
             r#"["mods/one/Example.psc", "mods/two/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "strict_achlist_scope: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[dir
+            .path()
+            .join("scripts.achlist")
+            .to_string_lossy()
+            .into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert_eq!(
+            stdout.matches("[conflicting-script-versions]").count(),
+            2,
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn strict_achlist_scope_does_not_double_report_a_conflict_also_visible_via_a_conventional_directory(
+    ) {
+        // Regression test: when two conflicting achlist entries also happen
+        // to sit under the project's conventional scripts/source and
+        // source/scripts directories, strict mode must report the
+        // collision once per file (via conflicting_script_versions_among),
+        // not twice (once more via the directory-based
+        // conflicting_script_versions, which strict mode must skip
+        // entirely to avoid duplicating what it already reports).
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("source/scripts/Example.psc"),
+            "ScriptName ExampleV2\n",
+        );
+        write_file(
+            &dir.path().join("scripts.achlist"),
+            r#"["scripts/source/Example.psc", "source/scripts/Example.psc"]"#,
         );
         write_file(
             &dir.path().join("papyrus-lint.yaml"),

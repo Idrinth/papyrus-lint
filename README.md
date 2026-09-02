@@ -191,10 +191,10 @@ additional_script_roots: []
 # alongside the lint engine's own. Requires compiler_path to be set/
 # auto-detected
 compile_check: false
-# true, false; scopes cross-script resolution and conflicting-script-versions
-# to exactly an achlist's own listed entries instead of every directory they
-# live in. Much faster on achlists spread across many directories, but every
-# .psc a listed entry depends on must itself be listed
+# true enables strict cross-script resolution and conflicting-script-versions
+# checks for only the achlist's listed entries. false (the default) keeps
+# parent-directory search roots. In strict mode, every .psc dependency must
+# be listed in the achlist
 strict_achlist_scope: false
 # true, false
 semicolon: false

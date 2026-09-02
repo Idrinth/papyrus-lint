@@ -118,10 +118,10 @@ const FIELD_COMMENTS: &[(&str, &str)] = &[
     ),
     (
         "strict_achlist_scope",
-        "# true, false; scopes cross-script resolution and conflicting-script-versions\n\
-         # to exactly an achlist's own listed entries instead of every directory they\n\
-         # live in. Much faster on achlists spread across many directories, but every\n\
-         # .psc a listed entry depends on must itself be listed",
+        "# true enables strict cross-script resolution and conflicting-script-versions\n\
+         # checks for only the achlist's listed entries. false (the default) keeps\n\
+         # parent-directory search roots. In strict mode, every .psc dependency must\n\
+         # be listed in the achlist",
     ),
     ("semicolon", "# true, false"),
     ("indentation", "# tab, space"),
