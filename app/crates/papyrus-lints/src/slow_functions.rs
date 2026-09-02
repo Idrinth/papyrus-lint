@@ -328,4 +328,45 @@ mod tests {
             "text = \"é\"\nakGlobal.SetValue(akOther.GetValue() As Int As Float)\n"
         );
     }
+
+    #[test]
+    fn repairs_multiple_calls_on_the_same_line_from_right_to_left() {
+        assert_eq!(
+            repair("first = left.GetValueInt() + right.GetValueInt()\n"),
+            "first = left.GetValue() As Int + right.GetValue() As Int\n"
+        );
+    }
+
+    #[test]
+    fn repairs_a_call_after_unicode_on_the_same_line() {
+        assert_eq!(
+            repair("message = \"café\" + akGlobal.GetValueInt()\n"),
+            "message = \"café\" + akGlobal.GetValue() As Int\n"
+        );
+    }
+
+    #[test]
+    fn repair_does_not_change_calls_in_strings_or_comments() {
+        let source = "text = \"GetValueInt()\" ; GetValueInt()\n; SetValueInt(1)\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_an_unbalanced_call_untouched() {
+        let source = "akGlobal.SetValueInt(GetAmount(1, 2)\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn bare_replacement_preserves_empty_and_multiple_argument_lists() {
+        assert_eq!(
+            repair_with_rules(
+                "ExampleGlobal.SlowCall()\nExampleGlobal.SlowCall(1, Other(2))\n",
+                GLOBAL_RULES,
+            ),
+            "ExampleGlobal.FastCall()\nExampleGlobal.FastCall(1, Other(2))\n"
+        );
+    }
 }
