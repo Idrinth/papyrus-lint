@@ -72,6 +72,16 @@ fix` against the file, applying every automatic fix (see the main
 project's README) and rewriting it on disk if anything changed, then
 reloads the file and re-lints it.
 
+A "PapyrusLint: Fix This Issue" command is available the same way, for
+fixing just the diagnostic under (or nearest to) the caret instead of the
+whole file. It re-reads the file's current diagnostics via
+`PapyrusLinterCLI --json`, picks the one on the caret's line closest to
+its column, then runs `PapyrusLinterCLI fix --type <rule> --line <n>` so
+only that rule's fix is applied, and only to that line — every other line
+and every other rule's findings are left untouched. If the caret's line
+has no reported issue, or the issue there has no automatic fix, an error
+message explains why nothing changed.
+
 ## Testing
 
 The tests provide lightweight substitutes for the Sublime Text and
