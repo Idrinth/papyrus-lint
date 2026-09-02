@@ -163,7 +163,8 @@ jobs:
 
   release-notes:
     name: Write release notes
-    needs: [release, editor-plugins]
+    needs:
+    - release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -276,7 +277,9 @@ jobs:
 
   nexus-upload:
     name: Publish release to Nexus Mods
-    needs: [release, editor-plugins, release-notes]
+    needs: 
+      - editor-plugins
+      - release-notes
     runs-on: ubuntu-latest
     permissions:
       contents: read
