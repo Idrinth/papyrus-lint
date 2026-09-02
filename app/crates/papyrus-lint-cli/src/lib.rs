@@ -450,9 +450,8 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     // same-named achlist entry elsewhere in the list, below, stays
     // proportional to how many scripts actually share a name rather than to
     // the achlist's full size. Only needed in strict-scope mode: the
-    // off-by-default directory-based `conflicting_script_versions` call
-    // below already covers this (and more) via the directories just added
-    // to `additional_script_roots`.
+    // off-by-default `script_index` built below already covers this (and
+    // more) via the directories just added to `additional_script_roots`.
     let mut scripts_by_name: HashMap<String, Vec<PathBuf>> = HashMap::new();
     if strict_achlist_scope {
         for script_path in &script_paths {
@@ -464,6 +463,20 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             }
         }
     }
+
+    // Built once up front, rather than re-scanning `function_table`'s search
+    // directories inside the loop below for every script, since a
+    // modlist-sized achlist can list hundreds of scripts across as many
+    // directories (see #311). Empty (and unused) in strict-scope mode, where
+    // `scripts_by_name` above covers this instead.
+    let script_index = if lint_config.rules.conflicting_script_versions && !strict_achlist_scope {
+        papyrus_lint_core::script_locator::build_script_index(
+            function_table.root(),
+            function_table.additional_roots(),
+        )
+    } else {
+        HashMap::new()
+    };
 
     let mut total_diagnostics = 0usize;
     let mut files_with_diagnostics = 0usize;
@@ -530,10 +543,9 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
                 }
             } else {
                 diagnostics.extend(
-                    papyrus_lint_core::script_locator::conflicting_script_versions(
+                    papyrus_lint_core::script_locator::conflicting_script_versions_in_index(
                         script_path,
-                        function_table.root(),
-                        function_table.additional_roots(),
+                        &script_index,
                     ),
                 );
             }
