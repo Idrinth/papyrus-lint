@@ -26,6 +26,12 @@ let identifierCasingStyleEl: HTMLSelectElement | null;
 let namedArgumentsStyleEl: HTMLSelectElement | null;
 let magicNumbersModeEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
+// Bumped by handleDroppedPaths every time a new drop starts parsing/linting;
+// a still-running drop's parsePscFiles callback checks its own snapshot of
+// this against the current value before touching currentPscOutcomes, so a
+// straggling outcome from a drop superseded by a newer one can't get mixed
+// into the newer drop's results.
+let currentParseGeneration = 0;
 let compilerPathEl: HTMLInputElement | null;
 let compileCheckEl: HTMLInputElement | null;
 let scriptRootsEl: HTMLTextAreaElement | null;
@@ -1533,6 +1539,7 @@ export async function handleDroppedPaths(paths: string[]) {
       // pass below can't show a previous drop's stale findings for a
       // path that happens to match one of this drop's entries.
       currentPscOutcomes = [];
+      const generation = ++currentParseGeneration;
       const projectDir = projectDirForAchlist(achlistPath, entries);
       showResult(achlistPath, entries, projectDir);
       renderPscResults(currentPscOutcomes);
@@ -1540,6 +1547,12 @@ export async function handleDroppedPaths(paths: string[]) {
       await useProjectDir(projectDir);
       currentAchlistScriptRoots = scriptRootsForAchlist(entries);
       await parsePscFiles(entries.filter(isPscPath), (outcome) => {
+        // A newer drop started (and so already reset currentPscOutcomes to
+        // its own array) while this one was still parsing/linting; don't
+        // mix this stale outcome into it.
+        if (generation !== currentParseGeneration) {
+          return;
+        }
         currentPscOutcomes.push(outcome);
         renderPscResults(currentPscOutcomes);
       });
@@ -1554,12 +1567,16 @@ export async function handleDroppedPaths(paths: string[]) {
     const pscPath = paths[0];
     clearError();
     currentPscOutcomes = [];
+    const generation = ++currentParseGeneration;
     showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
     renderPscResults(currentPscOutcomes);
 
     await useProjectDir(projectDirForPscPath(pscPath));
     currentAchlistScriptRoots = [];
     await parsePscFiles([pscPath], (outcome) => {
+      if (generation !== currentParseGeneration) {
+        return;
+      }
       currentPscOutcomes.push(outcome);
       renderPscResults(currentPscOutcomes);
     });
