@@ -598,3 +598,49 @@ fn unused_disable_rule_can_be_disabled_without_affecting_suppression() {
         .iter()
         .all(|diagnostic| { diagnostic.line != 4 || diagnostic.rule != "comma-spacing" }));
 }
+
+#[test]
+fn opt_in_rule_is_disabled_by_default_through_the_public_api() {
+    let source = "ScriptName Example\n\nGlobalVariable Property Toggle Auto\n\nFunction Run()\n    If Toggle.GetValue() == 1.0\n        Toggle.SetValue(1.0)\n    EndIf\nEndFunction\n";
+
+    let diagnostics = lint(source, &Config::default());
+
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "global-variable-setvalue"));
+}
+
+#[test]
+fn yaml_can_enable_an_opt_in_rule_through_the_public_api() {
+    let config: Config =
+        serde_yaml::from_str("rules:\n  global_variable_setvalue: true\n").unwrap();
+    let source = "ScriptName Example\n\nGlobalVariable Property Toggle Auto\n\nFunction Run()\n    If Toggle.GetValue() == 1.0\n        Toggle.SetValue(1.0)\n    Else\n        Toggle.SetValue(0.0)\n    EndIf\nEndFunction\n";
+
+    let diagnostics: Vec<_> = lint(source, &config)
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "global-variable-setvalue")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 2);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (7, 1));
+    assert!(diagnostics[0].message.contains("does not change the value"));
+    assert_eq!((diagnostics[1].line, diagnostics[1].column), (9, 1));
+    assert!(diagnostics[1]
+        .message
+        .contains("may be an unnecessary write"));
+}
+
+#[test]
+fn disable_comment_suppresses_an_opt_in_rule_on_only_its_own_line() {
+    let mut config = Config::default();
+    config.rules.global_variable_setvalue = true;
+    let source = "ScriptName Example\n\nGlobalVariable Property Toggle Auto\n\nFunction Run()\n    If Toggle.GetValue() == 1.0\n        Toggle.SetValue(1.0) ; @disable global-variable-setvalue\n    Else\n        Toggle.SetValue(0.0)\n    EndIf\nEndFunction\n";
+
+    let diagnostics: Vec<_> = lint(source, &config)
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "global-variable-setvalue")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 9);
+}
