@@ -117,7 +117,7 @@ fn is_type(type_name: &TypeName, name: &str) -> bool {
 /// depends on the type of another script that isn't tracked here.
 pub fn infer_type(expr: &Expr, env: &TypeEnv) -> Option<TypeName> {
     match expr {
-        Expr::Literal(Literal::Int(_)) => Some(scalar("Int")),
+        Expr::Literal(Literal::Int { .. }) => Some(scalar("Int")),
         Expr::Literal(Literal::Float(_)) => Some(scalar("Float")),
         Expr::Literal(Literal::String(_)) => Some(scalar("String")),
         Expr::Literal(Literal::Bool(_)) => Some(scalar("Bool")),
@@ -256,7 +256,7 @@ EndFunction
         let script = parse("ScriptName Example\n\nInt Property Count = 1 Auto\n").unwrap();
         let env = TypeEnv::for_script(&script);
         assert_eq!(
-            infer_type(&Expr::Literal(Literal::Int(1)), &env),
+            infer_type(&Expr::Literal(Literal::int(1)), &env),
             Some(scalar("Int"))
         );
         assert_eq!(
@@ -288,7 +288,7 @@ EndFunction
         let script = parse("ScriptName Example\n").unwrap();
         let env = TypeEnv::for_script(&script);
         let cmp = Expr::Binary {
-            left: Box::new(Expr::Literal(Literal::Int(1))),
+            left: Box::new(Expr::Literal(Literal::int(1))),
             op: BinaryOp::Gt,
             right: Box::new(Expr::Literal(Literal::Float(2.0))),
         };
@@ -301,14 +301,14 @@ EndFunction
         let env = TypeEnv::for_script(&script);
 
         let int_plus_int = Expr::Binary {
-            left: Box::new(Expr::Literal(Literal::Int(1))),
+            left: Box::new(Expr::Literal(Literal::int(1))),
             op: BinaryOp::Add,
-            right: Box::new(Expr::Literal(Literal::Int(2))),
+            right: Box::new(Expr::Literal(Literal::int(2))),
         };
         assert_eq!(infer_type(&int_plus_int, &env), Some(scalar("Int")));
 
         let int_plus_float = Expr::Binary {
-            left: Box::new(Expr::Literal(Literal::Int(1))),
+            left: Box::new(Expr::Literal(Literal::int(1))),
             op: BinaryOp::Add,
             right: Box::new(Expr::Literal(Literal::Float(2.0))),
         };
@@ -317,7 +317,7 @@ EndFunction
         let string_concat = Expr::Binary {
             left: Box::new(Expr::Literal(Literal::String("a".to_string()))),
             op: BinaryOp::Add,
-            right: Box::new(Expr::Literal(Literal::Int(2))),
+            right: Box::new(Expr::Literal(Literal::int(2))),
         };
         assert_eq!(infer_type(&string_concat, &env), Some(scalar("String")));
     }
@@ -328,14 +328,14 @@ EndFunction
         let env = TypeEnv::for_script(&script);
 
         let cast = Expr::Cast {
-            value: Box::new(Expr::Literal(Literal::Int(1))),
+            value: Box::new(Expr::Literal(Literal::int(1))),
             type_name: "Float".to_string(),
         };
         assert_eq!(infer_type(&cast, &env), Some(scalar("Float")));
 
         let new_array = Expr::NewArray {
             type_name: scalar("Int"),
-            size: Box::new(Expr::Literal(Literal::Int(5))),
+            size: Box::new(Expr::Literal(Literal::int(5))),
         };
         assert_eq!(
             infer_type(&new_array, &env),
@@ -347,7 +347,7 @@ EndFunction
 
         let index = Expr::Index {
             object: Box::new(new_array),
-            index: Box::new(Expr::Literal(Literal::Int(0))),
+            index: Box::new(Expr::Literal(Literal::int(0))),
         };
         assert_eq!(infer_type(&index, &env), Some(scalar("Int")));
     }

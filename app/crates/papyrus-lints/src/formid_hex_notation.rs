@@ -6,15 +6,19 @@
 //! overlook next to genuinely hex-written ones.
 //!
 //! Like [`crate::forbidden_functions`], this works on lexer tokens rather
-//! than the parsed AST: the AST's `Literal::Int` only keeps a literal's
-//! numeric value, discarding whether it was written as `0x...` or plain
-//! decimal — exactly the distinction this lint needs to make. Only a
-//! literal directly adjacent to the comparison operator or the call's
-//! argument list is checked; one reached indirectly through a variable
-//! assigned earlier is left unflagged rather than guessed at.
+//! than the parsed AST, since the calls it looks for (`GetFormID()`
+//! comparisons, `Game.GetFormFromFile` arguments) are easier to match as a
+//! flat token sequence than to walk out of an `Expr` tree. Each
+//! `TokenKind::IntLiteral` token carries the [`IntFormat`] it was written
+//! with, the same distinction `papyrus_parser::ast::Literal::Int` carries
+//! into the parsed AST, so this lint reads it straight off the token
+//! instead of re-scanning the literal's source text. Only a literal
+//! directly adjacent to the comparison operator or the call's argument
+//! list is checked; one reached indirectly through a variable assigned
+//! earlier is left unflagged rather than guessed at.
 
 use papyrus_parser::lexer::Lexer;
-use papyrus_parser::token::{Keyword, Token, TokenKind};
+use papyrus_parser::token::{IntFormat, Keyword, Token, TokenKind};
 
 use crate::Diagnostic;
 
@@ -31,10 +35,10 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     let mut diagnostics = Vec::new();
     for i in 0..tokens.len() {
         if is_get_form_id_call(&tokens, i) {
-            check_get_form_id_comparison(&tokens, i, source, &mut diagnostics);
+            check_get_form_id_comparison(&tokens, i, &mut diagnostics);
         }
         if is_game_get_form_from_file_call(&tokens, i) {
-            check_get_form_from_file_argument(&tokens, i, source, &mut diagnostics);
+            check_get_form_from_file_argument(&tokens, i, &mut diagnostics);
         }
     }
     diagnostics
@@ -96,7 +100,6 @@ fn is_game_get_form_from_file_call(tokens: &[Token], index: usize) -> bool {
 fn check_get_form_id_comparison(
     tokens: &[Token],
     call_index: usize,
-    source: &str,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let call_end = call_index + 2;
@@ -112,7 +115,7 @@ fn check_get_form_id_comparison(
                 literal_index += 1;
             }
             if let Some(literal) = tokens.get(literal_index) {
-                flag_if_decimal(literal, source, CONTEXT, diagnostics);
+                flag_if_decimal(literal, CONTEXT, diagnostics);
             }
         }
     }
@@ -122,7 +125,7 @@ fn check_get_form_id_comparison(
         if let Some(op) = tokens.get(receiver_start - 1) {
             if is_comparison(&op.kind) {
                 if let Some(literal) = tokens.get(receiver_start - 2) {
-                    flag_if_decimal(literal, source, CONTEXT, diagnostics);
+                    flag_if_decimal(literal, CONTEXT, diagnostics);
                 }
             }
         }
@@ -156,7 +159,6 @@ fn skip_receiver_backward(tokens: &[Token], call_index: usize) -> usize {
 fn check_get_form_from_file_argument(
     tokens: &[Token],
     call_index: usize,
-    source: &str,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let mut index = call_index + 2; // past the identifier and its `(`
@@ -179,24 +181,14 @@ fn check_get_form_from_file_argument(
     ) {
         return;
     }
-    flag_if_decimal(
-        literal,
-        source,
-        "passed to Game.GetFormFromFile",
-        diagnostics,
-    );
+    flag_if_decimal(literal, "passed to Game.GetFormFromFile", diagnostics);
 }
 
-fn flag_if_decimal(
-    literal: &Token,
-    source: &str,
-    context: &str,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let TokenKind::IntLiteral(value) = literal.kind else {
+fn flag_if_decimal(literal: &Token, context: &str, diagnostics: &mut Vec<Diagnostic>) {
+    let TokenKind::IntLiteral(value, format) = literal.kind else {
         return;
     };
-    if is_hex_notation(source, literal.line, literal.col) {
+    if format == IntFormat::Hexadecimal {
         return;
     }
     diagnostics.push(Diagnostic {
@@ -210,22 +202,6 @@ fn flag_if_decimal(
         ),
         rule: RULE,
     });
-}
-
-/// Whether the number literal starting at `line`/`col` in `source` was
-/// written with a `0x`/`0X` prefix — the same check
-/// `papyrus_parser::lexer::Lexer::read_number` makes when it lexes the
-/// literal in the first place, but which isn't preserved on the parsed
-/// `papyrus_parser::ast::Literal::Int` itself.
-fn is_hex_notation(source: &str, line: usize, col: usize) -> bool {
-    let Some(line_text) = source.lines().nth(line.saturating_sub(1)) else {
-        return false;
-    };
-    let Some(start) = col.checked_sub(1) else {
-        return false;
-    };
-    let bytes = line_text.as_bytes();
-    bytes.get(start) == Some(&b'0') && matches!(bytes.get(start + 1), Some(b'x') | Some(b'X'))
 }
 
 #[cfg(test)]

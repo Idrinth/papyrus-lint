@@ -34,7 +34,7 @@ fn preserves_call_locations_through_postfix_chains() {
     assert!(matches!(
         &args[0],
         Expr::NamedArg { name, value }
-            if name == "value" && **value == Expr::Literal(Literal::Int(42))
+            if name == "value" && **value == Expr::Literal(Literal::int(42))
     ));
 }
 
@@ -63,7 +63,7 @@ fn parses_assignments_to_member_and_index_targets() {
         Stmt::Assign {
             target: Expr::Index { index, .. },
             op: AssignOp::MulAssign,
-            value: Expr::Literal(Literal::Int(2)),
+            value: Expr::Literal(Literal::Int { value: 2, .. }),
             line: 4,
         } if **index == Expr::Identifier("index".into())
     ));
@@ -99,7 +99,7 @@ fn supports_chained_casts_and_array_types() {
         Some(Expr::NewArray { type_name, size })
             if type_name.name == "Form"
                 && !type_name.is_array
-                && **size == Expr::Literal(Literal::Int(3))
+                && **size == Expr::Literal(Literal::int(3))
     ));
 }
 

@@ -111,12 +111,12 @@ fn handles_case_insensitive_syntax_comments_and_line_continuations_together() {
     assert_eq!(
         result.value,
         Some(Expr::Binary {
-            left: Box::new(Expr::Literal(Literal::Int(1))),
+            left: Box::new(Expr::Literal(Literal::int(1))),
             op: BinaryOp::Add,
             right: Box::new(Expr::Binary {
-                left: Box::new(Expr::Literal(Literal::Int(2))),
+                left: Box::new(Expr::Literal(Literal::int(2))),
                 op: BinaryOp::Mul,
-                right: Box::new(Expr::Literal(Literal::Int(3))),
+                right: Box::new(Expr::Literal(Literal::int(3))),
             }),
         })
     );

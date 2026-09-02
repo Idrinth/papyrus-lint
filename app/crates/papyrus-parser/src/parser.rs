@@ -831,9 +831,9 @@ impl Parser {
     fn parse_primary(&mut self) -> PResult<Expr> {
         let tok = self.current().clone();
         match tok.kind {
-            TokenKind::IntLiteral(v) => {
+            TokenKind::IntLiteral(v, format) => {
                 self.advance();
-                Ok(Expr::Literal(Literal::Int(v)))
+                Ok(Expr::Literal(Literal::Int { value: v, format }))
             }
             TokenKind::FloatLiteral(v) => {
                 self.advance();

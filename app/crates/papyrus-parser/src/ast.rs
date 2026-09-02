@@ -2,6 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
+pub use crate::token::IntFormat;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TypeName {
     pub name: String,
@@ -149,11 +151,32 @@ pub enum UnaryOp {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Literal {
-    Int(i64),
+    /// An integer literal, alongside the notation (decimal or `0x`/`0X`
+    /// hexadecimal) it was written with in source. Preserving this lets
+    /// downstream tooling (see `formid_hex_notation` in `papyrus-lints`)
+    /// tell a hex-written FormID apart from a decimal one without
+    /// re-scanning the original source text.
+    Int {
+        value: i64,
+        format: IntFormat,
+    },
     Float(f64),
     String(String),
     Bool(bool),
     None,
+}
+
+impl Literal {
+    /// Convenience constructor for an integer literal in plain decimal
+    /// notation, for callers (constant folding, tests, ...) that build a
+    /// `Literal::Int` synthetically rather than parsing one from source and
+    /// so have no original notation to preserve.
+    pub fn int(value: i64) -> Self {
+        Literal::Int {
+            value,
+            format: IntFormat::Decimal,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
