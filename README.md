@@ -72,6 +72,8 @@ apply.
 
 ## Implemented Lints
 
+![Papyrus Lint Viewer](resources/papyrus-lint-viewer.png)
+
 ### Formatting
 
 | Lint | Description | Auto-Fix |
