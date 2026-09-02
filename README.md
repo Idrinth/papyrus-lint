@@ -46,6 +46,8 @@ Just drop your file or archlist here and see the results.
 - A guarantee a script is fit for purpose
 - A replacement for proper testing
 
+![Papyrus Lint VSCode Extension](resources/papyrus-lint-vscode.png)
+
 ## What is a linter?
 
 A linter is a tool that scans source code for patterns that are likely to be
