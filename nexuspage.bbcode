@@ -251,6 +251,11 @@ additional_script_roots: []
 # alongside the lint engine's own. Requires compiler_path to be set/
 # auto-detected
 compile_check: false
+# true enables strict cross-script resolution and conflicting-script-versions
+# checks for only the achlist's listed entries. false (the default) keeps
+# parent-directory search roots. In strict mode, every .psc dependency must
+# be listed in the achlist
+strict_achlist_scope: false
 # true, false
 semicolon: false
 # tab, space
@@ -275,11 +280,14 @@ magic_numbers: loose
 fail_on_warning: false
 # true, false
 fail_on_info: false
+# true, false
+bool_like_int: true
 # Each rule accepts true or false
 rules:
   trailing_whitespace: true
   comma_spacing: true
   forbidden_functions: true
+  formid_hex_notation: true
   slow_functions: true
   unused_getter: true
   unused_property: true
@@ -296,6 +304,7 @@ rules:
   unreachable_statement: true
   static_condition: true
   division_by_zero: true
+  empty_body: true
   unused_local_variable: true
   variable_used_before_assignment: true
   none_form_usage: true
@@ -310,14 +319,16 @@ rules:
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false
-  unused_disable: false
   unchecked_cast: true
+  useless_downcast: true
   unresolved_script: true
   short_wait_interval: true
   state_function_signature: true
   goto_state: true
   too_many_states: true
   multiple_auto_states: true
+  conflicting_script_versions: true
+  unused_disable: false
   magic_numbers: false[/code]
 
 [heading]CLI[/heading]
@@ -327,6 +338,8 @@ PapyrusLinter path/to/project.achlist
 PapyrusLinter path/to/Example.psc
 PapyrusLinter fix path/to/project.achlist
 PapyrusLinter fix path/to/Example.psc
+PapyrusLinter fix --type trailing-whitespace path/to/Example.psc
+PapyrusLinter fix --line 12 --type trailing-whitespace path/to/Example.psc
 PapyrusLinter --json path/to/project.achlist
 PapyrusLinter --json fix path/to/project.achlist
 PapyrusLinter --config path/to/papyrus-lint.yaml path/to/Example.psc
