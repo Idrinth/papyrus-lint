@@ -410,6 +410,8 @@ line.
 
 ## Command-line interface
 
+![Papyrus Lint CLI example](resources/papyrus-lint-cli.png)
+
 Besides its GUI, Papyrus Lint can lint non-interactively from the
 command line two ways: by passing an `.achlist` (or a single `.psc`) path
 to the desktop app's own executable (`PapyrusLinter`), or via the
