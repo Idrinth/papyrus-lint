@@ -350,7 +350,9 @@ PapyrusLinter --json fix path/to/project.achlist
 PapyrusLinter --config path/to/papyrus-lint.yaml path/to/Example.psc
 PapyrusLinter --script-root path/to/SharedScripts path/to/project.achlist
 PapyrusLinter --output path/to/report.txt path/to/project.achlist
-PapyrusLinter --json --output path/to/report.json path/to/project.achlist[/code]
+PapyrusLinter --json --output path/to/report.json path/to/project.achlist
+PapyrusLinter --color never path/to/project.achlist[/code]
+The plain-text report is colorized automatically when run in a terminal (rule tags, error/warning/info levels, and the summary line); pass --color always or --color never to override the detection.
 
 [heading]Usage of AI[/heading]
 This tool is almost entirely coded by AI. I have tested it and reviewed code changes, but have rarely coded parts myself.

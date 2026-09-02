@@ -1,5 +1,5 @@
 use std::env;
-use std::io;
+use std::io::{self, IsTerminal};
 use std::process::ExitCode;
 
 /// Launched with no arguments, this binary starts the desktop app, same as
@@ -12,10 +12,13 @@ use std::process::ExitCode;
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().skip(1).collect();
     detach_unused_windows_console(&args);
+    let mut stdout = io::stdout();
+    let stdout_is_terminal = stdout.is_terminal();
     dispatch(
         &args,
-        &mut io::stdout(),
+        &mut stdout,
         &mut io::stderr(),
+        stdout_is_terminal,
         papyrus_lint_lib::run,
     )
 }
@@ -46,13 +49,14 @@ fn dispatch(
     args: &[String],
     stdout: &mut impl io::Write,
     stderr: &mut impl io::Write,
+    stdout_is_terminal: bool,
     launch_desktop: impl FnOnce(),
 ) -> ExitCode {
     if args.is_empty() {
         launch_desktop();
         ExitCode::SUCCESS
     } else {
-        let code = papyrus_lint_cli::run(args, stdout, stderr);
+        let code = papyrus_lint_cli::run(args, stdout, stderr, stdout_is_terminal);
         ExitCode::from(code)
     }
 }
@@ -66,7 +70,9 @@ mod tests {
     fn no_arguments_launches_the_desktop_app() {
         let launched = Cell::new(false);
 
-        let code = dispatch(&[], &mut Vec::new(), &mut Vec::new(), || launched.set(true));
+        let code = dispatch(&[], &mut Vec::new(), &mut Vec::new(), false, || {
+            launched.set(true)
+        });
 
         assert_eq!(code, ExitCode::SUCCESS);
         assert!(launched.get());
@@ -78,9 +84,13 @@ mod tests {
         let mut stderr = Vec::new();
         let launched = Cell::new(false);
 
-        let code = dispatch(&["--version".to_string()], &mut stdout, &mut stderr, || {
-            launched.set(true)
-        });
+        let code = dispatch(
+            &["--version".to_string()],
+            &mut stdout,
+            &mut stderr,
+            false,
+            || launched.set(true),
+        );
 
         assert_eq!(code, ExitCode::SUCCESS);
         assert_eq!(
@@ -103,6 +113,7 @@ mod tests {
             &["--json".to_string(), script.display().to_string()],
             &mut stdout,
             &mut stderr,
+            false,
             || panic!("desktop app must not launch in CLI mode"),
         );
 
@@ -119,6 +130,7 @@ mod tests {
             &["--help".to_string()],
             &mut Vec::new(),
             &mut Vec::new(),
+            false,
             || panic!("desktop app must not launch in CLI mode"),
         );
 
