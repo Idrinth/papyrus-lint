@@ -132,4 +132,38 @@ mod tests {
         assert_eq!(locations, vec![(1, 12), (1, 33), (3, 12)]);
         assert!(unused.iter().all(|diagnostic| diagnostic.rule == RULE));
     }
+
+    #[test]
+    fn named_disable_is_used_only_by_a_matching_diagnostic_on_the_same_line() {
+        let disables = Disables::scan("Call(1,2) ; @disable comma-spacing\n");
+        let diagnostics = [diagnostic(1, "trailing-whitespace")];
+
+        let unused = check(&disables, &diagnostics, KNOWN_RULES);
+
+        assert_eq!(unused.len(), 1);
+        assert!(unused[0].message.contains("comma-spacing"));
+        assert!(unused[0].message.contains("does not produce"));
+    }
+
+    #[test]
+    fn duplicate_named_disables_produce_only_one_report() {
+        let disables =
+            Disables::scan("Call(1, 2) ; @disable trailing-whitespace, TRAILING-WHITESPACE\n");
+
+        let unused = check(&disables, &[], KNOWN_RULES);
+
+        assert_eq!(unused.len(), 1);
+        assert!(unused[0].message.contains("trailing-whitespace"));
+    }
+
+    #[test]
+    fn unknown_rule_is_reported_even_when_its_name_matches_a_diagnostic() {
+        let disables = Disables::scan("Call() ; @disable made-up-rule\n");
+        let diagnostics = [diagnostic(1, "made-up-rule")];
+
+        let unused = check(&disables, &diagnostics, KNOWN_RULES);
+
+        assert_eq!(unused.len(), 1);
+        assert!(unused[0].message.contains("unknown"));
+    }
 }

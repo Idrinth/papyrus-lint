@@ -135,4 +135,33 @@ Actor Property PlayerRef  Auto
         let protected = protected_lines("outside\n;BEGIN FRAGMENT CODE\nwrapper\n");
         assert_eq!(protected, vec![false, false, true, true]);
     }
+
+    #[test]
+    fn unterminated_code_section_leaves_remaining_lines_editable() {
+        let protected =
+            protected_lines(";BEGIN FRAGMENT CODE\nwrapper\n;BEGIN CODE\nbody\nstill body\n");
+
+        assert_eq!(protected, vec![false, true, true, true, false, false]);
+    }
+
+    #[test]
+    fn supports_multiple_fragment_blocks() {
+        let source = ";BEGIN FRAGMENT CODE\none\n;END FRAGMENT CODE\nbetween\n;BEGIN FRAGMENT CODE\ntwo\n;END FRAGMENT CODE\n";
+        let protected = protected_lines(source);
+
+        for line in [1, 2, 3, 5, 6, 7] {
+            assert!(protected[line], "expected line {line} to be protected");
+        }
+        assert!(!protected[4]);
+    }
+
+    #[test]
+    fn marker_prefixes_match_creation_kit_comment_suffixes() {
+        let source = ";BEGIN FRAGMENT CODE generated metadata\nwrapper\n;END FRAGMENT CODE generated metadata\noutside\n";
+
+        assert_eq!(
+            protected_lines(source),
+            vec![false, true, true, true, false]
+        );
+    }
 }
