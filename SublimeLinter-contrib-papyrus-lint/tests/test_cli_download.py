@@ -2,7 +2,7 @@
 
 from io import BytesIO
 import os
-from pathlib import Path
+from pathlib import Path, PosixPath
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -29,6 +29,12 @@ class CliDownloadTests(unittest.TestCase):
     def test_rejects_an_unsupported_platform(self):
         with self.assertRaisesRegex(OSError, 'FreeBSD'):
             cli_download._asset_name('FreeBSD')
+
+    def test_detects_the_current_platform_when_none_is_supplied(self):
+        with patch.object(cli_download.platform, 'system', return_value='Darwin') as system:
+            self.assertEqual(cli_download._asset_name(), 'PapyrusLinterCLI-macos')
+
+        system.assert_called_once_with()
 
     def test_package_control_version_takes_precedence(self):
         with patch.object(
@@ -74,6 +80,51 @@ class CliDownloadTests(unittest.TestCase):
             self.assertEqual(result, str(executable))
             download.assert_not_called()
 
+    def test_reuses_a_windows_cache_without_unix_execute_permissions(self):
+        with tempfile.TemporaryDirectory() as cache:
+            executable = (
+                Path(cache)
+                / 'PapyrusLint'
+                / 'v1.2.3'
+                / 'PapyrusLinterCLI-windows.exe'
+            )
+            executable.parent.mkdir(parents=True)
+            executable.write_bytes(b'cli')
+            executable.chmod(0o600)
+
+            with (
+                patch.object(cli_download.os, 'name', 'nt'),
+                patch.object(cli_download, 'Path', PosixPath),
+                patch.object(cli_download, 'urlopen') as download,
+            ):
+                result = cli_download.ensure_release_cli(
+                    cache, '1.2.3', 'Windows'
+                )
+
+            self.assertEqual(result, str(executable))
+            download.assert_not_called()
+
+    def test_uses_release_version_and_detected_platform_by_default(self):
+        with (
+            tempfile.TemporaryDirectory() as cache,
+            patch.object(cli_download, 'release_version', return_value='4.5.6') as version,
+            patch.object(cli_download.platform, 'system', return_value='Linux') as system,
+            patch.object(cli_download, 'urlopen', return_value=BytesIO(b'cli')) as download,
+        ):
+            result = Path(cli_download.ensure_release_cli(cache))
+
+            self.assertEqual(
+                result,
+                Path(cache) / 'PapyrusLint' / 'v4.5.6' / 'PapyrusLinterCLI-linux',
+            )
+
+        version.assert_called_once_with()
+        system.assert_called_once_with()
+        download.assert_called_once_with(
+            '{}/v4.5.6/PapyrusLinterCLI-linux'.format(cli_download.RELEASE_BASE),
+            timeout=30,
+        )
+
     def test_downloads_release_to_versioned_cache_and_makes_it_executable(self):
         with tempfile.TemporaryDirectory() as cache:
             response = BytesIO(b'first chunk' + b'second chunk')
@@ -107,6 +158,18 @@ class CliDownloadTests(unittest.TestCase):
                 side_effect=OSError('offline'),
             ):
                 with self.assertRaisesRegex(OSError, 'offline'):
+                    cli_download.ensure_release_cli(cache, '2.3.4', 'Linux')
+
+            directory = Path(cache) / 'PapyrusLint' / 'v2.3.4'
+            self.assertEqual(list(directory.iterdir()), [])
+
+    def test_failed_cache_install_removes_temporary_file(self):
+        with tempfile.TemporaryDirectory() as cache:
+            with (
+                patch.object(cli_download, 'urlopen', return_value=BytesIO(b'cli')),
+                patch.object(cli_download.os, 'replace', side_effect=OSError('disk full')),
+            ):
+                with self.assertRaisesRegex(OSError, 'disk full'):
                     cli_download.ensure_release_cli(cache, '2.3.4', 'Linux')
 
             directory = Path(cache) / 'PapyrusLint' / 'v2.3.4'
