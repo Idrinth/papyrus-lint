@@ -49,6 +49,7 @@ pub mod unused_getter;
 pub mod unused_local_variable;
 pub mod unused_property;
 pub mod useless_downcast;
+pub mod variable_used_before_assignment;
 
 const KNOWN_RULE_IDS: &[&str] = &[
     trailing_whitespace::RULE,
@@ -94,6 +95,7 @@ const KNOWN_RULE_IDS: &[&str] = &[
     state_count::MULTIPLE_AUTO_STATES_RULE,
     "conflicting-script-versions",
     unused_disable::RULE,
+    variable_used_before_assignment::RULE,
 ];
 
 use serde::Serialize;
@@ -257,6 +259,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.unused_local_variable {
         diagnostics.extend(unused_local_variable::check(source));
+    }
+    if rules.variable_used_before_assignment {
+        diagnostics.extend(variable_used_before_assignment::check(source));
     }
     if rules.none_form_usage {
         diagnostics.extend(none_form_usage::check(source));
@@ -768,6 +773,12 @@ mod tests {
                 none_form_usage::RULE,
                 Config::default(),
                 config_with(|c| c.rules.none_form_usage = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int i\n    Debug.Trace(i as String)\nEndFunction\n",
+                variable_used_before_assignment::RULE,
+                Config::default(),
+                config_with(|c| c.rules.variable_used_before_assignment = false),
             ),
             (
                 "ScriptName Example\n\nInt Property MyValue Auto\n\nFunction Test()\n    Int MyValue = 1\n    Debug.Trace(MyValue)\nEndFunction\n",

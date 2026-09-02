@@ -38,6 +38,7 @@
 //!   division_by_zero: true
 //!   empty_body: true
 //!   unused_local_variable: true
+//!   variable_used_before_assignment: true
 //!   none_form_usage: true
 //!   local_variable_shadowing: true
 //!   parameter_reassignment: true
@@ -264,6 +265,8 @@ pub struct Rules {
     pub empty_body: bool,
     /// The "Unused or write-only local variables" lint.
     pub unused_local_variable: bool,
+    /// The "Local variable used before assignment" lint.
+    pub variable_used_before_assignment: bool,
     /// The "None used as an existing Form" lint.
     pub none_form_usage: bool,
     /// The "Local variable shadowing" lint.
@@ -337,6 +340,7 @@ impl Default for Rules {
             division_by_zero: true,
             empty_body: true,
             unused_local_variable: true,
+            variable_used_before_assignment: true,
             none_form_usage: true,
             local_variable_shadowing: true,
             parameter_reassignment: true,
@@ -475,6 +479,7 @@ mod tests {
         assert!(config.rules.division_by_zero);
         assert!(config.rules.empty_body);
         assert!(config.rules.unused_local_variable);
+        assert!(config.rules.variable_used_before_assignment);
         assert!(config.rules.none_form_usage);
         assert!(config.rules.local_variable_shadowing);
         assert!(config.rules.chain_whitespace);
