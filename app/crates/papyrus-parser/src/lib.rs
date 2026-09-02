@@ -3,16 +3,20 @@
 //! This module is the foundation the lint rules build on: a lexer that
 //! turns Papyrus source text into tokens, an AST describing a script's
 //! structure, and a recursive-descent parser that builds the AST from the
-//! token stream.
+//! token stream. [`parse`] and [`tokenize`] are both memoized against the
+//! most recently seen source text (see [`cache`]), since a single lint
+//! pass over one script calls into them dozens of times with the exact
+//! same source.
 
 pub mod ast;
+mod cache;
 pub mod lexer;
 pub mod parser;
 pub mod token;
 pub mod types;
 
-use lexer::{LexError, Lexer};
-use parser::{ParseError, Parser};
+use lexer::LexError;
+use parser::ParseError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PapyrusError {
@@ -41,11 +45,19 @@ impl From<ParseError> for PapyrusError {
     }
 }
 
-/// Parses Papyrus source text into a `Script` AST.
+/// Parses Papyrus source text into a `Script` AST. Memoized against the
+/// most recently seen `source` -- see [`cache`].
 pub fn parse(source: &str) -> Result<ast::Script, PapyrusError> {
-    let tokens = Lexer::new(source).tokenize()?;
-    let script = Parser::new(tokens).parse_script()?;
-    Ok(script)
+    cache::parse(source)
+}
+
+/// Lexes Papyrus source text into tokens, the same as
+/// [`lexer::Lexer::new(source).tokenize()`](lexer::Lexer::tokenize).
+/// Memoized against the most recently seen `source` -- see [`cache`] --
+/// which is what lets every raw-token-based lint rule in `papyrus-lints`
+/// call this directly instead of running its own lexer pass.
+pub fn tokenize(source: &str) -> Result<Vec<token::Token>, LexError> {
+    cache::tokenize(source)
 }
 
 #[cfg(test)]

@@ -8,7 +8,6 @@
 //! checked) elsewhere, so flagging it here would just repeat that other
 //! script's diagnostic under the wrong file.
 
-use papyrus_parser::lexer::Lexer;
 use papyrus_parser::token::{Keyword, TokenKind};
 use serde::{Deserialize, Serialize};
 
@@ -105,7 +104,7 @@ fn first_letter_case(name: &str) -> Option<bool> {
 /// no `ScriptName` statement, or one that fails to lex, yields no
 /// diagnostics.
 pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
-    let Ok(tokens) = Lexer::new(source).tokenize() else {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return Vec::new();
     };
 
@@ -142,7 +141,7 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
 /// that would add or remove characters is skipped so the declaration remains
 /// compatible with its filename. Invalid source is returned verbatim.
 pub fn repair(source: &str, style: Style) -> String {
-    let Ok(tokens) = Lexer::new(source).tokenize() else {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();
     };
 
