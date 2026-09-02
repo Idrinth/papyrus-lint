@@ -339,8 +339,16 @@ also means an unlisted file that happens to sit in one of those
 directories resolves too, and `conflicting_script_versions` scans every
 such directory in full, which got expensive on a modlist-sized achlist
 (hundreds of listed files across as many directories; see
-[#311](https://github.com/Idrinth/papyrus-lint/issues/311)). Setting the
-project's `strict_achlist_scope` to `true` switches the CLI to registering
+[#311](https://github.com/Idrinth/papyrus-lint/issues/311)). The CLI avoids
+repeating that scan once per listed script by building a
+`script_locator::ScriptIndex` (`build_script_index`) — a one-time map from
+each directory's file names to their paths — up front, then checking every
+script against it via `conflicting_script_versions_in_index` instead of
+calling `conflicting_script_versions` (which scans afresh on every call)
+per script; the desktop app's single-file `lint_psc_file`/`repair_psc_file`
+commands still call `conflicting_script_versions` directly, since they
+only ever check one script per invocation. Setting the project's
+`strict_achlist_scope` to `true` switches the CLI to registering
 each listed `.psc` directly with the `FunctionTable`
 (`FunctionTable::with_known_scripts` in `papyrus-lint-core`) instead,
 scoping resolution strictly to what the achlist actually lists — cross-listed-directory

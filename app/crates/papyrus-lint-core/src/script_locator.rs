@@ -1,5 +1,6 @@
 //! Locates Papyrus `.psc` source files by case-insensitive name.
 
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -184,6 +185,64 @@ pub fn conflicting_script_versions(
             ),
         })
         .collect()
+}
+
+/// Maps a script file name (case-insensitively lowercased, as returned by
+/// [`detected_script_roots`]'s directories) to every path found under those
+/// directories carrying that name. Built once by [`build_script_index`] so
+/// [`conflicting_script_versions_in_index`] can check a whole batch of
+/// scripts (e.g. an achlist's worth) against it without re-scanning the
+/// same directories once per script.
+pub type ScriptIndex = HashMap<String, Vec<PathBuf>>;
+
+/// Scans `root`'s conventional and configured search directories (see
+/// [`detected_script_roots`]) once, recording every `.psc` file found under
+/// them by lowercased file name. Pass the result to
+/// [`conflicting_script_versions_in_index`] for each script being checked,
+/// instead of calling [`conflicting_script_versions`] (which re-scans those
+/// same directories on every call) once per script.
+pub fn build_script_index(root: &Path, additional_roots: &[String]) -> ScriptIndex {
+    let mut index: ScriptIndex = HashMap::new();
+
+    for search_root in detected_script_roots(root, additional_roots) {
+        let Ok(entries) = fs::read_dir(search_root) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if !path.is_file() {
+                continue;
+            }
+            let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
+                continue;
+            };
+            let bucket = index.entry(file_name.to_ascii_lowercase()).or_default();
+            if !bucket.contains(&path) {
+                bucket.push(path);
+            }
+        }
+    }
+
+    index
+}
+
+/// Like [`conflicting_script_versions`], but checks `script_path` against a
+/// pre-built [`ScriptIndex`] (see [`build_script_index`]) instead of
+/// scanning `root`'s search directories itself. Use this when checking many
+/// scripts from the same project in one run, so the directories are only
+/// scanned once for the whole batch rather than once per script.
+pub fn conflicting_script_versions_in_index(
+    script_path: &Path,
+    index: &ScriptIndex,
+) -> Vec<Diagnostic> {
+    let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
+        return Vec::new();
+    };
+    let Some(candidates) = index.get(&file_name.to_ascii_lowercase()) else {
+        return Vec::new();
+    };
+
+    conflicting_script_versions_among(script_path, candidates)
 }
 
 /// Warns when `script_path` has a same-named, byte-different counterpart
@@ -599,6 +658,89 @@ mod tests {
         fs::write(&script, "primary").expect("failed to write primary script");
 
         assert!(conflicting_script_versions(&script, root.path(), &[]).is_empty());
+    }
+
+    #[test]
+    fn build_script_index_groups_files_by_lowercased_name_across_search_roots() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        let alternate = root.path().join("source/scripts");
+        fs::create_dir_all(&primary).expect("failed to create primary root");
+        fs::create_dir_all(&alternate).expect("failed to create alternate root");
+        let script = write_file(&primary, "Example.psc");
+        let other = write_file(&alternate, "example.PSC");
+        write_file(&primary, "Unrelated.psc");
+
+        let index = build_script_index(root.path(), &[]);
+
+        let mut matches = index
+            .get("example.psc")
+            .expect("expected an entry for example.psc")
+            .clone();
+        matches.sort();
+        let mut expected = vec![script, other];
+        expected.sort();
+        assert_eq!(matches, expected);
+    }
+
+    #[test]
+    fn build_script_index_ignores_directories_and_missing_search_roots() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        fs::create_dir_all(primary.join("Example.psc"))
+            .expect("failed to create same-named directory");
+
+        let index = build_script_index(root.path(), &[]);
+
+        assert!(!index.contains_key("example.psc"));
+    }
+
+    #[test]
+    fn conflicting_script_versions_in_index_flags_a_same_named_entry_with_different_content() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        let alternate = root.path().join("source/scripts");
+        fs::create_dir_all(&primary).expect("failed to create primary root");
+        fs::create_dir_all(&alternate).expect("failed to create alternate root");
+        let script = write_file(&primary, "Example.psc");
+        fs::write(&script, "ScriptName Example\n").expect("failed to write primary script");
+        fs::write(alternate.join("example.PSC"), "ScriptName ExampleV2\n")
+            .expect("failed to write alternate script");
+        let index = build_script_index(root.path(), &[]);
+
+        let diagnostics = conflicting_script_versions_in_index(&script, &index);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule, CONFLICTING_SCRIPT_VERSIONS_RULE);
+        assert!(diagnostics[0].message.contains("example.PSC"));
+    }
+
+    #[test]
+    fn conflicting_script_versions_in_index_matches_conflicting_script_versions() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        let alternate = root.path().join("source/scripts");
+        fs::create_dir_all(&primary).expect("failed to create primary root");
+        fs::create_dir_all(&alternate).expect("failed to create alternate root");
+        let script = write_file(&primary, "Example.psc");
+        fs::write(&script, "ScriptName Example\n").expect("failed to write primary script");
+        fs::write(alternate.join("Example.psc"), "ScriptName ExampleV2\n")
+            .expect("failed to write alternate script");
+        let index = build_script_index(root.path(), &[]);
+
+        assert_eq!(
+            conflicting_script_versions_in_index(&script, &index),
+            conflicting_script_versions(&script, root.path(), &[])
+        );
+    }
+
+    #[test]
+    fn conflicting_script_versions_in_index_ignores_unknown_file_names() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let index = build_script_index(root.path(), &[]);
+        let script = root.path().join("Untracked.psc");
+
+        assert!(conflicting_script_versions_in_index(&script, &index).is_empty());
     }
 
     #[test]
