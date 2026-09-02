@@ -33,6 +33,7 @@ pub mod numeric_comparison;
 pub mod operator_spacing;
 pub mod parameter_reassignment;
 pub mod property_sorting;
+pub mod repeated_getvalue;
 pub mod return_types;
 pub mod semicolon;
 pub mod short_wait_interval;
@@ -107,6 +108,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     magic_numbers::RULE,
     variable_used_before_assignment::RULE,
     native_function_usage::RULE,
+    repeated_getvalue::RULE,
 ];
 
 use serde::Serialize;
@@ -332,6 +334,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.native_function_usage {
         diagnostics.extend(native_function_usage::check(source));
+    }
+    if rules.repeated_getvalue {
+        diagnostics.extend(repeated_getvalue::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1039,6 +1044,12 @@ mod tests {
                 state_count::MULTIPLE_AUTO_STATES_RULE,
                 Config::default(),
                 config_with(|c| c.rules.multiple_auto_states = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If gv.GetValue() == 1.0\n    ElseIf gv.GetValue() == 2.0\n    EndIf\nEndFunction\n",
+                repeated_getvalue::RULE,
+                config_with(|c| c.rules.repeated_getvalue = true),
+                Config::default(),
             ),
         ];
 

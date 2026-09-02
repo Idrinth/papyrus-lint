@@ -87,6 +87,10 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags Waits and RegisterFor(Single)Update(GameTime) if the time is smaller than a configured amount.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Repeated GlobalVariable.GetValue() calls[/b][/td]
+[td]Flags GetValue() called on the same global more than once across an If/ElseIf chain's conditions, since it can be cached in a local variable instead. Disabled by default.[/td]
+[td][/td]
+[/tr]
 [/table]
 [b][size=4]Reliability[/size][/b]
 [table][tr][th]Lint[/th]
@@ -334,7 +338,8 @@ rules:
   conflicting_script_versions: true
   unused_disable: false
   magic_numbers: false
-  native_function_usage: false[/code]
+  native_function_usage: false
+  repeated_getvalue: false[/code]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

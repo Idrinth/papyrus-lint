@@ -96,6 +96,7 @@ apply.
 | **Forbidden/discouraged function usage** | Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. | |
 | **Slow function usage** | Flags calls to functions listed in `rules/slow-functions.yaml` that have a faster equivalent available, and suggests the quicker alternative. The fix replaces the complete call with that rule's supplied replacement, preserving the original argument where the replacement uses the `value` placeholder. | ✓ |
 | **Short wait/update interval** | Flags, as a `[warning]`, a call to `Utility.Wait`, `RegisterForUpdate`, `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` whose interval argument folds to a compile-time-constant number below the configurable `min_wait_interval` (default `0.1`), since an interval that short runs far more often than is typically useful and can add up to meaningful performance overhead. `Utility.Wait` is only matched when qualified by that literal script name, the same way the "Forbidden/discouraged function usage" lint treats native singletons; the `RegisterFor*` family matches unqualified or through any receiver. Only an argument built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. | |
+| **Repeated GlobalVariable.GetValue() calls** | Flags, as an `[info]`, a `GetValue()` call repeated on the same receiver across the conditions of a single `If`/`ElseIf` chain (e.g. `If gv.GetValue() == 1.0` / `ElseIf gv.GetValue() == 2.0`), since none of the chain's earlier branch bodies run before a later condition is evaluated, so the value can't have changed between those reads — it can be read into a local variable once ahead of the chain instead. Like "Slow function usage", a call's receiver can't generally be resolved back to a `GlobalVariable`-typed script, so this matches by the `GetValue` method name alone (case-insensitively, with no arguments); it's the only native method with that name (see `rules/native-methods.yaml`), so this doesn't misfire on unrelated types. Disabled by default, since a chain that reads the same global more than once is often written that way deliberately for readability and the performance cost is usually negligible outside a hot code path; a project opts in via `rules.repeated_getvalue`. | |
 
 ### Reliability
 
@@ -280,6 +281,7 @@ rules:
   unused_disable: false
   magic_numbers: false
   native_function_usage: false
+  repeated_getvalue: false
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -372,16 +374,18 @@ rules:
   that lint (and its automatic fix, if it has one) off entirely; every
   key under `rules` can be omitted individually and falls back to its
   default. Every key defaults to `true` except `property_sorting`,
-  `unchecked_form_parameter`, `unused_disable`, `magic_numbers`, and
-  `native_function_usage`, which default to `false`: reordering a script's
-  declared properties is a more invasive change than the rest of these
-  lints, many scripts intentionally accept a possibly-`None` Form and
-  defer the check to a caller or a later branch, reporting stale
-  suppressions is opt-in to avoid surprising existing projects, flagging
-  every literal number in an existing script all at once is likely to be
-  noisy until a project is ready for it, and plenty of mods intentionally
-  depend on SKSE/F4SE or another native extension and don't need to be
-  warned about it. The key names match the lints listed above:
+  `unchecked_form_parameter`, `unused_disable`, `magic_numbers`,
+  `native_function_usage`, and `repeated_getvalue`, which default to
+  `false`: reordering a script's declared properties is a more invasive
+  change than the rest of these lints, many scripts intentionally accept a
+  possibly-`None` Form and defer the check to a caller or a later branch,
+  reporting stale suppressions is opt-in to avoid surprising existing
+  projects, flagging every literal number in an existing script all at
+  once is likely to be noisy until a project is ready for it, plenty of
+  mods intentionally depend on SKSE/F4SE or another native extension and
+  don't need to be warned about it, and a chain that reads the same global
+  more than once is often written that way deliberately for readability.
+  The key names match the lints listed above:
   `trailing_whitespace`, `comma_spacing`, `forbidden_functions`,
   `formid_hex_notation`, `slow_functions`, `unused_getter`,
   `unused_property`, `semicolon`, `float_int_conversion`, `strict_boolean`,
@@ -393,7 +397,7 @@ rules:
   `identifier_casing`, `type_casing`, `named_arguments`, `operator_spacing`,
   `property_sorting`, `explicit_return`, `unchecked_form_parameter`,
   `unchecked_cast`, `unresolved_script`, `short_wait_interval`,
-  `magic_numbers`, and `native_function_usage`.
+  `magic_numbers`, `native_function_usage`, and `repeated_getvalue`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
