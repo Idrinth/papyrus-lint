@@ -28,6 +28,7 @@ pub mod named_arguments;
 pub mod none_form_usage;
 pub mod numeric_comparison;
 pub mod operator_spacing;
+pub mod parameter_reassignment;
 pub mod property_sorting;
 pub mod return_types;
 pub mod semicolon;
@@ -74,6 +75,7 @@ const KNOWN_RULE_IDS: &[&str] = &[
     unused_local_variable::RULE,
     none_form_usage::RULE,
     local_variable_shadowing::RULE,
+    parameter_reassignment::RULE,
     chain_whitespace::RULE,
     exclamation_spacing::RULE,
     identifier_casing::RULE,
@@ -221,6 +223,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.local_variable_shadowing {
         diagnostics.extend(local_variable_shadowing::check_with(source, external));
+    }
+    if rules.parameter_reassignment {
+        diagnostics.extend(parameter_reassignment::check(source));
     }
     if rules.function_override {
         diagnostics.extend(function_override::check_with(source, external));

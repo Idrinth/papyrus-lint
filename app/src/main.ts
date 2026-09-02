@@ -135,6 +135,7 @@ export interface LintRules {
   unused_local_variable: boolean;
   none_form_usage: boolean;
   local_variable_shadowing: boolean;
+  parameter_reassignment: boolean;
   chain_whitespace: boolean;
   exclamation_spacing: boolean;
   identifier_casing: boolean;
@@ -198,6 +199,7 @@ export const DEFAULT_RULES: LintRules = {
   unused_local_variable: true,
   none_form_usage: true,
   local_variable_shadowing: true,
+  parameter_reassignment: true,
   chain_whitespace: true,
   exclamation_spacing: true,
   identifier_casing: true,

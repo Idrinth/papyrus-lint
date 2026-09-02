@@ -40,6 +40,7 @@
 //!   unused_local_variable: true
 //!   none_form_usage: true
 //!   local_variable_shadowing: true
+//!   parameter_reassignment: true
 //!   chain_whitespace: true
 //!   exclamation_spacing: true
 //!   identifier_casing: true
@@ -267,6 +268,8 @@ pub struct Rules {
     pub none_form_usage: bool,
     /// The "Local variable shadowing" lint.
     pub local_variable_shadowing: bool,
+    /// The "Parameter reassignment" lint.
+    pub parameter_reassignment: bool,
     /// The "Whitespace interrupting property/method chaining" lint/fix.
     pub chain_whitespace: bool,
     /// The "Exclamation mark spacing" lint/fix.
@@ -336,6 +339,7 @@ impl Default for Rules {
             unused_local_variable: true,
             none_form_usage: true,
             local_variable_shadowing: true,
+            parameter_reassignment: true,
             chain_whitespace: true,
             exclamation_spacing: true,
             identifier_casing: true,
