@@ -115,6 +115,7 @@ export interface LintRules {
   trailing_whitespace: boolean;
   comma_spacing: boolean;
   forbidden_functions: boolean;
+  formid_hex_notation: boolean;
   slow_functions: boolean;
   unused_getter: boolean;
   unused_property: boolean;
@@ -178,6 +179,7 @@ export const DEFAULT_RULES: LintRules = {
   trailing_whitespace: true,
   comma_spacing: true,
   forbidden_functions: true,
+  formid_hex_notation: true,
   slow_functions: true,
   unused_getter: true,
   unused_property: true,
