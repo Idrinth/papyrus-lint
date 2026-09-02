@@ -308,7 +308,7 @@ jobs:
       MOD_ID: "189862"
     steps:
       - name: Download Nexus changelog
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: nexus-changelog
 
