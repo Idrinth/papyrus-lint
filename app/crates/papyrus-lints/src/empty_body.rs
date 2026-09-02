@@ -11,16 +11,18 @@
 //! of its own and isn't considered trivial.
 //!
 //! `If`/`ElseIf` branches are checked straight from the parsed AST, since
-//! an empty branch body is unambiguous there. An `Else` block isn't: the
-//! AST represents "no `Else` clause" and "an empty `Else` clause" the same
-//! way (an empty statement list), so that case is instead detected by
-//! scanning the token stream for an `Else` keyword directly followed (only
-//! whitespace/newlines between them) by `EndIf`.
+//! an empty branch body is unambiguous there. An `Else` block is too: the
+//! AST's `Stmt::If` records the line/column the `Else` keyword itself
+//! started on (`None` when there was no `Else` clause at all), which is
+//! what lets "no `Else` clause" be told apart from "an empty `Else`
+//! clause" — both leave `else_body` empty — without re-lexing the source.
 //!
-//! Like the other AST-based lints in this crate, a script that doesn't
-//! parse cleanly is simply left unchecked by the `While`/`If`/`ElseIf`
-//! checks; the `Else` check works from lexer tokens instead, so it still
-//! runs even then.
+//! A script that doesn't parse cleanly is simply left unchecked by the
+//! `While`/`If`/`ElseIf`/`Else` checks above, all of which run from the
+//! AST; as a fallback for that case only, the `Else` check also scans the
+//! token stream directly for an `Else` keyword immediately followed (only
+//! whitespace/newlines between them) by `EndIf`, so it still runs on a
+//! script that doesn't parse.
 
 use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, FunctionDecl, Literal, Script, Stmt};
 use papyrus_parser::lexer::Lexer;
@@ -35,14 +37,17 @@ pub const RULE: &str = "empty-body";
 /// `If`/`ElseIf`/`Else` bodies. Flagged as a `[warning]`, since this is
 /// almost always an oversight rather than something intentional.
 pub fn check(source: &str) -> Vec<Diagnostic> {
-    let mut diagnostics = empty_else_diagnostics(source);
+    let Ok(script) = papyrus_parser::parse(source) else {
+        // The AST can't tell an empty `Else` apart from no `Else` clause at
+        // all without parsing, so fall back to scanning tokens directly for
+        // this one case on a script that doesn't parse cleanly.
+        return empty_else_diagnostics(source);
+    };
 
-    if let Ok(script) = papyrus_parser::parse(source) {
-        for function in all_functions(&script) {
-            check_body(&function.body, &mut diagnostics);
-        }
+    let mut diagnostics = Vec::new();
+    for function in all_functions(&script) {
+        check_body(&function.body, &mut diagnostics);
     }
-
     diagnostics
 }
 
@@ -63,6 +68,8 @@ fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
             Stmt::If {
                 branches,
                 else_body,
+                else_line,
+                else_col,
                 ..
             } => {
                 for branch in branches {
@@ -77,6 +84,18 @@ fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
                         });
                     }
                     check_body(&branch.body, diagnostics);
+                }
+                if let (Some(line), Some(column)) = (else_line, else_col) {
+                    if else_body.is_empty() {
+                        diagnostics.push(Diagnostic {
+                            line: *line,
+                            column: *column,
+                            message: "[warning] Empty Else body; this looks like an oversight \
+                                      rather than something intentional"
+                                .to_string(),
+                            rule: RULE,
+                        });
+                    }
                 }
                 check_body(else_body, diagnostics);
             }
@@ -163,10 +182,9 @@ fn is_numeric_literal(expr: &Expr) -> bool {
     )
 }
 
-/// Scans `source`'s lexer tokens for an `Else` keyword immediately followed
-/// (modulo newlines) by `EndIf`, which is the only way an `Else` clause can
-/// be distinguished from no `Else` clause at all: the parsed AST represents
-/// both as an empty statement list.
+/// Fallback for a script that doesn't parse cleanly (see [`check`]): scans
+/// `source`'s lexer tokens directly for an `Else` keyword immediately
+/// followed (modulo newlines) by `EndIf`.
 fn empty_else_diagnostics(source: &str) -> Vec<Diagnostic> {
     let Ok(tokens) = Lexer::new(source).tokenize() else {
         return Vec::new();

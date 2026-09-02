@@ -169,6 +169,7 @@ fn check_body(
                 branches,
                 else_body,
                 line,
+                ..
             } => {
                 for IfBranch {
                     condition, body, ..

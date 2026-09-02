@@ -128,6 +128,7 @@ impl Parser {
 
     pub fn parse_script(&mut self) -> PResult<Script> {
         self.skip_newlines();
+        let line = self.current().line;
         self.expect_keyword(Keyword::ScriptName)?;
         let name = self.expect_identifier()?;
 
@@ -162,6 +163,7 @@ impl Parser {
             variables: Vec::new(),
             functions: Vec::new(),
             states: Vec::new(),
+            line,
         };
 
         loop {
@@ -576,12 +578,15 @@ impl Parser {
             });
         }
 
-        let else_body = if self.at_keyword(Keyword::Else) {
+        let (else_body, else_line, else_col) = if self.at_keyword(Keyword::Else) {
+            let else_line = self.current().line;
+            let else_col = self.current().col;
             self.advance();
             self.expect_terminator()?;
-            self.parse_block(&[Keyword::EndIf])?
+            let body = self.parse_block(&[Keyword::EndIf])?;
+            (body, Some(else_line), Some(else_col))
         } else {
-            Vec::new()
+            (Vec::new(), None, None)
         };
 
         self.expect_keyword(Keyword::EndIf)?;
@@ -590,6 +595,8 @@ impl Parser {
         Ok(Stmt::If {
             branches,
             else_body,
+            else_line,
+            else_col,
             line,
         })
     }
