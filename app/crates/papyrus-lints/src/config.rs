@@ -20,6 +20,7 @@
 //!   trailing_whitespace: true
 //!   comma_spacing: true
 //!   forbidden_functions: true
+//!   formid_hex_notation: true
 //!   slow_functions: true
 //!   unused_getter: true
 //!   unused_property: true
@@ -229,6 +230,8 @@ pub struct Rules {
     pub comma_spacing: bool,
     /// The "Forbidden/discouraged function usage" lint.
     pub forbidden_functions: bool,
+    /// The "FormID hex notation" lint.
+    pub formid_hex_notation: bool,
     /// The "Slow function usage" lint.
     pub slow_functions: bool,
     /// The "Getter usage without saving result" lint.
@@ -322,6 +325,7 @@ impl Default for Rules {
             trailing_whitespace: true,
             comma_spacing: true,
             forbidden_functions: true,
+            formid_hex_notation: true,
             slow_functions: true,
             unused_getter: true,
             unused_property: true,
@@ -461,6 +465,7 @@ mod tests {
         assert!(config.rules.trailing_whitespace);
         assert!(config.rules.comma_spacing);
         assert!(config.rules.forbidden_functions);
+        assert!(config.rules.formid_hex_notation);
         assert!(config.rules.slow_functions);
         assert!(config.rules.unused_getter);
         assert!(config.rules.unused_property);

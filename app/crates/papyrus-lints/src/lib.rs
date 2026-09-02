@@ -18,6 +18,7 @@ pub mod exclamation_spacing;
 pub mod explicit_return;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
+pub mod formid_hex_notation;
 pub mod fragment_code;
 pub mod function_override;
 pub mod goto_state;
@@ -55,6 +56,7 @@ const KNOWN_RULE_IDS: &[&str] = &[
     trailing_whitespace::RULE,
     comma_spacing::RULE,
     forbidden_functions::RULE,
+    formid_hex_notation::RULE,
     slow_functions::RULE,
     unused_getter::RULE,
     unused_property::RULE,
@@ -192,6 +194,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.slow_functions {
         diagnostics.extend(slow_functions::check(source));
+    }
+    if rules.formid_hex_notation {
+        diagnostics.extend(formid_hex_notation::check(source));
     }
     if rules.unused_getter {
         diagnostics.extend(unused_getter::check(source));
@@ -872,6 +877,12 @@ mod tests {
                 short_wait_interval::RULE,
                 Config::default(),
                 config_with(|c| c.rules.short_wait_interval = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Actor akActor)\n    If akActor.GetFormID() == 76935\n    EndIf\nEndFunction\n",
+                formid_hex_notation::RULE,
+                Config::default(),
+                config_with(|c| c.rules.formid_hex_notation = false),
             ),
             (
                 "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nState Loud\n    Function Greet(Int name)\n    EndFunction\nEndState\n",
