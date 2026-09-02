@@ -45,6 +45,7 @@ EndFunction
         branches,
         else_body,
         line,
+        ..
     } = &body[0]
     else {
         panic!("expected an if statement inside the loop");

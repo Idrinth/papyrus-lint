@@ -287,7 +287,16 @@ so downstream tooling can tell a hex-written literal apart from a decimal
 one without re-scanning the original source text; `papyrus-lints`'
 `formid-hex-notation` lint reads the same distinction off the lexer's
 `TokenKind::IntLiteral` tokens directly, since it works on tokens rather
-than the parsed AST.
+than the parsed AST. The parsed `Script` also records the line its
+`ScriptName` keyword starts on, and a parsed `Stmt::If` records the
+line/column its `Else` keyword starts on (`None` when it has no `Else`
+clause at all, distinguishing that from an empty `Else` clause, which both
+leave `else_body` empty) — so `papyrus-lints`' `property-sorting` and
+`empty-body` lints can read that information straight off the AST instead
+of re-lexing the source, on a script that parses cleanly at all;
+`empty-body`'s `Else` check still falls back to scanning tokens directly
+when the script doesn't parse, since that's the only way it can still run
+then.
 
 `app/crates/papyrus-lints` currently implements all rules listed in the
 [README's Implemented Lints table](README.md#implemented-lints). Rules inspect

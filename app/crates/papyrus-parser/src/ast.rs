@@ -21,6 +21,11 @@ pub struct Script {
     pub variables: Vec<VariableDecl>,
     pub functions: Vec<FunctionDecl>,
     pub states: Vec<StateDecl>,
+    /// The line the `ScriptName` keyword itself starts on. Lets downstream
+    /// tooling (see `property-sorting` in `papyrus-lints`) locate the
+    /// `ScriptName` declaration without re-scanning the original source
+    /// text for it.
+    pub line: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -106,6 +111,14 @@ pub enum Stmt {
     If {
         branches: Vec<IfBranch>,
         else_body: Vec<Stmt>,
+        /// The line and column the `Else` keyword itself starts on, when
+        /// this `If` has an `Else` clause; `None` when it has none. Both
+        /// "no `Else` clause" and "an empty `Else` clause" leave
+        /// `else_body` empty, so this is what lets downstream tooling (see
+        /// `empty-body` in `papyrus-lints`) tell them apart without
+        /// re-lexing the source.
+        else_line: Option<usize>,
+        else_col: Option<usize>,
         line: usize,
     },
     While {

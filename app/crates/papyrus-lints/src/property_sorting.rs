@@ -23,8 +23,6 @@
 use std::collections::BTreeSet;
 
 use papyrus_parser::ast::{PropertyDecl, Script};
-use papyrus_parser::lexer::Lexer;
-use papyrus_parser::token::{Keyword, TokenKind};
 
 use crate::Diagnostic;
 
@@ -93,9 +91,7 @@ pub fn repair(source: &str) -> String {
     let Ok(script) = papyrus_parser::parse(source) else {
         return source.to_string();
     };
-    let Some(scriptname_line) = scriptname_line(source) else {
-        return source.to_string();
-    };
+    let scriptname_line = script.line;
 
     let lines: Vec<&str> = source.lines().collect();
     let chunks = line_chunks(source);
@@ -193,15 +189,6 @@ fn display_type(property: &PropertyDecl) -> String {
     } else {
         property.type_name.name.clone()
     }
-}
-
-/// The line the `ScriptName` keyword itself is declared on.
-fn scriptname_line(source: &str) -> Option<usize> {
-    let tokens = Lexer::new(source).tokenize().ok()?;
-    tokens
-        .iter()
-        .find(|token| matches!(token.kind, TokenKind::Keyword(Keyword::ScriptName)))
-        .map(|token| token.line)
 }
 
 /// Whether `line` (with no line ending, as returned by [`str::lines`]) is
