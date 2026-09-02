@@ -45,6 +45,22 @@ struct ProjectFile {
     /// output.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     compile_check: bool,
+    /// Whether the CLI resolves cross-script lookups among an `.achlist`'s
+    /// own entries by registering each listed `.psc` directly (see
+    /// `FunctionTable::with_known_scripts`) instead of treating every listed
+    /// entry's parent directory as an additional script root. `false` by
+    /// default, which preserves the resolution and diagnostics an achlist
+    /// project may already depend on: an unlisted sibling script sitting in
+    /// the same non-conventional directory as a listed one still resolves,
+    /// and `conflicting_script_versions` still scans every such directory
+    /// rather than just the achlist's other listed entries. `true` instead
+    /// scopes resolution (and `conflicting_script_versions`) strictly to the
+    /// achlist's own listed entries — dramatically faster, and immune to
+    /// unlisted files leaking in, on a large achlist whose entries are
+    /// spread across many directories (see #311) — but requires every
+    /// `.psc` an achlist's listed entries depend on to be listed itself.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    strict_achlist_scope: bool,
     #[serde(flatten)]
     lint: papyrus_lints::Config,
 }
@@ -99,6 +115,13 @@ const FIELD_COMMENTS: &[(&str, &str)] = &[
          # directory) as part of linting a dropped .psc, reporting its errors\n\
          # alongside the lint engine's own. Requires compiler_path to be set/\n\
          # auto-detected",
+    ),
+    (
+        "strict_achlist_scope",
+        "# true, false; scopes cross-script resolution and conflicting-script-versions\n\
+         # to exactly an achlist's own listed entries instead of every directory they\n\
+         # live in. Much faster on achlists spread across many directories, but every\n\
+         # .psc a listed entry depends on must itself be listed",
     ),
     ("semicolon", "# true, false"),
     ("indentation", "# tab, space"),
@@ -169,7 +192,8 @@ pub fn initialize_default_config(dir: &Path) -> Result<PathBuf, String> {
     let lint_yaml = papyrus_lints::config::to_yaml(&papyrus_lints::Config::default())
         .map_err(|err| err.to_string())?;
     let yaml = format!(
-        "compiler_path: null\nadditional_script_roots: []\ncompile_check: false\n{lint_yaml}"
+        "compiler_path: null\nadditional_script_roots: []\ncompile_check: false\n\
+         strict_achlist_scope: false\n{lint_yaml}"
     );
     let mut file = OpenOptions::new()
         .write(true)
@@ -247,6 +271,16 @@ pub fn save_compile_check(dir: &Path, enabled: bool) -> Result<(), String> {
     let mut project = load_project_file(dir)?;
     project.compile_check = enabled;
     save_project_file(dir, &project)
+}
+
+/// Reads `dir`'s papyrus-lint config file and returns whether it scopes
+/// cross-script resolution/`conflicting_script_versions` strictly to an
+/// `.achlist`'s own listed entries, rather than treating every listed
+/// entry's parent directory as a generic search root. `false` (the
+/// default, preserving the resolution an achlist project may already
+/// depend on) if `dir` has no config file or doesn't set the key.
+pub fn load_strict_achlist_scope(dir: &Path) -> Result<bool, String> {
+    Ok(load_project_file(dir)?.strict_achlist_scope)
 }
 
 /// Reads `dir`'s papyrus-lint config file and returns the additional script
@@ -613,6 +647,37 @@ mod tests {
         let contents = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
             .expect("failed to read saved config file");
         assert!(!contents.contains("compile_check"));
+    }
+
+    #[test]
+    fn load_strict_achlist_scope_defaults_to_false_when_unset() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert!(!load_strict_achlist_scope(dir.path()).expect("should succeed"));
+    }
+
+    #[test]
+    fn load_strict_achlist_scope_reads_the_configured_value() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(
+            dir.path(),
+            "papyrus-lint.yaml",
+            "strict_achlist_scope: true\n",
+        );
+
+        assert!(load_strict_achlist_scope(dir.path()).expect("should succeed"));
+    }
+
+    #[test]
+    fn saved_config_omits_strict_achlist_scope_when_disabled() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        save_config(dir.path(), &papyrus_lints::Config::default())
+            .expect("saving lint config should succeed");
+
+        let contents = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+            .expect("failed to read saved config file");
+        assert!(!contents.contains("strict_achlist_scope"));
     }
 
     #[test]
