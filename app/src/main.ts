@@ -626,6 +626,7 @@ export async function repairPscFile(path: string): Promise<Diagnostic[]> {
 // app/crates/papyrus-lints/src/lib.rs.
 const FIXABLE_RULE_IDS = new Set([
   "identifier-casing",
+  "slow-functions",
   "semicolon",
   "indentation",
   "property-sorting",

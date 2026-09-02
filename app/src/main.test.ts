@@ -223,6 +223,12 @@ describe("isFixableFinding", () => {
     );
   });
 
+  it("is true for a slow-function finding", () => {
+    expect(
+      isFixableFinding({ line: 1, column: 1, message: "[info] use the faster call", rule: "slow-functions" }),
+    ).toBe(true);
+  });
+
   it("is false for a finding whose rule has no automatic fix", () => {
     expect(
       isFixableFinding({ line: 1, column: 1, message: "[error] forbidden function used", rule: "forbidden-functions" }),

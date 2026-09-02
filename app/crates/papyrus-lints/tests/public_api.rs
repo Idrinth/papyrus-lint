@@ -2,7 +2,7 @@
 
 use papyrus_lints::{
     argument_types::{ExternalSignatures, ParamInfo},
-    lint, lint_with_external_arguments, repair, Config, Diagnostic,
+    lint, lint_with_external_arguments, repair, repair_filtered, Config, Diagnostic,
 };
 use papyrus_parser::ast::TypeName;
 
@@ -38,6 +38,21 @@ fn repair_is_idempotent_and_clears_fixable_diagnostics() {
             "trailing-whitespace" | "comma-spacing" | "identifier-casing"
         )
     }));
+}
+
+#[test]
+fn slow_functions_works_through_the_filtered_public_api() {
+    let source = "ScriptName Example\n\nFunction Run(GlobalVariable Value)\n    Value.SetValueInt(3)\nEndFunction\n";
+
+    let repaired = repair_filtered(source, &Config::default(), Some("slow-functions"));
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example\n\nFunction Run(GlobalVariable Value)\n    Value.SetValue(3 As Float)\nEndFunction\n"
+    );
+    assert!(lint(&repaired, &Config::default())
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "slow-functions"));
 }
 
 #[test]
@@ -337,6 +352,7 @@ fn disabling_all_fixable_rules_makes_public_repair_a_noop() {
     config.rules.identifier_casing = false;
     config.rules.type_casing = false;
     config.rules.property_sorting = false;
+    config.rules.slow_functions = false;
     let source = "ScriptName my_script  ;\n\nFunction run(Int left,Int right)  ;\n  If !ready&&left==right  ;\n  value . Call(left,right)  ;\n  EndIf  ;\nEndFunction  ;\n";
 
     assert_eq!(repair(source, &config), source);
