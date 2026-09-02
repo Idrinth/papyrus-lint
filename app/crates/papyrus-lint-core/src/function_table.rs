@@ -12,6 +12,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use serde::Serialize;
 
@@ -20,7 +21,7 @@ use papyrus_parser::ast::{FunctionDecl, PropertyDecl, Script, TypeName};
 
 use crate::source_encoding::read_psc_source;
 
-use crate::script_locator::find_psc_file;
+use crate::script_locator::{find_psc_file, find_psc_file_in_index, ScriptIndex};
 
 /// The parameters (name and type) and return type of a single function, as
 /// declared on a script.
@@ -159,10 +160,10 @@ impl ScriptFunctions {
 /// by object (script) type name.
 ///
 /// Each type name is resolved to a `.psc` file at most once: the file is
-/// located with [`find_psc_file`], parsed, and its function signatures
-/// (along with its `Extends` parent) are cached. A type that can't be
-/// found or fails to parse is cached as unresolved so repeated lookups
-/// don't retry the filesystem or parser.
+/// located from a supplied index or with [`find_psc_file`], parsed, and its
+/// function signatures (along with its `Extends` parent) are cached. A type
+/// that can't be found or fails to parse is cached as unresolved so repeated
+/// lookups don't retry the filesystem or parser.
 pub struct FunctionTable {
     root: PathBuf,
     additional_roots: Vec<String>,
@@ -177,6 +178,10 @@ pub struct FunctionTable {
     /// list of paths (e.g. an `.achlist`'s own entries). `None` (the
     /// default) preserves ordinary directory-based resolution instead.
     known_scripts: Option<HashMap<String, PathBuf>>,
+    /// Snapshot of ordinary directory-based resolution, when the caller has
+    /// already scanned the search roots. Unlike `known_scripts`, this does
+    /// not change resolution scope; it only avoids repeating directory reads.
+    script_index: Option<Arc<ScriptIndex>>,
     scripts: HashMap<String, Option<ScriptFunctions>>,
 }
 
@@ -198,6 +203,7 @@ impl FunctionTable {
             root,
             additional_roots: Vec::new(),
             known_scripts: None,
+            script_index: None,
             scripts: HashMap::new(),
         }
     }
@@ -210,6 +216,7 @@ impl FunctionTable {
             root,
             additional_roots,
             known_scripts: None,
+            script_index: None,
             scripts: HashMap::new(),
         }
     }
@@ -241,6 +248,13 @@ impl FunctionTable {
                 .or_insert_with(|| path.clone());
         }
         self.known_scripts = Some(known);
+        self
+    }
+
+    /// Reuses a snapshot of the table's normal search directories for O(1)
+    /// name lookup while preserving their first-match-wins resolution order.
+    pub fn with_script_index(mut self, index: Arc<ScriptIndex>) -> Self {
+        self.script_index = Some(index);
         self
     }
 
@@ -473,7 +487,10 @@ impl FunctionTable {
         let name_lower = type_name.to_ascii_lowercase();
         let found = match &self.known_scripts {
             Some(known) => known.contains_key(&name_lower),
-            None => find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some(),
+            None => match &self.script_index {
+                Some(index) => find_psc_file_in_index(index, &name_lower).is_some(),
+                None => find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some(),
+            },
         };
         found || crate::native_globals::is_known(&name_lower)
     }
@@ -503,7 +520,10 @@ impl FunctionTable {
         // has to do the same explicitly here.
         let resolved_path = match &self.known_scripts {
             Some(known) => known.get(&name_lower.to_ascii_lowercase()).cloned(),
-            None => find_psc_file(&self.root, name_lower, &self.additional_roots),
+            None => match &self.script_index {
+                Some(index) => find_psc_file_in_index(index, name_lower),
+                None => find_psc_file(&self.root, name_lower, &self.additional_roots),
+            },
         };
 
         let script = resolved_path
@@ -726,6 +746,29 @@ mod tests {
             .lookup_function("Shared", "DoThing")
             .expect("function should be found via the additional root");
         assert_eq!(signature.name, "DoThing");
+    }
+
+    #[test]
+    fn with_script_index_resolves_without_searching_the_configured_roots() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let indexed_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let indexed_path = indexed_dir.path().join("Shared.psc");
+        fs::write(
+            &indexed_path,
+            "ScriptName Shared\n\nInt Function DoThing()\nEndFunction\n",
+        )
+        .expect("failed to write indexed script");
+        let index = Arc::new(HashMap::from([(
+            "shared.psc".to_string(),
+            vec![indexed_path],
+        )]));
+
+        let mut table =
+            FunctionTable::new(root.path().join("nonexistent")).with_script_index(index);
+
+        assert!(table.script_exists("SHARED"));
+        assert!(table.lookup_function("Shared", "DoThing").is_some());
+        assert!(!table.script_exists("Missing"));
     }
 
     #[test]

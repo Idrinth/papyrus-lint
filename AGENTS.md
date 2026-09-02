@@ -342,8 +342,9 @@ such directory in full, which got expensive on a modlist-sized achlist
 [#311](https://github.com/Idrinth/papyrus-lint/issues/311)). The CLI avoids
 repeating that scan once per listed script by building a
 `script_locator::ScriptIndex` (`build_script_index`) — a one-time map from
-each directory's file names to their paths — up front, then checking every
-script against it via `conflicting_script_versions_in_index` instead of
+each directory's file names to their paths — up front, then using it both
+for cross-script name resolution and to check every script via
+`conflicting_script_versions_in_index` instead of
 calling `conflicting_script_versions` (which scans afresh on every call)
 per script; the desktop app's single-file `lint_psc_file`/`repair_psc_file`
 commands still call `conflicting_script_versions` directly, since they
