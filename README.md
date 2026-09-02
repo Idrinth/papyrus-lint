@@ -244,6 +244,7 @@ rules:
   unreachable_statement: true
   static_condition: true
   division_by_zero: true
+  empty_body: true
   unused_local_variable: true
   variable_used_before_assignment: true
   none_form_usage: true
@@ -259,6 +260,7 @@ rules:
   explicit_return: true
   unchecked_form_parameter: false
   unchecked_cast: true
+  useless_downcast: true
   unresolved_script: true
   short_wait_interval: true
   state_function_signature: true

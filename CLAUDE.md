@@ -413,5 +413,8 @@ change and verify that the two files remain identical.
 Whenever the documented lints in `README.md` are updated, make the corresponding
 lint update to `nexuspage.bbcode` in the same change. Preserve the Nexus page's
 existing style: keep its lint descriptions shorter and more concise than the
-README rather than copying the README's longer explanations verbatim. Other
-README changes do not need to be synchronized to the Nexus page.
+README rather than copying the README's longer explanations verbatim. Whenever
+the CLI usage examples/options or the documented default configuration in
+`README.md` are updated, make the corresponding update to the CLI or
+configuration section of `nexuspage.bbcode` in the same change. Other README
+changes do not need to be synchronized to the Nexus page.
