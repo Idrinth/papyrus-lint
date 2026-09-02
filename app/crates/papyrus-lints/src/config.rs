@@ -65,24 +65,27 @@
 //!   conflicting_script_versions: true
 //!   magic_numbers: false
 //!   native_function_usage: false
+//!   global_variable_setvalue: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
 //! disable that lint (and its automatic fix, if it has one) entirely. As
 //! with the top-level keys, `rules` and any key within it may be omitted
 //! and falls back to its default. `property_sorting`,
-//! `unchecked_form_parameter`, `magic_numbers`, and `native_function_usage`
-//! are the exceptions: they default to `false`. `property_sorting`
-//! reorders a script's declared properties, a more invasive change than
-//! the rest of these rules; `unchecked_form_parameter` defaults off
-//! because many scripts intentionally accept a possibly-`None` Form and
-//! defer the check to a caller or a later branch; `magic_numbers` defaults
-//! off because many existing scripts contain plenty of unremarkable
-//! literal numbers a project may not want flagged all at once;
-//! `native_function_usage` defaults off because plenty of mods
+//! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`, and
+//! `global_variable_setvalue` are the exceptions: they default to `false`.
+//! `property_sorting` reorders a script's declared properties, a more
+//! invasive change than the rest of these rules; `unchecked_form_parameter`
+//! defaults off because many scripts intentionally accept a possibly-`None`
+//! Form and defer the check to a caller or a later branch; `magic_numbers`
+//! defaults off because many existing scripts contain plenty of
+//! unremarkable literal numbers a project may not want flagged all at
+//! once; `native_function_usage` defaults off because plenty of mods
 //! intentionally depend on SKSE/F4SE or another native extension and don't
-//! need to be warned about it. All four need a project to opt in
-//! explicitly.
+//! need to be warned about it; `global_variable_setvalue` defaults off
+//! since its heuristic `Else`-branch check can't actually prove the write
+//! it flags is redundant, only that the branch never checked. All five need
+//! a project to opt in explicitly.
 
 use std::fmt;
 
@@ -352,6 +355,11 @@ pub struct Rules {
     /// [`Self::magic_numbers`], this defaults to `false`: see
     /// [`crate::native_function_usage`].
     pub native_function_usage: bool,
+    /// The "GlobalVariable no-op write" lint. Like [`Self::property_sorting`],
+    /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`], and
+    /// [`Self::native_function_usage`], this defaults to `false`: see
+    /// [`crate::global_variable_setvalue`].
+    pub global_variable_setvalue: bool,
 }
 
 impl Default for Rules {
@@ -404,6 +412,7 @@ impl Default for Rules {
             unused_disable: false,
             magic_numbers: false,
             native_function_usage: false,
+            global_variable_setvalue: false,
         }
     }
 }
@@ -556,6 +565,9 @@ mod tests {
         // SKSE/F4SE or another native extension and don't need to be
         // warned about it.
         assert!(!config.rules.native_function_usage);
+        // Also disabled by default: its Else-branch check is a heuristic,
+        // not a proof the flagged write is actually redundant.
+        assert!(!config.rules.global_variable_setvalue);
     }
 
     #[test]
