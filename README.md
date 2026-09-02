@@ -410,6 +410,8 @@ line.
 
 ## Command-line interface
 
+![Papyrus Lint CLI example](resources/papyrus-lint-cli.png)
+
 Besides its GUI, Papyrus Lint can lint non-interactively from the
 command line two ways: by passing an `.achlist` (or a single `.psc`) path
 to the desktop app's own executable (`PapyrusLinter`), or via the
@@ -432,6 +434,7 @@ PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
 PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
 PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
 PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
+PapyrusLinterCLI --short-paths path/to/project.achlist
 PapyrusLinterCLI --color never path/to/project.achlist
 ```
 
@@ -482,6 +485,12 @@ whichever `--json` selects — is written to `<path>` instead of stdout, so
 it can be stored directly without piping the command's output to a file.
 Usage/error text still goes to stderr either way, and the exit status is
 unaffected.
+
+Given `--short-paths` (combinable with `fix`/`--json`/`--config`/
+`--script-root`/`--output`, in any argument order), each script's path in
+the report has the project root stripped from its beginning, the same way
+the desktop app shortens paths in its own results list; a path that isn't
+under the project root is left unchanged.
 
 Given `--color <auto|always|never>` (default `auto`, combinable with every
 flag above), the plain-text report's diagnostic locations, rule tags, and
