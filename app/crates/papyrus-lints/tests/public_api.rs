@@ -2,8 +2,8 @@
 
 use papyrus_lints::{
     argument_types::{ExternalSignatures, ParamInfo},
-    lint, lint_with_external_arguments, repair, repair_filtered, Config, Diagnostic,
-    FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
+    lint, lint_with_external_arguments, repair, repair_filtered, restrict_to_line, Config,
+    Diagnostic, FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
 };
 use papyrus_parser::ast::TypeName;
 use std::collections::HashSet;
@@ -108,6 +108,28 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "filtered repair failed for {rule}"
         );
     }
+}
+
+#[test]
+fn line_restricted_public_repair_changes_only_the_requested_line() {
+    let source = "Call(1,2)  \r\nCall(3,4)  \r\nCall(5,6)  \r\n";
+    let repaired = repair_filtered(source, &Config::default(), Some("comma-spacing"));
+
+    assert_eq!(
+        restrict_to_line(source, &repaired, 2),
+        Some("Call(1,2)  \r\nCall(3, 4)  \r\nCall(5,6)  \r\n".to_string())
+    );
+}
+
+#[test]
+fn line_restricted_public_repair_rejects_a_line_relocating_fix() {
+    let mut config = Config::default();
+    config.rules.property_sorting = true;
+    let source = "ScriptName Example\n\nInt Property Zulu Auto\nActor Property Alpha Auto\n";
+    let repaired = repair_filtered(source, &config, Some("property-sorting"));
+
+    assert_ne!(source.lines().count(), repaired.lines().count());
+    assert_eq!(restrict_to_line(source, &repaired, 3), None);
 }
 
 #[test]
