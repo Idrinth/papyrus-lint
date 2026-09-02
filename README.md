@@ -410,6 +410,8 @@ PapyrusLinterCLI init
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
+PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
+PapyrusLinterCLI fix --line 12 --type trailing-whitespace path/to/Example.psc
 PapyrusLinterCLI --json path/to/project.achlist
 PapyrusLinterCLI --json fix path/to/project.achlist
 PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
@@ -477,6 +479,22 @@ indentation settings) to each resolved script first, rewriting a script on
 disk only if it changed, before reporting whatever diagnostics remain the
 same way — the same repair the desktop app's "Fix" button applies to a
 single script.
+
+`fix` also accepts `--type <rule-id>` to apply only that one automatic fix
+instead of every enabled one, and `--line <n>` to further restrict
+whichever fix(es) run to just that 1-indexed line, leaving every other
+line untouched — useful for an editor that wants to fix just the issue
+under the cursor rather than the whole file. The rule id matches the one
+in `[<rule>]`/`"rule"` in the plain-text or JSON report (e.g.
+`trailing-whitespace`); `_` and `-` are interchangeable and matching is
+case-insensitive, so `--type trailing_whitespace` also works. Both flags
+are only valid alongside `fix` and can be combined. `--type` errors out on
+a rule id that doesn't exist, or that exists but has no automatic fix
+(e.g. `forbidden-functions`, which can only be reported); `--line` errors
+out if applying the selected fix(es) would change the file's line count
+(e.g. `property-sorting` relocating a property's declaration), since a
+single original line number no longer identifies the same line in the
+result in that case.
 
 Given the `--json` flag (combinable with `fix`, in either argument order),
 the CLI prints a single JSON document to stdout instead of the plain-text
