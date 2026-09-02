@@ -229,3 +229,67 @@ fn public_diagnostics_have_valid_locations_and_severity_tags() {
         );
     }
 }
+
+#[test]
+fn raw_source_rules_still_report_when_the_script_does_not_parse() {
+    let source = "ScriptName Example\n\nFunction Broken(\n    Call(1,2)  \n";
+
+    let diagnostics = lint(source, &Config::default());
+
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.line == 4 && diagnostic.rule == "comma-spacing"));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| { diagnostic.line == 4 && diagnostic.rule == "trailing-whitespace" }));
+}
+
+#[test]
+fn yaml_rule_switches_gate_both_public_lint_and_repair() {
+    let config: Config = serde_yaml::from_str(
+        "rules:\n  comma_spacing: false\n  trailing_whitespace: false\n  identifier_casing: false\n",
+    )
+    .unwrap();
+    let source = "Function run(Int left,Int right)  \nEndFunction\n";
+
+    let diagnostics = lint(source, &config);
+
+    assert!(diagnostics.iter().all(|diagnostic| {
+        !matches!(
+            diagnostic.rule,
+            "comma-spacing" | "trailing-whitespace" | "identifier-casing"
+        )
+    }));
+    assert_eq!(repair(source, &config), source);
+}
+
+#[test]
+fn public_repair_preserves_generated_fragment_wrapper_lines() {
+    let source = ";BEGIN FRAGMENT CODE - generated  \nFunction Fragment_0(Int left,Int right)  \n;BEGIN CODE\nCall(left,right)  \n;END CODE\nEndFunction  \n;END FRAGMENT CODE  \n";
+
+    let repaired = repair(source, &Config::default());
+
+    assert_eq!(
+        repaired,
+        ";BEGIN FRAGMENT CODE - generated  \nFunction Fragment_0(Int left,Int right)  \n;BEGIN CODE\n\tCall(left, right)\n;END CODE\nEndFunction  \n;END FRAGMENT CODE  \n"
+    );
+    let diagnostics = lint(&repaired, &Config::default());
+    assert!(diagnostics.iter().all(|diagnostic| {
+        diagnostic.line != 4
+            || !matches!(
+                diagnostic.rule,
+                "comma-spacing" | "trailing-whitespace" | "indentation"
+            )
+    }));
+}
+
+#[test]
+fn disable_rule_ids_are_case_insensitive_and_accept_a_list() {
+    let source = "ScriptName Example\n\nFunction Run(Int left,Int right) ; @disable COMMA-SPACING, identifier-CASING\nEndFunction\n";
+
+    let diagnostics = lint(source, &Config::default());
+
+    assert!(diagnostics.iter().all(|diagnostic| {
+        diagnostic.line != 3 || !matches!(diagnostic.rule, "comma-spacing" | "identifier-casing")
+    }));
+}
