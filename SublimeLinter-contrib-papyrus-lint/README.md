@@ -16,23 +16,20 @@ Papyrus syntax package installed in Sublime Text.
    [Package Control](https://packagecontrol.io) (search for
    `SublimeLinter-contrib-papyrus-lint`) or by cloning/copying this
    directory into your Sublime Text `Packages` directory.
-4. Make sure `PapyrusLinterCLI` (or `PapyrusLinterCLI.exe` on Windows) is on
-   your `PATH`, or configure the installed desktop app's `PapyrusLinter`
-   executable as described below. You can build the standalone CLI from this
-   repository or download it from
-   [the releases page](https://github.com/Idrinth/papyrus-lint/releases) —
-   or via `cargo build --release --manifest-path
-   app/crates/papyrus-lint-cli/Cargo.toml` in this repository.
+4. The plugin automatically downloads and caches the platform-specific
+   `PapyrusLinterCLI` from the GitHub release matching the plugin version. To
+   use a locally installed CLI or desktop app executable instead, configure
+   it as described below.
 
 ## Settings
 
 - [SublimeLinter settings](http://www.sublimelinter.com/en/stable/settings.html)
 - [Linter settings](http://www.sublimelinter.com/en/stable/linter_settings.html)
 
-By default, the linter runs `PapyrusLinterCLI` from your `PATH`. Its standard
-`executable` setting can instead select either a standalone CLI at another
-location or the desktop app's `PapyrusLinter` executable; both lint and fix
-commands honor this setting:
+By default, the linter downloads its matching release CLI on first use and
+reuses the copy in Sublime Text's cache. Its standard `executable` setting can
+instead select either a standalone CLI at another location or the desktop
+app's `PapyrusLinter` executable; both lint and fix commands honor this setting:
 
 ```json
 {

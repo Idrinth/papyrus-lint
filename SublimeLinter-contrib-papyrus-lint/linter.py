@@ -3,7 +3,10 @@
 import json
 import re
 
+import sublime
+
 from SublimeLinter.lint import Linter, LintMatch, PermanentError
+from .cli_download import ensure_release_cli
 
 # Strips a diagnostic message's leading "[error]"/"[warning]"/"[info]" tag
 # (see app/crates/papyrus-lints/src/lib.rs Diagnostic::level) before it's shown
@@ -45,7 +48,9 @@ class PapyrusLint(Linter):
         static `cmd` tuple, which would leave a stray empty argument when
         unset.
         """
-        executable = self.settings.get('executable') or self.executable
+        executable = self.settings.get('executable') or ensure_release_cli(
+            sublime.cache_path()
+        )
         command = [executable, '--json']
         config_path = (self.settings.get('config_path') or '').strip()
         if config_path:

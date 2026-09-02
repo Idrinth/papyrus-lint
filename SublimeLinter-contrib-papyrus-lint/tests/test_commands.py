@@ -23,19 +23,27 @@ def load_commands_module(settings=None):
     sublime = types.ModuleType('sublime')
     sublime.error_message = Mock()
     sublime.load_settings = Mock(return_value=settings)
+    sublime.cache_path = Mock(return_value='/cache')
 
     sublime_plugin = types.ModuleType('sublime_plugin')
     sublime_plugin.TextCommand = FakeTextCommand
+    plugin_package = types.ModuleType('papyrus_lint_plugin')
+    plugin_package.__path__ = [str(PLUGIN_ROOT)]
 
     with patch.dict(
         sys.modules,
-        {'sublime': sublime, 'sublime_plugin': sublime_plugin},
+        {
+            'sublime': sublime,
+            'sublime_plugin': sublime_plugin,
+            'papyrus_lint_plugin': plugin_package,
+        },
     ):
         spec = importlib.util.spec_from_file_location(
-            'papyrus_lint_sublime_commands', PLUGIN_ROOT / 'commands.py'
+            'papyrus_lint_plugin.commands', PLUGIN_ROOT / 'commands.py'
         )
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
+        module.ensure_release_cli = Mock(return_value='/cache/PapyrusLinterCLI')
     return module, sublime
 
 
@@ -69,7 +77,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
             self.command.run(None)
 
         run.assert_called_once_with(
-            ('PapyrusLinterCLI', 'fix', '/scripts/Example.psc'),
+            ('/cache/PapyrusLinterCLI', 'fix', '/scripts/Example.psc'),
             capture_output=True,
             startupinfo=None,
         )
@@ -124,7 +132,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
             self.command.run(None)
 
         self.sublime.error_message.assert_called_once_with(
-            'PapyrusLint: failed to run "PapyrusLinterCLI": not found'
+            'PapyrusLint: failed to download or run the CLI: not found'
         )
         self.view.run_command.assert_not_called()
 
@@ -151,7 +159,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
         module, _ = load_commands_module(settings)
         command = module.PapyrusLintFixCommand(self.view)
 
-        self.assertEqual(command._executable(), 'PapyrusLinterCLI')
+        self.assertEqual(command._executable(), '/cache/PapyrusLinterCLI')
 
     def test_config_path_defaults_to_empty(self):
         settings = Mock()
@@ -183,7 +191,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
 
         run.assert_called_once_with(
             (
-                'PapyrusLinterCLI',
+                '/cache/PapyrusLinterCLI',
                 'fix',
                 '--config',
                 '/project/custom.yaml',

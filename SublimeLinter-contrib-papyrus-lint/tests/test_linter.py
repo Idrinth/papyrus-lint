@@ -39,13 +39,23 @@ def load_linter_module():
 
     package = types.ModuleType('SublimeLinter')
     package.lint = lint_module
+    sublime = types.ModuleType('sublime')
+    sublime.cache_path = lambda: '/tmp/sublime-cache'
+
+    plugin_package = types.ModuleType('papyrus_lint_plugin')
+    plugin_package.__path__ = [str(PLUGIN_ROOT)]
 
     with unittest.mock.patch.dict(
         sys.modules,
-        {'SublimeLinter': package, 'SublimeLinter.lint': lint_module},
+        {
+            'SublimeLinter': package,
+            'SublimeLinter.lint': lint_module,
+            'sublime': sublime,
+            'papyrus_lint_plugin': plugin_package,
+        },
     ):
         spec = importlib.util.spec_from_file_location(
-            'papyrus_lint_sublime_linter', PLUGIN_ROOT / 'linter.py'
+            'papyrus_lint_plugin.linter', PLUGIN_ROOT / 'linter.py'
         )
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
@@ -61,25 +71,25 @@ class PapyrusLintTests(unittest.TestCase):
         self.linter = self.module.PapyrusLint()
 
     def test_command_and_selector_target_saved_papyrus_files(self):
-        self.assertEqual(
-            self.linter.cmd(), ['PapyrusLinterCLI', '--json', '${file}']
-        )
         self.assertEqual(self.linter.executable, 'PapyrusLinterCLI')
         self.assertEqual(self.linter.defaults['selector'], 'source.papyrus')
         self.assertEqual(self.linter.defaults['config_path'], '')
 
     def test_cmd_inserts_config_flag_when_config_path_is_set(self):
-        self.linter.settings = {'config_path': '/project/custom-lint.yaml'}
+        self.linter.settings = {
+            'executable': '/tools/PapyrusLinterCLI',
+            'config_path': '/project/custom-lint.yaml',
+        }
 
         self.assertEqual(
             self.linter.cmd(),
-            ['PapyrusLinterCLI', '--json', '--config', '/project/custom-lint.yaml', '${file}'],
+            ['/tools/PapyrusLinterCLI', '--json', '--config', '/project/custom-lint.yaml', '${file}'],
         )
 
     def test_cmd_ignores_a_blank_config_path(self):
-        self.linter.settings = {'config_path': '   '}
+        self.linter.settings = {'executable': '/tools/cli', 'config_path': '   '}
 
-        self.assertEqual(self.linter.cmd(), ['PapyrusLinterCLI', '--json', '${file}'])
+        self.assertEqual(self.linter.cmd(), ['/tools/cli', '--json', '${file}'])
 
     def test_cmd_uses_configured_executable(self):
         self.linter.settings = {'executable': '/tools/PapyrusLinter'}

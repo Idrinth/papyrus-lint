@@ -10,8 +10,8 @@ Before this plugin does anything, you need:
 1. The base SublimeLinter package installed.
 2. A syntax package that assigns Papyrus files the `source.papyrus` scope
    (e.g. one of the Papyrus syntax packages available via Package Control).
-3. The `PapyrusLinterCLI` binary on your PATH, or the full path to either
-   executable configured via this linter's "executable" setting in your
-   SublimeLinter settings.
+3. Nothing else: the plugin downloads the `PapyrusLinterCLI` from its matching
+   release automatically. You may instead configure a local executable via
+   this linter's "executable" setting in your SublimeLinter settings.
 
 See this package's README.md for configuration details.
