@@ -479,8 +479,65 @@ mod tests {
         fs::create_dir_all(&alternate).expect("failed to create alternate root");
         let script = write_file(&primary, "Example.psc");
         fs::write(&script, "same").expect("failed to write primary script");
-        fs::write(alternate.join("Example.psc"), "same")
-            .expect("failed to write alternate script");
+        fs::write(alternate.join("Example.psc"), "same").expect("failed to write alternate script");
+
+        assert!(conflicting_script_versions(&script, root.path(), &[]).is_empty());
+    }
+
+    #[test]
+    fn reports_conflicts_from_additional_roots_in_sorted_path_order() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        let first_alphabetically = root.path().join("a-scripts");
+        let second_alphabetically = root.path().join("z-scripts");
+        fs::create_dir_all(&primary).expect("failed to create primary root");
+        fs::create_dir_all(&first_alphabetically).expect("failed to create first root");
+        fs::create_dir_all(&second_alphabetically).expect("failed to create second root");
+        let script = primary.join("Example.psc");
+        fs::write(&script, "primary").expect("failed to write primary script");
+        fs::write(first_alphabetically.join("example.psc"), "first")
+            .expect("failed to write first alternate");
+        fs::write(second_alphabetically.join("EXAMPLE.PSC"), "second")
+            .expect("failed to write second alternate");
+
+        let diagnostics = conflicting_script_versions(
+            &script,
+            root.path(),
+            &["z-scripts".into(), "a-scripts".into()],
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0]
+            .message
+            .contains(&first_alphabetically.display().to_string()));
+        assert!(diagnostics[1]
+            .message
+            .contains(&second_alphabetically.display().to_string()));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.line == 1 && diagnostic.column == 1));
+    }
+
+    #[test]
+    fn conflict_check_returns_empty_for_an_unreadable_script_path() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert!(
+            conflicting_script_versions(&root.path().join("Missing.psc"), root.path(), &[])
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn conflict_check_ignores_same_named_directories() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        let alternate = root.path().join("source/scripts");
+        fs::create_dir_all(&primary).expect("failed to create primary root");
+        fs::create_dir_all(alternate.join("Example.psc"))
+            .expect("failed to create same-named directory");
+        let script = primary.join("Example.psc");
+        fs::write(&script, "primary").expect("failed to write primary script");
 
         assert!(conflicting_script_versions(&script, root.path(), &[]).is_empty());
     }
