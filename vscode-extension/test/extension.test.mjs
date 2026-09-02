@@ -6,7 +6,13 @@ import { afterEach, describe, it } from 'node:test';
 const extensionModule = path.resolve('out-test/src/extension.js');
 const originalLoad = Module._load;
 
-function createHarness({ cliPath = '/tools/PapyrusLinterCLI', configPath = '', result } = {}) {
+function createHarness({
+  cliPath = '/tools/PapyrusLinterCLI',
+  configPath = '',
+  textDocuments = [],
+  releaseCli = async () => '/downloaded/PapyrusLinterCLI',
+  result,
+} = {}) {
   const commands = new Map();
   const listeners = {};
   const messages = { error: [], information: [], warning: [] };
@@ -50,7 +56,7 @@ function createHarness({ cliPath = '/tools/PapyrusLinterCLI', configPath = '', r
       onDidCloseTextDocument: (callback) => registerListener('close', callback),
       onDidOpenTextDocument: (callback) => registerListener('open', callback),
       onDidSaveTextDocument: (callback) => registerListener('save', callback),
-      textDocuments: [],
+      textDocuments,
     },
   };
   const execCalls = [];
@@ -62,6 +68,7 @@ function createHarness({ cliPath = '/tools/PapyrusLinterCLI', configPath = '', r
 
   Module._load = function (request, parent, isMain) {
     if (request === 'vscode') return vscode;
+    if (request === './cliDownload') return { ensureReleaseCli: releaseCli };
     if (request === 'child_process') {
       return {
         execFile(executable, args, options, callback) {
@@ -147,6 +154,29 @@ describe('extension activation and commands', () => {
     assert.equal(published.code, 'slow-function');
   });
 
+  it('uses the active editor and maps information and error severities', async () => {
+    const harness = createHarness({
+      result: {
+        error: null,
+        stdout: validReport({
+          files: [{
+            path: '/project/Test.psc',
+            diagnostics: [
+              { line: 1, column: 1, rule: 'note', level: 'info', message: 'A note.' },
+              { line: 2, column: 2, rule: 'failure', level: 'error', message: 'A failure.' },
+            ],
+          }],
+        }),
+        stderr: '',
+      },
+    });
+    harness.vscode.window.activeTextEditor = { document: { uri: uri('/project/Test.psc') } };
+
+    await harness.commands.get('papyrusLint.lintFile')();
+
+    assert.deepEqual(harness.diagnostics.published[0][1].map((entry) => entry.severity), [2, 0]);
+  });
+
   it('saves a dirty open target before fixing and reports the fix count', async () => {
     const harness = createHarness({
       result: { error: Object.assign(new Error('lint findings'), { code: 1 }), stdout: validReport({ files_fixed: 1 }), stderr: '' },
@@ -164,6 +194,50 @@ describe('extension activation and commands', () => {
     assert.equal(saves, 1);
     assert.deepEqual(harness.execCalls[0].args, ['fix', '--json', '/project/Test.psc']);
     assert.deepEqual(harness.messages.information, ['Papyrus Lint: fixed Test.psc. 0 issue(s) remain.']);
+  });
+
+  it('reports when a file needs no fixes and handles an empty file report', async () => {
+    const harness = createHarness({
+      result: { error: null, stdout: validReport({ files: [], files_fixed: null }), stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.fixFile')(uri('/project/Clean.psc'));
+
+    assert.deepEqual(harness.diagnostics.published[0][1], []);
+    assert.deepEqual(harness.messages.information, [
+      'Papyrus Lint: nothing to fix in Clean.psc. 0 issue(s) remain.',
+    ]);
+  });
+
+  it('downloads the matching CLI when no override is configured', async () => {
+    const downloads = [];
+    const harness = createHarness({
+      cliPath: '   ',
+      releaseCli: async (...args) => {
+        downloads.push(args);
+        return '/downloaded/PapyrusLinterCLI';
+      },
+    });
+
+    await harness.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
+
+    assert.deepEqual(downloads, [['/extension-storage', '1.2.3']]);
+    assert.equal(harness.execCalls[0].executable, '/downloaded/PapyrusLinterCLI');
+  });
+
+  it('reports download and executable launch failures', async () => {
+    const downloadFailure = createHarness({
+      cliPath: '',
+      releaseCli: async () => { throw new Error('offline'); },
+    });
+    await downloadFailure.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
+    assert.match(downloadFailure.messages.error[0], /offline/);
+
+    const launchFailure = createHarness({
+      result: { error: Object.assign(new Error('not found'), { code: 'ENOENT' }), stdout: '', stderr: '' },
+    });
+    await launchFailure.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
+    assert.match(launchFailure.messages.error[0], /not found/);
   });
 
   it('warns instead of running for invalid targets and cancelled saves', async () => {
@@ -191,6 +265,21 @@ describe('extension activation and commands', () => {
     await malformed.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
     assert.equal(malformed.diagnostics.published.length, 0);
     assert.match(malformed.messages.error[0], /could not parse the CLI output/);
+
+    await malformed.commands.get('papyrusLint.fixFile')(uri('/project/Test.psc'));
+    assert.deepEqual(malformed.messages.information, []);
+  });
+
+  it('lints clean Papyrus documents that are already open during activation', async () => {
+    const target = uri('/project/AlreadyOpen.psc');
+    const harness = createHarness({
+      textDocuments: [{ uri: target, languageId: 'papyrus', isDirty: false }],
+    });
+
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.equal(harness.execCalls.length, 1);
+    assert.deepEqual(harness.execCalls[0].args, ['--json', '/project/AlreadyOpen.psc']);
   });
 
   it('only automatically lints clean Papyrus file documents and clears them on close', async () => {
@@ -205,5 +294,13 @@ describe('extension activation and commands', () => {
 
     assert.equal(harness.execCalls.length, 1);
     assert.deepEqual(harness.diagnostics.deleted, [target]);
+  });
+
+  it('does not clear diagnostics when a non-file Papyrus document closes', () => {
+    const harness = createHarness();
+
+    harness.listeners.close({ uri: uri('/project/Test.psc', 'untitled'), languageId: 'papyrus' });
+
+    assert.deepEqual(harness.diagnostics.deleted, []);
   });
 });
