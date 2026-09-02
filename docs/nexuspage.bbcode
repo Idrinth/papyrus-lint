@@ -245,6 +245,10 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags a Native function/event whose name isn't one of the base game's own, a sign it needs SKSE/F4SE or another native extension. Disabled by default.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]GlobalVariable no-op write[/b][/td]
+[td]Flags a SetValue/SetValueInt call that doesn't provably change the value: a branch writing back the exact value its own GetValue() == literal condition just confirmed, or an Else branch writing a literal with no check ruling out that value already being current. Disabled by default.[/td]
+[td][/td]
+[/tr]
 [/table]
 The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
 [heading]Configuration file[/heading]
@@ -339,7 +343,8 @@ rules:
   unused_disable: false
   magic_numbers: false
   native_function_usage: false
-  repeated_getvalue: false[/code]
+  repeated_getvalue: false
+  global_variable_setvalue: false[/code]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

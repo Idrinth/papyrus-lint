@@ -21,6 +21,7 @@ pub mod forbidden_functions;
 pub mod formid_hex_notation;
 pub mod fragment_code;
 pub mod function_override;
+pub mod global_variable_setvalue;
 pub mod goto_state;
 pub mod identifier_casing;
 pub mod indentation;
@@ -109,6 +110,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     variable_used_before_assignment::RULE,
     native_function_usage::RULE,
     repeated_getvalue::RULE,
+    global_variable_setvalue::RULE,
 ];
 
 use serde::Serialize;
@@ -337,6 +339,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.repeated_getvalue {
         diagnostics.extend(repeated_getvalue::check(source));
+    }
+    if rules.global_variable_setvalue {
+        diagnostics.extend(global_variable_setvalue::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1049,6 +1054,12 @@ mod tests {
                 "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If gv.GetValue() == 1.0\n    ElseIf gv.GetValue() == 2.0\n    EndIf\nEndFunction\n",
                 repeated_getvalue::RULE,
                 config_with(|c| c.rules.repeated_getvalue = true),
+                Config::default(),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If gv.GetValue() == 2.0\n        gv.SetValue(2.0)\n    EndIf\nEndFunction\n",
+                global_variable_setvalue::RULE,
+                config_with(|c| c.rules.global_variable_setvalue = true),
                 Config::default(),
             ),
         ];

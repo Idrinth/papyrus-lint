@@ -146,6 +146,7 @@ apply.
 | **Unused disable directive** | Flags, as a `[warning]`, each rule id in an `@disable` comment that is unknown or does not suppress a diagnostic from that rule on its line. A bare `@disable` is flagged when its line has no diagnostics to suppress. Disabled by default; opt in with `rules.unused_disable`. | |
 | **Magic numbers** | Flags, as a `[warning]`, a numeric literal used directly in an expression rather than through a named constant, property, or local variable. `-1`, `0`, and `1` are never flagged, since they're near-universally used directly without losing any clarity. A literal that's the entire value given to a declaration or assignment (`Int kMaxTargets = 5`, later reassigned as `kMaxTargets = 6`) is left alone too, since naming it there already gives it the meaning this lint is after; a literal nested inside a more complex initializer (`Int kMaxTargets = 5 + 1`) is still checked. Disabled by default; opt in with `rules.magic_numbers`. The configurable `magic_numbers` setting controls how a `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/`RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call's interval argument is treated: `loose` (the default) leaves it unflagged, since a hardcoded interval there is common and usually self-explanatory; `strict` checks it like any other argument. | |
 | **Non-base-game native function usage** | Flags, as a `[warning]`, a `Native` function/event declared on a script whose name isn't one of the base game's own native functions, listed in `rules/native-methods.yaml` — a strong signal it's instead supplied by SKSE/F4SE or some other native extension the project depends on. Disabled by default, since plenty of mods intentionally depend on such an extension and don't need to be warned about it; opt in with `rules.native_function_usage`. | |
+| **GlobalVariable no-op write** | Flags, as a `[warning]`, a `SetValue`/`SetValueInt` call on a `GlobalVariable`-like receiver that writes a value an enclosing `If`/`ElseIf`/`Else` chain never proves is different from the value already there — either a branch writing back the exact literal its own `GetValue()`/`GetValueInt() == literal` condition just confirmed is already current, or the trailing `Else` of a chain that reads the same receiver elsewhere writing a literal with no condition of its own ruling out that value already being current, e.g. an `Else` unconditionally calling `gv.SetValue(0.0)` after an `If gv.GetValue() == 1.0` branch, where it should usually become an explicit `ElseIf gv.GetValue() != 0.0` instead. Only a `SetValue`/`SetValueInt` call standing alone as its own statement, guarded by a plain equality check against a literal, is considered; anything less direct is left unflagged rather than guessed at. Disabled by default, since the `Else` case is a heuristic rather than a proven no-op; opt in with `rules.global_variable_setvalue`. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, chain whitespace, exclamation mark spacing, and
@@ -179,7 +180,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
 `unchecked-cast`, `unresolved-script`, `short-wait-interval`,
 `state-function-signature`, `goto-state`, `conflicting-script-versions`,
-`unused-disable`, `magic-numbers`, and `native-function-usage`.
+`unused-disable`, `magic-numbers`, `native-function-usage`, and
+`global-variable-setvalue`.
 
 ## Configuration
 
@@ -282,6 +284,7 @@ rules:
   magic_numbers: false
   native_function_usage: false
   repeated_getvalue: false
+  global_variable_setvalue: false
 ```
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
@@ -375,17 +378,19 @@ rules:
   key under `rules` can be omitted individually and falls back to its
   default. Every key defaults to `true` except `property_sorting`,
   `unchecked_form_parameter`, `unused_disable`, `magic_numbers`,
-  `native_function_usage`, and `repeated_getvalue`, which default to
+  `native_function_usage`, `repeated_getvalue`, and
+  `global_variable_setvalue`, which default to
   `false`: reordering a script's declared properties is a more invasive
   change than the rest of these lints, many scripts intentionally accept a
   possibly-`None` Form and defer the check to a caller or a later branch,
   reporting stale suppressions is opt-in to avoid surprising existing
-  projects, flagging every literal number in an existing script all at
-  once is likely to be noisy until a project is ready for it, plenty of
-  mods intentionally depend on SKSE/F4SE or another native extension and
-  don't need to be warned about it, and a chain that reads the same global
-  more than once is often written that way deliberately for readability.
-  The key names match the lints listed above:
+  projects, flagging every literal number in an existing script all at once
+  is likely to be noisy until a project is ready for it, plenty of mods
+  intentionally depend on SKSE/F4SE or another native extension and don't
+  need to be warned about it, a chain that reads the same global more than
+  once is often written that way deliberately for readability, and the
+  `GlobalVariable` no-op write lint's `Else`-branch case is a heuristic
+  rather than a proven no-op. The key names match the lints listed above:
   `trailing_whitespace`, `comma_spacing`, `forbidden_functions`,
   `formid_hex_notation`, `slow_functions`, `unused_getter`,
   `unused_property`, `semicolon`, `float_int_conversion`, `strict_boolean`,
@@ -397,7 +402,8 @@ rules:
   `identifier_casing`, `type_casing`, `named_arguments`, `operator_spacing`,
   `property_sorting`, `explicit_return`, `unchecked_form_parameter`,
   `unchecked_cast`, `unresolved_script`, `short_wait_interval`,
-  `magic_numbers`, `native_function_usage`, and `repeated_getvalue`.
+  `magic_numbers`, `native_function_usage`, `repeated_getvalue`, and
+  `global_variable_setvalue`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
