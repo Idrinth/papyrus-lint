@@ -152,6 +152,11 @@
             <label title="Whether the CLI treats an [info]-level diagnostic as a reason to exit non-zero. Has no effect on the desktop app, which always lists every diagnostic regardless of severity."><input type="checkbox" id="fail-on-info" /> Fail on info</label>
           </fieldset>
 
+          <fieldset class="settings-group">
+            <legend>Strict boolean check</legend>
+            <label title="Whether the &quot;Strict boolean check&quot; lint accepts the Int literal 1 or 0 used directly as an If/ElseIf/While condition as bool-like, instead of flagging it. Any other Int value (a variable or property that happens to hold 0/1, or a literal other than 1/0) is still flagged either way."><input type="checkbox" id="bool-like-int" checked /> Allow 1/0 as bool-like</label>
+          </fieldset>
+
           <fieldset id="lint-rules" class="settings-group">
             <legend>Lint rules</legend>
             <label title="Flags lines that end with trailing spaces or tabs."><input type="checkbox" id="rule-trailing_whitespace" checked /> Trailing whitespace</label>

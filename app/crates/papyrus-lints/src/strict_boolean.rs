@@ -1,7 +1,7 @@
 //! Flags `If`/`ElseIf`/`While` conditions that aren't already boolean,
 //! instead of relying on Papyrus's implicit conversion to `Bool`.
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Stmt};
+use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Stmt};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::Diagnostic;
@@ -14,8 +14,12 @@ pub const RULE: &str = "strict-boolean";
 ///
 /// A condition whose type can't be determined locally (a function call or a
 /// member access on another script, for instance) is left unflagged rather
-/// than risk a false positive. Flagged as a `[warning]`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
+/// than risk a false positive. When `allow_bool_like_int` is `true` (see
+/// [`crate::config::Config::bool_like_int`]), a condition that's exactly
+/// the `Int` literal `1` or `0` is also left unflagged, since that's a
+/// common "bool-like" idiom; any other `Int` value is still flagged.
+/// Flagged as a `[warning]`.
+pub fn check(source: &str, allow_bool_like_int: bool) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
     };
@@ -29,19 +33,29 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             .iter()
             .flat_map(|state| state.functions.iter()),
     ) {
-        check_function(function, &mut env, &mut diagnostics);
+        check_function(function, &mut env, allow_bool_like_int, &mut diagnostics);
     }
 
     diagnostics
 }
 
-fn check_function(function: &FunctionDecl, env: &mut TypeEnv, diagnostics: &mut Vec<Diagnostic>) {
+fn check_function(
+    function: &FunctionDecl,
+    env: &mut TypeEnv,
+    allow_bool_like_int: bool,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     env.with_function_scope(function, |scoped| {
-        check_body(&function.body, scoped, diagnostics);
+        check_body(&function.body, scoped, allow_bool_like_int, diagnostics);
     });
 }
 
-fn check_body(body: &[Stmt], env: &TypeEnv, diagnostics: &mut Vec<Diagnostic>) {
+fn check_body(
+    body: &[Stmt],
+    env: &TypeEnv,
+    allow_bool_like_int: bool,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     for stmt in body {
         match stmt {
             Stmt::If {
@@ -56,10 +70,17 @@ fn check_body(body: &[Stmt], env: &TypeEnv, diagnostics: &mut Vec<Diagnostic>) {
                     col,
                 } in branches
                 {
-                    check_condition(condition, *line, *col, env, diagnostics);
-                    check_body(body, env, diagnostics);
+                    check_condition(
+                        condition,
+                        *line,
+                        *col,
+                        env,
+                        allow_bool_like_int,
+                        diagnostics,
+                    );
+                    check_body(body, env, allow_bool_like_int, diagnostics);
                 }
-                check_body(else_body, env, diagnostics);
+                check_body(else_body, env, allow_bool_like_int, diagnostics);
             }
             Stmt::While {
                 condition,
@@ -67,12 +88,25 @@ fn check_body(body: &[Stmt], env: &TypeEnv, diagnostics: &mut Vec<Diagnostic>) {
                 line,
                 col,
             } => {
-                check_condition(condition, *line, *col, env, diagnostics);
-                check_body(body, env, diagnostics);
+                check_condition(
+                    condition,
+                    *line,
+                    *col,
+                    env,
+                    allow_bool_like_int,
+                    diagnostics,
+                );
+                check_body(body, env, allow_bool_like_int, diagnostics);
             }
             Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
         }
     }
+}
+
+/// Whether `expr` is exactly the `Int` literal `1` or `0`, the "bool-like"
+/// idiom [`check`] allows past when `allow_bool_like_int` is set.
+fn is_bool_like_int(expr: &Expr) -> bool {
+    matches!(expr, Expr::Literal(Literal::Int(0 | 1)))
 }
 
 fn check_condition(
@@ -80,6 +114,7 @@ fn check_condition(
     line: usize,
     column: usize,
     env: &TypeEnv,
+    allow_bool_like_int: bool,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let Some(type_name) = infer_type(condition, env) else {
@@ -87,6 +122,10 @@ fn check_condition(
     };
 
     if !type_name.is_array && type_name.name.eq_ignore_ascii_case("bool") {
+        return;
+    }
+
+    if allow_bool_like_int && is_bool_like_int(condition) {
         return;
     }
 
@@ -114,6 +153,7 @@ mod tests {
     fn flags_non_boolean_if_and_while_conditions() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Int count)\n    If count\n    EndIf\n    While count\n    EndWhile\nEndFunction\n",
+            true,
         );
 
         assert_eq!(diagnostics.len(), 2);
@@ -127,6 +167,7 @@ mod tests {
     fn flags_each_elseif_branch_independently() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Int a, Bool b)\n    If b\n    ElseIf a\n    Else\n    EndIf\nEndFunction\n",
+            true,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -154,6 +195,7 @@ Function Test(Int a, Bool flag)
     EndWhile
 EndFunction
 "#,
+            true,
         );
 
         assert!(diagnostics.is_empty());
@@ -163,6 +205,7 @@ EndFunction
     fn ignores_conditions_that_cannot_be_resolved_locally() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    If GetValue()\n    EndIf\n    If Self.SomeProperty\n    EndIf\nEndFunction\n",
+            true,
         );
 
         assert!(diagnostics.is_empty());
@@ -172,6 +215,7 @@ EndFunction
     fn checks_nested_and_state_function_bodies() {
         let diagnostics = check(
             "ScriptName Example\n\nState Active\n    Function Test(Int a)\n        If a > 0\n            If a\n            EndIf\n        EndIf\n    EndFunction\nEndState\n",
+            true,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -192,6 +236,7 @@ Function Test(String text, Float ratio, Form target)
     EndIf
 EndFunction
 "#,
+            true,
         );
 
         assert_eq!(diagnostics.len(), 3);
@@ -204,6 +249,7 @@ EndFunction
     fn reports_array_conditions_with_array_notation() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Int[] values)\n    If values\n    EndIf\nEndFunction\n",
+            true,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -226,6 +272,7 @@ Function Test()
     EndWhile
 EndFunction
 "#,
+            true,
         );
 
         assert_eq!(diagnostics.len(), 2);
@@ -248,6 +295,7 @@ Function Second()
     EndIf
 EndFunction
 "#,
+            true,
         );
 
         assert!(diagnostics.is_empty());
@@ -266,6 +314,7 @@ Function Test(Bool ready, Int attempts)
     EndIf
 EndFunction
 "#,
+            true,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -274,9 +323,55 @@ EndFunction
 
     #[test]
     fn invalid_source_returns_no_diagnostics() {
-        let diagnostics =
-            check("ScriptName Example\n\nFunction Test(Int count)\n    If count\nEndFunction\n");
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int count)\n    If count\nEndFunction\n",
+            true,
+        );
 
         assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn allows_bool_like_int_literals_by_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    If 1\n    EndIf\n    While 0\n    EndWhile\nEndFunction\n",
+            true,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_bool_like_int_literals_when_disallowed() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    If 1\n    EndIf\n    While 0\n    EndWhile\nEndFunction\n",
+            false,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0].message.contains("found 'Int'"));
+        assert!(diagnostics[1].message.contains("found 'Int'"));
+    }
+
+    #[test]
+    fn still_flags_int_literals_other_than_one_and_zero() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    If 2\n    EndIf\nEndFunction\n",
+            true,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("found 'Int'"));
+    }
+
+    #[test]
+    fn still_flags_int_variables_holding_zero_or_one() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int count)\n    If count\n    EndIf\nEndFunction\n",
+            true,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("found 'Int'"));
     }
 }

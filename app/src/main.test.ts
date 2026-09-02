@@ -323,6 +323,7 @@ describe("lint config UI round trip", () => {
       min_wait_interval: 0.25,
       fail_on_warning: true,
       fail_on_info: true,
+      bool_like_int: false,
       rules: { ...DEFAULT_RULES, forbidden_functions: false, indentation: false },
     };
 
@@ -356,6 +357,7 @@ describe("lint config UI round trip", () => {
       named_arguments: "instead_of_defaults",
       fail_on_warning: true,
       fail_on_info: true,
+      bool_like_int: false,
     });
 
     expect(document.querySelector<HTMLSelectElement>("#identifier-casing-style")!.value).toBe(
@@ -366,12 +368,14 @@ describe("lint config UI round trip", () => {
     );
     expect(document.querySelector<HTMLInputElement>("#fail-on-warning")!.checked).toBe(true);
     expect(document.querySelector<HTMLInputElement>("#fail-on-info")!.checked).toBe(true);
+    expect(document.querySelector<HTMLInputElement>("#bool-like-int")!.checked).toBe(false);
 
     const config = lintConfigFromUI();
     expect(config.identifier_casing).toBe("CONSTANT_CASE");
     expect(config.named_arguments).toBe("instead_of_defaults");
     expect(config.fail_on_warning).toBe(true);
     expect(config.fail_on_info).toBe(true);
+    expect(config.bool_like_int).toBe(false);
   });
 
   it("handleLintConfigChanged persists the config only once a project dir is known", async () => {
@@ -1884,6 +1888,7 @@ describe("wired DOM interactions", () => {
       "#cyclomatic-complexity-error",
       "#fail-on-warning",
       "#fail-on-info",
+      "#bool-like-int",
       "#rule-trailing_whitespace",
       "#rule-property_sorting",
     ]) {

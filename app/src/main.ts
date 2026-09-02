@@ -36,6 +36,7 @@ let cyclomaticComplexityErrorEl: HTMLInputElement | null;
 let minWaitIntervalEl: HTMLInputElement | null;
 let failOnWarningEl: HTMLInputElement | null;
 let failOnInfoEl: HTMLInputElement | null;
+let boolLikeIntEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
@@ -171,6 +172,7 @@ export interface LintConfig {
   min_wait_interval: number;
   fail_on_warning: boolean;
   fail_on_info: boolean;
+  bool_like_int: boolean;
   rules: LintRules;
 }
 
@@ -230,6 +232,7 @@ export const DEFAULT_LINT_CONFIG: LintConfig = {
   min_wait_interval: 0.1,
   fail_on_warning: false,
   fail_on_info: false,
+  bool_like_int: true,
   rules: DEFAULT_RULES,
 };
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
@@ -514,6 +517,9 @@ export function applyLintConfigToUI(config: LintConfig) {
   if (failOnInfoEl) {
     failOnInfoEl.checked = config.fail_on_info;
   }
+  if (boolLikeIntEl) {
+    boolLikeIntEl.checked = config.bool_like_int;
+  }
   for (const key of RULE_KEYS) {
     const el = ruleEls[key];
     if (el) {
@@ -547,6 +553,7 @@ export function lintConfigFromUI(): LintConfig {
     ),
     fail_on_warning: failOnWarningEl?.checked ?? false,
     fail_on_info: failOnInfoEl?.checked ?? false,
+    bool_like_int: boolLikeIntEl?.checked ?? true,
     rules,
   };
 }
@@ -1555,6 +1562,7 @@ window.addEventListener("DOMContentLoaded", () => {
   minWaitIntervalEl = document.querySelector("#min-wait-interval");
   failOnWarningEl = document.querySelector("#fail-on-warning");
   failOnInfoEl = document.querySelector("#fail-on-info");
+  boolLikeIntEl = document.querySelector("#bool-like-int");
   ruleEls = Object.fromEntries(
     RULE_KEYS.map((key) => [key, document.querySelector<HTMLInputElement>(`#rule-${key}`)]),
   ) as Partial<Record<keyof LintRules, HTMLInputElement>>;
@@ -1659,6 +1667,7 @@ window.addEventListener("DOMContentLoaded", () => {
   minWaitIntervalEl?.addEventListener("change", handleLintConfigChanged);
   failOnWarningEl?.addEventListener("change", handleLintConfigChanged);
   failOnInfoEl?.addEventListener("change", handleLintConfigChanged);
+  boolLikeIntEl?.addEventListener("change", handleLintConfigChanged);
   for (const key of RULE_KEYS) {
     ruleEls[key]?.addEventListener("change", handleLintConfigChanged);
   }
