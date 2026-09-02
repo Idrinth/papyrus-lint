@@ -121,7 +121,7 @@ fn eval_const(expr: &Expr) -> Option<Literal> {
 fn truthy(value: &Literal) -> bool {
     match value {
         Literal::Bool(b) => *b,
-        Literal::Int(i) => *i != 0,
+        Literal::Int { value, .. } => *value != 0,
         Literal::Float(f) => *f != 0.0,
         Literal::String(s) => !s.is_empty(),
         Literal::None => false,
@@ -132,7 +132,7 @@ fn eval_unary(op: UnaryOp, value: &Literal) -> Option<Literal> {
     match op {
         UnaryOp::Not => Some(Literal::Bool(!truthy(value))),
         UnaryOp::Neg => match value {
-            Literal::Int(i) => Some(Literal::Int(-i)),
+            Literal::Int { value, .. } => Some(Literal::int(-value)),
             Literal::Float(f) => Some(Literal::Float(-f)),
             _ => None,
         },
@@ -144,7 +144,7 @@ fn eval_unary(op: UnaryOp, value: &Literal) -> Option<Literal> {
 /// so arithmetic results can be folded back to the right literal kind.
 fn as_number(value: &Literal) -> Option<(f64, bool)> {
     match value {
-        Literal::Int(i) => Some((*i as f64, false)),
+        Literal::Int { value, .. } => Some((*value as f64, false)),
         Literal::Float(f) => Some((*f, true)),
         _ => None,
     }
@@ -190,7 +190,7 @@ fn eval_binary(left: &Literal, op: BinaryOp, right: &Literal) -> Option<Literal>
             Some(if a_float || b_float {
                 Literal::Float(result)
             } else {
-                Literal::Int(result as i64)
+                Literal::int(result as i64)
             })
         }
         BinaryOp::Gt | BinaryOp::Lt | BinaryOp::GtEq | BinaryOp::LtEq => {
@@ -303,10 +303,10 @@ mod tests {
             Some(false)
         );
         assert_eq!(literal_eq(&Literal::None, &Literal::None), Some(true));
-        assert_eq!(literal_eq(&Literal::None, &Literal::Int(1)), Some(false));
-        assert_eq!(literal_eq(&Literal::Int(1), &Literal::None), Some(false));
+        assert_eq!(literal_eq(&Literal::None, &Literal::int(1)), Some(false));
+        assert_eq!(literal_eq(&Literal::int(1), &Literal::None), Some(false));
         assert_eq!(
-            literal_eq(&Literal::String("1".into()), &Literal::Int(1)),
+            literal_eq(&Literal::String("1".into()), &Literal::int(1)),
             None
         );
     }
@@ -319,16 +319,16 @@ mod tests {
             eval_binary(
                 &Literal::String("left".into()),
                 BinaryOp::Add,
-                &Literal::Int(1),
+                &Literal::int(1),
             ),
             None
         );
         assert_eq!(
-            eval_binary(&Literal::Int(1), BinaryOp::Div, &Literal::Int(0)),
+            eval_binary(&Literal::int(1), BinaryOp::Div, &Literal::int(0)),
             None
         );
         assert_eq!(
-            eval_binary(&Literal::Int(1), BinaryOp::Mod, &Literal::Int(0)),
+            eval_binary(&Literal::int(1), BinaryOp::Mod, &Literal::int(0)),
             None
         );
     }

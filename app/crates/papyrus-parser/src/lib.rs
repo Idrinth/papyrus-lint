@@ -85,7 +85,7 @@ float _cachedValue = 0.0
         assert_eq!(max_count.type_name.name, "Int");
         assert!(max_count.is_auto);
         assert!(max_count.is_hidden);
-        assert_eq!(max_count.value, Some(Expr::Literal(Literal::Int(10))));
+        assert_eq!(max_count.value, Some(Expr::Literal(Literal::int(10))));
 
         assert_eq!(script.variables.len(), 1);
         assert_eq!(script.variables[0].name, "_cachedValue");
@@ -109,7 +109,7 @@ EndFunction
         assert!(f.is_global);
         assert_eq!(f.return_type.as_ref().unwrap().name, "Int");
         assert_eq!(f.params.len(), 2);
-        assert_eq!(f.params[1].default, Some(Expr::Literal(Literal::Int(1))));
+        assert_eq!(f.params[1].default, Some(Expr::Literal(Literal::int(1))));
         assert_eq!(f.body.len(), 2);
         assert!(matches!(f.body[0], Stmt::VarDecl(_)));
         assert!(matches!(f.body[1], Stmt::Return { .. }));
@@ -193,12 +193,12 @@ EndFunction
                 assert_eq!(
                     decl.value,
                     Some(Expr::Binary {
-                        left: Box::new(Expr::Literal(Literal::Int(1))),
+                        left: Box::new(Expr::Literal(Literal::int(1))),
                         op: BinaryOp::Add,
                         right: Box::new(Expr::Binary {
-                            left: Box::new(Expr::Literal(Literal::Int(2))),
+                            left: Box::new(Expr::Literal(Literal::int(2))),
                             op: BinaryOp::Mul,
-                            right: Box::new(Expr::Literal(Literal::Int(3))),
+                            right: Box::new(Expr::Literal(Literal::int(3))),
                         }),
                     })
                 );
@@ -240,7 +240,7 @@ EndFunction
                 match &args[0] {
                     Expr::NamedArg { name, value } => {
                         assert_eq!(name, "argB");
-                        assert_eq!(**value, Expr::Literal(Literal::Int(1)));
+                        assert_eq!(**value, Expr::Literal(Literal::int(1)));
                     }
                     other => panic!("expected NamedArg, got {:?}", other),
                 }

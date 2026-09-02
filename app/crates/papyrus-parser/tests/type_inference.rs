@@ -85,7 +85,7 @@ fn infers_all_literal_and_unary_expression_types() {
     let env = TypeEnv::for_script(&script);
 
     for (expression, expected) in [
-        (Expr::Literal(Literal::Int(4)), Some(scalar("Int"))),
+        (Expr::Literal(Literal::int(4)), Some(scalar("Int"))),
         (Expr::Literal(Literal::Float(4.5)), Some(scalar("Float"))),
         (
             Expr::Literal(Literal::String("four".into())),
@@ -96,7 +96,7 @@ fn infers_all_literal_and_unary_expression_types() {
         (
             Expr::Unary {
                 op: UnaryOp::Not,
-                operand: Box::new(Expr::Literal(Literal::Int(1))),
+                operand: Box::new(Expr::Literal(Literal::int(1))),
             },
             Some(scalar("Bool")),
         ),
@@ -125,14 +125,14 @@ fn arithmetic_inference_covers_promotion_concatenation_and_invalid_operands() {
         BinaryOp::Mod,
     ] {
         let ints = binary(
-            Expr::Literal(Literal::Int(6)),
+            Expr::Literal(Literal::int(6)),
             op,
-            Expr::Literal(Literal::Int(2)),
+            Expr::Literal(Literal::int(2)),
         );
         assert_eq!(infer_type(&ints, &env), Some(scalar("Int")), "{op:?}");
 
         let promoted = binary(
-            Expr::Literal(Literal::Int(6)),
+            Expr::Literal(Literal::int(6)),
             op,
             Expr::Literal(Literal::Float(2.0)),
         );
@@ -140,7 +140,7 @@ fn arithmetic_inference_covers_promotion_concatenation_and_invalid_operands() {
     }
 
     let concat = binary(
-        Expr::Literal(Literal::Int(6)),
+        Expr::Literal(Literal::int(6)),
         BinaryOp::Add,
         Expr::Literal(Literal::String(" items".into())),
     );
@@ -149,7 +149,7 @@ fn arithmetic_inference_covers_promotion_concatenation_and_invalid_operands() {
     let invalid = binary(
         Expr::Literal(Literal::Bool(true)),
         BinaryOp::Mul,
-        Expr::Literal(Literal::Int(2)),
+        Expr::Literal(Literal::int(2)),
     );
     assert_eq!(infer_type(&invalid, &env), None);
 }
@@ -189,7 +189,7 @@ fn array_indexing_requires_an_inferable_array_expression() {
     let env = TypeEnv::for_script(&script);
     let index = |name: &str| Expr::Index {
         object: Box::new(Expr::Identifier(name.into())),
-        index: Box::new(Expr::Literal(Literal::Int(0))),
+        index: Box::new(Expr::Literal(Literal::int(0))),
     };
 
     assert_eq!(infer_type(&index("Values"), &env), Some(scalar("Int")));

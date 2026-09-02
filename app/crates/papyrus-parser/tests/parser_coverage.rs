@@ -1,4 +1,4 @@
-use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, Literal, Stmt, UnaryOp};
+use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IntFormat, Literal, Stmt, UnaryOp};
 use papyrus_parser::{parse, PapyrusError};
 
 #[test]
@@ -17,10 +17,35 @@ fn parses_all_property_and_script_modifiers() {
     assert!(read_only.is_auto_read_only);
     assert!(read_only.is_hidden);
     assert!(read_only.is_conditional);
-    assert_eq!(read_only.value, Some(Expr::Literal(Literal::Int(3))));
+    assert_eq!(read_only.value, Some(Expr::Literal(Literal::int(3))));
     assert!(script.properties[1].is_auto);
     assert!(script.properties[1].is_conditional);
     assert!(script.variables[0].is_conditional);
+}
+
+#[test]
+fn integer_literals_record_the_notation_they_were_written_with() {
+    let script = parse(
+        "ScriptName Notation\n\
+         Int Property Decimal = 76935 Auto\n\
+         Int Property Hex = 0x12C87 Auto\n",
+    )
+    .expect("script should parse");
+
+    assert_eq!(
+        script.properties[0].value,
+        Some(Expr::Literal(Literal::Int {
+            value: 76935,
+            format: IntFormat::Decimal,
+        }))
+    );
+    assert_eq!(
+        script.properties[1].value,
+        Some(Expr::Literal(Literal::Int {
+            value: 76935,
+            format: IntFormat::Hexadecimal,
+        }))
+    );
 }
 
 #[test]

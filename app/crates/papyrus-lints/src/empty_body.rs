@@ -159,7 +159,7 @@ fn is_identifier(expr: &Expr, name: &str) -> bool {
 fn is_numeric_literal(expr: &Expr) -> bool {
     matches!(
         expr,
-        Expr::Literal(Literal::Int(_)) | Expr::Literal(Literal::Float(_))
+        Expr::Literal(Literal::Int { .. }) | Expr::Literal(Literal::Float(_))
     )
 }
 

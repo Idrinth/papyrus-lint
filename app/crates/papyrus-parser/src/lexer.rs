@@ -1,6 +1,6 @@
 //! Hand-written lexer for Papyrus source.
 
-use super::token::{Keyword, Token, TokenKind};
+use super::token::{IntFormat, Keyword, Token, TokenKind};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LexError {
@@ -328,7 +328,11 @@ impl<'a> Lexer<'a> {
                 line,
                 col,
             })?;
-            return Ok(Token::new(TokenKind::IntLiteral(value), line, col));
+            return Ok(Token::new(
+                TokenKind::IntLiteral(value, IntFormat::Hexadecimal),
+                line,
+                col,
+            ));
         }
 
         while let Some(c) = self.peek() {
@@ -365,7 +369,11 @@ impl<'a> Lexer<'a> {
                 line,
                 col,
             })?;
-            Ok(Token::new(TokenKind::IntLiteral(value), line, col))
+            Ok(Token::new(
+                TokenKind::IntLiteral(value, IntFormat::Decimal),
+                line,
+                col,
+            ))
         }
     }
 
@@ -434,7 +442,7 @@ mod tests {
                 TokenKind::Identifier("Int".into()),
                 TokenKind::Identifier("value".into()),
                 TokenKind::Assign,
-                TokenKind::IntLiteral(1),
+                TokenKind::IntLiteral(1, IntFormat::Decimal),
                 TokenKind::Eof,
             ]
         );
@@ -449,7 +457,7 @@ mod tests {
                 TokenKind::Identifier("Int".to_string()),
                 TokenKind::Identifier("x".to_string()),
                 TokenKind::Assign,
-                TokenKind::IntLiteral(1),
+                TokenKind::IntLiteral(1, IntFormat::Decimal),
                 TokenKind::Eof,
             ]
         );
@@ -464,9 +472,9 @@ mod tests {
                 TokenKind::Identifier("Int".to_string()),
                 TokenKind::Identifier("x".to_string()),
                 TokenKind::Assign,
-                TokenKind::IntLiteral(1),
+                TokenKind::IntLiteral(1, IntFormat::Decimal),
                 TokenKind::Plus,
-                TokenKind::IntLiteral(2),
+                TokenKind::IntLiteral(2, IntFormat::Decimal),
                 TokenKind::Eof,
             ]
         );
@@ -492,9 +500,9 @@ mod tests {
         assert_eq!(
             toks,
             vec![
-                TokenKind::IntLiteral(1),
+                TokenKind::IntLiteral(1, IntFormat::Decimal),
                 TokenKind::FloatLiteral(2.5),
-                TokenKind::IntLiteral(31),
+                TokenKind::IntLiteral(31, IntFormat::Hexadecimal),
                 TokenKind::StringLiteral("hi\nthere".to_string()),
                 TokenKind::Eof,
             ]
@@ -572,7 +580,10 @@ mod tests {
         let tokens = Lexer::new("0Xff \\\r\nname")
             .tokenize()
             .expect("valid tokens");
-        assert_eq!(tokens[0].kind, TokenKind::IntLiteral(255));
+        assert_eq!(
+            tokens[0].kind,
+            TokenKind::IntLiteral(255, IntFormat::Hexadecimal)
+        );
         assert_eq!(tokens[1].kind, TokenKind::Identifier("name".to_string()));
         assert_eq!((tokens[1].line, tokens[1].col), (2, 1));
     }

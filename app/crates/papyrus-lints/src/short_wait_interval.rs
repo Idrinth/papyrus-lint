@@ -220,12 +220,12 @@ fn matching_function(callee: &Expr) -> Option<&'static WaitFunction> {
 /// running the script.
 fn eval_const(expr: &Expr) -> Option<Literal> {
     match expr {
-        Expr::Literal(literal @ (Literal::Int(_) | Literal::Float(_))) => Some(literal.clone()),
+        Expr::Literal(literal @ (Literal::Int { .. } | Literal::Float(_))) => Some(literal.clone()),
         Expr::Unary {
             op: UnaryOp::Neg,
             operand,
         } => match eval_const(operand)? {
-            Literal::Int(i) => Some(Literal::Int(-i)),
+            Literal::Int { value, .. } => Some(Literal::int(-value)),
             Literal::Float(f) => Some(Literal::Float(-f)),
             _ => None,
         },
@@ -245,7 +245,7 @@ fn eval_const(expr: &Expr) -> Option<Literal> {
             Some(if a_float || b_float {
                 Literal::Float(result)
             } else {
-                Literal::Int(result as i64)
+                Literal::int(result as i64)
             })
         }
         _ => None,
@@ -256,7 +256,7 @@ fn eval_const(expr: &Expr) -> Option<Literal> {
 /// `Float` (as opposed to an `Int`) literal.
 fn as_number(value: &Literal) -> Option<(f64, bool)> {
     match value {
-        Literal::Int(i) => Some((*i as f64, false)),
+        Literal::Int { value, .. } => Some((*value as f64, false)),
         Literal::Float(f) => Some((*f, true)),
         _ => None,
     }

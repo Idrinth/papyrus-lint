@@ -3,6 +3,19 @@
 //! Papyrus keywords and identifiers are case-insensitive, so keyword
 //! matching happens on a lowercased copy of the source text (see `lexer.rs`).
 
+use serde::{Deserialize, Serialize};
+
+/// How an integer literal was written in source: plain decimal digits, or a
+/// `0x`/`0X`-prefixed hexadecimal sequence. The lexer is the only place that
+/// still sees the original spelling, so it records this alongside the
+/// literal's parsed value; [`crate::ast::Literal::Int`] carries the same
+/// distinction through into the AST.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum IntFormat {
+    Decimal,
+    Hexadecimal,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Keyword {
     ScriptName,
@@ -89,7 +102,7 @@ impl Keyword {
 pub enum TokenKind {
     Identifier(String),
     Keyword(Keyword),
-    IntLiteral(i64),
+    IntLiteral(i64, IntFormat),
     FloatLiteral(f64),
     StringLiteral(String),
 
