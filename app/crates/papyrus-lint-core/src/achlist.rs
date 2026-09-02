@@ -139,6 +139,40 @@ mod tests {
     }
 
     #[test]
+    fn strips_redundant_data_prefix_with_either_separator() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let data_dir = root.path().join("Data");
+        fs::create_dir_all(&data_dir).expect("failed to create Data dir");
+        let achlist_path = write_achlist(
+            &data_dir,
+            "sources.achlist",
+            r#"["Data/Scripts/Foo.psc", "Data\\Scripts\\Bar.psc"]"#,
+        );
+
+        let result = parse_achlist(&achlist_path).expect("parsing should succeed");
+
+        assert_eq!(
+            result,
+            vec![
+                data_dir.join("Scripts/Foo.psc"),
+                data_dir.join("Scripts\\Bar.psc"),
+            ]
+        );
+    }
+
+    #[test]
+    fn strips_only_the_first_redundant_data_component() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let data_dir = root.path().join("Data");
+        fs::create_dir_all(&data_dir).expect("failed to create Data dir");
+        let achlist_path = write_achlist(&data_dir, "sources.achlist", r#"["Data/Data/Foo.psc"]"#);
+
+        let result = parse_achlist(&achlist_path).expect("parsing should succeed");
+
+        assert_eq!(result, vec![data_dir.join("Data/Foo.psc")]);
+    }
+
+    #[test]
     fn leaves_entry_unchanged_when_achlist_directory_is_not_named_data() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let achlist_path = write_achlist(dir.path(), "sources.achlist", r#"["Data/Foo.psc"]"#);
@@ -172,6 +206,47 @@ mod tests {
         let result = parse_achlist(&achlist_path).expect("parsing should succeed");
 
         assert!(result.is_empty());
+    }
+
+    #[test]
+    fn preserves_entry_order_and_duplicates() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let achlist_path = write_achlist(
+            dir.path(),
+            "sources.achlist",
+            r#"["B.psc", "A.psc", "B.psc"]"#,
+        );
+
+        let result = parse_achlist(&achlist_path).expect("parsing should succeed");
+
+        assert_eq!(
+            result,
+            vec![
+                dir.path().join("B.psc"),
+                dir.path().join("A.psc"),
+                dir.path().join("B.psc"),
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_unicode_and_whitespace_in_entries() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let achlist_path = write_achlist(
+            dir.path(),
+            "sources.achlist",
+            r#"["Scripts/Crème brûlée.psc", " spaced name.psc "]"#,
+        );
+
+        let result = parse_achlist(&achlist_path).expect("parsing should succeed");
+
+        assert_eq!(
+            result,
+            vec![
+                dir.path().join("Scripts/Crème brûlée.psc"),
+                dir.path().join(" spaced name.psc "),
+            ]
+        );
     }
 
     #[test]
@@ -222,6 +297,17 @@ mod tests {
     fn errors_on_non_array_json() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let achlist_path = write_achlist(dir.path(), "object.achlist", r#"{"not": "a list"}"#);
+
+        let result = parse_achlist(&achlist_path);
+
+        assert!(matches!(result, Err(AchlistError::Json(_))));
+    }
+
+    #[test]
+    fn errors_when_an_array_entry_is_not_a_string() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let achlist_path =
+            write_achlist(dir.path(), "wrong-entry-type.achlist", r#"["Foo.psc", 42]"#);
 
         let result = parse_achlist(&achlist_path);
 

@@ -77,6 +77,25 @@ mod tests {
     }
 
     #[test]
+    fn cp1252_fallback_decodes_ascii_and_non_ascii_bytes_together() {
+        // The invalid byte triggers the fallback for the complete input,
+        // which must still preserve every ASCII byte around it.
+        let bytes = b"ScriptName Example\r\n; price: \x8010\r\n";
+
+        assert_eq!(
+            decode_psc_source(bytes),
+            "ScriptName Example\r\n; price: €10\r\n"
+        );
+    }
+
+    #[test]
+    fn cp1252_fallback_maps_every_input_byte() {
+        // WHATWG Windows-1252 maps historically undefined bytes such as
+        // 0x81 to their corresponding C1 control code rather than failing.
+        assert_eq!(decode_psc_source(&[b'a', 0x81, b'b']), "a\u{81}b");
+    }
+
+    #[test]
     fn reads_file_from_disk_with_fallback() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let path = dir.path().join("Example.psc");
@@ -85,6 +104,17 @@ mod tests {
         let source = read_psc_source(&path).expect("reading should succeed");
 
         assert_eq!(source, "café");
+    }
+
+    #[test]
+    fn reads_valid_utf8_file_from_disk_without_cp1252_reinterpretation() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName Example ; 漢字").expect("failed to write test file");
+
+        let source = read_psc_source(&path).expect("reading should succeed");
+
+        assert_eq!(source, "ScriptName Example ; 漢字");
     }
 
     #[test]
