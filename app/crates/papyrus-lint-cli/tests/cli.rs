@@ -155,3 +155,102 @@ fn missing_script_reports_an_io_error_on_stderr() {
     assert!(stderr.starts_with("error: failed to read "));
     assert!(stderr.contains("Missing.psc"));
 }
+
+#[test]
+fn lint_errors_produce_a_failure_status_through_the_binary_entry_point() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(
+        &script,
+        "ScriptName Example\n\nFunction DoThing()\n    Game.GetPlayer()\nEndFunction\n",
+    );
+
+    let output = run_cli(&[&script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(stdout.contains("[forbidden-functions]"));
+    assert!(stdout.contains("[error]"));
+    assert!(stdout.contains("problem(s) found in 1 of 1 script(s)"));
+}
+
+#[test]
+fn achlist_json_report_includes_clean_and_dirty_scripts() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let clean_script = dir.path().join("scripts/source/Clean.psc");
+    let dirty_script = dir.path().join("scripts/source/Dirty.psc");
+    let achlist = dir.path().join("sources.achlist");
+    write_file(&clean_script, "ScriptName Clean\n");
+    write_file(&dirty_script, "ScriptName Dirty   \n");
+    write_file(
+        &achlist,
+        r#"["scripts/source/Clean.psc", "scripts/source/Dirty.psc"]"#,
+    );
+
+    let output = run_cli(&["--json", "--short-paths", &achlist.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain JSON");
+    assert_eq!(report["scripts_checked"], 2);
+    assert_eq!(report["files_with_diagnostics"], 1);
+    assert_eq!(report["total_diagnostics"], 1);
+    let files = report["files"]
+        .as_array()
+        .expect("files should be an array");
+    assert_eq!(files.len(), 2);
+    assert_eq!(
+        files[0]["path"],
+        Path::new("scripts/source/Clean.psc")
+            .to_string_lossy()
+            .as_ref()
+    );
+    assert_eq!(files[0]["diagnostics"].as_array().unwrap().len(), 0);
+    assert_eq!(
+        files[1]["path"],
+        Path::new("scripts/source/Dirty.psc")
+            .to_string_lossy()
+            .as_ref()
+    );
+    assert_eq!(files[1]["diagnostics"][0]["rule"], "trailing-whitespace");
+}
+
+#[test]
+fn invalid_config_is_reported_by_the_binary_without_a_lint_report() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example\n");
+    write_file(
+        &dir.path().join("papyrus-lint.yaml"),
+        "rules: not-a-rule-map\n",
+    );
+
+    let output = run_cli(&["--json", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.starts_with("error: failed to load lint config:"));
+    assert!(stderr.contains("expected struct Rules"));
+}
+
+#[test]
+fn init_refuses_to_replace_an_existing_config_through_the_binary() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let config_path = dir.path().join("papyrus-lint.yaml");
+    write_file(&config_path, "rules:\n  semicolon: false\n");
+
+    let output = run_cli_in(&["init"], dir.path());
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8(output.stderr)
+        .expect("stderr should be UTF-8")
+        .contains("config already exists"));
+    assert_eq!(
+        fs::read_to_string(config_path).expect("existing config should remain readable"),
+        "rules:\n  semicolon: false\n"
+    );
+}
