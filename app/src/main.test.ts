@@ -1267,6 +1267,48 @@ describe("handleDroppedPaths", () => {
 
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(2);
   });
+
+  it("ignores a stale drop's straggling outcome once a newer drop has started, instead of mixing it into the newer results", async () => {
+    let resolveOldLint: (findings: Diagnostic[]) => void = () => {};
+    const pendingOldLint = new Promise<Diagnostic[]>((resolve) => {
+      resolveOldLint = resolve;
+    });
+    invokeImplFor({
+      parse_achlist_file: (args) =>
+        (args as { path: string }).path === "/proj/old.achlist" ? ["Old.psc"] : ["New.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: (args) => ({ name: (args as { path: string }).path }),
+      lint_psc_file: (args) =>
+        (args as { path: string }).path === "Old.psc"
+          ? pendingOldLint
+          : [{ line: 1, column: 1, message: "[warning] from New" }],
+    });
+
+    const oldDrop = handleDroppedPaths(["/proj/old.achlist"]);
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+
+    // A second, newer drop starts while the first one is still stuck
+    // linting Old.psc.
+    const newDrop = handleDroppedPaths(["/proj/new.achlist"]);
+    await newDrop;
+
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+    expect(document.querySelector("#psc-result-list")!.textContent).toContain("New.psc");
+
+    // The stale drop's lint pass finally finishes; its outcome must not be
+    // mixed into the newer drop's already-rendered results.
+    resolveOldLint([{ line: 1, column: 1, message: "[warning] from Old" }]);
+    await oldDrop;
+
+    const items = document.querySelectorAll("#psc-result-list > li");
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toContain("New.psc");
+  });
 });
 
 describe("projectDirForPscPath", () => {
