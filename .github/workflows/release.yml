@@ -123,8 +123,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.ref_name }}" cli-dist/* --clobber --repo "${{ github.repository }}"
 
-  editor-plugins:
-    needs: release
+  vscode-plugin:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -151,12 +150,31 @@ jobs:
           npm ci
           npx @vscode/vsce package --out ../plugin-dist/papyrus-lint-vscode-${{ github.ref_name }}.vsix
 
+      - name: Upload editor plugins to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" plugin-dist/* --clobber --repo "${{ github.repository }}"
+
+  sublime-plugin:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Sync plugin versions with release tag
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          node -e "const fs=require('fs'); const p=require('./vscode-extension/package.json'); p.version=process.argv[1]; fs.writeFileSync('./vscode-extension/package.json', JSON.stringify(p, null, 2) + '\\n')" "$VERSION"
+          printf '%s\n' "$VERSION" > SublimeLinter-contrib-papyrus-lint/VERSION
+
       - name: Package SublimeLinter plugin
         run: |
           mkdir -p plugin-dist
           zip -r "plugin-dist/SublimeLinter-contrib-papyrus-lint-${{ github.ref_name }}.zip" SublimeLinter-contrib-papyrus-lint -x '*.gitignore'
 
-      - name: Upload editor plugins to release
+      - name: Upload editor plugin to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.ref_name }}" plugin-dist/* --clobber --repo "${{ github.repository }}"
@@ -278,7 +296,8 @@ jobs:
   nexus-upload:
     name: Publish release to Nexus Mods
     needs: 
-      - editor-plugins
+      - vscode-plugin
+      - sublime-plugin
       - release-notes
     runs-on: ubuntu-latest
     permissions:
