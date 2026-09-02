@@ -2,7 +2,7 @@
 //!
 //! ```text
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] <path-to-achlist-or-psc>
-//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix <path-to-achlist-or-psc>
+//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id>] [--line <n>] <path-to-achlist-or-psc>
 //! PapyrusLinterCLI init
 //! ```
 //!
@@ -41,6 +41,18 @@
 //! [`papyrus_lints::repair`]) is applied to each resolved script first,
 //! rewriting it on disk if it changed, before the (now possibly smaller)
 //! set of remaining diagnostics is reported the same way.
+//!
+//! `fix` also accepts `--type <rule-id>` (matched case-insensitively, `_`
+//! and `-` interchangeable, e.g. `trailing_whitespace` or
+//! `trailing-whitespace`) to apply only that one automatic fix (see
+//! [`papyrus_lints::FIXABLE_RULE_IDS`]) instead of every enabled one, and
+//! `--line <n>` to further restrict whichever fix(es) run to just that
+//! 1-indexed line, leaving every other line exactly as it was. Both flags
+//! are only valid with `fix` and can be combined, e.g. `fix --line=12
+//! --type=trailing_whitespace path/to/Example.psc`. `--line` errors out if
+//! a fix it would apply changes the file's line count (e.g.
+//! `property-sorting` relocating a property's declaration), since a single
+//! original line number no longer identifies the same line in the result.
 //!
 //! With the `--json` flag (combinable with `fix`, in either argument
 //! order), the diagnostics report is printed to stdout as a single JSON
@@ -158,9 +170,38 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
     })
 }
 
+/// Restricts a repair's changes to just `target_line` (1-indexed), leaving
+/// every other line exactly as it was in `original`. Returns `None` if
+/// `repaired` doesn't have the same number of lines as `original` (e.g. the
+/// `property-sorting` fix relocated a property's declaration lines
+/// elsewhere in the file), since a single original line number no longer
+/// identifies the same line in the result in that case.
+fn restrict_to_line(original: &str, repaired: &str, target_line: usize) -> Option<String> {
+    let original_lines: Vec<&str> = original.split('\n').collect();
+    let repaired_lines: Vec<&str> = repaired.split('\n').collect();
+    if original_lines.len() != repaired_lines.len() {
+        return None;
+    }
+    Some(
+        original_lines
+            .iter()
+            .zip(repaired_lines.iter())
+            .enumerate()
+            .map(|(i, (original_line, repaired_line))| {
+                if i + 1 == target_line {
+                    *repaired_line
+                } else {
+                    *original_line
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n"),
+    )
+}
+
 pub const USAGE: &str =
     "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
-PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] fix <path-to-achlist-or-psc>\n\n\
+PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id>] [--line <n>] <path-to-achlist-or-psc>\n\n\
 PapyrusLinterCLI init\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
@@ -187,7 +228,14 @@ Options:\n\
                           scripts/source, source/scripts, and the project's\n\
                           configured additional_script_roots. Repeatable.\n\
   --output <path>         Write the report (plain text or JSON, per --json) to\n\
-                          this file instead of stdout.\n\n\
+                          this file instead of stdout.\n\
+  --type <rule-id>        fix only: apply only this rule's automatic fix\n\
+                          (e.g. trailing-whitespace or trailing_whitespace)\n\
+                          instead of every enabled one.\n\
+  --line <n>              fix only: apply the selected fix(es) only to this\n\
+                          1-indexed line, leaving every other line untouched.\n\
+                          Combinable with --type. Errors if the fix would\n\
+                          change the file's line count (e.g. property-sorting).\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n\n\
@@ -272,6 +320,8 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
     let mut config_path: Option<PathBuf> = None;
     let mut output_path: Option<PathBuf> = None;
     let mut cli_script_roots: Vec<String> = Vec::new();
+    let mut type_filter: Option<String> = None;
+    let mut line_filter: Option<String> = None;
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
     let mut input = args
         .iter()
@@ -296,6 +346,22 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
                 return 2;
             };
             output_path = Some(PathBuf::from(value));
+        } else if arg == "--type" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            type_filter = Some(value);
+        } else if let Some(value) = arg.strip_prefix("--type=") {
+            type_filter = Some(value.to_string());
+        } else if arg == "--line" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            line_filter = Some(value);
+        } else if let Some(value) = arg.strip_prefix("--line=") {
+            line_filter = Some(value.to_string());
         } else {
             positional_and_flags.push(arg);
         }
@@ -313,6 +379,49 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
             let _ = write!(stderr, "{USAGE}");
             return 2;
         }
+    };
+
+    if !fix && (type_filter.is_some() || line_filter.is_some()) {
+        let _ = write!(stderr, "{USAGE}");
+        return 2;
+    }
+
+    let rule_filter: Option<&'static str> = match type_filter {
+        Some(value) => {
+            let normalized = value.replace('_', "-").to_ascii_lowercase();
+            match papyrus_lints::FIXABLE_RULE_IDS
+                .iter()
+                .find(|rule| **rule == normalized)
+            {
+                Some(rule) => Some(*rule),
+                None => {
+                    if papyrus_lints::KNOWN_RULE_IDS
+                        .iter()
+                        .any(|rule| *rule == normalized)
+                    {
+                        let _ = writeln!(stderr, "error: rule '{value}' has no automatic fix");
+                    } else {
+                        let _ = writeln!(stderr, "error: unknown rule '{value}'");
+                    }
+                    return 2;
+                }
+            }
+        }
+        None => None,
+    };
+
+    let target_line: Option<usize> = match line_filter {
+        Some(value) => match value.parse::<usize>() {
+            Ok(line) if line >= 1 => Some(line),
+            _ => {
+                let _ = writeln!(
+                    stderr,
+                    "error: --line must be a positive integer, got '{value}'"
+                );
+                return 2;
+            }
+        },
+        None => None,
     };
 
     let is_psc_file = input_path
@@ -439,7 +548,21 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         };
 
         let source = if fix {
-            let repaired = papyrus_lints::repair(&source, &lint_config);
+            let repaired = papyrus_lints::repair_filtered(&source, &lint_config, rule_filter);
+            let repaired = match target_line {
+                Some(line) => match restrict_to_line(&source, &repaired, line) {
+                    Some(restricted) => restricted,
+                    None => {
+                        let _ = writeln!(
+                            stderr,
+                            "error: --line can't be applied to {} because a fix changes the file's line count (e.g. property-sorting); use --type to restrict to a line-preserving fix, or omit --line",
+                            script_path.display()
+                        );
+                        return 2;
+                    }
+                },
+                None => repaired,
+            };
             if repaired != source {
                 if let Err(err) = fs::write(script_path, &repaired) {
                     let _ = writeln!(
@@ -1163,6 +1286,202 @@ mod tests {
         assert!(!stdout.contains("[trailing-whitespace]"));
         assert!(stdout.contains("Game.GetPlayer"));
         assert!(stdout.contains("(1 script(s) fixed.)"));
+    }
+
+    #[test]
+    fn fix_type_filter_applies_only_the_named_rule() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n\nFunction Add(Int left,Int right)\nEndFunction   \n",
+        );
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--type=comma_spacing".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stderr.is_empty());
+        assert_eq!(code, 0);
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n\nFunction Add(Int left, Int right)\nEndFunction   \n"
+        );
+    }
+
+    #[test]
+    fn fix_type_filter_accepts_the_hyphenated_rule_id() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--type".to_string(),
+            "trailing-whitespace".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stderr.is_empty());
+        assert_eq!(code, 0);
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n"
+        );
+    }
+
+    #[test]
+    fn fix_line_filter_only_touches_the_named_line() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example   \n\nFunction DoThing()   \nEndFunction\n",
+        );
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--line=3".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stderr.is_empty());
+        assert_eq!(code, 0);
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example   \n\nFunction DoThing()\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn fix_line_and_type_filters_combine() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example   \n\nFunction Add(Int left,Int right)   \nEndFunction\n",
+        );
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--line=3".to_string(),
+            "--type=comma_spacing".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stderr.is_empty());
+        assert_eq!(code, 0);
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example   \n\nFunction Add(Int left, Int right)   \nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn type_filter_rejects_an_unknown_rule_id() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--type=made-up-rule".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("unknown rule 'made-up-rule'"));
+    }
+
+    #[test]
+    fn type_filter_rejects_a_rule_with_no_automatic_fix() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--type=forbidden-functions".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("rule 'forbidden-functions' has no automatic fix"));
+    }
+
+    #[test]
+    fn type_filter_without_fix_prints_usage() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--type=trailing-whitespace".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn line_filter_without_fix_prints_usage() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--line=1".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn line_filter_rejects_a_non_positive_value() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--line=0".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("--line must be a positive integer"));
+    }
+
+    #[test]
+    fn line_filter_errors_when_a_fix_changes_the_line_count() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n\nInt Property Zulu = 1 Auto\nActor Property Alpha Auto\n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  property_sorting: true\n",
+        );
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--line=3".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("changes the file's line count"));
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n\nInt Property Zulu = 1 Auto\nActor Property Alpha Auto\n"
+        );
     }
 
     #[test]

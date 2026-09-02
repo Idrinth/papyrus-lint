@@ -53,7 +53,12 @@ pub mod unused_property;
 pub mod useless_downcast;
 pub mod variable_used_before_assignment;
 
-const KNOWN_RULE_IDS: &[&str] = &[
+/// Every rule id [`lint`]/[`lint_with_external_arguments`] can report,
+/// matched against `; @disable <rule-id>` directives (see
+/// [`disable_comments`]) and validated against by callers (e.g. the CLI's
+/// `fix --type <rule-id>`) that need to tell an unknown rule id apart from
+/// a known one with no automatic fix (see [`FIXABLE_RULE_IDS`]).
+pub const KNOWN_RULE_IDS: &[&str] = &[
     trailing_whitespace::RULE,
     comma_spacing::RULE,
     forbidden_functions::RULE,
@@ -332,57 +337,83 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     diagnostics
 }
 
+/// Rule ids with an automatic fix, in the order [`repair`] applies them.
+/// Every other id in [`KNOWN_RULE_IDS`] can only be reported, never fixed.
+pub const FIXABLE_RULE_IDS: &[&str] = &[
+    identifier_casing::RULE,
+    semicolon::RULE,
+    indentation::RULE,
+    property_sorting::RULE,
+    comma_spacing::RULE,
+    chain_whitespace::RULE,
+    exclamation_spacing::RULE,
+    operator_spacing::RULE,
+    type_casing::RULE,
+    trailing_whitespace::RULE,
+];
+
 /// Applies every automatic fix to `source`, including the semicolon and
 /// indentation style selected by `config`, and returns the repaired text.
 /// A ruleset disabled via `config.rules` has its fix skipped too.
 pub fn repair(source: &str, config: &Config) -> String {
+    repair_filtered(source, config, None)
+}
+
+/// Like [`repair`], but when `rule_filter` is `Some(rule)`, skips every fix
+/// except the one whose rule id (see [`FIXABLE_RULE_IDS`]) equals `rule`.
+/// `rule_filter` of `None` behaves exactly like [`repair`]. This lets a
+/// caller (e.g. the CLI's `fix --type <rule-id>`) apply just one automatic
+/// fix without disabling every other rule in `config` (which would also
+/// suppress their diagnostics from the report).
+pub fn repair_filtered(source: &str, config: &Config, rule_filter: Option<&str>) -> String {
     let rules = &config.rules;
-    let source = if rules.identifier_casing {
+    let applies = |rule: &str| rule_filter.is_none_or(|filter| filter == rule);
+    let source = if rules.identifier_casing && applies(identifier_casing::RULE) {
         identifier_casing::repair(source, config.identifier_casing)
     } else {
         source.to_string()
     };
-    let source = if rules.semicolon {
+    let source = if rules.semicolon && applies(semicolon::RULE) {
         semicolon::repair(&source, config.semicolon_style())
     } else {
         source
     };
-    let source = if rules.indentation {
+    let source = if rules.indentation && applies(indentation::RULE) {
         indentation::repair(&source, config.indentation_unit())
     } else {
         source
     };
-    let source = if rules.property_sorting {
+    let source = if rules.property_sorting && applies(property_sorting::RULE) {
         property_sorting::repair(&source)
     } else {
         source
     };
-    let source = if rules.comma_spacing {
+    let source = if rules.comma_spacing && applies(comma_spacing::RULE) {
         comma_spacing::repair(&source)
     } else {
         source
     };
-    let source = if rules.chain_whitespace {
+    let source = if rules.chain_whitespace && applies(chain_whitespace::RULE) {
         chain_whitespace::repair(&source)
     } else {
         source
     };
-    let source = if rules.exclamation_spacing {
+    let source = if rules.exclamation_spacing && applies(exclamation_spacing::RULE) {
         exclamation_spacing::repair(&source)
     } else {
         source
     };
-    let source = if rules.operator_spacing {
+    let source = if rules.operator_spacing && applies(operator_spacing::RULE) {
         operator_spacing::repair(&source)
     } else {
         source
     };
-    let source = if rules.type_casing {
+    let source = if rules.type_casing && applies(type_casing::RULE) {
         type_casing::repair(&source, config.type_casing)
     } else {
         source
     };
-    if rules.trailing_whitespace {
+    if rules.trailing_whitespace && applies(trailing_whitespace::RULE) {
         trailing_whitespace::repair(&source)
     } else {
         source
@@ -537,6 +568,34 @@ mod tests {
             .unwrap();
 
         assert_eq!(diagnostic.column, 31);
+    }
+
+    #[test]
+    fn repair_filtered_applies_only_the_named_rule() {
+        let config = Config::default();
+        let source = "Call(1,2)  \r\n";
+
+        let comma_only = repair_filtered(source, &config, Some(comma_spacing::RULE));
+        assert_eq!(comma_only, "Call(1, 2)  \r\n");
+
+        let whitespace_only = repair_filtered(source, &config, Some(trailing_whitespace::RULE));
+        assert_eq!(whitespace_only, "Call(1,2)\r\n");
+
+        assert_eq!(
+            repair_filtered(source, &config, None),
+            repair(source, &config)
+        );
+    }
+
+    #[test]
+    fn repair_filtered_matches_nothing_for_an_unknown_rule_id() {
+        let config = Config::default();
+        let source = "Call(1,2)  \r\n";
+
+        assert_eq!(
+            repair_filtered(source, &config, Some("made-up-rule")),
+            source
+        );
     }
 
     #[test]
