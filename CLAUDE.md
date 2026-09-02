@@ -177,7 +177,7 @@ binary target that crate also defines.
 - **Rules YAML lint job**: runs `yamllint` against every `rules/*.yaml` file
   so malformed rule data cannot be merged.
 - **Nexus page BBCode job**: runs the dependency-free Python BBCode linter's
-  unit tests, then checks `nexuspage.bbcode` for unknown, mismatched, and
+  unit tests, then checks `docs/nexuspage.bbcode` for unknown, mismatched, and
   unclosed tags.
 - **Sublime Text extension job**: runs the plugin's Python unit tests via
   `coverage run -m unittest discover`, scoped to `commands.py`/`linter.py`
@@ -267,7 +267,7 @@ editor plugins as `optional`, and the zipped config as `miscellaneous`.
 The setup.exe upload also sets `primary_mod_manager_download` and
 `update_mod_version`, since it's the mod's primary download and drives
 the mod-level version shown on the page. The Nexus API has no endpoint
-to update a mod's page description, so `nexuspage.bbcode` is not synced
+to update a mod's page description, so `docs/nexuspage.bbcode` is not synced
 by this job and still needs to be pasted onto the mod page by hand.
 
 ## Merging
@@ -411,10 +411,10 @@ one file is updated, make the equivalent update to the other file in the same
 change and verify that the two files remain identical.
 
 Whenever the documented lints in `README.md` are updated, make the corresponding
-lint update to `nexuspage.bbcode` in the same change. Preserve the Nexus page's
+lint update to `docs/nexuspage.bbcode` in the same change. Preserve the Nexus page's
 existing style: keep its lint descriptions shorter and more concise than the
 README rather than copying the README's longer explanations verbatim. Whenever
 the CLI usage examples/options or the documented default configuration in
 `README.md` are updated, make the corresponding update to the CLI or
-configuration section of `nexuspage.bbcode` in the same change. Other README
+configuration section of `docs/nexuspage.bbcode` in the same change. Other README
 changes do not need to be synchronized to the Nexus page.

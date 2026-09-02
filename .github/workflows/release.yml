@@ -40,7 +40,7 @@ jobs:
       - name: Generate version-specific Nexus page
         run: |
           python3 .github/scripts/render_nexuspage.py \
-            nexuspage.bbcode \
+            docs/nexuspage.bbcode \
             coverage-artifacts \
             "nexuspage-${{ github.ref_name }}.bbcode"
 
