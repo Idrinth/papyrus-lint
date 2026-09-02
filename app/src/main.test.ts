@@ -1443,6 +1443,43 @@ describe("handleDroppedPaths", () => {
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toContain("New.psc");
   });
+
+  it("ignores a stale single-psc drop's outcome after a newer psc drop has finished", async () => {
+    let resolveOldLint: (findings: Diagnostic[]) => void = () => {};
+    const pendingOldLint = new Promise<Diagnostic[]>((resolve) => {
+      resolveOldLint = resolve;
+    });
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: (args) => ({ name: (args as { path: string }).path }),
+      lint_psc_file: (args) =>
+        (args as { path: string }).path.endsWith("Old.psc")
+          ? pendingOldLint
+          : [{ line: 1, column: 1, message: "[warning] from New" }],
+    });
+
+    const oldDrop = handleDroppedPaths(["/proj/scripts/source/Old.psc"]);
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+
+    const newDrop = handleDroppedPaths(["/proj/scripts/source/New.psc"]);
+    await newDrop;
+
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+    expect(document.querySelector("#psc-result-list")!.textContent).toContain("New.psc");
+
+    resolveOldLint([{ line: 1, column: 1, message: "[warning] from Old" }]);
+    await oldDrop;
+
+    const items = document.querySelectorAll("#psc-result-list > li");
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toContain("New.psc");
+    expect(items[0].textContent).not.toContain("Old.psc");
+  });
 });
 
 describe("projectDirForPscPath", () => {
