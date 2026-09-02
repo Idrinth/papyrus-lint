@@ -739,6 +739,29 @@ describe("parsePscFiles / repairPscFile", () => {
     expect(outcome.findings).toEqual([]);
   });
 
+  it("invokes onOutcome as each file finishes, without waiting for the rest of the batch", async () => {
+    let resolveB: (findings: Diagnostic[]) => void = () => {};
+    const pendingB = new Promise<Diagnostic[]>((resolve) => {
+      resolveB = resolve;
+    });
+    invokeImplFor({
+      parse_psc_file: (args) => ({ name: (args as { path: string }).path }),
+      lint_psc_file: (args) => ((args as { path: string }).path === "B.psc" ? pendingB : []),
+    });
+
+    const seen: string[] = [];
+    const result = parsePscFiles(["A.psc", "B.psc"], (outcome) => seen.push(outcome.path));
+
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+    }
+    expect(seen).toEqual(["A.psc"]);
+
+    resolveB([]);
+    await result;
+    expect(seen).toEqual(["A.psc", "B.psc"]);
+  });
+
   it("lint_psc_file forwards the currently configured compiler path and compile-check setting", async () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
@@ -1208,6 +1231,41 @@ describe("handleDroppedPaths", () => {
 
     resolveLint([]);
     await secondDrop;
+  });
+
+  it("switches to the lint tab and grows the results list as each file finishes, without waiting for the whole achlist", async () => {
+    let resolveB: (findings: Diagnostic[]) => void = () => {};
+    const pendingB = new Promise<Diagnostic[]>((resolve) => {
+      resolveB = resolve;
+    });
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc", "B.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: (args) => ({ name: (args as { path: string }).path }),
+      lint_psc_file: (args) =>
+        (args as { path: string }).path === "B.psc"
+          ? pendingB
+          : [{ line: 1, column: 1, message: "[warning] from A" }],
+    });
+
+    switchTab("import");
+    const drop = handleDroppedPaths(["/proj/list.achlist"]);
+    // Let the project-dir setup and A's parse+lint pass resolve, but not
+    // B's, which is still pending.
+    for (let i = 0; i < 30; i++) {
+      await Promise.resolve();
+    }
+
+    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+
+    resolveB([{ line: 2, column: 1, message: "[warning] from B" }]);
+    await drop;
+
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(2);
   });
 });
 

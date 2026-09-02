@@ -638,16 +638,27 @@ export function hasFixableFindings(findings: Diagnostic[]): boolean {
   );
 }
 
-export async function parsePscFiles(paths: string[]): Promise<PscParseOutcome[]> {
+// Parses and lints every path in `paths`, invoking `onOutcome` (if given) as
+// each one finishes rather than waiting for the whole batch — the caller can
+// use that to render results incrementally instead of freezing until the
+// slowest file completes. Outcomes are otherwise still resolved concurrently,
+// so `onOutcome` fires in completion order, not necessarily `paths`' order.
+export async function parsePscFiles(
+  paths: string[],
+  onOutcome?: (outcome: PscParseOutcome) => void,
+): Promise<PscParseOutcome[]> {
   return Promise.all(
     paths.map(async (path) => {
+      let outcome: PscParseOutcome;
       try {
         const script = await invoke<PapyrusScript>("parse_psc_file", { path });
         const findings = await lintPscFile(path);
-        return { path, ok: true, detail: `parsed as "${script.name}"`, findings };
+        outcome = { path, ok: true, detail: `parsed as "${script.name}"`, findings };
       } catch (error) {
-        return { path, ok: false, detail: String(error), findings: [] };
+        outcome = { path, ok: false, detail: String(error), findings: [] };
       }
+      onOutcome?.(outcome);
+      return outcome;
     }),
   );
 }
@@ -1524,11 +1535,14 @@ export async function handleDroppedPaths(paths: string[]) {
       currentPscOutcomes = [];
       const projectDir = projectDirForAchlist(achlistPath, entries);
       showResult(achlistPath, entries, projectDir);
+      renderPscResults(currentPscOutcomes);
 
       await useProjectDir(projectDir);
       currentAchlistScriptRoots = scriptRootsForAchlist(entries);
-      currentPscOutcomes = await parsePscFiles(entries.filter(isPscPath));
-      renderPscResults(currentPscOutcomes);
+      await parsePscFiles(entries.filter(isPscPath), (outcome) => {
+        currentPscOutcomes.push(outcome);
+        renderPscResults(currentPscOutcomes);
+      });
     } catch (error) {
       showError("Failed to read that .achlist file. Please try again.");
       console.error(error);
@@ -1541,11 +1555,14 @@ export async function handleDroppedPaths(paths: string[]) {
     clearError();
     currentPscOutcomes = [];
     showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
+    renderPscResults(currentPscOutcomes);
 
     await useProjectDir(projectDirForPscPath(pscPath));
     currentAchlistScriptRoots = [];
-    currentPscOutcomes = await parsePscFiles([pscPath]);
-    renderPscResults(currentPscOutcomes);
+    await parsePscFiles([pscPath], (outcome) => {
+      currentPscOutcomes.push(outcome);
+      renderPscResults(currentPscOutcomes);
+    });
     return;
   }
 
