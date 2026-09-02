@@ -139,6 +139,26 @@ fn line_restricted_public_repair_rejects_a_line_relocating_fix() {
 }
 
 #[test]
+fn line_restricted_public_repair_preserves_text_for_out_of_range_lines() {
+    let source = "Call(1,2)\r\nCall(3,4)\r\n";
+    let repaired = repair_filtered(source, &Config::default(), Some("comma-spacing"));
+
+    assert_eq!(restrict_to_line(source, &repaired, 0), Some(source.into()));
+    assert_eq!(restrict_to_line(source, &repaired, 4), Some(source.into()));
+}
+
+#[test]
+fn line_restricted_public_repair_handles_a_final_line_without_a_newline() {
+    let source = "Call(1,2)\nCall(3,4)";
+    let repaired = repair_filtered(source, &Config::default(), Some("comma-spacing"));
+
+    assert_eq!(
+        restrict_to_line(source, &repaired, 2),
+        Some("Call(1,2)\nCall(3, 4)".to_string())
+    );
+}
+
+#[test]
 fn lint_reports_multiple_enabled_rules_through_the_public_api() {
     let source = "ScriptName Example  \n\nFunction Run(Int left,Int right)\nEndFunction\n";
 
@@ -189,6 +209,43 @@ fn diagnostic_serialization_exposes_the_structured_output_contract() {
             "message": "[warning] Example finding",
             "rule": "example-rule",
         })
+    );
+}
+
+#[test]
+fn diagnostic_level_requires_an_exact_leading_severity_tag() {
+    let diagnostic = |message: &str| Diagnostic {
+        line: 1,
+        column: 1,
+        message: message.to_string(),
+        rule: "example-rule",
+    };
+
+    assert_eq!(diagnostic("[info] details").level(), "info");
+    assert_eq!(diagnostic(" [warning] details").level(), "error");
+    assert_eq!(diagnostic("[WARNING] details").level(), "error");
+    assert_eq!(diagnostic("[warning-ish] details").level(), "error");
+}
+
+#[test]
+fn unknown_filtered_repair_rule_is_a_noop() {
+    let source = "Call(1,2)  \n";
+
+    assert_eq!(
+        repair_filtered(source, &Config::default(), Some("not-a-rule")),
+        source
+    );
+}
+
+#[test]
+fn a_disabled_rule_cannot_be_forced_through_filtered_repair() {
+    let source = "Call(1,2)\n";
+    let mut config = Config::default();
+    config.rules.comma_spacing = false;
+
+    assert_eq!(
+        repair_filtered(source, &config, Some("comma-spacing")),
+        source
     );
 }
 

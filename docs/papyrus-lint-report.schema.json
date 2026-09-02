@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/papyrus-lint-report.schema.json",
+  "$id": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-report.schema.json",
   "title": "Papyrus Lint CLI report",
   "description": "The JSON document emitted by PapyrusLinterCLI --json.",
   "type": "object",
