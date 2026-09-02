@@ -341,3 +341,70 @@ fn disabling_all_fixable_rules_makes_public_repair_a_noop() {
 
     assert_eq!(repair(source, &config), source);
 }
+
+#[test]
+fn public_lint_reports_unknown_and_untriggered_disable_directives() {
+    let source = "ScriptName Example\n\nCall() ; @disable mystery-rule, comma-spacing\n";
+    let mut config = Config::default();
+    config.rules.unused_disable = true;
+
+    let diagnostics = lint(source, &config);
+    let unused: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule == "unused-disable")
+        .collect();
+
+    assert_eq!(unused.len(), 2);
+    assert_eq!((unused[0].line, unused[0].column), (3, 19));
+    assert!(unused[0].message.contains("mystery-rule"));
+    assert!(unused[0].message.contains("unknown"));
+    assert_eq!((unused[1].line, unused[1].column), (3, 33));
+    assert!(unused[1].message.contains("comma-spacing"));
+    assert!(unused[1].message.contains("does not produce"));
+}
+
+#[test]
+fn public_lint_does_not_report_a_disable_that_suppresses_a_finding() {
+    let source = "ScriptName Example\n\nCall(1,2) ; @disable comma-spacing\n";
+    let mut config = Config::default();
+    config.rules.unused_disable = true;
+
+    let diagnostics = lint(source, &config);
+
+    assert!(diagnostics.iter().all(|diagnostic| {
+        diagnostic.rule != "comma-spacing" && diagnostic.rule != "unused-disable"
+    }));
+}
+
+#[test]
+fn bare_disable_is_unused_only_when_its_line_has_no_findings() {
+    let source = "ScriptName Example\n\nCall() ; @disable\nCall(1,2) ; @disable\n";
+    let mut config = Config::default();
+    config.rules.unused_disable = true;
+
+    let diagnostics = lint(source, &config);
+    let unused: Vec<_> = diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule == "unused-disable")
+        .collect();
+
+    assert_eq!(unused.len(), 1);
+    assert_eq!((unused[0].line, unused[0].column), (3, 10));
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.line != 4));
+}
+
+#[test]
+fn unused_disable_rule_can_be_disabled_without_affecting_suppression() {
+    let mut config = Config::default();
+    config.rules.unused_disable = false;
+    let source = "ScriptName Example\n\nCall() ; @disable mystery-rule\nCall(1,2) ; @disable comma-spacing\n";
+
+    let diagnostics = lint(source, &config);
+
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "unused-disable"));
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| { diagnostic.line != 4 || diagnostic.rule != "comma-spacing" }));
+}
