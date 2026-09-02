@@ -29,6 +29,7 @@ pub mod named_arguments;
 pub mod none_form_usage;
 pub mod numeric_comparison;
 pub mod operator_spacing;
+pub mod parameter_reassignment;
 pub mod property_sorting;
 pub mod return_types;
 pub mod semicolon;
@@ -49,6 +50,7 @@ pub mod unused_getter;
 pub mod unused_local_variable;
 pub mod unused_property;
 pub mod useless_downcast;
+pub mod variable_used_before_assignment;
 
 const KNOWN_RULE_IDS: &[&str] = &[
     trailing_whitespace::RULE,
@@ -75,6 +77,7 @@ const KNOWN_RULE_IDS: &[&str] = &[
     unused_local_variable::RULE,
     none_form_usage::RULE,
     local_variable_shadowing::RULE,
+    parameter_reassignment::RULE,
     chain_whitespace::RULE,
     exclamation_spacing::RULE,
     identifier_casing::RULE,
@@ -94,6 +97,7 @@ const KNOWN_RULE_IDS: &[&str] = &[
     "conflicting-script-versions",
     unused_disable::RULE,
     magic_numbers::RULE,
+    variable_used_before_assignment::RULE,
 ];
 
 use serde::Serialize;
@@ -224,6 +228,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     if rules.local_variable_shadowing {
         diagnostics.extend(local_variable_shadowing::check_with(source, external));
     }
+    if rules.parameter_reassignment {
+        diagnostics.extend(parameter_reassignment::check(source));
+    }
     if rules.function_override {
         diagnostics.extend(function_override::check_with(source, external));
     }
@@ -254,6 +261,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.unused_local_variable {
         diagnostics.extend(unused_local_variable::check(source));
+    }
+    if rules.variable_used_before_assignment {
+        diagnostics.extend(variable_used_before_assignment::check(source));
     }
     if rules.none_form_usage {
         diagnostics.extend(none_form_usage::check(source));
@@ -768,6 +778,12 @@ mod tests {
                 none_form_usage::RULE,
                 Config::default(),
                 config_with(|c| c.rules.none_form_usage = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int i\n    Debug.Trace(i as String)\nEndFunction\n",
+                variable_used_before_assignment::RULE,
+                Config::default(),
+                config_with(|c| c.rules.variable_used_before_assignment = false),
             ),
             (
                 "ScriptName Example\n\nInt Property MyValue Auto\n\nFunction Test()\n    Int MyValue = 1\n    Debug.Trace(MyValue)\nEndFunction\n",

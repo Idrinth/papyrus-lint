@@ -179,8 +179,16 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags a member/method access on a local variable or script-level property that's still known to be None.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Local variable used before assignment[/b][/td]
+[td]Flags a local variable declared without an initial value that's read before it's ever assigned one, since it then still holds its default value.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Local variable shadowing[/b][/td]
 [td]Flags a local variable whose name matches (case-insensitively) a Propertydeclared on the same script.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Parameter reassignment[/b][/td]
+[td]Flags a function/event parameter assigned a new value anywhere in its own body.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Form parameter used without a None check[/b][/td]
@@ -285,8 +293,10 @@ rules:
   static_condition: true
   division_by_zero: true
   unused_local_variable: true
+  variable_used_before_assignment: true
   none_form_usage: true
   local_variable_shadowing: true
+  parameter_reassignment: true
   chain_whitespace: true
   exclamation_spacing: true
   identifier_casing: true
