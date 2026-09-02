@@ -573,6 +573,22 @@ plugin as a `.zip` of the `SublimeLinter-contrib-papyrus-lint` directory
 on the standalone `PapyrusLinterCLI` binary above being installed and on
 `PATH` (or configured via each plugin's settings).
 
+## Fixing lint findings
+
+Each `.psc` file listed on the Lint results tab that has at least one
+finding for an "Auto-Fix" lint (see the tables above) shows an "Apply
+fixes" button, applying every automatic fix to that file at once — the
+same repair the CLI's `fix` subcommand applies to a single script (see
+Command-line interface below). Each individual finding for an
+auto-fixable rule additionally shows its own "Fix this issue" button,
+applying just that one finding's fix and restricting it to that finding's
+own line, leaving every other line and finding untouched — the desktop
+app's equivalent of the CLI's `fix --type <rule-id> --line <n>`. If that
+fix would change the file's line count elsewhere (e.g. `property-sorting`
+relocating a property's declaration), it fails instead of applying
+anything, showing the error inline next to the finding; the whole-file
+"Apply fixes" button has no such restriction and always applies cleanly.
+
 ## Compiling a script
 
 Each `.psc` file listed on the Lint results tab has a "Compile" button that
