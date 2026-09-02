@@ -169,6 +169,7 @@ export interface LintRules {
   conflicting_script_versions: boolean;
   unused_disable: boolean;
   magic_numbers: boolean;
+  native_function_usage: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -239,6 +240,7 @@ export const DEFAULT_RULES: LintRules = {
   conflicting_script_versions: true,
   unused_disable: false,
   magic_numbers: false,
+  native_function_usage: false,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {

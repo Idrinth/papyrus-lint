@@ -68,8 +68,11 @@ desktop app's binary at all.
 │       │       ├── config.rs                  # Config type (YAML-deserializable) passed
 │       │       │                              # to every check/fix job
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
-│       │       └── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
-│       │                                        # via a build-time-generated array
+│       │       ├── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
+│       │       │                              # via a build-time-generated array
+│       │       └── native_function_usage.rs   # Reads rules/native-methods.yaml via a
+│       │                                      # build-time-generated array; disabled by
+│       │                                      # default
 │       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
 │       │   └── src/               # and the CLI, independent of Tauri:
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
@@ -105,8 +108,11 @@ desktop app's binary at all.
 ├── resources/                # Images used by README.md (logo, screenshots)
 ├── rules/
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
-│   ├── slow-functions.yaml       # Slow calls and their faster alternatives; both
-│   │                              # files are compiled in by papyrus-lints/build.rs
+│   ├── slow-functions.yaml       # Slow calls and their faster alternatives
+│   ├── native-methods.yaml       # Base-game native functions (see
+│   │                             # native_function_usage.rs above); all three
+│   │                             # files above are compiled in by
+│   │                             # papyrus-lints/build.rs
 │   ├── native-types.yaml         # Native engine class hierarchy fallback (see
 │   │                              # papyrus-lint-core/src/native_types.rs above);
 │   │                              # compiled in by papyrus-lint-core/build.rs

@@ -64,21 +64,25 @@
 //!   multiple_auto_states: true
 //!   conflicting_script_versions: true
 //!   magic_numbers: false
+//!   native_function_usage: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
 //! disable that lint (and its automatic fix, if it has one) entirely. As
 //! with the top-level keys, `rules` and any key within it may be omitted
 //! and falls back to its default. `property_sorting`,
-//! `unchecked_form_parameter`, and `magic_numbers` are the exceptions: they
-//! default to `false`. `property_sorting` reorders a script's declared
-//! properties, a more invasive change than the rest of these rules;
-//! `unchecked_form_parameter` defaults off because many scripts
-//! intentionally accept a possibly-`None` Form and defer the check to a
-//! caller or a later branch; `magic_numbers` defaults off because many
-//! existing scripts contain plenty of unremarkable literal numbers a
-//! project may not want flagged all at once. All three need a project to
-//! opt in explicitly.
+//! `unchecked_form_parameter`, `magic_numbers`, and `native_function_usage`
+//! are the exceptions: they default to `false`. `property_sorting`
+//! reorders a script's declared properties, a more invasive change than
+//! the rest of these rules; `unchecked_form_parameter` defaults off
+//! because many scripts intentionally accept a possibly-`None` Form and
+//! defer the check to a caller or a later branch; `magic_numbers` defaults
+//! off because many existing scripts contain plenty of unremarkable
+//! literal numbers a project may not want flagged all at once;
+//! `native_function_usage` defaults off because plenty of mods
+//! intentionally depend on SKSE/F4SE or another native extension and don't
+//! need to be warned about it. All four need a project to opt in
+//! explicitly.
 
 use std::fmt;
 
@@ -343,6 +347,11 @@ pub struct Rules {
     /// [`Self::unchecked_form_parameter`], this defaults to `false`: see
     /// [`crate::magic_numbers`].
     pub magic_numbers: bool,
+    /// The "Non-base-game native function usage" lint. Like
+    /// [`Self::property_sorting`], [`Self::unchecked_form_parameter`], and
+    /// [`Self::magic_numbers`], this defaults to `false`: see
+    /// [`crate::native_function_usage`].
+    pub native_function_usage: bool,
 }
 
 impl Default for Rules {
@@ -394,6 +403,7 @@ impl Default for Rules {
             conflicting_script_versions: true,
             unused_disable: false,
             magic_numbers: false,
+            native_function_usage: false,
         }
     }
 }
@@ -542,6 +552,10 @@ mod tests {
         // unremarkable literal numbers a project may not want flagged all
         // at once.
         assert!(!config.rules.magic_numbers);
+        // Also disabled by default: plenty of mods intentionally depend on
+        // SKSE/F4SE or another native extension and don't need to be
+        // warned about it.
+        assert!(!config.rules.native_function_usage);
     }
 
     #[test]

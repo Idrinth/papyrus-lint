@@ -1,7 +1,12 @@
 # Native functions declared by Skyrim's base-game Papyrus scripts.
 #
-# This is data only: nothing in the linter reads this file yet.
-# Functions supplied by SKSE or other extensions are intentionally excluded.
+# Compiled in by papyrus-lints/build.rs for the "Non-base-game native
+# function usage" lint (see native_function_usage.rs), which flags a
+# `Native` function/event declared on a linted script whose (object,
+# function) pair isn't listed here — a strong signal it's instead supplied
+# by SKSE/F4SE or some other native extension the project depends on.
+# Functions supplied by SKSE or other extensions are intentionally excluded
+# from this list itself.
 #
 # Each entry:
 #   object:   the script or object type that declares the native function
