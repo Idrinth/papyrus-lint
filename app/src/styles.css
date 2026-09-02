@@ -1,3 +1,5 @@
+@import "@fontsource/cinzel/700.css";
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -52,11 +54,17 @@
 
 h1 {
   text-align: center;
+  font-family: "Cinzel", Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .app-version {
   font-size: 0.5em;
   font-weight: normal;
+  letter-spacing: normal;
+  text-transform: none;
   opacity: 0.6;
 }
 
