@@ -5,5 +5,5 @@
     "rootDir": ".",
     "sourceMap": false
   },
-  "include": ["src/diagnostics.ts", "src/cliDownload.ts"]
+  "include": ["src/**/*.ts"]
 }
