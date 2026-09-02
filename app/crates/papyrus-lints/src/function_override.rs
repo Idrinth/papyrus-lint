@@ -139,4 +139,41 @@ mod tests {
 
         assert!(diagnostics.is_empty());
     }
+
+    #[test]
+    fn inherited_function_lookup_is_case_insensitive() {
+        let diagnostics = check_with(
+            "ScriptName Example Extends parentscript\n\nFunction dOtHiNg()\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule, RULE);
+        assert!(diagnostics[0].message.contains("'dOtHiNg'"));
+    }
+
+    #[test]
+    fn flags_each_matching_top_level_declaration() {
+        let diagnostics = check_with(
+            "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n\nEvent DoThing()\nEndEvent\n",
+            &mut FakeExternal,
+        );
+
+        let locations: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.line, diagnostic.column))
+            .collect();
+        assert_eq!(locations, vec![(3, 1), (6, 1)]);
+    }
+
+    #[test]
+    fn top_level_override_is_still_flagged_when_a_state_also_overrides_it() {
+        let diagnostics = check_with(
+            "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n\nState Loud\n    Function DoThing()\n    EndFunction\nEndState\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 3);
+    }
 }
