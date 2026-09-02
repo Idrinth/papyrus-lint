@@ -1,0 +1,1787 @@
+# Native functions declared by Skyrim's base-game Papyrus scripts.
+#
+# This is data only: nothing in the linter reads this file yet.
+# Functions supplied by SKSE or other extensions are intentionally excluded.
+#
+# Each entry:
+#   object:   the script or object type that declares the native function
+#   function: the native function's Papyrus name
+
+- object: Actor
+  function: AddPerk
+
+- object: Actor
+  function: AllowBleedoutDialogue
+
+- object: Actor
+  function: AllowPCDialogue
+
+- object: Actor
+  function: AttachAshPile
+
+- object: Actor
+  function: CanFlyHere
+
+- object: Actor
+  function: ChangeHeadPart
+
+- object: Actor
+  function: ClearArrested
+
+- object: Actor
+  function: ClearExpressionOverride
+
+- object: Actor
+  function: ClearExtraArrows
+
+- object: Actor
+  function: ClearForcedLandingMarker
+
+- object: Actor
+  function: ClearKeepOffsetFromActor
+
+- object: Actor
+  function: ClearLookAt
+
+- object: Actor
+  function: DamageActorValue
+
+- object: Actor
+  function: DispelAllSpells
+
+- object: Actor
+  function: DispelSpell
+
+- object: Actor
+  function: DoCombatSpellApply
+
+- object: Actor
+  function: EnableAI
+
+- object: Actor
+  function: EndDeferredKill
+
+- object: Actor
+  function: EquipItem
+
+- object: Actor
+  function: EquipShout
+
+- object: Actor
+  function: EquipSpell
+
+- object: Actor
+  function: EvaluatePackage
+
+- object: Actor
+  function: ForceActorValue
+
+- object: Actor
+  function: ForceMovementDirection
+
+- object: Actor
+  function: ForceMovementRotationSpeed
+
+- object: Actor
+  function: ForceMovementSpeed
+
+- object: Actor
+  function: GetActorBase
+
+- object: Actor
+  function: GetActorValue
+
+- object: Actor
+  function: GetActorValuePercentage
+
+- object: Actor
+  function: GetBribeAmount
+
+- object: Actor
+  function: GetCombatState
+
+- object: Actor
+  function: GetCombatTarget
+
+- object: Actor
+  function: GetCrimeFaction
+
+- object: Actor
+  function: GetCurrentPackage
+
+- object: Actor
+  function: GetDialogueTarget
+
+- object: Actor
+  function: GetEquippedArmorInSlot
+
+- object: Actor
+  function: GetEquippedItemType
+
+- object: Actor
+  function: GetFactionRank
+
+- object: Actor
+  function: GetFactionReaction
+
+- object: Actor
+  function: GetFlyingState
+
+- object: Actor
+  function: GetForcedLandingMarker
+
+- object: Actor
+  function: GetGoldAmount
+
+- object: Actor
+  function: GetHighestRelationshipRank
+
+- object: Actor
+  function: GetKiller
+
+- object: Actor
+  function: GetLevel
+
+- object: Actor
+  function: GetLightLevel
+
+- object: Actor
+  function: GetLowestRelationshipRank
+
+- object: Actor
+  function: GetNoBleedoutRecovery
+
+- object: Actor
+  function: GetPlayerControls
+
+- object: Actor
+  function: GetRace
+
+- object: Actor
+  function: GetRelationshipRank
+
+- object: Actor
+  function: GetSitState
+
+- object: Actor
+  function: GetSleepState
+
+- object: Actor
+  function: GetVoiceRecoveryTime
+
+- object: Actor
+  function: HasAssociation
+
+- object: Actor
+  function: HasFamilyRelationship
+
+- object: Actor
+  function: HasLOS
+
+- object: Actor
+  function: HasMagicEffect
+
+- object: Actor
+  function: HasMagicEffectWithKeyword
+
+- object: Actor
+  function: HasPerk
+
+- object: Actor
+  function: IsAIEnabled
+
+- object: Actor
+  function: IsAlarmed
+
+- object: Actor
+  function: IsAlerted
+
+- object: Actor
+  function: IsAllowedToFly
+
+- object: Actor
+  function: IsArrested
+
+- object: Actor
+  function: IsBleedingOut
+
+- object: Actor
+  function: IsBribed
+
+- object: Actor
+  function: IsChild
+
+- object: Actor
+  function: IsCommandedActor
+
+- object: Actor
+  function: IsDead
+
+- object: Actor
+  function: IsDetectedBy
+
+- object: Actor
+  function: IsDoingFavor
+
+- object: Actor
+  function: IsEssential
+
+- object: Actor
+  function: IsFlying
+
+- object: Actor
+  function: IsGhost
+
+- object: Actor
+  function: IsGuard
+
+- object: Actor
+  function: IsHostileToActor
+
+- object: Actor
+  function: IsInCombat
+
+- object: Actor
+  function: IsInFaction
+
+- object: Actor
+  function: IsInKillMove
+
+- object: Actor
+  function: IsIntimidated
+
+- object: Actor
+  function: IsOnMount
+
+- object: Actor
+  function: IsOverEncumbered
+
+- object: Actor
+  function: IsPlayerTeammate
+
+- object: Actor
+  function: IsRunning
+
+- object: Actor
+  function: IsSneaking
+
+- object: Actor
+  function: IsSprinting
+
+- object: Actor
+  function: IsTrespassing
+
+- object: Actor
+  function: IsUnconscious
+
+- object: Actor
+  function: IsWeaponDrawn
+
+- object: Actor
+  function: KeepOffsetFromActor
+
+- object: Actor
+  function: Kill
+
+- object: Actor
+  function: KillEssential
+
+- object: Actor
+  function: KillSilent
+
+- object: Actor
+  function: ModActorValue
+
+- object: Actor
+  function: MoveToPackageLocation
+
+- object: Actor
+  function: OpenInventory
+
+- object: Actor
+  function: PathToReference
+
+- object: Actor
+  function: PlayIdle
+
+- object: Actor
+  function: PlayIdleWithTarget
+
+- object: Actor
+  function: RemoveFromAllFactions
+
+- object: Actor
+  function: RemoveFromFaction
+
+- object: Actor
+  function: RemovePerk
+
+- object: Actor
+  function: ResetAI
+
+- object: Actor
+  function: RestoreActorValue
+
+- object: Actor
+  function: Resurrect
+
+- object: Actor
+  function: SendAssaultAlarm
+
+- object: Actor
+  function: SendTrespassAlarm
+
+- object: Actor
+  function: SetActorValue
+
+- object: Actor
+  function: SetAlert
+
+- object: Actor
+  function: SetAllowFlying
+
+- object: Actor
+  function: SetAlpha
+
+- object: Actor
+  function: SetAttackActorOnSight
+
+- object: Actor
+  function: SetBribed
+
+- object: Actor
+  function: SetCrimeFaction
+
+- object: Actor
+  function: SetCriticalStage
+
+- object: Actor
+  function: SetDoingFavor
+
+- object: Actor
+  function: SetDontMove
+
+- object: Actor
+  function: SetExpressionOverride
+
+- object: Actor
+  function: SetEyeTexture
+
+- object: Actor
+  function: SetFactionRank
+
+- object: Actor
+  function: SetGhost
+
+- object: Actor
+  function: SetHeadTracking
+
+- object: Actor
+  function: SetIntimidated
+
+- object: Actor
+  function: SetLookAt
+
+- object: Actor
+  function: SetNoBleedoutRecovery
+
+- object: Actor
+  function: SetNotShowOnStealthMeter
+
+- object: Actor
+  function: SetOutfit
+
+- object: Actor
+  function: SetPlayerControls
+
+- object: Actor
+  function: SetPlayerResistingArrest
+
+- object: Actor
+  function: SetPlayerTeammate
+
+- object: Actor
+  function: SetRace
+
+- object: Actor
+  function: SetRelationshipRank
+
+- object: Actor
+  function: SetRestrained
+
+- object: Actor
+  function: SetSubGraphFloatVariable
+
+- object: Actor
+  function: SetUnconscious
+
+- object: Actor
+  function: SetVehicle
+
+- object: Actor
+  function: SetVoiceRecoveryTime
+
+- object: Actor
+  function: ShowBarterMenu
+
+- object: Actor
+  function: StartCannibal
+
+- object: Actor
+  function: StartCombat
+
+- object: Actor
+  function: StartDeferredKill
+
+- object: Actor
+  function: StopCombat
+
+- object: Actor
+  function: StopCombatAlarm
+
+- object: Actor
+  function: TrapSoul
+
+- object: Actor
+  function: UnequipAll
+
+- object: Actor
+  function: UnequipItem
+
+- object: Actor
+  function: UnequipItemSlot
+
+- object: Actor
+  function: UnequipShout
+
+- object: Actor
+  function: UnequipSpell
+
+- object: Actor
+  function: UnLockOwnedDoorsInCell
+
+- object: Actor
+  function: UpdateWeight
+
+- object: ActorBase
+  function: GetClass
+
+- object: ActorBase
+  function: GetCombatStyle
+
+- object: ActorBase
+  function: GetOutfit
+
+- object: ActorBase
+  function: GetRace
+
+- object: ActorBase
+  function: GetSex
+
+- object: ActorBase
+  function: GetTemplate
+
+- object: ActorBase
+  function: GetVoiceType
+
+- object: ActorBase
+  function: IsEssential
+
+- object: ActorBase
+  function: IsInvulnerable
+
+- object: ActorBase
+  function: IsProtected
+
+- object: ActorBase
+  function: IsUnique
+
+- object: ActorBase
+  function: SetClass
+
+- object: ActorBase
+  function: SetCombatStyle
+
+- object: ActorBase
+  function: SetEssential
+
+- object: ActorBase
+  function: SetInvulnerable
+
+- object: ActorBase
+  function: SetOutfit
+
+- object: ActorBase
+  function: SetProtected
+
+- object: ActorBase
+  function: SetVoiceType
+
+- object: Book
+  function: GetSkill
+
+- object: Book
+  function: GetSpell
+
+- object: Book
+  function: IsRead
+
+- object: Book
+  function: SetRead
+
+- object: Cell
+  function: GetActorOwner
+
+- object: Cell
+  function: GetFactionOwner
+
+- object: Cell
+  function: GetNthRef
+
+- object: Cell
+  function: GetNumRefs
+
+- object: Cell
+  function: IsAttached
+
+- object: Cell
+  function: IsInterior
+
+- object: Cell
+  function: Reset
+
+- object: Cell
+  function: SetActorOwner
+
+- object: Cell
+  function: SetFactionOwner
+
+- object: Debug
+  function: CenterOnCell
+
+- object: Debug
+  function: CenterOnCellAndWait
+
+- object: Debug
+  function: CloseUserLog
+
+- object: Debug
+  function: DTrace
+
+- object: Debug
+  function: DumpAliasData
+
+- object: Debug
+  function: GetConfigName
+
+- object: Debug
+  function: GetPlatformName
+
+- object: Debug
+  function: MessageBox
+
+- object: Debug
+  function: Notification
+
+- object: Debug
+  function: OpenUserLog
+
+- object: Debug
+  function: PlayerMoveToAndWait
+
+- object: Debug
+  function: QuitGame
+
+- object: Debug
+  function: SendAnimationEvent
+
+- object: Debug
+  function: SetFootIK
+
+- object: Debug
+  function: SetGodMode
+
+- object: Debug
+  function: ShowRefPosition
+
+- object: Debug
+  function: StartScriptProfiling
+
+- object: Debug
+  function: StartStackProfiling
+
+- object: Debug
+  function: StopScriptProfiling
+
+- object: Debug
+  function: StopStackProfiling
+
+- object: Debug
+  function: TakeScreenshot
+
+- object: Debug
+  function: ToggleAI
+
+- object: Debug
+  function: ToggleCollisions
+
+- object: Debug
+  function: Trace
+
+- object: Debug
+  function: TraceStack
+
+- object: Debug
+  function: TraceUser
+
+- object: Enchantment
+  function: GetBaseEnchantment
+
+- object: Enchantment
+  function: GetKeywordRestrictions
+
+- object: Enchantment
+  function: GetNthEffectArea
+
+- object: Enchantment
+  function: GetNthEffectDuration
+
+- object: Enchantment
+  function: GetNthEffectMagicEffect
+
+- object: Enchantment
+  function: GetNthEffectMagnitude
+
+- object: Enchantment
+  function: GetNumEffects
+
+- object: Enchantment
+  function: IsHostile
+
+- object: Enchantment
+  function: SetKeywordRestrictions
+
+- object: Enchantment
+  function: SetNthEffectArea
+
+- object: Enchantment
+  function: SetNthEffectDuration
+
+- object: Enchantment
+  function: SetNthEffectMagnitude
+
+- object: Faction
+  function: CanPayCrimeGold
+
+- object: Faction
+  function: GetCrimeGold
+
+- object: Faction
+  function: GetCrimeGoldNonViolent
+
+- object: Faction
+  function: GetCrimeGoldViolent
+
+- object: Faction
+  function: GetInfamy
+
+- object: Faction
+  function: GetInfamyNonViolent
+
+- object: Faction
+  function: GetInfamyViolent
+
+- object: Faction
+  function: GetReaction
+
+- object: Faction
+  function: IsFactionInCrimeGroup
+
+- object: Faction
+  function: IsPlayerExpelled
+
+- object: Faction
+  function: ModCrimeGold
+
+- object: Faction
+  function: PlayerPayCrimeGold
+
+- object: Faction
+  function: SendAssaultAlarm
+
+- object: Faction
+  function: SendPlayerToJail
+
+- object: Faction
+  function: SetAlly
+
+- object: Faction
+  function: SetCrimeGold
+
+- object: Faction
+  function: SetEnemy
+
+- object: Faction
+  function: SetPlayerEnemy
+
+- object: Faction
+  function: SetPlayerExpelled
+
+- object: Faction
+  function: SetReaction
+
+- object: Form
+  function: GetGoldValue
+
+- object: Form
+  function: GetName
+
+- object: Form
+  function: GetType
+
+- object: Form
+  function: HasKeyword
+
+- object: Form
+  function: PlayerKnows
+
+- object: Form
+  function: RegisterForAnimationEvent
+
+- object: Form
+  function: RegisterForLOS
+
+- object: Form
+  function: RegisterForMenu
+
+- object: Form
+  function: RegisterForSingleUpdate
+
+- object: Form
+  function: RegisterForSingleUpdateGameTime
+
+- object: Form
+  function: RegisterForSleep
+
+- object: Form
+  function: RegisterForTrackedStatsEvent
+
+- object: Form
+  function: RegisterForUpdate
+
+- object: Form
+  function: RegisterForUpdateGameTime
+
+- object: Form
+  function: SendModEvent
+
+- object: Form
+  function: SetGoldValue
+
+- object: Form
+  function: SetName
+
+- object: Form
+  function: StartObjectProfiling
+
+- object: Form
+  function: StopObjectProfiling
+
+- object: Form
+  function: UnregisterForAnimationEvent
+
+- object: Form
+  function: UnregisterForLOS
+
+- object: Form
+  function: UnregisterForMenu
+
+- object: Form
+  function: UnregisterForSleep
+
+- object: Form
+  function: UnregisterForTrackedStatsEvent
+
+- object: Form
+  function: UnregisterForUpdate
+
+- object: Form
+  function: UnregisterForUpdateGameTime
+
+- object: Game
+  function: AddAchievement
+
+- object: Game
+  function: AddHavokBallAndSocketConstraint
+
+- object: Game
+  function: CalculateFavorCost
+
+- object: Game
+  function: ClearPrison
+
+- object: Game
+  function: DisablePlayerControls
+
+- object: Game
+  function: EnableFastTravel
+
+- object: Game
+  function: EnablePlayerControls
+
+- object: Game
+  function: FadeOutGame
+
+- object: Game
+  function: FastTravel
+
+- object: Game
+  function: FindClosestActor
+
+- object: Game
+  function: FindClosestReferenceOfAnyTypeInList
+
+- object: Game
+  function: FindClosestReferenceOfType
+
+- object: Game
+  function: FindRandomActor
+
+- object: Game
+  function: FindRandomReferenceOfAnyTypeInList
+
+- object: Game
+  function: FindRandomReferenceOfType
+
+- object: Game
+  function: ForceFirstPerson
+
+- object: Game
+  function: ForceThirdPerson
+
+- object: Game
+  function: GetCameraState
+
+- object: Game
+  function: GetForm
+
+- object: Game
+  function: GetPlayer
+
+- object: Game
+  function: GetPlayersLastRiddenHorse
+
+- object: Game
+  function: GetRealHoursPassed
+
+- object: Game
+  function: HideTitleSequenceMenu
+
+- object: Game
+  function: IncrementStat
+
+- object: Game
+  function: IsActivateControlsEnabled
+
+- object: Game
+  function: IsCamSwitchControlsEnabled
+
+- object: Game
+  function: IsFastTravelControlsEnabled
+
+- object: Game
+  function: IsFightingControlsEnabled
+
+- object: Game
+  function: IsJournalControlsEnabled
+
+- object: Game
+  function: IsLookingControlsEnabled
+
+- object: Game
+  function: IsMenuControlsEnabled
+
+- object: Game
+  function: IsMovementControlsEnabled
+
+- object: Game
+  function: IsPlayerSungazing
+
+- object: Game
+  function: IsSneakingControlsEnabled
+
+- object: Game
+  function: IsTitleSequenceMenuOpen
+
+- object: Game
+  function: IsVATSPlaybackActive
+
+- object: Game
+  function: LoadGame
+
+- object: Game
+  function: PlayBink
+
+- object: Game
+  function: PrecacheCharGen
+
+- object: Game
+  function: PrecacheCharGenClear
+
+- object: Game
+  function: QueryStat
+
+- object: Game
+  function: QuitToMainMenu
+
+- object: Game
+  function: RemoveHavokConstraints
+
+- object: Game
+  function: RequestAutoSave
+
+- object: Game
+  function: RequestSave
+
+- object: Game
+  function: SaveGame
+
+- object: Game
+  function: ServeTime
+
+- object: Game
+  function: SetBeastForm
+
+- object: Game
+  function: SetHudCartMode
+
+- object: Game
+  function: SetInChargen
+
+- object: Game
+  function: SetMiscStat
+
+- object: Game
+  function: SetPlayerAIDriven
+
+- object: Game
+  function: SetPlayerReportCrime
+
+- object: Game
+  function: SetSittingRotation
+
+- object: Game
+  function: ShakeCamera
+
+- object: Game
+  function: ShakeController
+
+- object: Game
+  function: ShowFirstPersonGeometry
+
+- object: Game
+  function: ShowRaceMenu
+
+- object: Game
+  function: ShowTitleSequenceMenu
+
+- object: Game
+  function: ShowTrainingMenu
+
+- object: Game
+  function: StartTitleSequence
+
+- object: Game
+  function: TeachWord
+
+- object: Game
+  function: TriggerScreenBlood
+
+- object: Game
+  function: UpdateHairColor
+
+- object: Game
+  function: UpdateThirdPerson
+
+- object: GlobalVariable
+  function: GetValue
+
+- object: GlobalVariable
+  function: GetValueInt
+
+- object: GlobalVariable
+  function: Mod
+
+- object: GlobalVariable
+  function: SetValue
+
+- object: GlobalVariable
+  function: SetValueInt
+
+- object: Location
+  function: GetKeywordData
+
+- object: Location
+  function: HasCommonParent
+
+- object: Location
+  function: HasRefType
+
+- object: Location
+  function: IsChild
+
+- object: Location
+  function: IsCleared
+
+- object: Location
+  function: IsLoaded
+
+- object: Location
+  function: SetCleared
+
+- object: Location
+  function: SetKeywordData
+
+- object: Math
+  function: abs
+
+- object: Math
+  function: acos
+
+- object: Math
+  function: asin
+
+- object: Math
+  function: atan
+
+- object: Math
+  function: Ceiling
+
+- object: Math
+  function: cos
+
+- object: Math
+  function: Floor
+
+- object: Math
+  function: pow
+
+- object: Math
+  function: RandomFloat
+
+- object: Math
+  function: RandomInt
+
+- object: Math
+  function: sin
+
+- object: Math
+  function: sqrt
+
+- object: Math
+  function: tan
+
+- object: Message
+  function: GetButtonPressed
+
+- object: Message
+  function: Show
+
+- object: ObjectReference
+  function: Activate
+
+- object: ObjectReference
+  function: AddDependentAnimatedObjectReference
+
+- object: ObjectReference
+  function: AddInventoryEventFilter
+
+- object: ObjectReference
+  function: AddItem
+
+- object: ObjectReference
+  function: AddKeyIfNeeded
+
+- object: ObjectReference
+  function: ApplyHavokImpulse
+
+- object: ObjectReference
+  function: BlockActivation
+
+- object: ObjectReference
+  function: CalculateEncounterLevel
+
+- object: ObjectReference
+  function: CanFastTravelToMarker
+
+- object: ObjectReference
+  function: ClearDestruction
+
+- object: ObjectReference
+  function: CreateDetectionEvent
+
+- object: ObjectReference
+  function: DamageObject
+
+- object: ObjectReference
+  function: Delete
+
+- object: ObjectReference
+  function: Disable
+
+- object: ObjectReference
+  function: DisableNoWait
+
+- object: ObjectReference
+  function: DropObject
+
+- object: ObjectReference
+  function: Enable
+
+- object: ObjectReference
+  function: EnableFastTravel
+
+- object: ObjectReference
+  function: EnableNoWait
+
+- object: ObjectReference
+  function: ForceAddRagdollToWorld
+
+- object: ObjectReference
+  function: ForceRemoveRagdollFromWorld
+
+- object: ObjectReference
+  function: GetActorOwner
+
+- object: ObjectReference
+  function: GetAllForms
+
+- object: ObjectReference
+  function: GetAngleX
+
+- object: ObjectReference
+  function: GetAngleY
+
+- object: ObjectReference
+  function: GetAngleZ
+
+- object: ObjectReference
+  function: GetAnimationVariableBool
+
+- object: ObjectReference
+  function: GetAnimationVariableFloat
+
+- object: ObjectReference
+  function: GetAnimationVariableInt
+
+- object: ObjectReference
+  function: GetBaseObject
+
+- object: ObjectReference
+  function: GetCurrentDestructionStage
+
+- object: ObjectReference
+  function: GetCurrentLocation
+
+- object: ObjectReference
+  function: GetDistance
+
+- object: ObjectReference
+  function: GetEditorLocation
+
+- object: ObjectReference
+  function: GetFactionOwner
+
+- object: ObjectReference
+  function: GetHeadingAngle
+
+- object: ObjectReference
+  function: GetHeight
+
+- object: ObjectReference
+  function: GetItemCount
+
+- object: ObjectReference
+  function: GetKey
+
+- object: ObjectReference
+  function: GetLength
+
+- object: ObjectReference
+  function: GetLinkedRef
+
+- object: ObjectReference
+  function: GetLockLevel
+
+- object: ObjectReference
+  function: GetMass
+
+- object: ObjectReference
+  function: GetNthForm
+
+- object: ObjectReference
+  function: GetNthLinkedRef
+
+- object: ObjectReference
+  function: GetNumItems
+
+- object: ObjectReference
+  function: GetNumReferenceAliases
+
+- object: ObjectReference
+  function: GetOpenState
+
+- object: ObjectReference
+  function: GetParentCell
+
+- object: ObjectReference
+  function: GetPositionX
+
+- object: ObjectReference
+  function: GetPositionY
+
+- object: ObjectReference
+  function: GetPositionZ
+
+- object: ObjectReference
+  function: GetReferenceAliases
+
+- object: ObjectReference
+  function: GetScale
+
+- object: ObjectReference
+  function: GetTriggerObjectCount
+
+- object: ObjectReference
+  function: GetVoiceType
+
+- object: ObjectReference
+  function: GetWidth
+
+- object: ObjectReference
+  function: HasNode
+
+- object: ObjectReference
+  function: HasRefType
+
+- object: ObjectReference
+  function: IgnoreFriendlyHits
+
+- object: ObjectReference
+  function: Is3DLoaded
+
+- object: ObjectReference
+  function: IsActivateChild
+
+- object: ObjectReference
+  function: IsActivationBlocked
+
+- object: ObjectReference
+  function: IsDisabled
+
+- object: ObjectReference
+  function: IsFurnitureInUse
+
+- object: ObjectReference
+  function: IsFurnitureMarkerInUse
+
+- object: ObjectReference
+  function: IsIgnoringFriendlyHits
+
+- object: ObjectReference
+  function: IsInDialogueWithPlayer
+
+- object: ObjectReference
+  function: IsLockBroken
+
+- object: ObjectReference
+  function: IsLocked
+
+- object: ObjectReference
+  function: IsMapMarkerVisible
+
+- object: ObjectReference
+  function: IsOffLimits
+
+- object: ObjectReference
+  function: IsOwned
+
+- object: ObjectReference
+  function: IsTeleportEnabled
+
+- object: ObjectReference
+  function: KnockAreaEffect
+
+- object: ObjectReference
+  function: Lock
+
+- object: ObjectReference
+  function: MoveTo
+
+- object: ObjectReference
+  function: MoveToInteractionLocation
+
+- object: ObjectReference
+  function: MoveToMyEditorLocation
+
+- object: ObjectReference
+  function: MoveToNode
+
+- object: ObjectReference
+  function: MoveToWhenUnloaded
+
+- object: ObjectReference
+  function: PlayAnimation
+
+- object: ObjectReference
+  function: PlayAnimationAndWait
+
+- object: ObjectReference
+  function: PlayGamebryoAnimation
+
+- object: ObjectReference
+  function: PlayImpactEffect
+
+- object: ObjectReference
+  function: PlaySyncedAnimationAndWaitSS
+
+- object: ObjectReference
+  function: PlaySyncedAnimationSS
+
+- object: ObjectReference
+  function: PlayTerrainEffect
+
+- object: ObjectReference
+  function: ProcessTrapHit
+
+- object: ObjectReference
+  function: PushActorAway
+
+- object: ObjectReference
+  function: RemoveAllItems
+
+- object: ObjectReference
+  function: RemoveDependentAnimatedObjectReference
+
+- object: ObjectReference
+  function: RemoveInventoryEventFilter
+
+- object: ObjectReference
+  function: RemoveItem
+
+- object: ObjectReference
+  function: Reset
+
+- object: ObjectReference
+  function: ResetInventory
+
+- object: ObjectReference
+  function: RestoreObject
+
+- object: ObjectReference
+  function: Say
+
+- object: ObjectReference
+  function: SendStealAlarm
+
+- object: ObjectReference
+  function: SetActorCause
+
+- object: ObjectReference
+  function: SetActorOwner
+
+- object: ObjectReference
+  function: SetAngle
+
+- object: ObjectReference
+  function: SetAnimationVariableBool
+
+- object: ObjectReference
+  function: SetAnimationVariableFloat
+
+- object: ObjectReference
+  function: SetAnimationVariableInt
+
+- object: ObjectReference
+  function: SetDestroyed
+
+- object: ObjectReference
+  function: SetFactionOwner
+
+- object: ObjectReference
+  function: SetLockLevel
+
+- object: ObjectReference
+  function: SetMotionType
+
+- object: ObjectReference
+  function: SetNoFavorAllowed
+
+- object: ObjectReference
+  function: SetOpen
+
+- object: ObjectReference
+  function: SetPosition
+
+- object: ObjectReference
+  function: SetScale
+
+- object: ObjectReference
+  function: SetVehicle
+
+- object: ObjectReference
+  function: SplineTranslateTo
+
+- object: ObjectReference
+  function: SplineTranslateToRef
+
+- object: ObjectReference
+  function: StopTranslation
+
+- object: ObjectReference
+  function: TetherToHorse
+
+- object: ObjectReference
+  function: TranslateTo
+
+- object: ObjectReference
+  function: TranslateToRef
+
+- object: ObjectReference
+  function: WaitFor3DLoad
+
+- object: ObjectReference
+  function: WaitForAnimationEvent
+
+- object: ObjectReference
+  function: WaitForAnimationEventUnregister
+
+- object: Package
+  function: GetOwningQuest
+
+- object: Package
+  function: GetTemplate
+
+- object: Quest
+  function: CompleteAllObjectives
+
+- object: Quest
+  function: CompleteQuest
+
+- object: Quest
+  function: FailAllObjectives
+
+- object: Quest
+  function: GetAlias
+
+- object: Quest
+  function: GetCurrentStageID
+
+- object: Quest
+  function: GetNthAlias
+
+- object: Quest
+  function: GetNumAliases
+
+- object: Quest
+  function: GetPriority
+
+- object: Quest
+  function: GetQuestID
+
+- object: Quest
+  function: GetStage
+
+- object: Quest
+  function: GetStageDone
+
+- object: Quest
+  function: GetState
+
+- object: Quest
+  function: IsActive
+
+- object: Quest
+  function: IsCompleted
+
+- object: Quest
+  function: IsObjectiveCompleted
+
+- object: Quest
+  function: IsObjectiveDisplayed
+
+- object: Quest
+  function: IsObjectiveFailed
+
+- object: Quest
+  function: IsRunning
+
+- object: Quest
+  function: IsStarting
+
+- object: Quest
+  function: IsStopped
+
+- object: Quest
+  function: IsStopping
+
+- object: Quest
+  function: Reset
+
+- object: Quest
+  function: SetActive
+
+- object: Quest
+  function: SetCurrentStageID
+
+- object: Quest
+  function: SetObjectiveCompleted
+
+- object: Quest
+  function: SetObjectiveDisplayed
+
+- object: Quest
+  function: SetObjectiveFailed
+
+- object: Quest
+  function: SetPriority
+
+- object: Quest
+  function: SetStage
+
+- object: Quest
+  function: Start
+
+- object: Quest
+  function: Stop
+
+- object: Quest
+  function: UpdateCurrentInstanceGlobal
+
+- object: Race
+  function: GetDefaultVoiceType
+
+- object: Race
+  function: GetNthSpell
+
+- object: Race
+  function: GetSkin
+
+- object: Race
+  function: GetSpellCount
+
+- object: Race
+  function: IsRaceFlagSet
+
+- object: Race
+  function: SetDefaultVoiceType
+
+- object: Race
+  function: SetRaceFlag
+
+- object: Race
+  function: SetSkin
+
+- object: Scene
+  function: ForceStart
+
+- object: Scene
+  function: GetOwningQuest
+
+- object: Scene
+  function: IsActionComplete
+
+- object: Scene
+  function: IsPlaying
+
+- object: Scene
+  function: Pause
+
+- object: Scene
+  function: Start
+
+- object: Scene
+  function: Stop
+
+- object: Sound
+  function: Play
+
+- object: Sound
+  function: PlayAndWait
+
+- object: SoundCategory
+  function: Mute
+
+- object: SoundCategory
+  function: Pause
+
+- object: SoundCategory
+  function: SetFrequency
+
+- object: SoundCategory
+  function: SetVolume
+
+- object: SoundCategory
+  function: UnMute
+
+- object: SoundCategory
+  function: UnPause
+
+- object: Spell
+  function: Cast
+
+- object: Spell
+  function: GetCastTime
+
+- object: Spell
+  function: GetEffectiveMagickaCost
+
+- object: Spell
+  function: GetEquipType
+
+- object: Spell
+  function: GetNthEffectArea
+
+- object: Spell
+  function: GetNthEffectDuration
+
+- object: Spell
+  function: GetNthEffectMagicEffect
+
+- object: Spell
+  function: GetNthEffectMagnitude
+
+- object: Spell
+  function: GetNumEffects
+
+- object: Spell
+  function: GetPerk
+
+- object: Spell
+  function: IsHostile
+
+- object: Spell
+  function: Preload
+
+- object: Spell
+  function: RemoteCast
+
+- object: Spell
+  function: SetEquipType
+
+- object: Spell
+  function: SetNthEffectArea
+
+- object: Spell
+  function: SetNthEffectDuration
+
+- object: Spell
+  function: SetNthEffectMagnitude
+
+- object: Spell
+  function: Unload
+
+- object: Topic
+  function: Add
+
+- object: Topic
+  function: GetName
+
+- object: Utility
+  function: CaptureFrameRate
+
+- object: Utility
+  function: CreateAliasArray
+
+- object: Utility
+  function: CreateBoolArray
+
+- object: Utility
+  function: CreateFloatArray
+
+- object: Utility
+  function: CreateFormArray
+
+- object: Utility
+  function: CreateIntArray
+
+- object: Utility
+  function: CreateObjectReferenceArray
+
+- object: Utility
+  function: CreateStringArray
+
+- object: Utility
+  function: GameTimeToString
+
+- object: Utility
+  function: GetBudgetCount
+
+- object: Utility
+  function: GetCurrentGameTime
+
+- object: Utility
+  function: GetCurrentMemory
+
+- object: Utility
+  function: GetCurrentRealTime
+
+- object: Utility
+  function: GetINIBool
+
+- object: Utility
+  function: GetINIFloat
+
+- object: Utility
+  function: GetINIInt
+
+- object: Utility
+  function: GetINIString
+
+- object: Utility
+  function: GetWaitingItemCount
+
+- object: Utility
+  function: IsInMenuMode
+
+- object: Utility
+  function: OverBudget
+
+- object: Utility
+  function: RandomFloat
+
+- object: Utility
+  function: RandomInt
+
+- object: Utility
+  function: SetINIBool
+
+- object: Utility
+  function: SetINIFloat
+
+- object: Utility
+  function: SetINIInt
+
+- object: Utility
+  function: SetINIString
+
+- object: Utility
+  function: Wait
+
+- object: Utility
+  function: WaitGameTime
+
+- object: Utility
+  function: WaitMenuMode
+
+- object: VisualEffect
+  function: Play
+
+- object: VisualEffect
+  function: Stop
+
+- object: Weapon
+  function: Fire
+
+- object: WordOfPower
+  function: GetName
