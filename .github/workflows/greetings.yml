@@ -11,6 +11,5 @@ jobs:
     steps:
     - uses: actions/first-interaction@v3
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: "Thank you for helping to improve this tool. I'll get to your issue asap, usually within a day."
-        pr-message: "Thank you for proposing a change. I'll have a look as soon as possible. That usually means within 24h."
+        issue_message: "Thank you for helping to improve this tool. I'll get to your issue asap, usually within a day."
+        pr_message: "Thank you for proposing a change. I'll have a look as soon as possible. That usually means within 24h."
