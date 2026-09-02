@@ -35,7 +35,7 @@ jobs:
         run: python3 .github/scripts/test_bbcode_lint.py -v
 
       - name: Lint Nexus Mods page
-        run: python3 .github/scripts/bbcode_lint.py nexuspage.bbcode
+        run: python3 .github/scripts/bbcode_lint.py docs/nexuspage.bbcode
 
   markdown:
     name: Markdown lint
