@@ -9,6 +9,22 @@ permissions:
   contents: read
 
 jobs:
+  yaml:
+    name: Rules YAML lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install yamllint
+        run: pip install yamllint==1.37.1
+
+      - name: Lint rule files
+        run: yamllint rules/*.yaml
+
   bbcode:
     name: Nexus page BBCode lint
     runs-on: ubuntu-latest
