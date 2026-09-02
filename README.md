@@ -107,6 +107,7 @@ apply.
 | **Total named state count** | Flags, as an `[error]`, a script whose named `State` blocks, combined with every `State` declared anywhere in its `Extends` ancestry (a same-named state declared more than once along the way counts once), exceed 127 — the [CreationKit wiki's State Reference](https://ck.uesp.net/wiki/State_Reference) documents a hard engine limit of 128 states including the empty state, past which the game and CK refuse to load the script. Only the script's own declared states are counted when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too, the same way the argument/return type checks resolve their own. | |
 | **Multiple Auto states** | Flags, as an `[error]`, a script whose `State` blocks, combined with every `State` declared anywhere in its `Extends` ancestry (as above), include more than one marked `Auto`. The engine itself tolerates a parent and a child each declaring their own `Auto` state (the child's simply takes precedence at startup), but relying on that precedence is fragile — which one actually applies silently depends on which script the instance is, and removing the child's `Auto` state later silently switches its startup state back to the parent's — so this lint flags the combination outright. Only the script's own declared states are considered when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too. | |
 | **Conflicting script versions** | Flags, as a `[warning]`, a `.psc` file when another script search directory contains a case-insensitively same-named file with different contents (determined by MD5), since which version Papyrus resolves can depend on search-directory order. Byte-identical copies are ignored. Only available when linting a file with project context in the desktop app or CLI. | |
+| **FormID hex notation** | Flags, as a `[warning]`, a FormID literal that isn't written in hexadecimal notation when it's directly compared (`==`, `!=`, `<`, `<=`, `>`, `>=`) against a `GetFormID()` call, or passed as the FormID argument to `Game.GetFormFromFile` (positionally or by name), since hexadecimal is the convention used everywhere else a FormID appears (the Creation Kit, xEdit, mod documentation) and a stray decimal literal is easy to mistype or overlook. Only a literal directly adjacent to the comparison operator or the call's argument list is checked; one reached indirectly through a variable assigned earlier is left unflagged rather than guessed at. | |
 
 ### Bugprone
 
@@ -219,6 +220,7 @@ rules:
   trailing_whitespace: true
   comma_spacing: true
   forbidden_functions: true
+  formid_hex_notation: true
   slow_functions: true
   unused_getter: true
   unused_property: true
@@ -337,8 +339,9 @@ rules:
   existing projects, and flagging every literal number in an existing
   script all at once is likely to be noisy until a project is ready for
   it. The key names match the lints listed above: `trailing_whitespace`,
-  `comma_spacing`, `forbidden_functions`, `slow_functions`, `unused_getter`,
-  `unused_property`, `semicolon`, `float_int_conversion`, `strict_boolean`,
+  `comma_spacing`, `forbidden_functions`, `formid_hex_notation`,
+  `slow_functions`, `unused_getter`, `unused_property`, `semicolon`,
+  `float_int_conversion`, `strict_boolean`,
   `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
   `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
   `static_condition`, `division_by_zero`, `unused_local_variable`,
