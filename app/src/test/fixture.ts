@@ -112,6 +112,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-unused_disable" />
           <input type="checkbox" id="rule-magic_numbers" />
           <input type="checkbox" id="rule-native_function_usage" />
+          <input type="checkbox" id="rule-repeated_getvalue" />
         </fieldset>
       </div>
 

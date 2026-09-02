@@ -170,6 +170,7 @@ export interface LintRules {
   unused_disable: boolean;
   magic_numbers: boolean;
   native_function_usage: boolean;
+  repeated_getvalue: boolean;
   global_variable_setvalue: boolean;
 }
 
@@ -242,6 +243,7 @@ export const DEFAULT_RULES: LintRules = {
   unused_disable: false,
   magic_numbers: false,
   native_function_usage: false,
+  repeated_getvalue: false,
   global_variable_setvalue: false,
 };
 

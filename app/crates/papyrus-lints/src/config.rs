@@ -65,6 +65,7 @@
 //!   conflicting_script_versions: true
 //!   magic_numbers: false
 //!   native_function_usage: false
+//!   repeated_getvalue: false
 //!   global_variable_setvalue: false
 //! ```
 //!
@@ -72,8 +73,9 @@
 //! disable that lint (and its automatic fix, if it has one) entirely. As
 //! with the top-level keys, `rules` and any key within it may be omitted
 //! and falls back to its default. `property_sorting`,
-//! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`, and
-//! `global_variable_setvalue` are the exceptions: they default to `false`.
+//! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`,
+//! `repeated_getvalue`, and `global_variable_setvalue` are the exceptions:
+//! they default to `false`.
 //! `property_sorting` reorders a script's declared properties, a more
 //! invasive change than the rest of these rules; `unchecked_form_parameter`
 //! defaults off because many scripts intentionally accept a possibly-`None`
@@ -82,10 +84,13 @@
 //! unremarkable literal numbers a project may not want flagged all at
 //! once; `native_function_usage` defaults off because plenty of mods
 //! intentionally depend on SKSE/F4SE or another native extension and don't
-//! need to be warned about it; `global_variable_setvalue` defaults off
-//! since its heuristic `Else`-branch check can't actually prove the write
-//! it flags is redundant, only that the branch never checked. All five need
-//! a project to opt in explicitly.
+//! need to be warned about it; `repeated_getvalue` defaults off because a
+//! chain that reads the same global more than once is often written that
+//! way deliberately for readability, and the performance cost is usually
+//! negligible outside a hot code path; `global_variable_setvalue` defaults
+//! off since its heuristic `Else`-branch check can't actually prove the
+//! write it flags is redundant, only that the branch never checked. All six
+//! need a project to opt in explicitly.
 
 use std::fmt;
 
@@ -355,6 +360,11 @@ pub struct Rules {
     /// [`Self::magic_numbers`], this defaults to `false`: see
     /// [`crate::native_function_usage`].
     pub native_function_usage: bool,
+    /// The "Repeated GlobalVariable.GetValue() calls" lint. Like
+    /// [`Self::property_sorting`], [`Self::unchecked_form_parameter`],
+    /// [`Self::magic_numbers`], and [`Self::native_function_usage`], this
+    /// defaults to `false`: see [`crate::repeated_getvalue`].
+    pub repeated_getvalue: bool,
     /// The "GlobalVariable no-op write" lint. Like [`Self::property_sorting`],
     /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`], and
     /// [`Self::native_function_usage`], this defaults to `false`: see
@@ -412,6 +422,7 @@ impl Default for Rules {
             unused_disable: false,
             magic_numbers: false,
             native_function_usage: false,
+            repeated_getvalue: false,
             global_variable_setvalue: false,
         }
     }
@@ -565,6 +576,11 @@ mod tests {
         // SKSE/F4SE or another native extension and don't need to be
         // warned about it.
         assert!(!config.rules.native_function_usage);
+        // Also disabled by default: a chain that reads the same global more
+        // than once is often written that way deliberately for
+        // readability, and the performance cost is usually negligible
+        // outside a hot code path.
+        assert!(!config.rules.repeated_getvalue);
         // Also disabled by default: its Else-branch check is a heuristic,
         // not a proof the flagged write is actually redundant.
         assert!(!config.rules.global_variable_setvalue);
