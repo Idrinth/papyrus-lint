@@ -432,6 +432,7 @@ PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
 PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
 PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
 PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
+PapyrusLinterCLI --short-paths path/to/project.achlist
 ```
 
 `PapyrusLinterCLI init` creates a `papyrus-lint.yaml` containing all default
@@ -481,6 +482,12 @@ whichever `--json` selects — is written to `<path>` instead of stdout, so
 it can be stored directly without piping the command's output to a file.
 Usage/error text still goes to stderr either way, and the exit status is
 unaffected.
+
+Given `--short-paths` (combinable with `fix`/`--json`/`--config`/
+`--script-root`/`--output`, in any argument order), each script's path in
+the report has the project root stripped from its beginning, the same way
+the desktop app shortens paths in its own results list; a path that isn't
+under the project root is left unchanged.
 
 Each `.psc` file is decoded as UTF-8 when it's valid UTF-8, or as
 Windows-1252 (CP1252) — the Creation Kit/Papyrus compiler's own default
