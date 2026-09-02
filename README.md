@@ -539,12 +539,12 @@ Given the `--json` flag (combinable with `fix`, in either argument order),
 the CLI prints a single JSON document to stdout instead of the plain-text
 lines and summary, so editor plugins and other tooling can consume the
 report without scraping text. The output contract is published as a
-[JSON Schema](papyrus-lint-report.schema.json) using JSON Schema Draft 2020-12,
+[JSON Schema](docs/papyrus-lint-report.schema.json) using JSON Schema Draft 2020-12,
 so integrations can generate types and validate saved or streamed reports:
 
 ```console
 PapyrusLinterCLI --json --output report.json path/to/project.achlist
-npx ajv-cli validate --spec=draft2020 -s papyrus-lint-report.schema.json -d report.json
+npx ajv-cli validate --spec=draft2020 -s docs/papyrus-lint-report.schema.json -d report.json
 ```
 
 An example valid report is:
