@@ -221,6 +221,10 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags unknown @disable rule ids and directives that suppress no diagnostic. Disabled by default.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Magic numbers[/b][/td]
+[td]Flags numeric literals used directly instead of through a named constant, property, or local variable. -1, 0 and 1 are never flagged. Loose mode (default) exempts Wait/RegisterFor(Single)Update(GameTime) intervals, Strict checks them too. Disabled by default.[/td]
+[td][/td]
+[/tr]
 [/table]
 The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
 [heading]Configuration file[/heading]
@@ -253,6 +257,8 @@ type_casing: PascalCase
 named_arguments: never
 # Non-negative number
 min_wait_interval: 0.1
+# loose, strict
+magic_numbers: loose
 # true, false
 fail_on_warning: false
 # true, false
@@ -297,7 +303,8 @@ rules:
   state_function_signature: true
   goto_state: true
   too_many_states: true
-  multiple_auto_states: true[/code]
+  multiple_auto_states: true
+  magic_numbers: false[/code]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

@@ -125,6 +125,11 @@
             <option value="instead_of_defaults">Instead of defaults</option>
             <option value="always">Always</option>
           </select>
+          <label for="magic-numbers-mode">Magic numbers</label>
+          <select id="magic-numbers-mode">
+            <option value="loose">Loose (exempt Wait/RegisterFor* intervals)</option>
+            <option value="strict">Strict (check every call argument)</option>
+          </select>
 
           <fieldset class="settings-group">
             <legend>Cyclomatic complexity thresholds</legend>
@@ -194,6 +199,7 @@
             <label title="Flags, as an [error], a script whose named State blocks, combined with every State declared anywhere in its Extends ancestry, exceed 127, since the engine has a hard limit of 128 states (including the empty state) and refuses to load a script past it."><input type="checkbox" id="rule-too_many_states" checked /> Total named state count</label>
             <label title="Flags, as an [error], a script whose State blocks, combined with every State declared anywhere in its Extends ancestry, include more than one marked Auto, since relying on a child's Auto state silently overriding a parent's is fragile."><input type="checkbox" id="rule-multiple_auto_states" checked /> Multiple Auto states</label>
             <label title="Flags an @disable rule id that is unknown or does not suppress a diagnostic on its line. Disabled by default."><input type="checkbox" id="rule-unused_disable" /> Unused disable directive</label>
+            <label title="Flags, as a [warning], a numeric literal used directly instead of through a named constant, property, or local variable. -1, 0, and 1 are never flagged. By default (&quot;Magic numbers&quot; setting above set to Loose), a Utility.Wait/RegisterForUpdate/RegisterForSingleUpdate/RegisterForUpdateGameTime/RegisterForSingleUpdateGameTime call's interval argument is exempt too; Strict checks it like any other. Disabled by default."><input type="checkbox" id="rule-magic_numbers" /> Magic numbers</label>
           </fieldset>
         </div>
 
