@@ -25,6 +25,7 @@ pub mod goto_state;
 pub mod identifier_casing;
 pub mod indentation;
 pub mod local_variable_shadowing;
+pub mod magic_numbers;
 pub mod named_arguments;
 pub mod none_form_usage;
 pub mod numeric_comparison;
@@ -97,6 +98,7 @@ const KNOWN_RULE_IDS: &[&str] = &[
     state_count::MULTIPLE_AUTO_STATES_RULE,
     "conflicting-script-versions",
     unused_disable::RULE,
+    magic_numbers::RULE,
     variable_used_before_assignment::RULE,
 ];
 
@@ -208,7 +210,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
         diagnostics.extend(unused_property::check(source));
     }
     if rules.strict_boolean {
-        diagnostics.extend(strict_boolean::check(source));
+        diagnostics.extend(strict_boolean::check(source, config.bool_like_int));
     }
     if rules.numeric_comparison {
         diagnostics.extend(numeric_comparison::check(source));
@@ -317,6 +319,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
         diagnostics.extend(state_count::check_multiple_auto_states_with(
             source, external,
         ));
+    }
+    if rules.magic_numbers {
+        diagnostics.extend(magic_numbers::check(source, config.magic_numbers));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -901,6 +906,12 @@ mod tests {
                 state_count::TOO_MANY_STATES_RULE,
                 Config::default(),
                 config_with(|c| c.rules.too_many_states = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    DoThing(42)\nEndFunction\n",
+                magic_numbers::RULE,
+                config_with(|c| c.rules.magic_numbers = true),
+                Config::default(),
             ),
             (
                 "ScriptName Example\n\nAuto State Idle\nEndState\n\nAuto State Active\nEndState\n",

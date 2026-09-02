@@ -14,8 +14,10 @@
 //! type_casing: PascalCase
 //! named_arguments: never
 //! min_wait_interval: 0.1
+//! magic_numbers: loose
 //! fail_on_warning: false
 //! fail_on_info: false
+//! bool_like_int: true
 //! rules:
 //!   trailing_whitespace: true
 //!   comma_spacing: true
@@ -61,18 +63,22 @@
 //!   too_many_states: true
 //!   multiple_auto_states: true
 //!   conflicting_script_versions: true
+//!   magic_numbers: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
 //! disable that lint (and its automatic fix, if it has one) entirely. As
 //! with the top-level keys, `rules` and any key within it may be omitted
-//! and falls back to its default. `property_sorting` and
-//! `unchecked_form_parameter` are the exceptions: they default to
-//! `false`. `property_sorting` reorders a script's declared properties, a
-//! more invasive change than the rest of these rules; `unchecked_form_parameter`
-//! defaults off because many scripts intentionally accept a possibly-`None`
-//! Form and defer the check to a caller or a later branch. Both need a
-//! project to opt in explicitly.
+//! and falls back to its default. `property_sorting`,
+//! `unchecked_form_parameter`, and `magic_numbers` are the exceptions: they
+//! default to `false`. `property_sorting` reorders a script's declared
+//! properties, a more invasive change than the rest of these rules;
+//! `unchecked_form_parameter` defaults off because many scripts
+//! intentionally accept a possibly-`None` Form and defer the check to a
+//! caller or a later branch; `magic_numbers` defaults off because many
+//! existing scripts contain plenty of unremarkable literal numbers a
+//! project may not want flagged all at once. All three need a project to
+//! opt in explicitly.
 
 use std::fmt;
 
@@ -184,6 +190,13 @@ pub struct Config {
     /// `RegisterForSingleUpdateGameTime` call can go below before the
     /// "Short wait/update interval" lint flags it as a `[warning]`.
     pub min_wait_interval: f64,
+    /// Whether the "Magic numbers" lint also checks the interval argument
+    /// of a `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/
+    /// `RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call
+    /// (`strict`), or leaves it unflagged since a hardcoded interval there
+    /// is common and usually self-explanatory (`loose`, the default). See
+    /// [`crate::magic_numbers::MagicNumbers`].
+    pub magic_numbers: crate::magic_numbers::MagicNumbers,
     /// Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level
     /// diagnostic as a reason to exit non-zero. `false` by default, so a
     /// project only fails a lint run on `[error]`-level (and untagged)
@@ -193,6 +206,13 @@ pub struct Config {
     /// Like [`Self::fail_on_warning`], but for `[info]`-level diagnostics.
     /// `false` by default.
     pub fail_on_info: bool,
+    /// Whether the "Strict boolean check" lint accepts an `Int` literal
+    /// `1` or `0` used directly as an `If`/`ElseIf`/`While` condition,
+    /// treating it as the common "bool-like" idiom rather than flagging
+    /// it. `true` by default. Any other `Int` value (a variable, a
+    /// property, or a literal other than `1`/`0`) is still flagged
+    /// regardless of this setting.
+    pub bool_like_int: bool,
     /// Per-ruleset enable/disable switches. Every ruleset is enabled by
     /// default; see [`Rules`].
     pub rules: Rules,
@@ -210,8 +230,10 @@ impl Default for Config {
             type_casing: crate::type_casing::Style::default(),
             named_arguments: crate::named_arguments::NamedArguments::default(),
             min_wait_interval: 0.1,
+            magic_numbers: crate::magic_numbers::MagicNumbers::default(),
             fail_on_warning: false,
             fail_on_info: false,
+            bool_like_int: true,
             rules: Rules::default(),
         }
     }
@@ -317,6 +339,10 @@ pub struct Rules {
     pub conflicting_script_versions: bool,
     /// The "Unused disable directive" lint. Defaults to `false`.
     pub unused_disable: bool,
+    /// The "Magic numbers" lint. Like [`Self::property_sorting`] and
+    /// [`Self::unchecked_form_parameter`], this defaults to `false`: see
+    /// [`crate::magic_numbers`].
+    pub magic_numbers: bool,
 }
 
 impl Default for Rules {
@@ -367,6 +393,7 @@ impl Default for Rules {
             multiple_auto_states: true,
             conflicting_script_versions: true,
             unused_disable: false,
+            magic_numbers: false,
         }
     }
 }
@@ -511,6 +538,10 @@ mod tests {
         assert!(config.rules.multiple_auto_states);
         assert!(config.rules.conflicting_script_versions);
         assert!(!config.rules.unused_disable);
+        // Also disabled by default: many existing scripts contain plenty of
+        // unremarkable literal numbers a project may not want flagged all
+        // at once.
+        assert!(!config.rules.magic_numbers);
     }
 
     #[test]
@@ -555,8 +586,13 @@ mod tests {
             crate::named_arguments::NamedArguments::Never
         );
         assert_eq!(config.min_wait_interval, 0.1);
+        assert_eq!(
+            config.magic_numbers,
+            crate::magic_numbers::MagicNumbers::Loose
+        );
         assert!(!config.fail_on_warning);
         assert!(!config.fail_on_info);
+        assert!(config.bool_like_int);
     }
 
     #[test]
@@ -717,6 +753,23 @@ mod tests {
     }
 
     #[test]
+    fn parses_bool_like_int() {
+        assert!(parse("").unwrap().bool_like_int);
+        assert!(!parse("bool_like_int: false\n").unwrap().bool_like_int);
+        assert!(parse("bool_like_int: true\n").unwrap().bool_like_int);
+    }
+
+    #[test]
+    fn bool_like_int_round_trips_through_yaml() {
+        let config = Config {
+            bool_like_int: false,
+            ..Config::default()
+        };
+        let yaml = to_yaml(&config).unwrap();
+        assert_eq!(parse(&yaml).unwrap(), config);
+    }
+
+    #[test]
     fn rejects_invalid_yaml() {
         assert!(parse("semicolon: [this is not a bool\n").is_err());
     }
@@ -772,6 +825,38 @@ mod tests {
         ] {
             let config = Config {
                 named_arguments: setting,
+                ..Config::default()
+            };
+            let yaml = to_yaml(&config).unwrap();
+            assert_eq!(parse(&yaml).unwrap(), config);
+        }
+    }
+
+    #[test]
+    fn parses_magic_numbers_mode() {
+        assert_eq!(
+            parse("magic_numbers: loose\n").unwrap().magic_numbers,
+            crate::magic_numbers::MagicNumbers::Loose
+        );
+        assert_eq!(
+            parse("magic_numbers: strict\n").unwrap().magic_numbers,
+            crate::magic_numbers::MagicNumbers::Strict
+        );
+    }
+
+    #[test]
+    fn rejects_unknown_magic_numbers_value() {
+        assert!(parse("magic_numbers: sometimes\n").is_err());
+    }
+
+    #[test]
+    fn magic_numbers_round_trips_through_yaml() {
+        for mode in [
+            crate::magic_numbers::MagicNumbers::Loose,
+            crate::magic_numbers::MagicNumbers::Strict,
+        ] {
+            let config = Config {
+                magic_numbers: mode,
                 ..Config::default()
             };
             let yaml = to_yaml(&config).unwrap();
