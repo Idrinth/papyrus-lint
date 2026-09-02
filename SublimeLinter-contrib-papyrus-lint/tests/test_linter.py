@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import types
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
@@ -97,6 +97,25 @@ class PapyrusLintTests(unittest.TestCase):
         self.assertEqual(
             self.linter.cmd(), ['/tools/PapyrusLinter', '--json', '${file}']
         )
+
+    def test_cmd_downloads_matching_cli_when_executable_is_not_configured(self):
+        self.linter.settings = {}
+        with patch.object(
+            self.module,
+            'ensure_release_cli',
+            return_value='/tmp/sublime-cache/PapyrusLinterCLI-linux',
+        ) as ensure_cli:
+            command = self.linter.cmd()
+
+        self.assertEqual(
+            command,
+            [
+                '/tmp/sublime-cache/PapyrusLinterCLI-linux',
+                '--json',
+                '${file}',
+            ],
+        )
+        ensure_cli.assert_called_once_with('/tmp/sublime-cache')
 
     def test_find_errors_converts_every_diagnostic(self):
         report = {

@@ -136,6 +136,17 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
         )
         self.view.run_command.assert_not_called()
 
+    def test_download_error_is_reported_without_running_or_reloading(self):
+        self.module.ensure_release_cli.side_effect = OSError('offline')
+        with patch.object(self.module.subprocess, 'run') as run:
+            self.command.run(None)
+
+        self.sublime.error_message.assert_called_once_with(
+            'PapyrusLint: failed to download or run the CLI: offline'
+        )
+        run.assert_not_called()
+        self.view.run_command.assert_not_called()
+
     def test_missing_file_is_a_no_op(self):
         self.view.file_name.return_value = None
         with patch.object(self.module.subprocess, 'run') as run:
