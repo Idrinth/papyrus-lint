@@ -200,4 +200,46 @@ mod tests {
         )
         .is_empty());
     }
+
+    #[test]
+    fn counts_logical_operators_in_each_statement_expression() {
+        let source = "ScriptName Example\n\nBool Function Test(Bool a, Bool b)\n    Bool value = a && b\n    value = a || b\n    Consume(a && b)\n    Return a || b\nEndFunction\n";
+
+        // Baseline 1 plus one short-circuit operator in each of the four
+        // statement expression forms above.
+        let diagnostics = check(source, 4, 20);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("complexity of 5"));
+    }
+
+    #[test]
+    fn counts_nested_control_flow_inside_else_bodies() {
+        let source = "ScriptName Example\n\nFunction Test()\n    If ready\n        Return\n    Else\n        While waiting\n            If failed\n                Return\n            EndIf\n        EndWhile\n    EndIf\nEndFunction\n";
+
+        // Else itself adds no path, but its nested While and If do.
+        let diagnostics = check(source, 3, 20);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("complexity of 4"));
+    }
+
+    #[test]
+    fn reports_each_over_threshold_function_independently() {
+        let source = "ScriptName Example\n\nFunction First()\n    If ready\n    EndIf\nEndFunction\n\nEvent OnInit()\n    While waiting\n    EndWhile\nEndEvent\n";
+
+        let diagnostics = check(source, 1, 20);
+
+        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| (diagnostic.line, diagnostic.column))
+                .collect::<Vec<_>>(),
+            vec![(3, 1), (8, 1)]
+        );
+        assert!(diagnostics[0].message.contains("'First'"));
+        assert!(diagnostics[1].message.contains("'OnInit'"));
+        assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule == RULE));
+    }
 }

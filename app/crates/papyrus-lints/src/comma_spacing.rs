@@ -64,10 +64,12 @@ fn comma_offsets(source: &str) -> Vec<(usize, usize, usize)> {
             TokenKind::LParen => paren_depth += 1,
             TokenKind::RParen => paren_depth = paren_depth.saturating_sub(1),
             TokenKind::Comma if paren_depth > 0 => {
-                let offset = line_starts[token.line - 1] + token.col - 1;
+                let line_start = line_starts[token.line - 1];
+                let offset = line_start + token.col - 1;
                 let next = source.as_bytes().get(offset + 1).copied();
                 if next.is_some_and(|byte| !byte.is_ascii_whitespace() && byte != b')') {
-                    commas.push((offset, token.line, token.col));
+                    let column = source[line_start..offset].chars().count() + 1;
+                    commas.push((offset, token.line, column));
                 }
             }
             _ => {}
@@ -173,6 +175,39 @@ EndFunction
     #[test]
     fn invalid_source_is_left_unchanged() {
         let source = "Use(\"unterminated,value)\n";
+        assert!(check(source).is_empty());
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn nested_parentheses_keep_argument_context_until_the_outer_call_closes() {
+        let source = "Use(Choose(first,second),third)\n";
+        let diagnostics = check(source);
+
+        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.column)
+                .collect::<Vec<_>>(),
+            vec![17, 25]
+        );
+        assert_eq!(repair(source), "Use(Choose(first, second), third)\n");
+    }
+
+    #[test]
+    fn diagnostic_columns_count_unicode_characters_before_the_comma() {
+        let diagnostics = check("Show(\"hé\",value)\n");
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!((diagnostics[0].line, diagnostics[0].column), (1, 10));
+        assert_eq!(diagnostics[0].rule, RULE);
+    }
+
+    #[test]
+    fn comma_at_end_of_input_is_not_flagged() {
+        let source = "Use(value,";
+
         assert!(check(source).is_empty());
         assert_eq!(repair(source), source);
     }

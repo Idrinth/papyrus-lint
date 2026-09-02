@@ -56,9 +56,7 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
 pub fn repair(source: &str, style: Style) -> String {
     let protected = fragment_code::protected_lines(source);
     let mut result = String::with_capacity(source.len());
-    let mut line_number = 1usize;
-
-    for line_and_ending in source.split_inclusive('\n') {
+    for (line_number, line_and_ending) in (1usize..).zip(source.split_inclusive('\n')) {
         if protected[line_number] {
             result.push_str(line_and_ending);
         } else {
@@ -73,7 +71,6 @@ pub fn repair(source: &str, style: Style) -> String {
             repair_line(&mut result, line, style);
             result.push_str(ending);
         }
-        line_number += 1;
     }
 
     result
@@ -183,5 +180,34 @@ EndFunction
     fn repair_handles_a_final_line_without_a_newline() {
         assert_eq!(repair("value", Style::Require), "value;");
         assert_eq!(repair("value;", Style::Forbid), "value");
+    }
+
+    #[test]
+    fn check_reports_the_terminal_semicolon_location_and_rule() {
+        let diagnostics = check("Int value = 1;  \n", Style::Forbid);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!((diagnostics[0].line, diagnostics[0].column), (1, 14));
+        assert_eq!(diagnostics[0].rule, RULE);
+        assert_eq!(
+            diagnostics[0].message,
+            "[warning] Line should not end with a semicolon"
+        );
+    }
+
+    #[test]
+    fn require_preserves_trailing_whitespace_on_a_final_line() {
+        let source = "value \t";
+
+        assert_eq!(repair(source, Style::Require), "value; \t");
+        assert!(check(&repair(source, Style::Require), Style::Require).is_empty());
+    }
+
+    #[test]
+    fn matching_styles_leave_source_unchanged() {
+        assert_eq!(repair("value;\n", Style::Require), "value;\n");
+        assert_eq!(repair("value\n", Style::Forbid), "value\n");
+        assert!(check("value;\n", Style::Require).is_empty());
+        assert!(check("value\n", Style::Forbid).is_empty());
     }
 }
