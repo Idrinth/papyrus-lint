@@ -86,6 +86,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-division_by_zero" checked />
           <input type="checkbox" id="rule-empty_body" checked />
           <input type="checkbox" id="rule-unused_local_variable" checked />
+          <input type="checkbox" id="rule-variable_used_before_assignment" checked />
           <input type="checkbox" id="rule-none_form_usage" checked />
           <input type="checkbox" id="rule-local_variable_shadowing" checked />
           <input type="checkbox" id="rule-chain_whitespace" checked />
