@@ -94,7 +94,7 @@ apply.
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Getter usage without saving result** | Flags calls to functions whose names begin with `Get` (case-insensitively) whose result is discarded, whether the call stands alone (`GetValue()`) or only feeds a comparison, arithmetic, or logical operator whose own result is then discarded too (e.g. `GetDistance(target) > 0` on its own line, with no assignment, `Return`, or condition around it). | |
-| **Strict boolean check** | Flags `If`/`ElseIf`/`While` conditions that aren't already a `Bool` value or expression, instead of relying on Papyrus's implicit conversion to boolean. Only conditions whose type can be determined locally (locals, parameters, properties, literals, casts, and comparison/logical expressions) are checked; a condition that depends on a function call or a member access is left unflagged rather than risk a false positive. | |
+| **Strict boolean check** | Flags `If`/`ElseIf`/`While` conditions that aren't already a `Bool` value or expression, instead of relying on Papyrus's implicit conversion to boolean. Only conditions whose type can be determined locally (locals, parameters, properties, literals, casts, and comparison/logical expressions) are checked; a condition that depends on a function call or a member access is left unflagged rather than risk a false positive. By default (`bool_like_int: true`), the `Int` literal `1` or `0` used directly as a condition is allowed as a common "bool-like" idiom; any other `Int` value (including a variable or property that happens to hold `0`/`1`) is still flagged, and setting `bool_like_int: false` flags the literals too. | |
 | **Argument type check** | Flags call-site arguments whose type doesn't match the callee's declared parameter type (e.g. passing a `String` where an `Int` is expected), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as passing an object whose script extends (directly or transitively) the parameter's type (e.g. passing an `Armor` where a `Form` is expected, or an `Actor` where an `ObjectReference` is expected). Calls to functions declared in the same script are always checked; when linting a `.psc` file dropped in the app, calls to functions declared on other scripts under the project root (e.g. `SomeProperty.DoThing(...)`) are checked too, by resolving those scripts' signatures (including through `Extends`), and the `Extends` chain of an argument's own script is likewise resolved from the project root to allow compatible subtypes. Native engine types (e.g. `Actor`, `ObjectReference`, `Form`, `Spell`) whose own `.psc` isn't part of the project fall back to the common Skyrim/Fallout 4 native class hierarchy listed in `rules/native-types.yaml`, so a subtype relationship between them is still recognized. A call whose target or argument type can't be determined is skipped rather than guessed at. | |
 | **Return type check** | Flags `Return` statements whose value's type doesn't match the enclosing function's declared return type (e.g. returning a `String` from a Function declared `Int`), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as returning an object whose script extends (directly or transitively) the declared return type (e.g. returning an `Armor` from a Function declared `Form`, or an `Actor` from a Function declared `ObjectReference`). When linting a `.psc` file dropped in the app, a returned value's own script's `Extends` chain is resolved from the project root to allow compatible subtypes there too, with the same native-type fallback used by the argument type check for engine types like `Actor`/`ObjectReference`/`Form`. A `Return` whose value's type can't be determined, or with no declared return type, is skipped rather than guessed at. | |
 | **Inherited function override** | Flags, as an `[info]`, a function declared on this script that shares its name with a function declared on the script it `Extends` (directly or transitively) — the local declaration silently replaces the inherited one. This is often intentional (e.g. overriding an `Event OnInit()` handler), so it's informational rather than a warning. Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked (state-based override is a separate mechanism from `Extends`). | |
@@ -212,6 +212,8 @@ min_wait_interval: 0.1
 fail_on_warning: false
 # true, false
 fail_on_info: false
+# true, false
+bool_like_int: true
 # Each rule accepts true or false
 rules:
   trailing_whitespace: true
@@ -319,6 +321,12 @@ rules:
   `[warning]`/`[info]`-level diagnostics are still printed either way. Has
   no effect on the desktop app, which always lists every diagnostic
   regardless of severity.
+- `bool_like_int`: whether the "Strict boolean check" lint accepts the
+  `Int` literal `1` or `0` used directly as an `If`/`ElseIf`/`While`
+  condition, treating it as the common "bool-like" idiom instead of
+  flagging it. `true` by default; any other `Int` value (a variable, a
+  property, or a literal other than `1`/`0`) is still flagged regardless
+  of this setting.
 - `rules`: per-lint enable/disable switches. Setting one to `false` turns
   that lint (and its automatic fix, if it has one) off entirely; every
   key under `rules` can be omitted individually and falls back to its

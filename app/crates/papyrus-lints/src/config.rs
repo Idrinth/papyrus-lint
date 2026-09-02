@@ -16,6 +16,7 @@
 //! min_wait_interval: 0.1
 //! fail_on_warning: false
 //! fail_on_info: false
+//! bool_like_int: true
 //! rules:
 //!   trailing_whitespace: true
 //!   comma_spacing: true
@@ -193,6 +194,13 @@ pub struct Config {
     /// Like [`Self::fail_on_warning`], but for `[info]`-level diagnostics.
     /// `false` by default.
     pub fail_on_info: bool,
+    /// Whether the "Strict boolean check" lint accepts an `Int` literal
+    /// `1` or `0` used directly as an `If`/`ElseIf`/`While` condition,
+    /// treating it as the common "bool-like" idiom rather than flagging
+    /// it. `true` by default. Any other `Int` value (a variable, a
+    /// property, or a literal other than `1`/`0`) is still flagged
+    /// regardless of this setting.
+    pub bool_like_int: bool,
     /// Per-ruleset enable/disable switches. Every ruleset is enabled by
     /// default; see [`Rules`].
     pub rules: Rules,
@@ -212,6 +220,7 @@ impl Default for Config {
             min_wait_interval: 0.1,
             fail_on_warning: false,
             fail_on_info: false,
+            bool_like_int: true,
             rules: Rules::default(),
         }
     }
@@ -557,6 +566,7 @@ mod tests {
         assert_eq!(config.min_wait_interval, 0.1);
         assert!(!config.fail_on_warning);
         assert!(!config.fail_on_info);
+        assert!(config.bool_like_int);
     }
 
     #[test]
@@ -714,6 +724,23 @@ mod tests {
         assert!(opted_in.should_fail_on(&warning));
         assert!(opted_in.should_fail_on(&info));
         assert!(opted_in.should_fail_on(&untagged));
+    }
+
+    #[test]
+    fn parses_bool_like_int() {
+        assert!(parse("").unwrap().bool_like_int);
+        assert!(!parse("bool_like_int: false\n").unwrap().bool_like_int);
+        assert!(parse("bool_like_int: true\n").unwrap().bool_like_int);
+    }
+
+    #[test]
+    fn bool_like_int_round_trips_through_yaml() {
+        let config = Config {
+            bool_like_int: false,
+            ..Config::default()
+        };
+        let yaml = to_yaml(&config).unwrap();
+        assert_eq!(parse(&yaml).unwrap(), config);
     }
 
     #[test]

@@ -63,6 +63,7 @@ export const FIXTURE_HTML = `
         <input id="min-wait-interval" type="number" min="0" step="0.01" value="0.1" />
         <input type="checkbox" id="fail-on-warning" />
         <input type="checkbox" id="fail-on-info" />
+        <input type="checkbox" id="bool-like-int" checked />
         <fieldset id="lint-rules">
           <input type="checkbox" id="rule-trailing_whitespace" checked />
           <input type="checkbox" id="rule-comma_spacing" checked />

@@ -208,7 +208,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
         diagnostics.extend(unused_property::check(source));
     }
     if rules.strict_boolean {
-        diagnostics.extend(strict_boolean::check(source));
+        diagnostics.extend(strict_boolean::check(source, config.bool_like_int));
     }
     if rules.numeric_comparison {
         diagnostics.extend(numeric_comparison::check(source));
