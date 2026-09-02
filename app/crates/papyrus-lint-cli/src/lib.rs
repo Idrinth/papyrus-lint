@@ -172,35 +172,6 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
     })
 }
 
-/// Restricts a repair's changes to just `target_line` (1-indexed), leaving
-/// every other line exactly as it was in `original`. Returns `None` if
-/// `repaired` doesn't have the same number of lines as `original` (e.g. the
-/// `property-sorting` fix relocated a property's declaration lines
-/// elsewhere in the file), since a single original line number no longer
-/// identifies the same line in the result in that case.
-fn restrict_to_line(original: &str, repaired: &str, target_line: usize) -> Option<String> {
-    let original_lines: Vec<&str> = original.split('\n').collect();
-    let repaired_lines: Vec<&str> = repaired.split('\n').collect();
-    if original_lines.len() != repaired_lines.len() {
-        return None;
-    }
-    Some(
-        original_lines
-            .iter()
-            .zip(repaired_lines.iter())
-            .enumerate()
-            .map(|(i, (original_line, repaired_line))| {
-                if i + 1 == target_line {
-                    *repaired_line
-                } else {
-                    *original_line
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("\n"),
-    )
-}
-
 pub const USAGE: &str =
     "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
 PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id>] [--line <n>] <path-to-achlist-or-psc>\n\n\
@@ -616,7 +587,7 @@ pub fn run(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) ->
         let source = if fix {
             let repaired = papyrus_lints::repair_filtered(&source, &lint_config, rule_filter);
             let repaired = match target_line {
-                Some(line) => match restrict_to_line(&source, &repaired, line) {
+                Some(line) => match papyrus_lints::restrict_to_line(&source, &repaired, line) {
                     Some(restricted) => restricted,
                     None => {
                         let _ = writeln!(

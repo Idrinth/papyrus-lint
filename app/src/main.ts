@@ -98,6 +98,10 @@ export interface Diagnostic {
   line: number;
   column: number;
   message: string;
+  // The lint rule that raised this finding (e.g. "trailing-whitespace"),
+  // matching papyrus_lints::Diagnostic::rule. Optional here since not every
+  // test fixture needs one; the backend always sends it.
+  rule?: string;
 }
 
 export interface PscParseOutcome {
@@ -613,6 +617,47 @@ export async function repairPscFile(path: string): Promise<Diagnostic[]> {
     additionalRoots: effectiveScriptRoots(),
     compilerPath: currentCompilerPath,
     compileCheck: currentCompileCheck,
+  });
+}
+
+// Rule ids with an automatic fix (papyrus_lints::FIXABLE_RULE_IDS), used to
+// decide which findings offer the per-finding "Fix this issue" button. Kept
+// in sync by hand with FIXABLE_RULE_IDS in
+// app/crates/papyrus-lints/src/lib.rs.
+const FIXABLE_RULE_IDS = new Set([
+  "identifier-casing",
+  "semicolon",
+  "indentation",
+  "property-sorting",
+  "comma-spacing",
+  "chain-whitespace",
+  "exclamation-spacing",
+  "operator-spacing",
+  "type-casing",
+  "trailing-whitespace",
+]);
+
+export function isFixableFinding(finding: Diagnostic): boolean {
+  return finding.rule !== undefined && FIXABLE_RULE_IDS.has(finding.rule);
+}
+
+// Applies just `rule`'s own automatic fix, restricted to `line` (see
+// repair_psc_finding/papyrus_lints::restrict_to_line on the backend),
+// leaving every other line and finding untouched. Rejects (e.g. a fix that
+// would change the file's line count elsewhere, like property-sorting
+// relocating a declaration) rather than falling back to the whole-file
+// "Apply fixes" behavior, so the caller can surface why this one issue
+// couldn't be fixed on its own.
+export async function repairPscFinding(path: string, rule: string, line: number): Promise<Diagnostic[]> {
+  return invoke<Diagnostic[]>("repair_psc_finding", {
+    path,
+    root: currentProjectDir ?? "",
+    config: currentLintConfig,
+    additionalRoots: effectiveScriptRoots(),
+    compilerPath: currentCompilerPath,
+    compileCheck: currentCompileCheck,
+    rule,
+    line,
   });
 }
 
@@ -1285,13 +1330,32 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
     findingsList.replaceChildren(
       ...visibleFindings.map((finding) => {
         const findingItem = document.createElement("li");
-        findingItem.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
         findingItem.classList.add("psc-result__finding");
         const level = levelOf(finding.message);
         if (level) {
           findingItem.classList.add(`psc-result__finding--${level}`);
         }
         findingItem.addEventListener("click", () => void openCodeViewer(path, outcome.findings, finding.line));
+
+        const label = document.createElement("span");
+        label.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
+        findingItem.append(label);
+
+        if (isFixableFinding(finding)) {
+          const fixIssueButton = document.createElement("button");
+          fixIssueButton.type = "button";
+          fixIssueButton.textContent = "Fix this issue";
+          fixIssueButton.classList.add("psc-result__finding-fix-button");
+          const fixIssueErrorEl = document.createElement("span");
+          fixIssueErrorEl.classList.add("psc-result__finding-fix-error");
+          fixIssueErrorEl.hidden = true;
+          fixIssueButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            void handleFixIssueClick(path, outcome, finding, fixIssueButton, fixIssueErrorEl);
+          });
+          findingItem.append(fixIssueButton, fixIssueErrorEl);
+        }
+
         return findingItem;
       }),
     );
@@ -1327,6 +1391,36 @@ export async function handleFixClick(path: string, outcome: PscParseOutcome, but
     console.error(error);
   } finally {
     renderPscResults(currentPscOutcomes);
+  }
+}
+
+// Applies just `finding`'s own automatic fix (see repairPscFinding), rather
+// than every fixable finding in the file. On success, re-renders the whole
+// results list like handleFixClick does. On failure (e.g. the fix would
+// change the file's line count elsewhere, like property-sorting relocating
+// a declaration), leaves the list as-is and shows `error` inline next to
+// the finding instead, since a full re-render would just discard it.
+export async function handleFixIssueClick(
+  path: string,
+  outcome: PscParseOutcome,
+  finding: Diagnostic,
+  button: HTMLButtonElement,
+  errorEl: HTMLElement,
+) {
+  if (!finding.rule) {
+    return;
+  }
+  button.disabled = true;
+  errorEl.hidden = true;
+  errorEl.textContent = "";
+  try {
+    outcome.findings = await repairPscFinding(path, finding.rule, finding.line);
+    renderPscResults(currentPscOutcomes);
+  } catch (error) {
+    console.error(error);
+    errorEl.textContent = String(error);
+    errorEl.hidden = false;
+    button.disabled = false;
   }
 }
 

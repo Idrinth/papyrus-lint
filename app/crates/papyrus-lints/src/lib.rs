@@ -420,6 +420,39 @@ pub fn repair_filtered(source: &str, config: &Config, rule_filter: Option<&str>)
     }
 }
 
+/// Rebuilds a repair result so only `target_line` (1-indexed) differs from
+/// `original`, leaving every other line exactly as it was — even if
+/// `repaired` (e.g. from [`repair_filtered`]) changed other lines too.
+/// Returns `None` if `original` and `repaired` don't have the same number
+/// of lines, since a fix that shifts the line count (e.g.
+/// `property-sorting` relocating a property's declaration) means a single
+/// original line number no longer identifies the same line in the result.
+/// Lets a caller apply just one line's worth of an automatic fix — e.g. the
+/// CLI's `fix --line <n>`, or the desktop app's per-finding "Fix this
+/// issue" button — without touching lines the user didn't ask about.
+pub fn restrict_to_line(original: &str, repaired: &str, target_line: usize) -> Option<String> {
+    let original_lines: Vec<&str> = original.split('\n').collect();
+    let repaired_lines: Vec<&str> = repaired.split('\n').collect();
+    if original_lines.len() != repaired_lines.len() {
+        return None;
+    }
+    Some(
+        original_lines
+            .iter()
+            .zip(repaired_lines.iter())
+            .enumerate()
+            .map(|(i, (original_line, repaired_line))| {
+                if i + 1 == target_line {
+                    *repaired_line
+                } else {
+                    *original_line
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n"),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -596,6 +629,24 @@ mod tests {
             repair_filtered(source, &config, Some("made-up-rule")),
             source
         );
+    }
+
+    #[test]
+    fn restrict_to_line_keeps_only_the_target_line_changed() {
+        let original = "Call(1,2)\nCall(3,4)\nCall(5,6)\n";
+        let repaired = repair_filtered(original, &Config::default(), Some(comma_spacing::RULE));
+
+        let restricted = restrict_to_line(original, &repaired, 2).unwrap();
+
+        assert_eq!(restricted, "Call(1,2)\nCall(3, 4)\nCall(5,6)\n");
+    }
+
+    #[test]
+    fn restrict_to_line_returns_none_when_line_count_changes() {
+        let original = "Call(1,2)\n";
+        let repaired = "Call(1,2)\nCall(3,4)\n";
+
+        assert_eq!(restrict_to_line(original, repaired, 1), None);
     }
 
     #[test]

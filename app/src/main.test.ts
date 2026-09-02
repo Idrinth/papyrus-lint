@@ -32,12 +32,14 @@ import {
   handleCompilerPathChanged,
   handleDroppedPaths,
   handleFixClick,
+  handleFixIssueClick,
   handleLintConfigChanged,
   handleScriptRootsChanged,
   hasFixableFindings,
   hideAutocomplete,
   isAchlistPath,
   isCodeViewerEditDirty,
+  isFixableFinding,
   isPscPath,
   lastProjectDir,
   levelOf,
@@ -59,6 +61,7 @@ import {
   rememberProjectDir,
   renderPscResults,
   repairPscFile,
+  repairPscFinding,
   requestCloseCodeViewer,
   saveAndCompileCodeViewerEdits,
   saveCodeViewerEdits,
@@ -210,6 +213,24 @@ describe("hasFixableFindings", () => {
 
   it("is false for an empty findings list", () => {
     expect(hasFixableFindings([])).toBe(false);
+  });
+});
+
+describe("isFixableFinding", () => {
+  it("is true for a finding whose rule has an automatic fix", () => {
+    expect(isFixableFinding({ line: 1, column: 1, message: "[warning] trailing", rule: "trailing-whitespace" })).toBe(
+      true,
+    );
+  });
+
+  it("is false for a finding whose rule has no automatic fix", () => {
+    expect(
+      isFixableFinding({ line: 1, column: 1, message: "[error] forbidden function used", rule: "forbidden-functions" }),
+    ).toBe(false);
+  });
+
+  it("is false for a finding with no rule at all", () => {
+    expect(isFixableFinding({ line: 1, column: 1, message: "[error] bad" })).toBe(false);
   });
 });
 
@@ -799,6 +820,23 @@ describe("parsePscFiles / repairPscFile", () => {
       compileCheck: expect.any(Boolean),
     });
   });
+
+  it("repairPscFinding forwards the rule and line to the repair_psc_finding command", async () => {
+    const remaining: Diagnostic[] = [{ line: 1, column: 1, message: "[error] still broken" }];
+    invokeImplFor({ repair_psc_finding: () => remaining });
+
+    await expect(repairPscFinding("/scripts/MyScript.psc", "comma-spacing", 3)).resolves.toEqual(remaining);
+    expect(invokeMock).toHaveBeenCalledWith("repair_psc_finding", {
+      path: "/scripts/MyScript.psc",
+      root: expect.any(String),
+      config: expect.anything(),
+      additionalRoots: expect.anything(),
+      compilerPath: expect.any(String),
+      compileCheck: expect.any(Boolean),
+      rule: "comma-spacing",
+      line: 3,
+    });
+  });
 });
 
 describe("buildPscResultItem / renderPscResults", () => {
@@ -863,6 +901,33 @@ describe("buildPscResultItem / renderPscResults", () => {
     expect(findingEls[0].classList.contains("psc-result__finding--error")).toBe(true);
     expect(findingEls[0].textContent).toContain("line 3, col 5");
     expect(findingEls[1].classList.contains("psc-result__finding--warning")).toBe(true);
+  });
+
+  it("shows a 'Fix this issue' button only on findings whose own rule is auto-fixable", () => {
+    const item = buildPscResultItem(
+      outcome({
+        findings: [
+          { line: 3, column: 5, message: "[warning] missing space", rule: "comma-spacing" },
+          { line: 4, column: 1, message: "[error] forbidden function used", rule: "forbidden-functions" },
+        ],
+      }),
+    );
+    const findingEls = item!.querySelectorAll(".psc-result__finding");
+    expect(findingEls[0].querySelector(".psc-result__finding-fix-button")).not.toBeNull();
+    expect(findingEls[1].querySelector(".psc-result__finding-fix-button")).toBeNull();
+  });
+
+  it("clicking a finding's fix button does not also open the code viewer", () => {
+    invokeImplFor({ repair_psc_finding: () => [] });
+    const item = buildPscResultItem(
+      outcome({
+        findings: [{ line: 3, column: 5, message: "[warning] missing space", rule: "comma-spacing" }],
+      }),
+    );
+
+    item!.querySelector<HTMLButtonElement>(".psc-result__finding-fix-button")!.click();
+
+    expect(document.querySelector<HTMLDialogElement>("#code-viewer")!.open).toBe(false);
   });
 
   it("renderPscResults hides the panel entirely for an empty outcome list", () => {
@@ -935,6 +1000,69 @@ describe("handleFixClick", () => {
     await promise;
 
     expect(outcome.findings).toEqual(remaining);
+  });
+});
+
+describe("handleFixIssueClick", () => {
+  function setup(findings: Diagnostic[]) {
+    const button = document.createElement("button");
+    const errorEl = document.createElement("span");
+    errorEl.hidden = true;
+    const outcome: PscParseOutcome = { path: "/a.psc", ok: true, detail: "", findings };
+    return { button, errorEl, outcome };
+  }
+
+  it("disables the button, applies just that finding's fix, and re-renders with updated findings", async () => {
+    const finding: Diagnostic = {
+      line: 3,
+      column: 5,
+      message: "[warning] missing space after comma",
+      rule: "comma-spacing",
+    };
+    const remaining: Diagnostic[] = [];
+    invokeImplFor({ repair_psc_finding: () => remaining });
+    const { button, errorEl, outcome } = setup([finding]);
+
+    const promise = handleFixIssueClick("/a.psc", outcome, finding, button, errorEl);
+    expect(button.disabled).toBe(true);
+    await promise;
+
+    expect(outcome.findings).toEqual(remaining);
+    expect(invokeMock).toHaveBeenCalledWith("repair_psc_finding", expect.objectContaining({
+      rule: "comma-spacing",
+      line: 3,
+    }));
+  });
+
+  it("does nothing for a finding with no rule", async () => {
+    const finding: Diagnostic = { line: 1, column: 1, message: "[error] bad" };
+    const { button, errorEl, outcome } = setup([finding]);
+
+    await handleFixIssueClick("/a.psc", outcome, finding, button, errorEl);
+
+    expect(invokeMock).not.toHaveBeenCalledWith("repair_psc_finding", expect.anything());
+    expect(button.disabled).toBe(false);
+  });
+
+  it("shows the backend's error inline and re-enables the button instead of re-rendering", async () => {
+    const finding: Diagnostic = {
+      line: 4,
+      column: 1,
+      message: "[warning] out of order",
+      rule: "property-sorting",
+    };
+    invokeImplFor({
+      repair_psc_finding: () => Promise.reject(new Error('Fixing this issue would change other lines in the file; use "Apply fixes" instead.')),
+    });
+    const { button, errorEl, outcome } = setup([finding]);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await handleFixIssueClick("/a.psc", outcome, finding, button, errorEl);
+
+    expect(outcome.findings).toEqual([finding]);
+    expect(button.disabled).toBe(false);
+    expect(errorEl.hidden).toBe(false);
+    expect(errorEl.textContent).toContain("Apply fixes");
   });
 });
 

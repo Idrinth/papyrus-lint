@@ -378,6 +378,30 @@ h1 {
   text-decoration: underline;
 }
 
+.psc-result__finding-fix-button {
+  margin-left: 0.75em;
+  padding: 0.1em 0.5em;
+  border: 1px solid var(--color-accent-toggle);
+  border-radius: 6px;
+  background-color: transparent;
+  color: var(--color-accent-toggle);
+  font-size: 0.9em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.psc-result__finding-fix-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.psc-result__finding-fix-error {
+  display: block;
+  margin-top: 0.15em;
+  color: var(--color-error-strong);
+  font-size: 0.9em;
+}
+
 .psc-result__view-button {
   margin-left: 0.5em;
   padding: 0.15em 0.6em;
