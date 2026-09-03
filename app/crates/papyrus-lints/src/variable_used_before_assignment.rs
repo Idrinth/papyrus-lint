@@ -22,10 +22,16 @@
 //! reaches the code after the loop. Function parameters and script
 //! properties always have a value by the time a function runs and are
 //! never tracked by this lint.
+//!
+//! An `==`/`!=` comparison against the type's own implicit default
+//! (`None`, `0`, `0.0`, `False`, or `""`) is a deliberate gate on "has this
+//! been set yet?" rather than a genuine read of the value, so the compared
+//! variable is never flagged for that comparison specifically (other reads
+//! of it elsewhere still are).
 
 use std::collections::HashSet;
 
-use papyrus_parser::ast::{AssignOp, Expr, IfBranch, Stmt};
+use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IfBranch, Literal, Stmt};
 
 use crate::none_form_usage::{all_functions, diverges};
 use crate::Diagnostic;
@@ -181,9 +187,13 @@ fn check_expr(
                 check_expr(arg, unassigned, diagnostics, line);
             }
         }
-        Expr::Binary { left, right, .. } => {
-            check_expr(left, unassigned, diagnostics, line);
-            check_expr(right, unassigned, diagnostics, line);
+        Expr::Binary { left, op, right } => {
+            let is_default_value_gate =
+                matches!(op, BinaryOp::Eq | BinaryOp::NotEq) && default_value_gate(left, right);
+            if !is_default_value_gate {
+                check_expr(left, unassigned, diagnostics, line);
+                check_expr(right, unassigned, diagnostics, line);
+            }
         }
         Expr::Unary { operand, .. } => check_expr(operand, unassigned, diagnostics, line),
         Expr::Index { object, index } => {
@@ -194,6 +204,28 @@ fn check_expr(
         Expr::NewArray { size, .. } => check_expr(size, unassigned, diagnostics, line),
         Expr::NamedArg { value, .. } => check_expr(value, unassigned, diagnostics, line),
         Expr::Literal(_) | Expr::Self_ | Expr::Parent => {}
+    }
+}
+
+/// Whether `left`/`right` (in either order) is a plain identifier compared
+/// against a literal spelling of its type's implicit default (`None`, `0`,
+/// `0.0`, `False`, or `""`) — the "has this been set yet?" gate pattern this
+/// lint deliberately doesn't treat as a use of the variable.
+fn default_value_gate(left: &Expr, right: &Expr) -> bool {
+    matches!(
+        (left, right),
+        (Expr::Identifier(_), Expr::Literal(lit)) | (Expr::Literal(lit), Expr::Identifier(_))
+            if is_default_value_literal(lit)
+    )
+}
+
+/// Whether `literal` is the implicit default value for some Papyrus type.
+fn is_default_value_literal(literal: &Literal) -> bool {
+    match literal {
+        Literal::None | Literal::Int { value: 0, .. } | Literal::Bool(false) => true,
+        Literal::Float(value) => *value == 0.0,
+        Literal::String(value) => value.is_empty(),
+        _ => false,
     }
 }
 
@@ -234,7 +266,8 @@ mod tests {
 
     #[test]
     fn flags_compound_assignment_reading_an_unassigned_variable() {
-        let diagnostics = check("ScriptName Example\n\nFunction Test()\n    Int i\n    i += 1\nEndFunction\n");
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Int i\n    i += 1\nEndFunction\n");
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 5);
@@ -252,9 +285,8 @@ mod tests {
 
     #[test]
     fn flags_read_inside_the_initializer_of_another_declaration() {
-        let diagnostics = check(
-            "ScriptName Example\n\nFunction Test()\n    Int i\n    Int j = i\nEndFunction\n",
-        );
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Int i\n    Int j = i\nEndFunction\n");
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 5);
@@ -377,5 +409,88 @@ mod tests {
     #[test]
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_gate_comparison_against_the_int_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int i\n    If i == 0\n        i = 5\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_gate_comparison_with_the_default_literal_on_the_left() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int i\n    If 0 == i\n        i = 5\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_not_equal_gate_comparison_against_the_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int i\n    If i != 0\n        Debug.Trace(\"set\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_gate_comparison_against_none() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Armor a\n    If a == None\n        Return\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_gate_comparison_against_the_float_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Float f\n    If f == 0.0\n        f = 1.0\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_gate_comparison_against_the_bool_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Bool b\n    If b == False\n        b = True\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_gate_comparison_against_the_string_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    String s\n    If s == \"\"\n        s = \"set\"\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn still_flags_a_comparison_against_a_non_default_value() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int i\n    If i == 5\n        i = 5\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
+    fn still_flags_a_genuine_read_alongside_an_unrelated_gate_comparison() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int i\n    If i == 0\n        Debug.Trace(i as String)\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 6);
     }
 }
