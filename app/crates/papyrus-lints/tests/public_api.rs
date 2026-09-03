@@ -159,6 +159,16 @@ fn line_restricted_public_repair_handles_a_final_line_without_a_newline() {
 }
 
 #[test]
+fn whitespace_repair_preserves_identifier_and_type_casing() {
+    let source = "ScriptName exampleScript  \n\nFunction doThing(Int someValue)  \nEndFunction\n";
+
+    assert_eq!(
+        repair_filtered(source, &Config::default(), Some("trailing-whitespace")),
+        "ScriptName exampleScript\n\nFunction doThing(Int someValue)\nEndFunction\n"
+    );
+}
+
+#[test]
 fn lint_reports_multiple_enabled_rules_through_the_public_api() {
     let source = "ScriptName Example  \n\nFunction Run(Int left,Int right)\nEndFunction\n";
 
