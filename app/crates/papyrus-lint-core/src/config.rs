@@ -286,6 +286,22 @@ pub fn load_strict_achlist_scope(dir: &Path) -> Result<bool, String> {
     Ok(load_project_file(dir)?.strict_achlist_scope)
 }
 
+/// Reads an explicit config file at `path` (see [`load_config_from_path`])
+/// and returns whether it sets `strict_achlist_scope`, the same way
+/// [`load_strict_achlist_scope`] does for a project directory's own
+/// papyrus-lint.yaml/.yml. Used so a `--config <path>` override still
+/// honors the flag from the file it explicitly names, instead of that file
+/// being read only for its `papyrus_lints::Config` fields. Returns an
+/// error if `path` doesn't exist or fails to parse.
+pub fn load_strict_achlist_scope_from_path(path: &Path) -> Result<bool, String> {
+    let contents = fs::read_to_string(path).map_err(|err| err.to_string())?;
+    if contents.trim().is_empty() {
+        return Ok(false);
+    }
+    let project: ProjectFile = serde_yaml::from_str(&contents).map_err(|err| err.to_string())?;
+    Ok(project.strict_achlist_scope)
+}
+
 /// Reads `dir`'s papyrus-lint config file and returns the additional script
 /// root directories it lists, if any (see [`crate::script_locator`] for how
 /// they're used alongside the conventional `scripts/source`/`source/scripts`
@@ -687,6 +703,41 @@ mod tests {
         );
 
         assert!(load_strict_achlist_scope(dir.path()).expect("should succeed"));
+    }
+
+    #[test]
+    fn load_strict_achlist_scope_from_path_reads_an_explicit_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        fs::write(&path, "strict_achlist_scope: true\n").expect("failed to write test config file");
+
+        assert!(load_strict_achlist_scope_from_path(&path).expect("loading should succeed"));
+    }
+
+    #[test]
+    fn load_strict_achlist_scope_from_path_defaults_to_false_when_unset() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        fs::write(&path, "semicolon: true\n").expect("failed to write test config file");
+
+        assert!(!load_strict_achlist_scope_from_path(&path).expect("loading should succeed"));
+    }
+
+    #[test]
+    fn load_strict_achlist_scope_from_path_returns_false_for_an_empty_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        fs::write(&path, "").expect("failed to write test config file");
+
+        assert!(!load_strict_achlist_scope_from_path(&path).expect("loading should succeed"));
+    }
+
+    #[test]
+    fn load_strict_achlist_scope_from_path_errors_when_the_file_is_missing() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("missing-config.yaml");
+
+        assert!(load_strict_achlist_scope_from_path(&path).is_err());
     }
 
     #[test]
