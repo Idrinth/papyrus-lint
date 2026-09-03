@@ -271,4 +271,54 @@ mod tests {
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
     }
+
+    #[test]
+    fn reports_each_nested_zero_divisor_in_one_statement() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int a)\n    Int value = (a / 0) + (a % (2 - 2))\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0].message.contains('/'));
+        assert!(diagnostics[1].message.contains('%'));
+        assert!(diagnostics.iter().all(|diagnostic| diagnostic.line == 4));
+    }
+
+    #[test]
+    fn checks_call_arguments_array_indexes_and_assignment_targets() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int a, Int[] values)\n    Consume(a / 0)\n    Int value = values[a % 0]\n    values[a / 0] = 1\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 3);
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.line)
+                .collect::<Vec<_>>(),
+            vec![4, 5, 6]
+        );
+    }
+
+    #[test]
+    fn constant_folding_handles_mixed_numeric_arithmetic() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Float a)\n    Float value = a / (2 * 0.5 - 1.0)\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 4);
+    }
+
+    #[test]
+    fn does_not_fold_division_or_modulo_inside_the_divisor() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int a)\n    Int first = a / (0 / 1)\n    Int second = a / (0 % 1)\nEndFunction\n",
+        );
+
+        // The inner operations are safe, and their results deliberately are
+        // not folded to avoid evaluating potentially unsafe operations while
+        // linting. Consequently neither outer divisor is assumed to be zero.
+        assert!(diagnostics.is_empty());
+    }
 }
