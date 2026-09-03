@@ -4,7 +4,9 @@ pub mod pex_header;
 
 use std::path::{Path, PathBuf};
 
-use papyrus_lint_core::source_encoding::read_psc_source;
+use papyrus_lint_core::source_encoding::{
+    read_psc_source, read_psc_source_with_encoding, write_psc_source,
+};
 use papyrus_lint_core::{achlist, ast_cache, config, function_table, script_locator};
 
 #[derive(Debug, PartialEq, serde::Serialize)]
@@ -292,10 +294,11 @@ fn repair_psc_file(
     compiler_path: String,
     compile_check: bool,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
+    let (source, encoding) =
+        read_psc_source_with_encoding(Path::new(&path)).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair(&source, &config);
     if repaired != source {
-        std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
+        write_psc_source(Path::new(&path), &repaired, encoding).map_err(|err| err.to_string())?;
     }
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
@@ -334,14 +337,15 @@ fn repair_psc_finding(
     rule: String,
     line: usize,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
+    let (source, encoding) =
+        read_psc_source_with_encoding(Path::new(&path)).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair_filtered(&source, &config, Some(rule.as_str()));
     let repaired = papyrus_lints::restrict_to_line(&source, &repaired, line).ok_or_else(|| {
         "Fixing this issue would change other lines in the file; use \"Apply fixes\" instead."
             .to_string()
     })?;
     if repaired != source {
-        std::fs::write(&path, &repaired).map_err(|err| err.to_string())?;
+        write_psc_source(Path::new(&path), &repaired, encoding).map_err(|err| err.to_string())?;
     }
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
@@ -791,6 +795,34 @@ mod tests {
 
         assert!(diagnostics.is_empty());
         assert_eq!(std::fs::read_to_string(path).unwrap(), source);
+    }
+
+    #[test]
+    fn repair_psc_file_preserves_a_cp1252_encoded_files_encoding() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        // "ScriptName Example  \n\n; caf\xE9\n" with trailing whitespace on
+        // the first line to fix, and 0xE9 ("é" in Windows-1252) making the
+        // file as a whole invalid UTF-8.
+        let mut contents = b"ScriptName Example  \n\n; caf".to_vec();
+        contents.push(0xE9);
+        contents.push(b'\n');
+        std::fs::write(&path, &contents).unwrap();
+
+        repair_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        let mut expected = b"ScriptName Example\n\n; caf".to_vec();
+        expected.push(0xE9);
+        expected.push(b'\n');
+        assert_eq!(std::fs::read(&path).unwrap(), expected);
     }
 
     #[test]

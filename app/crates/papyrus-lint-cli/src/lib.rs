@@ -116,7 +116,7 @@ use std::sync::Arc;
 
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::script_locator::CANDIDATE_DIRS;
-use papyrus_lint_core::source_encoding::read_psc_source;
+use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, write_psc_source};
 use papyrus_lint_core::{achlist, config};
 use serde::Serialize;
 
@@ -730,8 +730,8 @@ pub fn run(
     let mut report_buf: Vec<u8> = Vec::new();
 
     for script_path in &script_paths {
-        let source = match read_psc_source(script_path) {
-            Ok(source) => source,
+        let (source, encoding) = match read_psc_source_with_encoding(script_path) {
+            Ok(result) => result,
             Err(err) => {
                 let _ = writeln!(
                     stderr,
@@ -759,7 +759,7 @@ pub fn run(
                 None => repaired,
             };
             if repaired != source {
-                if let Err(err) = fs::write(script_path, &repaired) {
+                if let Err(err) = write_psc_source(script_path, &repaired, encoding) {
                     let _ = writeln!(
                         stderr,
                         "error: failed to write {}: {err}",
@@ -1606,6 +1606,41 @@ mod tests {
         assert!(!stdout.contains("[trailing-whitespace]"));
         assert!(stdout.contains("Game.GetPlayer"));
         assert!(stdout.contains("(1 script(s) fixed.)"));
+    }
+
+    #[test]
+    fn fix_preserves_a_cp1252_encoded_files_encoding() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        fs::create_dir_all(script_path.parent().unwrap()).expect("failed to create parent dir");
+        // "ScriptName Example   \n\n; caf\xE9\n" with trailing whitespace on
+        // the first line to fix, and 0xE9 ("é" in Windows-1252) making the
+        // file as a whole invalid UTF-8.
+        let mut contents = b"ScriptName Example   \n\n; caf".to_vec();
+        contents.push(0xE9);
+        contents.push(b'\n');
+        fs::write(&script_path, &contents).expect("failed to write test file");
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stdout.contains("(1 script(s) fixed.)"), "stderr: {stderr}");
+        let mut expected = b"ScriptName Example\n\n; caf".to_vec();
+        expected.push(0xE9);
+        expected.push(b'\n');
+        assert_eq!(
+            fs::read(&script_path).expect("failed to read back fixed file"),
+            expected,
+            "fixing must preserve the file's original Windows-1252 encoding"
+        );
+        assert_eq!(code, 0);
     }
 
     #[test]
