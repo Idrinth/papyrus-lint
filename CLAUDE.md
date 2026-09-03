@@ -150,7 +150,9 @@ binary target that crate also defines.
   report and writing HTML/lcov reports to `coverage/`. `npm run lint` runs
   ESLint (flat config in `eslint.config.js`) over `src/`, using
   `typescript-eslint`'s recommended rules plus `@vitest/eslint-plugin`'s
-  recommended rules on test files.
+  recommended rules on test files. `npm run lint:css` runs stylelint (config
+  in `.stylelintrc.json`, extending `stylelint-config-recommended`) over
+  `src/**/*.css`.
   - `typescript-eslint` doesn't yet support TypeScript 7 (this repo's
     `typescript` devDependency), so `app/package.json` installs it under an
     npm alias: `typescript` resolves to the `@typescript/typescript6` shim
@@ -190,6 +192,8 @@ binary target that crate also defines.
   (test files themselves are omitted). The text summary is posted to the
   job's step summary and an lcov report is uploaded as the
   `sublime-extension-coverage` artifact.
+- **Frontend CSS lint job**: in `app/`, `npm ci`, then `npm run lint:css`
+  (stylelint) over `src/**/*.css`.
 - **Frontend job**: in `app/`, `npm ci`, then `npm run lint` (ESLint), `npm
   run test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
   run build` (typecheck & Vite build). The text coverage summary is

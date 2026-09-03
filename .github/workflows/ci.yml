@@ -88,6 +88,27 @@ jobs:
           name: sublime-extension-coverage
           path: lcov.info
 
+  stylelint:
+    name: Frontend CSS lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Lint CSS
+        run: npm run lint:css
+
   frontend:
     name: Frontend (typecheck & build)
     runs-on: ubuntu-latest
