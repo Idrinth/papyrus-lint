@@ -15,9 +15,13 @@
 //! variable then counts as assigned from that point on). `If`/`ElseIf`/
 //! `Else` branches are each walked from the same incoming state, and a
 //! branch that unconditionally `Return`s doesn't contribute its exit state
-//! to what follows the `If` — a variable stays flagged as possibly
-//! unassigned afterward if it's still unassigned along any surviving
-//! path. A `While` loop may run zero times, so an assignment made only
+//! to what follows the `If`; a variable assigned by any surviving branch
+//! counts as assigned afterward too — the standard Papyrus idiom of
+//! assigning a variable in only one branch (or omitting `Else` entirely)
+//! and later testing whether that ran, by comparing it against its
+//! default, would otherwise still be misread as a bug. Only a variable
+//! left unassigned by every surviving branch stays flagged past the `If`.
+//! A `While` loop may run zero times, so an assignment made only
 //! inside its body is never assumed to have run by the time execution
 //! reaches the code after the loop. Function parameters and script
 //! properties always have a value by the time a function runs and are
@@ -163,8 +167,14 @@ fn walk_body(
 /// Handles an `If`/`ElseIf`/`Else` chain: each branch (and the trailing
 /// `Else`, if any) is checked from the same incoming state, and only
 /// branches that don't unconditionally `Return` contribute their exit
-/// state to what follows the `If` — a variable stays flagged as possibly
-/// unassigned afterward if it's still unassigned along any surviving path.
+/// state to what follows the `If`. A variable assigned by *any* surviving
+/// branch is treated as assigned afterward too, even though a branch that
+/// doesn't run it wouldn't have — the standard Papyrus idiom is to assign a
+/// variable in only one branch (or omit the `Else` entirely) and later test
+/// whether that ran by comparing it against its default, so requiring every
+/// branch to assign it before dropping the flag would keep flagging that
+/// idiom's later reads as if they were bugs. Only a variable left
+/// unassigned by *every* surviving branch is still flagged past the `If`.
 fn handle_if(
     branches: &[IfBranch],
     else_body: &[Stmt],
@@ -195,7 +205,11 @@ fn handle_if(
         // state rather than guess.
         entry_vars
     } else {
-        surviving.into_iter().flatten().collect()
+        let mut merged = surviving.swap_remove(0);
+        for branch_vars in &surviving {
+            merged.retain(|name, kind| branch_vars.get(name) == Some(kind));
+        }
+        merged
     };
 }
 
@@ -360,13 +374,44 @@ mod tests {
     }
 
     #[test]
-    fn flags_use_still_possibly_unassigned_after_one_sided_assignment() {
+    fn does_not_flag_use_after_one_sided_if_assigns_it() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Bool flag)\n    Int i\n    If flag\n        i = 1\n    EndIf\n    Debug.Trace(i as String)\nEndFunction\n",
         );
 
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_use_when_only_one_branch_of_several_assigns() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Bool flag, Bool other)\n    Int i\n    If flag\n        Debug.Trace(\"a\")\n    ElseIf other\n        i = 1\n    EndIf\n    Debug.Trace(i as String)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn still_flags_use_after_if_else_when_neither_branch_assigns() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Bool flag)\n    Int i\n    If flag\n        Debug.Trace(\"a\")\n    Else\n        Debug.Trace(\"b\")\n    EndIf\n    Debug.Trace(i as String)\nEndFunction\n",
+        );
+
         assert_eq!(diagnostics.len(), 1);
-        assert_eq!(diagnostics[0].line, 8);
+        assert_eq!(diagnostics[0].line, 10);
+    }
+
+    #[test]
+    fn does_not_flag_the_conditional_assign_then_default_check_idiom() {
+        // The reported false positive (papyrus-lint#363): a variable is
+        // assigned in only one branch, then a *later*, separate `If`
+        // compares it against its default to find out whether that branch
+        // ran, deliberately relying on the language's implicit default.
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Bool flag, Bool sigilStoneInstalled)\n    Bool daedricItemCrafted\n    If flag\n        daedricItemCrafted = True\n    EndIf\n    If sigilStoneInstalled == False || daedricItemCrafted == False\n        Debug.Trace(\"no recipes\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
     }
 
     #[test]
