@@ -16,6 +16,17 @@
 use std::io;
 use std::path::Path;
 
+/// Which encoding a `.psc` file was actually read as (see
+/// [`read_psc_source_with_encoding`]), so a later write-back of repaired
+/// content can be encoded the same way it was read — otherwise fixing a
+/// Windows-1252-encoded file would silently re-save it as UTF-8, changing
+/// its encoding even though its content is (mostly) unchanged.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PscEncoding {
+    Utf8,
+    Windows1252,
+}
+
 /// Reads the file at `path`, decoding it as UTF-8 if it's valid UTF-8, or
 /// as Windows-1252 (CP1252) otherwise. Only fails on the underlying I/O
 /// error from reading the file itself.
@@ -24,16 +35,56 @@ pub fn read_psc_source(path: &Path) -> io::Result<String> {
     Ok(decode_psc_source(&bytes))
 }
 
+/// Like [`read_psc_source`], but also returns the [`PscEncoding`] that was
+/// used, for callers that may write repaired content back to `path` and
+/// need to preserve its original on-disk encoding.
+pub fn read_psc_source_with_encoding(path: &Path) -> io::Result<(String, PscEncoding)> {
+    let bytes = std::fs::read(path)?;
+    Ok(decode_psc_source_with_encoding(&bytes))
+}
+
 /// Decodes `bytes` as UTF-8 if valid, or as Windows-1252 (CP1252)
 /// otherwise, per [`read_psc_source`].
 pub fn decode_psc_source(bytes: &[u8]) -> String {
+    decode_psc_source_with_encoding(bytes).0
+}
+
+/// Like [`decode_psc_source`], but also returns the [`PscEncoding`] that
+/// was used to decode `bytes`.
+pub fn decode_psc_source_with_encoding(bytes: &[u8]) -> (String, PscEncoding) {
     match String::from_utf8(bytes.to_vec()) {
-        Ok(source) => source,
+        Ok(source) => (source, PscEncoding::Utf8),
         Err(err) => {
             let (source, _encoding, _had_errors) = encoding_rs::WINDOWS_1252.decode(err.as_bytes());
-            source.into_owned()
+            (source.into_owned(), PscEncoding::Windows1252)
         }
     }
+}
+
+/// Encodes `source` as `encoding`'s bytes — the counterpart to
+/// [`decode_psc_source_with_encoding`]/[`read_psc_source_with_encoding`].
+/// A character with no Windows-1252 representation (never expected in
+/// practice: every character an automatic fix can introduce is plain
+/// ASCII, and everything read from a Windows-1252 file already round-trips
+/// through it) falls back to a numeric character reference rather than
+/// silently dropping data.
+pub fn encode_psc_source(source: &str, encoding: PscEncoding) -> Vec<u8> {
+    match encoding {
+        PscEncoding::Utf8 => source.as_bytes().to_vec(),
+        PscEncoding::Windows1252 => {
+            let (bytes, _encoding, _had_unmappable_chars) =
+                encoding_rs::WINDOWS_1252.encode(source);
+            bytes.into_owned()
+        }
+    }
+}
+
+/// Writes `source` to `path`, encoded as `encoding` — the write-back
+/// counterpart to [`read_psc_source_with_encoding`]. Used after applying
+/// an automatic fix, so the file's on-disk encoding never changes even
+/// though its content does.
+pub fn write_psc_source(path: &Path, source: &str, encoding: PscEncoding) -> io::Result<()> {
+    std::fs::write(path, encode_psc_source(source, encoding))
 }
 
 #[cfg(test)]
@@ -122,5 +173,68 @@ mod tests {
         let missing = Path::new("/nonexistent/path/does-not-exist.psc");
 
         assert!(read_psc_source(missing).is_err());
+    }
+
+    #[test]
+    fn reports_windows_1252_for_non_utf8_bytes() {
+        let (source, encoding) = decode_psc_source_with_encoding(&[b'c', b'a', b'f', 0xE9]);
+
+        assert_eq!(source, "café");
+        assert_eq!(encoding, PscEncoding::Windows1252);
+    }
+
+    #[test]
+    fn reports_utf8_for_valid_utf8_bytes() {
+        let (source, encoding) = decode_psc_source_with_encoding("café".as_bytes());
+
+        assert_eq!(source, "café");
+        assert_eq!(encoding, PscEncoding::Utf8);
+    }
+
+    #[test]
+    fn round_trips_windows_1252_bytes_through_decode_and_encode() {
+        let original = [b'c', b'a', b'f', 0xE9, b'\r', b'\n', 0x93, b'h', b'i', 0x94];
+
+        let (source, encoding) = decode_psc_source_with_encoding(&original);
+        let encoded = encode_psc_source(&source, encoding);
+
+        assert_eq!(encoded, original);
+    }
+
+    #[test]
+    fn encodes_utf8_source_as_utf8_bytes() {
+        let bytes = encode_psc_source("ScriptName Example ; 漢字", PscEncoding::Utf8);
+
+        assert_eq!(bytes, "ScriptName Example ; 漢字".as_bytes());
+    }
+
+    #[test]
+    fn read_write_round_trip_preserves_a_windows_1252_file_byte_for_byte() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("Example.psc");
+        let original = [b'c', b'a', b'f', 0xE9, b'\r', b'\n'];
+        std::fs::write(&path, original).expect("failed to write test file");
+
+        let (source, encoding) =
+            read_psc_source_with_encoding(&path).expect("reading should succeed");
+        write_psc_source(&path, &source, encoding).expect("writing should succeed");
+
+        let bytes_on_disk = std::fs::read(&path).expect("failed to read back test file");
+        assert_eq!(bytes_on_disk, original);
+    }
+
+    #[test]
+    fn read_write_round_trip_preserves_a_utf8_file_byte_for_byte() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("Example.psc");
+        let original = "ScriptName Example ; 漢字\r\n";
+        std::fs::write(&path, original).expect("failed to write test file");
+
+        let (source, encoding) =
+            read_psc_source_with_encoding(&path).expect("reading should succeed");
+        write_psc_source(&path, &source, encoding).expect("writing should succeed");
+
+        let bytes_on_disk = std::fs::read(&path).expect("failed to read back test file");
+        assert_eq!(bytes_on_disk, original.as_bytes());
     }
 }

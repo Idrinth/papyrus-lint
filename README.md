@@ -431,7 +431,9 @@ Prefixed with the `fix` subcommand, it applies every automatic fix (the
 indentation settings) to each resolved script first, rewriting a script on
 disk only if it changed, before reporting whatever diagnostics remain the
 same way — the same repair the desktop app's "Fix" button applies to a
-single script.
+single script. A rewritten script is always saved back in the same
+encoding it was read as (UTF-8 or Windows-1252), so fixing a file never
+changes its encoding.
 
 `fix` also accepts `--type <rule-id>` to apply only that one automatic fix
 instead of every enabled one, and `--line <n>` to further restrict
