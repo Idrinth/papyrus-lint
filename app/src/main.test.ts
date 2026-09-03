@@ -2101,6 +2101,47 @@ describe("code viewer edit mode", () => {
       expect(autocompleteEl().querySelectorAll(".code-viewer__autocomplete-item")).toHaveLength(0);
     });
 
+    it("does not reopen the dropdown when a hidden lookup finishes", async () => {
+      await openWithCursorAfterSelfDot();
+      let finishLookup!: (members: unknown[]) => void;
+      invokeImplFor({
+        list_script_members: () =>
+          new Promise<unknown[]>((resolve) => {
+            finishLookup = resolve;
+          }),
+      });
+      const pendingUpdate = updateAutocomplete();
+
+      hideAutocomplete();
+      finishLookup([{ kind: "property", name: "AProp", type_name: { name: "Int", is_array: false } }]);
+      await pendingUpdate;
+
+      expect(autocompleteEl().hidden).toBe(true);
+      expect(autocompleteEl().children).toHaveLength(0);
+    });
+
+    it("keeps the newest results when an older lookup finishes last", async () => {
+      const field = await openWithCursorAfterSelfDot();
+      const finishes: Array<(members: unknown[]) => void> = [];
+      invokeImplFor({
+        list_script_members: () =>
+          new Promise<unknown[]>((resolve) => {
+            finishes.push(resolve);
+          }),
+      });
+      const olderUpdate = updateAutocomplete();
+      field.setRangeText("b", field.selectionStart, field.selectionEnd, "end");
+      const newerUpdate = updateAutocomplete();
+
+      finishes[1]([{ kind: "property", name: "Better", type_name: { name: "Int", is_array: false } }]);
+      await newerUpdate;
+      finishes[0]([{ kind: "property", name: "Ancient", type_name: { name: "Int", is_array: false } }]);
+      await olderUpdate;
+
+      expect(autocompleteEl().textContent).toContain("Better");
+      expect(autocompleteEl().textContent).not.toContain("Ancient");
+    });
+
     it("listScriptMembers logs and returns an empty list when the backend call fails", async () => {
       invokeMock.mockRejectedValue(new Error("lookup failed"));
       vi.spyOn(console, "error").mockImplementation(() => {});
