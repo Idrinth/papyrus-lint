@@ -330,6 +330,16 @@ property sorting (disabled by default; see the README). The desktop app,
 standalone CLI, and editor extensions all use the same lint and repair
 engine.
 
+`papyrus-lints`' `tags` module publishes a `RuleTags` entry — kind
+keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
+`"maintainability"`), an `Importance` (`Low`/`Medium`/`High`) rating how
+much fixing that rule matters for keeping a codebase maintainable, and an
+`auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
+separately, so the two can never drift apart — for every id in
+`KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. This
+only publishes the metadata; it's consumed by a separate, not-yet-built
+group-based filtering feature rather than filtering anything itself.
+
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are
 forgiving of an achlist that doesn't live in the project root itself (e.g.

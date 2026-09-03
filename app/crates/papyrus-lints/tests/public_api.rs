@@ -2,8 +2,9 @@
 
 use papyrus_lints::{
     argument_types::{ExternalSignatures, ParamInfo},
-    lint, lint_with_external_arguments, repair, repair_filtered, restrict_to_line, Config,
-    Diagnostic, FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
+    lint, lint_with_external_arguments, repair, repair_filtered, restrict_to_line,
+    tags::tags_for,
+    Config, Diagnostic, FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
 };
 use papyrus_parser::ast::TypeName;
 use std::collections::HashSet;
@@ -23,6 +24,15 @@ fn published_rule_id_lists_are_unique_and_fixable_rules_are_known() {
         fixable.is_subset(&known),
         "every fixable rule must also be advertised as known"
     );
+}
+
+#[test]
+fn every_known_rule_id_resolves_to_published_tags() {
+    for rule in KNOWN_RULE_IDS {
+        let tags = tags_for(rule).unwrap_or_else(|| panic!("{rule:?} has no published tags"));
+        assert!(!tags.kinds.is_empty());
+        assert_eq!(tags.auto_fixable(), FIXABLE_RULE_IDS.contains(rule));
+    }
 }
 
 #[test]
