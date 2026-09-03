@@ -31,8 +31,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Test BBCode linter
-        run: python3 .github/scripts/test_bbcode_lint.py -v
+      - name: Test Nexus page scripts
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
 
       - name: Lint Nexus Mods page
         run: python3 .github/scripts/bbcode_lint.py docs/nexuspage.bbcode
