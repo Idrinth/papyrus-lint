@@ -235,7 +235,11 @@ app/crates/papyrus-lint-cli/Cargo.toml`) on each platform, attaching each
 platform's desktop bundle and CLI binary
 (`PapyrusLinterCLI-linux`/`PapyrusLinterCLI-macos`/`PapyrusLinterCLI-windows.exe`)
 to a GitHub release for that tag, creating the release if it doesn't
-already exist. A separate `editor-plugins` job runs independently,
+already exist. The `ubuntu-latest` leg also copies the checked-in
+`docs/papyrus-lint.default.yaml` (see Configuration above) to
+`papyrus-lint.yaml` and attaches it to the release alongside the CLI
+binary, rather than generating it by running the freshly built CLI's
+`init` subcommand. A separate `editor-plugins` job runs independently,
 packages the VS Code extension into a `.vsix` (via `@vscode/vsce`)
 and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip`, and
 attaches both to the same release. A final `release-notes` job (after
@@ -259,9 +263,10 @@ A final `nexus-upload` job (after `release`, `editor-plugins`, and
 via the Nexus Mods API, authenticating with the `NEXUSMODS_API_KEY` repo
 secret. It downloads the already-built assets straight off the GitHub
 release (rather than rebuilding anything) — the Windows installer
-(`*setup.exe`), `PapyrusLinterCLI-windows.exe`, the generated
-`papyrus-lint.yaml` (zipped locally, since Nexus expects it as an
-archive), the SublimeLinter plugin `.zip`, and the VS Code extension
+(`*setup.exe`), `PapyrusLinterCLI-windows.exe`, the
+`docs/papyrus-lint.default.yaml` copy uploaded as `papyrus-lint.yaml`
+(zipped locally, since Nexus expects it as an archive), the SublimeLinter
+plugin `.zip`, and the VS Code extension
 `.vsix` — and posts the `nexus-changelog` artifact's content as a
 changelog entry for the tag's version (`POST /mods/{id}/changelogs`).
 Each of the five files is then uploaded as a new version of its
@@ -373,7 +378,18 @@ PapyrusCompiler.exe against a dropped `.psc` as part of linting it
 own; unlike the "Compile"/"Save & Compile" buttons, this always compiles
 into a throwaway temporary directory rather than the project's real
 output directory. See the [README configuration
-reference](README.md#configuration) for the complete schema and defaults.
+reference](README.md#configuration) for the per-key documentation, and
+[`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — the
+same file `PapyrusLinterCLI init` writes and the one the README links to
+instead of dumping inline — for the complete default file. That file must
+stay byte-for-byte identical to `PapyrusLinterCLI init`'s output (built
+from `papyrus_lints::Config::default()` and the `FIELD_COMMENTS` table in
+`papyrus-lint-core/src/config.rs`, which is what actually generates the
+per-key comments): `papyrus-lint-core`'s
+`config::tests::default_config_matches_the_checked_in_docs_copy` test
+fails CI if they drift, so regenerate it with `PapyrusLinterCLI init`
+(and update `FIELD_COMMENTS`/README together) whenever a default or a
+field comment changes.
 
 The desktop app's `parse_psc_file` command, and both the app's and the
 CLI's cross-script lookups (`papyrus-lint-core`'s `function_table.rs`,

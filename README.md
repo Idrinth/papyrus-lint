@@ -190,102 +190,11 @@ Lint/fix behavior is configured via an optional YAML file named
 next to the `.achlist` file you drop into the app, or, for a single
 `.psc` file dropped directly, two directories above it (e.g. `Data` for
 `Data/Scripts/Source/abc.psc`). Any key it omits falls back to its
-default:
-
-```yaml
-# Path to PapyrusCompiler.exe, or null to auto-detect it
-compiler_path: null
-# Extra directories (relative to the project root, or absolute) to search
-# for .psc files, besides scripts/source and source/scripts
-additional_script_roots: []
-# true, false; also runs PapyrusCompiler.exe (into a throwaway temporary
-# directory) as part of linting a dropped .psc, reporting its errors
-# alongside the lint engine's own. Requires compiler_path to be set/
-# auto-detected
-compile_check: false
-# true enables strict cross-script resolution and conflicting-script-versions
-# checks for only the achlist's listed entries. false (the default) keeps
-# parent-directory search roots. In strict mode, every .psc dependency must
-# be listed in the achlist
-strict_achlist_scope: false
-# true, false
-semicolon: false
-# tab, space
-indentation: tab
-# Non-negative integer; used only when indentation is space
-indentation_width: 4
-# camelCase, PascalCase, snake_case, CONSTANT_CASE
-identifier_casing: PascalCase
-# Non-negative integer
-cyclomatic_complexity_warning: 10
-# Non-negative integer
-cyclomatic_complexity_error: 20
-# PascalCase, camelCase, lowercase, UPPERCASE
-type_casing: PascalCase
-# always, instead_of_defaults, never
-named_arguments: never
-# Non-negative number
-min_wait_interval: 0.1
-# loose, strict
-magic_numbers: loose
-# true, false
-fail_on_warning: false
-# true, false
-fail_on_info: false
-# true, false
-bool_like_int: true
-# Each rule accepts true or false
-rules:
-  trailing_whitespace: true
-  comma_spacing: true
-  forbidden_functions: true
-  formid_hex_notation: true
-  slow_functions: true
-  unused_getter: true
-  unused_property: true
-  semicolon: true
-  float_int_conversion: true
-  strict_boolean: true
-  argument_types: true
-  return_types: true
-  function_override: true
-  argument_naming: true
-  numeric_comparison: true
-  indentation: true
-  cyclomatic_complexity: true
-  unreachable_statement: true
-  static_condition: true
-  division_by_zero: true
-  empty_body: true
-  unused_local_variable: true
-  variable_used_before_assignment: true
-  none_form_usage: true
-  local_variable_shadowing: true
-  parameter_reassignment: true
-  chain_whitespace: true
-  exclamation_spacing: true
-  identifier_casing: true
-  type_casing: true
-  named_arguments: true
-  operator_spacing: true
-  property_sorting: false
-  explicit_return: true
-  unchecked_form_parameter: false
-  unchecked_cast: true
-  useless_downcast: true
-  unresolved_script: true
-  short_wait_interval: true
-  state_function_signature: true
-  goto_state: true
-  too_many_states: true
-  multiple_auto_states: true
-  conflicting_script_versions: true
-  unused_disable: false
-  magic_numbers: false
-  native_function_usage: false
-  repeated_getvalue: false
-  global_variable_setvalue: false
-```
+default. The full default configuration, with every key documented inline,
+is checked in at
+[`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — it's
+also what `PapyrusLinterCLI init` writes into a project with no config
+file yet. Each key:
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
   app's Settings tab. When unset (or blank), the app auto-detects it at

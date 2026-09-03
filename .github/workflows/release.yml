@@ -155,10 +155,10 @@ jobs:
               ;;
           esac
 
-      - name: Generate default configuration
+      - name: Copy default configuration
         if: matrix.platform == 'ubuntu-latest'
-        working-directory: cli-dist
-        run: ../app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI init
+        shell: bash
+        run: cp docs/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
 
       - name: Upload CLI and default configuration to release
         shell: bash
