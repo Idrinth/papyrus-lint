@@ -190,8 +190,10 @@ jobs:
       - name: Package VS Code extension
         working-directory: vscode-extension
         run: |
+          cp ../LICENSE LICENSE
           npm ci
           npx @vscode/vsce package --out ../plugin-dist/papyrus-lint-vscode-${{ github.ref_name }}.vsix
+          rm LICENSE
 
       - name: Upload editor plugins to release
         env:
