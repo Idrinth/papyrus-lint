@@ -140,8 +140,11 @@ const FIELD_COMMENTS: &[(&str, &str)] = &[
         "# PascalCase, camelCase, lowercase, UPPERCASE",
     ),
     ("named_arguments", "# always, instead_of_defaults, never"),
+    ("min_wait_interval", "# Non-negative number"),
+    ("magic_numbers", "# loose, strict"),
     ("fail_on_warning", "# true, false"),
     ("fail_on_info", "# true, false"),
+    ("bool_like_int", "# true, false"),
     ("rules", "# Each rule accepts true or false"),
 ];
 
@@ -430,6 +433,24 @@ mod tests {
         fs::write(&path, "semicolon: [not a bool\n").expect("failed to write test config file");
 
         assert!(load_config_from_path(&path).is_err());
+    }
+
+    #[test]
+    fn default_config_matches_the_checked_in_docs_copy() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let path = initialize_default_config(dir.path()).expect("init should succeed");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        let docs_path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../docs/papyrus-lint.default.yaml");
+        let docs_copy =
+            fs::read_to_string(&docs_path).expect("failed to read docs/papyrus-lint.default.yaml");
+
+        assert_eq!(
+            generated, docs_copy,
+            "docs/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
+        );
     }
 
     #[test]
