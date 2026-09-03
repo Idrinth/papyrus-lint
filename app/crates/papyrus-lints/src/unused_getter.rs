@@ -228,4 +228,43 @@ mod tests {
         assert_eq!(diagnostics[0].line, 2);
         assert!(diagnostics[0].message.contains("GetAV"));
     }
+
+    #[test]
+    fn flags_only_the_first_getter_in_one_discarded_compound_expression() {
+        let diagnostics =
+            check("Function Test()\n  GetFirst() + GetSecond() * GetThird()\nEndFunction\n");
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!((diagnostics[0].line, diagnostics[0].column), (2, 3));
+        assert!(diagnostics[0].message.contains("GetFirst"));
+    }
+
+    #[test]
+    fn operators_inside_call_arguments_do_not_hide_a_discarded_getter() {
+        let diagnostics = check(
+            "Function Test(Int Left, Int Right)\n  GetValue((Left + Right) * 2)\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!((diagnostics[0].line, diagnostics[0].column), (2, 3));
+        assert!(diagnostics[0].message.contains("GetValue"));
+    }
+
+    #[test]
+    fn ignores_getters_consumed_by_compound_assignments() {
+        let diagnostics = check(
+            "Function Test()\n  Value += GetValue()\n  Value -= GetValue()\n  Value *= GetValue()\n  Value /= GetValue()\n  Value %= GetValue()\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn ignores_get_prefixed_identifiers_that_are_not_calls() {
+        let diagnostics = check(
+            "Function Test()\n  GetValue\n  object.GetValue\n  values[GetIndex()]\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
 }
