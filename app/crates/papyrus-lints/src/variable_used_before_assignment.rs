@@ -23,21 +23,65 @@
 //! properties always have a value by the time a function runs and are
 //! never tracked by this lint.
 //!
-//! An `==`/`!=` comparison against the type's own implicit default
-//! (`None`, `0`, `0.0`, `False`, or `""`) is a deliberate gate on "has this
-//! been set yet?" rather than a genuine read of the value, so the compared
-//! variable is never flagged for that comparison specifically (other reads
-//! of it elsewhere still are).
+//! An `==`/`!=` comparison against the variable's own declared type's
+//! implicit default (`None`, `0`, `0.0`, `False`, or `""`) is a deliberate
+//! gate on "has this been set yet?" rather than a genuine read of the
+//! value, so the compared variable is never flagged for that comparison
+//! specifically (other reads of it elsewhere still are). The declared
+//! type is tracked alongside each unassigned local so a mismatched
+//! comparison — `Int i` against `None`, or `Bool b` against `0` — is never
+//! mistaken for that type's own default and still gets flagged.
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 
-use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IfBranch, Literal, Stmt};
+use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IfBranch, Literal, Stmt, TypeName};
 
 use crate::none_form_usage::{all_functions, diverges};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "variable-used-before-assignment";
+
+/// The implicit default value Papyrus gives an unassigned local, grouped by
+/// which literal spells it: `Int`/`Float`/`Bool`/`String` locals default to
+/// `0`/`0.0`/`False`/`""` respectively, while every other type (object
+/// references and arrays alike) defaults to `None`.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum DefaultKind {
+    Int,
+    Float,
+    Bool,
+    String,
+    None_,
+}
+
+impl DefaultKind {
+    fn of(type_name: &TypeName) -> Self {
+        if type_name.is_array {
+            return DefaultKind::None_;
+        }
+        match type_name.name.to_lowercase().as_str() {
+            "int" => DefaultKind::Int,
+            "float" => DefaultKind::Float,
+            "bool" => DefaultKind::Bool,
+            "string" => DefaultKind::String,
+            _ => DefaultKind::None_,
+        }
+    }
+
+    /// Whether `literal` is this default's own spelling (as opposed to some
+    /// other type's default, which a comparison happens to also use).
+    fn matches(self, literal: &Literal) -> bool {
+        match (self, literal) {
+            (DefaultKind::Int, Literal::Int { value: 0, .. }) => true,
+            (DefaultKind::Float, Literal::Float(value)) => *value == 0.0,
+            (DefaultKind::Bool, Literal::Bool(false)) => true,
+            (DefaultKind::String, Literal::String(value)) => value.is_empty(),
+            (DefaultKind::None_, Literal::None) => true,
+            _ => false,
+        }
+    }
+}
 
 /// Checks every function/event in `source` for a local variable read before
 /// it's ever been assigned a value.
@@ -48,20 +92,24 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 
     let mut diagnostics = Vec::new();
     for function in all_functions(&script) {
-        let mut unassigned = HashSet::new();
+        let mut unassigned = HashMap::new();
         walk_body(&function.body, &mut unassigned, &mut diagnostics);
     }
     diagnostics
 }
 
-fn walk_body(body: &[Stmt], unassigned: &mut HashSet<String>, diagnostics: &mut Vec<Diagnostic>) {
+fn walk_body(
+    body: &[Stmt],
+    unassigned: &mut HashMap<String, DefaultKind>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     for stmt in body {
         match stmt {
             Stmt::VarDecl(decl) => {
                 if let Some(value) = &decl.value {
                     check_expr(value, unassigned, diagnostics, decl.line);
                 } else {
-                    unassigned.insert(decl.name.to_lowercase());
+                    unassigned.insert(decl.name.to_lowercase(), DefaultKind::of(&decl.type_name));
                 }
             }
             Stmt::Assign {
@@ -120,7 +168,7 @@ fn walk_body(body: &[Stmt], unassigned: &mut HashSet<String>, diagnostics: &mut 
 fn handle_if(
     branches: &[IfBranch],
     else_body: &[Stmt],
-    unassigned: &mut HashSet<String>,
+    unassigned: &mut HashMap<String, DefaultKind>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let entry_vars = unassigned.clone();
@@ -154,11 +202,11 @@ fn handle_if(
 /// Flags `name` if it's currently tracked as unassigned in `unassigned`.
 fn check_identifier(
     name: &str,
-    unassigned: &HashSet<String>,
+    unassigned: &HashMap<String, DefaultKind>,
     diagnostics: &mut Vec<Diagnostic>,
     line: usize,
 ) {
-    if unassigned.contains(&name.to_lowercase()) {
+    if unassigned.contains_key(&name.to_lowercase()) {
         diagnostics.push(Diagnostic {
             line,
             column: 1,
@@ -174,7 +222,7 @@ fn check_identifier(
 /// unassigned in `unassigned`.
 fn check_expr(
     expr: &Expr,
-    unassigned: &HashSet<String>,
+    unassigned: &HashMap<String, DefaultKind>,
     diagnostics: &mut Vec<Diagnostic>,
     line: usize,
 ) {
@@ -188,8 +236,8 @@ fn check_expr(
             }
         }
         Expr::Binary { left, op, right } => {
-            let is_default_value_gate =
-                matches!(op, BinaryOp::Eq | BinaryOp::NotEq) && default_value_gate(left, right);
+            let is_default_value_gate = matches!(op, BinaryOp::Eq | BinaryOp::NotEq)
+                && default_value_gate(left, right, unassigned);
             if !is_default_value_gate {
                 check_expr(left, unassigned, diagnostics, line);
                 check_expr(right, unassigned, diagnostics, line);
@@ -207,24 +255,23 @@ fn check_expr(
     }
 }
 
-/// Whether `left`/`right` (in either order) is a plain identifier compared
-/// against a literal spelling of its type's implicit default (`None`, `0`,
-/// `0.0`, `False`, or `""`) — the "has this been set yet?" gate pattern this
-/// lint deliberately doesn't treat as a use of the variable.
-fn default_value_gate(left: &Expr, right: &Expr) -> bool {
-    matches!(
-        (left, right),
-        (Expr::Identifier(_), Expr::Literal(lit)) | (Expr::Literal(lit), Expr::Identifier(_))
-            if is_default_value_literal(lit)
-    )
-}
-
-/// Whether `literal` is the implicit default value for some Papyrus type.
-fn is_default_value_literal(literal: &Literal) -> bool {
-    match literal {
-        Literal::None | Literal::Int { value: 0, .. } | Literal::Bool(false) => true,
-        Literal::Float(value) => *value == 0.0,
-        Literal::String(value) => value.is_empty(),
+/// Whether `left`/`right` (in either order) is a plain identifier, still
+/// tracked as unassigned, compared against the literal spelling of that
+/// identifier's own declared-type default — the "has this been set yet?"
+/// gate pattern this lint deliberately doesn't treat as a use of the
+/// variable. A comparison against some other type's default (`Int i`
+/// against `None`, `Bool b` against `0`, ...) doesn't match and is still
+/// treated as a genuine read.
+fn default_value_gate(
+    left: &Expr,
+    right: &Expr,
+    unassigned: &HashMap<String, DefaultKind>,
+) -> bool {
+    match (left, right) {
+        (Expr::Identifier(name), Expr::Literal(lit))
+        | (Expr::Literal(lit), Expr::Identifier(name)) => unassigned
+            .get(&name.to_lowercase())
+            .is_some_and(|kind| kind.matches(lit)),
         _ => false,
     }
 }
@@ -492,5 +539,25 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 6);
+    }
+
+    #[test]
+    fn still_flags_an_int_compared_against_none_since_that_is_not_its_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int i\n    If i == None\n        i = 5\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
+    fn still_flags_a_bool_compared_against_zero_since_that_is_not_its_default() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Bool b\n    If b == 0\n        b = True\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
     }
 }
