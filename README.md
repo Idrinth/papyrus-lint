@@ -385,10 +385,11 @@ of discovering `papyrus-lint.yaml`/`.yml` from the project root — useful
 when a config file lives somewhere other than that project root, or isn't
 named `papyrus-lint.yaml`/`.yml`. Both editor plugins expose this as a
 `config_path`/`configPath` setting (see their own READMEs). Since the
-project root's own config file is bypassed entirely in that case, so are
-its `additional_script_roots` and `strict_achlist_scope` (falling back to
-`false`, its default); use `--script-root` (below) to add any script roots
-back explicitly.
+project root's own config file is bypassed entirely in that case, so is
+its `additional_script_roots`; use `--script-root` (below) to add any
+script roots back explicitly. `strict_achlist_scope` is still read from
+`<path>` itself, the same as every other lint setting, since it isn't tied
+to the project root the way `additional_script_roots` is.
 
 Given one or more `--script-root <path>` flags (combinable with
 `fix`/`--json`/`--config`, in any argument order), each given directory

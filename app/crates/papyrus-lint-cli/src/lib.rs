@@ -74,7 +74,9 @@
 //! plugin with its own configured override) point at a config file with
 //! any name, anywhere on disk. This also skips the project root's own
 //! `additional_script_roots` (see below), since that config file is no
-//! longer being read at all.
+//! longer being read at all — but `strict_achlist_scope` (see
+//! [`papyrus_lint_core::config::load_strict_achlist_scope_from_path`]) is
+//! still read from `<path>` itself, the same as every other lint setting.
 //!
 //! With one or more `--script-root <path>` flags (combinable with
 //! `fix`/`--json`/`--config` in any order), each given directory (resolved
@@ -613,10 +615,9 @@ pub fn run(
     };
     additional_script_roots.extend(cli_script_roots);
 
-    // `strict_achlist_scope` (off by default, and skipped along with the
-    // rest of the project root's config whenever `--config` is used) picks
-    // between two ways of letting an achlist's entries resolve each other
-    // across arbitrary, non-conventional source directories:
+    // `strict_achlist_scope` (off by default) picks between two ways of
+    // letting an achlist's entries resolve each other across arbitrary,
+    // non-conventional source directories:
     //
     // - Off (the default): every listed entry's parent directory is added
     //   as a generic additional root, exactly as before this option
@@ -631,15 +632,21 @@ pub fn run(
     //   large achlist whose entries are spread across many directories (see
     //   #311) — but it does mean a project relying on the off behavior
     //   above would see resolution/diagnostics change.
-    let strict_achlist_scope = if config_path.is_some() {
-        false
-    } else {
-        match config::load_strict_achlist_scope(&project_root) {
-            Ok(value) => value,
-            Err(err) => {
-                let _ = writeln!(stderr, "error: failed to load lint config: {err}");
-                return 2;
-            }
+    //
+    // Unlike `additional_script_roots` above, this is read from whichever
+    // config file is actually in effect — the project root's own, or the
+    // file named by `--config` — rather than being forced off whenever
+    // `--config` is used: it isn't a project-root-only setting, so a
+    // `--config` file that sets it is honored the same way it is for every
+    // other key in that file (see #362).
+    let strict_achlist_scope = match config_path.as_deref().map_or_else(
+        || config::load_strict_achlist_scope(&project_root),
+        config::load_strict_achlist_scope_from_path,
+    ) {
+        Ok(value) => value,
+        Err(err) => {
+            let _ = writeln!(stderr, "error: failed to load lint config: {err}");
+            return 2;
         }
     };
 
@@ -1986,6 +1993,44 @@ mod tests {
             .join("scripts.achlist")
             .to_string_lossy()
             .into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stdout.contains("[unresolved-script]"), "stdout: {stdout}");
+        assert!(stdout.contains("'Unlisted'"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn strict_achlist_scope_is_honored_from_an_explicit_config_path() {
+        // Regression test for https://github.com/Idrinth/papyrus-lint/issues/362:
+        // `--config <path>` must still pick up `strict_achlist_scope` from
+        // the file it names, rather than always resolving as if it were
+        // off (which made the flag appear entirely inert whenever
+        // `--config` was used, and left an achlist entry's directory
+        // reachable as a search root when it should not have been).
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("mods/one/Example.psc"),
+            "ScriptName Example\n\nFunction Test()\n    Unlisted.DoThing()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("mods/one/Unlisted.psc"),
+            "ScriptName Unlisted\n\nFunction DoThing()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts.achlist"),
+            r#"["mods/one/Example.psc"]"#,
+        );
+        let config_path = dir.path().join("custom-config.yaml");
+        write_file(&config_path, "strict_achlist_scope: true\n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--config".to_string(),
+            config_path.to_string_lossy().into_owned(),
+            dir.path()
+                .join("scripts.achlist")
+                .to_string_lossy()
+                .into_owned(),
+        ]);
 
         assert_eq!(code, 0, "stderr: {stderr}");
         assert!(stdout.contains("[unresolved-script]"), "stdout: {stdout}");
