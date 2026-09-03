@@ -43,6 +43,7 @@ pub mod state_count;
 pub mod state_function_signature;
 pub mod static_condition;
 pub mod strict_boolean;
+pub mod tags;
 pub mod trailing_whitespace;
 pub mod type_casing;
 pub mod unchecked_cast;
