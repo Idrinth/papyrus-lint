@@ -337,16 +337,27 @@ much fixing that rule matters for keeping a codebase maintainable, and an
 `auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
 separately, so the two can never drift apart — for every id in
 `KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
-CLI's `--tag <kind>` flag builds on this metadata to run only one kind's
-worth of lints/fixes at a time, matched case-insensitively against a
-rule's `kinds` (e.g. `--tag style`): given without `fix`, it restricts the
-reported diagnostics to matching rules; given with `fix`, it also
-restricts which automatic fixes run, via `papyrus_lints::repair_filtered_by_tag`
-(a sibling of `repair_filtered`, which does the same for a single rule id
-via `fix --type`, both built atop a shared private `repair_with` that
-takes an `applies(rule) -> bool` predicate). `--tag` can't be combined
-with `--type`, since the two select overlapping things (one rule vs. one
-kind of rule), and an unrecognized tag is a usage error.
+desktop app's `list_rule_tags` Tauri command (`app/src-tauri/src/lib.rs`)
+exposes the same metadata to the frontend as a JSON-friendly
+`RuleTagsInfo` per rule; `app/src/main.ts` fetches it once at startup
+(`loadRuleTags`/`applyRuleTags`), indexes it by rule id, and uses it both
+to render each lint finding's kind/importance/auto-fixable badges (see
+`buildFindingTagsEl`) and to drive the Lint results tab's "Show tags"/
+"Show importance"/"Auto-fixable only" filters (`matchesTagFilters`),
+alongside its existing severity and filename filters. A finding whose
+rule carries no tag metadata (e.g. a compiler-reported diagnostic; see
+`app/src-tauri/src/compile_diagnostics.rs`) always passes those filters
+rather than being hidden. The CLI's `--tag <kind>` flag builds on the
+same metadata to run only one kind's worth of lints/fixes at a time,
+matched case-insensitively against a rule's `kinds` (e.g. `--tag style`):
+given without `fix`, it restricts the reported diagnostics to matching
+rules; given with `fix`, it also restricts which automatic fixes run, via
+`papyrus_lints::repair_filtered_by_tag` (a sibling of `repair_filtered`,
+which does the same for a single rule id via `fix --type`, both built
+atop a shared private `repair_with` that takes an `applies(rule) -> bool`
+predicate). `--tag` can't be combined with `--type`, since the two select
+overlapping things (one rule vs. one kind of rule), and an unrecognized
+tag is a usage error.
 
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are

@@ -17,6 +17,7 @@ import {
   applyAutocompleteSelection,
   applyLintConfigToUI,
   applyProjectInfoToUI,
+  applyRuleTags,
   applyTheme,
   applyScriptRootsToUI,
   buildPscResultItem,
@@ -50,9 +51,11 @@ import {
   loadCompilerPath,
   loadLintConfig,
   loadProjectInfo,
+  loadRuleTags,
   loadStoredTheme,
   loadScriptRoots,
   matchesFilenameFilter,
+  matchesTagFilters,
   openCodeViewer,
   parsePscFiles,
   projectDirForAchlist,
@@ -76,12 +79,14 @@ import {
   showResult,
   storeTheme,
   switchTab,
+  tagsForFinding,
   toggleCodeViewerFullscreen,
   updateAutocomplete,
   useProjectDir,
   type Diagnostic,
   type LintConfig,
   type PscParseOutcome,
+  type RuleTagsInfo,
 } from "./main";
 
 function invokeImplFor(handlers: Record<string, (args: unknown) => unknown>) {
@@ -649,6 +654,128 @@ describe("loadAppVersion", () => {
   });
 });
 
+describe("loadRuleTags / applyRuleTags", () => {
+  const trailingWhitespaceTags: RuleTagsInfo = {
+    rule: "trailing-whitespace",
+    kinds: ["style"],
+    importance: "low",
+    auto_fixable: true,
+  };
+
+  afterEach(() => {
+    // ruleTagsByRule is module state that outlives mountFixture(); reset it
+    // so it doesn't leak into later tests that assume no tags are known.
+    applyRuleTags([]);
+  });
+
+  it("returns the backend's reported rule tags", async () => {
+    invokeImplFor({ list_rule_tags: () => [trailingWhitespaceTags] });
+
+    await expect(loadRuleTags()).resolves.toEqual([trailingWhitespaceTags]);
+    expect(invokeMock).toHaveBeenCalledWith("list_rule_tags");
+  });
+
+  it("returns an empty array on failure", async () => {
+    invokeMock.mockRejectedValue(new Error("command not found"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadRuleTags()).resolves.toEqual([]);
+  });
+
+  it("applyRuleTags indexes tags by rule id for tagsForFinding", () => {
+    applyRuleTags([trailingWhitespaceTags]);
+
+    expect(tagsForFinding({ line: 1, column: 1, message: "x", rule: "trailing-whitespace" })).toEqual(
+      trailingWhitespaceTags,
+    );
+    expect(tagsForFinding({ line: 1, column: 1, message: "x", rule: "unknown-rule" })).toBeUndefined();
+    expect(tagsForFinding({ line: 1, column: 1, message: "x" })).toBeUndefined();
+  });
+});
+
+describe("matchesTagFilters", () => {
+  const styleLow: Diagnostic = { line: 1, column: 1, message: "x", rule: "trailing-whitespace" };
+  const correctnessHigh: Diagnostic = { line: 1, column: 1, message: "x", rule: "argument-types" };
+
+  // Populates ruleTagsByRule synchronously, with no `await` before it in the
+  // calling test - see the loadRuleTags/applyRuleTags describe block above
+  // for why that matters: applyRuleTags is also called (with an empty
+  // array) from main.ts's own DOMContentLoaded handler once its startup
+  // fetch resolves, and that resolution's timing relative to a test's own
+  // hooks isn't guaranteed, so each test sets its own fixture as its first,
+  // uninterrupted synchronous statement instead of relying on a shared
+  // beforeEach.
+  function useSampleTags() {
+    applyRuleTags([
+      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "argument-types", kinds: ["correctness"], importance: "high", auto_fixable: false },
+    ]);
+  }
+
+  // The active tag kind/importance/auto-fixable filters are module state
+  // that outlives mountFixture(), same as activeSeverities/currentFilenameFilter
+  // elsewhere in this file; restore every checkbox to its fixture default
+  // (all checked except "Auto-fixable only") so a test that unchecks one
+  // doesn't leak into a later test, in this describe block or any other.
+  afterEach(() => {
+    applyRuleTags([]);
+    for (const id of [
+      "filter-kind-style",
+      "filter-kind-performance",
+      "filter-kind-correctness",
+      "filter-kind-maintainability",
+      "filter-importance-low",
+      "filter-importance-medium",
+      "filter-importance-high",
+    ]) {
+      const el = document.querySelector<HTMLInputElement>(`#${id}`)!;
+      el.checked = true;
+      el.dispatchEvent(new Event("change"));
+    }
+    const autoFixableEl = document.querySelector<HTMLInputElement>("#filter-auto-fixable-only")!;
+    autoFixableEl.checked = false;
+    autoFixableEl.dispatchEvent(new Event("change"));
+  });
+
+  it("shows every finding by default, tagged or not", () => {
+    useSampleTags();
+    expect(matchesTagFilters(styleLow)).toBe(true);
+    expect(matchesTagFilters(correctnessHigh)).toBe(true);
+    expect(matchesTagFilters({ line: 1, column: 1, message: "x" })).toBe(true);
+    expect(matchesTagFilters({ line: 1, column: 1, message: "x", rule: "untagged-rule" })).toBe(true);
+  });
+
+  it("hides a finding whose kind is unchecked", () => {
+    useSampleTags();
+    document.querySelector<HTMLInputElement>("#filter-kind-style")!.checked = false;
+    document.querySelector<HTMLInputElement>("#filter-kind-style")!.dispatchEvent(new Event("change"));
+
+    expect(matchesTagFilters(styleLow)).toBe(false);
+    expect(matchesTagFilters(correctnessHigh)).toBe(true);
+  });
+
+  it("hides a finding whose importance is unchecked", () => {
+    useSampleTags();
+    document.querySelector<HTMLInputElement>("#filter-importance-high")!.checked = false;
+    document.querySelector<HTMLInputElement>("#filter-importance-high")!.dispatchEvent(new Event("change"));
+
+    expect(matchesTagFilters(correctnessHigh)).toBe(false);
+    expect(matchesTagFilters(styleLow)).toBe(true);
+  });
+
+  it("hides a non-auto-fixable finding when 'Auto-fixable only' is checked", () => {
+    useSampleTags();
+    document.querySelector<HTMLInputElement>("#filter-auto-fixable-only")!.checked = true;
+    document.querySelector<HTMLInputElement>("#filter-auto-fixable-only")!.dispatchEvent(new Event("change"));
+
+    expect(matchesTagFilters(correctnessHigh)).toBe(false);
+    expect(matchesTagFilters(styleLow)).toBe(true);
+    // An untagged finding (e.g. a compiler-reported diagnostic) is exempt
+    // from the auto-fixable filter, same as from the kind/importance ones.
+    expect(matchesTagFilters({ line: 1, column: 1, message: "x" })).toBe(true);
+  });
+});
+
 describe("loadCompilerPath / saveCompilerPath", () => {
   it("loadCompilerPath returns the backend's resolved path", async () => {
     invokeImplFor({ load_compiler_path: () => "C:\\Tools\\PapyrusCompiler.exe" });
@@ -909,6 +1036,35 @@ describe("buildPscResultItem / renderPscResults", () => {
     expect(findingEls[1].classList.contains("psc-result__finding--warning")).toBe(true);
   });
 
+  it("shows a finding's tag badges when its rule has known tag metadata", () => {
+    // See the matchesTagFilters describe block above for why applyRuleTags
+    // is called synchronously right here, with no `await` before it.
+    applyRuleTags([
+      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+    ]);
+    try {
+      const item = buildPscResultItem(
+        outcome({
+          findings: [{ line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" }],
+        }),
+      );
+      const badges = item!.querySelectorAll(".psc-result__tag-badge");
+      const badgeText = Array.from(badges).map((badge) => badge.textContent);
+      expect(badgeText).toContain("style");
+      expect(badgeText).toContain("low importance");
+      expect(badgeText).toContain("auto-fixable");
+    } finally {
+      applyRuleTags([]);
+    }
+  });
+
+  it("shows no tag badges for a finding whose rule has no known tag metadata", () => {
+    const item = buildPscResultItem(
+      outcome({ findings: [{ line: 1, column: 1, message: "[error] compile error", rule: "compiler-error" }] }),
+    );
+    expect(item!.querySelector(".psc-result__tag-badge")).toBeNull();
+  });
+
   it("shows a 'Fix this issue' button only on findings whose own rule is auto-fixable", () => {
     const item = buildPscResultItem(
       outcome({
@@ -963,6 +1119,28 @@ describe("buildPscResultItem / renderPscResults", () => {
     // The only finding is filtered out, and the file itself parsed cleanly,
     // so it should be skipped entirely.
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(0);
+  });
+
+  it("renderPscResults respects the active tag filters", () => {
+    applyRuleTags([{ rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true }]);
+    try {
+      document.querySelector<HTMLInputElement>("#filter-kind-style")!.checked = false;
+      document.querySelector<HTMLInputElement>("#filter-kind-style")!.dispatchEvent(new Event("change"));
+
+      renderPscResults([
+        outcome({
+          findings: [{ line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" }],
+        }),
+      ]);
+
+      // The only finding is a style-kind one, and style is now unchecked, so
+      // the file (which otherwise parsed cleanly) should be skipped entirely.
+      expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(0);
+    } finally {
+      document.querySelector<HTMLInputElement>("#filter-kind-style")!.checked = true;
+      document.querySelector<HTMLInputElement>("#filter-kind-style")!.dispatchEvent(new Event("change"));
+      applyRuleTags([]);
+    }
   });
 
   it("renderPscResults respects the filename filter input, typed live", () => {
