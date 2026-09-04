@@ -442,7 +442,17 @@ embeds. Any mismatch, or any I/O/(de)serialization failure reading the
 cache, falls back to a fresh parse, so a stale or corrupt cache never
 surfaces as a lint error. Since it lives in `papyrus-lint-core`, the same
 cache backs the editor extensions too, which invoke `PapyrusLinterCLI` as
-a subprocess.
+a subprocess. The on-disk entry format (the `modified_unix_secs`/
+`content_md5`/`linter_version`/`ast` envelope, and the `ast` field's own
+shape) is published as a [JSON
+Schema](docs/ast-cache-entry.schema.json) using JSON Schema Draft
+2020-12, versioned the same way the cache itself is: it describes
+entries whose `linter_version` is at or above `MIN_COMPATIBLE_VERSION`,
+so a consuming tool should check a read entry's `linter_version` against
+its own known-compatible floor the same way before trusting this schema,
+and bump that floor whenever `MIN_COMPATIBLE_VERSION` moves. Update it
+alongside any change to `CacheEntry` or to `papyrus_parser::ast::Script`
+that bumps `MIN_COMPATIBLE_VERSION`.
 
 Independent of that disk cache, `papyrus-parser`'s own `parse()` and
 `tokenize()` entry points (`app/crates/papyrus-parser/src/cache.rs`) are
