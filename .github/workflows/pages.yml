@@ -36,6 +36,9 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Test site builder
+        run: python3 -m unittest discover -s pages -p 'test_*.py'
+
       - name: Build site
         run: python3 pages/build.py --out pages/dist
 
