@@ -579,6 +579,11 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
     fn ancestor_states(&mut self, type_name: &str) -> Vec<(String, bool)> {
         self.ancestor_states(type_name)
     }
+
+    fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        self.lookup_function(type_name, function_name)
+            .map(|signature| signature.is_global)
+    }
 }
 
 #[cfg(test)]

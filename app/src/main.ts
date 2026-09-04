@@ -182,6 +182,7 @@ export interface LintRules {
   unchecked_form_parameter: boolean;
   unchecked_cast: boolean;
   unresolved_script: boolean;
+  non_global_function_call: boolean;
   short_wait_interval: boolean;
   state_function_signature: boolean;
   goto_state: boolean;
@@ -257,6 +258,7 @@ export const DEFAULT_RULES: LintRules = {
   unchecked_form_parameter: false,
   unchecked_cast: true,
   unresolved_script: true,
+  non_global_function_call: true,
   short_wait_interval: true,
   state_function_signature: true,
   goto_state: true,

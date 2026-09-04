@@ -2078,6 +2078,33 @@ mod tests {
     }
 
     #[test]
+    fn flags_a_call_through_a_script_name_to_a_function_not_declared_global() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/MyScriptOne.psc"),
+            "ScriptName MyScriptOne Extends Form\n\nFunction IMNotStatic()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/MyScriptTwo.psc"),
+            "ScriptName MyScriptTwo Extends Form\n\nFunction Mine()\n    MyScriptOne.IMNotStatic()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/MyScriptOne.psc", "scripts/source/MyScriptTwo.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1, "stderr: {stderr}");
+        assert!(
+            stdout.contains("[non-global-function-call]"),
+            "stdout: {stdout}"
+        );
+        assert!(stdout.contains("'IMNotStatic' is not declared Global on 'MyScriptOne'"));
+    }
+
+    #[test]
     fn resolves_cross_script_types_from_every_directory_listed_in_the_achlist() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         write_file(
@@ -2152,7 +2179,7 @@ mod tests {
         );
         write_file(
             &dir.path().join("mods/one/Unlisted.psc"),
-            "ScriptName Unlisted\n\nFunction DoThing()\nEndFunction\n",
+            "ScriptName Unlisted\n\nFunction DoThing() Global\nEndFunction\n",
         );
         write_file(
             &dir.path().join("scripts.achlist"),
@@ -2186,7 +2213,7 @@ mod tests {
         );
         write_file(
             &dir.path().join("mods/one/Unlisted.psc"),
-            "ScriptName Unlisted\n\nFunction DoThing()\nEndFunction\n",
+            "ScriptName Unlisted\n\nFunction DoThing() Global\nEndFunction\n",
         );
         write_file(
             &dir.path().join("scripts.achlist"),
@@ -2223,7 +2250,7 @@ mod tests {
         );
         write_file(
             &dir.path().join("mods/one/Unlisted.psc"),
-            "ScriptName Unlisted\n\nFunction DoThing()\nEndFunction\n",
+            "ScriptName Unlisted\n\nFunction DoThing() Global\nEndFunction\n",
         );
         write_file(
             &dir.path().join("scripts.achlist"),
