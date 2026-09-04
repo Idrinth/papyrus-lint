@@ -101,7 +101,18 @@ function createHarness({
     subscriptions: [],
   };
   extension.activate(context);
-  return { codeActionProviders, commands, context, diagnostics, execCalls, listeners, messages, output, vscode };
+  return {
+    codeActionProviders,
+    commands,
+    context,
+    diagnostics,
+    execCalls,
+    extension,
+    listeners,
+    messages,
+    output,
+    vscode,
+  };
 }
 
 function uri(fsPath, scheme = 'file') {
@@ -136,6 +147,7 @@ describe('extension activation and commands', () => {
     assert.deepEqual(Object.keys(harness.listeners).sort(), ['close', 'open', 'save']);
     assert.equal(harness.context.subscriptions.length, 9);
     assert.equal(harness.codeActionProviders.length, 1);
+    assert.equal(harness.extension.deactivate(), undefined);
   });
 
   it('lints a selected PSC with config override and publishes normalized diagnostics', async () => {
@@ -271,7 +283,8 @@ describe('extension activation and commands', () => {
       range: { start: { line: 2 } },
     };
     const otherSourceDiagnostic = { source: 'other-linter', code: 'rule', range: { start: { line: 0 } } };
-    const context = { diagnostics: [papyrusLintDiagnostic, otherSourceDiagnostic] };
+    const numericCodeDiagnostic = { source: 'papyrus-lint', code: 123, range: { start: { line: 1 } } };
+    const context = { diagnostics: [papyrusLintDiagnostic, otherSourceDiagnostic, numericCodeDiagnostic] };
 
     const actions = provider.provideCodeActions({ uri: target }, {}, context);
 
@@ -317,6 +330,27 @@ describe('extension activation and commands', () => {
     assert.match(launchFailure.messages.error[0], /not found/);
   });
 
+  it('retries an automatic CLI download after a non-Error rejection', async () => {
+    let attempts = 0;
+    const harness = createHarness({
+      cliPath: '',
+      releaseCli: async () => {
+        attempts += 1;
+        if (attempts === 1) throw 'temporarily unavailable';
+        return '/downloaded/PapyrusLinterCLI';
+      },
+    });
+    const target = uri('/project/Test.psc');
+
+    await harness.commands.get('papyrusLint.lintFile')(target);
+    await harness.commands.get('papyrusLint.lintFile')(target);
+
+    assert.equal(attempts, 2);
+    assert.match(harness.messages.error[0], /temporarily unavailable/);
+    assert.equal(harness.execCalls.length, 1);
+    assert.equal(harness.execCalls[0].executable, '/downloaded/PapyrusLinterCLI');
+  });
+
   it('warns instead of running for invalid targets and cancelled saves', async () => {
     const harness = createHarness();
     await harness.commands.get('papyrusLint.lintFile')(uri('/project/readme.txt'));
@@ -345,6 +379,17 @@ describe('extension activation and commands', () => {
 
     await malformed.commands.get('papyrusLint.fixFile')(uri('/project/Test.psc'));
     assert.deepEqual(malformed.messages.information, []);
+  });
+
+  it('supplies a fallback message for a usage error without stderr', async () => {
+    const harness = createHarness({
+      result: { error: Object.assign(new Error('bad arguments'), { code: 2 }), stdout: '', stderr: '  ' },
+    });
+
+    await harness.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
+
+    assert.deepEqual(harness.output.lines, ['papyrus-lint: failed to lint file.']);
+    assert.deepEqual(harness.messages.error, ['Papyrus Lint: failed to lint file.']);
   });
 
   it('lints clean Papyrus documents that are already open during activation', async () => {
