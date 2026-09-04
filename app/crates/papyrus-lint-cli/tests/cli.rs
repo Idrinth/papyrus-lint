@@ -42,6 +42,17 @@ fn help_is_written_to_stderr_with_the_usage_error_status() {
 }
 
 #[test]
+fn no_arguments_prints_usage_through_the_binary_entry_point() {
+    let output = run_cli(&[]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8(output.stderr)
+        .expect("stderr should be UTF-8")
+        .starts_with("Usage: PapyrusLinterCLI"));
+}
+
+#[test]
 fn version_is_written_to_stdout() {
     let output = run_cli(&["--version"]);
 
@@ -231,6 +242,65 @@ fn typed_fix_only_repairs_the_selected_rule_through_the_binary() {
 }
 
 #[test]
+fn line_scoped_fix_only_rewrites_the_selected_line_through_the_binary() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(
+        &script,
+        "ScriptName Example   \n\nFunction DoThing()   \nEndFunction\n",
+    );
+
+    let output = run_cli(&["fix", "--line=3", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        fs::read_to_string(script).expect("fixed script should be readable"),
+        "ScriptName Example   \n\nFunction DoThing()\nEndFunction\n"
+    );
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains("(1 script(s) fixed.)"));
+}
+
+#[test]
+fn explicit_config_disables_a_rule_through_the_binary_entry_point() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let config = dir.path().join("config/override.yaml");
+    write_file(&script, "ScriptName Example   \n");
+    write_file(&config, "rules:\n  trailing_whitespace: false\n");
+
+    let output = run_cli(&[
+        "--config",
+        &config.to_string_lossy(),
+        &script.to_string_lossy(),
+    ]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stdout).expect("stdout should be UTF-8"),
+        "PapyrusLinterCLI: no problems found in 1 script(s).\n"
+    );
+}
+
+#[test]
+fn color_always_emits_ansi_escapes_through_the_binary_entry_point() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example   \n");
+
+    let output = run_cli(&["--color=always", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains('\x1b'));
+}
+
+#[test]
 fn achlist_json_report_includes_clean_and_dirty_scripts() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let clean_script = dir.path().join("scripts/source/Clean.psc");
@@ -289,6 +359,21 @@ fn invalid_config_is_reported_by_the_binary_without_a_lint_report() {
     let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
     assert!(stderr.starts_with("error: failed to load lint config:"));
     assert!(stderr.contains("expected struct Rules"));
+}
+
+#[test]
+fn malformed_achlist_is_reported_by_the_binary_without_a_lint_report() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let achlist = dir.path().join("sources.achlist");
+    write_file(&achlist, r#"{"not": "an array"}"#);
+
+    let output = run_cli(&[&achlist.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.starts_with("error: failed to parse achlist file:"));
+    assert!(stderr.contains("expected a sequence"));
 }
 
 #[test]
