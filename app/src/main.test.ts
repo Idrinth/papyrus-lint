@@ -1020,6 +1020,53 @@ describe("buildPscResultItem / renderPscResults", () => {
     expect(item!.querySelector(".psc-result__compile-output")).not.toBeNull();
   });
 
+  it("opens the code viewer when the result's View code button is clicked", async () => {
+    invokeImplFor({ read_psc_file: () => "ScriptName A" });
+    const item = buildPscResultItem(
+      outcome({ ok: false, findings: [{ line: 1, column: 1, message: "[error] bad thing" }] }),
+    );
+    document.body.append(item!);
+
+    item!.querySelector<HTMLButtonElement>(".psc-result__view-button")!.click();
+
+    await vi.waitFor(() => {
+      expect(document.querySelector<HTMLDialogElement>("#code-viewer")!.open).toBe(true);
+    });
+    expect(document.querySelector("#code-viewer-title")!.textContent).toMatch(/a\.psc$/);
+    expect(document.querySelector("#code-viewer-line-1")!.classList).toContain("code-viewer__line--error");
+  });
+
+  it("runs all automatic fixes when the result's Apply fixes button is clicked", async () => {
+    invokeImplFor({ repair_psc_file: () => [] });
+    const result = outcome({
+      findings: [
+        { line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" },
+      ],
+    });
+    const item = buildPscResultItem(result);
+    document.body.append(item!);
+
+    item!.querySelector<HTMLButtonElement>(".psc-result__fix-button")!.click();
+
+    await vi.waitFor(() => expect(result.findings).toEqual([]));
+    expect(invokeMock).toHaveBeenCalledWith("repair_psc_file", expect.any(Object));
+  });
+
+  it("compiles a file when the result's Compile button is clicked", async () => {
+    invokeImplFor({
+      compile_psc_file: () => ({ success: true, stdout: "Compilation succeeded.", stderr: "" }),
+    });
+    const item = buildPscResultItem(outcome({ ok: false }));
+    document.body.append(item!);
+
+    item!.querySelector<HTMLButtonElement>(".psc-result__compile-button")!.click();
+
+    const output = item!.querySelector<HTMLElement>(".psc-result__compile-output")!;
+    await vi.waitFor(() => expect(output.hidden).toBe(false));
+    expect(output.textContent).toBe("Compilation succeeded.");
+    expect(output.classList).toContain("psc-result__compile-output--ok");
+  });
+
   it("renders one finding entry per finding, tagged with its severity", () => {
     const item = buildPscResultItem(
       outcome({
@@ -1411,6 +1458,19 @@ describe("showError / clearError / showResult", () => {
     expect(document.querySelector("#code-viewer-line-1")!.classList.contains("code-viewer__line--warning")).toBe(
       true,
     );
+  });
+
+  it("showResult's View button opens files that have no current lint outcome", async () => {
+    invokeImplFor({ read_psc_file: () => "ScriptName Unlinted" });
+    showResult("/proj/a.achlist", ["/proj/unlinted.psc"], "/proj");
+
+    document.querySelector<HTMLButtonElement>(".achlist-result__view-button")!.click();
+
+    await vi.waitFor(() => {
+      expect(document.querySelector<HTMLDialogElement>("#code-viewer")!.open).toBe(true);
+    });
+    expect(document.querySelector("#code-viewer-title")!.textContent).toMatch(/unlinted\.psc$/);
+    expect(document.querySelectorAll(".code-viewer__line--error, .code-viewer__line--warning")).toHaveLength(0);
   });
 });
 
