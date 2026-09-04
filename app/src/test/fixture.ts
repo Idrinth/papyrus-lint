@@ -132,6 +132,18 @@ export const FIXTURE_HTML = `
             <input type="checkbox" id="filter-info" checked />
             <input type="checkbox" id="filter-other" checked />
           </fieldset>
+          <fieldset id="psc-result-tag-kind-filters">
+            <input type="checkbox" id="filter-kind-style" checked />
+            <input type="checkbox" id="filter-kind-performance" checked />
+            <input type="checkbox" id="filter-kind-correctness" checked />
+            <input type="checkbox" id="filter-kind-maintainability" checked />
+          </fieldset>
+          <fieldset id="psc-result-tag-importance-filters">
+            <input type="checkbox" id="filter-importance-low" checked />
+            <input type="checkbox" id="filter-importance-medium" checked />
+            <input type="checkbox" id="filter-importance-high" checked />
+            <input type="checkbox" id="filter-auto-fixable-only" />
+          </fieldset>
           <ul id="psc-result-list"></ul>
         </div>
       </div>

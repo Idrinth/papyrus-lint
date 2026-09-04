@@ -45,6 +45,7 @@ let failOnWarningEl: HTMLInputElement | null;
 let failOnInfoEl: HTMLInputElement | null;
 let boolLikeIntEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
+let autoFixableFilterEl: HTMLInputElement | null;
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
 let codeViewerCloseEl: HTMLButtonElement | null;
@@ -109,6 +110,26 @@ export interface PscParseOutcome {
   ok: boolean;
   detail: string;
   findings: Diagnostic[];
+}
+
+// Mirrors papyrus_lints::tags::Importance's lowercase serde rename.
+export type TagImportance = "low" | "medium" | "high";
+export const TAG_IMPORTANCES: TagImportance[] = ["low", "medium", "high"];
+
+// The kind keyword(s) papyrus_lints::tags currently tags every rule with.
+// Kept in sync by hand with the "kinds" used across RULE_TAGS in
+// app/crates/papyrus-lints/src/tags.rs, the same convention FIXABLE_RULE_IDS
+// below follows.
+export type TagKind = "style" | "performance" | "correctness" | "maintainability";
+export const TAG_KINDS: TagKind[] = ["style", "performance", "correctness", "maintainability"];
+
+// One rule's tag metadata, as returned by the backend's list_rule_tags
+// command (papyrus_lints::tags::RuleTags, made JSON-friendly).
+export interface RuleTagsInfo {
+  rule: string;
+  kinds: string[];
+  importance: TagImportance;
+  auto_fixable: boolean;
 }
 
 export interface CompileOutcome {
@@ -291,6 +312,10 @@ let currentScriptRoots: string[] = [];
 // achlist. These are runtime-only roots: unlike currentScriptRoots, they are
 // not displayed as user configuration or persisted to papyrus-lint.yaml.
 let currentAchlistScriptRoots: string[] = [];
+// Every built-in lint rule's tag metadata, keyed by rule id, fetched once
+// from the backend (see loadRuleTags) and used both to render each
+// finding's tag badges and to drive the tag filters below.
+let ruleTagsByRule: Map<string, RuleTagsInfo> = new Map();
 
 function effectiveScriptRoots(): string[] {
   return [...new Set([...currentScriptRoots, ...currentAchlistScriptRoots])];
@@ -495,6 +520,27 @@ export async function saveScriptRoots(dir: string, roots: string[]): Promise<voi
   } catch (error) {
     console.error(error);
   }
+}
+
+// Fetches every built-in lint rule's tag metadata (kind(s), importance, and
+// whether it's auto-fixable; see papyrus_lints::tags) from the Rust
+// backend, for grouping/filtering the lint results by tag. Returns an
+// empty array if the lookup fails.
+export async function loadRuleTags(): Promise<RuleTagsInfo[]> {
+  try {
+    return (await invoke<RuleTagsInfo[]>("list_rule_tags")) ?? [];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+// Indexes `tags` by rule id (for tagsForFinding/matchesTagFilters below) and
+// re-renders the current lint results, so any already-listed findings pick
+// up their tag badges/filtering once the lookup resolves.
+export function applyRuleTags(tags: RuleTagsInfo[]) {
+  ruleTagsByRule = new Map(tags.map((info) => [info.rule, info]));
+  renderPscResults(currentPscOutcomes);
 }
 
 // Fetches the desktop app's version from the Rust backend, so it can be
@@ -1205,6 +1251,41 @@ export function severityOf(message: string): Severity {
 const activeSeverities = new Set<Severity>(SEVERITIES);
 let severityFilterEls: Partial<Record<Severity, HTMLInputElement>> = {};
 
+// Which tag kinds/importance levels are currently shown in the lint results
+// list; all are shown by default, same as activeSeverities above.
+const activeTagKinds = new Set<TagKind>(TAG_KINDS);
+const activeTagImportances = new Set<TagImportance>(TAG_IMPORTANCES);
+// Whether only auto-fixable findings should be shown; off by default.
+let onlyAutoFixable = false;
+let tagKindFilterEls: Partial<Record<TagKind, HTMLInputElement>> = {};
+let tagImportanceFilterEls: Partial<Record<TagImportance, HTMLInputElement>> = {};
+
+// Looks up `finding`'s own rule's tag metadata, if any. A finding with no
+// rule (or one that isn't a papyrus-lints rule id at all, e.g. a
+// compiler-reported diagnostic - see app/src-tauri/src/compile_diagnostics.rs)
+// has none.
+export function tagsForFinding(finding: Diagnostic): RuleTagsInfo | undefined {
+  return finding.rule ? ruleTagsByRule.get(finding.rule) : undefined;
+}
+
+// Whether `finding` passes the active tag kind/importance/auto-fixable
+// filters. A finding with no tag metadata always passes, the same way an
+// unrecognized severity still falls back to the always-shown "other"
+// bucket instead of being silently dropped.
+export function matchesTagFilters(finding: Diagnostic): boolean {
+  const tags = tagsForFinding(finding);
+  if (!tags) {
+    return true;
+  }
+  if (!tags.kinds.some((kind) => activeTagKinds.has(kind as TagKind))) {
+    return false;
+  }
+  if (!activeTagImportances.has(tags.importance)) {
+    return false;
+  }
+  return !onlyAutoFixable || tags.auto_fixable;
+}
+
 // The current filename search pattern; an empty string matches every file.
 let currentFilenameFilter = "";
 
@@ -1286,6 +1367,40 @@ export function showResult(path: string, entries: string[], base: string | null)
   switchTab("files");
 }
 
+// Builds the small badge row surfacing `finding`'s own rule's tag metadata
+// (kind(s), importance, and whether it has an automatic fix), or null if
+// its rule carries no tag metadata (see tagsForFinding).
+function buildFindingTagsEl(finding: Diagnostic): HTMLElement | null {
+  const tags = tagsForFinding(finding);
+  if (!tags) {
+    return null;
+  }
+
+  const tagsEl = document.createElement("span");
+  tagsEl.classList.add("psc-result__finding-tags");
+
+  for (const kind of tags.kinds) {
+    const badge = document.createElement("span");
+    badge.classList.add("psc-result__tag-badge", "psc-result__tag-badge--kind");
+    badge.textContent = kind;
+    tagsEl.append(badge);
+  }
+
+  const importanceBadge = document.createElement("span");
+  importanceBadge.classList.add("psc-result__tag-badge", `psc-result__tag-badge--importance-${tags.importance}`);
+  importanceBadge.textContent = `${tags.importance} importance`;
+  tagsEl.append(importanceBadge);
+
+  if (tags.auto_fixable) {
+    const fixableBadge = document.createElement("span");
+    fixableBadge.classList.add("psc-result__tag-badge", "psc-result__tag-badge--auto-fixable");
+    fixableBadge.textContent = "auto-fixable";
+    tagsEl.append(fixableBadge);
+  }
+
+  return tagsEl;
+}
+
 // Builds the list item for `outcome`, or null if it has no findings that
 // pass the active severity filter and should therefore be skipped
 // entirely (a file with nothing to show isn't worth a row). Files that
@@ -1298,7 +1413,9 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
     return null;
   }
 
-  const visibleFindings = findings.filter((finding) => activeSeverities.has(severityOf(finding.message)));
+  const visibleFindings = findings.filter(
+    (finding) => activeSeverities.has(severityOf(finding.message)) && matchesTagFilters(finding),
+  );
 
   if (ok && visibleFindings.length === 0) {
     return null;
@@ -1353,6 +1470,11 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
         const label = document.createElement("span");
         label.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
         findingItem.append(label);
+
+        const tagsEl = buildFindingTagsEl(finding);
+        if (tagsEl) {
+          findingItem.append(tagsEl);
+        }
 
         if (isFixableFinding(finding)) {
           const fixIssueButton = document.createElement("button");
@@ -1739,6 +1861,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerFullscreenEl = document.querySelector("#code-viewer-fullscreen");
   codeViewerAutocompleteEl = document.querySelector("#code-viewer-autocomplete");
   themeSelectEl = document.querySelector("#theme-select");
+  autoFixableFilterEl = document.querySelector("#filter-auto-fixable-only");
 
   const initialTheme = loadStoredTheme();
   if (themeSelectEl) {
@@ -1806,6 +1929,44 @@ window.addEventListener("DOMContentLoaded", () => {
     renderPscResults(currentPscOutcomes);
   });
 
+  tagKindFilterEls = Object.fromEntries(
+    TAG_KINDS.map((kind) => [kind, document.querySelector<HTMLInputElement>(`#filter-kind-${kind}`)]),
+  ) as Partial<Record<TagKind, HTMLInputElement>>;
+  for (const kind of TAG_KINDS) {
+    tagKindFilterEls[kind]?.addEventListener("change", () => {
+      const checked = tagKindFilterEls[kind]?.checked ?? true;
+      if (checked) {
+        activeTagKinds.add(kind);
+      } else {
+        activeTagKinds.delete(kind);
+      }
+      renderPscResults(currentPscOutcomes);
+    });
+  }
+
+  tagImportanceFilterEls = Object.fromEntries(
+    TAG_IMPORTANCES.map((importance) => [
+      importance,
+      document.querySelector<HTMLInputElement>(`#filter-importance-${importance}`),
+    ]),
+  ) as Partial<Record<TagImportance, HTMLInputElement>>;
+  for (const importance of TAG_IMPORTANCES) {
+    tagImportanceFilterEls[importance]?.addEventListener("change", () => {
+      const checked = tagImportanceFilterEls[importance]?.checked ?? true;
+      if (checked) {
+        activeTagImportances.add(importance);
+      } else {
+        activeTagImportances.delete(importance);
+      }
+      renderPscResults(currentPscOutcomes);
+    });
+  }
+
+  autoFixableFilterEl?.addEventListener("change", () => {
+    onlyAutoFixable = autoFixableFilterEl?.checked ?? false;
+    renderPscResults(currentPscOutcomes);
+  });
+
   compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
   compileCheckEl?.addEventListener("change", handleCompileCheckChanged);
   scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);
@@ -1841,6 +2002,8 @@ window.addEventListener("DOMContentLoaded", () => {
       appVersionEl.textContent = `v${version}`;
     }
   });
+
+  void loadRuleTags().then(applyRuleTags);
 
   const lastDir = lastProjectDir();
   if (lastDir) {

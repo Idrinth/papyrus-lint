@@ -336,9 +336,18 @@ keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
 much fixing that rule matters for keeping a codebase maintainable, and an
 `auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
 separately, so the two can never drift apart — for every id in
-`KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. This
-only publishes the metadata; it's consumed by a separate, not-yet-built
-group-based filtering feature rather than filtering anything itself.
+`KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
+desktop app's `list_rule_tags` Tauri command (`app/src-tauri/src/lib.rs`)
+exposes the same metadata to the frontend as a JSON-friendly
+`RuleTagsInfo` per rule; `app/src/main.ts` fetches it once at startup
+(`loadRuleTags`/`applyRuleTags`), indexes it by rule id, and uses it both
+to render each lint finding's kind/importance/auto-fixable badges (see
+`buildFindingTagsEl`) and to drive the Lint results tab's "Show tags"/
+"Show importance"/"Auto-fixable only" filters (`matchesTagFilters`),
+alongside its existing severity and filename filters. A finding whose
+rule carries no tag metadata (e.g. a compiler-reported diagnostic; see
+`app/src-tauri/src/compile_diagnostics.rs`) always passes those filters
+rather than being hidden.
 
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are
