@@ -544,10 +544,13 @@ run `cargo build --release --manifest-path
 app/crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
 `PapyrusLinterCLI`.
 
-See [`docs/github-actions-example.md`](docs/github-actions-example.md) for a
-minimal GitHub Actions workflow that downloads a release's
-`PapyrusLinterCLI` binary and lints a project's `.achlist` on every push and
-pull request.
+The preferred way to run Papyrus Lint in CI is the [Papyrus Lint GitHub
+Action](https://github.com/marketplace/actions/papyrus-lint)
+(`idrinth/papyrus-lint-action`), which downloads `PapyrusLinterCLI` for you
+and, on pull requests, posts findings as inline review comments on the
+changed lines. See [`docs/github-actions-example.md`](docs/github-actions-example.md)
+for a usage example, and for a manual workflow that downloads a release's
+`PapyrusLinterCLI` binary directly instead.
 
 Each release also attaches a packaged copy of the two editor plugins: the
 VS Code extension as a `.vsix` file (install via "Install from VSIX..." in
