@@ -97,6 +97,11 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Medium,
     },
     RuleTags {
+        rule: crate::int_division_to_float::RULE,
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
+    RuleTags {
         rule: crate::strict_boolean::RULE,
         kinds: &["correctness", "style"],
         importance: Importance::Medium,

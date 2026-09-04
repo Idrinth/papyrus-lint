@@ -154,6 +154,7 @@ export interface LintRules {
   unused_property: boolean;
   semicolon: boolean;
   float_int_conversion: boolean;
+  int_division_to_float: boolean;
   strict_boolean: boolean;
   argument_types: boolean;
   return_types: boolean;
@@ -230,6 +231,7 @@ export const DEFAULT_RULES: LintRules = {
   unused_property: true,
   semicolon: true,
   float_int_conversion: true,
+  int_division_to_float: true,
   strict_boolean: true,
   argument_types: true,
   return_types: true,

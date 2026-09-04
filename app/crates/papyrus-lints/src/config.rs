@@ -28,6 +28,7 @@
 //!   unused_property: true
 //!   semicolon: true
 //!   float_int_conversion: true
+//!   int_division_to_float: true
 //!   strict_boolean: true
 //!   argument_types: true
 //!   return_types: true
@@ -279,6 +280,8 @@ pub struct Rules {
     pub semicolon: bool,
     /// The "Implicit Float-to-Int conversion" lint.
     pub float_int_conversion: bool,
+    /// The "Int/Int division widened to Float" lint.
+    pub int_division_to_float: bool,
     /// The "Strict boolean check" lint.
     pub strict_boolean: bool,
     /// The "Argument type check" lint.
@@ -393,6 +396,7 @@ impl Default for Rules {
             unused_property: true,
             semicolon: true,
             float_int_conversion: true,
+            int_division_to_float: true,
             strict_boolean: true,
             argument_types: true,
             return_types: true,
@@ -540,6 +544,7 @@ mod tests {
         assert!(config.rules.unused_property);
         assert!(config.rules.semicolon);
         assert!(config.rules.float_int_conversion);
+        assert!(config.rules.int_division_to_float);
         assert!(config.rules.strict_boolean);
         assert!(config.rules.argument_types);
         assert!(config.rules.return_types);

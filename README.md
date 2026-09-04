@@ -125,6 +125,7 @@ apply.
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Implicit Float-to-Int conversion** | Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit `as Int` cast. | |
+| **Int/Int division widened to Float** | Flags an `Int / Int` division declared, assigned, returned, or passed as an argument into a Float-typed slot without either operand already being a Float, since Papyrus performs the division as integer division — truncating towards zero — before the result ever widens into the Float slot (e.g. `Float f = 1 / 2` yields `0.0`, not `0.5`). Casting the division's *result* to Float doesn't avoid this, only casting (or writing) an *operand* as a Float does, so only the latter is left unflagged. | |
 | **Unreachable statement** | Flags statements that follow a `Return` within the same block (a function/event body, an `If`/`ElseIf`/`Else` branch, or a `While` body), since they can never execute. | |
 | **Static condition** | Flags `If`/`ElseIf`/`While` conditions that fold to a constant `true` or `false` (e.g. `If true`, `If 1 == 2`, `If !false && 3 > 4`), regardless of any runtime state, as a `[warning]`. Only conditions built entirely from literals (combined with arithmetic, comparison, logical, and unary operators) are checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. | |
 | **Division by zero** | Flags, as a `[warning]`, a `/` or `%` whose right-hand operand is a compile-time-constant zero (e.g. `x / 0`, `x % 0.0`, `x / (1 - 1)`), since that crashes the script at runtime. Only a divisor built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. | |
@@ -174,7 +175,7 @@ against the directive's rule id(s) is case-insensitive. This only affects
 linting — it does not change what automatic fixes do to that line. The rule ids, one per
 lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `forbidden-functions`, `slow-functions`, `unused-getter`, `unused-property`,
-`semicolon`, `float-to-int`, `strict-boolean`, `argument-types`,
+`semicolon`, `float-to-int`, `int-division-to-float`, `strict-boolean`, `argument-types`,
 `return-types`, `function-override`, `argument-naming`, `numeric-comparison`,
 `indentation`, `cyclomatic-complexity`, `unreachable-statement`,
 `static-condition`, `division-by-zero`, `unused-local-variable`, `none-form-usage`,
@@ -305,7 +306,7 @@ file yet. Each key:
   rather than a proven no-op. The key names match the lints listed above:
   `trailing_whitespace`, `comma_spacing`, `forbidden_functions`,
   `formid_hex_notation`, `slow_functions`, `unused_getter`,
-  `unused_property`, `semicolon`, `float_int_conversion`, `strict_boolean`,
+  `unused_property`, `semicolon`, `float_int_conversion`, `int_division_to_float`, `strict_boolean`,
   `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
   `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
   `static_condition`, `division_by_zero`, `unused_local_variable`,

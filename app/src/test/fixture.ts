@@ -77,6 +77,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-unused_property" checked />
           <input type="checkbox" id="rule-semicolon" checked />
           <input type="checkbox" id="rule-float_int_conversion" checked />
+          <input type="checkbox" id="rule-int_division_to_float" checked />
           <input type="checkbox" id="rule-strict_boolean" checked />
           <input type="checkbox" id="rule-argument_types" checked />
           <input type="checkbox" id="rule-return_types" checked />
