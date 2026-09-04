@@ -20,8 +20,9 @@
 //! depends on which script the instance is, and removing the child's
 //! `Auto` state (intentionally or not) silently switches the object's
 //! startup state back to the parent's. [`check_multiple_auto_states`]/
-//! [`check_multiple_auto_states_with`] therefore flag a script whose own
-//! and inherited `State`s, combined, include more than one marked `Auto`.
+//! [`check_multiple_auto_states_with`] therefore reports that cross-script
+//! combination as a warning. More than one `Auto` state declared directly in
+//! the same script is an error, because a script itself may only declare one.
 //!
 //! Both checks treat a same-named `State` declared more than once across a
 //! script and its ancestry (e.g. a child overriding a parent's state) as a
@@ -99,9 +100,12 @@ pub fn check_multiple_auto_states_with<E: ExternalSignatures>(
         return Vec::new();
     };
 
-    let auto_count = states.values().filter(|&&is_auto| is_auto).count();
-    if auto_count > 1 {
-        vec![multiple_auto_states(&script, auto_count)]
+    let local_auto_count = script.states.iter().filter(|state| state.is_auto).count();
+    let inherited_auto_count = states.values().filter(|&&is_auto| is_auto).count();
+    if local_auto_count > 1 {
+        vec![multiple_auto_states(&script, local_auto_count, true)]
+    } else if inherited_auto_count > 1 {
+        vec![multiple_auto_states(&script, inherited_auto_count, false)]
     } else {
         Vec::new()
     }
@@ -157,14 +161,22 @@ fn too_many_states(script: &Script, count: usize) -> Diagnostic {
     }
 }
 
-fn multiple_auto_states(script: &Script, count: usize) -> Diagnostic {
+fn multiple_auto_states(script: &Script, count: usize, is_local_error: bool) -> Diagnostic {
+    let message = if is_local_error {
+        format!(
+            "[error] Script '{}' declares {count} states marked Auto, but a script may only declare one Auto state",
+            script.name,
+        )
+    } else {
+        format!(
+            "[warning] Script '{}' has {count} states marked Auto across its inheritance chain; its startup state depends on inheritance precedence",
+            script.name,
+        )
+    };
     Diagnostic {
         line: anchor(script),
         column: 1,
-        message: format!(
-            "[error] Script '{}' has {count} states marked Auto across its inheritance chain, but only one state may be Auto",
-            script.name,
-        ),
+        message,
         rule: MULTIPLE_AUTO_STATES_RULE,
     }
 }
@@ -226,6 +238,20 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].rule, MULTIPLE_AUTO_STATES_RULE);
+        assert!(diagnostics[0].message.starts_with("[error]"));
+        assert!(diagnostics[0].message.contains("2 states marked Auto"));
+        assert!(diagnostics[0]
+            .message
+            .contains("a script may only declare one Auto state"));
+    }
+
+    #[test]
+    fn counts_duplicate_local_auto_declarations_as_an_error() {
+        let source =
+            "ScriptName Example\n\nAuto State Idle\nEndState\n\nAuto State Idle\nEndState\n";
+        let diagnostics = check_multiple_auto_states(source);
+
+        assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.starts_with("[error]"));
         assert!(diagnostics[0].message.contains("2 states marked Auto"));
     }
@@ -304,7 +330,11 @@ mod tests {
 
         let diagnostics = check_multiple_auto_states_with(source, &mut external);
         assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.starts_with("[warning]"));
         assert!(diagnostics[0].message.contains("2 states marked Auto"));
+        assert!(diagnostics[0]
+            .message
+            .contains("across its inheritance chain"));
     }
 
     #[test]
