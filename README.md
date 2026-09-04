@@ -544,6 +544,11 @@ run `cargo build --release --manifest-path
 app/crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
 `PapyrusLinterCLI`.
 
+See [`docs/github-actions-example.md`](docs/github-actions-example.md) for a
+minimal GitHub Actions workflow that downloads a release's
+`PapyrusLinterCLI` binary and lints a project's `.achlist` on every push and
+pull request.
+
 Each release also attaches a packaged copy of the two editor plugins: the
 VS Code extension as a `.vsix` file (install via "Install from VSIX..." in
 VS Code, or `code --install-extension <file>`) and the SublimeLinter
