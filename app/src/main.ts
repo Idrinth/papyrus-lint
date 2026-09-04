@@ -972,6 +972,10 @@ function positionAutocomplete() {
 
 // Hides the autocompletion dropdown and clears its pending query/results.
 export function hideAutocomplete() {
+  // Invalidate a lookup that may still be awaiting the backend. Otherwise an
+  // Escape press (or a cursor move away from member access) can hide the
+  // dropdown only for the stale response to display it again.
+  autocompleteRequestId += 1;
   autocompleteQuery = null;
   autocompleteMembers = [];
   autocompleteSelectedIndex = 0;

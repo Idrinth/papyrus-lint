@@ -146,7 +146,7 @@ More detailed explanation of the rules and their implementation is available on 
 [td][/td]
 [/tr]
 [tr][td][b]Multiple Auto states[/b][/td]
-[td]Flags a script including ancestors that has multiple Auto states, making it hard to reason about.[/td]
+[td]Reports multiple Auto states in one script as an error, or multiple across its ancestry as a warning.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Conflicting script versions[/b][/td]
@@ -355,6 +355,8 @@ PapyrusLinter fix path/to/project.achlist
 PapyrusLinter fix path/to/Example.psc
 PapyrusLinter fix --type trailing-whitespace path/to/Example.psc
 PapyrusLinter fix --line 12 --type trailing-whitespace path/to/Example.psc
+PapyrusLinter --tag style path/to/project.achlist
+PapyrusLinter fix --tag style path/to/project.achlist
 PapyrusLinter --json path/to/project.achlist
 PapyrusLinter --json fix path/to/project.achlist
 PapyrusLinter --config path/to/papyrus-lint.yaml path/to/Example.psc
@@ -364,6 +366,7 @@ PapyrusLinter --json --output path/to/report.json path/to/project.achlist
 PapyrusLinter --short-paths path/to/project.achlist
 PapyrusLinter --color never path/to/project.achlist[/code]
 The plain-text report is colorized automatically when run in a terminal (rule tags, error/warning/info levels, and the summary line); pass --color always or --color never to override the detection.
+--tag <kind> (style, performance, correctness, or maintainability) restricts a run to just one class of rules; combine it with fix to only run that class's automatic fixes. Can't be combined with --type.
 
 [heading]Usage of AI[/heading]
 This tool is almost entirely coded by AI. I have tested it and reviewed code changes, but have rarely coded parts myself.

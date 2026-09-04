@@ -114,7 +114,7 @@ apply.
 | **Unresolved script reference** | Flags, as a `[warning]`, an unresolved parent in `Extends`, an unresolved type annotation, or a call through Papyrus's static/global call syntax (e.g. `MyMissingScript.DoThing()`) whose target script can't be found. Primitive types and native engine types are recognized without project-side source. Only a call whose object is a bare identifier not already known as a local variable, parameter, or property is considered a script reference at all — one resolved through a variable or property is left to the "Argument type check"/"Return type check" lints instead. Only checked when linting with project context, by resolving names against `.psc` files under the project root the same way the argument/return type checks do, with native types and singleton scripts supplied by the built-in rule data. | |
 | **GoToState state reference** | Flags, as a `[warning]`, a `GoToState("Name")` call (bare or `self.GoToState(...)`) whose target isn't declared as a `State` on this script, since a typo'd or renamed state name still compiles — the engine just silently falls back through its state resolution algorithm instead of raising an error, so the call quietly never takes effect. `GoToState("")`, which switches back to the empty state, is always valid. Only a literal string argument is checked; one built from anything else is left unflagged rather than guessed at. A target undeclared on this script is only flagged when this script has no `Extends` target at all, since it may otherwise be declared on a script further up that (unresolved) `Extends` chain — a legitimate way to forward-declare a state for a not-yet-written child script to implement. When linting a `.psc` file dropped in the app, that chain is resolved from the project root too, the same way the argument/return type checks resolve their own, so a target declared on an ancestor script is recognized rather than flagged. | |
 | **Total named state count** | Flags, as an `[error]`, a script whose named `State` blocks, combined with every `State` declared anywhere in its `Extends` ancestry (a same-named state declared more than once along the way counts once), exceed 127 — the [CreationKit wiki's State Reference](https://ck.uesp.net/wiki/State_Reference) documents a hard engine limit of 128 states including the empty state, past which the game and CK refuse to load the script. Only the script's own declared states are counted when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too, the same way the argument/return type checks resolve their own. | |
-| **Multiple Auto states** | Flags, as an `[error]`, a script whose `State` blocks, combined with every `State` declared anywhere in its `Extends` ancestry (as above), include more than one marked `Auto`. The engine itself tolerates a parent and a child each declaring their own `Auto` state (the child's simply takes precedence at startup), but relying on that precedence is fragile — which one actually applies silently depends on which script the instance is, and removing the child's `Auto` state later silently switches its startup state back to the parent's — so this lint flags the combination outright. Only the script's own declared states are considered when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too. | |
+| **Multiple Auto states** | Flags more than one `Auto` state declared in a single script as an `[error]`, since a script may only declare one. It also flags, as a `[warning]`, multiple `Auto` states found only after combining a script with every `State` declared anywhere in its `Extends` ancestry (as above). The engine tolerates a parent and child each declaring an `Auto` state (the child's takes precedence at startup), but relying on that precedence is fragile: removing the child's `Auto` state silently switches its startup state back to the parent's. Only the script's own declared states are considered when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too. | |
 | **Conflicting script versions** | Flags, as a `[warning]`, a `.psc` file when another script search directory contains a case-insensitively same-named file with different contents (determined by MD5), since which version Papyrus resolves can depend on search-directory order. Byte-identical copies are ignored. Only available when linting a file with project context in the desktop app or CLI. | |
 | **FormID hex notation** | Flags, as a `[warning]`, a FormID literal that isn't written in hexadecimal notation when it's directly compared (`==`, `!=`, `<`, `<=`, `>`, `>=`) against a `GetFormID()` call, or passed as the FormID argument to `Game.GetFormFromFile` (positionally or by name), since hexadecimal is the convention used everywhere else a FormID appears (the Creation Kit, xEdit, mod documentation) and a stray decimal literal is easy to mistype or overlook. Only a literal directly adjacent to the comparison operator or the call's argument list is checked; one reached indirectly through a variable assigned earlier is left unflagged rather than guessed at. | |
 
@@ -347,6 +347,8 @@ PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
 PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
 PapyrusLinterCLI fix --line 12 --type trailing-whitespace path/to/Example.psc
+PapyrusLinterCLI --tag style path/to/project.achlist
+PapyrusLinterCLI fix --tag style path/to/project.achlist
 PapyrusLinterCLI --json path/to/project.achlist
 PapyrusLinterCLI --json fix path/to/project.achlist
 PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
@@ -451,6 +453,19 @@ out if applying the selected fix(es) would change the file's line count
 (e.g. `property-sorting` relocating a property's declaration), since a
 single original line number no longer identifies the same line in the
 result in that case.
+
+Every rule is also tagged with one or more kind keywords — `style`,
+`performance`, `correctness`, or `maintainability` — describing what class
+of fix its findings represent. `--tag <kind>` restricts a run to just one
+of those kinds instead of a single rule id, matched case-insensitively
+(e.g. `--tag style` or `--tag Performance`). Given without `fix`, it
+limits the reported diagnostics to rules tagged with that kind; given
+alongside `fix`, it also limits which automatic fixes run to that same
+kind. Unlike `--type`/`--line`, `--tag` doesn't require `fix` — it works
+just as well on a plain lint run. It can't be combined with `--type`,
+since the two select overlapping things (one specific rule vs. one whole
+kind of rule), and it errors out on a tag that doesn't match any rule's
+kind keyword.
 
 Given the `--json` flag (combinable with `fix`, in either argument order),
 the CLI prints a single JSON document to stdout instead of the plain-text

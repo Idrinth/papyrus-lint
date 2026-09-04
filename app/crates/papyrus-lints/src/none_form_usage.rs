@@ -493,6 +493,15 @@ mod tests {
     }
 
     #[test]
+    fn does_not_flag_short_circuited_method_call_in_while_condition() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor a\n    Int c = 0\n    While a == None || a.IsDead()\n        a = Game.GetPlayer()\n        c += 1\n    EndWhile\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn does_not_flag_passing_a_possibly_none_variable_as_an_argument() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    Debug.Trace(a)\nEndFunction\n",

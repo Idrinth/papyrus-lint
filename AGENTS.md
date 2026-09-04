@@ -347,7 +347,17 @@ to render each lint finding's kind/importance/auto-fixable badges (see
 alongside its existing severity and filename filters. A finding whose
 rule carries no tag metadata (e.g. a compiler-reported diagnostic; see
 `app/src-tauri/src/compile_diagnostics.rs`) always passes those filters
-rather than being hidden.
+rather than being hidden. The CLI's `--tag <kind>` flag builds on the
+same metadata to run only one kind's worth of lints/fixes at a time,
+matched case-insensitively against a rule's `kinds` (e.g. `--tag style`):
+given without `fix`, it restricts the reported diagnostics to matching
+rules; given with `fix`, it also restricts which automatic fixes run, via
+`papyrus_lints::repair_filtered_by_tag` (a sibling of `repair_filtered`,
+which does the same for a single rule id via `fix --type`, both built
+atop a shared private `repair_with` that takes an `applies(rule) -> bool`
+predicate). `--tag` can't be combined with `--type`, since the two select
+overlapping things (one rule vs. one kind of rule), and an unrecognized
+tag is a usage error.
 
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are
