@@ -296,6 +296,11 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness", "maintainability"],
         importance: Importance::Medium,
     },
+    RuleTags {
+        rule: crate::invariant_loop_condition::RULE,
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
 ];
 
 #[cfg(test)]
