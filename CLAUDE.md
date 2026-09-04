@@ -125,10 +125,17 @@ desktop app's binary at all.
 │   ├── messages/install.txt               # into SublimeLinter diagnostics; kept
 │   ├── README.md                          # here for development but installed/
 │   └── LICENSE                            # distributed as its own package.
-└── vscode-extension/        # VS Code extension (TypeScript): lints and fixes
-    ├── package.json          # .psc files by invoking PapyrusLinterCLI --json
-    ├── src/extension.ts      # Commands, process execution, and diagnostics
-    └── test/                 # Node-based extension unit tests
+├── vscode-extension/        # VS Code extension (TypeScript): lints and fixes
+│   ├── package.json          # .psc files by invoking PapyrusLinterCLI --json
+│   ├── src/extension.ts      # Commands, process execution, and diagnostics
+│   └── test/                 # Node-based extension unit tests
+└── pages/                   # Static GitHub Pages site (deployed by
+    ├── index.html             # .github/workflows/pages.yml from the pages/
+    ├── styles.css              # directory on pushes to the-one): a discoverability
+    └── assets/                 # landing page drawn from README.md, styled to match
+                                 # the desktop app's frontend (Cinzel headings, the
+                                 # same light/dark palette). assets/ holds copies of
+                                 # resources/ images used on the page.
 ```
 
 `papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
@@ -226,6 +233,21 @@ binary target that crate also defines.
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
+
+## GitHub Pages (`.github/workflows/pages.yml`)
+
+A push to `the-one` that touches `pages/**` (or the workflow file itself),
+or a manual `workflow_dispatch` run, deploys the static site in `pages/`
+to GitHub Pages via `actions/upload-pages-artifact`/`actions/deploy-pages`.
+The repository's Pages source must be set to "GitHub Actions" (Settings →
+Pages) for this workflow to publish successfully. The site itself is a
+plain HTML/CSS discoverability landing page (no build step) drawn from
+`README.md`, styled to match the desktop app's frontend (`app/src/styles.css`):
+the same Cinzel-headed, light/dark-aware palette. Keep it in sync with
+`README.md` the same way `docs/nexuspage.bbcode` is kept in sync (see
+"Keeping agent instructions synchronized" below) whenever the documented
+lints, CLI usage, or configuration reference change — condensed the same
+way `docs/nexuspage.bbcode` condenses them, not copied verbatim.
 
 ## Releases (`.github/workflows/release.yml`)
 
@@ -483,3 +505,9 @@ the CLI usage examples/options or the documented default configuration in
 `README.md` are updated, make the corresponding update to the CLI or
 configuration section of `docs/nexuspage.bbcode` in the same change. Other README
 changes do not need to be synchronized to the Nexus page.
+
+The same applies to `pages/index.html` (see GitHub Pages above): whenever
+the documented lints, CLI usage/options, or configuration reference in
+`README.md` change, update the corresponding section of `pages/index.html`
+too, keeping its lint descriptions condensed the way `docs/nexuspage.bbcode`'s
+are rather than copied verbatim from the README.

@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Papyrus Lint</title>
+    <meta
+      name="description"
+      content="Papyrus Lint catches bugs that CreationKit's compiler lets through: a desktop app, CLI, and editor extensions that lint Skyrim/Fallout Papyrus scripts for correctness, reliability, performance, and style issues."
+    />
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <header class="site-header">
+      <a class="site-header__brand" href="#top">
+        <img class="site-header__logo" src="assets/logo-small.jpg" alt="" />
+        <h1 class="site-header__title">Papyrus Lint</h1>
+      </a>
+      <nav class="site-header__nav">
+        <a href="#lints">Lints</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="#cli">CLI</a>
+        <a href="#config">Configuration</a>
+        <a href="#editors">Editors</a>
+        <a href="#help">Contribute</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" style="border-top: none">
+        <h1>Papyrus Lint catches bugs that CreationKit's compiler lets through</h1>
+        <p class="hero__tagline">
+          <code>PapyrusCompiler.exe</code> only checks that a script is syntactically valid — it will happily compile
+          a script that dereferences a <code>None</code> object at runtime, passes a <code>String</code> where an
+          <code>Int</code> is expected, returns the wrong type from a function, compares an <code>Int</code> to a
+          <code>Float</code> inexactly, or contains a branch that can never execute. Papyrus Lint scans your
+          <code>.psc</code> source for exactly these patterns before you ship, on top of the formatting/style issues
+          a linter usually catches — as a desktop app, a CLI, and editor extensions.
+        </p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="https://github.com/idrinth/papyrus-lint/releases">Download latest release</a>
+          <a class="button" href="https://github.com/idrinth/papyrus-lint">View on GitHub</a>
+        </div>
+        <div class="badge-row">
+          <a href="https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint"
+            ><img src="https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status" alt="Quality gate status"
+          /></a>
+          <a href="https://discord.gg/idrinth"><img src="https://img.shields.io/badge/discord-server-5865F2?logo=discord" alt="Discord server" /></a>
+          <a href="https://www.nexusmods.com/skyrimspecialedition/mods/189862"
+            ><img src="https://img.shields.io/badge/nexusmods-page-yellow" alt="NexusMods page"
+          /></a>
+          <a href="https://github.com/idrinth/papyrus-lint"><img src="https://img.shields.io/badge/github-repo-white?logo=github" alt="GitHub repo" /></a>
+        </div>
+      </section>
+
+      <section id="example">
+        <h2>A simple example</h2>
+        <p class="section-intro">This compiles cleanly, but silently passes the wrong argument:</p>
+        <div class="example">
+          <figure>
+            <figcaption>Compiles, but wrong</figcaption>
+            <pre class="code-block"><code><span class="kw">Function</span> DoSomething(<span class="ty">Actor</span> a, <span class="ty">Actor</span> b, <span class="ty">Form</span> SomeItem)
+    a.RemoveItem(SomeItem, 1, b);
+<span class="kw">EndFunction</span></code></pre>
+          </figure>
+          <figure>
+            <figcaption>What was likely meant</figcaption>
+            <pre class="code-block"><code><span class="kw">Function</span> DoSomething(<span class="ty">Actor</span> a, <span class="ty">Actor</span> b, <span class="ty">Form</span> SomeItem)
+    a.RemoveItem(SomeItem, 1, <span class="kw">false</span>, b);
+<span class="kw">EndFunction</span></code></pre>
+          </figure>
+        </div>
+        <p class="section-intro">
+          The <strong>Strict boolean check</strong> lint catches this: the first call passes the <code>Actor</code>
+          value <code>b</code> to a <code>Bool</code> parameter.
+        </p>
+      </section>
+
+      <section id="what-it-is">
+        <h2>What is a linter?</h2>
+        <p class="section-intro">
+          A linter is a tool that scans source code for patterns that are likely to be mistakes, bad practice, or
+          inconsistent style, without actually running the code. It works from heuristics — recognizable patterns
+          known to often cause problems — rather than proving that a given line is definitely wrong. Because of that,
+          a linter can produce <strong>false positives</strong>. Treat every diagnostic as
+          <strong>advice, not a guaranteed defect report</strong>: use your own judgment, and use an
+          <a href="#disable"><code>; @disable</code></a> comment to silence a rule you've decided doesn't apply.
+        </p>
+        <div class="cards">
+          <div class="card card--negative">
+            <h3>What this is NOT</h3>
+            <p>
+              A compiler (it uses the standard Papyrus compiler under the hood), an editor, a guarantee a script is
+              fit for purpose, or a replacement for proper testing.
+            </p>
+          </div>
+          <div class="card">
+            <h3>What this IS</h3>
+            <p>
+              A desktop app, standalone CLI, and editor extensions that all share one lint/repair engine, so a
+              diagnostic looks and behaves the same everywhere you run it.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="screenshots">
+        <h2>See it in action</h2>
+        <p class="section-intro">Drop a <code>.achlist</code> or a single <code>.psc</code> file to get started.</p>
+        <div class="screenshots">
+          <figure>
+            <img src="assets/papyrus-lint-import.png" alt="Papyrus Lint's drag-and-drop import screen" loading="lazy" />
+            <figcaption>Drop your file or achlist to get started</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/papyrus-lint-results.png" alt="Papyrus Lint's lint results list" loading="lazy" />
+            <figcaption>Lint results, filterable by severity, tag, and importance</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/papyrus-lint-viewer.png" alt="Papyrus Lint's code viewer with syntax highlighting" loading="lazy" />
+            <figcaption>Code viewer with syntax highlighting and inline fixes</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/papyrus-lint-vscode.png" alt="Papyrus Lint's VS Code extension showing inline diagnostics" loading="lazy" />
+            <figcaption>The VS Code extension</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/papyrus-lint-cli.png" alt="Papyrus Lint's command-line interface output" loading="lazy" />
+            <figcaption>The command-line interface</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="lints">
+        <h2>Implemented lints</h2>
+        <p class="section-intro">
+          Every rule works from raw source or lexer tokens rather than requiring a script that parses cleanly. See
+          the
+          <a href="https://github.com/idrinth/papyrus-lint#implemented-lints">full README table</a> for the complete,
+          detailed description of every lint and its automatic fix.
+        </p>
+
+        <div class="lint-category">
+          <h3>Formatting</h3>
+          <div class="lint-table-wrap">
+            <table class="lint-table">
+              <thead>
+                <tr>
+                  <th>Lint</th>
+                  <th>Description</th>
+                  <th>Auto-fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Trailing whitespace</td>
+                  <td>Flags lines that end with trailing spaces or tabs.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Space after comma</td>
+                  <td>Requires whitespace after commas in argument lists.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Semicolon at end of line</td>
+                  <td>Requires or forbids trailing semicolons, according to the configured setting.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Formatting checks</td>
+                  <td>Flags lines whose indentation doesn't match the configured style/width.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Whitespace interrupting chaining</td>
+                  <td>Flags a space or tab immediately before or after a <code>.</code> member/method access.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Exclamation mark spacing</td>
+                  <td>Flags a <code>!</code> negation operator not followed by exactly one space.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Type name casing</td>
+                  <td>Flags a script's declared type name if it doesn't follow the configured convention.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Identifier casing</td>
+                  <td>Flags a declared function/event, property, state, parameter, or variable whose name doesn't match the configured style.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Operator spacing</td>
+                  <td>Requires exactly one space on either side of logical/comparison operators.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Property sorting</td>
+                  <td>Flags a property not sorted by type/name or not declared right after <code>ScriptName</code>. Disabled by default.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="lint-category">
+          <h3>Performance</h3>
+          <div class="lint-table-wrap">
+            <table class="lint-table">
+              <thead>
+                <tr>
+                  <th>Lint</th>
+                  <th>Description</th>
+                  <th>Auto-fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Forbidden/discouraged function usage</td>
+                  <td>Flags calls to functions that are usually unintentional performance bottlenecks.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Slow function usage</td>
+                  <td>Flags calls with a faster equivalent available; the fix applies the supplied replacement.</td>
+                  <td class="fix-yes">✓</td>
+                </tr>
+                <tr>
+                  <td>Short wait/update interval</td>
+                  <td>Flags <code>Wait</code>/<code>RegisterFor(Single)Update(GameTime)</code> calls below a configured interval.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Repeated <code>GetValue()</code> calls</td>
+                  <td>Flags a global's value re-read across an <code>If</code>/<code>ElseIf</code> chain instead of cached once. Disabled by default.</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="lint-category">
+          <h3>Reliability</h3>
+          <div class="lint-table-wrap">
+            <table class="lint-table">
+              <thead>
+                <tr>
+                  <th>Lint</th>
+                  <th>Description</th>
+                  <th>Auto-fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Getter usage without saving result</td>
+                  <td>Flags standalone calls to <code>Get*</code> functions whose returned value is discarded.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Strict boolean check</td>
+                  <td>Flags conditions that rely on Papyrus's implicit conversion to boolean.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Argument type check</td>
+                  <td>Flags call-site arguments whose type doesn't match the callee's declared parameter type.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Return type check</td>
+                  <td>Flags <code>Return</code> statements whose value's type doesn't match the declared return type.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Inherited function override</td>
+                  <td>Informs when a function shares a name with one declared on the <code>Extends</code> chain.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Argument naming consistency</td>
+                  <td>Flags a parameter name that doesn't match the parent script's same-named function.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>State function signature mismatch</td>
+                  <td>Flags a state function/event whose parameters or return type don't match its empty-state declaration.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Strict numeric type check</td>
+                  <td>Flags implicit <code>Int</code>/<code>Float</code> comparisons without an explicit cast.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Explicit return on every path</td>
+                  <td>Flags a typed function/event with a path that falls off the end without a <code>Return</code>.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Unresolved script reference</td>
+                  <td>Flags a script reference that can't be resolved against the configured source directories.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Non-static function call</td>
+                  <td>Flags a <code>Script.Function()</code> call whose target isn't declared <code>Global</code>.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Static function called via instance</td>
+                  <td>Flags a <code>Global</code> function called through an object reference instead of by script name.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>GoToState state reference</td>
+                  <td>Flags a <code>GoToState(...)</code> target that isn't declared on the script, likely a typo.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Total named state count</td>
+                  <td>Flags a script whose combined states (with its ancestry) exceed the engine's limit of 128.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Multiple Auto states</td>
+                  <td>Reports more than one <code>Auto</code> state in a script, or across its ancestry.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Conflicting script versions</td>
+                  <td>Flags same-named scripts with different contents in separate source directories.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>FormID hex notation</td>
+                  <td>Flags a FormID literal compared against <code>GetFormID()</code>/<code>GetFormFromFile</code> not written in hex.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Property/variable named as script</td>
+                  <td>Flags a property or variable whose name matches the script it's declared in, a compile error.</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="lint-category">
+          <h3>Bugprone</h3>
+          <div class="lint-table-wrap">
+            <table class="lint-table">
+              <thead>
+                <tr>
+                  <th>Lint</th>
+                  <th>Description</th>
+                  <th>Auto-fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Implicit Float-to-Int conversion</td>
+                  <td>Flags a <code>Float</code> value used where an <code>Int</code> is expected without an explicit cast.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Int/Int division widened to Float</td>
+                  <td>Flags <code>Int / Int</code> division into a <code>Float</code> slot, since Papyrus truncates it first.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Unreachable statement</td>
+                  <td>Flags statements that follow a <code>Return</code> within the same block.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Static condition</td>
+                  <td>Flags conditions that fold to a constant <code>true</code>/<code>false</code> regardless of runtime state.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Division by zero</td>
+                  <td>Flags a divisor that's a compile-time-constant zero.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Empty loop/conditional body</td>
+                  <td>Flags a seemingly useless <code>While</code>/<code>If</code>/<code>Else</code> body.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Invariant loop condition</td>
+                  <td>Flags a <code>While</code> whose condition depends on a variable never assigned in its body.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>None used as an existing Form</td>
+                  <td>Flags a member/method access on a value still known to be <code>None</code>.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Local variable used before assignment</td>
+                  <td>Flags a read of an uninitialized local before anything assigns it a value.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Local variable shadowing</td>
+                  <td>Flags a local variable whose name matches a <code>Property</code> on the same or a parent script.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Parameter reassignment</td>
+                  <td>Flags a function/event parameter assigned a new value anywhere in its own body.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Form parameter used without a None check</td>
+                  <td>Flags a member/method access on a <code>Form</code> parameter not yet confirmed non-<code>None</code>. Disabled by default.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Unchecked cast</td>
+                  <td>Flags a member/method access on an <code>as</code> cast result before it's checked against <code>None</code>.</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="lint-category">
+          <h3>Other</h3>
+          <div class="lint-table-wrap">
+            <table class="lint-table">
+              <thead>
+                <tr>
+                  <th>Lint</th>
+                  <th>Description</th>
+                  <th>Auto-fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Unused script properties</td>
+                  <td>Flags <code>Property</code> declarations never referenced elsewhere in the script.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Cyclomatic complexity</td>
+                  <td>Flags functions/events exceeding a configurable complexity threshold.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Unused or write-only local variables</td>
+                  <td>Flags a local variable whose value is never read back.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Prefer named arguments</td>
+                  <td>Flags a positional argument the configured setting prefers passed by name instead.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Useless downcast</td>
+                  <td>Flags an <code>as</code> cast to a type the value's already-known type extends or matches.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Unused disable directive</td>
+                  <td>Flags unknown <code>@disable</code> rule ids or directives that suppress no diagnostic. Disabled by default.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Magic numbers</td>
+                  <td>Flags a numeric literal used directly instead of through a named constant. Disabled by default.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Non-base-game native function usage</td>
+                  <td>Flags a <code>Native</code> function not part of the base game, a sign it needs SKSE/F4SE. Disabled by default.</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>GlobalVariable no-op write</td>
+                  <td>Flags a <code>SetValue</code> call that doesn't provably change the value. Disabled by default.</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <p id="disable" class="disable-note">
+          Add a trailing <code>; @disable &lt;rule-id&gt;[, &lt;rule-id&gt;...]</code> comment to a line to suppress
+          diagnostics from those rules on that line only (e.g. <code>action = 1 ; @disable float-to-int</code>); a
+          bare <code>; @disable</code> suppresses every rule on the line. See the
+          <a href="https://github.com/idrinth/papyrus-lint#disabling-a-lint-on-a-specific-line">README</a> for the
+          full list of rule ids.
+        </p>
+      </section>
+
+      <section id="cli">
+        <h2>Command-line interface</h2>
+        <p class="section-intro">
+          Besides its GUI, Papyrus Lint runs non-interactively via a standalone <code>PapyrusLinterCLI</code> binary
+          (or the desktop app's own executable, launched with an <code>.achlist</code>/<code>.psc</code> path),
+          supporting automatic fixes and structured JSON output.
+        </p>
+        <pre class="code-block cli-examples"><code>PapyrusLinterCLI path/to/project.achlist
+PapyrusLinterCLI init
+PapyrusLinterCLI path/to/Example.psc
+PapyrusLinterCLI fix path/to/project.achlist
+PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
+PapyrusLinterCLI --tag style path/to/project.achlist
+PapyrusLinterCLI --json path/to/project.achlist
+PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
+PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
+PapyrusLinterCLI --output path/to/report.json --json path/to/project.achlist</code></pre>
+        <p class="section-intro">
+          It exits <code>0</code> when nothing failing was found, <code>1</code> when something was, and
+          <code>2</code> on a usage or I/O error — so it can gate a CI step on a clean lint run. The preferred way to
+          run it in CI is the
+          <a href="https://github.com/marketplace/actions/papyrus-lint">Papyrus Lint GitHub Action</a>
+          (<code>idrinth/papyrus-lint-action</code>), which posts findings as inline PR review comments. See the
+          <a href="https://github.com/idrinth/papyrus-lint#command-line-interface">README</a> for every flag.
+        </p>
+      </section>
+
+      <section id="config">
+        <h2>Configuration</h2>
+        <p class="section-intro">
+          Lint/fix behavior is configured via an optional <code>papyrus-lint.yaml</code> (or <code>.yml</code>) file
+          at the project root — next to the <code>.achlist</code>, or two directories above a bare
+          <code>.psc</code>. Any key it omits falls back to its documented default. It controls formatting
+          (semicolons, indentation, casing), which rules are enabled, complexity thresholds, CLI failure levels, and
+          the compiler path — <code>PapyrusLinterCLI init</code> writes the full default file into a project with
+          none yet.
+        </p>
+        <div class="hero__actions" style="justify-content: flex-start">
+          <a class="button" href="https://github.com/idrinth/papyrus-lint/blob/the-one/docs/papyrus-lint.default.yaml"
+            >View the default configuration</a
+          >
+          <a class="button" href="https://github.com/idrinth/papyrus-lint#configuration">Full configuration reference</a>
+        </div>
+      </section>
+
+      <section id="editors">
+        <h2>Editor integrations</h2>
+        <p class="section-intro">
+          The desktop app, CLI, and both editor extensions all use the same lint and repair engine, so a diagnostic
+          matches wherever you run it.
+        </p>
+        <div class="integrations">
+          <div class="integration">
+            <h3>VS Code extension</h3>
+            <p>Lints and fixes <code>.psc</code> files by invoking <code>PapyrusLinterCLI --json</code>.</p>
+            <a href="https://github.com/idrinth/papyrus-lint/tree/the-one/vscode-extension">View source</a>
+          </div>
+          <div class="integration">
+            <h3>SublimeLinter plugin</h3>
+            <p>Runs <code>PapyrusLinterCLI</code> against a saved <code>.psc</code> and reports SublimeLinter diagnostics.</p>
+            <a href="https://github.com/idrinth/papyrus-lint/tree/the-one/SublimeLinter-contrib-papyrus-lint">View source</a>
+          </div>
+          <div class="integration">
+            <h3>GitHub Action</h3>
+            <p>Runs Papyrus Lint in CI and posts findings as inline review comments on pull requests.</p>
+            <a href="https://github.com/marketplace/actions/papyrus-lint">View on the Marketplace</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="help">
+        <h2>How to help</h2>
+        <p class="section-intro">You can help the project by:</p>
+        <ul class="help-list">
+          <li>Providing examples of false positives.</li>
+          <li>Providing examples of false negatives.</li>
+          <li>Giving feedback on the existing rules.</li>
+          <li>Proposing new rules or adjustments to existing ones.</li>
+          <li>Reviewing code.</li>
+          <li>Writing code.</li>
+          <li>Writing or suggesting tests.</li>
+          <li>Sponsoring development.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <ul class="contact-list">
+        <li><a href="https://discord.gg/idrinth" target="_blank" rel="noopener noreferrer">Discord</a></li>
+        <li><a href="https://www.nexusmods.com/skyrimspecialedition/mods/189862" target="_blank" rel="noopener noreferrer">NexusMods</a></li>
+        <li><a href="https://github.com/idrinth/papyrus-lint" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href="https://github.com/idrinth/papyrus-lint/releases" target="_blank" rel="noopener noreferrer">Releases</a></li>
+      </ul>
+      <p>Papyrus Lint is MIT licensed. Only Skyrim Special Edition/Anniversary Edition is supported.</p>
+    </footer>
+  </body>
+</html>
