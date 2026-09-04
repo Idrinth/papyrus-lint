@@ -1,6 +1,28 @@
 //! Edge-case coverage for the crate's black-box lint and repair API.
 
-use papyrus_lints::{lint, repair, repair_filtered, restrict_to_line, Config};
+use papyrus_lints::{
+    lint, repair, repair_filtered, restrict_to_line,
+    tags::{tags_for, Importance, RULE_TAGS},
+    Config, KNOWN_RULE_IDS,
+};
+
+#[test]
+fn published_rule_tags_have_the_same_order_and_cardinality_as_known_rules() {
+    let tagged_rules: Vec<_> = RULE_TAGS.iter().map(|tags| tags.rule).collect();
+
+    assert_eq!(tagged_rules, KNOWN_RULE_IDS);
+}
+
+#[test]
+fn tag_lookup_exposes_stable_metadata_for_multi_kind_rules() {
+    let tags = tags_for("FORBIDDEN-FUNCTIONS").expect("known rule should have tags");
+
+    assert_eq!(tags.rule, "forbidden-functions");
+    assert_eq!(tags.kinds, ["performance", "correctness"]);
+    assert_eq!(tags.importance, Importance::Medium);
+    assert!(!tags.auto_fixable());
+    assert!(tags_for("not-a-published-rule").is_none());
+}
 
 #[test]
 fn empty_source_is_a_stable_noop() {
@@ -107,4 +129,52 @@ fn opt_in_rules_are_dispatched_by_the_public_lint_api() {
             "public lint API did not dispatch opted-in rule {rule}: {diagnostics:?}"
         );
     }
+}
+
+#[test]
+fn script_name_collisions_are_dispatched_and_can_be_suppressed_publicly() {
+    let source = "ScriptName Example\n\nInt Property example Auto ; @disable SCRIPT-NAME-COLLISION\nInt Example = 1\n";
+
+    let diagnostics: Vec<_> = lint(source, &Config::default())
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "script-name-collision")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 1));
+    assert_eq!(diagnostics[0].level(), "error");
+    assert!(diagnostics[0].message.contains("Variable 'Example'"));
+}
+
+#[test]
+fn invariant_loop_conditions_are_dispatched_for_functions_in_states() {
+    let source = "ScriptName Example\n\nState Waiting\n    Function Poll(Int remaining)\n        While remaining > 0\n            Debug.Trace(remaining)\n        EndWhile\n    EndFunction\nEndState\n";
+
+    let diagnostics: Vec<_> = lint(source, &Config::default())
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "invariant-loop-condition")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (5, 9));
+    assert_eq!(diagnostics[0].level(), "warning");
+    assert!(diagnostics[0].message.contains("'remaining'"));
+}
+
+#[test]
+fn default_enabled_rules_can_be_disabled_through_deserialized_config() {
+    let config: Config = serde_yaml::from_str(
+        "rules:\n  script_name_collision: false\n  invariant_loop_condition: false\n",
+    )
+    .unwrap();
+    let source = "ScriptName Example\n\nInt Property Example Auto\n\nFunction Run(Int remaining)\n    While remaining > 0\n        Debug.Trace(remaining)\n    EndWhile\nEndFunction\n";
+
+    let diagnostics = lint(source, &config);
+
+    assert!(diagnostics.iter().all(|diagnostic| {
+        !matches!(
+            diagnostic.rule,
+            "script-name-collision" | "invariant-loop-condition"
+        )
+    }));
 }
