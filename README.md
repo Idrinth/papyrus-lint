@@ -624,6 +624,15 @@ project's actual compiled `.pex` output, and never needs the
 personal-data stripping described above — the compiled output is
 discarded either way.
 
+## Thank Yous
+
+A big thank you to WraithFallen for doing a massive testing run on the
+versions of this tool, helping find bugs and improve it further with
+their dedication to rooting out false positives.
+
+Another thank you to s3ngine and wall416 over on NexusMods for spotting
+bugs and reporting them in the early development of the tool.
+
 ## How to help
 
 You can help the project by:
