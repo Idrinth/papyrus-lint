@@ -6,6 +6,7 @@ on:
     paths:
       - 'pages/**'
       - 'README.md'
+      - 'docs/**'
       - 'resources/**'
       - 'app/src-tauri/icons/icon.png'
       - '.github/workflows/pages.yml'
