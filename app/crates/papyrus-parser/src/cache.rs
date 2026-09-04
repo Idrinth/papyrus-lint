@@ -145,6 +145,18 @@ mod tests {
     }
 
     #[test]
+    fn tokenize_only_retains_the_most_recent_source() {
+        let before = TOKENIZE_COMPUTATIONS.with(|c| c.get());
+        let first = "ScriptName TokenizeEvictionTestA\n";
+
+        tokenize(first).unwrap();
+        tokenize("ScriptName TokenizeEvictionTestB\n").unwrap();
+        tokenize(first).unwrap();
+
+        assert_eq!(TOKENIZE_COMPUTATIONS.with(|c| c.get()) - before, 3);
+    }
+
+    #[test]
     fn parse_is_memoized_for_repeated_identical_source() {
         let before = PARSE_COMPUTATIONS.with(|c| c.get());
         let source = format!("ScriptName {}\n", "ParseMemoTest");
@@ -164,6 +176,44 @@ mod tests {
         parse("ScriptName ParseChangeTestB\n").unwrap();
 
         assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 2);
+    }
+
+    #[test]
+    fn parse_memoizes_parser_errors_too() {
+        let before = PARSE_COMPUTATIONS.with(|c| c.get());
+        let source = "ScriptName ParseErrorMemoTest\nFunction Broken(\n";
+
+        let first = parse(source);
+        let second = parse(source);
+
+        assert!(matches!(first, Err(PapyrusError::Parse(_))));
+        assert_eq!(first, second);
+        assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 1);
+    }
+
+    #[test]
+    fn parse_memoizes_lexer_errors_too() {
+        let before = PARSE_COMPUTATIONS.with(|c| c.get());
+        let source = "ScriptName ParseLexErrorMemoTest\n@";
+
+        let first = parse(source);
+        let second = parse(source);
+
+        assert!(matches!(first, Err(PapyrusError::Lex(_))));
+        assert_eq!(first, second);
+        assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 1);
+    }
+
+    #[test]
+    fn parse_only_retains_the_most_recent_source() {
+        let before = PARSE_COMPUTATIONS.with(|c| c.get());
+        let first = "ScriptName ParseEvictionTestA\n";
+
+        parse(first).unwrap();
+        parse("ScriptName ParseEvictionTestB\n").unwrap();
+        parse(first).unwrap();
+
+        assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 3);
     }
 
     #[test]
