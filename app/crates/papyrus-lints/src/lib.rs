@@ -25,6 +25,7 @@ pub mod global_variable_setvalue;
 pub mod goto_state;
 pub mod identifier_casing;
 pub mod indentation;
+pub mod invariant_loop_condition;
 pub mod local_variable_shadowing;
 pub mod magic_numbers;
 pub mod named_arguments;
@@ -112,6 +113,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     native_function_usage::RULE,
     repeated_getvalue::RULE,
     global_variable_setvalue::RULE,
+    invariant_loop_condition::RULE,
 ];
 
 use serde::Serialize;
@@ -343,6 +345,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.global_variable_setvalue {
         diagnostics.extend(global_variable_setvalue::check(source));
+    }
+    if rules.invariant_loop_condition {
+        diagnostics.extend(invariant_loop_condition::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1091,6 +1096,12 @@ mod tests {
                 global_variable_setvalue::RULE,
                 config_with(|c| c.rules.global_variable_setvalue = true),
                 Config::default(),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int n = 5\n    While n < 10\n        Debug.Trace(\"y\")\n    EndWhile\nEndFunction\n",
+                invariant_loop_condition::RULE,
+                Config::default(),
+                config_with(|c| c.rules.invariant_loop_condition = false),
             ),
         ];
 

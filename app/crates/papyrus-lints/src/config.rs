@@ -67,6 +67,7 @@
 //!   native_function_usage: false
 //!   repeated_getvalue: false
 //!   global_variable_setvalue: false
+//!   invariant_loop_condition: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -370,6 +371,8 @@ pub struct Rules {
     /// [`Self::native_function_usage`], this defaults to `false`: see
     /// [`crate::global_variable_setvalue`].
     pub global_variable_setvalue: bool,
+    /// The "Invariant loop condition" lint.
+    pub invariant_loop_condition: bool,
 }
 
 impl Default for Rules {
@@ -424,6 +427,7 @@ impl Default for Rules {
             native_function_usage: false,
             repeated_getvalue: false,
             global_variable_setvalue: false,
+            invariant_loop_condition: true,
         }
     }
 }
@@ -584,6 +588,7 @@ mod tests {
         // Also disabled by default: its Else-branch check is a heuristic,
         // not a proof the flagged write is actually redundant.
         assert!(!config.rules.global_variable_setvalue);
+        assert!(config.rules.invariant_loop_condition);
     }
 
     #[test]
