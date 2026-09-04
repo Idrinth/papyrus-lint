@@ -132,12 +132,14 @@ desktop app's binary at all.
 └── pages/                   # Source for the GitHub Pages discoverability site
     ├── index.template.html    # (see GitHub Pages below): index.template.html is
     ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel
-    ├── styles.css              # headings, the same light/dark palette); build.py
-    └── build.py                # substitutes its lint-table/CLI-example placeholders
-                                 # with content converted straight from README.md,
-                                 # renders every docs/* file into a browsable subpage
+    ├── videos.template.html    # headings, the same light/dark palette); build.py
+    ├── videos.json             # substitutes its lint-table/CLI-example placeholders
+    ├── styles.css              # with content converted straight from README.md,
+    └── build.py                # renders every docs/* file into a browsable subpage
                                  # (via docs.template.html) linked from a
-                                 # Documentation section, and assembles pages/dist/
+                                 # Documentation section, renders videos.json's list
+                                 # of YouTube videos into videos.html (via
+                                 # videos.template.html), and assembles pages/dist/
                                  # (git-ignored), copying its assets/ images from
                                  # resources/ and the app icon, rather than
                                  # committing duplicates of either under pages/.
@@ -299,6 +301,15 @@ carrying its own `<!--DOC_TITLE-->`/`<!--DOC_DESCRIPTION-->`/
 hand-written blurb per doc from `DOCS`, linking into `pages/dist/docs/`.
 Adding a new file under `docs/` that should be published this way means
 adding an entry to `DOCS`, not touching either template.
+
+`pages/videos.json` is a simple JSON list of the project's video
+walkthroughs — each entry a YouTube `id` and a `title` — rendered by
+`pages/build.py`'s `render_videos_list`/`build_videos_page` into
+`pages/dist/videos.html` via `pages/videos.template.html`: one embedded
+YouTube player per entry, oldest first. Adding a new video means adding
+an entry to `pages/videos.json`, not touching `build.py` or the
+template. Both `index.template.html` and `docs.template.html` link to it
+from their nav bar's "Videos" entry.
 
 ## Releases (`.github/workflows/release.yml`)
 

@@ -75,6 +75,10 @@ DOCS = [
 
 DOC_FILENAME_TO_SLUG = {doc["filename"]: doc["slug"] for doc in DOCS}
 
+# Simple list of YouTube video IDs/titles rendered onto videos.html, so a new
+# video can be added without touching build.py or its template.
+VIDEOS_FILE = PAGES_DIR / "videos.json"
+
 ASSETS = {
     "logo-small.jpg": ROOT / "resources" / "logo-small.jpg",
     "papyrus-lint-import.png": ROOT / "resources" / "papyrus-lint-import.png",
@@ -328,6 +332,32 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
     (docs_out_dir / "index.html").write_text(index_page, encoding="utf-8")
 
 
+def render_videos_list(videos: list[dict]) -> str:
+    items = []
+    for video in videos:
+        video_id = html.escape(video["id"], quote=True)
+        title = html.escape(video["title"])
+        items.append(
+            '<figure class="video-card">'
+            '<div class="video-card__frame">'
+            f'<iframe src="https://www.youtube.com/embed/{video_id}" title="{title}" '
+            'loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>'
+            "</div>"
+            f"<figcaption>{title}</figcaption>"
+            "</figure>"
+        )
+    return "\n".join(items)
+
+
+def build_videos_page(out_dir: Path) -> None:
+    videos = json.loads(VIDEOS_FILE.read_text(encoding="utf-8"))
+    template = (PAGES_DIR / "videos.template.html").read_text(encoding="utf-8")
+    if "<!--VIDEOS_LIST-->" not in template:
+        raise SystemExit("videos.template.html: missing marker <!--VIDEOS_LIST-->")
+    page = template.replace("<!--VIDEOS_LIST-->", render_videos_list(videos))
+    (out_dir / "videos.html").write_text(page, encoding="utf-8")
+
+
 def build(out_dir: Path) -> None:
     readme_lines = (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
     lints_section = extract_section(readme_lines, "Implemented Lints", level=2)
@@ -370,6 +400,7 @@ def build(out_dir: Path) -> None:
         shutil.copyfile(source, assets_dir / name)
 
     build_doc_pages(out_dir, doc_results)
+    build_videos_page(out_dir)
 
 
 def main() -> None:
