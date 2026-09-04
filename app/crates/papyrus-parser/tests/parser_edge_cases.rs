@@ -118,3 +118,89 @@ fn reports_the_start_of_unterminated_lexical_constructs() {
         assert_eq!((error.line, error.col), (line, col));
     }
 }
+
+#[test]
+fn distinguishes_an_empty_else_clause_from_no_else_clause() {
+    let script = parse(
+        r#"ScriptName Branches
+Function Check(Bool first, Bool second)
+    If first
+    Else
+    EndIf
+
+    If second
+    EndIf
+EndFunction
+"#,
+    )
+    .expect("empty conditional bodies should parse");
+
+    let Stmt::If {
+        branches,
+        else_body,
+        else_line,
+        else_col,
+        ..
+    } = &script.functions[0].body[0]
+    else {
+        panic!("expected the first statement to be an if");
+    };
+    assert!(branches[0].body.is_empty());
+    assert!(else_body.is_empty());
+    assert_eq!((*else_line, *else_col), (Some(4), Some(5)));
+
+    let Stmt::If {
+        else_body,
+        else_line,
+        else_col,
+        ..
+    } = &script.functions[0].body[1]
+    else {
+        panic!("expected the second statement to be an if");
+    };
+    assert!(else_body.is_empty());
+    assert_eq!((*else_line, *else_col), (None, None));
+}
+
+#[test]
+fn preserves_complex_default_parameter_expressions() {
+    let script = parse(
+        r#"ScriptName Defaults
+Function Configure(Int count = 2 * (3 + 4), Bool enabled = !false, String label = "ready") Native
+"#,
+    )
+    .expect("expression defaults should parse");
+
+    let params = &script.functions[0].params;
+    assert!(matches!(
+        params[0].default,
+        Some(Expr::Binary {
+            op: BinaryOp::Mul,
+            ref right,
+            ..
+        }) if matches!(right.as_ref(), Expr::Binary { op: BinaryOp::Add, .. })
+    ));
+    assert!(matches!(params[1].default, Some(Expr::Unary { .. })));
+    assert_eq!(
+        params[2].default,
+        Some(Expr::Literal(Literal::String("ready".into())))
+    );
+}
+
+#[test]
+fn rejects_unterminated_full_properties_at_end_of_file() {
+    let error = parse(
+        "ScriptName Broken\n\
+         Int Property Value\n\
+             Int Function Get()\n\
+                 Return 1\n\
+             EndFunction\n",
+    )
+    .expect_err("a full property requires EndProperty");
+
+    let PapyrusError::Parse(error) = error else {
+        panic!("expected a parser error");
+    };
+    assert_eq!((error.line, error.col), (6, 1));
+    assert_eq!(error.message, "expected keyword EndProperty, found Eof");
+}
