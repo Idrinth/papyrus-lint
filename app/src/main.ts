@@ -183,6 +183,7 @@ export interface LintRules {
   unchecked_cast: boolean;
   unresolved_script: boolean;
   non_global_function_call: boolean;
+  static_function_call_via_instance: boolean;
   short_wait_interval: boolean;
   state_function_signature: boolean;
   goto_state: boolean;
@@ -259,6 +260,7 @@ export const DEFAULT_RULES: LintRules = {
   unchecked_cast: true,
   unresolved_script: true,
   non_global_function_call: true,
+  static_function_call_via_instance: true,
   short_wait_interval: true,
   state_function_signature: true,
   goto_state: true,
