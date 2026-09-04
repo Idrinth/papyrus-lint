@@ -126,7 +126,7 @@ def first_code_block(section_lines: list[str]) -> str:
     return "\n".join(section_lines[start + 1 : end])
 
 
-def build(out_dir: Path) -> None:
+def build(out_dir: Path, version: str = "") -> None:
     readme_lines = (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
     lints_section = extract_section(readme_lines, "Implemented Lints", level=2)
     cli_section = extract_section(readme_lines, "Command-line interface", level=2)
@@ -147,6 +147,7 @@ def build(out_dir: Path) -> None:
         "<!--CLI_EXAMPLES-->",
         f'<pre class="code-block cli-examples"><code>{cli_examples}</code></pre>',
     )
+    template = template.replace("<!--VERSION-->", html.escape(version) if version else "unreleased")
 
     if out_dir.exists():
         shutil.rmtree(out_dir)
@@ -163,8 +164,13 @@ def build(out_dir: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, default=PAGES_DIR / "dist")
+    parser.add_argument(
+        "--version",
+        default="",
+        help="Version tag to display on the site (e.g. v1.2.3); shown as 'unreleased' if omitted",
+    )
     args = parser.parse_args()
-    build(args.out)
+    build(args.out, args.version)
     print(f"Built site into {args.out}")
 
 

@@ -10,6 +10,17 @@ on:
       - 'app/src-tauri/icons/icon.png'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to display on the site (defaults to the latest release)'
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version tag to display on the site (defaults to the latest release)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -36,8 +47,19 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Determine version
+        id: version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(gh release view --json tagName -q .tagName --repo "${{ github.repository }}" 2>/dev/null || echo "")
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Build site
-        run: python3 pages/build.py --out pages/dist
+        run: python3 pages/build.py --out pages/dist --version "${{ steps.version.outputs.version }}"
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
