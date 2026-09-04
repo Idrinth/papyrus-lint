@@ -30,6 +30,7 @@ pub mod local_variable_shadowing;
 pub mod magic_numbers;
 pub mod named_arguments;
 pub mod native_function_usage;
+pub mod non_global_function_call;
 pub mod none_form_usage;
 pub mod numeric_comparison;
 pub mod operator_spacing;
@@ -103,6 +104,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     unchecked_cast::RULE,
     useless_downcast::RULE,
     unresolved_script::RULE,
+    non_global_function_call::RULE,
     short_wait_interval::RULE,
     goto_state::RULE,
     state_count::TOO_MANY_STATES_RULE,
@@ -245,6 +247,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.unresolved_script {
         diagnostics.extend(unresolved_script::check_with(source, external));
+    }
+    if rules.non_global_function_call {
+        diagnostics.extend(non_global_function_call::check_with(source, external));
     }
     if rules.local_variable_shadowing {
         diagnostics.extend(local_variable_shadowing::check_with(source, external));
@@ -1213,6 +1218,58 @@ mod tests {
             &mut FakeExternalWithMissingScript,
         );
         assert!(disabled.iter().all(|d| d.rule != unresolved_script::RULE));
+    }
+
+    struct FakeExternalWithNonGlobalFunction;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithNonGlobalFunction {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
+            None
+        }
+
+        fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+            if type_name.eq_ignore_ascii_case("MyScript")
+                && function_name.eq_ignore_ascii_case("NotGlobal")
+            {
+                Some(false)
+            } else {
+                None
+            }
+        }
+    }
+
+    /// Like `function_override_flag_gates_only_its_own_lint` above:
+    /// `non_global_function_call` also needs `lint_with_external_arguments`'s
+    /// `external` resolver to ever fire, so its own
+    /// `rules.non_global_function_call` gate is checked here instead of in
+    /// the main loop.
+    #[test]
+    fn non_global_function_call_flag_gates_only_its_own_lint() {
+        let source =
+            "ScriptName Example\n\nFunction Test()\n    MyScript.NotGlobal()\nEndFunction\n";
+
+        let enabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithNonGlobalFunction,
+        );
+        assert!(enabled
+            .iter()
+            .any(|d| d.rule == non_global_function_call::RULE));
+
+        let disabled_config = config_with(|c| c.rules.non_global_function_call = false);
+        let disabled = lint_with_external_arguments(
+            source,
+            &disabled_config,
+            &mut FakeExternalWithNonGlobalFunction,
+        );
+        assert!(disabled
+            .iter()
+            .all(|d| d.rule != non_global_function_call::RULE));
     }
 
     struct FakeExternalWithRenamedParentParam;

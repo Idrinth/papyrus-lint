@@ -242,6 +242,11 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::High,
     },
     RuleTags {
+        rule: crate::non_global_function_call::RULE,
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
+    RuleTags {
         rule: crate::short_wait_interval::RULE,
         kinds: &["performance"],
         importance: Importance::Medium,

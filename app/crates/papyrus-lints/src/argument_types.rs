@@ -125,6 +125,23 @@ pub trait ExternalSignatures {
     fn ancestor_states(&mut self, _type_name: &str) -> Vec<(String, bool)> {
         Vec::new()
     }
+
+    /// Whether `type_name`'s script declares `function_name` as a
+    /// `Global` function, i.e. one callable through Papyrus's static call
+    /// syntax (`ScriptName.Function(...)`) without an instance. Both names
+    /// are matched case-insensitively. `None` means the function couldn't
+    /// be resolved at all (unknown script or function), so the call site
+    /// is left unflagged rather than guessed at — that case is instead
+    /// covered by the "Unresolved script reference" lint. Used by the
+    /// "Non-static function call" lint (`crate::non_global_function_call`)
+    /// to flag a call like `MyScript.InstanceMethod()` whose target isn't
+    /// actually declared `Global`.
+    ///
+    /// The default always returns `None`, keeping existing behavior for
+    /// callers that can't resolve scripts (see [`NoExternalSignatures`]).
+    fn is_global_function(&mut self, _type_name: &str, _function_name: &str) -> Option<bool> {
+        None
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a
