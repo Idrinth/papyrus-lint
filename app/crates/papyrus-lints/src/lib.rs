@@ -37,6 +37,7 @@ pub mod parameter_reassignment;
 pub mod property_sorting;
 pub mod repeated_getvalue;
 pub mod return_types;
+pub mod script_name_collision;
 pub mod semicolon;
 pub mod short_wait_interval;
 pub mod slow_functions;
@@ -114,6 +115,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     repeated_getvalue::RULE,
     global_variable_setvalue::RULE,
     invariant_loop_condition::RULE,
+    script_name_collision::RULE,
 ];
 
 use serde::Serialize;
@@ -348,6 +350,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.invariant_loop_condition {
         diagnostics.extend(invariant_loop_condition::check(source));
+    }
+    if rules.script_name_collision {
+        diagnostics.extend(script_name_collision::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1102,6 +1107,12 @@ mod tests {
                 invariant_loop_condition::RULE,
                 Config::default(),
                 config_with(|c| c.rules.invariant_loop_condition = false),
+            ),
+            (
+                "ScriptName Example\n\nInt Property Example Auto\n",
+                script_name_collision::RULE,
+                Config::default(),
+                config_with(|c| c.rules.script_name_collision = false),
             ),
         ];
 
