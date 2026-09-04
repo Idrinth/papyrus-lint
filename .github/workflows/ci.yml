@@ -37,6 +37,19 @@ jobs:
       - name: Lint Nexus Mods page
         run: python3 .github/scripts/bbcode_lint.py docs/nexuspage.bbcode
 
+  pages:
+    name: GitHub Pages builder tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Test site builder
+        run: python3 -m unittest discover -s pages -p 'test_*.py' -v
+
   markdown:
     name: Markdown lint
     runs-on: ubuntu-latest

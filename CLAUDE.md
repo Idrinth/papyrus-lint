@@ -131,14 +131,16 @@ desktop app's binary at all.
 │   └── test/                 # Node-based extension unit tests
 └── pages/                   # Source for the GitHub Pages discoverability site
     ├── index.template.html    # (see GitHub Pages below): index.template.html is
-    ├── styles.css              # styled to match the desktop app's frontend (Cinzel
-    └── build.py                # headings, the same light/dark palette); build.py
-                                 # substitutes its lint-table/CLI-example placeholders
-                                 # with content converted straight from README.md and
-                                 # assembles pages/dist/ (git-ignored), copying its
-                                 # assets/ images from resources/ and the app icon,
-                                 # rather than committing duplicates of either under
-                                 # pages/.
+    ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel
+    ├── styles.css              # headings, the same light/dark palette); build.py
+    └── build.py                # substitutes its lint-table/CLI-example placeholders
+                                 # with content converted straight from README.md,
+                                 # renders every docs/* file into a browsable subpage
+                                 # (via docs.template.html) linked from a
+                                 # Documentation section, and assembles pages/dist/
+                                 # (git-ignored), copying its assets/ images from
+                                 # resources/ and the app icon, rather than
+                                 # committing duplicates of either under pages/.
 ```
 
 `papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
@@ -239,13 +241,13 @@ on all pull requests.
 
 ## GitHub Pages (`.github/workflows/pages.yml`, `pages/build.py`)
 
-A push to `the-one` that touches `pages/**`, `README.md`, `resources/**`,
-or `app/src-tauri/icons/icon.png` (or the workflow file itself), a
-manual `workflow_dispatch` run, or `release.yml`'s `update-pages` job
-(see Releases below) invoking it as a `workflow_call`, builds and deploys
-a discoverability landing page to GitHub Pages. The repository's Pages
-source must be set to "GitHub Actions" (Settings → Pages) for this
-workflow to publish successfully.
+A push to `the-one` that touches `pages/**`, `README.md`, `docs/**`,
+`resources/**`, or `app/src-tauri/icons/icon.png` (or the workflow file
+itself), a manual `workflow_dispatch` run, or `release.yml`'s
+`update-pages` job (see Releases below) invoking it as a `workflow_call`,
+builds and deploys a discoverability landing page to GitHub Pages. The
+repository's Pages source must be set to "GitHub Actions" (Settings →
+Pages) for this workflow to publish successfully.
 
 The page's footer displays the current version via a `<!--VERSION-->`
 placeholder that `pages/build.py --version <tag>` fills in the same way
@@ -282,6 +284,33 @@ the "what this is/isn't" cards, screenshots, editor integrations, "how
 to help" — is short, hand-authored prose kept in sync with `README.md`
 by hand, the same way `docs/nexuspage.bbcode`'s own intro prose is (see
 "Keeping agent instructions synchronized" below).
+
+Every file in the `docs/` directory (see Project structure above) is also
+published as its own browsable subpage, so that reference material isn't
+only reachable as raw source on GitHub. `pages/build.py`'s `DOCS` list
+names each file, a `slug` for its output filename, and a `kind`
+(`markdown`, `json-schema`, or plain text) that picks how it's rendered:
+a Markdown file (currently `docs/github-actions-example.md`) is converted
+to HTML the same way the CLI examples are (headings, paragraphs, fenced
+code blocks, and `render_inline`'s inline formatting), with its own
+top-level heading and first paragraph read back out as the subpage's
+title/description rather than duplicated in `DOCS`; a JSON Schema file
+renders its `title`/`description` fields plus the pretty-printed schema
+itself in a code block; anything else (`docs/papyrus-lint.default.yaml`,
+`docs/nexuspage.bbcode`) renders as a plain code block under a
+hand-written title/description in `DOCS`. A link inside a rendered
+Markdown doc to another published doc (matched by filename) resolves to
+that doc's own subpage; a `../`-relative link into the rest of the
+repository resolves on GitHub instead — both via `resolve_doc_href`,
+so `docs/github-actions-example.md`'s existing relative links keep
+working once rendered. `pages/docs.template.html` is the shared page
+shell these subpages (and their `docs/index.html` listing) render into,
+carrying its own `<!--DOC_TITLE-->`/`<!--DOC_DESCRIPTION-->`/
+`<!--DOC_CONTENT-->` placeholders; `index.template.html`'s own
+`<!--DOCS_LIST-->` placeholder is filled with the same titles and a short
+hand-written blurb per doc from `DOCS`, linking into `pages/dist/docs/`.
+Adding a new file under `docs/` that should be published this way means
+adding an entry to `DOCS`, not touching either template.
 
 ## Releases (`.github/workflows/release.yml`)
 

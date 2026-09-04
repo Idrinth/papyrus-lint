@@ -391,6 +391,96 @@ table.lint-table {
   font-size: 0.9em;
 }
 
+.docs-list {
+  list-style: none;
+  margin: 1.5em 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75em;
+}
+
+.docs-list li {
+  padding: 1em 1.25em;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background-color: var(--color-surface);
+}
+
+.docs-list a {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.docs-list a:hover {
+  text-decoration: underline;
+}
+
+.docs-list p {
+  margin: 0.35em 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9em;
+}
+
+.doc-hero {
+  text-align: left;
+  padding: 3em 0 1em;
+}
+
+.doc-hero h1 {
+  font-size: 1.8em;
+}
+
+.doc-breadcrumb {
+  margin: 0 0 1em;
+}
+
+.doc-breadcrumb a {
+  font-size: 0.9em;
+  text-decoration: none;
+}
+
+.doc-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.doc-content {
+  max-width: 46em;
+  margin: 0 auto;
+}
+
+.doc-content h2 {
+  font-size: 1.3em;
+  margin: 1.5em 0 0.6em;
+}
+
+.doc-content h2:first-child {
+  margin-top: 0;
+}
+
+.doc-content h3 {
+  font-size: 1.05em;
+  margin: 1.25em 0 0.5em;
+}
+
+.doc-content p {
+  color: var(--color-text-muted);
+}
+
+.doc-content pre.code-block {
+  margin: 1em 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.doc-content a {
+  color: var(--color-accent-toggle);
+}
+
+.doc-content .doc-raw-link {
+  display: inline-block;
+  margin-top: 1.5em;
+}
+
 .help-list {
   columns: 2;
   column-gap: 2em;
