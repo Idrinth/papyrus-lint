@@ -179,6 +179,10 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit as Int cast.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Int/Int division widened to Float[/b][/td]
+[td]Flags an Int/Int division declared, assigned, returned, or passed as an argument into a Float-typed slot, since Papyrus truncates the division before it ever widens into the Float (e.g. Float f = 1 / 2 yields 0.0, not 0.5).[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Unreachable statement[/b][/td]
 [td]Flags statements that follow a Return.[/td]
 [td][/td]
@@ -321,6 +325,7 @@ rules:
   unused_property: true
   semicolon: true
   float_int_conversion: true
+  int_division_to_float: true
   strict_boolean: true
   argument_types: true
   return_types: true

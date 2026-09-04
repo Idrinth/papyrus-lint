@@ -50,6 +50,7 @@ rules:
   unused_property: true
   semicolon: true
   float_int_conversion: true
+  int_division_to_float: true
   strict_boolean: true
   argument_types: true
   return_types: true

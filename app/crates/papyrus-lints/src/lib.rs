@@ -25,6 +25,7 @@ pub mod global_variable_setvalue;
 pub mod goto_state;
 pub mod identifier_casing;
 pub mod indentation;
+pub mod int_division_to_float;
 pub mod invariant_loop_condition;
 pub mod local_variable_shadowing;
 pub mod magic_numbers;
@@ -76,6 +77,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     unused_property::RULE,
     semicolon::RULE,
     float_int_conversion::RULE,
+    int_division_to_float::RULE,
     strict_boolean::RULE,
     argument_types::RULE,
     return_types::RULE,
@@ -225,6 +227,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.float_int_conversion {
         diagnostics.extend(float_int_conversion::check(source));
+    }
+    if rules.int_division_to_float {
+        diagnostics.extend(int_division_to_float::check(source));
     }
     if rules.unused_property {
         diagnostics.extend(unused_property::check(source));
@@ -906,6 +911,12 @@ mod tests {
                 float_int_conversion::RULE,
                 Config::default(),
                 config_with(|c| c.rules.float_int_conversion = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Float f = 1 / 2\nEndFunction\n",
+                int_division_to_float::RULE,
+                Config::default(),
+                config_with(|c| c.rules.int_division_to_float = false),
             ),
             (
                 "ScriptName Example\n\nFunction Test(Int count)\n    If count\n    EndIf\nEndFunction\n",
