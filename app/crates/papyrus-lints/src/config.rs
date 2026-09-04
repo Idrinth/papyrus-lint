@@ -68,6 +68,7 @@
 //!   repeated_getvalue: false
 //!   global_variable_setvalue: false
 //!   invariant_loop_condition: true
+//!   script_name_collision: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -373,6 +374,8 @@ pub struct Rules {
     pub global_variable_setvalue: bool,
     /// The "Invariant loop condition" lint.
     pub invariant_loop_condition: bool,
+    /// The "Property/variable named as script" lint.
+    pub script_name_collision: bool,
 }
 
 impl Default for Rules {
@@ -428,6 +431,7 @@ impl Default for Rules {
             repeated_getvalue: false,
             global_variable_setvalue: false,
             invariant_loop_condition: true,
+            script_name_collision: true,
         }
     }
 }
@@ -589,6 +593,7 @@ mod tests {
         // not a proof the flagged write is actually redundant.
         assert!(!config.rules.global_variable_setvalue);
         assert!(config.rules.invariant_loop_condition);
+        assert!(config.rules.script_name_collision);
     }
 
     #[test]

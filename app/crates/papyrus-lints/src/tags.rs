@@ -301,6 +301,11 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::High,
     },
+    RuleTags {
+        rule: crate::script_name_collision::RULE,
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
 ];
 
 #[cfg(test)]

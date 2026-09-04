@@ -117,6 +117,7 @@ apply.
 | **Multiple Auto states** | Flags more than one `Auto` state declared in a single script as an `[error]`, since a script may only declare one. It also flags, as a `[warning]`, multiple `Auto` states found only after combining a script with every `State` declared anywhere in its `Extends` ancestry (as above). The engine tolerates a parent and child each declaring an `Auto` state (the child's takes precedence at startup), but relying on that precedence is fragile: removing the child's `Auto` state silently switches its startup state back to the parent's. Only the script's own declared states are considered when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too. | |
 | **Conflicting script versions** | Flags, as a `[warning]`, a `.psc` file when another script search directory contains a case-insensitively same-named file with different contents (determined by MD5), since which version Papyrus resolves can depend on search-directory order. Byte-identical copies are ignored. Only available when linting a file with project context in the desktop app or CLI. | |
 | **FormID hex notation** | Flags, as a `[warning]`, a FormID literal that isn't written in hexadecimal notation when it's directly compared (`==`, `!=`, `<`, `<=`, `>`, `>=`) against a `GetFormID()` call, or passed as the FormID argument to `Game.GetFormFromFile` (positionally or by name), since hexadecimal is the convention used everywhere else a FormID appears (the Creation Kit, xEdit, mod documentation) and a stray decimal literal is easy to mistype or overlook. Only a literal directly adjacent to the comparison operator or the call's argument list is checked; one reached indirectly through a variable assigned earlier is left unflagged rather than guessed at. | |
+| **Property/variable named as script** | Flags, as an `[error]`, a script-level `Property` or variable whose name matches (case-insensitively) the name of the script it's declared in, since Papyrus rejects such a script at compile time. A local variable declared inside a function/event (see "Local variable shadowing" above) isn't checked by this lint. | |
 
 ### Bugprone
 
@@ -181,8 +182,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
 `unchecked-cast`, `unresolved-script`, `short-wait-interval`,
 `state-function-signature`, `goto-state`, `conflicting-script-versions`,
-`unused-disable`, `magic-numbers`, `native-function-usage`, and
-`global-variable-setvalue`.
+`unused-disable`, `magic-numbers`, `native-function-usage`,
+`global-variable-setvalue`, and `script-name-collision`.
 
 ## Configuration
 
@@ -313,7 +314,8 @@ file yet. Each key:
   `property_sorting`, `explicit_return`, `unchecked_form_parameter`,
   `unchecked_cast`, `unresolved_script`, `short_wait_interval`,
   `magic_numbers`, `native_function_usage`, `repeated_getvalue`,
-  `global_variable_setvalue`, and `invariant_loop_condition`.
+  `global_variable_setvalue`, `invariant_loop_condition`, and
+  `script_name_collision`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
