@@ -178,3 +178,45 @@ fn default_enabled_rules_can_be_disabled_through_deserialized_config() {
         )
     }));
 }
+
+#[test]
+fn every_filtered_fixer_respects_its_deserialized_rule_switch() {
+    let cases = [
+        (
+            "identifier-casing",
+            "ScriptName Example\n\nFunction Run(Int left)\nEndFunction\n",
+        ),
+        ("slow-functions", "Value.SetValueInt(3)\n"),
+        ("semicolon", "Int Value = 1;\n"),
+        ("indentation", "Function Run()\n  Call()\nEndFunction\n"),
+        (
+            "property-sorting",
+            "ScriptName Example\n\nInt Property Zulu Auto\nActor Property Alpha Auto\n",
+        ),
+        ("comma-spacing", "Call(1,2)\n"),
+        ("chain-whitespace", "Value . Call()\n"),
+        ("exclamation-spacing", "If !Ready\nEndIf\n"),
+        ("operator-spacing", "If Left==Right\nEndIf\n"),
+        ("type-casing", "ScriptName myScript\n"),
+        ("trailing-whitespace", "Call()  \n"),
+    ];
+
+    for (rule, source) in cases {
+        let config_key = rule.replace('-', "_");
+        let enabled_yaml = format!("rules:\n  {config_key}: true\n");
+        let enabled: Config = serde_yaml::from_str(&enabled_yaml).unwrap();
+        assert_ne!(
+            repair_filtered(source, &enabled, Some(rule)),
+            source,
+            "fixture must exercise the {rule} fixer"
+        );
+
+        let disabled_yaml = format!("rules:\n  {config_key}: false\n");
+        let disabled: Config = serde_yaml::from_str(&disabled_yaml).unwrap();
+        assert_eq!(
+            repair_filtered(source, &disabled, Some(rule)),
+            source,
+            "disabled {rule} fixer changed the source"
+        );
+    }
+}
