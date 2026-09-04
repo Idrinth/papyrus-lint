@@ -383,8 +383,37 @@ pub fn repair(source: &str, config: &Config) -> String {
 /// fix without disabling every other rule in `config` (which would also
 /// suppress their diagnostics from the report).
 pub fn repair_filtered(source: &str, config: &Config, rule_filter: Option<&str>) -> String {
+    repair_with(source, config, |rule| {
+        rule_filter.is_none_or(|filter| filter == rule)
+    })
+}
+
+/// Like [`repair_filtered`], but selects every fixable rule tagged (see
+/// [`tags`]) with `tag` instead of a single rule id, matched
+/// case-insensitively against each rule's kind keyword(s) (e.g. `"style"`
+/// or `"performance"`). `tag` of `None` behaves exactly like [`repair`].
+/// This lets a caller (e.g. the CLI's `fix --tag <kind>`) apply every
+/// automatic fix in one class at once, the tag-based counterpart to
+/// [`repair_filtered`]'s single-rule `fix --type <rule-id>`.
+pub fn repair_filtered_by_tag(source: &str, config: &Config, tag: Option<&str>) -> String {
+    repair_with(source, config, |rule| {
+        tag.is_none_or(|tag| {
+            tags::tags_for(rule).is_some_and(|rule_tags| {
+                rule_tags
+                    .kinds
+                    .iter()
+                    .any(|kind| kind.eq_ignore_ascii_case(tag))
+            })
+        })
+    })
+}
+
+/// Shared implementation behind [`repair_filtered`] and
+/// [`repair_filtered_by_tag`]: applies every fix in [`FIXABLE_RULE_IDS`]
+/// whose ruleset is enabled in `config.rules` and whose rule id `applies`
+/// accepts.
+fn repair_with(source: &str, config: &Config, applies: impl Fn(&str) -> bool) -> String {
     let rules = &config.rules;
-    let applies = |rule: &str| rule_filter.is_none_or(|filter| filter == rule);
     let source = if rules.identifier_casing && applies(identifier_casing::RULE) {
         identifier_casing::repair(source, config.identifier_casing)
     } else {

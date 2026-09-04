@@ -2,7 +2,8 @@
 
 use papyrus_lints::{
     argument_types::{ExternalSignatures, ParamInfo},
-    lint, lint_with_external_arguments, repair, repair_filtered, restrict_to_line,
+    lint, lint_with_external_arguments, repair, repair_filtered, repair_filtered_by_tag,
+    restrict_to_line,
     tags::tags_for,
     Config, Diagnostic, FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
 };
@@ -124,6 +125,42 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "filtered repair failed for {rule}"
         );
     }
+}
+
+#[test]
+fn tag_filtered_public_repair_applies_only_the_matching_kind() {
+    let config = Config::default();
+    let source =
+        "ScriptName Example  \n\nFunction DoThing(GlobalVariable akGlobal)\n    akGlobal.GetValueInt()\nEndFunction\n";
+
+    let performance_only = repair_filtered_by_tag(source, &config, Some("performance"));
+    assert!(!performance_only.contains("GetValueInt"));
+    assert!(performance_only.contains("Example  \n"));
+
+    let style_only = repair_filtered_by_tag(source, &config, Some("style"));
+    assert!(style_only.contains("GetValueInt"));
+    assert!(style_only.contains("Example\n"));
+    assert!(!style_only.contains("Example  \n"));
+
+    assert_eq!(
+        repair_filtered_by_tag(source, &config, None),
+        repair(source, &config)
+    );
+}
+
+#[test]
+fn tag_filtered_public_repair_matches_case_insensitively_and_ignores_unknown_tags() {
+    let config = Config::default();
+    let source = "Call(1,2)  \r\n";
+
+    assert_eq!(
+        repair_filtered_by_tag(source, &config, Some("STYLE")),
+        repair(source, &config)
+    );
+    assert_eq!(
+        repair_filtered_by_tag(source, &config, Some("made-up-tag")),
+        source
+    );
 }
 
 #[test]
