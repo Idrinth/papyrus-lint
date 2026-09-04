@@ -47,6 +47,7 @@ pub fn is_known(type_name_lower: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
 
     #[test]
     fn resolves_the_actor_object_reference_form_chain() {
@@ -71,5 +72,32 @@ mod tests {
         assert!(is_known("actor"));
         assert!(is_known("form"));
         assert!(!is_known("somemodsquestscript"));
+    }
+
+    #[test]
+    fn generated_native_type_names_are_lowercase_and_children_are_unique() {
+        let mut children = HashSet::new();
+
+        for (child, parent) in NATIVE_EXTENDS {
+            assert_eq!(*child, child.to_ascii_lowercase());
+            assert_eq!(*parent, parent.to_ascii_lowercase());
+            assert!(children.insert(*child), "duplicate native type: {child}");
+        }
+    }
+
+    #[test]
+    fn generated_native_type_hierarchy_contains_no_cycles() {
+        for (starting_type, _) in NATIVE_EXTENDS {
+            let mut visited = HashSet::new();
+            let mut current = Some(*starting_type);
+
+            while let Some(type_name) = current {
+                assert!(
+                    visited.insert(type_name),
+                    "cycle in native type hierarchy starting at {starting_type}"
+                );
+                current = parent_of(type_name);
+            }
+        }
     }
 }
