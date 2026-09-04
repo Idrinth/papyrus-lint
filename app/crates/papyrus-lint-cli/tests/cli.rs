@@ -176,6 +176,61 @@ fn lint_errors_produce_a_failure_status_through_the_binary_entry_point() {
 }
 
 #[test]
+fn quiet_warnings_hides_output_without_changing_the_binary_exit_status() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example   \n");
+
+    let output = run_cli(&["--quiet-warnings", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(!stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains("no problems found in 1 script"));
+}
+
+#[test]
+fn tag_filter_is_forwarded_through_the_binary_entry_point() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(
+        &script,
+        "ScriptName Example   \n\nFunction DoThing()\n    Game.GetPlayer()\nEndFunction\n",
+    );
+
+    let output = run_cli(&["--tag", "style", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(!stdout.contains("[forbidden-functions]"));
+}
+
+#[test]
+fn typed_fix_only_repairs_the_selected_rule_through_the_binary() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(
+        &script,
+        "ScriptName Example\n\nFunction Add(Int left,Int right)\nEndFunction   \n",
+    );
+
+    let output = run_cli(&["fix", "--type", "comma-spacing", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        fs::read_to_string(script).expect("fixed script should be readable"),
+        "ScriptName Example\n\nFunction Add(Int left, Int right)\nEndFunction   \n"
+    );
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(!stdout.contains("[comma-spacing]"));
+}
+
+#[test]
 fn achlist_json_report_includes_clean_and_dirty_scripts() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let clean_script = dir.path().join("scripts/source/Clean.psc");
