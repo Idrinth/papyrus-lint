@@ -129,13 +129,16 @@ desktop app's binary at all.
 │   ├── package.json          # .psc files by invoking PapyrusLinterCLI --json
 │   ├── src/extension.ts      # Commands, process execution, and diagnostics
 │   └── test/                 # Node-based extension unit tests
-└── pages/                   # Static GitHub Pages site (deployed by
-    ├── index.html             # .github/workflows/pages.yml from the pages/
-    ├── styles.css              # directory on pushes to the-one): a discoverability
-    └── assets/                 # landing page drawn from README.md, styled to match
-                                 # the desktop app's frontend (Cinzel headings, the
-                                 # same light/dark palette). assets/ holds copies of
-                                 # resources/ images used on the page.
+└── pages/                   # Source for the GitHub Pages discoverability site
+    ├── index.template.html    # (see GitHub Pages below): index.template.html is
+    ├── styles.css              # styled to match the desktop app's frontend (Cinzel
+    └── build.py                # headings, the same light/dark palette); build.py
+                                 # substitutes its lint-table/CLI-example placeholders
+                                 # with content converted straight from README.md and
+                                 # assembles pages/dist/ (git-ignored), copying its
+                                 # assets/ images from resources/ and the app icon,
+                                 # rather than committing duplicates of either under
+                                 # pages/.
 ```
 
 `papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
@@ -234,20 +237,39 @@ binary target that crate also defines.
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
 
-## GitHub Pages (`.github/workflows/pages.yml`)
+## GitHub Pages (`.github/workflows/pages.yml`, `pages/build.py`)
 
-A push to `the-one` that touches `pages/**` (or the workflow file itself),
-or a manual `workflow_dispatch` run, deploys the static site in `pages/`
-to GitHub Pages via `actions/upload-pages-artifact`/`actions/deploy-pages`.
-The repository's Pages source must be set to "GitHub Actions" (Settings →
-Pages) for this workflow to publish successfully. The site itself is a
-plain HTML/CSS discoverability landing page (no build step) drawn from
-`README.md`, styled to match the desktop app's frontend (`app/src/styles.css`):
-the same Cinzel-headed, light/dark-aware palette. Keep it in sync with
-`README.md` the same way `docs/nexuspage.bbcode` is kept in sync (see
-"Keeping agent instructions synchronized" below) whenever the documented
-lints, CLI usage, or configuration reference change — condensed the same
-way `docs/nexuspage.bbcode` condenses them, not copied verbatim.
+A push to `the-one` that touches `pages/**`, `README.md`, `resources/**`,
+or `app/src-tauri/icons/icon.png` (or the workflow file itself), or a
+manual `workflow_dispatch` run, builds and deploys a discoverability
+landing page to GitHub Pages. The repository's Pages source must be set
+to "GitHub Actions" (Settings → Pages) for this workflow to publish
+successfully.
+
+`pages/index.template.html` is a plain HTML/CSS page (no frontend
+framework or bundler) styled to match the desktop app's frontend
+(`app/src/styles.css`): the same Cinzel-headed, light/dark-aware
+palette. Rather than hand-duplicating the README's lint tables and CLI
+usage examples into that template (and having to keep them in sync by
+hand), it carries `<!--LINT_TABLE:Formatting-->`-style placeholder
+comments — one per lint category listed in the README's [Implemented
+Lints](README.md#implemented-lints) table, plus `<!--CLI_EXAMPLES-->` —
+that `pages/build.py` fills in at build time by extracting and
+converting the corresponding Markdown table/code block straight out of
+`README.md`, so that content can never drift out of sync. It also
+assembles the page's `assets/` directory by copying the screenshots
+from `resources/` and the app icon from `app/src-tauri/icons/icon.png`,
+rather than committing duplicate copies of them under `pages/`. Both the
+workflow and a contributor previewing the page locally run it as
+`python3 pages/build.py --out pages/dist` (the default `--out`); its
+output directory (`pages/dist` by default) is git-ignored (matched by
+the root `.gitignore`'s generic `dist` entry) and gets uploaded to Pages
+via `actions/upload-pages-artifact`/`actions/deploy-pages`. Everything
+in `index.template.html` outside those placeholders — the hero pitch,
+the "what this is/isn't" cards, screenshots, editor integrations, "how
+to help" — is short, hand-authored prose kept in sync with `README.md`
+by hand, the same way `docs/nexuspage.bbcode`'s own intro prose is (see
+"Keeping agent instructions synchronized" below).
 
 ## Releases (`.github/workflows/release.yml`)
 
@@ -506,8 +528,11 @@ the CLI usage examples/options or the documented default configuration in
 configuration section of `docs/nexuspage.bbcode` in the same change. Other README
 changes do not need to be synchronized to the Nexus page.
 
-The same applies to `pages/index.html` (see GitHub Pages above): whenever
-the documented lints, CLI usage/options, or configuration reference in
-`README.md` change, update the corresponding section of `pages/index.html`
-too, keeping its lint descriptions condensed the way `docs/nexuspage.bbcode`'s
-are rather than copied verbatim from the README.
+`pages/index.template.html` (see GitHub Pages above) needs no such manual
+sync for the documented lints or CLI usage examples: `pages/build.py`
+generates those sections directly from `README.md` on every deploy, so
+they can't drift. Its remaining hand-authored prose (the hero pitch, the
+"what this is/isn't" cards, the configuration/editor-integrations
+blurbs) should still be kept roughly in step with `README.md` by hand
+when those parts of the README change meaningfully, the same as
+`docs/nexuspage.bbcode`'s own intro prose above.

@@ -5,6 +5,9 @@ on:
     branches: [the-one]
     paths:
       - 'pages/**'
+      - 'README.md'
+      - 'resources/**'
+      - 'app/src-tauri/icons/icon.png'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -27,10 +30,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Build site
+        run: python3 pages/build.py --out pages/dist
+
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: pages
+          path: pages/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
