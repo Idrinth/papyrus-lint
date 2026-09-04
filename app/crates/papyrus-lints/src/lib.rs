@@ -45,6 +45,7 @@ pub mod slow_functions;
 pub mod state_count;
 pub mod state_function_signature;
 pub mod static_condition;
+pub mod static_function_call_via_instance;
 pub mod strict_boolean;
 pub mod tags;
 pub mod trailing_whitespace;
@@ -105,6 +106,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     useless_downcast::RULE,
     unresolved_script::RULE,
     non_global_function_call::RULE,
+    static_function_call_via_instance::RULE,
     short_wait_interval::RULE,
     goto_state::RULE,
     state_count::TOO_MANY_STATES_RULE,
@@ -250,6 +252,11 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.non_global_function_call {
         diagnostics.extend(non_global_function_call::check_with(source, external));
+    }
+    if rules.static_function_call_via_instance {
+        diagnostics.extend(static_function_call_via_instance::check_with(
+            source, external,
+        ));
     }
     if rules.local_variable_shadowing {
         diagnostics.extend(local_variable_shadowing::check_with(source, external));
@@ -1270,6 +1277,58 @@ mod tests {
         assert!(disabled
             .iter()
             .all(|d| d.rule != non_global_function_call::RULE));
+    }
+
+    struct FakeExternalWithGlobalFunction;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithGlobalFunction {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
+            None
+        }
+
+        fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+            if type_name.eq_ignore_ascii_case("MyScript")
+                && function_name.eq_ignore_ascii_case("IsGlobal")
+            {
+                Some(true)
+            } else {
+                None
+            }
+        }
+    }
+
+    /// Like `function_override_flag_gates_only_its_own_lint` above:
+    /// `static_function_call_via_instance` also needs
+    /// `lint_with_external_arguments`'s `external` resolver to ever fire, so
+    /// its own `rules.static_function_call_via_instance` gate is checked
+    /// here instead of in the main loop.
+    #[test]
+    fn static_function_call_via_instance_flag_gates_only_its_own_lint() {
+        let source =
+            "ScriptName Example\n\nFunction Test(MyScript akRef)\n    akRef.IsGlobal()\nEndFunction\n";
+
+        let enabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithGlobalFunction,
+        );
+        assert!(enabled
+            .iter()
+            .any(|d| d.rule == static_function_call_via_instance::RULE));
+
+        let disabled_config = config_with(|c| c.rules.static_function_call_via_instance = false);
+        let disabled = lint_with_external_arguments(
+            source,
+            &disabled_config,
+            &mut FakeExternalWithGlobalFunction,
+        );
+        assert!(disabled
+            .iter()
+            .all(|d| d.rule != static_function_call_via_instance::RULE));
     }
 
     struct FakeExternalWithRenamedParentParam;

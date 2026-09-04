@@ -58,6 +58,7 @@
 //!   useless_downcast: true
 //!   unresolved_script: true
 //!   non_global_function_call: true
+//!   static_function_call_via_instance: true
 //!   short_wait_interval: true
 //!   state_function_signature: true
 //!   goto_state: true
@@ -342,6 +343,8 @@ pub struct Rules {
     pub unresolved_script: bool,
     /// The "Non-static function call" lint.
     pub non_global_function_call: bool,
+    /// The "Static function called via instance" lint.
+    pub static_function_call_via_instance: bool,
     /// The "Short wait/update interval" lint.
     pub short_wait_interval: bool,
     /// The "State function signature mismatch" lint.
@@ -423,6 +426,7 @@ impl Default for Rules {
             useless_downcast: true,
             unresolved_script: true,
             non_global_function_call: true,
+            static_function_call_via_instance: true,
             short_wait_interval: true,
             state_function_signature: true,
             goto_state: true,
@@ -574,6 +578,7 @@ mod tests {
         assert!(config.rules.useless_downcast);
         assert!(config.rules.unresolved_script);
         assert!(config.rules.non_global_function_call);
+        assert!(config.rules.static_function_call_via_instance);
         assert!(config.rules.short_wait_interval);
         assert!(config.rules.state_function_signature);
         assert!(config.rules.goto_state);
