@@ -816,4 +816,38 @@ mod tests {
             conflicting_script_versions_among(&root.path().join("Missing.psc"), &[]).is_empty()
         );
     }
+
+    #[test]
+    fn conflicting_script_versions_among_ignores_unreadable_candidates() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script = write_file(dir.path(), "Example.psc");
+        fs::write(&script, "content").expect("failed to write script");
+        let missing = dir.path().join("EXAMPLE.PSC");
+
+        assert!(conflicting_script_versions_among(&script, &[missing]).is_empty());
+    }
+
+    #[test]
+    fn conflicting_script_versions_among_deduplicates_and_sorts_conflicts() {
+        let primary = tempfile::tempdir().expect("failed to create primary dir");
+        let alternatives = tempfile::tempdir().expect("failed to create alternatives dir");
+        let script = write_file(primary.path(), "Example.psc");
+        fs::write(&script, "primary").expect("failed to write primary script");
+        let first = write_file(alternatives.path(), "EXAMPLE.PSC");
+        fs::write(&first, "first").expect("failed to write first alternative");
+
+        let second_dir = tempfile::tempdir().expect("failed to create second alternative dir");
+        let second = write_file(second_dir.path(), "example.psc");
+        fs::write(&second, "second").expect("failed to write second alternative");
+
+        let diagnostics =
+            conflicting_script_versions_among(&script, &[second.clone(), first.clone(), second]);
+
+        let mut expected = vec![first, second_dir.path().join("example.psc")];
+        expected.sort();
+        assert_eq!(diagnostics.len(), 2);
+        for (diagnostic, path) in diagnostics.iter().zip(expected) {
+            assert!(diagnostic.message.contains(&path.display().to_string()));
+        }
+    }
 }
