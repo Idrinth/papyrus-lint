@@ -162,6 +162,53 @@ fn invariant_loop_conditions_are_dispatched_for_functions_in_states() {
 }
 
 #[test]
+fn int_division_widening_is_reported_in_each_publicly_supported_context() {
+    let source = "ScriptName Example\n\nFloat Function Ratio(Int numerator, Int denominator)\n    Float localRatio = numerator / denominator\n    localRatio = numerator / denominator\n    Consume(numerator / denominator)\n    Return numerator / denominator\nEndFunction\n\nFunction Consume(Float value)\nEndFunction\n";
+
+    let diagnostics: Vec<_> = lint(source, &Config::default())
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "int-division-to-float")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 4);
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect::<Vec<_>>(),
+        [4, 5, 6, 7]
+    );
+    assert!(diagnostics.iter().all(|diagnostic| {
+        diagnostic.level() == "warning" && diagnostic.message.contains("Int/Int division")
+    }));
+}
+
+#[test]
+fn int_division_widening_ignores_safe_float_operands_through_public_api() {
+    let source = "ScriptName Example\n\nFloat Function Ratio(Int numerator, Int denominator)\n    Float first = numerator as Float / denominator\n    Float second = numerator / 2.0\n    Return first + second\nEndFunction\n";
+
+    assert!(lint(source, &Config::default())
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "int-division-to-float"));
+}
+
+#[test]
+fn disable_comment_suppresses_only_the_targeted_int_division_diagnostic() {
+    let source = "ScriptName Example\n\nFloat Function Ratio(Int numerator, Int denominator)\n    Float ignored = numerator / denominator ; @disable INT-DIVISION-TO-FLOAT\n    Return numerator / denominator\nEndFunction\n";
+
+    let diagnostics: Vec<_> = lint(source, &Config::default())
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "int-division-to-float")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+    assert!(diagnostics[0]
+        .message
+        .contains("returned from Float function"));
+}
+
+#[test]
 fn default_enabled_rules_can_be_disabled_through_deserialized_config() {
     let config: Config = serde_yaml::from_str(
         "rules:\n  script_name_collision: false\n  invariant_loop_condition: false\n",
