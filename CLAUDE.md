@@ -336,9 +336,17 @@ keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
 much fixing that rule matters for keeping a codebase maintainable, and an
 `auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
 separately, so the two can never drift apart — for every id in
-`KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. This
-only publishes the metadata; it's consumed by a separate, not-yet-built
-group-based filtering feature rather than filtering anything itself.
+`KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
+CLI's `--tag <kind>` flag builds on this metadata to run only one kind's
+worth of lints/fixes at a time, matched case-insensitively against a
+rule's `kinds` (e.g. `--tag style`): given without `fix`, it restricts the
+reported diagnostics to matching rules; given with `fix`, it also
+restricts which automatic fixes run, via `papyrus_lints::repair_filtered_by_tag`
+(a sibling of `repair_filtered`, which does the same for a single rule id
+via `fix --type`, both built atop a shared private `repair_with` that
+takes an `applies(rule) -> bool` predicate). `--tag` can't be combined
+with `--type`, since the two select overlapping things (one rule vs. one
+kind of rule), and an unrecognized tag is a usage error.
 
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are

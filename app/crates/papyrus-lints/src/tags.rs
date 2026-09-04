@@ -2,9 +2,9 @@
 //! fix its findings represent (e.g. `"style"`, `"performance"`,
 //! `"correctness"`, `"maintainability"`), how important addressing them is
 //! to keeping a codebase maintainable, and whether they're auto-fixable.
-//! This module only exposes that metadata — a later group-based filtering
-//! feature (e.g. "show me only performance findings", or "only auto-fixable
-//! ones") is expected to build on it, not implemented here.
+//! This module only exposes that metadata; [`crate::repair_filtered_by_tag`]
+//! and the CLI's `--tag <kind>` flag are what actually filter lints/fixes
+//! down to one kind at a time, built on top of it.
 
 use crate::FIXABLE_RULE_IDS;
 

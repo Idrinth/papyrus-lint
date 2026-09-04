@@ -1,8 +1,8 @@
 //! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] <path-to-achlist-or-psc>
-//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id>] [--line <n>] <path-to-achlist-or-psc>
+//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc>
+//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc>
 //! PapyrusLinterCLI init
 //! ```
 //!
@@ -53,6 +53,17 @@
 //! a fix it would apply changes the file's line count (e.g.
 //! `property-sorting` relocating a property's declaration), since a single
 //! original line number no longer identifies the same line in the result.
+//!
+//! `--tag <kind>` (matched case-insensitively against the kind keyword(s)
+//! published by [`papyrus_lints::tags`], e.g. `style`, `performance`,
+//! `correctness`, `maintainability`) restricts a run to just one class of
+//! rules instead of a single rule id, the tag-based counterpart to
+//! `--type`. Without `fix`, it limits the reported diagnostics to rules
+//! tagged with that kind; with `fix`, it also limits which automatic fixes
+//! run to that same kind (see [`papyrus_lints::repair_filtered_by_tag`]).
+//! Unlike `--type`/`--line`, `--tag` doesn't require `fix`. It can't be
+//! combined with `--type`, since the two select overlapping things (one
+//! rule vs. one kind of rule); an unrecognized tag is a usage error.
 //!
 //! With the `--json` flag (combinable with `fix`, in either argument
 //! order), the diagnostics report is printed to stdout as a single JSON
@@ -193,8 +204,8 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] <path-to-achlist-or-psc>\n       \
-PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id>] [--line <n>] <path-to-achlist-or-psc>\n\n\
+    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--tag <kind>] <path-to-achlist-or-psc>\n       \
+PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc>\n\n\
 PapyrusLinterCLI init\n\n\
 Lints every .psc script listed in the given .achlist file, or a single\n\
 .psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
@@ -234,7 +245,13 @@ Options:\n\
   --line <n>              fix only: apply the selected fix(es) only to this\n\
                           1-indexed line, leaving every other line untouched.\n\
                           Combinable with --type. Errors if the fix would\n\
-                          change the file's line count (e.g. property-sorting).\n\n\
+                          change the file's line count (e.g. property-sorting).\n\
+  --tag <kind>            Restrict to rules tagged with this kind (e.g. style,\n\
+                          performance, correctness, maintainability), matched\n\
+                          case-insensitively. Without fix, limits the reported\n\
+                          diagnostics; with fix, also limits which automatic\n\
+                          fixes run. Valid with or without fix. Can't be\n\
+                          combined with --type.\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n\n\
@@ -408,6 +425,7 @@ pub fn run(
     let mut cli_script_roots: Vec<String> = Vec::new();
     let mut type_filter: Option<String> = None;
     let mut line_filter: Option<String> = None;
+    let mut tag_filter: Option<String> = None;
     let mut color_flag: Option<String> = None;
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
     let mut input = args
@@ -454,6 +472,14 @@ pub fn run(
             line_filter = Some(value);
         } else if let Some(value) = arg.strip_prefix("--line=") {
             line_filter = Some(value.to_string());
+        } else if arg == "--tag" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            tag_filter = Some(value);
+        } else if let Some(value) = arg.strip_prefix("--tag=") {
+            tag_filter = Some(value.to_string());
         } else if arg == "--color" {
             let Some(value) = input.next() else {
                 let _ = write!(stderr, "{USAGE}");
@@ -498,6 +524,29 @@ pub fn run(
         let _ = write!(stderr, "{USAGE}");
         return 2;
     }
+
+    if type_filter.is_some() && tag_filter.is_some() {
+        let _ = writeln!(stderr, "error: --type and --tag can't be combined");
+        return 2;
+    }
+
+    let tag_filter: Option<String> = match tag_filter {
+        Some(value) => {
+            let normalized = value.to_ascii_lowercase();
+            let known = papyrus_lints::tags::RULE_TAGS.iter().any(|rule_tags| {
+                rule_tags
+                    .kinds
+                    .iter()
+                    .any(|kind| kind.eq_ignore_ascii_case(&normalized))
+            });
+            if !known {
+                let _ = writeln!(stderr, "error: unknown tag '{value}'");
+                return 2;
+            }
+            Some(normalized)
+        }
+        None => None,
+    };
 
     let rule_filter: Option<&'static str> = match type_filter {
         Some(value) => {
@@ -743,7 +792,12 @@ pub fn run(
         };
 
         let source = if fix {
-            let repaired = papyrus_lints::repair_filtered(&source, &lint_config, rule_filter);
+            let repaired = match tag_filter.as_deref() {
+                Some(tag) => {
+                    papyrus_lints::repair_filtered_by_tag(&source, &lint_config, Some(tag))
+                }
+                None => papyrus_lints::repair_filtered(&source, &lint_config, rule_filter),
+            };
             let repaired = match target_line {
                 Some(line) => match papyrus_lints::restrict_to_line(&source, &repaired, line) {
                     Some(restricted) => restricted,
@@ -805,6 +859,16 @@ pub fn run(
                     ),
                 );
             }
+        }
+        if let Some(tag) = tag_filter.as_deref() {
+            diagnostics.retain(|diagnostic| {
+                papyrus_lints::tags::tags_for(diagnostic.rule).is_some_and(|rule_tags| {
+                    rule_tags
+                        .kinds
+                        .iter()
+                        .any(|kind| kind.eq_ignore_ascii_case(tag))
+                })
+            });
         }
         diagnostics.sort_by_key(|d| (d.line, d.column));
 
@@ -1779,6 +1843,116 @@ mod tests {
 
         assert_eq!(code, 2);
         assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn tag_filter_restricts_reported_diagnostics_to_the_matching_kind() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example   \n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--tag=style".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stderr.is_empty());
+        assert_eq!(code, 0);
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(!stdout.contains("[forbidden-functions]"));
+    }
+
+    #[test]
+    fn tag_filter_matches_case_insensitively() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--tag=STYLE".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stderr.is_empty());
+        assert_eq!(code, 0);
+        assert!(stdout.contains("[trailing-whitespace]"));
+    }
+
+    #[test]
+    fn tag_filter_works_without_fix() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
+        );
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--tag=performance".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stderr.is_empty());
+        assert_eq!(code, 1);
+    }
+
+    #[test]
+    fn fix_tag_filter_applies_only_fixes_in_that_kind() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n\nFunction DoThing(GlobalVariable akGlobal)\n    akGlobal.GetValueInt()  \nEndFunction\n",
+        );
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--tag=performance".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert!(stderr.is_empty());
+        assert_eq!(code, 0);
+        let fixed = fs::read_to_string(&script_path).unwrap();
+        assert!(!fixed.contains("GetValueInt"));
+        // trailing-whitespace is tagged "style", not "performance", so it's
+        // left in place by --tag=performance.
+        assert!(fixed.contains("  \n"));
+    }
+
+    #[test]
+    fn tag_and_type_filters_cannot_be_combined() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--type=trailing-whitespace".to_string(),
+            "--tag=style".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("--type and --tag can't be combined"));
+    }
+
+    #[test]
+    fn tag_filter_rejects_an_unknown_tag() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--tag=made-up-tag".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("unknown tag 'made-up-tag'"));
     }
 
     #[test]

@@ -347,6 +347,8 @@ PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
 PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
 PapyrusLinterCLI fix --line 12 --type trailing-whitespace path/to/Example.psc
+PapyrusLinterCLI --tag style path/to/project.achlist
+PapyrusLinterCLI fix --tag style path/to/project.achlist
 PapyrusLinterCLI --json path/to/project.achlist
 PapyrusLinterCLI --json fix path/to/project.achlist
 PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
@@ -451,6 +453,19 @@ out if applying the selected fix(es) would change the file's line count
 (e.g. `property-sorting` relocating a property's declaration), since a
 single original line number no longer identifies the same line in the
 result in that case.
+
+Every rule is also tagged with one or more kind keywords — `style`,
+`performance`, `correctness`, or `maintainability` — describing what class
+of fix its findings represent. `--tag <kind>` restricts a run to just one
+of those kinds instead of a single rule id, matched case-insensitively
+(e.g. `--tag style` or `--tag Performance`). Given without `fix`, it
+limits the reported diagnostics to rules tagged with that kind; given
+alongside `fix`, it also limits which automatic fixes run to that same
+kind. Unlike `--type`/`--line`, `--tag` doesn't require `fix` — it works
+just as well on a plain lint run. It can't be combined with `--type`,
+since the two select overlapping things (one specific rule vs. one whole
+kind of rule), and it errors out on a tag that doesn't match any rule's
+kind keyword.
 
 Given the `--json` flag (combinable with `fix`, in either argument order),
 the CLI prints a single JSON document to stdout instead of the plain-text
