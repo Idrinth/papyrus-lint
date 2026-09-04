@@ -1,0 +1,561 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/ast-cache-entry.schema.json",
+  "title": "Papyrus Lint AST cache entry",
+  "description": "One `<md5-of-source-path>.json` file inside an `ast-cache` directory next to a running PapyrusLinterCLI/desktop app binary (see app/crates/papyrus-lint-core/src/ast_cache.rs). This describes entries whose `linter_version` is at or above MIN_COMPATIBLE_VERSION (currently 1.16.0) in that file: an entry is only ever read back by a linter build whose own MIN_COMPATIBLE_VERSION accepts its linter_version, so a consuming tool should apply the same check -- against its own known-compatible floor -- before relying on this schema, and must otherwise treat the entry as opaque and fall back to re-parsing the source itself. MIN_COMPATIBLE_VERSION only moves forward when a release changes this layout or the embedded `ast` shape incompatibly, so a schema fetched at a given linter_version stays valid for every later entry until the next such bump.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "modified_unix_secs",
+    "content_md5",
+    "linter_version",
+    "ast"
+  ],
+  "properties": {
+    "modified_unix_secs": {
+      "description": "The cached source file's last-modified time, in whole seconds since the Unix epoch, at the moment this entry was written. A cache hit requires this to still match the source file's current mtime.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "content_md5": {
+      "description": "Lowercase hex MD5 digest of the cached source file's exact byte content at the moment this entry was written. A cache hit requires this to still match a fresh digest of the source's current content.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "linter_version": {
+      "description": "The `major.minor.patch` version of the linter release that wrote this entry (Cargo's CARGO_PKG_VERSION). A cache hit requires this to be at or above the reading binary's own MIN_COMPATIBLE_VERSION -- an exact match against the running version is never required, so an ordinary linter update doesn't discard an otherwise still-valid cache.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "ast": {
+      "description": "The parsed script, exactly as produced by papyrus_parser::parse() and serialized via serde -- see app/crates/papyrus-parser/src/ast.rs. Enums with data serialize externally-tagged (e.g. an Expr::Binary value is `{\"Binary\": {\"left\": ..., \"op\": ..., \"right\": ...}}`); enums without data (e.g. BinaryOp, or Expr::Self_) serialize as their bare variant name string.",
+      "$ref": "#/$defs/script"
+    }
+  },
+  "$defs": {
+    "script": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "extends",
+        "is_hidden",
+        "is_conditional",
+        "imports",
+        "properties",
+        "variables",
+        "functions",
+        "states",
+        "line"
+      ],
+      "properties": {
+        "name": { "type": "string" },
+        "extends": { "type": ["string", "null"] },
+        "is_hidden": { "type": "boolean" },
+        "is_conditional": { "type": "boolean" },
+        "imports": { "type": "array", "items": { "type": "string" } },
+        "properties": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/propertyDecl" }
+        },
+        "variables": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/variableDecl" }
+        },
+        "functions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/functionDecl" }
+        },
+        "states": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stateDecl" }
+        },
+        "line": {
+          "description": "The 1-indexed line the ScriptName keyword itself starts on.",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "typeName": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "is_array"],
+      "properties": {
+        "name": { "type": "string" },
+        "is_array": { "type": "boolean" }
+      }
+    },
+    "propertyDecl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type_name",
+        "name",
+        "value",
+        "is_auto",
+        "is_auto_read_only",
+        "is_hidden",
+        "is_conditional",
+        "line"
+      ],
+      "properties": {
+        "type_name": { "$ref": "#/$defs/typeName" },
+        "name": { "type": "string" },
+        "value": {
+          "anyOf": [{ "$ref": "#/$defs/expr" }, { "type": "null" }]
+        },
+        "is_auto": { "type": "boolean" },
+        "is_auto_read_only": { "type": "boolean" },
+        "is_hidden": { "type": "boolean" },
+        "is_conditional": { "type": "boolean" },
+        "line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "variableDecl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type_name", "name", "value", "is_conditional", "line"],
+      "properties": {
+        "type_name": { "$ref": "#/$defs/typeName" },
+        "name": { "type": "string" },
+        "value": {
+          "anyOf": [{ "$ref": "#/$defs/expr" }, { "type": "null" }]
+        },
+        "is_conditional": { "type": "boolean" },
+        "line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "param": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type_name", "name", "default"],
+      "properties": {
+        "type_name": { "$ref": "#/$defs/typeName" },
+        "name": { "type": "string" },
+        "default": {
+          "anyOf": [{ "$ref": "#/$defs/expr" }, { "type": "null" }]
+        }
+      }
+    },
+    "functionDecl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "return_type",
+        "params",
+        "is_global",
+        "is_native",
+        "is_event",
+        "body",
+        "line",
+        "state"
+      ],
+      "properties": {
+        "name": { "type": "string" },
+        "return_type": {
+          "anyOf": [{ "$ref": "#/$defs/typeName" }, { "type": "null" }]
+        },
+        "params": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/param" }
+        },
+        "is_global": { "type": "boolean" },
+        "is_native": { "type": "boolean" },
+        "is_event": { "type": "boolean" },
+        "body": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stmt" }
+        },
+        "line": { "type": "integer", "minimum": 1 },
+        "state": {
+          "description": "The name of the State block this function/event is declared in, or null when it's declared directly on the script (the \"empty state\").",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "stateDecl": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "is_auto", "functions", "line"],
+      "properties": {
+        "name": { "type": "string" },
+        "is_auto": { "type": "boolean" },
+        "functions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/functionDecl" }
+        },
+        "line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ifBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition", "body", "line", "col"],
+      "properties": {
+        "condition": { "$ref": "#/$defs/expr" },
+        "body": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stmt" }
+        },
+        "line": { "type": "integer", "minimum": 1 },
+        "col": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "stmt": {
+      "description": "A statement, externally tagged by its variant name.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["VarDecl"],
+          "properties": { "VarDecl": { "$ref": "#/$defs/variableDecl" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Assign"],
+          "properties": {
+            "Assign": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["target", "op", "value", "line"],
+              "properties": {
+                "target": { "$ref": "#/$defs/expr" },
+                "op": { "$ref": "#/$defs/assignOp" },
+                "value": { "$ref": "#/$defs/expr" },
+                "line": { "type": "integer", "minimum": 1 }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Expr"],
+          "properties": {
+            "Expr": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "line"],
+              "properties": {
+                "value": { "$ref": "#/$defs/expr" },
+                "line": { "type": "integer", "minimum": 1 }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Return"],
+          "properties": {
+            "Return": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "line"],
+              "properties": {
+                "value": {
+                  "anyOf": [{ "$ref": "#/$defs/expr" }, { "type": "null" }]
+                },
+                "line": { "type": "integer", "minimum": 1 }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["If"],
+          "properties": {
+            "If": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "branches",
+                "else_body",
+                "else_line",
+                "else_col",
+                "line"
+              ],
+              "properties": {
+                "branches": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/ifBranch" }
+                },
+                "else_body": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/stmt" }
+                },
+                "else_line": {
+                  "description": "The line the Else keyword itself starts on, or null when this If has no Else clause at all -- distinguishing that from an empty Else clause, which both leave else_body empty.",
+                  "type": ["integer", "null"],
+                  "minimum": 1
+                },
+                "else_col": {
+                  "type": ["integer", "null"],
+                  "minimum": 1
+                },
+                "line": { "type": "integer", "minimum": 1 }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["While"],
+          "properties": {
+            "While": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["condition", "body", "line", "col"],
+              "properties": {
+                "condition": { "$ref": "#/$defs/expr" },
+                "body": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/stmt" }
+                },
+                "line": { "type": "integer", "minimum": 1 },
+                "col": { "type": "integer", "minimum": 1 }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "assignOp": {
+      "type": "string",
+      "enum": [
+        "Assign",
+        "AddAssign",
+        "SubAssign",
+        "MulAssign",
+        "DivAssign",
+        "ModAssign"
+      ]
+    },
+    "binaryOp": {
+      "type": "string",
+      "enum": [
+        "Add",
+        "Sub",
+        "Mul",
+        "Div",
+        "Mod",
+        "Eq",
+        "NotEq",
+        "Gt",
+        "Lt",
+        "GtEq",
+        "LtEq",
+        "And",
+        "Or"
+      ]
+    },
+    "unaryOp": {
+      "type": "string",
+      "enum": ["Neg", "Not"]
+    },
+    "intFormat": {
+      "description": "The notation an integer literal was written with in source: plain decimal digits, or a 0x/0X-prefixed hexadecimal sequence.",
+      "type": "string",
+      "enum": ["Decimal", "Hexadecimal"]
+    },
+    "literal": {
+      "description": "A literal value, externally tagged by its variant name; None (the Papyrus null literal) has no data and serializes as the bare string \"None\".",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Int"],
+          "properties": {
+            "Int": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "format"],
+              "properties": {
+                "value": { "type": "integer" },
+                "format": { "$ref": "#/$defs/intFormat" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Float"],
+          "properties": { "Float": { "type": "number" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["String"],
+          "properties": { "String": { "type": "string" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Bool"],
+          "properties": { "Bool": { "type": "boolean" } }
+        },
+        { "const": "None" }
+      ]
+    },
+    "expr": {
+      "description": "An expression, externally tagged by its variant name; Self_ and Parent have no data and serialize as their bare variant name string.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Literal"],
+          "properties": { "Literal": { "$ref": "#/$defs/literal" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Identifier"],
+          "properties": { "Identifier": { "type": "string" } }
+        },
+        { "const": "Self_" },
+        { "const": "Parent" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Binary"],
+          "properties": {
+            "Binary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["left", "op", "right"],
+              "properties": {
+                "left": { "$ref": "#/$defs/expr" },
+                "op": { "$ref": "#/$defs/binaryOp" },
+                "right": { "$ref": "#/$defs/expr" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Unary"],
+          "properties": {
+            "Unary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["op", "operand"],
+              "properties": {
+                "op": { "$ref": "#/$defs/unaryOp" },
+                "operand": { "$ref": "#/$defs/expr" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Call"],
+          "properties": {
+            "Call": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["callee", "args", "line", "col"],
+              "properties": {
+                "callee": { "$ref": "#/$defs/expr" },
+                "args": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/expr" }
+                },
+                "line": { "type": "integer", "minimum": 1 },
+                "col": { "type": "integer", "minimum": 1 }
+              }
+            }
+          }
+        },
+        {
+          "description": "A named argument in a call's argument list (func(argB = 1)); only ever appears as an element of Call.args.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["NamedArg"],
+          "properties": {
+            "NamedArg": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "value"],
+              "properties": {
+                "name": { "type": "string" },
+                "value": { "$ref": "#/$defs/expr" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Member"],
+          "properties": {
+            "Member": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["object", "property"],
+              "properties": {
+                "object": { "$ref": "#/$defs/expr" },
+                "property": { "type": "string" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Index"],
+          "properties": {
+            "Index": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["object", "index"],
+              "properties": {
+                "object": { "$ref": "#/$defs/expr" },
+                "index": { "$ref": "#/$defs/expr" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Cast"],
+          "properties": {
+            "Cast": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "type_name"],
+              "properties": {
+                "value": { "$ref": "#/$defs/expr" },
+                "type_name": { "type": "string" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["NewArray"],
+          "properties": {
+            "NewArray": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type_name", "size"],
+              "properties": {
+                "type_name": { "$ref": "#/$defs/typeName" },
+                "size": { "$ref": "#/$defs/expr" }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
