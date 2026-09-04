@@ -166,6 +166,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.ref_name }}" cli-dist/* --clobber --repo "${{ github.repository }}"
 
+  update-pages:
+    name: Update GitHub Pages with release version
+    needs: release
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
+    with:
+      version: ${{ github.ref_name }}
+
   vscode-plugin:
     runs-on: ubuntu-latest
     permissions:

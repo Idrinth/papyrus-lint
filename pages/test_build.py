@@ -106,7 +106,11 @@ PapyrusLinterCLI example.psc
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
-                "<main><!--LINT_TABLE:Formatting--><!--CLI_EXAMPLES--></main>",
+                "<main><!--LINT_TABLE:Formatting--><!--CLI_EXAMPLES--><!--DOCS_LIST--><!--VERSION--></main>",
+                encoding="utf-8",
+            )
+            (pages_dir / "docs.template.html").write_text(
+                "<!--DOC_TITLE--><!--DOC_DESCRIPTION--><!--DOC_CONTENT-->",
                 encoding="utf-8",
             )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
@@ -121,20 +125,25 @@ PapyrusLinterCLI example.psc
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
                 patch.object(page_builder, "ASSETS", {"copied.png": source_asset}),
+                patch.object(page_builder, "DOCS", []),
             ):
-                page_builder.build(out_dir)
+                page_builder.build(out_dir, version="v1.2.3")
 
             output = (out_dir / "index.html").read_text(encoding="utf-8")
             self.assertIn("<code>spacing</code>", output)
             self.assertIn("PapyrusLinterCLI example.psc", output)
+            self.assertIn("v1.2.3", output)
             self.assertNotIn("<!--LINT_TABLE", output)
             self.assertNotIn("<!--CLI_EXAMPLES-->", output)
+            self.assertNotIn("<!--DOCS_LIST-->", output)
+            self.assertNotIn("<!--VERSION-->", output)
             self.assertEqual(
                 (out_dir / "styles.css").read_text(encoding="utf-8"),
                 "main { color: red; }",
             )
             self.assertEqual((out_dir / "assets" / "copied.png").read_bytes(), b"image bytes")
             self.assertFalse((out_dir / "stale.txt").exists())
+            self.assertTrue((out_dir / "docs" / "index.html").exists())
 
     def test_build_rejects_a_missing_lint_table_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
