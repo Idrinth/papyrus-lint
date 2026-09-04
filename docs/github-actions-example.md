@@ -1,7 +1,39 @@
 # Using PapyrusLinterCLI in a GitHub Action
 
-There's no dedicated GitHub Action for Papyrus Lint (yet) — instead, download
-the standalone `PapyrusLinterCLI` binary attached to the [latest
+The preferred way to lint a project in CI is the [Papyrus Lint GitHub
+Action](https://github.com/marketplace/actions/papyrus-lint)
+(`idrinth/papyrus-lint-action`): it downloads `PapyrusLinterCLI` for you,
+handles AST caching between runs itself, and — when run on a pull request —
+posts findings as inline review comments on the changed lines. A minimal
+workflow using it looks like:
+
+```yaml
+name: Papyrus Lint
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: idrinth/papyrus-lint-action@v1
+        with:
+          path: path/to/project.achlist
+```
+
+See the action's [Marketplace
+listing](https://github.com/marketplace/actions/papyrus-lint) for its full
+set of inputs (e.g. `version`, `config`, `script-root`, `fail-on-problems`)
+and outputs.
+
+## Downloading the CLI binary manually instead
+
+If you'd rather not depend on the action, download the standalone
+`PapyrusLinterCLI` binary attached to the [latest
 release](https://github.com/Idrinth/papyrus-lint/releases/latest) and run it
 against your project's `.achlist` directly. A minimal workflow that lints on
 every push and pull request looks like:
