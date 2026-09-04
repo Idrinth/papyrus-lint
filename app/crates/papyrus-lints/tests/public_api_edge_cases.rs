@@ -1,10 +1,32 @@
 //! Edge-case coverage for the crate's black-box lint and repair API.
 
 use papyrus_lints::{
+    argument_types::{ExternalSignatures, ParamInfo},
     lint, repair, repair_filtered, restrict_to_line,
     tags::{tags_for, Importance, RULE_TAGS},
     Config, KNOWN_RULE_IDS,
 };
+
+struct FunctionKindResolver;
+
+impl ExternalSignatures for FunctionKindResolver {
+    fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<ParamInfo>> {
+        None
+    }
+
+    fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        if !type_name.eq_ignore_ascii_case("Library") {
+            return None;
+        }
+        if function_name.eq_ignore_ascii_case("InstanceMethod") {
+            Some(false)
+        } else if function_name.eq_ignore_ascii_case("GlobalMethod") {
+            Some(true)
+        } else {
+            None
+        }
+    }
+}
 
 #[test]
 fn published_rule_tags_have_the_same_order_and_cardinality_as_known_rules() {
@@ -206,6 +228,42 @@ fn disable_comment_suppresses_only_the_targeted_int_division_diagnostic() {
     assert!(diagnostics[0]
         .message
         .contains("returned from Float function"));
+}
+
+#[test]
+fn non_global_calls_use_external_function_metadata_through_the_public_api() {
+    let source = "ScriptName Example\n\nFunction Run()\n    Library.InstanceMethod()\n    Library.GlobalMethod()\n    Library.UnknownMethod()\nEndFunction\n";
+
+    let diagnostics: Vec<_> = lint_with_function_kinds(source, &Config::default())
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "non-global-function-call")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].rule, "non-global-function-call");
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 27));
+    assert_eq!(diagnostics[0].level(), "error");
+    assert!(diagnostics[0].message.contains("Library.InstanceMethod()"));
+}
+
+#[test]
+fn non_global_calls_honor_disable_comments_and_the_rule_switch() {
+    let source = "ScriptName Example\n\nFunction Run()\n    Library.InstanceMethod() ; @disable NON-GLOBAL-FUNCTION-CALL\nEndFunction\n";
+    assert!(lint_with_function_kinds(source, &Config::default())
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "non-global-function-call"));
+
+    let disabled: Config =
+        serde_yaml::from_str("rules:\n  non_global_function_call: false\n").unwrap();
+    let source =
+        "ScriptName Example\n\nFunction Run()\n    Library.InstanceMethod()\nEndFunction\n";
+    assert!(lint_with_function_kinds(source, &disabled)
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "non-global-function-call"));
+}
+
+fn lint_with_function_kinds(source: &str, config: &Config) -> Vec<papyrus_lints::Diagnostic> {
+    papyrus_lints::lint_with_external_arguments(source, config, &mut FunctionKindResolver)
 }
 
 #[test]
