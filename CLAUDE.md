@@ -497,6 +497,27 @@ Before merging a pull request, make sure its branch is up to date with
 `the-one` (the default branch). Merge or rebase `the-one` into the branch
 first if it has fallen behind, so CI runs against the current base.
 
+## Pull request labels
+
+Every pull request must be tagged with at least one label naming the
+component(s) it affects:
+
+- `component: sublime lint plugin`
+- `component: vscode extension`
+- `component: frontend`
+- `component: ci`
+- `component: parsing`
+- `component: documentation`
+- `component: pages`
+- `component: gui`
+- `component: cli`
+
+These labels are intended to let a future revision of the `release-notes`
+job (see Releases above) group its changelist by component instead of
+listing merged pull requests flat; the job does not implement that
+grouping yet, so mislabeling a pull request has no effect on today's
+release notes.
+
 ## Current state
 
 The parser (`app/crates/papyrus-parser`) understands scripts, imports,
