@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
@@ -30,6 +31,14 @@ class MarkdownHelpersTest(unittest.TestCase):
     def test_extract_section_rejects_a_missing_heading(self) -> None:
         with self.assertRaisesRegex(SystemExit, "heading not found"):
             page_builder.extract_section(["## Present"], "Missing", level=2)
+
+    def test_extract_section_ignores_same_text_at_a_different_level(self) -> None:
+        lines = ["# Wanted", "wrong", "## Wanted", "right", "### Child", "also right"]
+
+        self.assertEqual(
+            page_builder.extract_section(lines, "Wanted", level=2),
+            ["right", "### Child", "also right"],
+        )
 
     def test_render_inline_converts_supported_markdown_and_escapes_html(self) -> None:
         rendered = page_builder.render_inline(
@@ -159,6 +168,14 @@ class MarkdownHelpersTest(unittest.TestCase):
             result,
         )
 
+    def test_markdown_to_html_flushes_a_final_paragraph(self) -> None:
+        result = page_builder.markdown_to_html(["A paragraph", "continued without a blank line."])
+
+        self.assertEqual(result, "<p>A paragraph continued without a blank line.</p>")
+
+    def test_first_paragraph_returns_empty_text_when_there_is_no_prose(self) -> None:
+        self.assertEqual(page_builder.first_paragraph(["# Title", "", "## Subtitle"]), "")
+
 
 class DocsRenderingTest(unittest.TestCase):
     def test_render_doc_renders_markdown_metadata_links_and_source(self) -> None:
@@ -197,6 +214,22 @@ class DocsRenderingTest(unittest.TestCase):
 
         self.assertEqual(title, "notes.md")
         self.assertEqual(description, "Opening paragraph.")
+
+    def test_render_doc_uses_default_repository_source_link(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "notes.md").write_text("# Notes\n", encoding="utf-8")
+
+            with (
+                patch.object(page_builder, "DOCS_DIR", docs_dir),
+                patch.object(page_builder, "GITHUB_BLOB_BASE", "https://example.test/repo"),
+            ):
+                _, description, content = page_builder.render_doc(
+                    {"filename": "notes.md", "slug": "notes", "kind": "markdown"}
+                )
+
+        self.assertEqual(description, "")
+        self.assertIn('href="https://example.test/repo/docs/notes.md"', content)
 
     def test_render_doc_renders_json_schema_and_plain_text(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -360,6 +393,16 @@ class MinifyTest(unittest.TestCase):
 
         self.assertIn(pre_block, result)
 
+    def test_minify_html_preserves_multiple_pre_blocks_in_order(self) -> None:
+        first = "<pre>first\n  indented</pre>"
+        second = "<pre><code>second\n\nlast</code></pre>"
+
+        result = page_builder.minify_html(f"<main>\n{first}\n<p>middle</p>\n{second}\n</main>")
+
+        self.assertIn(first, result)
+        self.assertIn(second, result)
+        self.assertLess(result.index(first), result.index(second))
+
     def test_minify_css_strips_comments_and_collapses_whitespace(self) -> None:
         source = """/* header */
         main {
@@ -479,6 +522,31 @@ command
             ):
                 with self.assertRaisesRegex(SystemExit, "missing marker"):
                     page_builder.build(root / "out")
+
+    def test_main_uses_default_version_and_reports_output_directory(self) -> None:
+        output_dir = Path("custom-output")
+
+        with (
+            patch("sys.argv", ["build.py", "--out", str(output_dir)]),
+            patch.object(page_builder, "build") as build,
+            patch("sys.stdout", new_callable=StringIO) as stdout,
+        ):
+            page_builder.main()
+
+        build.assert_called_once_with(output_dir, "")
+        self.assertEqual(stdout.getvalue(), f"Built site into {output_dir}\n")
+
+    def test_main_passes_an_explicit_version_to_build(self) -> None:
+        output_dir = Path("versioned-output")
+
+        with (
+            patch("sys.argv", ["build.py", "--out", str(output_dir), "--version", "v9.8.7"]),
+            patch.object(page_builder, "build") as build,
+            patch("sys.stdout", new_callable=StringIO),
+        ):
+            page_builder.main()
+
+        build.assert_called_once_with(output_dir, "v9.8.7")
 
 
 if __name__ == "__main__":
