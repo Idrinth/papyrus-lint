@@ -2,9 +2,13 @@
 """Recommends the next semantic version to tag, based on the `type: *` labels
 carried by the pull requests merged since the latest release (see the
 `semver-advisory` CI job, which gathers those pull requests via the GitHub
-API and passes them to this script as a JSON file). This is advisory only:
-it never creates a tag or changes any file, it just reports a recommendation
-for whoever prepares the next release.
+API and passes them to this script as a JSON file). A pull request whose
+`component: *` labels are exclusively among CI, pages, and documentation
+always recommends a patch bump instead, regardless of its `type: *` label(s)
+(if any): none of those components reach the end user, so they can never
+justify a major or minor bump. This is advisory only: it never creates a
+tag or changes any file, it just reports a recommendation for whoever
+prepares the next release.
 
 Usage: semver_advisory.py <pull-requests.json> [current-tag]
 
@@ -23,6 +27,11 @@ BREAKING_LABEL = "type: breaking change"
 FEATURE_LABEL = "type: feature"
 PATCH_LABELS = {"type: refactoring", "type: tests", "type: documentation"}
 
+# Components that never reach the end user: a pull request touching only
+# these (per its `component: *` labels) is always a patch-level change,
+# whatever `type: *` label(s) it also carries.
+NON_USER_FACING_COMPONENTS = {"component: ci", "component: pages", "component: documentation"}
+
 BUMP_RANK = {"major": 0, "minor": 1, "patch": 2}
 
 TAG_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
@@ -32,8 +41,14 @@ def classify_pull_request(labels: list[str]) -> str | None:
     """The version-bump level ("major"/"minor"/"patch") implied by one pull
     request's labels, or None if it carries none of the recognized `type: *`
     labels. A pull request can carry more than one; breaking change beats
-    feature beats the patch-level labels (refactoring/tests/documentation)."""
+    feature beats the patch-level labels (refactoring/tests/documentation).
+    A pull request whose `component: *` labels are all in
+    NON_USER_FACING_COMPONENTS is always "patch", overriding that
+    precedence, since none of those components affect the end user."""
     normalized = {label.strip().lower() for label in labels}
+    components = {label for label in normalized if label.startswith("component: ")}
+    if components and components <= NON_USER_FACING_COMPONENTS:
+        return "patch"
     if BREAKING_LABEL in normalized:
         return "major"
     if FEATURE_LABEL in normalized:

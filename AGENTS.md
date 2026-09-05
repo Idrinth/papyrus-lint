@@ -248,7 +248,12 @@ binary target that crate also defines.
   precedence wins across all of them: any `type: breaking change` recommends
   a major bump, else any `type: feature` recommends a minor bump, else any
   `type: refactoring`/`type: tests`/`type: documentation` recommends a patch
-  bump. A pull request with none of those labels contributes nothing. The
+  bump. A pull request with none of those labels contributes nothing. This
+  is overridden for a pull request whose `component: *` label(s) are
+  exclusively among `component: ci`, `component: pages`, and
+  `component: documentation`: it always recommends a patch bump instead,
+  regardless of its `type: *` label(s) (if any), since none of those three
+  components reach the end user on their own. The
   recommendation (a per-pull-request table plus the suggested next version)
   is posted to the job's step summary only; it's advisory, so it never
   creates a tag, edits a file, or fails the job — the actual release still
