@@ -245,10 +245,22 @@ on all pull requests.
 
 A push to `the-one` that touches `pages/**`, `README.md`, `docs/**`,
 `resources/**`, or `app/src-tauri/icons/icon.png` (or the workflow file
-itself), or a manual `workflow_dispatch` run, builds and deploys a
-discoverability landing page to GitHub Pages. The repository's Pages
-source must be set to "GitHub Actions" (Settings → Pages) for this
-workflow to publish successfully.
+itself), a manual `workflow_dispatch` run, or `release.yml`'s
+`update-pages` job (see Releases below) invoking it as a `workflow_call`,
+builds and deploys a discoverability landing page to GitHub Pages. The
+repository's Pages source must be set to "GitHub Actions" (Settings →
+Pages) for this workflow to publish successfully.
+
+The page's footer displays the current version via a `<!--VERSION-->`
+placeholder that `pages/build.py --version <tag>` fills in the same way
+as the lint tables/CLI examples below. The workflow resolves that
+version itself before building: it takes the caller-supplied `version`
+input if `workflow_call`/`workflow_dispatch` provided one, otherwise
+falls back to querying `gh release view` for the repository's latest
+release tag; if neither resolves (e.g. no release exists yet), the page
+shows "unreleased". This keeps an ordinary content-triggered deploy
+showing the actual latest release, while `release.yml`'s `update-pages`
+job pins it explicitly to the tag it just built.
 
 `pages/index.template.html` is a plain HTML/CSS page (no frontend
 framework or bundler) styled to match the desktop app's frontend
@@ -368,6 +380,12 @@ The setup.exe upload also sets `primary_mod_manager_download` and
 the mod-level version shown on the page. The Nexus API has no endpoint
 to update a mod's page description, so `docs/nexuspage.bbcode` is not synced
 by this job and still needs to be pasted onto the mod page by hand.
+
+An `update-pages` job (after `release`) invokes `pages.yml` (see GitHub
+Pages above) as a reusable `workflow_call`, passing the tag
+(`github.ref_name`) as its `version` input, so the deployed GitHub Pages
+site's footer reflects the just-released version immediately rather than
+waiting for the next content-triggered deploy.
 
 ## Merging
 
