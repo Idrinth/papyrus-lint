@@ -88,7 +88,7 @@ class MarkdownHelpersTest(unittest.TestCase):
             [{"id": "abc123", "title": "1.0.0 <overview>"}]
         )
 
-        self.assertIn('src="https://www.youtube.com/embed/abc123"', result)
+        self.assertIn('src="https://www.youtube-nocookie.com/embed/abc123"', result)
         self.assertIn("1.0.0 &lt;overview&gt;", result)
         self.assertNotIn("<overview>", result)
 
@@ -158,7 +158,7 @@ PapyrusLinterCLI example.psc
             self.assertTrue((out_dir / "docs" / "index.html").exists())
 
             videos_output = (out_dir / "videos.html").read_text(encoding="utf-8")
-            self.assertIn("youtube.com/embed/", videos_output)
+            self.assertIn("youtube-nocookie.com/embed/", videos_output)
             self.assertNotIn("<!--VIDEOS_LIST-->", videos_output)
 
     def test_build_rejects_a_missing_lint_table_marker(self) -> None:
