@@ -9,8 +9,30 @@ permissions:
   contents: read
 
 jobs:
+  labels:
+    name: Pull request labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require component and type labels
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const names = context.payload.pull_request.labels.map((label) => label.name);
+            const missing = [];
+            if (!names.some((name) => name.startsWith('component: '))) {
+              missing.push('a "component: ..." label');
+            }
+            if (!names.some((name) => name.startsWith('type: '))) {
+              missing.push('a "type: ..." label');
+            }
+            if (missing.length > 0) {
+              core.setFailed(`This pull request is missing ${missing.join(' and ')}. See CONTRIBUTING.md for the required labels.`);
+            }
+
   yaml:
     name: Rules YAML lint
+    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -27,6 +49,7 @@ jobs:
 
   bbcode:
     name: CI scripts and Nexus page BBCode lint
+    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -65,6 +88,7 @@ jobs:
 
   pages:
     name: GitHub Pages builder tests
+    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -104,6 +128,7 @@ jobs:
 
   pages-browser:
     name: GitHub Pages browser smoke test
+    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -126,6 +151,7 @@ jobs:
   pages-lighthouse:
     name: GitHub Pages Lighthouse check
     if: github.event_name == 'pull_request'
+    needs: labels
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -236,6 +262,7 @@ jobs:
 
   markdown:
     name: Markdown lint
+    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -247,6 +274,7 @@ jobs:
 
   sublime-extension:
     name: Sublime Text extension tests
+    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -287,6 +315,7 @@ jobs:
 
   stylelint:
     name: Frontend CSS lint
+    needs: labels
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -308,6 +337,7 @@ jobs:
 
   frontend:
     name: Frontend (typecheck & build)
+    needs: labels
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -352,6 +382,7 @@ jobs:
 
   frontend-browser:
     name: Frontend (in-browser layout tests)
+    needs: labels
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -385,6 +416,7 @@ jobs:
   app-lighthouse:
     name: Frontend Lighthouse check
     if: github.event_name == 'pull_request'
+    needs: labels
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -495,6 +527,7 @@ jobs:
 
   vscode-extension:
     name: VS Code extension (test & compile)
+    needs: labels
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -539,6 +572,7 @@ jobs:
 
   rust-build:
     name: Rust (fmt, clippy, check)
+    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

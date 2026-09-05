@@ -159,6 +159,13 @@ workflow group release notes by component instead of listing merged
 pull requests flat; that grouping isn't implemented yet, so mislabeling
 a pull request has no effect on today's release notes.
 
+Every pull request must also carry at least one `type: ...` label (e.g.
+`type: feature`, `type: documentation`) naming the kind of change it
+makes; unlike the component labels above, this set isn't fixed, so add a
+new `type: ...` label if a pull request doesn't fit an existing one. CI's
+`labels` job fails before running the rest of CI if either requirement
+is missing.
+
 Before merging (or asking a maintainer to merge) a pull request, make sure
 its branch is up to date with `the-one`. Merge or rebase `the-one` into the
 branch first if it has fallen behind, so CI has run against the current
