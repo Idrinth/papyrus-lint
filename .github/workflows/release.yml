@@ -317,8 +317,13 @@ jobs:
               IFS=',' read -ra PR_LABELS <<< "$labels_csv"
               matched_idx=-1
               is_doc=0
+              type_labels=()
               for l in "${PR_LABELS[@]}"; do
                 [ "$l" == "$DOC_LABEL" ] && is_doc=1
+                if [[ "$l" == "type: "* ]]; then
+                  type_labels+=("$(echo "${l#type: }" \
+                    | awk '{for (i = 1; i <= NF; i++) $i = toupper(substr($i, 1, 1)) substr($i, 2)}1')")
+                fi
                 for i in "${!LABEL_KEYS[@]}"; do
                   if [ "$l" == "${LABEL_KEYS[$i]}" ] && { [ "$matched_idx" -eq -1 ] || [ "$i" -lt "$matched_idx" ]; }; then
                     matched_idx=$i
@@ -326,13 +331,19 @@ jobs:
                 done
               done
 
+              type_tag=""
+              if [ "${#type_labels[@]}" -gt 0 ]; then
+                joined=$(printf ", %s" "${type_labels[@]}")
+                type_tag="[${joined:2}] "
+              fi
+
               if [ "$matched_idx" -eq -1 ]; then
                 if [ "$is_doc" -eq 1 ]; then
                   continue
                 fi
-                echo "- [#$number]($url) $title" >> "$WORKDIR/other.md"
+                echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/other.md"
               else
-                echo "- [#$number]($url) $title" >> "$WORKDIR/group_$matched_idx.md"
+                echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/group_$matched_idx.md"
               fi
               echo "- $title" >> nexus-changelog.md
             done <<< "$PRS"
