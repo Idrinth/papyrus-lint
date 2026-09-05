@@ -102,6 +102,24 @@ describe("completionQueryAt", () => {
     const source = "ScriptName Example\n\nFunction Run()\n    unknownVar.\nEndFunction\n";
     expect(completionQueryAt(source, source.indexOf("unknownVar.") + "unknownVar.".length)).toBeNull();
   });
+
+  it("resolves an indexed array element's declared element type", () => {
+    const source = "ScriptName Example\n\nActor[] actors\n\nFunction Run()\n    actors[0].\nEndFunction\n";
+    const cursor = source.indexOf("actors[0].") + "actors[0].".length;
+    expect(completionQueryAt(source, cursor)).toEqual({ receiverType: "Actor", prefix: "", prefixStart: cursor });
+  });
+
+  it("resolves an indexed array element mid-way through typing a member name", () => {
+    const source = "ScriptName Example\n\nActor[] actors\n\nFunction Run()\n    actors[0].Disa\nEndFunction\n";
+    const cursor = source.indexOf("actors[0].Disa") + "actors[0].Disa".length;
+    expect(completionQueryAt(source, cursor)).toEqual({ receiverType: "Actor", prefix: "Disa", prefixStart: cursor - 4 });
+  });
+
+  it("resolves an indexed array element whose index is a variable", () => {
+    const source = "ScriptName Example\n\nActor[] actors\n\nFunction Run()\n    actors[i].\nEndFunction\n";
+    const cursor = source.indexOf("actors[i].") + "actors[i].".length;
+    expect(completionQueryAt(source, cursor)?.receiverType).toBe("Actor");
+  });
 });
 
 describe("filterMembers", () => {

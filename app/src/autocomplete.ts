@@ -140,15 +140,24 @@ export interface CompletionQuery {
   prefixStart: number;
 }
 
-// Looks for a `receiver.prefix` immediately ending at `cursorIndex` (no
-// intervening whitespace), and, if `receiver`'s declared type is known,
+// Matches `receiver[index].prefix` - an array element access - ending at the
+// cursor. Tried before the plain identifier pattern below, since an indexed
+// receiver's own declared type (the array's element type, e.g. "Actor" for
+// an `Actor[]`) is what member completion should resolve against, not the
+// array itself.
+const ARRAY_ELEMENT_RECEIVER = new RegExp(`(${IDENTIFIER})\\s*\\[[^[\\]]*\\]\\s*\\.(\\w*)$`);
+
+const PLAIN_RECEIVER = new RegExp(`(${IDENTIFIER})\\.(\\w*)$`);
+
+// Looks for a `receiver.prefix` or `receiver[index].prefix` immediately
+// ending at `cursorIndex`, and, if `receiver`'s declared type is known,
 // returns enough to query and splice in its members. Returns null if the
 // text just before the cursor isn't a simple member access (nothing to
 // autocomplete: a compound receiver like `Foo().bar`, or an identifier
 // whose type isn't known) or its receiver's type can't be resolved.
 export function completionQueryAt(source: string, cursorIndex: number): CompletionQuery | null {
   const before = source.slice(0, cursorIndex);
-  const match = new RegExp(`(${IDENTIFIER})\\.(\\w*)$`).exec(before);
+  const match = ARRAY_ELEMENT_RECEIVER.exec(before) ?? PLAIN_RECEIVER.exec(before);
   if (!match) {
     return null;
   }
