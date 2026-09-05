@@ -221,9 +221,10 @@ binary target that crate also defines.
 
 - **Rules YAML lint job**: runs `yamllint` against every `rules/*.yaml` file
   so malformed rule data cannot be merged.
-- **Nexus page BBCode job**: runs the dependency-free Python BBCode linter's
-  unit tests, then checks `docs/nexuspage.bbcode` for unknown, mismatched, and
-  unclosed tags.
+- **CI scripts and Nexus page BBCode job**: runs the dependency-free Python
+  scripts' unit tests with coverage, publishes the text summary, uploads the
+  lcov report as the `ci-scripts-coverage` artifact, then checks
+  `docs/nexuspage.bbcode` for unknown, mismatched, and unclosed tags.
 - **GitHub Pages browser smoke test job**: builds the site
   (`pages/build.py`) and then opens every one of its pages in headless
   Chromium via Playwright (`pages/browser_check.py`) to catch what
@@ -236,6 +237,21 @@ binary target that crate also defines.
   (GitHub, Discord, Nexus Mods, badge/font hosts, ...) are faked with a
   harmless empty response rather than fetched, so the check stays fast
   and doesn't depend on services this repository doesn't control.
+- **GitHub Pages Lighthouse check job** (`pages-lighthouse`, pull requests
+  only): builds the site (`pages/build.py`), serves it locally, and runs
+  the `lighthouse` CLI (installed via npm, against the runner's
+  preinstalled Chrome) over every one of its pages for the performance,
+  accessibility, best-practices, and SEO categories, writing each page's
+  JSON/HTML report into a `lighthouse-reports` artifact. A per-page audit
+  failure is logged as a workflow warning and fails the job, without
+  stopping the remaining pages from being audited.
+  `.github/scripts/lighthouse_summary.py` turns the JSON reports into a
+  Markdown table of category scores plus, for any category scoring under
+  90/100, the specific audits behind that score, posted as a single PR
+  comment (updated in place on subsequent pushes, the same
+  marker-comment approach as the coverage summary comment below) and to
+  the job's step summary. Comment posting is best-effort
+  (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
 - **Sublime Text extension job**: runs the plugin's Python unit tests via
   `coverage run -m unittest discover`, scoped to `commands.py`/`linter.py`
   (test files themselves are omitted). The text summary is posted to the
@@ -271,12 +287,13 @@ binary target that crate also defines.
 - **Coverage summary comment job** (`coverage-comment`, pull requests
   only): downloads every job's lcov artifact and runs
   `.github/scripts/coverage_summary.py` to aggregate line coverage by
-  module — crates (the four reusable crates combined), app (`src-tauri`),
-  UI (the frontend), and editor plugins (the VS Code extension and the
-  Sublime Text plugin combined) — posting the result as a single
-  markdown table, updated in place on subsequent pushes, as a PR comment
-  (and to the job's step summary). Comment posting is best-effort
-  (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
+  module — CI tooling, crates (the four reusable crates combined), app
+  (`src-tauri`), UI (the frontend), the Pages builder, and editor plugins
+  (the VS Code extension and the Sublime Text plugin combined) — posting the
+  result as a single markdown table, updated in place on subsequent pushes,
+  as a PR comment (and to the job's step summary). Comment posting is
+  best-effort (`continue-on-error`) since forked PRs get a read-only
+  `GITHUB_TOKEN`.
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
