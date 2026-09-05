@@ -180,7 +180,7 @@ More detailed explanation of the rules and their implementation is available on 
 [td][/td]
 [/tr]
 [tr][td][b]Int/Int division widened to Float[/b][/td]
-[td]Flags an Int/Int division declared, assigned, returned, or passed as an argument into a Float-typed slot, since Papyrus truncates the division before it ever widens into the Float (e.g. Float f = 1 / 2 yields 0.0, not 0.5).[/td]
+[td]Flags an Int/Int division declared, assigned, returned, or passed as an argument into a Float-typed slot, since Papyrus truncates the division before it ever widens into the Float (e.g. Float f = 1 / 2 yields 0.0, not 0.5). A constant division that divides evenly (e.g. 72 / 8) isn't flagged.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Unreachable statement[/b][/td]
