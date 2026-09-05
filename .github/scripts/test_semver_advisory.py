@@ -59,6 +59,41 @@ class ClassifyPullRequestTests(unittest.TestCase):
             semver_advisory.classify_pull_request(["type: tests", "type: feature"]),
         )
 
+    def test_ci_only_component_recommends_patch_with_no_type_label(self) -> None:
+        self.assertEqual("patch", semver_advisory.classify_pull_request(["component: ci"]))
+
+    def test_pages_only_component_recommends_patch_with_no_type_label(self) -> None:
+        self.assertEqual("patch", semver_advisory.classify_pull_request(["component: pages"]))
+
+    def test_documentation_only_component_recommends_patch_with_no_type_label(self) -> None:
+        self.assertEqual("patch", semver_advisory.classify_pull_request(["component: documentation"]))
+
+    def test_mix_of_non_user_facing_components_recommends_patch(self) -> None:
+        self.assertEqual(
+            "patch",
+            semver_advisory.classify_pull_request(["component: ci", "component: pages"]),
+        )
+
+    def test_non_user_facing_component_caps_a_breaking_change_label_at_patch(self) -> None:
+        self.assertEqual(
+            "patch",
+            semver_advisory.classify_pull_request(["component: ci", "type: breaking change"]),
+        )
+
+    def test_non_user_facing_component_caps_a_feature_label_at_patch(self) -> None:
+        self.assertEqual(
+            "patch",
+            semver_advisory.classify_pull_request(["component: documentation", "type: feature"]),
+        )
+
+    def test_user_facing_component_alongside_a_non_user_facing_one_is_not_capped(self) -> None:
+        self.assertEqual(
+            "major",
+            semver_advisory.classify_pull_request(
+                ["component: ci", "component: frontend", "type: breaking change"]
+            ),
+        )
+
 
 class RecommendBumpTests(unittest.TestCase):
     def test_empty_list_recommends_nothing(self) -> None:
