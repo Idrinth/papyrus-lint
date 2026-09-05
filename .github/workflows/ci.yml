@@ -130,7 +130,7 @@ jobs:
             > semver-advisory.md
 
       - name: Publish semantic version advisory
-        run: cat semver-advisory.md >> "$GITHUB_STEP_SUMMARY"
+        run: cat semver-advisory.md >> "$GITHUB_STEP_SUMMARY" && cat semver-advisory.md
 
   pages:
     name: GitHub Pages builder tests
