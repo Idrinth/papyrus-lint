@@ -231,6 +231,19 @@ binary target that crate also defines.
   scripts' unit tests with coverage, publishes the text summary, uploads the
   lcov report as the `ci-scripts-coverage` artifact, then checks
   `docs/nexuspage.bbcode` for unknown, mismatched, and unclosed tags.
+- **Semantic version advisory job** (`semver-advisory`, pushes to `the-one`
+  only): gathers every pull request merged since the latest `v*.*.*` release
+  tag (via the GitHub API, walking `git log <tag>..HEAD`) and passes their
+  labels to `.github/scripts/semver_advisory.py`, which recommends the next
+  semantic version to tag based on the `type: *` labels below — highest
+  precedence wins across all of them: any `type: breaking change` recommends
+  a major bump, else any `type: feature` recommends a minor bump, else any
+  `type: refactoring`/`type: tests`/`type: documentation` recommends a patch
+  bump. A pull request with none of those labels contributes nothing. The
+  recommendation (a per-pull-request table plus the suggested next version)
+  is posted to the job's step summary only; it's advisory, so it never
+  creates a tag, edits a file, or fails the job — the actual release still
+  only happens when a maintainer pushes a `v*.*.*` tag (see Releases below).
 - **GitHub Pages browser smoke test job**: builds the site
   (`pages/build.py`) and then opens every one of its pages in headless
   Chromium via Playwright (`pages/browser_check.py`) to catch what
@@ -528,6 +541,19 @@ The `release-notes` job (see Releases above) groups its changelist by
 these labels instead of listing merged pull requests flat, so an
 unlabeled (or mislabeled) pull request falls into a trailing "Other"
 section of the release notes rather than under its actual component.
+
+Additionally, a pull request may carry one or more `type: *` labels to help
+the CI job described above recommend the next semantic version:
+
+- `type: breaking change` — a major-version bump (the first digit)
+- `type: feature` — a minor-version bump (the second digit)
+- `type: refactoring` — a patch-version bump (the last digit)
+- `type: tests` — a patch-version bump (the last digit)
+- `type: documentation` — a patch-version bump (the last digit)
+
+Unlike the component labels above, these are optional and purely advisory:
+nothing enforces them on a pull request, and omitting one just means that
+pull request contributes no recommendation of its own.
 
 ## Current state
 

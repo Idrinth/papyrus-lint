@@ -63,6 +63,51 @@ jobs:
       - name: Lint Nexus Mods page
         run: python3 .github/scripts/bbcode_lint.py docs/nexuspage.bbcode
 
+  semver-advisory:
+    name: Semantic version advisory
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Determine latest release tag
+        id: latest_tag
+        run: |
+          TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Collect pull requests merged since the latest release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.latest_tag.outputs.tag }}"
+          if [ -n "$TAG" ]; then
+            RANGE="$TAG..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+
+          : > pull-requests.jsonl
+          for sha in $(git log "$RANGE" --pretty=format:%H); do
+            gh api "repos/${{ github.repository }}/commits/$sha/pulls" \
+              --jq '.[] | {number: .number, title: .title, labels: [.labels[].name]}' \
+              >> pull-requests.jsonl 2>/dev/null || true
+          done
+          jq -s '.' pull-requests.jsonl > pull-requests.json
+
+      - name: Build semantic version advisory
+        run: |
+          python3 .github/scripts/semver_advisory.py pull-requests.json "${{ steps.latest_tag.outputs.tag }}" \
+            > semver-advisory.md
+
+      - name: Publish semantic version advisory
+        run: cat semver-advisory.md >> "$GITHUB_STEP_SUMMARY"
+
   pages:
     name: GitHub Pages builder tests
     runs-on: ubuntu-latest
