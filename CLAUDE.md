@@ -221,9 +221,10 @@ binary target that crate also defines.
 
 - **Rules YAML lint job**: runs `yamllint` against every `rules/*.yaml` file
   so malformed rule data cannot be merged.
-- **Nexus page BBCode job**: runs the dependency-free Python BBCode linter's
-  unit tests, then checks `docs/nexuspage.bbcode` for unknown, mismatched, and
-  unclosed tags.
+- **CI scripts and Nexus page BBCode job**: runs the dependency-free Python
+  scripts' unit tests with coverage, publishes the text summary, uploads the
+  lcov report as the `ci-scripts-coverage` artifact, then checks
+  `docs/nexuspage.bbcode` for unknown, mismatched, and unclosed tags.
 - **GitHub Pages browser smoke test job**: builds the site
   (`pages/build.py`) and then opens every one of its pages in headless
   Chromium via Playwright (`pages/browser_check.py`) to catch what
@@ -253,6 +254,19 @@ binary target that crate also defines.
   above) to catch element-size/layout regressions a real browser renders
   but jsdom can't. On failure, the HTML report is uploaded as the
   `playwright-report` artifact.
+- **Frontend Lighthouse check job** (`lighthouse`): builds the frontend
+  (`npm run build`) and runs `treosh/lighthouse-ci-action` against the
+  built static site (config in `app/lighthouserc.json`), then renders each
+  audited page's Performance/Accessibility/Best Practices/SEO scores,
+  plus any audit scoring below 90, into a Markdown summary via
+  `.github/scripts/lighthouse_summary.py`. That summary is posted to the
+  job's step summary and, on pull requests, as an updated-in-place PR
+  comment using the same marker-based update pattern as the coverage
+  summary comment below. No assertions are configured, so this check is
+  purely informational and a low score never fails the build; comment
+  posting is best-effort (`continue-on-error`) since forked PRs get a
+  read-only `GITHUB_TOKEN`. The full Lighthouse reports (via
+  `uploadArtifacts`) are uploaded as the `lighthouse-reports` artifact.
 - **Markdown job**: runs markdownlint-cli2 against every `README.md` in the
   repository, using the root `.markdownlint-cli2.yaml` configuration.
 - **VS Code extension job**: installs its dependencies, then runs `npm run
@@ -271,12 +285,13 @@ binary target that crate also defines.
 - **Coverage summary comment job** (`coverage-comment`, pull requests
   only): downloads every job's lcov artifact and runs
   `.github/scripts/coverage_summary.py` to aggregate line coverage by
-  module — crates (the four reusable crates combined), app (`src-tauri`),
-  UI (the frontend), and editor plugins (the VS Code extension and the
-  Sublime Text plugin combined) — posting the result as a single
-  markdown table, updated in place on subsequent pushes, as a PR comment
-  (and to the job's step summary). Comment posting is best-effort
-  (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
+  module — CI tooling, crates (the four reusable crates combined), app
+  (`src-tauri`), UI (the frontend), the Pages builder, and editor plugins
+  (the VS Code extension and the Sublime Text plugin combined) — posting the
+  result as a single markdown table, updated in place on subsequent pushes,
+  as a PR comment (and to the job's step summary). Comment posting is
+  best-effort (`continue-on-error`) since forked PRs get a read-only
+  `GITHUB_TOKEN`.
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.

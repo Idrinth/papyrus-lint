@@ -271,6 +271,83 @@ jobs:
           path: app/playwright-report/
           retention-days: 7
 
+  lighthouse:
+    name: Frontend Lighthouse check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci --ignore-scripts
+
+      - name: Build
+        working-directory: app
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12.6.2
+        with:
+          configPath: app/lighthouserc.json
+          uploadArtifacts: true
+          artifactName: lighthouse-reports
+          temporaryPublicStorage: true
+
+      - name: Build Lighthouse summary
+        if: always()
+        run: |
+          python3 .github/scripts/lighthouse_summary.py \
+            "${{ steps.lighthouse.outputs.resultsPath }}/manifest.json" > lighthouse-summary.md
+
+      - name: Publish Lighthouse summary
+        if: always()
+        run: cat lighthouse-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post Lighthouse comment
+        # Forked PRs get a read-only GITHUB_TOKEN, so posting the comment
+        # can fail there; the step summary above still carries the report.
+        if: always() && github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- lighthouse-summary-comment -->';
+            const body = fs.readFileSync('lighthouse-summary.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
   vscode-extension:
     name: VS Code extension (test & compile)
     runs-on: ubuntu-latest

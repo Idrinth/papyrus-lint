@@ -254,6 +254,19 @@ binary target that crate also defines.
   above) to catch element-size/layout regressions a real browser renders
   but jsdom can't. On failure, the HTML report is uploaded as the
   `playwright-report` artifact.
+- **Frontend Lighthouse check job** (`lighthouse`): builds the frontend
+  (`npm run build`) and runs `treosh/lighthouse-ci-action` against the
+  built static site (config in `app/lighthouserc.json`), then renders each
+  audited page's Performance/Accessibility/Best Practices/SEO scores,
+  plus any audit scoring below 90, into a Markdown summary via
+  `.github/scripts/lighthouse_summary.py`. That summary is posted to the
+  job's step summary and, on pull requests, as an updated-in-place PR
+  comment using the same marker-based update pattern as the coverage
+  summary comment below. No assertions are configured, so this check is
+  purely informational and a low score never fails the build; comment
+  posting is best-effort (`continue-on-error`) since forked PRs get a
+  read-only `GITHUB_TOKEN`. The full Lighthouse reports (via
+  `uploadArtifacts`) are uploaded as the `lighthouse-reports` artifact.
 - **Markdown job**: runs markdownlint-cli2 against every `README.md` in the
   repository, using the root `.markdownlint-cli2.yaml` configuration.
 - **VS Code extension job**: installs its dependencies, then runs `npm run
