@@ -164,6 +164,29 @@ mod tests {
     }
 
     #[test]
+    fn accepts_mixed_comma_and_whitespace_separators() {
+        let disables =
+            Disables::scan("Foo(1,2) ; @disable comma-spacing  float-to-int,semicolon\n");
+
+        assert!(disables.is_disabled(1, "comma-spacing"));
+        assert!(disables.is_disabled(1, "float-to-int"));
+        assert!(disables.is_disabled(1, "semicolon"));
+    }
+
+    #[test]
+    fn duplicate_rule_ids_are_recorded_only_once_at_the_first_column() {
+        let disables = Disables::scan("value = 1 ; @disable alpha, beta, ALPHA\n");
+        let (_, disable) = disables.iter().next().expect("directive should be found");
+        let LineDisable::Rules(rules) = disable else {
+            panic!("named rules should not become an all-rules directive");
+        };
+
+        assert_eq!(rules.len(), 2);
+        assert_eq!((rules[0].id.as_str(), rules[0].column), ("alpha", 22));
+        assert_eq!((rules[1].id.as_str(), rules[1].column), ("beta", 29));
+    }
+
+    #[test]
     fn bare_disable_suppresses_every_rule_on_the_line() {
         let disables = Disables::scan("action = 1  ; @disable\n");
         assert!(disables.is_disabled(1, "trailing-whitespace"));
@@ -174,6 +197,32 @@ mod tests {
     fn ignores_semicolons_inside_string_literals() {
         let disables = Disables::scan("Debug.Trace(\"a;b @disable float-to-int\")\n");
         assert!(!disables.is_disabled(1, "float-to-int"));
+    }
+
+    #[test]
+    fn escaped_quotes_do_not_end_a_string_or_expose_its_semicolon() {
+        let disables = Disables::scan(r#"Debug.Trace("escaped \"; @disable float-to-int\"")"#);
+
+        assert!(!disables.is_disabled(1, "float-to-int"));
+    }
+
+    #[test]
+    fn finds_a_directive_after_a_string_containing_a_semicolon() {
+        let disables = Disables::scan(r#"Debug.Trace("still; a string") ; @disable semicolon"#);
+
+        assert!(disables.is_disabled(1, "semicolon"));
+    }
+
+    #[test]
+    fn reports_character_columns_for_unicode_before_a_directive() {
+        let disables = Disables::scan("String text = \"λ\" ; @disable comma-spacing\n");
+        let (_, disable) = disables.iter().next().expect("directive should be found");
+        let LineDisable::Rules(rules) = disable else {
+            panic!("named rules should not become an all-rules directive");
+        };
+
+        assert_eq!(rules.len(), 1);
+        assert_eq!(rules[0].column, 30);
     }
 
     #[test]
