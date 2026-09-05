@@ -44,6 +44,13 @@ DOCS = [
         "blurb": "A minimal GitHub Actions workflow that lints a project on every push and pull request.",
     },
     {
+        "filename": "papyrus-lint-action-readme.md",
+        "slug": "papyrus-lint-action-readme",
+        "kind": "markdown",
+        "source_url": "https://github.com/Idrinth/papyrus-lint-action/blob/the-one/README.md",
+        "blurb": "The papyrus-lint-action GitHub Action's own README: its inputs, outputs, and how it posts findings as pull request review comments.",
+    },
+    {
         "filename": "papyrus-lint.default.yaml",
         "slug": "papyrus-lint-default-yaml",
         "kind": "yaml",
@@ -305,7 +312,10 @@ def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
 
 
 def raw_github_link(doc: dict) -> str:
-    href = f"{GITHUB_BLOB_BASE}/docs/{doc['filename']}"
+    """Links back to the doc's own raw source on GitHub: a checked-in
+    docs/ file by default, or `source_url` when a doc's content is a copy
+    of a file from another repository (e.g. papyrus-lint-action's README)."""
+    href = doc.get("source_url", f"{GITHUB_BLOB_BASE}/docs/{doc['filename']}")
     return f'<p><a class="doc-raw-link" href="{href}">View raw source on GitHub &rarr;</a></p>'
 
 

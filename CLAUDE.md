@@ -332,13 +332,14 @@ published as its own browsable subpage, so that reference material isn't
 only reachable as raw source on GitHub. `pages/build.py`'s `DOCS` list
 names each file, a `slug` for its output filename, and a `kind`
 (`markdown`, `json-schema`, or plain text) that picks how it's rendered:
-a Markdown file (currently `docs/github-actions-example.md`) is converted
-to HTML the same way the CLI examples are (headings, paragraphs, fenced
-code blocks, and `render_inline`'s inline formatting), with its own
-top-level heading and first paragraph read back out as the subpage's
-title/description rather than duplicated in `DOCS`; a JSON Schema file
-renders its `title`/`description` fields plus the pretty-printed schema
-itself in a code block; anything else (`docs/papyrus-lint.default.yaml`,
+a Markdown file (currently `docs/github-actions-example.md` and
+`docs/papyrus-lint-action-readme.md`) is converted to HTML the same way
+the CLI examples are (headings, paragraphs, fenced code blocks, and
+`render_inline`'s inline formatting), with its own top-level heading and
+first paragraph read back out as the subpage's title/description rather
+than duplicated in `DOCS`; a JSON Schema file renders its
+`title`/`description` fields plus the pretty-printed schema itself in a
+code block; anything else (`docs/papyrus-lint.default.yaml`,
 `docs/nexuspage.bbcode`) renders as a plain code block under a
 hand-written title/description in `DOCS`. A link inside a rendered
 Markdown doc to another published doc (matched by filename) resolves to
@@ -353,6 +354,21 @@ carrying its own `<!--DOC_TITLE-->`/`<!--DOC_DESCRIPTION-->`/
 hand-written blurb per doc from `DOCS`, linking into `pages/dist/docs/`.
 Adding a new file under `docs/` that should be published this way means
 adding an entry to `DOCS`, not touching either template.
+
+`docs/papyrus-lint-action-readme.md` is a checked-in copy of the
+[`papyrus-lint-action`](https://github.com/idrinth/papyrus-lint-action)
+repository's own `README.md`, rather than material written for this
+repository, so that its GitHub Action's inputs/outputs and usage
+documentation are also reachable as a subpage here. Its `DOCS` entry
+sets `source_url` to that other repository's own blob URL for the file
+(`raw_github_link`'s "View raw source on GitHub" link uses `source_url`
+when a doc sets it, instead of assuming the file lives under this
+repository's own `docs/`), so the rendered subpage links back to the
+authoritative source rather than to this copy. Whenever
+`papyrus-lint-action`'s `README.md` changes, copy the update into
+`docs/papyrus-lint-action-readme.md` here too, the same way
+`docs/nexuspage.bbcode`'s content is kept in sync by hand (see "Keeping
+agent instructions synchronized" below).
 
 `pages/videos.json` is a simple JSON list of the project's video
 walkthroughs — each entry a YouTube `id` and a `title` — rendered by
