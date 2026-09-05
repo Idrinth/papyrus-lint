@@ -65,6 +65,28 @@ fn version_is_written_to_stdout() {
 }
 
 #[test]
+fn short_version_flag_is_written_to_stdout() {
+    let output = run_cli(&["-V"]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stdout).expect("stdout should be UTF-8"),
+        format!("PapyrusLinterCLI {}\n", env!("CARGO_PKG_VERSION"))
+    );
+}
+
+#[test]
+fn extra_positional_argument_reports_usage_without_writing_to_stdout() {
+    let output = run_cli(&["first.achlist", "second.achlist"]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.starts_with("Usage: PapyrusLinterCLI"));
+}
+
+#[test]
 fn json_mode_lints_a_script_through_the_binary_entry_point() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let script = dir.path().join("scripts/source/Example.psc");
@@ -202,6 +224,51 @@ fn quiet_warnings_hides_output_without_changing_the_binary_exit_status() {
 }
 
 #[test]
+fn quiet_info_filters_json_without_changing_the_binary_exit_status() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(
+        &script,
+        "ScriptName Example\n\nGlobalVariable Property Value Auto\n\nFunction Test()\n    Value.GetValueInt()\nEndFunction\n",
+    );
+    write_file(
+        &dir.path().join("papyrus-lint.yaml"),
+        "fail_on_info: true\n",
+    );
+
+    let output = run_cli(&["--json", "--quiet-info", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain JSON");
+    assert_eq!(report["success"], false);
+    assert!(report["files"][0]["diagnostics"]
+        .as_array()
+        .expect("diagnostics should be an array")
+        .iter()
+        .all(|diagnostic| diagnostic["level"] != "info"));
+}
+
+#[test]
+fn short_paths_are_used_in_plain_text_through_the_binary_entry_point() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example   \n");
+
+    let output = run_cli(&["--short-paths", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    let relative_path = Path::new("scripts/source/Example.psc")
+        .to_string_lossy()
+        .into_owned();
+    assert!(stdout.contains(&format!("{relative_path}:1:")));
+    assert!(!stdout.contains(dir.path().to_string_lossy().as_ref()));
+}
+
+#[test]
 fn tag_filter_is_forwarded_through_the_binary_entry_point() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let script = dir.path().join("scripts/source/Example.psc");
@@ -298,6 +365,43 @@ fn color_always_emits_ansi_escapes_through_the_binary_entry_point() {
     let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
     assert!(stdout.contains("[trailing-whitespace]"));
     assert!(stdout.contains('\x1b'));
+}
+
+#[test]
+fn invalid_color_value_reports_usage_through_the_binary_entry_point() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example\n");
+
+    let output = run_cli(&["--color", "sometimes", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert_eq!(
+        stderr,
+        "error: --color must be 'auto', 'always', or 'never', got 'sometimes'\n"
+    );
+}
+
+#[test]
+fn missing_output_directory_reports_an_io_error_through_the_binary() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let report = dir.path().join("missing/report.txt");
+    write_file(&script, "ScriptName Example\n");
+
+    let output = run_cli(&[
+        "--output",
+        &report.to_string_lossy(),
+        &script.to_string_lossy(),
+    ]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.starts_with("error: failed to write "));
+    assert!(stderr.contains("report.txt"));
 }
 
 #[test]
