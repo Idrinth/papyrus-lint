@@ -26,13 +26,39 @@ jobs:
         run: yamllint rules/*.yaml
 
   bbcode:
-    name: Nexus page BBCode lint
+    name: CI scripts and Nexus page BBCode lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
+      - name: Install coverage
+        run: pip install coverage
+
       - name: Test Nexus page scripts
-        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
+        run: |
+          coverage run --source=.github/scripts --omit='.github/scripts/test_*.py' \
+            -m unittest discover -s .github/scripts -p 'test_*.py' -v
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### CI scripts coverage"
+            echo '```'
+            coverage report -m
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always()
+        run: coverage lcov -o lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-scripts-coverage
+          path: lcov.info
 
       - name: Lint Nexus Mods page
         run: python3 .github/scripts/bbcode_lint.py docs/nexuspage.bbcode
@@ -383,7 +409,7 @@ jobs:
   coverage-comment:
     name: Coverage summary comment
     if: always() && github.event_name == 'pull_request'
-    needs: [pages, sublime-extension, frontend, vscode-extension, rust-test]
+    needs: [bbcode, pages, sublime-extension, frontend, vscode-extension, rust-test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
