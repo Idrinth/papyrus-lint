@@ -328,9 +328,17 @@ def first_paragraph(lines: list[str]) -> str:
     """Returns the first non-blank, non-heading paragraph in a Markdown
     document's lines, its own line breaks collapsed into spaces."""
     para: list[str] = []
+    in_code_block = False
     for line in lines:
         stripped = line.strip()
-        if not stripped or HEADING_RE.match(line) or stripped.startswith("```"):
+        if stripped.startswith("```"):
+            in_code_block = not in_code_block
+            if para:
+                break
+            continue
+        if in_code_block:
+            continue
+        if not stripped or HEADING_RE.match(line):
             if para:
                 break
             continue
@@ -386,7 +394,10 @@ def raw_github_link(doc: dict) -> str:
     docs/ file by default, or `source_url` when a doc's content is a copy
     of a file from another repository (e.g. papyrus-lint-action's README)."""
     href = doc.get("source_url", f"{GITHUB_BLOB_BASE}/docs/{doc['filename']}")
-    return f'<p><a class="doc-raw-link" href="{href}">View raw source on GitHub &rarr;</a></p>'
+    return (
+        f'<p><a class="doc-raw-link" href="{html.escape(href, quote=True)}">'
+        "View raw source on GitHub &rarr;</a></p>"
+    )
 
 
 def render_doc(doc: dict) -> tuple[str, str, str]:
@@ -507,9 +518,11 @@ def build(out_dir: Path, version: str = "") -> None:
         if marker not in template:
             raise SystemExit(f"index.template.html: missing marker {marker}")
         template = template.replace(marker, table_html)
+    cli_marker = "<!--CLI_EXAMPLES-->"
+    if cli_marker not in template:
+        raise SystemExit(f"index.template.html: missing marker {cli_marker}")
     template = template.replace(
-        "<!--CLI_EXAMPLES-->",
-        f'<pre class="code-block cli-examples"><code>{cli_examples}</code></pre>',
+        cli_marker, f'<pre class="code-block cli-examples"><code>{cli_examples}</code></pre>'
     )
     if "<!--DOCS_LIST-->" not in template:
         raise SystemExit("index.template.html: missing marker <!--DOCS_LIST-->")
