@@ -73,8 +73,8 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install coverage
-        run: pip install coverage
+      - name: Install dependencies
+        run: pip install coverage -r pages/requirements-build.txt
 
       - name: Test site builder with coverage
         run: |
@@ -114,7 +114,7 @@ jobs:
 
       - name: Install Playwright
         run: |
-          pip install -r pages/requirements-browser-check.txt
+          pip install -r pages/requirements-browser-check.txt -r pages/requirements-build.txt
           playwright install --with-deps chromium
 
       - name: Build site
@@ -143,6 +143,9 @@ jobs:
 
       - name: Prepare report directory
         run: mkdir -p lighthouse-reports
+
+      - name: Install dependencies
+        run: pip install -r pages/requirements-build.txt
 
       - name: Build site
         run: python3 pages/build.py --out pages/dist

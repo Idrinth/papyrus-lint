@@ -59,6 +59,9 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Install dependencies
+        run: pip install -r pages/requirements-build.txt
+
       - name: Build site
         run: python3 pages/build.py --out pages/dist --version "${{ steps.version.outputs.version }}"
 

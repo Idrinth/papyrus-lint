@@ -146,12 +146,18 @@ desktop app's binary at all.
     │                            # assembles pages/dist/ (git-ignored), copying
     │                            # its assets/ images from resources/ and the
     │                            # app icon rather than committing duplicates of
-    │                            # either under pages/, and its fonts/ woff2
-    │                            # files as-is so styles.css's @font-face rules
-    │                            # self-host Cinzel/Inter instead of pulling
-    │                            # them from fonts.googleapis.com/fonts.gstatic.com
+    │                            # either under pages/, generating a WebP/AVIF
+    │                            # sibling of each one rendered as an <img> and
+    │                            # rewriting that <img> into a <picture> offering
+    │                            # them (see GitHub Pages below), and its fonts/
+    │                            # woff2 files as-is so styles.css's @font-face
+    │                            # rules self-host Cinzel/Inter instead of
+    │                            # pulling them from
+    │                            # fonts.googleapis.com/fonts.gstatic.com
     │                            # (avoiding a third-party request on every page
     │                            # load).
+    ├── requirements-build.txt  # Pinned Pillow version build.py's image
+    │                            # conversion above depends on.
     ├── browser_check.py        # Opens every page under a built pages/dist in
     │                            # headless Chromium (see CI below) to catch
     │                            # console/page errors and broken internal
@@ -345,9 +351,21 @@ converting the corresponding Markdown table/code block straight out of
 `README.md`, so that content can never drift out of sync. It also
 assembles the page's `assets/` directory by copying the screenshots
 from `resources/` and the app icon from `app/src-tauri/icons/icon.png`,
-rather than committing duplicate copies of them under `pages/`. Both the
+rather than committing duplicate copies of them under `pages/`. For the
+assets actually rendered as `<img>` elements (the header logo and the
+five screenshots — not `logo.jpg`, only ever referenced as a raw
+`og:image`/`twitter:image` URL, and not the favicon, only ever
+referenced via `<link rel="icon">`), it additionally writes a WebP and
+an AVIF sibling next to the copied original (`convert_to_modern_formats`,
+via `Pillow` — see `pages/requirements-build.txt`), losslessly for the
+PNG screenshots (so text/lines stay crisp) and lossy for the already-lossy
+JPEG logo; `wrap_images_with_modern_sources` then rewrites every such
+`<img>` tag, in every page this builder renders, into a `<picture>`
+offering those two smaller formats as preferred `<source>`s ahead of the
+original as the final fallback. Both the
 workflow and a contributor previewing the page locally run it as
-`python3 pages/build.py --out pages/dist` (the default `--out`); its
+`python3 pages/build.py --out pages/dist` (the default `--out`), after
+`pip install -r pages/requirements-build.txt`; its
 output directory (`pages/dist` by default) is git-ignored (matched by
 the root `.gitignore`'s generic `dist` entry) and gets uploaded to Pages
 via `actions/upload-pages-artifact`/`actions/deploy-pages`. Everything
