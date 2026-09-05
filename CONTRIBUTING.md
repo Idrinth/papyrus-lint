@@ -154,9 +154,10 @@ component(s) it affects:
 - `component: gui`
 - `component: cli`
 
-Release notes are grouped by these labels, so an unlabeled or mislabeled
-pull request's entry won't land under the right component in a release's
-notes.
+These labels are intended to let a future revision of the release
+workflow group release notes by component instead of listing merged
+pull requests flat; that grouping isn't implemented yet, so mislabeling
+a pull request has no effect on today's release notes.
 
 Before merging (or asking a maintainer to merge) a pull request, make sure
 its branch is up to date with `the-one`. Merge or rebase `the-one` into the

@@ -452,9 +452,7 @@ title and body — replacing the generic body `tauri-apps/tauri-action`
 set on the `release` job — with the tag name as the title; a changelist
 of the merged pull requests between the previous and current tag,
 resolved per commit via the "list pull requests associated with a
-commit" GitHub API and grouped by each pull request's `component:` label
-(see Pull request labels below) rather than listed as one flat list,
-linked with the PR title as text; the current
+commit" GitHub API and linked with the PR title as text; the current
 code coverage (aggregated the same way as CI's coverage-comment job,
 via `.github/scripts/coverage_summary.py`, from the lcov artifacts of
 the most recent successful `ci.yml` run for the tagged commit); and a
@@ -514,9 +512,11 @@ component(s) it affects:
 - `component: gui`
 - `component: cli`
 
-The `release-notes` job's changelist (see Releases above) is grouped by
-these labels rather than listed flat, so an unlabeled or mislabeled pull
-request's entry won't land under the right component in a release's notes.
+These labels are intended to let a future revision of the `release-notes`
+job (see Releases above) group its changelist by component instead of
+listing merged pull requests flat; the job does not implement that
+grouping yet, so mislabeling a pull request has no effect on today's
+release notes.
 
 ## Current state
 
