@@ -26,15 +26,15 @@ render_nexuspage = load_script("render_nexuspage")
 
 
 class CoverageSummaryTests(unittest.TestCase):
-    def test_modules_include_ci_scripts_coverage(self) -> None:
+    def test_modules_group_tooling_coverage(self) -> None:
         self.assertIn(
-            ("CI tooling", [(".github/scripts", "ci-scripts-coverage/lcov.info")]),
-            coverage_summary.MODULES,
-        )
-
-    def test_modules_include_pages_builder_coverage(self) -> None:
-        self.assertIn(
-            ("Pages (site builder)", [("pages", "pages-coverage/lcov.info")]),
+            (
+                "Tooling",
+                [
+                    ("CI tooling", "ci-scripts-coverage/lcov.info"),
+                    ("Pages (site builder)", "pages-coverage/lcov.info"),
+                ],
+            ),
             coverage_summary.MODULES,
         )
 
@@ -91,6 +91,30 @@ class CoverageSummaryTests(unittest.TestCase):
 
         self.assertIn("| **Total** | **n/a** | **0/0** |", output.getvalue())
 
+    def test_main_shows_part_rows_only_for_composite_modules(self) -> None:
+        modules = [
+            ("Single", [("single-part", "single.info")]),
+            ("Composite", [("first-part", "first.info"), ("second-part", "second.info")]),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for report in ("single.info", "first.info", "second.info"):
+                Path(root, report).write_text("LF:2\nLH:1\n", encoding="utf-8")
+            output = io.StringIO()
+
+            with (
+                mock.patch.object(coverage_summary, "MODULES", modules),
+                mock.patch.object(sys, "argv", ["coverage_summary.py", directory]),
+                contextlib.redirect_stdout(output),
+            ):
+                coverage_summary.main()
+
+        rendered = output.getvalue()
+        self.assertNotIn("| ↳ single-part |", rendered)
+        self.assertIn("| ↳ first-part | 50.0% | 1/2 |", rendered)
+        self.assertIn("| ↳ second-part | 50.0% | 1/2 |", rendered)
+        self.assertIn("| **Total** | **50.0%** | **3/6** |", rendered)
+
 
 class RenderNexusPageTests(unittest.TestCase):
     def test_coverage_totals_aggregates_every_report(self) -> None:
@@ -131,6 +155,14 @@ class RenderNexusPageTests(unittest.TestCase):
         template = "<COVERED_LINES> <COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE>"
         with self.assertRaisesRegex(ValueError, "expected exactly one <COVERED_LINES> marker, found 2"):
             render_nexuspage.render(template, 1, 2)
+
+    def test_render_rejects_missing_total_and_percentage_markers(self) -> None:
+        with self.assertRaisesRegex(ValueError, "expected exactly one <TOTAL_LINES> marker, found 0"):
+            render_nexuspage.render("<COVERED_LINES> <COVERAGE_PERCENTAGE>", 1, 2)
+        with self.assertRaisesRegex(
+            ValueError, "expected exactly one <COVERAGE_PERCENTAGE> marker, found 0"
+        ):
+            render_nexuspage.render("<COVERED_LINES> <TOTAL_LINES>", 1, 2)
 
     def test_main_renders_template_to_output_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

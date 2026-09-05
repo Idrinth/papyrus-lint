@@ -110,6 +110,173 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertEqual(result.count('loading="lazy"'), 2)
         self.assertEqual(result.count("allowfullscreen"), 2)
 
+    def test_resolve_doc_href_handles_docs_repository_and_external_links(self) -> None:
+        with (
+            patch.object(page_builder, "DOC_FILENAME_TO_SLUG", {"guide.md": "guide"}),
+            patch.object(page_builder, "GITHUB_BLOB_BASE", "https://example.test/repository"),
+        ):
+            self.assertEqual(page_builder.resolve_doc_href("guide.md"), "guide.html")
+            self.assertEqual(
+                page_builder.resolve_doc_href("../rules/example.yaml"),
+                "https://example.test/repository/rules/example.yaml",
+            )
+            self.assertEqual(page_builder.resolve_doc_href("https://example.com"), "https://example.com")
+
+    def test_strip_markdown_inline_produces_plain_text(self) -> None:
+        self.assertEqual(
+            page_builder.strip_markdown_inline(
+                "Read **the [`configuration`](config.html)** for `details`."
+            ),
+            "Read the configuration for details.",
+        )
+
+    def test_first_paragraph_skips_headings_and_joins_wrapped_lines(self) -> None:
+        lines = ["# Title", "", "First line with `code`", "continues here.", "", "Second paragraph."]
+
+        self.assertEqual(
+            page_builder.first_paragraph(lines),
+            "First line with `code` continues here.",
+        )
+
+    def test_markdown_to_html_renders_headings_paragraphs_and_code(self) -> None:
+        result = page_builder.markdown_to_html(
+            [
+                "## Setup **now**",
+                "Read [the guide](guide.md)",
+                "on the next line.",
+                "",
+                "```yaml",
+                "unsafe: <value>",
+                "```",
+            ],
+            lambda href: f"docs/{href}",
+        )
+
+        self.assertIn("<h2>Setup <strong>now</strong></h2>", result)
+        self.assertIn('<p>Read <a href="docs/guide.md">the guide</a> on the next line.</p>', result)
+        self.assertIn(
+            '<pre class="code-block"><code>unsafe: &lt;value&gt;</code></pre>',
+            result,
+        )
+
+
+class DocsRenderingTest(unittest.TestCase):
+    def test_render_doc_renders_markdown_metadata_links_and_source(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "guide.md").write_text(
+                "# Guide\n\nRead [`other`](other.md) before starting.\n",
+                encoding="utf-8",
+            )
+            doc = {
+                "filename": "guide.md",
+                "slug": "guide",
+                "kind": "markdown",
+                "source_url": "https://example.test/source",
+            }
+
+            with (
+                patch.object(page_builder, "DOCS_DIR", docs_dir),
+                patch.object(page_builder, "DOC_FILENAME_TO_SLUG", {"other.md": "other"}),
+            ):
+                title, description, content = page_builder.render_doc(doc)
+
+        self.assertEqual(title, "Guide")
+        self.assertEqual(description, "Read other before starting.")
+        self.assertIn('<a href="other.html"><code>other</code></a>', content)
+        self.assertIn('href="https://example.test/source"', content)
+
+    def test_render_doc_uses_filename_when_markdown_has_no_title(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "notes.md").write_text("Opening paragraph.\n", encoding="utf-8")
+            doc = {"filename": "notes.md", "slug": "notes", "kind": "markdown"}
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                title, description, _ = page_builder.render_doc(doc)
+
+        self.assertEqual(title, "notes.md")
+        self.assertEqual(description, "Opening paragraph.")
+
+    def test_render_doc_renders_json_schema_and_plain_text(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "schema.json").write_text(
+                '{"title":"Report <schema>","description":"A & B","type":"object"}',
+                encoding="utf-8",
+            )
+            (docs_dir / "config.yaml").write_text("setting: <value>\n", encoding="utf-8")
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                schema = page_builder.render_doc(
+                    {"filename": "schema.json", "slug": "schema", "kind": "json-schema"}
+                )
+                plain = page_builder.render_doc(
+                    {
+                        "filename": "config.yaml",
+                        "slug": "config",
+                        "kind": "yaml",
+                        "title": "Configuration",
+                        "description": "All settings",
+                    }
+                )
+
+        self.assertEqual(schema[:2], ("Report <schema>", "A & B"))
+        self.assertIn("Report &lt;schema&gt;", schema[2])
+        self.assertEqual(plain[:2], ("Configuration", "All settings"))
+        self.assertIn("setting: &lt;value&gt;", plain[2])
+
+    def test_render_docs_list_items_escapes_content_and_applies_prefix(self) -> None:
+        docs = [{"slug": "guide", "blurb": "Use <carefully> & safely"}]
+        results = {"guide": {"title": "Guide & reference"}}
+
+        with patch.object(page_builder, "DOCS", docs):
+            output = page_builder.render_docs_list_items(results, "docs/")
+
+        self.assertIn('href="docs/guide.html"', output)
+        self.assertIn("Guide &amp; reference", output)
+        self.assertIn("Use &lt;carefully&gt; &amp; safely", output)
+
+    def test_build_doc_pages_writes_detail_and_index_pages(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "docs.template.html").write_text(
+                "<title><!--DOC_TITLE--></title>"
+                '<meta content="<!--DOC_DESCRIPTION-->">'
+                '<link href="<!--DOC_URL-->">'
+                "<main><!--DOC_CONTENT--></main>",
+                encoding="utf-8",
+            )
+            docs = [{"slug": "guide", "blurb": "A useful guide"}]
+            results = {
+                "guide": {
+                    "title": "Guide & help",
+                    "description": 'Use "care" & attention',
+                    "content_html": "<p>Contents</p>",
+                }
+            }
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "DOCS", docs),
+                patch.object(page_builder, "SITE_URL", "https://example.test/"),
+            ):
+                page_builder.build_doc_pages(out_dir, results)
+
+            detail = (out_dir / "docs" / "guide.html").read_text(encoding="utf-8")
+            index = (out_dir / "docs" / "index.html").read_text(encoding="utf-8")
+
+        self.assertIn("<title>Guide &amp; help</title>", detail)
+        self.assertIn('content="Use &quot;care&quot; &amp; attention"', detail)
+        self.assertIn('href="https://example.test/docs/guide.html"', detail)
+        self.assertIn("<p>Contents</p>", detail)
+        self.assertIn('href="guide.html"', index)
+        self.assertIn("A useful guide", index)
+
 
 class VideosPageTest(unittest.TestCase):
     def test_build_videos_page_loads_json_and_replaces_the_marker(self) -> None:

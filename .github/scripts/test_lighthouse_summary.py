@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-"""Unit tests for the Lighthouse summary script."""
+"""Unit tests for the Lighthouse report summary script."""
 
-import contextlib
 import importlib.util
-import io
-import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest import mock
 
 
 def load_script(name: str):
@@ -25,154 +21,188 @@ def load_script(name: str):
 lighthouse_summary = load_script("lighthouse_summary")
 
 
-def make_report(scores: dict[str, float]) -> dict:
-    """Builds a minimal Lighthouse report with one audit per category, each
-    scored per the given category-key -> score mapping."""
+def make_report(url: str, scores: dict, failing_audits: dict | None = None) -> dict:
+    """Builds a minimal Lighthouse-report-shaped dict: `scores` maps category
+    ids (e.g. "performance") to a 0-1 score, `failing_audits` maps a category
+    id to a list of (audit_id, audit_score, audit_title) tuples referenced by
+    that category with nonzero weight."""
+    failing_audits = failing_audits or {}
     categories = {}
     audits = {}
-    for category_key, score in scores.items():
-        audit_id = f"{category_key}-audit"
-        categories[category_key] = {"auditRefs": [{"id": audit_id, "weight": 1}]}
-        audits[audit_id] = {"score": score, "title": f"{category_key} title"}
-    return {"categories": categories, "audits": audits}
+    for key, score in scores.items():
+        audit_refs = []
+        for audit_id, audit_score, title in failing_audits.get(key, []):
+            audit_refs.append({"id": audit_id, "weight": 1})
+            audits[audit_id] = {"score": audit_score, "title": title}
+        categories[key] = {"score": score, "auditRefs": audit_refs}
+    return {"finalUrl": url, "categories": categories, "audits": audits}
 
 
-class ScoreStrTests(unittest.TestCase):
-    def test_formats_fractional_score_as_percentage(self) -> None:
-        self.assertEqual("90", lighthouse_summary.score_str(0.9))
-        self.assertEqual("100", lighthouse_summary.score_str(1))
+class PageLabelTests(unittest.TestCase):
+    def test_uses_final_url_path(self) -> None:
+        report = {"finalUrl": "http://localhost:4173/docs/index.html"}
+        self.assertEqual("/docs/index.html", lighthouse_summary.page_label(report))
 
-    def test_returns_na_for_non_numeric_score(self) -> None:
-        self.assertEqual("n/a", lighthouse_summary.score_str(None))
-        self.assertEqual("n/a", lighthouse_summary.score_str("n/a"))
+    def test_falls_back_to_requested_url(self) -> None:
+        report = {"requestedUrl": "http://localhost:4173/videos.html"}
+        self.assertEqual("/videos.html", lighthouse_summary.page_label(report))
+
+    def test_root_path_when_url_has_no_path(self) -> None:
+        report = {"finalUrl": "http://localhost:4173"}
+        self.assertEqual("/", lighthouse_summary.page_label(report))
 
 
-class LoadJsonTests(unittest.TestCase):
-    def test_returns_none_for_missing_file(self) -> None:
-        self.assertIsNone(lighthouse_summary.load_json(Path("does-not-exist.json")))
+class FormatScoreTests(unittest.TestCase):
+    def test_formats_a_passing_score_without_a_flag(self) -> None:
+        self.assertEqual("95", lighthouse_summary.format_score(0.95))
 
-    def test_returns_none_for_invalid_json(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory, "bad.json")
-            path.write_text("not json", encoding="utf-8")
-            self.assertIsNone(lighthouse_summary.load_json(path))
+    def test_flags_a_score_below_threshold(self) -> None:
+        self.assertEqual("80 ⚠️", lighthouse_summary.format_score(0.8))
 
-    def test_parses_valid_json(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory, "good.json")
-            path.write_text(json.dumps({"a": 1}), encoding="utf-8")
-            self.assertEqual({"a": 1}, lighthouse_summary.load_json(path))
+    def test_reports_n_a_for_a_missing_score(self) -> None:
+        self.assertEqual("n/a", lighthouse_summary.format_score(None))
 
 
 class FailingAuditsTests(unittest.TestCase):
-    def test_flags_audits_below_threshold(self) -> None:
-        report = make_report({"performance": 0.5, "accessibility": 1.0})
-        self.assertEqual(["Performance: performance title"], lighthouse_summary.failing_audits(report))
-
-    def test_ignores_zero_weight_and_unscored_audits(self) -> None:
-        report = {
-            "categories": {
-                "performance": {
-                    "auditRefs": [
-                        {"id": "zero-weight", "weight": 0},
-                        {"id": "unscored", "weight": 1},
-                        {"id": "missing-audit", "weight": 1},
-                    ]
-                }
-            },
-            "audits": {
-                "zero-weight": {"score": 0.1, "title": "should be skipped (zero weight)"},
-                "unscored": {"score": None, "title": "manual/informational audit"},
-            },
-        }
+    def test_ignores_categories_at_or_above_threshold(self) -> None:
+        report = make_report(
+            "http://x/index.html",
+            {"performance": 1.0},
+            {"performance": [("unused-audit", 0.2, "Unused audit")]},
+        )
         self.assertEqual([], lighthouse_summary.failing_audits(report))
 
-    def test_ignores_categories_not_in_the_reported_set(self) -> None:
-        report = make_report({"pwa": 0.1})
+    def test_lists_titles_for_a_failing_category_weakest_first(self) -> None:
+        report = make_report(
+            "http://x/index.html",
+            {"performance": 0.5},
+            {
+                "performance": [
+                    ("uses-optimized-images", 0.4, "Efficiently encode images"),
+                    ("render-blocking-resources", 0.1, "Eliminate render-blocking resources"),
+                ]
+            },
+        )
+        self.assertEqual(
+            ["Eliminate render-blocking resources", "Efficiently encode images"],
+            lighthouse_summary.failing_audits(report),
+        )
+
+    def test_ignores_zero_weight_audit_refs(self) -> None:
+        report = {
+            "categories": {
+                "seo": {
+                    "score": 0.5,
+                    "auditRefs": [{"id": "manual-check", "weight": 0}],
+                }
+            },
+            "audits": {"manual-check": {"score": 0.0, "title": "Manual check"}},
+        }
         self.assertEqual([], lighthouse_summary.failing_audits(report))
 
 
 class BuildSummaryTests(unittest.TestCase):
-    def test_reports_no_report_when_manifest_is_empty(self) -> None:
+    def test_reports_no_reports_generated(self) -> None:
         summary = lighthouse_summary.build_summary([])
         self.assertIn(lighthouse_summary.MARKER, summary)
-        self.assertIn("did not produce a report", summary)
+        self.assertIn("No Lighthouse reports were generated.", summary)
 
-    def test_prefers_representative_runs_when_present(self) -> None:
-        manifest = [
-            {"url": "http://x/", "isRepresentativeRun": False, "summary": {"performance": 0.1}},
-            {"url": "http://x/", "isRepresentativeRun": True, "summary": {"performance": 0.9}},
-        ]
-        summary = lighthouse_summary.build_summary(manifest)
-        self.assertIn("| http://x/ | 90 | n/a | n/a | n/a |", summary)
-
-    def test_falls_back_to_every_entry_when_none_marked_representative(self) -> None:
-        manifest = [{"url": "http://x/", "summary": {"performance": 0.42}}]
-        summary = lighthouse_summary.build_summary(manifest)
-        self.assertIn("| http://x/ | 42 | n/a | n/a | n/a |", summary)
-
-    def test_lists_failing_audits_from_the_full_report_on_disk(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            report_path = Path(directory, "lhr.json")
-            report_path.write_text(
-                json.dumps(make_report({"performance": 0.3})), encoding="utf-8"
+    def test_reports_all_pages_passing_when_nothing_fails(self) -> None:
+        reports = [
+            make_report(
+                "http://x/index.html",
+                {"performance": 1.0, "accessibility": 1.0, "best-practices": 1.0, "seo": 1.0},
             )
-            manifest = [
-                {
-                    "url": "http://x/",
-                    "isRepresentativeRun": True,
-                    "summary": {"performance": 0.3},
-                    "jsonPath": str(report_path),
-                }
-            ]
-            summary = lighthouse_summary.build_summary(manifest)
-
-        self.assertIn("#### Audits below 90", summary)
-        self.assertIn("- http://x/", summary)
-        self.assertIn("Performance: performance title", summary)
-
-    def test_reports_no_issues_when_json_report_is_missing_or_unreadable(self) -> None:
-        manifest = [
-            {
-                "url": "http://x/",
-                "isRepresentativeRun": True,
-                "summary": {"performance": 0.5},
-                "jsonPath": "does-not-exist.json",
-            }
         ]
-        summary = lighthouse_summary.build_summary(manifest)
-        self.assertIn("No audits scored below the reporting threshold.", summary)
+        summary = lighthouse_summary.build_summary(reports)
+        self.assertIn("| /index.html | 100 | 100 | 100 | 100 |", summary)
+        self.assertIn("All pages scored at least 90/100 in every category.", summary)
 
-    def test_reports_no_issues_when_every_scored_audit_passes(self) -> None:
+    def test_flags_a_low_score_and_lists_its_audits_sorted_by_page(self) -> None:
+        reports = [
+            make_report(
+                "http://x/videos.html",
+                {"performance": 1.0, "accessibility": 1.0, "best-practices": 1.0, "seo": 1.0},
+            ),
+            make_report(
+                "http://x/index.html",
+                {"performance": 0.7, "accessibility": 1.0, "best-practices": 1.0, "seo": 1.0},
+                {"performance": [("render-blocking-resources", 0.2, "Eliminate render-blocking resources")]},
+            ),
+        ]
+        summary = lighthouse_summary.build_summary(reports)
+
+        self.assertIn("| /index.html | 70 ⚠️ | 100 | 100 | 100 |", summary)
+        self.assertIn("| /videos.html | 100 | 100 | 100 | 100 |", summary)
+        self.assertIn("**/index.html**", summary)
+        self.assertIn("Eliminate render-blocking resources", summary)
+        self.assertNotIn("**/videos.html**", summary)
+        index_pos = summary.index("| /index.html")
+        videos_pos = summary.index("| /videos.html")
+        self.assertLess(index_pos, videos_pos)
+
+    def test_uses_the_default_marker_and_title_when_no_label_is_given(self) -> None:
+        summary = lighthouse_summary.build_summary([])
+        self.assertIn(lighthouse_summary.MARKER, summary)
+        self.assertIn("### Lighthouse report", summary)
+
+    def test_accepts_a_custom_marker_and_title(self) -> None:
+        summary = lighthouse_summary.build_summary(
+            [], marker="<!-- custom-marker -->", title="Custom report"
+        )
+        self.assertIn("<!-- custom-marker -->", summary)
+        self.assertIn("### Custom report", summary)
+        self.assertNotIn(lighthouse_summary.MARKER, summary)
+
+
+class LoadReportsTests(unittest.TestCase):
+    def test_returns_empty_list_for_a_missing_directory(self) -> None:
+        self.assertEqual([], lighthouse_summary.load_reports(Path("does-not-exist")))
+
+    def test_loads_only_report_json_files(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            report_path = Path(directory, "lhr.json")
-            report_path.write_text(
-                json.dumps(make_report({"performance": 1.0})), encoding="utf-8"
-            )
-            manifest = [
-                {
-                    "url": "http://x/",
-                    "isRepresentativeRun": True,
-                    "summary": {"performance": 1.0},
-                    "jsonPath": str(report_path),
-                }
-            ]
-            summary = lighthouse_summary.build_summary(manifest)
+            root = Path(directory)
+            (root / "index__html.report.json").write_text('{"finalUrl": "http://x/index.html"}', encoding="utf-8")
+            (root / "index__html.report.html").write_text("<html></html>", encoding="utf-8")
 
-        self.assertIn("No audits scored below the reporting threshold.", summary)
+            reports = lighthouse_summary.load_reports(root)
+
+        self.assertEqual(1, len(reports))
+        self.assertEqual("http://x/index.html", reports[0]["finalUrl"])
 
 
 class MainTests(unittest.TestCase):
-    def test_main_prints_summary_for_missing_manifest(self) -> None:
+    def test_main_uses_the_default_marker_when_no_label_is_given(self) -> None:
+        import contextlib
+        import io
+        from unittest import mock
+
         output = io.StringIO()
         with (
-            mock.patch.object(sys, "argv", ["lighthouse_summary.py", "does-not-exist.json"]),
+            mock.patch.object(sys, "argv", ["lighthouse_summary.py", "does-not-exist"]),
             contextlib.redirect_stdout(output),
         ):
             lighthouse_summary.main()
 
         self.assertIn(lighthouse_summary.MARKER, output.getvalue())
-        self.assertIn("did not produce a report", output.getvalue())
+        self.assertIn("### Lighthouse report", output.getvalue())
+
+    def test_main_builds_a_labelled_marker_and_title_when_a_label_is_given(self) -> None:
+        import contextlib
+        import io
+        from unittest import mock
+
+        output = io.StringIO()
+        with (
+            mock.patch.object(sys, "argv", ["lighthouse_summary.py", "does-not-exist", "App"]),
+            contextlib.redirect_stdout(output),
+        ):
+            lighthouse_summary.main()
+
+        rendered = output.getvalue()
+        self.assertIn("<!-- lighthouse-summary-comment-App -->", rendered)
+        self.assertIn("### App Lighthouse report", rendered)
+        self.assertNotIn(lighthouse_summary.MARKER, rendered)
 
 
 if __name__ == "__main__":

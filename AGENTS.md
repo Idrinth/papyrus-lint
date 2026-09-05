@@ -237,6 +237,21 @@ binary target that crate also defines.
   (GitHub, Discord, Nexus Mods, badge/font hosts, ...) are faked with a
   harmless empty response rather than fetched, so the check stays fast
   and doesn't depend on services this repository doesn't control.
+- **GitHub Pages Lighthouse check job** (`pages-lighthouse`, pull requests
+  only): builds the site (`pages/build.py`), serves it locally, and runs
+  the `lighthouse` CLI (installed via npm, against the runner's
+  preinstalled Chrome) over every one of its pages for the performance,
+  accessibility, best-practices, and SEO categories, writing each page's
+  JSON/HTML report into a `lighthouse-reports` artifact. A per-page audit
+  failure is logged as a workflow warning and fails the job, without
+  stopping the remaining pages from being audited.
+  `.github/scripts/lighthouse_summary.py` turns the JSON reports into a
+  Markdown table of category scores plus, for any category scoring under
+  90/100, the specific audits behind that score, posted as a single PR
+  comment (updated in place on subsequent pushes, the same
+  marker-comment approach as the coverage summary comment below) and to
+  the job's step summary. Comment posting is best-effort
+  (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
 - **Sublime Text extension job**: runs the plugin's Python unit tests via
   `coverage run -m unittest discover`, scoped to `commands.py`/`linter.py`
   (test files themselves are omitted). The text summary is posted to the
@@ -254,19 +269,19 @@ binary target that crate also defines.
   above) to catch element-size/layout regressions a real browser renders
   but jsdom can't. On failure, the HTML report is uploaded as the
   `playwright-report` artifact.
-- **Frontend Lighthouse check job** (`lighthouse`): builds the frontend
-  (`npm run build`) and runs `treosh/lighthouse-ci-action` against the
-  built static site (config in `app/lighthouserc.json`), then renders each
-  audited page's Performance/Accessibility/Best Practices/SEO scores,
-  plus any audit scoring below 90, into a Markdown summary via
-  `.github/scripts/lighthouse_summary.py`. That summary is posted to the
-  job's step summary and, on pull requests, as an updated-in-place PR
-  comment using the same marker-based update pattern as the coverage
-  summary comment below. No assertions are configured, so this check is
-  purely informational and a low score never fails the build; comment
-  posting is best-effort (`continue-on-error`) since forked PRs get a
-  read-only `GITHUB_TOKEN`. The full Lighthouse reports (via
-  `uploadArtifacts`) are uploaded as the `lighthouse-reports` artifact.
+- **Frontend Lighthouse check job** (`app-lighthouse`, pull requests only):
+  builds the frontend (`npm run build`), serves `app/dist` locally, and
+  runs the same `lighthouse` CLI as the GitHub Pages Lighthouse check job
+  above over its page(s), writing each page's JSON/HTML report into an
+  `app-lighthouse-reports` artifact. A per-page audit failure is logged as
+  a workflow warning and fails the job, without stopping the remaining
+  pages from being audited. It calls the same
+  `.github/scripts/lighthouse_summary.py` with a second `App` argument, so
+  its Markdown summary (posted to the job's step summary and as an
+  updated-in-place PR comment, same as above) uses its own marker/title
+  and never overwrites the GitHub Pages job's comment. Comment posting is
+  best-effort (`continue-on-error`) since forked PRs get a read-only
+  `GITHUB_TOKEN`.
 - **Markdown job**: runs markdownlint-cli2 against every `README.md` in the
   repository, using the root `.markdownlint-cli2.yaml` configuration.
 - **VS Code extension job**: installs its dependencies, then runs `npm run

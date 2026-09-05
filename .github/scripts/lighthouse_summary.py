@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""Builds a Markdown Lighthouse summary for the CI PR comment.
+"""Aggregates a directory of Lighthouse JSON reports (see the
+`pages-lighthouse`/`app-lighthouse` CI jobs, which run the `lighthouse` CLI
+against every page of the built GitHub Pages site / app frontend) into a
+Markdown summary for the PR comment: one row per page with its category
+scores, plus a list of the specific audits behind any score that falls
+under THRESHOLD.
 
-Reads the `manifest.json`-shaped list produced by `treosh/lighthouse-ci-action`'s
-`manifest` output (one entry per collected page, each carrying category scores
-under `summary` and a `jsonPath` pointing at that run's full Lighthouse report
-on disk) and renders a per-page score table plus a list of failing audits.
+Usage: lighthouse_summary.py <dir-of-report.json-files> [label]
 
-Usage: lighthouse_summary.py <manifest.json>
+`label`, when given, distinguishes this summary's comment/title from
+another surface's (e.g. "App" for the app frontend vs. the default,
+unlabeled comment used for the GitHub Pages site), so the two can coexist
+as separate PR comments instead of overwriting each other.
 """
 
 import json
@@ -14,8 +19,8 @@ import sys
 from pathlib import Path
 
 MARKER = "<!-- lighthouse-summary-comment -->"
+THRESHOLD = 0.9
 
-# (summary/category key, display label), in report order.
 CATEGORIES = [
     ("performance", "Performance"),
     ("accessibility", "Accessibility"),
@@ -23,102 +28,99 @@ CATEGORIES = [
     ("seo", "SEO"),
 ]
 
-# Audits scoring below this are called out individually as issues. Lighthouse
-# scores are 0-1; audits without a numeric score (informational/manual ones)
-# are never flagged.
-ISSUE_THRESHOLD = 0.9
+
+def page_label(report: dict) -> str:
+    """The report's page, as a site-relative path (e.g. "/docs/index.html")."""
+    url = report.get("finalUrl") or report.get("requestedUrl") or ""
+    after_host = url.split("://", 1)[-1]
+    parts = after_host.split("/", 1)
+    path = parts[1] if len(parts) > 1 else ""
+    return f"/{path}" if path else "/"
 
 
-def score_str(value) -> str:
-    if not isinstance(value, (int, float)):
+def format_score(score: float | None) -> str:
+    if score is None:
         return "n/a"
-    return str(round(value * 100))
-
-
-def load_json(path: Path):
-    if not path.is_file():
-        return None
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
+    pct = round(score * 100)
+    return f"{pct} ⚠️" if score < THRESHOLD else str(pct)
 
 
 def failing_audits(report: dict) -> list[str]:
-    """Returns "Category: Audit title" for every scored audit below
-    ISSUE_THRESHOLD in one of CATEGORIES, in category order."""
-    found = []
+    """Titles of the audits behind every category below THRESHOLD, weakest first."""
     categories = report.get("categories", {})
     audits = report.get("audits", {})
-    for category_key, category_label in CATEGORIES:
-        category = categories.get(category_key)
-        if not category:
+
+    wanted_ids: set[str] = set()
+    for key, _ in CATEGORIES:
+        category = categories.get(key)
+        if not category or (category.get("score") if category.get("score") is not None else 1) >= THRESHOLD:
             continue
         for ref in category.get("auditRefs", []):
-            if ref.get("weight", 0) <= 0:
-                continue
-            audit = audits.get(ref.get("id", ""))
-            if not audit:
-                continue
-            score = audit.get("score")
-            if isinstance(score, (int, float)) and score < ISSUE_THRESHOLD:
-                found.append(f"{category_label}: {audit.get('title', ref.get('id'))}")
-    return found
+            if ref.get("weight", 0) > 0:
+                wanted_ids.add(ref["id"])
+
+    scored = []
+    for audit_id in wanted_ids:
+        audit = audits.get(audit_id)
+        if not audit or audit.get("score") is None or audit["score"] >= THRESHOLD:
+            continue
+        scored.append((audit["score"], audit.get("title", audit_id)))
+
+    scored.sort(key=lambda item: item[0])
+    return [title for _, title in scored]
 
 
-def build_summary(manifest: list) -> str:
-    lines = [MARKER, "### Lighthouse report", ""]
+def build_summary(reports: list[dict], marker: str = MARKER, title: str = "Lighthouse report") -> str:
+    lines = [marker, f"### {title}", ""]
 
-    runs = [entry for entry in manifest if entry.get("isRepresentativeRun")] or manifest
-    if not runs:
-        lines.append("_Lighthouse did not produce a report for this run._")
+    if not reports:
+        lines.append("No Lighthouse reports were generated.")
+        lines.append("")
         return "\n".join(lines)
 
-    header = "| Page | " + " | ".join(label for _, label in CATEGORIES) + " |"
-    separator = "| --- | " + " | ".join("---" for _ in CATEGORIES) + " |"
-    lines += [header, separator]
+    reports = sorted(reports, key=page_label)
 
-    issues_by_page = []
-    for run in runs:
-        page = run.get("url", "page")
-        summary = run.get("summary") or {}
-        scores = [score_str(summary.get(key)) for key, _ in CATEGORIES]
-        lines.append(f"| {page} | " + " | ".join(scores) + " |")
+    header = " | ".join(label for _, label in CATEGORIES)
+    lines.append(f"| Page | {header} |")
+    lines.append("| --- | " + " | ".join(["---"] * len(CATEGORIES)) + " |")
 
-        json_path = run.get("jsonPath")
-        report = load_json(Path(json_path)) if json_path else None
-        if report is None:
-            continue
+    issue_sections = []
+    for report in reports:
+        label = page_label(report)
+        categories = report.get("categories", {})
+        cells = [format_score((categories.get(key) or {}).get("score")) for key, _ in CATEGORIES]
+        lines.append(f"| {label} | " + " | ".join(cells) + " |")
 
         issues = failing_audits(report)
         if issues:
-            issues_by_page.append((page, issues))
+            bullets = "\n".join(f"  - {issue}" for issue in issues)
+            issue_sections.append(f"- **{label}**\n{bullets}")
 
     lines.append("")
-    if issues_by_page:
-        lines.append(f"#### Audits below {score_str(ISSUE_THRESHOLD)}")
-        for page, issues in issues_by_page:
-            lines.append(f"- {page}")
-            for issue in issues:
-                lines.append(f"  - {issue}")
+    if issue_sections:
+        lines.append(f"Audits behind a category scoring below {int(THRESHOLD * 100)}/100:")
+        lines.append("")
+        lines.extend(issue_sections)
     else:
-        lines.append("No audits scored below the reporting threshold.")
-
+        lines.append(f"All pages scored at least {int(THRESHOLD * 100)}/100 in every category.")
     lines.append("")
-    lines.append(
-        "_Scores are 0-100 (higher is better). This check is informational and does not fail the build._"
-    )
 
     return "\n".join(lines)
 
 
-def main() -> None:
-    manifest_path = Path(sys.argv[1])
-    manifest = load_json(manifest_path)
-    if manifest is None:
-        manifest = []
+def load_reports(directory: Path) -> list[dict]:
+    if not directory.is_dir():
+        return []
+    return [json.loads(path.read_text(encoding="utf-8")) for path in sorted(directory.glob("*.report.json"))]
 
-    print(build_summary(manifest))
+
+def main() -> None:
+    directory = Path(sys.argv[1])
+    label = sys.argv[2] if len(sys.argv) > 2 else None
+    marker = f"<!-- lighthouse-summary-comment-{label} -->" if label else MARKER
+    title = f"{label} Lighthouse report" if label else "Lighthouse report"
+
+    print(build_summary(load_reports(directory), marker=marker, title=title))
 
 
 if __name__ == "__main__":

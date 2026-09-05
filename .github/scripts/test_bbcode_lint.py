@@ -2,9 +2,13 @@
 """Unit tests for the dependency-free BBCode structural linter."""
 
 import importlib.util
+import io
 import sys
+import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 
 SCRIPT = Path(__file__).with_name("bbcode_lint.py")
@@ -43,8 +47,66 @@ class BbcodeLintTests(unittest.TestCase):
             self.messages("[haeding]Title[/haeding]"),
         )
 
+    def test_reports_closing_tag_with_argument(self) -> None:
+        self.assertEqual(
+            ["closing tag [/url] cannot have an argument"],
+            self.messages("[url=https://example.com]Example[/url=ignored]"),
+        )
+
+    def test_reports_closing_tag_without_an_opening_tag(self) -> None:
+        self.assertEqual(
+            ["closing tag [/b] has no opening tag"],
+            self.messages("text[/b]"),
+        )
+
     def test_plain_square_brackets_are_not_tags(self) -> None:
         self.assertEqual([], self.messages("values[0] and []"))
+
+    def test_location_reports_one_based_line_and_column(self) -> None:
+        text = "first line\nsecond [b]line"
+        self.assertEqual((2, 8), bbcode_lint.location(text, text.index("[b]")))
+
+    def test_check_file_prints_each_issue_with_its_location(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory, "page.bbcode")
+            path.write_text("[b]ok[/b]\n[/i]\n[u]", encoding="utf-8")
+            output = io.StringIO()
+
+            with redirect_stdout(output):
+                issue_count = bbcode_lint.check_file(path)
+
+        self.assertEqual(2, issue_count)
+        self.assertEqual(
+            f"{path}:2:1: closing tag [/i] has no opening tag\n"
+            f"{path}:3:1: tag [u] is not closed\n",
+            output.getvalue(),
+        )
+
+    def test_main_reports_success_for_every_input_file(self) -> None:
+        paths = [Path("one.bbcode"), Path("two.bbcode")]
+        output = io.StringIO()
+        with (
+            mock.patch.object(sys, "argv", ["bbcode_lint.py", *map(str, paths)]),
+            mock.patch.object(bbcode_lint, "check_file", side_effect=[0, 0]) as check_file,
+            redirect_stdout(output),
+        ):
+            result = bbcode_lint.main()
+
+        self.assertEqual(0, result)
+        self.assertEqual([mock.call(path) for path in paths], check_file.call_args_list)
+        self.assertEqual("BBCode lint passed for 2 file(s).\n", output.getvalue())
+
+    def test_main_reports_the_total_failure_count(self) -> None:
+        output = io.StringIO()
+        with (
+            mock.patch.object(sys, "argv", ["bbcode_lint.py", "one.bbcode", "two.bbcode"]),
+            mock.patch.object(bbcode_lint, "check_file", side_effect=[1, 2]),
+            redirect_stdout(output),
+        ):
+            result = bbcode_lint.main()
+
+        self.assertEqual(1, result)
+        self.assertEqual("BBCode lint failed with 3 issue(s).\n", output.getvalue())
 
 
 if __name__ == "__main__":
