@@ -8,9 +8,13 @@ Also renders every file listed in DOCS into its own browsable subpage
 under docs/ (via pages/docs.template.html), and assembles the site's
 assets/ directory by copying the screenshots and icon this page uses
 from resources/ and app/src-tauri/icons, rather than committing
-duplicate copies of them under pages/. Every generated HTML page and the
-stylesheet are minified (see minify_html/minify_css) before being written
-into the output directory.
+duplicate copies of them under pages/. Every asset actually rendered as
+an <img> also gets a WebP and an AVIF sibling (see
+convert_to_modern_formats), and every such <img> tag, in every generated
+page, is rewritten into a <picture> offering those smaller formats ahead
+of the original as a fallback (see wrap_images_with_modern_sources).
+Every generated HTML page and the stylesheet are minified (see
+minify_html/minify_css) before being written into the output directory.
 
 Usage: pages/build.py [--out DIR]  (default DIR: pages/dist)
 """
@@ -23,6 +27,8 @@ import json
 import re
 import shutil
 from pathlib import Path
+
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
@@ -100,6 +106,21 @@ ASSETS = {
     "favicon.png": ROOT / "app" / "src-tauri" / "icons" / "icon.png",
 }
 
+# The ASSETS entries actually rendered as <img> elements on the page (as
+# opposed to logo.jpg, only ever referenced as a raw og:image/twitter:image
+# URL, and favicon.png, only ever referenced via <link rel="icon">): these
+# get a WebP and an AVIF sibling generated alongside the original, so
+# wrap_images_with_modern_sources can offer them as smaller <picture>
+# alternatives.
+MODERN_FORMAT_ASSETS = {
+    "logo-small.jpg",
+    "papyrus-lint-import.png",
+    "papyrus-lint-results.png",
+    "papyrus-lint-viewer.png",
+    "papyrus-lint-vscode.png",
+    "papyrus-lint-cli.png",
+}
+
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 INLINE_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 INLINE_CODE_RE = re.compile(r"`([^`]+)`")
@@ -114,6 +135,10 @@ CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_WHITESPACE_RUN_RE = re.compile(r"\s+")
 CSS_SYNTAX_SPACE_RE = re.compile(r"\s*([{}:;,])\s*")
 CSS_TRAILING_SEMICOLON_RE = re.compile(r";}")
+
+# Matches a local (not http(s), e.g. a shields.io badge) <img> tag whose src
+# points into assets/ (optionally prefixed with ../, as docs/*.html pages do).
+IMG_ASSET_TAG_RE = re.compile(r'<img\b[^>]*\ssrc="((?:\.\./)?assets/([\w.-]+)\.(?:png|jpg))"[^>]*/?>')
 
 
 def minify_html(text: str) -> str:
@@ -234,6 +259,51 @@ def first_code_block(section_lines: list[str]) -> str:
     if end is None:
         raise SystemExit("README.md: unterminated fenced code block")
     return "\n".join(section_lines[start + 1 : end])
+
+
+def convert_to_modern_formats(source: Path, dest_dir: Path) -> None:
+    """Writes a WebP and an AVIF sibling of an already-copied asset (a PNG
+    screenshot or the header's JPEG logo) into dest_dir, so
+    wrap_images_with_modern_sources can offer them as smaller <picture>
+    alternatives to the original format. PNGs (the screenshots) are
+    re-encoded losslessly, since they're UI screenshots where lossy
+    artifacts around text/lines would be conspicuous; the JPEG logo is
+    re-encoded lossy, matching its own already-lossy source format."""
+    lossless = source.suffix.lower() == ".png"
+    with Image.open(source) as image:
+        if not lossless and image.mode != "RGB":
+            image = image.convert("RGB")
+        image.save(dest_dir / f"{source.stem}.webp", lossless=lossless, quality=80)
+        image.save(dest_dir / f"{source.stem}.avif", lossless=lossless, quality=65)
+
+
+def wrap_images_with_modern_sources(page_html: str) -> str:
+    """Wraps every <img> tag whose src points at a MODERN_FORMAT_ASSETS
+    asset in a <picture> element offering the AVIF/WebP siblings
+    convert_to_modern_formats generates as preferred <source>s, keeping the
+    original <img> as the final (and oldest-browser-compatible) fallback."""
+
+    def wrap(match: re.Match[str]) -> str:
+        src, name = match.group(1), match.group(2)
+        if f"{name}{Path(src).suffix}" not in MODERN_FORMAT_ASSETS:
+            return match.group(0)
+        prefix = src[: -len(Path(src).name)]
+        return (
+            "<picture>"
+            f'<source srcset="{prefix}{name}.avif" type="image/avif" />'
+            f'<source srcset="{prefix}{name}.webp" type="image/webp" />'
+            f"{match.group(0)}"
+            "</picture>"
+        )
+
+    return IMG_ASSET_TAG_RE.sub(wrap, page_html)
+
+
+def finalize_page(page_html: str) -> str:
+    """Applies every page-wide HTML post-processing step - modern-format
+    <picture> wrapping, then minification - shared by every full page this
+    builder writes out."""
+    return minify_html(wrap_images_with_modern_sources(page_html))
 
 
 def resolve_doc_href(href: str) -> str:
@@ -377,7 +447,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
         page = render_page(
             info["title"], info["description"], info["content_html"], f"{SITE_URL}docs/{doc['slug']}.html"
         )
-        (docs_out_dir / f"{doc['slug']}.html").write_text(minify_html(page), encoding="utf-8")
+        (docs_out_dir / f"{doc['slug']}.html").write_text(finalize_page(page), encoding="utf-8")
 
     index_content = f'<ul class="docs-list">{render_docs_list_items(doc_results, "")}</ul>'
     index_page = render_page(
@@ -386,7 +456,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
         index_content,
         f"{SITE_URL}docs/index.html",
     )
-    (docs_out_dir / "index.html").write_text(minify_html(index_page), encoding="utf-8")
+    (docs_out_dir / "index.html").write_text(finalize_page(index_page), encoding="utf-8")
 
 
 def render_videos_list(videos: list[dict]) -> str:
@@ -412,7 +482,7 @@ def build_videos_page(out_dir: Path) -> None:
     if "<!--VIDEOS_LIST-->" not in template:
         raise SystemExit("videos.template.html: missing marker <!--VIDEOS_LIST-->")
     page = template.replace("<!--VIDEOS_LIST-->", render_videos_list(videos))
-    (out_dir / "videos.html").write_text(minify_html(page), encoding="utf-8")
+    (out_dir / "videos.html").write_text(finalize_page(page), encoding="utf-8")
 
 
 def build(out_dir: Path, version: str = "") -> None:
@@ -449,14 +519,17 @@ def build(out_dir: Path, version: str = "") -> None:
     if out_dir.exists():
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True)
-    (out_dir / "index.html").write_text(minify_html(template), encoding="utf-8")
+    (out_dir / "index.html").write_text(finalize_page(template), encoding="utf-8")
     css = (PAGES_DIR / "styles.css").read_text(encoding="utf-8")
     (out_dir / "styles.css").write_text(minify_css(css), encoding="utf-8")
 
     assets_dir = out_dir / "assets"
     assets_dir.mkdir()
     for name, source in ASSETS.items():
-        shutil.copyfile(source, assets_dir / name)
+        dest = assets_dir / name
+        shutil.copyfile(source, dest)
+        if name in MODERN_FORMAT_ASSETS:
+            convert_to_modern_formats(dest, assets_dir)
 
     shutil.copytree(PAGES_DIR / "fonts", out_dir / "fonts")
 

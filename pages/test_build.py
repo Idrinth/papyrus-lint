@@ -7,6 +7,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from PIL import Image
+
 from pages import build as page_builder
 
 
@@ -377,6 +379,53 @@ class MinifyTest(unittest.TestCase):
         self.assertEqual(result, "main{color:red;margin:0}.a,.b{display:flex}")
 
 
+class ModernImageFormatsTest(unittest.TestCase):
+    def test_convert_to_modern_formats_writes_webp_and_avif_siblings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            out_dir = Path(directory)
+            source = out_dir / "screenshot.png"
+            Image.new("RGBA", (4, 4), (10, 20, 30, 255)).save(source)
+
+            page_builder.convert_to_modern_formats(source, out_dir)
+
+            self.assertTrue((out_dir / "screenshot.webp").exists())
+            self.assertTrue((out_dir / "screenshot.avif").exists())
+            with Image.open(out_dir / "screenshot.webp") as webp_image:
+                self.assertEqual(webp_image.size, (4, 4))
+            with Image.open(out_dir / "screenshot.avif") as avif_image:
+                self.assertEqual(avif_image.size, (4, 4))
+
+    def test_wrap_images_with_modern_sources_wraps_only_known_assets(self) -> None:
+        with patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"logo-small.jpg"}):
+            page_html = (
+                '<img class="site-header__logo" src="assets/logo-small.jpg" alt="" />'
+                '<img src="assets/untouched.png" alt="not converted" />'
+                '<img src="https://img.shields.io/badge/x" alt="badge" />'
+            )
+
+            result = page_builder.wrap_images_with_modern_sources(page_html)
+
+        self.assertIn(
+            '<picture><source srcset="assets/logo-small.avif" type="image/avif" />'
+            '<source srcset="assets/logo-small.webp" type="image/webp" />'
+            '<img class="site-header__logo" src="assets/logo-small.jpg" alt="" />'
+            "</picture>",
+            result,
+        )
+        self.assertIn('<img src="assets/untouched.png" alt="not converted" />', result)
+        self.assertIn('<img src="https://img.shields.io/badge/x" alt="badge" />', result)
+        self.assertEqual(result.count("<picture>"), 1)
+
+    def test_wrap_images_with_modern_sources_respects_a_relative_docs_prefix(self) -> None:
+        with patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"logo-small.jpg"}):
+            result = page_builder.wrap_images_with_modern_sources(
+                '<img class="site-header__logo" src="../assets/logo-small.jpg" alt="" />'
+            )
+
+        self.assertIn('<source srcset="../assets/logo-small.avif" type="image/avif" />', result)
+        self.assertIn('<source srcset="../assets/logo-small.webp" type="image/webp" />', result)
+
+
 class BuildTest(unittest.TestCase):
     def test_build_replaces_content_copies_assets_and_cleans_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -399,7 +448,8 @@ PapyrusLinterCLI example.psc
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
-                "<main><!--LINT_TABLE:Formatting--><!--CLI_EXAMPLES--><!--DOCS_LIST--><!--VERSION--></main>",
+                "<main><!--LINT_TABLE:Formatting--><!--CLI_EXAMPLES--><!--DOCS_LIST--><!--VERSION-->"
+                '<img src="assets/screenshot.png" alt="Screenshot" /></main>',
                 encoding="utf-8",
             )
             (pages_dir / "videos.template.html").write_text(
@@ -413,8 +463,10 @@ PapyrusLinterCLI example.psc
             fonts_dir = pages_dir / "fonts"
             fonts_dir.mkdir()
             (fonts_dir / "font.woff2").write_bytes(b"font bytes")
-            source_asset = root / "source.png"
-            source_asset.write_bytes(b"image bytes")
+            copied_asset = root / "source.png"
+            copied_asset.write_bytes(b"image bytes")
+            screenshot_asset = root / "screenshot-source.png"
+            Image.new("RGB", (4, 4), (1, 2, 3)).save(screenshot_asset)
             out_dir = root / "public"
             out_dir.mkdir()
             (out_dir / "stale.txt").write_text("remove me", encoding="utf-8")
@@ -424,8 +476,12 @@ PapyrusLinterCLI example.psc
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
                 patch.object(page_builder, "DOCS", []),
-                patch.object(page_builder, "ASSETS", {"copied.png": source_asset}),
-                patch.object(page_builder, "DOCS", []),
+                patch.object(
+                    page_builder,
+                    "ASSETS",
+                    {"copied.png": copied_asset, "screenshot.png": screenshot_asset},
+                ),
+                patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"screenshot.png"}),
             ):
                 page_builder.build(out_dir, version="v1.2.3")
 
@@ -437,11 +493,20 @@ PapyrusLinterCLI example.psc
             self.assertNotIn("<!--CLI_EXAMPLES-->", output)
             self.assertNotIn("<!--DOCS_LIST-->", output)
             self.assertNotIn("<!--VERSION-->", output)
+            self.assertIn(
+                '<picture><source srcset="assets/screenshot.avif" type="image/avif" />'
+                '<source srcset="assets/screenshot.webp" type="image/webp" />'
+                '<img src="assets/screenshot.png" alt="Screenshot" /></picture>',
+                output,
+            )
             self.assertEqual(
                 (out_dir / "styles.css").read_text(encoding="utf-8"),
                 "main{color:red}",
             )
             self.assertEqual((out_dir / "assets" / "copied.png").read_bytes(), b"image bytes")
+            self.assertFalse((out_dir / "assets" / "copied.webp").exists())
+            self.assertTrue((out_dir / "assets" / "screenshot.webp").exists())
+            self.assertTrue((out_dir / "assets" / "screenshot.avif").exists())
             self.assertEqual((out_dir / "fonts" / "font.woff2").read_bytes(), b"font bytes")
             self.assertFalse((out_dir / "stale.txt").exists())
             self.assertTrue((out_dir / "docs" / "index.html").exists())
