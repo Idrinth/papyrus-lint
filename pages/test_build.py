@@ -124,6 +124,7 @@ PapyrusLinterCLI example.psc
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
+                patch.object(page_builder, "DOCS", []),
                 patch.object(page_builder, "ASSETS", {"copied.png": source_asset}),
                 patch.object(page_builder, "DOCS", []),
             ):
