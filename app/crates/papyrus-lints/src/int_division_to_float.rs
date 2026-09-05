@@ -5,7 +5,10 @@
 //! any widening happens, so `Float x = 1 / 2` yields `0.0` rather than
 //! `0.5` — the truncation already happened by the time the `Int` result
 //! widens into the `Float` slot. Writing either operand as a `Float`
-//! (`1.0 / 2`) avoids it.
+//! (`1.0 / 2`) avoids it. When both operands are compile-time-constant
+//! integer literals *and* the division happens to divide evenly (e.g.
+//! `72 / 8`), no truncation actually occurs, so that case is left
+//! unflagged rather than reported as a false positive.
 //!
 //! Like [`crate::float_int_conversion`], this needs a value's inferred
 //! type, so it works on the parsed AST (see `papyrus_parser::types`)
@@ -15,7 +18,9 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Stmt, TypeName};
+use papyrus_parser::ast::{
+    BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Stmt, TypeName, UnaryOp,
+};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::Diagnostic;
@@ -365,7 +370,7 @@ fn collect_int_divisions(expr: &Expr, env: &TypeEnv, count: &mut usize) {
         right,
     } = expr
     {
-        if is_int_expr(left, env) && is_int_expr(right, env) {
+        if is_int_expr(left, env) && is_int_expr(right, env) && !divides_evenly(left, right) {
             *count += 1;
         }
         collect_int_divisions(left, env, count);
@@ -392,6 +397,50 @@ fn collect_int_divisions(expr: &Expr, env: &TypeEnv, count: &mut usize) {
     }
 }
 
+/// True when `left / right` is a division between two compile-time-constant
+/// integer literals that happens to divide evenly, so widening its result
+/// into a Float loses nothing — e.g. `72 / 8` (which is `9`, not truncated
+/// from something like `9.14...`). Mirrors the conservative folding in
+/// `division_by_zero`: only literals, negation, and `+`/`-`/`*` of
+/// already-folded operands are folded, never another division/modulo, and
+/// anything that depends on an identifier, a call, `Self`/`Parent`, a
+/// member/index access, a cast, or a `new` array is left unresolved (and so
+/// still flagged, since we can't tell whether it divides evenly).
+fn divides_evenly(left: &Expr, right: &Expr) -> bool {
+    let Some(a) = fold_int_literal(left) else {
+        return false;
+    };
+    let Some(b) = fold_int_literal(right) else {
+        return false;
+    };
+    b != 0 && a % b == 0
+}
+
+fn fold_int_literal(expr: &Expr) -> Option<i64> {
+    match expr {
+        Expr::Literal(Literal::Int { value, .. }) => Some(*value),
+        Expr::Unary {
+            op: UnaryOp::Neg,
+            operand,
+        } => fold_int_literal(operand)?.checked_neg(),
+        Expr::Binary {
+            left,
+            op: op @ (BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul),
+            right,
+        } => {
+            let a = fold_int_literal(left)?;
+            let b = fold_int_literal(right)?;
+            match op {
+                BinaryOp::Add => a.checked_add(b),
+                BinaryOp::Sub => a.checked_sub(b),
+                BinaryOp::Mul => a.checked_mul(b),
+                _ => unreachable!(),
+            }
+        }
+        _ => None,
+    }
+}
+
 fn describe_target(target: &Expr) -> String {
     match target {
         Expr::Identifier(name) => format!("variable '{name}'"),
@@ -412,6 +461,35 @@ mod tests {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 4);
         assert!(diagnostics[0].message.contains("'f'"));
+    }
+
+    #[test]
+    fn does_not_flag_constant_int_division_that_divides_evenly() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Float a = 72 / 8\nEndFunction\n");
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_negative_constant_int_division_that_divides_evenly() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Float a = -72 / 8\nEndFunction\n");
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn still_flags_constant_int_division_that_truncates() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Float a = 72 / 7\nEndFunction\n");
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn still_flags_int_division_when_an_operand_is_not_a_constant() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int x)\n    Float a = 72 / x\nEndFunction\n",
+        );
+        assert_eq!(diagnostics.len(), 1);
     }
 
     #[test]
