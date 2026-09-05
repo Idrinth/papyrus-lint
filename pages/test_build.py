@@ -93,6 +93,50 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertNotIn("<overview>", result)
 
 
+class MinifyTest(unittest.TestCase):
+    def test_minify_html_strips_comments_and_collapses_indentation(self) -> None:
+        source = """<main>
+          <!-- a comment -->
+          <p>
+            Hello
+          </p>
+
+
+          <p>World</p>
+        </main>"""
+
+        result = page_builder.minify_html(source)
+
+        self.assertNotIn("<!--", result)
+        self.assertNotIn("  ", result)
+        self.assertIn("<p>\nHello\n</p>", result)
+        self.assertIn("<p>World</p>", result)
+
+    def test_minify_html_preserves_pre_block_whitespace_verbatim(self) -> None:
+        pre_block = '<pre class="code-block"><code>line one\n    indented line\n\n\nline four</code></pre>'
+        source = f"<main>\n  <p>  before  </p>\n  {pre_block}\n  <p>after</p>\n</main>"
+
+        result = page_builder.minify_html(source)
+
+        self.assertIn(pre_block, result)
+
+    def test_minify_css_strips_comments_and_collapses_whitespace(self) -> None:
+        source = """/* header */
+        main {
+          color: red;
+          margin: 0 ;
+        }
+
+        .a, .b {
+          display: flex;
+        }
+        """
+
+        result = page_builder.minify_css(source)
+
+        self.assertEqual(result, "main{color:red;margin:0}.a,.b{display:flex}")
+
+
 class BuildTest(unittest.TestCase):
     def test_build_replaces_content_copies_assets_and_cleans_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -155,7 +199,7 @@ PapyrusLinterCLI example.psc
             self.assertNotIn("<!--VERSION-->", output)
             self.assertEqual(
                 (out_dir / "styles.css").read_text(encoding="utf-8"),
-                "main { color: red; }",
+                "main{color:red}",
             )
             self.assertEqual((out_dir / "assets" / "copied.png").read_bytes(), b"image bytes")
             self.assertEqual((out_dir / "fonts" / "font.woff2").read_bytes(), b"font bytes")
