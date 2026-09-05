@@ -237,6 +237,21 @@ binary target that crate also defines.
   (GitHub, Discord, Nexus Mods, badge/font hosts, ...) are faked with a
   harmless empty response rather than fetched, so the check stays fast
   and doesn't depend on services this repository doesn't control.
+- **GitHub Pages Lighthouse check job** (`pages-lighthouse`, pull requests
+  only): builds the site (`pages/build.py`), serves it locally, and runs
+  the `lighthouse` CLI (installed via npm, against the runner's
+  preinstalled Chrome) over every one of its pages for the performance,
+  accessibility, best-practices, and SEO categories, writing each page's
+  JSON/HTML report into a `lighthouse-reports` artifact. A per-page audit
+  failure is logged as a workflow warning and fails the job, without
+  stopping the remaining pages from being audited.
+  `.github/scripts/lighthouse_summary.py` turns the JSON reports into a
+  Markdown table of category scores plus, for any category scoring under
+  90/100, the specific audits behind that score, posted as a single PR
+  comment (updated in place on subsequent pushes, the same
+  marker-comment approach as the coverage summary comment below) and to
+  the job's step summary. Comment posting is best-effort
+  (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
 - **Sublime Text extension job**: runs the plugin's Python unit tests via
   `coverage run -m unittest discover`, scoped to `commands.py`/`linter.py`
   (test files themselves are omitted). The text summary is posted to the

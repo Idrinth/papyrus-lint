@@ -123,6 +123,114 @@ jobs:
       - name: Check built site in a browser
         run: python3 pages/browser_check.py --dist pages/dist
 
+  pages-lighthouse:
+    name: GitHub Pages Lighthouse check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Prepare report directory
+        run: mkdir -p lighthouse-reports
+
+      - name: Build site
+        run: python3 pages/build.py --out pages/dist
+
+      - name: Install Lighthouse
+        run: npm install -g lighthouse@13.4.1
+
+      - name: Serve built site
+        run: |
+          python3 -m http.server 4173 --directory pages/dist &
+          echo $! > server.pid
+          for _ in $(seq 1 30); do
+            curl -sf http://localhost:4173/index.html > /dev/null && break
+            sleep 1
+          done
+
+      - name: Run Lighthouse against every page
+        run: |
+          status=0
+          while IFS= read -r file; do
+            rel="${file#pages/dist/}"
+            name=$(echo "$rel" | tr '/.' '__')
+            if ! lighthouse "http://localhost:4173/$rel" \
+                --output=json --output=html \
+                --output-path="lighthouse-reports/$name" \
+                --chrome-flags="--headless=new --no-sandbox --disable-gpu" \
+                --only-categories=performance,accessibility,best-practices,seo \
+                --quiet; then
+              echo "::warning::Lighthouse audit failed for $rel"
+              status=1
+            fi
+          done < <(find pages/dist -name '*.html' | sort)
+          exit "$status"
+
+      - name: Stop server
+        if: always()
+        run: kill "$(cat server.pid)" 2>/dev/null || true
+
+      - name: Build Lighthouse summary
+        if: always()
+        run: python3 .github/scripts/lighthouse_summary.py lighthouse-reports > lighthouse-summary.md
+
+      - name: Publish Lighthouse summary
+        if: always()
+        run: cat lighthouse-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-reports
+          path: lighthouse-reports/
+
+      - name: Post Lighthouse comment
+        # Forked PRs get a read-only GITHUB_TOKEN, so posting the comment
+        # can fail there; the step summary above still carries the report.
+        if: always()
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- lighthouse-summary-comment -->';
+            const body = fs.readFileSync('lighthouse-summary.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
   markdown:
     name: Markdown lint
     runs-on: ubuntu-latest
