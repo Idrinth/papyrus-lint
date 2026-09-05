@@ -215,8 +215,36 @@ class MarkdownHelpersTest(unittest.TestCase):
     def test_first_paragraph_returns_empty_text_when_there_is_no_prose(self) -> None:
         self.assertEqual(page_builder.first_paragraph(["# Title", "", "## Subtitle"]), "")
 
+    def test_first_paragraph_skips_fenced_code_before_prose(self) -> None:
+        lines = [
+            "# Guide",
+            "```yaml",
+            "setting: value",
+            "```",
+            "",
+            "The actual introduction.",
+        ]
+
+        self.assertEqual(page_builder.first_paragraph(lines), "The actual introduction.")
+
+    def test_first_paragraph_ignores_an_unclosed_fenced_code_block(self) -> None:
+        self.assertEqual(page_builder.first_paragraph(["```text", "not prose"]), "")
+
 
 class DocsRenderingTest(unittest.TestCase):
+    def test_raw_github_link_escapes_a_custom_source_url(self) -> None:
+        result = page_builder.raw_github_link(
+            {
+                "filename": "guide.md",
+                "source_url": 'https://example.test/source?label="docs"&mode=raw',
+            }
+        )
+
+        self.assertIn(
+            'href="https://example.test/source?label=&quot;docs&quot;&amp;mode=raw"', result
+        )
+        self.assertNotIn('label="docs"', result)
+
     def test_render_doc_renders_markdown_metadata_links_and_source(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             docs_dir = Path(directory)
@@ -673,6 +701,39 @@ command
             ):
                 with self.assertRaisesRegex(SystemExit, "missing marker"):
                     page_builder.build(root / "out")
+
+    def test_build_rejects_a_missing_cli_examples_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            pages_dir.mkdir()
+            (root / "README.md").write_text(
+                """## Implemented Lints
+### Formatting
+| Lint | Description | Auto-Fix |
+| --- | --- | --- |
+| lint | description | |
+## Command-line interface
+```
+command
+```
+""",
+                encoding="utf-8",
+            )
+            (pages_dir / "index.template.html").write_text(
+                "<!--LINT_TABLE:Formatting--><!--DOCS_LIST-->", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "ROOT", root),
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
+                patch.object(page_builder, "DOCS", []),
+            ):
+                with self.assertRaisesRegex(SystemExit, "missing marker <!--CLI_EXAMPLES-->"):
+                    page_builder.build(root / "out")
+
+            self.assertFalse((root / "out").exists())
 
     def test_main_uses_default_version_and_reports_output_directory(self) -> None:
         output_dir = Path("custom-output")
