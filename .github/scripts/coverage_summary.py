@@ -14,6 +14,10 @@ MARKER = "<!-- coverage-summary-comment -->"
 # the downloaded-artifacts directory) that make it up.
 MODULES = [
     (
+        "CI tooling",
+        [(".github/scripts", "ci-scripts-coverage/lcov.info")],
+    ),
+    (
         "Crates (papyrus-parser, papyrus-lints, papyrus-lint-core, papyrus-lint-cli)",
         [
             ("papyrus-parser", "rust-coverage-papyrus-parser/lcov.info"),
