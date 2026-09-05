@@ -379,6 +379,117 @@ jobs:
           path: app/playwright-report/
           retention-days: 7
 
+  app-lighthouse:
+    name: Frontend Lighthouse check
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci --ignore-scripts
+
+      - name: Build frontend
+        working-directory: app
+        run: npm run build
+
+      - name: Prepare report directory
+        run: mkdir -p app-lighthouse-reports
+
+      - name: Install Lighthouse
+        run: npm install -g lighthouse@13.4.1
+
+      - name: Serve built frontend
+        run: |
+          python3 -m http.server 4173 --directory app/dist &
+          echo $! > server.pid
+          for _ in $(seq 1 30); do
+            curl -sf http://localhost:4173/index.html > /dev/null && break
+            sleep 1
+          done
+
+      - name: Run Lighthouse against every page
+        run: |
+          status=0
+          while IFS= read -r file; do
+            rel="${file#app/dist/}"
+            name=$(echo "$rel" | tr '/.' '__')
+            if ! lighthouse "http://localhost:4173/$rel" \
+                --output=json --output=html \
+                --output-path="app-lighthouse-reports/$name" \
+                --chrome-flags="--headless=new --no-sandbox --disable-gpu" \
+                --only-categories=performance,accessibility,best-practices,seo \
+                --quiet; then
+              echo "::warning::Lighthouse audit failed for $rel"
+              status=1
+            fi
+          done < <(find app/dist -name '*.html' | sort)
+          exit "$status"
+
+      - name: Stop server
+        if: always()
+        run: kill "$(cat server.pid)" 2>/dev/null || true
+
+      - name: Build Lighthouse summary
+        if: always()
+        run: python3 .github/scripts/lighthouse_summary.py app-lighthouse-reports App > app-lighthouse-summary.md
+
+      - name: Publish Lighthouse summary
+        if: always()
+        run: cat app-lighthouse-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: app-lighthouse-reports
+          path: app-lighthouse-reports/
+
+      - name: Post Lighthouse comment
+        # Forked PRs get a read-only GITHUB_TOKEN, so posting the comment
+        # can fail there; the step summary above still carries the report.
+        if: always()
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- lighthouse-summary-comment-App -->';
+            const body = fs.readFileSync('app-lighthouse-summary.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
   vscode-extension:
     name: VS Code extension (test & compile)
     runs-on: ubuntu-latest

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """Aggregates a directory of Lighthouse JSON reports (see the
-`pages-lighthouse` CI job, which runs the `lighthouse` CLI against every
-page of the built GitHub Pages site) into a Markdown summary for the PR
-comment: one row per page with its category scores, plus a list of the
-specific audits behind any score that falls under THRESHOLD.
+`pages-lighthouse`/`app-lighthouse` CI jobs, which run the `lighthouse` CLI
+against every page of the built GitHub Pages site / app frontend) into a
+Markdown summary for the PR comment: one row per page with its category
+scores, plus a list of the specific audits behind any score that falls
+under THRESHOLD.
 
-Usage: lighthouse_summary.py <dir-of-report.json-files>
+Usage: lighthouse_summary.py <dir-of-report.json-files> [label]
+
+`label`, when given, distinguishes this summary's comment/title from
+another surface's (e.g. "App" for the app frontend vs. the default,
+unlabeled comment used for the GitHub Pages site), so the two can coexist
+as separate PR comments instead of overwriting each other.
 """
 
 import json
@@ -64,8 +70,8 @@ def failing_audits(report: dict) -> list[str]:
     return [title for _, title in scored]
 
 
-def build_summary(reports: list[dict]) -> str:
-    lines = [MARKER, "### Lighthouse report", ""]
+def build_summary(reports: list[dict], marker: str = MARKER, title: str = "Lighthouse report") -> str:
+    lines = [marker, f"### {title}", ""]
 
     if not reports:
         lines.append("No Lighthouse reports were generated.")
@@ -109,7 +115,12 @@ def load_reports(directory: Path) -> list[dict]:
 
 
 def main() -> None:
-    print(build_summary(load_reports(Path(sys.argv[1]))))
+    directory = Path(sys.argv[1])
+    label = sys.argv[2] if len(sys.argv) > 2 else None
+    marker = f"<!-- lighthouse-summary-comment-{label} -->" if label else MARKER
+    title = f"{label} Lighthouse report" if label else "Lighthouse report"
+
+    print(build_summary(load_reports(directory), marker=marker, title=title))
 
 
 if __name__ == "__main__":

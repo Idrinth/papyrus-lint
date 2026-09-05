@@ -141,6 +141,19 @@ class BuildSummaryTests(unittest.TestCase):
         videos_pos = summary.index("| /videos.html")
         self.assertLess(index_pos, videos_pos)
 
+    def test_uses_the_default_marker_and_title_when_no_label_is_given(self) -> None:
+        summary = lighthouse_summary.build_summary([])
+        self.assertIn(lighthouse_summary.MARKER, summary)
+        self.assertIn("### Lighthouse report", summary)
+
+    def test_accepts_a_custom_marker_and_title(self) -> None:
+        summary = lighthouse_summary.build_summary(
+            [], marker="<!-- custom-marker -->", title="Custom report"
+        )
+        self.assertIn("<!-- custom-marker -->", summary)
+        self.assertIn("### Custom report", summary)
+        self.assertNotIn(lighthouse_summary.MARKER, summary)
+
 
 class LoadReportsTests(unittest.TestCase):
     def test_returns_empty_list_for_a_missing_directory(self) -> None:
@@ -156,6 +169,40 @@ class LoadReportsTests(unittest.TestCase):
 
         self.assertEqual(1, len(reports))
         self.assertEqual("http://x/index.html", reports[0]["finalUrl"])
+
+
+class MainTests(unittest.TestCase):
+    def test_main_uses_the_default_marker_when_no_label_is_given(self) -> None:
+        import contextlib
+        import io
+        from unittest import mock
+
+        output = io.StringIO()
+        with (
+            mock.patch.object(sys, "argv", ["lighthouse_summary.py", "does-not-exist"]),
+            contextlib.redirect_stdout(output),
+        ):
+            lighthouse_summary.main()
+
+        self.assertIn(lighthouse_summary.MARKER, output.getvalue())
+        self.assertIn("### Lighthouse report", output.getvalue())
+
+    def test_main_builds_a_labelled_marker_and_title_when_a_label_is_given(self) -> None:
+        import contextlib
+        import io
+        from unittest import mock
+
+        output = io.StringIO()
+        with (
+            mock.patch.object(sys, "argv", ["lighthouse_summary.py", "does-not-exist", "App"]),
+            contextlib.redirect_stdout(output),
+        ):
+            lighthouse_summary.main()
+
+        rendered = output.getvalue()
+        self.assertIn("<!-- lighthouse-summary-comment-App -->", rendered)
+        self.assertIn("### App Lighthouse report", rendered)
+        self.assertNotIn(lighthouse_summary.MARKER, rendered)
 
 
 if __name__ == "__main__":

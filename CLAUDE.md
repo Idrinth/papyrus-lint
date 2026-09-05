@@ -269,6 +269,19 @@ binary target that crate also defines.
   above) to catch element-size/layout regressions a real browser renders
   but jsdom can't. On failure, the HTML report is uploaded as the
   `playwright-report` artifact.
+- **Frontend Lighthouse check job** (`app-lighthouse`, pull requests only):
+  builds the frontend (`npm run build`), serves `app/dist` locally, and
+  runs the same `lighthouse` CLI as the GitHub Pages Lighthouse check job
+  above over its page(s), writing each page's JSON/HTML report into an
+  `app-lighthouse-reports` artifact. A per-page audit failure is logged as
+  a workflow warning and fails the job, without stopping the remaining
+  pages from being audited. It calls the same
+  `.github/scripts/lighthouse_summary.py` with a second `App` argument, so
+  its Markdown summary (posted to the job's step summary and as an
+  updated-in-place PR comment, same as above) uses its own marker/title
+  and never overwrites the GitHub Pages job's comment. Comment posting is
+  best-effort (`continue-on-error`) since forked PRs get a read-only
+  `GITHUB_TOKEN`.
 - **Markdown job**: runs markdownlint-cli2 against every `README.md` in the
   repository, using the root `.markdownlint-cli2.yaml` configuration.
 - **VS Code extension job**: installs its dependencies, then runs `npm run
