@@ -199,10 +199,10 @@ def render_inline(text: str, link_rewrite=None) -> str:
     escaped = html.escape(text, quote=False)
 
     def link(m: re.Match[str]) -> str:
-        href = m.group(2)
+        href = html.unescape(m.group(2))
         if link_rewrite is not None:
             href = link_rewrite(href)
-        href = href.replace('"', "&quot;")
+        href = html.escape(href, quote=True)
         return f'<a href="{href}">{m.group(1)}</a>'
 
     escaped = INLINE_LINK_RE.sub(link, escaped)

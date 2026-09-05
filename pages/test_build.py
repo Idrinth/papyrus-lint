@@ -54,6 +54,21 @@ class MarkdownHelpersTest(unittest.TestCase):
             '<a href="guide.html?x=1&amp;y=2">docs</a>',
         )
 
+    def test_render_inline_rewrites_and_escapes_link_targets(self) -> None:
+        seen_hrefs = []
+
+        def rewrite(href: str) -> str:
+            seen_hrefs.append(href)
+            return f'docs/{href}?label="read"&mode=full'
+
+        rendered = page_builder.render_inline("[Guide](guide.md)", rewrite)
+
+        self.assertEqual(seen_hrefs, ["guide.md"])
+        self.assertEqual(
+            rendered,
+            '<a href="docs/guide.md?label=&quot;read&quot;&amp;mode=full">Guide</a>',
+        )
+
     def test_split_table_row_preserves_escaped_pipes(self) -> None:
         self.assertEqual(
             page_builder.split_table_row(r"| Name | a \| b | yes |"),
@@ -79,6 +94,17 @@ class MarkdownHelpersTest(unittest.TestCase):
     def test_render_lint_table_rejects_missing_table(self) -> None:
         with self.assertRaisesRegex(SystemExit, "expected a Lint/Description"):
             page_builder.render_lint_table(["No table here"])
+
+    def test_render_lint_table_accepts_a_row_without_an_auto_fix_column(self) -> None:
+        result = page_builder.render_lint_table(
+            [
+                "| Lint | Description |",
+                "| --- | --- |",
+                "| safety | Still linted |",
+            ]
+        )
+
+        self.assertIn("<td>safety</td><td>Still linted</td><td></td>", result.replace("\n", ""))
 
     def test_first_code_block_returns_contents(self) -> None:
         self.assertEqual(
@@ -120,6 +146,9 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertEqual(result.count('<figure class="video-card">'), 2)
         self.assertEqual(result.count('loading="lazy"'), 2)
         self.assertEqual(result.count("allowfullscreen"), 2)
+
+    def test_render_videos_list_handles_an_empty_catalog(self) -> None:
+        self.assertEqual(page_builder.render_videos_list([]), "")
 
     def test_resolve_doc_href_handles_docs_repository_and_external_links(self) -> None:
         with (
@@ -174,6 +203,14 @@ class MarkdownHelpersTest(unittest.TestCase):
         result = page_builder.markdown_to_html(["A paragraph", "continued without a blank line."])
 
         self.assertEqual(result, "<p>A paragraph continued without a blank line.</p>")
+
+    def test_markdown_to_html_accepts_an_unclosed_final_code_fence(self) -> None:
+        result = page_builder.markdown_to_html(["```text", "first", "  second"])
+
+        self.assertEqual(
+            result,
+            '<pre class="code-block"><code>first\n  second</code></pre>',
+        )
 
     def test_first_paragraph_returns_empty_text_when_there_is_no_prose(self) -> None:
         self.assertEqual(page_builder.first_paragraph(["# Title", "", "## Subtitle"]), "")
@@ -260,6 +297,20 @@ class DocsRenderingTest(unittest.TestCase):
         self.assertIn("Report &lt;schema&gt;", schema[2])
         self.assertEqual(plain[:2], ("Configuration", "All settings"))
         self.assertIn("setting: &lt;value&gt;", plain[2])
+
+    def test_render_doc_uses_filename_defaults_for_schema_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "schema.json").write_text('{"type":"string"}', encoding="utf-8")
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                title, description, content = page_builder.render_doc(
+                    {"filename": "schema.json", "slug": "schema", "kind": "json-schema"}
+                )
+
+        self.assertEqual(title, "schema.json")
+        self.assertEqual(description, "")
+        self.assertIn('&quot;type&quot;: &quot;string&quot;', content)
 
     def test_render_docs_list_items_escapes_content_and_applies_prefix(self) -> None:
         docs = [{"slug": "guide", "blurb": "Use <carefully> & safely"}]
@@ -421,6 +472,20 @@ class MinifyTest(unittest.TestCase):
 
         self.assertEqual(result, "main{color:red;margin:0}.a,.b{display:flex}")
 
+    def test_finalize_page_wraps_images_before_removing_template_comments(self) -> None:
+        source = """<!-- generated -->
+        <main>
+          <img src="assets/logo-small.jpg" alt="Logo" />
+        </main>"""
+
+        with patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"logo-small.jpg"}):
+            result = page_builder.finalize_page(source)
+
+        self.assertNotIn("<!--", result)
+        self.assertNotIn("\n", result)
+        self.assertIn('<source srcset="assets/logo-small.avif" type="image/avif" />', result)
+        self.assertIn('<source srcset="assets/logo-small.webp" type="image/webp" />', result)
+
 
 class ModernImageFormatsTest(unittest.TestCase):
     def test_convert_to_modern_formats_writes_webp_and_avif_siblings(self) -> None:
@@ -437,6 +502,19 @@ class ModernImageFormatsTest(unittest.TestCase):
                 self.assertEqual(webp_image.size, (4, 4))
             with Image.open(out_dir / "screenshot.avif") as avif_image:
                 self.assertEqual(avif_image.size, (4, 4))
+
+    def test_convert_to_modern_formats_converts_non_rgb_jpeg_before_saving(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            out_dir = Path(directory)
+            source = out_dir / "logo.jpg"
+            Image.new("L", (3, 2), 128).save(source)
+
+            page_builder.convert_to_modern_formats(source, out_dir)
+
+            with Image.open(out_dir / "logo.webp") as webp_image:
+                self.assertEqual((webp_image.mode, webp_image.size), ("RGB", (3, 2)))
+            with Image.open(out_dir / "logo.avif") as avif_image:
+                self.assertEqual((avif_image.mode, avif_image.size), ("RGB", (3, 2)))
 
     def test_wrap_images_with_modern_sources_wraps_only_known_assets(self) -> None:
         with patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"logo-small.jpg"}):
@@ -467,6 +545,14 @@ class ModernImageFormatsTest(unittest.TestCase):
 
         self.assertIn('<source srcset="../assets/logo-small.avif" type="image/avif" />', result)
         self.assertIn('<source srcset="../assets/logo-small.webp" type="image/webp" />', result)
+
+    def test_wrap_images_with_modern_sources_preserves_query_like_non_asset_paths(self) -> None:
+        page_html = '<img src="assets/logo-small.jpg?cache=1" alt="Logo" />'
+
+        with patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"logo-small.jpg"}):
+            result = page_builder.wrap_images_with_modern_sources(page_html)
+
+        self.assertEqual(result, page_html)
 
 
 class BuildTest(unittest.TestCase):
