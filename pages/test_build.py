@@ -85,12 +85,84 @@ class MarkdownHelpersTest(unittest.TestCase):
 
     def test_render_videos_list_embeds_each_video_and_escapes_title(self) -> None:
         result = page_builder.render_videos_list(
-            [{"id": "abc123", "title": "1.0.0 <overview>"}]
+            [{"id": 'abc123?feature="test"&safe=yes', "title": '1.0.0 <overview> & "tour"'}]
         )
 
-        self.assertIn('src="https://www.youtube-nocookie.com/embed/abc123"', result)
-        self.assertIn("1.0.0 &lt;overview&gt;", result)
+        self.assertIn(
+            'src="https://www.youtube-nocookie.com/embed/abc123?feature=&quot;test&quot;&amp;safe=yes"',
+            result,
+        )
+        escaped_title = "1.0.0 &lt;overview&gt; &amp; &quot;tour&quot;"
+        self.assertIn(f'title="{escaped_title}"', result)
+        self.assertIn(f"<figcaption>{escaped_title}</figcaption>", result)
         self.assertNotIn("<overview>", result)
+
+    def test_render_videos_list_preserves_input_order_and_card_structure(self) -> None:
+        result = page_builder.render_videos_list(
+            [
+                {"id": "old-video", "title": "Old walkthrough"},
+                {"id": "new-video", "title": "New walkthrough"},
+            ]
+        )
+
+        self.assertLess(result.index("old-video"), result.index("new-video"))
+        self.assertEqual(result.count('<figure class="video-card">'), 2)
+        self.assertEqual(result.count('loading="lazy"'), 2)
+        self.assertEqual(result.count("allowfullscreen"), 2)
+
+
+class VideosPageTest(unittest.TestCase):
+    def test_build_videos_page_loads_json_and_replaces_the_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            videos_file = pages_dir / "videos.json"
+            videos_file.write_text(
+                '[{"id": "first", "title": "First"}, '
+                '{"id": "second", "title": "Second"}]',
+                encoding="utf-8",
+            )
+            (pages_dir / "videos.template.html").write_text(
+                "<main>before<!--VIDEOS_LIST-->after</main>", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "VIDEOS_FILE", videos_file),
+            ):
+                page_builder.build_videos_page(out_dir)
+
+            output = (out_dir / "videos.html").read_text(encoding="utf-8")
+            self.assertNotIn("<!--VIDEOS_LIST-->", output)
+            self.assertIn("<main>before", output)
+            self.assertIn("after</main>", output)
+            self.assertLess(output.index("First"), output.index("Second"))
+            self.assertEqual(output.count("youtube-nocookie.com/embed/"), 2)
+
+    def test_build_videos_page_rejects_a_template_without_the_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            videos_file = pages_dir / "videos.json"
+            videos_file.write_text("[]", encoding="utf-8")
+            (pages_dir / "videos.template.html").write_text(
+                "<main>No marker</main>", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "VIDEOS_FILE", videos_file),
+            ):
+                with self.assertRaisesRegex(SystemExit, "missing marker"):
+                    page_builder.build_videos_page(out_dir)
+
+            self.assertFalse((out_dir / "videos.html").exists())
 
 
 class MinifyTest(unittest.TestCase):
