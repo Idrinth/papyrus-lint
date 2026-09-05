@@ -83,6 +83,15 @@ class MarkdownHelpersTest(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "unterminated"):
             page_builder.first_code_block(["```console", "command"])
 
+    def test_render_videos_list_embeds_each_video_and_escapes_title(self) -> None:
+        result = page_builder.render_videos_list(
+            [{"id": "abc123", "title": "1.0.0 <overview>"}]
+        )
+
+        self.assertIn('src="https://www.youtube-nocookie.com/embed/abc123"', result)
+        self.assertIn("1.0.0 &lt;overview&gt;", result)
+        self.assertNotIn("<overview>", result)
+
 
 class BuildTest(unittest.TestCase):
     def test_build_replaces_content_copies_assets_and_cleans_output(self) -> None:
@@ -108,6 +117,9 @@ PapyrusLinterCLI example.psc
             (pages_dir / "index.template.html").write_text(
                 "<main><!--LINT_TABLE:Formatting--><!--CLI_EXAMPLES--><!--DOCS_LIST--><!--VERSION--></main>",
                 encoding="utf-8",
+            )
+            (pages_dir / "videos.template.html").write_text(
+                "<main><!--VIDEOS_LIST--></main>", encoding="utf-8"
             )
             (pages_dir / "docs.template.html").write_text(
                 "<!--DOC_TITLE--><!--DOC_DESCRIPTION--><!--DOC_CONTENT-->",
@@ -145,6 +157,10 @@ PapyrusLinterCLI example.psc
             self.assertEqual((out_dir / "assets" / "copied.png").read_bytes(), b"image bytes")
             self.assertFalse((out_dir / "stale.txt").exists())
             self.assertTrue((out_dir / "docs" / "index.html").exists())
+
+            videos_output = (out_dir / "videos.html").read_text(encoding="utf-8")
+            self.assertIn("youtube-nocookie.com/embed/", videos_output)
+            self.assertNotIn("<!--VIDEOS_LIST-->", videos_output)
 
     def test_build_rejects_a_missing_lint_table_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
