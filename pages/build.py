@@ -31,6 +31,7 @@ DOCS_DIR = ROOT / "docs"
 LINT_CATEGORIES = ["Formatting", "Performance", "Reliability", "Bugprone", "Other"]
 
 GITHUB_BLOB_BASE = "https://github.com/idrinth/papyrus-lint/blob/the-one"
+SITE_URL = "https://idrinth.github.io/papyrus-lint/"
 
 # Every file in docs/ published as a browsable subpage, alongside a short
 # hand-written blurb shown in the docs list on the homepage and on the docs
@@ -83,6 +84,7 @@ VIDEOS_FILE = PAGES_DIR / "videos.json"
 
 ASSETS = {
     "logo-small.jpg": ROOT / "resources" / "logo-small.jpg",
+    "logo.jpg": ROOT / "resources" / "logo.jpg",
     "papyrus-lint-import.png": ROOT / "resources" / "papyrus-lint-import.png",
     "papyrus-lint-results.png": ROOT / "resources" / "papyrus-lint-results.png",
     "papyrus-lint-viewer.png": ROOT / "resources" / "papyrus-lint-viewer.png",
@@ -356,14 +358,17 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
     docs_out_dir.mkdir()
     docs_template = (PAGES_DIR / "docs.template.html").read_text(encoding="utf-8")
 
-    def render_page(title: str, description: str, content_html: str) -> str:
+    def render_page(title: str, description: str, content_html: str, url: str) -> str:
         page = docs_template.replace("<!--DOC_TITLE-->", html.escape(title))
         page = page.replace("<!--DOC_DESCRIPTION-->", html.escape(description, quote=True))
+        page = page.replace("<!--DOC_URL-->", html.escape(url, quote=True))
         return page.replace("<!--DOC_CONTENT-->", content_html)
 
     for doc in DOCS:
         info = doc_results[doc["slug"]]
-        page = render_page(info["title"], info["description"], info["content_html"])
+        page = render_page(
+            info["title"], info["description"], info["content_html"], f"{SITE_URL}docs/{doc['slug']}.html"
+        )
         (docs_out_dir / f"{doc['slug']}.html").write_text(minify_html(page), encoding="utf-8")
 
     index_content = f'<ul class="docs-list">{render_docs_list_items(doc_results, "")}</ul>'
@@ -371,6 +376,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
         "Documentation",
         "Reference material from the project's docs/ directory, published as browsable pages.",
         index_content,
+        f"{SITE_URL}docs/index.html",
     )
     (docs_out_dir / "index.html").write_text(minify_html(index_page), encoding="utf-8")
 
