@@ -26,15 +26,15 @@ render_nexuspage = load_script("render_nexuspage")
 
 
 class CoverageSummaryTests(unittest.TestCase):
-    def test_modules_include_ci_scripts_coverage(self) -> None:
+    def test_modules_group_tooling_coverage(self) -> None:
         self.assertIn(
-            ("CI tooling", [(".github/scripts", "ci-scripts-coverage/lcov.info")]),
-            coverage_summary.MODULES,
-        )
-
-    def test_modules_include_pages_builder_coverage(self) -> None:
-        self.assertIn(
-            ("Pages (site builder)", [("pages", "pages-coverage/lcov.info")]),
+            (
+                "Tooling",
+                [
+                    ("CI tooling", "ci-scripts-coverage/lcov.info"),
+                    ("Pages (site builder)", "pages-coverage/lcov.info"),
+                ],
+            ),
             coverage_summary.MODULES,
         )
 
