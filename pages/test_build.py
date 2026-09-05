@@ -181,7 +181,8 @@ class MinifyTest(unittest.TestCase):
 
         self.assertNotIn("<!--", result)
         self.assertNotIn("  ", result)
-        self.assertIn("<p>\nHello\n</p>", result)
+        self.assertNotIn("\n", result)
+        self.assertIn("<p> Hello </p>", result)
         self.assertIn("<p>World</p>", result)
 
     def test_minify_html_preserves_pre_block_whitespace_verbatim(self) -> None:
