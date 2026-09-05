@@ -126,6 +126,9 @@ PapyrusLinterCLI example.psc
                 encoding="utf-8",
             )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
+            fonts_dir = pages_dir / "fonts"
+            fonts_dir.mkdir()
+            (fonts_dir / "font.woff2").write_bytes(b"font bytes")
             source_asset = root / "source.png"
             source_asset.write_bytes(b"image bytes")
             out_dir = root / "public"
@@ -155,6 +158,7 @@ PapyrusLinterCLI example.psc
                 "main { color: red; }",
             )
             self.assertEqual((out_dir / "assets" / "copied.png").read_bytes(), b"image bytes")
+            self.assertEqual((out_dir / "fonts" / "font.woff2").read_bytes(), b"font bytes")
             self.assertFalse((out_dir / "stale.txt").exists())
             self.assertTrue((out_dir / "docs" / "index.html").exists())
 
