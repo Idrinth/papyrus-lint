@@ -340,7 +340,7 @@ def render_videos_list(videos: list[dict]) -> str:
         items.append(
             '<figure class="video-card">'
             '<div class="video-card__frame">'
-            f'<iframe src="https://www.youtube.com/embed/{video_id}" title="{title}" '
+            f'<iframe src="https://youtube-nocookie.com/embed/{video_id}" title="{title}" '
             'loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>'
             "</div>"
             f"<figcaption>{title}</figcaption>"
