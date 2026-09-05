@@ -710,6 +710,52 @@ mod tests {
     }
 
     #[test]
+    fn repair_filtered_by_tag_applies_all_matching_fixes_only() {
+        let config = Config::default();
+        // Comma spacing and trailing whitespace are style fixes, while
+        // GetValueInt is covered by the performance-tagged slow-functions fix.
+        let source = "Function Read(GlobalVariable value)  \n\tFoo(1,2)\n\tvalue.GetValueInt()\nEndFunction\n";
+
+        let repaired = repair_filtered_by_tag(source, &config, Some("style"));
+
+        assert_eq!(
+            repaired,
+            "Function Read(GlobalVariable value)\n\tFoo(1, 2)\n\tvalue.GetValueInt()\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_filtered_by_tag_matches_case_insensitively() {
+        let source = "GlobalVariable value\nvalue.GetValueInt()\n";
+
+        assert_eq!(
+            repair_filtered_by_tag(source, &Config::default(), Some("PERFORMANCE")),
+            "GlobalVariable value\nvalue.GetValue() As Int\n"
+        );
+    }
+
+    #[test]
+    fn repair_filtered_by_tag_with_none_matches_combined_repair() {
+        let source = "Call(1,2)  \r\n";
+        let config = Config::default();
+
+        assert_eq!(
+            repair_filtered_by_tag(source, &config, None),
+            repair(source, &config)
+        );
+    }
+
+    #[test]
+    fn repair_filtered_by_tag_matches_nothing_for_an_unknown_tag() {
+        let source = "Call(1,2)  \r\n";
+
+        assert_eq!(
+            repair_filtered_by_tag(source, &Config::default(), Some("made-up-tag")),
+            source
+        );
+    }
+
+    #[test]
     fn restrict_to_line_keeps_only_the_target_line_changed() {
         let original = "Call(1,2)\nCall(3,4)\nCall(5,6)\n";
         let repaired = repair_filtered(original, &Config::default(), Some(comma_spacing::RULE));
@@ -725,6 +771,32 @@ mod tests {
         let repaired = "Call(1,2)\nCall(3,4)\n";
 
         assert_eq!(restrict_to_line(original, repaired, 1), None);
+    }
+
+    #[test]
+    fn restrict_to_line_out_of_range_leaves_original_unchanged() {
+        let original = "Call(1,2)\nCall(3,4)\n";
+        let repaired = "Call(1, 2)\nCall(3, 4)\n";
+
+        assert_eq!(
+            restrict_to_line(original, repaired, 0).as_deref(),
+            Some(original)
+        );
+        assert_eq!(
+            restrict_to_line(original, repaired, 4).as_deref(),
+            Some(original)
+        );
+    }
+
+    #[test]
+    fn restrict_to_line_can_replace_the_trailing_empty_line() {
+        let original = "Call(1,2)\n";
+        let repaired = "Call(1,2)\nreplacement";
+
+        assert_eq!(
+            restrict_to_line(original, repaired, 2).as_deref(),
+            Some("Call(1,2)\nreplacement")
+        );
     }
 
     #[test]
