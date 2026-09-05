@@ -474,7 +474,11 @@ title and body — replacing the generic body `tauri-apps/tauri-action`
 set on the `release` job — with the tag name as the title; a changelist
 of the merged pull requests between the previous and current tag,
 resolved per commit via the "list pull requests associated with a
-commit" GitHub API and linked with the PR title as text; the current
+commit" GitHub API and linked with the PR title as text, prefixed with
+that pull request's `type: *` label(s) (e.g. `[Feature]`, or
+`[Feature, Tests]` when a pull request carries more than one) when it
+carries any — a pull request with none is listed with no such prefix;
+the current
 code coverage (aggregated the same way as CI's coverage-comment job,
 via `.github/scripts/coverage_summary.py`, from the lcov artifacts of
 the most recent successful `ci.yml` run for the tagged commit); and a
