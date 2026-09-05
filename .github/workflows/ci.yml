@@ -4,6 +4,7 @@ on:
   push:
     branches: [the-one]
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 permissions:
   contents: read
