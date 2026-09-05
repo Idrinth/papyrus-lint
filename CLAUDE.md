@@ -225,6 +225,15 @@ binary target that crate also defines.
 
 ## CI (`.github/workflows/ci.yml`)
 
+- **Pull request labels job** (`labels`): on a pull request, fails unless
+  the pull request carries at least one `component: ...` label and at
+  least one `type: ...` label (see Pull request labels below), via
+  `actions/github-script` reading `context.payload.pull_request.labels`
+  directly rather than calling the API. It's a no-op on an ordinary push
+  to `the-one`, since that event carries no pull request labels to check.
+  Every other job `needs` this one (directly, or transitively through
+  `rust-build`/`rust-test`), so an unlabeled pull request's CI stops here
+  instead of spending time on the rest of the jobs below.
 - **Rules YAML lint job**: runs `yamllint` against every `rules/*.yaml` file
   so malformed rule data cannot be merged.
 - **CI scripts and Nexus page BBCode job**: runs the dependency-free Python
@@ -554,6 +563,15 @@ the CI job described above recommend the next semantic version:
 Unlike the component labels above, these are optional and purely advisory:
 nothing enforces them on a pull request, and omitting one just means that
 pull request contributes no recommendation of its own.
+
+Every pull request must also carry at least one `type: ...` label (e.g.
+`type: feature`, `type: documentation`) naming the kind of change it
+makes. Unlike the component labels above, this set isn't fixed by this
+document — add a new `type: ...` label in the repository's label
+settings if a pull request doesn't fit an existing one.
+
+CI's `labels` job (see CI below) enforces both requirements on every pull
+request and fails before running the rest of CI if either is missing.
 
 ## Current state
 
