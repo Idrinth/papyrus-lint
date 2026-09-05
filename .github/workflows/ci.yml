@@ -47,8 +47,34 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Test site builder
-        run: python3 -m unittest discover -s pages -p 'test_*.py' -v
+      - name: Install coverage
+        run: pip install coverage
+
+      - name: Test site builder with coverage
+        run: |
+          coverage run --source=pages --omit='pages/test_*.py' \
+            -m unittest discover -s pages -p 'test_*.py' -v
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### GitHub Pages builder coverage"
+            echo '```'
+            coverage report -m
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always()
+        run: coverage lcov -o lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pages-coverage
+          path: lcov.info
 
   markdown:
     name: Markdown lint
@@ -304,7 +330,7 @@ jobs:
   coverage-comment:
     name: Coverage summary comment
     if: always() && github.event_name == 'pull_request'
-    needs: [sublime-extension, frontend, vscode-extension, rust-test]
+    needs: [pages, sublime-extension, frontend, vscode-extension, rust-test]
     runs-on: ubuntu-latest
     permissions:
       contents: read

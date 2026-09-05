@@ -26,6 +26,12 @@ render_nexuspage = load_script("render_nexuspage")
 
 
 class CoverageSummaryTests(unittest.TestCase):
+    def test_modules_include_pages_builder_coverage(self) -> None:
+        self.assertIn(
+            ("Pages (site builder)", [("pages", "pages-coverage/lcov.info")]),
+            coverage_summary.MODULES,
+        )
+
     def test_parse_lcov_sums_records_and_tolerates_non_utf8_text(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory, "lcov.info")

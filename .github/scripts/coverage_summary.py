@@ -31,6 +31,10 @@ MODULES = [
         [("frontend", "frontend-coverage/lcov.info")],
     ),
     (
+        "Pages (site builder)",
+        [("pages", "pages-coverage/lcov.info")],
+    ),
+    (
         "Editor plugins",
         [
             ("vscode-extension", "vscode-extension-coverage/lcov.info"),
