@@ -8,7 +8,9 @@ Also renders every file listed in DOCS into its own browsable subpage
 under docs/ (via pages/docs.template.html), and assembles the site's
 assets/ directory by copying the screenshots and icon this page uses
 from resources/ and app/src-tauri/icons, rather than committing
-duplicate copies of them under pages/.
+duplicate copies of them under pages/. Every generated HTML page and the
+stylesheet are minified (see minify_html/minify_css) before being written
+into the output directory.
 
 Usage: pages/build.py [--out DIR]  (default DIR: pages/dist)
 """
@@ -94,6 +96,47 @@ INLINE_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 INLINE_CODE_RE = re.compile(r"`([^`]+)`")
 INLINE_BOLD_RE = re.compile(r"\*\*([^*]+)\*\*")
 ROW_SPLIT_RE = re.compile(r"(?<!\\)\|")
+
+PRE_BLOCK_RE = re.compile(r"<pre\b[^>]*>.*?</pre>", re.DOTALL | re.IGNORECASE)
+HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+TAG_GAP_RE = re.compile(r">\s+<")
+LINE_INDENT_RE = re.compile(r"[ \t]*\n[ \t]*")
+BLANK_LINES_RE = re.compile(r"\n{2,}")
+CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
+CSS_WHITESPACE_RUN_RE = re.compile(r"\s+")
+CSS_SYNTAX_SPACE_RE = re.compile(r"\s*([{}:;,])\s*")
+CSS_TRAILING_SEMICOLON_RE = re.compile(r";}")
+
+
+def minify_html(text: str) -> str:
+    """Minifies static HTML for deployment: strips comments and collapses
+    insignificant indentation/whitespace, while leaving <pre>...</pre>
+    blocks untouched since their whitespace (the CLI/config/schema
+    examples) is significant."""
+    blocks: list[str] = []
+
+    def stash(match: re.Match[str]) -> str:
+        blocks.append(match.group(0))
+        return f"\x00{len(blocks) - 1}\x00"
+
+    result = PRE_BLOCK_RE.sub(stash, text)
+    result = HTML_COMMENT_RE.sub("", result)
+    result = TAG_GAP_RE.sub("><", result)
+    result = LINE_INDENT_RE.sub("\n", result)
+    result = BLANK_LINES_RE.sub("\n", result)
+    result = result.strip()
+    return re.sub(r"\x00(\d+)\x00", lambda m: blocks[int(m.group(1))], result)
+
+
+def minify_css(text: str) -> str:
+    """Minifies CSS for deployment: strips comments and collapses
+    whitespace, which carries no meaning in this stylesheet's syntax
+    outside of string/url literals (none of which contain whitespace
+    here)."""
+    result = CSS_COMMENT_RE.sub("", text)
+    result = CSS_WHITESPACE_RUN_RE.sub(" ", result).strip()
+    result = CSS_SYNTAX_SPACE_RE.sub(r"\1", result)
+    return CSS_TRAILING_SEMICOLON_RE.sub("}", result)
 
 
 def extract_section(lines: list[str], heading_text: str, level: int) -> list[str]:
@@ -321,7 +364,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
     for doc in DOCS:
         info = doc_results[doc["slug"]]
         page = render_page(info["title"], info["description"], info["content_html"])
-        (docs_out_dir / f"{doc['slug']}.html").write_text(page, encoding="utf-8")
+        (docs_out_dir / f"{doc['slug']}.html").write_text(minify_html(page), encoding="utf-8")
 
     index_content = f'<ul class="docs-list">{render_docs_list_items(doc_results, "")}</ul>'
     index_page = render_page(
@@ -329,7 +372,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
         "Reference material from the project's docs/ directory, published as browsable pages.",
         index_content,
     )
-    (docs_out_dir / "index.html").write_text(index_page, encoding="utf-8")
+    (docs_out_dir / "index.html").write_text(minify_html(index_page), encoding="utf-8")
 
 
 def render_videos_list(videos: list[dict]) -> str:
@@ -355,7 +398,7 @@ def build_videos_page(out_dir: Path) -> None:
     if "<!--VIDEOS_LIST-->" not in template:
         raise SystemExit("videos.template.html: missing marker <!--VIDEOS_LIST-->")
     page = template.replace("<!--VIDEOS_LIST-->", render_videos_list(videos))
-    (out_dir / "videos.html").write_text(page, encoding="utf-8")
+    (out_dir / "videos.html").write_text(minify_html(page), encoding="utf-8")
 
 
 def build(out_dir: Path, version: str = "") -> None:
@@ -392,8 +435,9 @@ def build(out_dir: Path, version: str = "") -> None:
     if out_dir.exists():
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True)
-    (out_dir / "index.html").write_text(template, encoding="utf-8")
-    shutil.copyfile(PAGES_DIR / "styles.css", out_dir / "styles.css")
+    (out_dir / "index.html").write_text(minify_html(template), encoding="utf-8")
+    css = (PAGES_DIR / "styles.css").read_text(encoding="utf-8")
+    (out_dir / "styles.css").write_text(minify_css(css), encoding="utf-8")
 
     assets_dir = out_dir / "assets"
     assets_dir.mkdir()
