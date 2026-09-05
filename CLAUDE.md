@@ -138,14 +138,20 @@ desktop app's binary at all.
     ├── videos.template.html    # headings, the same light/dark palette); build.py
     ├── videos.json             # substitutes its lint-table/CLI-example placeholders
     ├── styles.css              # with content converted straight from README.md,
-    ├── build.py                # renders every docs/* file into a browsable subpage
-    │                            # (via docs.template.html) linked from a
-    │                            # Documentation section, renders videos.json's list
-    │                            # of YouTube videos into videos.html (via
-    │                            # videos.template.html), and assembles pages/dist/
-    │                            # (git-ignored), copying its assets/ images from
-    │                            # resources/ and the app icon, rather than
-    │                            # committing duplicates of either under pages/.
+    ├── fonts/                  # renders every docs/* file into a browsable subpage
+    │   ├── cinzel-v26-latin-700.woff2  # (via docs.template.html) linked from a
+    │   └── inter-v20-latin-variable.woff2  # Documentation section, renders
+    ├── build.py                # videos.json's list of YouTube videos into
+    │                            # videos.html (via videos.template.html), and
+    │                            # assembles pages/dist/ (git-ignored), copying
+    │                            # its assets/ images from resources/ and the
+    │                            # app icon rather than committing duplicates of
+    │                            # either under pages/, and its fonts/ woff2
+    │                            # files as-is so styles.css's @font-face rules
+    │                            # self-host Cinzel/Inter instead of pulling
+    │                            # them from fonts.googleapis.com/fonts.gstatic.com
+    │                            # (avoiding a third-party request on every page
+    │                            # load).
     ├── browser_check.py        # Opens every page under a built pages/dist in
     │                            # headless Chromium (see CI below) to catch
     │                            # console/page errors and broken internal

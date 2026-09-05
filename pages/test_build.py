@@ -85,12 +85,128 @@ class MarkdownHelpersTest(unittest.TestCase):
 
     def test_render_videos_list_embeds_each_video_and_escapes_title(self) -> None:
         result = page_builder.render_videos_list(
-            [{"id": "abc123", "title": "1.0.0 <overview>"}]
+            [{"id": 'abc123?feature="test"&safe=yes', "title": '1.0.0 <overview> & "tour"'}]
         )
 
-        self.assertIn('src="https://www.youtube-nocookie.com/embed/abc123"', result)
-        self.assertIn("1.0.0 &lt;overview&gt;", result)
+        self.assertIn(
+            'src="https://www.youtube-nocookie.com/embed/abc123?feature=&quot;test&quot;&amp;safe=yes"',
+            result,
+        )
+        escaped_title = "1.0.0 &lt;overview&gt; &amp; &quot;tour&quot;"
+        self.assertIn(f'title="{escaped_title}"', result)
+        self.assertIn(f"<figcaption>{escaped_title}</figcaption>", result)
         self.assertNotIn("<overview>", result)
+
+    def test_render_videos_list_preserves_input_order_and_card_structure(self) -> None:
+        result = page_builder.render_videos_list(
+            [
+                {"id": "old-video", "title": "Old walkthrough"},
+                {"id": "new-video", "title": "New walkthrough"},
+            ]
+        )
+
+        self.assertLess(result.index("old-video"), result.index("new-video"))
+        self.assertEqual(result.count('<figure class="video-card">'), 2)
+        self.assertEqual(result.count('loading="lazy"'), 2)
+        self.assertEqual(result.count("allowfullscreen"), 2)
+
+
+class VideosPageTest(unittest.TestCase):
+    def test_build_videos_page_loads_json_and_replaces_the_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            videos_file = pages_dir / "videos.json"
+            videos_file.write_text(
+                '[{"id": "first", "title": "First"}, '
+                '{"id": "second", "title": "Second"}]',
+                encoding="utf-8",
+            )
+            (pages_dir / "videos.template.html").write_text(
+                "<main>before<!--VIDEOS_LIST-->after</main>", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "VIDEOS_FILE", videos_file),
+            ):
+                page_builder.build_videos_page(out_dir)
+
+            output = (out_dir / "videos.html").read_text(encoding="utf-8")
+            self.assertNotIn("<!--VIDEOS_LIST-->", output)
+            self.assertIn("<main>before", output)
+            self.assertIn("after</main>", output)
+            self.assertLess(output.index("First"), output.index("Second"))
+            self.assertEqual(output.count("youtube-nocookie.com/embed/"), 2)
+
+    def test_build_videos_page_rejects_a_template_without_the_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            videos_file = pages_dir / "videos.json"
+            videos_file.write_text("[]", encoding="utf-8")
+            (pages_dir / "videos.template.html").write_text(
+                "<main>No marker</main>", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "VIDEOS_FILE", videos_file),
+            ):
+                with self.assertRaisesRegex(SystemExit, "missing marker"):
+                    page_builder.build_videos_page(out_dir)
+
+            self.assertFalse((out_dir / "videos.html").exists())
+
+
+class MinifyTest(unittest.TestCase):
+    def test_minify_html_strips_comments_and_collapses_indentation(self) -> None:
+        source = """<main>
+          <!-- a comment -->
+          <p>
+            Hello
+          </p>
+
+
+          <p>World</p>
+        </main>"""
+
+        result = page_builder.minify_html(source)
+
+        self.assertNotIn("<!--", result)
+        self.assertNotIn("  ", result)
+        self.assertIn("<p>\nHello\n</p>", result)
+        self.assertIn("<p>World</p>", result)
+
+    def test_minify_html_preserves_pre_block_whitespace_verbatim(self) -> None:
+        pre_block = '<pre class="code-block"><code>line one\n    indented line\n\n\nline four</code></pre>'
+        source = f"<main>\n  <p>  before  </p>\n  {pre_block}\n  <p>after</p>\n</main>"
+
+        result = page_builder.minify_html(source)
+
+        self.assertIn(pre_block, result)
+
+    def test_minify_css_strips_comments_and_collapses_whitespace(self) -> None:
+        source = """/* header */
+        main {
+          color: red;
+          margin: 0 ;
+        }
+
+        .a, .b {
+          display: flex;
+        }
+        """
+
+        result = page_builder.minify_css(source)
+
+        self.assertEqual(result, "main{color:red;margin:0}.a,.b{display:flex}")
 
 
 class BuildTest(unittest.TestCase):
@@ -126,6 +242,9 @@ PapyrusLinterCLI example.psc
                 encoding="utf-8",
             )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
+            fonts_dir = pages_dir / "fonts"
+            fonts_dir.mkdir()
+            (fonts_dir / "font.woff2").write_bytes(b"font bytes")
             source_asset = root / "source.png"
             source_asset.write_bytes(b"image bytes")
             out_dir = root / "public"
@@ -152,9 +271,10 @@ PapyrusLinterCLI example.psc
             self.assertNotIn("<!--VERSION-->", output)
             self.assertEqual(
                 (out_dir / "styles.css").read_text(encoding="utf-8"),
-                "main { color: red; }",
+                "main{color:red}",
             )
             self.assertEqual((out_dir / "assets" / "copied.png").read_bytes(), b"image bytes")
+            self.assertEqual((out_dir / "fonts" / "font.woff2").read_bytes(), b"font bytes")
             self.assertFalse((out_dir / "stale.txt").exists())
             self.assertTrue((out_dir / "docs" / "index.html").exists())
 
