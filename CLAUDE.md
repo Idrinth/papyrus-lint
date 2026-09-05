@@ -452,7 +452,9 @@ title and body — replacing the generic body `tauri-apps/tauri-action`
 set on the `release` job — with the tag name as the title; a changelist
 of the merged pull requests between the previous and current tag,
 resolved per commit via the "list pull requests associated with a
-commit" GitHub API and linked with the PR title as text; the current
+commit" GitHub API and grouped by each pull request's `component:` label
+(see Pull request labels below) rather than listed as one flat list,
+linked with the PR title as text; the current
 code coverage (aggregated the same way as CI's coverage-comment job,
 via `.github/scripts/coverage_summary.py`, from the lcov artifacts of
 the most recent successful `ci.yml` run for the tagged commit); and a
@@ -496,6 +498,25 @@ waiting for the next content-triggered deploy.
 Before merging a pull request, make sure its branch is up to date with
 `the-one` (the default branch). Merge or rebase `the-one` into the branch
 first if it has fallen behind, so CI runs against the current base.
+
+## Pull request labels
+
+Every pull request must be tagged with at least one label naming the
+component(s) it affects:
+
+- `component: sublime lint plugin`
+- `component: vscode extension`
+- `component: frontend`
+- `component: ci`
+- `component: parsing`
+- `component: documentation`
+- `component: pages`
+- `component: gui`
+- `component: cli`
+
+The `release-notes` job's changelist (see Releases above) is grouped by
+these labels rather than listed flat, so an unlabeled or mislabeled pull
+request's entry won't land under the right component in a release's notes.
 
 ## Current state
 

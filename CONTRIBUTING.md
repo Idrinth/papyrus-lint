@@ -141,6 +141,23 @@ Keep pull requests focused on a single change, and use the PR template's
 checklist — contributions are permanent and unpaid; only open a PR once
 you're comfortable with both.
 
+Every pull request must also be tagged with at least one label naming the
+component(s) it affects:
+
+- `component: sublime lint plugin`
+- `component: vscode extension`
+- `component: frontend`
+- `component: ci`
+- `component: parsing`
+- `component: documentation`
+- `component: pages`
+- `component: gui`
+- `component: cli`
+
+Release notes are grouped by these labels, so an unlabeled or mislabeled
+pull request's entry won't land under the right component in a release's
+notes.
+
 Before merging (or asking a maintainer to merge) a pull request, make sure
 its branch is up to date with `the-one`. Merge or rebase `the-one` into the
 branch first if it has fallen behind, so CI has run against the current
