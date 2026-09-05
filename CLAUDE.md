@@ -135,14 +135,20 @@ desktop app's binary at all.
     ├── videos.template.html    # headings, the same light/dark palette); build.py
     ├── videos.json             # substitutes its lint-table/CLI-example placeholders
     ├── styles.css              # with content converted straight from README.md,
-    └── build.py                # renders every docs/* file into a browsable subpage
-                                 # (via docs.template.html) linked from a
-                                 # Documentation section, renders videos.json's list
-                                 # of YouTube videos into videos.html (via
-                                 # videos.template.html), and assembles pages/dist/
-                                 # (git-ignored), copying its assets/ images from
-                                 # resources/ and the app icon, rather than
-                                 # committing duplicates of either under pages/.
+    ├── build.py                # renders every docs/* file into a browsable subpage
+    │                            # (via docs.template.html) linked from a
+    │                            # Documentation section, renders videos.json's list
+    │                            # of YouTube videos into videos.html (via
+    │                            # videos.template.html), and assembles pages/dist/
+    │                            # (git-ignored), copying its assets/ images from
+    │                            # resources/ and the app icon, rather than
+    │                            # committing duplicates of either under pages/.
+    ├── browser_check.py        # Opens every page under a built pages/dist in
+    │                            # headless Chromium (see CI below) to catch
+    │                            # console/page errors and broken internal
+    │                            # links/anchors that build.py's own unit
+    │                            # tests, working against small fixtures, can't
+    └── requirements-browser-check.txt  # Pinned Playwright version for the above
 ```
 
 `papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
@@ -201,6 +207,18 @@ binary target that crate also defines.
 - **Nexus page BBCode job**: runs the dependency-free Python BBCode linter's
   unit tests, then checks `docs/nexuspage.bbcode` for unknown, mismatched, and
   unclosed tags.
+- **GitHub Pages browser smoke test job**: builds the site
+  (`pages/build.py`) and then opens every one of its pages in headless
+  Chromium via Playwright (`pages/browser_check.py`) to catch what
+  `pages`' own unit tests can't, since those only exercise `build.py`'s
+  Markdown/table conversion logic against small in-memory fixtures rather
+  than the actual rendered output: JavaScript console/page errors,
+  same-origin resources that fail to load or respond with a 4xx/5xx
+  status, and internal links (including `#fragment` anchors) that point
+  at a page or in-page id that doesn't actually exist. External links
+  (GitHub, Discord, Nexus Mods, badge/font hosts, ...) are faked with a
+  harmless empty response rather than fetched, so the check stays fast
+  and doesn't depend on services this repository doesn't control.
 - **Sublime Text extension job**: runs the plugin's Python unit tests via
   `coverage run -m unittest discover`, scoped to `commands.py`/`linter.py`
   (test files themselves are omitted). The text summary is posted to the
