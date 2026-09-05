@@ -270,23 +270,90 @@ jobs:
             RANGE="$CURRENT"
           fi
 
-          echo "## Changes" > changelist.md
-          echo >> changelist.md
+          # Component labels, in the order their sections appear. Ranked
+          # ahead of "component: documentation": a pull request labeled
+          # both is grouped under the other component rather than dropped.
+          # Documentation changes are tracked elsewhere, so a pull request
+          # whose only matching label is documentation is left out of the
+          # release notes entirely instead of falling into "Other".
+          LABEL_KEYS=(
+            "component: sublime lint plugin"
+            "component: vscode extension"
+            "component: frontend"
+            "component: ci"
+            "component: parsing"
+            "component: pages"
+            "component: gui"
+            "component: cli"
+          )
+          LABEL_HEADINGS=(
+            "Sublime Text Plugin"
+            "VS Code Extension"
+            "Frontend"
+            "CI"
+            "Parsing"
+            "Pages"
+            "GUI"
+            "CLI"
+          )
+          DOC_LABEL="component: documentation"
+
+          WORKDIR=$(mktemp -d)
+          for i in "${!LABEL_KEYS[@]}"; do
+            : > "$WORKDIR/group_$i.md"
+          done
+          : > "$WORKDIR/other.md"
           : > nexus-changelog.md
 
           declare -A SEEN
           for sha in $(git log "$RANGE" --pretty=format:%H); do
             PRS=$(gh api "repos/${{ github.repository }}/commits/$sha/pulls" \
-              --jq '.[] | "\(.number)\t\(.title)\t\(.html_url)"' 2>/dev/null || true)
-            while IFS=$'\t' read -r number title url; do
+              --jq '.[] | "\(.number)\t\(.title)\t\(.html_url)\t\((.labels // []) | map(.name) | join(","))"' 2>/dev/null || true)
+            while IFS=$'\t' read -r number title url labels_csv; do
               [ -z "$number" ] && continue
-              if [ -z "${SEEN[$number]:-}" ]; then
-                SEEN[$number]=1
-                echo "- [#$number]($url) $title" >> changelist.md
-                echo "- $title" >> nexus-changelog.md
+              [ -n "${SEEN[$number]:-}" ] && continue
+              SEEN[$number]=1
+
+              IFS=',' read -ra PR_LABELS <<< "$labels_csv"
+              matched_idx=-1
+              is_doc=0
+              for l in "${PR_LABELS[@]}"; do
+                [ "$l" == "$DOC_LABEL" ] && is_doc=1
+                for i in "${!LABEL_KEYS[@]}"; do
+                  if [ "$l" == "${LABEL_KEYS[$i]}" ] && { [ "$matched_idx" -eq -1 ] || [ "$i" -lt "$matched_idx" ]; }; then
+                    matched_idx=$i
+                  fi
+                done
+              done
+
+              if [ "$matched_idx" -eq -1 ]; then
+                if [ "$is_doc" -eq 1 ]; then
+                  continue
+                fi
+                echo "- [#$number]($url) $title" >> "$WORKDIR/other.md"
+              else
+                echo "- [#$number]($url) $title" >> "$WORKDIR/group_$matched_idx.md"
               fi
+              echo "- $title" >> nexus-changelog.md
             done <<< "$PRS"
           done
+
+          echo "## Changes" > changelist.md
+          echo >> changelist.md
+          for i in "${!LABEL_KEYS[@]}"; do
+            if [ -s "$WORKDIR/group_$i.md" ]; then
+              echo "### ${LABEL_HEADINGS[$i]}" >> changelist.md
+              echo >> changelist.md
+              cat "$WORKDIR/group_$i.md" >> changelist.md
+              echo >> changelist.md
+            fi
+          done
+          if [ -s "$WORKDIR/other.md" ]; then
+            echo "### Other" >> changelist.md
+            echo >> changelist.md
+            cat "$WORKDIR/other.md" >> changelist.md
+            echo >> changelist.md
+          fi
 
       - name: Upload Nexus changelog
         uses: actions/upload-artifact@v7
