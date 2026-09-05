@@ -100,8 +100,7 @@ ROW_SPLIT_RE = re.compile(r"(?<!\\)\|")
 PRE_BLOCK_RE = re.compile(r"<pre\b[^>]*>.*?</pre>", re.DOTALL | re.IGNORECASE)
 HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 TAG_GAP_RE = re.compile(r">\s+<")
-LINE_INDENT_RE = re.compile(r"[ \t]*\n[ \t]*")
-BLANK_LINES_RE = re.compile(r"\n{2,}")
+WHITESPACE_RUN_RE = re.compile(r"\s+")
 CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_WHITESPACE_RUN_RE = re.compile(r"\s+")
 CSS_SYNTAX_SPACE_RE = re.compile(r"\s*([{}:;,])\s*")
@@ -110,9 +109,9 @@ CSS_TRAILING_SEMICOLON_RE = re.compile(r";}")
 
 def minify_html(text: str) -> str:
     """Minifies static HTML for deployment: strips comments and collapses
-    insignificant indentation/whitespace, while leaving <pre>...</pre>
-    blocks untouched since their whitespace (the CLI/config/schema
-    examples) is significant."""
+    every run of insignificant whitespace (including line breaks) down to
+    a single space, while leaving <pre>...</pre> blocks untouched since
+    their whitespace (the CLI/config/schema examples) is significant."""
     blocks: list[str] = []
 
     def stash(match: re.Match[str]) -> str:
@@ -122,8 +121,7 @@ def minify_html(text: str) -> str:
     result = PRE_BLOCK_RE.sub(stash, text)
     result = HTML_COMMENT_RE.sub("", result)
     result = TAG_GAP_RE.sub("><", result)
-    result = LINE_INDENT_RE.sub("\n", result)
-    result = BLANK_LINES_RE.sub("\n", result)
+    result = WHITESPACE_RUN_RE.sub(" ", result)
     result = result.strip()
     return re.sub(r"\x00(\d+)\x00", lambda m: blocks[int(m.group(1))], result)
 
