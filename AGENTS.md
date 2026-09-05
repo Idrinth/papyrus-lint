@@ -29,6 +29,9 @@ desktop app's binary at all.
 │   │   ├── highlight.test.ts    # Vitest unit tests for highlight.ts
 │   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for main.test.ts
 │   │   └── styles.css
+│   ├── e2e/                  # Playwright specs (real Chromium, not jsdom):
+│   │   └── layout.spec.ts       # catches element-size/layout regressions
+│   ├── playwright.config.ts  # Config for the e2e/ specs above
 │   ├── index.html            # Frontend entry point (Vite)
 │   ├── package.json          # npm scripts/deps for the frontend and Tauri CLI
 │   ├── src-tauri/            # Tauri desktop app shell (Rust)
@@ -166,7 +169,15 @@ binary target that crate also defines.
   `typescript-eslint`'s recommended rules plus `@vitest/eslint-plugin`'s
   recommended rules on test files. `npm run lint:css` runs stylelint (config
   in `.stylelintrc.json`, extending `stylelint-config-recommended`) over
-  `src/**/*.css`.
+  `src/**/*.css`. `npm run test:browser` runs `app/e2e/*.spec.ts` (config in
+  `playwright.config.ts`) against a real Chromium instance (via
+  `@playwright/test`, browsers installed separately with `npx playwright
+  install --with-deps chromium`) rather than jsdom, starting the Vite dev
+  server itself: jsdom (used by `npm run test` above) never computes an
+  actual box model, so it can't catch element-size/layout regressions
+  (a collapsed drop zone, a mis-hidden tab panel, an overlay no longer
+  matching its underlying element's dimensions, horizontal overflow) the
+  way these tests do.
   - `typescript-eslint` doesn't yet support TypeScript 7 (this repo's
     `typescript` devDependency), so `app/package.json` installs it under an
     npm alias: `typescript` resolves to the `@typescript/typescript6` shim
@@ -213,6 +224,11 @@ binary target that crate also defines.
   run build` (typecheck & Vite build). The text coverage summary is
   posted to the job's step summary and the full HTML/lcov report is
   uploaded as the `frontend-coverage` artifact.
+- **Frontend browser job**: in `app/`, `npm ci`, `npx playwright install
+  --with-deps chromium`, then `npm run test:browser` (see Development
+  above) to catch element-size/layout regressions a real browser renders
+  but jsdom can't. On failure, the HTML report is uploaded as the
+  `playwright-report` artifact.
 - **Markdown job**: runs markdownlint-cli2 against every `README.md` in the
   repository, using the root `.markdownlint-cli2.yaml` configuration.
 - **VS Code extension job**: installs its dependencies, then runs `npm run

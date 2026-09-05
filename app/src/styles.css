@@ -243,6 +243,7 @@ h1 {
 }
 
 .drop-zone {
+  box-sizing: border-box;
   width: 100%;
   padding: 3em 1.5em;
   border: 2px dashed var(--color-accent);
