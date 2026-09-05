@@ -400,6 +400,8 @@ def build(out_dir: Path, version: str = "") -> None:
     for name, source in ASSETS.items():
         shutil.copyfile(source, assets_dir / name)
 
+    shutil.copytree(PAGES_DIR / "fonts", out_dir / "fonts")
+
     build_doc_pages(out_dir, doc_results)
     build_videos_page(out_dir)
 
