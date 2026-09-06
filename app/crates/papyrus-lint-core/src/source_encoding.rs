@@ -209,6 +209,26 @@ mod tests {
     }
 
     #[test]
+    fn windows_1252_encoding_uses_numeric_references_for_unmappable_characters() {
+        let bytes = encode_psc_source("; snowman: ☃", PscEncoding::Windows1252);
+
+        assert_eq!(bytes, b"; snowman: &#9731;");
+    }
+
+    #[test]
+    fn windows_1252_encoding_preserves_representable_extended_characters() {
+        let bytes = encode_psc_source("€ “quoted” café", PscEncoding::Windows1252);
+
+        assert_eq!(
+            bytes,
+            [
+                0x80, b' ', 0x93, b'q', b'u', b'o', b't', b'e', b'd', 0x94, b' ', b'c', b'a', b'f',
+                0xE9
+            ]
+        );
+    }
+
+    #[test]
     fn read_write_round_trip_preserves_a_windows_1252_file_byte_for_byte() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let path = dir.path().join("Example.psc");
@@ -236,5 +256,23 @@ mod tests {
 
         let bytes_on_disk = std::fs::read(&path).expect("failed to read back test file");
         assert_eq!(bytes_on_disk, original.as_bytes());
+    }
+
+    #[test]
+    fn read_with_encoding_propagates_io_errors() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let missing = dir.path().join("does-not-exist.psc");
+
+        assert!(read_psc_source_with_encoding(&missing).is_err());
+    }
+
+    #[test]
+    fn write_propagates_io_errors() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let missing_parent = dir.path().join("missing-parent").join("Example.psc");
+
+        assert!(
+            write_psc_source(&missing_parent, "ScriptName Example", PscEncoding::Utf8).is_err()
+        );
     }
 }
