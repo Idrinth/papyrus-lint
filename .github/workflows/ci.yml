@@ -92,7 +92,7 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pull-requests: read
     steps:
       - uses: actions/checkout@v7
@@ -127,10 +127,46 @@ jobs:
       - name: Build semantic version advisory
         run: |
           python3 .github/scripts/semver_advisory.py pull-requests.json "${{ steps.latest_tag.outputs.tag }}" \
+            --release-notes semver-release-notes.md \
+            --outputs semver-outputs.json \
             > semver-advisory.md
 
       - name: Publish semantic version advisory
         run: cat semver-advisory.md >> "$GITHUB_STEP_SUMMARY" && cat semver-advisory.md
+
+      - name: Create or update draft release for the detected version jump
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MARKER: "<!-- semver-advisory: auto-generated draft -->"
+        run: |
+          NEXT_VERSION=$(jq -r '.next_version // empty' semver-outputs.json)
+          if [ -z "$NEXT_VERSION" ]; then
+            echo "No version bump recommended; leaving any existing draft release untouched."
+            exit 0
+          fi
+
+          # Only ever touch a draft release this job created itself (identified
+          # by the marker in its body), never one a maintainer drafted by hand.
+          EXISTING_TAG=$(gh api "repos/${{ github.repository }}/releases" --paginate \
+            --jq '.[] | select(.draft) | select((.body // "") | contains(env.MARKER)) | .tag_name' \
+            | head -n1)
+
+          if [ -n "$EXISTING_TAG" ] && [ "$EXISTING_TAG" != "$NEXT_VERSION" ]; then
+            echo "Recommended version changed from $EXISTING_TAG to $NEXT_VERSION; retargeting the draft release."
+            gh release delete "$EXISTING_TAG" --repo "${{ github.repository }}" --yes
+            EXISTING_TAG=""
+          fi
+
+          if [ -n "$EXISTING_TAG" ]; then
+            echo "Updating existing draft release $EXISTING_TAG."
+            gh release edit "$EXISTING_TAG" --repo "${{ github.repository }}" \
+              --title "$NEXT_VERSION" --notes-file semver-release-notes.md
+          else
+            echo "Creating draft release $NEXT_VERSION."
+            gh release create "$NEXT_VERSION" --repo "${{ github.repository }}" \
+              --title "$NEXT_VERSION" --notes-file semver-release-notes.md \
+              --target "${{ github.sha }}" --draft
+          fi
 
   pages:
     name: GitHub Pages builder tests

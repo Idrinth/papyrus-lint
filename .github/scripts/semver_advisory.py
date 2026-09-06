@@ -6,19 +6,30 @@ API and passes them to this script as a JSON file). A pull request whose
 `component: *` labels are exclusively among CI, pages, and documentation
 always recommends a patch bump instead, regardless of its `type: *` label(s)
 (if any): none of those components reach the end user, so they can never
-justify a major or minor bump. This is advisory only: it never creates a
-tag or changes any file, it just reports a recommendation for whoever
-prepares the next release.
+justify a major or minor bump. This script itself never creates a tag or
+changes any file; the `semver-advisory` job uses its output to create or
+update a draft GitHub release for the recommended version, which a
+maintainer can edit and publish (or leave alone) whenever they actually
+want to cut that release.
 
 Usage: semver_advisory.py <pull-requests.json> [current-tag]
+           [--release-notes <path>] [--outputs <path>]
 
 `pull-requests.json` is a JSON array of `{"number": ..., "title": ...,
 "labels": [...]}` objects, one per pull request merged since `current-tag`
 (the latest release tag, e.g. "v1.2.3"; omitted or empty when the project
 has no release yet). Duplicate `number`s (a pull request can be associated
 with more than one commit in the range) are collapsed to a single row.
+
+The advisory itself is always printed to stdout. `--release-notes` also
+writes the body for the draft release the calling workflow creates/updates
+for the recommended version (empty when no bump is recommended).
+`--outputs` also writes `{"bump": ..., "next_version": ...}` as JSON (both
+`null` when no bump is recommended), so the calling workflow can decide
+whether a draft release is needed without re-parsing the advisory text.
 """
 
+import argparse
 import json
 import re
 import sys
@@ -35,6 +46,11 @@ NON_USER_FACING_COMPONENTS = {"component: ci", "component: pages", "component: d
 BUMP_RANK = {"major": 0, "minor": 1, "patch": 2}
 
 TAG_RE = re.compile(r"^v(\d+)\.(\d+)\.(\d+)$")
+
+# Embedded in every draft release this job creates, so the workflow can tell
+# its own auto-generated draft apart from one a maintainer created by hand
+# (which must be left untouched) when deciding whether to update or replace it.
+RELEASE_MARKER = "<!-- semver-advisory: auto-generated draft -->"
 
 
 def classify_pull_request(labels: list[str]) -> str | None:
@@ -117,17 +133,67 @@ def build_summary(current_tag: str | None, pull_requests: list[dict], bump: str 
     return "\n".join(lines) + "\n"
 
 
-def main() -> None:
-    pull_requests_path = sys.argv[1]
-    current_tag = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else None
+def build_release_notes(pull_requests: list[dict], bump: str | None, next_version: str | None) -> str:
+    """Body for the draft release the calling workflow creates/updates for
+    `next_version`. Kept deliberately simple (unlike the grouped-by-component
+    changelist `release.yml` builds for an actual tagged release) since a
+    real release replaces this draft's title/body once it's tagged; this is
+    just enough for a maintainer reviewing the draft to see why that version
+    was recommended. Empty when no bump is recommended, since then there's
+    nothing to put in a draft release."""
+    if bump is None or next_version is None:
+        return ""
 
-    with open(pull_requests_path, encoding="utf-8") as handle:
+    lines = [
+        RELEASE_MARKER,
+        "",
+        f"Auto-generated draft based on the `type: *` labels of the pull requests merged so far "
+        f"({bump} bump). Review and edit before publishing — the actual release notes are "
+        "regenerated when this version is tagged.",
+        "",
+        "### Pull requests",
+        "",
+    ]
+    for pr in sorted(pull_requests, key=lambda pr: pr.get("number", 0)):
+        lines.append(f"- #{pr.get('number')} {pr.get('title', '')}")
+    return "\n".join(lines) + "\n"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("pull_requests_path")
+    parser.add_argument("current_tag", nargs="?", default=None)
+    parser.add_argument(
+        "--release-notes",
+        dest="release_notes_path",
+        default=None,
+        help="Write the draft release body for the recommended version to this path.",
+    )
+    parser.add_argument(
+        "--outputs",
+        dest="outputs_path",
+        default=None,
+        help='Write {"bump": ..., "next_version": ...} as JSON to this path.',
+    )
+    args = parser.parse_args()
+
+    current_tag = args.current_tag or None
+
+    with open(args.pull_requests_path, encoding="utf-8") as handle:
         pull_requests = dedupe_pull_requests(json.load(handle))
 
     bump = recommend_bump(pull_requests)
     next_version = bump_version(current_tag, bump) if bump else None
 
     print(build_summary(current_tag, pull_requests, bump, next_version))
+
+    if args.release_notes_path:
+        with open(args.release_notes_path, "w", encoding="utf-8") as handle:
+            handle.write(build_release_notes(pull_requests, bump, next_version))
+
+    if args.outputs_path:
+        with open(args.outputs_path, "w", encoding="utf-8") as handle:
+            json.dump({"bump": bump, "next_version": next_version}, handle)
 
 
 if __name__ == "__main__":
