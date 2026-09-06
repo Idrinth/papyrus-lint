@@ -228,7 +228,7 @@ More detailed explanation of the rules and their implementation is available on 
 [td][/td]
 [/tr]
 [tr][td][b]Unchecked cast[/b][/td]
-[td]Flags a member/method access on the result of an As cast before that result has been checked against None.[/td]
+[td]Flags a member/method access on the result of an As cast before that result has been checked against None. Never flags CreationKit's own fragment boilerplate cast (e.g. Actor akSpeaker = akSpeakerRef as Actor).[/td]
 [td][/td]
 [/tr]
 [/table]
