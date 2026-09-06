@@ -321,6 +321,11 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::High,
     },
+    RuleTags {
+        rule: crate::array_bounds::RULE,
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
 ];
 
 #[cfg(test)]

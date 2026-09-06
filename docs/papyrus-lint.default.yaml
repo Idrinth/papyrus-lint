@@ -95,3 +95,4 @@ rules:
   global_variable_setvalue: false
   invariant_loop_condition: true
   script_name_collision: true
+  array_bounds: true
