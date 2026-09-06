@@ -180,7 +180,9 @@ jobs:
           python-version: '3.13'
 
       - name: Install dependencies
-        run: pip install coverage -r pages/requirements-build.txt
+        run: |
+          pip install coverage -r pages/requirements-build.txt -r pages/requirements-browser-check.txt
+          playwright install --with-deps chromium
 
       - name: Test site builder with coverage
         run: |
