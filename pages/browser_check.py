@@ -138,6 +138,7 @@ def check_site(dist: Path) -> list[str]:
             browser.close()
     finally:
         server.shutdown()
+        server.server_close()
 
     known_files = {p.relative_to(dist).as_posix() for p in dist.rglob("*") if p.is_file()}
     for rel_path, hrefs in links_by_page.items():
