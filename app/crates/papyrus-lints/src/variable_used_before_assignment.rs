@@ -34,7 +34,13 @@
 //! specifically (other reads of it elsewhere still are). The declared
 //! type is tracked alongside each unassigned local so a mismatched
 //! comparison — `Int i` against `None`, or `Bool b` against `0` — is never
-//! mistaken for that type's own default and still gets flagged.
+//! mistaken for that type's own default and still gets flagged. That gate
+//! also carries across a short-circuiting `&&`/`||` joining it to a further
+//! operand, the same way [`crate::none_form_usage`] narrows its own
+//! known-`None` state through those operators: `x == <default> || x.Foo()`
+//! and `x != <default> && x.Foo()` both only evaluate `x.Foo()` once the
+//! gate has established `x` is no longer at its default, so that operand is
+//! never flagged either.
 
 use std::collections::HashMap;
 
@@ -249,9 +255,31 @@ fn check_expr(
                 check_expr(arg, unassigned, diagnostics, line);
             }
         }
+        Expr::Binary {
+            left,
+            op: BinaryOp::And,
+            right,
+        } => {
+            check_expr(left, unassigned, diagnostics, line);
+            // Short-circuit: `right` only evaluates once `left` is truthy.
+            let mut narrowed = unassigned.clone();
+            narrow_for_truthy(left, &mut narrowed);
+            check_expr(right, &narrowed, diagnostics, line);
+        }
+        Expr::Binary {
+            left,
+            op: BinaryOp::Or,
+            right,
+        } => {
+            check_expr(left, unassigned, diagnostics, line);
+            // Short-circuit: `right` only evaluates once `left` is falsy.
+            let mut narrowed = unassigned.clone();
+            narrow_for_falsy(left, &mut narrowed);
+            check_expr(right, &narrowed, diagnostics, line);
+        }
         Expr::Binary { left, op, right } => {
             let is_default_value_gate = matches!(op, BinaryOp::Eq | BinaryOp::NotEq)
-                && default_value_gate(left, right, unassigned);
+                && default_value_gate(left, right, unassigned).is_some();
             if !is_default_value_gate {
                 check_expr(left, unassigned, diagnostics, line);
                 check_expr(right, unassigned, diagnostics, line);
@@ -269,24 +297,97 @@ fn check_expr(
     }
 }
 
-/// Whether `left`/`right` (in either order) is a plain identifier, still
-/// tracked as unassigned, compared against the literal spelling of that
+/// If `left`/`right` (in either order) is a plain identifier, still tracked
+/// as unassigned, compared against the literal spelling of that
 /// identifier's own declared-type default — the "has this been set yet?"
 /// gate pattern this lint deliberately doesn't treat as a use of the
-/// variable. A comparison against some other type's default (`Int i`
-/// against `None`, `Bool b` against `0`, ...) doesn't match and is still
-/// treated as a genuine read.
+/// variable — returns that identifier's name (lowercased). A comparison
+/// against some other type's default (`Int i` against `None`, `Bool b`
+/// against `0`, ...) doesn't match and is still treated as a genuine read.
 fn default_value_gate(
     left: &Expr,
     right: &Expr,
     unassigned: &HashMap<String, DefaultKind>,
-) -> bool {
+) -> Option<String> {
     match (left, right) {
         (Expr::Identifier(name), Expr::Literal(lit))
-        | (Expr::Literal(lit), Expr::Identifier(name)) => unassigned
-            .get(&name.to_lowercase())
-            .is_some_and(|kind| kind.matches(lit)),
-        _ => false,
+        | (Expr::Literal(lit), Expr::Identifier(name)) => {
+            let key = name.to_lowercase();
+            unassigned
+                .get(&key)
+                .is_some_and(|kind| kind.matches(lit))
+                .then_some(key)
+        }
+        _ => None,
+    }
+}
+
+/// If `condition` is a direct default-value gate on some variable (`x ==
+/// <its default>` or `x != <its default>`), returns its name (lowercased)
+/// along with whether `condition` being *true* means that variable is
+/// still at its default.
+fn default_gate_check(
+    condition: &Expr,
+    unassigned: &HashMap<String, DefaultKind>,
+) -> Option<(String, bool)> {
+    match condition {
+        Expr::Binary {
+            left,
+            op: BinaryOp::Eq,
+            right,
+        } => default_value_gate(left, right, unassigned).map(|name| (name, true)),
+        Expr::Binary {
+            left,
+            op: BinaryOp::NotEq,
+            right,
+        } => default_value_gate(left, right, unassigned).map(|name| (name, false)),
+        _ => None,
+    }
+}
+
+/// Narrows `state` to reflect `condition` having evaluated `true`,
+/// recursing into `&&` operands (both must hold) — mirrors
+/// [`crate::none_form_usage::narrow_for_truthy`], but removes a variable
+/// from "still unassigned" state instead of adding it to "known None"
+/// state.
+fn narrow_for_truthy(condition: &Expr, state: &mut HashMap<String, DefaultKind>) {
+    if let Expr::Binary {
+        left,
+        op: BinaryOp::And,
+        right,
+    } = condition
+    {
+        narrow_for_truthy(left, state);
+        narrow_for_truthy(right, state);
+        return;
+    }
+    if let Some((name, means_default)) = default_gate_check(condition, state) {
+        if !means_default {
+            state.remove(&name);
+        }
+    }
+}
+
+/// Narrows `state` to reflect `condition` having evaluated `false`,
+/// recursing into `||` operands (both must have been false) — mirrors
+/// [`crate::none_form_usage::narrow_for_falsy`], but removes a variable
+/// from "still unassigned" state instead of adding it to "known None"
+/// state.
+fn narrow_for_falsy(condition: &Expr, state: &mut HashMap<String, DefaultKind>) {
+    if let Expr::Binary {
+        left,
+        op: BinaryOp::Or,
+        right,
+    } = condition
+    {
+        narrow_for_falsy(left, state);
+        narrow_for_falsy(right, state);
+        return;
+    }
+    if let Some((name, means_default)) = default_gate_check(condition, state) {
+        if means_default {
+            state.remove(&name);
+        }
     }
 }
 
@@ -604,5 +705,76 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
+    fn does_not_flag_an_or_joined_default_gate_guarding_a_while_condition() {
+        // papyrus-lint#457: `a == None || a.IsDead()` only evaluates
+        // `a.IsDead()` once the gate has established `a` is no longer at
+        // its default, so it shouldn't be flagged as a read of `a` before
+        // assignment.
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor a\n    While a == None || a.IsDead()\n        a = Game.GetPlayer()\n    EndWhile\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_an_or_joined_default_gate_guarding_an_if_condition() {
+        // Same shape as above, but in a plain `If` rather than a `While`
+        // condition, confirming the fix isn't loop-specific.
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor a\n    If a == None || a.IsDead()\n        a = Game.GetPlayer()\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_an_and_joined_default_gate_the_other_polarity() {
+        // The `&&` polarity: `a != None && a.IsDead()` only evaluates
+        // `a.IsDead()` once the gate has established `a` is no longer at
+        // its default.
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor a\n    If a != None && a.IsDead()\n        a = Game.GetPlayer()\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn still_flags_an_or_joined_operand_when_the_gate_does_not_rule_out_the_default() {
+        // `a != None || a.IsDead()`: the gate being false (needed to reach
+        // `a.IsDead()`) means `a == None`, so the default is *not* ruled
+        // out and the read is still a genuine bug.
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor a\n    If a != None || a.IsDead()\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
+    fn still_flags_an_and_joined_operand_when_the_gate_does_not_rule_out_the_default() {
+        // `a == None && a.IsDead()`: the gate being true (needed to reach
+        // `a.IsDead()`) means `a == None`, so the default is *not* ruled
+        // out and the read is still a genuine bug.
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor a\n    If a == None && a.IsDead()\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
+    fn does_not_flag_a_chain_of_or_joined_default_gates_before_a_final_read() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor a\n    Actor b\n    If a == None || b == None || a.IsDead()\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
     }
 }
