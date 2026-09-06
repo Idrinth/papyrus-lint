@@ -143,6 +143,8 @@ export const FIXTURE_HTML = `
             <input type="checkbox" id="filter-importance-low" checked />
             <input type="checkbox" id="filter-importance-medium" checked />
             <input type="checkbox" id="filter-importance-high" checked />
+          </fieldset>
+          <fieldset id="psc-result-auto-fixable-filter">
             <input type="checkbox" id="filter-auto-fixable-only" />
           </fieldset>
           <ul id="psc-result-list"></ul>
