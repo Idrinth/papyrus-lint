@@ -334,4 +334,42 @@ mod tests {
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
     }
+
+    #[test]
+    fn does_not_flag_a_cast_from_an_array_typed_value() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Actor[] actors)\n    Foo(actors as Actor)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn walks_a_cast_value_nested_in_an_index_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Actor[] arr)\n    Foo(arr[0] as Actor)\nEndFunction\n",
+        );
+
+        // Whether the array-element access itself resolves to a known type
+        // isn't the point here; this just needs to walk the Index
+        // expression nested inside the cast without crashing.
+        assert!(diagnostics.len() <= 1);
+    }
+
+    #[test]
+    fn flags_a_cast_nested_in_a_named_argument_and_walks_a_new_array_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Actor akActor)\n    SomeCall(flag = akActor as Actor)\n    Int[] arr = new Int[3]\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'Actor'"));
+    }
+
+    #[test]
+    fn fake_external_with_subtypes_lookup_always_returns_none() {
+        assert!(FakeExternalWithSubtypes
+            .lookup("Actor", "IsGlobal")
+            .is_none());
+    }
 }

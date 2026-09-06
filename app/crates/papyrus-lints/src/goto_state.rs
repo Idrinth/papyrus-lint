@@ -361,4 +361,38 @@ EndFunction
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("'StillMissing'"));
     }
+
+    #[test]
+    fn walks_an_indexed_argument_without_crashing() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(String[] names, Int i)\n    Debug.Trace(names[i])\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_a_call_nested_in_a_named_argument_and_walks_a_new_array_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    SomeCall(flag = GoToState(\"Missing\"))\n    Int[] arr = new Int[3]\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'Missing'"));
+    }
+
+    #[test]
+    fn does_not_treat_a_bare_self_call_as_goto_state() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Self(\"Missing\")\nEndFunction\n");
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn fake_external_with_ancestor_state_lookup_always_returns_none() {
+        assert!(FakeExternalWithAncestorState
+            .lookup("BaseScript", "SomeFunction")
+            .is_none());
+    }
 }

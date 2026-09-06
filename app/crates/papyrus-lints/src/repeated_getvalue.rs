@@ -218,4 +218,76 @@ mod tests {
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
     }
+
+    #[test]
+    fn checks_an_if_chain_nested_inside_a_while_loop() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    While true\n        If gv.GetValue() == 1.0\n        ElseIf gv.GetValue() == 2.0\n        EndIf\n    EndWhile\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn ignores_non_if_statements_around_the_chain() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    Float x = 0.0\n    x = 1.0\n    Debug.Trace(\"hi\")\n    If gv.GetValue() == 1.0\n    ElseIf gv.GetValue() == 2.0\n    EndIf\n    Return\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn does_not_flag_an_unqualified_get_value_call() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    If GetValue() == 1.0\n    ElseIf GetValue() == 2.0\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_a_repeated_read_wrapped_in_a_negation() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If !(gv.GetValue() == 1.0)\n    ElseIf !(gv.GetValue() == 2.0)\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_a_repeated_read_passed_as_a_named_argument() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If SomeCheck(threshold = gv.GetValue()) == 1.0\n    ElseIf SomeCheck(threshold = gv.GetValue()) == 2.0\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_a_repeated_read_on_an_indexed_receiver() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable[] gvs, Int i)\n    If gvs[i].GetValue() == 1.0\n    ElseIf gvs[i].GetValue() == 2.0\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_a_repeated_read_wrapped_in_a_cast() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If (gv.GetValue() as Float) > 1.0\n    ElseIf (gv.GetValue() as Float) > 2.0\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn walks_a_new_array_size_expression_without_crashing() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If (new Int[gv.GetValue() as Int]) == None\n    ElseIf (new Int[gv.GetValue() as Int]) == None\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
 }

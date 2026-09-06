@@ -412,4 +412,80 @@ mod tests {
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n", 0.1).is_empty());
     }
+
+    #[test]
+    fn does_not_crash_on_a_wait_call_with_no_arguments() {
+        assert!(check(
+            "ScriptName Example\n\nFunction Test()\n    Utility.Wait()\nEndFunction\n",
+            0.1
+        )
+        .is_empty());
+    }
+
+    #[test]
+    fn walks_extra_arguments_beyond_the_interval_argument() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    RegisterForUpdate(0.05, GetValue())\nEndFunction\n",
+            0.1,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn does_not_flag_a_wait_call_qualified_by_a_non_identifier_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    GetUtility().Wait(0.01)\nEndFunction\n",
+            0.1,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_call_whose_callee_is_neither_an_identifier_nor_a_member_access() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Self(0.01)\nEndFunction\n",
+            0.1,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_a_constant_addition_that_folds_below_the_minimum() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Utility.Wait(1 + 2)\nEndFunction\n",
+            10.0,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Wait(3)"));
+    }
+
+    #[test]
+    fn flags_a_constant_multiplication_that_folds_below_the_minimum() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Utility.Wait(0.01 * 2)\nEndFunction\n",
+            0.1,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Wait(0.02)"));
+    }
+
+    #[test]
+    fn walks_array_index_cast_and_new_array_expressions_without_crashing() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int[] values)\n    Int x = values[0]\n    Int y = 5 as Int\n    Int[] arr = new Int[3]\nEndFunction\n",
+            0.1,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn as_number_rejects_a_non_numeric_literal() {
+        assert_eq!(as_number(&Literal::Bool(true)), None);
+    }
 }

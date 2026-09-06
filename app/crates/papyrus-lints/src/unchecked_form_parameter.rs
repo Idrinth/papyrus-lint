@@ -370,4 +370,85 @@ mod tests {
 
         assert!(diagnostics.is_empty());
     }
+
+    #[test]
+    fn flags_access_in_a_var_decl_initializer() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    String name = akArmor.GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_access_in_a_return_value() {
+        let diagnostics = check(
+            "ScriptName Example\n\nString Function Test(Armor akArmor)\n    Return akArmor.GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn does_not_flag_a_bare_return_with_no_value() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test(Armor akArmor)\n    Return\nEndFunction\n");
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn stays_unchecked_after_an_if_else_chain_that_returns_on_every_path() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor, Bool flag)\n    If flag\n        Return\n    Else\n        Return\n    EndIf\n    akArmor.GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 9);
+    }
+
+    #[test]
+    fn flags_only_the_innermost_direct_access_in_a_chained_call() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    akArmor.GetContainer().GetName()\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn does_not_flag_short_circuited_or_guard() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    If akArmor == None || akArmor.GetName() == \"\"\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_the_right_side_of_an_unrelated_or_guard() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor, Bool flag)\n    If flag || akArmor.GetName() == \"\"\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_access_nested_in_an_index_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor, Int[] arr)\n    Int x = arr[akArmor.GetName().Length]\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_access_nested_in_a_cast_and_a_new_array_size_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    Form f = akArmor.GetLinkedRef() as Form\n    Int[] arr = new Int[akArmor.GetGoldValue()]\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+    }
 }

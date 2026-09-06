@@ -291,4 +291,30 @@ EndState
         let diagnostics = check("ScriptName Example\n\nFunction Test(\nEndFunction\n");
         assert!(diagnostics.is_empty());
     }
+
+    #[test]
+    fn walks_an_indexed_argument_without_crashing() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(MyScriptOne[] refs, Int i)\n    Debug.Trace(refs[i])\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_a_call_nested_in_a_named_argument_and_walks_a_new_array_expression() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test()\n    SomeCall(flag = MyScriptOne.IMNotStatic())\n    Int[] arr = new Int[3]\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("IMNotStatic"));
+    }
+
+    #[test]
+    fn fake_external_lookup_always_returns_none() {
+        assert!(FakeExternal.lookup("MyScriptOne", "IMNotStatic").is_none());
+    }
 }

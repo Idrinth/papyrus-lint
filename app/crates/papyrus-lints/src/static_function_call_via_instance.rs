@@ -304,6 +304,31 @@ EndState
     }
 
     #[test]
+    fn walks_an_indexed_receiver_used_as_a_plain_call_argument() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(MyScript[] refs, Int i)\n    Debug.Trace(refs[i])\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_a_call_nested_inside_a_named_argument_and_walks_a_new_array_expression() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(MyScript akRef)\n    SomeCall(flag = akRef.IsGlobal())\n    Int[] arr = new Int[3]\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("IsGlobal"));
+    }
+
+    #[test]
+    fn fake_external_lookup_always_returns_none() {
+        assert!(FakeExternal.lookup("MyScript", "IsGlobal").is_none());
+    }
+
+    #[test]
     fn does_not_crash_on_unparseable_source() {
         let diagnostics = check("ScriptName Example\n\nFunction Test(\nEndFunction\n");
         assert!(diagnostics.is_empty());

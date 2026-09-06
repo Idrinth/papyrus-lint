@@ -430,4 +430,109 @@ mod tests {
         );
         assert!(diagnostics.is_empty());
     }
+
+    #[test]
+    fn flags_a_positional_argument_in_a_var_decl_initializer() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    String result = Greet(\"hi\")\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Greet"));
+    }
+
+    #[test]
+    fn flags_positional_arguments_on_both_sides_of_an_assignment() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test(Int[] values)\n    values[Greet(\"index\") as Int] = 1\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Greet"));
+    }
+
+    #[test]
+    fn flags_a_positional_argument_in_a_return_value() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nString Function Test()\n    Return Greet(\"hi\")\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Greet"));
+    }
+
+    #[test]
+    fn does_not_flag_a_bare_return_with_no_value() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Return\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_positional_arguments_in_an_if_condition_every_branch_and_the_else_body() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test(Bool cond)\n    If Greet(\"cond\") == \"y\"\n        Greet(\"if-body\")\n    ElseIf cond\n        Greet(\"elseif-body\")\n    Else\n        Greet(\"else-body\")\n    EndIf\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 4);
+    }
+
+    #[test]
+    fn flags_positional_arguments_in_a_while_condition_and_body() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    While Greet(\"cond\") == \"y\"\n        Greet(\"body\")\n    EndWhile\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+    }
+
+    #[test]
+    fn flags_a_positional_argument_nested_in_a_binary_or_unary_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test(Bool cond)\n    Bool a = cond && Greet(\"binary\") == \"y\"\n    Bool b = !cond || Greet(\"unary\") == \"y\"\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+    }
+
+    #[test]
+    fn flags_a_positional_argument_nested_in_a_member_access() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(\"hi\").Length\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_a_positional_argument_nested_in_a_new_array_size_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction GetSize(String label)\nEndFunction\n\nFunction Test()\n    Int[] values = new Int[GetSize(\"n\")]\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("GetSize"));
+    }
+
+    #[test]
+    fn flags_a_positional_argument_nested_inside_a_named_argument_value() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Foo(String text)\nEndFunction\n\nFunction Test()\n    Foo(text = Greet(\"hi\"))\nEndFunction\n",
+            NamedArguments::Always,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("Greet"));
+    }
 }
