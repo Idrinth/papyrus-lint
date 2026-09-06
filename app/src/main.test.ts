@@ -243,6 +243,29 @@ describe("isFixableFinding", () => {
   it("is false for a finding with no rule at all", () => {
     expect(isFixableFinding({ line: 1, column: 1, message: "[error] bad" })).toBe(false);
   });
+
+  it("is false for a type-casing finding its own message says has no automatic fix", () => {
+    expect(
+      isFixableFinding({
+        line: 1,
+        column: 1,
+        message:
+          "[warning] Script name 'IDR__TIF__050000F5' does not follow the configured PascalCase casing (fixing this would rename the script, so no automatic fix is applied)",
+        rule: "type-casing",
+      }),
+    ).toBe(false);
+  });
+
+  it("is true for a type-casing finding a letter-casing-only rewrite can fix", () => {
+    expect(
+      isFixableFinding({
+        line: 1,
+        column: 1,
+        message: "[warning] Script name 'myQuestScript' does not follow the configured PascalCase casing",
+        rule: "type-casing",
+      }),
+    ).toBe(true);
+  });
 });
 
 describe("project dir memory", () => {
@@ -1100,6 +1123,32 @@ describe("buildPscResultItem / renderPscResults", () => {
       expect(badgeText).toContain("style");
       expect(badgeText).toContain("low importance");
       expect(badgeText).toContain("auto-fixable");
+    } finally {
+      applyRuleTags([]);
+    }
+  });
+
+  it("omits the auto-fixable badge for a fixable rule's finding that its own message says can't be fixed", () => {
+    applyRuleTags([{ rule: "type-casing", kinds: ["style"], importance: "low", auto_fixable: true }]);
+    try {
+      const item = buildPscResultItem(
+        outcome({
+          findings: [
+            {
+              line: 1,
+              column: 1,
+              message:
+                "[warning] Script name 'IDR__TIF__050000F5' does not follow the configured PascalCase casing (fixing this would rename the script, so no automatic fix is applied)",
+              rule: "type-casing",
+            },
+          ],
+        }),
+      );
+      const badges = item!.querySelectorAll(".psc-result__tag-badge");
+      const badgeText = Array.from(badges).map((badge) => badge.textContent);
+      expect(badgeText).toContain("style");
+      expect(badgeText).not.toContain("auto-fixable");
+      expect(item!.querySelector(".psc-result__finding-fix-button")).toBeNull();
     } finally {
       applyRuleTags([]);
     }

@@ -62,6 +62,15 @@ impl Style {
         }
     }
 
+    /// Whether repairing `name` to this style is possible through a
+    /// letter-casing change alone (see [`Style::apply`]), i.e. without a
+    /// substantive rename (such as removing an underscore for `PascalCase`)
+    /// that would break the required filename/`ScriptName` match.
+    fn fixable(self, name: &str) -> bool {
+        let replacement = self.apply(name);
+        replacement != *name && self.matches(&replacement)
+    }
+
     /// Returns the case-only rewrite of `name` for this convention.
     fn apply(self, name: &str) -> String {
         match self {
@@ -102,7 +111,10 @@ fn first_letter_case(name: &str) -> Option<bool> {
 
 /// Checks `source`'s declared `ScriptName` against `style`. A script with
 /// no `ScriptName` statement, or one that fails to lex, yields no
-/// diagnostics.
+/// diagnostics. A violation that [`repair`] can't actually fix (e.g. a name
+/// with underscores under `PascalCase`/`camelCase`) says so in its own
+/// message, so callers don't present it as automatically fixable when it
+/// isn't.
 pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return Vec::new();
@@ -122,11 +134,20 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
         if style.matches(name) {
             return Vec::new();
         }
+        // A violation this rule can't actually repair (see `Style::fixable`)
+        // says so in its own message, since the frontend otherwise has no
+        // way to tell such a finding apart from one this rule's automatic
+        // fix can resolve.
+        let unfixable_note = if style.fixable(name) {
+            ""
+        } else {
+            " (fixing this would rename the script, so no automatic fix is applied)"
+        };
         return vec![Diagnostic {
             line: name_token.line,
             column: name_token.col,
             message: format!(
-                "[warning] Script name '{name}' does not follow the configured {} casing",
+                "[warning] Script name '{name}' does not follow the configured {} casing{unfixable_note}",
                 style.label()
             ),
             rule: RULE,
@@ -156,14 +177,14 @@ pub fn repair(source: &str, style: Style) -> String {
         let TokenKind::Identifier(name) = &name_token.kind else {
             return source.to_string();
         };
-        let replacement = style.apply(name);
         // PascalCase/camelCase also prohibit underscores, but removing one
         // would be a substantive rename and break the required
         // filename/ScriptName match. Only apply a repair when changing case
         // alone can make the declaration conform.
-        if replacement == *name || !style.matches(&replacement) {
+        if !style.fixable(name) {
             return source.to_string();
         }
+        let replacement = style.apply(name);
 
         let line_start = if name_token.line == 1 {
             0
@@ -202,14 +223,30 @@ mod tests {
         assert_eq!(diagnostics[0].rule, RULE);
         assert!(diagnostics[0].message.contains("myQuestScript"));
         assert!(diagnostics[0].message.contains("PascalCase"));
+        // A letter-casing-only rewrite ("MyQuestScript") fixes this one, so
+        // it must not be flagged as unfixable.
+        assert!(!diagnostics[0].message.contains("no automatic fix"));
     }
 
     #[test]
     fn pascal_case_flags_underscores() {
-        assert_eq!(
-            check("ScriptName My_QuestScript\n", Style::PascalCase).len(),
-            1
-        );
+        let diagnostics = check("ScriptName My_QuestScript\n", Style::PascalCase);
+        assert_eq!(diagnostics.len(), 1);
+        // Removing the underscore would be a substantive rename `repair`
+        // won't make, so the diagnostic must say so rather than implying an
+        // automatic fix is available.
+        assert!(diagnostics[0].message.contains("no automatic fix"));
+    }
+
+    #[test]
+    fn pascal_case_notes_the_unfixable_double_underscore_convention() {
+        // Compiler-generated fragment scripts (e.g. dialogue Topic Info
+        // fragments) are always named like this; the double underscores can
+        // never be removed automatically without renaming the script and
+        // its file.
+        let diagnostics = check("ScriptName IDR__TIF__050000F5\n", Style::PascalCase);
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("no automatic fix"));
     }
 
     #[test]

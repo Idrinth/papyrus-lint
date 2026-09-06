@@ -702,8 +702,20 @@ const FIXABLE_RULE_IDS = new Set([
   "trailing-whitespace",
 ]);
 
+// A rule in FIXABLE_RULE_IDS can still report a violation it can't actually
+// repair without a substantive rename (e.g. type-casing on a name with
+// underscores, such as a compiler-generated fragment script's ScriptName) --
+// see papyrus_lints::type_casing::check, which appends this same note to
+// such a finding's own message rather than letting a caller assume every
+// finding from a "fixable" rule can be fixed.
+const NO_AUTOMATIC_FIX_NOTE = "no automatic fix";
+
+function hasNoAutomaticFix(finding: Diagnostic): boolean {
+  return finding.message.includes(NO_AUTOMATIC_FIX_NOTE);
+}
+
 export function isFixableFinding(finding: Diagnostic): boolean {
-  return finding.rule !== undefined && FIXABLE_RULE_IDS.has(finding.rule);
+  return finding.rule !== undefined && FIXABLE_RULE_IDS.has(finding.rule) && !hasNoAutomaticFix(finding);
 }
 
 // Applies just `rule`'s own automatic fix, restricted to `line` (see
@@ -1407,7 +1419,7 @@ function buildFindingTagsEl(finding: Diagnostic): HTMLElement | null {
   importanceBadge.textContent = `${tags.importance} importance`;
   tagsEl.append(importanceBadge);
 
-  if (tags.auto_fixable) {
+  if (tags.auto_fixable && !hasNoAutomaticFix(finding)) {
     const fixableBadge = document.createElement("span");
     fixableBadge.classList.add("psc-result__tag-badge", "psc-result__tag-badge--auto-fixable");
     fixableBadge.textContent = "auto-fixable";
