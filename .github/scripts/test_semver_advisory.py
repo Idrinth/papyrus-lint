@@ -196,6 +196,26 @@ class BuildSummaryTests(unittest.TestCase):
         self.assertIn("**Recommended next version: `v2.0.0`** (major bump).", summary)
 
 
+class BuildReleaseNotesTests(unittest.TestCase):
+    def test_empty_when_no_bump_is_recommended(self) -> None:
+        self.assertEqual("", semver_advisory.build_release_notes([], None, None))
+
+    def test_includes_the_marker_and_bump_level(self) -> None:
+        prs = [{"number": 5, "title": "Add a feature", "labels": ["type: feature"]}]
+        notes = semver_advisory.build_release_notes(prs, "minor", "v1.1.0")
+        self.assertIn(semver_advisory.RELEASE_MARKER, notes)
+        self.assertIn("minor bump", notes)
+        self.assertIn("- #5 Add a feature", notes)
+
+    def test_lists_pull_requests_sorted_by_number(self) -> None:
+        prs = [
+            {"number": 12, "title": "Second", "labels": ["type: feature"]},
+            {"number": 3, "title": "First", "labels": ["type: feature"]},
+        ]
+        notes = semver_advisory.build_release_notes(prs, "minor", "v1.1.0")
+        self.assertLess(notes.index("#3"), notes.index("#12"))
+
+
 class MainTests(unittest.TestCase):
     def test_main_prints_a_recommendation_for_the_given_pull_requests(self) -> None:
         import contextlib
@@ -235,6 +255,76 @@ class MainTests(unittest.TestCase):
                 semver_advisory.main()
 
         self.assertIn("(no previous release)", output.getvalue())
+
+    def test_main_writes_release_notes_and_outputs_when_requested(self) -> None:
+        import contextlib
+        import io
+        from unittest import mock
+
+        prs = [{"number": 3, "title": "Add a feature", "labels": ["type: feature"]}]
+        with tempfile.TemporaryDirectory() as directory:
+            prs_path = Path(directory) / "prs.json"
+            prs_path.write_text(json.dumps(prs), encoding="utf-8")
+            notes_path = Path(directory) / "notes.md"
+            outputs_path = Path(directory) / "outputs.json"
+
+            with (
+                mock.patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "semver_advisory.py",
+                        str(prs_path),
+                        "v1.0.0",
+                        "--release-notes",
+                        str(notes_path),
+                        "--outputs",
+                        str(outputs_path),
+                    ],
+                ),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                semver_advisory.main()
+
+            self.assertIn(semver_advisory.RELEASE_MARKER, notes_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                {"bump": "minor", "next_version": "v1.1.0"},
+                json.loads(outputs_path.read_text(encoding="utf-8")),
+            )
+
+    def test_main_writes_empty_release_notes_and_null_outputs_when_no_bump(self) -> None:
+        import contextlib
+        import io
+        from unittest import mock
+
+        with tempfile.TemporaryDirectory() as directory:
+            prs_path = Path(directory) / "prs.json"
+            prs_path.write_text("[]", encoding="utf-8")
+            notes_path = Path(directory) / "notes.md"
+            outputs_path = Path(directory) / "outputs.json"
+
+            with (
+                mock.patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "semver_advisory.py",
+                        str(prs_path),
+                        "--release-notes",
+                        str(notes_path),
+                        "--outputs",
+                        str(outputs_path),
+                    ],
+                ),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                semver_advisory.main()
+
+            self.assertEqual("", notes_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                {"bump": None, "next_version": None},
+                json.loads(outputs_path.read_text(encoding="utf-8")),
+            )
 
 
 if __name__ == "__main__":

@@ -255,9 +255,25 @@ binary target that crate also defines.
   regardless of its `type: *` label(s) (if any), since none of those three
   components reach the end user on their own. The
   recommendation (a per-pull-request table plus the suggested next version)
-  is posted to the job's step summary only; it's advisory, so it never
-  creates a tag, edits a file, or fails the job — the actual release still
-  only happens when a maintainer pushes a `v*.*.*` tag (see Releases below).
+  is posted to the job's step summary; the job itself never edits a file
+  or fails the job — the actual release still only happens when a
+  maintainer pushes a `v*.*.*` tag (see Releases below). It does, however,
+  create or update a draft GitHub release for the recommended version so
+  a maintainer has something to review and tweak in the meantime: it
+  looks up any existing draft release whose body carries a
+  `<!-- semver-advisory: auto-generated draft -->` marker (never touching
+  a draft a maintainer created by hand, which carries no such marker),
+  and either updates that draft's title/notes in place (recommendation
+  unchanged since the last push), deletes and recreates it under the new
+  tag (recommendation changed, e.g. a later push adds a `type: breaking
+  change` label), or creates a fresh one (no existing draft) via
+  `semver_advisory.py`'s own `--release-notes`/`--outputs` output. A
+  draft release carries no real git tag until it's published — GitHub
+  only creates the tag then — so this never triggers `release.yml` or
+  otherwise acts on the recommendation itself; publishing (or discarding)
+  the draft is still a maintainer's call. When no pull request carries a
+  recognized `type: *` label, no bump is recommended and any existing
+  auto-generated draft is left untouched.
 - **GitHub Pages browser smoke test job**: builds the site
   (`pages/build.py`) and then opens every one of its pages in headless
   Chromium via Playwright (`pages/browser_check.py`) to catch what
