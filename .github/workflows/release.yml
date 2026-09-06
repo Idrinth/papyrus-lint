@@ -363,7 +363,7 @@ jobs:
                 echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/group_$matched_idx.md"
               fi
               if [ "$nexus_excluded" -eq 0 ]; then
-                echo "- $title" >> nexus-changelog.md
+                echo "$title" >> nexus-changelog.md
               fi
             done <<< "$PRS"
           done
