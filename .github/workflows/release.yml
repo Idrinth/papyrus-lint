@@ -447,7 +447,7 @@ jobs:
     env:
       NEXUSMODS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
       NEXUS_API: https://api.nexusmods.com/v3
-      MOD_ID: "189862"
+      MOD_ID: "7318624462246"
     steps:
       - name: Download Nexus changelog
         uses: actions/download-artifact@v8
