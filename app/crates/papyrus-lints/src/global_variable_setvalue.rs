@@ -379,4 +379,85 @@ mod tests {
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
     }
+
+    #[test]
+    fn checks_an_if_nested_inside_a_while_loop() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    While gv.GetValue() == 1.0\n        If gv.GetValue() == 1.0\n            gv.SetValue(1.0)\n        EndIf\n    EndWhile\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn does_not_flag_conditions_that_are_not_a_bare_receiver_getter_equality() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv, GlobalVariable other)\n    If gv.GetValue(1) == 1.0\n        gv.SetValue(1.0)\n    ElseIf GetValue() == 1.0\n        gv.SetValue(1.0)\n    ElseIf gv.GetSomethingElse() == 1.0\n        gv.SetValue(1.0)\n    ElseIf gv.GetValue() == other\n        gv.SetValue(1.0)\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_condition_comparing_against_a_non_numeric_literal() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If gv.GetValue() == \"not-a-number\"\n        gv.SetValue(1.0)\n    ElseIf gv.GetValue() == true\n        gv.SetValue(1.0)\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn ignores_statements_in_the_branch_body_that_are_not_a_matching_setvalue_call() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv)\n    If gv.GetValue() == 1.0\n        gv.OtherProperty\n        gv.GetValue()\n        gv.SetValue(1.0, 2.0)\n        SetValue(1.0)\n        gv.SetSomethingElse(1.0)\n        gv.SetValue(notALiteral)\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn resolves_self_and_chained_member_receivers() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(SomeQuest quest)\n    If Self.GetValue() == 1.0\n        Self.SetValue(1.0)\n    EndIf\n    If quest.MyGlobal.GetValue() == 2.0\n        quest.MyGlobal.SetValue(2.0)\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Self.SetValue")));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("quest.MyGlobal.SetValue")));
+    }
+
+    #[test]
+    fn does_not_flag_a_receiver_that_is_neither_an_identifier_self_nor_member_chain() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable[] gvs)\n    If gvs[0].GetValue() == 1.0\n        gvs[0].SetValue(1.0)\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn literal_to_f64_rejects_non_numeric_literals() {
+        assert_eq!(literal_to_f64(&Literal::String("x".to_string())), None);
+        assert_eq!(literal_to_f64(&Literal::Bool(true)), None);
+        assert_eq!(literal_to_f64(&Literal::None), None);
+    }
+
+    #[test]
+    fn literal_display_is_empty_for_non_numeric_literals() {
+        assert_eq!(literal_display(&Literal::String("x".to_string())), "");
+        assert_eq!(literal_display(&Literal::Bool(true)), "");
+        assert_eq!(literal_display(&Literal::None), "");
+    }
+
+    #[test]
+    fn receiver_key_and_display_reject_expressions_that_are_not_a_simple_chain() {
+        let not_a_receiver = Expr::Literal(Literal::int(1));
+        assert_eq!(receiver_key(&not_a_receiver), None);
+        assert_eq!(receiver_display(&not_a_receiver), None);
+    }
 }
