@@ -7,6 +7,7 @@
 
 pub mod argument_naming;
 pub mod argument_types;
+pub mod array_bounds;
 pub mod chain_whitespace;
 pub mod comma_spacing;
 pub mod config;
@@ -122,6 +123,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     global_variable_setvalue::RULE,
     invariant_loop_condition::RULE,
     script_name_collision::RULE,
+    array_bounds::RULE,
 ];
 
 use serde::Serialize;
@@ -370,6 +372,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.script_name_collision {
         diagnostics.extend(script_name_collision::check(source));
+    }
+    if rules.array_bounds {
+        diagnostics.extend(array_bounds::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1208,6 +1213,12 @@ mod tests {
                 script_name_collision::RULE,
                 Config::default(),
                 config_with(|c| c.rules.script_name_collision = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int[] a = new Int[3]\n    a[5] = 1\nEndFunction\n",
+                array_bounds::RULE,
+                Config::default(),
+                config_with(|c| c.rules.array_bounds = false),
             ),
         ];
 

@@ -72,6 +72,7 @@
 //!   global_variable_setvalue: false
 //!   invariant_loop_condition: true
 //!   script_name_collision: true
+//!   array_bounds: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -385,6 +386,8 @@ pub struct Rules {
     pub invariant_loop_condition: bool,
     /// The "Property/variable named as script" lint.
     pub script_name_collision: bool,
+    /// The "Array bounds" lint.
+    pub array_bounds: bool,
 }
 
 impl Default for Rules {
@@ -444,6 +447,7 @@ impl Default for Rules {
             global_variable_setvalue: false,
             invariant_loop_condition: true,
             script_name_collision: true,
+            array_bounds: true,
         }
     }
 }
@@ -609,6 +613,7 @@ mod tests {
         assert!(!config.rules.global_variable_setvalue);
         assert!(config.rules.invariant_loop_condition);
         assert!(config.rules.script_name_collision);
+        assert!(config.rules.array_bounds);
     }
 
     #[test]

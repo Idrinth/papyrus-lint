@@ -195,6 +195,10 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags divisions by zero where they are likely to happen.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Array bounds[/b][/td]
+[td]Flags a literal index into a local array that falls outside the constant size it was declared with (e.g. new Float[3] followed by a[5]), since Papyrus silently no-ops the access instead of raising an error. Also flags a new array whose own literal size exceeds the engine's 128-element cap; that cap doesn't apply to array Properties or natively-returned arrays, so those aren't checked against it.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Empty loop/conditional body[/b][/td]
 [td]Flags seemingly useless loops and conditional bodies, since they are likely a mistake.[/td]
 [td][/td]
@@ -369,7 +373,8 @@ rules:
   repeated_getvalue: false
   global_variable_setvalue: false
   invariant_loop_condition: true
-  script_name_collision: true[/code]
+  script_name_collision: true
+  array_bounds: true[/code]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.
