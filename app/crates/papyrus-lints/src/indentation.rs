@@ -76,12 +76,16 @@ fn line_depths(source: &str) -> Option<Vec<usize>> {
 /// are never flagged. Returns no diagnostics if `source`'s structure can't
 /// be identified, since there's nothing to compare against. Lines inside a
 /// CreationKit fragment-code wrapper (see [`fragment_code`]), outside of
-/// its `;BEGIN CODE`/`;END CODE` markers, are never flagged.
+/// its `;BEGIN CODE`/`;END CODE` markers, are never flagged; lines inside
+/// those markers are expected relative to the marker's own depth (see
+/// [`fragment_code::code_section_starts`]), not the file-wide depth of the
+/// (never-reindented) wrapper function around them.
 pub fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
     let Some(depths) = line_depths(source) else {
         return Vec::new();
     };
     let protected = fragment_code::protected_lines(source);
+    let code_section_starts = fragment_code::code_section_starts(source);
     let unit = indentation.unit();
 
     source
@@ -97,7 +101,7 @@ pub fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
                 return None;
             }
 
-            let depth = depths[index + 1];
+            let depth = expected_depth(&depths, code_section_starts[index + 1], index + 1);
             let leading = &line[..line.len() - content.len()];
             if leading == unit.repeat(depth) {
                 return None;
@@ -119,7 +123,9 @@ pub fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
 /// Replaces leading whitespace with the configured indentation while preserving
 /// line endings, blank lines, and all non-leading content. Lines protected
 /// by a CreationKit fragment-code wrapper (see [`fragment_code`]) are left
-/// exactly as-is.
+/// exactly as-is; lines between a `;BEGIN CODE`/`;END CODE` pair are
+/// indented relative to that marker's own depth rather than the file-wide
+/// depth of the wrapper function around them (see [`check`]).
 pub fn repair(source: &str, indentation: Indentation) -> String {
     let unit = indentation.unit();
 
@@ -128,6 +134,7 @@ pub fn repair(source: &str, indentation: Indentation) -> String {
         return source.to_string();
     };
     let protected = fragment_code::protected_lines(source);
+    let code_section_starts = fragment_code::code_section_starts(source);
 
     let mut result = String::with_capacity(source.len());
     let mut rest = source;
@@ -152,7 +159,8 @@ pub fn repair(source: &str, indentation: Indentation) -> String {
 
             let content = line.trim_start_matches([' ', '\t']);
             if !content.is_empty() {
-                result.push_str(&unit.repeat(depths[line_number]));
+                let depth = expected_depth(&depths, code_section_starts[line_number], line_number);
+                result.push_str(&unit.repeat(depth));
                 result.push_str(content);
             }
             result.push_str(ending);
@@ -163,6 +171,23 @@ pub fn repair(source: &str, indentation: Indentation) -> String {
     }
 
     result
+}
+
+/// Returns `line_number`'s expected indentation depth: the file-wide depth
+/// from `depths`, unless `code_section_start` names the `;BEGIN CODE`
+/// marker line that opened the fragment-code section `line_number` falls
+/// inside, in which case the marker's own depth is subtracted so the
+/// section's code is measured relative to the marker instead of the
+/// (never-reindented) wrapper function around it.
+fn expected_depth(
+    depths: &[usize],
+    code_section_start: Option<usize>,
+    line_number: usize,
+) -> usize {
+    match code_section_start {
+        Some(begin_line) => depths[line_number].saturating_sub(depths[begin_line]),
+        None => depths[line_number],
+    }
 }
 
 fn closes_block(keywords: &[Keyword]) -> bool {
@@ -321,7 +346,10 @@ mod tests {
         // The function signature, the local variable declaration, `EndFunction`,
         // and every wrapper/marker comment must stay exactly as CreationKit wrote
         // them; only the actual code between `;BEGIN CODE`/`;END CODE` may be
-        // reindented to match its nesting depth.
+        // reindented, and relative to that marker's own depth (matching how
+        // CreationKit itself writes fragment code, flush with the marker
+        // rather than nested inside the wrapper function around it) rather
+        // than the file-wide depth of that wrapper function.
         let source = "\
 ;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
 Scriptname Example Extends TopicInfo Hidden
@@ -333,9 +361,31 @@ akSpeaker.RemoveItem(x, 1, false, PlayerRef)
 EndFunction
 ;END FRAGMENT CODE - Do not edit anything between this and the begin comment
 ";
+        assert!(check(source, Indentation::Tabs).is_empty());
+        assert_eq!(repair(source, Indentation::Tabs), source);
+    }
+
+    #[test]
+    fn fragment_code_is_indented_relative_to_its_begin_code_marker() {
+        // A nested `If`/`EndIf` inside the code section should still gain
+        // its own extra level, just measured from the marker rather than
+        // from the top of the file.
+        let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+Scriptname Example Extends TopicInfo Hidden
+Function Fragment_0(ObjectReference akSpeakerRef)
+Actor akSpeaker = akSpeakerRef as Actor
+;BEGIN CODE
+If akSpeaker
+akSpeaker.RemoveItem(x, 1, false, PlayerRef)
+EndIf
+;END CODE
+EndFunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+";
         let diagnostics = check(source, Indentation::Tabs);
         assert_eq!(diagnostics.len(), 1);
-        assert_eq!(diagnostics[0].line, 6);
+        assert_eq!(diagnostics[0].line, 7);
 
         assert_eq!(
             repair(source, Indentation::Tabs),
@@ -345,12 +395,25 @@ Scriptname Example Extends TopicInfo Hidden
 Function Fragment_0(ObjectReference akSpeakerRef)
 Actor akSpeaker = akSpeakerRef as Actor
 ;BEGIN CODE
+If akSpeaker
 \takSpeaker.RemoveItem(x, 1, false, PlayerRef)
+EndIf
 ;END CODE
 EndFunction
 ;END FRAGMENT CODE - Do not edit anything between this and the begin comment
 "
         );
+    }
+
+    #[test]
+    fn real_creation_kit_fragment_is_left_unchanged() {
+        // A real CreationKit-authored fragment (fixture shared with the
+        // trailing-whitespace tests) already writes its code flush with the
+        // `;BEGIN CODE` marker's own depth; the indentation fixer must not
+        // treat the wrapper function's nesting as extra depth on top of that.
+        let source = include_str!("../tests/fixtures/IDR__TIF__050002AB.psc");
+        assert!(check(source, Indentation::Tabs).is_empty());
+        assert_eq!(repair(source, Indentation::Tabs), source);
     }
 
     #[test]

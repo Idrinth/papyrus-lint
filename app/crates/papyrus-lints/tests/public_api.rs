@@ -517,7 +517,7 @@ fn public_repair_preserves_generated_fragment_wrapper_lines() {
 
     assert_eq!(
         repaired,
-        ";BEGIN FRAGMENT CODE - generated  \nFunction Fragment_0(Int left,Int right)  \n;BEGIN CODE\n\tCall(left, right)\n;END CODE\nEndFunction  \n;END FRAGMENT CODE  \n"
+        ";BEGIN FRAGMENT CODE - generated  \nFunction Fragment_0(Int left,Int right)  \n;BEGIN CODE\nCall(left, right)\n;END CODE\nEndFunction  \n;END FRAGMENT CODE  \n"
     );
     let diagnostics = lint(&repaired, &Config::default());
     assert!(diagnostics.iter().all(|diagnostic| {
