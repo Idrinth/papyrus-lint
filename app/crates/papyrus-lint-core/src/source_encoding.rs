@@ -260,15 +260,19 @@ mod tests {
 
     #[test]
     fn read_with_encoding_propagates_io_errors() {
-        let missing = Path::new("/nonexistent/path/does-not-exist.psc");
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let missing = dir.path().join("does-not-exist.psc");
 
-        assert!(read_psc_source_with_encoding(missing).is_err());
+        assert!(read_psc_source_with_encoding(&missing).is_err());
     }
 
     #[test]
     fn write_propagates_io_errors() {
-        let missing_parent = Path::new("/nonexistent/path/Example.psc");
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let missing_parent = dir.path().join("missing-parent").join("Example.psc");
 
-        assert!(write_psc_source(missing_parent, "ScriptName Example", PscEncoding::Utf8).is_err());
+        assert!(
+            write_psc_source(&missing_parent, "ScriptName Example", PscEncoding::Utf8).is_err()
+        );
     }
 }
