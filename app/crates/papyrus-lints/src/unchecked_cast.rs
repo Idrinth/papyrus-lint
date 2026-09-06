@@ -24,6 +24,16 @@
 //! contribute its exit state to what follows the `If`. A cast used
 //! directly inline (`(expr as Type).Member`) is always flagged, since
 //! there's no way to check it for `None` in between.
+//!
+//! A cast written on a line CreationKit itself generated (see
+//! [`crate::fragment_code`]) is never tracked as unchecked in the first
+//! place: CreationKit's fragment boilerplate always casts its speaker/
+//! actor parameter to a narrower type (e.g. `Actor akSpeaker = akSpeakerRef
+//! as Actor`) immediately before the user's own editable code, and
+//! guarantees that cast succeeds, so flagging every use of the resulting
+//! variable throughout the fragment would just be noise the user can't
+//! even silence by adding a `None` check without CreationKit rejecting the
+//! edit.
 
 use std::collections::HashSet;
 
@@ -31,6 +41,7 @@ use papyrus_parser::ast::{
     AssignOp, BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp,
 };
 
+use crate::fragment_code;
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -43,10 +54,17 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         return Vec::new();
     };
 
+    let protected = fragment_code::protected_lines(source);
+
     let mut diagnostics = Vec::new();
     for function in all_functions(&script) {
         let mut unchecked_vars = HashSet::new();
-        walk_body(&function.body, &mut unchecked_vars, &mut diagnostics);
+        walk_body(
+            &function.body,
+            &protected,
+            &mut unchecked_vars,
+            &mut diagnostics,
+        );
     }
     diagnostics
 }
@@ -62,6 +80,7 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 
 fn walk_body(
     body: &[Stmt],
+    protected: &[bool],
     unchecked_vars: &mut HashSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
@@ -70,7 +89,7 @@ fn walk_body(
             Stmt::VarDecl(decl) => {
                 if let Some(value) = &decl.value {
                     check_expr(value, unchecked_vars, diagnostics, decl.line);
-                    record_write(&decl.name, value, unchecked_vars);
+                    record_write(&decl.name, value, decl.line, protected, unchecked_vars);
                 } else {
                     unchecked_vars.remove(&decl.name.to_lowercase());
                 }
@@ -84,7 +103,7 @@ fn walk_body(
                 check_expr(value, unchecked_vars, diagnostics, *line);
                 check_expr(target, unchecked_vars, diagnostics, *line);
                 if let (Expr::Identifier(name), AssignOp::Assign) = (target, op) {
-                    record_write(name, value, unchecked_vars);
+                    record_write(name, value, *line, protected, unchecked_vars);
                 }
             }
             Stmt::Expr { value, line } => check_expr(value, unchecked_vars, diagnostics, *line),
@@ -97,7 +116,7 @@ fn walk_body(
                 branches,
                 else_body,
                 ..
-            } => handle_if(branches, else_body, unchecked_vars, diagnostics),
+            } => handle_if(branches, else_body, protected, unchecked_vars, diagnostics),
             Stmt::While {
                 condition,
                 body,
@@ -106,7 +125,7 @@ fn walk_body(
             } => {
                 check_expr(condition, unchecked_vars, diagnostics, *line);
                 clear_checked(condition, unchecked_vars);
-                walk_body(body, unchecked_vars, diagnostics);
+                walk_body(body, protected, unchecked_vars, diagnostics);
                 // The condition is re-evaluated every iteration, including
                 // the final one that exits the loop, so it's checked again
                 // even if the body just reassigned a fresh cast to it.
@@ -125,6 +144,7 @@ fn walk_body(
 fn handle_if(
     branches: &[IfBranch],
     else_body: &[Stmt],
+    protected: &[bool],
     unchecked_vars: &mut HashSet<String>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
@@ -140,14 +160,14 @@ fn handle_if(
         );
         clear_checked(&branch.condition, &mut after_conditions);
         let mut branch_vars = after_conditions.clone();
-        walk_body(&branch.body, &mut branch_vars, diagnostics);
+        walk_body(&branch.body, protected, &mut branch_vars, diagnostics);
         if !diverges(&branch.body) {
             surviving.push(branch_vars);
         }
     }
 
     let mut else_vars = after_conditions.clone();
-    walk_body(else_body, &mut else_vars, diagnostics);
+    walk_body(else_body, protected, &mut else_vars, diagnostics);
     if !diverges(else_body) {
         surviving.push(else_vars);
     }
@@ -171,10 +191,18 @@ fn diverges(body: &[Stmt]) -> bool {
 /// Updates `unchecked_vars` for a plain `name = value` write (a
 /// declaration's initializer or a `Stmt::Assign` with [`AssignOp::Assign`]):
 /// tracked as unchecked if `value` is an `as` cast expression, cleared
-/// otherwise.
-fn record_write(name: &str, value: &Expr, unchecked_vars: &mut HashSet<String>) {
+/// otherwise. A cast written on a `protected` line (CreationKit's own
+/// fragment boilerplate; see [`fragment_code::protected_lines`]) is never
+/// tracked as unchecked, since CreationKit guarantees that cast succeeds.
+fn record_write(
+    name: &str,
+    value: &Expr,
+    line: usize,
+    protected: &[bool],
+    unchecked_vars: &mut HashSet<String>,
+) {
     let key = name.to_lowercase();
-    if matches!(value, Expr::Cast { .. }) {
+    if matches!(value, Expr::Cast { .. }) && !protected.get(line).copied().unwrap_or(false) {
         unchecked_vars.insert(key);
     } else {
         unchecked_vars.remove(&key);
@@ -430,5 +458,41 @@ mod tests {
     #[test]
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_the_creation_kit_generated_cast_in_a_fragment_wrapper() {
+        let diagnostics = check(
+            "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+;NEXT FRAGMENT INDEX 0
+Scriptname IDR__TIF__05000235 Extends TopicInfo Hidden
+
+;BEGIN FRAGMENT Fragment_0
+Function Fragment_0(ObjectReference akSpeakerRef)
+Actor akSpeaker = akSpeakerRef as Actor
+;BEGIN CODE
+akSpeaker.RemoveItem(idrinthAlyienethMikaelsSong, 1, false, PlayerRef)
+PlayerRef.RemoveItem(Gold001, 5, false, akSpeaker)
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+Actor Property PlayerRef  Auto
+",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn still_flags_the_same_cast_pattern_outside_a_fragment_wrapper() {
+        let diagnostics = check(
+            "ScriptName Example Extends TopicInfo Hidden\n\nFunction Fragment_0(ObjectReference akSpeakerRef)\n    Actor akSpeaker = akSpeakerRef as Actor\n    akSpeaker.RemoveItem(Gold001, 1, false, PlayerRef)\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'akSpeaker'"));
     }
 }
