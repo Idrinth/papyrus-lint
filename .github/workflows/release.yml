@@ -298,6 +298,19 @@ jobs:
           )
           DOC_LABEL="component: documentation"
 
+          # Labels that mark a pull request as invisible to someone just
+          # downloading the mod from Nexus, regardless of what else it's
+          # labeled: excluded from nexus-changelog.md only, not from the
+          # GitHub release notes above (which still group ci/pages PRs
+          # under their own headings for repo-side visibility).
+          NEXUS_EXCLUDE_LABELS=(
+            "type: tests"
+            "type: documentation"
+            "component: pages"
+            "component: ci"
+            "component: documentation"
+          )
+
           WORKDIR=$(mktemp -d)
           for i in "${!LABEL_KEYS[@]}"; do
             : > "$WORKDIR/group_$i.md"
@@ -317,6 +330,7 @@ jobs:
               IFS=',' read -ra PR_LABELS <<< "$labels_csv"
               matched_idx=-1
               is_doc=0
+              nexus_excluded=0
               type_labels=()
               for l in "${PR_LABELS[@]}"; do
                 [ "$l" == "$DOC_LABEL" ] && is_doc=1
@@ -328,6 +342,9 @@ jobs:
                   if [ "$l" == "${LABEL_KEYS[$i]}" ] && { [ "$matched_idx" -eq -1 ] || [ "$i" -lt "$matched_idx" ]; }; then
                     matched_idx=$i
                   fi
+                done
+                for ex in "${NEXUS_EXCLUDE_LABELS[@]}"; do
+                  [ "$l" == "$ex" ] && nexus_excluded=1
                 done
               done
 
@@ -345,7 +362,9 @@ jobs:
               else
                 echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/group_$matched_idx.md"
               fi
-              echo "- $title" >> nexus-changelog.md
+              if [ "$nexus_excluded" -eq 0 ]; then
+                echo "- $title" >> nexus-changelog.md
+              fi
             done <<< "$PRS"
           done
 
@@ -446,6 +465,26 @@ jobs:
         with:
           name: nexus-changelog
 
+      - name: Read Nexus changelog
+        id: nexus_changelog
+        run: |
+          # Nexus's changelog field caps at 65535 characters (see the
+          # AddModChangelogEntriesRequest schema at
+          # https://api.nexusmods.com/openapi.yaml); truncate defensively so
+          # an unusually large release can't make the upload fail outright.
+          MAX_CHANGELOG_BYTES=65000
+          if [ "$(wc -c < nexus-changelog.md)" -gt "$MAX_CHANGELOG_BYTES" ]; then
+            head -c "$MAX_CHANGELOG_BYTES" nexus-changelog.md > nexus-changelog.truncated.md
+            printf '\n... (truncated; see the GitHub release notes for the full changelist)\n' \
+              >> nexus-changelog.truncated.md
+            mv nexus-changelog.truncated.md nexus-changelog.md
+          fi
+          {
+            echo "changelog<<NEXUS_CHANGELOG_EOF"
+            cat nexus-changelog.md
+            echo "NEXUS_CHANGELOG_EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Download release assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -477,7 +516,7 @@ jobs:
           mv PapyrusLinterCLI-windows.exe ../cli.exe
 
       - name: Upload to NexusMods (setup)
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7873554"
@@ -489,8 +528,10 @@ jobs:
           allow_mod_manager_download: false
           primary_mod_manager_download: true
           description: "Windows GUI executable, for other operating systems see github release."
+          mod_id: ${{ env.MOD_ID }}
+          changelog: ${{ steps.nexus_changelog.outputs.changelog }}
       - name: Upload to NexusMods (cli)
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7890633"
@@ -501,7 +542,7 @@ jobs:
           allow_mod_manager_download: false
           description: "Windows CLI executable, for other operating systems see github release."
       - name: Upload to NexusMods (config)
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881441"
@@ -512,7 +553,7 @@ jobs:
           allow_mod_manager_download: true
           description: "If you want to create your own presets start from here."
       - name: Upload to NexusMods (vscode)
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881354"
@@ -523,7 +564,7 @@ jobs:
           allow_mod_manager_download: false
           description: "Requires one of the executables from main."
       - name: Upload to NexusMods (sublime)
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881339"

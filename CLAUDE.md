@@ -515,34 +515,38 @@ labeled `component: documentation` alongside another component label
 still groups under that other label. A pull request matching none of
 the labels above falls into a trailing "Other" section instead of
 failing the job. It also builds a plain-text version of the same PR
-changelist (titles only, no PR numbers or links, and the same
-`component: documentation` exclusion applied, but without the
-per-component grouping/headings) and uploads it as the `nexus-changelog`
-artifact for the `nexus-upload` job below.
+changelist (titles only, no PR numbers or links) and uploads it as the
+`nexus-changelog` artifact for the `nexus-upload` job below; a pull
+request is left out of this version if it carries `component:
+documentation`, `component: pages`, `component: ci`, `type: tests`, or
+`type: documentation` — regardless of what else it's labeled, since none
+of those describe anything a Nexus downloader would notice, unlike the
+GitHub release notes above where a `component: ci`/`component: pages`
+pull request still gets its own section.
 
 A final `nexus-upload` job (after `release`, `editor-plugins`, and
 `release-notes` all succeed) publishes the release to the project's
-[Nexus Mods page](https://www.nexusmods.com/skyrimspecialedition/mods/189862)
-via the Nexus Mods API, authenticating with the `NEXUSMODS_API_KEY` repo
-secret. It downloads the already-built assets straight off the GitHub
-release (rather than rebuilding anything) — the Windows installer
-(`*setup.exe`), `PapyrusLinterCLI-windows.exe`, the
-`docs/papyrus-lint.default.yaml` copy uploaded as `papyrus-lint.yaml`
-(zipped locally, since Nexus expects it as an archive), the SublimeLinter
-plugin `.zip`, and the VS Code extension
-`.vsix` — and posts the `nexus-changelog` artifact's content as a
-changelog entry for the tag's version (`POST /mods/{id}/changelogs`).
-Each of the five files is then uploaded as a new version of its
-corresponding Nexus mod file (`POST /uploads`, a `PUT` of the file to the
-returned presigned URL with matching `Content-MD5`, `POST
-/uploads/{id}/finalise`, then `POST /mod-files/{id}/versions` once the
-upload reports `available`): the two executables as `main` files, the
-editor plugins as `optional`, and the zipped config as `miscellaneous`.
-The setup.exe upload also sets `primary_mod_manager_download` and
-`update_mod_version`, since it's the mod's primary download and drives
-the mod-level version shown on the page. The Nexus API has no endpoint
-to update a mod's page description, so `docs/nexuspage.bbcode` is not synced
-by this job and still needs to be pasted onto the mod page by hand.
+[Nexus Mods page](https://www.nexusmods.com/skyrimspecialedition/mods/189862),
+authenticating with the `NEXUSMODS_API_KEY` repo secret, via the
+[`Nexus-Mods/upload-action`](https://github.com/Nexus-Mods/upload-action).
+It downloads the already-built assets straight off the GitHub release
+(rather than rebuilding anything) — the Windows installer (`*setup.exe`),
+`PapyrusLinterCLI-windows.exe`, the `docs/papyrus-lint.default.yaml` copy
+uploaded as `papyrus-lint.yaml` (zipped locally, since Nexus expects it
+as an archive), the SublimeLinter plugin `.zip`, and the VS Code
+extension `.vsix` (also zipped, for the same reason) — and uploads each
+as a new version of its corresponding Nexus mod file: the two
+executables as `main` files, the editor plugins as `optional`, and the
+zipped config as `miscellaneous`. The setup.exe upload also sets
+`primary_mod_manager_download` and `update_mod_version`, since it's the
+mod's primary download and drives the mod-level version shown on the
+page; it additionally passes `mod_id` and the downloaded
+`nexus-changelog` artifact's content as `changelog`, so that same
+upload also posts the version's changelog entry to the mod page (the
+action requires `mod_id` whenever `changelog` is set). The Nexus API has
+no endpoint to update a mod's page description, so
+`docs/nexuspage.bbcode` is not synced by this job and still needs to be
+pasted onto the mod page by hand.
 
 An `update-pages` job (after `release`) invokes `pages.yml` (see GitHub
 Pages above) as a reusable `workflow_call`, passing the tag
