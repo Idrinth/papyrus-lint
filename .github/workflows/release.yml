@@ -516,7 +516,7 @@ jobs:
           mv PapyrusLinterCLI-windows.exe ../cli.exe
 
       - name: Upload to NexusMods (setup)
-        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7873554"
@@ -531,7 +531,7 @@ jobs:
           mod_id: ${{ env.MOD_ID }}
           changelog: ${{ steps.nexus_changelog.outputs.changelog }}
       - name: Upload to NexusMods (cli)
-        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7890633"
@@ -542,7 +542,7 @@ jobs:
           allow_mod_manager_download: false
           description: "Windows CLI executable, for other operating systems see github release."
       - name: Upload to NexusMods (config)
-        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881441"
@@ -553,7 +553,7 @@ jobs:
           allow_mod_manager_download: true
           description: "If you want to create your own presets start from here."
       - name: Upload to NexusMods (vscode)
-        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881354"
@@ -564,7 +564,7 @@ jobs:
           allow_mod_manager_download: false
           description: "Requires one of the executables from main."
       - name: Upload to NexusMods (sublime)
-        uses: Nexus-Mods/upload-action@c96019556046053aa26044b44396cd38929daf23 # v1.0.0-beta.10
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
           api_key: ${{ secrets.NEXUSMODS_API_KEY }}
           file_id: "7881339"
