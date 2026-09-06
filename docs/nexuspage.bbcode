@@ -25,7 +25,7 @@ Testing uses three steps to make sure everything is working as intended. Step on
 [heading]Implemented Lints[/heading]
 More detailed explanation of the rules and their implementation is available on the GitHub README: [url=https://github.com/Idrinth/papyrus-lint]https://github.com/Idrinth/papyrus-lint[/url]
 [size=4][b]Formatting[/b][/size]
-[table][tr][th]Lint[/th]
+[spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
 [/tr]
@@ -69,9 +69,9 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flag declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the ScriptName line, before any variable, function, or state declaration.[/td]
 [td]✓[/td]
 [/tr]
-[/table]
+[/table][/spoiler]
 [size=4][b]Performance[/b][/size]
-[table][tr][th]Lint[/th]
+[spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
 [/tr]
@@ -91,9 +91,9 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags GetValue() called on the same global more than once across an If/ElseIf chain's conditions, since it can be cached in a local variable instead. Disabled by default.[/td]
 [td][/td]
 [/tr]
-[/table]
+[/table][/spoiler]
 [b][size=4]Reliability[/size][/b]
-[table][tr][th]Lint[/th]
+[spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
 [/tr]
@@ -169,9 +169,9 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags a script-level Property or variable whose name matches the script it's declared in, since Papyrus fails to compile it.[/td]
 [td][/td]
 [/tr]
-[/table]
+[/table][/spoiler]
 [size=4][b]Bugprone[/b][/size]
-[table][tr][th]Lint[/th]
+[spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
 [/tr]
@@ -231,9 +231,9 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags a member/method access on the result of an As cast before that result has been checked against None. Never flags CreationKit's own fragment boilerplate cast (e.g. Actor akSpeaker = akSpeakerRef as Actor).[/td]
 [td][/td]
 [/tr]
-[/table]
+[/table][/spoiler]
 [size=4][b]Other[/b][/size]
-[table][tr][th]Lint[/th]
+[spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
 [/tr]
@@ -273,11 +273,11 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags a SetValue/SetValueInt call that doesn't provably change the value: a branch writing back the exact value its own GetValue() == literal condition just confirmed, or an Else branch writing a literal with no check ruling out that value already being current. Disabled by default.[/td]
 [td][/td]
 [/tr]
-[/table]
+[/table][/spoiler]
 The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
 [heading]Configuration file[/heading]
 All settings following are the default, the file will automatically be loaded from a directory two levels above the psc file(s). This means it is in your Data directory in any normal installation.
-[code]# Path to PapyrusCompiler.exe, or null to auto-detect it
+[spoiler][code]# Path to PapyrusCompiler.exe, or null to auto-detect it
 compiler_path: null
 # Extra directories (relative to the project root, or absolute) to search
 # for .psc files, besides scripts/source and source/scripts
@@ -374,11 +374,11 @@ rules:
   global_variable_setvalue: false
   invariant_loop_condition: true
   script_name_collision: true
-  array_bounds: true[/code]
+  array_bounds: true[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.
-[code]PapyrusLinter init
+[spoiler][code]PapyrusLinter init
 PapyrusLinter path/to/project.achlist
 PapyrusLinter path/to/Example.psc
 PapyrusLinter fix path/to/project.achlist
@@ -394,7 +394,7 @@ PapyrusLinter --script-root path/to/SharedScripts path/to/project.achlist
 PapyrusLinter --output path/to/report.txt path/to/project.achlist
 PapyrusLinter --json --output path/to/report.json path/to/project.achlist
 PapyrusLinter --short-paths path/to/project.achlist
-PapyrusLinter --color never path/to/project.achlist[/code]
+PapyrusLinter --color never path/to/project.achlist[/code][/spoiler]
 The plain-text report is colorized automatically when run in a terminal (rule tags, error/warning/info levels, and the summary line); pass --color always or --color never to override the detection.
 --tag <kind> (style, performance, correctness, or maintainability) restricts a run to just one class of rules; combine it with fix to only run that class's automatic fixes. Can't be combined with --type.
 
