@@ -75,6 +75,12 @@ class MarkdownHelpersTest(unittest.TestCase):
             ["Name", "a | b", "yes"],
         )
 
+    def test_split_table_row_accepts_rows_without_outer_pipes(self) -> None:
+        self.assertEqual(
+            page_builder.split_table_row("Name | Description | Auto-Fix"),
+            ["Name", "Description", "Auto-Fix"],
+        )
+
     def test_render_lint_table_renders_rows_and_fix_indicator(self) -> None:
         result = page_builder.render_lint_table(
             [
@@ -230,6 +236,11 @@ class MarkdownHelpersTest(unittest.TestCase):
     def test_first_paragraph_ignores_an_unclosed_fenced_code_block(self) -> None:
         self.assertEqual(page_builder.first_paragraph(["```text", "not prose"]), "")
 
+    def test_first_paragraph_stops_when_code_follows_prose(self) -> None:
+        lines = ["Introductory text.", "```text", "not part of the description", "```"]
+
+        self.assertEqual(page_builder.first_paragraph(lines), "Introductory text.")
+
 
 class DocsRenderingTest(unittest.TestCase):
     def test_raw_github_link_escapes_a_custom_source_url(self) -> None:
@@ -281,6 +292,20 @@ class DocsRenderingTest(unittest.TestCase):
 
         self.assertEqual(title, "notes.md")
         self.assertEqual(description, "Opening paragraph.")
+
+    def test_render_doc_handles_an_empty_markdown_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "empty.md").write_text("", encoding="utf-8")
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                title, description, content = page_builder.render_doc(
+                    {"filename": "empty.md", "slug": "empty", "kind": "markdown"}
+                )
+
+        self.assertEqual(title, "empty.md")
+        self.assertEqual(description, "")
+        self.assertIn("View raw source on GitHub", content)
 
     def test_render_doc_uses_default_repository_source_link(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -483,6 +508,13 @@ class MinifyTest(unittest.TestCase):
         self.assertIn(first, result)
         self.assertIn(second, result)
         self.assertLess(result.index(first), result.index(second))
+
+    def test_minify_html_preserves_comment_like_text_inside_pre_blocks(self) -> None:
+        pre_block = "<pre><!-- example syntax -->\n  value</pre>"
+
+        result = page_builder.minify_html(f"<!-- remove me --><main>{pre_block}</main>")
+
+        self.assertEqual(result, f"<main>{pre_block}</main>")
 
     def test_minify_css_strips_comments_and_collapses_whitespace(self) -> None:
         source = """/* header */
@@ -731,6 +763,39 @@ command
                 patch.object(page_builder, "DOCS", []),
             ):
                 with self.assertRaisesRegex(SystemExit, "missing marker <!--CLI_EXAMPLES-->"):
+                    page_builder.build(root / "out")
+
+            self.assertFalse((root / "out").exists())
+
+    def test_build_rejects_a_missing_docs_list_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            pages_dir.mkdir()
+            (root / "README.md").write_text(
+                """## Implemented Lints
+### Formatting
+| Lint | Description | Auto-Fix |
+| --- | --- | --- |
+| lint | description | |
+## Command-line interface
+```
+command
+```
+""",
+                encoding="utf-8",
+            )
+            (pages_dir / "index.template.html").write_text(
+                "<!--LINT_TABLE:Formatting--><!--CLI_EXAMPLES-->", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "ROOT", root),
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
+                patch.object(page_builder, "DOCS", []),
+            ):
+                with self.assertRaisesRegex(SystemExit, "missing marker <!--DOCS_LIST-->"):
                     page_builder.build(root / "out")
 
             self.assertFalse((root / "out").exists())
