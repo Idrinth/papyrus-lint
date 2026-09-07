@@ -176,9 +176,16 @@ fn with_field_comments(yaml: &str) -> String {
 /// shows for it (see [`FIELD_COMMENTS`]).
 fn save_project_file(dir: &Path, project: &ProjectFile) -> Result<(), String> {
     let path = existing_config_path(dir).unwrap_or_else(|| dir.join(CONFIG_FILE_NAMES[0]));
+    save_project_file_at(&path, project)
+}
 
+/// Writes `project` to the exact file at `path`, creating it if it doesn't
+/// exist yet. Shared by [`save_project_file`] (which first resolves `path`
+/// from a project directory) and [`save_config_at_path`] (which targets an
+/// explicit file directly).
+fn save_project_file_at(path: &Path, project: &ProjectFile) -> Result<(), String> {
     let yaml = serde_yaml::to_string(project).map_err(|err| err.to_string())?;
-    fs::write(&path, with_field_comments(&yaml)).map_err(|err| err.to_string())
+    fs::write(path, with_field_comments(&yaml)).map_err(|err| err.to_string())
 }
 
 /// Creates `papyrus-lint.yaml` in `dir` with the default project
@@ -237,6 +244,28 @@ pub fn save_config(dir: &Path, config: &papyrus_lints::Config) -> Result<(), Str
     let mut project = load_project_file(dir)?;
     project.lint = config.clone();
     save_project_file(dir, &project)
+}
+
+/// Writes `config` to the exact file at `path`, bypassing the
+/// `papyrus-lint.yaml`/`.yml` discovery [`save_config`] does in a project
+/// directory — the save-side counterpart of [`load_config_from_path`], used
+/// when the desktop app's user-selected config file override (rather than
+/// the project's own auto-detected config file) is in effect. Preserves any
+/// other settings (compiler path, additional script roots, ...) already
+/// stored in that file; creates the file if `path` doesn't exist yet.
+pub fn save_config_at_path(path: &Path, config: &papyrus_lints::Config) -> Result<(), String> {
+    let mut project = if path.is_file() {
+        let contents = fs::read_to_string(path).map_err(|err| err.to_string())?;
+        if contents.trim().is_empty() {
+            ProjectFile::default()
+        } else {
+            serde_yaml::from_str(&contents).map_err(|err| err.to_string())?
+        }
+    } else {
+        ProjectFile::default()
+    };
+    project.lint = config.clone();
+    save_project_file_at(path, &project)
 }
 
 /// Reads `dir`'s papyrus-lint config file and returns the explicit
@@ -440,6 +469,49 @@ mod tests {
         let path = dir.path().join("missing.yaml");
 
         assert!(load_config_from_path(&path).is_err());
+    }
+
+    #[test]
+    fn save_config_at_path_creates_the_file_when_it_does_not_exist() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            indentation: Indentation::Space,
+            ..papyrus_lints::Config::default()
+        };
+
+        save_config_at_path(&path, &config).expect("saving should succeed");
+
+        assert!(path.is_file());
+        assert_eq!(
+            load_config_from_path(&path).expect("loading should succeed"),
+            config
+        );
+    }
+
+    #[test]
+    fn save_config_at_path_preserves_other_settings_already_in_the_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        fs::write(
+            &path,
+            "compiler_path: C:\\Tools\\PapyrusCompiler.exe\nsemicolon: false\n",
+        )
+        .expect("failed to write test config file");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+
+        save_config_at_path(&path, &config).expect("saving should succeed");
+
+        assert_eq!(
+            load_config_from_path(&path).expect("loading should succeed"),
+            config
+        );
+        let contents = fs::read_to_string(&path).expect("failed to read saved config file");
+        assert!(contents.contains("compiler_path: C:\\Tools\\PapyrusCompiler.exe"));
     }
 
     #[test]

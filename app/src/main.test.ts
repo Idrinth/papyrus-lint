@@ -23,6 +23,7 @@ import {
   buildPscResultItem,
   cancelCodeViewerEditMode,
   clearError,
+  configPathOverride,
   dirnameOf,
   enterCodeViewerEditMode,
   escapeAttr,
@@ -31,6 +32,7 @@ import {
   handleCompileClick,
   handleCompileCheckChanged,
   handleCompilerPathChanged,
+  handleConfigPathOverrideChanged,
   handleDroppedPaths,
   handleFixClick,
   handleFixIssueClick,
@@ -42,6 +44,7 @@ import {
   isCodeViewerEditDirty,
   isFixableFinding,
   isPscPath,
+  lastConfigPathOverride,
   lastProjectDir,
   levelOf,
   lintConfigFromUI,
@@ -50,6 +53,7 @@ import {
   loadCompileCheck,
   loadCompilerPath,
   loadLintConfig,
+  loadLintConfigFromPath,
   loadProjectInfo,
   loadRuleTags,
   loadStoredTheme,
@@ -61,6 +65,7 @@ import {
   projectDirForAchlist,
   projectDirForPscPath,
   relativePath,
+  rememberConfigPathOverride,
   rememberProjectDir,
   renderPscResults,
   repairPscFile,
@@ -71,6 +76,7 @@ import {
   saveCompileCheck,
   saveCompilerPath,
   saveLintConfig,
+  saveLintConfigToPath,
   saveScriptRoots,
   scriptRootsFromUI,
   scriptRootsForAchlist,
@@ -452,6 +458,23 @@ describe("lint config UI round trip", () => {
     });
   });
 
+  it("handleLintConfigChanged saves to the configuration file override instead, when one is set", async () => {
+    invokeImplFor({ load_lint_config: () => DEFAULT_LINT_CONFIG });
+    await useProjectDir("/proj");
+    document.querySelector<HTMLInputElement>("#config-path-override")!.value = "/profiles/strict.yaml";
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLSelectElement>("#semicolon-style")!.value = "require";
+    handleLintConfigChanged();
+    await Promise.resolve();
+
+    expect(invokeMock).toHaveBeenCalledWith("save_lint_config_to_path", {
+      path: "/profiles/strict.yaml",
+      config: expect.objectContaining({ semicolon: true }),
+    });
+    expect(invokeMock).not.toHaveBeenCalledWith("save_lint_config", expect.anything());
+  });
+
   it("handleCompilerPathChanged persists the path once a project dir is known", async () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
@@ -510,6 +533,73 @@ describe("lint config UI round trip", () => {
   });
 });
 
+describe("configuration file override", () => {
+  it("configPathOverride reads and trims the settings input", () => {
+    expect(configPathOverride()).toBe("");
+
+    document.querySelector<HTMLInputElement>("#config-path-override")!.value = "  /profiles/strict.yaml  ";
+    expect(configPathOverride()).toBe("/profiles/strict.yaml");
+  });
+
+  it("round-trips through localStorage", () => {
+    expect(lastConfigPathOverride()).toBe("");
+    rememberConfigPathOverride("/profiles/strict.yaml");
+    expect(lastConfigPathOverride()).toBe("/profiles/strict.yaml");
+  });
+
+  it("clears the remembered value for an empty path", () => {
+    rememberConfigPathOverride("/profiles/strict.yaml");
+    rememberConfigPathOverride("");
+    expect(lastConfigPathOverride()).toBe("");
+  });
+
+  it("lastConfigPathOverride tolerates a broken localStorage", () => {
+    const getItemSpy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(lastConfigPathOverride()).toBe("");
+    getItemSpy.mockRestore();
+  });
+
+  it("rememberConfigPathOverride tolerates a broken localStorage", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => rememberConfigPathOverride("/profiles/strict.yaml")).not.toThrow();
+  });
+
+  it("handleConfigPathOverrideChanged remembers the path and reloads the current project's config from it", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+    await useProjectDir("/proj");
+    invokeMock.mockClear();
+
+    const custom: LintConfig = { ...DEFAULT_LINT_CONFIG, semicolon: true };
+    invokeImplFor({
+      load_lint_config_from_path: () => custom,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+    });
+    document.querySelector<HTMLInputElement>("#config-path-override")!.value = "/profiles/strict.yaml";
+    handleConfigPathOverrideChanged();
+
+    await vi.waitFor(() =>
+      expect(document.querySelector<HTMLSelectElement>("#semicolon-style")!.value).toBe("require"),
+    );
+    expect(lastConfigPathOverride()).toBe("/profiles/strict.yaml");
+    expect(invokeMock).toHaveBeenCalledWith("load_lint_config_from_path", { path: "/profiles/strict.yaml" });
+    expect(document.querySelector("#used-configuration-file")!.textContent).toBe("/profiles/strict.yaml");
+  });
+});
+
 describe("scriptRootsFromUI / applyScriptRootsToUI", () => {
   it("scriptRootsFromUI splits non-blank lines and trims whitespace", () => {
     document.querySelector<HTMLTextAreaElement>("#script-roots")!.value =
@@ -554,6 +644,41 @@ describe("loadLintConfig / saveLintConfig", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
 
     await expect(saveLintConfig("/proj", DEFAULT_LINT_CONFIG)).resolves.toBeUndefined();
+  });
+});
+
+describe("loadLintConfigFromPath / saveLintConfigToPath", () => {
+  it("loadLintConfigFromPath returns the backend's config on success", async () => {
+    const custom: LintConfig = { ...DEFAULT_LINT_CONFIG, semicolon: true };
+    invokeImplFor({ load_lint_config_from_path: () => custom });
+
+    await expect(loadLintConfigFromPath("/profiles/strict.yaml")).resolves.toEqual(custom);
+    expect(invokeMock).toHaveBeenCalledWith("load_lint_config_from_path", { path: "/profiles/strict.yaml" });
+  });
+
+  it("loadLintConfigFromPath falls back to the default config on failure", async () => {
+    invokeMock.mockRejectedValue(new Error("no such file"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadLintConfigFromPath("/profiles/missing.yaml")).resolves.toEqual(DEFAULT_LINT_CONFIG);
+  });
+
+  it("saveLintConfigToPath persists the config to the given file", async () => {
+    invokeImplFor({ save_lint_config_to_path: () => undefined });
+
+    await saveLintConfigToPath("/profiles/strict.yaml", DEFAULT_LINT_CONFIG);
+
+    expect(invokeMock).toHaveBeenCalledWith("save_lint_config_to_path", {
+      path: "/profiles/strict.yaml",
+      config: DEFAULT_LINT_CONFIG,
+    });
+  });
+
+  it("saveLintConfigToPath swallows backend errors", async () => {
+    invokeMock.mockRejectedValue(new Error("disk full"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(saveLintConfigToPath("/profiles/strict.yaml", DEFAULT_LINT_CONFIG)).resolves.toBeUndefined();
   });
 });
 
@@ -636,6 +761,28 @@ describe("useProjectDir", () => {
     expect(document.querySelector("#used-configuration-file")!.textContent).toBe(
       "/my/project/papyrus-lint.yml",
     );
+  });
+
+  it("loads the config from the override path instead, when one is set", async () => {
+    const custom: LintConfig = { ...DEFAULT_LINT_CONFIG, semicolon: true };
+    invokeImplFor({
+      load_lint_config_from_path: () => custom,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_project_info: () => ({
+        detected_script_roots: [],
+        used_configuration_file: "/my/project/papyrus-lint.yaml",
+      }),
+    });
+    document.querySelector<HTMLInputElement>("#config-path-override")!.value = "/profiles/strict.yaml";
+
+    await useProjectDir("/my/project");
+
+    expect(invokeMock).toHaveBeenCalledWith("load_lint_config_from_path", { path: "/profiles/strict.yaml" });
+    expect(invokeMock).not.toHaveBeenCalledWith("load_lint_config", expect.anything());
+    expect(document.querySelector<HTMLSelectElement>("#semicolon-style")!.value).toBe("require");
+    expect(document.querySelector("#used-configuration-file")!.textContent).toBe("/profiles/strict.yaml");
   });
 });
 
@@ -2640,6 +2787,16 @@ describe("remaining failure and defensive paths", () => {
     document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
     await vi.waitFor(() => expect(version.textContent).toBe("v1.2.3"));
     expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/remembered" });
+  });
+
+  it("prefills the configuration file override from storage on startup", () => {
+    localStorage.setItem("papyrus-lint:config-path-override", "/profiles/strict.yaml");
+
+    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
+
+    expect(document.querySelector<HTMLInputElement>("#config-path-override")!.value).toBe(
+      "/profiles/strict.yaml",
+    );
   });
 
   it("resets a failed save label after the timeout", async () => {

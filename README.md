@@ -223,7 +223,19 @@ default. The full default configuration, with every key documented inline,
 is checked in at
 [`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — it's
 also what `PapyrusLinterCLI init` writes into a project with no config
-file yet. Each key:
+file yet.
+
+The desktop app's Settings tab has a "Configuration file" field for
+overriding this auto-detection: enter the path to a specific
+`papyrus-lint.yaml`/`.yml` file (it need not be named that, or live at the
+project root) and the app reads/writes lint settings there instead,
+regardless of which project directory is currently loaded — useful for
+switching between several saved configurations, or for a project whose
+config file doesn't live where auto-detection expects it. Leave it blank
+to go back to auto-detection. Whatever path is entered is remembered
+across app restarts, so it's prefilled the next time the app opens.
+
+Each key:
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
   app's Settings tab. When unset (or blank), the app auto-detects it at

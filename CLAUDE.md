@@ -740,6 +740,27 @@ scanned at all — with `script_locator::conflicting_script_versions_among`
 covering the one case directory scanning otherwise catches for free: two
 listed entries sharing a file name. It defaults to `false` so an existing
 achlist-based project's resolution/diagnostics don't change underneath it.
+
+The desktop app's Settings tab additionally has a "Configuration file"
+input (`configPathOverrideEl` in `app/src/main.ts`) for overriding this
+project-directory discovery entirely: when set, the app reads/writes lint
+settings at that exact path instead — via the `load_lint_config_from_path`/
+`save_lint_config_to_path` Tauri commands, which wrap
+`papyrus_lint_core::config::load_config_from_path` (also used by the CLI's
+own `--config <path>`) and the new `config::save_config_at_path` — no
+matter which project directory (`useProjectDir`) is currently loaded, and
+persists across drops of a different achlist/`.psc`. It's remembered in
+`localStorage` (independent of any project's own config file, since
+picking a project doesn't imply picking a config override) so it's
+prefilled the next time the app starts, the same way the last opened
+project directory already is. Leaving it blank reverts to the normal
+auto-detection described above. Editing lint settings while an override is
+active saves to that file (creating it if it doesn't exist yet, preserving
+any other settings — e.g. `compiler_path` — already stored in it) instead
+of the current project directory's own config file; `compiler_path`,
+`compile_check`, and `additional_script_roots` themselves are unaffected
+by this override and still follow the loaded project directory.
+
 Configuration controls formatting, lint enablement, complexity thresholds,
 CLI failure levels, and the compiler path. It also controls whether the
 desktop app's `lint_psc_file`/`repair_psc_file` commands additionally run

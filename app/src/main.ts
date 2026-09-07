@@ -32,6 +32,7 @@ let currentPscOutcomes: PscParseOutcome[] = [];
 // straggling outcome from a drop superseded by a newer one can't get mixed
 // into the newer drop's results.
 let currentParseGeneration = 0;
+let configPathOverrideEl: HTMLInputElement | null;
 let compilerPathEl: HTMLInputElement | null;
 let compileCheckEl: HTMLInputElement | null;
 let scriptRootsEl: HTMLTextAreaElement | null;
@@ -299,6 +300,7 @@ export const DEFAULT_LINT_CONFIG: LintConfig = {
   rules: DEFAULT_RULES,
 };
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
+const CONFIG_PATH_OVERRIDE_KEY = "papyrus-lint:config-path-override";
 const THEME_KEY = "papyrus-lint:theme";
 export const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];
 
@@ -444,6 +446,29 @@ export async function loadLintConfig(dir: string): Promise<LintConfig> {
 export async function saveLintConfig(dir: string, config: LintConfig): Promise<void> {
   try {
     await invoke("save_lint_config", { dir, config });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Reads and parses the config file at the exact `path` given, bypassing the
+// project-directory discovery loadLintConfig does. Backs the Settings tab's
+// "Configuration file" override.
+export async function loadLintConfigFromPath(path: string): Promise<LintConfig> {
+  try {
+    return await invoke<LintConfig>("load_lint_config_from_path", { path });
+  } catch (error) {
+    console.error(error);
+    return DEFAULT_LINT_CONFIG;
+  }
+}
+
+// Persists `config` to the exact file at `path`, creating it if it doesn't
+// exist yet. The save-side counterpart of loadLintConfigFromPath, used
+// while the Settings tab's "Configuration file" override is set.
+export async function saveLintConfigToPath(path: string, config: LintConfig): Promise<void> {
+  try {
+    await invoke("save_lint_config_to_path", { path, config });
   } catch (error) {
     console.error(error);
   }
@@ -654,7 +679,10 @@ export function lintConfigFromUI(): LintConfig {
 // config and, if a project directory is known, persists it to disk.
 export function handleLintConfigChanged() {
   currentLintConfig = lintConfigFromUI();
-  if (currentProjectDir) {
+  const override = configPathOverride();
+  if (override) {
+    void saveLintConfigToPath(override, currentLintConfig);
+  } else if (currentProjectDir) {
     void saveLintConfig(currentProjectDir, currentLintConfig);
   }
 }
@@ -1667,6 +1695,37 @@ export function lastProjectDir(): string | null {
   }
 }
 
+// Reads the Settings tab's "Configuration file" override input, trimmed. An
+// empty string means no override is set, so the lint config is auto-detected
+// from the current project directory as usual.
+export function configPathOverride(): string {
+  return configPathOverrideEl?.value.trim() ?? "";
+}
+
+// Remembers `path` (or clears the remembered value, for an empty `path`) as
+// the configuration file override, so it's prefilled the next time the app
+// starts.
+export function rememberConfigPathOverride(path: string) {
+  try {
+    if (path) {
+      localStorage.setItem(CONFIG_PATH_OVERRIDE_KEY, path);
+    } else {
+      localStorage.removeItem(CONFIG_PATH_OVERRIDE_KEY);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export function lastConfigPathOverride(): string {
+  try {
+    return localStorage.getItem(CONFIG_PATH_OVERRIDE_KEY) ?? "";
+  } catch (error) {
+    console.error(error);
+    return "";
+  }
+}
+
 // Applies `theme` to the document: "system" removes any override, leaving
 // the prefers-color-scheme media query in styles.css in control; "light"
 // and "dark" set a data-theme attribute that overrides it.
@@ -1700,7 +1759,8 @@ export function loadStoredTheme(): Theme {
 
 export async function useProjectDir(dir: string) {
   currentProjectDir = dir;
-  currentLintConfig = await loadLintConfig(dir);
+  const override = configPathOverride();
+  currentLintConfig = override ? await loadLintConfigFromPath(override) : await loadLintConfig(dir);
   applyLintConfigToUI(currentLintConfig);
   currentCompilerPath = await loadCompilerPath(dir);
   if (compilerPathEl) {
@@ -1713,7 +1773,21 @@ export async function useProjectDir(dir: string) {
   currentScriptRoots = await loadScriptRoots(dir);
   applyScriptRootsToUI(currentScriptRoots);
   applyProjectInfoToUI(await loadProjectInfo(dir));
+  if (override && usedConfigurationFileEl) {
+    usedConfigurationFileEl.textContent = override;
+  }
   rememberProjectDir(dir);
+}
+
+// Called when the "Configuration file" override input changes: persists the
+// choice (so it's prefilled next time the app starts) and, if a project is
+// already loaded, reloads its lint configuration from the new source (the
+// override path, or back to auto-detection if it was cleared).
+export function handleConfigPathOverrideChanged() {
+  rememberConfigPathOverride(configPathOverride());
+  if (currentProjectDir) {
+    void useProjectDir(currentProjectDir);
+  }
 }
 
 // Called when the PapyrusCompiler.exe path input changes: updates the path
@@ -1855,6 +1929,7 @@ window.addEventListener("DOMContentLoaded", () => {
   pscResultEl = document.querySelector("#psc-result");
   pscResultListEl = document.querySelector("#psc-result-list");
   filenameFilterEl = document.querySelector("#filename-filter");
+  configPathOverrideEl = document.querySelector("#config-path-override");
   compilerPathEl = document.querySelector("#compiler-path");
   compileCheckEl = document.querySelector("#compile-check");
   scriptRootsEl = document.querySelector("#script-roots");
@@ -1997,6 +2072,7 @@ window.addEventListener("DOMContentLoaded", () => {
     renderPscResults(currentPscOutcomes);
   });
 
+  configPathOverrideEl?.addEventListener("change", handleConfigPathOverrideChanged);
   compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
   compileCheckEl?.addEventListener("change", handleCompileCheckChanged);
   scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);
@@ -2034,6 +2110,10 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   void loadRuleTags().then(applyRuleTags);
+
+  if (configPathOverrideEl) {
+    configPathOverrideEl.value = lastConfigPathOverride();
+  }
 
   const lastDir = lastProjectDir();
   if (lastDir) {
