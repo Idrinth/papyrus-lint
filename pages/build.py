@@ -181,6 +181,7 @@ ASSETS = {
     "papyrus-lint-results.png": ROOT / "resources" / "papyrus-lint-results.png",
     "papyrus-lint-viewer.png": ROOT / "resources" / "papyrus-lint-viewer.png",
     "papyrus-lint-vscode.png": ROOT / "resources" / "papyrus-lint-vscode.png",
+    "papyrus-lint-massfix.png": ROOT / "resources" / "papyrus-lint-massfix.png",
     "papyrus-lint-cli.png": ROOT / "resources" / "papyrus-lint-cli.png",
     "favicon.png": ROOT / "app" / "src-tauri" / "icons" / "icon.png",
 }
@@ -197,6 +198,7 @@ MODERN_FORMAT_ASSETS = {
     "papyrus-lint-results.png",
     "papyrus-lint-viewer.png",
     "papyrus-lint-vscode.png",
+    "papyrus-lint-massfix.png",
     "papyrus-lint-cli.png",
 }
 
