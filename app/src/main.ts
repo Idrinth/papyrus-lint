@@ -411,6 +411,25 @@ export function projectDirForAchlist(achlistPath: string, entries: string[]): st
   return dirnameOf(achlistPath);
 }
 
+// Finds the project root for a dropped directory (see handleDroppedPaths'
+// directory-scan mode, for a project with no .achlist at all whose scripts
+// are spread across arbitrarily nested subfolders, e.g. Requiem's own
+// layout): tries each recursively-found .psc entry's own position under a
+// `scripts/source`/`source/scripts` directory pair first (see
+// findCandidatePairRoot), the same way projectDirForAchlist does for an
+// achlist's entries. Falls back to the dropped directory itself if none of
+// the entries match that layout, since there's no achlist file whose parent
+// directory would otherwise apply.
+export function projectDirForDirectory(dirPath: string, entries: string[]): string {
+  for (const entry of entries) {
+    const root = findCandidatePairRoot(entry);
+    if (root) {
+      return root;
+    }
+  }
+  return dirPath;
+}
+
 // Formats `path` relative to `base` (the project root; see
 // projectDirForAchlist/projectDirForPscPath) for display in the lint
 // results list, so long absolute paths stay readable. Falls back to the
@@ -1842,7 +1861,41 @@ export async function handleDroppedPaths(paths: string[]) {
     return;
   }
 
-  showError("Please drop a single .achlist or .psc file.");
+  // Neither an .achlist nor a single .psc: try treating the single dropped
+  // path as a directory to scan recursively for .psc files, for a project
+  // (e.g. Requiem's own layout) with no .achlist at all whose scripts are
+  // spread across arbitrarily nested subfolders. list_psc_files_recursively
+  // errors out if the path isn't actually a directory, so that case falls
+  // through to the usual error message below.
+  if (paths.length === 1) {
+    const dirPath = paths[0];
+    try {
+      const entries = await invoke<string[]>("list_psc_files_recursively", {
+        path: dirPath,
+      });
+      clearError();
+      currentPscOutcomes = [];
+      const generation = ++currentParseGeneration;
+      const projectDir = projectDirForDirectory(dirPath, entries);
+      showResult(dirPath, entries, projectDir);
+      renderPscResults(currentPscOutcomes);
+
+      await useProjectDir(projectDir);
+      currentAchlistScriptRoots = scriptRootsForAchlist(entries);
+      await parsePscFiles(entries, (outcome) => {
+        if (generation !== currentParseGeneration) {
+          return;
+        }
+        currentPscOutcomes.push(outcome);
+        renderPscResults(currentPscOutcomes);
+      });
+      return;
+    } catch {
+      // Not a directory either; fall through to the error below.
+    }
+  }
+
+  showError("Please drop a single .achlist or .psc file, or a folder to scan recursively.");
 }
 
 window.addEventListener("DOMContentLoaded", () => {

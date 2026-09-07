@@ -1,40 +1,48 @@
 //! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc>
-//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc>
+//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
+//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
 //! PapyrusLinterCLI init
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
 //! [`papyrus_lint_core::achlist`]) — or, if given a single `.psc` file
-//! directly, treats that file as the achlist's sole entry — lints each
-//! against the project's `papyrus-lint.yaml`/`.yml` configuration, falling
-//! back to [`papyrus_lints::Config::default`] if it has none (see
-//! [`papyrus_lint_core::config`]) — and prints the diagnostics found, one
-//! per line. The project root the config (and the function table below) is
-//! looked up under is found by walking up from a resolved `.psc` file's own
-//! position for a `scripts/source`/`source/scripts` directory pair (matching
+//! directly, treats that file as the achlist's sole entry, or, if given a
+//! directory, recursively scans it (and every subdirectory beneath it, at
+//! any depth) for `.psc` files instead (see
+//! [`papyrus_lint_core::script_locator::find_psc_files_recursively`]) —
+//! lints each against the project's `papyrus-lint.yaml`/`.yml`
+//! configuration, falling back to [`papyrus_lints::Config::default`] if it
+//! has none (see [`papyrus_lint_core::config`]) — and prints the
+//! diagnostics found, one per line. The directory-scan mode is for a
+//! project with no `.achlist` at all whose scripts are spread across
+//! arbitrarily nested subfolders (e.g. Requiem's own layout) rather than
+//! flatly under `scripts/source`. The project root the config (and the
+//! function table below) is looked up under is found by walking up from a
+//! resolved `.psc` file's own position for a `scripts/source`/
+//! `source/scripts` directory pair (matching
 //! [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`], case-insensitively)
 //! and taking the directory above that pair, e.g. `Data` for
 //! `Data\Scripts\Source\abc.psc` — which also finds the right root for a
 //! script nested further still, e.g. a namespaced
 //! `Data\Scripts\Source\User\abc.psc`. For a bare `.psc` file given directly,
 //! that walk starts from the file itself, falling back to two directories up
-//! if no such pair is found in the path at all. For an `.achlist`, the same
-//! walk is tried against each of its resolved `.psc` entries first, so a
-//! project whose `.achlist` sits somewhere other than the project root (e.g.
-//! a user drops it next to a game's `Data` directory while the actual
-//! project, and its `papyrus-lint.yaml`, live in a subfolder alongside the
-//! `scripts/source`/`source/scripts` tree) still finds the right root;
-//! falling back to the achlist's own parent directory (the previous, simpler
-//! rule) only if none of its entries match that layout. This is what lets
-//! editor plugins that invoke the CLI on a single saved file (see
-//! `SublimeLinter-contrib-papyrus-lint/linter.py`) still pick up the
-//! project's config regardless of how the project organizes its scripts
-//! under `scripts/source`. Calls to functions declared on other scripts under
-//! the project root are resolved the same way the desktop app resolves
-//! them (see [`papyrus_lint_core::function_table`]), so the CLI's
+//! if no such pair is found in the path at all. For an `.achlist` or a
+//! directory, the same walk is tried against each resolved `.psc` entry
+//! first, so a project whose `.achlist`/scanned directory sits somewhere
+//! other than the project root (e.g. a user drops it next to a game's
+//! `Data` directory while the actual project, and its `papyrus-lint.yaml`,
+//! live in a subfolder alongside the `scripts/source`/`source/scripts`
+//! tree) still finds the right root; falling back to the achlist's own
+//! parent directory (the previous, simpler rule), or to the scanned
+//! directory itself, only if none of the resolved entries match that
+//! layout. This is what lets editor plugins that invoke the CLI on a single
+//! saved file (see `SublimeLinter-contrib-papyrus-lint/linter.py`) still
+//! pick up the project's config regardless of how the project organizes its
+//! scripts under `scripts/source`. Calls to functions declared on other
+//! scripts under the project root are resolved the same way the desktop app
+//! resolves them (see [`papyrus_lint_core::function_table`]), so the CLI's
 //! "Argument type check"/"Return type check" results match the app's.
 //!
 //! With the `fix` subcommand, every automatic fix (see
@@ -126,7 +134,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use papyrus_lint_core::function_table::FunctionTable;
-use papyrus_lint_core::script_locator::CANDIDATE_DIRS;
+use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, write_psc_source};
 use papyrus_lint_core::{achlist, config};
 use serde::Serialize;
@@ -204,14 +212,16 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--tag <kind>] <path-to-achlist-or-psc>\n       \
-PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc>\n\n\
+    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
+PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>\n\n\
 PapyrusLinterCLI init\n\n\
-Lints every .psc script listed in the given .achlist file, or a single\n\
-.psc file given directly, using the project's papyrus-lint.yaml/.yml\n\
-configuration (looked up next to the .achlist file, or two directories\n\
-up from a bare .psc file, e.g. Data for Data\\Scripts\\Source\\abc.psc;\n\
-falling back to defaults if it has none).\n\n\
+Lints every .psc script listed in the given .achlist file, a single\n\
+.psc file given directly, or every .psc file found recursively under a\n\
+given directory (any depth of subfolders), using the project's\n\
+papyrus-lint.yaml/.yml configuration (looked up next to the .achlist\n\
+file or scanned directory, or two directories up from a bare .psc file,\n\
+e.g. Data for Data\\Scripts\\Source\\abc.psc; falling back to defaults\n\
+if it has none).\n\n\
 With the `fix` subcommand, applies every automatic fix (see README.md)\n\
 to those scripts first, rewriting each one on disk if it changed, then\n\
 reports whatever diagnostics remain the same way.\n\n\
@@ -590,9 +600,12 @@ pub fn run(
         .extension()
         .and_then(|ext| ext.to_str())
         .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"));
+    let is_directory = !is_psc_file && input_path.is_dir();
 
     let script_paths: Vec<PathBuf> = if is_psc_file {
         vec![input_path.clone()]
+    } else if is_directory {
+        find_psc_files_recursively(&input_path)
     } else {
         let entries = match achlist::parse_achlist(&input_path) {
             Ok(entries) => entries,
@@ -616,10 +629,12 @@ pub fn run(
     // `scripts/source`/`source/scripts` directory pair (see
     // `find_psc_project_root`) so it still works when the script is nested
     // deeper still, e.g. under a namespaced subfolder. An .achlist's own
-    // entries are tried the same way first, so a project whose .achlist
-    // doesn't live in the project root still resolves correctly; only if
-    // none of its resolved scripts sit under such a pair do we fall back to
-    // the achlist's own parent directory (the conventional layout).
+    // entries, or a scanned directory's own recursively-found entries, are
+    // tried the same way first, so a project whose .achlist/scanned
+    // directory doesn't live in the project root still resolves correctly;
+    // only if none of the resolved scripts sit under such a pair do we fall
+    // back to the achlist's own parent directory (the conventional layout)
+    // or, for a scanned directory, the directory itself.
     let project_root = if is_psc_file {
         find_psc_project_root(&input_path)
     } else {
@@ -627,12 +642,16 @@ pub fn run(
             .iter()
             .find_map(|path| find_candidate_pair_root(path))
             .unwrap_or_else(|| {
-                input_path
-                    .ancestors()
-                    .nth(1)
-                    .filter(|dir| !dir.as_os_str().is_empty())
-                    .map(Path::to_path_buf)
-                    .unwrap_or_else(|| PathBuf::from("."))
+                if is_directory {
+                    input_path.clone()
+                } else {
+                    input_path
+                        .ancestors()
+                        .nth(1)
+                        .filter(|dir| !dir.as_os_str().is_empty())
+                        .map(Path::to_path_buf)
+                        .unwrap_or_else(|| PathBuf::from("."))
+                }
             })
     };
 
@@ -1487,6 +1506,98 @@ mod tests {
 
         assert_eq!(code, 0);
         assert!(stdout.contains("no problems found in 1 script"));
+    }
+
+    #[test]
+    fn lints_every_psc_found_recursively_under_a_dropped_directory() {
+        // Mirrors a mod like Requiem, whose scripts are spread across
+        // arbitrarily nested subfolders rather than a flat scripts/source
+        // directory, and ships no .achlist at all.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Top.psc"),
+            "ScriptName Top   \n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Requiem/Sub/Nested.psc"),
+            "ScriptName Nested   \n",
+        );
+        let target = dir.path().join("scripts/source");
+
+        let (code, stdout, stderr) = run_captured(&[target.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stdout.contains("2 script(s)"));
+        assert!(stdout.contains("Top.psc"));
+        assert!(stdout.contains("Nested.psc"));
+    }
+
+    #[test]
+    fn directory_scan_finds_the_project_root_from_a_nested_scripts_source_pair() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Requiem/Nested.psc"),
+            "ScriptName Nested   \n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  trailing_whitespace: false\n",
+        );
+        let target = dir.path().join("scripts/source");
+
+        let (code, stdout, _stderr) = run_captured(&[target.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found"));
+    }
+
+    #[test]
+    fn directory_scan_falls_back_to_the_scanned_directory_as_project_root() {
+        // No scripts/source or source/scripts pair anywhere in the path, so
+        // the scanned directory itself must be used as the project root.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("Nested/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  trailing_whitespace: false\n",
+        );
+
+        let (code, stdout, _stderr) = run_captured(&[dir.path().to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found"));
+    }
+
+    #[test]
+    fn directory_scan_reports_no_problems_for_an_empty_directory() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let (code, stdout, _stderr) = run_captured(&[dir.path().to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found in 0 script"));
+    }
+
+    #[test]
+    fn directory_scan_resolves_cross_script_calls_across_nested_subfolders() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Greeter.psc"),
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Requiem/Example.psc"),
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+        );
+        let target = dir.path().join("scripts/source");
+
+        let (code, stdout, _stderr) = run_captured(&[target.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("[argument-types]"));
     }
 
     #[test]

@@ -62,6 +62,27 @@ fn parse_achlist_file(path: String) -> Result<Vec<String>, String> {
         .collect())
 }
 
+/// Recursively scans `dir` (and every subdirectory beneath it, at any
+/// depth) for `.psc` files and returns their paths, for the frontend's
+/// directory-drop mode — dropping a folder instead of an `.achlist`, useful
+/// for a project (e.g. Requiem's own layout) whose scripts are spread
+/// across arbitrarily nested subfolders rather than a flat
+/// `scripts/source`. Returns an error if `path` isn't an existing
+/// directory, so the frontend can fall back to its usual
+/// "drop a single .achlist or .psc file" error.
+#[tauri::command]
+fn list_psc_files_recursively(path: String) -> Result<Vec<String>, String> {
+    let dir = PathBuf::from(&path);
+    if !dir.is_dir() {
+        return Err(format!("{path} is not a directory"));
+    }
+
+    Ok(script_locator::find_psc_files_recursively(&dir)
+        .into_iter()
+        .map(|entry| entry.to_string_lossy().into_owned())
+        .collect())
+}
+
 #[tauri::command]
 fn parse_papyrus_script(source: &str) -> Result<papyrus_parser::ast::Script, String> {
     papyrus_parser::parse(source).map_err(|e| e.to_string())
@@ -415,6 +436,7 @@ pub fn run() {
             get_app_version,
             list_rule_tags,
             parse_achlist_file,
+            list_psc_files_recursively,
             parse_papyrus_script,
             lint_papyrus_script,
             parse_psc_file,
@@ -696,6 +718,45 @@ mod tests {
 
         let missing = dir.path().join("missing.achlist");
         assert!(parse_achlist_file(missing.to_string_lossy().into_owned()).is_err());
+    }
+
+    #[test]
+    fn list_psc_files_recursively_finds_scripts_at_every_nesting_depth() {
+        let dir = tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("Requiem/Sub")).unwrap();
+        std::fs::write(dir.path().join("Top.psc"), "ScriptName Top\n").unwrap();
+        std::fs::write(
+            dir.path().join("Requiem/Sub/Nested.psc"),
+            "ScriptName Nested\n",
+        )
+        .unwrap();
+
+        let mut result = list_psc_files_recursively(dir.path().to_string_lossy().into_owned())
+            .expect("directory should scan successfully");
+        result.sort();
+        let mut expected = vec![
+            dir.path()
+                .join("Requiem/Sub/Nested.psc")
+                .to_string_lossy()
+                .into_owned(),
+            dir.path().join("Top.psc").to_string_lossy().into_owned(),
+        ];
+        expected.sort();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn list_psc_files_recursively_rejects_a_non_directory_path() {
+        let dir = tempdir().unwrap();
+        let file = dir.path().join("Example.psc");
+        std::fs::write(&file, "ScriptName Example\n").unwrap();
+
+        assert!(list_psc_files_recursively(file.to_string_lossy().into_owned()).is_err());
+        assert!(list_psc_files_recursively(
+            dir.path().join("missing").to_string_lossy().into_owned()
+        )
+        .is_err());
     }
 
     #[test]
