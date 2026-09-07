@@ -107,6 +107,7 @@ jobs:
   semver-advisory:
     name: Semantic version advisory
     if: github.event_name == 'push'
+    needs: labels
     runs-on: ubuntu-latest
     permissions:
       contents: write
