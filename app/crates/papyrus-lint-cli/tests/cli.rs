@@ -161,11 +161,25 @@ fn init_merges_a_config_placed_next_to_the_executable() {
     );
 
     let project_dir = tempfile::tempdir().expect("failed to create temp directory");
-    let output = Command::new(&exe_path)
-        .arg("init")
-        .current_dir(project_dir.path())
-        .output()
-        .expect("failed to run the copied PapyrusLinterCLI binary");
+    // Immediately after fs::copy, some CI filesystems (overlayfs in particular)
+    // briefly still report the freshly written copy as busy (ETXTBSY) when it's
+    // exec'd, even though the copy itself has already completed; a short,
+    // bounded retry absorbs that race instead of flaking the test.
+    let mut attempts_left = 20;
+    let output = loop {
+        match Command::new(&exe_path)
+            .arg("init")
+            .current_dir(project_dir.path())
+            .output()
+        {
+            Ok(output) => break output,
+            Err(err) if err.raw_os_error() == Some(26) && attempts_left > 1 => {
+                attempts_left -= 1;
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+            Err(err) => panic!("failed to run the copied PapyrusLinterCLI binary: {err}"),
+        }
+    };
 
     assert!(output.status.success());
     let config = fs::read_to_string(project_dir.path().join("papyrus-lint.yaml"))
