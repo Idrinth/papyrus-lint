@@ -156,6 +156,36 @@ class MarkdownHelpersTest(unittest.TestCase):
     def test_render_videos_list_handles_an_empty_catalog(self) -> None:
         self.assertEqual(page_builder.render_videos_list([]), "")
 
+    def test_render_shared_components_uses_one_source_with_page_relative_links(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            includes_dir = Path(directory)
+            (includes_dir / "header.html").write_text(
+                '<header><a href="<!--ROOT_PATH-->index.html">Home</a></header>', encoding="utf-8"
+            )
+            (includes_dir / "footer.html").write_text(
+                "<footer><!--VERSION--></footer>", encoding="utf-8"
+            )
+            with patch.object(page_builder, "INCLUDES_DIR", includes_dir):
+                result = page_builder.render_shared_components(
+                    "<!--SITE_HEADER--><main>Docs</main><!--SITE_FOOTER-->", "../", "v1.2&3"
+                )
+
+        self.assertEqual(
+            result,
+            '<header><a href="../index.html">Home</a></header>'
+            "<main>Docs</main><footer>v1.2&amp;3</footer>",
+        )
+
+    def test_render_shared_components_rejects_a_partially_shared_shell(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "missing shared component marker <!--SITE_FOOTER-->"):
+            page_builder.render_shared_components("<!--SITE_HEADER--><main></main>", "", "")
+
+    def test_render_shared_components_replaces_version_in_fragment_fixture(self) -> None:
+        self.assertEqual(
+            page_builder.render_shared_components("<footer><!--VERSION--></footer>", "", "v1.2&3"),
+            "<footer>v1.2&amp;3</footer>",
+        )
+
     def test_resolve_doc_href_handles_docs_repository_and_external_links(self) -> None:
         with (
             patch.object(page_builder, "DOC_FILENAME_TO_SLUG", {"guide.md": "guide"}),
