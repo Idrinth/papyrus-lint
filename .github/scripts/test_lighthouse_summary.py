@@ -101,6 +101,30 @@ class FailingAuditsTests(unittest.TestCase):
         self.assertEqual([], lighthouse_summary.failing_audits(report))
 
 
+class ActiveCategoriesTests(unittest.TestCase):
+    def test_includes_every_category_present_across_reports(self) -> None:
+        reports = [
+            make_report("http://x/a.html", {"performance": 1.0, "seo": 1.0}),
+            make_report("http://x/b.html", {"accessibility": 1.0}),
+        ]
+        self.assertEqual(
+            [("performance", "Performance"), ("accessibility", "Accessibility"), ("seo", "SEO")],
+            lighthouse_summary.active_categories(reports),
+        )
+
+    def test_drops_a_category_missing_from_every_report(self) -> None:
+        reports = [
+            make_report(
+                "http://x/index.html",
+                {"performance": 1.0, "accessibility": 1.0, "best-practices": 1.0},
+            )
+        ]
+        self.assertEqual(
+            [("performance", "Performance"), ("accessibility", "Accessibility"), ("best-practices", "Best Practices")],
+            lighthouse_summary.active_categories(reports),
+        )
+
+
 class BuildSummaryTests(unittest.TestCase):
     def test_reports_no_reports_generated(self) -> None:
         summary = lighthouse_summary.build_summary([])
@@ -145,6 +169,18 @@ class BuildSummaryTests(unittest.TestCase):
         summary = lighthouse_summary.build_summary([])
         self.assertIn(lighthouse_summary.MARKER, summary)
         self.assertIn("### Lighthouse report", summary)
+
+    def test_omits_the_seo_column_when_no_report_ran_it(self) -> None:
+        reports = [
+            make_report(
+                "http://x/index.html",
+                {"performance": 1.0, "accessibility": 1.0, "best-practices": 1.0},
+            )
+        ]
+        summary = lighthouse_summary.build_summary(reports)
+        self.assertIn("| Page | Performance | Accessibility | Best Practices |", summary)
+        self.assertNotIn("SEO", summary)
+        self.assertIn("| /index.html | 100 | 100 | 100 |", summary)
 
     def test_accepts_a_custom_marker_and_title(self) -> None:
         summary = lighthouse_summary.build_summary(

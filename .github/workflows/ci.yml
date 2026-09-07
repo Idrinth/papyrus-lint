@@ -547,7 +547,7 @@ jobs:
                 --output=json --output=html \
                 --output-path="app-lighthouse-reports/$name" \
                 --chrome-flags="--headless=new --no-sandbox --disable-gpu" \
-                --only-categories=performance,accessibility,best-practices,seo \
+                --only-categories=performance,accessibility,best-practices \
                 --quiet; then
               echo "::warning::Lighthouse audit failed for $rel"
               status=1
