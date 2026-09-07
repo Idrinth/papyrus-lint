@@ -48,6 +48,23 @@ jobs:
       - name: Lint rule files
         run: yamllint rules/*.yaml
 
+  python-lint:
+    name: Python lint
+    needs: labels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install ruff
+        run: pip install ruff==0.14.14
+
+      - name: Lint Python sources
+        run: ruff check .github/scripts pages SublimeLinter-contrib-papyrus-lint
+
   bbcode:
     name: CI scripts and Nexus page BBCode lint
     needs: labels

@@ -2,12 +2,11 @@
 
 import importlib.util
 import json
-from pathlib import Path
 import sys
 import types
 import unittest
+from pathlib import Path
 from unittest.mock import Mock, patch
-
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 

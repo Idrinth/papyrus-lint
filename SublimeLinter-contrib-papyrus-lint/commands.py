@@ -84,7 +84,7 @@ class PapyrusLintFixCommand(_PapyrusLintCliCommand):
             )
         except OSError as err:
             sublime.error_message(
-                'PapyrusLint: failed to download or run the CLI: {}'.format(err)
+                f'PapyrusLint: failed to download or run the CLI: {err}'
             )
             return
 
@@ -142,7 +142,7 @@ class PapyrusLintFixIssueCommand(_PapyrusLintCliCommand):
             executable = self._executable()
         except OSError as err:
             sublime.error_message(
-                'PapyrusLint: failed to download or run the CLI: {}'.format(err)
+                f'PapyrusLint: failed to download or run the CLI: {err}'
             )
             return
 
@@ -186,7 +186,7 @@ class PapyrusLintFixIssueCommand(_PapyrusLintCliCommand):
             )
         except OSError as err:
             sublime.error_message(
-                'PapyrusLint: failed to download or run the CLI: {}'.format(err)
+                f'PapyrusLint: failed to download or run the CLI: {err}'
             )
             return None
 

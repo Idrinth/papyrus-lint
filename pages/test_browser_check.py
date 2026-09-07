@@ -66,9 +66,11 @@ class StartServerTest(unittest.TestCase):
 
 class CheckSiteTest(unittest.TestCase):
     def test_reports_no_html_files_without_starting_a_browser(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            with patch.object(browser_check, "sync_playwright") as sync_playwright:
-                problems = browser_check.check_site(Path(directory))
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            patch.object(browser_check, "sync_playwright") as sync_playwright,
+        ):
+            problems = browser_check.check_site(Path(directory))
 
         self.assertEqual(len(problems), 1)
         self.assertIn("no .html files found under", problems[0])

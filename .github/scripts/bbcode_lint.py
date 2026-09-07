@@ -8,7 +8,6 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-
 # Keep this deliberately conservative: tags outside this set are reported as
 # typos rather than silently treated as plain text.
 KNOWN_TAGS = {

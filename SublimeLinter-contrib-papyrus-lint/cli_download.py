@@ -1,14 +1,13 @@
 """Download and cache the PapyrusLinterCLI matching this plugin release."""
 
+import json
 import os
-from pathlib import Path
 import platform
 import tempfile
+from pathlib import Path
 from urllib.request import urlopen
 
-import json
 import sublime
-
 
 RELEASE_BASE = 'https://github.com/Idrinth/papyrus-lint/releases/download'
 
@@ -21,7 +20,7 @@ def _asset_name(system=None):
         'Linux': 'PapyrusLinterCLI-linux',
     }
     if system not in assets:
-        raise OSError('Papyrus Lint does not publish a CLI for {}'.format(system))
+        raise OSError(f'Papyrus Lint does not publish a CLI for {system}')
     return assets[system]
 
 
@@ -50,7 +49,7 @@ def ensure_release_cli(cache_root, version=None, system=None):
         return str(executable)
 
     directory.mkdir(parents=True, exist_ok=True)
-    url = '{}/v{}/{}'.format(RELEASE_BASE, version, asset)
+    url = f'{RELEASE_BASE}/v{version}/{asset}'
     descriptor, temporary = tempfile.mkstemp(prefix=asset + '.', dir=str(directory))
     try:
         with os.fdopen(descriptor, 'wb') as output, urlopen(url, timeout=30) as response:

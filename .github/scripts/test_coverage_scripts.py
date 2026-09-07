@@ -131,18 +131,16 @@ class RenderNexusPageTests(unittest.TestCase):
     def test_coverage_totals_requires_all_reports(self) -> None:
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(
             render_nexuspage, "MODULES", [("Module", [("one", "missing.info")])]
-        ):
-            with self.assertRaisesRegex(ValueError, "missing coverage reports: missing.info"):
-                render_nexuspage.coverage_totals(Path(directory))
+        ), self.assertRaisesRegex(ValueError, "missing coverage reports: missing.info"):
+            render_nexuspage.coverage_totals(Path(directory))
 
     def test_coverage_totals_rejects_reports_without_lines(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             Path(directory, "empty.info").write_text("LF:0\nLH:0\n", encoding="utf-8")
             with mock.patch.object(
                 render_nexuspage, "MODULES", [("Module", [("empty", "empty.info")])]
-            ):
-                with self.assertRaisesRegex(ValueError, "coverage reports contain no lines"):
-                    render_nexuspage.coverage_totals(Path(directory))
+            ), self.assertRaisesRegex(ValueError, "coverage reports contain no lines"):
+                render_nexuspage.coverage_totals(Path(directory))
 
     def test_render_replaces_counts_and_percentage(self) -> None:
         template = "<COVERED_LINES> / <TOTAL_LINES> (~<COVERAGE_PERCENTAGE>%)"
@@ -181,9 +179,11 @@ class RenderNexusPageTests(unittest.TestCase):
             self.assertEqual("9/10 (90.0)", output.read_text(encoding="utf-8"))
 
     def test_main_rejects_invalid_argument_count(self) -> None:
-        with mock.patch.object(sys, "argv", ["render_nexuspage.py"]):
-            with self.assertRaisesRegex(SystemExit, "usage: render_nexuspage.py"):
-                render_nexuspage.main()
+        with (
+            mock.patch.object(sys, "argv", ["render_nexuspage.py"]),
+            self.assertRaisesRegex(SystemExit, "usage: render_nexuspage.py"),
+        ):
+            render_nexuspage.main()
 
 
 if __name__ == "__main__":

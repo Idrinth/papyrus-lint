@@ -10,7 +10,6 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-
 SCRIPT = Path(__file__).with_name("bbcode_lint.py")
 SPEC = importlib.util.spec_from_file_location("bbcode_lint", SCRIPT)
 assert SPEC and SPEC.loader

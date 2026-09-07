@@ -464,9 +464,9 @@ class VideosPageTest(unittest.TestCase):
             with (
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "VIDEOS_FILE", videos_file),
+                self.assertRaisesRegex(SystemExit, "missing marker"),
             ):
-                with self.assertRaisesRegex(SystemExit, "missing marker"):
-                    page_builder.build_videos_page(out_dir)
+                page_builder.build_videos_page(out_dir)
 
             self.assertFalse((out_dir / "videos.html").exists())
 
@@ -730,9 +730,9 @@ command
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
+                self.assertRaisesRegex(SystemExit, "missing marker"),
             ):
-                with self.assertRaisesRegex(SystemExit, "missing marker"):
-                    page_builder.build(root / "out")
+                page_builder.build(root / "out")
 
     def test_build_rejects_a_missing_cli_examples_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -761,9 +761,9 @@ command
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
                 patch.object(page_builder, "DOCS", []),
+                self.assertRaisesRegex(SystemExit, "missing marker <!--CLI_EXAMPLES-->"),
             ):
-                with self.assertRaisesRegex(SystemExit, "missing marker <!--CLI_EXAMPLES-->"):
-                    page_builder.build(root / "out")
+                page_builder.build(root / "out")
 
             self.assertFalse((root / "out").exists())
 
@@ -794,9 +794,9 @@ command
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
                 patch.object(page_builder, "DOCS", []),
+                self.assertRaisesRegex(SystemExit, "missing marker <!--DOCS_LIST-->"),
             ):
-                with self.assertRaisesRegex(SystemExit, "missing marker <!--DOCS_LIST-->"):
-                    page_builder.build(root / "out")
+                page_builder.build(root / "out")
 
             self.assertFalse((root / "out").exists())
 
