@@ -488,6 +488,40 @@ mod tests {
     }
 
     #[test]
+    fn config_file_path_reports_the_selected_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        assert_eq!(config_file_path(dir.path()), None);
+
+        let yml = dir.path().join("papyrus-lint.yml");
+        write_config(dir.path(), "papyrus-lint.yml", "semicolon: false\n");
+        assert_eq!(config_file_path(dir.path()), Some(yml));
+
+        let yaml = dir.path().join("papyrus-lint.yaml");
+        write_config(dir.path(), "papyrus-lint.yaml", "semicolon: true\n");
+        assert_eq!(config_file_path(dir.path()), Some(yaml));
+    }
+
+    #[test]
+    fn config_file_path_ignores_directories_with_config_names() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        fs::create_dir(dir.path().join("papyrus-lint.yaml"))
+            .expect("failed to create misleading config directory");
+
+        assert_eq!(config_file_path(dir.path()), None);
+    }
+
+    #[test]
+    fn whitespace_only_project_config_returns_defaults() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(dir.path(), "papyrus-lint.yaml", " \t\n\r\n");
+
+        assert_eq!(
+            load_config(dir.path()).expect("loading should succeed"),
+            papyrus_lints::Config::default()
+        );
+    }
+
+    #[test]
     fn load_config_from_path_reads_an_explicit_file_regardless_of_name() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let path = dir.path().join("custom-config.yaml");
@@ -569,6 +603,20 @@ mod tests {
         fs::write(&path, "semicolon: [not a bool\n").expect("failed to write test config file");
 
         assert!(load_config_from_path(&path).is_err());
+    }
+
+    #[test]
+    fn save_config_at_path_rejects_invalid_existing_yaml_without_overwriting_it() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        let invalid = "semicolon: [not a bool\n";
+        fs::write(&path, invalid).expect("failed to write test config file");
+
+        assert!(save_config_at_path(&path, &papyrus_lints::Config::default()).is_err());
+        assert_eq!(
+            fs::read_to_string(path).expect("failed to read test config file"),
+            invalid
+        );
     }
 
     #[test]
@@ -660,6 +708,23 @@ mod tests {
         );
 
         assert!(initialize_config_with_base(dir.path(), Some(base_dir.path())).is_err());
+    }
+
+    #[test]
+    fn init_refuses_to_replace_either_supported_config_name() {
+        for name in CONFIG_FILE_NAMES {
+            let dir = tempfile::tempdir().expect("failed to create temp dir");
+            write_config(dir.path(), name, "semicolon: true\n");
+
+            let error = initialize_config_with_base(dir.path(), None)
+                .expect_err("init should reject an existing config");
+
+            assert!(error.contains(name));
+            assert_eq!(
+                fs::read_to_string(dir.path().join(name)).expect("failed to read existing config"),
+                "semicolon: true\n"
+            );
+        }
     }
 
     #[test]
@@ -774,6 +839,19 @@ mod tests {
         assert_eq!(
             load_compiler_path(dir.path()).expect("should succeed"),
             None
+        );
+    }
+
+    #[test]
+    fn save_compiler_path_trims_the_override() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        save_compiler_path(dir.path(), Some("  C:\\Tools\\PapyrusCompiler.exe  "))
+            .expect("saving compiler path should succeed");
+
+        assert_eq!(
+            load_compiler_path(dir.path()).expect("should succeed"),
+            Some("C:\\Tools\\PapyrusCompiler.exe".to_string())
         );
     }
 
@@ -996,6 +1074,21 @@ mod tests {
             ],
         )
         .expect("saving script roots should succeed");
+
+        assert_eq!(
+            load_script_roots(dir.path()).expect("should succeed"),
+            vec!["../SharedScripts".to_string()]
+        );
+    }
+
+    #[test]
+    fn load_script_roots_trims_entries_from_yaml() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(
+            dir.path(),
+            "papyrus-lint.yaml",
+            "additional_script_roots:\n  - '  ../SharedScripts  '\n  - '   '\n",
+        );
 
         assert_eq!(
             load_script_roots(dir.path()).expect("should succeed"),
