@@ -2237,11 +2237,32 @@ describe("code viewer edit mode", () => {
 
       expect(isCodeViewerEditDirty()).toBe(false);
     });
+
+    it("is false right after entering edit mode on a CRLF-saved file", async () => {
+      // A textarea's value getter normalizes CRLF to LF even though nothing
+      // was typed, so comparing it against the CRLF source verbatim would
+      // read as dirty with no edit having happened.
+      await openWithSource("Int x = 1\r\nInt y = 2\r\n");
+      enterCodeViewerEditMode();
+
+      expect(isCodeViewerEditDirty()).toBe(false);
+    });
   });
 
   describe("cancelCodeViewerEditMode", () => {
     it("returns to view mode without confirming when there are no unsaved changes", async () => {
       await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      const confirmSpy = vi.spyOn(window, "confirm");
+
+      cancelCodeViewerEditMode();
+
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(panelHidden("#code-viewer-view")).toBe(false);
+    });
+
+    it("returns to view mode without confirming on a CRLF-saved file with no unsaved changes", async () => {
+      await openWithSource("Int x = 1\r\nInt y = 2\r\n");
       enterCodeViewerEditMode();
       const confirmSpy = vi.spyOn(window, "confirm");
 

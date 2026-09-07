@@ -1168,12 +1168,22 @@ export function handleAutocompleteKeydown(event: KeyboardEvent) {
   }
 }
 
+// A textarea's `value` getter always normalizes CR/CRLF line breaks to LF
+// (per the HTML spec's "API value" transform), even though its `value`
+// setter stores whatever was assigned verbatim. A CRLF-saved .psc file's
+// `source` therefore no longer matches the textarea's own value right
+// after `enterCodeViewerEditMode` sets it, with no edit having happened;
+// normalizing both sides before comparing keeps that from reading as dirty.
+function normalizeLineEndings(text: string): string {
+  return text.replace(/\r\n?/g, "\n");
+}
+
 export function isCodeViewerEditDirty(): boolean {
   return (
     codeViewerMode === "edit" &&
     codeViewerState !== null &&
     codeViewerEditTextareaEl !== null &&
-    codeViewerEditTextareaEl.value !== codeViewerState.source
+    codeViewerEditTextareaEl.value !== normalizeLineEndings(codeViewerState.source)
   );
 }
 
