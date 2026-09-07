@@ -406,6 +406,7 @@ PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
 PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
 PapyrusLinterCLI --short-paths path/to/project.achlist
 PapyrusLinterCLI --color never path/to/project.achlist
+PapyrusLinterCLI --progress --output path/to/report.txt path/to/project.achlist
 ```
 
 `PapyrusLinterCLI init` creates a `papyrus-lint.yaml` containing all default
@@ -477,6 +478,14 @@ Given `--short-paths` (combinable with `fix`/`--json`/`--config`/
 the report has the project root stripped from its beginning, the same way
 the desktop app shortens paths in its own results list; a path that isn't
 under the project root is left unchanged.
+
+Given `--progress` (combinable with `fix`/`--json`/`--config`/
+`--script-root`/`--short-paths`, in any argument order), a live
+`<files linted>/<total files to lint>` progress bar is written to stdout as
+each script finishes linting. This only makes sense alongside `--output
+<path>`, since otherwise the report itself would also be writing to
+stdout; using `--progress` without `--output` is a usage error (exit
+status `2`) rather than mixing the two together on stdout.
 
 Given `--color <auto|always|never>` (default `auto`, combinable with every
 flag above), the plain-text report's diagnostic locations, rule tags, and

@@ -112,6 +112,14 @@
 //! without piping. Usage/error text still goes to stderr either way, and
 //! the exit code is unaffected.
 //!
+//! With `--progress` (combinable with `fix`/`--json`/`--config`/
+//! `--script-root`/`--short-paths` in any order), a live `<files
+//! linted>/<total files to lint>` progress bar is written to stdout as each
+//! script finishes linting. This only makes sense when the report itself
+//! isn't also going to stdout, so `--progress` requires `--output <path>`
+//! to be given alongside it — it's a usage error (exit code `2`) otherwise,
+//! in every other mode (plain stdout or `--json` to stdout).
+//!
 //! With `--color <auto|always|never>` (default `auto`, combinable with
 //! every flag above), the plain-text report's diagnostic locations, rule
 //! tags, and `[error]`/`[warning]`/`[info]` level tags are colorized with
@@ -212,8 +220,8 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
-PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>\n\n\
+    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
+PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>\n\n\
 PapyrusLinterCLI init\n\n\
 Lints every .psc script listed in the given .achlist file, a single\n\
 .psc file given directly, or every .psc file found recursively under a\n\
@@ -246,6 +254,10 @@ Options:\n\
                           configured additional_script_roots. Repeatable.\n\
   --output <path>         Write the report (plain text or JSON, per --json) to\n\
                           this file instead of stdout.\n\
+  --progress              Print a live files-linted/total-files progress bar\n\
+                          to stdout as each script finishes. Requires --output\n\
+                          (a usage error otherwise, since the report itself\n\
+                          would otherwise also be writing to stdout).\n\
   --color <when>          Colorize the plain-text report: auto (default),\n\
                           always, or never. auto colors only when stdout is a\n\
                           terminal, --output isn't used, and NO_COLOR is unset.\n\
@@ -429,6 +441,7 @@ pub fn run(
     let quiet_warnings = args.iter().any(|arg| arg == "--quiet-warnings");
     let quiet_info = args.iter().any(|arg| arg == "--quiet-info");
     let short_paths = args.iter().any(|arg| arg == "--short-paths");
+    let progress = args.iter().any(|arg| arg == "--progress");
 
     let mut config_path: Option<PathBuf> = None;
     let mut output_path: Option<PathBuf> = None;
@@ -443,7 +456,7 @@ pub fn run(
         .filter(|arg| {
             !matches!(
                 arg.as_str(),
-                "--json" | "--quiet-warnings" | "--quiet-info" | "--short-paths"
+                "--json" | "--quiet-warnings" | "--quiet-info" | "--short-paths" | "--progress"
             )
         })
         .cloned();
@@ -532,6 +545,11 @@ pub fn run(
 
     if !fix && (type_filter.is_some() || line_filter.is_some()) {
         let _ = write!(stderr, "{USAGE}");
+        return 2;
+    }
+
+    if progress && output_path.is_none() {
+        let _ = writeln!(stderr, "error: --progress requires --output <path>");
         return 2;
     }
 
@@ -797,7 +815,8 @@ pub fn run(
     // instead of stdout, without duplicating the printing logic below.
     let mut report_buf: Vec<u8> = Vec::new();
 
-    for script_path in &script_paths {
+    let total_scripts = script_paths.len();
+    for (file_index, script_path) in script_paths.iter().enumerate() {
         let (source, encoding) = match read_psc_source_with_encoding(script_path) {
             Ok(result) => result,
             Err(err) => {
@@ -933,6 +952,18 @@ pub fn run(
             files_with_diagnostics += 1;
             total_diagnostics += diagnostics.len();
         }
+
+        if progress {
+            let _ = write!(
+                stdout,
+                "\rLinting: {}/{total_scripts} files",
+                file_index + 1
+            );
+            let _ = stdout.flush();
+        }
+    }
+    if progress {
+        let _ = writeln!(stdout);
     }
 
     let success = !should_fail;
@@ -2919,6 +2950,87 @@ mod tests {
 
         assert_eq!(code, 2);
         assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn progress_flag_requires_output_in_plain_text_mode() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--progress".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.contains("--progress requires --output"));
+    }
+
+    #[test]
+    fn progress_flag_requires_output_in_json_mode() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--json".to_string(),
+            "--progress".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.contains("--progress requires --output"));
+    }
+
+    #[test]
+    fn progress_flag_prints_a_progress_bar_to_stdout_when_output_is_set() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/One.psc"),
+            "ScriptName One\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Two.psc"),
+            "ScriptName Two\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/One.psc", "scripts/source/Two.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("report.txt");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--progress".to_string(),
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(stdout.contains("\rLinting: 1/2 files"));
+        assert!(stdout.contains("\rLinting: 2/2 files"));
+        assert!(stdout.ends_with('\n'));
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        assert!(contents.contains("no problems found in 2 script"));
     }
 
     #[test]
