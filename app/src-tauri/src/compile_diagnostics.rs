@@ -236,4 +236,70 @@ mod tests {
     fn ignores_a_line_with_no_marker_at_all() {
         assert!(parse_line("just some unrelated text").is_none());
     }
+
+    #[test]
+    fn accepts_whitespace_around_coordinates_and_message() {
+        let diagnostic = parse_line("Example.psc( 12 , 4 ):   unexpected token   ")
+            .expect("whitespace should not invalidate a compiler location");
+
+        assert_eq!(diagnostic.line, 12);
+        assert_eq!(diagnostic.column, 4);
+        assert_eq!(diagnostic.message, "[error] unexpected token");
+    }
+
+    #[test]
+    fn accepts_an_empty_compiler_message() {
+        let diagnostic =
+            parse_line("Example.psc(7,9):   ").expect("the location marker itself is still useful");
+
+        assert_eq!(diagnostic.line, 7);
+        assert_eq!(diagnostic.column, 9);
+        assert_eq!(diagnostic.message, "[error] ");
+    }
+
+    #[test]
+    fn ignores_malformed_location_markers() {
+        for line in [
+            "Example.psc(1): missing column",
+            "Example.psc(,2): missing line",
+            "Example.psc(1,): missing column",
+            "Example.psc(one,2): non-numeric line",
+            "Example.psc(1,two): non-numeric column",
+            "Example.psc(1,2] wrong closing delimiter",
+            "Example.psc(1,2) missing colon",
+            "Example.psc(184467440737095516160,2): overflowing line",
+        ] {
+            assert!(parse_line(line).is_none(), "unexpectedly parsed {line:?}");
+        }
+    }
+
+    #[test]
+    fn keeps_scanning_after_an_invalid_parenthesized_segment() {
+        let diagnostic = parse_line("C:\\Mods (portable)\\Example.psc(3,8): bad expression")
+            .expect("the valid marker after the path segment should be found");
+
+        assert_eq!(diagnostic.line, 3);
+        assert_eq!(diagnostic.column, 8);
+        assert_eq!(diagnostic.message, "[error] bad expression");
+    }
+
+    #[test]
+    fn preserves_stream_order_across_windows_line_endings() {
+        let outcome = CompileOutcome {
+            success: false,
+            stdout: "One.psc(1,2): first\r\nTwo.psc(3,4): second\r\n".to_string(),
+            stderr: "Three.psc(5,6): third\r\n".to_string(),
+            personal_data_stripped: false,
+        };
+
+        let diagnostics = parse_compile_errors(&outcome);
+
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect::<Vec<_>>(),
+            ["[error] first", "[error] second", "[error] third"]
+        );
+    }
 }
