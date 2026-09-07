@@ -147,6 +147,7 @@ component(s) it affects:
 - `component: sublime lint plugin`
 - `component: vscode extension`
 - `component: frontend`
+- `component: linting`
 - `component: ci`
 - `component: parsing`
 - `component: documentation`
