@@ -36,36 +36,56 @@ jobs:
           # CodeQL config (see .github/codeql/rust-*.yml), so every crate is
           # scanned on a separate runner in parallel. Each leg gets its own
           # category so all sets of results are kept in Code Scanning rather
-          # than one overwriting another.
+          # than one overwriting another. `crate` names each leg's own
+          # Cargo.lock so the dependency cache step below can be scoped to
+          # it (see Swatinem/rust-cache below).
           - language: rust
             build-mode: none
             name: rust-app
             category: "/language:rust-app"
             config-file: .github/codeql/rust-app.yml
+            crate: app/src-tauri
           - language: rust
             build-mode: none
             name: rust-papyrus-parser
             category: "/language:rust-papyrus-parser"
             config-file: .github/codeql/rust-papyrus-parser.yml
+            crate: app/crates/papyrus-parser
           - language: rust
             build-mode: none
             name: rust-papyrus-lints
             category: "/language:rust-papyrus-lints"
             config-file: .github/codeql/rust-papyrus-lints.yml
+            crate: app/crates/papyrus-lints
           - language: rust
             build-mode: none
             name: rust-papyrus-lint-core
             category: "/language:rust-papyrus-lint-core"
             config-file: .github/codeql/rust-papyrus-lint-core.yml
+            crate: app/crates/papyrus-lint-core
           - language: rust
             build-mode: none
             name: rust-papyrus-lint-cli
             category: "/language:rust-papyrus-lint-cli"
             config-file: .github/codeql/rust-papyrus-lint-cli.yml
+            crate: app/crates/papyrus-lint-cli
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      # The Rust extractor resolves types across each crate's full
+      # dependency graph even though paths-ignore scopes the reported
+      # results to one crate, so app/src-tauri's ~480 transitive
+      # dependencies (Tauri's GUI stack) make its own leg the long pole in
+      # this workflow. Caching each leg's Cargo registry (keyed off its own
+      # Cargo.lock, same as ci.yml's rust-build/rust-test jobs) avoids
+      # re-fetching that dependency graph from crates.io on every run.
+      - name: Set up Rust dependency cache
+        if: matrix.language == 'rust'
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ matrix.crate }}
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
