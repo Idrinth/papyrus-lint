@@ -546,6 +546,65 @@ class VideosPageTest(unittest.TestCase):
             self.assertFalse((out_dir / "videos.html").exists())
 
 
+class ActionPageTest(unittest.TestCase):
+    def test_build_action_page_renders_the_downloaded_readme_and_replaces_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "action.template.html").write_text(
+                "<title><!--ACTION_TITLE--></title>"
+                '<meta content="<!--ACTION_DESCRIPTION-->">'
+                "<main><!--ACTION_CONTENT--></main>",
+                encoding="utf-8",
+            )
+            response = MagicMock()
+            response.__enter__.return_value.read.return_value = (
+                b"# Papyrus Lint Action\n\nLints pull requests automatically.\n"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "urlopen", return_value=response),
+            ):
+                page_builder.build_action_page(out_dir, version="v1.0.0")
+
+            output = (out_dir / "action.html").read_text(encoding="utf-8")
+
+        self.assertIn("<title>Papyrus Lint Action</title>", output)
+        self.assertIn('content="Lints pull requests automatically."', output)
+        self.assertIn("<p>Lints pull requests automatically.</p>", output)
+        self.assertIn("View raw source on GitHub", output)
+        self.assertNotIn("<!--ACTION_TITLE-->", output)
+        self.assertNotIn("<!--ACTION_DESCRIPTION-->", output)
+        self.assertNotIn("<!--ACTION_CONTENT-->", output)
+
+    def test_build_action_page_rejects_a_template_missing_a_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "action.template.html").write_text(
+                "<title><!--ACTION_TITLE--></title><main><!--ACTION_CONTENT--></main>",
+                encoding="utf-8",
+            )
+            response = MagicMock()
+            response.__enter__.return_value.read.return_value = b"# Title\n\nBody.\n"
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "urlopen", return_value=response),
+                self.assertRaisesRegex(SystemExit, "missing marker <!--ACTION_DESCRIPTION-->"),
+            ):
+                page_builder.build_action_page(out_dir)
+
+            self.assertFalse((out_dir / "action.html").exists())
+
+
 class MinifyTest(unittest.TestCase):
     def test_minify_html_strips_comments_and_collapses_indentation(self) -> None:
         source = """<main>
@@ -705,6 +764,7 @@ class SitemapAndRobotsTest(unittest.TestCase):
             urls,
             [
                 "https://example.test/",
+                "https://example.test/action.html",
                 "https://example.test/videos.html",
                 "https://example.test/coverage.html",
                 "https://example.test/docs/index.html",
@@ -722,6 +782,7 @@ class SitemapAndRobotsTest(unittest.TestCase):
 
         self.assertTrue(content.startswith('<?xml version="1.0" encoding="UTF-8"?>\n'))
         self.assertIn("<loc>https://example.test/a&amp;b/</loc>", content)
+        self.assertIn("<loc>https://example.test/a&amp;b/action.html</loc>", content)
         self.assertIn("<loc>https://example.test/a&amp;b/videos.html</loc>", content)
 
     def test_build_robots_txt_points_at_the_sitemap(self) -> None:
@@ -774,6 +835,10 @@ PapyrusLinterCLI example.psc
             (pages_dir / "coverage.template.html").write_text(
                 "<!--COVERAGE_VERSION--><!--COVERAGE_CONTENT-->", encoding="utf-8"
             )
+            (pages_dir / "action.template.html").write_text(
+                "<!--ACTION_TITLE--><!--ACTION_DESCRIPTION--><!--ACTION_CONTENT-->",
+                encoding="utf-8",
+            )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
             (pages_dir / "theme.js").write_text("/* theme js */", encoding="utf-8")
             fonts_dir = pages_dir / "fonts"
@@ -787,6 +852,11 @@ PapyrusLinterCLI example.psc
             out_dir.mkdir()
             (out_dir / "stale.txt").write_text("remove me", encoding="utf-8")
 
+            action_response = MagicMock()
+            action_response.__enter__.return_value.read.return_value = (
+                b"# Papyrus Lint Action\n\nLints pull requests automatically.\n"
+            )
+
             with (
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
@@ -798,6 +868,7 @@ PapyrusLinterCLI example.psc
                     {"copied.png": copied_asset, "screenshot.png": screenshot_asset},
                 ),
                 patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"screenshot.png"}),
+                patch.object(page_builder, "urlopen", return_value=action_response),
             ):
                 page_builder.build(out_dir, version="v1.2.3")
 
@@ -831,6 +902,11 @@ PapyrusLinterCLI example.psc
             self.assertIn("youtube-nocookie.com/embed/", videos_output)
             self.assertNotIn("<!--VIDEOS_LIST-->", videos_output)
 
+            action_output = (out_dir / "action.html").read_text(encoding="utf-8")
+            self.assertIn("Papyrus Lint Action", action_output)
+            self.assertIn("Lints pull requests automatically.", action_output)
+            self.assertNotIn("<!--ACTION_TITLE-->", action_output)
+
             self.assertEqual(
                 (out_dir / "CNAME").read_text(encoding="utf-8"),
                 page_builder.CNAME_FILE.read_text(encoding="utf-8"),
@@ -842,6 +918,7 @@ PapyrusLinterCLI example.psc
 
             sitemap_output = (out_dir / "sitemap.xml").read_text(encoding="utf-8")
             self.assertIn(f"<loc>{page_builder.SITE_URL}</loc>", sitemap_output)
+            self.assertIn(f"<loc>{page_builder.SITE_URL}action.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}videos.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}coverage.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}docs/index.html</loc>", sitemap_output)
