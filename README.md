@@ -76,8 +76,8 @@ apply.
 
 ### Formatting
 
-To make it easier to read scripts, this will make sure they follow the
-same look and feel. The most useful in group projects obviously.
+These lints make scripts easier to read by enforcing a consistent look
+and feel. They are especially useful in group projects.
 
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
