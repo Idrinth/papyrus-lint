@@ -6,6 +6,18 @@
 // option matching the OS the browser reports pre-selected, so most visitors
 // land on the right download without ever seeing the release page.
 (function () {
+  // Every option's url must resolve under the project's own GitHub release
+  // downloads - options come from a data-options JSON attribute this
+  // template authors itself, but CodeQL flags any getAttribute()-sourced
+  // string reaching a href/src sink as a potential DOM XSS regardless, so
+  // this allow-list makes that flow provably safe rather than trusting the
+  // markup never changes.
+  var SAFE_URL_PREFIX = "https://github.com/idrinth/papyrus-lint/releases/";
+
+  function isSafeDownloadUrl(url) {
+    return typeof url === "string" && url.indexOf(SAFE_URL_PREFIX) === 0;
+  }
+
   function detectOS() {
     var ua = (navigator.userAgent || "") + " " + (navigator.platform || "");
     if (/android/i.test(ua)) {
@@ -49,7 +61,13 @@
     } catch (error) {
       return;
     }
-    if (!Array.isArray(options) || options.length === 0) {
+    if (!Array.isArray(options)) {
+      return;
+    }
+    options = options.filter(function (option) {
+      return option && isSafeDownloadUrl(option.url);
+    });
+    if (options.length === 0) {
       return;
     }
 
@@ -94,7 +112,9 @@
     go.href = options[selectedIndex].url;
 
     select.addEventListener("change", function () {
-      go.href = select.value;
+      if (isSafeDownloadUrl(select.value)) {
+        go.href = select.value;
+      }
     });
 
     panel.appendChild(label);
