@@ -59,6 +59,7 @@ import {
   openCodeViewer,
   parsePscFiles,
   projectDirForAchlist,
+  projectDirForDirectory,
   projectDirForPscPath,
   relativePath,
   rememberProjectDir,
@@ -1530,8 +1531,48 @@ describe("handleDroppedPaths", () => {
   });
 
   it("rejects a drop of a single file that's neither .achlist nor .psc", async () => {
+    invokeImplFor({
+      list_psc_files_recursively: () => Promise.reject(new Error("not a directory")),
+    });
+
     await handleDroppedPaths(["/scripts/readme.txt"]);
+
     expect(document.querySelector("#drop-zone-error")!.textContent).toContain(".psc");
+  });
+
+  it("recursively scans a dropped directory with no .achlist, loading project config and linting each .psc found", async () => {
+    invokeImplFor({
+      list_psc_files_recursively: () => ["/proj/scripts/source/A.psc", "/proj/scripts/source/Requiem/B.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [],
+    });
+
+    await handleDroppedPaths(["/proj/scripts/source"]);
+
+    expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/scripts/source");
+    expect(lastProjectDir()).toBe("/proj");
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc" });
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/Requiem/B.psc" });
+  });
+
+  it("falls back to the dropped directory itself as project root when no scripts/source pair is found", async () => {
+    invokeImplFor({
+      list_psc_files_recursively: () => ["/proj/Nested/A.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [],
+    });
+
+    await handleDroppedPaths(["/proj"]);
+
+    expect(lastProjectDir()).toBe("/proj");
   });
 
   it("parses the achlist, loads project config, and lints each .psc entry", async () => {
@@ -1828,6 +1869,22 @@ describe("projectDirForAchlist", () => {
         "/proj/somefolder/scripts/source/A.psc",
       ]),
     ).toBe("/proj/somefolder");
+  });
+});
+
+describe("projectDirForDirectory", () => {
+  it("resolves a nested scripts/source pair beneath the dropped directory", () => {
+    expect(
+      projectDirForDirectory("/proj/scripts/source", ["/proj/scripts/source/Requiem/A.psc"]),
+    ).toBe("/proj");
+  });
+
+  it("falls back to the dropped directory itself when no entry matches the convention", () => {
+    expect(projectDirForDirectory("/proj", ["/proj/Nested/A.psc"])).toBe("/proj");
+  });
+
+  it("falls back to the dropped directory itself for an empty scan", () => {
+    expect(projectDirForDirectory("/proj", [])).toBe("/proj");
   });
 });
 
