@@ -3031,4 +3031,83 @@ mod tests {
         assert_eq!(code, 2);
         assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     }
+
+    #[test]
+    fn json_output_is_never_colorized_even_when_color_is_always() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, stderr) = run_captured_with_terminal_stdout(
+            &[
+                "--json".to_string(),
+                "--color=always".to_string(),
+                script_path.to_string_lossy().into_owned(),
+            ],
+            true,
+        );
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(!stdout.contains('\x1b'));
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("colored JSON would not parse");
+        assert_eq!(report["total_diagnostics"], 1);
+    }
+
+    #[test]
+    fn diagnostic_formatter_colorizes_each_structural_part() {
+        let diagnostic = papyrus_lints::Diagnostic {
+            line: 4,
+            column: 7,
+            rule: "example-rule",
+            message: "[warning] example message".to_string(),
+        };
+
+        let formatted = format_diagnostic_line("Example.psc", &diagnostic, true);
+
+        assert!(formatted.contains("\x1b[1mExample.psc:4:7\x1b[0m"));
+        assert!(formatted.contains("\x1b[2m[example-rule]\x1b[0m"));
+        assert!(formatted.contains("\x1b[33m[warning]\x1b[0m example message"));
+    }
+
+    #[test]
+    fn diagnostic_formatter_preserves_an_untagged_message() {
+        let diagnostic = papyrus_lints::Diagnostic {
+            line: 1,
+            column: 2,
+            rule: "example-rule",
+            message: "example message without a level tag".to_string(),
+        };
+
+        let formatted = format_diagnostic_line("Example.psc", &diagnostic, true);
+
+        assert!(formatted.ends_with("example message without a level tag"));
+        assert!(!formatted.contains("\x1b[31m[error]"));
+    }
+
+    #[test]
+    fn display_path_leaves_paths_outside_the_project_root_unchanged() {
+        let path = Path::new("other-project/scripts/source/Example.psc");
+
+        assert_eq!(
+            display_path(path, Path::new("project"), true),
+            path.display().to_string()
+        );
+    }
+
+    #[test]
+    fn a_psc_path_that_is_a_directory_reports_a_read_error() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let misleading_path = dir.path().join("NotAFile.psc");
+        fs::create_dir(&misleading_path).expect("failed to create directory");
+
+        let (code, stdout, stderr) =
+            run_captured(&[misleading_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.contains("error: failed to read"));
+        assert!(stderr.contains("NotAFile.psc"));
+    }
 }
