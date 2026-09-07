@@ -478,6 +478,29 @@ mod tests {
     }
 
     #[test]
+    fn does_not_flag_folded_constant_division_that_divides_evenly() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Float a = (10 + 2) / (2 * 3)\nEndFunction\n",
+        );
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_folded_constant_division_that_truncates() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Float a = (10 - 1) / (2 * 2)\nEndFunction\n",
+        );
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn flags_literal_division_by_zero_in_float_context() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Float a = 10 / 0\nEndFunction\n");
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
     fn still_flags_constant_int_division_that_truncates() {
         let diagnostics =
             check("ScriptName Example\n\nFunction Test()\n    Float a = 72 / 7\nEndFunction\n");
@@ -594,6 +617,26 @@ mod tests {
     }
 
     #[test]
+    fn resolves_function_and_named_parameter_case_insensitively() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Add(Float Amount)\nEndFunction\n\nFunction Test()\n    add(amount = 1 / 2)\nEndFunction\n",
+        );
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'Amount'"));
+        assert!(diagnostics[0].message.contains("'Add'"));
+    }
+
+    #[test]
+    fn flags_nested_local_call_without_attributing_division_to_outer_declaration() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFloat Function Scale(Float amount)\n    Return amount\nEndFunction\n\nFunction Test()\n    Float result = Scale(1 / 2)\nEndFunction\n",
+        );
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("parameter 'amount'"));
+        assert!(!diagnostics[0].message.contains("variable 'result'"));
+    }
+
+    #[test]
     fn does_not_flag_int_division_when_param_is_int() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Add(Int amount)\nEndFunction\n\nFunction Test()\n    Add(1 / 2)\nEndFunction\n",
@@ -617,6 +660,25 @@ mod tests {
         );
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("'amount'"));
+    }
+
+    #[test]
+    fn flags_int_divisions_in_state_function_control_flow() {
+        let diagnostics = check(
+            "ScriptName Example\n\nState Active\n    Float Function Ratio(Int value)\n        If value > 0\n            Return value / 2\n        Else\n            While value < 0\n                Float result = value / 3\n                Return result\n            EndWhile\n        EndIf\n    EndFunction\nEndState\n",
+        );
+        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(diagnostics[0].line, 6);
+        assert_eq!(diagnostics[1].line, 9);
+    }
+
+    #[test]
+    fn flags_assignment_to_float_array_element() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Float[] values)\n    values[0] = 1 / 2\nEndFunction\n",
+        );
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("array element"));
     }
 
     #[test]
