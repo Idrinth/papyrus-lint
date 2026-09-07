@@ -73,6 +73,7 @@
 //!   invariant_loop_condition: true
 //!   script_name_collision: true
 //!   array_bounds: true
+//!   readonly_property_write: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -388,6 +389,8 @@ pub struct Rules {
     pub script_name_collision: bool,
     /// The "Array bounds" lint.
     pub array_bounds: bool,
+    /// The "Read-only (AutoReadOnly) property write" lint.
+    pub readonly_property_write: bool,
 }
 
 impl Default for Rules {
@@ -448,6 +451,7 @@ impl Default for Rules {
             invariant_loop_condition: true,
             script_name_collision: true,
             array_bounds: true,
+            readonly_property_write: true,
         }
     }
 }
@@ -614,6 +618,7 @@ mod tests {
         assert!(config.rules.invariant_loop_condition);
         assert!(config.rules.script_name_collision);
         assert!(config.rules.array_bounds);
+        assert!(config.rules.readonly_property_write);
     }
 
     #[test]
