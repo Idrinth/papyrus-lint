@@ -1496,6 +1496,22 @@ describe("showLintProgress / updateLintProgress / hideLintProgress", () => {
     expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
     vi.useRealTimers();
   });
+
+  it("scheduleHideLintProgress replaces an already pending hide", () => {
+    vi.useFakeTimers();
+    showLintProgress(1);
+
+    scheduleHideLintProgress(1000);
+    vi.advanceTimersByTime(500);
+    scheduleHideLintProgress(1000);
+    vi.advanceTimersByTime(500);
+
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
+
+    vi.advanceTimersByTime(500);
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(true);
+    vi.useRealTimers();
+  });
 });
 
 describe("handleFixClick", () => {
@@ -2191,6 +2207,49 @@ describe("handleDroppedPaths", () => {
 
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
     expect(document.querySelector("#psc-result-list")!.textContent).toContain("New.psc");
+
+    resolveOldLint([{ line: 1, column: 1, message: "[warning] from Old" }]);
+    await oldDrop;
+
+    const items = document.querySelectorAll("#psc-result-list > li");
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toContain("New.psc");
+    expect(items[0].textContent).not.toContain("Old.psc");
+  });
+
+  it("ignores a stale directory scan's outcome after a newer directory scan has finished", async () => {
+    let resolveOldLint: (findings: Diagnostic[]) => void = () => {};
+    let resolveOldLintStarted: () => void = () => {};
+    const pendingOldLint = new Promise<Diagnostic[]>((resolve) => {
+      resolveOldLint = resolve;
+    });
+    const oldLintStarted = new Promise<void>((resolve) => {
+      resolveOldLintStarted = resolve;
+    });
+    invokeImplFor({
+      list_psc_files_recursively: (args) =>
+        (args as { path: string }).path === "/proj/old"
+          ? ["/proj/old/Old.psc"]
+          : ["/proj/new/New.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: (args) => ({ name: (args as { path: string }).path }),
+      lint_psc_file: (args) => {
+        if ((args as { path: string }).path.endsWith("Old.psc")) {
+          resolveOldLintStarted();
+          return pendingOldLint;
+        }
+        return [{ line: 1, column: 1, message: "[warning] from New" }];
+      },
+    });
+
+    const oldDrop = handleDroppedPaths(["/proj/old"]);
+    await oldLintStarted;
+
+    const newDrop = handleDroppedPaths(["/proj/new"]);
+    await newDrop;
 
     resolveOldLint([{ line: 1, column: 1, message: "[warning] from Old" }]);
     await oldDrop;
