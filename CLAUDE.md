@@ -138,6 +138,9 @@ desktop app's binary at all.
     ├── videos.template.html    # headings, the same light/dark palette); build.py
     ├── videos.json             # substitutes its lint-table/CLI-example placeholders
     ├── coverage.template.html  # with content converted straight from README.md,
+    ├── includes/               # shared page chrome inserted during the build
+    │   ├── header.html         # with depth-aware links for root/docs pages
+    │   └── footer.html         # and one source for release/contact details
     ├── styles.css              # and renders coverage.html, a per-module/per-file
     ├── CNAME                   # line coverage breakdown for the latest release
     │                            # (see coverage.template.html below). The site's
@@ -484,10 +487,15 @@ Markdown doc to another published doc (matched by filename) resolves to
 that doc's own subpage; a `../`-relative link into the rest of the
 repository resolves on GitHub instead — both via `resolve_doc_href`,
 so `docs/github-actions-example.md`'s existing relative links keep
-working once rendered. `pages/docs.template.html` is the shared page
-shell these subpages (and their `docs/index.html` listing) render into,
-carrying its own `<!--DOC_TITLE-->`/`<!--DOC_DESCRIPTION-->`/
-`<!--DOC_CONTENT-->` placeholders; `index.template.html`'s own
+working once rendered. `pages/docs.template.html` is the page template
+these subpages (and their `docs/index.html` listing) render into, carrying
+its own `<!--DOC_TITLE-->`/`<!--DOC_DESCRIPTION-->`/`<!--DOC_CONTENT-->`
+placeholders. All HTML page templates carry `<!--SITE_HEADER-->` and
+`<!--SITE_FOOTER-->` markers which `render_shared_components` fills from
+`pages/includes/header.html` and `pages/includes/footer.html`; its
+depth-aware `<!--ROOT_PATH-->` replacement keeps links correct from both
+the site root and `docs/`, while the footer's `<!--VERSION-->` is filled
+from the same build argument everywhere. `index.template.html`'s own
 `<!--DOCS_LIST-->` placeholder is filled with the same titles and a short
 hand-written blurb per doc from `DOCS`, linking into `pages/dist/docs/`.
 Adding a new file under `docs/` that should be published this way means
