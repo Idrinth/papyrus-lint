@@ -58,8 +58,48 @@
           a linter usually catches — as a desktop app, a CLI, and editor extensions.
         </p>
         <div class="hero__actions">
-          <a class="button button--primary" href="https://github.com/idrinth/papyrus-lint/releases">Download latest release</a>
-          <a class="button" href="https://github.com/idrinth/papyrus-lint">View on GitHub</a>
+          <div class="download-group">
+            <a
+              class="button button--primary"
+              href="https://github.com/idrinth/papyrus-lint/releases/latest"
+              data-download-toggle
+              data-download-id="gui"
+              data-download-label="Choose your platform"
+              data-options='[
+                {"os":"windows","label":"Windows — Installer (.exe)","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinter-windows-x64_setup.exe"},
+                {"os":"windows","label":"Windows — Installer (.msi)","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinter-windows-x64.msi"},
+                {"os":"macos","label":"macOS — Disk image (.dmg)","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinter-darwin-aarch64.dmg"},
+                {"os":"linux","label":"Linux — AppImage","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinter-linux-amd64.AppImage"},
+                {"os":"linux","label":"Linux — Debian/Ubuntu (.deb)","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinter-linux-amd64.deb"},
+                {"os":"linux","label":"Linux — Fedora/RHEL (.rpm)","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinter-linux-x86_64.rpm"}
+              ]'
+              >Download GUI</a
+            >
+          </div>
+          <a class="button" href="https://github.com/marketplace/actions/papyrus-lint">GitHub Action on the Marketplace</a>
+        </div>
+        <div class="hero__actions">
+          <a class="button" href="https://github.com/idrinth/papyrus-lint/releases/latest/download/papyrus-lint-vscode.vsix"
+            >VS Code Extension</a
+          >
+          <a class="button" href="https://github.com/idrinth/papyrus-lint/releases/latest/download/SublimeLinter-contrib-papyrus-lint.zip"
+            >Sublime Text Plugin</a
+          >
+          <div class="download-group">
+            <a
+              class="button"
+              href="https://github.com/idrinth/papyrus-lint/releases/latest"
+              data-download-toggle
+              data-download-id="cli"
+              data-download-label="Choose your platform"
+              data-options='[
+                {"os":"windows","label":"Windows","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterCLI-windows.exe"},
+                {"os":"macos","label":"macOS","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterCLI-macos"},
+                {"os":"linux","label":"Linux","url":"https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterCLI-linux"}
+              ]'
+              >Download CLI</a
+            >
+          </div>
         </div>
         <div class="badge-row">
           <a href="https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint"
@@ -329,5 +369,6 @@
     </main>
 
     <!--SITE_FOOTER-->
+    <script src="downloads.js" defer></script>
   </body>
 </html>
