@@ -632,6 +632,13 @@ relocating a property's declaration), it fails instead of applying
 anything, showing the error inline next to the finding; the whole-file
 "Apply fixes" button has no such restriction and always applies cleanly.
 
+The code viewer has the same whole-file "Apply fixes" button built in,
+next to "Edit" in its header, whenever the file it's currently showing has
+at least one auto-fixable finding — applying the exact same repair and
+refreshing the viewer's highlighted source in place, so fixing a file no
+longer requires closing the viewer and going back to the Lint results
+list first. It disappears again once nothing is left to fix.
+
 The Lint results tab also has a "Mass fix an issue" panel, listing every
 auto-fixable rule with at least one finding anywhere among the currently
 loaded scripts (e.g. "Trailing whitespace (37)") next to a "Fix all ... in

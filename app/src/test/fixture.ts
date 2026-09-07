@@ -175,6 +175,7 @@ export const FIXTURE_HTML = `
       <h2 id="code-viewer-title" class="code-viewer__title"></h2>
       <div class="code-viewer__actions">
         <button type="button" id="code-viewer-edit" class="code-viewer__action">Edit</button>
+        <button type="button" id="code-viewer-fix" class="code-viewer__action" hidden>Apply fixes</button>
         <button type="button" id="code-viewer-save" class="code-viewer__action" hidden>Save</button>
         <button type="button" id="code-viewer-save-compile" class="code-viewer__action" hidden>Save &amp; Compile</button>
         <button type="button" id="code-viewer-cancel" class="code-viewer__action" hidden>Cancel</button>
