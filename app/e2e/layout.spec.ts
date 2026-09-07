@@ -51,6 +51,30 @@ test("switching tabs shows exactly one panel with a real box, hides the rest", a
   }
 });
 
+test("lint progress bar is actually hidden when idle, not just marked hidden", async ({ page }) => {
+  // Regression test for a bug jsdom can't see: `.lint-progress` used to set
+  // `display: flex` unconditionally, which (being an author-stylesheet rule)
+  // outranks the browser's default `[hidden] { display: none }` at equal
+  // specificity. hideLintProgress()/scheduleHideLintProgress() were setting
+  // the `hidden` attribute correctly the whole time - the element just never
+  // actually disappeared, so the finished "N / N files" bar looked stuck
+  // forever instead of hiding after its grace period.
+  await page.goto("/");
+
+  const progress = page.locator("#lint-progress");
+  await expect(progress).toBeHidden();
+
+  await page.evaluate(() => {
+    document.querySelector<HTMLElement>("#lint-progress")!.hidden = false;
+  });
+  await expect(progress).toBeVisible();
+
+  await page.evaluate(() => {
+    document.querySelector<HTMLElement>("#lint-progress")!.hidden = true;
+  });
+  await expect(progress).toBeHidden();
+});
+
 test("layout does not overflow horizontally at the app's default window size", async ({ page }) => {
   // 800x600 is the desktop app's configured default window size
   // (app/src-tauri/tauri.conf.json); it has no configured minimum, so a

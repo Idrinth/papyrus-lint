@@ -140,6 +140,14 @@ h1 {
   margin-top: 0.75em;
 }
 
+/* Without this, the class's own `display: flex` above (an author-stylesheet
+   rule) outranks the browser's default `[hidden] { display: none }` (a
+   user-agent rule) at equal specificity, so toggling the `hidden` attribute
+   in JS never actually hides the element. */
+.lint-progress[hidden] {
+  display: none;
+}
+
 .lint-progress__label {
   font-size: 0.85em;
   opacity: 0.75;
