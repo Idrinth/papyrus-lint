@@ -169,6 +169,10 @@ More detailed explanation of the rules and their implementation is available on 
 [td]Flags a script-level Property or variable whose name matches the script it's declared in, since Papyrus fails to compile it.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Read-only (AutoReadOnly) property write[/b][/td]
+[td]Flags an assignment to a property declared AutoReadOnly, since Papyrus rejects that at compile time. Matches the property's bare name or Self.PropertyName; a bare name shadowed by a same-named local/parameter is left alone.[/td]
+[td][/td]
+[/tr]
 [/table][/spoiler]
 [size=4][b]Bugprone[/b][/size]
 [spoiler][table][tr][th]Lint[/th]
@@ -374,7 +378,8 @@ rules:
   global_variable_setvalue: false
   invariant_loop_condition: true
   script_name_collision: true
-  array_bounds: true[/code][/spoiler]
+  array_bounds: true
+  readonly_property_write: true[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

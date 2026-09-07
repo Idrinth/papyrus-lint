@@ -120,6 +120,7 @@ apply.
 | **Conflicting script versions** | Flags, as a `[warning]`, a `.psc` file when another script search directory contains a case-insensitively same-named file with different contents (determined by MD5), since which version Papyrus resolves can depend on search-directory order. Byte-identical copies are ignored. Only available when linting a file with project context in the desktop app or CLI. | |
 | **FormID hex notation** | Flags, as a `[warning]`, a FormID literal that isn't written in hexadecimal notation when it's directly compared (`==`, `!=`, `<`, `<=`, `>`, `>=`) against a `GetFormID()` call, or passed as the FormID argument to `Game.GetFormFromFile` (positionally or by name), since hexadecimal is the convention used everywhere else a FormID appears (the Creation Kit, xEdit, mod documentation) and a stray decimal literal is easy to mistype or overlook. Only a literal directly adjacent to the comparison operator or the call's argument list is checked; one reached indirectly through a variable assigned earlier is left unflagged rather than guessed at. | |
 | **Property/variable named as script** | Flags, as an `[error]`, a script-level `Property` or variable whose name matches (case-insensitively) the name of the script it's declared in, since Papyrus rejects such a script at compile time. A local variable declared inside a function/event (see "Local variable shadowing" above) isn't checked by this lint. | |
+| **Read-only (AutoReadOnly) property write** | Flags, as an `[error]`, an assignment (`=`, `+=`, `-=`, ...) targeting a script-level property declared `AutoReadOnly` (e.g. `Float Property a = 0.1 AutoReadOnly`), since Papyrus rejects that assignment at compile time — an `AutoReadOnly` property can only ever hold its declared initial value. Matched by the property's bare name or as `Self.PropertyName`; a bare name shadowed by a same-named local variable or parameter in the enclosing function refers to that local/parameter instead and is never flagged, while a `Self.`-qualified write is always flagged regardless of shadowing. | |
 
 ### Bugprone
 
@@ -321,7 +322,7 @@ file yet. Each key:
   `short_wait_interval`,
   `magic_numbers`, `native_function_usage`, `repeated_getvalue`,
   `global_variable_setvalue`, `invariant_loop_condition`,
-  `script_name_collision`, and `array_bounds`.
+  `script_name_collision`, `array_bounds`, and `readonly_property_write`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

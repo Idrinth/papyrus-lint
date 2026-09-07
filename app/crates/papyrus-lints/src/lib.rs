@@ -38,6 +38,7 @@ pub mod numeric_comparison;
 pub mod operator_spacing;
 pub mod parameter_reassignment;
 pub mod property_sorting;
+pub mod readonly_property_write;
 pub mod repeated_getvalue;
 pub mod return_types;
 pub mod script_name_collision;
@@ -124,6 +125,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     invariant_loop_condition::RULE,
     script_name_collision::RULE,
     array_bounds::RULE,
+    readonly_property_write::RULE,
 ];
 
 use serde::Serialize;
@@ -375,6 +377,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.array_bounds {
         diagnostics.extend(array_bounds::check(source));
+    }
+    if rules.readonly_property_write {
+        diagnostics.extend(readonly_property_write::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1219,6 +1224,12 @@ mod tests {
                 array_bounds::RULE,
                 Config::default(),
                 config_with(|c| c.rules.array_bounds = false),
+            ),
+            (
+                "ScriptName Example\n\nFloat Property a = 0.1 AutoReadOnly\n\nFunction Test()\n    a = 0.2\nEndFunction\n",
+                readonly_property_write::RULE,
+                Config::default(),
+                config_with(|c| c.rules.readonly_property_write = false),
             ),
         ];
 
