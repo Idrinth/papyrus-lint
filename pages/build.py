@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Builds the GitHub Pages site from pages/index.template.html.
+"""Builds the GitHub Pages site from the templates under pages/.
 
 Substitutes the lint tables and CLI usage examples in the template with
 content converted directly from README.md's own tables/code blocks, so
 that documentation never has to be kept in sync by hand in two places.
 Also renders every file listed in DOCS into its own browsable subpage
-under docs/ (via pages/docs.template.html), and assembles the site's
-assets/ directory by copying the screenshots and icon this page uses
+under docs/ (via pages/docs.template.html). The templates receive their
+shared header and footer from pages/includes/, so site chrome has a single
+source of truth. The builder also assembles the site's assets/ directory
+by copying the screenshots and icon this page uses
 from resources/ and app/src-tauri/icons, rather than committing
 duplicate copies of them under pages/. Every asset actually rendered as
 an <img> also gets a WebP and an AVIF sibling (see
@@ -128,6 +130,7 @@ DOC_FILENAME_TO_SLUG = {doc["filename"]: doc["slug"] for doc in DOCS}
 # Simple list of YouTube video IDs/titles rendered onto videos.html, so a new
 # video can be added without touching build.py or its template.
 VIDEOS_FILE = PAGES_DIR / "videos.json"
+INCLUDES_DIR = PAGES_DIR / "includes"
 
 ASSETS = {
     "logo-small.jpg": ROOT / "resources" / "logo-small.jpg",
@@ -483,7 +486,36 @@ def render_docs_list_items(doc_results: dict, link_prefix: str) -> str:
     return "\n".join(items)
 
 
-def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
+def render_shared_components(page: str, root_path: str, version: str) -> str:
+    """Insert the shared site chrome into a page template.
+
+    ``root_path`` makes the same header work both at the site root and one
+    directory down for documentation pages. Templates without either marker
+    are accepted for the small, fragment-only unit-test fixtures; a real page
+    with only one marker is rejected so its chrome cannot silently drift.
+    """
+    markers = {"<!--SITE_HEADER-->": "header.html", "<!--SITE_FOOTER-->": "footer.html"}
+    present = [marker for marker in markers if marker in page]
+    if not present:
+        return page
+    if len(present) != len(markers):
+        missing = next(marker for marker in markers if marker not in page)
+        raise SystemExit(f"page template: missing shared component marker {missing}")
+
+    rendered = page
+    replacements = {
+        "<!--ROOT_PATH-->": root_path,
+        "<!--VERSION-->": html.escape(version) if version else "unreleased",
+    }
+    for marker, filename in markers.items():
+        component = (INCLUDES_DIR / filename).read_text(encoding="utf-8")
+        for placeholder, value in replacements.items():
+            component = component.replace(placeholder, value)
+        rendered = rendered.replace(marker, component)
+    return rendered
+
+
+def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None:
     docs_out_dir = out_dir / "docs"
     docs_out_dir.mkdir()
     docs_template = (PAGES_DIR / "docs.template.html").read_text(encoding="utf-8")
@@ -499,6 +531,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
         page = render_page(
             info["title"], info["description"], info["content_html"], f"{SITE_URL}docs/{doc['slug']}.html"
         )
+        page = render_shared_components(page, "../", version)
         (docs_out_dir / f"{doc['slug']}.html").write_text(finalize_page(page), encoding="utf-8")
 
     index_content = f'<ul class="docs-list">{render_docs_list_items(doc_results, "")}</ul>'
@@ -508,6 +541,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict) -> None:
         index_content,
         f"{SITE_URL}docs/index.html",
     )
+    index_page = render_shared_components(index_page, "../", version)
     (docs_out_dir / "index.html").write_text(finalize_page(index_page), encoding="utf-8")
 
 
@@ -528,12 +562,13 @@ def render_videos_list(videos: list[dict]) -> str:
     return "\n".join(items)
 
 
-def build_videos_page(out_dir: Path) -> None:
+def build_videos_page(out_dir: Path, version: str = "") -> None:
     videos = json.loads(VIDEOS_FILE.read_text(encoding="utf-8"))
     template = (PAGES_DIR / "videos.template.html").read_text(encoding="utf-8")
     if "<!--VIDEOS_LIST-->" not in template:
         raise SystemExit("videos.template.html: missing marker <!--VIDEOS_LIST-->")
     page = template.replace("<!--VIDEOS_LIST-->", render_videos_list(videos))
+    page = render_shared_components(page, "", version)
     (out_dir / "videos.html").write_text(finalize_page(page), encoding="utf-8")
 
 
@@ -688,6 +723,7 @@ def build_coverage_page(out_dir: Path, coverage_dir: Path | None, version: str) 
         content = '<p class="section-intro">Coverage data isn\'t available for this build.</p>'
     page = template.replace("<!--COVERAGE_CONTENT-->", content)
     page = page.replace("<!--COVERAGE_VERSION-->", html.escape(version) if version else "unreleased")
+    page = render_shared_components(page, "", version)
     (out_dir / "coverage.html").write_text(finalize_page(page), encoding="utf-8")
 
 
@@ -751,7 +787,7 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
     if "<!--DOCS_LIST-->" not in template:
         raise SystemExit("index.template.html: missing marker <!--DOCS_LIST-->")
     template = template.replace("<!--DOCS_LIST-->", render_docs_list_items(doc_results, "docs/"))
-    template = template.replace("<!--VERSION-->", html.escape(version) if version else "unreleased")
+    template = render_shared_components(template, "", version)
 
     if out_dir.exists():
         shutil.rmtree(out_dir)
@@ -771,8 +807,8 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
     shutil.copytree(PAGES_DIR / "fonts", out_dir / "fonts")
     shutil.copyfile(CNAME_FILE, out_dir / "CNAME")
 
-    build_doc_pages(out_dir, doc_results)
-    build_videos_page(out_dir)
+    build_doc_pages(out_dir, doc_results, version)
+    build_videos_page(out_dir, version)
     build_coverage_page(out_dir, coverage_dir, version)
     build_sitemap(out_dir, doc_results)
     build_robots_txt(out_dir)
