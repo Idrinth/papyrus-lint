@@ -544,6 +544,34 @@ table.lint-table {
   margin-top: 1.5em;
 }
 
+.coverage-content {
+  max-width: 64em;
+}
+
+.coverage-module {
+  margin-top: 2em;
+}
+
+.coverage-module h2 {
+  font-size: 1.3em;
+  margin: 0 0 0.5em;
+}
+
+.coverage-module h3 {
+  font-size: 1.05em;
+  margin: 1.5em 0 0.5em;
+}
+
+.coverage-module .lint-table td:first-child {
+  font-size: 0.85em;
+}
+
+.coverage-module .lint-table td:last-child,
+.coverage-module .lint-table th:last-child {
+  width: auto;
+  text-align: left;
+}
+
 .help-list {
   columns: 2;
   column-gap: 2em;

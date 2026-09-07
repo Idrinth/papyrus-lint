@@ -25,6 +25,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -59,11 +60,40 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Find CI coverage run for the displayed version
+        id: ci_run
+        if: steps.version.outputs.version != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          SHA=$(gh api "repos/${{ github.repository }}/commits/${{ steps.version.outputs.version }}" --jq .sha 2>/dev/null || echo "")
+          RUN_ID=""
+          if [ -n "$SHA" ]; then
+            RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$SHA&status=completed" \
+              --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
+          fi
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download coverage artifacts
+        if: steps.ci_run.outputs.run_id != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download "${{ steps.ci_run.outputs.run_id }}" \
+            --repo "${{ github.repository }}" \
+            --dir coverage-artifacts \
+            --pattern '*coverage*'
+
       - name: Install dependencies
         run: pip install -r pages/requirements-build.txt
 
       - name: Build site
-        run: python3 pages/build.py --out pages/dist --version "${{ steps.version.outputs.version }}"
+        run: |
+          COVERAGE_ARGS=()
+          if [ -d coverage-artifacts ]; then
+            COVERAGE_ARGS=(--coverage-dir coverage-artifacts)
+          fi
+          python3 pages/build.py --out pages/dist --version "${{ steps.version.outputs.version }}" "${COVERAGE_ARGS[@]}"
 
       - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v4

@@ -137,17 +137,23 @@ desktop app's binary at all.
     ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel
     ├── videos.template.html    # headings, the same light/dark palette); build.py
     ├── videos.json             # substitutes its lint-table/CLI-example placeholders
-    ├── styles.css              # with content converted straight from README.md,
-    ├── CNAME                   # The site's custom domain
-    │                            # (papyrus-lint.idrinth.de); build.py copies this
-    │                            # into pages/dist/ so GitHub Pages keeps serving it
-    │                            # across every Actions-based deploy.
+    ├── coverage.template.html  # with content converted straight from README.md,
+    ├── styles.css              # and renders coverage.html, a per-module/per-file
+    ├── CNAME                   # line coverage breakdown for the latest release
+    │                            # (see coverage.template.html below). The site's
+    │                            # custom domain (papyrus-lint.idrinth.de);
+    │                            # build.py copies CNAME into pages/dist/ so
+    │                            # GitHub Pages keeps serving it across every
+    │                            # Actions-based deploy.
     ├── fonts/                  # renders every docs/* file into a browsable subpage
     │   ├── cinzel-v26-latin-700.woff2  # (via docs.template.html) linked from a
     │   └── inter-v20-latin-variable.woff2  # Documentation section, renders
     ├── build.py                # videos.json's list of YouTube videos into
-    │                            # videos.html (via videos.template.html), and
-    │                            # assembles pages/dist/ (git-ignored), copying
+    │                            # videos.html (via videos.template.html), a
+    │                            # --coverage-dir of downloaded lcov reports into
+    │                            # coverage.html (via coverage.template.html, see
+    │                            # GitHub Pages below), and assembles pages/dist/
+    │                            # (git-ignored), copying
     │                            # its assets/ images from resources/ and the
     │                            # app icon rather than committing duplicates of
     │                            # either under pages/, generating a WebP/AVIF
@@ -395,6 +401,19 @@ shows "unreleased". This keeps an ordinary content-triggered deploy
 showing the actual latest release, while `release.yml`'s `update-pages`
 job pins it explicitly to the tag it just built.
 
+The same resolved version also drives the `coverage.html` subpage (see
+`pages/coverage.template.html` above): the `deploy` job resolves that
+version's commit SHA via the GitHub API, looks up the most recent
+successful `ci.yml` run for that commit the same way `release.yml`'s
+`release-notes` job does, and — only if one is found — downloads its
+`*coverage*` artifacts into a local `coverage-artifacts` directory passed
+to `pages/build.py --coverage-dir`. No version resolved, or no successful
+CI run found for it, just means an empty `--coverage-dir` argument, which
+`build.py` treats as "no coverage data" rather than a build failure. This
+needed no separate CI job of its own: it's a few extra steps in the
+existing `deploy` job, gated by `actions: read` alongside the permissions
+that job already carries.
+
 `pages/index.template.html` is a plain HTML/CSS page (no frontend
 framework or bundler) styled to match the desktop app's frontend
 (`app/src/styles.css`): the same Cinzel-headed, light/dark-aware
@@ -497,6 +516,32 @@ YouTube player per entry, oldest first. Adding a new video means adding
 an entry to `pages/videos.json`, not touching `build.py` or the
 template. Both `index.template.html` and `docs.template.html` link to it
 from their nav bar's "Videos" entry.
+
+`pages/coverage.template.html` renders into `pages/dist/coverage.html`, a
+per-module, per-file line coverage breakdown for the version shown in the
+site's footer, so visitors can get an impression of how well tested the
+project is without digging through CI artifacts themselves. Unlike every
+other page above, its content isn't derived from anything checked into the
+repository: `build.py`'s `build_coverage_content` renders it from a
+directory of downloaded lcov reports passed via `--coverage-dir`, grouping
+and formatting them with `.github/scripts/coverage_summary.py`'s own
+`MODULES` list and `pct()` helper (loaded by file path via
+`load_coverage_summary`, since `.github/scripts` isn't an importable
+Python package) so the breakdown can never drift from the module grouping
+already used in the release notes and pull request coverage comments;
+`parse_lcov_files`/`normalize_source_path` add the per-file granularity
+`coverage_summary.py` itself doesn't need, stripping a CI runner's
+absolute checkout prefix off each lcov `SF:` path so files display
+relative to the repository root. Within each report, files are listed
+worst-covered first so weak spots are immediately visible. Omitting
+`--coverage-dir` (a local preview build, or no successful CI run found for
+the displayed version) renders the page with a "data unavailable"
+placeholder instead of failing the build. This doesn't need its own CI
+job: the existing GitHub Pages workflow (see below) resolves the same
+version shown in the footer, finds that commit's most recent successful
+`ci.yml` run the same way `release.yml`'s `release-notes` job does,
+downloads its coverage artifacts if one exists, and passes them straight
+to `--coverage-dir`.
 
 ## Releases (`.github/workflows/release.yml`)
 

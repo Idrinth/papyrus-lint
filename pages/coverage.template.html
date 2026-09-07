@@ -3,17 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Videos · Papyrus Lint</title>
-    <meta name="description" content="Video walkthroughs and showcases of Papyrus Lint." />
+    <title>Coverage · Papyrus Lint</title>
+    <meta name="description" content="Line coverage per module and file from the latest release's CI run." />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Papyrus Lint" />
-    <meta property="og:url" content="https://papyrus-lint.idrinth.de/videos.html" />
-    <meta property="og:title" content="Videos · Papyrus Lint" />
-    <meta property="og:description" content="Video walkthroughs and showcases of Papyrus Lint." />
+    <meta property="og:url" content="https://papyrus-lint.idrinth.de/coverage.html" />
+    <meta property="og:title" content="Coverage · Papyrus Lint" />
+    <meta property="og:description" content="Line coverage per module and file from the latest release's CI run." />
     <meta property="og:image" content="https://papyrus-lint.idrinth.de/assets/logo.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Videos · Papyrus Lint" />
-    <meta name="twitter:description" content="Video walkthroughs and showcases of Papyrus Lint." />
+    <meta name="twitter:title" content="Coverage · Papyrus Lint" />
+    <meta name="twitter:description" content="Line coverage per module and file from the latest release's CI run." />
     <meta name="twitter:image" content="https://papyrus-lint.idrinth.de/assets/logo.jpg" />
     <link rel="icon" type="image/png" href="assets/favicon.png" />
     <link rel="preload" href="fonts/cinzel-v26-latin-700.woff2" as="font" type="font/woff2" crossorigin />
@@ -42,14 +42,16 @@
     <main id="top">
       <section class="hero doc-hero" style="border-top: none">
         <p class="doc-breadcrumb"><a href="index.html#top">&larr; Back to home</a></p>
-        <h1>Videos</h1>
-        <p class="hero__tagline">Video walkthroughs and showcases of Papyrus Lint, oldest first.</p>
+        <h1>Test coverage</h1>
+        <p class="hero__tagline">
+          Line coverage per module and file, from the CI run behind release <!--COVERAGE_VERSION-->. Aggregated the
+          same way as the project's release notes and pull request coverage comments, so it never drifts from what
+          actually shipped.
+        </p>
       </section>
 
-      <section class="doc-content" style="border-top: none">
-        <div class="videos-list">
-          <!--VIDEOS_LIST-->
-        </div>
+      <section class="doc-content coverage-content" style="border-top: none">
+        <!--COVERAGE_CONTENT-->
       </section>
     </main>
 

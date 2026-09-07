@@ -15,18 +15,26 @@ page, is rewritten into a <picture> offering those smaller formats ahead
 of the original as a fallback (see wrap_images_with_modern_sources).
 Every generated HTML page and the stylesheet are minified (see
 minify_html/minify_css) before being written into the output directory.
-Also writes a sitemap.xml (every page build() renders, see sitemap_urls)
-and a robots.txt pointing at it, and copies pages/CNAME into the output
+Also renders coverage.html (via pages/coverage.template.html), a per-module,
+per-file line coverage breakdown built from a directory of downloaded lcov
+reports passed as --coverage-dir (see build_coverage_content), reusing
+.github/scripts/coverage_summary.py's module grouping so it can't drift
+from the coverage figures already shown in release notes and PR comments;
+omitting --coverage-dir (e.g. a local preview build) renders the page with
+a "data unavailable" placeholder instead of failing the build. Also writes
+a sitemap.xml (every page build() renders, see sitemap_urls) and a
+robots.txt pointing at it, and copies pages/CNAME into the output
 directory so GitHub Pages keeps serving the site's custom domain across
 each Actions-based deploy.
 
-Usage: pages/build.py [--out DIR]  (default DIR: pages/dist)
+Usage: pages/build.py [--out DIR] [--version TAG] [--coverage-dir DIR]  (default DIR: pages/dist)
 """
 
 from __future__ import annotations
 
 import argparse
 import html
+import importlib.util
 import json
 import re
 import shutil
@@ -37,6 +45,18 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
 DOCS_DIR = ROOT / "docs"
+
+# .github/scripts isn't an importable package (its directory name starts
+# with a dot), so the coverage subpage loads it by file path instead. This
+# reuses coverage_summary.py's MODULES grouping and lcov parsing rather than
+# duplicating them, so the subpage can never drift from the module
+# breakdown used in the release notes and PR coverage comments.
+COVERAGE_SUMMARY_SCRIPT = ROOT / ".github" / "scripts" / "coverage_summary.py"
+
+# Matches a CI runner's absolute checkout prefix in an lcov SF: path (e.g.
+# /home/runner/work/papyrus-lint/papyrus-lint/app/...), stripped off so the
+# coverage subpage shows paths relative to the repository root.
+REPO_CHECKOUT_MARKER = "/papyrus-lint/"
 
 LINT_CATEGORIES = ["Formatting", "Performance", "Reliability", "Bugprone", "Other"]
 
@@ -506,11 +526,136 @@ def build_videos_page(out_dir: Path) -> None:
     (out_dir / "videos.html").write_text(finalize_page(page), encoding="utf-8")
 
 
+def load_coverage_summary():
+    """Loads .github/scripts/coverage_summary.py by file path (see
+    COVERAGE_SUMMARY_SCRIPT above) so the coverage subpage shares its
+    MODULES grouping and pct() formatting instead of duplicating them."""
+    spec = importlib.util.spec_from_file_location("coverage_summary", COVERAGE_SUMMARY_SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def normalize_source_path(raw_path: str) -> str:
+    """Strips a CI runner's absolute checkout prefix off an lcov SF: path, so
+    the coverage subpage displays paths relative to the repository root the
+    same way the rest of the site links into it. A path that's already
+    relative (as some coverage tools emit) is returned unchanged."""
+    normalized = raw_path.strip().replace("\\", "/")
+    marker_at = normalized.rfind(REPO_CHECKOUT_MARKER)
+    if marker_at == -1:
+        return normalized
+    return normalized[marker_at + len(REPO_CHECKOUT_MARKER) :]
+
+
+def parse_lcov_files(path: Path) -> list[tuple[str, int, int]] | None:
+    """Returns (source_file, lines_found, lines_hit) for every SF:/
+    end_of_record record in an lcov.info file, or None if the file doesn't
+    exist. The per-file counterpart of coverage_summary.parse_lcov, which
+    only sums the whole report."""
+    if not path.is_file():
+        return None
+    records: list[tuple[str, int, int]] = []
+    current_file: str | None = None
+    found = hit = 0
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.startswith("SF:"):
+            current_file = normalize_source_path(line[3:])
+            found = hit = 0
+        elif line.startswith("LF:"):
+            found += int(line[3:])
+        elif line.startswith("LH:"):
+            hit += int(line[3:])
+        elif line.startswith("end_of_record"):
+            if current_file is not None:
+                records.append((current_file, found, hit))
+            current_file = None
+    return records
+
+
+def render_coverage_table(rows: list[tuple[str, int, int]], coverage_summary) -> str:
+    if not rows:
+        return '<p class="section-intro">No files reported.</p>'
+    out = [
+        '<div class="lint-table-wrap">',
+        '<table class="lint-table">',
+        "<thead><tr><th>File</th><th>Coverage</th><th>Lines</th></tr></thead>",
+        "<tbody>",
+    ]
+    for name, found, hit in rows:
+        out.append("<tr>")
+        out.append(f"<td><code>{html.escape(name)}</code></td>")
+        out.append(f"<td>{coverage_summary.pct(hit, found)}</td>")
+        out.append(f"<td>{hit}/{found}</td>")
+        out.append("</tr>")
+    out.append("</tbody></table></div>")
+    return "\n".join(out)
+
+
+def build_coverage_content(coverage_dir: Path, coverage_summary) -> str:
+    """Renders the coverage subpage's body: a per-module, per-file line
+    coverage breakdown from the downloaded lcov reports, worst-covered file
+    first within each part so weak spots are immediately visible."""
+    out: list[str] = []
+    total_found = total_hit = 0
+    any_report = False
+
+    for label, parts in coverage_summary.MODULES:
+        module_found = module_hit = 0
+        part_html: list[str] = []
+        for name, rel_path in parts:
+            rows = parse_lcov_files(coverage_dir / rel_path)
+            if rows is None:
+                part_html.append(f'<h3>{html.escape(name)}</h3><p class="section-intro">No report.</p>')
+                continue
+            found = sum(f for _, f, _h in rows)
+            hit = sum(h for _, _f, h in rows)
+            module_found += found
+            module_hit += hit
+            total_found += found
+            total_hit += hit
+            any_report = True
+            rows_sorted = sorted(rows, key=lambda r: ((r[2] / r[1]) if r[1] else 1.0, r[0]))
+            heading = (
+                f"<h3>{html.escape(name)} — {coverage_summary.pct(hit, found)} ({hit}/{found})</h3>"
+                if len(parts) > 1
+                else ""
+            )
+            part_html.append(heading + render_coverage_table(rows_sorted, coverage_summary))
+
+        summary = coverage_summary.pct(module_hit, module_found)
+        out.append(
+            f'<div class="coverage-module"><h2>{html.escape(label)} — {summary} '
+            f"({module_hit}/{module_found})</h2>" + "".join(part_html) + "</div>"
+        )
+
+    total_summary = coverage_summary.pct(total_hit, total_found) if any_report else "n/a"
+    out.insert(
+        0,
+        f'<p class="section-intro">Total line coverage: <strong>{total_summary}</strong> '
+        f"({total_hit}/{total_found}).</p>",
+    )
+    return "\n".join(out)
+
+
+def build_coverage_page(out_dir: Path, coverage_dir: Path | None, version: str) -> None:
+    template = (PAGES_DIR / "coverage.template.html").read_text(encoding="utf-8")
+    if "<!--COVERAGE_CONTENT-->" not in template:
+        raise SystemExit("coverage.template.html: missing marker <!--COVERAGE_CONTENT-->")
+    if coverage_dir is not None and coverage_dir.is_dir():
+        content = build_coverage_content(coverage_dir, load_coverage_summary())
+    else:
+        content = '<p class="section-intro">Coverage data isn\'t available for this build.</p>'
+    page = template.replace("<!--COVERAGE_CONTENT-->", content)
+    page = page.replace("<!--COVERAGE_VERSION-->", html.escape(version) if version else "unreleased")
+    (out_dir / "coverage.html").write_text(finalize_page(page), encoding="utf-8")
+
+
 def sitemap_urls(doc_results: dict) -> list[str]:
     """Every page build() renders, as absolute SITE_URL-rooted URLs, in the
     same order sitemap.xml lists them. Kept in one place so the sitemap can
     never drift from the pages actually published."""
-    urls = [SITE_URL, f"{SITE_URL}videos.html", f"{SITE_URL}docs/index.html"]
+    urls = [SITE_URL, f"{SITE_URL}videos.html", f"{SITE_URL}coverage.html", f"{SITE_URL}docs/index.html"]
     for doc in DOCS:
         if doc["slug"] in doc_results:
             urls.append(f"{SITE_URL}docs/{doc['slug']}.html")
@@ -535,7 +680,7 @@ def build_robots_txt(out_dir: Path) -> None:
     (out_dir / "robots.txt").write_text(content, encoding="utf-8")
 
 
-def build(out_dir: Path, version: str = "") -> None:
+def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) -> None:
     readme_lines = (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
     lints_section = extract_section(readme_lines, "Implemented Lints", level=2)
     cli_section = extract_section(readme_lines, "Command-line interface", level=2)
@@ -588,6 +733,7 @@ def build(out_dir: Path, version: str = "") -> None:
 
     build_doc_pages(out_dir, doc_results)
     build_videos_page(out_dir)
+    build_coverage_page(out_dir, coverage_dir, version)
     build_sitemap(out_dir, doc_results)
     build_robots_txt(out_dir)
 
@@ -600,8 +746,17 @@ def main() -> None:
         default="",
         help="Version tag to display on the site (e.g. v1.2.3); shown as 'unreleased' if omitted",
     )
+    parser.add_argument(
+        "--coverage-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Directory of downloaded lcov coverage artifacts (see .github/scripts/coverage_summary.py's "
+            "MODULES) for the coverage subpage; omitted or missing shows a 'data unavailable' page instead"
+        ),
+    )
     args = parser.parse_args()
-    build(args.out, args.version)
+    build(args.out, args.version, args.coverage_dir)
     print(f"Built site into {args.out}")
 
 
