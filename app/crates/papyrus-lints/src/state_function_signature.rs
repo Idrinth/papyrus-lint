@@ -20,7 +20,7 @@
 //! this exact name"), so a state function with no local empty-state
 //! counterpart is left unflagged rather than guessed at.
 
-use papyrus_parser::ast::FunctionDecl;
+use papyrus_parser::ast::{FunctionDecl, TypeName};
 
 use crate::argument_types::format_type;
 use crate::Diagnostic;
@@ -77,7 +77,7 @@ fn check_function(
         for (index, (state_param, base_param)) in
             state_fn.params.iter().zip(&base_fn.params).enumerate()
         {
-            if state_param.type_name != base_param.type_name {
+            if !type_names_match(&state_param.type_name, &base_param.type_name) {
                 diagnostics.push(Diagnostic {
                     line: state_fn.line,
                     column: 1,
@@ -95,7 +95,7 @@ fn check_function(
         }
     }
 
-    if state_fn.return_type != base_fn.return_type {
+    if !return_types_match(&state_fn.return_type, &base_fn.return_type) {
         diagnostics.push(Diagnostic {
             line: state_fn.line,
             column: 1,
@@ -108,6 +108,21 @@ fn check_function(
             ),
             rule: RULE,
         });
+    }
+}
+
+/// Papyrus type names are case-insensitive, so `Bool` and `bool` name the
+/// same type even though they'd otherwise fail a derived `PartialEq` on
+/// [`TypeName`], which compares `name` byte-for-byte.
+fn type_names_match(a: &TypeName, b: &TypeName) -> bool {
+    a.is_array == b.is_array && a.name.eq_ignore_ascii_case(&b.name)
+}
+
+fn return_types_match(a: &Option<TypeName>, b: &Option<TypeName>) -> bool {
+    match (a, b) {
+        (Some(a), Some(b)) => type_names_match(a, b),
+        (None, None) => true,
+        _ => false,
     }
 }
 
@@ -217,6 +232,24 @@ mod tests {
         // which this lint has no way to resolve; see the module docs.
         let diagnostics = check(
             "ScriptName Example Extends ParentScript\n\nState Loud\n    Function Greet(Int volume)\n    EndFunction\nEndState\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn allows_a_state_override_whose_parameter_type_casing_differs() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Greet(bool flag)\nEndFunction\n\nState Loud\n    Function Greet(Bool flag)\n    EndFunction\nEndState\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn allows_a_state_override_whose_return_type_casing_differs() {
+        let diagnostics = check(
+            "ScriptName Example\n\nbool Function IsLoud()\n    Return false\nEndFunction\n\nState Loud\n    Bool Function IsLoud()\n        Return true\n    EndFunction\nEndState\n",
         );
 
         assert!(diagnostics.is_empty());
