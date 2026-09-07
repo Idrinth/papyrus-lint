@@ -170,17 +170,21 @@ fn walk_body(
     }
 }
 
-/// Handles an `If`/`ElseIf`/`Else` chain: each branch (and the trailing
-/// `Else`, if any) is checked from the same incoming state, and only
-/// branches that don't unconditionally `Return` contribute their exit
-/// state to what follows the `If`. A variable assigned by *any* surviving
-/// branch is treated as assigned afterward too, even though a branch that
-/// doesn't run it wouldn't have — the standard Papyrus idiom is to assign a
-/// variable in only one branch (or omit the `Else` entirely) and later test
-/// whether that ran by comparing it against its default, so requiring every
-/// branch to assign it before dropping the flag would keep flagging that
-/// idiom's later reads as if they were bugs. Only a variable left
-/// unassigned by *every* surviving branch is still flagged past the `If`.
+/// Handles an `If`/`ElseIf`/`Else` chain: each branch's own condition
+/// narrows the incoming state before its body is walked (a default-value
+/// gate that rules out the default, e.g. `found != None && ...`, means the
+/// gated variable is no longer treated as unassigned for the rest of that
+/// branch's body), and a single-branch `If`'s `Else` gets the opposite
+/// narrowing from that same condition; only branches that don't
+/// unconditionally `Return` contribute their exit state to what follows the
+/// `If`. A variable assigned by *any* surviving branch is treated as
+/// assigned afterward too, even though a branch that doesn't run it
+/// wouldn't have — the standard Papyrus idiom is to assign a variable in
+/// only one branch (or omit the `Else` entirely) and later test whether
+/// that ran by comparing it against its default, so requiring every branch
+/// to assign it before dropping the flag would keep flagging that idiom's
+/// later reads as if they were bugs. Only a variable left unassigned by
+/// *every* surviving branch is still flagged past the `If`.
 fn handle_if(
     branches: &[IfBranch],
     else_body: &[Stmt],
@@ -193,6 +197,7 @@ fn handle_if(
     for branch in branches {
         check_expr(&branch.condition, &entry_vars, diagnostics, branch.line);
         let mut branch_vars = entry_vars.clone();
+        narrow_for_truthy(&branch.condition, &mut branch_vars);
         walk_body(&branch.body, &mut branch_vars, diagnostics);
         if !diverges(&branch.body) {
             surviving.push(branch_vars);
@@ -200,6 +205,9 @@ fn handle_if(
     }
 
     let mut else_vars = entry_vars.clone();
+    if let [only_branch] = branches {
+        narrow_for_falsy(&only_branch.condition, &mut else_vars);
+    }
     walk_body(else_body, &mut else_vars, diagnostics);
     if !diverges(else_body) {
         surviving.push(else_vars);
@@ -767,6 +775,29 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
+    fn does_not_flag_a_read_inside_an_and_joined_default_gate_branch_body() {
+        // papyrus-lint: `found != None && !found.IsDead()` rules out
+        // `found`'s default before the branch body runs, so reading
+        // `found` inside that body (not just within the condition itself)
+        // shouldn't be flagged either.
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor found\n    If found != None && !found.IsDead()\n        Float new_x = found.GetPositionX()\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_read_in_the_else_body_of_a_single_default_gate_branch() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor found\n    If found != None\n        Debug.Trace(\"found\")\n    Else\n        found.GetPositionX()\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 8);
     }
 
     #[test]
