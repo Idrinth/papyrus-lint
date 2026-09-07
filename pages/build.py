@@ -14,7 +14,13 @@ backed by a small blocking inline script duplicated into each template's
 own <head> (before the stylesheet link, to set an already-persisted
 light/dark override ahead of first paint and avoid a flash of the wrong
 theme), the same "system"/"light"/"dark" scheme and localStorage key the
-desktop app's own theme switch uses. The builder also assembles the site's
+desktop app's own theme switch uses. The homepage's hero "Download
+GUI"/"Download CLI" buttons are progressively enhanced the same way, by
+pages/downloads.js (also copied verbatim): without it they're plain links
+to the latest GitHub release page, encoded via each button's own
+data-options attribute; with it, clicking one opens a quick-select panel
+of that release's actual per-platform assets instead, pre-selected by the
+OS the browser reports. The builder also assembles the site's
 assets/ directory
 by copying the screenshots and icon this page uses
 from resources/ and app/src-tauri/icons, rather than committing
@@ -913,6 +919,7 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
     css = (PAGES_DIR / "styles.css").read_text(encoding="utf-8")
     (out_dir / "styles.css").write_text(minify_css(css), encoding="utf-8")
     shutil.copyfile(PAGES_DIR / "theme.js", out_dir / "theme.js")
+    shutil.copyfile(PAGES_DIR / "downloads.js", out_dir / "downloads.js")
 
     assets_dir = out_dir / "assets"
     assets_dir.mkdir()

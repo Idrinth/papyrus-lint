@@ -972,6 +972,7 @@ PapyrusLinterCLI example.psc
             )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
             (pages_dir / "theme.js").write_text("/* theme js */", encoding="utf-8")
+            (pages_dir / "downloads.js").write_text("/* downloads js */", encoding="utf-8")
             fonts_dir = pages_dir / "fonts"
             fonts_dir.mkdir()
             (fonts_dir / "font.woff2").write_bytes(b"font bytes")
@@ -1026,6 +1027,10 @@ PapyrusLinterCLI example.psc
             self.assertTrue((out_dir / "assets" / "screenshot.webp").exists())
             self.assertTrue((out_dir / "assets" / "screenshot.avif").exists())
             self.assertEqual((out_dir / "fonts" / "font.woff2").read_bytes(), b"font bytes")
+            self.assertEqual((out_dir / "theme.js").read_text(encoding="utf-8"), "/* theme js */")
+            self.assertEqual(
+                (out_dir / "downloads.js").read_text(encoding="utf-8"), "/* downloads js */"
+            )
             self.assertFalse((out_dir / "stale.txt").exists())
             self.assertTrue((out_dir / "docs" / "index.html").exists())
 
