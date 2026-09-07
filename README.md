@@ -184,6 +184,8 @@ within it. Reformatting the rest of that block (fragment headers, the
 generated function signature, `EndFunction`, or the markers themselves)
 would make CreationKit fail to recognize the fragment.
 
+![Papyrus Lint Mass Fix](resources/papyrus-lint-massfix.png)
+
 ## Disabling a lint on a specific line
 
 A line carrying a trailing `; @disable <rule-id>[, <rule-id>...]` comment
