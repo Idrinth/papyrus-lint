@@ -494,6 +494,13 @@ def render_shared_components(page: str, root_path: str, version: str) -> str:
     are accepted for the small, fragment-only unit-test fixtures; a real page
     with only one marker is rejected so its chrome cannot silently drift.
     """
+    replacements = {
+        "<!--ROOT_PATH-->": root_path,
+        "<!--VERSION-->": html.escape(version) if version else "unreleased",
+    }
+    for placeholder, value in replacements.items():
+        page = page.replace(placeholder, value)
+
     markers = {"<!--SITE_HEADER-->": "header.html", "<!--SITE_FOOTER-->": "footer.html"}
     present = [marker for marker in markers if marker in page]
     if not present:
@@ -503,10 +510,6 @@ def render_shared_components(page: str, root_path: str, version: str) -> str:
         raise SystemExit(f"page template: missing shared component marker {missing}")
 
     rendered = page
-    replacements = {
-        "<!--ROOT_PATH-->": root_path,
-        "<!--VERSION-->": html.escape(version) if version else "unreleased",
-    }
     for marker, filename in markers.items():
         component = (INCLUDES_DIR / filename).read_text(encoding="utf-8")
         for placeholder, value in replacements.items():
