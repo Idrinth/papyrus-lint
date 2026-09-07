@@ -733,6 +733,41 @@ mod tests {
     }
 
     #[test]
+    fn preserves_function_modifiers_array_types_and_events_in_signatures() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nString[] Function Build(Int[] values) Global Native\n\nEvent OnReady()\nEndEvent\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let function = table
+            .lookup_function("Foo", "Build")
+            .expect("native function should be found");
+        let event = table
+            .lookup_function("Foo", "OnReady")
+            .expect("event should be found");
+
+        assert_eq!(
+            function.return_type,
+            Some(TypeName {
+                name: "String".to_string(),
+                is_array: true,
+            })
+        );
+        assert_eq!(function.params[0].type_name.name, "Int");
+        assert!(function.params[0].type_name.is_array);
+        assert!(function.is_global);
+        assert!(function.is_native);
+        assert!(!function.is_event);
+        assert!(event.is_event);
+        assert!(!event.is_global);
+        assert!(!event.is_native);
+        assert_eq!(event.return_type, None);
+    }
+
+    #[test]
     fn new_with_additional_roots_resolves_a_script_outside_the_conventional_dirs() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         let shared = tempfile::tempdir().expect("failed to create temp dir");
@@ -915,6 +950,24 @@ mod tests {
             .expect("failed to remove script file");
 
         assert!(table.lookup_function("Foo", "Bar").is_some());
+    }
+
+    #[test]
+    fn caches_an_unparseable_script_as_unresolved() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Foo", "this is not a Papyrus script\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        assert!(table.lookup_function("Foo", "Bar").is_none());
+        assert!(table.script_exists("Foo"));
+
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n\nFunction Bar()\nEndFunction\n",
+        );
+
+        assert!(table.lookup_function("Foo", "Bar").is_none());
     }
 
     #[test]
@@ -1303,6 +1356,31 @@ mod tests {
     }
 
     #[test]
+    fn list_members_shadows_an_ancestor_member_even_when_the_member_kind_changes() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Base",
+            "ScriptName Base\n\nFunction Value()\nEndFunction\n",
+        );
+        write_script(
+            root.path(),
+            "Child",
+            "ScriptName Child Extends Base\n\nInt Property Value Auto\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let matching: Vec<_> = table
+            .list_members("Child")
+            .into_iter()
+            .filter(|member| member.name().eq_ignore_ascii_case("Value"))
+            .collect();
+
+        assert_eq!(matching.len(), 1);
+        assert!(matches!(matching[0], Member::Property(_)));
+    }
+
+    #[test]
     fn list_members_is_empty_for_an_unresolvable_type() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
 
@@ -1586,6 +1664,46 @@ EndFunction
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(!table.script_exists("MyMissingScript"));
+    }
+
+    #[test]
+    fn external_signature_trait_reports_builtin_native_and_project_types() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Helpers",
+            "ScriptName Helpers\n\nFunction Run() Global\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(
+            papyrus_lints::argument_types::ExternalSignatures::type_exists(&mut table, "FLOAT")
+        );
+        assert!(
+            papyrus_lints::argument_types::ExternalSignatures::type_exists(&mut table, "Actor")
+        );
+        assert!(
+            papyrus_lints::argument_types::ExternalSignatures::type_exists(&mut table, "helpers")
+        );
+        assert!(
+            !papyrus_lints::argument_types::ExternalSignatures::type_exists(
+                &mut table,
+                "DefinitelyMissing"
+            )
+        );
+        assert_eq!(
+            papyrus_lints::argument_types::ExternalSignatures::is_global_function(
+                &mut table, "Helpers", "Run"
+            ),
+            Some(true)
+        );
+        assert_eq!(
+            papyrus_lints::argument_types::ExternalSignatures::is_global_function(
+                &mut table, "Helpers", "Missing"
+            ),
+            None
+        );
     }
 
     #[test]
