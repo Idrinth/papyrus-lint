@@ -39,6 +39,11 @@ class IsLocalHrefTest(unittest.TestCase):
         self.assertFalse(browser_check.is_local_href("mailto:test@example.com"))
         self.assertFalse(browser_check.is_local_href("tel:+15555550100"))
 
+    def test_rejects_scheme_relative_and_non_navigation_urls(self) -> None:
+        self.assertFalse(browser_check.is_local_href("//cdn.example.com/style.css"))
+        self.assertFalse(browser_check.is_local_href("data:text/plain,hello"))
+        self.assertFalse(browser_check.is_local_href("javascript:void(0)"))
+
 
 class StartServerTest(unittest.TestCase):
     def test_serves_directory_contents_quietly(self) -> None:
@@ -111,6 +116,46 @@ class CheckSiteTest(unittest.TestCase):
                     "index.html: broken link: 'missing.html' (no such file 'missing.html')",
                 ]
             ),
+        )
+
+    def test_resolves_root_relative_parent_and_query_only_links_from_nested_pages(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            docs = dist / "docs"
+            docs.mkdir()
+            (dist / "index.html").write_text(
+                '<html><body><main id="home">Home</main></body></html>', encoding="utf-8"
+            )
+            (docs / "guide.html").write_text(
+                """<html><body>
+                <h1 id="guide">Guide</h1>
+                <a href="../index.html#home">Parent-relative home</a>
+                <a href="/index.html#home">Root-relative home</a>
+                <a href="?mode=print#guide">Query on this page</a>
+                <a href="./missing.html">Missing sibling</a>
+                </body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            ["docs/guide.html: broken link: './missing.html' (no such file 'docs/missing.html')"],
+        )
+
+    def test_detects_a_missing_fragment_on_the_same_page(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html><body><a href="#missing">Missing section</a></body></html>', encoding="utf-8"
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            ["index.html: broken link: '#missing' (no element with id 'missing' on 'index.html')"],
         )
 
     def test_detects_console_errors_page_errors_and_failed_resources(self) -> None:
