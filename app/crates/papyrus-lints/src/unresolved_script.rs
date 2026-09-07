@@ -455,6 +455,123 @@ EndFunction
     }
 
     #[test]
+    fn respects_locally_declared_names_case_insensitively() {
+        let diagnostics = check_with(
+            r#"
+ScriptName Example
+
+Actor Property PlayerRef Auto
+
+Function Test(ObjectReference TargetRef)
+    playerref.GetName()
+    TARGETREF.Activate(PlayerRef)
+    Actor LocalRef = PlayerRef
+    localref.GetName()
+EndFunction
+"#,
+            &mut FakeExternal,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn checks_calls_in_script_level_initializers() {
+        let diagnostics = check_with(
+            r#"
+ScriptName Example
+
+Int Property InitialValue = MissingPropertyValue.Get() AutoReadOnly
+Int CurrentValue = MissingVariableValue.Get()
+"#,
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(diagnostics[0].line, 4);
+        assert!(diagnostics[0].message.contains("MissingPropertyValue"));
+        assert_eq!(diagnostics[1].line, 5);
+        assert!(diagnostics[1].message.contains("MissingVariableValue"));
+    }
+
+    #[test]
+    fn checks_both_sides_of_assignments_and_named_arguments() {
+        let diagnostics = check_with(
+            r#"
+ScriptName Example
+
+Function Test()
+    MissingTarget.Get()[MissingIndex.Get()] = MissingValue.Get()
+    Utility.Wait(afInterval = MissingArgument.Get())
+EndFunction
+"#,
+            &mut FakeExternal,
+        );
+
+        let missing_scripts: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect();
+        assert_eq!(
+            diagnostics.iter().map(|d| d.line).collect::<Vec<_>>(),
+            [5, 5, 5, 6]
+        );
+        assert!(missing_scripts
+            .iter()
+            .any(|message| message.contains("MissingTarget")));
+        assert!(missing_scripts
+            .iter()
+            .any(|message| message.contains("MissingIndex")));
+        assert!(missing_scripts
+            .iter()
+            .any(|message| message.contains("MissingValue")));
+        assert!(missing_scripts
+            .iter()
+            .any(|message| message.contains("MissingArgument")));
+        assert!(missing_scripts
+            .iter()
+            .all(|message| !message.contains("Utility")));
+    }
+
+    #[test]
+    fn reports_precise_metadata_for_an_unresolved_static_call() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test()\n    MissingScript.Run()\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(
+            diagnostics,
+            [Diagnostic {
+                line: 4,
+                column: 22,
+                message: "[warning] Script 'MissingScript' could not be located".to_string(),
+                rule: RULE,
+            }]
+        );
+    }
+
+    #[test]
+    fn accepts_known_types_case_insensitively_in_every_declaration_position() {
+        let diagnostics = check_with(
+            r#"
+ScriptName Example Extends ACTOR
+
+KNOWN Property Value Auto
+
+objectreference Function Test(aCtOr Subject)
+    known LocalValue
+    ObjectReference[] Values = new OBJECTREFERENCE[1]
+    Return Subject
+EndFunction
+"#,
+            &mut FakeExternal,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn does_not_crash_on_unparseable_source() {
         let diagnostics = check("ScriptName Example\n\nFunction Test(\nEndFunction\n");
         assert!(diagnostics.is_empty());
