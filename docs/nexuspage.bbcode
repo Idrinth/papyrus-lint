@@ -25,6 +25,7 @@ Testing uses three steps to make sure everything is working as intended. Step on
 [heading]Implemented Lints[/heading]
 More detailed explanation of the rules and their implementation is available on the GitHub README: [url=https://github.com/Idrinth/papyrus-lint]https://github.com/Idrinth/papyrus-lint[/url]
 [size=4][b]Formatting[/b][/size]
+These lints make scripts easier to read by enforcing a consistent look and feel. They are especially useful in group projects.
 [spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
@@ -71,6 +72,7 @@ More detailed explanation of the rules and their implementation is available on 
 [/tr]
 [/table][/spoiler]
 [size=4][b]Performance[/b][/size]
+To keep scripts running smoothly, this flags calls and patterns known to run slower than necessary.
 [spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
@@ -93,6 +95,7 @@ More detailed explanation of the rules and their implementation is available on 
 [/tr]
 [/table][/spoiler]
 [b][size=4]Reliability[/size][/b]
+Catches mistakes that still compile fine but can misbehave once the game is actually running.
 [spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
@@ -175,6 +178,7 @@ More detailed explanation of the rules and their implementation is available on 
 [/tr]
 [/table][/spoiler]
 [size=4][b]Bugprone[/b][/size]
+Flags patterns that compile clean but crash or silently do the wrong thing at runtime.
 [spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]
@@ -237,6 +241,7 @@ More detailed explanation of the rules and their implementation is available on 
 [/tr]
 [/table][/spoiler]
 [size=4][b]Other[/b][/size]
+Everything else, from unused code and excessive complexity to naming and style preferences.
 [spoiler][table][tr][th]Lint[/th]
 [th]Description[/th]
 [th]Auto-Fix[/th]

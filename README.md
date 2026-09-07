@@ -76,6 +76,9 @@ apply.
 
 ### Formatting
 
+These lints make scripts easier to read by enforcing a consistent look
+and feel. They are especially useful in group projects.
+
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Trailing whitespace** | Flags, as a `[warning]`, lines that end with trailing spaces or tabs. | ✓ |
@@ -91,6 +94,10 @@ apply.
 
 ### Performance
 
+To keep scripts running smoothly, this flags calls and patterns known to
+run slower than necessary, most useful for anything running in a hot loop
+or on a frequent update.
+
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Forbidden/discouraged function usage** | Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. | |
@@ -99,6 +106,10 @@ apply.
 | **Repeated GlobalVariable.GetValue() calls** | Flags, as an `[info]`, a `GetValue()` call repeated on the same receiver across the conditions of a single `If`/`ElseIf` chain (e.g. `If gv.GetValue() == 1.0` / `ElseIf gv.GetValue() == 2.0`), since none of the chain's earlier branch bodies run before a later condition is evaluated, so the value can't have changed between those reads — it can be read into a local variable once ahead of the chain instead. Like "Slow function usage", a call's receiver can't generally be resolved back to a `GlobalVariable`-typed script, so this matches by the `GetValue` method name alone (case-insensitively, with no arguments); it's the only native method with that name (see `rules/native-methods.yaml`), so this doesn't misfire on unrelated types. Disabled by default, since a chain that reads the same global more than once is often written that way deliberately for readability and the performance cost is usually negligible outside a hot code path; a project opts in via `rules.repeated_getvalue`. | |
 
 ### Reliability
+
+To catch mistakes that still compile fine but can misbehave once the game
+is actually running, this checks cross-script calls, states, and type
+usage for problems the compiler itself doesn't flag.
 
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
@@ -124,6 +135,10 @@ apply.
 
 ### Bugprone
 
+To catch mistakes that compile clean but crash or silently do the wrong
+thing at runtime, this flags patterns that are almost always bugs rather
+than intentional code.
+
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Implicit Float-to-Int conversion** | Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit `as Int` cast. | |
@@ -142,6 +157,10 @@ apply.
 | **Unchecked cast** | Flags, as a `[warning]`, a member/method access on the result of an `as` cast (e.g. `(akRef as Actor).GetActorValue("Health")`) before that result has been checked against `None`, since a cast that doesn't match the underlying Form's actual type evaluates to `None` at runtime rather than raising an error, so dereferencing it immediately crashes the script. Tracks a local variable as an unchecked cast result from its declaration/assignment from an `as` expression until it's reassigned something else, clearing it the moment a direct `None` check on it (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) is evaluated, regardless of which branch is ultimately taken — this lint only cares whether the possibility of `None` was ever considered, not which branch handles it. A cast used directly inline (`(value as Type).Member`) is always flagged, since there's no way to check it in between. A cast CreationKit itself generated (the boilerplate line a quest/dialogue fragment gets between its `Function` signature and `;BEGIN CODE`, e.g. `Actor akSpeaker = akSpeakerRef as Actor`) is never tracked as unchecked in the first place, since CreationKit guarantees that cast succeeds and the user can't add a `None` check there without CreationKit rejecting the edit. | |
 
 ### Other
+
+Everything that doesn't fit the categories above, from unused code and
+excessive complexity to naming and configuration-driven style
+preferences.
 
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
