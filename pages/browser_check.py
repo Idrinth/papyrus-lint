@@ -52,8 +52,8 @@ class PageIssues:
 def is_local_href(href: str) -> bool:
     if not href or href.startswith("#"):
         return True
-    scheme = urlsplit(href).scheme
-    return scheme not in ("http", "https", "mailto", "tel")
+    parsed = urlsplit(href)
+    return not parsed.scheme and not parsed.netloc
 
 
 class _QuietHandler(http.server.SimpleHTTPRequestHandler):
