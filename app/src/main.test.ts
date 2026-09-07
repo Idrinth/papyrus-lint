@@ -87,6 +87,7 @@ import {
   saveLintConfig,
   saveLintConfigToPath,
   saveScriptRoots,
+  scheduleHideLintProgress,
   scriptRootsFromUI,
   scriptRootsForAchlist,
   severityOf,
@@ -1466,6 +1467,35 @@ describe("showLintProgress / updateLintProgress / hideLintProgress", () => {
 
     expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(true);
   });
+
+  it("scheduleHideLintProgress keeps the bar visible during the grace period, then hides it", () => {
+    vi.useFakeTimers();
+    showLintProgress(2);
+    updateLintProgress(2, 2);
+
+    scheduleHideLintProgress();
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
+
+    vi.advanceTimersByTime(1999);
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
+
+    vi.advanceTimersByTime(1);
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it("scheduleHideLintProgress's pending hide is cancelled by a new showLintProgress call", () => {
+    vi.useFakeTimers();
+    showLintProgress(2);
+    updateLintProgress(2, 2);
+    scheduleHideLintProgress();
+
+    showLintProgress(3);
+    vi.advanceTimersByTime(2000);
+
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
+    vi.useRealTimers();
+  });
 });
 
 describe("handleFixClick", () => {
@@ -2041,6 +2071,7 @@ describe("handleDroppedPaths", () => {
   });
 
   it("switches to the lint tab and grows the results list as each file finishes, without waiting for the whole achlist", async () => {
+    vi.useFakeTimers();
     let resolveB: (findings: Diagnostic[]) => void = () => {};
     const pendingB = new Promise<Diagnostic[]>((resolve) => {
       resolveB = resolve;
@@ -2077,7 +2108,13 @@ describe("handleDroppedPaths", () => {
     await drop;
 
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(2);
+    // The finished progress bar stays visible for a grace period instead of
+    // disappearing the instant the last file finishes.
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
+
+    vi.advanceTimersByTime(2000);
     expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(true);
+    vi.useRealTimers();
   });
 
   it("ignores a stale drop's straggling outcome once a newer drop has started, instead of mixing it into the newer results", async () => {
