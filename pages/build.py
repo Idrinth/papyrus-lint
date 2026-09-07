@@ -85,6 +85,10 @@ DOCS = [
         "filename": "ast-cache-entry.schema.json",
         "slug": "ast-cache-entry-schema",
         "kind": "json-schema",
+        "description": (
+            "The JSON Schema for one entry in the on-disk ast-cache used to skip re-parsing unchanged scripts, "
+            "keyed by the cached script's content hash, modification time, and the linter version that wrote it."
+        ),
         "blurb": "The JSON Schema for one entry in the on-disk ast-cache used to skip re-parsing unchanged scripts.",
     },
     {
@@ -380,7 +384,8 @@ def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
                 code_lines.append(lines[i])
                 i += 1
             i += 1
-            out.append(f'<pre class="code-block"><code>{html.escape(chr(10).join(code_lines))}</code></pre>')
+            code_html = html.escape(chr(10).join(code_lines))
+            out.append(f'<pre class="code-block" tabindex="0"><code>{code_html}</code></pre>')
             continue
         heading = HEADING_RE.match(line)
         if heading:
@@ -429,12 +434,18 @@ def render_doc(doc: dict) -> tuple[str, str, str]:
     elif kind == "json-schema":
         data = json.loads(source)
         title = data.get("title", doc["filename"])
-        description = data.get("description", "")
-        content_html = f'<pre class="code-block"><code>{html.escape(json.dumps(data, indent=2))}</code></pre>'
+        # A schema's own "description" is written for JSON Schema consumers and can run
+        # much longer than a page tagline should be (see ast-cache-entry.schema.json,
+        # whose 800+ character description became this page's Largest Contentful Paint
+        # element); prefer a DOCS entry's own short "description" when it sets one.
+        description = doc.get("description", data.get("description", ""))
+        schema_html = html.escape(json.dumps(data, indent=2))
+        content_html = f'<pre class="code-block" tabindex="0"><code>{schema_html}</code></pre>'
     else:
         title = doc["title"]
         description = doc["description"]
-        content_html = f'<pre class="code-block"><code>{html.escape(source)}</code></pre>'
+        source_html = html.escape(source)
+        content_html = f'<pre class="code-block" tabindex="0"><code>{source_html}</code></pre>'
     content_html += raw_github_link(doc)
     return title, description, content_html
 
