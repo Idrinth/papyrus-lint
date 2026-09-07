@@ -299,7 +299,7 @@ def render_lint_table(section_lines: list[str]) -> str:
         raise SystemExit("README.md: expected a Lint/Description/Auto-Fix table, found none")
     header = split_table_row(rows[0])
     # rows[1] is the "| --- | --- | --- |" separator row.
-    out = ['<div class="lint-table-wrap">', '<table class="lint-table">', "<thead><tr>"]
+    out = ['<div class="lint-table-wrap">', '<table class="lint-table lint-rules-table">', "<thead><tr>"]
     for cell in header:
         out.append(f"<th>{html.escape(cell)}</th>")
     out.append("</tr></thead>")

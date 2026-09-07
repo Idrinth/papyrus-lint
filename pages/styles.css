@@ -380,12 +380,21 @@ table.lint-table {
   font-size: 0.9em;
 }
 
+table.lint-rules-table {
+  table-layout: fixed;
+}
+
 .lint-table th,
 .lint-table td {
   padding: 0.5em 0.75em;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
   vertical-align: top;
+}
+
+.lint-rules-table th:first-child,
+.lint-rules-table td:first-child {
+  width: 14em;
 }
 
 .lint-table th {
