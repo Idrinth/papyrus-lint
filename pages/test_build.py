@@ -631,6 +631,7 @@ class SitemapAndRobotsTest(unittest.TestCase):
             [
                 "https://example.test/",
                 "https://example.test/videos.html",
+                "https://example.test/coverage.html",
                 "https://example.test/docs/index.html",
                 "https://example.test/docs/guide.html",
             ],
@@ -694,6 +695,9 @@ PapyrusLinterCLI example.psc
             (pages_dir / "docs.template.html").write_text(
                 "<!--DOC_TITLE--><!--DOC_DESCRIPTION--><!--DOC_CONTENT-->",
                 encoding="utf-8",
+            )
+            (pages_dir / "coverage.template.html").write_text(
+                "<!--COVERAGE_VERSION--><!--COVERAGE_CONTENT-->", encoding="utf-8"
             )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
             fonts_dir = pages_dir / "fonts"
@@ -763,7 +767,12 @@ PapyrusLinterCLI example.psc
             sitemap_output = (out_dir / "sitemap.xml").read_text(encoding="utf-8")
             self.assertIn(f"<loc>{page_builder.SITE_URL}</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}videos.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{page_builder.SITE_URL}coverage.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}docs/index.html</loc>", sitemap_output)
+
+            coverage_output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+            self.assertIn("v1.2.3", coverage_output)
+            self.assertIn("Coverage data isn't available for this build.", coverage_output)
 
     def test_build_rejects_a_missing_lint_table_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -871,7 +880,7 @@ command
         ):
             page_builder.main()
 
-        build.assert_called_once_with(output_dir, "")
+        build.assert_called_once_with(output_dir, "", None)
         self.assertEqual(stdout.getvalue(), f"Built site into {output_dir}\n")
 
     def test_main_passes_an_explicit_version_to_build(self) -> None:
@@ -884,7 +893,187 @@ command
         ):
             page_builder.main()
 
-        build.assert_called_once_with(output_dir, "v9.8.7")
+        build.assert_called_once_with(output_dir, "v9.8.7", None)
+
+    def test_main_passes_a_coverage_dir_to_build(self) -> None:
+        output_dir = Path("coverage-output")
+        coverage_dir = Path("coverage-artifacts")
+
+        with (
+            patch(
+                "sys.argv",
+                ["build.py", "--out", str(output_dir), "--coverage-dir", str(coverage_dir)],
+            ),
+            patch.object(page_builder, "build") as build,
+            patch("sys.stdout", new_callable=StringIO),
+        ):
+            page_builder.main()
+
+        build.assert_called_once_with(output_dir, "", coverage_dir)
+
+
+class CoveragePageTest(unittest.TestCase):
+    def test_normalize_source_path_strips_a_ci_checkout_prefix(self) -> None:
+        self.assertEqual(
+            page_builder.normalize_source_path(
+                "/home/runner/work/papyrus-lint/papyrus-lint/app/crates/papyrus-parser/src/lexer.rs"
+            ),
+            "app/crates/papyrus-parser/src/lexer.rs",
+        )
+
+    def test_normalize_source_path_leaves_an_already_relative_path_unchanged(self) -> None:
+        self.assertEqual(page_builder.normalize_source_path("src/main.ts"), "src/main.ts")
+
+    def test_normalize_source_path_normalizes_windows_style_separators(self) -> None:
+        self.assertEqual(
+            page_builder.normalize_source_path(
+                r"C:\work\papyrus-lint\papyrus-lint\app\crates\papyrus-lints\src\lib.rs"
+            ),
+            "app/crates/papyrus-lints/src/lib.rs",
+        )
+
+    def test_parse_lcov_files_returns_none_for_a_missing_report(self) -> None:
+        self.assertIsNone(page_builder.parse_lcov_files(Path("does-not-exist.info")))
+
+    def test_parse_lcov_files_returns_per_file_records(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text(
+                "SF:/home/runner/work/papyrus-lint/papyrus-lint/app/src/one.rs\n"
+                "LF:10\nLH:8\nend_of_record\n"
+                "SF:app/src/two.rs\n"
+                "LF:4\nLH:1\nend_of_record\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                page_builder.parse_lcov_files(report),
+                [("app/src/one.rs", 10, 8), ("app/src/two.rs", 4, 1)],
+            )
+
+    def test_parse_lcov_files_ignores_a_record_without_a_source_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text("LF:5\nLH:5\nend_of_record\n", encoding="utf-8")
+
+            self.assertEqual(page_builder.parse_lcov_files(report), [])
+
+    def test_render_coverage_table_renders_rows_with_percentage_and_counts(self) -> None:
+        coverage_summary = page_builder.load_coverage_summary()
+        result = page_builder.render_coverage_table([("src/one.rs", 10, 8)], coverage_summary)
+
+        self.assertIn("<code>src/one.rs</code>", result)
+        self.assertIn("<td>80.0%</td>", result)
+        self.assertIn("<td>8/10</td>", result)
+
+    def test_render_coverage_table_handles_no_rows(self) -> None:
+        coverage_summary = page_builder.load_coverage_summary()
+        result = page_builder.render_coverage_table([], coverage_summary)
+
+        self.assertEqual(result, '<p class="section-intro">No files reported.</p>')
+
+    def test_build_coverage_content_groups_by_module_and_sorts_worst_first(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            coverage_summary = page_builder.load_coverage_summary()
+            coverage_summary.MODULES = [
+                (
+                    "Combined",
+                    [
+                        ("first-part", "first/lcov.info"),
+                        ("second-part", "second/lcov.info"),
+                    ],
+                ),
+                ("Missing", [("absent", "absent/lcov.info")]),
+            ]
+            first_dir = root / "first"
+            first_dir.mkdir()
+            (first_dir / "lcov.info").write_text(
+                "SF:good.rs\nLF:10\nLH:10\nend_of_record\n"
+                "SF:bad.rs\nLF:10\nLH:2\nend_of_record\n",
+                encoding="utf-8",
+            )
+            second_dir = root / "second"
+            second_dir.mkdir()
+            (second_dir / "lcov.info").write_text("SF:only.rs\nLF:4\nLH:4\nend_of_record\n", encoding="utf-8")
+
+            result = page_builder.build_coverage_content(root, coverage_summary)
+
+        self.assertIn("Combined", result)
+        self.assertIn("Missing", result)
+        self.assertIn("No report.", result)
+        self.assertLess(result.index("bad.rs"), result.index("good.rs"))
+        self.assertIn("Total line coverage: <strong>66.7%</strong> (16/24)", result)
+
+    def test_build_coverage_content_reports_na_when_nothing_is_available(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            coverage_summary = page_builder.load_coverage_summary()
+            coverage_summary.MODULES = [("Missing", [("absent", "absent/lcov.info")])]
+
+            result = page_builder.build_coverage_content(root, coverage_summary)
+
+        self.assertIn("Total line coverage: <strong>n/a</strong> (0/0)", result)
+
+    def test_build_coverage_page_renders_a_placeholder_without_a_coverage_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text(
+                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
+                encoding="utf-8",
+            )
+
+            with patch.object(page_builder, "PAGES_DIR", pages_dir):
+                page_builder.build_coverage_page(out_dir, None, "")
+
+            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+
+        self.assertIn("unreleased", output)
+        self.assertIn("Coverage data isn't available for this build.", output)
+
+    def test_build_coverage_page_renders_report_content_from_a_coverage_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            coverage_dir = root / "coverage-artifacts"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            coverage_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text(
+                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
+                encoding="utf-8",
+            )
+            report_dir = coverage_dir / "rust-coverage-papyrus-parser"
+            report_dir.mkdir()
+            (report_dir / "lcov.info").write_text("SF:src/lib.rs\nLF:2\nLH:1\nend_of_record\n", encoding="utf-8")
+
+            with patch.object(page_builder, "PAGES_DIR", pages_dir):
+                page_builder.build_coverage_page(out_dir, coverage_dir, "v1.4.0")
+
+            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+
+        self.assertIn("v1.4.0", output)
+        self.assertIn("papyrus-parser", output)
+        self.assertIn("src/lib.rs", output)
+        self.assertNotIn("Coverage data isn&#x27;t available", output)
+
+    def test_build_coverage_page_rejects_a_template_without_the_content_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            pages_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text("<main>No marker</main>", encoding="utf-8")
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                self.assertRaisesRegex(SystemExit, "missing marker"),
+            ):
+                page_builder.build_coverage_page(root / "out", None, "")
 
 
 if __name__ == "__main__":
