@@ -85,7 +85,7 @@ class CheckSiteTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
             (dist / "index.html").write_text(
-                """<html><body>
+                """<html lang="en"><head><title>Home</title></head><body>
                 <h1 id="top">Home</h1>
                 <a href="other.html">Other page</a>
                 <a href="other.html#section">Valid anchor</a>
@@ -98,7 +98,7 @@ class CheckSiteTest(unittest.TestCase):
                 encoding="utf-8",
             )
             (dist / "other.html").write_text(
-                """<html><body>
+                """<html lang="en"><head><title>Other</title></head><body>
                 <h2 id="section">Section</h2>
                 <a href="index.html">Back</a>
                 </body></html>""",
@@ -124,10 +124,12 @@ class CheckSiteTest(unittest.TestCase):
             docs = dist / "docs"
             docs.mkdir()
             (dist / "index.html").write_text(
-                '<html><body><main id="home">Home</main></body></html>', encoding="utf-8"
+                '<html lang="en"><head><title>Home</title></head>'
+                '<body><main id="home">Home</main></body></html>',
+                encoding="utf-8",
             )
             (docs / "guide.html").write_text(
-                """<html><body>
+                """<html lang="en"><head><title>Guide</title></head><body>
                 <h1 id="guide">Guide</h1>
                 <a href="../index.html#home">Parent-relative home</a>
                 <a href="/index.html#home">Root-relative home</a>
@@ -148,7 +150,9 @@ class CheckSiteTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
             (dist / "index.html").write_text(
-                '<html><body><a href="#missing">Missing section</a></body></html>', encoding="utf-8"
+                '<html lang="en"><head><title>Home</title></head>'
+                '<body><a href="#missing">Missing section</a></body></html>',
+                encoding="utf-8",
             )
 
             problems = browser_check.check_site(dist)
@@ -185,7 +189,8 @@ class CheckSiteTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
             (dist / "index.html").write_text(
-                '<html><body><img src="https://example.test/definitely-not-real.png" alt="" />'
+                '<html lang="en"><head><title>Home</title></head><body>'
+                '<img src="https://example.test/definitely-not-real.png" alt="" />'
                 "</body></html>",
                 encoding="utf-8",
             )
@@ -228,6 +233,36 @@ class CheckSiteTest(unittest.TestCase):
                 """<html lang="en"><head><title>Accessible page</title></head><body>
                 <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="">
                 </body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
+    def test_detects_missing_document_language_and_title(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                "<html><head><title>   </title></head><body></body></html>",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "index.html: document error: document has no language",
+                "index.html: document error: document has no title",
+            ],
+        )
+
+    def test_accepts_nonempty_document_language_and_title(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Page title</title></head><body></body></html>',
                 encoding="utf-8",
             )
 

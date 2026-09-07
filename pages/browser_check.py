@@ -15,7 +15,8 @@ page in headless Chromium via Playwright to catch:
 - internal links (relative hrefs, including `#fragment` anchors) that point
   at a page or an in-page id that doesn't actually exist,
 - duplicate element ids, which make fragment links ambiguous, and
-- basic image accessibility metadata by requiring alternative text.
+- basic document accessibility metadata: a non-empty page title, a declared
+  document language, and alternative text on images.
 
 External links (https://github.com/..., Discord, Nexus Mods, ...) are never
 actually fetched: doing so would make this "quick" check slow and flaky
@@ -135,6 +136,8 @@ def check_site(dist: Path) -> list[str]:
                         return {
                             duplicateIds,
                             imagesWithoutAlt,
+                            hasDocumentLanguage: Boolean(document.documentElement.lang.trim()),
+                            hasDocumentTitle: Boolean(document.title.trim()),
                         };
                     }"""
                 )
@@ -142,6 +145,10 @@ def check_site(dist: Path) -> list[str]:
                     issues.document_errors.append(f"duplicate element id '{duplicate_id}'")
                 for image_src in document_checks["imagesWithoutAlt"]:
                     issues.document_errors.append(f"image '{image_src}' has no alt attribute")
+                if not document_checks["hasDocumentLanguage"]:
+                    issues.document_errors.append("document has no language")
+                if not document_checks["hasDocumentTitle"]:
+                    issues.document_errors.append("document has no title")
 
                 page.remove_listener("console", on_console)
                 page.remove_listener("pageerror", on_pageerror)
