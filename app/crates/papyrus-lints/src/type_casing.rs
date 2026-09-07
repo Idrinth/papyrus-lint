@@ -289,6 +289,37 @@ mod tests {
     }
 
     #[test]
+    fn lowercase_and_uppercase_allow_underscores_and_digits() {
+        assert!(check("ScriptName quest_script2\n", Style::Lowercase).is_empty());
+        assert!(check("ScriptName QUEST_SCRIPT2\n", Style::Uppercase).is_empty());
+    }
+
+    #[test]
+    fn names_without_letters_do_not_have_a_case_violation() {
+        assert!(check("ScriptName _123\n", Style::Lowercase).is_empty());
+        assert!(check("ScriptName _123\n", Style::Uppercase).is_empty());
+
+        // PascalCase and camelCase still reject this identifier because
+        // those conventions independently prohibit underscores.
+        assert_eq!(check("ScriptName _123\n", Style::PascalCase).len(), 1);
+        assert_eq!(check("ScriptName _123\n", Style::CamelCase).len(), 1);
+    }
+
+    #[test]
+    fn every_style_uses_its_config_value_in_the_diagnostic() {
+        for (style, name, label) in [
+            (Style::PascalCase, "example", "PascalCase"),
+            (Style::CamelCase, "Example", "camelCase"),
+            (Style::Lowercase, "ExAmPlE", "lowercase"),
+            (Style::Uppercase, "ExAmPlE", "UPPERCASE"),
+        ] {
+            let diagnostics = check(&format!("ScriptName {name}\n"), style);
+            assert_eq!(diagnostics.len(), 1);
+            assert!(diagnostics[0].message.contains(label));
+        }
+    }
+
+    #[test]
     fn reports_the_declared_name_position_not_the_keyword() {
         let diagnostics = check(
             "Scriptname   myQuestScript Extends Quest\n",
@@ -302,6 +333,12 @@ mod tests {
     #[test]
     fn script_with_no_scriptname_statement_is_unflagged() {
         assert!(check("Function Foo()\nEndFunction\n", Style::PascalCase).is_empty());
+    }
+
+    #[test]
+    fn incomplete_or_non_identifier_declarations_are_unflagged() {
+        assert!(check("ScriptName", Style::PascalCase).is_empty());
+        assert!(check("ScriptName Int\n", Style::PascalCase).is_empty());
     }
 
     #[test]
@@ -353,6 +390,27 @@ mod tests {
     }
 
     #[test]
+    fn repair_finds_the_declaration_after_an_earlier_line() {
+        let source = "; generated file\r\nScriptName myScript Extends Parent\r\n";
+        assert_eq!(
+            repair(source, Style::PascalCase),
+            "; generated file\r\nScriptName MyScript Extends Parent\r\n"
+        );
+    }
+
+    #[test]
+    fn lowercase_and_uppercase_repairs_preserve_non_letters() {
+        assert_eq!(
+            repair("ScriptName Quest_Script2\n", Style::Lowercase),
+            "ScriptName quest_script2\n"
+        );
+        assert_eq!(
+            repair("ScriptName Quest_Script2\n", Style::Uppercase),
+            "ScriptName QUEST_SCRIPT2\n"
+        );
+    }
+
+    #[test]
     fn repair_does_not_make_a_substantive_rename() {
         for style in [Style::PascalCase, Style::CamelCase] {
             let source = "ScriptName my_questScript\n";
@@ -365,8 +423,15 @@ mod tests {
         for source in [
             "Function Foo()\nEndFunction\n",
             "ScriptName Example \"unterminated\n",
+            "ScriptName",
+            "ScriptName Int\n",
         ] {
             assert_eq!(repair(source, Style::PascalCase), source);
         }
+    }
+
+    #[test]
+    fn pascal_case_is_the_default_style() {
+        assert_eq!(Style::default(), Style::PascalCase);
     }
 }
