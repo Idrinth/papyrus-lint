@@ -138,6 +138,10 @@ desktop app's binary at all.
     ├── videos.template.html    # headings, the same light/dark palette); build.py
     ├── videos.json             # substitutes its lint-table/CLI-example placeholders
     ├── styles.css              # with content converted straight from README.md,
+    ├── CNAME                   # The site's custom domain
+    │                            # (papyrus-lint.idrinth.de); build.py copies this
+    │                            # into pages/dist/ so GitHub Pages keeps serving it
+    │                            # across every Actions-based deploy.
     ├── fonts/                  # renders every docs/* file into a browsable subpage
     │   ├── cinzel-v26-latin-700.woff2  # (via docs.template.html) linked from a
     │   └── inter-v20-latin-variable.woff2  # Documentation section, renders
@@ -149,13 +153,14 @@ desktop app's binary at all.
     │                            # either under pages/, generating a WebP/AVIF
     │                            # sibling of each one rendered as an <img> and
     │                            # rewriting that <img> into a <picture> offering
-    │                            # them (see GitHub Pages below), and its fonts/
+    │                            # them (see GitHub Pages below), its fonts/
     │                            # woff2 files as-is so styles.css's @font-face
     │                            # rules self-host Cinzel/Inter instead of
     │                            # pulling them from
     │                            # fonts.googleapis.com/fonts.gstatic.com
     │                            # (avoiding a third-party request on every page
-    │                            # load).
+    │                            # load), and a sitemap.xml/robots.txt pair (see
+    │                            # GitHub Pages below) rooted at SITE_URL.
     ├── requirements-build.txt  # Pinned Pillow version build.py's image
     │                            # conversion above depends on.
     ├── browser_check.py        # Opens every page under a built pages/dist in
@@ -422,6 +427,20 @@ the "what this is/isn't" cards, screenshots, editor integrations, "how
 to help" — is short, hand-authored prose kept in sync with `README.md`
 by hand, the same way `docs/nexuspage.bbcode`'s own intro prose is (see
 "Keeping agent instructions synchronized" below).
+
+The site is served from the custom domain `papyrus-lint.idrinth.de`
+(`build.py`'s `SITE_URL` constant, also used in every page's `og:url`/
+`og:image`/`twitter:image` tags); `build.py` copies the checked-in
+`pages/CNAME` (just that domain, on its own line) into `pages/dist/CNAME`
+on every build so GitHub Pages keeps serving it there across each
+Actions-based deploy, rather than relying solely on the custom-domain
+setting under Settings → Pages. `build.py` also writes a `sitemap.xml`
+(`sitemap_urls`/`build_sitemap`, rooted at `SITE_URL`) listing the
+homepage, `videos.html`, `docs/index.html`, and every `DOCS` entry's own
+subpage — built from the same lists that generate those pages, so it
+can't drift out of sync with what's actually published — and a
+`robots.txt` (`build_robots_txt`) allowing all crawling and pointing at
+that sitemap.
 
 Every file in the `docs/` directory (see Project structure above) is also
 published as its own browsable subpage, so that reference material isn't

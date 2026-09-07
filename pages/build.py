@@ -15,6 +15,10 @@ page, is rewritten into a <picture> offering those smaller formats ahead
 of the original as a fallback (see wrap_images_with_modern_sources).
 Every generated HTML page and the stylesheet are minified (see
 minify_html/minify_css) before being written into the output directory.
+Also writes a sitemap.xml (every page build() renders, see sitemap_urls)
+and a robots.txt pointing at it, and copies pages/CNAME into the output
+directory so GitHub Pages keeps serving the site's custom domain across
+each Actions-based deploy.
 
 Usage: pages/build.py [--out DIR]  (default DIR: pages/dist)
 """
@@ -37,7 +41,8 @@ DOCS_DIR = ROOT / "docs"
 LINT_CATEGORIES = ["Formatting", "Performance", "Reliability", "Bugprone", "Other"]
 
 GITHUB_BLOB_BASE = "https://github.com/idrinth/papyrus-lint/blob/the-one"
-SITE_URL = "https://idrinth.github.io/papyrus-lint/"
+SITE_URL = "https://papyrus-lint.idrinth.de/"
+CNAME_FILE = PAGES_DIR / "CNAME"
 
 # Every file in docs/ published as a browsable subpage, alongside a short
 # hand-written blurb shown in the docs list on the homepage and on the docs
@@ -496,6 +501,35 @@ def build_videos_page(out_dir: Path) -> None:
     (out_dir / "videos.html").write_text(finalize_page(page), encoding="utf-8")
 
 
+def sitemap_urls(doc_results: dict) -> list[str]:
+    """Every page build() renders, as absolute SITE_URL-rooted URLs, in the
+    same order sitemap.xml lists them. Kept in one place so the sitemap can
+    never drift from the pages actually published."""
+    urls = [SITE_URL, f"{SITE_URL}videos.html", f"{SITE_URL}docs/index.html"]
+    for doc in DOCS:
+        if doc["slug"] in doc_results:
+            urls.append(f"{SITE_URL}docs/{doc['slug']}.html")
+    return urls
+
+
+def build_sitemap(out_dir: Path, doc_results: dict) -> None:
+    entries = "\n".join(
+        f"  <url><loc>{html.escape(url, quote=True)}</loc></url>" for url in sitemap_urls(doc_results)
+    )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{entries}\n"
+        "</urlset>\n"
+    )
+    (out_dir / "sitemap.xml").write_text(xml, encoding="utf-8")
+
+
+def build_robots_txt(out_dir: Path) -> None:
+    content = f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}sitemap.xml\n"
+    (out_dir / "robots.txt").write_text(content, encoding="utf-8")
+
+
 def build(out_dir: Path, version: str = "") -> None:
     readme_lines = (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
     lints_section = extract_section(readme_lines, "Implemented Lints", level=2)
@@ -545,9 +579,12 @@ def build(out_dir: Path, version: str = "") -> None:
             convert_to_modern_formats(dest, assets_dir)
 
     shutil.copytree(PAGES_DIR / "fonts", out_dir / "fonts")
+    shutil.copyfile(CNAME_FILE, out_dir / "CNAME")
 
     build_doc_pages(out_dir, doc_results)
     build_videos_page(out_dir)
+    build_sitemap(out_dir, doc_results)
+    build_robots_txt(out_dir)
 
 
 def main() -> None:

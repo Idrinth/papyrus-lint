@@ -615,6 +615,53 @@ class ModernImageFormatsTest(unittest.TestCase):
         self.assertEqual(result, page_html)
 
 
+class SitemapAndRobotsTest(unittest.TestCase):
+    def test_sitemap_urls_lists_the_homepage_videos_page_and_every_doc(self) -> None:
+        docs = [{"slug": "guide"}, {"slug": "missing"}]
+        doc_results = {"guide": {}}
+
+        with (
+            patch.object(page_builder, "SITE_URL", "https://example.test/"),
+            patch.object(page_builder, "DOCS", docs),
+        ):
+            urls = page_builder.sitemap_urls(doc_results)
+
+        self.assertEqual(
+            urls,
+            [
+                "https://example.test/",
+                "https://example.test/videos.html",
+                "https://example.test/docs/index.html",
+                "https://example.test/docs/guide.html",
+            ],
+        )
+
+    def test_build_sitemap_writes_escaped_urls(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            out_dir = Path(directory)
+            with patch.object(page_builder, "SITE_URL", "https://example.test/a&b/"):
+                page_builder.build_sitemap(out_dir, {})
+
+            content = (out_dir / "sitemap.xml").read_text(encoding="utf-8")
+
+        self.assertTrue(content.startswith('<?xml version="1.0" encoding="UTF-8"?>\n'))
+        self.assertIn("<loc>https://example.test/a&amp;b/</loc>", content)
+        self.assertIn("<loc>https://example.test/a&amp;b/videos.html</loc>", content)
+
+    def test_build_robots_txt_points_at_the_sitemap(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            out_dir = Path(directory)
+            with patch.object(page_builder, "SITE_URL", "https://example.test/"):
+                page_builder.build_robots_txt(out_dir)
+
+            content = (out_dir / "robots.txt").read_text(encoding="utf-8")
+
+        self.assertEqual(
+            content,
+            "User-agent: *\nAllow: /\n\nSitemap: https://example.test/sitemap.xml\n",
+        )
+
+
 class BuildTest(unittest.TestCase):
     def test_build_replaces_content_copies_assets_and_cleans_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -703,6 +750,20 @@ PapyrusLinterCLI example.psc
             videos_output = (out_dir / "videos.html").read_text(encoding="utf-8")
             self.assertIn("youtube-nocookie.com/embed/", videos_output)
             self.assertNotIn("<!--VIDEOS_LIST-->", videos_output)
+
+            self.assertEqual(
+                (out_dir / "CNAME").read_text(encoding="utf-8"),
+                page_builder.CNAME_FILE.read_text(encoding="utf-8"),
+            )
+
+            robots_output = (out_dir / "robots.txt").read_text(encoding="utf-8")
+            self.assertIn("Allow: /", robots_output)
+            self.assertIn(f"Sitemap: {page_builder.SITE_URL}sitemap.xml", robots_output)
+
+            sitemap_output = (out_dir / "sitemap.xml").read_text(encoding="utf-8")
+            self.assertIn(f"<loc>{page_builder.SITE_URL}</loc>", sitemap_output)
+            self.assertIn(f"<loc>{page_builder.SITE_URL}videos.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{page_builder.SITE_URL}docs/index.html</loc>", sitemap_output)
 
     def test_build_rejects_a_missing_lint_table_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
