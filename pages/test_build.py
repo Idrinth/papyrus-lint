@@ -180,6 +180,30 @@ class MarkdownHelpersTest(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "missing shared component marker <!--SITE_FOOTER-->"):
             page_builder.render_shared_components("<!--SITE_HEADER--><main></main>", "", "")
 
+    def test_render_funding_links_reads_provider_and_custom_links(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            funding_file = Path(directory) / "FUNDING.yml"
+            funding_file.write_text(
+                "github: [first sponsor, second]\ncustom: https://www.paypal.com/donate?id=1&campaign=two\n",
+                encoding="utf-8",
+            )
+
+            result = page_builder.render_funding_links(funding_file)
+
+        self.assertIn('href="https://github.com/sponsors/first%20sponsor"', result)
+        self.assertIn('href="https://github.com/sponsors/second"', result)
+        self.assertIn(">GitHub Sponsors</a>", result)
+        self.assertIn('href="https://www.paypal.com/donate?id=1&amp;campaign=two"', result)
+        self.assertIn(">PayPal</a>", result)
+
+    def test_render_funding_links_rejects_an_invalid_custom_url(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            funding_file = Path(directory) / "FUNDING.yml"
+            funding_file.write_text("custom: javascript:alert(1)\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(SystemExit, "must be an HTTP\\(S\\) URL"):
+                page_builder.render_funding_links(funding_file)
+
     def test_resolve_doc_href_handles_docs_repository_and_external_links(self) -> None:
         with (
             patch.object(page_builder, "DOC_FILENAME_TO_SLUG", {"guide.md": "guide"}),
