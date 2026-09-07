@@ -146,6 +146,24 @@ fn save_lint_config(dir: String, config: papyrus_lints::Config) -> Result<(), St
     config::save_config(&PathBuf::from(dir), &config)
 }
 
+/// Reads and parses the config file at the exact `path` given, bypassing
+/// the project directory discovery [`load_lint_config`] does. Backs the
+/// Settings tab's "Configuration file" override, letting the user point the
+/// app at a specific papyrus-lint.yaml/.yml instead of relying on the one
+/// auto-detected next to the dropped `.achlist`/`.psc`.
+#[tauri::command]
+fn load_lint_config_from_path(path: String) -> Result<papyrus_lints::Config, String> {
+    config::load_config_from_path(&PathBuf::from(path))
+}
+
+/// Writes `config` to the exact file at `path`, creating it if it doesn't
+/// exist yet. The save-side counterpart of [`load_lint_config_from_path`],
+/// used while the Settings tab's "Configuration file" override is set.
+#[tauri::command]
+fn save_lint_config_to_path(path: String, config: papyrus_lints::Config) -> Result<(), String> {
+    config::save_config_at_path(&PathBuf::from(path), &config)
+}
+
 /// Returns the PapyrusCompiler.exe path to use for `dir`'s project: an
 /// explicit override saved to its papyrus-lint config file, or, absent
 /// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompiler.exe`
@@ -444,6 +462,8 @@ pub fn run() {
             write_psc_file,
             load_lint_config,
             save_lint_config,
+            load_lint_config_from_path,
+            save_lint_config_to_path,
             load_compiler_path,
             save_compiler_path,
             load_compile_check,
@@ -810,6 +830,22 @@ mod tests {
             load_script_roots(dir_string).unwrap(),
             vec!["../SharedScripts".to_string()]
         );
+    }
+
+    #[test]
+    fn lint_config_from_path_commands_round_trip_regardless_of_project_directory() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("custom-config.yaml");
+        let path_string = path.to_string_lossy().into_owned();
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            indentation_width: 2,
+            ..papyrus_lints::Config::default()
+        };
+
+        assert!(load_lint_config_from_path(path_string.clone()).is_err());
+        save_lint_config_to_path(path_string.clone(), config.clone()).unwrap();
+        assert_eq!(load_lint_config_from_path(path_string).unwrap(), config);
     }
 
     #[test]
