@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api/core";
+import { invoke, isTauri } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { highlightPapyrusLines } from "./highlight";
 import {
@@ -2346,31 +2346,37 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   switchTab("import");
 
-  void loadAppVersion().then((version) => {
-    if (appVersionEl && version) {
-      appVersionEl.textContent = `v${version}`;
-    }
-  });
-
-  void loadRuleTags().then(applyRuleTags);
-
   if (configPathOverrideEl) {
     configPathOverrideEl.value = lastConfigPathOverride();
   }
 
-  const lastDir = lastProjectDir();
-  if (lastDir) {
-    void useProjectDir(lastDir);
-  }
+  // Only reach for the Tauri bridge when actually running inside the
+  // desktop app's webview: opened as a plain page (e.g. a browser preview,
+  // or the CI Lighthouse check against the built frontend), none of these
+  // calls have a backend to talk to and would otherwise throw/log errors.
+  if (isTauri()) {
+    void loadAppVersion().then((version) => {
+      if (appVersionEl && version) {
+        appVersionEl.textContent = `v${version}`;
+      }
+    });
 
-  getCurrentWebview().onDragDropEvent((event) => {
-    if (event.payload.type === "over") {
-      dropZoneEl?.classList.add("drop-zone--active");
-    } else if (event.payload.type === "drop") {
-      dropZoneEl?.classList.remove("drop-zone--active");
-      void handleDroppedPaths(event.payload.paths);
-    } else {
-      dropZoneEl?.classList.remove("drop-zone--active");
+    void loadRuleTags().then(applyRuleTags);
+
+    const lastDir = lastProjectDir();
+    if (lastDir) {
+      void useProjectDir(lastDir);
     }
-  });
+
+    getCurrentWebview().onDragDropEvent((event) => {
+      if (event.payload.type === "over") {
+        dropZoneEl?.classList.add("drop-zone--active");
+      } else if (event.payload.type === "drop") {
+        dropZoneEl?.classList.remove("drop-zone--active");
+        void handleDroppedPaths(event.payload.paths);
+      } else {
+        dropZoneEl?.classList.remove("drop-zone--active");
+      }
+    });
+  }
 });
