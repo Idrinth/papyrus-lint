@@ -213,6 +213,14 @@ mod tests {
     }
 
     #[test]
+    fn does_not_flag_a_script_without_named_states() {
+        let source = "ScriptName Example\n";
+
+        assert!(check_too_many_states(source).is_empty());
+        assert!(check_multiple_auto_states(source).is_empty());
+    }
+
+    #[test]
     fn flags_a_script_that_exceeds_the_named_state_limit() {
         let source = script_with_states(128);
         let diagnostics = check_too_many_states(&source);
@@ -322,6 +330,32 @@ mod tests {
     }
 
     #[test]
+    fn matches_overridden_state_names_case_insensitively() {
+        let source = script_extending_with_states(Some("ParentScript"), 127);
+        let mut external = FakeExternalWithAncestorStates {
+            states: vec![("sTaTe0".to_string(), false)],
+        };
+
+        assert!(check_too_many_states_with(&source, &mut external).is_empty());
+    }
+
+    #[test]
+    fn deduplicates_repeated_inherited_state_names() {
+        let source = script_extending_with_states(Some("ParentScript"), 0);
+        let mut external = FakeExternalWithAncestorStates {
+            states: (0..128)
+                .map(|index| (format!("ParentState{index}"), false))
+                .chain(std::iter::once(("parentstate0".to_string(), true)))
+                .collect(),
+        };
+
+        let diagnostics = check_too_many_states_with(&source, &mut external);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("128 named states"));
+    }
+
+    #[test]
     fn flags_an_inherited_auto_state_combined_with_a_local_one() {
         let source = "ScriptName Example Extends ParentScript\n\nAuto State Local\nEndState\n";
         let mut external = FakeExternalWithAncestorStates {
@@ -348,6 +382,43 @@ mod tests {
         };
 
         assert!(check_multiple_auto_states_with(source, &mut external).is_empty());
+    }
+
+    #[test]
+    fn combines_duplicate_inherited_auto_flags_with_logical_or() {
+        let source = "ScriptName Example Extends ParentScript\n";
+        let mut external = FakeExternalWithAncestorStates {
+            states: vec![
+                ("Idle".to_string(), false),
+                ("IDLE".to_string(), true),
+                ("Active".to_string(), true),
+            ],
+        };
+
+        let diagnostics = check_multiple_auto_states_with(source, &mut external);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 1);
+        assert_eq!(diagnostics[0].column, 1);
+        assert_eq!(diagnostics[0].rule, MULTIPLE_AUTO_STATES_RULE);
+        assert!(diagnostics[0].message.starts_with("[warning]"));
+        assert!(diagnostics[0].message.contains("2 states marked Auto"));
+    }
+
+    #[test]
+    fn local_auto_state_error_takes_precedence_over_inherited_warning() {
+        let source =
+            "ScriptName Example Extends ParentScript\n\nAuto State Idle\nEndState\n\nAuto State Active\nEndState\n";
+        let mut external = FakeExternalWithAncestorStates {
+            states: vec![("ParentAuto".to_string(), true)],
+        };
+
+        let diagnostics = check_multiple_auto_states_with(source, &mut external);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.starts_with("[error]"));
+        assert!(diagnostics[0].message.contains("2 states marked Auto"));
+        assert!(!diagnostics[0].message.contains("inheritance precedence"));
     }
 
     #[test]
