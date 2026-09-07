@@ -249,8 +249,8 @@ binary target that crate also defines.
   directly rather than calling the API. It's a no-op on an ordinary push
   to `the-one`, since that event carries no pull request labels to check.
   Every other job `needs` this one (directly, or transitively through
-  `rust-build`/`rust-test`), so an unlabeled pull request's CI stops here
-  instead of spending time on the rest of the jobs below.
+  `rust-fmt`/`rust-clippy`/`rust-test`), so an unlabeled pull request's CI
+  stops here instead of spending time on the rest of the jobs below.
 - **Rules YAML lint job**: runs `yamllint` against every `rules/*.yaml` file
   so malformed rule data cannot be merged.
 - **Python lint job** (`python-lint`): runs `ruff check` (configured in the
@@ -363,8 +363,17 @@ binary target that crate also defines.
   `--experimental-test-coverage`), ESLint, and TypeScript compilation. The
   text coverage summary is posted to the job's step summary and an lcov
   report is uploaded as the `vscode-extension-coverage` artifact.
-- **Rust build job**: `cargo fmt --check`, `cargo clippy -- -D warnings`,
-  and `cargo check`, all run against `app/src-tauri/Cargo.toml`.
+- **Rust fmt job** (`rust-fmt`): runs `cargo fmt --check` against every
+  crate's own `Cargo.toml` (`app/src-tauri` and all four reusable crates
+  under `app/crates`) — not just `app/src-tauri` — since they're separate
+  crates rather than workspace members and so aren't formatted together
+  by a single invocation. It needs none of `rust-clippy`'s Tauri system
+  dependencies or build cache, since checking formatting never compiles
+  anything, so it runs in parallel with `rust-clippy` instead of after it.
+- **Rust clippy job** (`rust-clippy`): runs `cargo clippy --all-targets --
+  -D warnings` against `app/src-tauri/Cargo.toml`. Runs in parallel with
+  `rust-fmt` (both only `need` the `labels` job); `rust-test` (below)
+  `needs` both.
 - **Rust test job**: a matrix over `app/src-tauri`, `app/crates/papyrus-parser`,
   `app/crates/papyrus-lints`, `app/crates/papyrus-lint-core`, and
   `app/crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.

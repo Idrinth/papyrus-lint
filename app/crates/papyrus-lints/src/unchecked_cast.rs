@@ -113,7 +113,9 @@ fn walk_body(
                     record_write(name, value, *line, protected, unchecked_vars);
                 }
             }
-            Stmt::Expr { value, line } => check_expr(value, unchecked_vars, &[], diagnostics, *line),
+            Stmt::Expr { value, line } => {
+                check_expr(value, unchecked_vars, &[], diagnostics, *line)
+            }
             Stmt::Return {
                 value: Some(value),
                 line,

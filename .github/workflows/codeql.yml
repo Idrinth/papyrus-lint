@@ -79,7 +79,7 @@ jobs:
       # results to one crate, so app/src-tauri's ~480 transitive
       # dependencies (Tauri's GUI stack) make its own leg the long pole in
       # this workflow. Caching each leg's Cargo registry (keyed off its own
-      # Cargo.lock, same as ci.yml's rust-build/rust-test jobs) avoids
+      # Cargo.lock, same as ci.yml's rust-clippy/rust-test jobs) avoids
       # re-fetching that dependency graph from crates.io on every run.
       - name: Set up Rust dependency cache
         if: matrix.language == 'rust'

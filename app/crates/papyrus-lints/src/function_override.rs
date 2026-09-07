@@ -169,7 +169,9 @@ mod tests {
             .map(|diagnostic| (diagnostic.line, diagnostic.column))
             .collect();
         assert_eq!(locations, vec![(3, 1), (6, 1)]);
-        assert!(diagnostics[0].message.starts_with("[info] Function 'DoThing'"));
+        assert!(diagnostics[0]
+            .message
+            .starts_with("[info] Function 'DoThing'"));
         assert!(diagnostics[0].message.contains("inherited function"));
         assert!(diagnostics[1].message.starts_with("[info] Event 'DoThing'"));
         assert!(diagnostics[1].message.contains("inherited event"));

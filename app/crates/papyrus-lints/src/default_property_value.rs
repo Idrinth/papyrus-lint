@@ -36,7 +36,9 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     script
         .properties
         .iter()
-        .filter(|property| (property.is_auto || property.is_auto_read_only) && property.value.is_none())
+        .filter(|property| {
+            (property.is_auto || property.is_auto_read_only) && property.value.is_none()
+        })
         .filter_map(|property| {
             let literal = default_literal_for(property)?;
             Some(Diagnostic {
@@ -84,10 +86,18 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 4);
         assert!(diagnostics.iter().all(|d| d.rule == RULE));
-        assert!(diagnostics.iter().any(|d| d.message.contains("IsActive") && d.message.contains("False")));
-        assert!(diagnostics.iter().any(|d| d.message.contains("Count") && d.message.contains("0")));
-        assert!(diagnostics.iter().any(|d| d.message.contains("Scale") && d.message.contains("0.0")));
-        assert!(diagnostics.iter().any(|d| d.message.contains("Label") && d.message.contains("\"\"")));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("IsActive") && d.message.contains("False")));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Count") && d.message.contains("0")));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Scale") && d.message.contains("0.0")));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.message.contains("Label") && d.message.contains("\"\"")));
     }
 
     #[test]
