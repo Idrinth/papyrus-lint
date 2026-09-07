@@ -78,8 +78,12 @@ REPO_CHECKOUT_MARKER = "/papyrus-lint/"
 LINT_CATEGORIES = ["Formatting", "Performance", "Reliability", "Bugprone", "Other"]
 
 GITHUB_BLOB_BASE = "https://github.com/idrinth/papyrus-lint/blob/the-one"
-SITE_URL = "https://papyrus-lint.idrinth.de/"
 CNAME_FILE = PAGES_DIR / "CNAME"
+# The site's custom domain (see GitHub Pages custom domain docs) is the
+# single source of truth for pages/CNAME - every absolute URL this builder
+# emits (canonical/og/twitter tags, the sitemap, robots.txt) is derived from
+# it rather than hardcoding the domain a second time.
+SITE_URL = f"https://{CNAME_FILE.read_text(encoding='utf-8').strip()}/"
 FUNDING_FILE = ROOT / ".github" / "FUNDING.yml"
 
 FUNDING_PROVIDERS = {
@@ -584,6 +588,7 @@ def render_shared_components(page: str, root_path: str, version: str) -> str:
         "<!--ROOT_PATH-->": root_path,
         "<!--VERSION-->": html.escape(version) if version else "unreleased",
         "<!--FUNDING_LINKS-->": render_funding_links(),
+        "<!--SITE_URL-->": SITE_URL,
     }
     for placeholder, value in replacements.items():
         page = page.replace(placeholder, value)

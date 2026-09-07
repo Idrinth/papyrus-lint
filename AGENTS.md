@@ -471,10 +471,13 @@ to help" — is short, hand-authored prose kept in sync with `README.md`
 by hand, the same way `docs/nexuspage.bbcode`'s own intro prose is (see
 "Keeping agent instructions synchronized" below).
 
-The site is served from the custom domain `papyrus-lint.idrinth.de`
-(`build.py`'s `SITE_URL` constant, also used in every page's `og:url`/
-`og:image`/`twitter:image` tags); `build.py` copies the checked-in
-`pages/CNAME` (just that domain, on its own line) into `pages/dist/CNAME`
+The site is served from the custom domain `papyrus-lint.idrinth.de`, read
+from the checked-in `pages/CNAME` (just that domain, on its own line) at
+build time into `build.py`'s `SITE_URL` constant, which every page's
+`og:url`/`og:image`/`twitter:image` tags are built from (via the
+`<!--SITE_URL-->` placeholder each template carries, filled in by
+`render_shared_components`) rather than hardcoding the domain a second
+time; `build.py` also copies `pages/CNAME` itself into `pages/dist/CNAME`
 on every build so GitHub Pages keeps serving it there across each
 Actions-based deploy, rather than relying solely on the custom-domain
 setting under Settings → Pages. `build.py` also writes a `sitemap.xml`
