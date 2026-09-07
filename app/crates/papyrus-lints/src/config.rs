@@ -73,6 +73,7 @@
 //!   invariant_loop_condition: true
 //!   script_name_collision: true
 //!   array_bounds: true
+//!   readonly_property_write: true
 //!   default_property_value: false
 //! ```
 //!
@@ -391,6 +392,8 @@ pub struct Rules {
     pub script_name_collision: bool,
     /// The "Array bounds" lint.
     pub array_bounds: bool,
+    /// The "Read-only (AutoReadOnly) property write" lint.
+    pub readonly_property_write: bool,
     /// The "Default property value" lint. Like [`Self::property_sorting`],
     /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`],
     /// [`Self::native_function_usage`], [`Self::repeated_getvalue`], and
@@ -457,6 +460,7 @@ impl Default for Rules {
             invariant_loop_condition: true,
             script_name_collision: true,
             array_bounds: true,
+            readonly_property_write: true,
             default_property_value: false,
         }
     }
@@ -624,6 +628,7 @@ mod tests {
         assert!(config.rules.invariant_loop_condition);
         assert!(config.rules.script_name_collision);
         assert!(config.rules.array_bounds);
+        assert!(config.rules.readonly_property_write);
         // Also disabled by default: many existing scripts already rely on
         // Papyrus's own implicit per-type defaults for some or all of
         // their properties.

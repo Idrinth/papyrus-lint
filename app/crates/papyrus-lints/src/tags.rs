@@ -327,6 +327,11 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::High,
     },
     RuleTags {
+        rule: crate::readonly_property_write::RULE,
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
+    RuleTags {
         rule: crate::default_property_value::RULE,
         kinds: &["style", "maintainability"],
         importance: Importance::Low,
