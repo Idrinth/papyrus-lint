@@ -42,7 +42,8 @@ jobs:
           python3 .github/scripts/render_nexuspage.py \
             docs/nexuspage.bbcode \
             coverage-artifacts \
-            "nexuspage-${{ github.ref_name }}.bbcode"
+            "nexuspage-${{ github.ref_name }}.bbcode" \
+            "${{ github.ref_name }}"
 
       - name: Attach Nexus page to release
         uses: softprops/action-gh-release@v2

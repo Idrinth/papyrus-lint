@@ -10,6 +10,7 @@ MARKERS = {
     "<COVERED_LINES>": "hit",
     "<TOTAL_LINES>": "found",
     "<COVERAGE_PERCENTAGE>": "percentage",
+    "<VERSION>": "version",
 }
 
 
@@ -34,12 +35,13 @@ def coverage_totals(artifacts: Path) -> tuple[int, int]:
     return hit, found
 
 
-def render(template: str, hit: int, found: int) -> str:
+def render(template: str, hit: int, found: int, version: str) -> str:
     """Replace each expected marker exactly once."""
     values = {
         "hit": str(hit),
         "found": str(found),
         "percentage": f"{hit / found * 100:.1f}",
+        "version": version,
     }
     rendered = template
     for marker, value_name in MARKERS.items():
@@ -51,15 +53,16 @@ def render(template: str, hit: int, found: int) -> str:
 
 
 def main() -> None:
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         raise SystemExit(
-            "usage: render_nexuspage.py TEMPLATE COVERAGE_ARTIFACTS OUTPUT"
+            "usage: render_nexuspage.py TEMPLATE COVERAGE_ARTIFACTS OUTPUT VERSION"
         )
 
-    template_path, artifacts_path, output_path = map(Path, sys.argv[1:])
+    template_path, artifacts_path, output_path = map(Path, sys.argv[1:4])
+    version = sys.argv[4]
     hit, found = coverage_totals(artifacts_path)
     output_path.write_text(
-        render(template_path.read_text(encoding="utf-8"), hit, found),
+        render(template_path.read_text(encoding="utf-8"), hit, found, version),
         encoding="utf-8",
     )
 
