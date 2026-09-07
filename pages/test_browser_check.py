@@ -194,6 +194,47 @@ class CheckSiteTest(unittest.TestCase):
 
         self.assertEqual(problems, [])
 
+    def test_detects_duplicate_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                """<html lang="en"><head><title>Duplicate ids</title></head><body>
+                <section id="repeated"></section><div id="repeated"></div>
+                </body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, ["index.html: document error: duplicate element id 'repeated'"])
+
+    def test_detects_images_without_alt_text(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html><body><img src="photo.png"></body></html>',
+                encoding="utf-8",
+            )
+            (dist / "photo.png").write_bytes(b"not a real image")
+
+            problems = browser_check.check_site(dist)
+
+        self.assertIn("index.html: document error: image 'photo.png' has no alt attribute", problems)
+
+    def test_accepts_empty_alt_text_for_decorative_images(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                """<html lang="en"><head><title>Accessible page</title></head><body>
+                <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="">
+                </body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
 
 class MainTest(unittest.TestCase):
     def test_reports_an_error_when_the_dist_directory_is_missing(self) -> None:

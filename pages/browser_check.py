@@ -13,7 +13,9 @@ page in headless Chromium via Playwright to catch:
 - same-origin resources (stylesheets, images, other pages) that fail to load
   or respond with a 4xx/5xx status, and
 - internal links (relative hrefs, including `#fragment` anchors) that point
-  at a page or an in-page id that doesn't actually exist.
+  at a page or an in-page id that doesn't actually exist,
+- duplicate element ids, which make fragment links ambiguous, and
+- basic image accessibility metadata by requiring alternative text.
 
 External links (https://github.com/..., Discord, Nexus Mods, ...) are never
 actually fetched: doing so would make this "quick" check slow and flaky
@@ -47,6 +49,7 @@ class PageIssues:
     console_errors: list[str] = field(default_factory=list)
     page_errors: list[str] = field(default_factory=list)
     failed_requests: list[str] = field(default_factory=list)
+    document_errors: list[str] = field(default_factory=list)
 
 
 def is_local_href(href: str) -> bool:
@@ -123,6 +126,23 @@ def check_site(dist: Path) -> list[str]:
                 )
                 links_by_page[rel_path] = HREF_RE.findall(page.content())
 
+                document_checks = page.evaluate(
+                    """() => {
+                        const ids = [...document.querySelectorAll('[id]')].map(el => el.id);
+                        const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
+                        const imagesWithoutAlt = [...document.querySelectorAll('img:not([alt])')]
+                            .map(img => img.getAttribute('src') || '<no src>');
+                        return {
+                            duplicateIds,
+                            imagesWithoutAlt,
+                        };
+                    }"""
+                )
+                for duplicate_id in document_checks["duplicateIds"]:
+                    issues.document_errors.append(f"duplicate element id '{duplicate_id}'")
+                for image_src in document_checks["imagesWithoutAlt"]:
+                    issues.document_errors.append(f"image '{image_src}' has no alt attribute")
+
                 page.remove_listener("console", on_console)
                 page.remove_listener("pageerror", on_pageerror)
                 page.remove_listener("response", on_response)
@@ -131,6 +151,7 @@ def check_site(dist: Path) -> list[str]:
                     ("console error", issues.console_errors),
                     ("page error", issues.page_errors),
                     ("failed resource", issues.failed_requests),
+                    ("document error", issues.document_errors),
                 ):
                     for entry in entries:
                         problems.append(f"{rel_path}: {kind}: {entry}")
