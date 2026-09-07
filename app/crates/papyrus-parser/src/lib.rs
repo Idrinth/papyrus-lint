@@ -465,4 +465,67 @@ EndProperty
         assert!(json.contains("\"Example\""));
         assert!(json.contains("\"Count\""));
     }
+
+    #[test]
+    fn tokenize_preserves_integer_formats_and_source_locations() {
+        use super::token::{IntFormat, TokenKind};
+
+        let tokens = tokenize("Int decimal = 42\nInt hexadecimal = 0x2A\n").unwrap();
+        let integers: Vec<_> = tokens
+            .iter()
+            .filter_map(|token| match token.kind {
+                TokenKind::IntLiteral(value, format) => {
+                    Some((value, format, token.line, token.col))
+                }
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(
+            integers,
+            vec![
+                (42, IntFormat::Decimal, 1, 15),
+                (42, IntFormat::Hexadecimal, 2, 19),
+            ]
+        );
+        assert!(matches!(tokens.last().unwrap().kind, TokenKind::Eof));
+    }
+
+    #[test]
+    fn tokenize_returns_independent_vectors_when_result_is_cached() {
+        use super::token::TokenKind;
+
+        let source = "ScriptName Cached\n";
+        let mut first = tokenize(source).unwrap();
+        assert!(matches!(first.pop().unwrap().kind, TokenKind::Eof));
+
+        let second = tokenize(source).unwrap();
+        assert!(matches!(second.last().unwrap().kind, TokenKind::Eof));
+        assert_eq!(second.len(), first.len() + 1);
+    }
+
+    #[test]
+    fn reports_lex_errors_with_location_and_message() {
+        let error = parse("ScriptName Example\n@\n").unwrap_err();
+
+        assert_eq!(error.to_string(), "2:1: unexpected character '@'");
+        assert!(matches!(
+            error,
+            PapyrusError::Lex(LexError {
+                line: 2,
+                col: 1,
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn reports_parse_errors_with_location_and_message() {
+        let error = parse("ScriptName Example\nFunction Broken(\n").unwrap_err();
+        let message = error.to_string();
+
+        assert!(message.starts_with("2:"), "unexpected error: {message}");
+        assert!(message.contains("expected identifier"), "{message}");
+        assert!(matches!(error, PapyrusError::Parse(_)));
+    }
 }
