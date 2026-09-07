@@ -362,13 +362,14 @@ binary target that crate also defines.
 - **Coverage summary comment job** (`coverage-comment`, pull requests
   only): downloads every job's lcov artifact and runs
   `.github/scripts/coverage_summary.py` to aggregate line coverage by
-  module — CI tooling, crates (the four reusable crates combined), app
-  (`src-tauri`), UI (the frontend), the Pages builder, and editor plugins
-  (the VS Code extension and the Sublime Text plugin combined) — posting the
-  result as a single markdown table, updated in place on subsequent pushes,
-  as a PR comment (and to the job's step summary). Comment posting is
-  best-effort (`continue-on-error`) since forked PRs get a read-only
-  `GITHUB_TOKEN`.
+  module — App (`src-tauri`, the frontend, and Crates — the four reusable
+  crates combined, nested underneath it), editor plugins (the VS Code
+  extension and the Sublime Text plugin combined), and Tooling (CI tooling
+  and the Pages builder) — posting the result as a single markdown table,
+  with groups and their entries sorted alphabetically, updated in place on
+  subsequent pushes, as a PR comment (and to the job's step summary).
+  Comment posting is best-effort (`continue-on-error`) since forked PRs get
+  a read-only `GITHUB_TOKEN`.
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.

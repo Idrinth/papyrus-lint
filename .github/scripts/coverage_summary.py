@@ -10,38 +10,40 @@ from pathlib import Path
 
 MARKER = "<!-- coverage-summary-comment -->"
 
-# Each module maps to a display label and the lcov.info files (relative to
-# the downloaded-artifacts directory) that make it up.
+# Each module maps to a display label and either a single lcov.info file
+# (relative to the downloaded-artifacts directory), or a nested list of
+# further (label, ...) entries of the same shape, letting a module group
+# sub-modules (e.g. App's Crates) arbitrarily deep. Groups and their
+# entries are kept sorted alphabetically.
 MODULES = [
+    (
+        "App",
+        [
+            (
+                "Crates",
+                [
+                    ("papyrus-lint-cli", "rust-coverage-papyrus-lint-cli/lcov.info"),
+                    ("papyrus-lint-core", "rust-coverage-papyrus-lint-core/lcov.info"),
+                    ("papyrus-lints", "rust-coverage-papyrus-lints/lcov.info"),
+                    ("papyrus-parser", "rust-coverage-papyrus-parser/lcov.info"),
+                ],
+            ),
+            ("frontend", "frontend-coverage/lcov.info"),
+            ("src-tauri", "rust-coverage-src-tauri/lcov.info"),
+        ],
+    ),
+    (
+        "Editor plugins",
+        [
+            ("SublimeLinter-contrib-papyrus-lint", "sublime-extension-coverage/lcov.info"),
+            ("vscode-extension", "vscode-extension-coverage/lcov.info"),
+        ],
+    ),
     (
         "Tooling",
         [
             ("CI tooling", "ci-scripts-coverage/lcov.info"),
             ("Pages (site builder)", "pages-coverage/lcov.info"),
-        ],
-    ),
-    (
-        "Crates (papyrus-parser, papyrus-lints, papyrus-lint-core, papyrus-lint-cli)",
-        [
-            ("papyrus-parser", "rust-coverage-papyrus-parser/lcov.info"),
-            ("papyrus-lints", "rust-coverage-papyrus-lints/lcov.info"),
-            ("papyrus-lint-core", "rust-coverage-papyrus-lint-core/lcov.info"),
-            ("papyrus-lint-cli", "rust-coverage-papyrus-lint-cli/lcov.info"),
-        ],
-    ),
-    (
-        "App (src-tauri)",
-        [("src-tauri", "rust-coverage-src-tauri/lcov.info")],
-    ),
-    (
-        "UI (frontend)",
-        [("frontend", "frontend-coverage/lcov.info")],
-    ),
-    (
-        "Editor plugins",
-        [
-            ("vscode-extension", "vscode-extension-coverage/lcov.info"),
-            ("SublimeLinter-contrib-papyrus-lint", "sublime-extension-coverage/lcov.info"),
         ],
     ),
 ]
@@ -67,40 +69,55 @@ def pct(hit: int, found: int) -> str:
     return f"{hit / found * 100:.1f}%"
 
 
+def iter_leaf_paths(entry):
+    """Yields every lcov.info relative path nested (at any depth) under a
+    MODULES entry's value: a leaf path string, or a further list of
+    (label, value) entries."""
+    if isinstance(entry, str):
+        yield entry
+        return
+    for _, value in entry:
+        yield from iter_leaf_paths(value)
+
+
+def render_entry(root: Path, label: str, value, depth: int) -> tuple[int, int, list[str]]:
+    """Renders one (label, value) MODULES entry, recursing into nested
+    groups. Returns (lines_found, lines_hit, rendered_rows)."""
+    prefix = "↳ " * depth
+    if isinstance(value, str):
+        result = parse_lcov(root / value)
+        if result is None:
+            return 0, 0, [f"| {prefix}{label} | _no report_ | |"]
+        found, hit = result
+        return found, hit, [f"| {prefix}{label} | {pct(hit, found)} | {hit}/{found} |"]
+
+    found = hit = 0
+    child_rows: list[str] = []
+    for name, child in value:
+        child_found, child_hit, rows = render_entry(root, name, child, depth + 1)
+        found += child_found
+        hit += child_hit
+        child_rows.extend(rows)
+
+    rows = [f"| {prefix}{label} | {pct(hit, found)} | {hit}/{found} |"]
+    if len(value) > 1:
+        rows.extend(child_rows)
+    return found, hit, rows
+
+
 def main() -> None:
     root = Path(sys.argv[1])
 
     lines = [MARKER, "### Coverage by module", "", "| Module | Coverage | Lines covered |", "| --- | --- | --- |"]
     total_found = total_hit = 0
-    any_report = False
 
     for label, parts in MODULES:
-        module_found = module_hit = 0
-        any_missing = False
-        part_rows = []
-        for name, rel_path in parts:
-            result = parse_lcov(root / rel_path)
-            if result is None:
-                any_missing = True
-                part_rows.append(f"| ↳ {name} | _no report_ | |")
-                continue
-            found, hit = result
-            any_report = True
-            module_found += found
-            module_hit += hit
-            total_found += found
-            total_hit += hit
-            part_rows.append(f"| ↳ {name} | {pct(hit, found)} | {hit}/{found} |")
+        module_found, module_hit, rows = render_entry(root, label, parts, 0)
+        total_found += module_found
+        total_hit += module_hit
+        lines.extend(rows)
 
-        summary = pct(module_hit, module_found)
-        if any_missing and module_found == 0:
-            summary = "n/a"
-        lines.append(f"| {label} | {summary} | {module_hit}/{module_found} |")
-
-        if len(parts) > 1:
-            lines.extend(part_rows)
-
-    total_summary = pct(total_hit, total_found) if any_report else "n/a"
+    total_summary = pct(total_hit, total_found)
     lines.append(f"| **Total** | **{total_summary}** | **{total_hit}/{total_found}** |")
 
     lines.append("")

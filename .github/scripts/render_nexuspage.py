@@ -4,7 +4,7 @@
 import sys
 from pathlib import Path
 
-from coverage_summary import MODULES, parse_lcov
+from coverage_summary import MODULES, iter_leaf_paths, parse_lcov
 
 MARKERS = {
     "<COVERED_LINES>": "hit",
@@ -19,7 +19,7 @@ def coverage_totals(artifacts: Path) -> tuple[int, int]:
     hit = found = 0
     missing: list[str] = []
     for _, parts in MODULES:
-        for _, relative_path in parts:
+        for relative_path in iter_leaf_paths(parts):
             result = parse_lcov(artifacts / relative_path)
             if result is None:
                 missing.append(relative_path)
