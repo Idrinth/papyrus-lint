@@ -193,6 +193,30 @@ class MarkdownHelpersTest(unittest.TestCase):
             f'<title>unreleased</title><a href="{page_builder.SITE_URL}">Site</a>',
         )
 
+    def test_render_shared_components_replaces_placeholders_inside_includes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            includes_dir = Path(directory)
+            (includes_dir / "header.html").write_text(
+                '<a href="<!--SITE_URL-->"><!--ROOT_PATH--></a>', encoding="utf-8"
+            )
+            (includes_dir / "footer.html").write_text(
+                "<footer><!--FUNDING_LINKS--><!--VERSION--></footer>", encoding="utf-8"
+            )
+            with (
+                patch.object(page_builder, "INCLUDES_DIR", includes_dir),
+                patch.object(page_builder, "SITE_URL", "https://example.test/"),
+                patch.object(page_builder, "render_funding_links", return_value="<li>Support</li>"),
+            ):
+                result = page_builder.render_shared_components(
+                    "<!--SITE_HEADER--><!--SITE_FOOTER-->", "../", 'v1<&"'
+                )
+
+        self.assertEqual(
+            result,
+            '<a href="https://example.test/">../</a>'
+            "<footer><li>Support</li>v1&lt;&amp;&quot;</footer>",
+        )
+
     def test_parse_funding_values_accepts_scalars_lists_quotes_and_empty_values(self) -> None:
         self.assertEqual(page_builder.parse_funding_values(" sponsor "), ["sponsor"])
         self.assertEqual(
@@ -238,6 +262,31 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertEqual(result.count("<li>"), 1)
         self.assertIn("https://github.com/sponsors/valid-user", result)
         self.assertNotIn("unknown", result)
+
+    def test_render_funding_links_supports_each_named_provider(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            funding_file = Path(directory) / "FUNDING.yml"
+            funding_file.write_text(
+                "\n".join(f"{provider}: account/name" for provider in page_builder.FUNDING_PROVIDERS),
+                encoding="utf-8",
+            )
+
+            result = page_builder.render_funding_links(funding_file)
+
+        self.assertEqual(result.count("<li>"), len(page_builder.FUNDING_PROVIDERS))
+        for label, url_template in page_builder.FUNDING_PROVIDERS.values():
+            self.assertIn(f">{label}</a>", result)
+            self.assertIn(url_template.format("account%2Fname"), result)
+
+    def test_render_funding_links_labels_non_paypal_custom_urls_generically(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            funding_file = Path(directory) / "FUNDING.yml"
+            funding_file.write_text("custom: https://example.test/support\n", encoding="utf-8")
+
+            result = page_builder.render_funding_links(funding_file)
+
+        self.assertIn(">Support this project</a>", result)
+        self.assertIn('href="https://example.test/support"', result)
 
     def test_resolve_doc_href_handles_docs_repository_and_external_links(self) -> None:
         with (
@@ -494,6 +543,26 @@ class DocsRenderingTest(unittest.TestCase):
         self.assertEqual(description, "")
         self.assertIn('&quot;type&quot;: &quot;string&quot;', content)
 
+    def test_render_doc_prefers_a_short_configured_schema_description(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "schema.json").write_text(
+                '{"title":"Schema","description":"A very long schema description."}',
+                encoding="utf-8",
+            )
+            doc = {
+                "filename": "schema.json",
+                "slug": "schema",
+                "kind": "json-schema",
+                "description": "Short page summary.",
+            }
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                title, description, content = page_builder.render_doc(doc)
+
+        self.assertEqual((title, description), ("Schema", "Short page summary."))
+        self.assertIn("A very long schema description.", content)
+
     def test_render_docs_list_items_escapes_content_and_applies_prefix(self) -> None:
         docs = [{"slug": "guide", "blurb": "Use <carefully> & safely"}]
         results = {"guide": {"title": "Guide & reference"}}
@@ -703,6 +772,14 @@ class MinifyTest(unittest.TestCase):
         result = page_builder.minify_html(f"<!-- remove me --><main>{pre_block}</main>")
 
         self.assertEqual(result, f"<main>{pre_block}</main>")
+
+    def test_minify_html_recognizes_pre_tags_case_insensitively(self) -> None:
+        pre_block = "<PRE class=\"example\">first\n    second</PRE>"
+
+        result = page_builder.minify_html(f"<main>\n  {pre_block}\n</main>")
+
+        self.assertIn(pre_block, result)
+        self.assertEqual(result.count("\n"), 1)
 
     def test_minify_css_strips_comments_and_collapses_whitespace(self) -> None:
         source = """/* header */
@@ -1178,6 +1255,19 @@ class CoveragePageTest(unittest.TestCase):
                 [("src/generated.rs", 5, 3)],
             )
 
+    def test_parse_lcov_files_discards_an_unterminated_record(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text(
+                "SF:complete.rs\nLF:2\nLH:2\nend_of_record\n"
+                "SF:partial.rs\nLF:10\nLH:9\n",
+                encoding="utf-8",
+            )
+
+            result = page_builder.parse_lcov_files(report)
+
+        self.assertEqual(result, [("complete.rs", 2, 2)])
+
     def test_render_coverage_table_renders_rows_with_percentage_and_counts(self) -> None:
         coverage_summary = page_builder.load_coverage_summary()
         result = page_builder.render_coverage_table([("src/one.rs", 10, 8)], coverage_summary)
@@ -1258,6 +1348,25 @@ class CoveragePageTest(unittest.TestCase):
         self.assertIn("<code>empty.rs</code>", result)
         self.assertIn("<h3>missing — n/a (0/0)</h3>", result)
         self.assertIn("No report.", result)
+
+    def test_render_coverage_entry_omits_a_redundant_heading_for_one_child(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report_dir = root / "only"
+            report_dir.mkdir()
+            (report_dir / "lcov.info").write_text(
+                "SF:src/only.py\nLF:4\nLH:3\nend_of_record\n",
+                encoding="utf-8",
+            )
+            coverage_summary = page_builder.load_coverage_summary()
+
+            found, hit, any_report, result = page_builder.render_coverage_entry(
+                root, "parent", [("only child", "only/lcov.info")], coverage_summary
+            )
+
+        self.assertEqual((found, hit, any_report), (4, 3, True))
+        self.assertNotIn("<h3>", result)
+        self.assertIn("<code>src/only.py</code>", result)
 
     def test_build_coverage_page_renders_a_placeholder_without_a_coverage_dir(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
