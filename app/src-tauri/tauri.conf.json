@@ -26,12 +26,25 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "publisher": "Björn Büttner",
+    "copyright": "Björn Büttner",
+    "homepage": "https://papyrus-lint.idrinth.de",
+    "shortDescription": "A linter for Bethesda's Papyrus scripting language.",
+    "longDescription": "A tool to find bugs in Papyrus scripts for Skyrim Special Editions or Skyrim Anniversary Edition that the compiler misses and therefore prevent hard to locate bugs from being released.",
+    "license": "MIT",
+    "licenseFile": "../../LICENSE",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico"
+      }
+    }
   }
 }
