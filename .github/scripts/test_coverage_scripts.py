@@ -142,25 +142,29 @@ class RenderNexusPageTests(unittest.TestCase):
             ), self.assertRaisesRegex(ValueError, "coverage reports contain no lines"):
                 render_nexuspage.coverage_totals(Path(directory))
 
-    def test_render_replaces_counts_and_percentage(self) -> None:
-        template = "<COVERED_LINES> / <TOTAL_LINES> (~<COVERAGE_PERCENTAGE>%)"
-        self.assertEqual("7 / 8 (~87.5%)", render_nexuspage.render(template, 7, 8))
+    def test_render_replaces_counts_percentage_and_version(self) -> None:
+        template = "<COVERED_LINES> / <TOTAL_LINES> (~<COVERAGE_PERCENTAGE>%) <VERSION>"
+        self.assertEqual(
+            "7 / 8 (~87.5%) v1.2.3", render_nexuspage.render(template, 7, 8, "v1.2.3")
+        )
 
     def test_render_requires_every_marker_exactly_once(self) -> None:
         with self.assertRaisesRegex(ValueError, "expected exactly one <COVERED_LINES> marker, found 0"):
-            render_nexuspage.render("<TOTAL_LINES> <COVERAGE_PERCENTAGE>", 1, 2)
+            render_nexuspage.render("<TOTAL_LINES> <COVERAGE_PERCENTAGE> <VERSION>", 1, 2, "v1.2.3")
 
-        template = "<COVERED_LINES> <COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE>"
+        template = "<COVERED_LINES> <COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE> <VERSION>"
         with self.assertRaisesRegex(ValueError, "expected exactly one <COVERED_LINES> marker, found 2"):
-            render_nexuspage.render(template, 1, 2)
+            render_nexuspage.render(template, 1, 2, "v1.2.3")
 
-    def test_render_rejects_missing_total_and_percentage_markers(self) -> None:
+    def test_render_rejects_missing_total_percentage_and_version_markers(self) -> None:
         with self.assertRaisesRegex(ValueError, "expected exactly one <TOTAL_LINES> marker, found 0"):
-            render_nexuspage.render("<COVERED_LINES> <COVERAGE_PERCENTAGE>", 1, 2)
+            render_nexuspage.render("<COVERED_LINES> <COVERAGE_PERCENTAGE> <VERSION>", 1, 2, "v1.2.3")
         with self.assertRaisesRegex(
             ValueError, "expected exactly one <COVERAGE_PERCENTAGE> marker, found 0"
         ):
-            render_nexuspage.render("<COVERED_LINES> <TOTAL_LINES>", 1, 2)
+            render_nexuspage.render("<COVERED_LINES> <TOTAL_LINES> <VERSION>", 1, 2, "v1.2.3")
+        with self.assertRaisesRegex(ValueError, "expected exactly one <VERSION> marker, found 0"):
+            render_nexuspage.render("<COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE>", 1, 2, "v1.2.3")
 
     def test_main_renders_template_to_output_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -168,15 +172,19 @@ class RenderNexusPageTests(unittest.TestCase):
             template = root / "template.bbcode"
             output = root / "output.bbcode"
             template.write_text(
-                "<COVERED_LINES>/<TOTAL_LINES> (<COVERAGE_PERCENTAGE>)", encoding="utf-8"
+                "<COVERED_LINES>/<TOTAL_LINES> (<COVERAGE_PERCENTAGE>) <VERSION>", encoding="utf-8"
             )
             with (
-                mock.patch.object(sys, "argv", ["render_nexuspage.py", str(template), str(root), str(output)]),
+                mock.patch.object(
+                    sys,
+                    "argv",
+                    ["render_nexuspage.py", str(template), str(root), str(output), "v1.2.3"],
+                ),
                 mock.patch.object(render_nexuspage, "coverage_totals", return_value=(9, 10)),
             ):
                 render_nexuspage.main()
 
-            self.assertEqual("9/10 (90.0)", output.read_text(encoding="utf-8"))
+            self.assertEqual("9/10 (90.0) v1.2.3", output.read_text(encoding="utf-8"))
 
     def test_main_rejects_invalid_argument_count(self) -> None:
         with (
