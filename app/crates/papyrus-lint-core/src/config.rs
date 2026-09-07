@@ -181,23 +181,71 @@ fn save_project_file(dir: &Path, project: &ProjectFile) -> Result<(), String> {
     fs::write(&path, with_field_comments(&yaml)).map_err(|err| err.to_string())
 }
 
+/// Directory next to the CLI's own running executable, if it can be
+/// determined. [`initialize_default_config`] looks here for an optional
+/// shared base config.
+fn executable_dir() -> Option<PathBuf> {
+    std::env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(Path::to_path_buf))
+}
+
+/// Serializes the app-only (non-lint) settings of `project`, always
+/// including every field regardless of [`ProjectFile`]'s `skip_serializing_if`
+/// attributes, so an initialized file serves as a complete, discoverable
+/// template rather than omitting whichever settings happen to match their
+/// default.
+fn non_lint_yaml(project: &ProjectFile) -> Result<String, String> {
+    #[derive(Serialize)]
+    struct NonLintFields<'a> {
+        compiler_path: &'a Option<String>,
+        additional_script_roots: &'a [String],
+        compile_check: bool,
+        strict_achlist_scope: bool,
+    }
+
+    serde_yaml::to_string(&NonLintFields {
+        compiler_path: &project.compiler_path,
+        additional_script_roots: &project.additional_script_roots,
+        compile_check: project.compile_check,
+        strict_achlist_scope: project.strict_achlist_scope,
+    })
+    .map_err(|err| err.to_string())
+}
+
 /// Creates `papyrus-lint.yaml` in `dir` with the default project
 /// configuration. Refuses to replace either supported config filename, so
 /// an existing project configuration cannot be lost accidentally.
+///
+/// If a `papyrus-lint.yaml`/`.yml` file exists next to the running
+/// executable, it's used as the base instead of the engine's built-in
+/// defaults: any setting it specifies overrides the built-in default, and
+/// any setting it leaves out still falls back to that default. This lets
+/// someone define their own baseline settings once, next to wherever they
+/// keep the CLI (or desktop app) binary, and reuse it across every project
+/// they run `init` in, rather than hand-editing each newly generated file
+/// the same way afterward.
 pub fn initialize_default_config(dir: &Path) -> Result<PathBuf, String> {
+    initialize_config_with_base(dir, executable_dir().as_deref())
+}
+
+/// Same as [`initialize_default_config`], but takes the directory to look
+/// for the optional shared base config in explicitly, rather than assuming
+/// it's next to the running executable. Split out so tests can exercise the
+/// merge behavior without depending on `std::env::current_exe()`.
+fn initialize_config_with_base(dir: &Path, base_dir: Option<&Path>) -> Result<PathBuf, String> {
     if let Some(path) = existing_config_path(dir) {
         return Err(format!("config already exists at {}", path.display()));
     }
 
+    let base = base_dir
+        .map(load_project_file)
+        .transpose()?
+        .unwrap_or_default();
+
     let path = dir.join(CONFIG_FILE_NAMES[0]);
-    // `ProjectFile` omits empty app-only settings during ordinary saves, but
-    // an initialized file should serve as a complete, discoverable template.
-    let lint_yaml = papyrus_lints::config::to_yaml(&papyrus_lints::Config::default())
-        .map_err(|err| err.to_string())?;
-    let yaml = format!(
-        "compiler_path: null\nadditional_script_roots: []\ncompile_check: false\n\
-         strict_achlist_scope: false\n{lint_yaml}"
-    );
+    let lint_yaml = papyrus_lints::config::to_yaml(&base.lint).map_err(|err| err.to_string())?;
+    let yaml = format!("{}{lint_yaml}", non_lint_yaml(&base)?);
     let mut file = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -467,6 +515,79 @@ mod tests {
             generated, docs_copy,
             "docs/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
         );
+    }
+
+    #[test]
+    fn init_with_no_base_config_matches_init_with_a_base_dir_that_has_none() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let path = initialize_config_with_base(dir.path(), Some(base_dir.path()))
+            .expect("init should succeed");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        let default_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let default_path =
+            initialize_default_config(default_dir.path()).expect("init should succeed");
+        let default_generated =
+            fs::read_to_string(&default_path).expect("failed to read generated config");
+
+        assert_eq!(generated, default_generated);
+    }
+
+    #[test]
+    fn init_merges_an_executable_adjacent_base_config_over_the_defaults() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(
+            base_dir.path(),
+            "papyrus-lint.yaml",
+            "compiler_path: /opt/PapyrusCompiler.exe\nsemicolon: true\n",
+        );
+
+        let path = initialize_config_with_base(dir.path(), Some(base_dir.path()))
+            .expect("init should succeed");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        // The base's own settings win...
+        assert!(generated.contains("compiler_path: /opt/PapyrusCompiler.exe\n"));
+        assert!(generated.contains("semicolon: true\n"));
+        // ...while everything the base didn't set still falls back to the
+        // built-in default.
+        assert!(generated.contains("indentation: tab\n"));
+        assert!(generated.contains("strict_achlist_scope: false\n"));
+    }
+
+    #[test]
+    fn init_ignores_an_empty_executable_adjacent_base_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(base_dir.path(), "papyrus-lint.yaml", "");
+
+        let path = initialize_config_with_base(dir.path(), Some(base_dir.path()))
+            .expect("init should succeed");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        let default_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let default_path =
+            initialize_default_config(default_dir.path()).expect("init should succeed");
+        let default_generated =
+            fs::read_to_string(&default_path).expect("failed to read generated config");
+
+        assert_eq!(generated, default_generated);
+    }
+
+    #[test]
+    fn init_errors_on_an_invalid_executable_adjacent_base_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(
+            base_dir.path(),
+            "papyrus-lint.yaml",
+            "semicolon: [not a bool\n",
+        );
+
+        assert!(initialize_config_with_base(dir.path(), Some(base_dir.path())).is_err());
     }
 
     #[test]

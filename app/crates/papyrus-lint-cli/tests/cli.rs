@@ -146,6 +146,36 @@ fn init_creates_a_config_in_the_process_working_directory() {
 }
 
 #[test]
+fn init_merges_a_config_placed_next_to_the_executable() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let exe_path = exe_dir.path().join(
+        Path::new(env!("CARGO_BIN_EXE_PapyrusLinterCLI"))
+            .file_name()
+            .expect("binary path should have a file name"),
+    );
+    fs::copy(env!("CARGO_BIN_EXE_PapyrusLinterCLI"), &exe_path)
+        .expect("failed to copy the CLI binary next to a base config");
+    write_file(
+        &exe_dir.path().join("papyrus-lint.yaml"),
+        "semicolon: true\n",
+    );
+
+    let project_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let output = Command::new(&exe_path)
+        .arg("init")
+        .current_dir(project_dir.path())
+        .output()
+        .expect("failed to run the copied PapyrusLinterCLI binary");
+
+    assert!(output.status.success());
+    let config = fs::read_to_string(project_dir.path().join("papyrus-lint.yaml"))
+        .expect("init should create papyrus-lint.yaml");
+    assert!(config.contains("semicolon: true"));
+    // Settings the base config didn't set still fall back to the default.
+    assert!(config.contains("trailing_whitespace: true"));
+}
+
+#[test]
 fn output_flag_redirects_json_without_writing_to_stdout() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let script = dir.path().join("scripts/source/Example.psc");

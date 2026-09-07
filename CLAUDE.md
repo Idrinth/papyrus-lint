@@ -762,6 +762,21 @@ fails CI if they drift, so regenerate it with `PapyrusLinterCLI init`
 (and update `FIELD_COMMENTS`/README together) whenever a default or a
 field comment changes.
 
+`initialize_default_config` also looks for a `papyrus-lint.yaml`/`.yml`
+file next to the running executable (`config::executable_dir`, backed by
+`std::env::current_exe()`) and, if one exists, uses it as the base instead
+of `papyrus_lints::Config::default()`/the hardcoded app-only defaults: any
+key it sets overrides the built-in default, any key it omits still falls
+back to that default (`ProjectFile`'s `#[serde(default)]` handles the
+merge for free once the base file is parsed). This lets someone define
+their own baseline settings once, next to wherever they keep the CLI or
+desktop app binary, and reuse it across every project they run `init` in.
+The lookup is split into a private `initialize_config_with_base(dir,
+base_dir)` so tests can supply a controlled `base_dir` instead of
+depending on the test binary's own `current_exe()`; the checked-in
+`docs/papyrus-lint.default.yaml` copy is unaffected since CI's test
+environment has no such file next to the test binary.
+
 The desktop app's `parse_psc_file` command, and both the app's and the
 CLI's cross-script lookups (`papyrus-lint-core`'s `function_table.rs`,
 used to resolve the "Argument type check"/"Return type check" lints
