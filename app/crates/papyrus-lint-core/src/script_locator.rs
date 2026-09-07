@@ -129,6 +129,43 @@ pub fn detected_script_roots(root: &Path, additional_roots: &[String]) -> Vec<Pa
         .collect()
 }
 
+/// Recursively scans `dir` and every subdirectory beneath it for `.psc`
+/// files, matched case-insensitively on extension, and returns their paths
+/// in sorted order for a deterministic report.
+///
+/// Used for the CLI's/desktop app's directory-scan mode (see
+/// [`crate::achlist`]'s module docs), which lints every script found under
+/// a given directory instead of requiring an `.achlist` — useful for a mod
+/// whose scripts are spread across arbitrarily nested subfolders (e.g.
+/// Requiem's own layout, see
+/// <https://github.com/idrinth/papyrus-lint/issues>) rather than the flat
+/// `scripts/source` an `.achlist` conventionally lists.
+pub fn find_psc_files_recursively(dir: &Path) -> Vec<PathBuf> {
+    let mut results = Vec::new();
+    collect_psc_files_recursively(dir, &mut results);
+    results.sort();
+    results
+}
+
+fn collect_psc_files_recursively(dir: &Path, results: &mut Vec<PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_psc_files_recursively(&path, results);
+        } else if path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
+        {
+            results.push(path);
+        }
+    }
+}
+
 /// Warns when `script_path` has a same-named, byte-different counterpart in
 /// another script search directory.
 ///
@@ -579,6 +616,51 @@ mod tests {
         fs::write(&regular_file, "content").expect("failed to create regular file");
 
         assert!(detected_script_roots(root.path(), &["shared".to_string()]).is_empty());
+    }
+
+    #[test]
+    fn find_psc_files_recursively_finds_files_at_every_nesting_depth() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(root.path(), "Top.psc");
+        let nested = root.path().join("Requiem/Sub");
+        fs::create_dir_all(&nested).expect("failed to create nested dir");
+        write_file(&nested, "Nested.psc");
+
+        let mut result = find_psc_files_recursively(root.path());
+        result.sort();
+        let mut expected = vec![
+            root.path().join("Requiem/Sub/Nested.psc"),
+            root.path().join("Top.psc"),
+        ];
+        expected.sort();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn find_psc_files_recursively_matches_the_extension_case_insensitively() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(root.path(), "Example.PSC");
+
+        assert_eq!(
+            find_psc_files_recursively(root.path()),
+            vec![root.path().join("Example.PSC")]
+        );
+    }
+
+    #[test]
+    fn find_psc_files_recursively_ignores_non_psc_files() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(root.path(), "Example.pex");
+
+        assert!(find_psc_files_recursively(root.path()).is_empty());
+    }
+
+    #[test]
+    fn find_psc_files_recursively_returns_empty_for_a_missing_directory() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert!(find_psc_files_recursively(&root.path().join("missing")).is_empty());
     }
 
     #[test]

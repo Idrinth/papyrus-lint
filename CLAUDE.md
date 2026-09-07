@@ -711,6 +711,28 @@ back to two directories above it if no such pair is found at all; the
 desktop app's frontend still uses that simpler fixed "two directories up"
 rule for a bare `.psc` dropped directly (`projectDirForPscPath`).
 
+Given a directory instead of an `.achlist`/`.psc` path, the CLI
+recursively scans it (and every subdirectory beneath it, at any depth)
+for `.psc` files instead
+(`papyrus_lint_core::script_locator::find_psc_files_recursively`) and
+lints every one found — for a project (e.g. Requiem's own layout) with no
+`.achlist` at all whose scripts are spread across arbitrarily nested
+subfolders rather than a flat `scripts/source`. Its project root is found
+the same way as an achlist's: each resolved script is tried against
+`find_candidate_pair_root` first, falling back to the scanned directory
+itself (rather than an achlist's parent directory, which doesn't apply
+here) only if none of them match. The desktop app exposes the same scan
+as a `list_psc_files_recursively` Tauri command, used by
+`handleDroppedPaths` in `app/src/main.ts` when a single dropped path is
+neither an `.achlist` nor a `.psc` file (it errors out for a path that
+isn't an existing directory either, which the frontend treats the same as
+today's "drop a single .achlist or .psc file" case); `projectDirForDirectory`
+mirrors `find_candidate_pair_root`'s fallback using the same
+`findCandidatePairRoot` helper `projectDirForAchlist` already uses.
+Cross-script resolution across the discovered subfolders works the same
+way it does for achlist entries, since both share the code path that adds
+each resolved script's parent directory as an additional search root.
+
 By default, the CLI (and the desktop app) resolves cross-script lookups
 among an achlist's own entries by treating every listed entry's parent
 directory as a generic additional search root — which matters for achlists

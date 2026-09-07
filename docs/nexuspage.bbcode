@@ -396,6 +396,7 @@ A command line interface is included. For automated checks there are also smalle
 [spoiler][code]PapyrusLinter init
 PapyrusLinter path/to/project.achlist
 PapyrusLinter path/to/Example.psc
+PapyrusLinter path/to/scripts/source
 PapyrusLinter fix path/to/project.achlist
 PapyrusLinter fix path/to/Example.psc
 PapyrusLinter fix --type trailing-whitespace path/to/Example.psc
@@ -412,6 +413,7 @@ PapyrusLinter --short-paths path/to/project.achlist
 PapyrusLinter --color never path/to/project.achlist[/code][/spoiler]
 The plain-text report is colorized automatically when run in a terminal (rule tags, error/warning/info levels, and the summary line); pass --color always or --color never to override the detection.
 --tag <kind> (style, performance, correctness, or maintainability) restricts a run to just one class of rules; combine it with fix to only run that class's automatic fixes. Can't be combined with --type.
+Given a directory instead of an .achlist/.psc path, the CLI (and dropping a folder onto the desktop app) recursively scans it for .psc files at any subfolder depth and lints them all — useful for a mod (e.g. Requiem) with no .achlist whose scripts aren't laid out in a flat scripts/source folder.
 
 [heading]Usage of AI[/heading]
 This tool is almost entirely coded by AI. I have tested it and reviewed code changes, but have rarely coded parts myself.

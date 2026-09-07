@@ -366,17 +366,18 @@ line.
 ![Papyrus Lint CLI example](resources/papyrus-lint-cli.png)
 
 Besides its GUI, Papyrus Lint can lint non-interactively from the
-command line two ways: by passing an `.achlist` (or a single `.psc`) path
-to the desktop app's own executable (`PapyrusLinter`), or via the
-standalone `PapyrusLinterCLI` binary (`app/crates/papyrus-lint-cli`) built and
-shipped separately for use cases — e.g. a CI pipeline — that shouldn't
-need the desktop app's binary (and its GUI dependencies) at all. Both
-accept the same argument and behave identically:
+command line two ways: by passing an `.achlist` (or a single `.psc`, or a
+directory) path to the desktop app's own executable (`PapyrusLinter`), or
+via the standalone `PapyrusLinterCLI` binary (`app/crates/papyrus-lint-cli`)
+built and shipped separately for use cases — e.g. a CI pipeline — that
+shouldn't need the desktop app's binary (and its GUI dependencies) at all.
+Both accept the same argument and behave identically:
 
 ```text
 PapyrusLinterCLI path/to/project.achlist
 PapyrusLinterCLI init
 PapyrusLinterCLI path/to/Example.psc
+PapyrusLinterCLI path/to/scripts/source
 PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
 PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
@@ -399,21 +400,28 @@ settings in the current working directory. It refuses to overwrite an existing
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
 Given a single `.psc` path directly, it lints just that file, treating it
-as the achlist's sole entry. Either way, each script is linted against
-the project's `papyrus-lint.yaml`/`.yml` config file (see Configuration
-above). For an `.achlist`, the project root is its containing directory; for
-a bare `.psc`, the root is found by walking up from the file for a
+as the achlist's sole entry. Given a directory instead, it recursively
+scans it (and every subdirectory beneath it, at any depth) for `.psc`
+files and lints every one found — useful for a mod whose scripts are
+spread across arbitrarily nested subfolders instead of a flat
+`scripts/source` (e.g. Requiem's own layout) and that ships no `.achlist`
+at all. Either way, each script is linted against the project's
+`papyrus-lint.yaml`/`.yml` config file (see Configuration above). For an
+`.achlist`, the project root is its containing directory; for a bare
+`.psc`, the root is found by walking up from the file for a
 `Scripts/Source` or `Source/Scripts` directory pair (matched
 case-insensitively) and taking the directory above it — so it's found
 correctly even for a script nested further still, e.g. a namespaced
 `Scripts/Source/User/MyScript.psc`, not just the conventional two
-directories up. If no config exists there, the documented defaults apply.
-Each diagnostic found is printed as `<path>:<line>:<column>: [<rule>]
-<message>`, followed by a one-line summary. Calls to functions declared on
-other scripts under the project root are resolved the same way the
-desktop app resolves them, so the CLI's "Argument type check"/"Return type
-check" results match what dropping the same `.achlist` into the app would
-report.
+directories up. A scanned directory's own resolved scripts are tried the
+same way first, falling back to the scanned directory itself as the
+project root if none of them match that layout. If no config exists
+there, the documented defaults apply. Each diagnostic found is printed as
+`<path>:<line>:<column>: [<rule>] <message>`, followed by a one-line
+summary. Calls to functions declared on other scripts under the project
+root are resolved the same way the desktop app resolves them, so the
+CLI's "Argument type check"/"Return type check" results match what
+dropping the same `.achlist` into the app would report.
 
 Given `--config <path>` (combinable with `fix`/`--json`, in any argument
 order), the CLI loads lint configuration directly from `<path>` instead
