@@ -630,6 +630,14 @@ relocating a property's declaration), it fails instead of applying
 anything, showing the error inline next to the finding; the whole-file
 "Apply fixes" button has no such restriction and always applies cleanly.
 
+The Lint results tab also has a "Mass fix an issue" panel, listing every
+auto-fixable rule with at least one finding anywhere among the currently
+loaded scripts (e.g. "Trailing whitespace (37)") next to a "Fix all ... in
+project" button, applying just that one rule's fix across every one of
+those files at once — the desktop app's equivalent of the CLI's
+`fix --type <rule-id>` run against the whole project. A rule drops out of
+the panel once none of its findings remain.
+
 ## Compiling a script
 
 Each `.psc` file listed on the Lint results tab has a "Compile" button that

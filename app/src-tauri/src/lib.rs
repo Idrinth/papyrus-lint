@@ -429,6 +429,45 @@ fn repair_psc_finding(
     ))
 }
 
+/// Like [`repair_psc_file`], but applies only the automatic fix for `rule`
+/// (a [`papyrus_lints::FIXABLE_RULE_IDS`] id) across the whole file, rather
+/// than every fixable rule. Unlike [`repair_psc_finding`], it isn't
+/// restricted to a single line and can't fail on a line-count mismatch, so
+/// it drives the frontend's "mass fix" action, which repeats this call
+/// across every file in the current results to clear one issue project-wide
+/// (e.g. every trailing-whitespace finding) in one go.
+#[tauri::command]
+#[allow(clippy::too_many_arguments)]
+fn repair_psc_file_rule(
+    path: String,
+    root: String,
+    config: papyrus_lints::Config,
+    additional_roots: Vec<String>,
+    compiler_path: String,
+    compile_check: bool,
+    rule: String,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let (source, encoding) =
+        read_psc_source_with_encoding(Path::new(&path)).map_err(|err| err.to_string())?;
+    let repaired = papyrus_lints::repair_filtered(&source, &config, Some(rule.as_str()));
+    if repaired != source {
+        write_psc_source(Path::new(&path), &repaired, encoding).map_err(|err| err.to_string())?;
+    }
+    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
+        PathBuf::from(root),
+        additional_roots.clone(),
+    );
+    Ok(lint_with_compile_check(
+        Path::new(&path),
+        &repaired,
+        &config,
+        &mut function_table,
+        &additional_roots,
+        &compiler_path,
+        compile_check,
+    ))
+}
+
 /// Lists every function and property available on an object of type
 /// `type_name` (including those inherited via `Extends`), for driving the
 /// code viewer's editor autocompletion. See [`lint_psc_file`] for
@@ -474,6 +513,7 @@ pub fn run() {
             lint_psc_file,
             repair_psc_file,
             repair_psc_finding,
+            repair_psc_file_rule,
             compile_psc_file,
             list_script_members
         ])
@@ -688,6 +728,39 @@ mod tests {
 
         assert!(error.contains("Apply fixes"));
         assert_eq!(std::fs::read_to_string(&path).unwrap(), source);
+    }
+
+    #[test]
+    fn repair_psc_file_rule_fixes_every_occurrence_of_the_named_rule_and_leaves_others() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example  \n\nFunction Run(Int left,Int right)  \nEndFunction\n",
+        )
+        .unwrap();
+
+        let diagnostics = repair_psc_file_rule(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::trailing_whitespace::RULE.to_string(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "ScriptName Example\n\nFunction Run(Int left,Int right)\nEndFunction\n"
+        );
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::trailing_whitespace::RULE));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule == papyrus_lints::comma_spacing::RULE));
     }
 
     #[test]
