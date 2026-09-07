@@ -540,6 +540,34 @@ mod tests {
     }
 
     #[test]
+    fn checks_camel_and_constant_case_styles() {
+        let camel_case = "ScriptName Example\n\nInt Property myValue Auto\n";
+        let constant_case = "ScriptName Example\n\nInt Property MY_VALUE Auto\n";
+
+        assert!(check(camel_case, IdentifierCasing::CamelCase).is_empty());
+        assert_eq!(
+            check(camel_case, IdentifierCasing::ConstantCase)[0].message,
+            "[warning] Property 'myValue' does not match the configured CONSTANT_CASE casing style"
+        );
+        assert!(check(constant_case, IdentifierCasing::ConstantCase).is_empty());
+        assert_eq!(
+            check(constant_case, IdentifierCasing::CamelCase)[0].message,
+            "[warning] Property 'MY_VALUE' does not match the configured camelCase casing style"
+        );
+    }
+
+    #[test]
+    fn flags_locals_nested_in_else_if_branches() {
+        let source = "ScriptName Example\n\nFunction DoThing()\n    If false\n    ElseIf true\n        Int bad_name = 1\n    EndIf\nEndFunction\n";
+
+        let diagnostics = check(source, IdentifierCasing::PascalCase);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 6);
+        assert!(diagnostics[0].message.contains("bad_name"));
+    }
+
+    #[test]
     fn ignores_declarations_inside_a_fragment_wrapper() {
         let source = "\
 ;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
@@ -579,6 +607,43 @@ EndFunction
             repair(source, IdentifierCasing::CamelCase),
             "ScriptName Example\n\nInt Property maxCount Auto\n\nFunction addValue(Int itemCount)\n    Int newTotal = maxCount + itemCount\n    maxCount = newTotal\nEndFunction\n"
         );
+    }
+
+    #[test]
+    fn repair_matches_references_case_insensitively() {
+        let source = "ScriptName Example\n\nInt Property MAXCOUNT Auto\n\nFunction Update()\n    maxcount = MaxCount + MAXCOUNT\nEndFunction\n";
+
+        assert_eq!(
+            repair(source, IdentifierCasing::CamelCase),
+            "ScriptName Example\n\nInt Property maxcount Auto\n\nFunction update()\n    maxcount = maxcount + maxcount\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_renames_state_members_and_nested_locals() {
+        let source = "ScriptName Example\n\nState waitingState\n    Function handleEvent(Int itemCount)\n        If true\n            Int firstValue = itemCount\n        Else\n            While true\n                Int secondValue = firstValue\n            EndWhile\n        EndIf\n    EndFunction\nEndState\n";
+
+        assert_eq!(
+            repair(source, IdentifierCasing::PascalCase),
+            "ScriptName Example\n\nState WaitingState\n    Function HandleEvent(Int ItemCount)\n        If true\n            Int FirstValue = ItemCount\n        Else\n            While true\n                Int SecondValue = FirstValue\n            EndWhile\n        EndIf\n    EndFunction\nEndState\n"
+        );
+    }
+
+    #[test]
+    fn repair_handles_crlf_line_endings() {
+        let source = "ScriptName Example\r\n\r\nInt Property MaxCount Auto\r\nFunction ReadValue()\r\n    Return MaxCount\r\nEndFunction\r\n";
+
+        assert_eq!(
+            repair(source, IdentifierCasing::CamelCase),
+            "ScriptName Example\r\n\r\nInt Property maxCount Auto\r\nFunction readValue()\r\n    Return maxCount\r\nEndFunction\r\n"
+        );
+    }
+
+    #[test]
+    fn repair_returns_already_conforming_source_unchanged() {
+        let source = "ScriptName Example\n\nInt Property maxCount Auto\n";
+
+        assert_eq!(repair(source, IdentifierCasing::CamelCase), source);
     }
 
     #[test]
