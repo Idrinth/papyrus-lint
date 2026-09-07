@@ -22,8 +22,15 @@
 //! any earlier condition in the same `If`/`ElseIf` chain) actually
 //! performed, and a branch that unconditionally `Return`s doesn't
 //! contribute its exit state to what follows the `If`. A cast used
-//! directly inline (`(expr as Type).Member`) is always flagged, since
-//! there's no way to check it for `None` in between.
+//! directly inline (`(expr as Type).Member`) is flagged unless the same
+//! `&&` expression's left-hand side already proved it non-`None` (a bare
+//! `expr as Type`, or `expr as Type != None`, evaluated earlier in the
+//! same left-to-right, short-circuiting `&&` chain) — since `&&` only
+//! evaluates its right side once the left side is truthy, `(akSource as
+//! Spell && (akSource as Spell).isHostile())` never dereferences a
+//! `None`. Nothing else (a separate statement, an unrelated cast target,
+//! or `||`, whose right side runs precisely when the left side is *not*
+//! truthy) grants that same guarantee, so those are still flagged.
 //!
 //! A cast written on a line CreationKit itself generated (see
 //! [`crate::fragment_code`]) is never tracked as unchecked in the first
@@ -88,7 +95,7 @@ fn walk_body(
         match stmt {
             Stmt::VarDecl(decl) => {
                 if let Some(value) = &decl.value {
-                    check_expr(value, unchecked_vars, diagnostics, decl.line);
+                    check_expr(value, unchecked_vars, &[], diagnostics, decl.line);
                     record_write(&decl.name, value, decl.line, protected, unchecked_vars);
                 } else {
                     unchecked_vars.remove(&decl.name.to_lowercase());
@@ -100,17 +107,17 @@ fn walk_body(
                 value,
                 line,
             } => {
-                check_expr(value, unchecked_vars, diagnostics, *line);
-                check_expr(target, unchecked_vars, diagnostics, *line);
+                check_expr(value, unchecked_vars, &[], diagnostics, *line);
+                check_expr(target, unchecked_vars, &[], diagnostics, *line);
                 if let (Expr::Identifier(name), AssignOp::Assign) = (target, op) {
                     record_write(name, value, *line, protected, unchecked_vars);
                 }
             }
-            Stmt::Expr { value, line } => check_expr(value, unchecked_vars, diagnostics, *line),
+            Stmt::Expr { value, line } => check_expr(value, unchecked_vars, &[], diagnostics, *line),
             Stmt::Return {
                 value: Some(value),
                 line,
-            } => check_expr(value, unchecked_vars, diagnostics, *line),
+            } => check_expr(value, unchecked_vars, &[], diagnostics, *line),
             Stmt::Return { value: None, .. } => {}
             Stmt::If {
                 branches,
@@ -123,7 +130,7 @@ fn walk_body(
                 line,
                 ..
             } => {
-                check_expr(condition, unchecked_vars, diagnostics, *line);
+                check_expr(condition, unchecked_vars, &[], diagnostics, *line);
                 clear_checked(condition, unchecked_vars);
                 walk_body(body, protected, unchecked_vars, diagnostics);
                 // The condition is re-evaluated every iteration, including
@@ -155,6 +162,7 @@ fn handle_if(
         check_expr(
             &branch.condition,
             &after_conditions,
+            &[],
             diagnostics,
             branch.line,
         );
@@ -248,18 +256,22 @@ fn clear_checked(expr: &Expr, unchecked_vars: &mut HashSet<String>) {
 
 /// Recursively checks `expr` for a member/method access on an unchecked
 /// cast, either inline (`(value as Type).Member`) or through a variable
-/// still tracked in `unchecked_vars`.
+/// still tracked in `unchecked_vars`. `guarded_casts` lists inline cast
+/// expressions that an enclosing `&&`'s left-hand side already proved
+/// non-`None` before `expr` (its right-hand side) runs; a `Cast` matching
+/// one of these structurally is not flagged.
 fn check_expr(
     expr: &Expr,
     unchecked_vars: &HashSet<String>,
+    guarded_casts: &[Expr],
     diagnostics: &mut Vec<Diagnostic>,
     line: usize,
 ) {
     match expr {
         Expr::Member { object, property } => {
-            check_expr(object, unchecked_vars, diagnostics, line);
+            check_expr(object, unchecked_vars, guarded_casts, diagnostics, line);
             match &**object {
-                Expr::Cast { type_name, .. } => {
+                Expr::Cast { type_name, .. } if !guarded_casts.contains(object) => {
                     diagnostics.push(Diagnostic {
                         line,
                         column: 1,
@@ -283,24 +295,73 @@ fn check_expr(
             }
         }
         Expr::Call { callee, args, .. } => {
-            check_expr(callee, unchecked_vars, diagnostics, line);
+            check_expr(callee, unchecked_vars, guarded_casts, diagnostics, line);
             for arg in args {
-                check_expr(arg, unchecked_vars, diagnostics, line);
+                check_expr(arg, unchecked_vars, guarded_casts, diagnostics, line);
             }
         }
+        Expr::Binary {
+            left,
+            op: BinaryOp::And,
+            right,
+        } => {
+            check_expr(left, unchecked_vars, guarded_casts, diagnostics, line);
+            let mut narrowed = guarded_casts.to_vec();
+            collect_guarded_casts(left, &mut narrowed);
+            check_expr(right, unchecked_vars, &narrowed, diagnostics, line);
+        }
         Expr::Binary { left, right, .. } => {
-            check_expr(left, unchecked_vars, diagnostics, line);
-            check_expr(right, unchecked_vars, diagnostics, line);
+            check_expr(left, unchecked_vars, guarded_casts, diagnostics, line);
+            check_expr(right, unchecked_vars, guarded_casts, diagnostics, line);
         }
-        Expr::Unary { operand, .. } => check_expr(operand, unchecked_vars, diagnostics, line),
+        Expr::Unary { operand, .. } => {
+            check_expr(operand, unchecked_vars, guarded_casts, diagnostics, line)
+        }
         Expr::Index { object, index } => {
-            check_expr(object, unchecked_vars, diagnostics, line);
-            check_expr(index, unchecked_vars, diagnostics, line);
+            check_expr(object, unchecked_vars, guarded_casts, diagnostics, line);
+            check_expr(index, unchecked_vars, guarded_casts, diagnostics, line);
         }
-        Expr::Cast { value, .. } => check_expr(value, unchecked_vars, diagnostics, line),
-        Expr::NewArray { size, .. } => check_expr(size, unchecked_vars, diagnostics, line),
-        Expr::NamedArg { value, .. } => check_expr(value, unchecked_vars, diagnostics, line),
+        Expr::Cast { value, .. } => {
+            check_expr(value, unchecked_vars, guarded_casts, diagnostics, line)
+        }
+        Expr::NewArray { size, .. } => {
+            check_expr(size, unchecked_vars, guarded_casts, diagnostics, line)
+        }
+        Expr::NamedArg { value, .. } => {
+            check_expr(value, unchecked_vars, guarded_casts, diagnostics, line)
+        }
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+    }
+}
+
+/// Collects the inline cast expressions that `expr`, evaluated truthily,
+/// proves non-`None` — a bare `value as Type`, `value as Type != None` (or
+/// reversed), or a nested `&&` combining either — into `casts`. Used by
+/// `check_expr`'s `&&` handling to let a right-hand side skip flagging a
+/// cast its left-hand side already checked.
+fn collect_guarded_casts(expr: &Expr, casts: &mut Vec<Expr>) {
+    match expr {
+        Expr::Cast { .. } => casts.push(expr.clone()),
+        Expr::Binary {
+            left,
+            op: BinaryOp::NotEq,
+            right,
+        } => {
+            if matches!(**right, Expr::Literal(Literal::None)) {
+                collect_guarded_casts(left, casts);
+            } else if matches!(**left, Expr::Literal(Literal::None)) {
+                collect_guarded_casts(right, casts);
+            }
+        }
+        Expr::Binary {
+            left,
+            op: BinaryOp::And,
+            right,
+        } => {
+            collect_guarded_casts(left, casts);
+            collect_guarded_casts(right, casts);
+        }
+        _ => {}
     }
 }
 
@@ -450,6 +511,43 @@ mod tests {
     fn checks_functions_declared_in_states_too() {
         let diagnostics = check(
             "ScriptName Example\n\nState Active\n    Function Test(ObjectReference akRef)\n        Actor a = akRef as Actor\n        a.GetName()\n    EndFunction\nEndState\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn does_not_flag_inline_cast_guarded_by_the_same_cast_in_an_and_chain() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Form akSource)\n    If (akSource as Weapon || (akSource as Spell && (akSource as Spell).isHostile()))\n        Debug.Trace(\"hostile\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_inline_cast_guarded_by_not_equal_none_in_an_and_chain() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Form akSource)\n    If (akSource as Spell != None && (akSource as Spell).isHostile())\n        Debug.Trace(\"hostile\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn still_flags_inline_cast_when_the_and_guard_is_a_different_cast_target() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Form akSource, Form akOther)\n    If (akOther as Spell && (akSource as Spell).isHostile())\n        Debug.Trace(\"hostile\")\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("'Spell'"));
+    }
+
+    #[test]
+    fn still_flags_inline_cast_guarded_only_on_the_or_side() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Form akSource)\n    If (akSource as Spell == None || (akSource as Spell).isHostile())\n        Debug.Trace(\"hostile\")\n    EndIf\nEndFunction\n",
         );
 
         assert_eq!(diagnostics.len(), 1);
