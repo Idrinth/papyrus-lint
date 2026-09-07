@@ -201,7 +201,7 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertIn("<h2>Setup <strong>now</strong></h2>", result)
         self.assertIn('<p>Read <a href="docs/guide.md">the guide</a> on the next line.</p>', result)
         self.assertIn(
-            '<pre class="code-block"><code>unsafe: &lt;value&gt;</code></pre>',
+            '<pre class="code-block" tabindex="0"><code>unsafe: &lt;value&gt;</code></pre>',
             result,
         )
 
@@ -215,7 +215,7 @@ class MarkdownHelpersTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<pre class="code-block"><code>first\n  second</code></pre>',
+            '<pre class="code-block" tabindex="0"><code>first\n  second</code></pre>',
         )
 
     def test_first_paragraph_returns_empty_text_when_there_is_no_prose(self) -> None:
