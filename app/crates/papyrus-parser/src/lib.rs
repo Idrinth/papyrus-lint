@@ -345,13 +345,17 @@ EndState
     }
 
     #[test]
-    fn parses_full_property_with_get_set() {
+    fn parses_full_property_with_both_get_and_set() {
         let src = r#"
 ScriptName Example
 
-Int Property Total Hidden
+Int myInt_Var = 0
+Int Property myInt
     Int Function Get()
-        Return 5
+        Return myInt_Var
+    EndFunction
+    Function Set(Int value)
+        myInt_Var = value
     EndFunction
 EndProperty
 "#;
@@ -359,7 +363,89 @@ EndProperty
         assert_eq!(script.properties.len(), 1);
         let prop = &script.properties[0];
         assert!(!prop.is_auto);
+        assert!(!prop.is_auto_read_only);
+    }
+
+    /// The "long" read-only property form: a full `Property`/`EndProperty`
+    /// block that defines only a `Get` function and no `Set`, as opposed to
+    /// the short `AutoReadOnly` form (see
+    /// `parses_auto_read_only_property_with_required_default_value` below).
+    #[test]
+    fn parses_full_property_with_get_only_the_long_read_only_form() {
+        let src = r#"
+ScriptName Example
+
+Int myVar = 5
+Int Property Total Hidden
+    Int Function Get()
+        Return myVar
+    EndFunction
+EndProperty
+"#;
+        let script = parse(src).unwrap();
+        assert_eq!(script.properties.len(), 1);
+        let prop = &script.properties[0];
+        assert!(!prop.is_auto);
+        assert!(!prop.is_auto_read_only);
         assert!(prop.is_hidden);
+    }
+
+    #[test]
+    fn parses_full_property_with_set_only_the_write_only_form() {
+        let src = r#"
+ScriptName Example
+
+Int myVar = 5
+Int Property WriteOnly
+    Function Set(Int value)
+        If value >= 0
+            myVar = value
+        Else
+            myVar = 0
+        EndIf
+    EndFunction
+EndProperty
+"#;
+        let script = parse(src).unwrap();
+        assert_eq!(script.properties.len(), 1);
+        let prop = &script.properties[0];
+        assert!(!prop.is_auto);
+        assert!(!prop.is_auto_read_only);
+    }
+
+    #[test]
+    fn parses_auto_property_with_default_value() {
+        let script = parse("ScriptName Example\n\nInt Property myInt = 5 Auto\n").unwrap();
+        let prop = &script.properties[0];
+        assert!(prop.is_auto);
+        assert!(!prop.is_auto_read_only);
+        assert_eq!(prop.value, Some(Expr::Literal(Literal::int(5))));
+    }
+
+    #[test]
+    fn parses_auto_read_only_property_with_required_default_value() {
+        let script =
+            parse("ScriptName Example\n\nInt Property myReadOnlyInt = 20 AutoReadOnly\n").unwrap();
+        let prop = &script.properties[0];
+        assert!(!prop.is_auto);
+        assert!(prop.is_auto_read_only);
+        assert_eq!(prop.value, Some(Expr::Literal(Literal::int(20))));
+    }
+
+    #[test]
+    fn parses_auto_property_with_conditional_flag() {
+        let script = parse("ScriptName Example\n\nInt Property myVar Auto Conditional\n").unwrap();
+        let prop = &script.properties[0];
+        assert!(prop.is_auto);
+        assert!(prop.is_conditional);
+    }
+
+    #[test]
+    fn parses_array_typed_auto_property() {
+        let script = parse("ScriptName Example\n\nInt[] Property Values Auto\n").unwrap();
+        let prop = &script.properties[0];
+        assert!(prop.type_name.is_array);
+        assert!(prop.is_auto);
     }
 
     #[test]
