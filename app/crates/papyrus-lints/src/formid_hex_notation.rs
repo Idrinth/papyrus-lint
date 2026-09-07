@@ -257,6 +257,27 @@ mod tests {
     }
 
     #[test]
+    fn flags_parent_receiver_and_case_insensitive_call_name() {
+        let diagnostics = check(
+            "ScriptName Example Extends Actor\n\nFunction Test()\n    If Parent.gEtFoRmId() != 42\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 4);
+        assert!(diagnostics[0].message.contains("0x2A"));
+    }
+
+    #[test]
+    fn flags_negative_decimal_after_get_form_id() {
+        let diagnostics = check(
+            "ScriptName Example Extends Actor\n\nFunction Test()\n    If GetFormID() == -1\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].column, 24);
+    }
+
+    #[test]
     fn does_not_flag_get_form_id_compared_to_a_runtime_value() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Actor akActor, Int aiOther)\n    If akActor.GetFormID() == aiOther\n    EndIf\n    If akActor.GetFormID() == GetOtherFormID()\n    EndIf\nEndFunction\n",
@@ -304,6 +325,26 @@ mod tests {
     }
 
     #[test]
+    fn matches_game_and_function_names_case_insensitively() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Form theForm = gAmE.gEtFoRmFrOmFiLe(42, \"Skyrim.esm\")\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.contains("0x2A"));
+    }
+
+    #[test]
+    fn flags_negative_named_formid_argument() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(auiFormID = -1)\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 4);
+    }
+
+    #[test]
     fn does_not_flag_hex_formid_passed_to_get_form_from_file() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x00012C87, \"Skyrim.esm\")\nEndFunction\n",
@@ -316,6 +357,24 @@ mod tests {
     fn does_not_flag_get_form_from_file_with_a_runtime_formid() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Int aiFormID)\n    Form theForm = Game.GetFormFromFile(aiFormID, \"Skyrim.esm\")\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_decimal_inside_a_larger_argument_expression() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int aiOffset)\n    Form theForm = Game.GetFormFromFile(76935 + aiOffset, \"Skyrim.esm\")\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_unqualified_get_form_from_file() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Form theForm = GetFormFromFile(76935, \"Skyrim.esm\")\nEndFunction\n",
         );
 
         assert!(diagnostics.is_empty());
