@@ -23,6 +23,7 @@ let pscResultMassFixListEl: HTMLElement | null;
 let lintProgressEl: HTMLElement | null;
 let lintProgressLabelEl: HTMLElement | null;
 let lintProgressBarEl: HTMLProgressElement | null;
+let lintProgressHideTimer: ReturnType<typeof setTimeout> | null = null;
 let filenameFilterEl: HTMLInputElement | null;
 let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
@@ -2067,9 +2068,18 @@ export function projectDirForPscPath(path: string): string {
   return dirnameOf(dirnameOf(dirnameOf(path)));
 }
 
+// How long the finished progress bar stays visible before
+// scheduleHideLintProgress() hides it, so a run that finishes quickly
+// doesn't just flash on and off.
+const LINT_PROGRESS_HIDE_DELAY_MS = 2000;
+
 // Shows the progress bar reset to 0/`total`, for a drop about to start
 // parsing/linting `total` files.
 export function showLintProgress(total: number) {
+  if (lintProgressHideTimer !== null) {
+    clearTimeout(lintProgressHideTimer);
+    lintProgressHideTimer = null;
+  }
   if (!lintProgressEl || !lintProgressLabelEl || !lintProgressBarEl) {
     return;
   }
@@ -2092,9 +2102,27 @@ export function updateLintProgress(processed: number, total: number) {
 }
 
 export function hideLintProgress() {
+  if (lintProgressHideTimer !== null) {
+    clearTimeout(lintProgressHideTimer);
+    lintProgressHideTimer = null;
+  }
   if (lintProgressEl) {
     lintProgressEl.hidden = true;
   }
+}
+
+// Hides the progress bar after a short grace period instead of instantly,
+// so the finished state stays visible long enough to register before it
+// disappears. A drop that starts again in the meantime (showLintProgress)
+// cancels this timer, so the bar isn't hidden out from under it.
+export function scheduleHideLintProgress(delayMs = LINT_PROGRESS_HIDE_DELAY_MS) {
+  if (lintProgressHideTimer !== null) {
+    clearTimeout(lintProgressHideTimer);
+  }
+  lintProgressHideTimer = window.setTimeout(() => {
+    lintProgressHideTimer = null;
+    hideLintProgress();
+  }, delayMs);
 }
 
 export async function handleDroppedPaths(paths: string[]) {
@@ -2131,7 +2159,7 @@ export async function handleDroppedPaths(paths: string[]) {
         updateLintProgress(currentPscOutcomes.length, pscEntries.length);
       });
       if (generation === currentParseGeneration) {
-        hideLintProgress();
+        scheduleHideLintProgress();
       }
     } catch (error) {
       showError("Failed to read that .achlist file. Please try again.");
@@ -2160,7 +2188,7 @@ export async function handleDroppedPaths(paths: string[]) {
       updateLintProgress(currentPscOutcomes.length, 1);
     });
     if (generation === currentParseGeneration) {
-      hideLintProgress();
+      scheduleHideLintProgress();
     }
     return;
   }
@@ -2196,7 +2224,7 @@ export async function handleDroppedPaths(paths: string[]) {
         updateLintProgress(currentPscOutcomes.length, entries.length);
       });
       if (generation === currentParseGeneration) {
-        hideLintProgress();
+        scheduleHideLintProgress();
       }
       return;
     } catch {
