@@ -4,8 +4,9 @@
 Substitutes the lint tables and CLI usage examples in the template with
 content converted directly from README.md's own tables/code blocks, so
 that documentation never has to be kept in sync by hand in two places.
-Also renders every file listed in DOCS into its own browsable subpage
-under docs/ (via pages/docs.template.html). The templates receive their
+Also renders every document listed in DOCS (including remotely sourced
+documentation) into its own browsable subpage under docs/ (via
+pages/docs.template.html). The templates receive their
 shared header and footer from pages/includes/, so site chrome has a single
 source of truth. The builder also assembles the site's assets/ directory
 by copying the screenshots and icon this page uses
@@ -41,7 +42,9 @@ import json
 import re
 import shutil
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
+from urllib.request import Request, urlopen
 
 from PIL import Image
 
@@ -93,9 +96,9 @@ DOCS = [
         "blurb": "A minimal GitHub Actions workflow that lints a project on every push and pull request.",
     },
     {
-        "filename": "papyrus-lint-action-readme.md",
         "slug": "papyrus-lint-action-readme",
         "kind": "markdown",
+        "content_url": "https://raw.githubusercontent.com/Idrinth/papyrus-lint-action/the-one/README.md",
         "source_url": "https://github.com/Idrinth/papyrus-lint-action/blob/the-one/README.md",
         "blurb": (
             "The papyrus-lint-action GitHub Action's own README: its inputs, outputs, and how it "
@@ -141,7 +144,7 @@ DOCS = [
     },
 ]
 
-DOC_FILENAME_TO_SLUG = {doc["filename"]: doc["slug"] for doc in DOCS}
+DOC_FILENAME_TO_SLUG = {doc["filename"]: doc["slug"] for doc in DOCS if "filename" in doc}
 
 # Simple list of YouTube video IDs/titles rendered onto videos.html, so a new
 # video can be added without touching build.py or its template.
@@ -444,20 +447,34 @@ def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
 
 
 def raw_github_link(doc: dict) -> str:
-    """Links back to the doc's own raw source on GitHub: a checked-in
-    docs/ file by default, or `source_url` when a doc's content is a copy
-    of a file from another repository (e.g. papyrus-lint-action's README)."""
-    href = doc.get("source_url", f"{GITHUB_BLOB_BASE}/docs/{doc['filename']}")
+    """Link to a local doc on GitHub or a configured external source."""
+    href = doc["source_url"] if "source_url" in doc else f"{GITHUB_BLOB_BASE}/docs/{doc['filename']}"
     return (
         f'<p><a class="doc-raw-link" href="{html.escape(href, quote=True)}">'
         "View raw source on GitHub &rarr;</a></p>"
     )
 
 
+def load_doc_source(doc: dict) -> str:
+    """Load a document from this checkout or its configured remote source.
+
+    Remote documentation is downloaded during every Pages build so the
+    published copy follows its owning repository without requiring a synced,
+    checked-in duplicate here.
+    """
+    if content_url := doc.get("content_url"):
+        request = Request(content_url, headers={"User-Agent": "papyrus-lint-pages-builder"})
+        try:
+            with urlopen(request, timeout=30) as response:
+                return response.read().decode("utf-8")
+        except (HTTPError, URLError, TimeoutError, UnicodeDecodeError) as error:
+            raise SystemExit(f"Could not download documentation from {content_url}: {error}") from error
+    return (DOCS_DIR / doc["filename"]).read_text(encoding="utf-8")
+
+
 def render_doc(doc: dict) -> tuple[str, str, str]:
-    """Renders one docs/ file into (title, plain-text description, content
-    HTML) for its published subpage."""
-    source = (DOCS_DIR / doc["filename"]).read_text(encoding="utf-8")
+    """Render one document into title, description, and subpage HTML."""
+    source = load_doc_source(doc)
     kind = doc["kind"]
     if kind == "markdown":
         lines = source.splitlines()
@@ -597,7 +614,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None
     index_content = f'<ul class="docs-list">{render_docs_list_items(doc_results, "")}</ul>'
     index_page = render_page(
         "Documentation",
-        "Reference material from the project's docs/ directory, published as browsable pages.",
+        "Project reference material and related documentation, published as browsable pages.",
         index_content,
         f"{SITE_URL}docs/index.html",
     )

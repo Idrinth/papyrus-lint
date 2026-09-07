@@ -6,7 +6,8 @@ import tempfile
 import unittest
 from io import StringIO
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+from urllib.error import URLError
 
 from PIL import Image
 
@@ -291,10 +292,36 @@ class MarkdownHelpersTest(unittest.TestCase):
 
 
 class DocsRenderingTest(unittest.TestCase):
+    def test_load_doc_source_downloads_remote_documentation(self) -> None:
+        response = MagicMock()
+        response.__enter__.return_value.read.return_value = b"# Current remote README\n"
+
+        with patch.object(page_builder, "urlopen", return_value=response) as urlopen:
+            source = page_builder.load_doc_source(
+                {"content_url": "https://example.test/README.md"}
+            )
+
+        self.assertEqual(source, "# Current remote README\n")
+        request = urlopen.call_args.args[0]
+        self.assertEqual(request.full_url, "https://example.test/README.md")
+        self.assertEqual(request.get_header("User-agent"), "papyrus-lint-pages-builder")
+        self.assertEqual(urlopen.call_args.kwargs, {"timeout": 30})
+
+    def test_load_doc_source_reports_remote_download_failure(self) -> None:
+        with (
+            patch.object(page_builder, "urlopen", side_effect=URLError("offline")),
+            self.assertRaisesRegex(
+                SystemExit,
+                "Could not download documentation from https://example.test/README.md",
+            ),
+        ):
+            page_builder.load_doc_source(
+                {"content_url": "https://example.test/README.md"}
+            )
+
     def test_raw_github_link_escapes_a_custom_source_url(self) -> None:
         result = page_builder.raw_github_link(
             {
-                "filename": "guide.md",
                 "source_url": 'https://example.test/source?label="docs"&mode=raw',
             }
         )

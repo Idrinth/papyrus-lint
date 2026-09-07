@@ -465,13 +465,13 @@ can't drift out of sync with what's actually published — and a
 `robots.txt` (`build_robots_txt`) allowing all crawling and pointing at
 that sitemap.
 
-Every file in the `docs/` directory (see Project structure above) is also
-published as its own browsable subpage, so that reference material isn't
-only reachable as raw source on GitHub. `pages/build.py`'s `DOCS` list
-names each file, a `slug` for its output filename, and a `kind`
+Every file in the `docs/` directory (see Project structure above), plus the
+papyrus-lint-action README fetched at build time, is also published as its
+own browsable subpage, so that reference material isn't only reachable as
+raw source on GitHub. `pages/build.py`'s `DOCS` list names each local file
+or remote `content_url`, a `slug` for its output filename, and a `kind`
 (`markdown`, `json-schema`, or plain text) that picks how it's rendered:
-a Markdown file (currently `docs/github-actions-example.md` and
-`docs/papyrus-lint-action-readme.md`) is converted to HTML the same way
+a Markdown document is converted to HTML the same way
 the CLI examples are (headings, paragraphs, fenced code blocks, and
 `render_inline`'s inline formatting), with its own top-level heading and
 first paragraph read back out as the subpage's title/description rather
@@ -493,20 +493,17 @@ hand-written blurb per doc from `DOCS`, linking into `pages/dist/docs/`.
 Adding a new file under `docs/` that should be published this way means
 adding an entry to `DOCS`, not touching either template.
 
-`docs/papyrus-lint-action-readme.md` is a checked-in copy of the
-[`papyrus-lint-action`](https://github.com/idrinth/papyrus-lint-action)
-repository's own `README.md`, rather than material written for this
-repository, so that its GitHub Action's inputs/outputs and usage
-documentation are also reachable as a subpage here. Its `DOCS` entry
-sets `source_url` to that other repository's own blob URL for the file
+The [`papyrus-lint-action`](https://github.com/idrinth/papyrus-lint-action)
+repository's own `README.md` is fetched from its `the-one` branch during
+every site build, so that its GitHub Action's inputs/outputs and usage
+documentation are always current on a subpage here without keeping a
+duplicate in this repository. Its `DOCS` entry sets `content_url` to the
+raw file and `source_url` to that other repository's own blob URL
 (`raw_github_link`'s "View raw source on GitHub" link uses `source_url`
 when a doc sets it, instead of assuming the file lives under this
 repository's own `docs/`), so the rendered subpage links back to the
-authoritative source rather than to this copy. Whenever
-`papyrus-lint-action`'s `README.md` changes, copy the update into
-`docs/papyrus-lint-action-readme.md` here too, the same way
-`docs/nexuspage.bbcode`'s content is kept in sync by hand (see "Keeping
-agent instructions synchronized" below).
+authoritative source. A failed download fails the build rather than
+silently publishing stale documentation.
 
 `pages/videos.json` is a simple JSON list of the project's video
 walkthroughs — each entry a YouTube `id` and a `title` — rendered by
