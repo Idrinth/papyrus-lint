@@ -40,6 +40,7 @@ import {
   handleScriptRootsChanged,
   hasFixableFindings,
   hideAutocomplete,
+  hideLintProgress,
   isAchlistPath,
   isCodeViewerEditDirty,
   isFixableFinding,
@@ -83,12 +84,14 @@ import {
   scriptRootsForAchlist,
   severityOf,
   showError,
+  showLintProgress,
   showResult,
   storeTheme,
   switchTab,
   tagsForFinding,
   toggleCodeViewerFullscreen,
   updateAutocomplete,
+  updateLintProgress,
   useProjectDir,
   type Diagnostic,
   type LintConfig,
@@ -1410,6 +1413,38 @@ describe("buildPscResultItem / renderPscResults", () => {
   });
 });
 
+describe("showLintProgress / updateLintProgress / hideLintProgress", () => {
+  it("shows the progress bar reset to 0/total", () => {
+    showLintProgress(3);
+
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
+    expect(document.querySelector<HTMLProgressElement>("#lint-progress-bar")!.value).toBe(0);
+    expect(document.querySelector<HTMLProgressElement>("#lint-progress-bar")!.max).toBe(3);
+    expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Linting 0 / 3 files");
+  });
+
+  it("stays hidden when there are no files to process", () => {
+    showLintProgress(0);
+
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(true);
+  });
+
+  it("updates the bar's value and label as files finish", () => {
+    showLintProgress(2);
+    updateLintProgress(1, 2);
+
+    expect(document.querySelector<HTMLProgressElement>("#lint-progress-bar")!.value).toBe(1);
+    expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Linting 1 / 2 files");
+  });
+
+  it("hides the progress bar", () => {
+    showLintProgress(2);
+    hideLintProgress();
+
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(true);
+  });
+});
+
 describe("handleFixClick", () => {
   it("disables the button, applies the repair, and re-renders with updated findings", async () => {
     const remaining: Diagnostic[] = [];
@@ -1870,11 +1905,16 @@ describe("handleDroppedPaths", () => {
 
     expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(false);
+    expect(document.querySelector<HTMLProgressElement>("#lint-progress-bar")!.value).toBe(1);
+    expect(document.querySelector<HTMLProgressElement>("#lint-progress-bar")!.max).toBe(2);
+    expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Linting 1 / 2 files");
 
     resolveB([{ line: 2, column: 1, message: "[warning] from B" }]);
     await drop;
 
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(2);
+    expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(true);
   });
 
   it("ignores a stale drop's straggling outcome once a newer drop has started, instead of mixing it into the newer results", async () => {

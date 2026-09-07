@@ -53,6 +53,11 @@
           </button>
         </div>
 
+        <div id="lint-progress" class="lint-progress" hidden aria-live="polite">
+          <label id="lint-progress-label" for="lint-progress-bar" class="lint-progress__label"></label>
+          <progress id="lint-progress-bar" value="0" max="1"></progress>
+        </div>
+
         <div id="panel-import" class="tabs__panel" role="tabpanel" aria-labelledby="tab-import">
           <div id="drop-zone" class="drop-zone">
             <p class="drop-zone__hint">Drag and drop an .achlist file, a single .psc file, or a folder to scan recursively, here to get started</p>

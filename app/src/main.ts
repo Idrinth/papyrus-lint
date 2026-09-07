@@ -18,6 +18,9 @@ let resultTitleEl: HTMLElement | null;
 let resultListEl: HTMLElement | null;
 let pscResultEl: HTMLElement | null;
 let pscResultListEl: HTMLElement | null;
+let lintProgressEl: HTMLElement | null;
+let lintProgressLabelEl: HTMLElement | null;
+let lintProgressBarEl: HTMLProgressElement | null;
 let filenameFilterEl: HTMLInputElement | null;
 let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
@@ -1878,6 +1881,36 @@ export function projectDirForPscPath(path: string): string {
   return dirnameOf(dirnameOf(dirnameOf(path)));
 }
 
+// Shows the progress bar reset to 0/`total`, for a drop about to start
+// parsing/linting `total` files.
+export function showLintProgress(total: number) {
+  if (!lintProgressEl || !lintProgressLabelEl || !lintProgressBarEl) {
+    return;
+  }
+  if (total === 0) {
+    lintProgressEl.hidden = true;
+    return;
+  }
+  lintProgressBarEl.max = total;
+  lintProgressBarEl.value = 0;
+  lintProgressLabelEl.textContent = `Linting 0 / ${total} files`;
+  lintProgressEl.hidden = false;
+}
+
+export function updateLintProgress(processed: number, total: number) {
+  if (!lintProgressEl || !lintProgressLabelEl || !lintProgressBarEl) {
+    return;
+  }
+  lintProgressBarEl.value = processed;
+  lintProgressLabelEl.textContent = `Linting ${processed} / ${total} files`;
+}
+
+export function hideLintProgress() {
+  if (lintProgressEl) {
+    lintProgressEl.hidden = true;
+  }
+}
+
 export async function handleDroppedPaths(paths: string[]) {
   const achlistPath = paths.find(isAchlistPath);
 
@@ -1898,7 +1931,9 @@ export async function handleDroppedPaths(paths: string[]) {
 
       await useProjectDir(projectDir);
       currentAchlistScriptRoots = scriptRootsForAchlist(entries);
-      await parsePscFiles(entries.filter(isPscPath), (outcome) => {
+      const pscEntries = entries.filter(isPscPath);
+      showLintProgress(pscEntries.length);
+      await parsePscFiles(pscEntries, (outcome) => {
         // A newer drop started (and so already reset currentPscOutcomes to
         // its own array) while this one was still parsing/linting; don't
         // mix this stale outcome into it.
@@ -1907,7 +1942,11 @@ export async function handleDroppedPaths(paths: string[]) {
         }
         currentPscOutcomes.push(outcome);
         renderPscResults(currentPscOutcomes);
+        updateLintProgress(currentPscOutcomes.length, pscEntries.length);
       });
+      if (generation === currentParseGeneration) {
+        hideLintProgress();
+      }
     } catch (error) {
       showError("Failed to read that .achlist file. Please try again.");
       console.error(error);
@@ -1925,13 +1964,18 @@ export async function handleDroppedPaths(paths: string[]) {
 
     await useProjectDir(projectDirForPscPath(pscPath));
     currentAchlistScriptRoots = [];
+    showLintProgress(1);
     await parsePscFiles([pscPath], (outcome) => {
       if (generation !== currentParseGeneration) {
         return;
       }
       currentPscOutcomes.push(outcome);
       renderPscResults(currentPscOutcomes);
+      updateLintProgress(currentPscOutcomes.length, 1);
     });
+    if (generation === currentParseGeneration) {
+      hideLintProgress();
+    }
     return;
   }
 
@@ -1956,13 +2000,18 @@ export async function handleDroppedPaths(paths: string[]) {
 
       await useProjectDir(projectDir);
       currentAchlistScriptRoots = scriptRootsForAchlist(entries);
+      showLintProgress(entries.length);
       await parsePscFiles(entries, (outcome) => {
         if (generation !== currentParseGeneration) {
           return;
         }
         currentPscOutcomes.push(outcome);
         renderPscResults(currentPscOutcomes);
+        updateLintProgress(currentPscOutcomes.length, entries.length);
       });
+      if (generation === currentParseGeneration) {
+        hideLintProgress();
+      }
       return;
     } catch {
       // Not a directory either; fall through to the error below.
@@ -1981,6 +2030,9 @@ window.addEventListener("DOMContentLoaded", () => {
   resultListEl = document.querySelector("#achlist-result-list");
   pscResultEl = document.querySelector("#psc-result");
   pscResultListEl = document.querySelector("#psc-result-list");
+  lintProgressEl = document.querySelector("#lint-progress");
+  lintProgressLabelEl = document.querySelector("#lint-progress-label");
+  lintProgressBarEl = document.querySelector("#lint-progress-bar");
   filenameFilterEl = document.querySelector("#filename-filter");
   configPathOverrideEl = document.querySelector("#config-path-override");
   compilerPathEl = document.querySelector("#compiler-path");

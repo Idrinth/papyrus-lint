@@ -20,6 +20,11 @@ export const FIXTURE_HTML = `
         <button type="button" id="tab-contact" class="tabs__tab" role="tab" aria-selected="false">Contact</button>
       </div>
 
+      <div id="lint-progress" class="lint-progress" hidden aria-live="polite">
+        <label id="lint-progress-label" for="lint-progress-bar" class="lint-progress__label"></label>
+        <progress id="lint-progress-bar" value="0" max="1"></progress>
+      </div>
+
       <div id="panel-import" class="tabs__panel" role="tabpanel">
         <div id="drop-zone" class="drop-zone">
           <p id="drop-zone-error" class="drop-zone__error" aria-live="polite"></p>
