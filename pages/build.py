@@ -603,6 +603,41 @@ def render_coverage_table(rows: list[tuple[str, int, int]], coverage_summary) ->
     return "\n".join(out)
 
 
+def render_coverage_entry(coverage_dir: Path, name: str, value, coverage_summary) -> tuple[int, int, bool, str]:
+    """Renders one (name, value) MODULES entry's body (its own heading not
+    included, since the caller decides whether to show it), recursing into
+    nested groups the same way coverage_summary.render_entry does, since a
+    value can be either a leaf lcov.info path or a further nested list of
+    (label, value) entries (e.g. App's Crates). Returns (lines_found,
+    lines_hit, whether any report was found, rendered body HTML)."""
+    if isinstance(value, str):
+        rows = parse_lcov_files(coverage_dir / value)
+        if rows is None:
+            return 0, 0, False, '<p class="section-intro">No report.</p>'
+        found = sum(f for _, f, _h in rows)
+        hit = sum(h for _, _f, h in rows)
+        rows_sorted = sorted(rows, key=lambda r: ((r[2] / r[1]) if r[1] else 1.0, r[0]))
+        return found, hit, True, render_coverage_table(rows_sorted, coverage_summary)
+
+    found = hit = 0
+    any_report = False
+    child_html: list[str] = []
+    for child_name, child_value in value:
+        child_found, child_hit, child_any_report, child_body = render_coverage_entry(
+            coverage_dir, child_name, child_value, coverage_summary
+        )
+        found += child_found
+        hit += child_hit
+        any_report = any_report or child_any_report
+        heading = (
+            f"<h3>{html.escape(child_name)} — {coverage_summary.pct(child_hit, child_found)} "
+            f"({child_hit}/{child_found})</h3>"
+        )
+        child_html.append((heading if len(value) > 1 else "") + child_body)
+
+    return found, hit, any_report, "".join(child_html)
+
+
 def build_coverage_content(coverage_dir: Path, coverage_summary) -> str:
     """Renders the coverage subpage's body: a per-module, per-file line
     coverage breakdown from the downloaded lcov reports, worst-covered file
@@ -614,25 +649,19 @@ def build_coverage_content(coverage_dir: Path, coverage_summary) -> str:
     for label, parts in coverage_summary.MODULES:
         module_found = module_hit = 0
         part_html: list[str] = []
-        for name, rel_path in parts:
-            rows = parse_lcov_files(coverage_dir / rel_path)
-            if rows is None:
-                part_html.append(f'<h3>{html.escape(name)}</h3><p class="section-intro">No report.</p>')
-                continue
-            found = sum(f for _, f, _h in rows)
-            hit = sum(h for _, _f, h in rows)
+        for name, value in parts:
+            found, hit, part_any_report, body = render_coverage_entry(coverage_dir, name, value, coverage_summary)
             module_found += found
             module_hit += hit
             total_found += found
             total_hit += hit
-            any_report = True
-            rows_sorted = sorted(rows, key=lambda r: ((r[2] / r[1]) if r[1] else 1.0, r[0]))
+            any_report = any_report or part_any_report
             heading = (
                 f"<h3>{html.escape(name)} — {coverage_summary.pct(hit, found)} ({hit}/{found})</h3>"
                 if len(parts) > 1
                 else ""
             )
-            part_html.append(heading + render_coverage_table(rows_sorted, coverage_summary))
+            part_html.append(heading + body)
 
         summary = coverage_summary.pct(module_hit, module_found)
         out.append(
