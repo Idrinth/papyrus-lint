@@ -331,6 +331,11 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::High,
     },
+    RuleTags {
+        rule: crate::default_property_value::RULE,
+        kinds: &["style", "maintainability"],
+        importance: Importance::Low,
+    },
 ];
 
 #[cfg(test)]
