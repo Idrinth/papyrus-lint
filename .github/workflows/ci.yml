@@ -671,8 +671,30 @@ jobs:
       - name: Compile
         run: npm run compile
 
-  rust-build:
-    name: Rust (fmt, clippy, check)
+  rust-fmt:
+    name: Rust (fmt)
+    needs: labels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: |
+          for manifest in \
+            app/src-tauri/Cargo.toml \
+            app/crates/papyrus-parser/Cargo.toml \
+            app/crates/papyrus-lints/Cargo.toml \
+            app/crates/papyrus-lint-core/Cargo.toml \
+            app/crates/papyrus-lint-cli/Cargo.toml; do
+            cargo fmt --manifest-path "$manifest" -- --check
+          done
+
+  rust-clippy:
+    name: Rust (clippy)
     needs: labels
     runs-on: ubuntu-latest
     steps:
@@ -685,24 +707,18 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt, clippy
+          components: clippy
 
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: app/src-tauri
 
-      - name: Check formatting
-        run: cargo fmt --manifest-path app/src-tauri/Cargo.toml -- --check
-
       - name: Clippy
         run: cargo clippy --manifest-path app/src-tauri/Cargo.toml --all-targets -- -D warnings
 
-      - name: Check
-        run: cargo check --manifest-path app/src-tauri/Cargo.toml
-
   rust-test:
     name: Rust test (${{ matrix.name }})
-    needs: rust-build
+    needs: [rust-fmt, rust-clippy]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

@@ -132,9 +132,7 @@ mod tests {
         assert!(diagnostics[0].message.starts_with("[warning]"));
         assert!(diagnostics[0].message.contains("Parameter 1 of 'DoThing'"));
         assert!(diagnostics[0].message.contains("named 'akRef'"));
-        assert!(diagnostics[0]
-            .message
-            .contains("names it 'akTarget'"));
+        assert!(diagnostics[0].message.contains("names it 'akTarget'"));
     }
 
     #[test]

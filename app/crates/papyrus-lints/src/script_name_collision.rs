@@ -61,8 +61,7 @@ mod tests {
 
     #[test]
     fn flags_a_property_named_identically_to_its_script() {
-        let diagnostics =
-            check("ScriptName Example\n\nInt Property Example Auto\n");
+        let diagnostics = check("ScriptName Example\n\nInt Property Example Auto\n");
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 3);
@@ -89,27 +88,24 @@ mod tests {
 
     #[test]
     fn does_not_flag_an_unrelated_property_or_variable_name() {
-        let diagnostics = check(
-            "ScriptName Example\n\nInt Property MyValue Auto\n\nInt total = 1\n",
-        );
+        let diagnostics =
+            check("ScriptName Example\n\nInt Property MyValue Auto\n\nInt total = 1\n");
 
         assert!(diagnostics.is_empty());
     }
 
     #[test]
     fn flags_every_colliding_declaration_on_the_same_script() {
-        let diagnostics = check(
-            "ScriptName Example\n\nInt Property Example Auto\n\nInt Example = 1\n",
-        );
+        let diagnostics =
+            check("ScriptName Example\n\nInt Property Example Auto\n\nInt Example = 1\n");
 
         assert_eq!(diagnostics.len(), 2);
     }
 
     #[test]
     fn does_not_flag_a_local_variable_sharing_the_script_name() {
-        let diagnostics = check(
-            "ScriptName Example\n\nFunction Test()\n    Int Example = 1\nEndFunction\n",
-        );
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Int Example = 1\nEndFunction\n");
 
         assert!(diagnostics.is_empty());
     }
