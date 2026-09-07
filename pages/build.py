@@ -41,6 +41,7 @@ import json
 import re
 import shutil
 from pathlib import Path
+from urllib.parse import quote, urlparse
 
 from PIL import Image
 
@@ -65,6 +66,21 @@ LINT_CATEGORIES = ["Formatting", "Performance", "Reliability", "Bugprone", "Othe
 GITHUB_BLOB_BASE = "https://github.com/idrinth/papyrus-lint/blob/the-one"
 SITE_URL = "https://papyrus-lint.idrinth.de/"
 CNAME_FILE = PAGES_DIR / "CNAME"
+FUNDING_FILE = ROOT / ".github" / "FUNDING.yml"
+
+FUNDING_PROVIDERS = {
+    "github": ("GitHub Sponsors", "https://github.com/sponsors/{}"),
+    "patreon": ("Patreon", "https://www.patreon.com/{}"),
+    "open_collective": ("Open Collective", "https://opencollective.com/{}"),
+    "ko_fi": ("Ko-fi", "https://ko-fi.com/{}"),
+    "community_bridge": ("Community Bridge", "https://funding.communitybridge.org/projects/{}"),
+    "liberapay": ("Liberapay", "https://liberapay.com/{}"),
+    "issuehunt": ("IssueHunt", "https://issuehunt.io/r/{}"),
+    "lfx_crowdfunding": ("LFX Crowdfunding", "https://crowdfunding.lfx.linuxfoundation.org/projects/{}"),
+    "polar": ("Polar", "https://polar.sh/{}"),
+    "buy_me_a_coffee": ("Buy Me a Coffee", "https://www.buymeacoffee.com/{}"),
+    "thanks_dev": ("thanks.dev", "https://thanks.dev/d/{}"),
+}
 
 # Every file in docs/ published as a browsable subpage, alongside a short
 # hand-written blurb shown in the docs list on the homepage and on the docs
@@ -486,6 +502,46 @@ def render_docs_list_items(doc_results: dict, link_prefix: str) -> str:
     return "\n".join(items)
 
 
+def parse_funding_values(value: str) -> list[str]:
+    """Parse the scalar and inline-list forms accepted by FUNDING.yml.
+
+    GitHub's funding configuration consists only of top-level string values
+    (or short inline lists), so pulling in a full YAML dependency solely for
+    the site footer would be unnecessary.
+    """
+    value = value.strip()
+    values = value[1:-1].split(",") if value.startswith("[") and value.endswith("]") else [value]
+    return [item.strip().strip("'\"") for item in values if item.strip().strip("'\"")]
+
+
+def render_funding_links(funding_file: Path | None = None) -> str:
+    """Render footer list items from the repository's GitHub funding file."""
+    funding_file = funding_file or FUNDING_FILE
+    links: list[tuple[str, str]] = []
+    for raw_line in funding_file.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        provider, raw_value = line.split(":", 1)
+        provider = provider.strip()
+        for value in parse_funding_values(raw_value):
+            if provider == "custom":
+                parsed = urlparse(value)
+                if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                    raise SystemExit(f"{funding_file}: custom funding link must be an HTTP(S) URL: {value}")
+                label = "PayPal" if parsed.hostname in {"paypal.com", "www.paypal.com"} else "Support this project"
+                links.append((label, value))
+            elif provider in FUNDING_PROVIDERS:
+                label, url_template = FUNDING_PROVIDERS[provider]
+                links.append((label, url_template.format(quote(value, safe=""))))
+
+    return "\n".join(
+        f'<li><a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">'
+        f"{html.escape(label)}</a></li>"
+        for label, url in links
+    )
+
+
 def render_shared_components(page: str, root_path: str, version: str) -> str:
     """Insert the shared site chrome into a page template.
 
@@ -497,6 +553,7 @@ def render_shared_components(page: str, root_path: str, version: str) -> str:
     replacements = {
         "<!--ROOT_PATH-->": root_path,
         "<!--VERSION-->": html.escape(version) if version else "unreleased",
+        "<!--FUNDING_LINKS-->": render_funding_links(),
     }
     for placeholder, value in replacements.items():
         page = page.replace(placeholder, value)
