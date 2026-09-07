@@ -410,6 +410,14 @@ PapyrusLinterCLI --color never path/to/project.achlist
 settings in the current working directory. It refuses to overwrite an existing
 `papyrus-lint.yaml` or `papyrus-lint.yml` file.
 
+If a `papyrus-lint.yaml`/`.yml` file exists next to the running executable
+(the CLI binary itself, or the desktop app's binary when it delegates to CLI
+mode), `init` merges it in as the base instead of the built-in defaults: any
+key it sets overrides the built-in default, and any key it omits still falls
+back to that default. This lets you define your own baseline settings once,
+next to wherever you keep the binary, and reuse it across every project you
+run `init` in instead of hand-editing each newly generated file the same way.
+
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
 Given a single `.psc` path directly, it lints just that file, treating it
 as the achlist's sole entry. Given a directory instead, it recursively
