@@ -60,6 +60,7 @@ let codeViewerEditEl: HTMLElement | null;
 let codeViewerEditHighlightEl: HTMLElement | null;
 let codeViewerEditTextareaEl: HTMLTextAreaElement | null;
 let codeViewerEditButtonEl: HTMLButtonElement | null;
+let codeViewerFixButtonEl: HTMLButtonElement | null;
 let codeViewerSaveButtonEl: HTMLButtonElement | null;
 let codeViewerSaveCompileButtonEl: HTMLButtonElement | null;
 let codeViewerCancelButtonEl: HTMLButtonElement | null;
@@ -1008,6 +1009,21 @@ function setCodeViewerMode(mode: "view" | "edit") {
   if (codeViewerSaveButtonEl) codeViewerSaveButtonEl.hidden = mode !== "edit";
   if (codeViewerSaveCompileButtonEl) codeViewerSaveCompileButtonEl.hidden = mode !== "edit";
   if (codeViewerCancelButtonEl) codeViewerCancelButtonEl.hidden = mode !== "edit";
+  updateCodeViewerFixButtonVisibility();
+}
+
+// Shows the "Apply fixes" button only in view mode, and only while the
+// currently loaded file still has at least one fixable finding (the same
+// check the Lint results list uses to decide whether to show its own
+// per-file "Apply fixes" button), so it disappears on its own once nothing
+// is left to fix. Called both on every mode change and whenever
+// codeViewerState's findings change without a mode change (e.g. right
+// after a fix is applied).
+function updateCodeViewerFixButtonVisibility() {
+  if (!codeViewerFixButtonEl) {
+    return;
+  }
+  codeViewerFixButtonEl.hidden = codeViewerMode !== "view" || !hasFixableFindings(codeViewerState?.findings ?? []);
 }
 
 // Re-renders the edit mode's syntax-highlighted overlay from the
@@ -1372,6 +1388,7 @@ export async function openCodeViewer(path: string, findings: Diagnostic[], focus
   }
 
   codeViewerState = { path, source, findings };
+  updateCodeViewerFixButtonVisibility();
   renderCodeViewerView(source, findings, focusLine);
 }
 
@@ -1715,6 +1732,39 @@ export async function handleFixClick(path: string, outcome: PscParseOutcome, but
     console.error(error);
   } finally {
     renderPscResults(currentPscOutcomes);
+  }
+}
+
+// The code viewer's own "Apply fixes" button: applies every automatic fix
+// in the currently open file (the same repair handleFixClick performs from
+// the Lint results list), then refreshes the viewer's source/findings in
+// place and, since the fix also touches the file on disk, re-syncs the
+// matching Lint results list entry - so acting on a file no longer requires
+// closing the viewer first.
+export async function handleCodeViewerFixClick() {
+  if (!codeViewerState || !codeViewerFixButtonEl) {
+    return;
+  }
+  const { path } = codeViewerState;
+  codeViewerFixButtonEl.disabled = true;
+  try {
+    const findings = await repairPscFile(path);
+    const source = await invoke<string>("read_psc_file", { path });
+    codeViewerState = { path, source, findings };
+    renderCodeViewerView(source, findings);
+
+    const outcome = currentPscOutcomes.find((candidate) => candidate.path === path);
+    if (outcome) {
+      outcome.findings = findings;
+      renderPscResults(currentPscOutcomes);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    updateCodeViewerFixButtonVisibility();
+    if (codeViewerFixButtonEl) {
+      codeViewerFixButtonEl.disabled = false;
+    }
   }
 }
 
@@ -2202,6 +2252,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerEditHighlightEl = document.querySelector("#code-viewer-editor-highlight");
   codeViewerEditTextareaEl = document.querySelector("#code-viewer-editor-textarea");
   codeViewerEditButtonEl = document.querySelector("#code-viewer-edit");
+  codeViewerFixButtonEl = document.querySelector("#code-viewer-fix");
   codeViewerSaveButtonEl = document.querySelector("#code-viewer-save");
   codeViewerSaveCompileButtonEl = document.querySelector("#code-viewer-save-compile");
   codeViewerCancelButtonEl = document.querySelector("#code-viewer-cancel");
@@ -2237,6 +2288,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerEl?.addEventListener("close", () => setCodeViewerMode("view"));
 
   codeViewerEditButtonEl?.addEventListener("click", () => enterCodeViewerEditMode());
+  codeViewerFixButtonEl?.addEventListener("click", () => void handleCodeViewerFixClick());
   codeViewerCancelButtonEl?.addEventListener("click", () => cancelCodeViewerEditMode());
   codeViewerSaveButtonEl?.addEventListener("click", () => void saveCodeViewerEdits());
   codeViewerSaveCompileButtonEl?.addEventListener("click", () => void saveAndCompileCodeViewerEdits());

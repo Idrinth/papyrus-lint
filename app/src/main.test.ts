@@ -30,6 +30,7 @@ import {
   escapeAttr,
   findCandidatePairRoot,
   handleAutocompleteKeydown,
+  handleCodeViewerFixClick,
   handleCompileClick,
   handleCompileCheckChanged,
   handleCompilerPathChanged,
@@ -2290,6 +2291,86 @@ describe("openCodeViewer", () => {
     await openCodeViewer("/a.psc", []);
 
     expect(document.querySelector("#code-viewer-view")!.textContent).toContain("permission denied");
+  });
+
+  it("shows the Apply fixes button when the loaded file has a fixable finding", async () => {
+    invokeImplFor({ read_psc_file: () => "line one  \n" });
+
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]);
+
+    expect(document.querySelector<HTMLButtonElement>("#code-viewer-fix")!.hidden).toBe(false);
+  });
+
+  it("keeps the Apply fixes button hidden when the loaded file has no fixable finding", async () => {
+    invokeImplFor({ read_psc_file: () => 'Debug.Trace("hi")\n' });
+
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[error] forbidden function used" }]);
+
+    expect(document.querySelector<HTMLButtonElement>("#code-viewer-fix")!.hidden).toBe(true);
+  });
+});
+
+describe("handleCodeViewerFixClick", () => {
+  async function openWithFixableFinding() {
+    invokeImplFor({
+      read_psc_file: () => "line one  \n",
+      repair_psc_file: () => [],
+    });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]);
+  }
+
+  it("disables the button, repairs the file, and re-renders the viewer with the re-read source", async () => {
+    invokeImplFor({
+      read_psc_file: vi.fn().mockResolvedValueOnce("line one  \n").mockResolvedValueOnce("line one\n"),
+      repair_psc_file: () => [],
+    });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]);
+    const button = document.querySelector<HTMLButtonElement>("#code-viewer-fix")!;
+
+    const promise = handleCodeViewerFixClick();
+    expect(button.disabled).toBe(true);
+    await promise;
+
+    expect(invokeMock).toHaveBeenCalledWith("repair_psc_file", expect.objectContaining({ path: "/a.psc" }));
+    expect(document.querySelectorAll("#code-viewer-view .code-viewer__line--warning")).toHaveLength(0);
+    expect(button.disabled).toBe(false);
+  });
+
+  it("hides the button once nothing is left to fix", async () => {
+    await openWithFixableFinding();
+    const button = document.querySelector<HTMLButtonElement>("#code-viewer-fix")!;
+    expect(button.hidden).toBe(false);
+
+    await handleCodeViewerFixClick();
+
+    expect(button.hidden).toBe(true);
+  });
+
+  it("does nothing when the code viewer has no loaded file", async () => {
+    // A failed read leaves codeViewerState null (openCodeViewer resets it to
+    // null up front and only repopulates it after a successful read).
+    invokeMock.mockRejectedValue(new Error("permission denied"));
+    await openCodeViewer("/a.psc", []);
+    invokeMock.mockReset();
+
+    await handleCodeViewerFixClick();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("re-enables the button and leaves the viewer untouched when the repair fails", async () => {
+    invokeImplFor({
+      read_psc_file: () => "line one  \n",
+      repair_psc_file: () => Promise.reject(new Error("disk full")),
+    });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]);
+    const button = document.querySelector<HTMLButtonElement>("#code-viewer-fix")!;
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await handleCodeViewerFixClick();
+
+    expect(button.disabled).toBe(false);
+    expect(button.hidden).toBe(false);
   });
 });
 
