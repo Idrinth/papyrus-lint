@@ -137,6 +137,9 @@ desktop app's binary at all.
     ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel
     ├── videos.template.html    # headings, the same light/dark palette); build.py
     ├── videos.json             # substitutes its lint-table/CLI-example placeholders
+    ├── action.template.html    # and renders action.html, the papyrus-lint-action
+    │                            # GitHub Action's own README fetched at build
+    │                            # time (see action.template.html below).
     ├── coverage.template.html  # with content converted straight from README.md,
     ├── includes/               # shared page chrome inserted during the build
     │   ├── header.html         # with depth-aware links for root/docs pages
@@ -462,17 +465,16 @@ on every build so GitHub Pages keeps serving it there across each
 Actions-based deploy, rather than relying solely on the custom-domain
 setting under Settings → Pages. `build.py` also writes a `sitemap.xml`
 (`sitemap_urls`/`build_sitemap`, rooted at `SITE_URL`) listing the
-homepage, `videos.html`, `docs/index.html`, and every `DOCS` entry's own
-subpage — built from the same lists that generate those pages, so it
-can't drift out of sync with what's actually published — and a
-`robots.txt` (`build_robots_txt`) allowing all crawling and pointing at
-that sitemap.
+homepage, `action.html`, `videos.html`, `coverage.html`, `docs/index.html`,
+and every `DOCS` entry's own subpage — built from the same lists that
+generate those pages, so it can't drift out of sync with what's actually
+published — and a `robots.txt` (`build_robots_txt`) allowing all crawling
+and pointing at that sitemap.
 
-Every file in the `docs/` directory (see Project structure above), plus the
-papyrus-lint-action README fetched at build time, is also published as its
-own browsable subpage, so that reference material isn't only reachable as
-raw source on GitHub. `pages/build.py`'s `DOCS` list names each local file
-or remote `content_url`, a `slug` for its output filename, and a `kind`
+Every file in the `docs/` directory (see Project structure above) is also
+published as its own browsable subpage, so that reference material isn't
+only reachable as raw source on GitHub. `pages/build.py`'s `DOCS` list names
+each local file or remote `content_url`, a `slug` for its output filename, and a `kind`
 (`markdown`, `json-schema`, or plain text) that picks how it's rendered:
 a Markdown document is converted to HTML the same way
 the CLI examples are (headings, paragraphs, fenced code blocks, and
@@ -504,12 +506,18 @@ adding an entry to `DOCS`, not touching either template.
 The [`papyrus-lint-action`](https://github.com/idrinth/papyrus-lint-action)
 repository's own `README.md` is fetched from its `the-one` branch during
 every site build, so that its GitHub Action's inputs/outputs and usage
-documentation are always current on a subpage here without keeping a
-duplicate in this repository. Its `DOCS` entry sets `content_url` to the
-raw file and `source_url` to that other repository's own blob URL
+documentation are always current here without keeping a duplicate in this
+repository — but unlike the `docs/` files above, it's rendered as its own
+top-level `action.html` page (`ACTION_DOC`/`build_action_page`), reachable
+from the main nav's "Action" entry (`pages/includes/header.html`) and from
+the "GitHub Action" integration card on the homepage, rather than filed
+under `docs/` as if it were reference material rather than a primary
+integration. It reuses the same `render_doc`/`raw_github_link` machinery a
+`DOCS` entry's remote `content_url` uses: `ACTION_DOC` sets `content_url` to
+the raw file and `source_url` to that other repository's own blob URL
 (`raw_github_link`'s "View raw source on GitHub" link uses `source_url`
 when a doc sets it, instead of assuming the file lives under this
-repository's own `docs/`), so the rendered subpage links back to the
+repository's own `docs/`), so the rendered page links back to the
 authoritative source. A failed download fails the build rather than
 silently publishing stale documentation.
 

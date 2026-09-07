@@ -18,6 +18,10 @@ page, is rewritten into a <picture> offering those smaller formats ahead
 of the original as a fallback (see wrap_images_with_modern_sources).
 Every generated HTML page and the stylesheet are minified (see
 minify_html/minify_css) before being written into the output directory.
+Also renders action.html (via pages/action.template.html), the
+papyrus-lint-action GitHub Action's own README fetched fresh on every build
+(see ACTION_DOC/build_action_page), reachable from the main nav's "Action"
+entry rather than filed under docs/ as if it were reference material.
 Also renders coverage.html (via pages/coverage.template.html), a per-module,
 per-file line coverage breakdown built from a directory of downloaded lcov
 reports passed as --coverage-dir (see build_coverage_content), reusing
@@ -96,16 +100,6 @@ DOCS = [
         "blurb": "A minimal GitHub Actions workflow that lints a project on every push and pull request.",
     },
     {
-        "slug": "papyrus-lint-action-readme",
-        "kind": "markdown",
-        "content_url": "https://raw.githubusercontent.com/Idrinth/papyrus-lint-action/the-one/README.md",
-        "source_url": "https://github.com/Idrinth/papyrus-lint-action/blob/the-one/README.md",
-        "blurb": (
-            "The papyrus-lint-action GitHub Action's own README: its inputs, outputs, and how it "
-            "posts findings as pull request review comments."
-        ),
-    },
-    {
         "filename": "papyrus-lint.default.yaml",
         "slug": "papyrus-lint-default-yaml",
         "kind": "yaml",
@@ -145,6 +139,18 @@ DOCS = [
 ]
 
 DOC_FILENAME_TO_SLUG = {doc["filename"]: doc["slug"] for doc in DOCS if "filename" in doc}
+
+# The papyrus-lint-action GitHub Action's own README, rendered as its own
+# top-level action.html page (linked from the main nav's "Action" entry)
+# rather than filed under docs/ as if it were reference material - see
+# build_action_page. Downloaded fresh on every build the same way a DOCS
+# entry's own content_url is, so it never drifts from the other
+# repository's actual README.
+ACTION_DOC = {
+    "kind": "markdown",
+    "content_url": "https://raw.githubusercontent.com/Idrinth/papyrus-lint-action/the-one/README.md",
+    "source_url": "https://github.com/Idrinth/papyrus-lint-action/blob/the-one/README.md",
+}
 
 # Simple list of YouTube video IDs/titles rendered onto videos.html, so a new
 # video can be added without touching build.py or its template.
@@ -649,6 +655,22 @@ def build_videos_page(out_dir: Path, version: str = "") -> None:
     (out_dir / "videos.html").write_text(finalize_page(page), encoding="utf-8")
 
 
+def build_action_page(out_dir: Path, version: str = "") -> None:
+    """Renders the papyrus-lint-action GitHub Action's own README (ACTION_DOC
+    above) into its own top-level action.html page, reachable from the main
+    nav's "Action" entry, instead of a docs/ subpage."""
+    title, description, content_html = render_doc(ACTION_DOC)
+    template = (PAGES_DIR / "action.template.html").read_text(encoding="utf-8")
+    for marker in ("<!--ACTION_TITLE-->", "<!--ACTION_DESCRIPTION-->", "<!--ACTION_CONTENT-->"):
+        if marker not in template:
+            raise SystemExit(f"action.template.html: missing marker {marker}")
+    page = template.replace("<!--ACTION_TITLE-->", html.escape(title))
+    page = page.replace("<!--ACTION_DESCRIPTION-->", html.escape(description, quote=True))
+    page = page.replace("<!--ACTION_CONTENT-->", content_html)
+    page = render_shared_components(page, "", version)
+    (out_dir / "action.html").write_text(finalize_page(page), encoding="utf-8")
+
+
 def load_coverage_summary():
     """Loads .github/scripts/coverage_summary.py by file path (see
     COVERAGE_SUMMARY_SCRIPT above) so the coverage subpage shares its
@@ -808,7 +830,13 @@ def sitemap_urls(doc_results: dict) -> list[str]:
     """Every page build() renders, as absolute SITE_URL-rooted URLs, in the
     same order sitemap.xml lists them. Kept in one place so the sitemap can
     never drift from the pages actually published."""
-    urls = [SITE_URL, f"{SITE_URL}videos.html", f"{SITE_URL}coverage.html", f"{SITE_URL}docs/index.html"]
+    urls = [
+        SITE_URL,
+        f"{SITE_URL}action.html",
+        f"{SITE_URL}videos.html",
+        f"{SITE_URL}coverage.html",
+        f"{SITE_URL}docs/index.html",
+    ]
     for doc in DOCS:
         if doc["slug"] in doc_results:
             urls.append(f"{SITE_URL}docs/{doc['slug']}.html")
@@ -886,6 +914,7 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
 
     build_doc_pages(out_dir, doc_results, version)
     build_videos_page(out_dir, version)
+    build_action_page(out_dir, version)
     build_coverage_page(out_dir, coverage_dir, version)
     build_sitemap(out_dir, doc_results)
     build_robots_txt(out_dir)
