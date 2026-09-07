@@ -775,6 +775,7 @@ PapyrusLinterCLI example.psc
                 "<!--COVERAGE_VERSION--><!--COVERAGE_CONTENT-->", encoding="utf-8"
             )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
+            (pages_dir / "theme.js").write_text("/* theme js */", encoding="utf-8")
             fonts_dir = pages_dir / "fonts"
             fonts_dir.mkdir()
             (fonts_dir / "font.woff2").write_bytes(b"font bytes")

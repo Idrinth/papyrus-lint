@@ -2,6 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("papyrus-lint:theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+        } catch (error) {
+          /* localStorage unavailable (e.g. disabled); fall back to the
+             system theme via the CSS media query. */
+        }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Videos · Papyrus Lint</title>
     <meta name="description" content="Video walkthroughs and showcases of Papyrus Lint." />

@@ -8,7 +8,14 @@ Also renders every document listed in DOCS (including remotely sourced
 documentation) into its own browsable subpage under docs/ (via
 pages/docs.template.html). The templates receive their
 shared header and footer from pages/includes/, so site chrome has a single
-source of truth. The builder also assembles the site's assets/ directory
+source of truth - including the header's System/Light/Dark theme switch,
+wired up by pages/theme.js (copied into the output directory verbatim) and
+backed by a small blocking inline script duplicated into each template's
+own <head> (before the stylesheet link, to set an already-persisted
+light/dark override ahead of first paint and avoid a flash of the wrong
+theme), the same "system"/"light"/"dark" scheme and localStorage key the
+desktop app's own theme switch uses. The builder also assembles the site's
+assets/ directory
 by copying the screenshots and icon this page uses
 from resources/ and app/src-tauri/icons, rather than committing
 duplicate copies of them under pages/. Every asset actually rendered as
@@ -872,6 +879,7 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
     (out_dir / "index.html").write_text(finalize_page(template), encoding="utf-8")
     css = (PAGES_DIR / "styles.css").read_text(encoding="utf-8")
     (out_dir / "styles.css").write_text(minify_css(css), encoding="utf-8")
+    shutil.copyfile(PAGES_DIR / "theme.js", out_dir / "theme.js")
 
     assets_dir = out_dir / "assets"
     assets_dir.mkdir()
