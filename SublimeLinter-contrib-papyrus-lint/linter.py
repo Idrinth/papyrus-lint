@@ -4,8 +4,8 @@ import json
 import re
 
 import sublime
-
 from SublimeLinter.lint import Linter, LintMatch, PermanentError
+
 from .cli_download import ensure_release_cli
 
 # Strips a diagnostic message's leading "[error]"/"[warning]"/"[info]" tag
@@ -72,12 +72,12 @@ class PapyrusLint(Linter):
         """
         try:
             report = json.loads(output)
-        except ValueError:
+        except ValueError as err:
             self.logger.error(
-                '{}: could not parse JSON output:\n{}'.format(self.name, output)
+                f'{self.name}: could not parse JSON output:\n{output}'
             )
             self.notify_failure()
-            raise PermanentError('invalid JSON output')
+            raise PermanentError('invalid JSON output') from err
 
         for file_report in report.get('files', []):
             for diagnostic in file_report.get('diagnostics', []):

@@ -104,7 +104,10 @@ def main() -> None:
     lines.append(f"| **Total** | **{total_summary}** | **{total_hit}/{total_found}** |")
 
     lines.append("")
-    lines.append("_Line coverage, aggregated from each job's lcov report. Missing reports mean that job didn't run or didn't upload one._")
+    lines.append(
+        "_Line coverage, aggregated from each job's lcov report. "
+        "Missing reports mean that job didn't run or didn't upload one._"
+    )
 
     print("\n".join(lines))
 

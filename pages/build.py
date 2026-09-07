@@ -59,7 +59,10 @@ DOCS = [
         "slug": "papyrus-lint-action-readme",
         "kind": "markdown",
         "source_url": "https://github.com/Idrinth/papyrus-lint-action/blob/the-one/README.md",
-        "blurb": "The papyrus-lint-action GitHub Action's own README: its inputs, outputs, and how it posts findings as pull request review comments.",
+        "blurb": (
+            "The papyrus-lint-action GitHub Action's own README: its inputs, outputs, and how it "
+            "posts findings as pull request review comments."
+        ),
     },
     {
         "filename": "papyrus-lint.default.yaml",
@@ -89,7 +92,9 @@ DOCS = [
         "slug": "nexuspage-bbcode",
         "kind": "bbcode",
         "title": "Nexus Mods page description (BBCode source)",
-        "description": "The BBCode source used for the project's listing on Nexus Mods, kept in sync with the README by hand.",
+        "description": (
+            "The BBCode source used for the project's listing on Nexus Mods, kept in sync with the README by hand."
+        ),
         "blurb": "The BBCode source behind the project's Nexus Mods page listing.",
     },
 ]
@@ -243,7 +248,7 @@ def render_lint_table(section_lines: list[str]) -> str:
         out.append("<tr>")
         out.append(f"<td>{render_inline(name)}</td>")
         out.append(f"<td>{render_inline(desc)}</td>")
-        out.append(f'<td class="fix-yes">✓</td>' if fix.strip() else "<td></td>")
+        out.append('<td class="fix-yes">✓</td>' if fix.strip() else "<td></td>")
         out.append("</tr>")
     out.append("</tbody></table></div>")
     return "\n".join(out)

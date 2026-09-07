@@ -32,7 +32,6 @@ whether a draft release is needed without re-parsing the advisory text.
 import argparse
 import json
 import re
-import sys
 
 BREAKING_LABEL = "type: breaking change"
 FEATURE_LABEL = "type: feature"
@@ -108,7 +107,9 @@ def dedupe_pull_requests(pull_requests: list[dict]) -> list[dict]:
     return list(seen.values())
 
 
-def build_summary(current_tag: str | None, pull_requests: list[dict], bump: str | None, next_version: str | None) -> str:
+def build_summary(
+    current_tag: str | None, pull_requests: list[dict], bump: str | None, next_version: str | None
+) -> str:
     baseline = current_tag or "(no previous release)"
     lines = ["### Semantic version advisory", "", f"Comparing against the latest release: `{baseline}`.", ""]
 

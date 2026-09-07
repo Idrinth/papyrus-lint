@@ -1,15 +1,14 @@
 """Tests for release-specific CLI download selection and caching."""
 
-from io import BytesIO
-import os
-from pathlib import Path, PosixPath
-import tempfile
-import unittest
-from unittest.mock import patch
 import importlib.util
+import os
 import sys
+import tempfile
 import types
-
+import unittest
+from io import BytesIO
+from pathlib import Path, PosixPath
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sublime = types.ModuleType('sublime')
@@ -121,7 +120,7 @@ class CliDownloadTests(unittest.TestCase):
         version.assert_called_once_with()
         system.assert_called_once_with()
         download.assert_called_once_with(
-            '{}/v4.5.6/PapyrusLinterCLI-linux'.format(cli_download.RELEASE_BASE),
+            f'{cli_download.RELEASE_BASE}/v4.5.6/PapyrusLinterCLI-linux',
             timeout=30,
         )
 
@@ -143,9 +142,7 @@ class CliDownloadTests(unittest.TestCase):
             self.assertEqual(result.read_bytes(), b'first chunksecond chunk')
             self.assertTrue(os.access(result, os.X_OK))
             download.assert_called_once_with(
-                '{}/v2.3.4/PapyrusLinterCLI-linux'.format(
-                    cli_download.RELEASE_BASE
-                ),
+                f'{cli_download.RELEASE_BASE}/v2.3.4/PapyrusLinterCLI-linux',
                 timeout=30,
             )
             self.assertEqual(list(result.parent.iterdir()), [result])
@@ -156,9 +153,8 @@ class CliDownloadTests(unittest.TestCase):
                 cli_download,
                 'urlopen',
                 side_effect=OSError('offline'),
-            ):
-                with self.assertRaisesRegex(OSError, 'offline'):
-                    cli_download.ensure_release_cli(cache, '2.3.4', 'Linux')
+            ), self.assertRaisesRegex(OSError, 'offline'):
+                cli_download.ensure_release_cli(cache, '2.3.4', 'Linux')
 
             directory = Path(cache) / 'PapyrusLint' / 'v2.3.4'
             self.assertEqual(list(directory.iterdir()), [])
@@ -168,9 +164,9 @@ class CliDownloadTests(unittest.TestCase):
             with (
                 patch.object(cli_download, 'urlopen', return_value=BytesIO(b'cli')),
                 patch.object(cli_download.os, 'replace', side_effect=OSError('disk full')),
+                self.assertRaisesRegex(OSError, 'disk full'),
             ):
-                with self.assertRaisesRegex(OSError, 'disk full'):
-                    cli_download.ensure_release_cli(cache, '2.3.4', 'Linux')
+                cli_download.ensure_release_cli(cache, '2.3.4', 'Linux')
 
             directory = Path(cache) / 'PapyrusLint' / 'v2.3.4'
             self.assertEqual(list(directory.iterdir()), [])
