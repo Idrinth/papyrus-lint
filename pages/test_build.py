@@ -181,6 +181,26 @@ class MarkdownHelpersTest(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "missing shared component marker <!--SITE_FOOTER-->"):
             page_builder.render_shared_components("<!--SITE_HEADER--><main></main>", "", "")
 
+    def test_render_shared_components_supports_fragment_only_templates(self) -> None:
+        result = page_builder.render_shared_components(
+            "<title><!--VERSION--></title><a href=\"<!--SITE_URL-->\">Site</a>",
+            "../",
+            "",
+        )
+
+        self.assertEqual(
+            result,
+            f'<title>unreleased</title><a href="{page_builder.SITE_URL}">Site</a>',
+        )
+
+    def test_parse_funding_values_accepts_scalars_lists_quotes_and_empty_values(self) -> None:
+        self.assertEqual(page_builder.parse_funding_values(" sponsor "), ["sponsor"])
+        self.assertEqual(
+            page_builder.parse_funding_values("['first sponsor', \"second\", '']"),
+            ["first sponsor", "second"],
+        )
+        self.assertEqual(page_builder.parse_funding_values("   "), [])
+
     def test_render_funding_links_reads_provider_and_custom_links(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             funding_file = Path(directory) / "FUNDING.yml"
@@ -204,6 +224,20 @@ class MarkdownHelpersTest(unittest.TestCase):
 
             with self.assertRaisesRegex(SystemExit, "must be an HTTP\\(S\\) URL"):
                 page_builder.render_funding_links(funding_file)
+
+    def test_render_funding_links_skips_comments_malformed_lines_and_unknown_providers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            funding_file = Path(directory) / "FUNDING.yml"
+            funding_file.write_text(
+                "# Maintainer funding\nmalformed line\nunknown: account\ngithub: valid-user\n",
+                encoding="utf-8",
+            )
+
+            result = page_builder.render_funding_links(funding_file)
+
+        self.assertEqual(result.count("<li>"), 1)
+        self.assertIn("https://github.com/sponsors/valid-user", result)
+        self.assertNotIn("unknown", result)
 
     def test_resolve_doc_href_handles_docs_repository_and_external_links(self) -> None:
         with (
@@ -318,6 +352,26 @@ class DocsRenderingTest(unittest.TestCase):
             page_builder.load_doc_source(
                 {"content_url": "https://example.test/README.md"}
             )
+
+    def test_load_doc_source_reports_invalid_remote_utf8(self) -> None:
+        response = MagicMock()
+        response.__enter__.return_value.read.return_value = b"\xff"
+
+        with (
+            patch.object(page_builder, "urlopen", return_value=response),
+            self.assertRaisesRegex(SystemExit, "Could not download documentation"),
+        ):
+            page_builder.load_doc_source({"content_url": "https://example.test/README.md"})
+
+    def test_load_doc_source_reads_local_documentation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "guide.md").write_text("# Local guide\n", encoding="utf-8")
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                source = page_builder.load_doc_source({"filename": "guide.md"})
+
+        self.assertEqual(source, "# Local guide\n")
 
     def test_raw_github_link_escapes_a_custom_source_url(self) -> None:
         result = page_builder.raw_github_link(
@@ -1111,6 +1165,19 @@ class CoveragePageTest(unittest.TestCase):
 
             self.assertEqual(page_builder.parse_lcov_files(report), [])
 
+    def test_parse_lcov_files_accumulates_repeated_summary_lines(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text(
+                "SF:src/generated.rs\nLF:3\nLF:2\nLH:1\nLH:2\nend_of_record\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                page_builder.parse_lcov_files(report),
+                [("src/generated.rs", 5, 3)],
+            )
+
     def test_render_coverage_table_renders_rows_with_percentage_and_counts(self) -> None:
         coverage_summary = page_builder.load_coverage_summary()
         result = page_builder.render_coverage_table([("src/one.rs", 10, 8)], coverage_summary)
@@ -1168,6 +1235,30 @@ class CoveragePageTest(unittest.TestCase):
 
         self.assertIn("Total line coverage: <strong>n/a</strong> (0/0)", result)
 
+    def test_render_coverage_entry_recurses_through_nested_groups(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report_dir = root / "child"
+            report_dir.mkdir()
+            (report_dir / "lcov.info").write_text(
+                "SF:empty.rs\nLF:0\nLH:0\nend_of_record\n",
+                encoding="utf-8",
+            )
+            coverage_summary = page_builder.load_coverage_summary()
+
+            found, hit, any_report, result = page_builder.render_coverage_entry(
+                root,
+                "parent",
+                [("available", "child/lcov.info"), ("missing", "missing/lcov.info")],
+                coverage_summary,
+            )
+
+        self.assertEqual((found, hit, any_report), (0, 0, True))
+        self.assertIn("<h3>available — n/a (0/0)</h3>", result)
+        self.assertIn("<code>empty.rs</code>", result)
+        self.assertIn("<h3>missing — n/a (0/0)</h3>", result)
+        self.assertIn("No report.", result)
+
     def test_build_coverage_page_renders_a_placeholder_without_a_coverage_dir(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -1186,6 +1277,24 @@ class CoveragePageTest(unittest.TestCase):
             output = (out_dir / "coverage.html").read_text(encoding="utf-8")
 
         self.assertIn("unreleased", output)
+        self.assertIn("Coverage data isn't available for this build.", output)
+
+    def test_build_coverage_page_uses_placeholder_for_a_missing_coverage_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text(
+                "<main><!--COVERAGE_CONTENT--></main>", encoding="utf-8"
+            )
+
+            with patch.object(page_builder, "PAGES_DIR", pages_dir):
+                page_builder.build_coverage_page(out_dir, root / "missing", "v2.0.0")
+
+            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+
         self.assertIn("Coverage data isn't available for this build.", output)
 
     def test_build_coverage_page_renders_report_content_from_a_coverage_dir(self) -> None:
