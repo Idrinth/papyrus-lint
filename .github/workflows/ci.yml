@@ -673,9 +673,23 @@ jobs:
         run: npm run compile
 
   rust-fmt:
-    name: Rust (fmt)
+    name: Rust (fmt) (${{ matrix.name }})
     needs: labels
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - crate: app/src-tauri
+            name: src-tauri
+          - crate: app/crates/papyrus-parser
+            name: papyrus-parser
+          - crate: app/crates/papyrus-lints
+            name: papyrus-lints
+          - crate: app/crates/papyrus-lint-core
+            name: papyrus-lint-core
+          - crate: app/crates/papyrus-lint-cli
+            name: papyrus-lint-cli
     steps:
       - uses: actions/checkout@v7
 
@@ -684,15 +698,7 @@ jobs:
           components: rustfmt
 
       - name: Check formatting
-        run: |
-          for manifest in \
-            app/src-tauri/Cargo.toml \
-            app/crates/papyrus-parser/Cargo.toml \
-            app/crates/papyrus-lints/Cargo.toml \
-            app/crates/papyrus-lint-core/Cargo.toml \
-            app/crates/papyrus-lint-cli/Cargo.toml; do
-            cargo fmt --manifest-path "$manifest" -- --check
-          done
+        run: cargo fmt --manifest-path "${{ matrix.crate }}/Cargo.toml" -- --check
 
   rust-clippy:
     name: Rust (clippy)
@@ -719,7 +725,7 @@ jobs:
 
   rust-test:
     name: Rust test (${{ matrix.name }})
-    needs: [rust-fmt, rust-clippy]
+    needs: rust-clippy
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
