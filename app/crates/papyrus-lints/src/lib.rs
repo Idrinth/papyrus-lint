@@ -12,6 +12,7 @@ pub mod chain_whitespace;
 pub mod comma_spacing;
 pub mod config;
 pub mod cyclomatic_complexity;
+pub mod default_property_value;
 mod disable_comments;
 pub mod division_by_zero;
 pub mod empty_body;
@@ -124,6 +125,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     invariant_loop_condition::RULE,
     script_name_collision::RULE,
     array_bounds::RULE,
+    default_property_value::RULE,
 ];
 
 use serde::Serialize;
@@ -375,6 +377,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.array_bounds {
         diagnostics.extend(array_bounds::check(source));
+    }
+    if rules.default_property_value {
+        diagnostics.extend(default_property_value::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1219,6 +1224,12 @@ mod tests {
                 array_bounds::RULE,
                 Config::default(),
                 config_with(|c| c.rules.array_bounds = false),
+            ),
+            (
+                "ScriptName Example\n\nInt Property Count Auto\n",
+                default_property_value::RULE,
+                config_with(|c| c.rules.default_property_value = true),
+                Config::default(),
             ),
         ];
 

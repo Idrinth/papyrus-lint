@@ -73,6 +73,7 @@
 //!   invariant_loop_condition: true
 //!   script_name_collision: true
 //!   array_bounds: true
+//!   default_property_value: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -80,8 +81,8 @@
 //! with the top-level keys, `rules` and any key within it may be omitted
 //! and falls back to its default. `property_sorting`,
 //! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`,
-//! `repeated_getvalue`, and `global_variable_setvalue` are the exceptions:
-//! they default to `false`.
+//! `repeated_getvalue`, `global_variable_setvalue`, and
+//! `default_property_value` are the exceptions: they default to `false`.
 //! `property_sorting` reorders a script's declared properties, a more
 //! invasive change than the rest of these rules; `unchecked_form_parameter`
 //! defaults off because many scripts intentionally accept a possibly-`None`
@@ -95,8 +96,10 @@
 //! way deliberately for readability, and the performance cost is usually
 //! negligible outside a hot code path; `global_variable_setvalue` defaults
 //! off since its heuristic `Else`-branch check can't actually prove the
-//! write it flags is redundant, only that the branch never checked. All six
-//! need a project to opt in explicitly.
+//! write it flags is redundant, only that the branch never checked;
+//! `default_property_value` defaults off because many existing scripts
+//! already rely on Papyrus's own implicit per-type defaults for some or
+//! all of their properties. All seven need a project to opt in explicitly.
 
 use std::fmt;
 
@@ -388,6 +391,12 @@ pub struct Rules {
     pub script_name_collision: bool,
     /// The "Array bounds" lint.
     pub array_bounds: bool,
+    /// The "Default property value" lint. Like [`Self::property_sorting`],
+    /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`],
+    /// [`Self::native_function_usage`], [`Self::repeated_getvalue`], and
+    /// [`Self::global_variable_setvalue`], this defaults to `false`: see
+    /// [`crate::default_property_value`].
+    pub default_property_value: bool,
 }
 
 impl Default for Rules {
@@ -448,6 +457,7 @@ impl Default for Rules {
             invariant_loop_condition: true,
             script_name_collision: true,
             array_bounds: true,
+            default_property_value: false,
         }
     }
 }
@@ -614,6 +624,10 @@ mod tests {
         assert!(config.rules.invariant_loop_condition);
         assert!(config.rules.script_name_collision);
         assert!(config.rules.array_bounds);
+        // Also disabled by default: many existing scripts already rely on
+        // Papyrus's own implicit per-type defaults for some or all of
+        // their properties.
+        assert!(!config.rules.default_property_value);
     }
 
     #[test]

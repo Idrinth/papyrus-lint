@@ -199,6 +199,7 @@ export interface LintRules {
   invariant_loop_condition: boolean;
   script_name_collision: boolean;
   array_bounds: boolean;
+  default_property_value: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -278,6 +279,7 @@ export const DEFAULT_RULES: LintRules = {
   invariant_loop_condition: true,
   script_name_collision: true,
   array_bounds: true,
+  default_property_value: false,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
