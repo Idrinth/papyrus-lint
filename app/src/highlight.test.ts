@@ -41,6 +41,12 @@ describe("highlightPapyrusLines", () => {
     ]);
   });
 
+  it("accepts an uppercase hex marker while leaving a leading minus as punctuation", () => {
+    expect(highlightPapyrusLines("-12 0Xcafe")).toEqual([
+      '-<span class="cm-number">12</span> <span class="cm-number">0Xcafe</span>',
+    ]);
+  });
+
   it("highlights float literals as a single number token", () => {
     expect(highlightPapyrusLines("3.14")).toEqual(['<span class="cm-number">3.14</span>']);
   });
@@ -67,6 +73,13 @@ describe("highlightPapyrusLines", () => {
     ]);
   });
 
+  it("keeps a brace comment highlighted across lines, including when unterminated", () => {
+    expect(highlightPapyrusLines("{ first\nsecond")).toEqual([
+      '<span class="cm-comment">{ first</span>',
+      '<span class="cm-comment">second</span>',
+    ]);
+  });
+
   it("keeps a block comment's class active across its spanned lines", () => {
     const lines = highlightPapyrusLines(";/\nblock body\n/;\nafter");
     expect(lines).toEqual([
@@ -83,5 +96,11 @@ describe("highlightPapyrusLines", () => {
 
   it("escapes HTML-significant characters inside classified tokens", () => {
     expect(highlightPapyrusLines('"<tag>"')).toEqual(['<span class="cm-string">"&lt;tag&gt;"</span>']);
+  });
+
+  it("does not interpret comment markers inside a string literal", () => {
+    expect(highlightPapyrusLines('Debug.Trace("; not a comment { either }")')).toEqual([
+      'Debug.Trace(<span class="cm-string">"; not a comment { either }"</span>)',
+    ]);
   });
 });
