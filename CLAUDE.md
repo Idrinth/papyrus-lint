@@ -630,9 +630,10 @@ failing the job. It also builds a plain-text version of the same PR
 changelist (titles only, no PR numbers or links) and uploads it as the
 `nexus-changelog` artifact for the `nexus-upload` job below; a pull
 request is left out of this version if it carries `component:
-documentation`, `component: pages`, `component: ci`, `type: tests`, or
-`type: documentation` — regardless of what else it's labeled, since none
-of those describe anything a Nexus downloader would notice, unlike the
+documentation`, `component: pages`, `component: ci`, `type: tests`,
+`type: documentation`, or `type: dependency` — regardless of what else
+it's labeled, since none of those describe anything a Nexus downloader
+would notice, unlike the
 GitHub release notes above where a `component: ci`/`component: pages`
 pull request still gets its own section.
 
