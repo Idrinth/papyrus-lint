@@ -146,6 +146,66 @@ class CheckSiteTest(unittest.TestCase):
             ["docs/guide.html: broken link: './missing.html' (no such file 'docs/missing.html')"],
         )
 
+    def test_accepts_directory_index_links_and_the_site_root(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            docs = dist / "docs"
+            docs.mkdir()
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Home</title></head><body>'
+                '<a href="docs/">Docs</a></body></html>',
+                encoding="utf-8",
+            )
+            (docs / "index.html").write_text(
+                '<html lang="en"><head><title>Docs</title></head><body>'
+                '<a href="/">Home</a></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
+    def test_decodes_percent_encoded_paths_and_fragments(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Home</title></head><body>'
+                '<a href="release%20notes.html#command%20line">Release notes</a>'
+                '<a href="#same%20page">Same page</a>'
+                '<h2 id="same page">Same-page heading</h2>'
+                '</body></html>',
+                encoding="utf-8",
+            )
+            (dist / "release notes.html").write_text(
+                '<html lang="en"><head><title>Release notes</title></head><body>'
+                '<h1 id="command line">Command line</h1></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
+    def test_reports_a_decoded_missing_fragment_name(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Home</title></head><body>'
+                '<a href="#missing%20section">Missing</a></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "index.html: broken link: '#missing%20section' "
+                "(no element with id 'missing section' on 'index.html')"
+            ],
+        )
+
     def test_detects_a_missing_fragment_on_the_same_page(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
