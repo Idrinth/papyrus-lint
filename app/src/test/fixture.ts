@@ -74,6 +74,7 @@ export const FIXTURE_HTML = `
         <input type="checkbox" id="fail-on-warning" />
         <input type="checkbox" id="fail-on-info" />
         <input type="checkbox" id="bool-like-int" checked />
+        <input type="checkbox" id="assume-auto-properties-filled" />
         <fieldset id="lint-rules">
           <input type="checkbox" id="rule-trailing_whitespace" checked />
           <input type="checkbox" id="rule-comma_spacing" checked />

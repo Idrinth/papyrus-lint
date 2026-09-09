@@ -18,6 +18,7 @@
 //! fail_on_warning: false
 //! fail_on_info: false
 //! bool_like_int: true
+//! assume_auto_properties_filled: false
 //! rules:
 //!   trailing_whitespace: true
 //!   comma_spacing: true
@@ -101,6 +102,9 @@
 //! `default_property_value` defaults off because many existing scripts
 //! already rely on Papyrus's own implicit per-type defaults for some or
 //! all of their properties. All seven need a project to opt in explicitly.
+//!
+//! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
+//! is `false` by default: see [`Config::assume_auto_properties_filled`].
 
 use std::fmt;
 
@@ -235,6 +239,19 @@ pub struct Config {
     /// property, or a literal other than `1`/`0`) is still flagged
     /// regardless of this setting.
     pub bool_like_int: bool,
+    /// Whether the "None used as an existing Form" lint treats a
+    /// script-level `Auto`/`AutoReadOnly` property as already filled in by
+    /// the time a function runs, rather than possibly still `None` (see
+    /// [`crate::none_form_usage`]). `false` by default, so such a property
+    /// is treated the same as an uninitialized local unless proven
+    /// otherwise. Many projects consider that noise, since in practice the
+    /// CK's Property Manager (or another script's `PropertySet`) has
+    /// already filled every listed property in by the time any function
+    /// runs; setting this to `true` drops that initial assumption. A
+    /// property is still tracked (and flagged) once script code assigns it
+    /// `None` directly, the same as a local variable. Has no effect on
+    /// `unchecked_form_parameter`, which never tracks properties at all.
+    pub assume_auto_properties_filled: bool,
     /// Per-ruleset enable/disable switches. Every ruleset is enabled by
     /// default; see [`Rules`].
     pub rules: Rules,
@@ -256,6 +273,7 @@ impl Default for Config {
             fail_on_warning: false,
             fail_on_info: false,
             bool_like_int: true,
+            assume_auto_properties_filled: false,
             rules: Rules::default(),
         }
     }
@@ -684,6 +702,7 @@ mod tests {
         assert!(!config.fail_on_warning);
         assert!(!config.fail_on_info);
         assert!(config.bool_like_int);
+        assert!(!config.assume_auto_properties_filled);
     }
 
     #[test]
@@ -854,6 +873,31 @@ mod tests {
     fn bool_like_int_round_trips_through_yaml() {
         let config = Config {
             bool_like_int: false,
+            ..Config::default()
+        };
+        let yaml = to_yaml(&config).unwrap();
+        assert_eq!(parse(&yaml).unwrap(), config);
+    }
+
+    #[test]
+    fn parses_assume_auto_properties_filled() {
+        assert!(!parse("").unwrap().assume_auto_properties_filled);
+        assert!(
+            !parse("assume_auto_properties_filled: false\n")
+                .unwrap()
+                .assume_auto_properties_filled
+        );
+        assert!(
+            parse("assume_auto_properties_filled: true\n")
+                .unwrap()
+                .assume_auto_properties_filled
+        );
+    }
+
+    #[test]
+    fn assume_auto_properties_filled_round_trips_through_yaml() {
+        let config = Config {
+            assume_auto_properties_filled: true,
             ..Config::default()
         };
         let yaml = to_yaml(&config).unwrap();

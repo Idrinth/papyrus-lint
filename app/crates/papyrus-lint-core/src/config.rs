@@ -145,6 +145,11 @@ const FIELD_COMMENTS: &[(&str, &str)] = &[
     ("fail_on_warning", "# true, false"),
     ("fail_on_info", "# true, false"),
     ("bool_like_int", "# true, false"),
+    (
+        "assume_auto_properties_filled",
+        "# true, false; true treats an Auto/AutoReadOnly property as already\n\
+         # filled in by the time a function runs instead of possibly None",
+    ),
     ("rules", "# Each rule accepts true or false"),
 ];
 

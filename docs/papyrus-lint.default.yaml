@@ -39,6 +39,9 @@ fail_on_warning: false
 fail_on_info: false
 # true, false
 bool_like_int: true
+# true, false; true treats an Auto/AutoReadOnly property as already
+# filled in by the time a function runs instead of possibly None
+assume_auto_properties_filled: false
 # Each rule accepts true or false
 rules:
   trailing_whitespace: true

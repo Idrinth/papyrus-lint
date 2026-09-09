@@ -398,6 +398,7 @@ describe("lint config UI round trip", () => {
       fail_on_warning: true,
       fail_on_info: true,
       bool_like_int: false,
+      assume_auto_properties_filled: true,
       rules: { ...DEFAULT_RULES, forbidden_functions: false, indentation: false },
     };
 
@@ -432,6 +433,7 @@ describe("lint config UI round trip", () => {
       fail_on_warning: true,
       fail_on_info: true,
       bool_like_int: false,
+      assume_auto_properties_filled: true,
     });
 
     expect(document.querySelector<HTMLSelectElement>("#identifier-casing-style")!.value).toBe(
@@ -443,6 +445,9 @@ describe("lint config UI round trip", () => {
     expect(document.querySelector<HTMLInputElement>("#fail-on-warning")!.checked).toBe(true);
     expect(document.querySelector<HTMLInputElement>("#fail-on-info")!.checked).toBe(true);
     expect(document.querySelector<HTMLInputElement>("#bool-like-int")!.checked).toBe(false);
+    expect(
+      document.querySelector<HTMLInputElement>("#assume-auto-properties-filled")!.checked,
+    ).toBe(true);
 
     const config = lintConfigFromUI();
     expect(config.identifier_casing).toBe("CONSTANT_CASE");
@@ -450,6 +455,7 @@ describe("lint config UI round trip", () => {
     expect(config.fail_on_warning).toBe(true);
     expect(config.fail_on_info).toBe(true);
     expect(config.bool_like_int).toBe(false);
+    expect(config.assume_auto_properties_filled).toBe(true);
   });
 
   it("handleLintConfigChanged persists the config only once a project dir is known", async () => {
@@ -3118,6 +3124,7 @@ describe("wired DOM interactions", () => {
       "#fail-on-warning",
       "#fail-on-info",
       "#bool-like-int",
+      "#assume-auto-properties-filled",
       "#rule-trailing_whitespace",
       "#rule-property_sorting",
     ]) {
