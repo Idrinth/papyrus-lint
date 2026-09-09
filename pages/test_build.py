@@ -119,6 +119,21 @@ class MarkdownHelpersTest(unittest.TestCase):
 
         self.assertIn("<td>safety</td><td>Still linted</td><td></td>", result.replace("\n", ""))
 
+    def test_render_lint_table_escapes_headers_and_row_content(self) -> None:
+        result = page_builder.render_lint_table(
+            [
+                "| <Lint> | Description & impact | Auto-Fix |",
+                "| --- | --- | --- |",
+                '| <unsafe> | Never render <script> or "quotes" | Yes |',
+            ]
+        )
+
+        self.assertIn("<th>&lt;Lint&gt;</th>", result)
+        self.assertIn("<th>Description &amp; impact</th>", result)
+        self.assertIn("<td>&lt;unsafe&gt;</td>", result)
+        self.assertIn("Never render &lt;script&gt; or \"quotes\"", result)
+        self.assertNotIn("<script>", result)
+
     def test_first_code_block_returns_contents(self) -> None:
         self.assertEqual(
             page_builder.first_code_block(
@@ -305,6 +320,14 @@ class MarkdownHelpersTest(unittest.TestCase):
                 "https://example.test/repository/rules/example.yaml",
             )
             self.assertEqual(page_builder.resolve_doc_href("https://example.com"), "https://example.com")
+
+    def test_resolve_doc_href_only_rewrites_a_leading_parent_segment(self) -> None:
+        with patch.object(page_builder, "GITHUB_BLOB_BASE", "https://example.test/repository"):
+            self.assertEqual(
+                page_builder.resolve_doc_href("../docs/guide.md#setup"),
+                "https://example.test/repository/docs/guide.md#setup",
+            )
+            self.assertEqual(page_builder.resolve_doc_href("guide/../notes.md"), "guide/../notes.md")
 
     def test_strip_markdown_inline_produces_plain_text(self) -> None:
         self.assertEqual(
@@ -588,6 +611,19 @@ class DocsRenderingTest(unittest.TestCase):
 
         self.assertEqual((title, description), ("Schema", "Short page summary."))
         self.assertIn("A very long schema description.", content)
+
+    def test_render_doc_propagates_invalid_json_schema_input(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "schema.json").write_text("{not valid json", encoding="utf-8")
+
+            with (
+                patch.object(page_builder, "DOCS_DIR", docs_dir),
+                self.assertRaisesRegex(ValueError, "Expecting property name"),
+            ):
+                page_builder.render_doc(
+                    {"filename": "schema.json", "slug": "schema", "kind": "json-schema"}
+                )
 
     def test_render_docs_list_items_escapes_content_and_applies_prefix(self) -> None:
         docs = [{"slug": "guide", "blurb": "Use <carefully> & safely"}]
@@ -936,6 +972,20 @@ class ModernImageFormatsTest(unittest.TestCase):
             result = page_builder.wrap_images_with_modern_sources(page_html)
 
         self.assertEqual(result, page_html)
+
+    def test_wrap_images_with_modern_sources_handles_multiple_attributes_and_extensions(self) -> None:
+        page_html = (
+            '<img src="assets/first.png" alt="First">'
+            '<img loading="lazy" src="assets/second.jpg" class="shot">'
+        )
+
+        with patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"first.png", "second.jpg"}):
+            result = page_builder.wrap_images_with_modern_sources(page_html)
+
+        self.assertEqual(result.count("<picture>"), 2)
+        self.assertIn('srcset="assets/first.avif"', result)
+        self.assertIn('srcset="assets/second.webp"', result)
+        self.assertIn('<img loading="lazy" src="assets/second.jpg" class="shot">', result)
 
 
 class SitemapAndRobotsTest(unittest.TestCase):
