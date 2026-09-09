@@ -45,6 +45,7 @@ Just drop your file or archlist here and see the results.
 - An editor(see VSCode or Sublime Text for editors supported by our plugins)
 - A guarantee a script is fit for purpose
 - A replacement for proper testing
+- An AI or AI-powered
 
 ![Papyrus Lint VSCode Extension](resources/papyrus-lint-vscode.png)
 
