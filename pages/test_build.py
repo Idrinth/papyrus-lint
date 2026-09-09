@@ -70,6 +70,12 @@ class MarkdownHelpersTest(unittest.TestCase):
             '<a href="docs/guide.md?label=&quot;read&quot;&amp;mode=full">Guide</a>',
         )
 
+    def test_render_inline_leaves_plain_text_unchanged(self) -> None:
+        self.assertEqual(
+            page_builder.render_inline("Papyrus source uses properties and events."),
+            "Papyrus source uses properties and events.",
+        )
+
     def test_split_table_row_preserves_escaped_pipes(self) -> None:
         self.assertEqual(
             page_builder.split_table_row(r"| Name | a \| b | yes |"),
@@ -350,6 +356,18 @@ class MarkdownHelpersTest(unittest.TestCase):
             '<pre class="code-block" tabindex="0"><code>first\n  second</code></pre>',
         )
 
+    def test_markdown_to_html_escapes_headings_and_code_blocks(self) -> None:
+        result = page_builder.markdown_to_html(
+            ["###### <Advanced> & **safe**", "", "```", '<script data-x="1">', "```"]
+        )
+
+        self.assertEqual(
+            result,
+            "<h6>&lt;Advanced&gt; &amp; <strong>safe</strong></h6>\n"
+            '<pre class="code-block" tabindex="0"><code>'
+            '&lt;script data-x=&quot;1&quot;&gt;</code></pre>',
+        )
+
     def test_first_paragraph_returns_empty_text_when_there_is_no_prose(self) -> None:
         self.assertEqual(page_builder.first_paragraph(["# Title", "", "## Subtitle"]), "")
 
@@ -421,6 +439,14 @@ class DocsRenderingTest(unittest.TestCase):
                 source = page_builder.load_doc_source({"filename": "guide.md"})
 
         self.assertEqual(source, "# Local guide\n")
+
+    def test_load_doc_source_propagates_a_missing_local_document(self) -> None:
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            patch.object(page_builder, "DOCS_DIR", Path(directory)),
+            self.assertRaises(FileNotFoundError),
+        ):
+            page_builder.load_doc_source({"filename": "missing.md"})
 
     def test_raw_github_link_escapes_a_custom_source_url(self) -> None:
         result = page_builder.raw_github_link(
@@ -667,6 +693,38 @@ class VideosPageTest(unittest.TestCase):
                 page_builder.build_videos_page(out_dir)
 
             self.assertFalse((out_dir / "videos.html").exists())
+
+    def test_build_videos_page_escapes_the_version_in_shared_components(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            includes_dir = pages_dir / "includes"
+            out_dir = root / "out"
+            includes_dir.mkdir(parents=True)
+            out_dir.mkdir()
+            videos_file = pages_dir / "videos.json"
+            videos_file.write_text("[]", encoding="utf-8")
+            (pages_dir / "videos.template.html").write_text(
+                "<!--SITE_HEADER--><main><!--VIDEOS_LIST--></main><!--SITE_FOOTER-->",
+                encoding="utf-8",
+            )
+            (includes_dir / "header.html").write_text("<header>Videos</header>", encoding="utf-8")
+            (includes_dir / "footer.html").write_text(
+                "<footer><!--VERSION--></footer>", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "VIDEOS_FILE", videos_file),
+                patch.object(page_builder, "INCLUDES_DIR", includes_dir),
+                patch.object(page_builder, "render_funding_links", return_value=""),
+            ):
+                page_builder.build_videos_page(out_dir, 'v2<&"')
+
+            output = (out_dir / "videos.html").read_text(encoding="utf-8")
+
+        self.assertIn("<header>Videos</header>", output)
+        self.assertIn("<footer>v2&lt;&amp;&quot;</footer>", output)
 
 
 class ActionPageTest(unittest.TestCase):
@@ -1273,6 +1331,15 @@ class CoveragePageTest(unittest.TestCase):
 
         self.assertEqual(result, [("complete.rs", 2, 2)])
 
+    def test_parse_lcov_files_replaces_invalid_utf8_in_source_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_bytes(b"SF:src/invalid-\xff.rs\nLF:1\nLH:1\nend_of_record\n")
+
+            result = page_builder.parse_lcov_files(report)
+
+        self.assertEqual(result, [("src/invalid-\ufffd.rs", 1, 1)])
+
     def test_render_coverage_table_renders_rows_with_percentage_and_counts(self) -> None:
         coverage_summary = page_builder.load_coverage_summary()
         result = page_builder.render_coverage_table([("src/one.rs", 10, 8)], coverage_summary)
@@ -1286,6 +1353,16 @@ class CoveragePageTest(unittest.TestCase):
         result = page_builder.render_coverage_table([], coverage_summary)
 
         self.assertEqual(result, '<p class="section-intro">No files reported.</p>')
+
+    def test_render_coverage_table_escapes_source_file_names(self) -> None:
+        coverage_summary = page_builder.load_coverage_summary()
+
+        result = page_builder.render_coverage_table(
+            [('src/<unsafe>&"file".rs', 2, 1)], coverage_summary
+        )
+
+        self.assertIn("<code>src/&lt;unsafe&gt;&amp;&quot;file&quot;.rs</code>", result)
+        self.assertNotIn("<unsafe>", result)
 
     def test_build_coverage_content_groups_by_module_and_sorts_worst_first(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1372,6 +1449,21 @@ class CoveragePageTest(unittest.TestCase):
         self.assertEqual((found, hit, any_report), (4, 3, True))
         self.assertNotIn("<h3>", result)
         self.assertIn("<code>src/only.py</code>", result)
+
+    def test_render_coverage_entry_escapes_nested_group_names(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            coverage_summary = page_builder.load_coverage_summary()
+
+            _found, _hit, _any_report, result = page_builder.render_coverage_entry(
+                Path(directory),
+                "parent",
+                [("<available>", "missing-one.info"), ("safe & sound", "missing-two.info")],
+                coverage_summary,
+            )
+
+        self.assertIn("<h3>&lt;available&gt; — n/a (0/0)</h3>", result)
+        self.assertIn("<h3>safe &amp; sound — n/a (0/0)</h3>", result)
+        self.assertNotIn("<available>", result)
 
     def test_build_coverage_page_renders_a_placeholder_without_a_coverage_dir(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
