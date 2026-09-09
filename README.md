@@ -666,6 +666,18 @@ those files at once — the desktop app's equivalent of the CLI's
 `fix --type <rule-id>` run against the whole project. A rule drops out of
 the panel once none of its findings remain.
 
+The Lint results tab also has an "Export issues" button, next to an
+"Export format" selector (Text or JSON), that downloads every finding
+currently passing the tab's own filters (filename search, severity, tag,
+importance, auto-fixable, and rule) — exactly what's shown in the list
+above it. The text format is one `<path>:<line>:<column>: [<rule>]
+<message>` line per finding, the same layout the CLI's plain-text report
+uses; the JSON format mirrors the shape of the CLI's own `--json` report
+(a `files` array of `{path, diagnostics}`, plus `files_with_diagnostics`
+and `total_diagnostics` counts), restricted to the currently filtered
+files/findings, so both can be consumed by the same tooling. The button
+is disabled whenever no finding currently passes the active filters.
+
 ## Compiling a script
 
 Each `.psc` file listed on the Lint results tab has a "Compile" button that

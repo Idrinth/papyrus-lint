@@ -160,6 +160,13 @@ export const FIXTURE_HTML = `
           <div id="psc-result-mass-fix" hidden>
             <ul id="psc-result-mass-fix-list"></ul>
           </div>
+          <div id="psc-result-export">
+            <select id="export-format">
+              <option value="text">Text</option>
+              <option value="json">JSON</option>
+            </select>
+            <button type="button" id="export-issues-button" disabled>Export issues</button>
+          </div>
           <ul id="psc-result-list"></ul>
         </div>
       </div>

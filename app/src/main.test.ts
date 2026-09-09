@@ -24,11 +24,14 @@ import {
   buildPscResultItem,
   cancelCodeViewerEditMode,
   clearError,
+  collectFilteredIssues,
   configPathOverride,
   dirnameOf,
   enterCodeViewerEditMode,
   escapeAttr,
   findCandidatePairRoot,
+  formatIssuesAsJson,
+  formatIssuesAsText,
   handleAutocompleteKeydown,
   handleCodeViewerFixClick,
   handleCompileClick,
@@ -36,6 +39,7 @@ import {
   handleCompilerPathChanged,
   handleConfigPathOverrideChanged,
   handleDroppedPaths,
+  handleExportIssuesClick,
   handleFixClick,
   handleFixIssueClick,
   handleLintConfigChanged,
@@ -100,6 +104,7 @@ import {
   tagsForFinding,
   toggleCodeViewerFullscreen,
   updateAutocomplete,
+  updateExportIssuesButtonState,
   updateLintProgress,
   useProjectDir,
   type Diagnostic,
@@ -1493,11 +1498,19 @@ describe("buildPscResultItem / renderPscResults", () => {
     document.querySelector<HTMLInputElement>("#filter-error")!.checked = false;
     document.querySelector<HTMLInputElement>("#filter-error")!.dispatchEvent(new Event("change"));
 
-    renderPscResults([outcome({ findings: [{ line: 1, column: 1, message: "[error] bad" }] })]);
+    try {
+      renderPscResults([outcome({ findings: [{ line: 1, column: 1, message: "[error] bad" }] })]);
 
-    // The only finding is filtered out, and the file itself parsed cleanly,
-    // so it should be skipped entirely.
-    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(0);
+      // The only finding is filtered out, and the file itself parsed cleanly,
+      // so it should be skipped entirely.
+      expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(0);
+    } finally {
+      // activeSeverities is module state that outlives mountFixture(), same
+      // as activeTagKinds/activeRules elsewhere in this file; restore it so
+      // it doesn't leak into later tests.
+      document.querySelector<HTMLInputElement>("#filter-error")!.checked = true;
+      document.querySelector<HTMLInputElement>("#filter-error")!.dispatchEvent(new Event("change"));
+    }
   });
 
   it("renderPscResults respects the active tag filters", () => {
@@ -1691,6 +1704,241 @@ describe("massFixRuleCounts", () => {
     const outcomes: PscParseOutcome[] = [{ path: "/a.psc", ok: false, detail: "", findings: [forbiddenFunction] }];
 
     expect(massFixRuleCounts(outcomes).size).toBe(0);
+  });
+});
+
+describe("collectFilteredIssues", () => {
+  const trailingWhitespace: Diagnostic = {
+    line: 1,
+    column: 1,
+    message: "[warning] Line contains trailing whitespace",
+    rule: "trailing-whitespace",
+  };
+  const forbiddenFunction: Diagnostic = {
+    line: 5,
+    column: 3,
+    message: "[error] forbidden function used",
+    rule: "forbidden-functions",
+  };
+
+  it("groups the findings that pass the active filters by file path", () => {
+    const outcomes: PscParseOutcome[] = [
+      { path: "/somewhere/A.psc", ok: true, detail: "", findings: [trailingWhitespace] },
+      { path: "/somewhere/B.psc", ok: true, detail: "", findings: [forbiddenFunction] },
+    ];
+
+    expect(collectFilteredIssues(outcomes)).toEqual([
+      { path: "/somewhere/A.psc", findings: [trailingWhitespace] },
+      { path: "/somewhere/B.psc", findings: [forbiddenFunction] },
+    ]);
+  });
+
+  it("omits a file whose findings are all filtered out by the active severity filter", () => {
+    document.querySelector<HTMLInputElement>("#filter-error")!.checked = false;
+    document.querySelector<HTMLInputElement>("#filter-error")!.dispatchEvent(new Event("change"));
+
+    try {
+      const outcomes: PscParseOutcome[] = [
+        { path: "/a.psc", ok: true, detail: "", findings: [forbiddenFunction] },
+        { path: "/b.psc", ok: true, detail: "", findings: [trailingWhitespace] },
+      ];
+
+      expect(collectFilteredIssues(outcomes)).toEqual([{ path: "/b.psc", findings: [trailingWhitespace] }]);
+    } finally {
+      document.querySelector<HTMLInputElement>("#filter-error")!.checked = true;
+      document.querySelector<HTMLInputElement>("#filter-error")!.dispatchEvent(new Event("change"));
+    }
+  });
+
+  it("omits a file that doesn't match the filename filter", () => {
+    const filterInput = document.querySelector<HTMLInputElement>("#filename-filter")!;
+    filterInput.value = "*quest*";
+    filterInput.dispatchEvent(new Event("input"));
+
+    try {
+      const outcomes: PscParseOutcome[] = [
+        { path: "/MyQuestScript.psc", ok: true, detail: "", findings: [trailingWhitespace] },
+        { path: "/OtherScript.psc", ok: true, detail: "", findings: [forbiddenFunction] },
+      ];
+
+      expect(collectFilteredIssues(outcomes)).toEqual([{ path: "/MyQuestScript.psc", findings: [trailingWhitespace] }]);
+    } finally {
+      filterInput.value = "";
+      filterInput.dispatchEvent(new Event("input"));
+    }
+  });
+
+  it("omits a file with no findings at all, e.g. one that failed to parse", () => {
+    const outcomes: PscParseOutcome[] = [{ path: "/broken.psc", ok: false, detail: "boom", findings: [] }];
+
+    expect(collectFilteredIssues(outcomes)).toEqual([]);
+  });
+
+  it("returns an empty array when nothing is loaded", () => {
+    expect(collectFilteredIssues([])).toEqual([]);
+  });
+});
+
+describe("formatIssuesAsText", () => {
+  it("renders one CLI-style diagnostic line per finding", () => {
+    const text = formatIssuesAsText([
+      {
+        path: "scripts/source/A.psc",
+        findings: [
+          { line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" },
+          { line: 5, column: 3, message: "[error] forbidden function used", rule: "forbidden-functions" },
+        ],
+      },
+    ]);
+
+    expect(text).toBe(
+      "scripts/source/A.psc:1:1: [trailing-whitespace] [warning] trailing whitespace\n" +
+        "scripts/source/A.psc:5:3: [forbidden-functions] [error] forbidden function used",
+    );
+  });
+
+  it("falls back to 'unknown' for a finding with no rule id", () => {
+    const text = formatIssuesAsText([
+      { path: "A.psc", findings: [{ line: 1, column: 1, message: "[error] compiler failure" }] },
+    ]);
+
+    expect(text).toBe("A.psc:1:1: [unknown] [error] compiler failure");
+  });
+
+  it("returns an empty string for no files", () => {
+    expect(formatIssuesAsText([])).toBe("");
+  });
+});
+
+describe("formatIssuesAsJson", () => {
+  it("mirrors the CLI --json report shape, restricted to the given files/findings", () => {
+    const json = formatIssuesAsJson([
+      {
+        path: "A.psc",
+        findings: [{ line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" }],
+      },
+      {
+        path: "B.psc",
+        findings: [
+          { line: 5, column: 3, message: "[error] forbidden function used", rule: "forbidden-functions" },
+          { line: 6, column: 1, message: "[info] consider renaming" },
+        ],
+      },
+    ]);
+
+    expect(JSON.parse(json)).toEqual({
+      files: [
+        {
+          path: "A.psc",
+          diagnostics: [
+            { line: 1, column: 1, rule: "trailing-whitespace", level: "warning", message: "[warning] trailing whitespace" },
+          ],
+        },
+        {
+          path: "B.psc",
+          diagnostics: [
+            { line: 5, column: 3, rule: "forbidden-functions", level: "error", message: "[error] forbidden function used" },
+            { line: 6, column: 1, rule: "unknown", level: "info", message: "[info] consider renaming" },
+          ],
+        },
+      ],
+      files_with_diagnostics: 2,
+      total_diagnostics: 3,
+    });
+  });
+
+  it("returns an empty report for no files", () => {
+    expect(JSON.parse(formatIssuesAsJson([]))).toEqual({
+      files: [],
+      files_with_diagnostics: 0,
+      total_diagnostics: 0,
+    });
+  });
+});
+
+describe("Export issues button", () => {
+  const finding: Diagnostic = {
+    line: 1,
+    column: 1,
+    message: "[warning] Line contains trailing whitespace",
+    rule: "trailing-whitespace",
+  };
+
+  it("updateExportIssuesButtonState disables the button when nothing is currently filtered", () => {
+    updateExportIssuesButtonState([{ path: "/a.psc", ok: false, detail: "boom", findings: [] }]);
+
+    expect(document.querySelector<HTMLButtonElement>("#export-issues-button")!.disabled).toBe(true);
+  });
+
+  it("updateExportIssuesButtonState enables the button once a finding passes the active filters", () => {
+    updateExportIssuesButtonState([{ path: "/a.psc", ok: true, detail: "", findings: [finding] }]);
+
+    expect(document.querySelector<HTMLButtonElement>("#export-issues-button")!.disabled).toBe(false);
+  });
+
+  it("renderPscResults itself keeps the button's disabled state in sync", () => {
+    renderPscResults([{ path: "/a.psc", ok: true, detail: "", findings: [finding] }]);
+    expect(document.querySelector<HTMLButtonElement>("#export-issues-button")!.disabled).toBe(false);
+
+    renderPscResults([{ path: "/a.psc", ok: false, detail: "boom", findings: [] }]);
+    expect(document.querySelector<HTMLButtonElement>("#export-issues-button")!.disabled).toBe(true);
+  });
+
+  // handleExportIssuesClick reads currentPscOutcomes (the same module state
+  // renderPscResults's own filter-change listeners re-render from), not
+  // whatever's passed straight to renderPscResults in the tests above - so
+  // it needs to be populated the same way the app does, via a real drop.
+  async function populateCurrentPscOutcomes(findings: Diagnostic[]): Promise<void> {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => findings,
+    });
+    await handleDroppedPaths(["/proj/scripts/source/A.psc"]);
+  }
+
+  it("handleExportIssuesClick downloads a .txt file by default", async () => {
+    await populateCurrentPscOutcomes([finding]);
+
+    const objectUrl = "blob:mock-url";
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue(objectUrl);
+    const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+    handleExportIssuesClick();
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    const [blob] = createObjectURL.mock.calls[0] as [Blob];
+    expect(blob.type).toBe("text/plain");
+    expect(click).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURL).toHaveBeenCalledWith(objectUrl);
+  });
+
+  it("handleExportIssuesClick downloads a .json file when JSON is selected", async () => {
+    await populateCurrentPscOutcomes([finding]);
+    document.querySelector<HTMLSelectElement>("#export-format")!.value = "json";
+
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-url");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+    handleExportIssuesClick();
+
+    const [blob] = createObjectURL.mock.calls[0] as [Blob];
+    expect(blob.type).toBe("application/json");
+  });
+
+  it("handleExportIssuesClick does nothing when there's nothing currently filtered", async () => {
+    await populateCurrentPscOutcomes([]);
+
+    const createObjectURL = vi.spyOn(URL, "createObjectURL");
+
+    handleExportIssuesClick();
+
+    expect(createObjectURL).not.toHaveBeenCalled();
   });
 });
 
