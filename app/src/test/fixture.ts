@@ -166,6 +166,7 @@ export const FIXTURE_HTML = `
           <li><a href="https://discord.gg/idrinth">Discord</a></li>
           <li><a href="https://www.nexusmods.com/skyrimspecialedition/mods/189862">NexusMods</a></li>
           <li><a href="https://github.com/idrinth/papyrus-lint">GitHub</a></li>
+          <li><a href="https://tally.so/r/aQL1dB">Feedback</a></li>
         </ul>
       </div>
     </div>
