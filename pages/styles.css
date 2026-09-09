@@ -61,6 +61,14 @@
   box-sizing: border-box;
 }
 
+html {
+  /* Offsets in-page anchor jumps (nav links, direct #fragment URLs) by the
+     sticky site header's actual height, set by theme.js, so the jump
+     target isn't scrolled to right underneath it. The 5em fallback covers
+     the moment before that script runs. */
+  scroll-padding-top: var(--site-header-height, 5em);
+}
+
 body {
   margin: 0;
 }

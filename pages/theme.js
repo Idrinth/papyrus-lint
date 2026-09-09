@@ -48,9 +48,37 @@
     });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
+  // Keeps --site-header-height in sync with the sticky header's actual
+  // rendered height (see styles.css's html { scroll-padding-top }), so an
+  // in-page anchor jump (nav links, a direct #fragment URL) lands with the
+  // target visible below the header instead of hidden underneath it. A
+  // ResizeObserver, not just a window resize listener, is needed because
+  // the header's own height can change independent of the viewport (its
+  // nav wraps onto more lines at narrower widths, or web fonts swap in).
+  function initHeaderHeightTracking() {
+    var header = document.querySelector(".site-header");
+    if (!header) {
+      return;
+    }
+    function updateHeaderHeight() {
+      document.documentElement.style.setProperty("--site-header-height", header.offsetHeight + "px");
+    }
+    updateHeaderHeight();
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(updateHeaderHeight).observe(header);
+    } else {
+      window.addEventListener("resize", updateHeaderHeight);
+    }
+  }
+
+  function initAll() {
     init();
+    initHeaderHeightTracking();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAll);
+  } else {
+    initAll();
   }
 })();
