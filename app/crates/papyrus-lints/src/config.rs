@@ -76,6 +76,7 @@
 //!   array_bounds: true
 //!   readonly_property_write: true
 //!   default_property_value: false
+//!   unguarded_self_recursion: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -418,6 +419,8 @@ pub struct Rules {
     /// [`Self::global_variable_setvalue`], this defaults to `false`: see
     /// [`crate::default_property_value`].
     pub default_property_value: bool,
+    /// The "Unguarded self-recursion" lint.
+    pub unguarded_self_recursion: bool,
 }
 
 impl Default for Rules {
@@ -480,6 +483,7 @@ impl Default for Rules {
             array_bounds: true,
             readonly_property_write: true,
             default_property_value: false,
+            unguarded_self_recursion: true,
         }
     }
 }
@@ -651,6 +655,7 @@ mod tests {
         // Papyrus's own implicit per-type defaults for some or all of
         // their properties.
         assert!(!config.rules.default_property_value);
+        assert!(config.rules.unguarded_self_recursion);
     }
 
     #[test]

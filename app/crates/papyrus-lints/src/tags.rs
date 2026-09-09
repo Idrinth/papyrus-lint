@@ -336,6 +336,11 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["style", "maintainability"],
         importance: Importance::Low,
     },
+    RuleTags {
+        rule: crate::unguarded_self_recursion::RULE,
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
 ];
 
 #[cfg(test)]

@@ -56,6 +56,7 @@ pub mod trailing_whitespace;
 pub mod type_casing;
 pub mod unchecked_cast;
 pub mod unchecked_form_parameter;
+pub mod unguarded_self_recursion;
 pub mod unreachable_statement;
 pub mod unresolved_script;
 pub mod unused_disable;
@@ -128,6 +129,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     array_bounds::RULE,
     readonly_property_write::RULE,
     default_property_value::RULE,
+    unguarded_self_recursion::RULE,
 ];
 
 use serde::Serialize;
@@ -388,6 +390,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.default_property_value {
         diagnostics.extend(default_property_value::check(source));
+    }
+    if rules.unguarded_self_recursion {
+        diagnostics.extend(unguarded_self_recursion::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1244,6 +1249,12 @@ mod tests {
                 default_property_value::RULE,
                 config_with(|c| c.rules.default_property_value = true),
                 Config::default(),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Test()\nEndFunction\n",
+                unguarded_self_recursion::RULE,
+                Config::default(),
+                config_with(|c| c.rules.unguarded_self_recursion = false),
             ),
         ];
 
