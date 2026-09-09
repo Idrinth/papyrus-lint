@@ -96,7 +96,7 @@ jobs:
           python3 pages/build.py --out pages/dist --version "${{ steps.version.outputs.version }}" "${COVERAGE_ARGS[@]}"
 
       - name: Upload pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: pages/dist
 
