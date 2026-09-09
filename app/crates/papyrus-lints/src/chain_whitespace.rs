@@ -11,8 +11,8 @@ const WHITESPACE: [u8; 2] = [b' ', b'\t'];
 
 /// Checks for a `.` member/method access whose adjacent character, on
 /// either side and on the same line, is a space or tab, since that
-/// whitespace interrupts the chain for no benefit. Always reported as an
-/// `[error]`. A dot inside a `Float` literal (e.g. `1.5`) is lexed as part
+/// whitespace interrupts the chain for no benefit. Always reported as a
+/// `[warning]`. A dot inside a `Float` literal (e.g. `1.5`) is lexed as part
 /// of the number itself and never reaches this check. Dots on a line
 /// protected by a CreationKit fragment-code wrapper (see [`fragment_code`])
 /// are never flagged.
@@ -41,7 +41,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             diagnostics.push(Diagnostic {
                 line: token.line,
                 column: token.col,
-                message: "[error] Whitespace before '.' interrupts property/method chaining"
+                message: "[warning] Whitespace before '.' interrupts property/method chaining"
                     .to_string(),
                 rule: RULE,
             });
@@ -52,7 +52,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             diagnostics.push(Diagnostic {
                 line: token.line,
                 column: token.col,
-                message: "[error] Whitespace after '.' interrupts property/method chaining"
+                message: "[warning] Whitespace after '.' interrupts property/method chaining"
                     .to_string(),
                 rule: RULE,
             });
@@ -145,7 +145,7 @@ mod tests {
         let diagnostics = check("SomeProperty .DoThing()\n");
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 1);
-        assert!(diagnostics[0].message.starts_with("[error]"));
+        assert!(diagnostics[0].message.starts_with("[warning]"));
         assert!(diagnostics[0].message.contains("before"));
     }
 
