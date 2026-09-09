@@ -1908,13 +1908,23 @@ describe("Export issues button", () => {
     const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
 
-    handleExportIssuesClick();
+    vi.useFakeTimers();
+    try {
+      handleExportIssuesClick();
 
-    expect(createObjectURL).toHaveBeenCalledTimes(1);
-    const [blob] = createObjectURL.mock.calls[0] as [Blob];
-    expect(blob.type).toBe("text/plain");
-    expect(click).toHaveBeenCalledTimes(1);
-    expect(revokeObjectURL).toHaveBeenCalledWith(objectUrl);
+      expect(createObjectURL).toHaveBeenCalledTimes(1);
+      const [blob] = createObjectURL.mock.calls[0] as [Blob];
+      expect(blob.type).toBe("text/plain");
+      expect(click).toHaveBeenCalledTimes(1);
+      // The Blob URL is deliberately not revoked synchronously (see
+      // downloadTextFile) so an in-progress download can't race it - it's
+      // revoked once the event loop is free again.
+      expect(revokeObjectURL).not.toHaveBeenCalled();
+      vi.runAllTimers();
+      expect(revokeObjectURL).toHaveBeenCalledWith(objectUrl);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("handleExportIssuesClick downloads a .json file when JSON is selected", async () => {

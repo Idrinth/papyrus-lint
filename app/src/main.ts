@@ -1822,7 +1822,10 @@ function downloadTextFile(filename: string, contents: string, mimeType: string) 
   anchor.href = url;
   anchor.download = filename;
   anchor.click();
-  URL.revokeObjectURL(url);
+  // Download processing can be asynchronous, so the WebView may still need
+  // the URL after this task finishes; revoking it only once the event loop
+  // is free again avoids racing an in-progress download.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 // Enables the "Export issues" button only while there's at least one
