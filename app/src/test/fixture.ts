@@ -154,6 +154,9 @@ export const FIXTURE_HTML = `
           <fieldset id="psc-result-auto-fixable-filter">
             <input type="checkbox" id="filter-auto-fixable-only" />
           </fieldset>
+          <fieldset id="psc-result-rule-filter">
+            <select id="filter-rule" multiple></select>
+          </fieldset>
           <div id="psc-result-mass-fix" hidden>
             <ul id="psc-result-mass-fix-list"></ul>
           </div>

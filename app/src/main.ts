@@ -54,6 +54,7 @@ let boolLikeIntEl: HTMLInputElement | null;
 let assumeAutoPropertiesFilledEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 let autoFixableFilterEl: HTMLInputElement | null;
+let ruleFilterEl: HTMLSelectElement | null;
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
 let codeViewerCloseEl: HTMLButtonElement | null;
@@ -603,12 +604,49 @@ export async function loadRuleTags(): Promise<RuleTagsInfo[]> {
   }
 }
 
-// Indexes `tags` by rule id (for tagsForFinding/matchesTagFilters below) and
-// re-renders the current lint results, so any already-listed findings pick
-// up their tag badges/filtering once the lookup resolves.
+// Indexes `tags` by rule id (for tagsForFinding/matchesTagFilters below),
+// rebuilds the "Filter by rule" multiselect's options from the same list,
+// and re-renders the current lint results, so any already-listed findings
+// pick up their tag badges/filtering once the lookup resolves.
 export function applyRuleTags(tags: RuleTagsInfo[]) {
   ruleTagsByRule = new Map(tags.map((info) => [info.rule, info]));
+  populateRuleFilterOptions(tags);
   renderPscResults(currentPscOutcomes);
+}
+
+// Renders a rule id like "trailing-whitespace" as "Trailing whitespace" for
+// the rule filter's option labels; spelling a display name out by hand for
+// every rule, the way FIXABLE_RULE_DISPLAY_NAMES does for the smaller set of
+// fixable ones, doesn't scale to all of them.
+function titleCaseRuleId(rule: string): string {
+  return rule.charAt(0).toUpperCase() + rule.slice(1).replace(/-/g, " ");
+}
+
+// Rebuilds the "Filter by rule" multiselect's options from the backend's
+// full set of known rules, selecting all of them by default so the filter
+// starts as a no-op, the same way every other lint results filter does.
+// activeRules is populated regardless of whether the <select> itself is
+// present, so matchesRuleFilter below still works correctly (e.g. in a test
+// fixture that doesn't include it).
+function populateRuleFilterOptions(tags: RuleTagsInfo[]) {
+  activeRules.clear();
+  for (const tag of tags) {
+    activeRules.add(tag.rule);
+  }
+  if (!ruleFilterEl) {
+    return;
+  }
+  ruleFilterEl.replaceChildren(
+    ...[...tags]
+      .sort((a, b) => a.rule.localeCompare(b.rule))
+      .map((tag) => {
+        const option = document.createElement("option");
+        option.value = tag.rule;
+        option.textContent = titleCaseRuleId(tag.rule);
+        option.selected = true;
+        return option;
+      }),
+  );
 }
 
 // Fetches the desktop app's version from the Rust backend, so it can be
@@ -1429,6 +1467,12 @@ let onlyAutoFixable = false;
 let tagKindFilterEls: Partial<Record<TagKind, HTMLInputElement>> = {};
 let tagImportanceFilterEls: Partial<Record<TagImportance, HTMLInputElement>> = {};
 
+// Which rule ids are currently shown in the lint results list, driven by the
+// "Filter by rule" multiselect. Populated (with every known rule, i.e. no
+// filtering) once the backend's rule list loads - see applyRuleTags/
+// populateRuleFilterOptions.
+const activeRules = new Set<string>();
+
 // Looks up `finding`'s own rule's tag metadata, if any. A finding with no
 // rule (or one that isn't a papyrus-lints rule id at all, e.g. a
 // compiler-reported diagnostic - see app/src-tauri/src/compile_diagnostics.rs)
@@ -1453,6 +1497,18 @@ export function matchesTagFilters(finding: Diagnostic): boolean {
     return false;
   }
   return !onlyAutoFixable || tags.auto_fixable;
+}
+
+// Whether `finding` passes the "Filter by rule" multiselect. A finding with
+// no known rule (e.g. a compiler-reported diagnostic) always passes, the
+// same way it always passes matchesTagFilters above; so does every finding
+// while the backend's rule list hasn't loaded yet (ruleTagsByRule still
+// empty), since activeRules isn't populated until then either.
+export function matchesRuleFilter(finding: Diagnostic): boolean {
+  if (ruleTagsByRule.size === 0 || !finding.rule) {
+    return true;
+  }
+  return activeRules.has(finding.rule);
 }
 
 // The current filename search pattern; an empty string matches every file.
@@ -1583,7 +1639,8 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
   }
 
   const visibleFindings = findings.filter(
-    (finding) => activeSeverities.has(severityOf(finding.message)) && matchesTagFilters(finding),
+    (finding) =>
+      activeSeverities.has(severityOf(finding.message)) && matchesTagFilters(finding) && matchesRuleFilter(finding),
   );
 
   if (ok && visibleFindings.length === 0) {
@@ -2297,6 +2354,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerAutocompleteEl = document.querySelector("#code-viewer-autocomplete");
   themeSelectEl = document.querySelector("#theme-select");
   autoFixableFilterEl = document.querySelector("#filter-auto-fixable-only");
+  ruleFilterEl = document.querySelector("#filter-rule");
 
   const initialTheme = loadStoredTheme();
   if (themeSelectEl) {
@@ -2400,6 +2458,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   autoFixableFilterEl?.addEventListener("change", () => {
     onlyAutoFixable = autoFixableFilterEl?.checked ?? false;
+    renderPscResults(currentPscOutcomes);
+  });
+
+  ruleFilterEl?.addEventListener("change", () => {
+    activeRules.clear();
+    for (const option of ruleFilterEl?.selectedOptions ?? []) {
+      activeRules.add(option.value);
+    }
     renderPscResults(currentPscOutcomes);
   });
 

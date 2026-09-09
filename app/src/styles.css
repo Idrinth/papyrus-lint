@@ -363,6 +363,16 @@ h1 {
   cursor: pointer;
 }
 
+.psc-result__filters--rule {
+  display: block;
+}
+
+.psc-result__filters--rule select {
+  width: 100%;
+  max-width: 24em;
+  font-size: 0.9em;
+}
+
 .psc-result__mass-fix {
   margin: 0 0 1em;
   padding: 0.5em 0.75em;
