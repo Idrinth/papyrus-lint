@@ -587,6 +587,22 @@ mod tests {
     }
 
     #[test]
+    fn psc_file_commands_decode_cp1252_source_for_the_viewer_and_parser() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let mut source = b"ScriptName Example\n\n; caf".to_vec();
+        source.extend_from_slice(&[0xE9, b'\n']);
+        std::fs::write(&path, source).unwrap();
+        let path_string = path.to_string_lossy().into_owned();
+
+        assert_eq!(
+            read_psc_file(path_string.clone()).unwrap(),
+            "ScriptName Example\n\n; café\n"
+        );
+        assert_eq!(parse_psc_file(path_string).unwrap().name, "Example");
+    }
+
+    #[test]
     fn parse_psc_file_reflects_edits_made_between_calls_instead_of_a_stale_cache_entry() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Example.psc");
@@ -1045,6 +1061,45 @@ mod tests {
         expected.push(0xE9);
         expected.push(b'\n');
         assert_eq!(std::fs::read(&path).unwrap(), expected);
+    }
+
+    #[test]
+    fn targeted_repairs_preserve_a_cp1252_encoded_files_encoding() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let mut source = b"ScriptName Example  \n\n; caf".to_vec();
+        source.extend_from_slice(&[0xE9, b'\n']);
+        std::fs::write(&path, &source).unwrap();
+
+        repair_psc_finding(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            1,
+        )
+        .unwrap();
+
+        let mut expected = b"ScriptName Example\n\n; caf".to_vec();
+        expected.extend_from_slice(&[0xE9, b'\n']);
+        assert_eq!(std::fs::read(&path).unwrap(), expected);
+
+        std::fs::write(&path, &source).unwrap();
+        repair_psc_file_rule(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::trailing_whitespace::RULE.to_string(),
+        )
+        .unwrap();
+
+        assert_eq!(std::fs::read(path).unwrap(), expected);
     }
 
     #[test]
