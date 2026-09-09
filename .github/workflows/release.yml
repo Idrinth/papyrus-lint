@@ -302,6 +302,7 @@ jobs:
           NEXUS_EXCLUDE_LABELS=(
             "type: tests"
             "type: documentation"
+            "type: dependency"
             "component: pages"
             "component: ci"
             "component: documentation"
