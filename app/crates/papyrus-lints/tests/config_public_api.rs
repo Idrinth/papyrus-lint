@@ -72,6 +72,24 @@ fn bool_like_int_setting_changes_strict_boolean_results() {
 }
 
 #[test]
+fn assume_auto_properties_filled_setting_changes_none_form_usage_results() {
+    let source =
+        "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n";
+    let default_diagnostics = lint(source, &Config::default());
+    let assume_filled_config: Config =
+        serde_yaml::from_str("assume_auto_properties_filled: true\n")
+            .expect("assume_auto_properties_filled should deserialize");
+    let assume_filled_diagnostics = lint(source, &assume_filled_config);
+
+    assert!(default_diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "none-form-usage"));
+    assert!(assume_filled_diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "none-form-usage"));
+}
+
+#[test]
 fn config_round_trip_preserves_user_visible_settings_and_rule_switches() {
     let config: Config = serde_yaml::from_str(
         "semicolon: true\nindentation: space\nindentation_width: 8\nidentifier_casing: CONSTANT_CASE\nfail_on_warning: true\nrules:\n  comma_spacing: false\n  magic_numbers: true\n",

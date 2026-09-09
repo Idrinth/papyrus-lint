@@ -10,12 +10,16 @@
 //! of the primitive value types (`Int`/`Float`/`Bool`/`String`) — object-typed
 //! locals (`Form` and its subtypes) default to `None` until assigned, unlike
 //! primitives which get a non-`None` zero value. Script-level `Auto`/
-//! `AutoReadOnly` properties get the same treatment: an object-typed one
-//! with no explicit initializer (or an explicit `= None`) isn't guaranteed
-//! to be filled in until something outside the script (the CK's Property
-//! Manager, another script's `PropertyGet`/`PropertySet`, `OnInit`, …) sets
-//! it, so each function starts out treating it as possibly `None` too,
-//! same as an uninitialized local. It stops being tracked as
+//! `AutoReadOnly` properties get the same treatment by default: an
+//! object-typed one with no explicit initializer (or an explicit `= None`)
+//! isn't guaranteed to be filled in until something outside the script (the
+//! CK's Property Manager, another script's `PropertyGet`/`PropertySet`,
+//! `OnInit`, …) sets it, so each function starts out treating it as
+//! possibly `None` too, same as an uninitialized local. Setting
+//! [`crate::config::Config::assume_auto_properties_filled`] drops that
+//! assumption for properties (not locals), since many projects consider it
+//! noise once they trust their Property Manager setup. It stops being
+//! tracked as
 //! soon as it's assigned anything else, except that assigning it another
 //! identifier makes it inherit that identifier's own tracked state instead
 //! (so `a = b` keeps `a` known-`None` when `b` still is, rather than
@@ -43,13 +47,21 @@ use crate::Diagnostic;
 pub const RULE: &str = "none-form-usage";
 
 /// Checks every function/event in `source` for member/method access on a
-/// local variable that's still known to be `None`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
+/// local variable that's still known to be `None`. When
+/// `assume_auto_properties_filled` is `true`, a script-level `Auto`/
+/// `AutoReadOnly` property is never treated as possibly `None` on its own
+/// (see [`crate::config::Config::assume_auto_properties_filled`]); a local
+/// variable's own tracking is unaffected either way.
+pub fn check(source: &str, assume_auto_properties_filled: bool) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
     };
 
-    let default_none_properties = default_none_properties(&script);
+    let default_none_properties = if assume_auto_properties_filled {
+        HashSet::new()
+    } else {
+        default_none_properties(&script)
+    };
 
     let mut diagnostics = Vec::new();
     for function in all_functions(&script) {
@@ -380,6 +392,7 @@ mod tests {
     fn flags_method_call_on_variable_declared_none() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -394,6 +407,7 @@ mod tests {
     fn flags_property_access_on_variable_assigned_none() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a\n    a = None\n    Debug.Trace(a.Name)\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -404,6 +418,7 @@ mod tests {
     fn does_not_flag_variable_reassigned_before_use() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    a = Game.GetPlayer() as Armor\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -413,6 +428,7 @@ mod tests {
     fn does_not_flag_after_early_return_none_guard() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    If a == None\n        Return\n    EndIf\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -422,6 +438,7 @@ mod tests {
     fn does_not_flag_after_bang_guard() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    If !a\n        Return\n    EndIf\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -431,6 +448,7 @@ mod tests {
     fn does_not_flag_inside_not_equal_none_branch() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    If a != None\n        a.GetName()\n    EndIf\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -440,6 +458,7 @@ mod tests {
     fn does_not_flag_inside_and_guarded_branch() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Bool flag)\n    Armor a = None\n    If a != None && flag\n        a.GetName()\n    EndIf\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -449,6 +468,7 @@ mod tests {
     fn does_not_flag_after_or_guarded_early_return() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Bool flag)\n    Armor a = None\n    If a == None || flag\n        Return\n    EndIf\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -458,6 +478,7 @@ mod tests {
     fn flags_inside_equal_none_branch() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    If a == None\n        a.GetName()\n    EndIf\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -468,6 +489,7 @@ mod tests {
     fn flags_use_still_possibly_none_after_one_sided_assignment() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Bool flag)\n    Armor a = None\n    If flag\n        a = Game.GetPlayer() as Armor\n    EndIf\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -478,6 +500,7 @@ mod tests {
     fn does_not_flag_when_both_branches_assign_non_none() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Bool flag)\n    Armor a = None\n    If flag\n        a = Game.GetPlayer() as Armor\n    Else\n        a = Game.GetPlayer() as Armor\n    EndIf\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -487,6 +510,7 @@ mod tests {
     fn does_not_flag_after_while_loop_guard() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    While a == None\n        a = Game.GetPlayer() as Armor\n    EndWhile\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -496,6 +520,7 @@ mod tests {
     fn does_not_flag_short_circuited_method_call_in_while_condition() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Actor a\n    Int c = 0\n    While a == None || a.IsDead()\n        a = Game.GetPlayer()\n        c += 1\n    EndWhile\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -505,6 +530,7 @@ mod tests {
     fn does_not_flag_passing_a_possibly_none_variable_as_an_argument() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    Debug.Trace(a)\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -514,6 +540,7 @@ mod tests {
     fn flags_uninitialized_form_declaration() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -524,6 +551,7 @@ mod tests {
     fn does_not_flag_uninitialized_declaration_after_assignment() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a\n    a = Game.GetPlayer() as Armor\n    a.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -533,6 +561,7 @@ mod tests {
     fn does_not_flag_uninitialized_primitive_declarations() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Int i\n    Float f\n    Bool b\n    String s\n    Debug.Trace(s)\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -542,6 +571,7 @@ mod tests {
     fn does_not_flag_uninitialized_array_declaration() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor[] a\n    Debug.Trace(a)\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -551,6 +581,7 @@ mod tests {
     fn checks_functions_declared_in_states_too() {
         let diagnostics = check(
             "ScriptName Example\n\nState Active\n    Function Test()\n        Armor a = None\n        a.GetName()\n    EndFunction\nEndState\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -560,6 +591,7 @@ mod tests {
     fn flags_use_after_aliasing_a_still_none_variable() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    Armor b\n    b = a\n    b.GetName()\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -571,6 +603,7 @@ mod tests {
     fn does_not_flag_aliasing_a_known_not_none_variable() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = Game.GetPlayer() as Armor\n    Armor b = None\n    b = a\n    b.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -580,6 +613,7 @@ mod tests {
     fn flags_unguarded_use_of_an_uninitialized_auto_property() {
         let diagnostics = check(
             "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -591,15 +625,48 @@ mod tests {
     fn flags_unguarded_use_of_an_auto_property_explicitly_defaulted_to_none() {
         let diagnostics = check(
             "ScriptName Example\n\nArmor Property MyArmor = None Auto\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
     }
 
     #[test]
+    fn assume_auto_properties_filled_suppresses_the_uninitialized_property_flag() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+            true,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn assume_auto_properties_filled_suppresses_the_explicit_none_default_flag() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor = None Auto\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+            true,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn assume_auto_properties_filled_still_flags_a_local_variable() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    a.GetName()\nEndFunction\n",
+            true,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
     fn does_not_flag_auto_property_guarded_by_a_none_check() {
         let diagnostics = check(
             "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    If MyArmor != None\n        MyArmor.GetName()\n    EndIf\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -609,6 +676,7 @@ mod tests {
     fn does_not_flag_auto_property_reassigned_before_use() {
         let diagnostics = check(
             "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    MyArmor = Game.GetPlayer() as Armor\n    MyArmor.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -618,6 +686,7 @@ mod tests {
     fn does_not_flag_auto_read_only_property_with_a_non_none_default() {
         let diagnostics = check(
             "ScriptName Example\n\nArmor Property MyArmor = Game.GetPlayer() as Armor AutoReadOnly\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -627,6 +696,7 @@ mod tests {
     fn does_not_flag_full_property_without_an_auto_keyword() {
         let diagnostics = check(
             "ScriptName Example\n\nArmor Property MyArmor\n    Armor Function Get()\n        Return None\n    EndFunction\nEndProperty\n\nFunction Test()\n    MyArmor.GetName()\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -636,6 +706,7 @@ mod tests {
     fn does_not_flag_uninitialized_primitive_auto_property() {
         let diagnostics = check(
             "ScriptName Example\n\nInt Property MyCount Auto\n\nFunction Test()\n    Debug.Trace(MyCount as String)\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());
@@ -645,6 +716,7 @@ mod tests {
     fn each_function_starts_fresh_for_a_default_none_property() {
         let diagnostics = check(
             "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction First()\n    MyArmor = Game.GetPlayer() as Armor\nEndFunction\n\nFunction Second()\n    MyArmor.GetName()\nEndFunction\n",
+            false,
         );
 
         assert_eq!(diagnostics.len(), 1);
@@ -653,13 +725,14 @@ mod tests {
 
     #[test]
     fn does_not_crash_on_unparseable_source() {
-        assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
+        assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n", false).is_empty());
     }
 
     #[test]
     fn does_not_flag_short_circuited_and_guard_on_a_property() {
         let diagnostics = check(
             "Scriptname ShortCircuitProbe extends Quest\n\nQuest Property QA Auto\n\nFunction Probe()\n\tQA = None\n\tif (QA && QA.IsRunning())\n\t\tDebug.Trace(\"x\")\n\tendif\n\tif (QA != None)\n\t\tQA.SetStage(2)\n\tendif\nEndFunction\n",
+            false,
         );
 
         assert!(diagnostics.is_empty());

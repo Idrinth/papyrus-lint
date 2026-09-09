@@ -310,7 +310,10 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
         diagnostics.extend(variable_used_before_assignment::check(source));
     }
     if rules.none_form_usage {
-        diagnostics.extend(none_form_usage::check(source));
+        diagnostics.extend(none_form_usage::check(
+            source,
+            config.assume_auto_properties_filled,
+        ));
     }
     if rules.chain_whitespace {
         diagnostics.extend(chain_whitespace::check(source));

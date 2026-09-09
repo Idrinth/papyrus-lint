@@ -216,7 +216,7 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td][/td]
 [/tr]
 [tr][td][b]None used as an existing Form[/b][/td]
-[td]Flags a member/method access on a local variable or script-level property that's still known to be None.[/td]
+[td]Flags a member/method access on a local variable or script-level property that's still known to be None. Set assume_auto_properties_filled to stop treating Auto/AutoReadOnly properties as possibly None.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Local variable used before assignment[/b][/td]
@@ -331,6 +331,9 @@ fail_on_warning: false
 fail_on_info: false
 # true, false
 bool_like_int: true
+# true, false; true treats an Auto/AutoReadOnly property as already
+# filled in by the time a function runs instead of possibly None
+assume_auto_properties_filled: false
 # Each rule accepts true or false
 rules:
   trailing_whitespace: true

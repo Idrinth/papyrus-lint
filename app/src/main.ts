@@ -51,6 +51,7 @@ let minWaitIntervalEl: HTMLInputElement | null;
 let failOnWarningEl: HTMLInputElement | null;
 let failOnInfoEl: HTMLInputElement | null;
 let boolLikeIntEl: HTMLInputElement | null;
+let assumeAutoPropertiesFilledEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 let autoFixableFilterEl: HTMLInputElement | null;
 let codeViewerEl: HTMLDialogElement | null;
@@ -229,6 +230,7 @@ export interface LintConfig {
   fail_on_warning: boolean;
   fail_on_info: boolean;
   bool_like_int: boolean;
+  assume_auto_properties_filled: boolean;
   rules: LintRules;
 }
 
@@ -304,6 +306,7 @@ export const DEFAULT_LINT_CONFIG: LintConfig = {
   fail_on_warning: false,
   fail_on_info: false,
   bool_like_int: true,
+  assume_auto_properties_filled: false,
   rules: DEFAULT_RULES,
 };
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
@@ -662,6 +665,9 @@ export function applyLintConfigToUI(config: LintConfig) {
   if (boolLikeIntEl) {
     boolLikeIntEl.checked = config.bool_like_int;
   }
+  if (assumeAutoPropertiesFilledEl) {
+    assumeAutoPropertiesFilledEl.checked = config.assume_auto_properties_filled;
+  }
   for (const key of RULE_KEYS) {
     const el = ruleEls[key];
     if (el) {
@@ -697,6 +703,7 @@ export function lintConfigFromUI(): LintConfig {
     fail_on_warning: failOnWarningEl?.checked ?? false,
     fail_on_info: failOnInfoEl?.checked ?? false,
     bool_like_int: boolLikeIntEl?.checked ?? true,
+    assume_auto_properties_filled: assumeAutoPropertiesFilledEl?.checked ?? false,
     rules,
   };
 }
@@ -2269,6 +2276,7 @@ window.addEventListener("DOMContentLoaded", () => {
   failOnWarningEl = document.querySelector("#fail-on-warning");
   failOnInfoEl = document.querySelector("#fail-on-info");
   boolLikeIntEl = document.querySelector("#bool-like-int");
+  assumeAutoPropertiesFilledEl = document.querySelector("#assume-auto-properties-filled");
   ruleEls = Object.fromEntries(
     RULE_KEYS.map((key) => [key, document.querySelector<HTMLInputElement>(`#rule-${key}`)]),
   ) as Partial<Record<keyof LintRules, HTMLInputElement>>;
@@ -2417,6 +2425,7 @@ window.addEventListener("DOMContentLoaded", () => {
   failOnWarningEl?.addEventListener("change", handleLintConfigChanged);
   failOnInfoEl?.addEventListener("change", handleLintConfigChanged);
   boolLikeIntEl?.addEventListener("change", handleLintConfigChanged);
+  assumeAutoPropertiesFilledEl?.addEventListener("change", handleLintConfigChanged);
   for (const key of RULE_KEYS) {
     ruleEls[key]?.addEventListener("change", handleLintConfigChanged);
   }
