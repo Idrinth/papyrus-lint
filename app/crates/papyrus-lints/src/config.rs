@@ -247,8 +247,9 @@ pub struct Config {
     /// otherwise. Many projects consider that noise, since in practice the
     /// CK's Property Manager (or another script's `PropertySet`) has
     /// already filled every listed property in by the time any function
-    /// runs; setting this to `true` drops that assumption and only flags
-    /// local variables, not properties. Has no effect on
+    /// runs; setting this to `true` drops that initial assumption. A
+    /// property is still tracked (and flagged) once script code assigns it
+    /// `None` directly, the same as a local variable. Has no effect on
     /// `unchecked_form_parameter`, which never tracks properties at all.
     pub assume_auto_properties_filled: bool,
     /// Per-ruleset enable/disable switches. Every ruleset is enabled by

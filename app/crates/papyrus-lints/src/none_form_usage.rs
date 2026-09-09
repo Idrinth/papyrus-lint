@@ -652,6 +652,17 @@ mod tests {
     }
 
     #[test]
+    fn assume_auto_properties_filled_still_flags_a_property_explicitly_set_to_none() {
+        let diagnostics = check(
+            "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test()\n    MyArmor = None\n    MyArmor.GetName()\nEndFunction\n",
+            true,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 7);
+    }
+
+    #[test]
     fn assume_auto_properties_filled_still_flags_a_local_variable() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Armor a = None\n    a.GetName()\nEndFunction\n",

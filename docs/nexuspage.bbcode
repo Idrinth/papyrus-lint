@@ -216,7 +216,7 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td][/td]
 [/tr]
 [tr][td][b]None used as an existing Form[/b][/td]
-[td]Flags a member/method access on a local variable or script-level property that's still known to be None. Set assume_auto_properties_filled to stop treating Auto/AutoReadOnly properties as possibly None.[/td]
+[td]Flags a member/method access on a local variable or script-level property that's still known to be None. Set assume_auto_properties_filled to stop assuming an unset Auto/AutoReadOnly property starts out None; it's still tracked once code assigns it None directly.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Local variable used before assignment[/b][/td]
