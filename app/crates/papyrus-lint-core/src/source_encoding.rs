@@ -259,6 +259,42 @@ mod tests {
     }
 
     #[test]
+    fn writing_a_repair_preserves_the_original_windows_1252_encoding() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, b"ScriptName Example\r\n; caf\xE9   \r\n")
+            .expect("failed to write test file");
+
+        let (source, encoding) =
+            read_psc_source_with_encoding(&path).expect("reading should succeed");
+        let repaired = source.replace("   \r\n", "\r\n");
+        write_psc_source(&path, &repaired, encoding).expect("writing should succeed");
+
+        assert_eq!(
+            std::fs::read(&path).expect("failed to read back test file"),
+            b"ScriptName Example\r\n; caf\xE9\r\n"
+        );
+    }
+
+    #[test]
+    fn writing_a_repair_preserves_utf8_characters_without_reencoding_them() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n; 漢字   \n")
+            .expect("failed to write test file");
+
+        let (source, encoding) =
+            read_psc_source_with_encoding(&path).expect("reading should succeed");
+        let repaired = source.replace("   \n", "\n");
+        write_psc_source(&path, &repaired, encoding).expect("writing should succeed");
+
+        assert_eq!(
+            std::fs::read(&path).expect("failed to read back test file"),
+            "ScriptName Example\n; 漢字\n".as_bytes()
+        );
+    }
+
+    #[test]
     fn read_with_encoding_propagates_io_errors() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let missing = dir.path().join("does-not-exist.psc");
