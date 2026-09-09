@@ -52,6 +52,58 @@ class CoverageSummaryTests(unittest.TestCase):
         self.assertEqual("n/a", coverage_summary.pct(0, 0))
         self.assertEqual("62.5%", coverage_summary.pct(5, 8))
 
+    def test_iter_leaf_paths_flattens_arbitrarily_nested_groups(self) -> None:
+        entries = [
+            ("direct", "direct.info"),
+            (
+                "nested",
+                [
+                    ("child", "child.info"),
+                    ("deeper", [("grandchild", "grandchild.info")]),
+                ],
+            ),
+        ]
+
+        self.assertEqual(
+            ["direct.info", "child.info", "grandchild.info"],
+            list(coverage_summary.iter_leaf_paths(entries)),
+        )
+
+    def test_render_entry_includes_nested_group_totals_and_leaf_rows(self) -> None:
+        value = [
+            ("first", "first.info"),
+            ("nested", [("second", "second.info"), ("missing", "missing.info")]),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "first.info").write_text("LF:4\nLH:3\n", encoding="utf-8")
+            (root / "second.info").write_text("LF:6\nLH:2\n", encoding="utf-8")
+
+            found, hit, rows = coverage_summary.render_entry(root, "Group", value, 0)
+
+        self.assertEqual((10, 5), (found, hit))
+        self.assertEqual(
+            [
+                "| Group | 50.0% | 5/10 |",
+                "| ↳ first | 75.0% | 3/4 |",
+                "| ↳ nested | 33.3% | 2/6 |",
+                "| ↳ ↳ second | 33.3% | 2/6 |",
+                "| ↳ ↳ missing | _no report_ | |",
+            ],
+            rows,
+        )
+
+    def test_render_entry_hides_the_only_child_of_a_group(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "only.info").write_text("LF:2\nLH:2\n", encoding="utf-8")
+
+            result = coverage_summary.render_entry(
+                root, "Wrapper", [("only", "only.info")], 1
+            )
+
+        self.assertEqual((2, 2, ["| ↳ Wrapper | 100.0% | 2/2 |"]), result)
+
     def test_main_reports_module_parts_missing_reports_and_total(self) -> None:
         modules = [
             ("Combined", [("first", "first/lcov.info"), ("missing", "missing/lcov.info")]),
@@ -141,6 +193,23 @@ class RenderNexusPageTests(unittest.TestCase):
                 render_nexuspage, "MODULES", [("Module", [("empty", "empty.info")])]
             ), self.assertRaisesRegex(ValueError, "coverage reports contain no lines"):
                 render_nexuspage.coverage_totals(Path(directory))
+
+    def test_coverage_totals_lists_every_missing_nested_report(self) -> None:
+        modules = [
+            (
+                "Module",
+                [
+                    ("nested", [("one", "one.info"), ("two", "two.info")]),
+                    ("three", "three.info"),
+                ],
+            )
+        ]
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(
+            render_nexuspage, "MODULES", modules
+        ), self.assertRaisesRegex(
+            ValueError, "missing coverage reports: one.info, two.info, three.info"
+        ):
+            render_nexuspage.coverage_totals(Path(directory))
 
     def test_render_replaces_counts_percentage_and_version(self) -> None:
         template = "<COVERED_LINES> / <TOTAL_LINES> (~<COVERAGE_PERCENTAGE>%) <VERSION>"
