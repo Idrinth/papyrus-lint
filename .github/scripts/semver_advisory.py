@@ -35,7 +35,7 @@ import re
 
 BREAKING_LABEL = "type: breaking change"
 FEATURE_LABEL = "type: feature"
-PATCH_LABELS = {"type: refactoring", "type: tests", "type: documentation"}
+PATCH_LABELS = {"type: refactoring", "type: tests", "type: documentation", "type: dependency"}
 
 # Components that never reach the end user: a pull request touching only
 # these (per its `component: *` labels) is always a patch-level change,
