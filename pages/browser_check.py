@@ -177,11 +177,12 @@ def check_site(dist: Path) -> list[str]:
             path_part, _, fragment = href.partition("#")
             if path_part:
                 target_url = urljoin(f"http://x/{rel_path}", path_part)
-                target_path = unquote(urlsplit(target_url).path).lstrip("/")
+                target_url_path = unquote(urlsplit(target_url).path)
+                target_path = target_url_path.lstrip("/")
                 # SimpleHTTPRequestHandler serves an index.html for directory
                 # URLs. Mirror that behaviour when checking the built files so
                 # links such as ``docs/`` and ``/`` are not false positives.
-                target_file = f"{target_path}index.html" if target_path.endswith("/") else target_path
+                target_file = f"{target_path}index.html" if target_url_path.endswith("/") else target_path
             else:
                 target_file = rel_path
 
