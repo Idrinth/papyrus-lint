@@ -30,6 +30,20 @@ describe("stripComments", () => {
     // Line count (and therefore later regex matching) is unaffected.
     expect(stripped.split("\n").length).toBe(source.split("\n").length);
   });
+
+  it("preserves every character position outside line endings", () => {
+    const source = "Int before ; comment\n{brace}\n;/ block /; Float after";
+    const stripped = stripComments(source);
+
+    expect(stripped).toHaveLength(source.length);
+    expect(stripped.indexOf("Float after")).toBe(source.indexOf("Float after"));
+    expect([...stripped].filter((character) => character === "\n")).toHaveLength(2);
+  });
+
+  it("blanks unterminated block and brace comments through end of source", () => {
+    expect(stripComments("Int i\n;/ unfinished\nFloat f")).toBe("Int i\n             \n       ");
+    expect(stripComments("Int i\n{unfinished\nFloat f")).toBe("Int i\n           \n       ");
+  });
 });
 
 describe("declaredTypes", () => {
@@ -72,6 +86,27 @@ describe("declaredTypes", () => {
   it("does not mistake an assignment or a call for a declaration", () => {
     const source = "ScriptName Example\n\nFunction Run()\n    akRef = None\n    akRef.MoveTo(akTarget)\nEndFunction\n";
     expect(declaredTypes(source).has("akref")).toBe(false);
+  });
+
+  it("maps event parameters and script-level fields", () => {
+    const source = `ScriptName Example
+Actor CurrentActor
+
+Event OnHit(ObjectReference akAggressor, Form[] akSources)
+EndEvent
+`;
+    const types = declaredTypes(source);
+
+    expect(types.get("currentactor")).toBe("Actor");
+    expect(types.get("akaggressor")).toBe("ObjectReference");
+    expect(types.get("aksources")).toBe("Form");
+  });
+
+  it("rejects declarations that use a keyword as the type or variable name", () => {
+    const types = declaredTypes("If possible = None\nActor Return = None\n");
+
+    expect(types.has("possible")).toBe(false);
+    expect(types.has("return")).toBe(false);
   });
 });
 
@@ -120,6 +155,34 @@ describe("completionQueryAt", () => {
     const cursor = source.indexOf("actors[i].") + "actors[i].".length;
     expect(completionQueryAt(source, cursor)?.receiverType).toBe("Actor");
   });
+
+  it("allows whitespace inside an array index and before the member-access dot", () => {
+    const source = "ScriptName Example\nActor[] actors\nactors[ index + 1 ] .Get";
+    const cursor = source.length;
+
+    expect(completionQueryAt(source, cursor)).toEqual({
+      receiverType: "Actor",
+      prefix: "Get",
+      prefixStart: cursor - 3,
+    });
+  });
+
+  it("uses only the source before the cursor to identify the typed prefix", () => {
+    const source = "ScriptName Example\nActor target\ntarget.GetName()";
+    const cursor = source.indexOf("GetName") + 3;
+
+    expect(completionQueryAt(source, cursor)).toEqual({
+      receiverType: "Actor",
+      prefix: "Get",
+      prefixStart: cursor - 3,
+    });
+  });
+
+  it("does not resolve a function-call result as a simple receiver", () => {
+    const source = "ScriptName Example\nActor target\ntarget.GetActor().GetName";
+
+    expect(completionQueryAt(source, source.length)).toBeNull();
+  });
 });
 
 describe("filterMembers", () => {
@@ -158,6 +221,14 @@ describe("filterMembers", () => {
 
   it("returns nothing when no member matches", () => {
     expect(filterMembers(members, "zzz")).toEqual([]);
+  });
+
+  it("does not reorder the backend's original member array", () => {
+    const originalOrder = members.map((member) => member.name);
+
+    filterMembers(members, "");
+
+    expect(members.map((member) => member.name)).toEqual(originalOrder);
   });
 });
 
