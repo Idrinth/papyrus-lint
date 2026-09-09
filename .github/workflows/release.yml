@@ -46,7 +46,7 @@ jobs:
             "${{ github.ref_name }}"
 
       - name: Attach Nexus page to release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: nexuspage-${{ github.ref_name }}.bbcode
 
