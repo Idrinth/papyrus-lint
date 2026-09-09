@@ -38,6 +38,9 @@ class ClassifyPullRequestTests(unittest.TestCase):
     def test_documentation_label_recommends_patch(self) -> None:
         self.assertEqual("patch", semver_advisory.classify_pull_request(["type: documentation"]))
 
+    def test_dependency_label_recommends_patch(self) -> None:
+        self.assertEqual("patch", semver_advisory.classify_pull_request(["type: dependency"]))
+
     def test_matching_is_case_insensitive(self) -> None:
         self.assertEqual("major", semver_advisory.classify_pull_request(["Type: Breaking Change"]))
 

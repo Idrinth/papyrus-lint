@@ -1,0 +1,53 @@
+name: Label Dependabot pull requests
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    name: Apply dependency labels
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine component label
+        id: component
+        run: |
+          # "component: ci" for a github-actions update (a workflow's own
+          # dependency); otherwise the component matching the directory
+          # dependabot.yml configured for this update, so it lines up with
+          # the same component labels release.yml groups PRs by.
+          case "${{ steps.metadata.outputs.package-ecosystem }}" in
+            github-actions)
+              echo "label=component: ci" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              case "${{ steps.metadata.outputs.directory }}" in
+                /app) echo "label=component: frontend" >> "$GITHUB_OUTPUT" ;;
+                /app/src-tauri) echo "label=component: gui" >> "$GITHUB_OUTPUT" ;;
+                /app/crates/papyrus-parser) echo "label=component: parsing" >> "$GITHUB_OUTPUT" ;;
+                /app/crates/papyrus-lints) echo "label=component: linting" >> "$GITHUB_OUTPUT" ;;
+                *) echo "label=" >> "$GITHUB_OUTPUT" ;;
+              esac
+              ;;
+          esac
+
+      - name: Apply labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          COMPONENT_LABEL: ${{ steps.component.outputs.label }}
+        run: |
+          gh pr edit "$PR_URL" --add-label "type: dependency"
+          if [ -n "$COMPONENT_LABEL" ]; then
+            gh pr edit "$PR_URL" --add-label "$COMPONENT_LABEL"
+          fi

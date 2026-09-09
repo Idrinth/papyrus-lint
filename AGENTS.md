@@ -680,6 +680,7 @@ component(s) it affects:
 - `component: sublime lint plugin`
 - `component: vscode extension`
 - `component: frontend`
+- `component: linting`
 - `component: ci`
 - `component: parsing`
 - `component: documentation`
@@ -700,6 +701,8 @@ the CI job described above recommend the next semantic version:
 - `type: refactoring` — a patch-version bump (the last digit)
 - `type: tests` — a patch-version bump (the last digit)
 - `type: documentation` — a patch-version bump (the last digit)
+- `type: dependency` — a patch-version bump (the last digit), the same as a
+  bugfix; used for dependency version updates
 
 Unlike the component labels above, these are optional and purely advisory:
 nothing enforces them on a pull request, and omitting one just means that
@@ -712,7 +715,21 @@ document — add a new `type: ...` label in the repository's label
 settings if a pull request doesn't fit an existing one.
 
 CI's `labels` job (see CI below) enforces both requirements on every pull
-request and fails before running the rest of CI if either is missing.
+request and fails before running the rest of CI if either is missing. A
+Dependabot pull request satisfies this automatically: the
+`dependabot-labels.yml` workflow (triggered by `pull_request_target` on
+`opened`/`reopened`, since a `pull_request`-triggered workflow gets a
+read-only token for Dependabot's own pull requests) tags every one with
+`type: dependency`, plus `component: ci` for a `github-actions` ecosystem
+update or the component matching the directory Dependabot updated
+otherwise (`/app` → `component: frontend`, `/app/src-tauri` →
+`component: gui`, `/app/crates/papyrus-parser` → `component: parsing`,
+`/app/crates/papyrus-lints` → `component: linting`) via
+[`dependabot/fetch-metadata`](https://github.com/dependabot/fetch-metadata)'s
+`package-ecosystem`/`directory` outputs. A directory not in that list (i.e.
+not yet one `.github/dependabot.yml` configures) only gets `type:
+dependency`, the same as any other pull request that still needs a
+`component: ...` label added by hand.
 
 ## Current state
 
