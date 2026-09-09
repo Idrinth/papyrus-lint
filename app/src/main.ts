@@ -55,6 +55,8 @@ let assumeAutoPropertiesFilledEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 let autoFixableFilterEl: HTMLInputElement | null;
 let ruleFilterEl: HTMLSelectElement | null;
+let exportFormatEl: HTMLSelectElement | null;
+let exportIssuesButtonEl: HTMLButtonElement | null;
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
 let codeViewerCloseEl: HTMLButtonElement | null;
@@ -1511,6 +1513,16 @@ export function matchesRuleFilter(finding: Diagnostic): boolean {
   return activeRules.has(finding.rule);
 }
 
+// `findings` restricted to those passing every active severity/tag/rule
+// filter, shared by buildPscResultItem (rendering the Lint results list)
+// and collectFilteredIssues (the "Export issues" button below) so the two
+// can never disagree about what "currently filtered" means.
+function findingsPassingActiveFilters(findings: Diagnostic[]): Diagnostic[] {
+  return findings.filter(
+    (finding) => activeSeverities.has(severityOf(finding.message)) && matchesTagFilters(finding) && matchesRuleFilter(finding),
+  );
+}
+
 // The current filename search pattern; an empty string matches every file.
 let currentFilenameFilter = "";
 
@@ -1638,10 +1650,7 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
     return null;
   }
 
-  const visibleFindings = findings.filter(
-    (finding) =>
-      activeSeverities.has(severityOf(finding.message)) && matchesTagFilters(finding) && matchesRuleFilter(finding),
-  );
+  const visibleFindings = findingsPassingActiveFilters(findings);
 
   if (ok && visibleFindings.length === 0) {
     return null;
@@ -1728,6 +1737,119 @@ export function buildPscResultItem(outcome: PscParseOutcome): HTMLLIElement | nu
   return item;
 }
 
+// One file's worth of findings that currently pass every active filter
+// (filename search, severity, tag, rule), as gathered by
+// collectFilteredIssues below for the "Export issues" button.
+export interface FilteredIssuesFile {
+  path: string;
+  findings: Diagnostic[];
+}
+
+// Gathers every finding currently visible in the Lint results list - i.e.
+// the same set buildPscResultItem renders, grouped by file - for the
+// "Export issues" button. A file that doesn't match the filename filter,
+// or has no findings passing the severity/tag/rule filters (including one
+// that failed to parse, which has none at all), is omitted entirely, since
+// there's nothing to export for it.
+export function collectFilteredIssues(outcomes: PscParseOutcome[]): FilteredIssuesFile[] {
+  const files: FilteredIssuesFile[] = [];
+  for (const outcome of outcomes) {
+    const path = relativePath(outcome.path, currentProjectDir);
+    if (!matchesFilenameFilter(path, currentFilenameFilter)) {
+      continue;
+    }
+    const findings = findingsPassingActiveFilters(outcome.findings);
+    if (findings.length === 0) {
+      continue;
+    }
+    files.push({ path, findings });
+  }
+  return files;
+}
+
+// Renders `files` the same way the CLI's plain-text report does (see
+// format_diagnostic_line in papyrus-lint-cli), one finding per line, so the
+// exported text stays familiar to anyone who's already used the CLI's
+// output.
+export function formatIssuesAsText(files: FilteredIssuesFile[]): string {
+  const lines: string[] = [];
+  for (const file of files) {
+    for (const finding of file.findings) {
+      lines.push(`${file.path}:${finding.line}:${finding.column}: [${finding.rule ?? "unknown"}] ${finding.message}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+// Renders `files` as JSON, mirroring the shape of the CLI's own `--json`
+// report (JsonReport/JsonFileReport/JsonDiagnostic in
+// papyrus-lint-cli/src/lib.rs) so both can be consumed by the same tooling.
+export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
+  let totalDiagnostics = 0;
+  const jsonFiles = files.map((file) => {
+    totalDiagnostics += file.findings.length;
+    return {
+      path: file.path,
+      diagnostics: file.findings.map((finding) => ({
+        line: finding.line,
+        column: finding.column,
+        rule: finding.rule ?? "unknown",
+        level: severityOf(finding.message),
+        message: finding.message,
+      })),
+    };
+  });
+  return JSON.stringify(
+    {
+      files: jsonFiles,
+      files_with_diagnostics: jsonFiles.length,
+      total_diagnostics: totalDiagnostics,
+    },
+    null,
+    2,
+  );
+}
+
+// Triggers a browser "Save As" download of `contents` named `filename`, via
+// a throwaway Blob URL and a clicked anchor element - the standard
+// technique for a framework-free page, and one the desktop app's own
+// WebView handles the same way an ordinary browser does, without needing a
+// Tauri fs/dialog plugin.
+function downloadTextFile(filename: string, contents: string, mimeType: string) {
+  const blob = new Blob([contents], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  // Download processing can be asynchronous, so the WebView may still need
+  // the URL after this task finishes; revoking it only once the event loop
+  // is free again avoids racing an in-progress download.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+// Enables the "Export issues" button only while there's at least one
+// currently filtered finding to export.
+export function updateExportIssuesButtonState(outcomes: PscParseOutcome[]) {
+  if (exportIssuesButtonEl) {
+    exportIssuesButtonEl.disabled = collectFilteredIssues(outcomes).length === 0;
+  }
+}
+
+// Downloads the currently filtered lint findings (see collectFilteredIssues)
+// as a single text or JSON file, per the "Export format" selector.
+export function handleExportIssuesClick() {
+  const files = collectFilteredIssues(currentPscOutcomes);
+  if (files.length === 0) {
+    return;
+  }
+  if (exportFormatEl?.value === "json") {
+    downloadTextFile("papyrus-lint-issues.json", formatIssuesAsJson(files), "application/json");
+  } else {
+    downloadTextFile("papyrus-lint-issues.txt", formatIssuesAsText(files), "text/plain");
+  }
+}
+
 // Builds/refreshes the "mass fix" panel listing every rule with at least
 // one fixable finding somewhere in `outcomes`, each with a button that
 // clears every occurrence of that one rule across every file at once (see
@@ -1786,6 +1908,7 @@ export function renderPscResults(outcomes: PscParseOutcome[]) {
   const items = outcomes.map(buildPscResultItem).filter((item): item is HTMLLIElement => item !== null);
   pscResultListEl.replaceChildren(...items);
   pscResultEl.removeAttribute("hidden");
+  updateExportIssuesButtonState(outcomes);
   switchTab("lint");
 }
 
@@ -2355,6 +2478,8 @@ window.addEventListener("DOMContentLoaded", () => {
   themeSelectEl = document.querySelector("#theme-select");
   autoFixableFilterEl = document.querySelector("#filter-auto-fixable-only");
   ruleFilterEl = document.querySelector("#filter-rule");
+  exportFormatEl = document.querySelector("#export-format");
+  exportIssuesButtonEl = document.querySelector("#export-issues-button");
 
   const initialTheme = loadStoredTheme();
   if (themeSelectEl) {
@@ -2468,6 +2593,8 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     renderPscResults(currentPscOutcomes);
   });
+
+  exportIssuesButtonEl?.addEventListener("click", () => handleExportIssuesClick());
 
   configPathOverrideEl?.addEventListener("change", handleConfigPathOverrideChanged);
   compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
