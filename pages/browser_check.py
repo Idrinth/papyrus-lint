@@ -36,7 +36,7 @@ import sys
 import threading
 from dataclasses import dataclass, field
 from pathlib import Path
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import unquote, urljoin, urlsplit
 
 from playwright.sync_api import sync_playwright
 
@@ -177,7 +177,11 @@ def check_site(dist: Path) -> list[str]:
             path_part, _, fragment = href.partition("#")
             if path_part:
                 target_url = urljoin(f"http://x/{rel_path}", path_part)
-                target_file = urlsplit(target_url).path.lstrip("/")
+                target_path = unquote(urlsplit(target_url).path).lstrip("/")
+                # SimpleHTTPRequestHandler serves an index.html for directory
+                # URLs. Mirror that behaviour when checking the built files so
+                # links such as ``docs/`` and ``/`` are not false positives.
+                target_file = f"{target_path}index.html" if target_path.endswith("/") else target_path
             else:
                 target_file = rel_path
 
@@ -185,9 +189,14 @@ def check_site(dist: Path) -> list[str]:
                 problems.append(f"{rel_path}: broken link: '{href}' (no such file '{target_file}')")
                 continue
 
-            if fragment and fragment not in ids_by_page.get(target_file, set()):
+            # URL fragments are percent encoded in href attributes but DOM ids
+            # contain their decoded text (for example, #command%20line targets
+            # id="command line"). Compare the browser-visible value.
+            decoded_fragment = unquote(fragment)
+            if decoded_fragment and decoded_fragment not in ids_by_page.get(target_file, set()):
                 problems.append(
-                    f"{rel_path}: broken link: '{href}' (no element with id '{fragment}' on '{target_file}')"
+                    f"{rel_path}: broken link: '{href}' "
+                    f"(no element with id '{decoded_fragment}' on '{target_file}')"
                 )
 
     return problems
