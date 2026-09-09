@@ -65,6 +65,7 @@ import {
   massFixRuleCounts,
   massFixRuleDisplayName,
   matchesFilenameFilter,
+  matchesRuleFilter,
   matchesTagFilters,
   openCodeViewer,
   parsePscFiles,
@@ -964,6 +965,80 @@ describe("matchesTagFilters", () => {
   });
 });
 
+describe("populateRuleFilterOptions (via applyRuleTags)", () => {
+  const sampleTags: RuleTagsInfo[] = [
+    { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+    { rule: "argument-types", kinds: ["correctness"], importance: "high", auto_fixable: false },
+  ];
+
+  // ruleTagsByRule/activeRules are module state that outlives mountFixture();
+  // reset them so they don't leak into later tests - see the
+  // loadRuleTags/applyRuleTags describe block above for why this matters.
+  afterEach(() => {
+    applyRuleTags([]);
+  });
+
+  it("populates the rule filter select, sorted by rule id, all selected", () => {
+    applyRuleTags(sampleTags);
+
+    const select = document.querySelector<HTMLSelectElement>("#filter-rule")!;
+    const options = [...select.options];
+    expect(options.map((option) => option.value)).toEqual(["argument-types", "trailing-whitespace"]);
+    expect(options.map((option) => option.textContent)).toEqual(["Argument types", "Trailing whitespace"]);
+    expect(options.every((option) => option.selected)).toBe(true);
+  });
+
+  it("rebuilds the select's options on a later call, dropping stale ones", () => {
+    applyRuleTags(sampleTags);
+    applyRuleTags([sampleTags[0]]);
+
+    const select = document.querySelector<HTMLSelectElement>("#filter-rule")!;
+    expect([...select.options].map((option) => option.value)).toEqual(["trailing-whitespace"]);
+  });
+});
+
+describe("matchesRuleFilter", () => {
+  const trailingWhitespace: Diagnostic = { line: 1, column: 1, message: "x", rule: "trailing-whitespace" };
+  const argumentTypes: Diagnostic = { line: 1, column: 1, message: "x", rule: "argument-types" };
+
+  afterEach(() => {
+    applyRuleTags([]);
+  });
+
+  it("shows every finding before the rule list has loaded", () => {
+    expect(matchesRuleFilter(trailingWhitespace)).toBe(true);
+    expect(matchesRuleFilter(argumentTypes)).toBe(true);
+    expect(matchesRuleFilter({ line: 1, column: 1, message: "x" })).toBe(true);
+  });
+
+  it("shows every finding by default once the rule list has loaded", () => {
+    applyRuleTags([
+      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "argument-types", kinds: ["correctness"], importance: "high", auto_fixable: false },
+    ]);
+
+    expect(matchesRuleFilter(trailingWhitespace)).toBe(true);
+    expect(matchesRuleFilter(argumentTypes)).toBe(true);
+    // A finding with no rule (e.g. a compiler-reported diagnostic) is exempt
+    // from this filter entirely, even once the rule list has loaded.
+    expect(matchesRuleFilter({ line: 1, column: 1, message: "x" })).toBe(true);
+  });
+
+  it("hides a finding whose rule is deselected in the multiselect", () => {
+    applyRuleTags([
+      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "argument-types", kinds: ["correctness"], importance: "high", auto_fixable: false },
+    ]);
+    const select = document.querySelector<HTMLSelectElement>("#filter-rule")!;
+    const trailingWhitespaceOption = [...select.options].find((option) => option.value === "trailing-whitespace")!;
+    trailingWhitespaceOption.selected = false;
+    select.dispatchEvent(new Event("change"));
+
+    expect(matchesRuleFilter(trailingWhitespace)).toBe(false);
+    expect(matchesRuleFilter(argumentTypes)).toBe(true);
+  });
+});
+
 describe("loadCompilerPath / saveCompilerPath", () => {
   it("loadCompilerPath returns the backend's resolved path", async () => {
     invokeImplFor({ load_compiler_path: () => "C:\\Tools\\PapyrusCompiler.exe" });
@@ -1340,6 +1415,33 @@ describe("buildPscResultItem / renderPscResults", () => {
       outcome({ findings: [{ line: 1, column: 1, message: "[error] compile error", rule: "compiler-error" }] }),
     );
     expect(item!.querySelector(".psc-result__tag-badge")).toBeNull();
+  });
+
+  it("hides a finding whose rule is deselected in the 'Filter by rule' multiselect", () => {
+    applyRuleTags([
+      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "comma-spacing", kinds: ["style"], importance: "low", auto_fixable: true },
+    ]);
+    try {
+      const select = document.querySelector<HTMLSelectElement>("#filter-rule")!;
+      const trailingWhitespaceOption = [...select.options].find((option) => option.value === "trailing-whitespace")!;
+      trailingWhitespaceOption.selected = false;
+      select.dispatchEvent(new Event("change"));
+
+      const item = buildPscResultItem(
+        outcome({
+          findings: [
+            { line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" },
+            { line: 2, column: 1, message: "[warning] missing space", rule: "comma-spacing" },
+          ],
+        }),
+      );
+      const findingEls = item!.querySelectorAll(".psc-result__finding");
+      expect(findingEls).toHaveLength(1);
+      expect(findingEls[0].textContent).toContain("missing space");
+    } finally {
+      applyRuleTags([]);
+    }
   });
 
   it("shows a 'Fix this issue' button only on findings whose own rule is auto-fixable", () => {
