@@ -51,6 +51,9 @@ class PageLabelTests(unittest.TestCase):
         report = {"finalUrl": "http://localhost:4173"}
         self.assertEqual("/", lighthouse_summary.page_label(report))
 
+    def test_root_path_when_report_has_no_url(self) -> None:
+        self.assertEqual("/", lighthouse_summary.page_label({}))
+
 
 class FormatScoreTests(unittest.TestCase):
     def test_formats_a_passing_score_without_a_flag(self) -> None:
@@ -61,6 +64,9 @@ class FormatScoreTests(unittest.TestCase):
 
     def test_reports_n_a_for_a_missing_score(self) -> None:
         self.assertEqual("n/a", lighthouse_summary.format_score(None))
+
+    def test_threshold_score_is_not_flagged(self) -> None:
+        self.assertEqual("90", lighthouse_summary.format_score(lighthouse_summary.THRESHOLD))
 
 
 class FailingAuditsTests(unittest.TestCase):
@@ -99,6 +105,39 @@ class FailingAuditsTests(unittest.TestCase):
             "audits": {"manual-check": {"score": 0.0, "title": "Manual check"}},
         }
         self.assertEqual([], lighthouse_summary.failing_audits(report))
+
+    def test_ignores_missing_and_passing_audits_and_falls_back_to_an_id(self) -> None:
+        report = {
+            "categories": {
+                "performance": {
+                    "score": 0.5,
+                    "auditRefs": [
+                        {"id": "missing", "weight": 1},
+                        {"id": "passing", "weight": 1},
+                        {"id": "untitled", "weight": 1},
+                        {"id": "unscored", "weight": 1},
+                    ],
+                }
+            },
+            "audits": {
+                "passing": {"score": 0.9, "title": "Passing"},
+                "untitled": {"score": 0.2},
+                "unscored": {"score": None, "title": "Unscored"},
+            },
+        }
+
+        self.assertEqual(["untitled"], lighthouse_summary.failing_audits(report))
+
+    def test_deduplicates_an_audit_referenced_by_multiple_categories(self) -> None:
+        report = make_report(
+            "http://x/index.html",
+            {"performance": 0.5, "accessibility": 0.5},
+            {
+                "performance": [("shared", 0.1, "Shared audit")],
+                "accessibility": [("shared", 0.1, "Shared audit")],
+            },
+        )
+        self.assertEqual(["Shared audit"], lighthouse_summary.failing_audits(report))
 
 
 class ActiveCategoriesTests(unittest.TestCase):
@@ -205,6 +244,16 @@ class LoadReportsTests(unittest.TestCase):
 
         self.assertEqual(1, len(reports))
         self.assertEqual("http://x/index.html", reports[0]["finalUrl"])
+
+    def test_loads_reports_in_filename_order(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "z.report.json").write_text('{"id": "z"}', encoding="utf-8")
+            (root / "a.report.json").write_text('{"id": "a"}', encoding="utf-8")
+
+            reports = lighthouse_summary.load_reports(root)
+
+        self.assertEqual(["a", "z"], [report["id"] for report in reports])
 
 
 class MainTests(unittest.TestCase):
