@@ -273,6 +273,22 @@ describe('extension activation and commands', () => {
     ]);
   });
 
+  it('does not report a fix outcome when fixing one issue returns malformed JSON', async () => {
+    const harness = createHarness({
+      result: { error: null, stdout: 'not json', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.fixIssue')(
+      uri('/project/Test.psc'),
+      'trailing-whitespace',
+      3,
+    );
+
+    assert.deepEqual(harness.messages.information, []);
+    assert.match(harness.messages.error[0], /could not parse the CLI output/);
+    assert.equal(harness.diagnostics.published.length, 0);
+  });
+
   it('offers a quick fix command for each papyrus-lint diagnostic under the cursor', () => {
     const harness = createHarness();
     const [{ provider }] = harness.codeActionProviders;
