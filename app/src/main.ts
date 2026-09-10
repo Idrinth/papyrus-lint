@@ -87,11 +87,13 @@ let presetPickerEl: HTMLDialogElement | null;
 let presetPickerListEl: HTMLElement | null;
 let presetPickerSkipEl: HTMLButtonElement | null;
 let saveConfigAsPresetButtonEl: HTMLButtonElement | null;
+let presetManagementTabEl: HTMLButtonElement | null;
+let presetManagementListEl: HTMLElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
 
-export const TAB_IDS = ["import", "settings", "files", "lint", "contact"] as const;
+export const TAB_IDS = ["import", "settings", "presets", "files", "lint", "contact"] as const;
 type TabId = (typeof TAB_IDS)[number];
 
 // Shows `tab`'s panel and hides the others, updating the tab buttons'
@@ -616,7 +618,7 @@ export function applyProjectInfoToUI(info: ProjectInfo) {
 // without showing anything.
 export async function loadConfigPresets(): Promise<ConfigPreset[]> {
   try {
-    return await invoke<ConfigPreset[]>("list_config_presets");
+    return (await invoke<ConfigPreset[]>("list_config_presets")) ?? [];
   } catch (error) {
     console.error(error);
     return [];
@@ -661,10 +663,159 @@ export async function handleSaveConfigAsPresetClick(): Promise<void> {
 
   try {
     await invoke("save_config_as_preset", { config: currentLintConfig, name, overwrite: exists });
+    await refreshPresetManagementTab();
     window.alert(`Saved preset "${name}".`);
   } catch (error) {
     console.error(error);
     window.alert(`Failed to save preset "${name}": ${error}`);
+  }
+}
+
+// The three built-in presets' own ids (see papyrus_lint_core::config::PRESET_NAMES),
+// kept in sync by hand the same way FIXABLE_RULE_IDS is: everything
+// loadConfigPresets returns that isn't one of these is a user preset, since
+// config::save_user_preset/rename_user_preset always refuse a name matching
+// one of these case-insensitively.
+const BUILTIN_PRESET_IDS = new Set(["strict", "standard", "careful"]);
+
+export function isCustomPreset(preset: ConfigPreset): boolean {
+  return !BUILTIN_PRESET_IDS.has(preset.id.toLowerCase());
+}
+
+// Renames the user preset `oldName` to `newName`, via the backend's
+// rename_user_preset command (papyrus_lint_core::config::rename_user_preset).
+export async function renameUserPreset(oldName: string, newName: string, overwrite: boolean): Promise<void> {
+  await invoke("rename_user_preset", { oldName, newName, overwrite });
+}
+
+// Deletes the user preset `name`, via the backend's delete_user_preset
+// command (papyrus_lint_core::config::delete_user_preset).
+export async function deleteUserPreset(name: string): Promise<void> {
+  await invoke("delete_user_preset", { name });
+}
+
+// Fetches the user preset `name`'s raw YAML content, via the backend's
+// export_user_preset command (papyrus_lint_core::config::read_user_preset_yaml),
+// for handleExportPresetClick to offer as a download.
+export async function exportUserPreset(name: string): Promise<string> {
+  return invoke<string>("export_user_preset", { name });
+}
+
+// Rebuilds the Presets tab's management list from `presets` (see
+// loadConfigPresets), showing only the user (non-built-in) ones — built-in
+// presets can't be renamed, exported, or deleted. The tab itself (its
+// button and panel) is only shown while at least one user preset exists;
+// if it was the active tab and its last preset just got deleted, switches
+// back to the Settings tab instead of leaving an empty panel showing.
+export function renderPresetManagementTab(presets: ConfigPreset[]) {
+  const customPresets = presets.filter(isCustomPreset);
+  const hasCustomPresets = customPresets.length > 0;
+  const wasActive = presetManagementTabEl?.classList.contains("tabs__tab--active") ?? false;
+  if (presetManagementTabEl) {
+    presetManagementTabEl.hidden = !hasCustomPresets;
+  }
+  if (!hasCustomPresets && wasActive) {
+    switchTab("settings");
+  }
+
+  if (!presetManagementListEl) {
+    return;
+  }
+  presetManagementListEl.innerHTML = "";
+  for (const preset of customPresets) {
+    const item = document.createElement("li");
+    item.className = "preset-management__item";
+
+    const label = document.createElement("span");
+    label.className = "preset-management__label";
+    label.textContent = preset.label;
+
+    const actions = document.createElement("span");
+    actions.className = "preset-management__actions";
+
+    const renameButton = document.createElement("button");
+    renameButton.type = "button";
+    renameButton.className = "preset-management__button";
+    renameButton.textContent = "Rename";
+    renameButton.addEventListener("click", () => void handleRenamePresetClick(preset));
+
+    const exportButton = document.createElement("button");
+    exportButton.type = "button";
+    exportButton.className = "preset-management__button";
+    exportButton.textContent = "Export";
+    exportButton.addEventListener("click", () => void handleExportPresetClick(preset));
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "preset-management__button";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => void handleDeletePresetClick(preset));
+
+    actions.append(renameButton, exportButton, deleteButton);
+    item.append(label, actions);
+    presetManagementListEl.appendChild(item);
+  }
+}
+
+// Reloads every configuration preset and re-renders the Presets tab from
+// it. Called on startup and after any action (saving, renaming, or
+// deleting a user preset) that could change which presets exist.
+export async function refreshPresetManagementTab(): Promise<void> {
+  renderPresetManagementTab(await loadConfigPresets());
+}
+
+// Prompts for `preset`'s new name, confirming an overwrite the same way
+// handleSaveConfigAsPresetClick does if one is already in use, then renames
+// it via renameUserPreset and refreshes the tab. Cancels silently if the
+// prompt is left blank, unchanged (ignoring case), or the overwrite
+// confirmation is declined.
+export async function handleRenamePresetClick(preset: ConfigPreset): Promise<void> {
+  const name = window.prompt(`Rename preset "${preset.label}" to:`, preset.label)?.trim();
+  if (!name || name.toLowerCase() === preset.id.toLowerCase()) {
+    return;
+  }
+
+  const presets = await loadConfigPresets();
+  const exists = presets.some((other) => other.id.toLowerCase() === name.toLowerCase());
+  if (exists && !window.confirm(`A preset named "${name}" already exists. Overwrite it?`)) {
+    return;
+  }
+
+  try {
+    await renameUserPreset(preset.id, name, exists);
+    await refreshPresetManagementTab();
+  } catch (error) {
+    console.error(error);
+    window.alert(`Failed to rename preset "${preset.label}": ${error}`);
+  }
+}
+
+// Confirms, then deletes `preset` via deleteUserPreset and refreshes the
+// tab.
+export async function handleDeletePresetClick(preset: ConfigPreset): Promise<void> {
+  if (!window.confirm(`Delete preset "${preset.label}"? This can't be undone.`)) {
+    return;
+  }
+
+  try {
+    await deleteUserPreset(preset.id);
+    await refreshPresetManagementTab();
+  } catch (error) {
+    console.error(error);
+    window.alert(`Failed to delete preset "${preset.label}": ${error}`);
+  }
+}
+
+// Downloads `preset`'s raw YAML content (via exportUserPreset) as
+// `<id>.yaml`, the same browser-download technique handleExportIssuesClick
+// uses for the Lint results tab's own export button.
+export async function handleExportPresetClick(preset: ConfigPreset): Promise<void> {
+  try {
+    const yaml = await exportUserPreset(preset.id);
+    downloadTextFile(`${preset.id}.yaml`, yaml, "application/x-yaml");
+  } catch (error) {
+    console.error(error);
+    window.alert(`Failed to export preset "${preset.label}": ${error}`);
   }
 }
 
@@ -2734,6 +2885,8 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   saveConfigAsPresetButtonEl = document.querySelector("#save-config-as-preset");
   saveConfigAsPresetButtonEl?.addEventListener("click", () => void handleSaveConfigAsPresetClick());
+  presetManagementTabEl = document.querySelector("#tab-presets");
+  presetManagementListEl = document.querySelector("#preset-management-list");
 
   const initialTheme = loadStoredTheme();
   if (themeSelectEl) {
@@ -2926,6 +3079,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     void loadRuleTags().then(applyRuleTags);
+    void refreshPresetManagementTab();
 
     const lastDir = lastProjectDir();
     if (lastDir) {

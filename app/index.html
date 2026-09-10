@@ -43,6 +43,9 @@
           <button type="button" id="tab-settings" class="tabs__tab" role="tab" aria-controls="panel-settings" aria-selected="false">
             Settings
           </button>
+          <button type="button" id="tab-presets" class="tabs__tab" role="tab" aria-controls="panel-presets" aria-selected="false" hidden>
+            Presets
+          </button>
           <button type="button" id="tab-files" class="tabs__tab" role="tab" aria-controls="panel-files" aria-selected="false">
             Files
           </button>
@@ -237,6 +240,14 @@
           <div class="settings-group__row">
             <button type="button" id="save-config-as-preset">Save current settings as preset&hellip;</button>
           </div>
+        </div>
+
+        <div id="panel-presets" class="tabs__panel" role="tabpanel" aria-labelledby="tab-presets" hidden>
+          <p class="preset-management__intro">
+            Rename, export, or delete your own saved presets. Built-in presets (Strict, Standard,
+            Careful) aren't shown here since they can't be edited.
+          </p>
+          <ul id="preset-management-list" class="preset-management__list"></ul>
         </div>
 
         <div id="panel-files" class="tabs__panel" role="tabpanel" aria-labelledby="tab-files" hidden>

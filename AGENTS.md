@@ -1036,6 +1036,44 @@ creating that directory first if it doesn't exist yet — so the saved
 preset is immediately selectable from the picker, or via the CLI's
 `--preset <name>`, without restarting anything.
 
+A "Presets" tab (`#tab-presets`/`#panel-presets`, next to Settings) lets a
+user rename, export, or delete their own saved presets afterward, without
+touching the filesystem by hand. It's only shown once at least one exists:
+`renderPresetManagementTab` (`app/src/main.ts`) filters whatever
+`list_config_presets` returns down to the non-built-in ones
+(`isCustomPreset`, checking a preset's id against the three built-in names
+by hand — the same convention `FIXABLE_RULE_IDS` follows for the lint
+engine's own fixable rule ids), hides the tab entirely when that list is
+empty, and switches back to the Settings tab if it was the active one and
+its last preset just disappeared. `refreshPresetManagementTab` re-fetches
+and re-renders it, called once at startup and after every action below
+that could change which presets exist (including
+`handleSaveConfigAsPresetClick` itself, above). Each listed preset gets
+three buttons:
+
+- **Rename** (`handleRenamePresetClick`) prompts for a new name, applying
+  the same "cancel on a blank prompt" and "confirm before overwriting an
+  already-used name" rules `handleSaveConfigAsPresetClick` does, then
+  calls the `rename_user_preset` Tauri command
+  (`papyrus_lint_core::config::rename_user_preset`), which finds the
+  preset's existing `<name>.yaml`/`.yml` file in the executable-adjacent
+  `presets` directory and renames it in place — refusing a blank or
+  built-in new name the same way `save_user_preset` does, and preserving
+  the file's own extension.
+- **Delete** (`handleDeletePresetClick`) confirms, then calls
+  `delete_user_preset` (`config::delete_user_preset`), which removes the
+  matching file from the `presets` directory.
+- **Export** (`handleExportPresetClick`) calls `export_user_preset`
+  (`config::read_user_preset_yaml`), which returns the preset's file
+  contents verbatim (unlike `initialize_default_config`, it isn't merged
+  against an executable-adjacent base config or a project's own settings),
+  and downloads it as `<id>.yaml` via the same Blob-and-anchor technique
+  `handleExportIssuesClick` uses for the Lint results tab's own export
+  button, so it needs no Tauri fs/dialog plugin either. Built-in presets
+  can't be renamed, deleted, or exported this way, since none of the three
+  backend functions above ever resolve a name matching
+  `config::PRESET_NAMES`.
+
 The desktop app's `parse_psc_file` command, both the app's and the CLI's
 cross-script lookups (`papyrus-lint-core`'s `function_table.rs`, used to
 resolve the "Argument type check"/"Return type check" lints across

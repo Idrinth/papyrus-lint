@@ -15,6 +15,7 @@ export const FIXTURE_HTML = `
       <div class="tabs__list" role="tablist">
         <button type="button" id="tab-import" class="tabs__tab" role="tab" aria-selected="true">Import</button>
         <button type="button" id="tab-settings" class="tabs__tab" role="tab" aria-selected="false">Settings</button>
+        <button type="button" id="tab-presets" class="tabs__tab" role="tab" aria-selected="false" hidden>Presets</button>
         <button type="button" id="tab-files" class="tabs__tab" role="tab" aria-selected="false">Files</button>
         <button type="button" id="tab-lint" class="tabs__tab" role="tab" aria-selected="false">Lint results</button>
         <button type="button" id="tab-contact" class="tabs__tab" role="tab" aria-selected="false">Contact</button>
@@ -123,6 +124,10 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-repeated_getvalue" />
         </fieldset>
         <button type="button" id="save-config-as-preset">Save current settings as preset&hellip;</button>
+      </div>
+
+      <div id="panel-presets" class="tabs__panel" role="tabpanel" hidden>
+        <ul id="preset-management-list"></ul>
       </div>
 
       <div id="panel-files" class="tabs__panel" role="tabpanel" hidden>

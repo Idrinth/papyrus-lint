@@ -288,6 +288,13 @@ becomes selectable from that first-run picker (or the CLI's `--preset
 exists under it (a built-in name is rejected outright, since `--preset`
 always resolves those first), asks to overwrite it before replacing it.
 
+A "Presets" tab appears next to Settings once at least one user preset
+exists (built-in presets can't be edited, so the tab stays hidden without
+one), listing each with Rename, Export, and Delete buttons: Rename asks for
+a new name with the same overwrite confirmation as saving one; Export
+downloads its `papyrus-lint.yaml` content as-is; Delete asks to confirm and
+removes it from the `presets` directory.
+
 Each key:
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
