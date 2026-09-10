@@ -635,6 +635,13 @@ plugin as a `.zip` of the `SublimeLinter-contrib-papyrus-lint` directory
 on the standalone `PapyrusLinterCLI` binary above being installed and on
 `PATH` (or configured via each plugin's settings).
 
+## Versioning
+
+Papyrus Lint follows [Semantic Versioning](https://semver.org/). Release
+versions use the `MAJOR.MINOR.PATCH` format: major releases contain breaking
+changes, minor releases add backward-compatible functionality, and patch
+releases contain backward-compatible fixes.
+
 ## Fixing lint findings
 
 Each `.psc` file listed on the Lint results tab that has at least one
