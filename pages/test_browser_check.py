@@ -68,6 +68,21 @@ class StartServerTest(unittest.TestCase):
                 server.shutdown()
                 server.server_close()
 
+    def test_serves_nested_files_and_decodes_url_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            nested = Path(directory) / "release notes"
+            nested.mkdir()
+            (nested / "index.html").write_text("nested page", encoding="utf-8")
+
+            server, base_url = browser_check.start_server(Path(directory))
+            try:
+                with urllib.request.urlopen(f"{base_url}/release%20notes/") as response:
+                    self.assertEqual(response.status, 200)
+                    self.assertEqual(response.read(), b"nested page")
+            finally:
+                server.shutdown()
+                server.server_close()
+
 
 class CheckSiteTest(unittest.TestCase):
     def test_reports_no_html_files_without_starting_a_browser(self) -> None:
@@ -233,6 +248,45 @@ class CheckSiteTest(unittest.TestCase):
 
         self.assertEqual(problems, [])
 
+    def test_checks_html_pages_recursively(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            nested = dist / "guides" / "advanced"
+            nested.mkdir(parents=True)
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Home</title></head><body></body></html>',
+                encoding="utf-8",
+            )
+            (nested / "setup.html").write_text(
+                '<html lang="en"><head><title>Setup</title></head><body>'
+                '<a href="missing.html">Missing</a></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "guides/advanced/setup.html: broken link: 'missing.html' "
+                "(no such file 'guides/advanced/missing.html')"
+            ],
+        )
+
+    def test_accepts_empty_query_and_fragment_links_to_the_current_page(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Home</title></head><body>'
+                '<h1 id="top">Home</h1><a href="">Empty</a><a href="?print=1">Print</a>'
+                '<a href="?#top">Top</a></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
     def test_decodes_percent_encoded_paths_and_fragments(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
@@ -270,6 +324,30 @@ class CheckSiteTest(unittest.TestCase):
             [
                 "index.html: broken link: '#missing%20section' "
                 "(no element with id 'missing section' on 'index.html')"
+            ],
+        )
+
+    def test_checks_links_added_by_javascript_after_page_load(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                """<html lang="en"><head><title>Home</title></head><body>
+                <script>
+                  const link = document.createElement('a');
+                  link.href = 'generated-missing.html';
+                  link.textContent = 'Generated link';
+                  document.body.append(link);
+                </script></body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "index.html: broken link: 'generated-missing.html' "
+                "(no such file 'generated-missing.html')"
             ],
         )
 
@@ -352,6 +430,20 @@ class CheckSiteTest(unittest.TestCase):
 
         self.assertEqual(problems, [])
 
+    def test_fakes_external_scripts_without_executing_remote_content(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Home</title>'
+                '<script src="https://example.test/unavailable.js"></script>'
+                '</head><body></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
     def test_detects_duplicate_ids(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
@@ -365,6 +457,27 @@ class CheckSiteTest(unittest.TestCase):
             problems = browser_check.check_site(dist)
 
         self.assertEqual(problems, ["index.html: document error: duplicate element id 'repeated'"])
+
+    def test_reports_each_duplicate_id_only_once(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                """<html lang="en"><head><title>Duplicate ids</title></head><body>
+                <div id="first"></div><div id="first"></div><div id="first"></div>
+                <div id="second"></div><div id="second"></div>
+                </body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "index.html: document error: duplicate element id 'first'",
+                "index.html: document error: duplicate element id 'second'",
+            ],
+        )
 
     def test_detects_images_without_alt_text(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -390,6 +503,27 @@ class CheckSiteTest(unittest.TestCase):
             problems = browser_check.check_site(dist)
 
         self.assertEqual(problems, ["index.html: document error: image '<no src>' has no alt attribute"])
+
+    def test_reports_every_image_without_an_alt_attribute(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Images</title></head><body>'
+                '<img src="first.svg"><img><img src="third.svg" alt="Third">'
+                "</body></html>",
+                encoding="utf-8",
+            )
+            (dist / "first.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'/>", encoding="utf-8")
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "index.html: document error: image 'first.svg' has no alt attribute",
+                "index.html: document error: image '<no src>' has no alt attribute",
+            ],
+        )
 
     def test_accepts_empty_alt_text_for_decorative_images(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
