@@ -6,7 +6,9 @@ content converted directly from README.md's own tables/code blocks, so
 that documentation never has to be kept in sync by hand in two places.
 Also renders every document listed in DOCS (including remotely sourced
 documentation) into its own browsable subpage under docs/ (via
-pages/docs.template.html). The templates receive their
+pages/docs.template.html), with lightweight build-time syntax highlighting
+for fenced Markdown and raw JSON, YAML, shell, and BBCode sources. The
+templates receive their
 shared header and footer from pages/includes/, so site chrome has a single
 source of truth - including the header's System/Light/Dark theme switch,
 wired up by pages/theme.js (copied into the output directory verbatim) and
@@ -427,6 +429,67 @@ def first_paragraph(lines: list[str]) -> str:
     return " ".join(para)
 
 
+SYNTAX_PATTERNS = {
+    "json": re.compile(
+        r'(?P<string>"(?:\\.|[^"\\])*")|'
+        r"(?P<number>-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|"
+        r"(?P<keyword>\b(?:true|false|null)\b)"
+    ),
+    "yaml": re.compile(
+        r'(?P<comment>#[^\n]*)|'
+        r'(?P<string>"(?:\\.|[^"\\])*"|\'(?:\'\'|[^\'])*\')|'
+        r"(?P<keyword>\b(?:true|false|null|yes|no|on|off)\b)|"
+        r"(?P<number>(?<![\w.])-?\d+(?:\.\d+)?(?![\w.]))"
+    ),
+    "shell": re.compile(
+        r'(?P<comment>#[^\n]*)|'
+        r'(?P<string>"(?:\\.|[^"\\])*"|\'(?:[^\'])*\')|'
+        r"(?P<keyword>\b(?:if|then|else|elif|fi|for|while|do|done|case|esac|in|function)\b)"
+    ),
+    "bbcode": re.compile(r"(?P<tag>\[/?[A-Za-z][^\]\n]*\])"),
+}
+
+LANGUAGE_ALIASES = {
+    "bash": "shell",
+    "console": "shell",
+    "json-schema": "json",
+    "sh": "shell",
+    "yml": "yaml",
+}
+
+SYNTAX_CLASSES = {
+    "comment": "cm",
+    "keyword": "kw",
+    "number": "num",
+    "string": "str",
+    "tag": "tag",
+}
+
+
+def highlight_code(source: str, language: str | None) -> str:
+    """Escape source and add lightweight, build-time syntax markup.
+
+    Keeping highlighting in the generated HTML avoids shipping a JavaScript
+    parser (and a flash of unhighlighted code) on every documentation page.
+    Unknown and deliberately plain-text fences still receive safe escaping.
+    """
+    normalized = LANGUAGE_ALIASES.get((language or "").lower(), (language or "").lower())
+    pattern = SYNTAX_PATTERNS.get(normalized)
+    if pattern is None:
+        return html.escape(source)
+
+    out: list[str] = []
+    cursor = 0
+    for match in pattern.finditer(source):
+        out.append(html.escape(source[cursor : match.start()]))
+        token_type = match.lastgroup
+        css_class = SYNTAX_CLASSES[token_type] if token_type else ""
+        out.append(f'<span class="{css_class}">{html.escape(match.group(0))}</span>')
+        cursor = match.end()
+    out.append(html.escape(source[cursor:]))
+    return "".join(out)
+
+
 def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
     """Converts the small subset of Markdown used by docs/*.md (headings,
     paragraphs, fenced code blocks, and render_inline's inline formatting)
@@ -445,14 +508,18 @@ def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
         stripped = line.strip()
         if stripped.startswith("```"):
             flush_paragraph()
+            language = stripped[3:].strip().split(maxsplit=1)[0] if stripped[3:].strip() else None
             i += 1
             code_lines: list[str] = []
             while i < len(lines) and not lines[i].strip().startswith("```"):
                 code_lines.append(lines[i])
                 i += 1
             i += 1
-            code_html = html.escape(chr(10).join(code_lines))
-            out.append(f'<pre class="code-block" tabindex="0"><code>{code_html}</code></pre>')
+            code_html = highlight_code(chr(10).join(code_lines), language)
+            language_class = f" language-{html.escape(language, quote=True)}" if language else ""
+            out.append(
+                f'<pre class="code-block{language_class}" tabindex="0"><code>{code_html}</code></pre>'
+            )
             continue
         heading = HEADING_RE.match(line)
         if heading:
@@ -520,13 +587,16 @@ def render_doc(doc: dict) -> tuple[str, str, str]:
         # whose 800+ character description became this page's Largest Contentful Paint
         # element); prefer a DOCS entry's own short "description" when it sets one.
         description = doc.get("description", data.get("description", ""))
-        schema_html = html.escape(json.dumps(data, indent=2))
-        content_html = f'<pre class="code-block" tabindex="0"><code>{schema_html}</code></pre>'
+        schema_html = highlight_code(json.dumps(data, indent=2), "json")
+        content_html = f'<pre class="code-block language-json" tabindex="0"><code>{schema_html}</code></pre>'
     else:
         title = doc["title"]
         description = doc["description"]
-        source_html = html.escape(source)
-        content_html = f'<pre class="code-block" tabindex="0"><code>{source_html}</code></pre>'
+        source_html = highlight_code(source, kind)
+        content_html = (
+            f'<pre class="code-block language-{html.escape(kind, quote=True)}" tabindex="0">'
+            f"<code>{source_html}</code></pre>"
+        )
     content_html += raw_github_link(doc)
     return title, description, content_html
 

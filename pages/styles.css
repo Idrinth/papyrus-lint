@@ -370,6 +370,18 @@ pre.code-block {
   font-style: italic;
 }
 
+.code-block .str {
+  color: var(--code-string);
+}
+
+.code-block .num {
+  color: var(--code-number);
+}
+
+.code-block .tag {
+  color: var(--code-keyword);
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));
