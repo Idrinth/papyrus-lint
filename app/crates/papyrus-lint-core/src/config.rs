@@ -560,6 +560,119 @@ fn save_user_preset_under(
     Ok(path)
 }
 
+/// Deletes the user preset named `name` from the executable-adjacent
+/// [`USER_PRESETS_DIR_NAME`] directory (see [`user_presets_dir`]), for the
+/// desktop app's preset management tab. Errors if the executable's
+/// directory can't be determined, or no preset named `name` exists there.
+pub fn delete_user_preset(name: &str) -> Result<(), String> {
+    delete_user_preset_under(executable_dir().as_deref(), name)
+}
+
+/// Same as [`delete_user_preset`], but takes the executable-adjacent
+/// directory explicitly rather than assuming it's [`executable_dir`], so
+/// tests can supply a controlled directory instead of depending on the
+/// test binary's own `current_exe()`.
+fn delete_user_preset_under(base_dir: Option<&Path>, name: &str) -> Result<(), String> {
+    let trimmed = name.trim();
+    let base_dir = base_dir
+        .ok_or_else(|| "could not determine the running executable's directory".to_string())?;
+    let dir = base_dir.join(USER_PRESETS_DIR_NAME);
+    let path = find_user_preset_file(&dir, trimmed)
+        .ok_or_else(|| format!("no preset named '{trimmed}' exists"))?;
+    fs::remove_file(&path).map_err(|err| err.to_string())
+}
+
+/// Renames the user preset named `old_name` to `new_name`, in the same
+/// executable-adjacent [`USER_PRESETS_DIR_NAME`] directory (see
+/// [`user_presets_dir`]) [`save_user_preset`]/[`delete_user_preset`] use,
+/// for the desktop app's preset management tab. Refuses `new_name` (the
+/// same way [`save_user_preset`] does) if it's blank or matches a built-in
+/// preset name case-insensitively, since such a name would never actually
+/// be selectable via `--preset <new_name>`. Errors if no preset named
+/// `old_name` exists.
+///
+/// If a preset already exists under `new_name` (matched case-insensitively,
+/// as either `.yaml` or `.yml`), this refuses to overwrite it unless
+/// `overwrite` is `true` — the same guard [`save_user_preset`] applies,
+/// giving a caller the chance to confirm before retrying with
+/// `overwrite: true`. Renaming a preset to a name that only differs from
+/// its current one by case is a no-op, returning the file's existing path
+/// unchanged.
+pub fn rename_user_preset(
+    old_name: &str,
+    new_name: &str,
+    overwrite: bool,
+) -> Result<PathBuf, String> {
+    rename_user_preset_under(executable_dir().as_deref(), old_name, new_name, overwrite)
+}
+
+/// Same as [`rename_user_preset`], but takes the executable-adjacent
+/// directory explicitly rather than assuming it's [`executable_dir`], so
+/// tests can supply a controlled directory instead of depending on the
+/// test binary's own `current_exe()`.
+fn rename_user_preset_under(
+    base_dir: Option<&Path>,
+    old_name: &str,
+    new_name: &str,
+    overwrite: bool,
+) -> Result<PathBuf, String> {
+    let old_trimmed = old_name.trim();
+    let new_trimmed = new_name.trim();
+    if new_trimmed.is_empty() {
+        return Err("preset name must not be blank".to_string());
+    }
+    if PRESET_NAMES
+        .iter()
+        .any(|built_in| built_in.eq_ignore_ascii_case(new_trimmed))
+    {
+        return Err(format!(
+            "'{new_trimmed}' is a built-in preset name and can't be used for a custom preset"
+        ));
+    }
+
+    let base_dir = base_dir
+        .ok_or_else(|| "could not determine the running executable's directory".to_string())?;
+    let dir = base_dir.join(USER_PRESETS_DIR_NAME);
+    let old_path = find_user_preset_file(&dir, old_trimmed)
+        .ok_or_else(|| format!("no preset named '{old_trimmed}' exists"))?;
+
+    if old_trimmed.eq_ignore_ascii_case(new_trimmed) {
+        return Ok(old_path);
+    }
+
+    let extension = old_path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or("yaml");
+    let target_path = find_user_preset_file(&dir, new_trimmed)
+        .unwrap_or_else(|| dir.join(format!("{new_trimmed}.{extension}")));
+    if target_path.is_file() && !overwrite {
+        return Err(format!("a preset named '{new_trimmed}' already exists"));
+    }
+
+    fs::rename(&old_path, &target_path).map_err(|err| err.to_string())?;
+    Ok(target_path)
+}
+
+/// Reads a user preset's own YAML content verbatim, for exporting it (e.g.
+/// the desktop app's preset management tab) without merging it against a
+/// project's own settings the way [`initialize_default_config`] does.
+/// Errors if no preset named `name` exists under the executable-adjacent
+/// [`USER_PRESETS_DIR_NAME`] directory.
+pub fn read_user_preset_yaml(name: &str) -> Result<String, String> {
+    read_user_preset_yaml_under(executable_dir().as_deref(), name)
+}
+
+/// Same as [`read_user_preset_yaml`], but takes the executable-adjacent
+/// directory explicitly rather than assuming it's [`executable_dir`], so
+/// tests can supply a controlled directory instead of depending on the
+/// test binary's own `current_exe()`.
+fn read_user_preset_yaml_under(base_dir: Option<&Path>, name: &str) -> Result<String, String> {
+    Preset::Custom(name.trim().to_string())
+        .yaml(base_dir)
+        .map(Cow::into_owned)
+}
+
 /// Deep-merges `over` onto `base`: a `Mapping` present in both merges key by
 /// key (recursively, so `rules:`'s own nested keys merge independently
 /// rather than one `rules:` block replacing the other outright), and
@@ -1254,6 +1367,172 @@ mod tests {
         )
         .expect("saved preset should parse as a lint config");
         assert_eq!(saved, config);
+    }
+
+    #[test]
+    fn delete_user_preset_removes_the_matching_file_case_insensitively() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "My-Preset.yaml", "semicolon: true\n");
+
+        delete_user_preset_under(Some(base_dir.path()), "my-preset")
+            .expect("deleting an existing preset should succeed");
+
+        assert!(list_user_preset_names(&presets_dir).is_empty());
+    }
+
+    #[test]
+    fn delete_user_preset_errors_for_an_unknown_preset() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let error = delete_user_preset_under(Some(base_dir.path()), "missing")
+            .expect_err("deleting a missing preset should fail");
+
+        assert!(error.contains("no preset named 'missing' exists"));
+    }
+
+    #[test]
+    fn delete_user_preset_errors_without_a_resolvable_base_dir() {
+        let error = delete_user_preset_under(None, "my-preset")
+            .expect_err("should fail without a base dir");
+
+        assert!(error.contains("executable's directory"));
+    }
+
+    #[test]
+    fn rename_user_preset_renames_the_matching_file() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "old-name.yaml", "semicolon: true\n");
+
+        let path = rename_user_preset_under(Some(base_dir.path()), "old-name", "new-name", false)
+            .expect("renaming should succeed");
+
+        assert_eq!(path, presets_dir.join("new-name.yaml"));
+        assert_eq!(
+            list_user_preset_names(&presets_dir),
+            vec!["new-name".to_string()]
+        );
+        assert_eq!(fs::read_to_string(&path).unwrap(), "semicolon: true\n");
+    }
+
+    #[test]
+    fn rename_user_preset_preserves_the_original_files_extension() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "old-name.yml", "semicolon: true\n");
+
+        let path = rename_user_preset_under(Some(base_dir.path()), "old-name", "new-name", false)
+            .expect("renaming should succeed");
+
+        assert_eq!(path, presets_dir.join("new-name.yml"));
+    }
+
+    #[test]
+    fn rename_user_preset_is_a_no_op_when_only_case_differs() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "my-preset.yaml", "semicolon: true\n");
+
+        let path = rename_user_preset_under(Some(base_dir.path()), "my-preset", "My-Preset", false)
+            .expect("a case-only rename should succeed");
+
+        assert_eq!(path, presets_dir.join("my-preset.yaml"));
+    }
+
+    #[test]
+    fn rename_user_preset_errors_for_an_unknown_source_preset() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let error = rename_user_preset_under(Some(base_dir.path()), "missing", "new-name", false)
+            .expect_err("renaming a missing preset should fail");
+
+        assert!(error.contains("no preset named 'missing' exists"));
+    }
+
+    #[test]
+    fn rename_user_preset_rejects_a_blank_new_name() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "old-name.yaml", "semicolon: true\n");
+
+        let error = rename_user_preset_under(Some(base_dir.path()), "old-name", "   ", false)
+            .expect_err("blank new name should be rejected");
+
+        assert!(error.contains("must not be blank"));
+    }
+
+    #[test]
+    fn rename_user_preset_rejects_a_built_in_preset_name_case_insensitively() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "old-name.yaml", "semicolon: true\n");
+
+        let error = rename_user_preset_under(Some(base_dir.path()), "old-name", "STRICT", false)
+            .expect_err("built-in preset name should be rejected");
+
+        assert!(error.contains("built-in preset name"));
+    }
+
+    #[test]
+    fn rename_user_preset_refuses_to_overwrite_without_the_flag() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "old-name.yaml", "semicolon: true\n");
+        write_config(&presets_dir, "new-name.yaml", "semicolon: false\n");
+
+        let error = rename_user_preset_under(Some(base_dir.path()), "old-name", "new-name", false)
+            .expect_err("renaming over an existing preset should fail without overwrite");
+
+        assert!(error.contains("already exists"));
+    }
+
+    #[test]
+    fn rename_user_preset_overwrites_an_existing_preset_when_allowed() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "old-name.yaml", "semicolon: true\n");
+        write_config(&presets_dir, "new-name.yaml", "semicolon: false\n");
+
+        let path = rename_user_preset_under(Some(base_dir.path()), "old-name", "new-name", true)
+            .expect("overwrite should succeed");
+
+        assert_eq!(fs::read_to_string(&path).unwrap(), "semicolon: true\n");
+        assert_eq!(
+            list_user_preset_names(&presets_dir),
+            vec!["new-name".to_string()]
+        );
+    }
+
+    #[test]
+    fn read_user_preset_yaml_returns_the_files_raw_contents() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "my-preset.yaml", "semicolon: true\n");
+
+        let yaml = read_user_preset_yaml_under(Some(base_dir.path()), "my-preset")
+            .expect("reading an existing preset should succeed");
+
+        assert_eq!(yaml, "semicolon: true\n");
+    }
+
+    #[test]
+    fn read_user_preset_yaml_errors_for_an_unknown_preset() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let error = read_user_preset_yaml_under(Some(base_dir.path()), "missing")
+            .expect_err("reading a missing preset should fail");
+
+        assert!(error.contains("unknown preset 'missing'"));
     }
 
     #[test]

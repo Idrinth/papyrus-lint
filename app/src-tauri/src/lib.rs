@@ -282,6 +282,36 @@ fn save_config_as_preset(
     Ok(())
 }
 
+/// Renames the user preset named `old_name` to `new_name`, in the same
+/// executable-adjacent `presets` directory [`list_config_presets`]/
+/// [`save_config_as_preset`] use, for the desktop app's preset management
+/// tab. Refuses to replace an existing same-named preset (matched
+/// case-insensitively) unless `overwrite` is true. Errors if `new_name` is
+/// blank, matches a built-in preset name, or `old_name` doesn't name an
+/// existing user preset.
+#[tauri::command]
+fn rename_user_preset(old_name: String, new_name: String, overwrite: bool) -> Result<(), String> {
+    config::rename_user_preset(&old_name, &new_name, overwrite)?;
+    Ok(())
+}
+
+/// Deletes the user preset named `name`, from the same executable-adjacent
+/// `presets` directory [`list_config_presets`]/[`save_config_as_preset`]
+/// use, for the desktop app's preset management tab. Errors if no preset
+/// named `name` exists.
+#[tauri::command]
+fn delete_user_preset(name: String) -> Result<(), String> {
+    config::delete_user_preset(&name)
+}
+
+/// Returns the raw YAML content of the user preset named `name`, for the
+/// desktop app's preset management tab to offer as a download. Errors if
+/// no preset named `name` exists.
+#[tauri::command]
+fn export_user_preset(name: String) -> Result<String, String> {
+    config::read_user_preset_yaml(&name)
+}
+
 /// Compiles the `.psc` file at `path` using the compiler executable at
 /// `compiler_path` (see [`load_compiler_path`]/[`resolve_compiler_path`]
 /// for how the frontend obtains that path). `additional_roots` are the
@@ -565,6 +595,9 @@ pub fn run() {
             list_config_presets,
             apply_config_preset,
             save_config_as_preset,
+            rename_user_preset,
+            delete_user_preset,
+            export_user_preset,
             lint_psc_file,
             repair_psc_file,
             repair_psc_finding,
@@ -1038,6 +1071,45 @@ mod tests {
         .expect_err("built-in preset name should be rejected");
 
         assert!(error.contains("built-in preset name"));
+    }
+
+    // rename_user_preset/delete_user_preset/export_user_preset's happy paths
+    // are covered by papyrus_lint_core::config's own unit tests against an
+    // isolated temp directory, for the same reason noted above
+    // save_config_as_preset's own validation-only tests: exercising them
+    // here would touch the real, shared executable-adjacent presets
+    // directory. Only the validation/not-found errors that happen before
+    // that lookup resolves are exercised here.
+    #[test]
+    fn rename_user_preset_rejects_a_blank_new_name() {
+        let error = rename_user_preset("old-name".to_string(), "   ".to_string(), false)
+            .expect_err("blank new name should be rejected");
+
+        assert!(error.contains("must not be blank"));
+    }
+
+    #[test]
+    fn rename_user_preset_rejects_a_built_in_preset_name() {
+        let error = rename_user_preset("old-name".to_string(), "strict".to_string(), false)
+            .expect_err("built-in preset name should be rejected");
+
+        assert!(error.contains("built-in preset name"));
+    }
+
+    #[test]
+    fn delete_user_preset_errors_for_an_unknown_preset() {
+        let error = delete_user_preset(format!("no-such-preset-{}", std::process::id()))
+            .expect_err("deleting an unknown preset should fail");
+
+        assert!(error.contains("no preset named"));
+    }
+
+    #[test]
+    fn export_user_preset_errors_for_an_unknown_preset() {
+        let error = export_user_preset(format!("no-such-preset-{}", std::process::id()))
+            .expect_err("exporting an unknown preset should fail");
+
+        assert!(error.contains("unknown preset"));
     }
 
     #[test]
