@@ -944,9 +944,14 @@ embeds. Any mismatch, or any I/O/(de)serialization failure reading the
 cache, falls back to a fresh parse, so a stale or corrupt cache never
 surfaces as a lint error. Since it lives in `papyrus-lint-core`, the same
 cache backs the editor extensions too, which invoke `PapyrusLinterCLI` as
-a subprocess. The on-disk entry format (the `modified_unix_secs`/
-`content_md5`/`linter_version`/`ast` envelope, and the `ast` field's own
-shape) is published as a [JSON
+a subprocess. The on-disk entry also carries a `tokens` field alongside
+`ast` (both `Option`s, so writing one preserves the other's still-valid
+cached value via a read-modify-write against the existing entry), for the
+lexer's own token stream (`papyrus_parser::tokenize()`'s output), cached
+via `get_tokens`/`put_tokens` the same way `get`/`put` cache the AST. The
+on-disk entry format (the `modified_unix_secs`/`content_md5`/
+`linter_version`/`ast`/`tokens` envelope, and the `ast`/`tokens` fields'
+own shape) is published as a [JSON
 Schema](docs/ast-cache-entry.schema.json) using JSON Schema Draft
 2020-12, versioned the same way the cache itself is: it describes
 entries whose `linter_version` is at or above `MIN_COMPATIBLE_VERSION`,
@@ -956,23 +961,26 @@ and bump that floor whenever `MIN_COMPATIBLE_VERSION` moves. Update it
 alongside any change to `CacheEntry` or to `papyrus_parser::ast::Script`
 that bumps `MIN_COMPATIBLE_VERSION`.
 
-Since `papyrus_lints::lint()`/`repair()` parse their `source` argument
-internally and never see a file path, they can't consult `ast_cache`
-directly by themselves. `ast_cache::get` closes that gap as a side effect:
-a disk cache hit also primes `papyrus-parser`'s own in-memory memoization
-(`papyrus_parser::prime_cache`, see below) with the same AST, so anything
-that parses that exact source text later in the same process -- including
-a lint/repair pass's own internal `parse()` calls -- reuses it instead of
-re-parsing. `ast_cache::ensure_primed` wraps that for the "about to
-lint/repair a script whose disk cache might already be current" case: a
-disk cache hit primes the in-memory cache as above; a miss parses the
-source once itself (which populates the in-memory cache the same way a
-hit would) and writes a fresh disk entry for next time. It's what the app's
+Since `papyrus_lints::lint()`/`repair()` parse and tokenize their `source`
+argument internally and never see a file path, they can't consult
+`ast_cache` directly by themselves. `ast_cache::get`/`get_tokens` close
+that gap as a side effect: a disk cache hit for either also primes
+`papyrus-parser`'s own in-memory memoization (`papyrus_parser::prime_cache`/
+`prime_tokenize_cache`, see below) with the same value, so anything that
+parses/tokenizes that exact source text later in the same process --
+including a lint/repair pass's own internal `parse()`/`tokenize()` calls --
+reuses it instead of redoing the work. `ast_cache::ensure_primed` wraps
+both accessors for the "about to lint/repair a script whose disk cache
+might already be current" case: a disk cache hit for either primes the
+matching in-memory cache as above; a miss for either parses/tokenizes the
+source once itself (which populates the in-memory cache the same way a hit
+would) and writes a fresh disk entry for next time. It's what the app's
 `lint_psc_file`/`repair_psc_file`/`repair_psc_finding`/`repair_psc_file_rule`
 commands and the CLI's own per-script lint loop call before linting/
 repairing, so relinting an unchanged script -- across separate desktop app
 commands or CLI invocations, not just the narrower `parse_psc_file`/
-cross-script-lookup cases above -- skips re-parsing it too.
+cross-script-lookup cases above -- skips both re-parsing and re-tokenizing
+it too.
 
 `papyrus-parser`'s own `parse()` and `tokenize()` entry points
 (`app/crates/papyrus-parser/src/cache.rs`) are memoized in-memory against
@@ -987,13 +995,12 @@ into a clone instead of a re-lex/re-parse. This is deliberately simpler
 than the disk-backed `ast_cache`: it never outlives the process (or even
 the thread) and so needs no path, mtime, or version bookkeeping, since it
 only ever has to remember the one source string a lint/repair pass is
-currently working on. `papyrus_parser::prime_cache` (`cache.rs`'s
-`prime`) is the one way this cache is seeded from outside the crate,
-letting a caller that already has a validated AST for that same source
-text -- namely `ast_cache::get`, above -- insert it directly instead of
-leaving the pass's first `parse()` call to compute it. It only primes the
-AST slot, not the separate token slot `tokenize()` uses, so a token-based
-rule still lexes fresh the first time a pass runs even after a prime.
+currently working on. `papyrus_parser::prime_cache`/`prime_tokenize_cache`
+(`cache.rs`'s `prime`/`prime_tokens`) are the two ways this in-memory
+cache is seeded from outside the crate, letting a caller that already has
+a validated AST/token stream for that same source text -- namely
+`ast_cache::get`/`get_tokens`, above -- insert it directly instead of
+leaving the pass's first `parse()`/`tokenize()` call to compute it.
 
 ## Keeping agent instructions synchronized
 

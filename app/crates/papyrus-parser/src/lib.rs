@@ -72,6 +72,20 @@ pub fn prime_cache(source: &str, ast: ast::Script) {
     cache::prime(source, ast);
 }
 
+/// Same as [`prime_cache`], but for [`tokenize`]'s in-memory memoization
+/// cache: inserts a precomputed `tokens` as if `source` had just been
+/// lexed to it, so the next [`tokenize`] call with the same `source` in
+/// this process returns it without re-lexing. Lets a caller that already
+/// has a validated token stream for `source` from elsewhere (e.g.
+/// `papyrus-lint-core`'s disk-backed AST cache) short-circuit this crate's
+/// own lex of it -- notably before calling into
+/// `papyrus_lints::lint()`/`repair()`, whose raw-token-based rules
+/// tokenize their `source` argument internally without ever seeing these
+/// tokens themselves.
+pub fn prime_tokenize_cache(source: &str, tokens: Vec<token::Token>) {
+    cache::prime_tokens(source, tokens);
+}
+
 #[cfg(test)]
 mod tests {
     use super::ast::*;

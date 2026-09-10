@@ -9,7 +9,8 @@
     "modified_unix_secs",
     "content_md5",
     "linter_version",
-    "ast"
+    "ast",
+    "tokens"
   ],
   "properties": {
     "modified_unix_secs": {
@@ -28,8 +29,18 @@
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
     },
     "ast": {
-      "description": "The parsed script, exactly as produced by papyrus_parser::parse() and serialized via serde -- see app/crates/papyrus-parser/src/ast.rs. Enums with data serialize externally-tagged (e.g. an Expr::Binary value is `{\"Binary\": {\"left\": ..., \"op\": ..., \"right\": ...}}`); enums without data (e.g. BinaryOp, or Expr::Self_) serialize as their bare variant name string.",
-      "$ref": "#/$defs/script"
+      "description": "The parsed script, exactly as produced by papyrus_parser::parse() and serialized via serde -- see app/crates/papyrus-parser/src/ast.rs. Enums with data serialize externally-tagged (e.g. an Expr::Binary value is `{\"Binary\": {\"left\": ..., \"op\": ..., \"right\": ...}}`); enums without data (e.g. BinaryOp, or Expr::Self_) serialize as their bare variant name string. Null when this entry was written by a `put_tokens` call that found no already-cached `ast` to carry forward -- a reader should treat that the same as a miss for the AST specifically and re-parse.",
+      "anyOf": [{ "$ref": "#/$defs/script" }, { "type": "null" }]
+    },
+    "tokens": {
+      "description": "The token stream, exactly as produced by papyrus_parser::tokenize() and serialized via serde -- see app/crates/papyrus-parser/src/token.rs. Null when this entry was written by a `put` call that found no already-cached `tokens` to carry forward -- a reader should treat that the same as a miss for the tokens specifically and re-tokenize. As of this schema version nothing in the linter reads or writes this field yet; it's reserved for a future change that caches the lexer's token stream alongside the AST.",
+      "anyOf": [
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/token" }
+        },
+        { "type": "null" }
+      ]
     }
   },
   "$defs": {
@@ -85,6 +96,133 @@
         "name": { "type": "string" },
         "is_array": { "type": "boolean" }
       }
+    },
+    "token": {
+      "description": "One lexed token, exactly as produced by papyrus_parser::tokenize() -- see app/crates/papyrus-parser/src/token.rs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "line", "col"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/tokenKind" },
+        "line": { "type": "integer", "minimum": 1 },
+        "col": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "keyword": {
+      "description": "A recognized Papyrus keyword; serializes as its bare variant name string.",
+      "type": "string",
+      "enum": [
+        "ScriptName",
+        "Extends",
+        "Hidden",
+        "Conditional",
+        "Import",
+        "Function",
+        "EndFunction",
+        "Event",
+        "EndEvent",
+        "Property",
+        "EndProperty",
+        "Auto",
+        "AutoReadOnly",
+        "Global",
+        "Native",
+        "Return",
+        "If",
+        "ElseIf",
+        "Else",
+        "EndIf",
+        "While",
+        "EndWhile",
+        "State",
+        "EndState",
+        "New",
+        "As",
+        "True",
+        "False",
+        "None",
+        "Self_",
+        "Parent",
+        "Length",
+        "DebugOnly",
+        "BetaOnly"
+      ]
+    },
+    "tokenKind": {
+      "description": "A token's kind, externally tagged by its variant name; a variant with no data (e.g. LParen, Newline, Eof) serializes as its bare variant name string.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Identifier"],
+          "properties": { "Identifier": { "type": "string" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["Keyword"],
+          "properties": { "Keyword": { "$ref": "#/$defs/keyword" } }
+        },
+        {
+          "description": "The literal's parsed value and the notation (decimal/hexadecimal) it was written with, in that order.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["IntLiteral"],
+          "properties": {
+            "IntLiteral": {
+              "type": "array",
+              "prefixItems": [
+                { "type": "integer" },
+                { "$ref": "#/$defs/intFormat" }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["FloatLiteral"],
+          "properties": { "FloatLiteral": { "type": "number" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["StringLiteral"],
+          "properties": { "StringLiteral": { "type": "string" } }
+        },
+        { "const": "LParen" },
+        { "const": "RParen" },
+        { "const": "LBracket" },
+        { "const": "RBracket" },
+        { "const": "Comma" },
+        { "const": "Dot" },
+        { "const": "Colon" },
+        { "const": "Assign" },
+        { "const": "PlusAssign" },
+        { "const": "MinusAssign" },
+        { "const": "StarAssign" },
+        { "const": "SlashAssign" },
+        { "const": "PercentAssign" },
+        { "const": "Plus" },
+        { "const": "Minus" },
+        { "const": "Star" },
+        { "const": "Slash" },
+        { "const": "Percent" },
+        { "const": "Eq" },
+        { "const": "NotEq" },
+        { "const": "Gt" },
+        { "const": "Lt" },
+        { "const": "GtEq" },
+        { "const": "LtEq" },
+        { "const": "AndAnd" },
+        { "const": "OrOr" },
+        { "const": "Not" },
+        { "const": "Newline" },
+        { "const": "Eof" }
+      ]
     },
     "propertyDecl": {
       "type": "object",
