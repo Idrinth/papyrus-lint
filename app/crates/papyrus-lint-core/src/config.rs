@@ -340,6 +340,112 @@ fn user_presets_dir_under(base_dir: Option<&Path>) -> Option<PathBuf> {
     dir.is_dir().then_some(dir)
 }
 
+/// Why [`add_user_preset`] refused to add a user preset.
+#[derive(Debug, PartialEq, Eq)]
+pub enum AddPresetError {
+    /// `name` is blank, or matches a built-in preset name (see
+    /// [`PRESET_NAMES`]) case-insensitively — such a name would never
+    /// actually be selectable via `--preset <name>`, since [`Preset::parse`]
+    /// always resolves a built-in name first.
+    InvalidName(String),
+    /// A user preset named `name` already exists at this path, and
+    /// `overwrite` was `false`.
+    AlreadyExists(PathBuf),
+    /// The running executable's own directory couldn't be determined, so
+    /// there's nowhere to create (or look for) the `presets` directory.
+    BaseDirUnavailable,
+    /// Failed to read `source_path`, create the `presets` directory, or
+    /// write the destination file.
+    Io(String),
+}
+
+impl std::fmt::Display for AddPresetError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidName(name) => write!(
+                f,
+                "'{name}' can't be used as a preset name (it's blank, or matches a built-in \
+                 preset: {})",
+                PRESET_NAMES.join(", ")
+            ),
+            Self::AlreadyExists(path) => {
+                write!(f, "a preset already exists at {}", path.display())
+            }
+            Self::BaseDirUnavailable => {
+                write!(f, "could not determine the running executable's directory")
+            }
+            Self::Io(err) => write!(f, "{err}"),
+        }
+    }
+}
+
+/// Adds (or overwrites) a user preset named `name`, copying the contents of
+/// `source_path` (an existing `papyrus-lint.yaml`/`.yml`) into the
+/// executable-adjacent [`USER_PRESETS_DIR_NAME`] directory (see
+/// [`user_presets_dir`]), creating that directory first if it doesn't exist
+/// yet. The saved preset then becomes selectable the same way a built-in
+/// preset is, via `--preset <name>` (CLI `init`) or the desktop app's preset
+/// picker.
+///
+/// Refuses `name` (see [`AddPresetError::InvalidName`]) if it's blank or
+/// matches a built-in preset name case-insensitively.
+///
+/// If a preset named `name` already exists (matched case-insensitively, as
+/// either `.yaml` or `.yml`), this refuses to overwrite it unless
+/// `overwrite` is `true`, returning [`AddPresetError::AlreadyExists`] with
+/// the existing file's path instead — giving a caller (the CLI's `preset
+/// add` command) the chance to make the user confirm before retrying with
+/// `overwrite: true`. Overwriting reuses the existing file's
+/// own path (and therefore its `.yaml`/`.yml` extension) rather than
+/// creating a second file alongside it; a brand new preset is always
+/// written as `<name>.yaml`.
+pub fn add_user_preset(
+    name: &str,
+    source_path: &Path,
+    overwrite: bool,
+) -> Result<PathBuf, AddPresetError> {
+    add_user_preset_under(executable_dir().as_deref(), name, source_path, overwrite)
+}
+
+/// Same as [`add_user_preset`], but takes the executable-adjacent directory
+/// explicitly rather than assuming it's [`executable_dir`] — the same split
+/// used elsewhere in this module (see [`initialize_config_with_base`]) so
+/// tests can supply a controlled directory instead of depending on the test
+/// binary's own `current_exe()`.
+fn add_user_preset_under(
+    base_dir: Option<&Path>,
+    name: &str,
+    source_path: &Path,
+    overwrite: bool,
+) -> Result<PathBuf, AddPresetError> {
+    let trimmed = name.trim();
+    if trimmed.is_empty()
+        || PRESET_NAMES
+            .iter()
+            .any(|builtin| builtin.eq_ignore_ascii_case(trimmed))
+    {
+        return Err(AddPresetError::InvalidName(name.to_string()));
+    }
+
+    let base_dir = base_dir.ok_or(AddPresetError::BaseDirUnavailable)?;
+    let presets_dir = base_dir.join(USER_PRESETS_DIR_NAME);
+    fs::create_dir_all(&presets_dir).map_err(|err| AddPresetError::Io(err.to_string()))?;
+
+    let existing = find_user_preset_file(&presets_dir, trimmed);
+    if let Some(existing_path) = &existing {
+        if !overwrite {
+            return Err(AddPresetError::AlreadyExists(existing_path.clone()));
+        }
+    }
+    let target_path = existing.unwrap_or_else(|| presets_dir.join(format!("{trimmed}.yaml")));
+
+    let contents =
+        fs::read_to_string(source_path).map_err(|err| AddPresetError::Io(err.to_string()))?;
+    fs::write(&target_path, contents).map_err(|err| AddPresetError::Io(err.to_string()))?;
+
+    Ok(target_path)
+}
+
 /// Whether `path`'s extension is `yaml`/`yml`, matched case-insensitively —
 /// the same two extensions a project's own `papyrus-lint.yaml`/`.yml`
 /// supports (see [`CONFIG_FILE_NAMES`]).
@@ -951,6 +1057,124 @@ mod tests {
             list_user_preset_names(&dir.path().join("does-not-exist")),
             Vec::<String>::new()
         );
+    }
+
+    #[test]
+    fn add_user_preset_creates_the_presets_dir_and_copies_the_source_file() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let source = base_dir.path().join("source.yaml");
+        fs::write(&source, "semicolon: true\n").expect("failed to write source file");
+
+        let path = add_user_preset_under(Some(base_dir.path()), "my-team", &source, false)
+            .expect("adding a new preset should succeed");
+
+        assert_eq!(
+            path,
+            base_dir
+                .path()
+                .join(USER_PRESETS_DIR_NAME)
+                .join("my-team.yaml")
+        );
+        assert_eq!(fs::read_to_string(&path).unwrap(), "semicolon: true\n");
+        assert_eq!(
+            list_user_preset_names(&base_dir.path().join(USER_PRESETS_DIR_NAME)),
+            vec!["my-team".to_string()]
+        );
+    }
+
+    #[test]
+    fn add_user_preset_refuses_to_overwrite_an_existing_preset_without_confirmation() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "my-team.yaml", "semicolon: true\n");
+        let existing_path = presets_dir.join("my-team.yaml");
+        let source = base_dir.path().join("source.yaml");
+        fs::write(&source, "semicolon: false\n").expect("failed to write source file");
+
+        let error = add_user_preset_under(Some(base_dir.path()), "my-team", &source, false)
+            .expect_err("should refuse to overwrite without confirmation");
+
+        assert_eq!(error, AddPresetError::AlreadyExists(existing_path.clone()));
+        assert_eq!(
+            fs::read_to_string(&existing_path).unwrap(),
+            "semicolon: true\n"
+        );
+    }
+
+    #[test]
+    fn add_user_preset_overwrites_an_existing_preset_when_confirmed() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        // The existing file is a `.yml`, so overwriting should reuse that
+        // same path/extension rather than also creating a `.yaml` file.
+        write_config(&presets_dir, "my-team.yml", "semicolon: true\n");
+        let existing_path = presets_dir.join("my-team.yml");
+        let source = base_dir.path().join("source.yaml");
+        fs::write(&source, "semicolon: false\n").expect("failed to write source file");
+
+        let path = add_user_preset_under(Some(base_dir.path()), "my-team", &source, true)
+            .expect("overwriting with confirmation should succeed");
+
+        assert_eq!(path, existing_path);
+        assert_eq!(fs::read_to_string(&path).unwrap(), "semicolon: false\n");
+        assert_eq!(
+            list_user_preset_names(&presets_dir),
+            vec!["my-team".to_string()]
+        );
+    }
+
+    #[test]
+    fn add_user_preset_rejects_a_blank_name() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let source = base_dir.path().join("source.yaml");
+        fs::write(&source, "semicolon: true\n").expect("failed to write source file");
+
+        let error = add_user_preset_under(Some(base_dir.path()), "   ", &source, false)
+            .expect_err("a blank name should be rejected");
+
+        assert_eq!(error, AddPresetError::InvalidName("   ".to_string()));
+    }
+
+    #[test]
+    fn add_user_preset_rejects_a_name_matching_a_built_in_preset() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let source = base_dir.path().join("source.yaml");
+        fs::write(&source, "semicolon: true\n").expect("failed to write source file");
+
+        let error = add_user_preset_under(Some(base_dir.path()), "STRICT", &source, false)
+            .expect_err("a name matching a built-in preset should be rejected");
+
+        assert_eq!(error, AddPresetError::InvalidName("STRICT".to_string()));
+    }
+
+    #[test]
+    fn add_user_preset_errors_when_the_source_file_does_not_exist() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let error = add_user_preset_under(
+            Some(base_dir.path()),
+            "my-team",
+            &base_dir.path().join("does-not-exist.yaml"),
+            false,
+        )
+        .expect_err("a missing source file should be reported as an error");
+
+        assert!(matches!(error, AddPresetError::Io(_)));
+    }
+
+    #[test]
+    fn add_user_preset_errors_without_a_base_dir() {
+        let source = tempfile::tempdir()
+            .expect("failed to create temp dir")
+            .path()
+            .join("source.yaml");
+
+        let error = add_user_preset_under(None, "my-team", &source, false)
+            .expect_err("a missing base dir should be reported as an error");
+
+        assert_eq!(error, AddPresetError::BaseDirUnavailable);
     }
 
     #[test]

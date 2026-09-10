@@ -242,6 +242,157 @@ fn init_preset_flag_reports_an_error_for_a_name_matching_no_built_in_or_user_pre
 }
 
 #[test]
+fn preset_add_creates_a_new_user_preset_next_to_the_executable() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let project_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let source = project_dir.path().join("papyrus-lint.yaml");
+    write_file(&source, "semicolon: true\n");
+
+    let output = run_copied_cli(
+        exe_dir.path(),
+        &["preset", "add", "my-team", &source.to_string_lossy()],
+        project_dir.path(),
+    );
+
+    assert!(output.status.success());
+    let preset_path = exe_dir.path().join("presets/my-team.yaml");
+    assert_eq!(
+        String::from_utf8(output.stdout).expect("stdout should be UTF-8"),
+        format!("Added preset 'my-team' at {}\n", preset_path.display())
+    );
+    assert_eq!(
+        fs::read_to_string(&preset_path).expect("preset file should have been created"),
+        "semicolon: true\n"
+    );
+}
+
+#[test]
+fn preset_add_makes_the_preset_selectable_via_init() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let source_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let source = source_dir.path().join("papyrus-lint.yaml");
+    write_file(
+        &source,
+        "semicolon: true\nrules:\n  identifier_casing: false\n",
+    );
+
+    let add_output = run_copied_cli(
+        exe_dir.path(),
+        &["preset", "add", "my-team", &source.to_string_lossy()],
+        source_dir.path(),
+    );
+    assert!(add_output.status.success());
+
+    let project_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let init_output = run_copied_cli(
+        exe_dir.path(),
+        &["init", "--preset", "my-team"],
+        project_dir.path(),
+    );
+
+    assert!(init_output.status.success());
+    let config = fs::read_to_string(project_dir.path().join("papyrus-lint.yaml"))
+        .expect("init should create papyrus-lint.yaml");
+    assert!(config.contains("semicolon: true"));
+    assert!(config.contains("  identifier_casing: false\n"));
+}
+
+#[test]
+fn preset_add_refuses_to_overwrite_an_existing_preset_without_yes() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    write_file(
+        &exe_dir.path().join("presets/my-team.yaml"),
+        "semicolon: true\n",
+    );
+
+    let source_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let source = source_dir.path().join("papyrus-lint.yaml");
+    write_file(&source, "semicolon: false\n");
+
+    let output = run_copied_cli(
+        exe_dir.path(),
+        &["preset", "add", "my-team", &source.to_string_lossy()],
+        source_dir.path(),
+    );
+
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.contains("already exists"));
+    assert!(stderr.contains("--yes"));
+    assert_eq!(
+        fs::read_to_string(exe_dir.path().join("presets/my-team.yaml"))
+            .expect("existing preset should be readable"),
+        "semicolon: true\n"
+    );
+}
+
+#[test]
+fn preset_add_overwrites_an_existing_preset_with_yes() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    write_file(
+        &exe_dir.path().join("presets/my-team.yaml"),
+        "semicolon: true\n",
+    );
+
+    let source_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let source = source_dir.path().join("papyrus-lint.yaml");
+    write_file(&source, "semicolon: false\n");
+
+    let output = run_copied_cli(
+        exe_dir.path(),
+        &[
+            "preset",
+            "add",
+            "my-team",
+            &source.to_string_lossy(),
+            "--yes",
+        ],
+        source_dir.path(),
+    );
+
+    assert!(output.status.success());
+    assert_eq!(
+        fs::read_to_string(exe_dir.path().join("presets/my-team.yaml"))
+            .expect("overwritten preset should be readable"),
+        "semicolon: false\n"
+    );
+}
+
+#[test]
+fn preset_add_rejects_a_name_matching_a_built_in_preset() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let source_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let source = source_dir.path().join("papyrus-lint.yaml");
+    write_file(&source, "semicolon: true\n");
+
+    let output = run_copied_cli(
+        exe_dir.path(),
+        &["preset", "add", "strict", &source.to_string_lossy()],
+        source_dir.path(),
+    );
+
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.contains("built-in preset"));
+    assert!(!exe_dir.path().join("presets").exists());
+}
+
+#[test]
+fn preset_add_errors_when_the_source_file_does_not_exist() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let source_dir = tempfile::tempdir().expect("failed to create temp directory");
+
+    let output = run_copied_cli(
+        exe_dir.path(),
+        &["preset", "add", "my-team", "does-not-exist.yaml"],
+        source_dir.path(),
+    );
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(!exe_dir.path().join("presets/my-team.yaml").exists());
+}
+
+#[test]
 fn init_defaults_to_the_strict_preset() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
 

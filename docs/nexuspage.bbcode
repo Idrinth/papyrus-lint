@@ -410,6 +410,8 @@ A command line interface is included. For automated checks there are also smalle
 [spoiler][code]PapyrusLinter init
 PapyrusLinter init --preset standard
 PapyrusLinter init --preset my-team
+PapyrusLinter preset add my-team path/to/papyrus-lint.yaml
+PapyrusLinter preset add my-team path/to/papyrus-lint.yaml --yes
 PapyrusLinter path/to/project.achlist
 PapyrusLinter path/to/Example.psc
 PapyrusLinter path/to/scripts/source
@@ -432,6 +434,7 @@ The plain-text report is colorized automatically when run in a terminal (rule ta
 --progress prints a live files-linted/total-files progress bar to stdout as each script finishes; it requires --output, since otherwise the report itself would be writing to stdout too.
 --tag <kind> (style, performance, correctness, or maintainability) restricts a run to just one class of rules; combine it with fix to only run that class's automatic fixes. Can't be combined with --type.
 init writes papyrus-lint.yaml from --preset strict, standard, or careful (defaults to strict, i.e. the settings shown above); any other name is looked up as <name>.yaml/.yml in a presets directory next to the executable, so you can define your own custom presets too. If a papyrus-lint.yaml/.yml sits next to the executable, its settings are merged in over the selected preset as your own baseline instead, so you only have to define them once.
+preset add <name> <path> saves an existing papyrus-lint.yaml/.yml as a user preset, so it becomes selectable via init --preset <name>. Refuses a blank name or one matching a built-in preset, and refuses to overwrite an existing preset of the same name unless you also pass --yes.
 Given a directory instead of an .achlist/.psc path, the CLI (and dropping a folder onto the desktop app) recursively scans it for .psc files at any subfolder depth and lints them all — useful for a mod (e.g. Requiem) with no .achlist whose scripts aren't laid out in a flat scripts/source folder.
 
 [heading]Usage of AI[/heading]

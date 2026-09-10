@@ -951,6 +951,25 @@ binary's own `current_exe()`. `config::list_user_preset_names(dir)` lists
 every such file's stem (sorted case-insensitively), for the desktop app's
 preset picker below.
 
+The CLI's `preset add <name> <path-to-papyrus-lint.yaml> [--yes]` subcommand
+creates a user preset from an existing config file, rather than requiring
+one to be placed under the executable-adjacent `presets` directory by hand:
+`config::add_user_preset(name, source_path, overwrite)` copies
+`source_path`'s contents into that directory as `<name>.yaml` (creating the
+directory first if needed), refusing `name` if it's blank or matches a
+built-in preset name case-insensitively (`AddPresetError::InvalidName`),
+since such a name could never actually be selected — `Preset::parse` always
+resolves a built-in first. If a preset named `name` already exists there
+(as either `.yaml` or `.yml`), it's left untouched and
+`AddPresetError::AlreadyExists` is returned unless `overwrite` is `true`;
+the CLI surfaces this as `--yes`, the confirmation an overwrite requires
+since the CLI has no interactive prompt, and reuses the existing file's own
+extension when overwriting rather than creating a second file alongside it.
+Split into a private `add_user_preset_under(base_dir, ...)` the same way as
+`initialize_default_config`/`initialize_config_with_base` above, so tests
+can supply a controlled directory instead of depending on the test binary's
+own `current_exe()`.
+
 `initialize_default_config` also looks for a `papyrus-lint.yaml`/`.yml`
 file next to the running executable (`config::executable_dir`, backed by
 `std::env::current_exe()`) and, if one exists, layers it over the selected

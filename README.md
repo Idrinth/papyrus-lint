@@ -248,6 +248,17 @@ config described below: a user preset is a full baseline `init` starts
 from, while the base config always layers on top of whichever preset
 (built-in or user) is selected.
 
+`PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml>` adds a
+user preset the same way, without placing the file under the `presets`
+directory by hand: it copies the config at the given path into that
+directory as `<name>.yaml`, creating the directory first if it doesn't
+exist yet. `<name>` can't be blank or match a built-in preset name
+(`strict`, `standard`, `careful`), since a preset by one of those names
+could never actually be selected. If a preset named `<name>` already
+exists, it's left untouched and an error is reported unless `--yes` is
+also given — the confirmation an overwrite requires, since the CLI has no
+interactive prompt.
+
 The desktop app's Settings tab has a "Configuration file" field for
 overriding this auto-detection: enter the path to a specific
 `papyrus-lint.yaml`/`.yml` file (it need not be named that, or live at the
@@ -432,6 +443,8 @@ PapyrusLinterCLI path/to/project.achlist
 PapyrusLinterCLI init
 PapyrusLinterCLI init --preset standard
 PapyrusLinterCLI init --preset my-team
+PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml
+PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml --yes
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI path/to/scripts/source
 PapyrusLinterCLI fix path/to/project.achlist
@@ -470,6 +483,13 @@ falls back to the preset. This lets you define your own baseline settings
 once, next to wherever you keep the binary, and reuse it across every
 project you run `init` in — on top of whichever preset you pick each time —
 instead of hand-editing each newly generated file the same way.
+
+`PapyrusLinterCLI preset add <name> <path>` saves an existing
+`papyrus-lint.yaml`/`.yml` as a user preset named `<name>`, so it becomes
+selectable via `init --preset <name>` afterward (see Configuration above).
+It refuses a blank name or one matching a built-in preset (`strict`,
+`standard`, `careful`), and refuses to overwrite a preset that already
+exists under that name unless `--yes` is also given.
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
 Given a single `.psc` path directly, it lints just that file, treating it
