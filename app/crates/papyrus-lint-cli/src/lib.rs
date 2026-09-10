@@ -4,6 +4,7 @@
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
 //! PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]
+//! PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
@@ -91,6 +92,20 @@
 //! actually runs (a missing `--preset` value, or an argument that isn't
 //! `--preset`/`--preset=<name>` at all, is still a usage error reported
 //! immediately).
+//!
+//! `preset add <name> <path-to-papyrus-lint.yaml>` adds a user preset,
+//! selectable afterward the same way as a built-in one via `--preset
+//! <name>` (see [`papyrus_lint_core::config::add_user_preset`]): it copies
+//! the file at `<path-to-papyrus-lint.yaml>` into the executable-adjacent
+//! `presets` directory (see
+//! [`papyrus_lint_core::config::USER_PRESETS_DIR_NAME`]) as `<name>.yaml`,
+//! creating that directory first if it doesn't exist yet. `<name>` can't be
+//! blank or match a built-in preset name (`strict`, `standard`, `careful`)
+//! case-insensitively, since such a name could never actually be selected
+//! (a built-in always resolves first). If a preset named `<name>` already
+//! exists, this refuses to overwrite it and reports an error naming the
+//! existing file, unless `--yes` is also given — the confirmation an
+//! overwrite requires, since there's no interactive prompt.
 //!
 //! With the `--json` flag (combinable with `fix`, in either argument
 //! order), the diagnostics report is printed to stdout as a single JSON
@@ -242,6 +257,7 @@ pub const USAGE: &str =
     "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
 PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>\n\n\
 PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n\
+PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n\
 Lints every .psc script listed in the given .achlist file, a single\n\
 .psc file given directly, or every .psc file found recursively under a\n\
 given directory (any depth of subfolders), using the project's\n\
@@ -257,6 +273,12 @@ working directory without overwriting an existing config, from the\n\
 selected --preset (strict, standard, or careful; defaults to strict,\n\
 identical to today's built-in default; any other name is looked up as\n\
 <name>.yaml/.yml in a presets directory next to the executable).\n\n\
+With the `preset add` subcommand, adds a user preset named <name> by\n\
+copying <path-to-papyrus-lint.yaml> into a presets directory next to the\n\
+executable, so it becomes selectable via --preset <name> just like a\n\
+built-in preset. Refuses a blank name or one matching a built-in preset\n\
+(strict, standard, careful). Refuses to overwrite an existing preset\n\
+of the same name unless --yes is also given.\n\n\
 Options:\n\
   -h, --help              Show this help message\n\
   -V, --version           Print the PapyrusLinterCLI version\n\
@@ -301,7 +323,10 @@ Options:\n\
                           README.md). Defaults to strict, identical to the\n\
                           built-in default. Any other name is looked up as\n\
                           <name>.yaml/.yml in a presets directory next to\n\
-                          the executable.\n\n\
+                          the executable.\n\
+  --yes                   preset add only: confirm overwriting an existing\n\
+                          preset of the same name. Without it, an existing\n\
+                          preset is left untouched and an error is reported.\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n\n\
@@ -471,6 +496,22 @@ pub fn run(
             }
         };
         return initialize_config(&current_dir, preset, stdout, stderr);
+    }
+
+    if args.first().map(String::as_str) == Some("preset") {
+        if args.get(1).map(String::as_str) != Some("add") {
+            let _ = write!(stderr, "{USAGE}");
+            return 2;
+        }
+        let (name, source_path, overwrite) = match parse_preset_add_args(&args[2..]) {
+            Ok(parsed) => parsed,
+            Err(PresetAddArgsError::Usage) => {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            }
+        };
+        let result = config::add_user_preset(&name, &source_path, overwrite);
+        return report_add_user_preset(&name, result, stdout, stderr);
     }
 
     let json = args.iter().any(|arg| arg == "--json");
@@ -1148,6 +1189,73 @@ fn parse_init_preset(rest: &[String]) -> Result<config::Preset, InitPresetError>
     Ok(preset)
 }
 
+/// Why [`parse_preset_add_args`] rejected `preset add`'s arguments: missing
+/// or extra positional arguments, or an unrecognized flag. Mirrors
+/// [`InitPresetError`]'s single `Usage` variant, reported the same way (the
+/// generic [`USAGE`] text).
+#[derive(Debug, PartialEq, Eq)]
+enum PresetAddArgsError {
+    Usage,
+}
+
+/// Parses the arguments following `preset add` (i.e. `args[2..]` in
+/// [`run`]) into `(name, source_path, overwrite)`: the two required
+/// positional arguments (a preset name and a path to an existing
+/// `papyrus-lint.yaml`) plus whether `--yes` was given. Split out from
+/// [`run`] so the parsing itself is testable without touching the process's
+/// actual executable-adjacent `presets` directory, the same way
+/// [`parse_init_preset`] is split from `init`'s own filesystem effects.
+fn parse_preset_add_args(rest: &[String]) -> Result<(String, PathBuf, bool), PresetAddArgsError> {
+    let mut overwrite = false;
+    let mut positionals: Vec<&String> = Vec::new();
+    for arg in rest {
+        if arg == "--yes" {
+            overwrite = true;
+        } else if arg.starts_with("--") {
+            return Err(PresetAddArgsError::Usage);
+        } else {
+            positionals.push(arg);
+        }
+    }
+    match positionals.as_slice() {
+        [name, path] => Ok(((*name).clone(), PathBuf::from((*path).clone()), overwrite)),
+        _ => Err(PresetAddArgsError::Usage),
+    }
+}
+
+/// Reports the outcome of `preset add` (see [`config::add_user_preset`]) to
+/// `stdout`/`stderr` and returns the process exit code. Split out from the
+/// actual [`config::add_user_preset`] call in [`run`] so it's testable
+/// without touching the executable-adjacent `presets` directory (which
+/// [`config::add_user_preset`] always writes into) from a parallel test
+/// suite — the same reason [`parse_init_preset`] is split from `init`'s own
+/// filesystem effects.
+fn report_add_user_preset(
+    name: &str,
+    result: Result<PathBuf, config::AddPresetError>,
+    stdout: &mut impl Write,
+    stderr: &mut impl Write,
+) -> u8 {
+    match result {
+        Ok(path) => {
+            let _ = writeln!(stdout, "Added preset '{name}' at {}", path.display());
+            0
+        }
+        Err(config::AddPresetError::AlreadyExists(path)) => {
+            let _ = writeln!(
+                stderr,
+                "error: a preset named '{name}' already exists at {} (pass --yes to overwrite it)",
+                path.display()
+            );
+            2
+        }
+        Err(err) => {
+            let _ = writeln!(stderr, "error: failed to add preset: {err}");
+            2
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1251,6 +1359,166 @@ mod tests {
 
         assert_eq!(code, 2);
         assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn prints_usage_when_preset_is_given_without_add() {
+        let (code, _stdout, stderr) = run_captured(&["preset".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn prints_usage_for_an_unrecognized_preset_subcommand() {
+        let (code, _stdout, stderr) = run_captured(&["preset".to_string(), "remove".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn prints_usage_when_preset_add_is_missing_arguments() {
+        let (code, _stdout, stderr) = run_captured(&[
+            "preset".to_string(),
+            "add".to_string(),
+            "my-team".to_string(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn parse_preset_add_args_parses_the_two_positionals() {
+        assert_eq!(
+            parse_preset_add_args(&[
+                "my-team".to_string(),
+                "path/to/papyrus-lint.yaml".to_string()
+            ]),
+            Ok((
+                "my-team".to_string(),
+                PathBuf::from("path/to/papyrus-lint.yaml"),
+                false
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_preset_add_args_recognizes_yes_in_any_position() {
+        assert_eq!(
+            parse_preset_add_args(&[
+                "--yes".to_string(),
+                "my-team".to_string(),
+                "path/to/papyrus-lint.yaml".to_string()
+            ]),
+            Ok((
+                "my-team".to_string(),
+                PathBuf::from("path/to/papyrus-lint.yaml"),
+                true
+            ))
+        );
+        assert_eq!(
+            parse_preset_add_args(&[
+                "my-team".to_string(),
+                "path/to/papyrus-lint.yaml".to_string(),
+                "--yes".to_string()
+            ]),
+            Ok((
+                "my-team".to_string(),
+                PathBuf::from("path/to/papyrus-lint.yaml"),
+                true
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_preset_add_args_rejects_a_missing_argument() {
+        let err = parse_preset_add_args(&["my-team".to_string()])
+            .expect_err("a single positional argument should be rejected");
+        assert!(matches!(err, PresetAddArgsError::Usage));
+    }
+
+    #[test]
+    fn parse_preset_add_args_rejects_an_extra_argument() {
+        let err = parse_preset_add_args(&[
+            "my-team".to_string(),
+            "path.yaml".to_string(),
+            "extra".to_string(),
+        ])
+        .expect_err("an extra positional argument should be rejected");
+        assert!(matches!(err, PresetAddArgsError::Usage));
+    }
+
+    #[test]
+    fn parse_preset_add_args_rejects_an_unrecognized_flag() {
+        let err = parse_preset_add_args(&[
+            "my-team".to_string(),
+            "path.yaml".to_string(),
+            "--force".to_string(),
+        ])
+        .expect_err("an unrecognized flag should be rejected");
+        assert!(matches!(err, PresetAddArgsError::Usage));
+    }
+
+    #[test]
+    fn report_add_user_preset_prints_the_added_path_on_success() {
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = report_add_user_preset(
+            "my-team",
+            Ok(PathBuf::from("/presets/my-team.yaml")),
+            &mut stdout,
+            &mut stderr,
+        );
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert_eq!(
+            String::from_utf8(stdout).unwrap(),
+            "Added preset 'my-team' at /presets/my-team.yaml\n"
+        );
+    }
+
+    #[test]
+    fn report_add_user_preset_explains_how_to_confirm_an_overwrite() {
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = report_add_user_preset(
+            "my-team",
+            Err(config::AddPresetError::AlreadyExists(PathBuf::from(
+                "/presets/my-team.yaml",
+            ))),
+            &mut stdout,
+            &mut stderr,
+        );
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        let error = String::from_utf8(stderr).unwrap();
+        assert!(error.contains("already exists"));
+        assert!(error.contains("--yes"));
+    }
+
+    #[test]
+    fn report_add_user_preset_reports_an_invalid_name() {
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = report_add_user_preset(
+            "strict",
+            Err(config::AddPresetError::InvalidName("strict".to_string())),
+            &mut stdout,
+            &mut stderr,
+        );
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(String::from_utf8(stderr)
+            .unwrap()
+            .contains("built-in preset"));
     }
 
     #[test]
