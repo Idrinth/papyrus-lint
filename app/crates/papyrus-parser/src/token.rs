@@ -16,7 +16,7 @@ pub enum IntFormat {
     Hexadecimal,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Keyword {
     ScriptName,
     Extends,
@@ -98,7 +98,7 @@ impl Keyword {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TokenKind {
     Identifier(String),
     Keyword(Keyword),
@@ -144,7 +144,7 @@ pub enum TokenKind {
     Eof,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Token {
     pub kind: TokenKind,
     pub line: usize,
@@ -221,5 +221,22 @@ mod tests {
         assert_eq!(token.kind, TokenKind::Identifier("value".to_string()));
         assert_eq!(token.line, 12);
         assert_eq!(token.col, 7);
+    }
+
+    /// Tokens need to round-trip through serde so a disk-backed cache can
+    /// persist them alongside the parsed AST, rather than only ever holding
+    /// them in memory for the duration of a single lint pass.
+    #[test]
+    fn token_round_trips_through_json_including_a_keyword_and_hex_int_literal() {
+        let tokens = vec![
+            Token::new(TokenKind::Keyword(Keyword::ScriptName), 1, 1),
+            Token::new(TokenKind::IntLiteral(42, IntFormat::Hexadecimal), 2, 5),
+            Token::new(TokenKind::Eof, 3, 1),
+        ];
+
+        let json = serde_json::to_string(&tokens).unwrap();
+        let round_tripped: Vec<Token> = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(round_tripped, tokens);
     }
 }
