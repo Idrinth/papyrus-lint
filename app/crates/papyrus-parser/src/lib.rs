@@ -60,6 +60,18 @@ pub fn tokenize(source: &str) -> Result<Vec<token::Token>, LexError> {
     cache::tokenize(source)
 }
 
+/// Inserts a precomputed `ast` into [`parse`]'s in-memory memoization cache
+/// as if `source` had just been parsed to it, so the next [`parse`] call
+/// with the same `source` in this process returns it without re-parsing.
+/// Lets a caller that already has a validated AST for `source` from
+/// elsewhere (e.g. `papyrus-lint-core`'s disk-backed AST cache) short-circuit
+/// this crate's own parse of it -- notably before calling into
+/// `papyrus_lints::lint()`/`repair()`, which parse their `source` argument
+/// internally without ever seeing this AST themselves.
+pub fn prime_cache(source: &str, ast: ast::Script) {
+    cache::prime(source, ast);
+}
+
 #[cfg(test)]
 mod tests {
     use super::ast::*;

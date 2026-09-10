@@ -103,6 +103,22 @@ pub(crate) fn parse(source: &str) -> Result<Script, PapyrusError> {
     result
 }
 
+/// Inserts a precomputed `ast` into this cache as if `source` had just
+/// been parsed to it, so a subsequent [`parse`] call with the same
+/// `source` in this process returns it directly instead of re-parsing.
+/// Lets a caller that already has a validated AST for `source` from
+/// elsewhere (e.g. `papyrus-lint-core`'s disk-backed `ast_cache`) prime
+/// this cache before code that parses `source` itself -- without ever
+/// seeing that AST -- runs, such as `papyrus_lints::lint()`.
+pub(crate) fn prime(source: &str, ast: Script) {
+    AST.with(|cell| {
+        *cell.borrow_mut() = Some(Slot {
+            source: source.to_string(),
+            result: Ok(ast),
+        });
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -214,6 +230,36 @@ mod tests {
         parse(first).unwrap();
 
         assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 3);
+    }
+
+    #[test]
+    fn prime_short_circuits_a_later_parse_of_the_same_source() {
+        let before = PARSE_COMPUTATIONS.with(|c| c.get());
+        let source = "ScriptName PrimeTest extends Quest\n";
+        let ast = Parser::new(Lexer::new(source).tokenize().unwrap())
+            .parse_script()
+            .unwrap();
+
+        prime(source, ast.clone());
+        let result = parse(source).unwrap();
+
+        assert_eq!(result, ast);
+        assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()), before);
+    }
+
+    #[test]
+    fn prime_is_overwritten_by_a_later_source_change() {
+        let source = "ScriptName PrimeEvictionTest\n";
+        let ast = Parser::new(Lexer::new(source).tokenize().unwrap())
+            .parse_script()
+            .unwrap();
+        prime(source, ast);
+
+        parse("ScriptName PrimeEvictionOther\n").unwrap();
+
+        let before = PARSE_COMPUTATIONS.with(|c| c.get());
+        parse(source).unwrap();
+        assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 1);
     }
 
     #[test]

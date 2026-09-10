@@ -923,10 +923,13 @@ depending on the test binary's own `current_exe()`; the checked-in
 `docs/papyrus-lint.default.yaml` copy is unaffected since CI's test
 environment has no such file next to the test binary.
 
-The desktop app's `parse_psc_file` command, and both the app's and the
-CLI's cross-script lookups (`papyrus-lint-core`'s `function_table.rs`,
-used to resolve the "Argument type check"/"Return type check" lints
-across scripts), cache each parsed `.psc` AST on disk
+The desktop app's `parse_psc_file` command, both the app's and the CLI's
+cross-script lookups (`papyrus-lint-core`'s `function_table.rs`, used to
+resolve the "Argument type check"/"Return type check" lints across
+scripts), and the desktop app's `lint_psc_file`/`repair_psc_file`/
+`repair_psc_finding`/`repair_psc_file_rule` commands and the CLI's own
+per-script lint loop (via `ast_cache::ensure_primed`, see below) cache
+each parsed `.psc` AST on disk
 (`app/crates/papyrus-lint-core/src/ast_cache.rs`), in an `ast-cache`
 directory next to the running executable — the desktop app's own binary,
 or `PapyrusLinterCLI`'s, whichever process is doing the parsing. A cached
@@ -953,9 +956,27 @@ and bump that floor whenever `MIN_COMPATIBLE_VERSION` moves. Update it
 alongside any change to `CacheEntry` or to `papyrus_parser::ast::Script`
 that bumps `MIN_COMPATIBLE_VERSION`.
 
-Independent of that disk cache, `papyrus-parser`'s own `parse()` and
-`tokenize()` entry points (`app/crates/papyrus-parser/src/cache.rs`) are
-memoized in-memory against the most recently seen source string: a single
+Since `papyrus_lints::lint()`/`repair()` parse their `source` argument
+internally and never see a file path, they can't consult `ast_cache`
+directly by themselves. `ast_cache::get` closes that gap as a side effect:
+a disk cache hit also primes `papyrus-parser`'s own in-memory memoization
+(`papyrus_parser::prime_cache`, see below) with the same AST, so anything
+that parses that exact source text later in the same process -- including
+a lint/repair pass's own internal `parse()` calls -- reuses it instead of
+re-parsing. `ast_cache::ensure_primed` wraps that for the "about to
+lint/repair a script whose disk cache might already be current" case: a
+disk cache hit primes the in-memory cache as above; a miss parses the
+source once itself (which populates the in-memory cache the same way a
+hit would) and writes a fresh disk entry for next time. It's what the app's
+`lint_psc_file`/`repair_psc_file`/`repair_psc_finding`/`repair_psc_file_rule`
+commands and the CLI's own per-script lint loop call before linting/
+repairing, so relinting an unchanged script -- across separate desktop app
+commands or CLI invocations, not just the narrower `parse_psc_file`/
+cross-script-lookup cases above -- skips re-parsing it too.
+
+`papyrus-parser`'s own `parse()` and `tokenize()` entry points
+(`app/crates/papyrus-parser/src/cache.rs`) are memoized in-memory against
+the most recently seen source string: a single
 `papyrus_lints::lint()`/`lint_with_external_arguments()` pass over one
 script calls into them dozens of times (each AST-based lint rule calls
 `parse()`, each rule that works on raw tokens instead — e.g.
@@ -966,7 +987,13 @@ into a clone instead of a re-lex/re-parse. This is deliberately simpler
 than the disk-backed `ast_cache`: it never outlives the process (or even
 the thread) and so needs no path, mtime, or version bookkeeping, since it
 only ever has to remember the one source string a lint/repair pass is
-currently working on.
+currently working on. `papyrus_parser::prime_cache` (`cache.rs`'s
+`prime`) is the one way this cache is seeded from outside the crate,
+letting a caller that already has a validated AST for that same source
+text -- namely `ast_cache::get`, above -- insert it directly instead of
+leaving the pass's first `parse()` call to compute it. It only primes the
+AST slot, not the separate token slot `tokenize()` uses, so a token-based
+rule still lexes fresh the first time a pass runs even after a prime.
 
 ## Keeping agent instructions synchronized
 

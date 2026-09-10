@@ -88,6 +88,11 @@ fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
     Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
 }
 
+/// Also primes `papyrus_parser`'s own in-memory memoization (see
+/// [`papyrus_parser::prime_cache`]) with a hit, so anything that parses
+/// `source` itself later in this process -- notably
+/// `papyrus_lints::lint()`/`repair()`, which never see `source_path` and so
+/// can't consult this cache directly -- reuses it instead of re-parsing.
 fn get_in(dir: &Path, source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
     let raw = std::fs::read(cache_file_path(dir, source_path)).ok()?;
     let entry: CacheEntry = serde_json::from_slice(&raw).ok()?;
@@ -99,6 +104,7 @@ fn get_in(dir: &Path, source_path: &Path, source: &str) -> Option<papyrus_parser
         return None;
     }
 
+    papyrus_parser::prime_cache(source, entry.ast.clone());
     Some(entry.ast)
 }
 
@@ -131,7 +137,8 @@ fn put_in(
 /// still-valid entry for `source`'s current content, `source_path`'s
 /// modification time, and a linter version at or above
 /// [`MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss, mismatch, or
-/// error -- the caller should parse `source` fresh in that case.
+/// error -- the caller should parse `source` fresh in that case. See
+/// [`get_in`] for the in-memory priming a hit also does.
 pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
     get_in(&cache_dir()?, source_path, source)
 }
@@ -143,6 +150,33 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
     if let Some(dir) = cache_dir() {
         put_in(&dir, source_path, source, ast, env!("CARGO_PKG_VERSION"));
     }
+}
+
+fn ensure_primed_in(dir: &Path, source_path: &Path, source: &str, linter_version: &str) {
+    if get_in(dir, source_path, source).is_some() {
+        return;
+    }
+    if let Ok(ast) = papyrus_parser::parse(source) {
+        put_in(dir, source_path, source, &ast, linter_version);
+    }
+}
+
+/// Makes sure `papyrus_parser`'s in-memory memoization has an AST ready for
+/// `source` before something that parses `source` itself -- typically
+/// `papyrus_lints::lint()`/`repair()`, called with only the raw source text,
+/// never `source_path` -- runs. A disk cache hit ([`get_in`]) already primes
+/// it as a side effect; on a miss, this parses `source` once here instead
+/// (which populates the in-memory cache the same way a hit would) and
+/// writes the result to the disk cache for next time. Used by the desktop
+/// app's `lint_psc_file`/`repair_psc_file` commands and the CLI's own
+/// per-script lint loop, so relinting an unchanged script -- across separate
+/// desktop app commands or CLI invocations -- skips re-parsing it there too,
+/// not just in `get`'s other existing callers.
+pub fn ensure_primed(source_path: &Path, source: &str) {
+    let Some(dir) = cache_dir() else {
+        return;
+    };
+    ensure_primed_in(&dir, source_path, source, env!("CARGO_PKG_VERSION"));
 }
 
 #[cfg(test)]
@@ -490,6 +524,71 @@ mod tests {
         let ast = sample_ast();
         put(&source_path, source, &ast);
         let _ = get(&source_path, source);
+    }
+
+    #[test]
+    fn ensure_primed_populates_the_disk_cache_on_a_miss_and_is_a_hit_afterwards() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("EnsurePrimedMiss.psc");
+        let source = "ScriptName EnsurePrimedMiss\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+
+        assert_eq!(
+            get_in(cache_dir.path(), &source_path, source),
+            Some(papyrus_parser::parse(source).unwrap())
+        );
+    }
+
+    #[test]
+    fn ensure_primed_is_a_noop_on_an_already_cached_entry() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("EnsurePrimedHit.psc");
+        let source = "ScriptName EnsurePrimedHit\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+        let first = get_in(cache_dir.path(), &source_path, source);
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+        let second = get_in(cache_dir.path(), &source_path, source);
+
+        assert_eq!(first, second);
+        assert!(first.is_some());
+    }
+
+    #[test]
+    fn get_in_primes_papyrus_parsers_in_memory_cache_with_the_disk_cached_ast() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("PrimesInMemory.psc");
+        let source = "ScriptName PrimesInMemory extends Quest\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        // Deliberately not what `source` actually parses to, so that a
+        // subsequent `papyrus_parser::parse(source)` call returning it
+        // proves it came from `get_in`'s in-memory priming rather than a
+        // fresh parse of `source`.
+        let distinct_ast = papyrus_parser::parse(
+            "ScriptName PrimesInMemory extends Quest\n\nInt Property Marker = 1 Auto\n",
+        )
+        .unwrap();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &distinct_ast,
+            COMPATIBLE_VERSION,
+        );
+
+        let cached = get_in(cache_dir.path(), &source_path, source).unwrap();
+        assert_eq!(cached, distinct_ast);
+        assert_eq!(papyrus_parser::parse(source).unwrap(), distinct_ast);
     }
 
     #[test]
