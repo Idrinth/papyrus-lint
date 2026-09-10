@@ -17,9 +17,9 @@ import tempfile
 import unittest
 import urllib.error
 import urllib.request
+from pages import browser_check
 from pathlib import Path
 from unittest.mock import Mock, MagicMock, patch
-from pages import browser_check
 
 
 class IsLocalHrefTest(unittest.TestCase):
