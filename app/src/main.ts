@@ -162,11 +162,12 @@ export interface ProjectInfo {
   used_configuration_file: string | null;
 }
 
-// One built-in configuration preset's identity/description, as returned by
-// the backend's list_config_presets command (papyrus_lint_core::presets::
-// PresetInfo, made JSON-friendly). Offered as a first-run picker (see
-// promptForConfigPreset/useProjectDir) for a project directory that has no
-// papyrus-lint.yaml/.yml of its own yet.
+// One configuration preset's identity/description — a built-in one, or a
+// user preset found under a presets directory next to the executable — as
+// returned by the backend's list_config_presets command
+// (papyrus_lint_core::presets::PresetInfo, made JSON-friendly). Offered as
+// a first-run picker (see promptForConfigPreset/useProjectDir) for a
+// project directory that has no papyrus-lint.yaml/.yml of its own yet.
 export interface ConfigPreset {
   id: string;
   label: string;
@@ -600,10 +601,11 @@ export function applyProjectInfoToUI(info: ProjectInfo) {
   }
 }
 
-// Fetches every built-in configuration preset's identity/description (see
-// ConfigPreset), for the first-run picker shown by useProjectDir. Returns
-// an empty array if the lookup fails, which promptForConfigPreset treats
-// the same as "nothing to offer" and resolves without showing anything.
+// Fetches every configuration preset's identity/description — built-in
+// plus any user preset (see ConfigPreset) — for the first-run picker shown
+// by useProjectDir. Returns an empty array if the lookup fails, which
+// promptForConfigPreset treats the same as "nothing to offer" and resolves
+// without showing anything.
 export async function loadConfigPresets(): Promise<ConfigPreset[]> {
   try {
     return await invoke<ConfigPreset[]>("list_config_presets");
@@ -613,9 +615,10 @@ export async function loadConfigPresets(): Promise<ConfigPreset[]> {
   }
 }
 
-// Seeds `dir`'s papyrus-lint config file from the named built-in preset.
-// Only called right after promptForConfigPreset resolves with a non-null
-// choice, while `dir` is still known to have no config file of its own.
+// Seeds `dir`'s papyrus-lint config file from the named preset (built-in
+// or user). Only called right after promptForConfigPreset resolves with a
+// non-null choice, while `dir` is still known to have no config file of
+// its own.
 export async function applyConfigPreset(dir: string, preset: string): Promise<void> {
   try {
     await invoke("apply_config_preset", { dir, preset });

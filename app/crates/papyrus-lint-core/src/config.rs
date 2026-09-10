@@ -3,6 +3,7 @@
 //! and the app-level settings (currently just the PapyrusCompiler.exe path)
 //! that live in the same file alongside it.
 
+use std::borrow::Cow;
 use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -195,7 +196,8 @@ fn save_project_file_at(path: &Path, project: &ProjectFile) -> Result<(), String
 
 /// Directory next to the CLI's own running executable, if it can be
 /// determined. [`initialize_default_config`] looks here for an optional
-/// shared base config.
+/// shared base config, and [`user_presets_dir`] for an optional user
+/// presets directory.
 fn executable_dir() -> Option<PathBuf> {
     std::env::current_exe()
         .ok()
@@ -227,9 +229,9 @@ fn non_lint_yaml(project: &ProjectFile) -> Result<String, String> {
 
 /// A named baseline `init` can generate `papyrus-lint.yaml` from, selected
 /// via the CLI's `--preset <name>` flag (see [`Preset::parse`]). See
-/// `docs/presets/` for each preset's own annotated YAML and the reasoning
-/// behind what it turns on/off relative to the others.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+/// `docs/presets/` for each built-in preset's own annotated YAML and the
+/// reasoning behind what it turns on/off relative to the others.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Preset {
     /// Everything on, including pure style/naming nits. Identical to the
     /// engine's built-in defaults (`docs/papyrus-lint.default.yaml`), so
@@ -245,38 +247,149 @@ pub enum Preset {
     /// complexity thresholds are relaxed — meant for a quiet first pass
     /// over an unfamiliar or legacy codebase.
     Careful,
+    /// A user-defined preset, named after a `<name>.yaml`/`.yml` file found
+    /// under a `presets` directory next to the running executable (see
+    /// [`user_presets_dir`]). [`Preset::parse`] accepts any name that isn't
+    /// one of the three built-ins above as this variant without checking
+    /// the filesystem yet; [`Preset::yaml`] is where a name that doesn't
+    /// actually match a file there is finally rejected, since only there is
+    /// the executable-adjacent base directory available.
+    Custom(String),
 }
 
 /// The names [`Preset::parse`] accepts, in the order shown in `--help`/
 /// error text.
 pub const PRESET_NAMES: [&str; 3] = ["strict", "standard", "careful"];
 
+/// Name of the directory, next to the running executable, that holds
+/// optional user-defined preset YAML files. A file named `<name>.yaml` (or
+/// `.yml`) there is selectable as `--preset <name>` (CLI) or from the
+/// desktop app's first-run preset picker, exactly as if it were a fourth
+/// built-in preset.
+pub const USER_PRESETS_DIR_NAME: &str = "presets";
+
 impl Preset {
-    /// Matches `name` against [`PRESET_NAMES`] case-insensitively. Returns
-    /// `None` for anything else, which the CLI's `--preset` parsing treats
-    /// as a usage error.
+    /// Matches `name` against [`PRESET_NAMES`] case-insensitively. Anything
+    /// else non-empty (after trimming) is accepted as [`Self::Custom`],
+    /// naming a user preset whose actual existence is only checked once its
+    /// YAML is needed (see [`Preset::yaml`]). Returns `None` only for an
+    /// empty (or all-whitespace) name, which the CLI's `--preset` parsing
+    /// treats as a usage error.
     pub fn parse(name: &str) -> Option<Self> {
-        match name.to_ascii_lowercase().as_str() {
+        let trimmed = name.trim();
+        if trimmed.is_empty() {
+            return None;
+        }
+        match trimmed.to_ascii_lowercase().as_str() {
             "strict" => Some(Self::Strict),
             "standard" => Some(Self::Standard),
             "careful" => Some(Self::Careful),
-            _ => None,
+            _ => Some(Self::Custom(trimmed.to_string())),
         }
     }
 
-    /// The checked-in `docs/presets/papyrus-lint.<preset>.yaml` contents
-    /// this preset generates `init`'s output from.
-    fn yaml(self) -> &'static str {
+    /// This preset's baseline YAML content: for a built-in preset, the
+    /// checked-in `docs/presets/papyrus-lint.<preset>.yaml` contents
+    /// compiled into the binary; for [`Self::Custom`], the contents of the
+    /// matching `<name>.yaml`/`.yml` file under `base_dir`'s
+    /// [`USER_PRESETS_DIR_NAME`] directory. Errors if `base_dir` is
+    /// unavailable, has no such directory, or it has no file matching
+    /// `name`.
+    fn yaml(&self, base_dir: Option<&Path>) -> Result<Cow<'static, str>, String> {
         match self {
-            Self::Strict => include_str!("../../../../docs/presets/papyrus-lint.strict.yaml"),
-            Self::Standard => {
-                include_str!("../../../../docs/presets/papyrus-lint.standard.yaml")
-            }
-            Self::Careful => {
-                include_str!("../../../../docs/presets/papyrus-lint.careful.yaml")
+            Self::Strict => Ok(Cow::Borrowed(include_str!(
+                "../../../../docs/presets/papyrus-lint.strict.yaml"
+            ))),
+            Self::Standard => Ok(Cow::Borrowed(include_str!(
+                "../../../../docs/presets/papyrus-lint.standard.yaml"
+            ))),
+            Self::Careful => Ok(Cow::Borrowed(include_str!(
+                "../../../../docs/presets/papyrus-lint.careful.yaml"
+            ))),
+            Self::Custom(name) => {
+                let path = user_presets_dir_under(base_dir)
+                    .and_then(|dir| find_user_preset_file(&dir, name));
+                match path {
+                    Some(path) => fs::read_to_string(&path).map(Cow::Owned).map_err(|err| err.to_string()),
+                    None => Err(format!(
+                        "unknown preset '{name}' (expected one of: {}, or a matching <name>.yaml/.yml \
+                         file in a '{USER_PRESETS_DIR_NAME}' directory next to the executable)",
+                        PRESET_NAMES.join(", ")
+                    )),
+                }
             }
         }
     }
+}
+
+/// The user presets directory next to the running executable (see
+/// [`USER_PRESETS_DIR_NAME`]), if the executable's location can be
+/// determined and it actually has such a directory.
+pub fn user_presets_dir() -> Option<PathBuf> {
+    user_presets_dir_under(executable_dir().as_deref())
+}
+
+/// Same as [`user_presets_dir`], but takes the executable-adjacent
+/// directory explicitly rather than assuming it's [`executable_dir`] — the
+/// same split used elsewhere in this module (see
+/// [`initialize_config_with_base`]) so tests can supply a controlled
+/// directory instead of depending on the test binary's own
+/// `current_exe()`.
+fn user_presets_dir_under(base_dir: Option<&Path>) -> Option<PathBuf> {
+    let dir = base_dir?.join(USER_PRESETS_DIR_NAME);
+    dir.is_dir().then_some(dir)
+}
+
+/// Whether `path`'s extension is `yaml`/`yml`, matched case-insensitively —
+/// the same two extensions a project's own `papyrus-lint.yaml`/`.yml`
+/// supports (see [`CONFIG_FILE_NAMES`]).
+fn has_yaml_extension(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("yaml") || ext.eq_ignore_ascii_case("yml"))
+}
+
+/// Every user preset name available in `dir` (see [`user_presets_dir`]):
+/// each `.yaml`/`.yml` file's own file stem (the name it's selected by),
+/// sorted case-insensitively so listings (e.g. the desktop app's preset
+/// picker) are stable and predictable. Returns an empty `Vec` if `dir`
+/// can't be read at all.
+pub fn list_user_preset_names(dir: &Path) -> Vec<String> {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return Vec::new();
+    };
+    let mut names: Vec<String> = entries
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.is_file() && has_yaml_extension(path))
+        .filter_map(|path| {
+            path.file_stem()
+                .and_then(|stem| stem.to_str())
+                .map(str::to_string)
+        })
+        .collect();
+    names.sort_by_key(|name| name.to_ascii_lowercase());
+    names
+}
+
+/// Finds the `.yaml`/`.yml` file in `dir` whose file stem matches `name`
+/// case-insensitively, e.g. `find_user_preset_file(dir, "ABC")` matching a
+/// file named `abc.yaml`. Returns `None` if `dir` can't be read or has no
+/// such file.
+fn find_user_preset_file(dir: &Path, name: &str) -> Option<PathBuf> {
+    fs::read_dir(dir)
+        .into_iter()
+        .flatten()
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .find(|path| {
+            path.is_file()
+                && has_yaml_extension(path)
+                && path
+                    .file_stem()
+                    .and_then(|stem| stem.to_str())
+                    .is_some_and(|stem| stem.eq_ignore_ascii_case(name))
+        })
 }
 
 /// Deep-merges `over` onto `base`: a `Mapping` present in both merges key by
@@ -304,7 +417,10 @@ fn deep_merge(base: serde_yaml::Value, over: serde_yaml::Value) -> serde_yaml::V
 
 /// Creates `papyrus-lint.yaml` in `dir` from `preset`'s baseline
 /// configuration. Refuses to replace either supported config filename, so
-/// an existing project configuration cannot be lost accidentally.
+/// an existing project configuration cannot be lost accidentally. If
+/// `preset` is [`Preset::Custom`], its YAML is read from the matching file
+/// under the executable-adjacent [`USER_PRESETS_DIR_NAME`] directory (see
+/// [`Preset::yaml`]), erroring out if none matches.
 ///
 /// If a `papyrus-lint.yaml`/`.yml` file exists next to the running
 /// executable, it's layered on top of `preset` instead of the engine's
@@ -320,7 +436,8 @@ pub fn initialize_default_config(dir: &Path, preset: Preset) -> Result<PathBuf, 
 }
 
 /// Same as [`initialize_default_config`], but takes the directory to look
-/// for the optional shared base config in explicitly, rather than assuming
+/// for the optional shared base config (and, for a [`Preset::Custom`]
+/// preset, the `presets` directory) in explicitly, rather than assuming
 /// it's next to the running executable. Split out so tests can exercise the
 /// merge behavior without depending on `std::env::current_exe()`.
 fn initialize_config_with_base(
@@ -332,8 +449,9 @@ fn initialize_config_with_base(
         return Err(format!("config already exists at {}", path.display()));
     }
 
+    let preset_yaml = preset.yaml(base_dir)?;
     let preset_value: serde_yaml::Value =
-        serde_yaml::from_str(preset.yaml()).map_err(|err| err.to_string())?;
+        serde_yaml::from_str(&preset_yaml).map_err(|err| err.to_string())?;
 
     let merged_value = match base_dir.and_then(existing_config_path) {
         Some(base_path) => {
@@ -745,19 +863,128 @@ mod tests {
     }
 
     #[test]
-    fn preset_parse_matches_case_insensitively_and_rejects_unknown_names() {
+    fn preset_parse_matches_built_ins_case_insensitively_and_rejects_only_blank_names() {
         assert_eq!(Preset::parse("strict"), Some(Preset::Strict));
         assert_eq!(Preset::parse("STANDARD"), Some(Preset::Standard));
         assert_eq!(Preset::parse("Careful"), Some(Preset::Careful));
-        assert_eq!(Preset::parse("lenient"), None);
+        assert_eq!(Preset::parse("   "), None);
+        assert_eq!(Preset::parse(""), None);
     }
 
     #[test]
-    fn every_preset_yaml_parses_into_a_project_file() {
+    fn preset_parse_treats_any_other_name_as_a_custom_preset() {
+        assert_eq!(
+            Preset::parse("lenient"),
+            Some(Preset::Custom("lenient".to_string()))
+        );
+        assert_eq!(
+            Preset::parse("  my-preset  "),
+            Some(Preset::Custom("my-preset".to_string()))
+        );
+    }
+
+    #[test]
+    fn every_built_in_preset_yaml_parses_into_a_project_file() {
         for preset in [Preset::Strict, Preset::Standard, Preset::Careful] {
-            serde_yaml::from_str::<ProjectFile>(preset.yaml())
+            let yaml = preset.yaml(None).expect("built-in preset should resolve");
+            serde_yaml::from_str::<ProjectFile>(&yaml)
                 .unwrap_or_else(|err| panic!("{preset:?} preset failed to parse: {err}"));
         }
+    }
+
+    #[test]
+    fn custom_preset_yaml_errors_when_no_presets_dir_exists() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let error = Preset::Custom("abc".to_string())
+            .yaml(Some(dir.path()))
+            .expect_err("should fail without a presets directory");
+
+        assert!(error.contains("unknown preset 'abc'"));
+    }
+
+    #[test]
+    fn custom_preset_yaml_errors_when_no_matching_file_exists() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        fs::create_dir(base_dir.path().join(USER_PRESETS_DIR_NAME))
+            .expect("failed to create presets dir");
+
+        let error = Preset::Custom("abc".to_string())
+            .yaml(Some(base_dir.path()))
+            .expect_err("should fail without a matching preset file");
+
+        assert!(error.contains("unknown preset 'abc'"));
+    }
+
+    #[test]
+    fn custom_preset_yaml_reads_the_matching_file_case_insensitively() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "abc.yaml", "semicolon: true\n");
+
+        let yaml = Preset::Custom("ABC".to_string())
+            .yaml(Some(base_dir.path()))
+            .expect("should find abc.yaml case-insensitively");
+
+        assert_eq!(yaml.as_ref(), "semicolon: true\n");
+    }
+
+    #[test]
+    fn list_user_preset_names_lists_yaml_and_yml_stems_sorted_case_insensitively() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(dir.path(), "Zebra.yaml", "");
+        write_config(dir.path(), "abc.yml", "");
+        write_config(dir.path(), "not-a-preset.txt", "");
+
+        assert_eq!(
+            list_user_preset_names(dir.path()),
+            vec!["abc".to_string(), "Zebra".to_string()]
+        );
+    }
+
+    #[test]
+    fn list_user_preset_names_returns_empty_for_a_missing_directory() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert_eq!(
+            list_user_preset_names(&dir.path().join("does-not-exist")),
+            Vec::<String>::new()
+        );
+    }
+
+    #[test]
+    fn init_generates_a_config_from_a_custom_preset_under_the_base_dir() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "abc.yaml", "semicolon: true\n");
+
+        let path = initialize_config_with_base(
+            dir.path(),
+            Some(base_dir.path()),
+            Preset::Custom("abc".to_string()),
+        )
+        .expect("init should succeed from a custom preset");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        assert!(generated.contains("semicolon: true\n"));
+    }
+
+    #[test]
+    fn init_reports_an_error_for_an_unknown_custom_preset() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let error = initialize_config_with_base(
+            dir.path(),
+            Some(base_dir.path()),
+            Preset::Custom("does-not-exist".to_string()),
+        )
+        .expect_err("init should fail for an unresolvable custom preset");
+
+        assert!(error.contains("unknown preset 'does-not-exist'"));
     }
 
     #[test]

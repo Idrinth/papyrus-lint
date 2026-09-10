@@ -235,7 +235,18 @@ performance stake plus the cheap, auto-fixable formatting rules, and turns
 off purely naming/style and informational/advisory rules; `careful` keeps
 only `medium`/`high` importance rules and relaxes the cyclomatic complexity
 thresholds, for a quiet first pass over an unfamiliar or legacy codebase.
-See [`docs/presets/`](docs/presets/) for each preset's own annotated YAML.
+See [`docs/presets/`](docs/presets/) for each built-in preset's own
+annotated YAML.
+
+Besides the three built-ins, `--preset <name>` also accepts the name of a
+user preset: place a `<name>.yaml` (or `.yml`) file in a `presets`
+directory next to the running executable (the CLI binary, or the desktop
+app's binary when it delegates to CLI mode) and it becomes selectable the
+same way, e.g. a `presets/my-team.yaml` next to the binary is picked with
+`init --preset my-team`. This is separate from the executable-adjacent base
+config described below: a user preset is a full baseline `init` starts
+from, while the base config always layers on top of whichever preset
+(built-in or user) is selected.
 
 The desktop app's Settings tab has a "Configuration file" field for
 overriding this auto-detection: enter the path to a specific
@@ -247,14 +258,16 @@ config file doesn't live where auto-detection expects it. Leave it blank
 to go back to auto-detection. Whatever path is entered is remembered
 across app restarts, so it's prefilled the next time the app opens.
 
-The desktop app offers the same three presets as its own first-run picker:
-the first time it opens a project directory with no `papyrus-lint.yaml`/
-`.yml` of its own yet (and no "Configuration file" override set), it asks
-which preset to start from instead of silently linting against the
-engine's defaults. Every setting a preset picks can still be changed
-afterward in the Settings tab. Closing the dialog without choosing one
-leaves the project on the engine's built-in defaults without writing a
-config file, so it's asked again next time that directory is opened.
+The desktop app offers the same presets — the three built-ins plus any user
+preset found under the executable-adjacent `presets` directory — as its own
+first-run picker: the first time it opens a project directory with no
+`papyrus-lint.yaml`/`.yml` of its own yet (and no "Configuration file"
+override set), it asks which preset to start from instead of silently
+linting against the engine's defaults. Every setting a preset picks can
+still be changed afterward in the Settings tab. Closing the dialog without
+choosing one leaves the project on the engine's built-in defaults without
+writing a config file, so it's asked again next time that directory is
+opened.
 
 Each key:
 
@@ -418,6 +431,7 @@ Both accept the same argument and behave identically:
 PapyrusLinterCLI path/to/project.achlist
 PapyrusLinterCLI init
 PapyrusLinterCLI init --preset standard
+PapyrusLinterCLI init --preset my-team
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI path/to/scripts/source
 PapyrusLinterCLI fix path/to/project.achlist
@@ -441,9 +455,12 @@ PapyrusLinterCLI --progress --output path/to/report.txt path/to/project.achlist
 directory from the selected `--preset` (`strict`, `standard`, or `careful`,
 matched case-insensitively; defaults to `strict`, identical to today's
 built-in default — see Configuration above and
-[`docs/presets/`](docs/presets/)). It refuses to overwrite an existing
-`papyrus-lint.yaml` or `papyrus-lint.yml` file, and an unrecognized `--preset`
-name is a usage error.
+[`docs/presets/`](docs/presets/)). Any other `--preset` name is looked up
+as `<name>.yaml`/`.yml` (matched case-insensitively) in a `presets`
+directory next to the running executable (see Configuration above). It
+refuses to overwrite an existing `papyrus-lint.yaml` or `papyrus-lint.yml`
+file, and a `--preset` name matching neither a built-in nor a file in that
+directory is reported as an error.
 
 If a `papyrus-lint.yaml`/`.yml` file exists next to the running executable
 (the CLI binary itself, or the desktop app's binary when it delegates to CLI

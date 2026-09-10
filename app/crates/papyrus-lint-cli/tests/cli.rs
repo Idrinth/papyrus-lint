@@ -145,31 +145,28 @@ fn init_creates_a_config_in_the_process_working_directory() {
     assert!(config.contains("trailing_whitespace: true"));
 }
 
-#[test]
-fn init_merges_a_config_placed_next_to_the_executable() {
-    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
-    let exe_path = exe_dir.path().join(
+/// Copies the built `PapyrusLinterCLI` binary into `exe_dir` (which may
+/// already contain other executable-adjacent files, e.g. a base config or a
+/// `presets` directory) and runs it with `args` inside `current_dir`.
+/// Immediately after `fs::copy`, some CI filesystems (overlayfs in
+/// particular) briefly still report the freshly written copy as busy
+/// (`ETXTBSY`) when it's exec'd, even though the copy itself has already
+/// completed; a short, bounded retry absorbs that race instead of flaking
+/// the test.
+fn run_copied_cli(exe_dir: &Path, args: &[&str], current_dir: &Path) -> Output {
+    let exe_path = exe_dir.join(
         Path::new(env!("CARGO_BIN_EXE_PapyrusLinterCLI"))
             .file_name()
             .expect("binary path should have a file name"),
     );
     fs::copy(env!("CARGO_BIN_EXE_PapyrusLinterCLI"), &exe_path)
         .expect("failed to copy the CLI binary next to a base config");
-    write_file(
-        &exe_dir.path().join("papyrus-lint.yaml"),
-        "semicolon: true\n",
-    );
 
-    let project_dir = tempfile::tempdir().expect("failed to create temp directory");
-    // Immediately after fs::copy, some CI filesystems (overlayfs in particular)
-    // briefly still report the freshly written copy as busy (ETXTBSY) when it's
-    // exec'd, even though the copy itself has already completed; a short,
-    // bounded retry absorbs that race instead of flaking the test.
     let mut attempts_left = 20;
-    let output = loop {
+    loop {
         match Command::new(&exe_path)
-            .arg("init")
-            .current_dir(project_dir.path())
+            .args(args)
+            .current_dir(current_dir)
             .output()
         {
             Ok(output) => break output,
@@ -179,7 +176,19 @@ fn init_merges_a_config_placed_next_to_the_executable() {
             }
             Err(err) => panic!("failed to run the copied PapyrusLinterCLI binary: {err}"),
         }
-    };
+    }
+}
+
+#[test]
+fn init_merges_a_config_placed_next_to_the_executable() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    write_file(
+        &exe_dir.path().join("papyrus-lint.yaml"),
+        "semicolon: true\n",
+    );
+
+    let project_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let output = run_copied_cli(exe_dir.path(), &["init"], project_dir.path());
 
     assert!(output.status.success());
     let config = fs::read_to_string(project_dir.path().join("papyrus-lint.yaml"))
@@ -187,6 +196,49 @@ fn init_merges_a_config_placed_next_to_the_executable() {
     assert!(config.contains("semicolon: true"));
     // Settings the base config didn't set still fall back to the default.
     assert!(config.contains("trailing_whitespace: true"));
+}
+
+#[test]
+fn init_preset_flag_selects_a_user_preset_from_the_presets_directory() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    write_file(
+        &exe_dir.path().join("presets/my-preset.yaml"),
+        "semicolon: true\nrules:\n  identifier_casing: false\n",
+    );
+
+    let project_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let output = run_copied_cli(
+        exe_dir.path(),
+        &["init", "--preset", "my-preset"],
+        project_dir.path(),
+    );
+
+    assert!(output.status.success());
+    let config = fs::read_to_string(project_dir.path().join("papyrus-lint.yaml"))
+        .expect("init should create papyrus-lint.yaml");
+    assert!(config.contains("semicolon: true"));
+    assert!(config.contains("  identifier_casing: false\n"));
+    // Settings the user preset didn't set still fall back to the engine's
+    // built-in default.
+    assert!(config.contains("  trailing_whitespace: true\n"));
+}
+
+#[test]
+fn init_preset_flag_reports_an_error_for_a_name_matching_no_built_in_or_user_preset() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    write_file(&exe_dir.path().join("presets/my-preset.yaml"), "");
+
+    let project_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let output = run_copied_cli(
+        exe_dir.path(),
+        &["init", "--preset", "does-not-exist"],
+        project_dir.path(),
+    );
+
+    assert_eq!(output.status.code(), Some(2));
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.contains("unknown preset 'does-not-exist'"));
+    assert!(!project_dir.path().join("papyrus-lint.yaml").exists());
 }
 
 #[test]

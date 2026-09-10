@@ -238,16 +238,19 @@ fn save_script_roots(dir: String, roots: Vec<String>) -> Result<(), String> {
     config::save_script_roots(&PathBuf::from(dir), &roots)
 }
 
-/// Returns every built-in configuration preset's identity/description (see
-/// [`papyrus_lint_core::presets`]), for the frontend's first-run picker
-/// shown when a project directory has no `papyrus-lint.yaml`/`.yml` yet.
+/// Returns every configuration preset's identity/description — the three
+/// built-ins plus any user preset found under a `presets` directory next to
+/// the running executable (see [`papyrus_lint_core::presets`]) — for the
+/// frontend's first-run picker shown when a project directory has no
+/// `papyrus-lint.yaml`/`.yml` yet.
 #[tauri::command]
 fn list_config_presets() -> Vec<presets::PresetInfo> {
     presets::all()
 }
 
-/// Seeds `dir`'s papyrus-lint config file from the named built-in preset,
-/// for the frontend's first-run picker, via the same
+/// Seeds `dir`'s papyrus-lint config file from the named preset (a built-in
+/// one, or a user preset found under the executable-adjacent `presets`
+/// directory), for the frontend's first-run picker, via the same
 /// [`config::initialize_default_config`] the CLI's `init --preset` uses:
 /// refuses to replace an existing config file, and still layers in an
 /// executable-adjacent base config over the selected preset if one exists.

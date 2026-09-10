@@ -3,7 +3,7 @@
 //! ```text
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
-//! PapyrusLinterCLI init [--preset <strict|standard|careful>]
+//! PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
@@ -78,11 +78,19 @@
 //! [`papyrus_lint_core::config::Preset`] and `docs/presets/`), selecting
 //! which baseline `papyrus-lint.yaml` it generates. Defaults to `strict`,
 //! identical to the engine's built-in default, so plain `init` is
-//! unaffected by this flag existing at all. An executable-adjacent base
-//! config file (see [`papyrus_lint_core::config::initialize_default_config`])
-//! still layers on top of whichever preset is selected the same way it
-//! layers over the built-in default. An unrecognized preset name is a
-//! usage error.
+//! unaffected by this flag existing at all. Any other name is looked up as
+//! a user preset: a `<name>.yaml`/`.yml` file (matched case-insensitively)
+//! under a `presets` directory next to the running executable (the CLI
+//! binary itself, or the desktop app's binary when it delegates to CLI
+//! mode) — see [`papyrus_lint_core::config::USER_PRESETS_DIR_NAME`]. An
+//! executable-adjacent base config file (see
+//! [`papyrus_lint_core::config::initialize_default_config`]) still layers
+//! on top of whichever preset is selected the same way it layers over the
+//! built-in default. A `--preset` value that matches neither a built-in nor
+//! a file in the `presets` directory is reported as an error once `init`
+//! actually runs (a missing `--preset` value, or an argument that isn't
+//! `--preset`/`--preset=<name>` at all, is still a usage error reported
+//! immediately).
 //!
 //! With the `--json` flag (combinable with `fix`, in either argument
 //! order), the diagnostics report is printed to stdout as a single JSON
@@ -233,7 +241,7 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 pub const USAGE: &str =
     "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
 PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>\n\n\
-PapyrusLinterCLI init [--preset <strict|standard|careful>]\n\n\
+PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n\
 Lints every .psc script listed in the given .achlist file, a single\n\
 .psc file given directly, or every .psc file found recursively under a\n\
 given directory (any depth of subfolders), using the project's\n\
@@ -247,7 +255,8 @@ reports whatever diagnostics remain the same way.\n\n\
 With the `init` subcommand, creates a papyrus-lint.yaml in the current\n\
 working directory without overwriting an existing config, from the\n\
 selected --preset (strict, standard, or careful; defaults to strict,\n\
-identical to today's built-in default).\n\n\
+identical to today's built-in default; any other name is looked up as\n\
+<name>.yaml/.yml in a presets directory next to the executable).\n\n\
 Options:\n\
   -h, --help              Show this help message\n\
   -V, --version           Print the PapyrusLinterCLI version\n\
@@ -290,7 +299,9 @@ Options:\n\
   --preset <name>         init only: the baseline papyrus-lint.yaml to\n\
                           generate (strict, standard, or careful; see\n\
                           README.md). Defaults to strict, identical to the\n\
-                          built-in default.\n\n\
+                          built-in default. Any other name is looked up as\n\
+                          <name>.yaml/.yml in a presets directory next to\n\
+                          the executable.\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n\n\
@@ -445,14 +456,6 @@ pub fn run(
             Ok(preset) => preset,
             Err(InitPresetError::Usage) => {
                 let _ = write!(stderr, "{USAGE}");
-                return 2;
-            }
-            Err(InitPresetError::UnknownPreset(name)) => {
-                let _ = writeln!(
-                    stderr,
-                    "error: unknown preset '{name}' (expected one of: {})",
-                    config::PRESET_NAMES.join(", ")
-                );
                 return 2;
             }
         };
@@ -1103,19 +1106,20 @@ fn initialize_config(
     }
 }
 
-/// Why [`parse_init_preset`] rejected `init`'s arguments, so [`run`] can
-/// print the right message for each: a bare usage error gets the generic
-/// [`USAGE`] text, matching every other usage error this CLI reports, while
-/// an unrecognized preset name gets its own message listing the valid
-/// ones.
+/// Why [`parse_init_preset`] rejected `init`'s arguments: a missing
+/// `--preset` value, an argument that isn't `--preset`/`--preset=<name>` at
+/// all, or a blank `--preset=` value all get the generic [`USAGE`] text,
+/// matching every other usage error this CLI reports. A non-blank preset
+/// name is never rejected at this stage even if it isn't one of the three
+/// built-ins (see [`config::Preset::parse`]): it's accepted as a possible
+/// user preset name and only found to be unresolvable once `init` actually
+/// looks for a matching file, reported the same way as any other
+/// `initialize_config` failure.
 #[derive(Debug, PartialEq, Eq)]
 enum InitPresetError {
-    /// A missing `--preset` value, or an argument that isn't `--preset`/
-    /// `--preset=<name>` at all.
+    /// A missing `--preset` value, an argument that isn't `--preset`/
+    /// `--preset=<name>` at all, or a blank preset name.
     Usage,
-    /// A recognized `--preset`/`--preset=` flag whose value doesn't match
-    /// any of [`config::PRESET_NAMES`].
-    UnknownPreset(String),
 }
 
 /// Parses the arguments following `init` (i.e. `args[1..]` in [`run`]) into
@@ -1139,8 +1143,7 @@ fn parse_init_preset(rest: &[String]) -> Result<config::Preset, InitPresetError>
             return Err(InitPresetError::Usage);
         };
 
-        preset = config::Preset::parse(value)
-            .ok_or_else(|| InitPresetError::UnknownPreset(value.to_string()))?;
+        preset = config::Preset::parse(value).ok_or(InitPresetError::Usage)?;
     }
     Ok(preset)
 }
@@ -1321,10 +1324,14 @@ mod tests {
     }
 
     #[test]
-    fn parse_init_preset_rejects_an_unknown_preset() {
-        let err = parse_init_preset(&["--preset".to_string(), "lenient".to_string()])
-            .expect_err("an unrecognized preset name should be rejected");
-        assert!(matches!(err, InitPresetError::UnknownPreset(name) if name == "lenient"));
+    fn parse_init_preset_accepts_a_name_that_is_not_a_built_in_as_a_custom_preset() {
+        // Whether a name actually matches a user preset file is only
+        // checked once `init` runs (see `config::Preset::yaml`), not during
+        // argument parsing, so an arbitrary non-blank name parses fine here.
+        assert_eq!(
+            parse_init_preset(&["--preset".to_string(), "lenient".to_string()]),
+            Ok(config::Preset::Custom("lenient".to_string()))
+        );
     }
 
     #[test]
@@ -1335,10 +1342,29 @@ mod tests {
     }
 
     #[test]
+    fn parse_init_preset_rejects_a_blank_value() {
+        let err = parse_init_preset(&["--preset=".to_string()])
+            .expect_err("a blank --preset value should be rejected");
+        assert!(matches!(err, InitPresetError::Usage));
+    }
+
+    #[test]
     fn parse_init_preset_rejects_an_unrecognized_extra_argument() {
         let err = parse_init_preset(&["extra".to_string()])
             .expect_err("an argument other than --preset should be rejected");
         assert!(matches!(err, InitPresetError::Usage));
+    }
+
+    #[test]
+    fn run_init_with_an_unresolvable_preset_name_reports_an_error_at_init_time() {
+        // No `presets` directory exists next to the test binary, so a name
+        // that isn't a built-in preset fails once `init` actually looks for
+        // a matching file, rather than during argument parsing.
+        let (code, _stdout, stderr) =
+            run_captured(&["init".to_string(), "--preset=lenient".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("unknown preset 'lenient'"));
     }
 
     #[test]
