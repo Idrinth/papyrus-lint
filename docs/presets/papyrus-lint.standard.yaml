@@ -1,0 +1,128 @@
+# === "standard" preset (DRAFT) ================================================
+# A middle ground for most projects. Every rule that can catch a real bug
+# or a real performance problem stays on (everything tagged "medium" or
+# "high" importance by papyrus-lints' tags module), plus the handful of
+# purely mechanical formatting/whitespace rules that are auto-fixable and
+# essentially free (trailing whitespace, comma spacing, semicolons,
+# indentation, whitespace around `.`/`!`, operator spacing).
+#
+# Turned off relative to "strict": rules that are purely naming-convention,
+# informational, or maintainability-advisory with no correctness/
+# performance stake of their own — identifier/type casing, named-argument
+# style, property sorting, unused-property/-local-variable/-disable-directive
+# advisories, function-override/useless-downcast info notices, parameter
+# reassignment, and the "call a Global via an instance" style nit.
+# `unused_getter` stays on: unlike the others in that family, it's tagged
+# "correctness" as well as "maintainability" (medium importance), since an
+# unused getter can also mean the property it reads was never wired up.
+# These are still useful over time, just not on every run.
+#
+# This file is a draft for review, not yet wired into `PapyrusLinterCLI
+# init`. See docs/presets/papyrus-lint.strict.yaml (today's actual default)
+# and docs/presets/papyrus-lint.careful.yaml for the other two presets.
+# ===============================================================================
+
+# Path to PapyrusCompiler.exe, or null to auto-detect it
+compiler_path: null
+# Extra directories (relative to the project root, or absolute) to search
+# for .psc files, besides scripts/source and source/scripts
+additional_script_roots: []
+# true, false; also runs PapyrusCompiler.exe (into a throwaway temporary
+# directory) as part of linting a dropped .psc, reporting its errors
+# alongside the lint engine's own. Requires compiler_path to be set/
+# auto-detected
+compile_check: false
+# true enables strict cross-script resolution and conflicting-script-versions
+# checks for only the achlist's listed entries. false (the default) keeps
+# parent-directory search roots. In strict mode, every .psc dependency must
+# be listed in the achlist
+strict_achlist_scope: false
+# true, false
+semicolon: false
+# tab, space
+indentation: tab
+# Non-negative integer; used only when indentation is space
+indentation_width: 4
+# camelCase, PascalCase, snake_case, CONSTANT_CASE
+identifier_casing: PascalCase
+# Non-negative integer
+cyclomatic_complexity_warning: 10
+# Non-negative integer
+cyclomatic_complexity_error: 20
+# PascalCase, camelCase, lowercase, UPPERCASE
+type_casing: PascalCase
+# always, instead_of_defaults, never
+named_arguments: never
+# Non-negative number
+min_wait_interval: 0.1
+# loose, strict
+magic_numbers: loose
+# true, false
+fail_on_warning: false
+# true, false
+fail_on_info: false
+# true, false
+bool_like_int: true
+# true, false; true treats an Auto/AutoReadOnly property as already
+# filled in by the time a function runs instead of possibly None
+assume_auto_properties_filled: false
+# Each rule accepts true or false
+rules:
+  trailing_whitespace: true
+  comma_spacing: true
+  forbidden_functions: true
+  formid_hex_notation: true
+  slow_functions: true
+  unused_getter: true
+  unused_property: false           # was true: maintainability advisory, no correctness stake
+  semicolon: true
+  float_int_conversion: true
+  int_division_to_float: true
+  strict_boolean: true
+  argument_types: true
+  return_types: true
+  function_override: false         # was true: [info]-only "heads up", not a likely mistake
+  argument_naming: true
+  numeric_comparison: true
+  indentation: true
+  cyclomatic_complexity: true
+  unreachable_statement: true
+  static_condition: true
+  division_by_zero: true
+  empty_body: true
+  unused_local_variable: false     # was true: maintainability advisory, no correctness stake
+  variable_used_before_assignment: true
+  none_form_usage: true
+  local_variable_shadowing: true
+  parameter_reassignment: false    # was true: style/maintainability nit
+  chain_whitespace: true
+  exclamation_spacing: true
+  identifier_casing: false         # was true: naming-convention style nit
+  type_casing: false               # was true: naming-convention style nit
+  named_arguments: false           # was true: style nit, and named_arguments setting is "never" anyway
+  operator_spacing: true
+  property_sorting: false
+  explicit_return: true
+  unchecked_form_parameter: false
+  unchecked_cast: true
+  useless_downcast: false          # was true: [info]-only, not a likely mistake
+  unresolved_script: true
+  non_global_function_call: true
+  static_function_call_via_instance: false  # was true: style nit, Papyrus allows this
+  short_wait_interval: true
+  state_function_signature: true
+  goto_state: true
+  too_many_states: true
+  multiple_auto_states: true
+  conflicting_script_versions: true
+  unused_disable: false
+  magic_numbers: false
+  native_function_usage: false
+  repeated_getvalue: false
+  global_variable_setvalue: false
+  invariant_loop_condition: true
+  script_name_collision: true
+  array_bounds: true
+  readonly_property_write: true
+  default_property_value: false
+  unguarded_self_recursion: true
