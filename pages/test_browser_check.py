@@ -513,7 +513,11 @@ class CheckSiteTest(unittest.TestCase):
                 "</body></html>",
                 encoding="utf-8",
             )
-            (dist / "first.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'/>", encoding="utf-8")
+            for image_name in ("first.svg", "third.svg"):
+                (dist / image_name).write_text(
+                    "<svg xmlns='http://www.w3.org/2000/svg'/>",
+                    encoding="utf-8",
+                )
 
             problems = browser_check.check_site(dist)
 
