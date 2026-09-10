@@ -51,6 +51,11 @@ mod tests {
     }
 
     #[test]
+    fn empty_script_name_is_not_a_native_global() {
+        assert!(!is_known(""));
+    }
+
+    #[test]
     fn generated_native_globals_are_lowercase_and_unique() {
         let mut seen = HashSet::new();
 
