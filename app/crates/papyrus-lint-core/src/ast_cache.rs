@@ -22,6 +22,14 @@
 //! Caching is a pure optimization: any I/O or (de)serialization failure
 //! here is swallowed and simply falls through to a fresh parse, never
 //! surfaced as a lint error.
+//!
+//! Each entry also has room for the lexer's token stream
+//! (`papyrus_parser::tokenize()`'s output) alongside the AST, via
+//! [`get_tokens`]/[`put_tokens`], sharing the same freshness metadata as
+//! the AST accessors -- a `put`/`put_tokens` call preserves whatever
+//! still-valid value the other field already held instead of clobbering it.
+//! Nothing calls the token accessors yet; they exist so a later change can
+//! start caching tokens without another on-disk format migration.
 
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
@@ -39,7 +47,9 @@ struct CacheEntry {
     modified_unix_secs: u64,
     content_md5: String,
     linter_version: String,
-    ast: papyrus_parser::ast::Script,
+    ast: Option<papyrus_parser::ast::Script>,
+    #[serde(default)]
+    tokens: Option<Vec<papyrus_parser::token::Token>>,
 }
 
 /// Parses a `major.minor.patch` version string into a comparable tuple.
@@ -88,7 +98,12 @@ fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
     Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
 }
 
-fn get_in(dir: &Path, source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
+/// Reads back the cache entry for `source_path`/`source`, if one exists and
+/// is still fresh (matching content/mtime and at or above
+/// [`MIN_COMPATIBLE_VERSION`]). Shared by the `ast` and `tokens` accessors
+/// below, and by each one's `put` so that writing one field preserves
+/// whatever still-valid value the other field already held.
+fn valid_entry_in(dir: &Path, source_path: &Path, source: &str) -> Option<CacheEntry> {
     let raw = std::fs::read(cache_file_path(dir, source_path)).ok()?;
     let entry: CacheEntry = serde_json::from_slice(&raw).ok()?;
 
@@ -99,7 +114,29 @@ fn get_in(dir: &Path, source_path: &Path, source: &str) -> Option<papyrus_parser
         return None;
     }
 
-    Some(entry.ast)
+    Some(entry)
+}
+
+fn get_in(dir: &Path, source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
+    valid_entry_in(dir, source_path, source)?.ast
+}
+
+fn get_tokens_in(
+    dir: &Path,
+    source_path: &Path,
+    source: &str,
+) -> Option<Vec<papyrus_parser::token::Token>> {
+    valid_entry_in(dir, source_path, source)?.tokens
+}
+
+fn write_entry_in(dir: &Path, source_path: &Path, entry: &CacheEntry) {
+    let Ok(serialized) = serde_json::to_vec(entry) else {
+        return;
+    };
+    if std::fs::create_dir_all(dir).is_err() {
+        return;
+    }
+    let _ = std::fs::write(cache_file_path(dir, source_path), serialized);
 }
 
 fn put_in(
@@ -112,19 +149,36 @@ fn put_in(
     let Some(modified_unix_secs) = file_modified_unix_secs(source_path) else {
         return;
     };
+    let tokens = valid_entry_in(dir, source_path, source).and_then(|entry| entry.tokens);
     let entry = CacheEntry {
         modified_unix_secs,
         content_md5: format!("{:x}", md5::compute(source.as_bytes())),
         linter_version: linter_version.to_string(),
-        ast: ast.clone(),
+        ast: Some(ast.clone()),
+        tokens,
     };
-    let Ok(serialized) = serde_json::to_vec(&entry) else {
+    write_entry_in(dir, source_path, &entry);
+}
+
+fn put_tokens_in(
+    dir: &Path,
+    source_path: &Path,
+    source: &str,
+    tokens: &[papyrus_parser::token::Token],
+    linter_version: &str,
+) {
+    let Some(modified_unix_secs) = file_modified_unix_secs(source_path) else {
         return;
     };
-    if std::fs::create_dir_all(dir).is_err() {
-        return;
-    }
-    let _ = std::fs::write(cache_file_path(dir, source_path), serialized);
+    let ast = valid_entry_in(dir, source_path, source).and_then(|entry| entry.ast);
+    let entry = CacheEntry {
+        modified_unix_secs,
+        content_md5: format!("{:x}", md5::compute(source.as_bytes())),
+        linter_version: linter_version.to_string(),
+        ast,
+        tokens: Some(tokens.to_vec()),
+    };
+    write_entry_in(dir, source_path, &entry);
 }
 
 /// Returns the cached AST for `source_path` if the on-disk cache has a
@@ -145,6 +199,30 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
     }
 }
 
+/// Returns the cached tokens for `source_path` if the on-disk cache has a
+/// still-valid entry for `source`'s current content, `source_path`'s
+/// modification time, and a linter version at or above
+/// [`MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss, mismatch, or
+/// error -- the caller should tokenize `source` fresh in that case.
+///
+/// Not yet called anywhere: the entry layout carries a `tokens` field
+/// alongside `ast` so both can share the same freshness metadata, but
+/// nothing populates or reads it outside this module's own tests yet.
+pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser::token::Token>> {
+    get_tokens_in(&cache_dir()?, source_path, source)
+}
+
+/// Persists `tokens`, lexed from `source_path`/`source`, to the on-disk
+/// cache for later [`get_tokens`] calls. Any failure (e.g. an unwritable
+/// install directory) is silently ignored.
+///
+/// Not yet called anywhere: see [`get_tokens`].
+pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::token::Token]) {
+    if let Some(dir) = cache_dir() {
+        put_tokens_in(&dir, source_path, source, tokens, env!("CARGO_PKG_VERSION"));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -156,6 +234,10 @@ mod tests {
 
     fn sample_ast() -> papyrus_parser::ast::Script {
         papyrus_parser::parse("ScriptName Example\n").unwrap()
+    }
+
+    fn sample_tokens() -> Vec<papyrus_parser::token::Token> {
+        papyrus_parser::tokenize("ScriptName Example\n").unwrap()
     }
 
     #[test]
@@ -261,7 +343,8 @@ mod tests {
             modified_unix_secs: file_modified_unix_secs(&source_path).unwrap(),
             content_md5: format!("{:x}", md5::compute(source.as_bytes())),
             linter_version: "1.10.1".to_string(),
-            ast: sample_ast(),
+            ast: Some(sample_ast()),
+            tokens: None,
         };
         std::fs::create_dir_all(cache_dir.path()).unwrap();
         std::fs::write(
@@ -285,7 +368,8 @@ mod tests {
             modified_unix_secs: file_modified_unix_secs(&source_path).unwrap(),
             content_md5: format!("{:x}", md5::compute(source.as_bytes())),
             linter_version: "not-a-version".to_string(),
-            ast: sample_ast(),
+            ast: Some(sample_ast()),
+            tokens: None,
         };
         std::fs::create_dir_all(cache_dir.path()).unwrap();
         std::fs::write(
@@ -525,5 +609,167 @@ mod tests {
         std::fs::remove_file(&source_path).unwrap();
 
         assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    }
+
+    #[test]
+    fn put_tokens_then_get_tokens_returns_the_cached_tokens_when_nothing_changed() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let tokens = sample_tokens();
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &tokens,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, source),
+            Some(tokens)
+        );
+    }
+
+    #[test]
+    fn get_tokens_is_a_miss_for_an_uncached_path() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        std::fs::write(&source_path, "ScriptName Example\n").unwrap();
+
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, "ScriptName Example\n"),
+            None
+        );
+    }
+
+    #[test]
+    fn get_tokens_is_a_miss_when_the_content_changed_even_if_the_mtime_did_not() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let original = "ScriptName Example\n";
+        std::fs::write(&source_path, original).unwrap();
+
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            original,
+            &sample_tokens(),
+            COMPATIBLE_VERSION,
+        );
+
+        let changed = "ScriptName Renamed\n";
+        assert_eq!(get_tokens_in(cache_dir.path(), &source_path, changed), None);
+    }
+
+    #[test]
+    fn putting_tokens_preserves_an_already_cached_ast() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let ast = sample_ast();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &ast,
+            COMPATIBLE_VERSION,
+        );
+
+        let tokens = sample_tokens();
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &tokens,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, source),
+            Some(tokens)
+        );
+    }
+
+    #[test]
+    fn putting_ast_preserves_already_cached_tokens() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let tokens = sample_tokens();
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &tokens,
+            COMPATIBLE_VERSION,
+        );
+
+        let ast = sample_ast();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &ast,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, source),
+            Some(tokens)
+        );
+    }
+
+    #[test]
+    fn an_entry_missing_the_tokens_field_still_deserializes_as_a_miss_for_get_tokens() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        // Simulates an entry written before the `tokens` field existed --
+        // #[serde(default)] should fill it in as `None` on read rather than
+        // failing to deserialize.
+        let raw = format!(
+            r#"{{"modified_unix_secs":{},"content_md5":"{:x}","linter_version":"{}","ast":{}}}"#,
+            file_modified_unix_secs(&source_path).unwrap(),
+            md5::compute(source.as_bytes()),
+            COMPATIBLE_VERSION,
+            serde_json::to_string(&sample_ast()).unwrap(),
+        );
+        std::fs::create_dir_all(cache_dir.path()).unwrap();
+        std::fs::write(cache_file_path(cache_dir.path(), &source_path), raw).unwrap();
+
+        assert_eq!(
+            get_in(cache_dir.path(), &source_path, source),
+            Some(sample_ast())
+        );
+        assert_eq!(get_tokens_in(cache_dir.path(), &source_path, source), None);
+    }
+
+    #[test]
+    fn public_get_tokens_and_put_tokens_do_not_panic() {
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let tokens = sample_tokens();
+        put_tokens(&source_path, source, &tokens);
+        let _ = get_tokens(&source_path, source);
     }
 }
