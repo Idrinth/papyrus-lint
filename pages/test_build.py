@@ -396,9 +396,24 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertIn("<h2>Setup <strong>now</strong></h2>", result)
         self.assertIn('<p>Read <a href="docs/guide.md">the guide</a> on the next line.</p>', result)
         self.assertIn(
-            '<pre class="code-block" tabindex="0"><code>unsafe: &lt;value&gt;</code></pre>',
+            '<pre class="code-block language-yaml" tabindex="0"><code>unsafe: &lt;value&gt;</code></pre>',
             result,
         )
+
+    def test_highlight_code_marks_tokens_and_escapes_untrusted_source(self) -> None:
+        result = page_builder.highlight_code(
+            '{"enabled": true, "count": 12, "unsafe": "<script>"}', "json"
+        )
+
+        self.assertIn('<span class="str">&quot;enabled&quot;</span>', result)
+        self.assertIn('<span class="kw">true</span>', result)
+        self.assertIn('<span class="num">12</span>', result)
+        self.assertIn('&lt;script&gt;', result)
+        self.assertNotIn('<script>', result)
+
+    def test_highlight_code_supports_aliases_and_plain_text_fallback(self) -> None:
+        self.assertIn('<span class="cm"># note</span>', page_builder.highlight_code("# note", "yml"))
+        self.assertEqual(page_builder.highlight_code("<unsafe>", "text"), "&lt;unsafe&gt;")
 
     def test_markdown_to_html_flushes_a_final_paragraph(self) -> None:
         result = page_builder.markdown_to_html(["A paragraph", "continued without a blank line."])
@@ -428,7 +443,7 @@ class MarkdownHelpersTest(unittest.TestCase):
 
         self.assertEqual(
             result,
-            '<pre class="code-block" tabindex="0"><code>first\n  second</code></pre>',
+            '<pre class="code-block language-text" tabindex="0"><code>first\n  second</code></pre>',
         )
 
     def test_markdown_to_html_escapes_headings_and_code_blocks(self) -> None:
@@ -665,7 +680,8 @@ class DocsRenderingTest(unittest.TestCase):
 
         self.assertEqual(title, "schema.json")
         self.assertEqual(description, "")
-        self.assertIn('&quot;type&quot;: &quot;string&quot;', content)
+        self.assertIn('<span class="str">&quot;type&quot;</span>', content)
+        self.assertIn('<span class="str">&quot;string&quot;</span>', content)
 
     def test_render_doc_prefers_a_short_configured_schema_description(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
