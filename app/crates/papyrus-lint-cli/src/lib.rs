@@ -144,7 +144,7 @@ use std::sync::Arc;
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, write_psc_source};
-use papyrus_lint_core::{achlist, config};
+use papyrus_lint_core::{achlist, ast_cache, config};
 use serde::Serialize;
 
 /// Walks up `psc_path`'s ancestors looking for a directory pair matching
@@ -866,6 +866,7 @@ pub fn run(
             source
         };
 
+        ast_cache::ensure_primed(script_path, &source);
         let mut diagnostics =
             papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut function_table);
         if lint_config.rules.conflicting_script_versions {

@@ -28,8 +28,18 @@
 //! [`get_tokens`]/[`put_tokens`], sharing the same freshness metadata as
 //! the AST accessors -- a `put`/`put_tokens` call preserves whatever
 //! still-valid value the other field already held instead of clobbering it.
-//! Nothing calls the token accessors yet; they exist so a later change can
-//! start caching tokens without another on-disk format migration.
+//!
+//! Since `papyrus_lints::lint()`/`repair()` parse/tokenize their `source`
+//! argument internally and never see `source_path`, they can't consult this
+//! cache directly. `get`/`get_tokens` close that gap as a side effect of a
+//! hit: each also primes `papyrus_parser`'s own in-memory memoization (see
+//! `papyrus_parser::prime_cache`/`prime_tokenize_cache`) with the same
+//! value, so anything that parses/tokenizes that exact source text later in
+//! the same process reuses it instead of redoing the work. [`ensure_primed`]
+//! wraps both accessors for the "about to lint/repair a script whose disk
+//! cache might already be current" case: a hit for either primes the
+//! matching in-memory cache as above; a miss for either parses/tokenizes
+//! `source` once itself and writes a fresh disk entry for next time.
 
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
@@ -117,16 +127,28 @@ fn valid_entry_in(dir: &Path, source_path: &Path, source: &str) -> Option<CacheE
     Some(entry)
 }
 
+/// Also primes `papyrus_parser`'s own in-memory memoization (see
+/// [`papyrus_parser::prime_cache`]) with a hit, so anything that parses
+/// `source` itself later in this process -- notably
+/// `papyrus_lints::lint()`/`repair()`, which never see `source_path` and so
+/// can't consult this cache directly -- reuses it instead of re-parsing.
 fn get_in(dir: &Path, source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
-    valid_entry_in(dir, source_path, source)?.ast
+    let ast = valid_entry_in(dir, source_path, source)?.ast?;
+    papyrus_parser::prime_cache(source, ast.clone());
+    Some(ast)
 }
 
+/// Also primes `papyrus_parser`'s own in-memory memoization (see
+/// [`papyrus_parser::prime_tokenize_cache`]) with a hit, the same way
+/// [`get_in`] does for the AST.
 fn get_tokens_in(
     dir: &Path,
     source_path: &Path,
     source: &str,
 ) -> Option<Vec<papyrus_parser::token::Token>> {
-    valid_entry_in(dir, source_path, source)?.tokens
+    let tokens = valid_entry_in(dir, source_path, source)?.tokens?;
+    papyrus_parser::prime_tokenize_cache(source, tokens.clone());
+    Some(tokens)
 }
 
 fn write_entry_in(dir: &Path, source_path: &Path, entry: &CacheEntry) {
@@ -185,7 +207,8 @@ fn put_tokens_in(
 /// still-valid entry for `source`'s current content, `source_path`'s
 /// modification time, and a linter version at or above
 /// [`MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss, mismatch, or
-/// error -- the caller should parse `source` fresh in that case.
+/// error -- the caller should parse `source` fresh in that case. See
+/// [`get_in`] for the in-memory priming a hit also does.
 pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
     get_in(&cache_dir()?, source_path, source)
 }
@@ -203,11 +226,8 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
 /// still-valid entry for `source`'s current content, `source_path`'s
 /// modification time, and a linter version at or above
 /// [`MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss, mismatch, or
-/// error -- the caller should tokenize `source` fresh in that case.
-///
-/// Not yet called anywhere: the entry layout carries a `tokens` field
-/// alongside `ast` so both can share the same freshness metadata, but
-/// nothing populates or reads it outside this module's own tests yet.
+/// error -- the caller should tokenize `source` fresh in that case. See
+/// [`get_tokens_in`] for the in-memory priming a hit also does.
 pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser::token::Token>> {
     get_tokens_in(&cache_dir()?, source_path, source)
 }
@@ -215,12 +235,43 @@ pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser
 /// Persists `tokens`, lexed from `source_path`/`source`, to the on-disk
 /// cache for later [`get_tokens`] calls. Any failure (e.g. an unwritable
 /// install directory) is silently ignored.
-///
-/// Not yet called anywhere: see [`get_tokens`].
 pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::token::Token]) {
     if let Some(dir) = cache_dir() {
         put_tokens_in(&dir, source_path, source, tokens, env!("CARGO_PKG_VERSION"));
     }
+}
+
+fn ensure_primed_in(dir: &Path, source_path: &Path, source: &str, linter_version: &str) {
+    if get_in(dir, source_path, source).is_none() {
+        if let Ok(ast) = papyrus_parser::parse(source) {
+            put_in(dir, source_path, source, &ast, linter_version);
+        }
+    }
+    if get_tokens_in(dir, source_path, source).is_none() {
+        if let Ok(tokens) = papyrus_parser::tokenize(source) {
+            put_tokens_in(dir, source_path, source, &tokens, linter_version);
+        }
+    }
+}
+
+/// Makes sure `papyrus_parser`'s in-memory memoization has both an AST and
+/// a token stream ready for `source` before something that parses/
+/// tokenizes `source` itself -- typically `papyrus_lints::lint()`/
+/// `repair()`, called with only the raw source text, never `source_path` --
+/// runs. A disk cache hit for either ([`get_in`]/[`get_tokens_in`]) already
+/// primes the matching in-memory cache as a side effect; a miss for either
+/// parses/tokenizes `source` once here instead (which populates the
+/// in-memory cache the same way a hit would) and writes the result to the
+/// disk cache for next time. Used by the desktop app's `lint_psc_file`/
+/// `repair_psc_file` commands and the CLI's own per-script lint loop, so
+/// relinting an unchanged script -- across separate desktop app commands or
+/// CLI invocations -- skips both re-parsing and re-tokenizing it there too,
+/// not just in `get`/`get_tokens`'s other existing callers.
+pub fn ensure_primed(source_path: &Path, source: &str) {
+    let Some(dir) = cache_dir() else {
+        return;
+    };
+    ensure_primed_in(&dir, source_path, source, env!("CARGO_PKG_VERSION"));
 }
 
 #[cfg(test)]
@@ -574,6 +625,136 @@ mod tests {
         let ast = sample_ast();
         put(&source_path, source, &ast);
         let _ = get(&source_path, source);
+    }
+
+    #[test]
+    fn ensure_primed_populates_the_disk_cache_on_a_miss_and_is_a_hit_afterwards() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("EnsurePrimedMiss.psc");
+        let source = "ScriptName EnsurePrimedMiss\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+        assert_eq!(get_tokens_in(cache_dir.path(), &source_path, source), None);
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+
+        assert_eq!(
+            get_in(cache_dir.path(), &source_path, source),
+            Some(papyrus_parser::parse(source).unwrap())
+        );
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, source),
+            Some(papyrus_parser::tokenize(source).unwrap())
+        );
+    }
+
+    #[test]
+    fn ensure_primed_is_a_noop_on_an_already_cached_entry() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("EnsurePrimedHit.psc");
+        let source = "ScriptName EnsurePrimedHit\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+        let first_ast = get_in(cache_dir.path(), &source_path, source);
+        let first_tokens = get_tokens_in(cache_dir.path(), &source_path, source);
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+        let second_ast = get_in(cache_dir.path(), &source_path, source);
+        let second_tokens = get_tokens_in(cache_dir.path(), &source_path, source);
+
+        assert_eq!(first_ast, second_ast);
+        assert!(first_ast.is_some());
+        assert_eq!(first_tokens, second_tokens);
+        assert!(first_tokens.is_some());
+    }
+
+    #[test]
+    fn ensure_primed_fills_in_a_missing_tokens_field_without_disturbing_an_already_cached_ast() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("EnsurePrimedAstOnly.psc");
+        let source = "ScriptName EnsurePrimedAstOnly\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let ast = sample_ast();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &ast,
+            COMPATIBLE_VERSION,
+        );
+        assert_eq!(get_tokens_in(cache_dir.path(), &source_path, source), None);
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, source),
+            Some(papyrus_parser::tokenize(source).unwrap())
+        );
+    }
+
+    #[test]
+    fn get_in_primes_papyrus_parsers_in_memory_cache_with_the_disk_cached_ast() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("PrimesInMemory.psc");
+        let source = "ScriptName PrimesInMemory extends Quest\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        // Deliberately not what `source` actually parses to, so that a
+        // subsequent `papyrus_parser::parse(source)` call returning it
+        // proves it came from `get_in`'s in-memory priming rather than a
+        // fresh parse of `source`.
+        let distinct_ast = papyrus_parser::parse(
+            "ScriptName PrimesInMemory extends Quest\n\nInt Property Marker = 1 Auto\n",
+        )
+        .unwrap();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &distinct_ast,
+            COMPATIBLE_VERSION,
+        );
+
+        let cached = get_in(cache_dir.path(), &source_path, source).unwrap();
+        assert_eq!(cached, distinct_ast);
+        assert_eq!(papyrus_parser::parse(source).unwrap(), distinct_ast);
+    }
+
+    #[test]
+    fn get_tokens_in_primes_papyrus_parsers_in_memory_cache_with_the_disk_cached_tokens() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("PrimesTokensInMemory.psc");
+        let source = "ScriptName PrimesTokensInMemory extends Quest\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        // Deliberately not what `source` actually tokenizes to, so that a
+        // subsequent `papyrus_parser::tokenize(source)` call returning it
+        // proves it came from `get_tokens_in`'s in-memory priming rather
+        // than a fresh tokenize of `source`.
+        let distinct_tokens = papyrus_parser::tokenize(
+            "ScriptName PrimesTokensInMemory extends Quest\n\nInt Property Marker = 1 Auto\n",
+        )
+        .unwrap();
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &distinct_tokens,
+            COMPATIBLE_VERSION,
+        );
+
+        let cached = get_tokens_in(cache_dir.path(), &source_path, source).unwrap();
+        assert_eq!(cached, distinct_tokens);
+        assert_eq!(papyrus_parser::tokenize(source).unwrap(), distinct_tokens);
     }
 
     #[test]
