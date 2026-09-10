@@ -140,11 +140,15 @@ export const FIXTURE_HTML = `
             <input type="checkbox" id="filter-info" checked />
             <input type="checkbox" id="filter-other" checked />
           </fieldset>
-          <fieldset id="psc-result-tag-kind-filters">
+          <fieldset id="psc-result-tag-filters">
             <input type="checkbox" id="filter-kind-style" checked />
+            <select id="filter-rule-style" multiple></select>
             <input type="checkbox" id="filter-kind-performance" checked />
+            <select id="filter-rule-performance" multiple></select>
             <input type="checkbox" id="filter-kind-correctness" checked />
+            <select id="filter-rule-correctness" multiple></select>
             <input type="checkbox" id="filter-kind-maintainability" checked />
+            <select id="filter-rule-maintainability" multiple></select>
           </fieldset>
           <fieldset id="psc-result-tag-importance-filters">
             <input type="checkbox" id="filter-importance-low" checked />
@@ -153,9 +157,6 @@ export const FIXTURE_HTML = `
           </fieldset>
           <fieldset id="psc-result-auto-fixable-filter">
             <input type="checkbox" id="filter-auto-fixable-only" />
-          </fieldset>
-          <fieldset id="psc-result-rule-filter">
-            <select id="filter-rule" multiple></select>
           </fieldset>
           <div id="psc-result-mass-fix" hidden>
             <ul id="psc-result-mass-fix-list"></ul>

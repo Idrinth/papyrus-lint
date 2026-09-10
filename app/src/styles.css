@@ -363,13 +363,21 @@ h1 {
   cursor: pointer;
 }
 
-.psc-result__filters--rule {
-  display: block;
+.psc-result__filters--tag-groups {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1em;
 }
 
-.psc-result__filters--rule select {
-  width: 100%;
-  max-width: 24em;
+.psc-result__tag-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  min-width: 10em;
+}
+
+.psc-result__tag-group select {
   font-size: 0.9em;
 }
 

@@ -783,9 +783,21 @@ exposes the same metadata to the frontend as a JSON-friendly
 `RuleTagsInfo` per rule; `app/src/main.ts` fetches it once at startup
 (`loadRuleTags`/`applyRuleTags`), indexes it by rule id, and uses it both
 to render each lint finding's kind/importance/auto-fixable badges (see
-`buildFindingTagsEl`) and to drive the Lint results tab's "Show tags"/
-"Show importance"/"Auto-fixable only" filters (`matchesTagFilters`),
-alongside its existing severity and filename filters. A finding whose
+`buildFindingTagsEl`) and to drive the Lint results tab's filters
+(`matchesTagFilters`), alongside its existing severity and filename
+filters. "Filter by tag / rule" combines what used to be a separate
+flat "Filter by rule" multiselect with the tag kind checkboxes into one
+fieldset (`populateRuleFilterGroups`): each kind (Style, Performance,
+Correctness, Maintainability) gets its own multiselect listing just the
+rules tagged with that kind — a rule tagged with more than one kind
+(e.g. `argument-types`, tagged both `performance` and `correctness`)
+appears in each of its kinds' own lists, kept in sync with each other
+through the single `activeRules` set they all read from/write to
+(`syncRuleFilterSelections`) — and the kind's own checkbox is a "select
+all"/"select none" toggle for its multiselect (reflecting a partial
+selection as indeterminate; `updateTagKindHeaderCheckbox`) rather than an
+independent filter dimension of its own. The separate "Show
+importance"/"Auto-fixable only" filters are unaffected. A finding whose
 rule carries no tag metadata (e.g. a compiler-reported diagnostic; see
 `app/src-tauri/src/compile_diagnostics.rs`) always passes those filters
 rather than being hidden. The CLI's `--tag <kind>` flag builds on the

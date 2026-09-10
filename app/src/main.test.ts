@@ -69,7 +69,6 @@ import {
   massFixRuleCounts,
   massFixRuleDisplayName,
   matchesFilenameFilter,
-  matchesRuleFilter,
   matchesTagFilters,
   openCodeViewer,
   parsePscFiles,
@@ -931,6 +930,12 @@ describe("matchesTagFilters", () => {
     autoFixableEl.dispatchEvent(new Event("change"));
   });
 
+  it("shows every finding before the rule list has loaded", () => {
+    expect(matchesTagFilters(styleLow)).toBe(true);
+    expect(matchesTagFilters(correctnessHigh)).toBe(true);
+    expect(matchesTagFilters({ line: 1, column: 1, message: "x" })).toBe(true);
+  });
+
   it("shows every finding by default, tagged or not", () => {
     useSampleTags();
     expect(matchesTagFilters(styleLow)).toBe(true);
@@ -939,10 +944,21 @@ describe("matchesTagFilters", () => {
     expect(matchesTagFilters({ line: 1, column: 1, message: "x", rule: "untagged-rule" })).toBe(true);
   });
 
-  it("hides a finding whose kind is unchecked", () => {
+  it("hides a finding whose kind header checkbox is unchecked", () => {
     useSampleTags();
     document.querySelector<HTMLInputElement>("#filter-kind-style")!.checked = false;
     document.querySelector<HTMLInputElement>("#filter-kind-style")!.dispatchEvent(new Event("change"));
+
+    expect(matchesTagFilters(styleLow)).toBe(false);
+    expect(matchesTagFilters(correctnessHigh)).toBe(true);
+  });
+
+  it("hides a finding whose rule is individually deselected in its kind's multiselect", () => {
+    useSampleTags();
+    const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
+    const trailingWhitespaceOption = [...select.options].find((option) => option.value === "trailing-whitespace")!;
+    trailingWhitespaceOption.selected = false;
+    select.dispatchEvent(new Event("change"));
 
     expect(matchesTagFilters(styleLow)).toBe(false);
     expect(matchesTagFilters(correctnessHigh)).toBe(true);
@@ -970,10 +986,10 @@ describe("matchesTagFilters", () => {
   });
 });
 
-describe("populateRuleFilterOptions (via applyRuleTags)", () => {
+describe("populateRuleFilterGroups (via applyRuleTags)", () => {
   const sampleTags: RuleTagsInfo[] = [
     { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
-    { rule: "argument-types", kinds: ["correctness"], importance: "high", auto_fixable: false },
+    { rule: "argument-types", kinds: ["performance", "correctness"], importance: "high", auto_fixable: false },
   ];
 
   // ruleTagsByRule/activeRules are module state that outlives mountFixture();
@@ -983,64 +999,82 @@ describe("populateRuleFilterOptions (via applyRuleTags)", () => {
     applyRuleTags([]);
   });
 
-  it("populates the rule filter select, sorted by rule id, all selected", () => {
+  it("populates each kind's rule filter select, sorted by rule id, all selected", () => {
     applyRuleTags(sampleTags);
 
-    const select = document.querySelector<HTMLSelectElement>("#filter-rule")!;
-    const options = [...select.options];
-    expect(options.map((option) => option.value)).toEqual(["argument-types", "trailing-whitespace"]);
-    expect(options.map((option) => option.textContent)).toEqual(["Argument types", "Trailing whitespace"]);
-    expect(options.every((option) => option.selected)).toBe(true);
+    const styleSelect = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
+    expect([...styleSelect.options].map((option) => option.value)).toEqual(["trailing-whitespace"]);
+    expect([...styleSelect.options].map((option) => option.textContent)).toEqual(["Trailing whitespace"]);
+    expect([...styleSelect.options].every((option) => option.selected)).toBe(true);
+
+    // A rule tagged with more than one kind (here "argument-types", tagged
+    // both "performance" and "correctness") appears in each of its kinds'
+    // own selects.
+    const performanceSelect = document.querySelector<HTMLSelectElement>("#filter-rule-performance")!;
+    const correctnessSelect = document.querySelector<HTMLSelectElement>("#filter-rule-correctness")!;
+    expect([...performanceSelect.options].map((option) => option.value)).toEqual(["argument-types"]);
+    expect([...correctnessSelect.options].map((option) => option.value)).toEqual(["argument-types"]);
+
+    const maintainabilitySelect = document.querySelector<HTMLSelectElement>("#filter-rule-maintainability")!;
+    expect(maintainabilitySelect.options).toHaveLength(0);
   });
 
-  it("rebuilds the select's options on a later call, dropping stale ones", () => {
+  it("rebuilds every kind's select on a later call, dropping stale options", () => {
     applyRuleTags(sampleTags);
     applyRuleTags([sampleTags[0]]);
 
-    const select = document.querySelector<HTMLSelectElement>("#filter-rule")!;
-    expect([...select.options].map((option) => option.value)).toEqual(["trailing-whitespace"]);
-  });
-});
-
-describe("matchesRuleFilter", () => {
-  const trailingWhitespace: Diagnostic = { line: 1, column: 1, message: "x", rule: "trailing-whitespace" };
-  const argumentTypes: Diagnostic = { line: 1, column: 1, message: "x", rule: "argument-types" };
-
-  afterEach(() => {
-    applyRuleTags([]);
+    const styleSelect = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
+    expect([...styleSelect.options].map((option) => option.value)).toEqual(["trailing-whitespace"]);
+    const correctnessSelect = document.querySelector<HTMLSelectElement>("#filter-rule-correctness")!;
+    expect(correctnessSelect.options).toHaveLength(0);
   });
 
-  it("shows every finding before the rule list has loaded", () => {
-    expect(matchesRuleFilter(trailingWhitespace)).toBe(true);
-    expect(matchesRuleFilter(argumentTypes)).toBe(true);
-    expect(matchesRuleFilter({ line: 1, column: 1, message: "x" })).toBe(true);
+  it("deselecting a multi-kind rule in one of its selects deselects it in the other too", () => {
+    applyRuleTags(sampleTags);
+
+    const performanceSelect = document.querySelector<HTMLSelectElement>("#filter-rule-performance")!;
+    performanceSelect.options[0].selected = false;
+    performanceSelect.dispatchEvent(new Event("change"));
+
+    const correctnessSelect = document.querySelector<HTMLSelectElement>("#filter-rule-correctness")!;
+    expect(correctnessSelect.options[0].selected).toBe(false);
   });
 
-  it("shows every finding by default once the rule list has loaded", () => {
+  it("unchecks a kind's header checkbox once every rule in its select is deselected, and marks it indeterminate for a partial selection", () => {
     applyRuleTags([
       { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
-      { rule: "argument-types", kinds: ["correctness"], importance: "high", auto_fixable: false },
+      { rule: "comma-spacing", kinds: ["style"], importance: "low", auto_fixable: true },
     ]);
+    const header = document.querySelector<HTMLInputElement>("#filter-kind-style")!;
+    expect(header.checked).toBe(true);
+    expect(header.indeterminate).toBe(false);
 
-    expect(matchesRuleFilter(trailingWhitespace)).toBe(true);
-    expect(matchesRuleFilter(argumentTypes)).toBe(true);
-    // A finding with no rule (e.g. a compiler-reported diagnostic) is exempt
-    // from this filter entirely, even once the rule list has loaded.
-    expect(matchesRuleFilter({ line: 1, column: 1, message: "x" })).toBe(true);
-  });
-
-  it("hides a finding whose rule is deselected in the multiselect", () => {
-    applyRuleTags([
-      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
-      { rule: "argument-types", kinds: ["correctness"], importance: "high", auto_fixable: false },
-    ]);
-    const select = document.querySelector<HTMLSelectElement>("#filter-rule")!;
+    const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
     const trailingWhitespaceOption = [...select.options].find((option) => option.value === "trailing-whitespace")!;
     trailingWhitespaceOption.selected = false;
     select.dispatchEvent(new Event("change"));
+    expect(header.checked).toBe(false);
+    expect(header.indeterminate).toBe(true);
 
-    expect(matchesRuleFilter(trailingWhitespace)).toBe(false);
-    expect(matchesRuleFilter(argumentTypes)).toBe(true);
+    const commaSpacingOption = [...select.options].find((option) => option.value === "comma-spacing")!;
+    commaSpacingOption.selected = false;
+    select.dispatchEvent(new Event("change"));
+    expect(header.checked).toBe(false);
+    expect(header.indeterminate).toBe(false);
+  });
+
+  it("checking a kind's header checkbox re-selects every rule in its select", () => {
+    applyRuleTags([{ rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true }]);
+    const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
+    select.options[0].selected = false;
+    select.dispatchEvent(new Event("change"));
+
+    const header = document.querySelector<HTMLInputElement>("#filter-kind-style")!;
+    header.checked = true;
+    header.dispatchEvent(new Event("change"));
+
+    expect(select.options[0].selected).toBe(true);
+    expect(matchesTagFilters({ line: 1, column: 1, message: "x", rule: "trailing-whitespace" })).toBe(true);
   });
 });
 
@@ -1422,13 +1456,13 @@ describe("buildPscResultItem / renderPscResults", () => {
     expect(item!.querySelector(".psc-result__tag-badge")).toBeNull();
   });
 
-  it("hides a finding whose rule is deselected in the 'Filter by rule' multiselect", () => {
+  it("hides a finding whose rule is deselected in its kind's 'Filter by rule' multiselect", () => {
     applyRuleTags([
       { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
       { rule: "comma-spacing", kinds: ["style"], importance: "low", auto_fixable: true },
     ]);
     try {
-      const select = document.querySelector<HTMLSelectElement>("#filter-rule")!;
+      const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
       const trailingWhitespaceOption = [...select.options].find((option) => option.value === "trailing-whitespace")!;
       trailingWhitespaceOption.selected = false;
       select.dispatchEvent(new Event("change"));
@@ -1506,8 +1540,8 @@ describe("buildPscResultItem / renderPscResults", () => {
       expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(0);
     } finally {
       // activeSeverities is module state that outlives mountFixture(), same
-      // as activeTagKinds/activeRules elsewhere in this file; restore it so
-      // it doesn't leak into later tests.
+      // as activeRules elsewhere in this file; restore it so it doesn't leak
+      // into later tests.
       document.querySelector<HTMLInputElement>("#filter-error")!.checked = true;
       document.querySelector<HTMLInputElement>("#filter-error")!.dispatchEvent(new Event("change"));
     }
