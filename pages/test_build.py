@@ -226,6 +226,10 @@ class MarkdownHelpersTest(unittest.TestCase):
         with self.assertRaisesRegex(SystemExit, "missing shared component marker <!--SITE_FOOTER-->"):
             page_builder.render_shared_components("<!--SITE_HEADER--><main></main>", "", "")
 
+    def test_render_shared_components_rejects_a_footer_without_a_header(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "missing shared component marker <!--SITE_HEADER-->"):
+            page_builder.render_shared_components("<main></main><!--SITE_FOOTER-->", "", "")
+
     def test_render_shared_components_supports_fragment_only_templates(self) -> None:
         result = page_builder.render_shared_components(
             "<title><!--VERSION--></title><a href=\"<!--SITE_URL-->\">Site</a>",
@@ -269,6 +273,12 @@ class MarkdownHelpersTest(unittest.TestCase):
             ["first sponsor", "second"],
         )
         self.assertEqual(page_builder.parse_funding_values("   "), [])
+
+    def test_parse_funding_values_ignores_empty_inline_list_entries(self) -> None:
+        self.assertEqual(
+            page_builder.parse_funding_values("[first, , '', \"second account\"]"),
+            ["first", "second account"],
+        )
 
     def test_render_funding_links_reads_provider_and_custom_links(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -619,6 +629,29 @@ class DocsRenderingTest(unittest.TestCase):
         self.assertIn("Report &lt;schema&gt;", schema[2])
         self.assertEqual(plain[:2], ("Configuration", "All settings"))
         self.assertIn("setting: &lt;value&gt;", plain[2])
+
+    def test_render_doc_escapes_plain_text_and_appends_the_raw_source_link(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "example.bbcode").write_text(
+                '[url="javascript:alert(1)"]<unsafe> & text[/url]', encoding="utf-8"
+            )
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                title, description, content = page_builder.render_doc(
+                    {
+                        "filename": "example.bbcode",
+                        "slug": "example",
+                        "kind": "bbcode",
+                        "title": "Example source",
+                        "description": "A safe preview",
+                    }
+                )
+
+        self.assertEqual((title, description), ("Example source", "A safe preview"))
+        self.assertIn("&lt;unsafe&gt; &amp; text", content)
+        self.assertNotIn("<unsafe>", content)
+        self.assertIn("View raw source on GitHub", content)
 
     def test_render_doc_uses_filename_defaults_for_schema_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1365,6 +1398,31 @@ command
             page_builder.main()
 
         build.assert_called_once_with(output_dir, "", coverage_dir)
+
+    def test_main_passes_version_and_coverage_options_together(self) -> None:
+        output_dir = Path("complete-output")
+        coverage_dir = Path("downloaded-coverage")
+
+        with (
+            patch(
+                "sys.argv",
+                [
+                    "build.py",
+                    "--out",
+                    str(output_dir),
+                    "--version",
+                    "v4.5.6",
+                    "--coverage-dir",
+                    str(coverage_dir),
+                ],
+            ),
+            patch.object(page_builder, "build") as build,
+            patch("sys.stdout", new_callable=StringIO) as stdout,
+        ):
+            page_builder.main()
+
+        build.assert_called_once_with(output_dir, "v4.5.6", coverage_dir)
+        self.assertEqual(stdout.getvalue(), f"Built site into {output_dir}\n")
 
 
 class CoveragePageTest(unittest.TestCase):
