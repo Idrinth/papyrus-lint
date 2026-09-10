@@ -300,7 +300,7 @@ Everything else, from unused code and excessive complexity to naming and style p
 [/table][/spoiler]
 The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
 [heading]Configuration file[/heading]
-All settings following are the default, the file will automatically be loaded from a directory two levels above the psc file(s). This means it is in your Data directory in any normal installation. The desktop app asks which built-in preset to start from (strict/standard/careful) the first time it opens a project with no config file yet.
+All settings following are the default, the file will automatically be loaded from a directory two levels above the psc file(s). This means it is in your Data directory in any normal installation. The desktop app asks which preset to start from (strict/standard/careful, plus any user preset - see below) the first time it opens a project with no config file yet.
 [spoiler][code]# Path to PapyrusCompiler.exe, or null to auto-detect it
 compiler_path: null
 # Extra directories (relative to the project root, or absolute) to search
@@ -409,6 +409,7 @@ rules:
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.
 [spoiler][code]PapyrusLinter init
 PapyrusLinter init --preset standard
+PapyrusLinter init --preset my-team
 PapyrusLinter path/to/project.achlist
 PapyrusLinter path/to/Example.psc
 PapyrusLinter path/to/scripts/source
@@ -430,7 +431,7 @@ PapyrusLinter --progress --output path/to/report.txt path/to/project.achlist[/co
 The plain-text report is colorized automatically when run in a terminal (rule tags, error/warning/info levels, and the summary line); pass --color always or --color never to override the detection.
 --progress prints a live files-linted/total-files progress bar to stdout as each script finishes; it requires --output, since otherwise the report itself would be writing to stdout too.
 --tag <kind> (style, performance, correctness, or maintainability) restricts a run to just one class of rules; combine it with fix to only run that class's automatic fixes. Can't be combined with --type.
-init writes papyrus-lint.yaml from --preset strict, standard, or careful (defaults to strict, i.e. the settings shown above); if a papyrus-lint.yaml/.yml sits next to the executable, its settings are merged in over the selected preset as your own baseline instead, so you only have to define them once.
+init writes papyrus-lint.yaml from --preset strict, standard, or careful (defaults to strict, i.e. the settings shown above); any other name is looked up as <name>.yaml/.yml in a presets directory next to the executable, so you can define your own custom presets too. If a papyrus-lint.yaml/.yml sits next to the executable, its settings are merged in over the selected preset as your own baseline instead, so you only have to define them once.
 Given a directory instead of an .achlist/.psc path, the CLI (and dropping a folder onto the desktop app) recursively scans it for .psc files at any subfolder depth and lints them all — useful for a mod (e.g. Requiem) with no .achlist whose scripts aren't laid out in a flat scripts/source folder.
 
 [heading]Usage of AI[/heading]
