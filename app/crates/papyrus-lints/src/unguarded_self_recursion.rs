@@ -5,23 +5,24 @@
 //!
 //! This is deliberately very conservative: it never follows a call chain
 //! through another function (that's out of scope entirely), and within one
-//! function it only fires when the *entire* function body contains no `If`
-//! or `While` at all — i.e. there is no branch or loop anywhere that could
-//! possibly act as a base case or otherwise skip the recursive call on some
-//! call. The much more common recursion pattern, an `If` guarding an early
+//! function it only follows statements that are guaranteed to execute. An
+//! `If True` body is guaranteed, so it does not hide an otherwise unguarded
+//! self-call; any runtime-dependent `If` or any `While` still disqualifies
+//! the function because it could act as a base case or skip the call. The
+//! much more common recursion pattern, an `If` guarding an early
 //! `Return` before the recursive call, is left completely alone by this
-//! rule (any `If`/`While` in the function disqualifies it), even though
-//! that guard might not actually cover every case — proving that would mean
-//! evaluating the condition, which this lint doesn't attempt. The goal is
-//! to catch the plain "this function just calls itself, unconditionally,
-//! every single time" mistake with no false positives, not to reason about
-//! whether a given guard is correct.
+//! rule (any runtime-dependent `If` or `While` in the function disqualifies
+//! it), even though that guard might not actually cover every case — proving
+//! that would mean evaluating the condition, which this lint doesn't attempt.
+//! The goal is to catch the plain "this function just calls itself,
+//! unconditionally, every single time" mistake with no false positives, not
+//! to reason about whether a given guard is correct.
 //!
 //! A self-call reached only through the right-hand side of a short-circuit
 //! `&&`/`\|\|` is not considered unconditional either, since that side may
 //! never actually evaluate.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, Script, Stmt};
+use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, Literal, Script, Stmt};
 
 use crate::Diagnostic;
 
@@ -41,11 +42,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             continue;
         }
         let name_lower = function.name.to_lowercase();
-        for stmt in &function.body {
-            for expr in stmt_exprs(stmt) {
-                find_self_calls(expr, &name_lower, &mut diagnostics);
-            }
-        }
+        find_self_calls_in_body(&function.body, &name_lower, &mut diagnostics);
     }
     diagnostics
 }
@@ -59,26 +56,46 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     )
 }
 
-/// Whether `body` contains an `If` or `While` anywhere, which disqualifies
-/// the whole function from this lint: this language has no other way to
-/// conditionally skip code, so their absence means every statement in
-/// `body` always runs, in order, on every call.
+/// Whether `body` contains runtime-dependent branching. An `If True` selects
+/// its first body unconditionally, so only branching inside that body matters.
 fn has_branching(body: &[Stmt]) -> bool {
-    body.iter()
-        .any(|stmt| matches!(stmt, Stmt::If { .. } | Stmt::While { .. }))
+    body.iter().any(|stmt| match stmt {
+        Stmt::If { branches, .. }
+            if matches!(
+                branches.first().map(|branch| &branch.condition),
+                Some(Expr::Literal(Literal::Bool(true)))
+            ) =>
+        {
+            has_branching(&branches[0].body)
+        }
+        Stmt::If { .. } | Stmt::While { .. } => true,
+        _ => false,
+    })
 }
 
-/// The expression(s) a top-level statement evaluates, in the order they
-/// evaluate, for [`find_self_calls`] to search. `If`/`While` never appear
-/// here since [`has_branching`] already excludes any function containing
-/// one before this is ever called.
-fn stmt_exprs(stmt: &Stmt) -> Vec<&Expr> {
-    match stmt {
-        Stmt::VarDecl(decl) => decl.value.iter().collect(),
-        Stmt::Assign { target, value, .. } => vec![target, value],
-        Stmt::Expr { value, .. } => vec![value],
-        Stmt::Return { value, .. } => value.iter().collect(),
-        Stmt::If { .. } | Stmt::While { .. } => Vec::new(),
+fn find_self_calls_in_body(body: &[Stmt], name_lower: &str, diagnostics: &mut Vec<Diagnostic>) {
+    for stmt in body {
+        match stmt {
+            Stmt::VarDecl(decl) => {
+                if let Some(value) = &decl.value {
+                    find_self_calls(value, name_lower, diagnostics);
+                }
+            }
+            Stmt::Assign { target, value, .. } => {
+                find_self_calls(target, name_lower, diagnostics);
+                find_self_calls(value, name_lower, diagnostics);
+            }
+            Stmt::Expr { value, .. } => find_self_calls(value, name_lower, diagnostics),
+            Stmt::Return { value, .. } => {
+                if let Some(value) = value {
+                    find_self_calls(value, name_lower, diagnostics);
+                }
+            }
+            Stmt::If { branches, .. } => {
+                find_self_calls_in_body(&branches[0].body, name_lower, diagnostics);
+            }
+            Stmt::While { .. } => unreachable!("branching bodies are filtered before scanning"),
+        }
     }
 }
 
@@ -206,6 +223,18 @@ mod tests {
         let source = "ScriptName Example\n\nFunction Foo(Int x)\n    If x <= 0\n        Return\n    EndIf\n    Foo(x - 1)\nEndFunction\n";
 
         assert!(check(source).is_empty());
+    }
+
+    #[test]
+    fn flags_a_self_call_inside_an_always_true_if() {
+        let source =
+            "ScriptName Example\n\nFunction A()\n  If True\n    A()\n  EndIf\nEndFunction\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
+        assert_eq!(diagnostics[0].rule, RULE);
     }
 
     #[test]
