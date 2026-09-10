@@ -360,5 +360,17 @@
         <pre id="code-viewer-compile-output" class="code-viewer__compile-output" hidden></pre>
       </div>
     </dialog>
+
+    <dialog id="preset-picker" class="preset-picker">
+      <div class="preset-picker__header">
+        <h2 class="preset-picker__title">Choose a starting configuration</h2>
+        <button type="button" id="preset-picker-skip" class="preset-picker__skip">Use defaults</button>
+      </div>
+      <p class="preset-picker__intro">
+        This project doesn't have a papyrus-lint.yaml yet. Pick a preset to start from — every
+        setting can still be changed afterward in the Settings tab.
+      </p>
+      <div id="preset-picker-list" class="preset-picker__list"></div>
+    </dialog>
   </body>
 </html>

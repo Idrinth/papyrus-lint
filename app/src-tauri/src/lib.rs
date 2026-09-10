@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use papyrus_lint_core::source_encoding::{
     read_psc_source, read_psc_source_with_encoding, write_psc_source,
 };
-use papyrus_lint_core::{achlist, ast_cache, config, function_table, script_locator};
+use papyrus_lint_core::{achlist, ast_cache, config, function_table, presets, script_locator};
 
 #[derive(Debug, PartialEq, serde::Serialize)]
 struct ProjectInfo {
@@ -236,6 +236,26 @@ fn load_project_info(dir: String) -> Result<ProjectInfo, String> {
 #[tauri::command]
 fn save_script_roots(dir: String, roots: Vec<String>) -> Result<(), String> {
     config::save_script_roots(&PathBuf::from(dir), &roots)
+}
+
+/// Returns every built-in configuration preset's identity/description (see
+/// [`papyrus_lint_core::presets`]), for the frontend's first-run picker
+/// shown when a project directory has no `papyrus-lint.yaml`/`.yml` yet.
+#[tauri::command]
+fn list_config_presets() -> Vec<presets::PresetInfo> {
+    presets::all()
+}
+
+/// Seeds `dir`'s papyrus-lint config file from the named built-in preset,
+/// for the frontend's first-run picker. Refuses to replace an existing
+/// config file (see [`config::initialize_config_from`]), and errors if
+/// `preset` doesn't name a known preset.
+#[tauri::command]
+fn apply_config_preset(dir: String, preset: String) -> Result<(), String> {
+    let config = presets::config_for(&preset)
+        .ok_or_else(|| format!("unknown configuration preset: {preset}"))?;
+    config::initialize_config_from(&PathBuf::from(dir), &config)?;
+    Ok(())
 }
 
 /// Compiles the `.psc` file at `path` using the compiler executable at
@@ -518,6 +538,8 @@ pub fn run() {
             load_script_roots,
             load_project_info,
             save_script_roots,
+            list_config_presets,
+            apply_config_preset,
             lint_psc_file,
             repair_psc_file,
             repair_psc_finding,
@@ -927,6 +949,53 @@ mod tests {
             load_script_roots(dir_string).unwrap(),
             vec!["../SharedScripts".to_string()]
         );
+    }
+
+    #[test]
+    fn list_config_presets_reports_every_built_in_preset() {
+        let presets = list_config_presets();
+
+        assert_eq!(presets.len(), 3);
+        assert!(presets.iter().any(|preset| preset.id == "strict"));
+        assert!(presets.iter().any(|preset| preset.id == "standard"));
+        assert!(presets.iter().any(|preset| preset.id == "careful"));
+    }
+
+    #[test]
+    fn apply_config_preset_seeds_a_projects_config_from_the_named_preset() {
+        let dir = tempdir().unwrap();
+        let dir_string = dir.path().to_string_lossy().into_owned();
+
+        apply_config_preset(dir_string.clone(), "careful".to_string()).unwrap();
+
+        let config = load_lint_config(dir_string).unwrap();
+        assert_eq!(config.cyclomatic_complexity_warning, 20);
+        assert!(!config.rules.trailing_whitespace);
+    }
+
+    #[test]
+    fn apply_config_preset_rejects_an_unknown_preset() {
+        let dir = tempdir().unwrap();
+
+        let error = apply_config_preset(
+            dir.path().to_string_lossy().into_owned(),
+            "nonexistent".to_string(),
+        )
+        .expect_err("should reject an unknown preset");
+
+        assert!(error.contains("nonexistent"));
+    }
+
+    #[test]
+    fn apply_config_preset_refuses_to_replace_an_existing_config() {
+        let dir = tempdir().unwrap();
+        let dir_string = dir.path().to_string_lossy().into_owned();
+        save_lint_config(dir_string.clone(), papyrus_lints::Config::default()).unwrap();
+
+        let error = apply_config_preset(dir_string, "careful".to_string())
+            .expect_err("should refuse to replace an existing config");
+
+        assert!(error.contains("config already exists"));
     }
 
     #[test]

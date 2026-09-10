@@ -268,6 +268,25 @@ fn initialize_config_with_base(dir: &Path, base_dir: Option<&Path>) -> Result<Pa
     Ok(path)
 }
 
+/// Creates `dir`'s papyrus-lint config file directly from `config`, instead
+/// of the engine's built-in defaults ([`initialize_default_config`]) or a
+/// merged executable-adjacent base. Used by the desktop app's first-run
+/// preset picker (see [`crate::presets`]) once the user has chosen one:
+/// unlike [`save_config`], this refuses to replace an existing config file
+/// (the same guard [`initialize_config_with_base`] applies), so a preset
+/// can only ever seed a project that doesn't have a config yet.
+pub fn initialize_config_from(
+    dir: &Path,
+    config: &papyrus_lints::Config,
+) -> Result<PathBuf, String> {
+    if let Some(path) = existing_config_path(dir) {
+        return Err(format!("config already exists at {}", path.display()));
+    }
+    save_config(dir, config)?;
+    existing_config_path(dir)
+        .ok_or_else(|| "failed to locate the config file just written".to_string())
+}
+
 /// Looks for a papyrus-lint config file in `dir` and parses it into a
 /// [`papyrus_lints::Config`]. Returns [`papyrus_lints::Config::default`]
 /// if `dir` contains none of the candidate file names.
@@ -640,6 +659,41 @@ mod tests {
             generated, docs_copy,
             "docs/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
         );
+    }
+
+    #[test]
+    fn initialize_config_from_writes_the_given_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            indentation: Indentation::Space,
+            ..papyrus_lints::Config::default()
+        };
+
+        let path = initialize_config_from(dir.path(), &config).expect("init should succeed");
+
+        assert_eq!(path, dir.path().join("papyrus-lint.yaml"));
+        assert_eq!(
+            load_config(dir.path()).expect("loading should succeed"),
+            config
+        );
+    }
+
+    #[test]
+    fn initialize_config_from_refuses_to_replace_either_supported_config_name() {
+        for name in CONFIG_FILE_NAMES {
+            let dir = tempfile::tempdir().expect("failed to create temp dir");
+            write_config(dir.path(), name, "semicolon: true\n");
+
+            let error = initialize_config_from(dir.path(), &papyrus_lints::Config::default())
+                .expect_err("init should reject an existing config");
+
+            assert!(error.contains(name));
+            assert_eq!(
+                fs::read_to_string(dir.path().join(name)).expect("failed to read existing config"),
+                "semicolon: true\n"
+            );
+        }
     }
 
     #[test]

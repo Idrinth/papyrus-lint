@@ -208,6 +208,15 @@ export const FIXTURE_HTML = `
       <pre id="code-viewer-compile-output" class="code-viewer__compile-output" hidden></pre>
     </div>
   </dialog>
+
+  <dialog id="preset-picker" class="preset-picker">
+    <div class="preset-picker__header">
+      <h2 class="preset-picker__title">Choose a starting configuration</h2>
+      <button type="button" id="preset-picker-skip" class="preset-picker__skip">Use defaults</button>
+    </div>
+    <p class="preset-picker__intro"></p>
+    <div id="preset-picker-list" class="preset-picker__list"></div>
+  </dialog>
 `;
 
 // jsdom doesn't implement <dialog>'s showModal()/close(), which main.ts

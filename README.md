@@ -239,6 +239,23 @@ config file doesn't live where auto-detection expects it. Leave it blank
 to go back to auto-detection. Whatever path is entered is remembered
 across app restarts, so it's prefilled the next time the app opens.
 
+The first time the desktop app opens a project directory with no
+`papyrus-lint.yaml`/`.yml` of its own yet (and no "Configuration file"
+override set), it asks which of three built-in presets to start from
+instead of silently linting against the engine's defaults: `strict`
+(everything on, identical to the default file above), `standard` (every
+rule that can catch a real bug or performance problem, plus the free
+auto-fixable formatting rules — naming conventions and purely
+informational notices are left off), or `careful` (only rules that catch
+real correctness/performance problems, with relaxed complexity
+thresholds — meant for a first pass over a project that wasn't
+necessarily written with this linter in mind). Every setting a preset
+picks can still be changed afterward in the Settings tab. Closing the
+dialog without choosing one leaves the project on the engine's built-in
+defaults without writing a config file, so it's asked again next time
+that directory is opened. This picker is desktop-app-only; `PapyrusLinterCLI
+init` is unaffected and always writes the `strict` preset.
+
 Each key:
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the

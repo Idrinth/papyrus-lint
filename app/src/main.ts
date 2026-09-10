@@ -76,6 +76,9 @@ let codeViewerCompileOutputEl: HTMLElement | null;
 let codeViewerFullscreenEl: HTMLButtonElement | null;
 let codeViewerAutocompleteEl: HTMLUListElement | null;
 let themeSelectEl: HTMLSelectElement | null;
+let presetPickerEl: HTMLDialogElement | null;
+let presetPickerListEl: HTMLElement | null;
+let presetPickerSkipEl: HTMLButtonElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
@@ -157,6 +160,17 @@ export interface CompileOutcome {
 export interface ProjectInfo {
   detected_script_roots: string[];
   used_configuration_file: string | null;
+}
+
+// One built-in configuration preset's identity/description, as returned by
+// the backend's list_config_presets command (papyrus_lint_core::presets::
+// PresetInfo, made JSON-friendly). Offered as a first-run picker (see
+// promptForConfigPreset/useProjectDir) for a project directory that has no
+// papyrus-lint.yaml/.yml of its own yet.
+export interface ConfigPreset {
+  id: string;
+  label: string;
+  description: string;
 }
 
 export interface LintRules {
@@ -584,6 +598,79 @@ export function applyProjectInfoToUI(info: ProjectInfo) {
   if (usedConfigurationFileEl) {
     usedConfigurationFileEl.textContent = info.used_configuration_file ?? "None (using defaults)";
   }
+}
+
+// Fetches every built-in configuration preset's identity/description (see
+// ConfigPreset), for the first-run picker shown by useProjectDir. Returns
+// an empty array if the lookup fails, which promptForConfigPreset treats
+// the same as "nothing to offer" and resolves without showing anything.
+export async function loadConfigPresets(): Promise<ConfigPreset[]> {
+  try {
+    return await invoke<ConfigPreset[]>("list_config_presets");
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+// Seeds `dir`'s papyrus-lint config file from the named built-in preset.
+// Only called right after promptForConfigPreset resolves with a non-null
+// choice, while `dir` is still known to have no config file of its own.
+export async function applyConfigPreset(dir: string, preset: string): Promise<void> {
+  try {
+    await invoke("apply_config_preset", { dir, preset });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Shows the "pick a starting configuration" dialog listing `presets` and
+// resolves with the id of the one the user picks, or null if they close
+// the dialog without picking one (the "Use defaults" button, Escape, or a
+// backdrop click) — in which case no config file is written, so the
+// project keeps linting against the engine's built-in defaults and is
+// asked again the next time it's opened. Resolves immediately with null if
+// there's nothing to show (no dialog in the DOM, or an empty preset list).
+export function promptForConfigPreset(presets: ConfigPreset[]): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (!presetPickerEl || !presetPickerListEl || presets.length === 0) {
+      resolve(null);
+      return;
+    }
+
+    presetPickerListEl.innerHTML = "";
+    let settled = false;
+    const finish = (choice: string | null) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      presetPickerEl?.removeEventListener("close", handleClose);
+      resolve(choice);
+    };
+    const handleClose = () => finish(null);
+
+    for (const preset of presets) {
+      const option = document.createElement("button");
+      option.type = "button";
+      option.className = "preset-picker__option";
+      const label = document.createElement("strong");
+      label.className = "preset-picker__option-label";
+      label.textContent = preset.label;
+      const description = document.createElement("span");
+      description.className = "preset-picker__option-description";
+      description.textContent = preset.description;
+      option.append(label, description);
+      option.addEventListener("click", () => {
+        finish(preset.id);
+        presetPickerEl?.close();
+      });
+      presetPickerListEl.appendChild(option);
+    }
+
+    presetPickerEl.addEventListener("close", handleClose, { once: true });
+    presetPickerEl.showModal();
+  });
 }
 
 // Persists `roots` as `dir`'s configured additional script root
@@ -2199,6 +2286,23 @@ export function loadStoredTheme(): Theme {
 export async function useProjectDir(dir: string) {
   currentProjectDir = dir;
   const override = configPathOverride();
+
+  // No override means the project's own papyrus-lint.yaml/.yml (or lack of
+  // one) drives things. If it has none yet, ask which built-in preset to
+  // start from before loading/linting against the engine's silent
+  // defaults, rather than the user discovering the choice only by opening
+  // the Settings tab afterward. Skipping the dialog (or a lookup failure)
+  // just means the project keeps using the built-in defaults, unwritten,
+  // so it's asked again next time it's opened.
+  let projectInfo = override ? null : await loadProjectInfo(dir);
+  if (projectInfo && !projectInfo.used_configuration_file) {
+    const choice = await promptForConfigPreset(await loadConfigPresets());
+    if (choice) {
+      await applyConfigPreset(dir, choice);
+      projectInfo = await loadProjectInfo(dir);
+    }
+  }
+
   currentLintConfig = override ? await loadLintConfigFromPath(override) : await loadLintConfig(dir);
   applyLintConfigToUI(currentLintConfig);
   currentCompilerPath = await loadCompilerPath(dir);
@@ -2211,7 +2315,7 @@ export async function useProjectDir(dir: string) {
   }
   currentScriptRoots = await loadScriptRoots(dir);
   applyScriptRootsToUI(currentScriptRoots);
-  applyProjectInfoToUI(await loadProjectInfo(dir));
+  applyProjectInfoToUI(projectInfo ?? (await loadProjectInfo(dir)));
   if (override && usedConfigurationFileEl) {
     usedConfigurationFileEl.textContent = override;
   }
@@ -2525,6 +2629,15 @@ window.addEventListener("DOMContentLoaded", () => {
   ) as Partial<Record<TagKind, HTMLSelectElement>>;
   exportFormatEl = document.querySelector("#export-format");
   exportIssuesButtonEl = document.querySelector("#export-issues-button");
+  presetPickerEl = document.querySelector("#preset-picker");
+  presetPickerListEl = document.querySelector("#preset-picker-list");
+  presetPickerSkipEl = document.querySelector("#preset-picker-skip");
+  presetPickerSkipEl?.addEventListener("click", () => presetPickerEl?.close());
+  presetPickerEl?.addEventListener("click", (event) => {
+    if (event.target === presetPickerEl) {
+      presetPickerEl?.close();
+    }
+  });
 
   const initialTheme = loadStoredTheme();
   if (themeSelectEl) {

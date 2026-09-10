@@ -14,5 +14,6 @@ pub mod config;
 pub mod function_table;
 mod native_globals;
 mod native_types;
+pub mod presets;
 pub mod script_locator;
 pub mod source_encoding;
