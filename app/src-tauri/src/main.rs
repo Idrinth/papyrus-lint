@@ -136,4 +136,50 @@ mod tests {
 
         assert_eq!(code, ExitCode::from(2));
     }
+
+    #[test]
+    fn lint_findings_are_printed_and_return_the_cli_failure_code() {
+        let temp = tempfile::tempdir().unwrap();
+        let script = temp.path().join("Findings.psc");
+        std::fs::write(
+            &script,
+            "ScriptName Findings\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+        )
+        .unwrap();
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = dispatch(
+            &[script.display().to_string()],
+            &mut stdout,
+            &mut stderr,
+            false,
+            || panic!("desktop app must not launch in CLI mode"),
+        );
+
+        assert_eq!(code, ExitCode::from(1));
+        let report = String::from_utf8(stdout).unwrap();
+        assert!(report.contains("forbidden-function"));
+        assert!(report.contains("Game.GetPlayer"));
+        assert!(stderr.is_empty());
+    }
+
+    #[test]
+    fn invalid_cli_arguments_write_usage_to_stderr() {
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = dispatch(
+            &["--not-a-real-option".to_string()],
+            &mut stdout,
+            &mut stderr,
+            false,
+            || panic!("desktop app must not launch in CLI mode"),
+        );
+
+        assert_eq!(code, ExitCode::from(2));
+        assert!(stdout.is_empty());
+        let error = String::from_utf8(stderr).unwrap();
+        assert!(error.contains("Usage: PapyrusLinterCLI"));
+    }
 }
