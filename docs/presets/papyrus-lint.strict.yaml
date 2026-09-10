@@ -1,13 +1,13 @@
-# === "strict" preset (DRAFT) =================================================
+# === "strict" preset ===========================================================
 # Catches everything the linter knows how to catch, including pure style/
 # naming nits and purely informational findings. This is identical to
-# today's built-in default (docs/papyrus-lint.default.yaml) — it's included
-# here only so all three presets can be reviewed side by side. Best suited
-# to a project written for this linter from day one, or a team that wants
+# today's built-in default (docs/papyrus-lint.default.yaml). Best suited to
+# a project written for this linter from day one, or a team that wants
 # maximum coverage and is willing to triage every finding.
 #
-# This file is a draft for review, not yet wired into `PapyrusLinterCLI
-# init`. See docs/presets/papyrus-lint.standard.yaml and
+# Selected via `PapyrusLinterCLI init --preset strict` (also the default
+# when `init` is run with no `--preset` flag at all). See
+# docs/presets/papyrus-lint.standard.yaml and
 # docs/presets/papyrus-lint.careful.yaml for the less noisy alternatives.
 # ===============================================================================
 
