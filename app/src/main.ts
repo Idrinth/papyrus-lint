@@ -80,6 +80,16 @@ let presetPickerEl: HTMLDialogElement | null;
 let presetPickerListEl: HTMLElement | null;
 let presetPickerSkipEl: HTMLButtonElement | null;
 let saveConfigAsPresetButtonEl: HTMLButtonElement | null;
+let settingsFieldsetEl: HTMLFieldSetElement | null;
+let settingsLockedNoticeEl: HTMLElement | null;
+let configPickerEl: HTMLDialogElement | null;
+let configPickerDetectedEl: HTMLElement | null;
+let configPickerDetectedPathEl: HTMLElement | null;
+let configPickerNoneEl: HTMLElement | null;
+let configPickerPresetButtonEl: HTMLButtonElement | null;
+let configPickerPathInputEl: HTMLInputElement | null;
+let configPickerUsePathButtonEl: HTMLButtonElement | null;
+let configPickerContinueEl: HTMLButtonElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
@@ -174,6 +184,17 @@ export interface ConfigPreset {
   label: string;
   description: string;
 }
+
+// What promptForConfigSelection resolved to (see useProjectDir): stick with
+// whatever useProjectDir's own auto-detection would already do ("detected" —
+// the project's existing papyrus-lint.yaml/.yml, or the engine's silent
+// defaults if it has none), point at a specific configuration file instead
+// ("path"), or seed a fresh one from a preset ("preset", handled the same
+// way applyConfigPreset already is elsewhere).
+export type ConfigSelectionResult =
+  | { kind: "detected" }
+  | { kind: "path"; path: string }
+  | { kind: "preset"; preset: string };
 
 export interface LintRules {
   trailing_whitespace: boolean;
@@ -332,7 +353,6 @@ export const DEFAULT_LINT_CONFIG: LintConfig = {
   rules: DEFAULT_RULES,
 };
 const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
-const CONFIG_PATH_OVERRIDE_KEY = "papyrus-lint:config-path-override";
 const THEME_KEY = "papyrus-lint:theme";
 export const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];
 
@@ -707,6 +727,101 @@ export function promptForConfigPreset(presets: ConfigPreset[]): Promise<string |
 
     presetPickerEl.addEventListener("close", handleClose, { once: true });
     presetPickerEl.showModal();
+  });
+}
+
+// Shows the "select this project's configuration" dialog useProjectDir
+// opens for every not-yet-confirmed project directory (see
+// confirmedProjectDirs), so a project's configuration is always picked
+// with the project itself already known, rather than the Settings tab
+// showing/editing whatever configuration happened to be loaded previously
+// (or the engine's silent defaults) before the user has even said which
+// project it applies to. Resolves to `{ kind: "detected" }` for "Continue"
+// (or Escape/a backdrop click), which leaves useProjectDir's own
+// auto-detection to do the right thing whether or not the project already
+// has a configuration file; to `{ kind: "path", path }` once a non-blank
+// path is confirmed via the "different file" input; or to
+// `{ kind: "preset", preset }` once promptForConfigPreset's own dialog
+// (shown in place of this one via "Start from a preset…") resolves with a
+// choice, falling back to `{ kind: "detected" }` if that dialog is itself
+// skipped. Resolves immediately with `{ kind: "detected" }` if the dialog
+// isn't present in the DOM (e.g. a minimal test fixture).
+export function promptForConfigSelection(projectInfo: ProjectInfo): Promise<ConfigSelectionResult> {
+  return new Promise((resolve) => {
+    if (!configPickerEl) {
+      resolve({ kind: "detected" });
+      return;
+    }
+
+    const detectedPath = projectInfo.used_configuration_file;
+    if (configPickerDetectedEl) {
+      configPickerDetectedEl.hidden = !detectedPath;
+    }
+    if (configPickerDetectedPathEl) {
+      configPickerDetectedPathEl.textContent = detectedPath ?? "";
+    }
+    if (configPickerNoneEl) {
+      configPickerNoneEl.hidden = Boolean(detectedPath);
+    }
+    if (configPickerPresetButtonEl) {
+      // Initializing from a preset requires there to be no configuration
+      // file yet (see applyConfigPreset/papyrus_lint_core::config::
+      // initialize_default_config), so it's pointless to offer once one's
+      // already been detected.
+      configPickerPresetButtonEl.hidden = Boolean(detectedPath);
+    }
+    if (configPickerPathInputEl) {
+      configPickerPathInputEl.value = "";
+    }
+
+    let settled = false;
+    // Set while handlePreset hands off to promptForConfigPreset's own
+    // dialog, so the close event that firing configPickerEl.close() below
+    // triggers doesn't resolve this promise itself; finish() is called
+    // once that dialog resolves instead.
+    let choosingPreset = false;
+    const cleanup = () => {
+      configPickerEl?.removeEventListener("close", handleClose);
+      configPickerContinueEl?.removeEventListener("click", handleContinue);
+      configPickerPresetButtonEl?.removeEventListener("click", handlePreset);
+      configPickerUsePathButtonEl?.removeEventListener("click", handleUsePath);
+    };
+    const finish = (result: ConfigSelectionResult) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      cleanup();
+      if (configPickerEl?.hasAttribute("open")) {
+        configPickerEl.close();
+      }
+      resolve(result);
+    };
+    const handleClose = () => {
+      if (!choosingPreset) {
+        finish({ kind: "detected" });
+      }
+    };
+    const handleContinue = () => finish({ kind: "detected" });
+    const handlePreset = () => {
+      choosingPreset = true;
+      configPickerEl?.close();
+      void loadConfigPresets()
+        .then((presets) => promptForConfigPreset(presets))
+        .then((choice) => finish(choice ? { kind: "preset", preset: choice } : { kind: "detected" }));
+    };
+    const handleUsePath = () => {
+      const path = configPickerPathInputEl?.value.trim();
+      if (path) {
+        finish({ kind: "path", path });
+      }
+    };
+
+    configPickerContinueEl?.addEventListener("click", handleContinue);
+    configPickerPresetButtonEl?.addEventListener("click", handlePreset);
+    configPickerUsePathButtonEl?.addEventListener("click", handleUsePath);
+    configPickerEl.addEventListener("close", handleClose, { once: true });
+    configPickerEl.showModal();
   });
 }
 
@@ -2265,27 +2380,24 @@ export function configPathOverride(): string {
   return configPathOverrideEl?.value.trim() ?? "";
 }
 
-// Remembers `path` (or clears the remembered value, for an empty `path`) as
-// the configuration file override, so it's prefilled the next time the app
-// starts.
-export function rememberConfigPathOverride(path: string) {
-  try {
-    if (path) {
-      localStorage.setItem(CONFIG_PATH_OVERRIDE_KEY, path);
-    } else {
-      localStorage.removeItem(CONFIG_PATH_OVERRIDE_KEY);
-    }
-  } catch (error) {
-    console.error(error);
+// Locks (while `locked`) or unlocks the entire Settings tab. A project's
+// configuration is picked per drop (see promptForConfigSelection/
+// useProjectDir below), so until that pick is made for the
+// currently-loading project, the Settings tab must not be shown/editable at
+// all - otherwise it'd display (and let the user edit) the previous
+// project's configuration, or the engine's silent defaults, before this
+// drop's own configuration is even known, which doesn't make sense once
+// more than one project is involved. The native <fieldset disabled>
+// wrapping every Settings tab control (settingsFieldsetEl) handles
+// keyboard/mouse interaction and accessibility on its own; the notice
+// paragraph is a sibling of that fieldset (so it stays visible/announced
+// while locked) explaining why the tab is inert.
+export function setSettingsLocked(locked: boolean) {
+  if (settingsFieldsetEl) {
+    settingsFieldsetEl.disabled = locked;
   }
-}
-
-export function lastConfigPathOverride(): string {
-  try {
-    return localStorage.getItem(CONFIG_PATH_OVERRIDE_KEY) ?? "";
-  } catch (error) {
-    console.error(error);
-    return "";
+  if (settingsLockedNoticeEl) {
+    settingsLockedNoticeEl.hidden = !locked;
   }
 }
 
@@ -2323,22 +2435,7 @@ export function loadStoredTheme(): Theme {
 export async function useProjectDir(dir: string) {
   currentProjectDir = dir;
   const override = configPathOverride();
-
-  // No override means the project's own papyrus-lint.yaml/.yml (or lack of
-  // one) drives things. If it has none yet, ask which built-in preset to
-  // start from before loading/linting against the engine's silent
-  // defaults, rather than the user discovering the choice only by opening
-  // the Settings tab afterward. Skipping the dialog (or a lookup failure)
-  // just means the project keeps using the built-in defaults, unwritten,
-  // so it's asked again next time it's opened.
-  let projectInfo = override ? null : await loadProjectInfo(dir);
-  if (projectInfo && !projectInfo.used_configuration_file) {
-    const choice = await promptForConfigPreset(await loadConfigPresets());
-    if (choice) {
-      await applyConfigPreset(dir, choice);
-      projectInfo = await loadProjectInfo(dir);
-    }
-  }
+  const projectInfo = override ? null : await loadProjectInfo(dir);
 
   currentLintConfig = override ? await loadLintConfigFromPath(override) : await loadLintConfig(dir);
   applyLintConfigToUI(currentLintConfig);
@@ -2359,12 +2456,54 @@ export async function useProjectDir(dir: string) {
   rememberProjectDir(dir);
 }
 
-// Called when the "Configuration file" override input changes: persists the
-// choice (so it's prefilled next time the app starts) and, if a project is
-// already loaded, reloads its lint configuration from the new source (the
-// override path, or back to auto-detection if it was cleared).
+// Project directories already confirmed via promptForConfigSelection this
+// session (see loadProjectConfig below), so re-linting the same project
+// again (e.g. dropping the same achlist a second time) doesn't re-show the
+// picker every time - only a directory not yet seen this session needs to
+// go through it.
+const confirmedProjectDirs = new Set<string>();
+
+// Exposed for tests only: forgets every directory confirmed this session,
+// so a test reusing the same directory string as an earlier one isn't
+// short-circuited by that earlier test's confirmation.
+export function resetConfirmedProjectDirs() {
+  confirmedProjectDirs.clear();
+}
+
+// The entry point every real drop (handleDroppedPaths) and the app's own
+// startup restore of the last project directory call instead of
+// useProjectDir directly: it's what actually picks `dir`'s configuration
+// (via promptForConfigSelection, unless `dir` was already confirmed this
+// session) before handing off to useProjectDir to load and apply it,
+// keeping the Settings tab locked for the whole of that pick (see
+// setSettingsLocked) so it can never show/edit a configuration before one
+// has actually been chosen for the project in play. useProjectDir itself
+// stays reusable on its own (as plenty of tests do) for just loading an
+// already-decided directory's configuration, without going through the
+// picker at all.
+export async function loadProjectConfig(dir: string): Promise<void> {
+  if (!confirmedProjectDirs.has(dir)) {
+    setSettingsLocked(true);
+    const decision = await promptForConfigSelection(await loadProjectInfo(dir));
+    if (decision.kind === "preset") {
+      await applyConfigPreset(dir, decision.preset);
+    }
+    if (configPathOverrideEl) {
+      configPathOverrideEl.value = decision.kind === "path" ? decision.path : "";
+    }
+    confirmedProjectDirs.add(dir);
+  }
+  await useProjectDir(dir);
+  setSettingsLocked(false);
+}
+
+// Called when the "Configuration file" override input changes: reloads the
+// current project's lint configuration from the new source (the override
+// path, or back to auto-detection if it was cleared). Only reachable once
+// the Settings tab is unlocked, i.e. after that project's configuration has
+// already been picked via loadProjectConfig, so this never re-shows that
+// picker - it's ordinary editing of an already-picked configuration.
 export function handleConfigPathOverrideChanged() {
-  rememberConfigPathOverride(configPathOverride());
   if (currentProjectDir) {
     void useProjectDir(currentProjectDir);
   }
@@ -2514,7 +2653,7 @@ export async function handleDroppedPaths(paths: string[]) {
       showResult(achlistPath, entries, projectDir);
       renderPscResults(currentPscOutcomes);
 
-      await useProjectDir(projectDir);
+      await loadProjectConfig(projectDir);
       currentAchlistScriptRoots = scriptRootsForAchlist(entries);
       const pscEntries = entries.filter(isPscPath);
       showLintProgress(pscEntries.length);
@@ -2547,7 +2686,7 @@ export async function handleDroppedPaths(paths: string[]) {
     showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
     renderPscResults(currentPscOutcomes);
 
-    await useProjectDir(projectDirForPscPath(pscPath));
+    await loadProjectConfig(projectDirForPscPath(pscPath));
     currentAchlistScriptRoots = [];
     showLintProgress(1);
     await parsePscFiles([pscPath], (outcome) => {
@@ -2583,7 +2722,7 @@ export async function handleDroppedPaths(paths: string[]) {
       showResult(dirPath, entries, projectDir);
       renderPscResults(currentPscOutcomes);
 
-      await useProjectDir(projectDir);
+      await loadProjectConfig(projectDir);
       currentAchlistScriptRoots = scriptRootsForAchlist(entries);
       showLintProgress(entries.length);
       await parsePscFiles(entries, (outcome) => {
@@ -2677,6 +2816,27 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   saveConfigAsPresetButtonEl = document.querySelector("#save-config-as-preset");
   saveConfigAsPresetButtonEl?.addEventListener("click", () => void handleSaveConfigAsPresetClick());
+
+  settingsFieldsetEl = document.querySelector("#settings-fieldset");
+  settingsLockedNoticeEl = document.querySelector("#settings-locked-notice");
+  configPickerEl = document.querySelector("#config-picker");
+  configPickerDetectedEl = document.querySelector("#config-picker-detected");
+  configPickerDetectedPathEl = document.querySelector("#config-picker-detected-path");
+  configPickerNoneEl = document.querySelector("#config-picker-none");
+  configPickerPresetButtonEl = document.querySelector("#config-picker-preset");
+  configPickerPathInputEl = document.querySelector("#config-picker-path-input");
+  configPickerUsePathButtonEl = document.querySelector("#config-picker-use-path");
+  configPickerContinueEl = document.querySelector("#config-picker-continue");
+  configPickerEl?.addEventListener("click", (event) => {
+    if (event.target === configPickerEl) {
+      configPickerEl?.close();
+    }
+  });
+  // No project's configuration has been picked yet at startup, so the
+  // Settings tab starts locked (see setSettingsLocked/useProjectDir); the
+  // markup itself also starts with the wrapping fieldset disabled, so this
+  // just keeps the notice paragraph in sync with it from the start.
+  setSettingsLocked(true);
 
   const initialTheme = loadStoredTheme();
   if (themeSelectEl) {
@@ -2839,10 +2999,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   switchTab("import");
 
-  if (configPathOverrideEl) {
-    configPathOverrideEl.value = lastConfigPathOverride();
-  }
-
   // Only reach for the Tauri bridge when actually running inside the
   // desktop app's webview: opened as a plain page (e.g. a browser preview,
   // or the CI Lighthouse check against the built frontend), none of these
@@ -2858,7 +3014,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const lastDir = lastProjectDir();
     if (lastDir) {
-      void useProjectDir(lastDir);
+      void loadProjectConfig(lastDir);
     }
 
     getCurrentWebview().onDragDropEvent((event) => {
