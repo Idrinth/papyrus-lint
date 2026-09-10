@@ -83,6 +83,7 @@ def check_site(dist: Path) -> list[str]:
     problems: list[str] = []
     ids_by_page: dict[str, set[str]] = {}
     links_by_page: dict[str, list[str]] = {}
+    browser = None
 
     try:
         with sync_playwright() as playwright:
@@ -163,8 +164,9 @@ def check_site(dist: Path) -> list[str]:
                     for entry in entries:
                         problems.append(f"{rel_path}: {kind}: {entry}")
 
-            browser.close()
     finally:
+        if browser is not None:
+            browser.close()
         server.shutdown()
         server.server_close()
 
