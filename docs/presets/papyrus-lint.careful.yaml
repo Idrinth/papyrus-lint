@@ -1,0 +1,125 @@
+# === "careful" preset (DRAFT) ==================================================
+# The quietest of the three: meant for a first pass over a project that
+# wasn't necessarily written with this linter in mind (an imported/legacy
+# codebase, someone else's mod). Only rules tagged "medium" or "high"
+# importance by papyrus-lints' tags module are on — real correctness bugs
+# (type mismatches, unresolved references, division by zero, unguarded
+# recursion, ...) and real performance problems (slow/forbidden function
+# calls, short wait intervals, ...). Every purely stylistic or
+# maintainability-advisory rule is off, including the mechanical
+# formatting/whitespace ones "standard" still keeps, since hundreds of
+# trailing-whitespace/indentation findings on a codebase formatted
+# differently from this linter's conventions would bury the findings that
+# actually matter. `cyclomatic_complexity`'s thresholds are also relaxed,
+# since unfamiliar code often has a few gnarly functions that aren't worth
+# flagging on a first pass.
+#
+# This file is a draft for review, not yet wired into `PapyrusLinterCLI
+# init`. See docs/presets/papyrus-lint.strict.yaml (today's actual default)
+# and docs/presets/papyrus-lint.standard.yaml for the other two presets.
+# ===============================================================================
+
+# Path to PapyrusCompiler.exe, or null to auto-detect it
+compiler_path: null
+# Extra directories (relative to the project root, or absolute) to search
+# for .psc files, besides scripts/source and source/scripts
+additional_script_roots: []
+# true, false; also runs PapyrusCompiler.exe (into a throwaway temporary
+# directory) as part of linting a dropped .psc, reporting its errors
+# alongside the lint engine's own. Requires compiler_path to be set/
+# auto-detected
+compile_check: false
+# true enables strict cross-script resolution and conflicting-script-versions
+# checks for only the achlist's listed entries. false (the default) keeps
+# parent-directory search roots. In strict mode, every .psc dependency must
+# be listed in the achlist
+strict_achlist_scope: false
+# true, false
+semicolon: false
+# tab, space
+indentation: tab
+# Non-negative integer; used only when indentation is space
+indentation_width: 4
+# camelCase, PascalCase, snake_case, CONSTANT_CASE
+identifier_casing: PascalCase
+# Non-negative integer
+cyclomatic_complexity_warning: 20  # was 10: avoid flooding unfamiliar/legacy code with complexity findings
+# Non-negative integer
+cyclomatic_complexity_error: 40    # was 20: same as above
+# PascalCase, camelCase, lowercase, UPPERCASE
+type_casing: PascalCase
+# always, instead_of_defaults, never
+named_arguments: never
+# Non-negative number
+min_wait_interval: 0.1
+# loose, strict
+magic_numbers: loose
+# true, false
+fail_on_warning: false
+# true, false
+fail_on_info: false
+# true, false
+bool_like_int: true
+# true, false; true treats an Auto/AutoReadOnly property as already
+# filled in by the time a function runs instead of possibly None
+assume_auto_properties_filled: false
+# Each rule accepts true or false
+rules:
+  trailing_whitespace: false       # was true: pure style
+  comma_spacing: false             # was true: pure style
+  forbidden_functions: true
+  formid_hex_notation: true
+  slow_functions: true
+  unused_getter: true
+  unused_property: false
+  semicolon: false                 # was true: pure style
+  float_int_conversion: true
+  int_division_to_float: true
+  strict_boolean: true
+  argument_types: true
+  return_types: true
+  function_override: false
+  argument_naming: true
+  numeric_comparison: true
+  indentation: false               # was true: pure style, very noisy on differently-formatted code
+  cyclomatic_complexity: true      # thresholds relaxed above instead of disabling outright
+  unreachable_statement: true
+  static_condition: true
+  division_by_zero: true
+  empty_body: true
+  unused_local_variable: false
+  variable_used_before_assignment: true
+  none_form_usage: true
+  local_variable_shadowing: true
+  parameter_reassignment: false
+  chain_whitespace: false          # was true: pure style
+  exclamation_spacing: false       # was true: pure style
+  identifier_casing: false
+  type_casing: false
+  named_arguments: false
+  operator_spacing: false          # was true: pure style
+  property_sorting: false
+  explicit_return: true
+  unchecked_form_parameter: false
+  unchecked_cast: true
+  useless_downcast: false
+  unresolved_script: true
+  non_global_function_call: true
+  static_function_call_via_instance: false
+  short_wait_interval: true
+  state_function_signature: true
+  goto_state: true
+  too_many_states: true
+  multiple_auto_states: true
+  conflicting_script_versions: true
+  unused_disable: false
+  magic_numbers: false
+  native_function_usage: false
+  repeated_getvalue: false
+  global_variable_setvalue: false
+  invariant_loop_condition: true
+  script_name_collision: true
+  array_bounds: true
+  readonly_property_write: true
+  default_property_value: false
+  unguarded_self_recursion: true
