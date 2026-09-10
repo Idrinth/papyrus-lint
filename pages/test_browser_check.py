@@ -17,10 +17,9 @@ import tempfile
 import unittest
 import urllib.error
 import urllib.request
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
 from pages import browser_check
+from pathlib import Path
+from unittest.mock import Mock, MagicMock, patch
 
 
 class IsLocalHrefTest(unittest.TestCase):
@@ -80,6 +79,22 @@ class CheckSiteTest(unittest.TestCase):
         self.assertEqual(len(problems), 1)
         self.assertIn("no .html files found under", problems[0])
         sync_playwright.assert_not_called()
+
+    def test_stops_the_server_when_playwright_fails_to_start(self) -> None:
+        server = Mock()
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            patch.object(browser_check, "start_server", return_value=(server, "http://127.0.0.1:1234")),
+            patch.object(browser_check, "sync_playwright", side_effect=RuntimeError("browser unavailable")),
+        ):
+            dist = Path(directory)
+            (dist / "index.html").write_text("<html></html>", encoding="utf-8")
+
+            with self.assertRaisesRegex(RuntimeError, "browser unavailable"):
+                 browser_check.check_site(dist)
+
+        server.shutdown.assert_called_once_with()
+        server.server_close.assert_called_once_with()
 
     def test_closes_browser_and_server_when_page_navigation_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -296,6 +311,32 @@ class CheckSiteTest(unittest.TestCase):
             problems,
         )
 
+    def test_keeps_browser_events_scoped_to_the_page_that_emitted_them(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "first.html").write_text(
+                """<html lang="en"><head><title>First</title></head><body>
+                <script>console.error('first page only');</script>
+                </body></html>""",
+                encoding="utf-8",
+            )
+            (dist / "second.html").write_text(
+                """<html lang="en"><head><title>Second</title></head><body>
+                <script>console.error('second page only');</script>
+                </body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "first.html: console error: first page only",
+                "second.html: console error: second page only",
+            ],
+        )
+
     def test_fakes_external_requests_instead_of_fetching_them(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
@@ -336,6 +377,18 @@ class CheckSiteTest(unittest.TestCase):
             problems = browser_check.check_site(dist)
 
         self.assertIn("index.html: document error: image 'photo.png' has no alt attribute", problems)
+
+    def test_describes_an_image_without_src_or_alt(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Image</title></head><body><img></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, ["index.html: document error: image '<no src>' has no alt attribute"])
 
     def test_accepts_empty_alt_text_for_decorative_images(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
