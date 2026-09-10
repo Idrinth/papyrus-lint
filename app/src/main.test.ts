@@ -84,7 +84,6 @@ import {
   projectDirForAchlist,
   projectDirForDirectory,
   projectDirForPscPath,
-  promptForConfigPreset,
   promptForConfigSelection,
   refreshPresetManagementTab,
   relativePath,
@@ -842,7 +841,6 @@ describe("useProjectDir", () => {
     await useProjectDir("/my/project");
 
     expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
-    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
   });
 });
 
@@ -865,7 +863,7 @@ describe("setSettingsLocked", () => {
 });
 
 describe("promptForConfigSelection", () => {
-  it("shows the detected configuration and hides the preset option when one was found", async () => {
+  it("shows the detected configuration and no preset list when one was found", async () => {
     const pending = promptForConfigSelection({
       detected_script_roots: [],
       used_configuration_file: "/proj/papyrus-lint.yaml",
@@ -876,23 +874,52 @@ describe("promptForConfigSelection", () => {
       "/proj/papyrus-lint.yaml",
     );
     expect(document.querySelector<HTMLElement>("#config-picker-none")!.hidden).toBe(true);
-    expect(document.querySelector<HTMLButtonElement>("#config-picker-preset")!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>("#config-picker-preset-list")!.hidden).toBe(true);
 
     document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
     const result: ConfigSelectionResult = await pending;
     expect(result).toEqual({ kind: "detected" });
   });
 
-  it("shows the no-configuration notice and offers a preset when none was found", () => {
+  it("shows the no-configuration notice and lists every preset when none was found", async () => {
+    invokeImplFor({
+      list_config_presets: () => [
+        { id: "strict", label: "Strict", description: "Catches everything." },
+        { id: "careful", label: "Careful", description: "The quietest option." },
+      ],
+    });
+
     void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
 
     expect(document.querySelector<HTMLElement>("#config-picker-detected")!.hidden).toBe(true);
     expect(document.querySelector<HTMLElement>("#config-picker-none")!.hidden).toBe(false);
-    expect(document.querySelector<HTMLButtonElement>("#config-picker-preset")!.hidden).toBe(false);
+    const options = document.querySelectorAll<HTMLButtonElement>(
+      "#config-picker-preset-list .config-picker__preset-option",
+    );
+    expect(options).toHaveLength(2);
+    expect(options[1].textContent).toContain("Careful");
+    expect(options[1].textContent).toContain("The quietest option.");
+  });
+
+  it("hides the preset list entirely when there are no presets to offer", async () => {
+    invokeImplFor({ list_config_presets: () => [] });
+
+    void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+
+    expect(document.querySelector<HTMLElement>("#config-picker-preset-list")!.hidden).toBe(true);
   });
 
   it("resolves detected when closed without a choice (Escape or a backdrop click)", async () => {
     const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
 
     document.querySelector<HTMLDialogElement>("#config-picker")!.close();
 
@@ -901,6 +928,9 @@ describe("promptForConfigSelection", () => {
 
   it("resolves with the trimmed path once a different file is confirmed", async () => {
     const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
 
     document.querySelector<HTMLInputElement>("#config-picker-path-input")!.value = "  /profiles/strict.yaml  ";
     document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
@@ -908,15 +938,18 @@ describe("promptForConfigSelection", () => {
     await expect(pending).resolves.toEqual({ kind: "path", path: "/profiles/strict.yaml" });
   });
 
-  it("does not resolve when the different-file input is left blank", () => {
+  it("does not resolve when the different-file input is left blank", async () => {
     void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
 
     document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
 
     expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true);
   });
 
-  it("delegates to promptForConfigPreset and resolves with the chosen preset", async () => {
+  it("resolves with the chosen preset when one of the inline options is clicked", async () => {
     invokeImplFor({
       list_config_presets: () => [
         { id: "strict", label: "Strict", description: "Catches everything." },
@@ -925,29 +958,62 @@ describe("promptForConfigSelection", () => {
     });
 
     const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    document.querySelector<HTMLButtonElement>("#config-picker-preset")!.click();
-
     await vi.waitFor(() =>
-      expect(document.querySelectorAll("#preset-picker-list .preset-picker__option").length).toBe(2),
+      expect(
+        document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option").length,
+      ).toBe(2),
     );
-    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
-    document.querySelectorAll<HTMLButtonElement>("#preset-picker-list .preset-picker__option")[1].click();
+    document
+      .querySelectorAll<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")[1]
+      .click();
 
     await expect(pending).resolves.toEqual({ kind: "preset", preset: "careful" });
+    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
   });
 
-  it("falls back to detected when the nested preset picker is itself skipped", async () => {
+  it("resolves with a user preset's id unchanged, not its label", async () => {
     invokeImplFor({
-      list_config_presets: () => [{ id: "strict", label: "Strict", description: "Catches everything." }],
+      list_config_presets: () => [
+        { id: "Team Conventions", label: "Team Conventions", description: "A custom preset." },
+      ],
     });
 
     const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    document.querySelector<HTMLButtonElement>("#config-picker-preset")!.click();
+    await vi.waitFor(() =>
+      expect(
+        document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option").length,
+      ).toBe(1),
+    );
+    const option = document.querySelector<HTMLButtonElement>(
+      "#config-picker-preset-list .config-picker__preset-option",
+    )!;
+    expect(option.textContent).toContain("Team Conventions");
+    expect(option.textContent).toContain("A custom preset.");
+    option.click();
 
-    await vi.waitFor(() => expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(true));
-    document.querySelector<HTMLButtonElement>("#preset-picker-skip")!.click();
+    await expect(pending).resolves.toEqual({ kind: "preset", preset: "Team Conventions" });
+  });
 
-    await expect(pending).resolves.toEqual({ kind: "detected" });
+  it("doesn't accumulate stale listeners on the static Continue/browse buttons across repeated calls", async () => {
+    // Continue/the browse button are reused across every call (unlike the
+    // preset options, rebuilt fresh each time); a leaked listener from an
+    // earlier call resolving a different way would double-fire finish() on
+    // a later call's own click.
+    const first = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+    document.querySelector<HTMLDialogElement>("#config-picker")!.close();
+    await first;
+
+    const second = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+    document.querySelector<HTMLInputElement>("#config-picker-path-input")!.value = "/profiles/strict.yaml";
+    document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
+
+    await expect(second).resolves.toEqual({ kind: "path", path: "/profiles/strict.yaml" });
   });
 
   it("resolves immediately with detected when the dialog isn't present in the DOM", async () => {
@@ -1016,12 +1082,12 @@ describe("loadProjectConfig", () => {
     });
 
     const pending = loadProjectConfig("/my/project");
-    await vi.waitFor(() => expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true));
-    document.querySelector<HTMLButtonElement>("#config-picker-preset")!.click();
     await vi.waitFor(() =>
-      expect(document.querySelectorAll("#preset-picker-list .preset-picker__option").length).toBe(2),
+      expect(document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option").length).toBe(2),
     );
-    document.querySelectorAll<HTMLButtonElement>("#preset-picker-list .preset-picker__option")[1].click();
+    document
+      .querySelectorAll<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")[1]
+      .click();
     await pending;
 
     expect(invokeMock).toHaveBeenCalledWith("apply_config_preset", { dir: "/my/project", preset: "careful" });
@@ -1101,54 +1167,6 @@ describe("loadConfigPresets / applyConfigPreset", () => {
     invokeImplFor({});
 
     await expect(applyConfigPreset("/my/project", "careful")).resolves.toBeUndefined();
-  });
-});
-
-describe("promptForConfigPreset", () => {
-  it("resolves null immediately when there are no presets to offer", async () => {
-    await expect(promptForConfigPreset([])).resolves.toBeNull();
-    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
-  });
-
-  it("renders one option per preset and resolves with the id of the one clicked", async () => {
-    const presets = [
-      { id: "strict", label: "Strict", description: "Catches everything." },
-      { id: "careful", label: "Careful", description: "The quietest option." },
-    ];
-
-    const pending = promptForConfigPreset(presets);
-    const options = document.querySelectorAll<HTMLButtonElement>(
-      "#preset-picker-list .preset-picker__option",
-    );
-    expect(options).toHaveLength(2);
-    expect(options[1].textContent).toContain("Careful");
-    expect(options[1].textContent).toContain("The quietest option.");
-    options[1].click();
-
-    await expect(pending).resolves.toBe("careful");
-    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
-  });
-
-  it("renders and selects a user preset without changing its backend id", async () => {
-    const pending = promptForConfigPreset([
-      { id: "Team Conventions", label: "Team Conventions", description: "A custom preset." },
-    ]);
-    const option = document.querySelector<HTMLButtonElement>("#preset-picker-list .preset-picker__option")!;
-
-    expect(option.textContent).toContain("Team Conventions");
-    expect(option.textContent).toContain("A custom preset.");
-    option.click();
-
-    await expect(pending).resolves.toBe("Team Conventions");
-  });
-
-  it("resolves null when the dialog is closed without picking a preset", async () => {
-    const presets = [{ id: "strict", label: "Strict", description: "Catches everything." }];
-
-    const pending = promptForConfigPreset(presets);
-    document.querySelector<HTMLButtonElement>("#preset-picker-skip")!.click();
-
-    await expect(pending).resolves.toBeNull();
   });
 });
 

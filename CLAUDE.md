@@ -897,9 +897,10 @@ a `#settings-locked-notice` paragraph explaining why) and shows the
 else. "Continue" (or Escape, or a backdrop click) accepts whatever
 `useProjectDir`'s own auto-detection would already do — the project's
 existing `papyrus-lint.yaml`/`.yml`, or the engine's silent defaults if it
-has none; "Start from a preset…" hands off to the existing first-run
-preset dialog (see below); and a text field lets the user point at a
-specific configuration file instead. The Settings tab's own "Configuration
+has none; an inline list of presets (shown only when the project has none
+yet — see below) lets the user click one to start from instead; and a text
+field lets the user point at a specific configuration file instead. The
+Settings tab's own "Configuration
 file" input (`configPathOverrideEl`) is set to that typed path (or cleared,
 for the other two choices) before `useProjectDir` actually loads and
 applies the resulting configuration and the Settings tab is unlocked. A
@@ -1022,12 +1023,16 @@ environment has no such file next to the test binary, and the `strict`
 preset (`init`'s own default) reproduces it byte-for-byte.
 
 The desktop app offers the same presets from its own config-picker dialog
-above, rather than only through the CLI's `init --preset` flag: within
-`promptForConfigSelection`, a "Start from a preset…" button (shown only
-when the project has no `papyrus-lint.yaml`/`.yml` yet, per
-`load_project_info`'s result) hands off to `promptForConfigPreset`, a
-nested dialog (`#preset-picker`) listing every preset via the
-`list_config_presets` Tauri command, backed by `papyrus-lint-core`'s
+above, rather than only through the CLI's `init --preset` flag:
+`promptForConfigSelection` fetches every preset via the
+`list_config_presets` Tauri command (only when the project has no
+`papyrus-lint.yaml`/`.yml` yet, per `load_project_info`'s result — a preset
+is pointless to offer once one's already been detected) and renders one
+button per preset directly into the dialog's own `#config-picker-preset-list`
+(hidden entirely when the list comes back empty), rather than opening a
+second, nested dialog for it: the preset list is only ever meaningful as
+part of this one choice, so there's nothing else it needs to be its own
+dialog for. `list_config_presets` is backed by `papyrus-lint-core`'s
 `presets` module (`presets::all()`) — a thin label/description layer over
 `config::Preset`/`config::PRESET_NAMES`, the same enum the CLI flag parses,
 which appends a `PresetInfo` (id/label both the file's stem, a generic
@@ -1036,17 +1041,13 @@ the executable-adjacent `presets` directory (`config::user_presets_dir`),
 after the three built-ins; `presets::all()`/`PresetInfo`'s fields are owned
 `String`s rather than `&'static str`, since a user preset's identity is
 discovered from a file name at runtime instead of being a compile-time
-constant. Picking one calls `apply_config_preset(dir, id)`, which resolves
-the id via `config::Preset::parse` and hands it to
-`config::initialize_default_config` — the very function `init --preset`
-itself calls — so the desktop app gets the same "refuse to replace an
-existing config" guard, executable-adjacent base-config layering, and
-user-preset resolution for free. Closing this nested dialog without
-choosing one (its "Use defaults" button, Escape, or a backdrop click) falls
-back to `promptForConfigSelection`'s own "detected" outcome, the same as
-its "Continue" button, leaving the project on the engine's built-in
-defaults without writing a file, so it's asked again the next time that
-directory is opened.
+constant. Clicking one resolves `promptForConfigSelection` with
+`{ kind: "preset", preset: id }`, which `loadProjectConfig` then hands to
+`apply_config_preset(dir, id)` — resolving the id via `config::Preset::parse`
+and handing it to `config::initialize_default_config`, the very function
+`init --preset` itself calls — so the desktop app gets the same "refuse to
+replace an existing config" guard, executable-adjacent base-config
+layering, and user-preset resolution for free.
 
 The Settings tab's own "Save current settings as preset…" button goes the
 other direction: `handleSaveConfigAsPresetClick` (`app/src/main.ts`) prompts

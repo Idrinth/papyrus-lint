@@ -83,9 +83,6 @@ let codeViewerCompileOutputEl: HTMLElement | null;
 let codeViewerFullscreenEl: HTMLButtonElement | null;
 let codeViewerAutocompleteEl: HTMLUListElement | null;
 let themeSelectEl: HTMLSelectElement | null;
-let presetPickerEl: HTMLDialogElement | null;
-let presetPickerListEl: HTMLElement | null;
-let presetPickerSkipEl: HTMLButtonElement | null;
 let saveConfigAsPresetButtonEl: HTMLButtonElement | null;
 let settingsFieldsetEl: HTMLFieldSetElement | null;
 let settingsLockedNoticeEl: HTMLElement | null;
@@ -93,7 +90,7 @@ let configPickerEl: HTMLDialogElement | null;
 let configPickerDetectedEl: HTMLElement | null;
 let configPickerDetectedPathEl: HTMLElement | null;
 let configPickerNoneEl: HTMLElement | null;
-let configPickerPresetButtonEl: HTMLButtonElement | null;
+let configPickerPresetListEl: HTMLElement | null;
 let configPickerPathInputEl: HTMLInputElement | null;
 let configPickerUsePathButtonEl: HTMLButtonElement | null;
 let configPickerContinueEl: HTMLButtonElement | null;
@@ -185,8 +182,8 @@ export interface ProjectInfo {
 // One configuration preset's identity/description — a built-in one, or a
 // user preset found under a presets directory next to the executable — as
 // returned by the backend's list_config_presets command
-// (papyrus_lint_core::presets::PresetInfo, made JSON-friendly). Offered as
-// a first-run picker (see promptForConfigPreset/useProjectDir) for a
+// (papyrus_lint_core::presets::PresetInfo, made JSON-friendly). Offered
+// inline in the config-picker dialog (see promptForConfigSelection) for a
 // project directory that has no papyrus-lint.yaml/.yml of its own yet.
 export interface ConfigPreset {
   id: string;
@@ -632,10 +629,10 @@ export function applyProjectInfoToUI(info: ProjectInfo) {
 }
 
 // Fetches every configuration preset's identity/description — built-in
-// plus any user preset (see ConfigPreset) — for the first-run picker shown
-// by useProjectDir. Returns an empty array if the lookup fails, which
-// promptForConfigPreset treats the same as "nothing to offer" and resolves
-// without showing anything.
+// plus any user preset (see ConfigPreset) — for the config-picker dialog's
+// inline preset list (see promptForConfigSelection). Returns an empty
+// array if the lookup fails, which promptForConfigSelection treats the
+// same as "nothing to offer" and hides that list entirely.
 export async function loadConfigPresets(): Promise<ConfigPreset[]> {
   try {
     return (await invoke<ConfigPreset[]>("list_config_presets")) ?? [];
@@ -646,8 +643,8 @@ export async function loadConfigPresets(): Promise<ConfigPreset[]> {
 }
 
 // Seeds `dir`'s papyrus-lint config file from the named preset (built-in
-// or user). Only called right after promptForConfigPreset resolves with a
-// non-null choice, while `dir` is still known to have no config file of
+// or user). Only called right after promptForConfigSelection resolves with
+// a "preset" choice, while `dir` is still known to have no config file of
 // its own.
 export async function applyConfigPreset(dir: string, preset: string): Promise<void> {
   try {
@@ -839,55 +836,6 @@ export async function handleExportPresetClick(preset: ConfigPreset): Promise<voi
   }
 }
 
-// Shows the "pick a starting configuration" dialog listing `presets` and
-// resolves with the id of the one the user picks, or null if they close
-// the dialog without picking one (the "Use defaults" button, Escape, or a
-// backdrop click) — in which case no config file is written, so the
-// project keeps linting against the engine's built-in defaults and is
-// asked again the next time it's opened. Resolves immediately with null if
-// there's nothing to show (no dialog in the DOM, or an empty preset list).
-export function promptForConfigPreset(presets: ConfigPreset[]): Promise<string | null> {
-  return new Promise((resolve) => {
-    if (!presetPickerEl || !presetPickerListEl || presets.length === 0) {
-      resolve(null);
-      return;
-    }
-
-    presetPickerListEl.innerHTML = "";
-    let settled = false;
-    const finish = (choice: string | null) => {
-      if (settled) {
-        return;
-      }
-      settled = true;
-      presetPickerEl?.removeEventListener("close", handleClose);
-      resolve(choice);
-    };
-    const handleClose = () => finish(null);
-
-    for (const preset of presets) {
-      const option = document.createElement("button");
-      option.type = "button";
-      option.className = "preset-picker__option";
-      const label = document.createElement("strong");
-      label.className = "preset-picker__option-label";
-      label.textContent = preset.label;
-      const description = document.createElement("span");
-      description.className = "preset-picker__option-description";
-      description.textContent = preset.description;
-      option.append(label, description);
-      option.addEventListener("click", () => {
-        finish(preset.id);
-        presetPickerEl?.close();
-      });
-      presetPickerListEl.appendChild(option);
-    }
-
-    presetPickerEl.addEventListener("close", handleClose, { once: true });
-    presetPickerEl.showModal();
-  });
-}
-
 // Shows the "select this project's configuration" dialog useProjectDir
 // opens for every not-yet-confirmed project directory (see
 // confirmedProjectDirs), so a project's configuration is always picked
@@ -899,19 +847,22 @@ export function promptForConfigPreset(presets: ConfigPreset[]): Promise<string |
 // auto-detection to do the right thing whether or not the project already
 // has a configuration file; to `{ kind: "path", path }` once a non-blank
 // path is confirmed via the "different file" input; or to
-// `{ kind: "preset", preset }` once promptForConfigPreset's own dialog
-// (shown in place of this one via "Start from a preset…") resolves with a
-// choice, falling back to `{ kind: "detected" }` if that dialog is itself
-// skipped. Resolves immediately with `{ kind: "detected" }` if the dialog
-// isn't present in the DOM (e.g. a minimal test fixture).
-export function promptForConfigSelection(projectInfo: ProjectInfo): Promise<ConfigSelectionResult> {
-  return new Promise((resolve) => {
-    if (!configPickerEl) {
-      resolve({ kind: "detected" });
-      return;
-    }
+// `{ kind: "preset", preset }` once one of the inline preset options -
+// shown only when the project has no configuration file yet, since
+// initializing from a preset requires there to be none (see
+// applyConfigPreset/papyrus_lint_core::config::initialize_default_config)
+// - is clicked. Resolves immediately with `{ kind: "detected" }` if the
+// dialog isn't present in the DOM (e.g. a minimal test fixture).
+export async function promptForConfigSelection(projectInfo: ProjectInfo): Promise<ConfigSelectionResult> {
+  if (!configPickerEl) {
+    return { kind: "detected" };
+  }
 
-    const detectedPath = projectInfo.used_configuration_file;
+  const detectedPath = projectInfo.used_configuration_file;
+  const presets = detectedPath ? [] : await loadConfigPresets();
+  const dialog = configPickerEl;
+
+  return new Promise((resolve) => {
     if (configPickerDetectedEl) {
       configPickerDetectedEl.hidden = !detectedPath;
     }
@@ -921,27 +872,21 @@ export function promptForConfigSelection(projectInfo: ProjectInfo): Promise<Conf
     if (configPickerNoneEl) {
       configPickerNoneEl.hidden = Boolean(detectedPath);
     }
-    if (configPickerPresetButtonEl) {
-      // Initializing from a preset requires there to be no configuration
-      // file yet (see applyConfigPreset/papyrus_lint_core::config::
-      // initialize_default_config), so it's pointless to offer once one's
-      // already been detected.
-      configPickerPresetButtonEl.hidden = Boolean(detectedPath);
-    }
     if (configPickerPathInputEl) {
       configPickerPathInputEl.value = "";
     }
 
     let settled = false;
-    // Set while handlePreset hands off to promptForConfigPreset's own
-    // dialog, so the close event that firing configPickerEl.close() below
-    // triggers doesn't resolve this promise itself; finish() is called
-    // once that dialog resolves instead.
-    let choosingPreset = false;
+    // configPickerContinueEl/configPickerUsePathButtonEl are static
+    // elements reused across every call (unlike the preset options below,
+    // rebuilt fresh each time), so their listeners must be explicitly torn
+    // down here - otherwise an earlier, already-resolved call's handler
+    // (still bound, since a run that resolved via a different path/Escape
+    // never fired it to trigger its own removal) would keep piling up
+    // across every project dropped in the session.
     const cleanup = () => {
-      configPickerEl?.removeEventListener("close", handleClose);
+      dialog.removeEventListener("close", handleClose);
       configPickerContinueEl?.removeEventListener("click", handleContinue);
-      configPickerPresetButtonEl?.removeEventListener("click", handlePreset);
       configPickerUsePathButtonEl?.removeEventListener("click", handleUsePath);
     };
     const finish = (result: ConfigSelectionResult) => {
@@ -950,24 +895,13 @@ export function promptForConfigSelection(projectInfo: ProjectInfo): Promise<Conf
       }
       settled = true;
       cleanup();
-      if (configPickerEl?.hasAttribute("open")) {
-        configPickerEl.close();
+      if (dialog.hasAttribute("open")) {
+        dialog.close();
       }
       resolve(result);
     };
-    const handleClose = () => {
-      if (!choosingPreset) {
-        finish({ kind: "detected" });
-      }
-    };
+    const handleClose = () => finish({ kind: "detected" });
     const handleContinue = () => finish({ kind: "detected" });
-    const handlePreset = () => {
-      choosingPreset = true;
-      configPickerEl?.close();
-      void loadConfigPresets()
-        .then((presets) => promptForConfigPreset(presets))
-        .then((choice) => finish(choice ? { kind: "preset", preset: choice } : { kind: "detected" }));
-    };
     const handleUsePath = () => {
       const path = configPickerPathInputEl?.value.trim();
       if (path) {
@@ -976,10 +910,29 @@ export function promptForConfigSelection(projectInfo: ProjectInfo): Promise<Conf
     };
 
     configPickerContinueEl?.addEventListener("click", handleContinue);
-    configPickerPresetButtonEl?.addEventListener("click", handlePreset);
     configPickerUsePathButtonEl?.addEventListener("click", handleUsePath);
-    configPickerEl.addEventListener("close", handleClose, { once: true });
-    configPickerEl.showModal();
+
+    if (configPickerPresetListEl) {
+      configPickerPresetListEl.hidden = presets.length === 0;
+      configPickerPresetListEl.innerHTML = "";
+      for (const preset of presets) {
+        const option = document.createElement("button");
+        option.type = "button";
+        option.className = "config-picker__preset-option";
+        const label = document.createElement("strong");
+        label.className = "config-picker__preset-option-label";
+        label.textContent = preset.label;
+        const description = document.createElement("span");
+        description.className = "config-picker__preset-option-description";
+        description.textContent = preset.description;
+        option.append(label, description);
+        option.addEventListener("click", () => finish({ kind: "preset", preset: preset.id }));
+        configPickerPresetListEl.appendChild(option);
+      }
+    }
+
+    dialog.addEventListener("close", handleClose, { once: true });
+    dialog.showModal();
   });
 }
 
@@ -3013,15 +2966,6 @@ window.addEventListener("DOMContentLoaded", () => {
   ) as Partial<Record<TagKind, HTMLSelectElement>>;
   exportFormatEl = document.querySelector("#export-format");
   exportIssuesButtonEl = document.querySelector("#export-issues-button");
-  presetPickerEl = document.querySelector("#preset-picker");
-  presetPickerListEl = document.querySelector("#preset-picker-list");
-  presetPickerSkipEl = document.querySelector("#preset-picker-skip");
-  presetPickerSkipEl?.addEventListener("click", () => presetPickerEl?.close());
-  presetPickerEl?.addEventListener("click", (event) => {
-    if (event.target === presetPickerEl) {
-      presetPickerEl?.close();
-    }
-  });
   saveConfigAsPresetButtonEl = document.querySelector("#save-config-as-preset");
   saveConfigAsPresetButtonEl?.addEventListener("click", () => void handleSaveConfigAsPresetClick());
   presetManagementTabEl = document.querySelector("#tab-presets");
@@ -3033,7 +2977,7 @@ window.addEventListener("DOMContentLoaded", () => {
   configPickerDetectedEl = document.querySelector("#config-picker-detected");
   configPickerDetectedPathEl = document.querySelector("#config-picker-detected-path");
   configPickerNoneEl = document.querySelector("#config-picker-none");
-  configPickerPresetButtonEl = document.querySelector("#config-picker-preset");
+  configPickerPresetListEl = document.querySelector("#config-picker-preset-list");
   configPickerPathInputEl = document.querySelector("#config-picker-path-input");
   configPickerUsePathButtonEl = document.querySelector("#config-picker-use-path");
   configPickerContinueEl = document.querySelector("#config-picker-continue");

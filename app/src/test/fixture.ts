@@ -218,15 +218,6 @@ export const FIXTURE_HTML = `
     </div>
   </dialog>
 
-  <dialog id="preset-picker" class="preset-picker">
-    <div class="preset-picker__header">
-      <h2 class="preset-picker__title">Choose a starting configuration</h2>
-      <button type="button" id="preset-picker-skip" class="preset-picker__skip">Use defaults</button>
-    </div>
-    <p class="preset-picker__intro"></p>
-    <div id="preset-picker-list" class="preset-picker__list"></div>
-  </dialog>
-
   <dialog id="config-picker" class="config-picker">
     <div class="config-picker__header">
       <h2 class="config-picker__title">Select this project's configuration</h2>
@@ -238,11 +229,7 @@ export const FIXTURE_HTML = `
     <p id="config-picker-none" class="config-picker__none" hidden>
       This project doesn't have a papyrus-lint.yaml yet.
     </p>
-    <div class="config-picker__actions">
-      <button type="button" id="config-picker-preset" class="config-picker__option">
-        Start from a preset&hellip;
-      </button>
-    </div>
+    <div id="config-picker-preset-list" class="config-picker__list" hidden></div>
     <div class="config-picker__browse">
       <label for="config-picker-path-input">Use a different configuration file instead</label>
       <input id="config-picker-path-input" type="text" />
