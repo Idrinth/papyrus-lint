@@ -54,7 +54,10 @@ let boolLikeIntEl: HTMLInputElement | null;
 let assumeAutoPropertiesFilledEl: HTMLInputElement | null;
 let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 let autoFixableFilterEl: HTMLInputElement | null;
-let ruleFilterEl: HTMLSelectElement | null;
+// The per-tag-kind "Filter by rule" multiselects (one per TagKind; see
+// populateRuleFilterGroups/wireRuleFilterGroups below), replacing what used
+// to be a single flat multiselect spanning every rule.
+let ruleFilterSelectEls: Partial<Record<TagKind, HTMLSelectElement>> = {};
 let exportFormatEl: HTMLSelectElement | null;
 let exportIssuesButtonEl: HTMLButtonElement | null;
 let codeViewerEl: HTMLDialogElement | null;
@@ -607,12 +610,12 @@ export async function loadRuleTags(): Promise<RuleTagsInfo[]> {
 }
 
 // Indexes `tags` by rule id (for tagsForFinding/matchesTagFilters below),
-// rebuilds the "Filter by rule" multiselect's options from the same list,
+// rebuilds each tag kind's "Filter by rule" multiselect from the same list,
 // and re-renders the current lint results, so any already-listed findings
 // pick up their tag badges/filtering once the lookup resolves.
 export function applyRuleTags(tags: RuleTagsInfo[]) {
   ruleTagsByRule = new Map(tags.map((info) => [info.rule, info]));
-  populateRuleFilterOptions(tags);
+  populateRuleFilterGroups(tags);
   renderPscResults(currentPscOutcomes);
 }
 
@@ -624,31 +627,75 @@ function titleCaseRuleId(rule: string): string {
   return rule.charAt(0).toUpperCase() + rule.slice(1).replace(/-/g, " ");
 }
 
-// Rebuilds the "Filter by rule" multiselect's options from the backend's
-// full set of known rules, selecting all of them by default so the filter
+// Rebuilds each tag kind's "Filter by rule" multiselect from the backend's
+// full set of known rules - a rule tagged with more than one kind (e.g.
+// "argument-types", tagged both "performance" and "correctness") appears in
+// each of its kinds' multiselects, kept in sync with each other via the
+// single activeRules set both read from/write to (see
+// syncRuleFilterSelections below, and its own "change" listener set up in
+// the DOMContentLoaded handler), so deselecting it in one group's list is
+// reflected in the other's too. Every rule starts selected, so the filter
 // starts as a no-op, the same way every other lint results filter does.
-// activeRules is populated regardless of whether the <select> itself is
-// present, so matchesRuleFilter below still works correctly (e.g. in a test
-// fixture that doesn't include it).
-function populateRuleFilterOptions(tags: RuleTagsInfo[]) {
+// activeRules is populated regardless of whether the <select> elements
+// themselves are present, so matchesTagFilters below still works correctly
+// (e.g. in a test fixture that doesn't include them).
+function populateRuleFilterGroups(tags: RuleTagsInfo[]) {
   activeRules.clear();
   for (const tag of tags) {
     activeRules.add(tag.rule);
   }
-  if (!ruleFilterEl) {
+  for (const kind of TAG_KINDS) {
+    const select = ruleFilterSelectEls[kind];
+    if (!select) {
+      continue;
+    }
+    select.replaceChildren(
+      ...tags
+        .filter((tag) => tag.kinds.includes(kind))
+        .sort((a, b) => a.rule.localeCompare(b.rule))
+        .map((tag) => {
+          const option = document.createElement("option");
+          option.value = tag.rule;
+          option.textContent = titleCaseRuleId(tag.rule);
+          option.selected = true;
+          return option;
+        }),
+    );
+    updateTagKindHeaderCheckbox(kind);
+  }
+}
+
+// Reflects activeRules onto every tag kind's "Filter by rule" multiselect
+// (a rule shared by more than one kind's list needs both copies kept in
+// sync) and updates each group's header checkbox to reflect whether all,
+// some, or none of its own rules are currently active.
+function syncRuleFilterSelections() {
+  for (const kind of TAG_KINDS) {
+    const select = ruleFilterSelectEls[kind];
+    if (!select) {
+      continue;
+    }
+    for (const option of select.options) {
+      option.selected = activeRules.has(option.value);
+    }
+    updateTagKindHeaderCheckbox(kind);
+  }
+}
+
+// Sets `kind`'s header checkbox to checked (every rule in its multiselect is
+// active), unchecked (none are), or indeterminate (some are) - so it doubles
+// as a "select all"/"select none" toggle for that group and as an at-a-glance
+// summary of its current selection.
+function updateTagKindHeaderCheckbox(kind: TagKind) {
+  const checkbox = tagKindFilterEls[kind];
+  const select = ruleFilterSelectEls[kind];
+  if (!checkbox || !select) {
     return;
   }
-  ruleFilterEl.replaceChildren(
-    ...[...tags]
-      .sort((a, b) => a.rule.localeCompare(b.rule))
-      .map((tag) => {
-        const option = document.createElement("option");
-        option.value = tag.rule;
-        option.textContent = titleCaseRuleId(tag.rule);
-        option.selected = true;
-        return option;
-      }),
-  );
+  const options = [...select.options];
+  const selectedCount = options.filter((option) => option.selected).length;
+  checkbox.checked = options.length > 0 && selectedCount === options.length;
+  checkbox.indeterminate = selectedCount > 0 && selectedCount < options.length;
 }
 
 // Fetches the desktop app's version from the Rust backend, so it can be
@@ -1460,9 +1507,12 @@ export function severityOf(message: string): Severity {
 const activeSeverities = new Set<Severity>(SEVERITIES);
 let severityFilterEls: Partial<Record<Severity, HTMLInputElement>> = {};
 
-// Which tag kinds/importance levels are currently shown in the lint results
-// list; all are shown by default, same as activeSeverities above.
-const activeTagKinds = new Set<TagKind>(TAG_KINDS);
+// Which importance levels are currently shown in the lint results list; all
+// are shown by default, same as activeSeverities above. Tag kind filtering
+// used to be a separate activeTagKinds set alongside this one, but each tag
+// kind's checkbox is now just a "select all"/"select none" toggle for its
+// own "Filter by rule" multiselect (see updateTagKindHeaderCheckbox above),
+// so which rules of that kind are shown is tracked by activeRules alone.
 const activeTagImportances = new Set<TagImportance>(TAG_IMPORTANCES);
 // Whether only auto-fixable findings should be shown; off by default.
 let onlyAutoFixable = false;
@@ -1470,9 +1520,9 @@ let tagKindFilterEls: Partial<Record<TagKind, HTMLInputElement>> = {};
 let tagImportanceFilterEls: Partial<Record<TagImportance, HTMLInputElement>> = {};
 
 // Which rule ids are currently shown in the lint results list, driven by the
-// "Filter by rule" multiselect. Populated (with every known rule, i.e. no
-// filtering) once the backend's rule list loads - see applyRuleTags/
-// populateRuleFilterOptions.
+// tag-grouped "Filter by rule" multiselects (see populateRuleFilterGroups/
+// syncRuleFilterSelections above). Populated (with every known rule, i.e. no
+// filtering) once the backend's rule list loads.
 const activeRules = new Set<string>();
 
 // Looks up `finding`'s own rule's tag metadata, if any. A finding with no
@@ -1483,16 +1533,21 @@ export function tagsForFinding(finding: Diagnostic): RuleTagsInfo | undefined {
   return finding.rule ? ruleTagsByRule.get(finding.rule) : undefined;
 }
 
-// Whether `finding` passes the active tag kind/importance/auto-fixable
-// filters. A finding with no tag metadata always passes, the same way an
-// unrecognized severity still falls back to the always-shown "other"
-// bucket instead of being silently dropped.
+// Whether `finding` passes the active tag/rule, importance, and
+// auto-fixable filters. A finding with no tag metadata always passes, the
+// same way an unrecognized severity still falls back to the always-shown
+// "other" bucket instead of being silently dropped. A finding whose rule is
+// known always has a truthy `finding.rule` (tagsForFinding only returns tag
+// metadata when it does), so once `tags` is present activeRules.has() below
+// is checking the same rule id that produced it. Every finding also passes
+// while the backend's rule list hasn't loaded yet, since tagsForFinding
+// (and so `tags`) is undefined for all of them until then.
 export function matchesTagFilters(finding: Diagnostic): boolean {
   const tags = tagsForFinding(finding);
   if (!tags) {
     return true;
   }
-  if (!tags.kinds.some((kind) => activeTagKinds.has(kind as TagKind))) {
+  if (!activeRules.has(finding.rule as string)) {
     return false;
   }
   if (!activeTagImportances.has(tags.importance)) {
@@ -1501,25 +1556,13 @@ export function matchesTagFilters(finding: Diagnostic): boolean {
   return !onlyAutoFixable || tags.auto_fixable;
 }
 
-// Whether `finding` passes the "Filter by rule" multiselect. A finding with
-// no known rule (e.g. a compiler-reported diagnostic) always passes, the
-// same way it always passes matchesTagFilters above; so does every finding
-// while the backend's rule list hasn't loaded yet (ruleTagsByRule still
-// empty), since activeRules isn't populated until then either.
-export function matchesRuleFilter(finding: Diagnostic): boolean {
-  if (ruleTagsByRule.size === 0 || !finding.rule) {
-    return true;
-  }
-  return activeRules.has(finding.rule);
-}
-
 // `findings` restricted to those passing every active severity/tag/rule
 // filter, shared by buildPscResultItem (rendering the Lint results list)
 // and collectFilteredIssues (the "Export issues" button below) so the two
 // can never disagree about what "currently filtered" means.
 function findingsPassingActiveFilters(findings: Diagnostic[]): Diagnostic[] {
   return findings.filter(
-    (finding) => activeSeverities.has(severityOf(finding.message)) && matchesTagFilters(finding) && matchesRuleFilter(finding),
+    (finding) => activeSeverities.has(severityOf(finding.message)) && matchesTagFilters(finding),
   );
 }
 
@@ -2477,7 +2520,9 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerAutocompleteEl = document.querySelector("#code-viewer-autocomplete");
   themeSelectEl = document.querySelector("#theme-select");
   autoFixableFilterEl = document.querySelector("#filter-auto-fixable-only");
-  ruleFilterEl = document.querySelector("#filter-rule");
+  ruleFilterSelectEls = Object.fromEntries(
+    TAG_KINDS.map((kind) => [kind, document.querySelector<HTMLSelectElement>(`#filter-rule-${kind}`)]),
+  ) as Partial<Record<TagKind, HTMLSelectElement>>;
   exportFormatEl = document.querySelector("#export-format");
   exportIssuesButtonEl = document.querySelector("#export-issues-button");
 
@@ -2552,13 +2597,35 @@ window.addEventListener("DOMContentLoaded", () => {
     TAG_KINDS.map((kind) => [kind, document.querySelector<HTMLInputElement>(`#filter-kind-${kind}`)]),
   ) as Partial<Record<TagKind, HTMLInputElement>>;
   for (const kind of TAG_KINDS) {
+    const select = ruleFilterSelectEls[kind];
+
+    // Selecting/deselecting an individual rule in this kind's multiselect.
+    select?.addEventListener("change", () => {
+      for (const option of select.options) {
+        if (option.selected) {
+          activeRules.add(option.value);
+        } else {
+          activeRules.delete(option.value);
+        }
+      }
+      syncRuleFilterSelections();
+      renderPscResults(currentPscOutcomes);
+    });
+
+    // The kind's own header checkbox: a "select all"/"select none" toggle
+    // for every rule in its multiselect, rather than an independent filter
+    // dimension of its own (see matchesTagFilters/updateTagKindHeaderCheckbox
+    // above).
     tagKindFilterEls[kind]?.addEventListener("change", () => {
       const checked = tagKindFilterEls[kind]?.checked ?? true;
-      if (checked) {
-        activeTagKinds.add(kind);
-      } else {
-        activeTagKinds.delete(kind);
+      for (const option of select?.options ?? []) {
+        if (checked) {
+          activeRules.add(option.value);
+        } else {
+          activeRules.delete(option.value);
+        }
       }
+      syncRuleFilterSelections();
       renderPscResults(currentPscOutcomes);
     });
   }
@@ -2583,14 +2650,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   autoFixableFilterEl?.addEventListener("change", () => {
     onlyAutoFixable = autoFixableFilterEl?.checked ?? false;
-    renderPscResults(currentPscOutcomes);
-  });
-
-  ruleFilterEl?.addEventListener("change", () => {
-    activeRules.clear();
-    for (const option of ruleFilterEl?.selectedOptions ?? []) {
-      activeRules.add(option.value);
-    }
     renderPscResults(currentPscOutcomes);
   });
 
