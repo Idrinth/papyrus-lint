@@ -144,6 +144,27 @@ mod tests {
     }
 
     #[test]
+    fn all_with_user_presets_dir_keeps_custom_names_sorted_and_describes_their_files() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        fs::write(dir.path().join("Zebra.yml"), "").expect("failed to write preset file");
+        fs::write(dir.path().join("alpha.yaml"), "").expect("failed to write preset file");
+        fs::write(dir.path().join("ignored.txt"), "").expect("failed to write non-preset file");
+
+        let custom = &all_with_user_presets_dir(Some(dir.path()))[PRESET_NAMES.len()..];
+
+        assert_eq!(
+            custom
+                .iter()
+                .map(|preset| preset.id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["alpha", "Zebra"]
+        );
+        assert_eq!(custom[0].label, "alpha");
+        assert!(custom[0].description.contains("alpha.yaml"));
+        assert!(custom[1].description.contains("Zebra.yaml"));
+    }
+
+    #[test]
     fn all_with_user_presets_dir_ignores_a_missing_directory() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
 

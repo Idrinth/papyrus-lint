@@ -951,6 +951,19 @@ describe("promptForConfigPreset", () => {
     expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
   });
 
+  it("renders and selects a user preset without changing its backend id", async () => {
+    const pending = promptForConfigPreset([
+      { id: "Team Conventions", label: "Team Conventions", description: "A custom preset." },
+    ]);
+    const option = document.querySelector<HTMLButtonElement>("#preset-picker-list .preset-picker__option")!;
+
+    expect(option.textContent).toContain("Team Conventions");
+    expect(option.textContent).toContain("A custom preset.");
+    option.click();
+
+    await expect(pending).resolves.toBe("Team Conventions");
+  });
+
   it("resolves null when the dialog is closed without picking a preset", async () => {
     const presets = [{ id: "strict", label: "Strict", description: "Catches everything." }];
 
@@ -1011,6 +1024,27 @@ describe("handleSaveConfigAsPresetClick", () => {
       overwrite: false,
     });
     expect(window.alert).toHaveBeenCalledWith('Saved preset "my-preset".');
+  });
+
+  it("trims the entered name and saves the latest settings edited in the UI", async () => {
+    invokeImplFor({ save_lint_config: () => undefined });
+    document.querySelector<HTMLSelectElement>("#semicolon-style")!.value = "forbid";
+    await handleLintConfigChanged();
+    invokeMock.mockClear();
+    vi.spyOn(window, "prompt").mockReturnValue("  team-style  ");
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    invokeImplFor({
+      list_config_presets: () => [],
+      save_config_as_preset: () => undefined,
+    });
+
+    await handleSaveConfigAsPresetClick();
+
+    expect(invokeMock).toHaveBeenCalledWith("save_config_as_preset", {
+      config: expect.objectContaining({ semicolon: false }),
+      name: "team-style",
+      overwrite: false,
+    });
   });
 
   it("asks to overwrite when a preset already exists under that name, matched case-insensitively", async () => {
