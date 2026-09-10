@@ -2371,11 +2371,20 @@ export async function useProjectDir(dir: string) {
 // choice (so it's prefilled next time the app starts) and, if a project is
 // already loaded, reloads its lint configuration from the new source (the
 // override path, or back to auto-detection if it was cleared).
-export function handleConfigPathOverrideChanged() {
+export async function handleConfigPathOverrideChanged() {
   rememberConfigPathOverride(configPathOverride());
   lintResultsStale = true;
   if (currentProjectDir) {
-    void useProjectDir(currentProjectDir);
+    await useProjectDir(currentProjectDir);
+    // useProjectDir may have replaced currentLintConfig (and the other
+    // settings it reloads) after a relint already ran against the old
+    // values, if the Lint results tab was clicked while this reload was
+    // still in flight (relintCurrentFiles clears lintResultsStale as soon
+    // as it starts, well before this await resolves). Re-marking it stale
+    // here, unconditionally, is what makes the next tab switch re-lint
+    // against the config this reload actually settled on, regardless of
+    // whether that race happened.
+    lintResultsStale = true;
   }
 }
 

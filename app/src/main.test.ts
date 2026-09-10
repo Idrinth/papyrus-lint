@@ -3028,6 +3028,63 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
     expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
   });
+
+  it("re-marks results stale once a config-path-override reload settles, even if a race relint already ran against the old config", async () => {
+    // Regression test: handleConfigPathOverrideChanged sets lintResultsStale
+    // before its useProjectDir() reload (which replaces currentLintConfig)
+    // has actually finished. If the Lint results tab is clicked in that
+    // window, relintCurrentFiles relints against the still-old config and
+    // clears the flag - so once the reload finally lands the new config, the
+    // displayed results must be re-flagged stale, or nothing ever re-lints
+    // them against it.
+    await dropOneFileAndSettle();
+
+    let resolveOverrideLoad: (config: LintConfig) => void = () => {};
+    const pendingOverrideLoad = new Promise<LintConfig>((resolve) => {
+      resolveOverrideLoad = resolve;
+    });
+    const custom: LintConfig = { ...DEFAULT_LINT_CONFIG, semicolon: true };
+    invokeImplFor({
+      load_lint_config_from_path: () => pendingOverrideLoad,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] raced" }],
+    });
+    document.querySelector<HTMLInputElement>("#config-path-override")!.value = "/profiles/strict.yaml";
+    const overrideChange = handleConfigPathOverrideChanged();
+
+    // The override's own config load is still pending, but lintResultsStale
+    // was already set before it started; switching to the Lint tab now
+    // races ahead of it and relints against the config still in effect.
+    invokeMock.mockClear();
+    document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+    const raceLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_psc_file");
+    expect((raceLintCall?.[1] as { config: LintConfig }).config.semicolon).toBe(false);
+
+    // The override's config load now finishes, well after that race relint
+    // already cleared lintResultsStale.
+    invokeMock.mockClear();
+    resolveOverrideLoad(custom);
+    await overrideChange;
+
+    invokeImplFor({
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] under custom config" }],
+    });
+    document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+
+    const secondLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_psc_file");
+    expect((secondLintCall?.[1] as { config: LintConfig }).config.semicolon).toBe(true);
+  });
 });
 
 describe("projectDirForPscPath", () => {
