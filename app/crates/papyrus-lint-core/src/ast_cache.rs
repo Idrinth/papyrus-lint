@@ -23,13 +23,14 @@
 //! here is swallowed and simply falls through to a fresh parse, never
 //! surfaced as a lint error.
 //!
-//! Each entry also has room for the lexer's token stream
+//! Each entry also carries the lexer's token stream
 //! (`papyrus_parser::tokenize()`'s output) alongside the AST, via
 //! [`get_tokens`]/[`put_tokens`], sharing the same freshness metadata as
 //! the AST accessors -- a `put`/`put_tokens` call preserves whatever
 //! still-valid value the other field already held instead of clobbering it.
-//! Nothing calls the token accessors yet; they exist so a later change can
-//! start caching tokens without another on-disk format migration.
+//! `put_tokens` is called wherever a script is freshly parsed (see
+//! `get_tokens`'s doc comment for the call sites), so entries accumulate a
+//! cached token stream too; nothing reads one back via `get_tokens` yet.
 
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
@@ -40,7 +41,7 @@ const CACHE_DIR_NAME: &str = "ast-cache";
 
 /// The oldest linter release whose AST cache entries the running binary
 /// still accepts. See the module docs above for when to bump this.
-const MIN_COMPATIBLE_VERSION: &str = "1.16.0";
+const MIN_COMPATIBLE_VERSION: &str = "1.28.0";
 
 #[derive(Serialize, Deserialize)]
 struct CacheEntry {
@@ -205,9 +206,12 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
 /// [`MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss, mismatch, or
 /// error -- the caller should tokenize `source` fresh in that case.
 ///
-/// Not yet called anywhere: the entry layout carries a `tokens` field
-/// alongside `ast` so both can share the same freshness metadata, but
-/// nothing populates or reads it outside this module's own tests yet.
+/// Not yet called anywhere: [`put_tokens`] is now populated alongside every
+/// fresh parse (see `parse_psc_file` in `app/src-tauri/src/lib.rs` and
+/// `FunctionTable::ensure_loaded`), but nothing yet reads a cached token
+/// stream back out -- lint rules that need tokens still tokenize `source`
+/// directly, relying on `papyrus_parser`'s own in-memory memoization rather
+/// than this disk cache.
 pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser::token::Token>> {
     get_tokens_in(&cache_dir()?, source_path, source)
 }
@@ -215,8 +219,6 @@ pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser
 /// Persists `tokens`, lexed from `source_path`/`source`, to the on-disk
 /// cache for later [`get_tokens`] calls. Any failure (e.g. an unwritable
 /// install directory) is silently ignored.
-///
-/// Not yet called anywhere: see [`get_tokens`].
 pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::token::Token]) {
     if let Some(dir) = cache_dir() {
         put_tokens_in(&dir, source_path, source, tokens, env!("CARGO_PKG_VERSION"));
@@ -400,9 +402,9 @@ mod tests {
     #[test]
     fn is_compatible_version_accepts_the_minimum_and_anything_newer() {
         assert!(is_compatible_version(MIN_COMPATIBLE_VERSION));
-        assert!(is_compatible_version("1.16.1"));
+        assert!(is_compatible_version("1.28.1"));
         assert!(is_compatible_version("2.0.0"));
-        assert!(!is_compatible_version("1.15.99"));
+        assert!(!is_compatible_version("1.27.99"));
         assert!(!is_compatible_version("not-a-version"));
     }
 

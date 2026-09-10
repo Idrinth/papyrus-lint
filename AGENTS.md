@@ -933,7 +933,7 @@ or `PapyrusLinterCLI`'s, whichever process is doing the parsing. A cached
 entry is only reused when its stored MD5 of the file's content and the
 file's last-modified timestamp still match, and the linter version that
 wrote the entry is at or above a `MIN_COMPATIBLE_VERSION` constant
-(currently `1.16.0`) rather than an exact match against the running
+(currently `1.28.0`) rather than an exact match against the running
 version — so an ordinary app update doesn't discard an otherwise
 still-valid cache, and `MIN_COMPATIBLE_VERSION` only needs bumping when a
 release actually changes the cache entry layout or the AST shape it
@@ -945,9 +945,11 @@ a subprocess. The on-disk entry also carries a `tokens` field alongside
 `ast` (both `Option`s, so writing one preserves the other's still-valid
 cached value via a read-modify-write against the existing entry), for the
 lexer's own token stream (`papyrus_parser::tokenize()`'s output) to be
-cached the same way; `get_tokens`/`put_tokens` exist for it already, but
-nothing calls them yet -- it's not wired into `parse_psc_file` or
-`function_table.rs` the way `get`/`put` are. The on-disk entry format
+cached the same way; `put_tokens` is called wherever `parse_psc_file` and
+`function_table.rs` freshly parse a script, alongside `put`, so entries
+accumulate a cached token stream too, but nothing calls `get_tokens` yet
+to read one back out -- lint rules that need tokens still tokenize the
+source directly. The on-disk entry format
 (the `modified_unix_secs`/`content_md5`/`linter_version`/`ast`/`tokens`
 envelope, and the `ast`/`tokens` fields' own shape) is published as a
 [JSON Schema](docs/ast-cache-entry.schema.json) using JSON Schema Draft

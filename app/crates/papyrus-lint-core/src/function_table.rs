@@ -534,6 +534,9 @@ impl FunctionTable {
                 }
                 let parsed = papyrus_parser::parse(&source).ok()?;
                 crate::ast_cache::put(&path, &source, &parsed);
+                if let Ok(tokens) = papyrus_parser::tokenize(&source) {
+                    crate::ast_cache::put_tokens(&path, &source, &tokens);
+                }
                 Some(parsed)
             })
             .map(|script| ScriptFunctions::from_script(&script));
