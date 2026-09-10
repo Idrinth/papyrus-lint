@@ -1,4 +1,4 @@
-# === "careful" preset (DRAFT) ==================================================
+# === "careful" preset ==========================================================
 # The quietest of the three: meant for a first pass over a project that
 # wasn't necessarily written with this linter in mind (an imported/legacy
 # codebase, someone else's mod). Only rules tagged "medium" or "high"
@@ -16,9 +16,10 @@
 # since unfamiliar code often has a few gnarly functions that aren't worth
 # flagging on a first pass.
 #
-# This file is a draft for review, not yet wired into `PapyrusLinterCLI
-# init`. See docs/presets/papyrus-lint.strict.yaml (today's actual default)
-# and docs/presets/papyrus-lint.standard.yaml for the other two presets.
+# Selected via `PapyrusLinterCLI init --preset careful`. See
+# docs/presets/papyrus-lint.strict.yaml (today's built-in default, and
+# `init`'s own default) and docs/presets/papyrus-lint.standard.yaml for the
+# other two presets.
 # ===============================================================================
 
 # Path to PapyrusCompiler.exe, or null to auto-detect it

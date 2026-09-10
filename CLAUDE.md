@@ -920,20 +920,39 @@ fails CI if they drift, so regenerate it with `PapyrusLinterCLI init`
 (and update `FIELD_COMMENTS`/README together) whenever a default or a
 field comment changes.
 
+`PapyrusLinterCLI init` also accepts `--preset <strict|standard|careful>`
+(matched case-insensitively, defaulting to `strict`), which selects the
+baseline `config::Preset` (`papyrus-lint-core/src/config.rs`) it generates
+`papyrus-lint.yaml` from, in place of the hardcoded default. `strict` is
+identical to `papyrus_lints::Config::default()` (and to
+`docs/papyrus-lint.default.yaml`), so plain `init` — no `--preset` — is
+unaffected by the flag existing at all; `standard` and `careful` are less
+noisy. Each preset's own annotated YAML lives under
+[`docs/presets/`](docs/presets/) (`papyrus-lint.strict.yaml`,
+`.standard.yaml`, `.careful.yaml`) and is compiled into the binary via
+`include_str!` on `Preset::yaml`, rather than read from disk at runtime.
+
 `initialize_default_config` also looks for a `papyrus-lint.yaml`/`.yml`
 file next to the running executable (`config::executable_dir`, backed by
-`std::env::current_exe()`) and, if one exists, uses it as the base instead
-of `papyrus_lints::Config::default()`/the hardcoded app-only defaults: any
-key it sets overrides the built-in default, any key it omits still falls
-back to that default (`ProjectFile`'s `#[serde(default)]` handles the
-merge for free once the base file is parsed). This lets someone define
-their own baseline settings once, next to wherever they keep the CLI or
-desktop app binary, and reuse it across every project they run `init` in.
-The lookup is split into a private `initialize_config_with_base(dir,
-base_dir)` so tests can supply a controlled `base_dir` instead of
+`std::env::current_exe()`) and, if one exists, layers it over the selected
+preset's own YAML instead of using the preset alone: any key it sets
+overrides the preset, any key it omits still falls back to the preset.
+This is a recursive per-key merge over `serde_yaml::Value` (`deep_merge`)
+rather than serde's own `#[serde(default)]` handling, since which
+"default" a key falls back to now depends on the chosen preset at runtime
+instead of being fixed at compile time; the merge covers `rules:`'s own
+nested keys too, so a base file that only overrides a couple of individual
+rules still inherits every other rule from the selected preset. This lets
+someone define their own baseline settings once, next to wherever they
+keep the CLI or desktop app binary, and reuse it across every project they
+run `init` in — layered on top of whichever preset they pick each time —
+rather than hand-editing each newly generated file the same way
+afterward. The lookup is split into a private `initialize_config_with_base(dir,
+base_dir, preset)` so tests can supply a controlled `base_dir` instead of
 depending on the test binary's own `current_exe()`; the checked-in
 `docs/papyrus-lint.default.yaml` copy is unaffected since CI's test
-environment has no such file next to the test binary.
+environment has no such file next to the test binary, and the `strict`
+preset (`init`'s own default) reproduces it byte-for-byte.
 
 The desktop app's `parse_psc_file` command, both the app's and the CLI's
 cross-script lookups (`papyrus-lint-core`'s `function_table.rs`, used to

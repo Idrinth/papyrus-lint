@@ -190,6 +190,59 @@ fn init_merges_a_config_placed_next_to_the_executable() {
 }
 
 #[test]
+fn init_defaults_to_the_strict_preset() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+
+    let output = run_cli_in(&["init"], dir.path());
+
+    assert!(output.status.success());
+    let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+        .expect("init should create papyrus-lint.yaml");
+    // Strict is the default, and matches every rule on (including pure
+    // style/naming nits like identifier casing).
+    assert!(config.contains("  identifier_casing: true\n"));
+}
+
+#[test]
+fn init_preset_flag_selects_the_standard_preset() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+
+    let output = run_cli_in(&["init", "--preset", "standard"], dir.path());
+
+    assert!(output.status.success());
+    let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+        .expect("init should create papyrus-lint.yaml");
+    assert!(config.contains("  identifier_casing: false\n"));
+    assert!(config.contains("  trailing_whitespace: true\n"));
+}
+
+#[test]
+fn init_preset_flag_accepts_the_equals_form_case_insensitively() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+
+    let output = run_cli_in(&["init", "--preset=CAREFUL"], dir.path());
+
+    assert!(output.status.success());
+    let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+        .expect("init should create papyrus-lint.yaml");
+    assert!(config.contains("cyclomatic_complexity_warning: 20\n"));
+    assert!(config.contains("  trailing_whitespace: false\n"));
+}
+
+#[test]
+fn init_rejects_an_unknown_preset() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+
+    let output = run_cli_in(&["init", "--preset", "lenient"], dir.path());
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).expect("stderr should be UTF-8");
+    assert!(stderr.contains("unknown preset 'lenient'"));
+    assert!(!dir.path().join("papyrus-lint.yaml").exists());
+}
+
+#[test]
 fn output_flag_redirects_json_without_writing_to_stdout() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let script = dir.path().join("scripts/source/Example.psc");
