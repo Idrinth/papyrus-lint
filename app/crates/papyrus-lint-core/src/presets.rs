@@ -100,6 +100,8 @@ fn all_with_user_presets_dir(dir: Option<&Path>) -> Vec<PresetInfo> {
 mod tests {
     use std::fs;
 
+    use serde_json::json;
+
     use super::*;
     use crate::config::Preset;
 
@@ -125,6 +127,38 @@ mod tests {
     fn all_matches_preset_names_order() {
         let ids: Vec<String> = all().into_iter().map(|preset| preset.id).collect();
         assert_eq!(ids, PRESET_NAMES.to_vec());
+    }
+
+    #[test]
+    fn preset_info_serializes_with_the_frontend_field_names() {
+        let preset = PresetInfo {
+            id: "team-rules".to_string(),
+            label: "Team rules".to_string(),
+            description: "The team's shared lint configuration.".to_string(),
+        };
+
+        assert_eq!(
+            serde_json::to_value(preset).expect("preset info should serialize"),
+            json!({
+                "id": "team-rules",
+                "label": "Team rules",
+                "description": "The team's shared lint configuration.",
+            })
+        );
+    }
+
+    #[test]
+    fn all_with_no_user_preset_directory_returns_only_built_ins() {
+        let presets = all_with_user_presets_dir(None);
+
+        assert_eq!(presets.len(), PRESET_NAMES.len());
+        assert_eq!(
+            presets
+                .iter()
+                .map(|preset| preset.id.as_str())
+                .collect::<Vec<_>>(),
+            PRESET_NAMES
+        );
     }
 
     #[test]

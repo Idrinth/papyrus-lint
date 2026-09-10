@@ -68,6 +68,12 @@ mod tests {
     }
 
     #[test]
+    fn lookup_requires_the_documented_lowercase_input() {
+        assert_eq!(parent_of("Actor"), None);
+        assert!(!is_known("Form"));
+    }
+
+    #[test]
     fn recognizes_children_and_root_types() {
         assert!(is_known("actor"));
         assert!(is_known("form"));
@@ -98,6 +104,16 @@ mod tests {
                 );
                 current = parent_of(type_name);
             }
+        }
+    }
+
+    #[test]
+    fn every_generated_parent_is_itself_a_known_native_type() {
+        for (child, parent) in NATIVE_EXTENDS {
+            assert!(
+                is_known(parent),
+                "parent {parent} of native type {child} should be known"
+            );
         }
     }
 }
