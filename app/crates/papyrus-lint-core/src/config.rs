@@ -1099,6 +1099,20 @@ mod tests {
     }
 
     #[test]
+    fn custom_preset_yaml_supports_uppercase_yml_extensions() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "team-style.YML", "semicolon: true\n");
+
+        let yaml = Preset::Custom("team-style".to_string())
+            .yaml(Some(base_dir.path()))
+            .expect("uppercase YML preset should resolve");
+
+        assert_eq!(yaml.as_ref(), "semicolon: true\n");
+    }
+
+    #[test]
     fn save_user_preset_rejects_a_blank_name() {
         let error = save_user_preset_under(None, "   ", &papyrus_lints::Config::default(), false)
             .expect_err("blank name should be rejected");
@@ -1155,6 +1169,28 @@ mod tests {
         let saved: papyrus_lints::Config =
             serde_yaml::from_str(&yaml).expect("saved preset should parse as a lint config");
         assert_eq!(saved, config);
+    }
+
+    #[test]
+    fn save_user_preset_trims_the_name_used_for_the_file() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let path = save_user_preset_under(
+            Some(base_dir.path()),
+            "  team-style  ",
+            &papyrus_lints::Config::default(),
+            false,
+        )
+        .expect("saving a trimmed preset name should succeed");
+
+        assert_eq!(
+            path.file_name().and_then(|name| name.to_str()),
+            Some("team-style.yaml")
+        );
+        assert_eq!(
+            list_user_preset_names(&base_dir.path().join(USER_PRESETS_DIR_NAME)),
+            vec!["team-style".to_string()]
+        );
     }
 
     #[test]
