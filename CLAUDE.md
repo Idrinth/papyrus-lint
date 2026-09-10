@@ -941,10 +941,16 @@ embeds. Any mismatch, or any I/O/(de)serialization failure reading the
 cache, falls back to a fresh parse, so a stale or corrupt cache never
 surfaces as a lint error. Since it lives in `papyrus-lint-core`, the same
 cache backs the editor extensions too, which invoke `PapyrusLinterCLI` as
-a subprocess. The on-disk entry format (the `modified_unix_secs`/
-`content_md5`/`linter_version`/`ast` envelope, and the `ast` field's own
-shape) is published as a [JSON
-Schema](docs/ast-cache-entry.schema.json) using JSON Schema Draft
+a subprocess. The on-disk entry also carries a `tokens` field alongside
+`ast` (both `Option`s, so writing one preserves the other's still-valid
+cached value via a read-modify-write against the existing entry), for the
+lexer's own token stream (`papyrus_parser::tokenize()`'s output) to be
+cached the same way; `get_tokens`/`put_tokens` exist for it already, but
+nothing calls them yet -- it's not wired into `parse_psc_file` or
+`function_table.rs` the way `get`/`put` are. The on-disk entry format
+(the `modified_unix_secs`/`content_md5`/`linter_version`/`ast`/`tokens`
+envelope, and the `ast`/`tokens` fields' own shape) is published as a
+[JSON Schema](docs/ast-cache-entry.schema.json) using JSON Schema Draft
 2020-12, versioned the same way the cache itself is: it describes
 entries whose `linter_version` is at or above `MIN_COMPATIBLE_VERSION`,
 so a consuming tool should check a read entry's `linter_version` against

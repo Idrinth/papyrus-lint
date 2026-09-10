@@ -16,7 +16,7 @@ pub enum IntFormat {
     Hexadecimal,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Keyword {
     ScriptName,
     Extends,
@@ -98,7 +98,7 @@ impl Keyword {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum TokenKind {
     Identifier(String),
     Keyword(Keyword),
@@ -144,7 +144,7 @@ pub enum TokenKind {
     Eof,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Token {
     pub kind: TokenKind,
     pub line: usize,
