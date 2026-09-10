@@ -95,6 +95,11 @@ class CheckSiteTest(unittest.TestCase):
             playwright_context = MagicMock()
             playwright_context.__enter__.return_value = playwright
 
+            def assert_browser_closed_before_playwright_stops(*_args) -> None:
+                browser.close.assert_called_once_with()
+
+            playwright_context.__exit__.side_effect = assert_browser_closed_before_playwright_stops
+
             with (
                 patch.object(browser_check, "start_server", return_value=(server, "http://local.test")),
                 patch.object(browser_check, "sync_playwright", return_value=playwright_context),
@@ -103,6 +108,7 @@ class CheckSiteTest(unittest.TestCase):
                 browser_check.check_site(dist)
 
         browser.close.assert_called_once_with()
+        playwright_context.__exit__.assert_called_once()
         server.shutdown.assert_called_once_with()
         server.server_close.assert_called_once_with()
 
