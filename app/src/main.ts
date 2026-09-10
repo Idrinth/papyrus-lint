@@ -79,6 +79,7 @@ let themeSelectEl: HTMLSelectElement | null;
 let presetPickerEl: HTMLDialogElement | null;
 let presetPickerListEl: HTMLElement | null;
 let presetPickerSkipEl: HTMLButtonElement | null;
+let saveConfigAsPresetButtonEl: HTMLButtonElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
@@ -624,6 +625,39 @@ export async function applyConfigPreset(dir: string, preset: string): Promise<vo
     await invoke("apply_config_preset", { dir, preset });
   } catch (error) {
     console.error(error);
+  }
+}
+
+// Prompts for a name and saves the Settings tab's currently edited lint
+// configuration (currentLintConfig, kept in sync by handleLintConfigChanged)
+// as a new user preset under it, via the backend's save_config_as_preset
+// command (papyrus_lint_core::config::save_user_preset) — the same
+// executable-adjacent "presets" directory loadConfigPresets/applyConfigPreset
+// above already read from, so the saved preset is immediately selectable
+// from the first-run picker (or the CLI's --preset <name>) afterward.
+// Cancels silently if the prompt is left blank; if a preset (built-in or
+// user) already exists under that name, asks to overwrite it and cancels
+// silently if declined. Reports success/failure once the save itself is
+// attempted, since unlike every other Settings tab field, this isn't an
+// autosave the user can otherwise tell happened.
+export async function handleSaveConfigAsPresetClick(): Promise<void> {
+  const name = window.prompt("Save the current settings as a preset named:")?.trim();
+  if (!name) {
+    return;
+  }
+
+  const presets = await loadConfigPresets();
+  const exists = presets.some((preset) => preset.id.toLowerCase() === name.toLowerCase());
+  if (exists && !window.confirm(`A preset named "${name}" already exists. Overwrite it?`)) {
+    return;
+  }
+
+  try {
+    await invoke("save_config_as_preset", { config: currentLintConfig, name, overwrite: exists });
+    window.alert(`Saved preset "${name}".`);
+  } catch (error) {
+    console.error(error);
+    window.alert(`Failed to save preset "${name}": ${error}`);
   }
 }
 
@@ -2641,6 +2675,8 @@ window.addEventListener("DOMContentLoaded", () => {
       presetPickerEl?.close();
     }
   });
+  saveConfigAsPresetButtonEl = document.querySelector("#save-config-as-preset");
+  saveConfigAsPresetButtonEl?.addEventListener("click", () => void handleSaveConfigAsPresetClick());
 
   const initialTheme = loadStoredTheme();
   if (themeSelectEl) {
