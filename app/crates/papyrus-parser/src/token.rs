@@ -222,4 +222,21 @@ mod tests {
         assert_eq!(token.line, 12);
         assert_eq!(token.col, 7);
     }
+
+    /// Tokens need to round-trip through serde so a disk-backed cache can
+    /// persist them alongside the parsed AST, rather than only ever holding
+    /// them in memory for the duration of a single lint pass.
+    #[test]
+    fn token_round_trips_through_json_including_a_keyword_and_hex_int_literal() {
+        let tokens = vec![
+            Token::new(TokenKind::Keyword(Keyword::ScriptName), 1, 1),
+            Token::new(TokenKind::IntLiteral(42, IntFormat::Hexadecimal), 2, 5),
+            Token::new(TokenKind::Eof, 3, 1),
+        ];
+
+        let json = serde_json::to_string(&tokens).unwrap();
+        let round_tripped: Vec<Token> = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(round_tripped, tokens);
+    }
 }
