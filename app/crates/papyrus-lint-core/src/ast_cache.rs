@@ -396,6 +396,74 @@ mod tests {
     }
 
     #[test]
+    fn same_named_scripts_in_different_projects_do_not_share_a_cache_entry() {
+        let cache_dir = tempdir().unwrap();
+        let projects_dir = tempdir().unwrap();
+        let project_a = projects_dir.path().join("ProjectA");
+        let project_b = projects_dir.path().join("ProjectB");
+        std::fs::create_dir_all(&project_a).unwrap();
+        std::fs::create_dir_all(&project_b).unwrap();
+
+        let path_a = project_a.join("Shared.psc");
+        let path_b = project_b.join("Shared.psc");
+        let source_a = "ScriptName Shared\nInt Property ProjectId = 1 Auto\n";
+        let source_b = "ScriptName Shared\nInt Property ProjectId = 2 Auto\n";
+        std::fs::write(&path_a, source_a).unwrap();
+        std::fs::write(&path_b, source_b).unwrap();
+
+        let ast_a = papyrus_parser::parse(source_a).unwrap();
+        let ast_b = papyrus_parser::parse(source_b).unwrap();
+        put_in(
+            cache_dir.path(),
+            &path_a,
+            source_a,
+            &ast_a,
+            COMPATIBLE_VERSION,
+        );
+        put_in(
+            cache_dir.path(),
+            &path_b,
+            source_b,
+            &ast_b,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_ne!(
+            cache_file_path(cache_dir.path(), &path_a),
+            cache_file_path(cache_dir.path(), &path_b)
+        );
+        assert_eq!(get_in(cache_dir.path(), &path_a, source_a), Some(ast_a));
+        assert_eq!(get_in(cache_dir.path(), &path_b, source_b), Some(ast_b));
+    }
+
+    #[test]
+    fn put_replaces_a_corrupt_entry_with_a_readable_cache_entry() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        std::fs::write(
+            cache_file_path(cache_dir.path(), &source_path),
+            b"a previous process left an incomplete cache entry",
+        )
+        .unwrap();
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+
+        let ast = sample_ast();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &ast,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
+    }
+
+    #[test]
     fn cache_file_path_is_stable_and_does_not_expose_the_source_filename() {
         let cache_dir = Path::new("/tmp/cache");
         let source_path = Path::new("/projects/private/MyScript.psc");
