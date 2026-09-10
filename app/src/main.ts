@@ -32,6 +32,13 @@ let identifierCasingStyleEl: HTMLSelectElement | null;
 let namedArgumentsStyleEl: HTMLSelectElement | null;
 let magicNumbersModeEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
+// Set whenever a setting affecting lint output (formatting/rule config,
+// compiler path, compile-check toggle, additional script roots, or the
+// configuration file override) changes after currentPscOutcomes was last
+// populated, so a currently showing lint results list no longer reflects
+// the active settings. Checked by the Lint results tab button so switching
+// to it re-lints the same files instead of silently showing stale findings.
+let lintResultsStale = false;
 // Bumped by handleDroppedPaths every time a new drop starts parsing/linting;
 // a still-running drop's parsePscFiles callback checks its own snapshot of
 // this against the current value before touching currentPscOutcomes, so a
@@ -923,6 +930,7 @@ export function lintConfigFromUI(): LintConfig {
 // config and, if a project directory is known, persists it to disk.
 export function handleLintConfigChanged() {
   currentLintConfig = lintConfigFromUI();
+  lintResultsStale = true;
   const override = configPathOverride();
   if (override) {
     void saveLintConfigToPath(override, currentLintConfig);
@@ -2365,6 +2373,7 @@ export async function useProjectDir(dir: string) {
 // override path, or back to auto-detection if it was cleared).
 export function handleConfigPathOverrideChanged() {
   rememberConfigPathOverride(configPathOverride());
+  lintResultsStale = true;
   if (currentProjectDir) {
     void useProjectDir(currentProjectDir);
   }
@@ -2375,6 +2384,7 @@ export function handleConfigPathOverrideChanged() {
 // config file (if a project is loaded).
 export function handleCompilerPathChanged() {
   currentCompilerPath = compilerPathEl?.value ?? "";
+  lintResultsStale = true;
   if (currentProjectDir && compilerPathEl) {
     void saveCompilerPath(currentProjectDir, compilerPathEl.value);
   }
@@ -2386,6 +2396,7 @@ export function handleCompilerPathChanged() {
 // project's config file (if a project is loaded).
 export function handleCompileCheckChanged() {
   currentCompileCheck = compileCheckEl?.checked ?? false;
+  lintResultsStale = true;
   if (currentProjectDir) {
     void saveCompileCheck(currentProjectDir, currentCompileCheck);
   }
@@ -2413,6 +2424,7 @@ export function applyScriptRootsToUI(roots: string[]) {
 // loaded).
 export function handleScriptRootsChanged() {
   currentScriptRoots = scriptRootsFromUI();
+  lintResultsStale = true;
   if (currentProjectDir) {
     void saveScriptRoots(currentProjectDir, currentScriptRoots);
   }
@@ -2509,6 +2521,7 @@ export async function handleDroppedPaths(paths: string[]) {
       // pass below can't show a previous drop's stale findings for a
       // path that happens to match one of this drop's entries.
       currentPscOutcomes = [];
+      lintResultsStale = false;
       const generation = ++currentParseGeneration;
       const projectDir = projectDirForAchlist(achlistPath, entries);
       showResult(achlistPath, entries, projectDir);
@@ -2543,6 +2556,7 @@ export async function handleDroppedPaths(paths: string[]) {
     const pscPath = paths[0];
     clearError();
     currentPscOutcomes = [];
+    lintResultsStale = false;
     const generation = ++currentParseGeneration;
     showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
     renderPscResults(currentPscOutcomes);
@@ -2578,6 +2592,7 @@ export async function handleDroppedPaths(paths: string[]) {
       });
       clearError();
       currentPscOutcomes = [];
+      lintResultsStale = false;
       const generation = ++currentParseGeneration;
       const projectDir = projectDirForDirectory(dirPath, entries);
       showResult(dirPath, entries, projectDir);
@@ -2604,6 +2619,39 @@ export async function handleDroppedPaths(paths: string[]) {
   }
 
   showError("Please drop a single .achlist or .psc file, or a folder to scan recursively.");
+}
+
+// Re-lints the same set of files currently shown in the Lint results tab
+// against the now-current settings. Called when that tab is switched to
+// while lintResultsStale is set, so a settings change (formatting/rule
+// config, compiler path, compile-check toggle, script roots, or the
+// configuration file override) takes visible effect instead of leaving
+// stale findings on screen. Clears the list first (rather than relinting
+// in place) so it's obvious a fresh pass is running rather than silently
+// showing results that may no longer match the current settings.
+export async function relintCurrentFiles() {
+  const paths = currentPscOutcomes.map((outcome) => outcome.path);
+  if (paths.length === 0) {
+    return;
+  }
+  lintResultsStale = false;
+  currentPscOutcomes = [];
+  const generation = ++currentParseGeneration;
+  switchTab("lint");
+  renderPscResults(currentPscOutcomes);
+
+  showLintProgress(paths.length);
+  await parsePscFiles(paths, (outcome) => {
+    if (generation !== currentParseGeneration) {
+      return;
+    }
+    currentPscOutcomes.push(outcome);
+    renderPscResults(currentPscOutcomes);
+    updateLintProgress(currentPscOutcomes.length, paths.length);
+  });
+  if (generation === currentParseGeneration) {
+    scheduleHideLintProgress();
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -2835,7 +2883,21 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   for (const id of TAB_IDS) {
-    document.querySelector<HTMLButtonElement>(`#tab-${id}`)?.addEventListener("click", () => switchTab(id));
+    const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);
+    if (id === "lint") {
+      // A settings change since the results currently shown were linted
+      // (lintResultsStale) means they no longer reflect the active
+      // settings; re-lint the same files instead of just showing the tab.
+      button?.addEventListener("click", () => {
+        if (lintResultsStale && currentPscOutcomes.length > 0) {
+          void relintCurrentFiles();
+        } else {
+          switchTab("lint");
+        }
+      });
+    } else {
+      button?.addEventListener("click", () => switchTab(id));
+    }
   }
   switchTab("import");
 

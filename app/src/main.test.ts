@@ -80,6 +80,7 @@ import {
   projectDirForPscPath,
   promptForConfigPreset,
   relativePath,
+  relintCurrentFiles,
   rememberConfigPathOverride,
   rememberProjectDir,
   renderMassFixList,
@@ -2945,6 +2946,87 @@ describe("handleDroppedPaths", () => {
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toContain("New.psc");
     expect(items[0].textContent).not.toContain("Old.psc");
+  });
+});
+
+describe("relintCurrentFiles / Lint results tab settings staleness", () => {
+  async function dropOneFileAndSettle() {
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      save_lint_config: () => undefined,
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] from first pass" }],
+    });
+    await handleDroppedPaths(["/proj/list.achlist"]);
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+  }
+
+  it("relintCurrentFiles does nothing when no files are currently loaded", async () => {
+    // An achlist with no .psc entries leaves currentPscOutcomes empty,
+    // giving a deterministic "nothing loaded" state to start the test from
+    // regardless of what an earlier test left behind (module-level state
+    // isn't reset between tests).
+    invokeImplFor({
+      parse_achlist_file: () => ["readme.txt"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+    await handleDroppedPaths(["/proj/list.achlist"]);
+    invokeMock.mockClear();
+
+    await relintCurrentFiles();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("clicking the Lint results tab after a settings change clears the list and re-lints the same files", async () => {
+    await dropOneFileAndSettle();
+
+    switchTab("settings");
+    invokeImplFor({
+      save_lint_config: () => undefined,
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[error] from second pass" }],
+    });
+    handleLintConfigChanged();
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
+    // The results panel is hidden synchronously (the same "empty" signal a
+    // fresh drop uses while its own lint pass is still running) before the
+    // re-lint pass's async work (parse_psc_file/lint_psc_file) runs.
+    expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(true);
+    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
+
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc" });
+    expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(false);
+    const items = document.querySelectorAll("#psc-result-list > li");
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toContain("from second pass");
+  });
+
+  it("clicking the Lint results tab with no settings change since the last lint just switches tabs", async () => {
+    await dropOneFileAndSettle();
+
+    switchTab("settings");
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
+    await Promise.resolve();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
   });
 });
 
