@@ -5,8 +5,10 @@
 # importance by papyrus-lints' tags module are on — real correctness bugs
 # (type mismatches, unresolved references, division by zero, unguarded
 # recursion, ...) and real performance problems (slow/forbidden function
-# calls, short wait intervals, ...). Every purely stylistic or
-# maintainability-advisory rule is off, including the mechanical
+# calls, short wait intervals, ...); a rule tagged partly "maintainability"
+# alongside "correctness"/"performance" (e.g. `unused_getter`) still stays
+# on, since importance — not kind — is what this preset filters by. Every
+# "low" importance rule is off, including the mechanical
 # formatting/whitespace ones "standard" still keeps, since hundreds of
 # trailing-whitespace/indentation findings on a codebase formatted
 # differently from this linter's conventions would bury the findings that

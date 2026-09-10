@@ -9,10 +9,13 @@
 # Turned off relative to "strict": rules that are purely naming-convention,
 # informational, or maintainability-advisory with no correctness/
 # performance stake of their own — identifier/type casing, named-argument
-# style, property sorting, unused-getter/-property/-local-variable/
-# -disable-directive advisories, function-override/useless-downcast info
-# notices, parameter reassignment, and the "call a Global via an instance"
-# style nit. These are still useful over time, just not on every run.
+# style, property sorting, unused-property/-local-variable/-disable-directive
+# advisories, function-override/useless-downcast info notices, parameter
+# reassignment, and the "call a Global via an instance" style nit.
+# `unused_getter` stays on: unlike the others in that family, it's tagged
+# "correctness" as well as "maintainability" (medium importance), since an
+# unused getter can also mean the property it reads was never wired up.
+# These are still useful over time, just not on every run.
 #
 # This file is a draft for review, not yet wired into `PapyrusLinterCLI
 # init`. See docs/presets/papyrus-lint.strict.yaml (today's actual default)
