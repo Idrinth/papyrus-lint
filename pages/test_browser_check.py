@@ -19,7 +19,6 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from unittest.mock import Mock, MagicMock, patch
-
 from pages import browser_check
 
 
