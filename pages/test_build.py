@@ -1310,6 +1310,15 @@ command
 
 
 class CoveragePageTest(unittest.TestCase):
+    def test_load_coverage_summary_loads_the_shared_ci_module(self) -> None:
+        coverage_summary = page_builder.load_coverage_summary()
+
+        self.assertEqual(coverage_summary.pct(7, 8), "87.5%")
+        self.assertIn(
+            ("Pages (site builder)", "pages-coverage/lcov.info"),
+            next(parts for label, parts in coverage_summary.MODULES if label == "Tooling"),
+        )
+
     def test_normalize_source_path_strips_a_ci_checkout_prefix(self) -> None:
         self.assertEqual(
             page_builder.normalize_source_path(
@@ -1368,6 +1377,20 @@ class CoveragePageTest(unittest.TestCase):
                 [("src/generated.rs", 5, 3)],
             )
 
+    def test_parse_lcov_files_resets_counts_when_a_new_record_starts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text(
+                "SF:incomplete.rs\nLF:50\nLH:40\n"
+                "SF:complete.rs\nLF:4\nLH:3\nend_of_record\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                page_builder.parse_lcov_files(report),
+                [("complete.rs", 4, 3)],
+            )
+
     def test_parse_lcov_files_discards_an_unterminated_record(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             report = Path(directory, "lcov.info")
@@ -1413,6 +1436,17 @@ class CoveragePageTest(unittest.TestCase):
 
         self.assertIn("<code>src/&lt;unsafe&gt;&amp;&quot;file&quot;.rs</code>", result)
         self.assertNotIn("<unsafe>", result)
+
+    def test_render_coverage_table_preserves_the_supplied_row_order(self) -> None:
+        coverage_summary = page_builder.load_coverage_summary()
+
+        result = page_builder.render_coverage_table(
+            [("lowest.rs", 10, 1), ("middle.rs", 10, 5), ("highest.rs", 10, 9)],
+            coverage_summary,
+        )
+
+        self.assertLess(result.index("lowest.rs"), result.index("middle.rs"))
+        self.assertLess(result.index("middle.rs"), result.index("highest.rs"))
 
     def test_build_coverage_content_groups_by_module_and_sorts_worst_first(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
