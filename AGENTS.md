@@ -97,11 +97,14 @@ desktop app's binary at all.
 │       │       │                       # Form, ...) with no .psc in the project;
 │       │       │                       # reads rules/native-types.yaml via a
 │       │       │                       # build-time-generated array (build.rs)
-│       │       └── native_globals.rs   # Known native singleton scripts (Game,
-│       │                               # Utility, Debug, ...) always called by
-│       │                               # literal name, with no .psc in the
-│       │                               # project; reads rules/native-globals.yaml
-│       │                               # via a build-time-generated array (build.rs)
+│       │       ├── native_globals.rs   # Known native singleton scripts (Game,
+│       │       │                       # Utility, Debug, ...) always called by
+│       │       │                       # literal name, with no .psc in the
+│       │       │                       # project; reads rules/native-globals.yaml
+│       │       │                       # via a build-time-generated array (build.rs)
+│       │       └── presets.rs          # Label/description metadata for the desktop
+│       │                               # app's first-run preset picker, layered over
+│       │                               # config::Preset (see Configuration below)
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           └── src/                # achlist's scripts against its project's
 │               ├── lib.rs           # papyrus-lint.yaml and prints the results.
@@ -953,6 +956,25 @@ depending on the test binary's own `current_exe()`; the checked-in
 `docs/papyrus-lint.default.yaml` copy is unaffected since CI's test
 environment has no such file next to the test binary, and the `strict`
 preset (`init`'s own default) reproduces it byte-for-byte.
+
+The desktop app offers the same three presets as its own first-run picker,
+rather than only through the CLI's `init --preset` flag above:
+`useProjectDir` (`app/src/main.ts`) checks the project directory's
+`load_project_info` result and, if it has no `papyrus-lint.yaml`/`.yml`
+yet (and no "Configuration file" override is set — that's an explicit,
+separately managed file path), shows a dialog (`#preset-picker`) listing
+every preset via the `list_config_presets` Tauri command, backed by
+`papyrus-lint-core`'s `presets` module (`presets::all()`) — a thin
+label/description layer over `config::Preset`/`config::PRESET_NAMES`, the
+same enum the CLI flag parses. Picking one calls `apply_config_preset(dir,
+id)`, which resolves the id via `config::Preset::parse` and hands it to
+`config::initialize_default_config` — the very function `init --preset`
+itself calls — so the desktop app gets the same "refuse to replace an
+existing config" guard and executable-adjacent base-config layering for
+free. Closing the dialog without choosing one (its "Use defaults" button,
+Escape, or a backdrop click) leaves the project on the engine's built-in
+defaults without writing a file, so it's asked again the next time that
+directory is opened.
 
 The desktop app's `parse_psc_file` command, both the app's and the CLI's
 cross-script lookups (`papyrus-lint-core`'s `function_table.rs`, used to

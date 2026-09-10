@@ -6,7 +6,9 @@
 # maximum coverage and is willing to triage every finding.
 #
 # Selected via `PapyrusLinterCLI init --preset strict` (also the default
-# when `init` is run with no `--preset` flag at all). See
+# when `init` is run with no `--preset` flag at all) and by the desktop
+# app's first-run preset picker for a project with no
+# papyrus-lint.yaml/.yml yet. See
 # docs/presets/papyrus-lint.standard.yaml and
 # docs/presets/papyrus-lint.careful.yaml for the less noisy alternatives.
 # ===============================================================================

@@ -17,10 +17,11 @@
 # unused getter can also mean the property it reads was never wired up.
 # These are still useful over time, just not on every run.
 #
-# Selected via `PapyrusLinterCLI init --preset standard`. See
-# docs/presets/papyrus-lint.strict.yaml (today's built-in default, and
-# `init`'s own default) and docs/presets/papyrus-lint.careful.yaml for the
-# other two presets.
+# Selected via `PapyrusLinterCLI init --preset standard` and by the desktop
+# app's first-run preset picker for a project with no
+# papyrus-lint.yaml/.yml yet. See docs/presets/papyrus-lint.strict.yaml
+# (today's built-in default, and `init`'s own default) and
+# docs/presets/papyrus-lint.careful.yaml for the other two presets.
 # ===============================================================================
 
 # Path to PapyrusCompiler.exe, or null to auto-detect it

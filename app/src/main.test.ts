@@ -17,6 +17,7 @@ import {
   DEFAULT_RULES,
   applyAutocompleteSelection,
   applyLintConfigToUI,
+  applyConfigPreset,
   applyProjectInfoToUI,
   applyRuleTags,
   applyTheme,
@@ -60,6 +61,7 @@ import {
   loadAppVersion,
   loadCompileCheck,
   loadCompilerPath,
+  loadConfigPresets,
   loadLintConfig,
   loadLintConfigFromPath,
   loadProjectInfo,
@@ -75,6 +77,7 @@ import {
   projectDirForAchlist,
   projectDirForDirectory,
   projectDirForPscPath,
+  promptForConfigPreset,
   relativePath,
   rememberConfigPathOverride,
   rememberProjectDir,
@@ -806,6 +809,154 @@ describe("useProjectDir", () => {
     expect(invokeMock).not.toHaveBeenCalledWith("load_lint_config", expect.anything());
     expect(document.querySelector<HTMLSelectElement>("#semicolon-style")!.value).toBe("require");
     expect(document.querySelector("#used-configuration-file")!.textContent).toBe("/profiles/strict.yaml");
+  });
+
+  it("prompts for a preset when the project has no config yet, and applies the chosen one", async () => {
+    const presets = [
+      { id: "strict", label: "Strict", description: "Catches everything." },
+      { id: "careful", label: "Careful", description: "The quietest option." },
+    ];
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      list_config_presets: () => presets,
+      apply_config_preset: () => undefined,
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+
+    const pending = useProjectDir("/my/project");
+
+    await vi.waitFor(() =>
+      expect(document.querySelectorAll("#preset-picker-list .preset-picker__option").length).toBe(2),
+    );
+    document.querySelectorAll<HTMLButtonElement>("#preset-picker-list .preset-picker__option")[1].click();
+    await pending;
+
+    expect(invokeMock).toHaveBeenCalledWith("apply_config_preset", { dir: "/my/project", preset: "careful" });
+    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
+  });
+
+  it("does not apply any preset when the picker is skipped", async () => {
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      list_config_presets: () => [{ id: "strict", label: "Strict", description: "Catches everything." }],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+
+    const pending = useProjectDir("/my/project");
+
+    await vi.waitFor(() => expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(true));
+    document.querySelector<HTMLButtonElement>("#preset-picker-skip")!.click();
+    await pending;
+
+    expect(invokeMock).not.toHaveBeenCalledWith("apply_config_preset", expect.anything());
+  });
+
+  it("does not prompt for a preset when the project already has a config file", async () => {
+    invokeImplFor({
+      load_project_info: () => ({
+        detected_script_roots: [],
+        used_configuration_file: "/my/project/papyrus-lint.yaml",
+      }),
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+
+    await useProjectDir("/my/project");
+
+    expect(invokeMock).not.toHaveBeenCalledWith("list_config_presets");
+    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
+  });
+
+  it("does not prompt for a preset when a configuration file override is set", async () => {
+    invokeImplFor({
+      load_lint_config_from_path: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+    });
+    document.querySelector<HTMLInputElement>("#config-path-override")!.value = "/profiles/strict.yaml";
+
+    await useProjectDir("/my/project");
+
+    expect(invokeMock).not.toHaveBeenCalledWith("list_config_presets");
+  });
+});
+
+describe("loadConfigPresets / applyConfigPreset", () => {
+  it("fetches the list of built-in presets from the backend", async () => {
+    const presets = [
+      { id: "strict", label: "Strict", description: "Catches everything." },
+      { id: "standard", label: "Standard", description: "A middle ground." },
+    ];
+    invokeImplFor({ list_config_presets: () => presets });
+
+    await expect(loadConfigPresets()).resolves.toEqual(presets);
+  });
+
+  it("returns an empty array when fetching presets fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    invokeImplFor({});
+
+    await expect(loadConfigPresets()).resolves.toEqual([]);
+  });
+
+  it("applies the chosen preset to the given project directory", async () => {
+    invokeImplFor({ apply_config_preset: () => undefined });
+
+    await applyConfigPreset("/my/project", "careful");
+
+    expect(invokeMock).toHaveBeenCalledWith("apply_config_preset", { dir: "/my/project", preset: "careful" });
+  });
+
+  it("logs and swallows an error applying a preset", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    invokeImplFor({});
+
+    await expect(applyConfigPreset("/my/project", "careful")).resolves.toBeUndefined();
+  });
+});
+
+describe("promptForConfigPreset", () => {
+  it("resolves null immediately when there are no presets to offer", async () => {
+    await expect(promptForConfigPreset([])).resolves.toBeNull();
+    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
+  });
+
+  it("renders one option per preset and resolves with the id of the one clicked", async () => {
+    const presets = [
+      { id: "strict", label: "Strict", description: "Catches everything." },
+      { id: "careful", label: "Careful", description: "The quietest option." },
+    ];
+
+    const pending = promptForConfigPreset(presets);
+    const options = document.querySelectorAll<HTMLButtonElement>(
+      "#preset-picker-list .preset-picker__option",
+    );
+    expect(options).toHaveLength(2);
+    expect(options[1].textContent).toContain("Careful");
+    expect(options[1].textContent).toContain("The quietest option.");
+    options[1].click();
+
+    await expect(pending).resolves.toBe("careful");
+    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
+  });
+
+  it("resolves null when the dialog is closed without picking a preset", async () => {
+    const presets = [{ id: "strict", label: "Strict", description: "Catches everything." }];
+
+    const pending = promptForConfigPreset(presets);
+    document.querySelector<HTMLButtonElement>("#preset-picker-skip")!.click();
+
+    await expect(pending).resolves.toBeNull();
   });
 });
 

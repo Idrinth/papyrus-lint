@@ -247,6 +247,15 @@ config file doesn't live where auto-detection expects it. Leave it blank
 to go back to auto-detection. Whatever path is entered is remembered
 across app restarts, so it's prefilled the next time the app opens.
 
+The desktop app offers the same three presets as its own first-run picker:
+the first time it opens a project directory with no `papyrus-lint.yaml`/
+`.yml` of its own yet (and no "Configuration file" override set), it asks
+which preset to start from instead of silently linting against the
+engine's defaults. Every setting a preset picks can still be changed
+afterward in the Settings tab. Closing the dialog without choosing one
+leaves the project on the engine's built-in defaults without writing a
+config file, so it's asked again next time that directory is opened.
+
 Each key:
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
