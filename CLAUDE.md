@@ -999,6 +999,23 @@ backdrop click) leaves the project on the engine's built-in defaults
 without writing a file, so it's asked again the next time that directory is
 opened.
 
+The Settings tab's own "Save current settings as preset…" button goes the
+other direction: `handleSaveConfigAsPresetClick` (`app/src/main.ts`) prompts
+for a name, then — if `list_config_presets` already lists a preset under it
+(matched case-insensitively; a built-in name is rejected by the backend
+outright, since `config::Preset::parse` always resolves those first) —
+confirms overwriting it before calling the `save_config_as_preset` Tauri
+command with the currently edited `LintConfig`, the name, and whether to
+overwrite. That command wraps `papyrus-lint-core`'s
+`config::save_user_preset`, which writes just the lint settings (not a
+project's own `compiler_path`/`additional_script_roots`/`compile_check`/
+`strict_achlist_scope`, which aren't something a reusable preset should
+hardcode) as `<name>.yaml` under the same executable-adjacent `presets`
+directory the picker above and `list_user_preset_names` read from —
+creating that directory first if it doesn't exist yet — so the saved
+preset is immediately selectable from the picker, or via the CLI's
+`--preset <name>`, without restarting anything.
+
 The desktop app's `parse_psc_file` command, both the app's and the CLI's
 cross-script lookups (`papyrus-lint-core`'s `function_table.rs`, used to
 resolve the "Argument type check"/"Return type check" lints across

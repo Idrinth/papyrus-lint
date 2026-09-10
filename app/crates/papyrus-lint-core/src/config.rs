@@ -392,6 +392,68 @@ fn find_user_preset_file(dir: &Path, name: &str) -> Option<PathBuf> {
         })
 }
 
+/// Saves `config` as a new user preset named `name`, in a `presets`
+/// directory next to the running executable (created if it doesn't exist
+/// yet), so it becomes selectable afterward exactly like a built-in preset
+/// (`--preset <name>`, or the desktop app's "Save current settings as
+/// preset" button/first-run picker). Only the lint settings themselves are
+/// written, not a project's own `compiler_path`/`additional_script_roots`/
+/// `compile_check`/`strict_achlist_scope`, since those are specific to a
+/// project rather than something a reusable preset should hardcode.
+///
+/// Refuses a blank name, and refuses a name matching one of
+/// [`PRESET_NAMES`] (case-insensitively), since [`Preset::parse`] always
+/// resolves those to a built-in preset first — a same-named file here would
+/// be written but never actually selectable. An existing same-named preset
+/// (matched case-insensitively, the same way [`find_user_preset_file`]
+/// resolves one) is only replaced if `overwrite` is true; otherwise this
+/// errors without touching it.
+pub fn save_user_preset(
+    name: &str,
+    config: &papyrus_lints::Config,
+    overwrite: bool,
+) -> Result<PathBuf, String> {
+    save_user_preset_under(executable_dir().as_deref(), name, config, overwrite)
+}
+
+/// Same as [`save_user_preset`], but takes the executable-adjacent
+/// directory explicitly rather than assuming it's next to the running
+/// executable, so tests can exercise it without depending on the test
+/// binary's own `current_exe()`.
+fn save_user_preset_under(
+    base_dir: Option<&Path>,
+    name: &str,
+    config: &papyrus_lints::Config,
+    overwrite: bool,
+) -> Result<PathBuf, String> {
+    let trimmed = name.trim();
+    if trimmed.is_empty() {
+        return Err("preset name must not be blank".to_string());
+    }
+    if PRESET_NAMES
+        .iter()
+        .any(|built_in| built_in.eq_ignore_ascii_case(trimmed))
+    {
+        return Err(format!(
+            "'{trimmed}' is a built-in preset name and can't be used for a custom preset"
+        ));
+    }
+    let base_dir = base_dir
+        .ok_or_else(|| "could not determine the running executable's directory".to_string())?;
+    let dir = base_dir.join(USER_PRESETS_DIR_NAME);
+    fs::create_dir_all(&dir).map_err(|err| err.to_string())?;
+
+    let path =
+        find_user_preset_file(&dir, trimmed).unwrap_or_else(|| dir.join(format!("{trimmed}.yaml")));
+    if path.is_file() && !overwrite {
+        return Err(format!("a preset named '{trimmed}' already exists"));
+    }
+
+    let yaml = papyrus_lints::config::to_yaml(config).map_err(|err| err.to_string())?;
+    fs::write(&path, with_field_comments(&yaml)).map_err(|err| err.to_string())?;
+    Ok(path)
+}
+
 /// Deep-merges `over` onto `base`: a `Mapping` present in both merges key by
 /// key (recursively, so `rules:`'s own nested keys merge independently
 /// rather than one `rules:` block replacing the other outright), and
@@ -928,6 +990,128 @@ mod tests {
             .expect("should find abc.yaml case-insensitively");
 
         assert_eq!(yaml.as_ref(), "semicolon: true\n");
+    }
+
+    #[test]
+    fn save_user_preset_rejects_a_blank_name() {
+        let error = save_user_preset_under(None, "   ", &papyrus_lints::Config::default(), false)
+            .expect_err("blank name should be rejected");
+
+        assert!(error.contains("must not be blank"));
+    }
+
+    #[test]
+    fn save_user_preset_rejects_built_in_preset_names_case_insensitively() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let error = save_user_preset_under(
+            Some(base_dir.path()),
+            "STRICT",
+            &papyrus_lints::Config::default(),
+            false,
+        )
+        .expect_err("built-in preset name should be rejected");
+
+        assert!(error.contains("built-in preset name"));
+        assert!(!base_dir.path().join(USER_PRESETS_DIR_NAME).exists());
+    }
+
+    #[test]
+    fn save_user_preset_errors_without_a_resolvable_base_dir() {
+        let error =
+            save_user_preset_under(None, "my-preset", &papyrus_lints::Config::default(), false)
+                .expect_err("should fail without a base dir");
+
+        assert!(error.contains("executable's directory"));
+    }
+
+    #[test]
+    fn save_user_preset_creates_the_presets_directory_and_writes_the_file() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+
+        let path = save_user_preset_under(Some(base_dir.path()), "my-preset", &config, false)
+            .expect("saving a new preset should succeed");
+
+        assert_eq!(
+            path,
+            base_dir
+                .path()
+                .join(USER_PRESETS_DIR_NAME)
+                .join("my-preset.yaml")
+        );
+        let yaml = Preset::Custom("my-preset".to_string())
+            .yaml(Some(base_dir.path()))
+            .expect("saved preset should resolve");
+        let saved: papyrus_lints::Config =
+            serde_yaml::from_str(&yaml).expect("saved preset should parse as a lint config");
+        assert_eq!(saved, config);
+    }
+
+    #[test]
+    fn save_user_preset_refuses_to_overwrite_without_the_flag() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        save_user_preset_under(
+            Some(base_dir.path()),
+            "my-preset",
+            &papyrus_lints::Config::default(),
+            false,
+        )
+        .expect("first save should succeed");
+
+        let error = save_user_preset_under(
+            Some(base_dir.path()),
+            "my-preset",
+            &papyrus_lints::Config::default(),
+            false,
+        )
+        .expect_err("saving over an existing preset should fail without overwrite");
+
+        assert!(error.contains("already exists"));
+    }
+
+    #[test]
+    fn save_user_preset_overwrites_an_existing_preset_case_insensitively_when_allowed() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        save_user_preset_under(
+            Some(base_dir.path()),
+            "My-Preset",
+            &papyrus_lints::Config::default(),
+            false,
+        )
+        .expect("first save should succeed");
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+
+        let path = save_user_preset_under(Some(base_dir.path()), "my-preset", &config, true)
+            .expect("overwrite should succeed");
+
+        // The differently-cased existing file is reused rather than a second
+        // one being created alongside it.
+        assert_eq!(
+            path,
+            base_dir
+                .path()
+                .join(USER_PRESETS_DIR_NAME)
+                .join("My-Preset.yaml")
+        );
+        let entries: Vec<_> = fs::read_dir(base_dir.path().join(USER_PRESETS_DIR_NAME))
+            .expect("failed to read presets dir")
+            .filter_map(Result::ok)
+            .collect();
+        assert_eq!(entries.len(), 1);
+        let saved: papyrus_lints::Config = serde_yaml::from_str(
+            &Preset::Custom("my-preset".to_string())
+                .yaml(Some(base_dir.path()))
+                .expect("saved preset should resolve"),
+        )
+        .expect("saved preset should parse as a lint config");
+        assert_eq!(saved, config);
     }
 
     #[test]

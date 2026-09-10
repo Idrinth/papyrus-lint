@@ -45,6 +45,7 @@ import {
   handleFixIssueClick,
   handleLintConfigChanged,
   handleMassFixClick,
+  handleSaveConfigAsPresetClick,
   handleScriptRootsChanged,
   hasFixableFindings,
   hideAutocomplete,
@@ -957,6 +958,107 @@ describe("promptForConfigPreset", () => {
     document.querySelector<HTMLButtonElement>("#preset-picker-skip")!.click();
 
     await expect(pending).resolves.toBeNull();
+  });
+});
+
+describe("handleSaveConfigAsPresetClick", () => {
+  beforeEach(async () => {
+    invokeImplFor({
+      load_lint_config: () => ({ ...DEFAULT_LINT_CONFIG, semicolon: true }),
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_project_info: () => ({
+        detected_script_roots: [],
+        used_configuration_file: "/proj/papyrus-lint.yaml",
+      }),
+    });
+    await useProjectDir("/proj");
+    invokeMock.mockClear();
+  });
+
+  it("does nothing when the prompt is left blank", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("   ");
+
+    await handleSaveConfigAsPresetClick();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when the prompt is cancelled", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue(null);
+
+    await handleSaveConfigAsPresetClick();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("saves a new preset without asking to overwrite when the name is unused", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("my-preset");
+    const confirmSpy = vi.spyOn(window, "confirm");
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    invokeImplFor({
+      list_config_presets: () => [{ id: "strict", label: "Strict", description: "Catches everything." }],
+      save_config_as_preset: () => undefined,
+    });
+
+    await handleSaveConfigAsPresetClick();
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(invokeMock).toHaveBeenCalledWith("save_config_as_preset", {
+      config: expect.objectContaining({ semicolon: true }),
+      name: "my-preset",
+      overwrite: false,
+    });
+    expect(window.alert).toHaveBeenCalledWith('Saved preset "my-preset".');
+  });
+
+  it("asks to overwrite when a preset already exists under that name, matched case-insensitively", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("Strict-Custom");
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    invokeImplFor({
+      list_config_presets: () => [{ id: "strict-custom", label: "Strict Custom", description: "" }],
+    });
+
+    await handleSaveConfigAsPresetClick();
+
+    expect(window.confirm).toHaveBeenCalledWith('A preset named "Strict-Custom" already exists. Overwrite it?');
+    expect(invokeMock).not.toHaveBeenCalledWith("save_config_as_preset", expect.anything());
+  });
+
+  it("overwrites the existing preset once confirmed", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("Strict-Custom");
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    invokeImplFor({
+      list_config_presets: () => [{ id: "strict-custom", label: "Strict Custom", description: "" }],
+      save_config_as_preset: () => undefined,
+    });
+
+    await handleSaveConfigAsPresetClick();
+
+    expect(invokeMock).toHaveBeenCalledWith("save_config_as_preset", {
+      config: expect.objectContaining({ semicolon: true }),
+      name: "Strict-Custom",
+      overwrite: true,
+    });
+  });
+
+  it("reports and logs a failure from the backend", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("my-preset");
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    invokeImplFor({
+      list_config_presets: () => [],
+      save_config_as_preset: () => {
+        throw new Error("disk full");
+      },
+    });
+
+    await handleSaveConfigAsPresetClick();
+
+    expect(window.alert).toHaveBeenCalledWith('Failed to save preset "my-preset": Error: disk full');
+    expect(console.error).toHaveBeenCalled();
   });
 });
 

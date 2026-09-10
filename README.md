@@ -269,6 +269,14 @@ choosing one leaves the project on the engine's built-in defaults without
 writing a config file, so it's asked again next time that directory is
 opened.
 
+A "Save current settings as preset…" button at the bottom of the Settings
+tab goes the other way: it saves whatever the tab is currently set to as a
+new user preset, in the same executable-adjacent `presets` directory, so it
+becomes selectable from that first-run picker (or the CLI's `--preset
+<name>`) immediately afterward. It asks for a name and, if a preset already
+exists under it (a built-in name is rejected outright, since `--preset`
+always resolves those first), asks to overwrite it before replacing it.
+
 Each key:
 
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the

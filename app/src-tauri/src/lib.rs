@@ -263,6 +263,25 @@ fn apply_config_preset(dir: String, preset: String) -> Result<(), String> {
     Ok(())
 }
 
+/// Saves the desktop app's currently edited lint settings (the Settings
+/// tab's own fields, not the project-level `compiler_path`/`additional_script_roots`/
+/// `compile_check`/`strict_achlist_scope` next to them) as a new user
+/// preset named `name`, in the same executable-adjacent `presets`
+/// directory [`list_config_presets`]/[`apply_config_preset`] use, so it's
+/// immediately selectable from the first-run picker (or the CLI's
+/// `--preset <name>`) afterward. Refuses to replace an existing same-named
+/// preset (matched case-insensitively) unless `overwrite` is true. Errors
+/// if `name` is blank or matches a built-in preset name.
+#[tauri::command]
+fn save_config_as_preset(
+    config: papyrus_lints::Config,
+    name: String,
+    overwrite: bool,
+) -> Result<(), String> {
+    config::save_user_preset(&name, &config, overwrite)?;
+    Ok(())
+}
+
 /// Compiles the `.psc` file at `path` using the compiler executable at
 /// `compiler_path` (see [`load_compiler_path`]/[`resolve_compiler_path`]
 /// for how the frontend obtains that path). `additional_roots` are the
@@ -545,6 +564,7 @@ pub fn run() {
             save_script_roots,
             list_config_presets,
             apply_config_preset,
+            save_config_as_preset,
             lint_psc_file,
             repair_psc_file,
             repair_psc_finding,
@@ -989,6 +1009,35 @@ mod tests {
         .expect_err("should reject an unknown preset");
 
         assert!(error.contains("nonexistent"));
+    }
+
+    // save_config_as_preset's happy path (writing/overwriting a preset
+    // file) is covered by papyrus_lint_core::config's own unit tests
+    // against an isolated temp directory; testing it here would write into
+    // the real, shared executable-adjacent presets directory instead
+    // (config::save_user_preset resolves it from current_exe()), which
+    // would pollute list_config_presets_reports_every_built_in_preset and
+    // any other test running in the same binary. Only the validation that
+    // happens before that lookup is exercised here.
+    #[test]
+    fn save_config_as_preset_rejects_a_blank_name() {
+        let error =
+            save_config_as_preset(papyrus_lints::Config::default(), "   ".to_string(), false)
+                .expect_err("blank name should be rejected");
+
+        assert!(error.contains("must not be blank"));
+    }
+
+    #[test]
+    fn save_config_as_preset_rejects_a_built_in_preset_name() {
+        let error = save_config_as_preset(
+            papyrus_lints::Config::default(),
+            "strict".to_string(),
+            false,
+        )
+        .expect_err("built-in preset name should be rejected");
+
+        assert!(error.contains("built-in preset name"));
     }
 
     #[test]

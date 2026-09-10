@@ -122,6 +122,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-native_function_usage" />
           <input type="checkbox" id="rule-repeated_getvalue" />
         </fieldset>
+        <button type="button" id="save-config-as-preset">Save current settings as preset&hellip;</button>
       </div>
 
       <div id="panel-files" class="tabs__panel" role="tabpanel" hidden>
