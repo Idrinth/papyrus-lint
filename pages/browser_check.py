@@ -29,6 +29,7 @@ Usage: pages/browser_check.py [--dist DIR]  (default DIR: pages/dist)
 from __future__ import annotations
 
 import argparse
+import contextlib
 import functools
 import http.server
 import re
@@ -85,8 +86,9 @@ def check_site(dist: Path) -> list[str]:
     links_by_page: dict[str, list[str]] = {}
 
     try:
-        with sync_playwright() as playwright:
-            browser = playwright.chromium.launch()
+        with sync_playwright() as playwright, contextlib.closing(
+            playwright.chromium.launch()
+        ) as browser:
             page = browser.new_page()
             # Waiting on external hosts (badges, Google Fonts, ...) would
             # make this "quick" check slow and flaky against services this
@@ -163,7 +165,6 @@ def check_site(dist: Path) -> list[str]:
                     for entry in entries:
                         problems.append(f"{rel_path}: {kind}: {entry}")
 
-            browser.close()
     finally:
         server.shutdown()
         server.server_close()
