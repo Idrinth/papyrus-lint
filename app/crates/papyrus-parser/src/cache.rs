@@ -103,6 +103,39 @@ pub(crate) fn parse(source: &str) -> Result<Script, PapyrusError> {
     result
 }
 
+/// Inserts a precomputed `ast` into this cache as if `source` had just
+/// been parsed to it, so a subsequent [`parse`] call with the same
+/// `source` in this process returns it directly instead of re-parsing.
+/// Lets a caller that already has a validated AST for `source` from
+/// elsewhere (e.g. `papyrus-lint-core`'s disk-backed `ast_cache`) prime
+/// this cache before code that parses `source` itself -- without ever
+/// seeing that AST -- runs, such as `papyrus_lints::lint()`.
+pub(crate) fn prime(source: &str, ast: Script) {
+    AST.with(|cell| {
+        *cell.borrow_mut() = Some(Slot {
+            source: source.to_string(),
+            result: Ok(ast),
+        });
+    });
+}
+
+/// Same as [`prime`], but for [`tokenize`]'s cache slot: inserts a
+/// precomputed `tokens` as if `source` had just been lexed to it, so a
+/// subsequent [`tokenize`] call with the same `source` in this process
+/// returns it directly instead of re-lexing. Lets a caller that already has
+/// a validated token stream for `source` from elsewhere (e.g.
+/// `papyrus-lint-core`'s disk-backed `ast_cache`) prime this cache before
+/// code that tokenizes `source` itself -- without ever seeing those tokens
+/// -- runs, such as a raw-token-based lint rule.
+pub(crate) fn prime_tokens(source: &str, tokens: Vec<Token>) {
+    TOKENS.with(|cell| {
+        *cell.borrow_mut() = Some(Slot {
+            source: source.to_string(),
+            result: Ok(tokens),
+        });
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -214,6 +247,62 @@ mod tests {
         parse(first).unwrap();
 
         assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 3);
+    }
+
+    #[test]
+    fn prime_short_circuits_a_later_parse_of_the_same_source() {
+        let before = PARSE_COMPUTATIONS.with(|c| c.get());
+        let source = "ScriptName PrimeTest extends Quest\n";
+        let ast = Parser::new(Lexer::new(source).tokenize().unwrap())
+            .parse_script()
+            .unwrap();
+
+        prime(source, ast.clone());
+        let result = parse(source).unwrap();
+
+        assert_eq!(result, ast);
+        assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()), before);
+    }
+
+    #[test]
+    fn prime_is_overwritten_by_a_later_source_change() {
+        let source = "ScriptName PrimeEvictionTest\n";
+        let ast = Parser::new(Lexer::new(source).tokenize().unwrap())
+            .parse_script()
+            .unwrap();
+        prime(source, ast);
+
+        parse("ScriptName PrimeEvictionOther\n").unwrap();
+
+        let before = PARSE_COMPUTATIONS.with(|c| c.get());
+        parse(source).unwrap();
+        assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 1);
+    }
+
+    #[test]
+    fn prime_tokens_short_circuits_a_later_tokenize_of_the_same_source() {
+        let before = TOKENIZE_COMPUTATIONS.with(|c| c.get());
+        let source = "ScriptName PrimeTokensTest extends Quest\n";
+        let tokens = Lexer::new(source).tokenize().unwrap();
+
+        prime_tokens(source, tokens.clone());
+        let result = tokenize(source).unwrap();
+
+        assert_eq!(result, tokens);
+        assert_eq!(TOKENIZE_COMPUTATIONS.with(|c| c.get()), before);
+    }
+
+    #[test]
+    fn prime_tokens_is_overwritten_by_a_later_source_change() {
+        let source = "ScriptName PrimeTokensEvictionTest\n";
+        let tokens = Lexer::new(source).tokenize().unwrap();
+        prime_tokens(source, tokens);
+
+        tokenize("ScriptName PrimeTokensEvictionOther\n").unwrap();
+
+        let before = TOKENIZE_COMPUTATIONS.with(|c| c.get());
+        tokenize(source).unwrap();
+        assert_eq!(TOKENIZE_COMPUTATIONS.with(|c| c.get()) - before, 1);
     }
 
     #[test]

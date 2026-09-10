@@ -334,13 +334,15 @@ fn lint_psc_file(
     compiler_path: String,
     compile_check: bool,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
+    let path = Path::new(&path);
+    let source = read_psc_source(path).map_err(|err| err.to_string())?;
+    ast_cache::ensure_primed(path, &source);
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
         additional_roots.clone(),
     );
     Ok(lint_with_compile_check(
-        Path::new(&path),
+        path,
         &source,
         &config,
         &mut function_table,
@@ -364,18 +366,19 @@ fn repair_psc_file(
     compiler_path: String,
     compile_check: bool,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let (source, encoding) =
-        read_psc_source_with_encoding(Path::new(&path)).map_err(|err| err.to_string())?;
+    let path = Path::new(&path);
+    let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair(&source, &config);
     if repaired != source {
-        write_psc_source(Path::new(&path), &repaired, encoding).map_err(|err| err.to_string())?;
+        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
     }
+    ast_cache::ensure_primed(path, &repaired);
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
         additional_roots.clone(),
     );
     Ok(lint_with_compile_check(
-        Path::new(&path),
+        path,
         &repaired,
         &config,
         &mut function_table,
@@ -407,22 +410,23 @@ fn repair_psc_finding(
     rule: String,
     line: usize,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let (source, encoding) =
-        read_psc_source_with_encoding(Path::new(&path)).map_err(|err| err.to_string())?;
+    let path = Path::new(&path);
+    let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair_filtered(&source, &config, Some(rule.as_str()));
     let repaired = papyrus_lints::restrict_to_line(&source, &repaired, line).ok_or_else(|| {
         "Fixing this issue would change other lines in the file; use \"Apply fixes\" instead."
             .to_string()
     })?;
     if repaired != source {
-        write_psc_source(Path::new(&path), &repaired, encoding).map_err(|err| err.to_string())?;
+        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
     }
+    ast_cache::ensure_primed(path, &repaired);
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
         additional_roots.clone(),
     );
     Ok(lint_with_compile_check(
-        Path::new(&path),
+        path,
         &repaired,
         &config,
         &mut function_table,
@@ -450,18 +454,19 @@ fn repair_psc_file_rule(
     compile_check: bool,
     rule: String,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
-    let (source, encoding) =
-        read_psc_source_with_encoding(Path::new(&path)).map_err(|err| err.to_string())?;
+    let path = Path::new(&path);
+    let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     let repaired = papyrus_lints::repair_filtered(&source, &config, Some(rule.as_str()));
     if repaired != source {
-        write_psc_source(Path::new(&path), &repaired, encoding).map_err(|err| err.to_string())?;
+        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
     }
+    ast_cache::ensure_primed(path, &repaired);
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
         additional_roots.clone(),
     );
     Ok(lint_with_compile_check(
-        Path::new(&path),
+        path,
         &repaired,
         &config,
         &mut function_table,

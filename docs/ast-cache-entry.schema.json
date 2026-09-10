@@ -33,7 +33,7 @@
       "anyOf": [{ "$ref": "#/$defs/script" }, { "type": "null" }]
     },
     "tokens": {
-      "description": "The token stream, exactly as produced by papyrus_parser::tokenize() and serialized via serde -- see app/crates/papyrus-parser/src/token.rs. Null when this entry was written by a `put` call that found no already-cached `tokens` to carry forward -- a reader should treat that the same as a miss for the tokens specifically and re-tokenize. Written alongside `ast` whenever a script is freshly parsed (`parse_psc_file` and `FunctionTable::ensure_loaded`); nothing reads a cached token stream back out yet -- lint rules that need tokens still tokenize the source directly.",
+      "description": "The token stream, exactly as produced by papyrus_parser::tokenize() and serialized via serde -- see app/crates/papyrus-parser/src/token.rs. Null when this entry was written by a `put` call that found no already-cached `tokens` to carry forward -- a reader should treat that the same as a miss for the tokens specifically and re-tokenize. Written alongside `ast` whenever a script is freshly parsed (`parse_psc_file` and `FunctionTable::ensure_loaded`), and read back via `ast_cache::get_tokens`/`ensure_primed`, which primes `papyrus_parser`'s own in-memory memoization on a hit so a subsequent lint/repair pass's internal `tokenize()` call reuses it instead of re-tokenizing.",
       "anyOf": [
         {
           "type": "array",
