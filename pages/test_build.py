@@ -76,6 +76,18 @@ class MarkdownHelpersTest(unittest.TestCase):
             "Papyrus source uses properties and events.",
         )
 
+    def test_render_inline_escapes_markup_in_link_labels_and_code(self) -> None:
+        rendered = page_builder.render_inline(
+            '[<Guide & notes>](guide.html) and `<script>alert("x")</script>`'
+        )
+
+        self.assertEqual(
+            rendered,
+            '<a href="guide.html">&lt;Guide &amp; notes&gt;</a> and '
+            '<code>&lt;script&gt;alert("x")&lt;/script&gt;</code>',
+        )
+        self.assertNotIn("<script>", rendered)
+
     def test_split_table_row_preserves_escaped_pipes(self) -> None:
         self.assertEqual(
             page_builder.split_table_row(r"| Name | a \| b | yes |"),
@@ -118,6 +130,18 @@ class MarkdownHelpersTest(unittest.TestCase):
         )
 
         self.assertIn("<td>safety</td><td>Still linted</td><td></td>", result.replace("\n", ""))
+
+    def test_render_lint_table_treats_whitespace_only_auto_fix_as_disabled(self) -> None:
+        result = page_builder.render_lint_table(
+            [
+                "| Lint | Description | Auto-Fix |",
+                "| --- | --- | --- |",
+                "| safety | Still linted |    |",
+            ]
+        )
+
+        self.assertNotIn('class="fix-yes"', result)
+        self.assertIn("<td></td>", result)
 
     def test_render_lint_table_escapes_headers_and_row_content(self) -> None:
         result = page_builder.render_lint_table(
@@ -370,6 +394,24 @@ class MarkdownHelpersTest(unittest.TestCase):
         result = page_builder.markdown_to_html(["A paragraph", "continued without a blank line."])
 
         self.assertEqual(result, "<p>A paragraph continued without a blank line.</p>")
+
+    def test_markdown_to_html_rewrites_links_in_headings_and_paragraphs(self) -> None:
+        rewritten = []
+
+        def rewrite(href: str) -> str:
+            rewritten.append(href)
+            return f"published/{href}"
+
+        result = page_builder.markdown_to_html(
+            ["## [Setup](setup.md)", "Read the [guide](guide.md)."], rewrite
+        )
+
+        self.assertEqual(rewritten, ["setup.md", "guide.md"])
+        self.assertEqual(
+            result,
+            '<h2><a href="published/setup.md">Setup</a></h2>\n'
+            '<p>Read the <a href="published/guide.md">guide</a>.</p>',
+        )
 
     def test_markdown_to_html_accepts_an_unclosed_final_code_fence(self) -> None:
         result = page_builder.markdown_to_html(["```text", "first", "  second"])
@@ -635,6 +677,22 @@ class DocsRenderingTest(unittest.TestCase):
         self.assertIn('href="docs/guide.html"', output)
         self.assertIn("Guide &amp; reference", output)
         self.assertIn("Use &lt;carefully&gt; &amp; safely", output)
+
+    def test_render_docs_list_items_preserves_configured_document_order(self) -> None:
+        docs = [
+            {"slug": "second", "blurb": "Second blurb"},
+            {"slug": "first", "blurb": "First blurb"},
+        ]
+        results = {
+            "first": {"title": "First"},
+            "second": {"title": "Second"},
+        }
+
+        with patch.object(page_builder, "DOCS", docs):
+            output = page_builder.render_docs_list_items(results, "")
+
+        self.assertLess(output.index("second.html"), output.index("first.html"))
+        self.assertEqual(output.count("<li>"), 2)
 
     def test_build_doc_pages_writes_detail_and_index_pages(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
