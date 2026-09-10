@@ -882,25 +882,54 @@ covering the one case directory scanning otherwise catches for free: two
 listed entries sharing a file name. It defaults to `false` so an existing
 achlist-based project's resolution/diagnostics don't change underneath it.
 
-The desktop app's Settings tab additionally has a "Configuration file"
-input (`configPathOverrideEl` in `app/src/main.ts`) for overriding this
-project-directory discovery entirely: when set, the app reads/writes lint
-settings at that exact path instead — via the `load_lint_config_from_path`/
-`save_lint_config_to_path` Tauri commands, which wrap
-`papyrus_lint_core::config::load_config_from_path` (also used by the CLI's
-own `--config <path>`) and the new `config::save_config_at_path` — no
-matter which project directory (`useProjectDir`) is currently loaded, and
-persists across drops of a different achlist/`.psc`. It's remembered in
-`localStorage` (independent of any project's own config file, since
-picking a project doesn't imply picking a config override) so it's
-prefilled the next time the app starts, the same way the last opened
-project directory already is. Leaving it blank reverts to the normal
-auto-detection described above. Editing lint settings while an override is
-active saves to that file (creating it if it doesn't exist yet, preserving
-any other settings — e.g. `compiler_path` — already stored in it) instead
-of the current project directory's own config file; `compiler_path`,
-`compile_check`, and `additional_script_roots` themselves are unaffected
-by this override and still follow the loaded project directory.
+The desktop app picks each project's lint configuration explicitly, right
+after a drop resolves which project directory is actually in play, rather
+than showing/editing whatever configuration happened to be loaded
+previously (or the engine's silent defaults) before the user has even said
+which project it applies to. `loadProjectConfig` (`app/src/main.ts`) is
+what `handleDroppedPaths` and the app's own startup restore of the last
+project directory call, in place of calling `useProjectDir` directly: for
+a project directory not yet confirmed this session, it locks the entire
+Settings tab (`setSettingsLocked`, backed by a `<fieldset
+id="settings-fieldset" disabled>` wrapping every Settings tab control, plus
+a `#settings-locked-notice` paragraph explaining why) and shows the
+`#config-picker` dialog (`promptForConfigSelection`) before doing anything
+else. "Continue" (or Escape, or a backdrop click) accepts whatever
+`useProjectDir`'s own auto-detection would already do — the project's
+existing `papyrus-lint.yaml`/`.yml`, or the engine's silent defaults if it
+has none; an inline list of presets (shown only when the project has none
+yet — see below) lets the user click one to start from instead; and a text
+field lets the user point at a specific configuration file instead. The
+Settings tab's own "Configuration
+file" input (`configPathOverrideEl`) is set to that typed path (or cleared,
+for the other two choices) before `useProjectDir` actually loads and
+applies the resulting configuration and the Settings tab is unlocked. A
+project directory already confirmed this session (e.g. dropping the same
+achlist again) skips the dialog entirely and reuses whatever was picked the
+first time. `useProjectDir` itself stays a plain, reusable "load this
+already-decided directory's configuration" function with no dialog of its
+own, since other call sites — the "Configuration file" input changing,
+once the tab is already unlocked — need to reload a project's
+configuration without re-asking which one to use.
+
+Editing the "Configuration file" input directly, once unlocked, still
+overrides project-directory discovery entirely the same way it always has:
+when set, the app reads/writes lint settings at that exact path instead —
+via the `load_lint_config_from_path`/`save_lint_config_to_path` Tauri
+commands, which wrap `papyrus_lint_core::config::load_config_from_path`
+(also used by the CLI's own `--config <path>`) and
+`config::save_config_at_path`. Unlike before, it's no longer remembered in
+`localStorage` independent of the loaded project: a value chosen for one
+project has no bearing on the next one dropped, since each project's
+configuration is picked fresh via the dialog above rather than a page-load
+default the user could edit before dropping anything. Leaving it blank
+reverts to the normal auto-detection described above. Editing lint
+settings while an override is active saves to that file (creating it if it
+doesn't exist yet, preserving any other settings — e.g. `compiler_path` —
+already stored in it) instead of the current project directory's own
+config file; `compiler_path`, `compile_check`, and
+`additional_script_roots` themselves are unaffected by this override and
+still follow the loaded project directory.
 
 Configuration controls formatting, lint enablement, complexity thresholds,
 CLI failure levels, and the compiler path. It also controls whether the
@@ -993,31 +1022,32 @@ depending on the test binary's own `current_exe()`; the checked-in
 environment has no such file next to the test binary, and the `strict`
 preset (`init`'s own default) reproduces it byte-for-byte.
 
-The desktop app offers the same presets as its own first-run picker, rather
-than only through the CLI's `init --preset` flag above: `useProjectDir`
-(`app/src/main.ts`) checks the project directory's `load_project_info`
-result and, if it has no `papyrus-lint.yaml`/`.yml` yet (and no
-"Configuration file" override is set — that's an explicit, separately
-managed file path), shows a dialog (`#preset-picker`) listing every preset
-via the `list_config_presets` Tauri command, backed by
-`papyrus-lint-core`'s `presets` module (`presets::all()`) — a thin
-label/description layer over `config::Preset`/`config::PRESET_NAMES`, the
-same enum the CLI flag parses, which appends a `PresetInfo` (id/label both
-the file's stem, a generic description) for every name
-`config::list_user_preset_names` finds under the executable-adjacent
-`presets` directory (`config::user_presets_dir`), after the three built-ins;
-`presets::all()`/`PresetInfo`'s fields are owned `String`s rather than
-`&'static str`, since a user preset's identity is discovered from a file
-name at runtime instead of being a compile-time constant. Picking one calls
-`apply_config_preset(dir, id)`, which resolves the id via
-`config::Preset::parse` and hands it to `config::initialize_default_config`
-— the very function `init --preset` itself calls — so the desktop app gets
-the same "refuse to replace an existing config" guard, executable-adjacent
-base-config layering, and user-preset resolution for free. Closing the
-dialog without choosing one (its "Use defaults" button, Escape, or a
-backdrop click) leaves the project on the engine's built-in defaults
-without writing a file, so it's asked again the next time that directory is
-opened.
+The desktop app offers the same presets from its own config-picker dialog
+above, rather than only through the CLI's `init --preset` flag:
+`promptForConfigSelection` fetches every preset via the
+`list_config_presets` Tauri command (only when the project has no
+`papyrus-lint.yaml`/`.yml` yet, per `load_project_info`'s result — a preset
+is pointless to offer once one's already been detected) and renders one
+button per preset directly into the dialog's own `#config-picker-preset-list`
+(hidden entirely when the list comes back empty), rather than opening a
+second, nested dialog for it: the preset list is only ever meaningful as
+part of this one choice, so there's nothing else it needs to be its own
+dialog for. `list_config_presets` is backed by `papyrus-lint-core`'s
+`presets` module (`presets::all()`) — a thin label/description layer over
+`config::Preset`/`config::PRESET_NAMES`, the same enum the CLI flag parses,
+which appends a `PresetInfo` (id/label both the file's stem, a generic
+description) for every name `config::list_user_preset_names` finds under
+the executable-adjacent `presets` directory (`config::user_presets_dir`),
+after the three built-ins; `presets::all()`/`PresetInfo`'s fields are owned
+`String`s rather than `&'static str`, since a user preset's identity is
+discovered from a file name at runtime instead of being a compile-time
+constant. Clicking one resolves `promptForConfigSelection` with
+`{ kind: "preset", preset: id }`, which `loadProjectConfig` then hands to
+`apply_config_preset(dir, id)` — resolving the id via `config::Preset::parse`
+and handing it to `config::initialize_default_config`, the very function
+`init --preset` itself calls — so the desktop app gets the same "refuse to
+replace an existing config" guard, executable-adjacent base-config
+layering, and user-preset resolution for free.
 
 The Settings tab's own "Save current settings as preset…" button goes the
 other direction: `handleSaveConfigAsPresetClick` (`app/src/main.ts`) prompts

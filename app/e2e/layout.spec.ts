@@ -75,19 +75,19 @@ test("lint progress bar is actually hidden when idle, not just marked hidden", a
   await expect(progress).toBeHidden();
 });
 
-test("preset picker is actually hidden after a preset is selected", async ({ page }) => {
+test("config picker is actually hidden after a choice is made", async ({ page }) => {
   await page.goto("/");
 
-  const picker = page.locator("#preset-picker");
+  const picker = page.locator("#config-picker");
   await expect(picker).toBeHidden();
 
   await page.evaluate(() => {
-    document.querySelector<HTMLDialogElement>("#preset-picker")!.showModal();
+    document.querySelector<HTMLDialogElement>("#config-picker")!.showModal();
   });
   await expect(picker).toBeVisible();
 
   await page.evaluate(() => {
-    document.querySelector<HTMLDialogElement>("#preset-picker")!.close();
+    document.querySelector<HTMLDialogElement>("#config-picker")!.close();
   });
   await expect(picker).toBeHidden();
 });

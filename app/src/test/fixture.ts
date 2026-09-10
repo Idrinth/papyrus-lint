@@ -33,6 +33,8 @@ export const FIXTURE_HTML = `
       </div>
 
       <div id="panel-settings" class="tabs__panel" role="tabpanel" hidden>
+        <p id="settings-locked-notice" class="settings-locked-notice" aria-live="polite"></p>
+        <fieldset id="settings-fieldset" class="settings-fieldset" disabled>
         <output id="detected-script-roots">No project loaded</output>
         <output id="used-configuration-file">No project loaded</output>
         <input id="config-path-override" type="text" />
@@ -124,6 +126,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-repeated_getvalue" />
         </fieldset>
         <button type="button" id="save-config-as-preset">Save current settings as preset&hellip;</button>
+        </fieldset>
       </div>
 
       <div id="panel-presets" class="tabs__panel" role="tabpanel" hidden>
@@ -215,13 +218,23 @@ export const FIXTURE_HTML = `
     </div>
   </dialog>
 
-  <dialog id="preset-picker" class="preset-picker">
-    <div class="preset-picker__header">
-      <h2 class="preset-picker__title">Choose a starting configuration</h2>
-      <button type="button" id="preset-picker-skip" class="preset-picker__skip">Use defaults</button>
+  <dialog id="config-picker" class="config-picker">
+    <div class="config-picker__header">
+      <h2 class="config-picker__title">Select this project's configuration</h2>
+      <button type="button" id="config-picker-continue" class="config-picker__skip">Continue</button>
     </div>
-    <p class="preset-picker__intro"></p>
-    <div id="preset-picker-list" class="preset-picker__list"></div>
+    <p id="config-picker-detected" class="config-picker__detected" hidden>
+      Found <code id="config-picker-detected-path"></code> for this project.
+    </p>
+    <p id="config-picker-none" class="config-picker__none" hidden>
+      This project doesn't have a papyrus-lint.yaml yet.
+    </p>
+    <div id="config-picker-preset-list" class="config-picker__list" hidden></div>
+    <div class="config-picker__browse">
+      <label for="config-picker-path-input">Use a different configuration file instead</label>
+      <input id="config-picker-path-input" type="text" />
+      <button type="button" id="config-picker-use-path">Use this file</button>
+    </div>
   </dialog>
 `;
 

@@ -60,7 +60,6 @@ import {
   isCustomPreset,
   isFixableFinding,
   isPscPath,
-  lastConfigPathOverride,
   lastProjectDir,
   levelOf,
   lintConfigFromUI,
@@ -71,6 +70,7 @@ import {
   loadConfigPresets,
   loadLintConfig,
   loadLintConfigFromPath,
+  loadProjectConfig,
   loadProjectInfo,
   loadRuleTags,
   loadStoredTheme,
@@ -84,11 +84,10 @@ import {
   projectDirForAchlist,
   projectDirForDirectory,
   projectDirForPscPath,
-  promptForConfigPreset,
+  promptForConfigSelection,
   refreshPresetManagementTab,
   relativePath,
   relintCurrentFiles,
-  rememberConfigPathOverride,
   rememberProjectDir,
   renameUserPreset,
   renderMassFixList,
@@ -98,6 +97,7 @@ import {
   repairPscFileRule,
   repairPscFinding,
   requestCloseCodeViewer,
+  resetConfirmedProjectDirs,
   saveAndCompileCodeViewerEdits,
   saveCodeViewerEdits,
   saveCompileCheck,
@@ -108,6 +108,7 @@ import {
   scheduleHideLintProgress,
   scriptRootsFromUI,
   scriptRootsForAchlist,
+  setSettingsLocked,
   severityOf,
   showError,
   showLintProgress,
@@ -120,6 +121,7 @@ import {
   updateExportIssuesButtonState,
   updateLintProgress,
   useProjectDir,
+  type ConfigSelectionResult,
   type Diagnostic,
   type LintConfig,
   type PscParseOutcome,
@@ -140,7 +142,41 @@ beforeEach(() => {
   invokeMock.mockReset();
   localStorage.clear();
   mountFixture();
+  resetConfirmedProjectDirs();
 });
+
+// Waits for the "select this project's configuration" dialog
+// (promptForConfigSelection) to open and clicks "Continue", accepting
+// useProjectDir's own auto-detection either way (an existing configuration
+// file, or the engine's silent defaults if the project has none). Pumps
+// microtasks directly instead of vi.waitFor, so it works the same whether
+// or not a test has switched to fake timers.
+async function confirmDetectedConfig(): Promise<void> {
+  const picker = document.querySelector<HTMLDialogElement>("#config-picker")!;
+  for (let i = 0; i < 30 && !picker.hasAttribute("open"); i++) {
+    await Promise.resolve();
+  }
+  expect(picker.hasAttribute("open")).toBe(true);
+  document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
+}
+
+// Drives useProjectDir through loadProjectConfig's own "select this
+// project's configuration" step for tests that don't care about that step
+// itself, immediately accepting whatever useProjectDir would already do on
+// its own (see confirmDetectedConfig). A directory already confirmed this
+// session (see resetConfirmedProjectDirs) skips the dialog entirely, the
+// same as loadProjectConfig itself does.
+async function loadProjectConfigConfirmed(dir: string): Promise<void> {
+  const pending = loadProjectConfig(dir);
+  const picker = document.querySelector<HTMLDialogElement>("#config-picker")!;
+  for (let i = 0; i < 30 && !picker.hasAttribute("open"); i++) {
+    await Promise.resolve();
+  }
+  if (picker.hasAttribute("open")) {
+    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
+  }
+  await pending;
+}
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -578,36 +614,7 @@ describe("configuration file override", () => {
     expect(configPathOverride()).toBe("/profiles/strict.yaml");
   });
 
-  it("round-trips through localStorage", () => {
-    expect(lastConfigPathOverride()).toBe("");
-    rememberConfigPathOverride("/profiles/strict.yaml");
-    expect(lastConfigPathOverride()).toBe("/profiles/strict.yaml");
-  });
-
-  it("clears the remembered value for an empty path", () => {
-    rememberConfigPathOverride("/profiles/strict.yaml");
-    rememberConfigPathOverride("");
-    expect(lastConfigPathOverride()).toBe("");
-  });
-
-  it("lastConfigPathOverride tolerates a broken localStorage", () => {
-    const getItemSpy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw new Error("blocked");
-    });
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(lastConfigPathOverride()).toBe("");
-    getItemSpy.mockRestore();
-  });
-
-  it("rememberConfigPathOverride tolerates a broken localStorage", () => {
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-      throw new Error("blocked");
-    });
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(() => rememberConfigPathOverride("/profiles/strict.yaml")).not.toThrow();
-  });
-
-  it("handleConfigPathOverrideChanged remembers the path and reloads the current project's config from it", async () => {
+  it("handleConfigPathOverrideChanged reloads the current project's config from the new override path", async () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
@@ -631,10 +638,10 @@ describe("configuration file override", () => {
     await vi.waitFor(() =>
       expect(document.querySelector<HTMLSelectElement>("#semicolon-style")!.value).toBe("require"),
     );
-    expect(lastConfigPathOverride()).toBe("/profiles/strict.yaml");
     expect(invokeMock).toHaveBeenCalledWith("load_lint_config_from_path", { path: "/profiles/strict.yaml" });
     expect(document.querySelector("#used-configuration-file")!.textContent).toBe("/profiles/strict.yaml");
   });
+
 });
 
 describe("scriptRootsFromUI / applyScriptRootsToUI", () => {
@@ -822,7 +829,244 @@ describe("useProjectDir", () => {
     expect(document.querySelector("#used-configuration-file")!.textContent).toBe("/profiles/strict.yaml");
   });
 
-  it("prompts for a preset when the project has no config yet, and applies the chosen one", async () => {
+  it("never shows the config-selection dialog on its own - that's loadProjectConfig's job", async () => {
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+
+    await useProjectDir("/my/project");
+
+    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
+  });
+});
+
+describe("setSettingsLocked", () => {
+  it("disables the settings fieldset and shows the locked notice when locked", () => {
+    setSettingsLocked(true);
+
+    expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(true);
+    expect(document.querySelector<HTMLElement>("#settings-locked-notice")!.hidden).toBe(false);
+  });
+
+  it("enables the settings fieldset and hides the locked notice when unlocked", () => {
+    setSettingsLocked(true);
+
+    setSettingsLocked(false);
+
+    expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(false);
+    expect(document.querySelector<HTMLElement>("#settings-locked-notice")!.hidden).toBe(true);
+  });
+});
+
+describe("promptForConfigSelection", () => {
+  it("shows the detected configuration and no preset list when one was found", async () => {
+    const pending = promptForConfigSelection({
+      detected_script_roots: [],
+      used_configuration_file: "/proj/papyrus-lint.yaml",
+    });
+
+    expect(document.querySelector<HTMLElement>("#config-picker-detected")!.hidden).toBe(false);
+    expect(document.querySelector("#config-picker-detected-path")!.textContent).toBe(
+      "/proj/papyrus-lint.yaml",
+    );
+    expect(document.querySelector<HTMLElement>("#config-picker-none")!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>("#config-picker-preset-list")!.hidden).toBe(true);
+
+    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
+    const result: ConfigSelectionResult = await pending;
+    expect(result).toEqual({ kind: "detected" });
+  });
+
+  it("shows the no-configuration notice and lists every preset when none was found", async () => {
+    invokeImplFor({
+      list_config_presets: () => [
+        { id: "strict", label: "Strict", description: "Catches everything." },
+        { id: "careful", label: "Careful", description: "The quietest option." },
+      ],
+    });
+
+    void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+
+    expect(document.querySelector<HTMLElement>("#config-picker-detected")!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>("#config-picker-none")!.hidden).toBe(false);
+    const options = document.querySelectorAll<HTMLButtonElement>(
+      "#config-picker-preset-list .config-picker__preset-option",
+    );
+    expect(options).toHaveLength(2);
+    expect(options[1].textContent).toContain("Careful");
+    expect(options[1].textContent).toContain("The quietest option.");
+  });
+
+  it("hides the preset list entirely when there are no presets to offer", async () => {
+    invokeImplFor({ list_config_presets: () => [] });
+
+    void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+
+    expect(document.querySelector<HTMLElement>("#config-picker-preset-list")!.hidden).toBe(true);
+  });
+
+  it("resolves detected when closed without a choice (Escape or a backdrop click)", async () => {
+    const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+
+    document.querySelector<HTMLDialogElement>("#config-picker")!.close();
+
+    await expect(pending).resolves.toEqual({ kind: "detected" });
+  });
+
+  it("resolves with the trimmed path once a different file is confirmed", async () => {
+    const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+
+    document.querySelector<HTMLInputElement>("#config-picker-path-input")!.value = "  /profiles/strict.yaml  ";
+    document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
+
+    await expect(pending).resolves.toEqual({ kind: "path", path: "/profiles/strict.yaml" });
+  });
+
+  it("does not resolve when the different-file input is left blank", async () => {
+    void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+
+    document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
+
+    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true);
+  });
+
+  it("resolves with the chosen preset when one of the inline options is clicked", async () => {
+    invokeImplFor({
+      list_config_presets: () => [
+        { id: "strict", label: "Strict", description: "Catches everything." },
+        { id: "careful", label: "Careful", description: "The quietest option." },
+      ],
+    });
+
+    const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(
+        document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option").length,
+      ).toBe(2),
+    );
+    document
+      .querySelectorAll<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")[1]
+      .click();
+
+    await expect(pending).resolves.toEqual({ kind: "preset", preset: "careful" });
+    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
+  });
+
+  it("resolves with a user preset's id unchanged, not its label", async () => {
+    invokeImplFor({
+      list_config_presets: () => [
+        { id: "Team Conventions", label: "Team Conventions", description: "A custom preset." },
+      ],
+    });
+
+    const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(
+        document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option").length,
+      ).toBe(1),
+    );
+    const option = document.querySelector<HTMLButtonElement>(
+      "#config-picker-preset-list .config-picker__preset-option",
+    )!;
+    expect(option.textContent).toContain("Team Conventions");
+    expect(option.textContent).toContain("A custom preset.");
+    option.click();
+
+    await expect(pending).resolves.toEqual({ kind: "preset", preset: "Team Conventions" });
+  });
+
+  it("doesn't accumulate stale listeners on the static Continue/browse buttons across repeated calls", async () => {
+    // Continue/the browse button are reused across every call (unlike the
+    // preset options, rebuilt fresh each time); a leaked listener from an
+    // earlier call resolving a different way would double-fire finish() on
+    // a later call's own click.
+    const first = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+    document.querySelector<HTMLDialogElement>("#config-picker")!.close();
+    await first;
+
+    const second = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+    document.querySelector<HTMLInputElement>("#config-picker-path-input")!.value = "/profiles/strict.yaml";
+    document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
+
+    await expect(second).resolves.toEqual({ kind: "path", path: "/profiles/strict.yaml" });
+  });
+
+  it("resolves immediately with detected when the dialog isn't present in the DOM", async () => {
+    document.querySelector("#config-picker")!.remove();
+    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
+
+    await expect(
+      promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null }),
+    ).resolves.toEqual({ kind: "detected" });
+  });
+});
+
+describe("loadProjectConfig", () => {
+  it("locks the Settings tab while the picker is open and unlocks it once resolved", async () => {
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+
+    const pending = loadProjectConfig("/my/project");
+    await vi.waitFor(() => expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true));
+    expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(true);
+    expect(document.querySelector<HTMLElement>("#settings-locked-notice")!.hidden).toBe(false);
+
+    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
+    await pending;
+
+    expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(false);
+    expect(document.querySelector<HTMLElement>("#settings-locked-notice")!.hidden).toBe(true);
+  });
+
+  it("uses auto-detection (no override) when Continue is picked", async () => {
+    invokeImplFor({
+      load_project_info: () => ({
+        detected_script_roots: [],
+        used_configuration_file: "/my/project/papyrus-lint.yaml",
+      }),
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+
+    await loadProjectConfigConfirmed("/my/project");
+
+    expect(configPathOverride()).toBe("");
+    expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/my/project" });
+  });
+
+  it("applies the chosen preset before loading the project's config", async () => {
     const presets = [
       { id: "strict", label: "Strict", description: "Catches everything." },
       { id: "careful", label: "Careful", description: "The quietest option." },
@@ -837,74 +1081,58 @@ describe("useProjectDir", () => {
       load_script_roots: () => [],
     });
 
-    const pending = useProjectDir("/my/project");
-
+    const pending = loadProjectConfig("/my/project");
     await vi.waitFor(() =>
-      expect(document.querySelectorAll("#preset-picker-list .preset-picker__option").length).toBe(2),
+      expect(document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option").length).toBe(2),
     );
-    document.querySelectorAll<HTMLButtonElement>("#preset-picker-list .preset-picker__option")[1].click();
+    document
+      .querySelectorAll<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")[1]
+      .click();
     await pending;
 
     expect(invokeMock).toHaveBeenCalledWith("apply_config_preset", { dir: "/my/project", preset: "careful" });
-    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
   });
 
-  it("does not apply any preset when the picker is skipped", async () => {
+  it("uses a manually specified configuration file", async () => {
     invokeImplFor({
       load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
-      list_config_presets: () => [{ id: "strict", label: "Strict", description: "Catches everything." }],
-      load_lint_config: () => DEFAULT_LINT_CONFIG,
-      load_compiler_path: () => null,
-      load_compile_check: () => false,
-      load_script_roots: () => [],
-    });
-
-    const pending = useProjectDir("/my/project");
-
-    await vi.waitFor(() => expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(true));
-    document.querySelector<HTMLButtonElement>("#preset-picker-skip")!.click();
-    await pending;
-
-    expect(invokeMock).not.toHaveBeenCalledWith("apply_config_preset", expect.anything());
-  });
-
-  it("does not prompt for a preset when the project already has a config file", async () => {
-    invokeImplFor({
-      load_project_info: () => ({
-        detected_script_roots: [],
-        used_configuration_file: "/my/project/papyrus-lint.yaml",
-      }),
-      load_lint_config: () => DEFAULT_LINT_CONFIG,
-      load_compiler_path: () => null,
-      load_compile_check: () => false,
-      load_script_roots: () => [],
-    });
-    // Clears the startup calls mountFixture's DOMContentLoaded dispatch
-    // already fired (e.g. refreshPresetManagementTab's own
-    // list_config_presets lookup), which are unrelated to what this test
-    // actually exercises: whether useProjectDir itself calls it.
-    invokeMock.mockClear();
-
-    await useProjectDir("/my/project");
-
-    expect(invokeMock).not.toHaveBeenCalledWith("list_config_presets");
-    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
-  });
-
-  it("does not prompt for a preset when a configuration file override is set", async () => {
-    invokeImplFor({
       load_lint_config_from_path: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
       load_compile_check: () => false,
       load_script_roots: () => [],
-      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
     });
-    document.querySelector<HTMLInputElement>("#config-path-override")!.value = "/profiles/strict.yaml";
+
+    const pending = loadProjectConfig("/my/project");
+    await vi.waitFor(() => expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true));
+    document.querySelector<HTMLInputElement>("#config-picker-path-input")!.value = "/profiles/strict.yaml";
+    document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
+    await pending;
+
+    expect(configPathOverride()).toBe("/profiles/strict.yaml");
+    expect(invokeMock).toHaveBeenCalledWith("load_lint_config_from_path", { path: "/profiles/strict.yaml" });
+  });
+
+  it("does not re-show the picker for a directory already confirmed this session", async () => {
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+    await loadProjectConfigConfirmed("/my/project");
     invokeMock.mockClear();
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
 
-    await useProjectDir("/my/project");
+    await loadProjectConfig("/my/project");
 
-    expect(invokeMock).not.toHaveBeenCalledWith("list_config_presets");
+    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
   });
 });
 
@@ -939,54 +1167,6 @@ describe("loadConfigPresets / applyConfigPreset", () => {
     invokeImplFor({});
 
     await expect(applyConfigPreset("/my/project", "careful")).resolves.toBeUndefined();
-  });
-});
-
-describe("promptForConfigPreset", () => {
-  it("resolves null immediately when there are no presets to offer", async () => {
-    await expect(promptForConfigPreset([])).resolves.toBeNull();
-    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
-  });
-
-  it("renders one option per preset and resolves with the id of the one clicked", async () => {
-    const presets = [
-      { id: "strict", label: "Strict", description: "Catches everything." },
-      { id: "careful", label: "Careful", description: "The quietest option." },
-    ];
-
-    const pending = promptForConfigPreset(presets);
-    const options = document.querySelectorAll<HTMLButtonElement>(
-      "#preset-picker-list .preset-picker__option",
-    );
-    expect(options).toHaveLength(2);
-    expect(options[1].textContent).toContain("Careful");
-    expect(options[1].textContent).toContain("The quietest option.");
-    options[1].click();
-
-    await expect(pending).resolves.toBe("careful");
-    expect(document.querySelector("#preset-picker")!.hasAttribute("open")).toBe(false);
-  });
-
-  it("renders and selects a user preset without changing its backend id", async () => {
-    const pending = promptForConfigPreset([
-      { id: "Team Conventions", label: "Team Conventions", description: "A custom preset." },
-    ]);
-    const option = document.querySelector<HTMLButtonElement>("#preset-picker-list .preset-picker__option")!;
-
-    expect(option.textContent).toContain("Team Conventions");
-    expect(option.textContent).toContain("A custom preset.");
-    option.click();
-
-    await expect(pending).resolves.toBe("Team Conventions");
-  });
-
-  it("resolves null when the dialog is closed without picking a preset", async () => {
-    const presets = [{ id: "strict", label: "Strict", description: "Catches everything." }];
-
-    const pending = promptForConfigPreset(presets);
-    document.querySelector<HTMLButtonElement>("#preset-picker-skip")!.click();
-
-    await expect(pending).resolves.toBeNull();
   });
 });
 
@@ -2496,7 +2676,9 @@ describe("Export issues button", () => {
       parse_psc_file: () => ({ name: "A" }),
       lint_psc_file: () => findings,
     });
-    await handleDroppedPaths(["/proj/scripts/source/A.psc"]);
+    const pending = handleDroppedPaths(["/proj/scripts/source/A.psc"]);
+    await confirmDetectedConfig();
+    await pending;
   }
 
   it("handleExportIssuesClick downloads a .txt file by default", async () => {
@@ -2852,7 +3034,9 @@ describe("showError / clearError / showResult", () => {
 
     // Populates currentPscOutcomes (via the lint pass) so the View button
     // rendered by showResult below has real findings to look up.
-    await handleDroppedPaths(["/proj/a.achlist"]);
+    const pending = handleDroppedPaths(["/proj/a.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
 
     document.querySelector<HTMLButtonElement>(".achlist-result__view-button")!.click();
     await Promise.resolve();
@@ -2907,7 +3091,9 @@ describe("handleDroppedPaths", () => {
       lint_psc_file: () => [],
     });
 
-    await handleDroppedPaths(["/proj/scripts/source"]);
+    const pending = handleDroppedPaths(["/proj/scripts/source"]);
+    await confirmDetectedConfig();
+    await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/scripts/source");
     expect(lastProjectDir()).toBe("/proj");
@@ -2926,7 +3112,9 @@ describe("handleDroppedPaths", () => {
       lint_psc_file: () => [],
     });
 
-    await handleDroppedPaths(["/proj"]);
+    const pending = handleDroppedPaths(["/proj"]);
+    await confirmDetectedConfig();
+    await pending;
 
     expect(lastProjectDir()).toBe("/proj");
   });
@@ -2939,7 +3127,9 @@ describe("handleDroppedPaths", () => {
       lint_psc_file: () => [],
     });
 
-    await handleDroppedPaths(["/proj/list.achlist"]);
+    const pending = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/list.achlist");
     expect(lastProjectDir()).toBe("/proj");
@@ -2973,7 +3163,9 @@ describe("handleDroppedPaths", () => {
       lint_psc_file: () => [],
     });
 
-    await handleDroppedPaths(["/proj/list.achlist"]);
+    const pending = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
 
     expect(lastProjectDir()).toBe("/proj/somefolder/otherfolder");
     expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/proj/somefolder/otherfolder" });
@@ -2998,7 +3190,9 @@ describe("handleDroppedPaths", () => {
       lint_psc_file: () => [],
     });
 
-    await handleDroppedPaths(["/proj/scripts/source/A.psc"]);
+    const pending = handleDroppedPaths(["/proj/scripts/source/A.psc"]);
+    await confirmDetectedConfig();
+    await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe(
       "Loaded /proj/scripts/source/A.psc",
@@ -3017,7 +3211,9 @@ describe("handleDroppedPaths", () => {
       parse_psc_file: () => ({ name: "A" }),
       lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] stale finding" }],
     });
-    await handleDroppedPaths(["/proj/list.achlist"]);
+    const firstDrop = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await firstDrop;
 
     let resolveLint: (findings: Diagnostic[]) => void = () => {};
     const pendingLint = new Promise<Diagnostic[]>((resolve) => {
@@ -3072,8 +3268,8 @@ describe("handleDroppedPaths", () => {
 
     switchTab("import");
     const drop = handleDroppedPaths(["/proj/list.achlist"]);
-    // Let the project-dir setup and A's parse+lint pass resolve, but not
-    // B's, which is still pending.
+    await confirmDetectedConfig();
+    // Let A's parse+lint pass resolve, but not B's, which is still pending.
     for (let i = 0; i < 30; i++) {
       await Promise.resolve();
     }
@@ -3125,10 +3321,13 @@ describe("handleDroppedPaths", () => {
     });
 
     const oldDrop = handleDroppedPaths(["/proj/old.achlist"]);
+    await confirmDetectedConfig();
     await oldLintStarted;
 
     // A second, newer drop starts while the first one is still stuck
-    // linting Old.psc.
+    // linting Old.psc. Both achlists resolve to the same "/proj" project
+    // directory, already confirmed by oldDrop above, so this one doesn't
+    // show the picker again.
     const newDrop = handleDroppedPaths(["/proj/new.achlist"]);
     await newDrop;
 
@@ -3163,10 +3362,13 @@ describe("handleDroppedPaths", () => {
     });
 
     const oldDrop = handleDroppedPaths(["/proj/scripts/source/Old.psc"]);
+    await confirmDetectedConfig();
     for (let i = 0; i < 10; i++) {
       await Promise.resolve();
     }
 
+    // Both .psc paths resolve to the same "/proj" project directory,
+    // already confirmed above, so this one doesn't show the picker again.
     const newDrop = handleDroppedPaths(["/proj/scripts/source/New.psc"]);
     await newDrop;
 
@@ -3211,9 +3413,13 @@ describe("handleDroppedPaths", () => {
     });
 
     const oldDrop = handleDroppedPaths(["/proj/old"]);
+    await confirmDetectedConfig();
     await oldLintStarted;
 
+    // "/proj/new" is a different, not-yet-confirmed project directory, so
+    // this drop shows its own picker too.
     const newDrop = handleDroppedPaths(["/proj/new"]);
+    await confirmDetectedConfig();
     await newDrop;
 
     resolveOldLint([{ line: 1, column: 1, message: "[warning] from Old" }]);
@@ -3238,7 +3444,9 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
       parse_psc_file: () => ({ name: "A" }),
       lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] from first pass" }],
     });
-    await handleDroppedPaths(["/proj/list.achlist"]);
+    const pending = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
   }
 
@@ -3254,7 +3462,9 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
       load_compile_check: () => false,
       load_script_roots: () => [],
     });
-    await handleDroppedPaths(["/proj/list.achlist"]);
+    const pending = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
     invokeMock.mockClear();
 
     await relintCurrentFiles();
@@ -3771,7 +3981,9 @@ describe("code viewer edit mode", () => {
         parse_psc_file: () => ({ name: "A" }),
         lint_psc_file: () => [],
       });
-      await handleDroppedPaths(["/proj/list.achlist"]);
+      const pending = handleDroppedPaths(["/proj/list.achlist"]);
+      await confirmDetectedConfig();
+      await pending;
       // The dropped file's outcome is keyed by the same path handed to
       // parse_psc_file above, so the code viewer must be opened on it too.
       invokeImplFor({ read_psc_file: () => "Int x = 1\n" });
@@ -4336,6 +4548,7 @@ describe("remaining failure and defensive paths", () => {
     localStorage.setItem("papyrus-lint:last-project-dir", "/remembered");
     invokeImplFor({
       get_app_version: () => "1.2.3",
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
       load_compile_check: () => false,
@@ -4347,16 +4560,35 @@ describe("remaining failure and defensive paths", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
     await vi.waitFor(() => expect(version.textContent).toBe("v1.2.3"));
-    expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/remembered" });
+    // The restored project's own configuration still isn't known yet until
+    // its picker is answered, same as any other not-yet-confirmed project.
+    expect(invokeMock).not.toHaveBeenCalledWith("load_lint_config", expect.anything());
+
+    await confirmDetectedConfig();
+
+    await vi.waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/remembered" }),
+    );
   });
 
-  it("prefills the configuration file override from storage on startup", () => {
-    localStorage.setItem("papyrus-lint:config-path-override", "/profiles/strict.yaml");
+  it("locks the Settings tab at startup until the restored project's configuration is picked", async () => {
+    localStorage.setItem("papyrus-lint:last-project-dir", "/remembered");
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
 
     document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
 
-    expect(document.querySelector<HTMLInputElement>("#config-path-override")!.value).toBe(
-      "/profiles/strict.yaml",
+    expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(true);
+
+    await confirmDetectedConfig();
+
+    await vi.waitFor(() =>
+      expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(false),
     );
   });
 

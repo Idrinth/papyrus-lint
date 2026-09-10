@@ -268,6 +268,22 @@ h1 {
   opacity: 0.75;
 }
 
+.settings-fieldset {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.settings-locked-notice {
+  margin: 0 0 1em;
+  padding: 0.6em 0.8em;
+  border: 1px solid var(--color-warning);
+  border-radius: 8px;
+  background-color: var(--color-warning-bg);
+  color: inherit;
+  font-size: 0.9em;
+}
+
 .drop-zone {
   box-sizing: border-box;
   width: 100%;
@@ -865,7 +881,7 @@ h1 {
   }
 }
 
-.preset-picker {
+.config-picker {
   width: min(36em, 92vw);
   padding: 1.25em;
   border: none;
@@ -874,29 +890,29 @@ h1 {
   background-color: var(--color-bg);
 }
 
-.preset-picker[open] {
+.config-picker[open] {
   display: flex;
   flex-direction: column;
   gap: 0.75em;
 }
 
-.preset-picker::backdrop {
+.config-picker::backdrop {
   background-color: rgba(0, 0, 0, 0.45);
 }
 
-.preset-picker__header {
+.config-picker__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1em;
 }
 
-.preset-picker__title {
+.config-picker__title {
   margin: 0;
   font-size: 1.1em;
 }
 
-.preset-picker__skip {
+.config-picker__skip {
   flex: none;
   padding: 0.2em 0.7em;
   border: 1px solid var(--color-border-strong);
@@ -907,23 +923,34 @@ h1 {
   cursor: pointer;
 }
 
-.preset-picker__skip:hover {
+.config-picker__skip:hover {
   background-color: var(--color-hover-bg);
 }
 
-.preset-picker__intro {
+.config-picker__detected,
+.config-picker__none {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 0.9em;
 }
 
-.preset-picker__list {
+.preset-management__intro {
+  margin: 0 0 1em;
+  color: var(--color-text-muted);
+  font-size: 0.9em;
+}
+
+.config-picker__detected code {
+  overflow-wrap: anywhere;
+}
+
+.config-picker__list {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
 }
 
-.preset-picker__option {
+.config-picker__preset-option {
   display: flex;
   flex-direction: column;
   gap: 0.2em;
@@ -937,24 +964,57 @@ h1 {
   cursor: pointer;
 }
 
-.preset-picker__option:hover,
-.preset-picker__option:focus-visible {
+.config-picker__preset-option:hover,
+.config-picker__preset-option:focus-visible {
   border-color: var(--color-accent-toggle);
 }
 
-.preset-picker__option-label {
+.config-picker__preset-option-label {
   font-weight: 600;
 }
 
-.preset-picker__option-description {
+.config-picker__preset-option-description {
   color: var(--color-text-muted);
   font-size: 0.85em;
 }
 
-.preset-management__intro {
-  margin: 0 0 1em;
+.config-picker__browse {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  padding-top: 0.5em;
+  border-top: 1px solid var(--color-border);
+}
+
+.config-picker__browse label {
   color: var(--color-text-muted);
-  font-size: 0.9em;
+  font-size: 0.85em;
+}
+
+.config-picker__browse input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.4em 0.6em;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: inherit;
+  font: inherit;
+}
+
+.config-picker__browse button {
+  align-self: flex-start;
+  padding: 0.3em 0.8em;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.config-picker__browse button:hover {
+  background-color: var(--color-hover-bg);
 }
 
 .preset-management__list {
