@@ -2,7 +2,8 @@
 
 ![Papyrus Lint logo](resources/logo-small.jpg)
 
-**Papyrus Lint catches bugs that CreationKit's compiler lets through.**
+**Papyrus Lint goes far beyond style: it catches bugs that CreationKit's
+compiler lets through.**
 `PapyrusCompiler.exe` only checks that a script is syntactically valid — it
 will happily compile a script that dereferences a `None` object at
 runtime, passes a `String` where an `Int` is expected, returns the wrong
@@ -11,10 +12,10 @@ contains a branch or statement that can never execute. Those bugs don't
 show up until later, as a CTD, a quest stage that never advances, or a
 value that's silently wrong — often far from the line that actually
 caused them, and long after the mod author has lost the context to spot
-it. Papyrus Lint scans your `.psc` source for exactly these patterns (see
-the full list below) before you ship, on top of the formatting/style
-issues a linter usually catches, so a mod author finds them at write time
-instead of from a bug report.
+it. Papyrus Lint performs deep correctness, reliability, and performance
+checks across your `.psc` source (see the full list below), on top of the
+formatting and style checks a linter usually provides, so a mod author
+finds these problems at write time instead of from a bug report.
 
 ## Simple Example
 
@@ -287,6 +288,13 @@ becomes selectable from that first-run picker (or the CLI's `--preset
 <name>`) immediately afterward. It asks for a name and, if a preset already
 exists under it (a built-in name is rejected outright, since `--preset`
 always resolves those first), asks to overwrite it before replacing it.
+
+A "Presets" tab appears next to Settings once at least one user preset
+exists (built-in presets can't be edited, so the tab stays hidden without
+one), listing each with Rename, Export, and Delete buttons: Rename asks for
+a new name with the same overwrite confirmation as saving one; Export
+downloads its `papyrus-lint.yaml` content as-is; Delete asks to confirm and
+removes it from the `presets` directory.
 
 Each key:
 

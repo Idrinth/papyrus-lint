@@ -122,9 +122,21 @@ pre {
   object-fit: cover;
 }
 
+.site-header__brand-copy {
+  display: flex;
+  flex-direction: column;
+}
+
 .site-header__title {
   margin: 0;
   font-size: 1.1em;
+}
+
+.site-header__subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.75em;
+  line-height: 1.2;
 }
 
 .site-header__nav {

@@ -27,9 +27,11 @@ import {
   clearError,
   collectFilteredIssues,
   configPathOverride,
+  deleteUserPreset,
   dirnameOf,
   enterCodeViewerEditMode,
   escapeAttr,
+  exportUserPreset,
   findCandidatePairRoot,
   formatIssuesAsJson,
   formatIssuesAsText,
@@ -39,12 +41,15 @@ import {
   handleCompileCheckChanged,
   handleCompilerPathChanged,
   handleConfigPathOverrideChanged,
+  handleDeletePresetClick,
   handleDroppedPaths,
   handleExportIssuesClick,
+  handleExportPresetClick,
   handleFixClick,
   handleFixIssueClick,
   handleLintConfigChanged,
   handleMassFixClick,
+  handleRenamePresetClick,
   handleSaveConfigAsPresetClick,
   handleScriptRootsChanged,
   hasFixableFindings,
@@ -52,6 +57,7 @@ import {
   hideLintProgress,
   isAchlistPath,
   isCodeViewerEditDirty,
+  isCustomPreset,
   isFixableFinding,
   isPscPath,
   lastProjectDir,
@@ -80,9 +86,13 @@ import {
   projectDirForPscPath,
   promptForConfigPreset,
   promptForConfigSelection,
+  refreshPresetManagementTab,
   relativePath,
+  relintCurrentFiles,
   rememberProjectDir,
+  renameUserPreset,
   renderMassFixList,
+  renderPresetManagementTab,
   renderPscResults,
   repairPscFile,
   repairPscFileRule,
@@ -1261,6 +1271,268 @@ describe("handleSaveConfigAsPresetClick", () => {
 
     expect(window.alert).toHaveBeenCalledWith('Failed to save preset "my-preset": Error: disk full');
     expect(console.error).toHaveBeenCalled();
+  });
+});
+
+describe("isCustomPreset", () => {
+  it("treats the three built-in preset ids as non-custom, case-insensitively", () => {
+    expect(isCustomPreset({ id: "strict", label: "Strict", description: "" })).toBe(false);
+    expect(isCustomPreset({ id: "Standard", label: "Standard", description: "" })).toBe(false);
+    expect(isCustomPreset({ id: "CAREFUL", label: "Careful", description: "" })).toBe(false);
+  });
+
+  it("treats any other id as a custom preset", () => {
+    expect(isCustomPreset({ id: "team-style", label: "Team Style", description: "" })).toBe(true);
+  });
+});
+
+describe("renderPresetManagementTab", () => {
+  const builtIns = [
+    { id: "strict", label: "Strict", description: "Catches everything." },
+    { id: "standard", label: "Standard", description: "A middle ground." },
+    { id: "careful", label: "Careful", description: "The quietest option." },
+  ];
+
+  it("hides the tab and clears the list when there are no custom presets", () => {
+    renderPresetManagementTab(builtIns);
+
+    expect(document.querySelector("#tab-presets")!.hasAttribute("hidden")).toBe(true);
+    expect(document.querySelector("#preset-management-list")!.children.length).toBe(0);
+  });
+
+  it("shows the tab and lists only the custom presets", () => {
+    renderPresetManagementTab([
+      ...builtIns,
+      { id: "team-style", label: "Team Style", description: "Our house rules." },
+    ]);
+
+    expect(document.querySelector("#tab-presets")!.hasAttribute("hidden")).toBe(false);
+    const items = document.querySelectorAll("#preset-management-list .preset-management__item");
+    expect(items.length).toBe(1);
+    expect(items[0].querySelector(".preset-management__label")!.textContent).toBe("Team Style");
+    expect(items[0].querySelectorAll(".preset-management__button").length).toBe(3);
+  });
+
+  it("switches back to the Settings tab if the active Presets tab's last custom preset disappears", () => {
+    renderPresetManagementTab([...builtIns, { id: "team-style", label: "Team Style", description: "" }]);
+    switchTab("presets");
+    expect(document.querySelector("#tab-presets")!.classList.contains("tabs__tab--active")).toBe(true);
+
+    renderPresetManagementTab(builtIns);
+
+    expect(document.querySelector("#tab-presets")!.hasAttribute("hidden")).toBe(true);
+    expect(document.querySelector("#tab-settings")!.classList.contains("tabs__tab--active")).toBe(true);
+    expect(document.querySelector("#panel-presets")!.hasAttribute("hidden")).toBe(true);
+  });
+});
+
+describe("refreshPresetManagementTab / rename/delete/exportUserPreset", () => {
+  it("refreshPresetManagementTab re-renders the tab from the backend's current preset list", async () => {
+    invokeImplFor({
+      list_config_presets: () => [{ id: "team-style", label: "Team Style", description: "" }],
+    });
+
+    await refreshPresetManagementTab();
+
+    expect(document.querySelector("#tab-presets")!.hasAttribute("hidden")).toBe(false);
+    expect(document.querySelectorAll("#preset-management-list .preset-management__item").length).toBe(1);
+  });
+
+  it("renameUserPreset invokes rename_user_preset with the given arguments", async () => {
+    invokeImplFor({ rename_user_preset: () => undefined });
+
+    await renameUserPreset("old-name", "new-name", true);
+
+    expect(invokeMock).toHaveBeenCalledWith("rename_user_preset", {
+      oldName: "old-name",
+      newName: "new-name",
+      overwrite: true,
+    });
+  });
+
+  it("deleteUserPreset invokes delete_user_preset with the given name", async () => {
+    invokeImplFor({ delete_user_preset: () => undefined });
+
+    await deleteUserPreset("team-style");
+
+    expect(invokeMock).toHaveBeenCalledWith("delete_user_preset", { name: "team-style" });
+  });
+
+  it("exportUserPreset invokes export_user_preset and returns its YAML", async () => {
+    invokeImplFor({ export_user_preset: () => "semicolon: true\n" });
+
+    await expect(exportUserPreset("team-style")).resolves.toBe("semicolon: true\n");
+    expect(invokeMock).toHaveBeenCalledWith("export_user_preset", { name: "team-style" });
+  });
+});
+
+describe("handleRenamePresetClick", () => {
+  const preset = { id: "team-style", label: "Team Style", description: "" };
+
+  // mountFixture's DOMContentLoaded dispatch (see the top-level beforeEach)
+  // already fires a handful of startup calls, including
+  // refreshPresetManagementTab's own list_config_presets lookup; clear
+  // those so the "does nothing"-style assertions below (checking invokeMock
+  // was never called at all) aren't tripped up by them.
+  beforeEach(() => {
+    invokeMock.mockClear();
+  });
+
+  it("does nothing when the prompt is left blank", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("   ");
+
+    await handleRenamePresetClick(preset);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when the new name is unchanged, ignoring case", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("TEAM-STYLE");
+
+    await handleRenamePresetClick(preset);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("renames without asking to overwrite when the new name is unused", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("new-name");
+    const confirmSpy = vi.spyOn(window, "confirm");
+    invokeImplFor({
+      list_config_presets: () => [preset],
+      rename_user_preset: () => undefined,
+    });
+
+    await handleRenamePresetClick(preset);
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(invokeMock).toHaveBeenCalledWith("rename_user_preset", {
+      oldName: "team-style",
+      newName: "new-name",
+      overwrite: false,
+    });
+  });
+
+  it("asks to overwrite when the new name is already used, and cancels if declined", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("other-preset");
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+    invokeImplFor({
+      list_config_presets: () => [preset, { id: "other-preset", label: "Other Preset", description: "" }],
+    });
+
+    await handleRenamePresetClick(preset);
+
+    expect(window.confirm).toHaveBeenCalledWith('A preset named "other-preset" already exists. Overwrite it?');
+    expect(invokeMock).not.toHaveBeenCalledWith("rename_user_preset", expect.anything());
+  });
+
+  it("overwrites when confirmed and refreshes the tab", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("other-preset");
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    invokeImplFor({
+      list_config_presets: () => [preset, { id: "other-preset", label: "Other Preset", description: "" }],
+      rename_user_preset: () => undefined,
+    });
+
+    await handleRenamePresetClick(preset);
+
+    expect(invokeMock).toHaveBeenCalledWith("rename_user_preset", {
+      oldName: "team-style",
+      newName: "other-preset",
+      overwrite: true,
+    });
+  });
+
+  it("alerts on failure", async () => {
+    vi.spyOn(window, "prompt").mockReturnValue("new-name");
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    invokeImplFor({
+      list_config_presets: () => [preset],
+      rename_user_preset: () => {
+        throw new Error("disk full");
+      },
+    });
+
+    await handleRenamePresetClick(preset);
+
+    expect(window.alert).toHaveBeenCalledWith('Failed to rename preset "Team Style": Error: disk full');
+  });
+});
+
+describe("handleDeletePresetClick", () => {
+  const preset = { id: "team-style", label: "Team Style", description: "" };
+
+  beforeEach(() => {
+    invokeMock.mockClear();
+  });
+
+  it("does nothing when the confirmation is declined", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    await handleDeletePresetClick(preset);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes and refreshes the tab when confirmed", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    invokeImplFor({
+      delete_user_preset: () => undefined,
+      list_config_presets: () => [],
+    });
+
+    await handleDeletePresetClick(preset);
+
+    expect(invokeMock).toHaveBeenCalledWith("delete_user_preset", { name: "team-style" });
+  });
+
+  it("alerts on failure", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    invokeImplFor({
+      delete_user_preset: () => {
+        throw new Error("permission denied");
+      },
+    });
+
+    await handleDeletePresetClick(preset);
+
+    expect(window.alert).toHaveBeenCalledWith('Failed to delete preset "Team Style": Error: permission denied');
+  });
+});
+
+describe("handleExportPresetClick", () => {
+  const preset = { id: "team-style", label: "Team Style", description: "" };
+
+  it("downloads the preset's YAML content as <id>.yaml", async () => {
+    invokeImplFor({ export_user_preset: () => "semicolon: true\n" });
+    const objectUrl = "blob:mock-url";
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue(objectUrl);
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      expect(this.download).toBe("team-style.yaml");
+    });
+
+    await handleExportPresetClick(preset);
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    const [blob] = createObjectURL.mock.calls[0] as [Blob];
+    expect(blob.type).toBe("application/x-yaml");
+    expect(click).toHaveBeenCalledTimes(1);
+  });
+
+  it("alerts on failure", async () => {
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    invokeImplFor({
+      export_user_preset: () => {
+        throw new Error("not found");
+      },
+    });
+
+    await handleExportPresetClick(preset);
+
+    expect(window.alert).toHaveBeenCalledWith('Failed to export preset "Team Style": Error: not found');
   });
 });
 
@@ -3139,6 +3411,148 @@ describe("handleDroppedPaths", () => {
     expect(items).toHaveLength(1);
     expect(items[0].textContent).toContain("New.psc");
     expect(items[0].textContent).not.toContain("Old.psc");
+  });
+});
+
+describe("relintCurrentFiles / Lint results tab settings staleness", () => {
+  async function dropOneFileAndSettle() {
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      save_lint_config: () => undefined,
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] from first pass" }],
+    });
+    const pending = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+  }
+
+  it("relintCurrentFiles does nothing when no files are currently loaded", async () => {
+    // An achlist with no .psc entries leaves currentPscOutcomes empty,
+    // giving a deterministic "nothing loaded" state to start the test from
+    // regardless of what an earlier test left behind (module-level state
+    // isn't reset between tests).
+    invokeImplFor({
+      parse_achlist_file: () => ["readme.txt"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+    });
+    const pending = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
+    invokeMock.mockClear();
+
+    await relintCurrentFiles();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("clicking the Lint results tab after a settings change clears the list and re-lints the same files", async () => {
+    await dropOneFileAndSettle();
+
+    switchTab("settings");
+    invokeImplFor({
+      save_lint_config: () => undefined,
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[error] from second pass" }],
+    });
+    handleLintConfigChanged();
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
+    // The results panel is hidden synchronously (the same "empty" signal a
+    // fresh drop uses while its own lint pass is still running) before the
+    // re-lint pass's async work (parse_psc_file/lint_psc_file) runs.
+    expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(true);
+    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
+
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc" });
+    expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(false);
+    const items = document.querySelectorAll("#psc-result-list > li");
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toContain("from second pass");
+  });
+
+  it("clicking the Lint results tab with no settings change since the last lint just switches tabs", async () => {
+    await dropOneFileAndSettle();
+
+    switchTab("settings");
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
+    await Promise.resolve();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+  });
+
+  it("re-marks results stale once a config-path-override reload settles, even if a race relint already ran against the old config", async () => {
+    // Regression test: handleConfigPathOverrideChanged sets lintResultsStale
+    // before its useProjectDir() reload (which replaces currentLintConfig)
+    // has actually finished. If the Lint results tab is clicked in that
+    // window, relintCurrentFiles relints against the still-old config and
+    // clears the flag - so once the reload finally lands the new config, the
+    // displayed results must be re-flagged stale, or nothing ever re-lints
+    // them against it.
+    await dropOneFileAndSettle();
+
+    let resolveOverrideLoad: (config: LintConfig) => void = () => {};
+    const pendingOverrideLoad = new Promise<LintConfig>((resolve) => {
+      resolveOverrideLoad = resolve;
+    });
+    const custom: LintConfig = { ...DEFAULT_LINT_CONFIG, semicolon: true };
+    invokeImplFor({
+      load_lint_config_from_path: () => pendingOverrideLoad,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] raced" }],
+    });
+    document.querySelector<HTMLInputElement>("#config-path-override")!.value = "/profiles/strict.yaml";
+    const overrideChange = handleConfigPathOverrideChanged();
+
+    // The override's own config load is still pending, but lintResultsStale
+    // was already set before it started; switching to the Lint tab now
+    // races ahead of it and relints against the config still in effect.
+    invokeMock.mockClear();
+    document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+    const raceLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_psc_file");
+    expect((raceLintCall?.[1] as { config: LintConfig }).config.semicolon).toBe(false);
+
+    // The override's config load now finishes, well after that race relint
+    // already cleared lintResultsStale.
+    invokeMock.mockClear();
+    resolveOverrideLoad(custom);
+    await overrideChange;
+
+    invokeImplFor({
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [{ line: 1, column: 1, message: "[warning] under custom config" }],
+    });
+    document.querySelector<HTMLButtonElement>("#tab-lint")!.click();
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+
+    const secondLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_psc_file");
+    expect((secondLintCall?.[1] as { config: LintConfig }).config.semicolon).toBe(true);
   });
 });
 

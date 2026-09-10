@@ -32,6 +32,13 @@ let identifierCasingStyleEl: HTMLSelectElement | null;
 let namedArgumentsStyleEl: HTMLSelectElement | null;
 let magicNumbersModeEl: HTMLSelectElement | null;
 let currentPscOutcomes: PscParseOutcome[] = [];
+// Set whenever a setting affecting lint output (formatting/rule config,
+// compiler path, compile-check toggle, additional script roots, or the
+// configuration file override) changes after currentPscOutcomes was last
+// populated, so a currently showing lint results list no longer reflects
+// the active settings. Checked by the Lint results tab button so switching
+// to it re-lints the same files instead of silently showing stale findings.
+let lintResultsStale = false;
 // Bumped by handleDroppedPaths every time a new drop starts parsing/linting;
 // a still-running drop's parsePscFiles callback checks its own snapshot of
 // this against the current value before touching currentPscOutcomes, so a
@@ -90,11 +97,13 @@ let configPickerPresetButtonEl: HTMLButtonElement | null;
 let configPickerPathInputEl: HTMLInputElement | null;
 let configPickerUsePathButtonEl: HTMLButtonElement | null;
 let configPickerContinueEl: HTMLButtonElement | null;
+let presetManagementTabEl: HTMLButtonElement | null;
+let presetManagementListEl: HTMLElement | null;
 
 const ACHLIST_EXTENSION = ".achlist";
 const PSC_EXTENSION = ".psc";
 
-export const TAB_IDS = ["import", "settings", "files", "lint", "contact"] as const;
+export const TAB_IDS = ["import", "settings", "presets", "files", "lint", "contact"] as const;
 type TabId = (typeof TAB_IDS)[number];
 
 // Shows `tab`'s panel and hides the others, updating the tab buttons'
@@ -629,7 +638,7 @@ export function applyProjectInfoToUI(info: ProjectInfo) {
 // without showing anything.
 export async function loadConfigPresets(): Promise<ConfigPreset[]> {
   try {
-    return await invoke<ConfigPreset[]>("list_config_presets");
+    return (await invoke<ConfigPreset[]>("list_config_presets")) ?? [];
   } catch (error) {
     console.error(error);
     return [];
@@ -674,10 +683,159 @@ export async function handleSaveConfigAsPresetClick(): Promise<void> {
 
   try {
     await invoke("save_config_as_preset", { config: currentLintConfig, name, overwrite: exists });
+    await refreshPresetManagementTab();
     window.alert(`Saved preset "${name}".`);
   } catch (error) {
     console.error(error);
     window.alert(`Failed to save preset "${name}": ${error}`);
+  }
+}
+
+// The three built-in presets' own ids (see papyrus_lint_core::config::PRESET_NAMES),
+// kept in sync by hand the same way FIXABLE_RULE_IDS is: everything
+// loadConfigPresets returns that isn't one of these is a user preset, since
+// config::save_user_preset/rename_user_preset always refuse a name matching
+// one of these case-insensitively.
+const BUILTIN_PRESET_IDS = new Set(["strict", "standard", "careful"]);
+
+export function isCustomPreset(preset: ConfigPreset): boolean {
+  return !BUILTIN_PRESET_IDS.has(preset.id.toLowerCase());
+}
+
+// Renames the user preset `oldName` to `newName`, via the backend's
+// rename_user_preset command (papyrus_lint_core::config::rename_user_preset).
+export async function renameUserPreset(oldName: string, newName: string, overwrite: boolean): Promise<void> {
+  await invoke("rename_user_preset", { oldName, newName, overwrite });
+}
+
+// Deletes the user preset `name`, via the backend's delete_user_preset
+// command (papyrus_lint_core::config::delete_user_preset).
+export async function deleteUserPreset(name: string): Promise<void> {
+  await invoke("delete_user_preset", { name });
+}
+
+// Fetches the user preset `name`'s raw YAML content, via the backend's
+// export_user_preset command (papyrus_lint_core::config::read_user_preset_yaml),
+// for handleExportPresetClick to offer as a download.
+export async function exportUserPreset(name: string): Promise<string> {
+  return invoke<string>("export_user_preset", { name });
+}
+
+// Rebuilds the Presets tab's management list from `presets` (see
+// loadConfigPresets), showing only the user (non-built-in) ones — built-in
+// presets can't be renamed, exported, or deleted. The tab itself (its
+// button and panel) is only shown while at least one user preset exists;
+// if it was the active tab and its last preset just got deleted, switches
+// back to the Settings tab instead of leaving an empty panel showing.
+export function renderPresetManagementTab(presets: ConfigPreset[]) {
+  const customPresets = presets.filter(isCustomPreset);
+  const hasCustomPresets = customPresets.length > 0;
+  const wasActive = presetManagementTabEl?.classList.contains("tabs__tab--active") ?? false;
+  if (presetManagementTabEl) {
+    presetManagementTabEl.hidden = !hasCustomPresets;
+  }
+  if (!hasCustomPresets && wasActive) {
+    switchTab("settings");
+  }
+
+  if (!presetManagementListEl) {
+    return;
+  }
+  presetManagementListEl.innerHTML = "";
+  for (const preset of customPresets) {
+    const item = document.createElement("li");
+    item.className = "preset-management__item";
+
+    const label = document.createElement("span");
+    label.className = "preset-management__label";
+    label.textContent = preset.label;
+
+    const actions = document.createElement("span");
+    actions.className = "preset-management__actions";
+
+    const renameButton = document.createElement("button");
+    renameButton.type = "button";
+    renameButton.className = "preset-management__button";
+    renameButton.textContent = "Rename";
+    renameButton.addEventListener("click", () => void handleRenamePresetClick(preset));
+
+    const exportButton = document.createElement("button");
+    exportButton.type = "button";
+    exportButton.className = "preset-management__button";
+    exportButton.textContent = "Export";
+    exportButton.addEventListener("click", () => void handleExportPresetClick(preset));
+
+    const deleteButton = document.createElement("button");
+    deleteButton.type = "button";
+    deleteButton.className = "preset-management__button";
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => void handleDeletePresetClick(preset));
+
+    actions.append(renameButton, exportButton, deleteButton);
+    item.append(label, actions);
+    presetManagementListEl.appendChild(item);
+  }
+}
+
+// Reloads every configuration preset and re-renders the Presets tab from
+// it. Called on startup and after any action (saving, renaming, or
+// deleting a user preset) that could change which presets exist.
+export async function refreshPresetManagementTab(): Promise<void> {
+  renderPresetManagementTab(await loadConfigPresets());
+}
+
+// Prompts for `preset`'s new name, confirming an overwrite the same way
+// handleSaveConfigAsPresetClick does if one is already in use, then renames
+// it via renameUserPreset and refreshes the tab. Cancels silently if the
+// prompt is left blank, unchanged (ignoring case), or the overwrite
+// confirmation is declined.
+export async function handleRenamePresetClick(preset: ConfigPreset): Promise<void> {
+  const name = window.prompt(`Rename preset "${preset.label}" to:`, preset.label)?.trim();
+  if (!name || name.toLowerCase() === preset.id.toLowerCase()) {
+    return;
+  }
+
+  const presets = await loadConfigPresets();
+  const exists = presets.some((other) => other.id.toLowerCase() === name.toLowerCase());
+  if (exists && !window.confirm(`A preset named "${name}" already exists. Overwrite it?`)) {
+    return;
+  }
+
+  try {
+    await renameUserPreset(preset.id, name, exists);
+    await refreshPresetManagementTab();
+  } catch (error) {
+    console.error(error);
+    window.alert(`Failed to rename preset "${preset.label}": ${error}`);
+  }
+}
+
+// Confirms, then deletes `preset` via deleteUserPreset and refreshes the
+// tab.
+export async function handleDeletePresetClick(preset: ConfigPreset): Promise<void> {
+  if (!window.confirm(`Delete preset "${preset.label}"? This can't be undone.`)) {
+    return;
+  }
+
+  try {
+    await deleteUserPreset(preset.id);
+    await refreshPresetManagementTab();
+  } catch (error) {
+    console.error(error);
+    window.alert(`Failed to delete preset "${preset.label}": ${error}`);
+  }
+}
+
+// Downloads `preset`'s raw YAML content (via exportUserPreset) as
+// `<id>.yaml`, the same browser-download technique handleExportIssuesClick
+// uses for the Lint results tab's own export button.
+export async function handleExportPresetClick(preset: ConfigPreset): Promise<void> {
+  try {
+    const yaml = await exportUserPreset(preset.id);
+    downloadTextFile(`${preset.id}.yaml`, yaml, "application/x-yaml");
+  } catch (error) {
+    console.error(error);
+    window.alert(`Failed to export preset "${preset.label}": ${error}`);
   }
 }
 
@@ -1038,6 +1196,7 @@ export function lintConfigFromUI(): LintConfig {
 // config and, if a project directory is known, persists it to disk.
 export function handleLintConfigChanged() {
   currentLintConfig = lintConfigFromUI();
+  lintResultsStale = true;
   const override = configPathOverride();
   if (override) {
     void saveLintConfigToPath(override, currentLintConfig);
@@ -2503,9 +2662,19 @@ export async function loadProjectConfig(dir: string): Promise<void> {
 // the Settings tab is unlocked, i.e. after that project's configuration has
 // already been picked via loadProjectConfig, so this never re-shows that
 // picker - it's ordinary editing of an already-picked configuration.
-export function handleConfigPathOverrideChanged() {
+export async function handleConfigPathOverrideChanged() {
+  lintResultsStale = true;
   if (currentProjectDir) {
-    void useProjectDir(currentProjectDir);
+    await useProjectDir(currentProjectDir);
+    // useProjectDir may have replaced currentLintConfig (and the other
+    // settings it reloads) after a relint already ran against the old
+    // values, if the Lint results tab was clicked while this reload was
+    // still in flight (relintCurrentFiles clears lintResultsStale as soon
+    // as it starts, well before this await resolves). Re-marking it stale
+    // here, unconditionally, is what makes the next tab switch re-lint
+    // against the config this reload actually settled on, regardless of
+    // whether that race happened.
+    lintResultsStale = true;
   }
 }
 
@@ -2514,6 +2683,7 @@ export function handleConfigPathOverrideChanged() {
 // config file (if a project is loaded).
 export function handleCompilerPathChanged() {
   currentCompilerPath = compilerPathEl?.value ?? "";
+  lintResultsStale = true;
   if (currentProjectDir && compilerPathEl) {
     void saveCompilerPath(currentProjectDir, compilerPathEl.value);
   }
@@ -2525,6 +2695,7 @@ export function handleCompilerPathChanged() {
 // project's config file (if a project is loaded).
 export function handleCompileCheckChanged() {
   currentCompileCheck = compileCheckEl?.checked ?? false;
+  lintResultsStale = true;
   if (currentProjectDir) {
     void saveCompileCheck(currentProjectDir, currentCompileCheck);
   }
@@ -2552,6 +2723,7 @@ export function applyScriptRootsToUI(roots: string[]) {
 // loaded).
 export function handleScriptRootsChanged() {
   currentScriptRoots = scriptRootsFromUI();
+  lintResultsStale = true;
   if (currentProjectDir) {
     void saveScriptRoots(currentProjectDir, currentScriptRoots);
   }
@@ -2648,6 +2820,7 @@ export async function handleDroppedPaths(paths: string[]) {
       // pass below can't show a previous drop's stale findings for a
       // path that happens to match one of this drop's entries.
       currentPscOutcomes = [];
+      lintResultsStale = false;
       const generation = ++currentParseGeneration;
       const projectDir = projectDirForAchlist(achlistPath, entries);
       showResult(achlistPath, entries, projectDir);
@@ -2682,6 +2855,7 @@ export async function handleDroppedPaths(paths: string[]) {
     const pscPath = paths[0];
     clearError();
     currentPscOutcomes = [];
+    lintResultsStale = false;
     const generation = ++currentParseGeneration;
     showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
     renderPscResults(currentPscOutcomes);
@@ -2717,6 +2891,7 @@ export async function handleDroppedPaths(paths: string[]) {
       });
       clearError();
       currentPscOutcomes = [];
+      lintResultsStale = false;
       const generation = ++currentParseGeneration;
       const projectDir = projectDirForDirectory(dirPath, entries);
       showResult(dirPath, entries, projectDir);
@@ -2743,6 +2918,39 @@ export async function handleDroppedPaths(paths: string[]) {
   }
 
   showError("Please drop a single .achlist or .psc file, or a folder to scan recursively.");
+}
+
+// Re-lints the same set of files currently shown in the Lint results tab
+// against the now-current settings. Called when that tab is switched to
+// while lintResultsStale is set, so a settings change (formatting/rule
+// config, compiler path, compile-check toggle, script roots, or the
+// configuration file override) takes visible effect instead of leaving
+// stale findings on screen. Clears the list first (rather than relinting
+// in place) so it's obvious a fresh pass is running rather than silently
+// showing results that may no longer match the current settings.
+export async function relintCurrentFiles() {
+  const paths = currentPscOutcomes.map((outcome) => outcome.path);
+  if (paths.length === 0) {
+    return;
+  }
+  lintResultsStale = false;
+  currentPscOutcomes = [];
+  const generation = ++currentParseGeneration;
+  switchTab("lint");
+  renderPscResults(currentPscOutcomes);
+
+  showLintProgress(paths.length);
+  await parsePscFiles(paths, (outcome) => {
+    if (generation !== currentParseGeneration) {
+      return;
+    }
+    currentPscOutcomes.push(outcome);
+    renderPscResults(currentPscOutcomes);
+    updateLintProgress(currentPscOutcomes.length, paths.length);
+  });
+  if (generation === currentParseGeneration) {
+    scheduleHideLintProgress();
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -2816,6 +3024,8 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   saveConfigAsPresetButtonEl = document.querySelector("#save-config-as-preset");
   saveConfigAsPresetButtonEl?.addEventListener("click", () => void handleSaveConfigAsPresetClick());
+  presetManagementTabEl = document.querySelector("#tab-presets");
+  presetManagementListEl = document.querySelector("#preset-management-list");
 
   settingsFieldsetEl = document.querySelector("#settings-fieldset");
   settingsLockedNoticeEl = document.querySelector("#settings-locked-notice");
@@ -2995,7 +3205,21 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   for (const id of TAB_IDS) {
-    document.querySelector<HTMLButtonElement>(`#tab-${id}`)?.addEventListener("click", () => switchTab(id));
+    const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);
+    if (id === "lint") {
+      // A settings change since the results currently shown were linted
+      // (lintResultsStale) means they no longer reflect the active
+      // settings; re-lint the same files instead of just showing the tab.
+      button?.addEventListener("click", () => {
+        if (lintResultsStale && currentPscOutcomes.length > 0) {
+          void relintCurrentFiles();
+        } else {
+          switchTab("lint");
+        }
+      });
+    } else {
+      button?.addEventListener("click", () => switchTab(id));
+    }
   }
   switchTab("import");
 
@@ -3011,6 +3235,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     void loadRuleTags().then(applyRuleTags);
+    void refreshPresetManagementTab();
 
     const lastDir = lastProjectDir();
     if (lastDir) {
