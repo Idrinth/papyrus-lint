@@ -75,6 +75,23 @@ test("lint progress bar is actually hidden when idle, not just marked hidden", a
   await expect(progress).toBeHidden();
 });
 
+test("preset picker is actually hidden after a preset is selected", async ({ page }) => {
+  await page.goto("/");
+
+  const picker = page.locator("#preset-picker");
+  await expect(picker).toBeHidden();
+
+  await page.evaluate(() => {
+    document.querySelector<HTMLDialogElement>("#preset-picker")!.showModal();
+  });
+  await expect(picker).toBeVisible();
+
+  await page.evaluate(() => {
+    document.querySelector<HTMLDialogElement>("#preset-picker")!.close();
+  });
+  await expect(picker).toBeHidden();
+});
+
 test("layout does not overflow horizontally at the app's default window size", async ({ page }) => {
   // 800x600 is the desktop app's configured default window size
   // (app/src-tauri/tauri.conf.json); it has no configured minimum, so a

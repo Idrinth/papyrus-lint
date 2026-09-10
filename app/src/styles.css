@@ -866,9 +866,6 @@ h1 {
 }
 
 .preset-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75em;
   width: min(36em, 92vw);
   padding: 1.25em;
   border: none;
@@ -879,6 +876,8 @@ h1 {
 
 .preset-picker[open] {
   display: flex;
+  flex-direction: column;
+  gap: 0.75em;
 }
 
 .preset-picker::backdrop {
