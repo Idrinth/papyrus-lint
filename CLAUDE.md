@@ -621,13 +621,14 @@ the most recent successful `ci.yml` run for the tagged commit); and a
 link to the full changelist (`.../compare/<previous-tag>...<tag>`). The
 changelist itself is grouped into a section per `component: *` label
 (see Pull request labels below) in a fixed order — Sublime Text Plugin,
-VS Code Extension, Frontend, CI, Parsing, Pages, GUI, then CLI — with a
-pull request carrying more than one of those labels grouped under
-whichever comes first in that order; a pull request whose only matching
-label is `component: documentation` is left out of the release notes
-entirely, since documentation changes are tracked elsewhere, while one
-labeled `component: documentation` alongside another component label
-still groups under that other label. A pull request matching none of
+VS Code Extension, Frontend, Linting, CI, Parsing, Pages, GUI, then CLI —
+with a pull request carrying more than one of those labels listed under
+every matching component in that order; a pull request whose only
+matching label is `component: documentation` is left out of the release
+notes entirely, since documentation changes are tracked elsewhere, while
+one labeled `component: documentation` alongside other component labels
+is still listed under every one of those other components. A pull request
+matching none of
 the labels above falls into a trailing "Other" section instead of
 failing the job. It also builds a plain-text version of the same PR
 changelist (titles only, no PR numbers or links) and uploads it as the

@@ -264,9 +264,11 @@ jobs:
             RANGE="$CURRENT"
           fi
 
-          # Component labels, in the order their sections appear. Ranked
-          # ahead of "component: documentation": a pull request labeled
-          # both is grouped under the other component rather than dropped.
+          # Component labels, in the order their sections appear. A pull
+          # request carrying multiple component labels is listed under every
+          # matching section. "component: documentation" is not a section,
+          # so a pull request labeled with it and another component is still
+          # grouped under each of its other components rather than dropped.
           # Documentation changes are tracked elsewhere, so a pull request
           # whose only matching label is documentation is left out of the
           # release notes entirely instead of falling into "Other".
@@ -325,7 +327,7 @@ jobs:
               SEEN[$number]=1
 
               IFS=',' read -ra PR_LABELS <<< "$labels_csv"
-              matched_idx=-1
+              matched_indices=()
               is_doc=0
               nexus_excluded=0
               type_labels=()
@@ -336,8 +338,8 @@ jobs:
                     | awk '{for (i = 1; i <= NF; i++) $i = toupper(substr($i, 1, 1)) substr($i, 2)}1')")
                 fi
                 for i in "${!LABEL_KEYS[@]}"; do
-                  if [ "$l" == "${LABEL_KEYS[$i]}" ] && { [ "$matched_idx" -eq -1 ] || [ "$i" -lt "$matched_idx" ]; }; then
-                    matched_idx=$i
+                  if [ "$l" == "${LABEL_KEYS[$i]}" ]; then
+                    matched_indices+=("$i")
                   fi
                 done
                 for ex in "${NEXUS_EXCLUDE_LABELS[@]}"; do
@@ -351,13 +353,15 @@ jobs:
                 type_tag="[${joined:2}] "
               fi
 
-              if [ "$matched_idx" -eq -1 ]; then
+              if [ "${#matched_indices[@]}" -eq 0 ]; then
                 if [ "$is_doc" -eq 1 ]; then
                   continue
                 fi
                 echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/other.md"
               else
-                echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/group_$matched_idx.md"
+                for i in "${matched_indices[@]}"; do
+                  echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/group_$i.md"
+                done
               fi
               if [ "$nexus_excluded" -eq 0 ]; then
                 echo "$title" >> nexus-changelog.md
