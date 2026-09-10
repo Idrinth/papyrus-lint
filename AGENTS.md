@@ -102,11 +102,9 @@ desktop app's binary at all.
 │       │       │                       # literal name, with no .psc in the
 │       │       │                       # project; reads rules/native-globals.yaml
 │       │       │                       # via a build-time-generated array (build.rs)
-│       │       └── presets.rs          # Built-in starting-point configurations
-│       │                               # ("strict"/"standard"/"careful"), embedded
-│       │                               # at compile time from docs/presets/*.yaml,
-│       │                               # for the desktop app's first-run picker
-│       │                               # (see Configuration below)
+│       │       └── presets.rs          # Label/description metadata for the desktop
+│       │                               # app's first-run preset picker, layered over
+│       │                               # config::Preset (see Configuration below)
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           └── src/                # achlist's scripts against its project's
 │               ├── lib.rs           # papyrus-lint.yaml and prints the results.
@@ -925,48 +923,58 @@ fails CI if they drift, so regenerate it with `PapyrusLinterCLI init`
 (and update `FIELD_COMMENTS`/README together) whenever a default or a
 field comment changes.
 
+`PapyrusLinterCLI init` also accepts `--preset <strict|standard|careful>`
+(matched case-insensitively, defaulting to `strict`), which selects the
+baseline `config::Preset` (`papyrus-lint-core/src/config.rs`) it generates
+`papyrus-lint.yaml` from, in place of the hardcoded default. `strict` is
+identical to `papyrus_lints::Config::default()` (and to
+`docs/papyrus-lint.default.yaml`), so plain `init` — no `--preset` — is
+unaffected by the flag existing at all; `standard` and `careful` are less
+noisy. Each preset's own annotated YAML lives under
+[`docs/presets/`](docs/presets/) (`papyrus-lint.strict.yaml`,
+`.standard.yaml`, `.careful.yaml`) and is compiled into the binary via
+`include_str!` on `Preset::yaml`, rather than read from disk at runtime.
+
 `initialize_default_config` also looks for a `papyrus-lint.yaml`/`.yml`
 file next to the running executable (`config::executable_dir`, backed by
-`std::env::current_exe()`) and, if one exists, uses it as the base instead
-of `papyrus_lints::Config::default()`/the hardcoded app-only defaults: any
-key it sets overrides the built-in default, any key it omits still falls
-back to that default (`ProjectFile`'s `#[serde(default)]` handles the
-merge for free once the base file is parsed). This lets someone define
-their own baseline settings once, next to wherever they keep the CLI or
-desktop app binary, and reuse it across every project they run `init` in.
-The lookup is split into a private `initialize_config_with_base(dir,
-base_dir)` so tests can supply a controlled `base_dir` instead of
+`std::env::current_exe()`) and, if one exists, layers it over the selected
+preset's own YAML instead of using the preset alone: any key it sets
+overrides the preset, any key it omits still falls back to the preset.
+This is a recursive per-key merge over `serde_yaml::Value` (`deep_merge`)
+rather than serde's own `#[serde(default)]` handling, since which
+"default" a key falls back to now depends on the chosen preset at runtime
+instead of being fixed at compile time; the merge covers `rules:`'s own
+nested keys too, so a base file that only overrides a couple of individual
+rules still inherits every other rule from the selected preset. This lets
+someone define their own baseline settings once, next to wherever they
+keep the CLI or desktop app binary, and reuse it across every project they
+run `init` in — layered on top of whichever preset they pick each time —
+rather than hand-editing each newly generated file the same way
+afterward. The lookup is split into a private `initialize_config_with_base(dir,
+base_dir, preset)` so tests can supply a controlled `base_dir` instead of
 depending on the test binary's own `current_exe()`; the checked-in
 `docs/papyrus-lint.default.yaml` copy is unaffected since CI's test
-environment has no such file next to the test binary.
+environment has no such file next to the test binary, and the `strict`
+preset (`init`'s own default) reproduces it byte-for-byte.
 
-Besides that built-in default (the "strict" preset below), three
-alternative starting points live under `docs/presets/` — `strict`
-(identical to the engine default), `standard` (every rule that can catch a
-real bug or performance problem, plus the free auto-fixable formatting
-rules), and `careful` (only real correctness/performance rules, relaxed
-complexity thresholds, meant for a first pass over a codebase not written
-with this linter in mind) — each a complete `papyrus-lint.yaml`. They're
-embedded into `papyrus-lint-core` at compile time (`presets.rs`, via
-`include_str!`, so the desktop app and CLI never depend on `docs/`
-existing at runtime) and exposed as `presets::all()`/`presets::config_for`.
-The desktop app's frontend uses them for a first-run picker: `useProjectDir`
-(`app/src/main.ts`) checks the project directory's `load_project_info`
-result and, if it has no `papyrus-lint.yaml`/`.yml` yet (and no
-"Configuration file" override is set — that's an explicit, separately
-managed file path), shows a dialog (`#preset-picker`) listing every preset
-via the `list_config_presets` Tauri command; picking one calls
-`apply_config_preset(dir, id)`, which resolves it through
-`presets::config_for` and writes it via
-`config::initialize_config_from` — the same "refuse to replace an existing
-config" guard `initialize_config_with_base` applies, so a preset can only
-ever seed a project that doesn't have a config yet. Closing the dialog
-without choosing one (its "Use defaults" button, Escape, or a backdrop
-click) leaves the project on the engine's built-in defaults without
-writing a file, so it's asked again the next time that directory is
-opened. This picker is desktop-app-only; the CLI's own `init` subcommand
-is unaffected and still writes `papyrus_lints::Config::default()` (or an
-executable-adjacent base file) regardless of these presets.
+The desktop app offers the same three presets as its own first-run picker,
+rather than only through the CLI's `init --preset` flag above:
+`useProjectDir` (`app/src/main.ts`) checks the project directory's
+`load_project_info` result and, if it has no `papyrus-lint.yaml`/`.yml`
+yet (and no "Configuration file" override is set — that's an explicit,
+separately managed file path), shows a dialog (`#preset-picker`) listing
+every preset via the `list_config_presets` Tauri command, backed by
+`papyrus-lint-core`'s `presets` module (`presets::all()`) — a thin
+label/description layer over `config::Preset`/`config::PRESET_NAMES`, the
+same enum the CLI flag parses. Picking one calls `apply_config_preset(dir,
+id)`, which resolves the id via `config::Preset::parse` and hands it to
+`config::initialize_default_config` — the very function `init --preset`
+itself calls — so the desktop app gets the same "refuse to replace an
+existing config" guard and executable-adjacent base-config layering for
+free. Closing the dialog without choosing one (its "Use defaults" button,
+Escape, or a backdrop click) leaves the project on the engine's built-in
+defaults without writing a file, so it's asked again the next time that
+directory is opened.
 
 The desktop app's `parse_psc_file` command, both the app's and the CLI's
 cross-script lookups (`papyrus-lint-core`'s `function_table.rs`, used to

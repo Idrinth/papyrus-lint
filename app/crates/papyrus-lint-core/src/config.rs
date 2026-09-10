@@ -225,35 +225,131 @@ fn non_lint_yaml(project: &ProjectFile) -> Result<String, String> {
     .map_err(|err| err.to_string())
 }
 
-/// Creates `papyrus-lint.yaml` in `dir` with the default project
+/// A named baseline `init` can generate `papyrus-lint.yaml` from, selected
+/// via the CLI's `--preset <name>` flag (see [`Preset::parse`]). See
+/// `docs/presets/` for each preset's own annotated YAML and the reasoning
+/// behind what it turns on/off relative to the others.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Preset {
+    /// Everything on, including pure style/naming nits. Identical to the
+    /// engine's built-in defaults (`docs/papyrus-lint.default.yaml`), so
+    /// plain `init` (no `--preset`) behaves exactly as it did before
+    /// presets existed.
+    #[default]
+    Strict,
+    /// Keeps every rule with a real correctness/performance stake, plus
+    /// the cheap, auto-fixable formatting rules; turns off naming/style and
+    /// purely informational/advisory rules.
+    Standard,
+    /// Only rules tagged `medium`/`high` importance stay on, and cyclomatic
+    /// complexity thresholds are relaxed — meant for a quiet first pass
+    /// over an unfamiliar or legacy codebase.
+    Careful,
+}
+
+/// The names [`Preset::parse`] accepts, in the order shown in `--help`/
+/// error text.
+pub const PRESET_NAMES: [&str; 3] = ["strict", "standard", "careful"];
+
+impl Preset {
+    /// Matches `name` against [`PRESET_NAMES`] case-insensitively. Returns
+    /// `None` for anything else, which the CLI's `--preset` parsing treats
+    /// as a usage error.
+    pub fn parse(name: &str) -> Option<Self> {
+        match name.to_ascii_lowercase().as_str() {
+            "strict" => Some(Self::Strict),
+            "standard" => Some(Self::Standard),
+            "careful" => Some(Self::Careful),
+            _ => None,
+        }
+    }
+
+    /// The checked-in `docs/presets/papyrus-lint.<preset>.yaml` contents
+    /// this preset generates `init`'s output from.
+    fn yaml(self) -> &'static str {
+        match self {
+            Self::Strict => include_str!("../../../../docs/presets/papyrus-lint.strict.yaml"),
+            Self::Standard => {
+                include_str!("../../../../docs/presets/papyrus-lint.standard.yaml")
+            }
+            Self::Careful => {
+                include_str!("../../../../docs/presets/papyrus-lint.careful.yaml")
+            }
+        }
+    }
+}
+
+/// Deep-merges `over` onto `base`: a `Mapping` present in both merges key by
+/// key (recursively, so `rules:`'s own nested keys merge independently
+/// rather than one `rules:` block replacing the other outright), and
+/// anything else in `over` replaces `base`'s value for that key entirely.
+/// Used to layer an executable-adjacent base config over a selected
+/// [`Preset`]'s own YAML, the same key-by-key override semantics a project's
+/// own `papyrus-lint.yaml` already gets over the engine's built-in defaults.
+fn deep_merge(base: serde_yaml::Value, over: serde_yaml::Value) -> serde_yaml::Value {
+    match (base, over) {
+        (serde_yaml::Value::Mapping(mut base_map), serde_yaml::Value::Mapping(over_map)) => {
+            for (key, value) in over_map {
+                let merged = match base_map.remove(&key) {
+                    Some(base_value) => deep_merge(base_value, value),
+                    None => value,
+                };
+                base_map.insert(key, merged);
+            }
+            serde_yaml::Value::Mapping(base_map)
+        }
+        (_, over) => over,
+    }
+}
+
+/// Creates `papyrus-lint.yaml` in `dir` from `preset`'s baseline
 /// configuration. Refuses to replace either supported config filename, so
 /// an existing project configuration cannot be lost accidentally.
 ///
 /// If a `papyrus-lint.yaml`/`.yml` file exists next to the running
-/// executable, it's used as the base instead of the engine's built-in
-/// defaults: any setting it specifies overrides the built-in default, and
-/// any setting it leaves out still falls back to that default. This lets
+/// executable, it's layered on top of `preset` instead of the engine's
+/// built-in defaults: any setting it specifies overrides the preset's own,
+/// and any setting it leaves out still falls back to the preset. This lets
 /// someone define their own baseline settings once, next to wherever they
 /// keep the CLI (or desktop app) binary, and reuse it across every project
-/// they run `init` in, rather than hand-editing each newly generated file
-/// the same way afterward.
-pub fn initialize_default_config(dir: &Path) -> Result<PathBuf, String> {
-    initialize_config_with_base(dir, executable_dir().as_deref())
+/// they run `init` in — on top of whichever preset they pick each time —
+/// rather than hand-editing each newly generated file the same way
+/// afterward.
+pub fn initialize_default_config(dir: &Path, preset: Preset) -> Result<PathBuf, String> {
+    initialize_config_with_base(dir, executable_dir().as_deref(), preset)
 }
 
 /// Same as [`initialize_default_config`], but takes the directory to look
 /// for the optional shared base config in explicitly, rather than assuming
 /// it's next to the running executable. Split out so tests can exercise the
 /// merge behavior without depending on `std::env::current_exe()`.
-fn initialize_config_with_base(dir: &Path, base_dir: Option<&Path>) -> Result<PathBuf, String> {
+fn initialize_config_with_base(
+    dir: &Path,
+    base_dir: Option<&Path>,
+    preset: Preset,
+) -> Result<PathBuf, String> {
     if let Some(path) = existing_config_path(dir) {
         return Err(format!("config already exists at {}", path.display()));
     }
 
-    let base = base_dir
-        .map(load_project_file)
-        .transpose()?
-        .unwrap_or_default();
+    let preset_value: serde_yaml::Value =
+        serde_yaml::from_str(preset.yaml()).map_err(|err| err.to_string())?;
+
+    let merged_value = match base_dir.and_then(existing_config_path) {
+        Some(base_path) => {
+            let contents = fs::read_to_string(&base_path).map_err(|err| err.to_string())?;
+            if contents.trim().is_empty() {
+                preset_value
+            } else {
+                let override_value: serde_yaml::Value =
+                    serde_yaml::from_str(&contents).map_err(|err| err.to_string())?;
+                deep_merge(preset_value, override_value)
+            }
+        }
+        None => preset_value,
+    };
+
+    let base: ProjectFile = serde_yaml::from_value(merged_value).map_err(|err| err.to_string())?;
 
     let path = dir.join(CONFIG_FILE_NAMES[0]);
     let lint_yaml = papyrus_lints::config::to_yaml(&base.lint).map_err(|err| err.to_string())?;
@@ -266,25 +362,6 @@ fn initialize_config_with_base(dir: &Path, base_dir: Option<&Path>) -> Result<Pa
     file.write_all(with_field_comments(&yaml).as_bytes())
         .map_err(|err| err.to_string())?;
     Ok(path)
-}
-
-/// Creates `dir`'s papyrus-lint config file directly from `config`, instead
-/// of the engine's built-in defaults ([`initialize_default_config`]) or a
-/// merged executable-adjacent base. Used by the desktop app's first-run
-/// preset picker (see [`crate::presets`]) once the user has chosen one:
-/// unlike [`save_config`], this refuses to replace an existing config file
-/// (the same guard [`initialize_config_with_base`] applies), so a preset
-/// can only ever seed a project that doesn't have a config yet.
-pub fn initialize_config_from(
-    dir: &Path,
-    config: &papyrus_lints::Config,
-) -> Result<PathBuf, String> {
-    if let Some(path) = existing_config_path(dir) {
-        return Err(format!("config already exists at {}", path.display()));
-    }
-    save_config(dir, config)?;
-    existing_config_path(dir)
-        .ok_or_else(|| "failed to locate the config file just written".to_string())
 }
 
 /// Looks for a papyrus-lint config file in `dir` and parses it into a
@@ -647,7 +724,8 @@ mod tests {
     fn default_config_matches_the_checked_in_docs_copy() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
 
-        let path = initialize_default_config(dir.path()).expect("init should succeed");
+        let path =
+            initialize_default_config(dir.path(), Preset::default()).expect("init should succeed");
         let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
         let docs_path =
@@ -662,37 +740,23 @@ mod tests {
     }
 
     #[test]
-    fn initialize_config_from_writes_the_given_config() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let config = papyrus_lints::Config {
-            semicolon: true,
-            indentation: Indentation::Space,
-            ..papyrus_lints::Config::default()
-        };
-
-        let path = initialize_config_from(dir.path(), &config).expect("init should succeed");
-
-        assert_eq!(path, dir.path().join("papyrus-lint.yaml"));
-        assert_eq!(
-            load_config(dir.path()).expect("loading should succeed"),
-            config
-        );
+    fn default_preset_is_strict() {
+        assert_eq!(Preset::default(), Preset::Strict);
     }
 
     #[test]
-    fn initialize_config_from_refuses_to_replace_either_supported_config_name() {
-        for name in CONFIG_FILE_NAMES {
-            let dir = tempfile::tempdir().expect("failed to create temp dir");
-            write_config(dir.path(), name, "semicolon: true\n");
+    fn preset_parse_matches_case_insensitively_and_rejects_unknown_names() {
+        assert_eq!(Preset::parse("strict"), Some(Preset::Strict));
+        assert_eq!(Preset::parse("STANDARD"), Some(Preset::Standard));
+        assert_eq!(Preset::parse("Careful"), Some(Preset::Careful));
+        assert_eq!(Preset::parse("lenient"), None);
+    }
 
-            let error = initialize_config_from(dir.path(), &papyrus_lints::Config::default())
-                .expect_err("init should reject an existing config");
-
-            assert!(error.contains(name));
-            assert_eq!(
-                fs::read_to_string(dir.path().join(name)).expect("failed to read existing config"),
-                "semicolon: true\n"
-            );
+    #[test]
+    fn every_preset_yaml_parses_into_a_project_file() {
+        for preset in [Preset::Strict, Preset::Standard, Preset::Careful] {
+            serde_yaml::from_str::<ProjectFile>(preset.yaml())
+                .unwrap_or_else(|err| panic!("{preset:?} preset failed to parse: {err}"));
         }
     }
 
@@ -701,13 +765,14 @@ mod tests {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let base_dir = tempfile::tempdir().expect("failed to create temp dir");
 
-        let path = initialize_config_with_base(dir.path(), Some(base_dir.path()))
-            .expect("init should succeed");
+        let path =
+            initialize_config_with_base(dir.path(), Some(base_dir.path()), Preset::default())
+                .expect("init should succeed");
         let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
         let default_dir = tempfile::tempdir().expect("failed to create temp dir");
-        let default_path =
-            initialize_default_config(default_dir.path()).expect("init should succeed");
+        let default_path = initialize_default_config(default_dir.path(), Preset::default())
+            .expect("init should succeed");
         let default_generated =
             fs::read_to_string(&default_path).expect("failed to read generated config");
 
@@ -724,8 +789,9 @@ mod tests {
             "compiler_path: /opt/PapyrusCompiler.exe\nsemicolon: true\n",
         );
 
-        let path = initialize_config_with_base(dir.path(), Some(base_dir.path()))
-            .expect("init should succeed");
+        let path =
+            initialize_config_with_base(dir.path(), Some(base_dir.path()), Preset::default())
+                .expect("init should succeed");
         let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
         // The base's own settings win...
@@ -743,13 +809,14 @@ mod tests {
         let base_dir = tempfile::tempdir().expect("failed to create temp dir");
         write_config(base_dir.path(), "papyrus-lint.yaml", "");
 
-        let path = initialize_config_with_base(dir.path(), Some(base_dir.path()))
-            .expect("init should succeed");
+        let path =
+            initialize_config_with_base(dir.path(), Some(base_dir.path()), Preset::default())
+                .expect("init should succeed");
         let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
         let default_dir = tempfile::tempdir().expect("failed to create temp dir");
-        let default_path =
-            initialize_default_config(default_dir.path()).expect("init should succeed");
+        let default_path = initialize_default_config(default_dir.path(), Preset::default())
+            .expect("init should succeed");
         let default_generated =
             fs::read_to_string(&default_path).expect("failed to read generated config");
 
@@ -766,7 +833,10 @@ mod tests {
             "semicolon: [not a bool\n",
         );
 
-        assert!(initialize_config_with_base(dir.path(), Some(base_dir.path())).is_err());
+        assert!(
+            initialize_config_with_base(dir.path(), Some(base_dir.path()), Preset::default())
+                .is_err()
+        );
     }
 
     #[test]
@@ -775,7 +845,7 @@ mod tests {
             let dir = tempfile::tempdir().expect("failed to create temp dir");
             write_config(dir.path(), name, "semicolon: true\n");
 
-            let error = initialize_config_with_base(dir.path(), None)
+            let error = initialize_config_with_base(dir.path(), None, Preset::default())
                 .expect_err("init should reject an existing config");
 
             assert!(error.contains(name));
@@ -784,6 +854,71 @@ mod tests {
                 "semicolon: true\n"
             );
         }
+    }
+
+    #[test]
+    fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let path = initialize_config_with_base(dir.path(), None, Preset::Standard)
+            .expect("init should succeed");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        assert!(generated.contains("  identifier_casing: false\n"));
+        assert!(generated.contains("  trailing_whitespace: true\n"));
+    }
+
+    #[test]
+    fn careful_preset_relaxes_complexity_thresholds_and_disables_formatting() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let path = initialize_config_with_base(dir.path(), None, Preset::Careful)
+            .expect("init should succeed");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        assert!(generated.contains("cyclomatic_complexity_warning: 20\n"));
+        assert!(generated.contains("cyclomatic_complexity_error: 40\n"));
+        assert!(generated.contains("  trailing_whitespace: false\n"));
+    }
+
+    #[test]
+    fn strict_preset_matches_the_built_in_default() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let path = initialize_config_with_base(dir.path(), None, Preset::Strict)
+            .expect("init should succeed");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        let default_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let default_path = initialize_default_config(default_dir.path(), Preset::default())
+            .expect("init should succeed");
+        let default_generated =
+            fs::read_to_string(&default_path).expect("failed to read generated config");
+
+        assert_eq!(generated, default_generated);
+    }
+
+    #[test]
+    fn executable_adjacent_base_config_overrides_a_non_strict_preset() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(
+            base_dir.path(),
+            "papyrus-lint.yaml",
+            "semicolon: true\nrules:\n  property_sorting: true\n",
+        );
+
+        let path = initialize_config_with_base(dir.path(), Some(base_dir.path()), Preset::Careful)
+            .expect("init should succeed");
+        let generated = fs::read_to_string(&path).expect("failed to read generated config");
+
+        // The base's own settings win, even over the preset's own values...
+        assert!(generated.contains("semicolon: true\n"));
+        assert!(generated.contains("  property_sorting: true\n"));
+        // ...while every other rule/setting still falls back to the
+        // selected preset rather than the hardcoded built-in default.
+        assert!(generated.contains("cyclomatic_complexity_warning: 20\n"));
+        assert!(generated.contains("  trailing_whitespace: false\n"));
     }
 
     #[test]

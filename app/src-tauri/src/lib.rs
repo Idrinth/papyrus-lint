@@ -247,14 +247,16 @@ fn list_config_presets() -> Vec<presets::PresetInfo> {
 }
 
 /// Seeds `dir`'s papyrus-lint config file from the named built-in preset,
-/// for the frontend's first-run picker. Refuses to replace an existing
-/// config file (see [`config::initialize_config_from`]), and errors if
-/// `preset` doesn't name a known preset.
+/// for the frontend's first-run picker, via the same
+/// [`config::initialize_default_config`] the CLI's `init --preset` uses:
+/// refuses to replace an existing config file, and still layers in an
+/// executable-adjacent base config over the selected preset if one exists.
+/// Errors if `preset` doesn't name a known preset.
 #[tauri::command]
 fn apply_config_preset(dir: String, preset: String) -> Result<(), String> {
-    let config = presets::config_for(&preset)
+    let preset = config::Preset::parse(&preset)
         .ok_or_else(|| format!("unknown configuration preset: {preset}"))?;
-    config::initialize_config_from(&PathBuf::from(dir), &config)?;
+    config::initialize_default_config(&PathBuf::from(dir), preset)?;
     Ok(())
 }
 

@@ -3,7 +3,7 @@
 //! ```text
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
 //! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
-//! PapyrusLinterCLI init
+//! PapyrusLinterCLI init [--preset <strict|standard|careful>]
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
@@ -72,6 +72,17 @@
 //! Unlike `--type`/`--line`, `--tag` doesn't require `fix`. It can't be
 //! combined with `--type`, since the two select overlapping things (one
 //! rule vs. one kind of rule); an unrecognized tag is a usage error.
+//!
+//! `init` accepts its own `--preset <name>` flag (`strict`, `standard`, or
+//! `careful`, matched case-insensitively; see
+//! [`papyrus_lint_core::config::Preset`] and `docs/presets/`), selecting
+//! which baseline `papyrus-lint.yaml` it generates. Defaults to `strict`,
+//! identical to the engine's built-in default, so plain `init` is
+//! unaffected by this flag existing at all. An executable-adjacent base
+//! config file (see [`papyrus_lint_core::config::initialize_default_config`])
+//! still layers on top of whichever preset is selected the same way it
+//! layers over the built-in default. An unrecognized preset name is a
+//! usage error.
 //!
 //! With the `--json` flag (combinable with `fix`, in either argument
 //! order), the diagnostics report is printed to stdout as a single JSON
@@ -222,7 +233,7 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 pub const USAGE: &str =
     "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
 PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>\n\n\
-PapyrusLinterCLI init\n\n\
+PapyrusLinterCLI init [--preset <strict|standard|careful>]\n\n\
 Lints every .psc script listed in the given .achlist file, a single\n\
 .psc file given directly, or every .psc file found recursively under a\n\
 given directory (any depth of subfolders), using the project's\n\
@@ -233,8 +244,10 @@ if it has none).\n\n\
 With the `fix` subcommand, applies every automatic fix (see README.md)\n\
 to those scripts first, rewriting each one on disk if it changed, then\n\
 reports whatever diagnostics remain the same way.\n\n\
-With the `init` subcommand, creates a default papyrus-lint.yaml in the\n\
-current working directory without overwriting an existing config.\n\n\
+With the `init` subcommand, creates a papyrus-lint.yaml in the current\n\
+working directory without overwriting an existing config, from the\n\
+selected --preset (strict, standard, or careful; defaults to strict,\n\
+identical to today's built-in default).\n\n\
 Options:\n\
   -h, --help              Show this help message\n\
   -V, --version           Print the PapyrusLinterCLI version\n\
@@ -273,7 +286,11 @@ Options:\n\
                           case-insensitively. Without fix, limits the reported\n\
                           diagnostics; with fix, also limits which automatic\n\
                           fixes run. Valid with or without fix. Can't be\n\
-                          combined with --type.\n\n\
+                          combined with --type.\n\
+  --preset <name>         init only: the baseline papyrus-lint.yaml to\n\
+                          generate (strict, standard, or careful; see\n\
+                          README.md). Defaults to strict, identical to the\n\
+                          built-in default.\n\n\
 Exit status: 0 if no problems were found (or none met the configured\n\
 fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
 I/O error.\n\n\
@@ -423,7 +440,23 @@ pub fn run(
     stderr: &mut impl Write,
     stdout_is_terminal: bool,
 ) -> u8 {
-    if args == ["init"] {
+    if args.first().map(String::as_str) == Some("init") {
+        let preset = match parse_init_preset(&args[1..]) {
+            Ok(preset) => preset,
+            Err(InitPresetError::Usage) => {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            }
+            Err(InitPresetError::UnknownPreset(name)) => {
+                let _ = writeln!(
+                    stderr,
+                    "error: unknown preset '{name}' (expected one of: {})",
+                    config::PRESET_NAMES.join(", ")
+                );
+                return 2;
+            }
+        };
+
         let current_dir = match std::env::current_dir() {
             Ok(dir) => dir,
             Err(err) => {
@@ -434,7 +467,7 @@ pub fn run(
                 return 2;
             }
         };
-        return initialize_config(&current_dir, stdout, stderr);
+        return initialize_config(&current_dir, preset, stdout, stderr);
     }
 
     let json = args.iter().any(|arg| arg == "--json");
@@ -1052,8 +1085,13 @@ fn display_path(path: &Path, project_root: &Path, short_paths: bool) -> String {
     path.display().to_string()
 }
 
-fn initialize_config(dir: &Path, stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
-    match config::initialize_default_config(dir) {
+fn initialize_config(
+    dir: &Path,
+    preset: config::Preset,
+    stdout: &mut impl Write,
+    stderr: &mut impl Write,
+) -> u8 {
+    match config::initialize_default_config(dir, preset) {
         Ok(path) => {
             let _ = writeln!(stdout, "Created {}", path.display());
             0
@@ -1063,6 +1101,48 @@ fn initialize_config(dir: &Path, stdout: &mut impl Write, stderr: &mut impl Writ
             2
         }
     }
+}
+
+/// Why [`parse_init_preset`] rejected `init`'s arguments, so [`run`] can
+/// print the right message for each: a bare usage error gets the generic
+/// [`USAGE`] text, matching every other usage error this CLI reports, while
+/// an unrecognized preset name gets its own message listing the valid
+/// ones.
+#[derive(Debug, PartialEq, Eq)]
+enum InitPresetError {
+    /// A missing `--preset` value, or an argument that isn't `--preset`/
+    /// `--preset=<name>` at all.
+    Usage,
+    /// A recognized `--preset`/`--preset=` flag whose value doesn't match
+    /// any of [`config::PRESET_NAMES`].
+    UnknownPreset(String),
+}
+
+/// Parses the arguments following `init` (i.e. `args[1..]` in [`run`]) into
+/// the [`config::Preset`] its `--preset <name>`/`--preset=<name>` flag
+/// selects, defaulting to [`config::Preset::default`] (`strict`) when
+/// `rest` is empty. Split out from [`run`] so the parsing itself is
+/// testable without touching the process's actual current directory,
+/// unlike `init`'s success path (see [`initialize_config`]), which writes
+/// into it.
+fn parse_init_preset(rest: &[String]) -> Result<config::Preset, InitPresetError> {
+    let mut preset = config::Preset::default();
+    let mut args = rest.iter();
+    while let Some(arg) = args.next() {
+        let value = if arg == "--preset" {
+            args.next()
+                .map(String::as_str)
+                .ok_or(InitPresetError::Usage)?
+        } else if let Some(value) = arg.strip_prefix("--preset=") {
+            value
+        } else {
+            return Err(InitPresetError::Usage);
+        };
+
+        preset = config::Preset::parse(value)
+            .ok_or_else(|| InitPresetError::UnknownPreset(value.to_string()))?;
+    }
+    Ok(preset)
 }
 
 #[cfg(test)]
@@ -1176,7 +1256,12 @@ mod tests {
         let mut stdout = Vec::new();
         let mut stderr = Vec::new();
 
-        let code = initialize_config(dir.path(), &mut stdout, &mut stderr);
+        let code = initialize_config(
+            dir.path(),
+            config::Preset::default(),
+            &mut stdout,
+            &mut stderr,
+        );
 
         assert_eq!(code, 0);
         assert!(stderr.is_empty());
@@ -1195,7 +1280,12 @@ mod tests {
         let mut stdout = Vec::new();
         let mut stderr = Vec::new();
 
-        let code = initialize_config(dir.path(), &mut stdout, &mut stderr);
+        let code = initialize_config(
+            dir.path(),
+            config::Preset::default(),
+            &mut stdout,
+            &mut stderr,
+        );
 
         assert_eq!(code, 2);
         assert!(stdout.is_empty());
@@ -1203,6 +1293,77 @@ mod tests {
             .unwrap()
             .contains("config already exists"));
         assert_eq!(fs::read_to_string(path).unwrap(), "semicolon: true\n");
+    }
+
+    #[test]
+    fn parse_init_preset_defaults_to_strict_when_no_flag_is_given() {
+        assert_eq!(parse_init_preset(&[]), Ok(config::Preset::Strict));
+    }
+
+    #[test]
+    fn parse_init_preset_accepts_the_flag_and_its_equals_form() {
+        assert_eq!(
+            parse_init_preset(&["--preset".to_string(), "careful".to_string()]),
+            Ok(config::Preset::Careful)
+        );
+        assert_eq!(
+            parse_init_preset(&["--preset=standard".to_string()]),
+            Ok(config::Preset::Standard)
+        );
+    }
+
+    #[test]
+    fn parse_init_preset_matches_names_case_insensitively() {
+        assert_eq!(
+            parse_init_preset(&["--preset".to_string(), "STANDARD".to_string()]),
+            Ok(config::Preset::Standard)
+        );
+    }
+
+    #[test]
+    fn parse_init_preset_rejects_an_unknown_preset() {
+        let err = parse_init_preset(&["--preset".to_string(), "lenient".to_string()])
+            .expect_err("an unrecognized preset name should be rejected");
+        assert!(matches!(err, InitPresetError::UnknownPreset(name) if name == "lenient"));
+    }
+
+    #[test]
+    fn parse_init_preset_rejects_a_missing_value() {
+        let err = parse_init_preset(&["--preset".to_string()])
+            .expect_err("a --preset with no value should be rejected");
+        assert!(matches!(err, InitPresetError::Usage));
+    }
+
+    #[test]
+    fn parse_init_preset_rejects_an_unrecognized_extra_argument() {
+        let err = parse_init_preset(&["extra".to_string()])
+            .expect_err("an argument other than --preset should be rejected");
+        assert!(matches!(err, InitPresetError::Usage));
+    }
+
+    #[test]
+    fn run_init_with_a_preset_flag_writes_the_selected_presets_config() {
+        // `run(["init", ...], ...)` writes into the process's actual
+        // current directory (see `initialize_config`'s call in `run`),
+        // which isn't safe to exercise from a parallel test suite. The
+        // argument parsing itself (see the `parse_init_preset` tests
+        // above) and `initialize_config`'s own preset handling (see
+        // `init_creates_a_default_config` above and
+        // `papyrus-lint-core`'s own preset tests) are covered separately,
+        // so this only checks that `run` wires the two together for a
+        // `--preset` other than the default.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let preset =
+            parse_init_preset(&["--preset=careful".to_string()]).expect("careful should parse");
+        let code = initialize_config(dir.path(), preset, &mut stdout, &mut stderr);
+
+        assert_eq!(code, 0);
+        let generated = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+            .expect("failed to read generated config");
+        assert!(generated.contains("cyclomatic_complexity_warning: 20\n"));
     }
 
     #[test]

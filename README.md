@@ -226,8 +226,16 @@ next to the `.achlist` file you drop into the app, or, for a single
 default. The full default configuration, with every key documented inline,
 is checked in at
 [`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — it's
-also what `PapyrusLinterCLI init` writes into a project with no config
-file yet.
+also what `PapyrusLinterCLI init` (or `init --preset strict`, the default)
+writes into a project with no config file yet.
+
+`PapyrusLinterCLI init --preset <name>` picks a different built-in starting
+point instead: `standard` keeps every rule with a real correctness/
+performance stake plus the cheap, auto-fixable formatting rules, and turns
+off purely naming/style and informational/advisory rules; `careful` keeps
+only `medium`/`high` importance rules and relaxes the cyclomatic complexity
+thresholds, for a quiet first pass over an unfamiliar or legacy codebase.
+See [`docs/presets/`](docs/presets/) for each preset's own annotated YAML.
 
 The desktop app's Settings tab has a "Configuration file" field for
 overriding this auto-detection: enter the path to a specific
@@ -239,22 +247,14 @@ config file doesn't live where auto-detection expects it. Leave it blank
 to go back to auto-detection. Whatever path is entered is remembered
 across app restarts, so it's prefilled the next time the app opens.
 
-The first time the desktop app opens a project directory with no
-`papyrus-lint.yaml`/`.yml` of its own yet (and no "Configuration file"
-override set), it asks which of three built-in presets to start from
-instead of silently linting against the engine's defaults: `strict`
-(everything on, identical to the default file above), `standard` (every
-rule that can catch a real bug or performance problem, plus the free
-auto-fixable formatting rules — naming conventions and purely
-informational notices are left off), or `careful` (only rules that catch
-real correctness/performance problems, with relaxed complexity
-thresholds — meant for a first pass over a project that wasn't
-necessarily written with this linter in mind). Every setting a preset
-picks can still be changed afterward in the Settings tab. Closing the
-dialog without choosing one leaves the project on the engine's built-in
-defaults without writing a config file, so it's asked again next time
-that directory is opened. This picker is desktop-app-only; `PapyrusLinterCLI
-init` is unaffected and always writes the `strict` preset.
+The desktop app offers the same three presets as its own first-run picker:
+the first time it opens a project directory with no `papyrus-lint.yaml`/
+`.yml` of its own yet (and no "Configuration file" override set), it asks
+which preset to start from instead of silently linting against the
+engine's defaults. Every setting a preset picks can still be changed
+afterward in the Settings tab. Closing the dialog without choosing one
+leaves the project on the engine's built-in defaults without writing a
+config file, so it's asked again next time that directory is opened.
 
 Each key:
 
@@ -417,6 +417,7 @@ Both accept the same argument and behave identically:
 ```text
 PapyrusLinterCLI path/to/project.achlist
 PapyrusLinterCLI init
+PapyrusLinterCLI init --preset standard
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI path/to/scripts/source
 PapyrusLinterCLI fix path/to/project.achlist
@@ -436,17 +437,22 @@ PapyrusLinterCLI --color never path/to/project.achlist
 PapyrusLinterCLI --progress --output path/to/report.txt path/to/project.achlist
 ```
 
-`PapyrusLinterCLI init` creates a `papyrus-lint.yaml` containing all default
-settings in the current working directory. It refuses to overwrite an existing
-`papyrus-lint.yaml` or `papyrus-lint.yml` file.
+`PapyrusLinterCLI init` creates a `papyrus-lint.yaml` in the current working
+directory from the selected `--preset` (`strict`, `standard`, or `careful`,
+matched case-insensitively; defaults to `strict`, identical to today's
+built-in default — see Configuration above and
+[`docs/presets/`](docs/presets/)). It refuses to overwrite an existing
+`papyrus-lint.yaml` or `papyrus-lint.yml` file, and an unrecognized `--preset`
+name is a usage error.
 
 If a `papyrus-lint.yaml`/`.yml` file exists next to the running executable
 (the CLI binary itself, or the desktop app's binary when it delegates to CLI
-mode), `init` merges it in as the base instead of the built-in defaults: any
-key it sets overrides the built-in default, and any key it omits still falls
-back to that default. This lets you define your own baseline settings once,
-next to wherever you keep the binary, and reuse it across every project you
-run `init` in instead of hand-editing each newly generated file the same way.
+mode), `init` merges it in as the base instead of the selected preset's own
+settings: any key it sets overrides the preset, and any key it omits still
+falls back to the preset. This lets you define your own baseline settings
+once, next to wherever you keep the binary, and reuse it across every
+project you run `init` in — on top of whichever preset you pick each time —
+instead of hand-editing each newly generated file the same way.
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
 Given a single `.psc` path directly, it lints just that file, treating it
