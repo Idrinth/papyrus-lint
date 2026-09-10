@@ -111,6 +111,9 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
 
     let script = papyrus_parser::parse(&source).map_err(|err| err.to_string())?;
     ast_cache::put(path, &source, &script);
+    if let Ok(tokens) = papyrus_parser::tokenize(&source) {
+        ast_cache::put_tokens(path, &source, &tokens);
+    }
     Ok(script)
 }
 

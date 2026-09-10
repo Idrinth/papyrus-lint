@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/ast-cache-entry.schema.json",
   "title": "Papyrus Lint AST cache entry",
-  "description": "One `<md5-of-source-path>.json` file inside an `ast-cache` directory next to a running PapyrusLinterCLI/desktop app binary (see app/crates/papyrus-lint-core/src/ast_cache.rs). This describes entries whose `linter_version` is at or above MIN_COMPATIBLE_VERSION (currently 1.16.0) in that file: an entry is only ever read back by a linter build whose own MIN_COMPATIBLE_VERSION accepts its linter_version, so a consuming tool should apply the same check -- against its own known-compatible floor -- before relying on this schema, and must otherwise treat the entry as opaque and fall back to re-parsing the source itself. MIN_COMPATIBLE_VERSION only moves forward when a release changes this layout or the embedded `ast` shape incompatibly, so a schema fetched at a given linter_version stays valid for every later entry until the next such bump.",
+  "description": "One `<md5-of-source-path>.json` file inside an `ast-cache` directory next to a running PapyrusLinterCLI/desktop app binary (see app/crates/papyrus-lint-core/src/ast_cache.rs). This describes entries whose `linter_version` is at or above MIN_COMPATIBLE_VERSION (currently 1.28.0) in that file: an entry is only ever read back by a linter build whose own MIN_COMPATIBLE_VERSION accepts its linter_version, so a consuming tool should apply the same check -- against its own known-compatible floor -- before relying on this schema, and must otherwise treat the entry as opaque and fall back to re-parsing the source itself. MIN_COMPATIBLE_VERSION only moves forward when a release changes this layout or the embedded `ast` shape incompatibly, so a schema fetched at a given linter_version stays valid for every later entry until the next such bump.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -33,7 +33,7 @@
       "anyOf": [{ "$ref": "#/$defs/script" }, { "type": "null" }]
     },
     "tokens": {
-      "description": "The token stream, exactly as produced by papyrus_parser::tokenize() and serialized via serde -- see app/crates/papyrus-parser/src/token.rs. Null when this entry was written by a `put` call that found no already-cached `tokens` to carry forward -- a reader should treat that the same as a miss for the tokens specifically and re-tokenize. As of this schema version nothing in the linter reads or writes this field yet; it's reserved for a future change that caches the lexer's token stream alongside the AST.",
+      "description": "The token stream, exactly as produced by papyrus_parser::tokenize() and serialized via serde -- see app/crates/papyrus-parser/src/token.rs. Null when this entry was written by a `put` call that found no already-cached `tokens` to carry forward -- a reader should treat that the same as a miss for the tokens specifically and re-tokenize. Written alongside `ast` whenever a script is freshly parsed (`parse_psc_file` and `FunctionTable::ensure_loaded`), and read back via `ast_cache::get_tokens`/`ensure_primed`, which primes `papyrus_parser`'s own in-memory memoization on a hit so a subsequent lint/repair pass's internal `tokenize()` call reuses it instead of re-tokenizing.",
       "anyOf": [
         {
           "type": "array",

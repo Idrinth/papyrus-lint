@@ -23,11 +23,14 @@
 //! here is swallowed and simply falls through to a fresh parse, never
 //! surfaced as a lint error.
 //!
-//! Each entry also has room for the lexer's token stream
+//! Each entry also carries the lexer's token stream
 //! (`papyrus_parser::tokenize()`'s output) alongside the AST, via
 //! [`get_tokens`]/[`put_tokens`], sharing the same freshness metadata as
 //! the AST accessors -- a `put`/`put_tokens` call preserves whatever
 //! still-valid value the other field already held instead of clobbering it.
+//! `put_tokens` is also called directly (alongside `put`) wherever
+//! `parse_psc_file` or `FunctionTable::ensure_loaded` freshly parse a
+//! script, independent of the priming path below.
 //!
 //! Since `papyrus_lints::lint()`/`repair()` parse/tokenize their `source`
 //! argument internally and never see `source_path`, they can't consult this
@@ -50,7 +53,7 @@ const CACHE_DIR_NAME: &str = "ast-cache";
 
 /// The oldest linter release whose AST cache entries the running binary
 /// still accepts. See the module docs above for when to bump this.
-const MIN_COMPATIBLE_VERSION: &str = "1.16.0";
+const MIN_COMPATIBLE_VERSION: &str = "1.28.0";
 
 #[derive(Serialize, Deserialize)]
 struct CacheEntry {
@@ -451,9 +454,9 @@ mod tests {
     #[test]
     fn is_compatible_version_accepts_the_minimum_and_anything_newer() {
         assert!(is_compatible_version(MIN_COMPATIBLE_VERSION));
-        assert!(is_compatible_version("1.16.1"));
+        assert!(is_compatible_version("1.28.1"));
         assert!(is_compatible_version("2.0.0"));
-        assert!(!is_compatible_version("1.15.99"));
+        assert!(!is_compatible_version("1.27.99"));
         assert!(!is_compatible_version("not-a-version"));
     }
 
