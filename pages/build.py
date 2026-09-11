@@ -7,7 +7,8 @@ that documentation never has to be kept in sync by hand in two places.
 Also renders every document listed in DOCS (including remotely sourced
 documentation) into its own browsable subpage under docs/ (via
 pages/docs.template.html), with lightweight build-time syntax highlighting
-for fenced Markdown and raw JSON, YAML, shell, and BBCode sources. The
+for fenced Markdown (including Papyrus code fences) and raw JSON, YAML,
+shell, and BBCode sources. The
 templates receive their
 shared header and footer from pages/includes/, so site chrome has a single
 source of truth - including the header's System/Light/Dark theme switch,
@@ -453,6 +454,20 @@ SYNTAX_PATTERNS = {
         r"(?P<keyword>\b(?:if|then|else|elif|fi|for|while|do|done|case|esac|in|function)\b)"
     ),
     "bbcode": re.compile(r"(?P<tag>\[/?[A-Za-z][^\]\n]*\])"),
+    # Kept in sync with the KEYWORDS/TYPES token classes app/src/highlight.ts
+    # uses for the desktop app's own code viewer, so a ```papyrus fence (the
+    # docs/examples.md walkthroughs) reads the same way there and here.
+    "papyrus": re.compile(
+        r"(?P<comment>;/[\s\S]*?(?:/;|$)|\{[^}]*\}?|;[^\n]*)|"
+        r'(?P<string>"(?:\\.|[^"\\\n])*"?)|'
+        r"(?P<number>0[xX][0-9a-fA-F]+|\b\d+(?:\.\d+)?\b)|"
+        r"(?P<keyword>\b(?:scriptname|extends|hidden|conditional|import|function|"
+        r"endfunction|event|endevent|property|endproperty|auto|autoreadonly|global|"
+        r"native|return|if|elseif|else|endif|while|endwhile|state|endstate|new|as|"
+        r"true|false|none|self|parent|length|debugonly|betaonly)\b)|"
+        r"(?P<type>\b(?:int|float|bool|string|var)\b)",
+        re.IGNORECASE,
+    ),
 }
 
 LANGUAGE_ALIASES = {
@@ -469,6 +484,7 @@ SYNTAX_CLASSES = {
     "number": "num",
     "string": "str",
     "tag": "tag",
+    "type": "ty",
 }
 
 
