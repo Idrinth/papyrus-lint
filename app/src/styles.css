@@ -735,6 +735,15 @@ h1 {
   display: flex;
 }
 
+/* Without this, the class's own `display: flex` above (an author-stylesheet
+   rule) outranks the browser's default `[hidden] { display: none }` (a
+   user-agent rule) at equal specificity, so toggling the `hidden` attribute
+   in JS never actually hides the element - leaving edit mode's textarea/
+   gutter/highlight overlay rendered on top of the read-only view. */
+.code-viewer__editor[hidden] {
+  display: none;
+}
+
 /* Mirrors `.code-viewer__table`'s `.code-viewer__line-number` column in the
  * read-only view above, so edit mode shows the same line numbers instead of
  * losing them entirely once a script is opened for editing. Scrolled in
