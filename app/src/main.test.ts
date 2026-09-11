@@ -3816,7 +3816,7 @@ describe("code viewer edit mode", () => {
       expect(panelHidden("#code-viewer-cancel")).toBe(false);
     });
 
-    it("keeps linter severities and messages visible in the editor", async () => {
+    it("keeps linter severities visible in the editor and describes every finding in the accessible label", async () => {
       await openWithSource("line one\nline two\n", [
         { line: 2, column: 3, message: "[warning] risky edit" },
         { line: 2, column: 5, message: "[error] broken edit" },
@@ -3827,10 +3827,65 @@ describe("code viewer edit mode", () => {
       const lines = highlightCode().querySelectorAll(".code-viewer__editor-line");
       expect(lines).toHaveLength(3);
       expect(lines[1].classList.contains("code-viewer__line--error")).toBe(true);
-      expect(lines[1].getAttribute("title")).toContain("[warning] risky edit");
-      expect(lines[1].getAttribute("title")).toContain("[error] broken edit");
-      expect(textarea().title).toContain("Line 2, column 3: [warning] risky edit");
+      // The highlight layer's own per-line title would never actually be
+      // hoverable (the textarea on top of it intercepts every pointer
+      // event), so it carries no title of its own - see the
+      // "hovered line" tooltip test below for how the textarea's title is
+      // kept in sync instead.
+      expect(lines[1].hasAttribute("title")).toBe(false);
+      expect(textarea().getAttribute("aria-label")).toContain("Line 2, column 3: [warning] risky edit");
       expect(textarea().getAttribute("aria-label")).toContain("Line 2, column 5: [error] broken edit");
+    });
+
+    it("renders one line number per source line in the gutter, kept in sync as the user types", async () => {
+      await openWithSource("line one\nline two\n");
+      enterCodeViewerEditMode();
+
+      const gutterLines = () =>
+        Array.from(document.querySelectorAll("#code-viewer-editor-gutter .code-viewer__editor-gutter-line")).map(
+          (el) => el.textContent,
+        );
+      expect(gutterLines()).toEqual(["1", "2", "3"]);
+
+      textarea().value = "line one\nline two\nline three\n";
+      textarea().dispatchEvent(new Event("input"));
+
+      expect(gutterLines()).toEqual(["1", "2", "3", "4"]);
+    });
+
+    it("updates the textarea's tooltip to only the hovered line's findings, not the whole file's", async () => {
+      await openWithSource("line one\nline two\nline three\n", [
+        { line: 1, column: 1, message: "[info] first line" },
+        { line: 3, column: 1, message: "[warning] third line" },
+      ]);
+      enterCodeViewerEditMode();
+      const ta = textarea();
+      vi.spyOn(ta, "getBoundingClientRect").mockReturnValue({
+        top: 0,
+        left: 0,
+        bottom: 100,
+        right: 100,
+        width: 100,
+        height: 100,
+        x: 0,
+        y: 0,
+        toJSON() {},
+      } as DOMRect);
+      vi.spyOn(window, "getComputedStyle").mockReturnValue({
+        lineHeight: "20px",
+        paddingTop: "10px",
+      } as CSSStyleDeclaration);
+
+      ta.dispatchEvent(new MouseEvent("mousemove", { clientY: 10 }));
+      expect(ta.title).toContain("[info] first line");
+      expect(ta.title).not.toContain("[warning] third line");
+
+      ta.dispatchEvent(new MouseEvent("mousemove", { clientY: 55 }));
+      expect(ta.title).toContain("[warning] third line");
+      expect(ta.title).not.toContain("[info] first line");
+
+      ta.dispatchEvent(new MouseEvent("mouseleave"));
+      expect(ta.title).toBe("");
     });
 
     it("renders each blank source line as its own line element with no stray whitespace between line elements", async () => {

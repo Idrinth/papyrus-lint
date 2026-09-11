@@ -209,9 +209,12 @@ export const FIXTURE_HTML = `
       <div class="code-viewer__stage">
         <div id="code-viewer-view" class="code-viewer__view"></div>
         <div id="code-viewer-editor" class="code-viewer__editor" hidden>
-          <pre id="code-viewer-editor-highlight" class="code-viewer__editor-highlight" aria-hidden="true"><code></code></pre>
-          <textarea id="code-viewer-editor-textarea" class="code-viewer__editor-textarea" spellcheck="false"></textarea>
-          <ul id="code-viewer-autocomplete" class="code-viewer__autocomplete" role="listbox" hidden></ul>
+          <div id="code-viewer-editor-gutter" class="code-viewer__editor-gutter" aria-hidden="true"></div>
+          <div class="code-viewer__editor-code">
+            <pre id="code-viewer-editor-highlight" class="code-viewer__editor-highlight" aria-hidden="true"><code></code></pre>
+            <textarea id="code-viewer-editor-textarea" class="code-viewer__editor-textarea" spellcheck="false"></textarea>
+            <ul id="code-viewer-autocomplete" class="code-viewer__autocomplete" role="listbox" hidden></ul>
+          </div>
         </div>
       </div>
       <pre id="code-viewer-compile-output" class="code-viewer__compile-output" hidden></pre>

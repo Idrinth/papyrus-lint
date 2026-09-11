@@ -72,6 +72,7 @@ let codeViewerTitleEl: HTMLElement | null;
 let codeViewerCloseEl: HTMLButtonElement | null;
 let codeViewerViewEl: HTMLElement | null;
 let codeViewerEditEl: HTMLElement | null;
+let codeViewerEditGutterEl: HTMLElement | null;
 let codeViewerEditHighlightEl: HTMLElement | null;
 let codeViewerEditTextareaEl: HTMLTextAreaElement | null;
 let codeViewerEditButtonEl: HTMLButtonElement | null;
@@ -1472,8 +1473,15 @@ function updateCodeViewerFixButtonVisibility() {
   codeViewerFixButtonEl.hidden = codeViewerMode !== "view" || !hasFixableFindings(codeViewerState?.findings ?? []);
 }
 
-// Re-renders the edit mode's syntax-highlighted overlay from the
-// textarea's current value, keeping it in sync as the user types.
+// Findings for the script currently open in edit mode, grouped by line -
+// refreshed by every `updateCodeViewerEditHighlight()` call below, and read
+// by `updateCodeViewerEditTooltip` so a mouse move doesn't have to regroup
+// `codeViewerState.findings` on every event.
+let codeViewerEditFindingsByLine: Map<number, Diagnostic[]> = new Map();
+
+// Re-renders the edit mode's syntax-highlighted overlay and line-number
+// gutter from the textarea's current value, keeping both in sync as the
+// user types.
 function updateCodeViewerEditHighlight() {
   const code = codeViewerEditHighlightEl?.querySelector("code");
   if (!code || !codeViewerEditTextareaEl) {
@@ -1481,17 +1489,16 @@ function updateCodeViewerEditHighlight() {
   }
   const findings = codeViewerState?.findings ?? [];
   const findingsByLine = findingsGroupedByLine(findings);
-  code.innerHTML = highlightPapyrusLines(codeViewerEditTextareaEl.value)
+  codeViewerEditFindingsByLine = findingsByLine;
+  const highlightedLines = highlightPapyrusLines(codeViewerEditTextareaEl.value);
+  code.innerHTML = highlightedLines
     .map((lineHtml, index) => {
       const lineFindings = findingsByLine.get(index + 1);
       const severity = lineSeverityOf(lineFindings);
       const lineClass = severity
         ? `code-viewer__editor-line code-viewer__line--${severity}`
         : "code-viewer__editor-line";
-      const title = lineFindings
-        ? ` title="${escapeAttr(lineFindings.map((finding) => finding.message).join("\n"))}"`
-        : "";
-      return `<span class="${lineClass}"${title}>${lineHtml}</span>`;
+      return `<span class="${lineClass}">${lineHtml}</span>`;
     })
     // Each line is already `display: block` (see styles.css), so it needs no
     // separator to end up on its own line; joining with "\n" here used to add
@@ -1501,17 +1508,44 @@ function updateCodeViewerEditHighlight() {
     // up and misaligning the overlay against the textarea underneath it.
     .join("");
 
-  // The textarea sits above the non-interactive highlighting layer, so
-  // expose all current lint messages through its tooltip and accessible
-  // description as well as through the per-line colours underneath it.
+  if (codeViewerEditGutterEl) {
+    codeViewerEditGutterEl.innerHTML = highlightedLines
+      .map((_, index) => `<span class="code-viewer__editor-gutter-line">${index + 1}</span>`)
+      .join("");
+  }
+
+  // The textarea sits above the non-interactive highlighting layer, so its
+  // per-line colours are the only ones actually visible; its own `title`
+  // (see `updateCodeViewerEditTooltip`) is instead kept in sync with
+  // whichever line the mouse currently hovers, the same as the read-only
+  // view's per-row tooltips. The accessible description still summarizes
+  // every finding at once, since a screen-reader user has no equivalent of
+  // "hovering a line" to reveal them one at a time.
   const diagnosticSummary = findings
     .map((finding) => `Line ${finding.line}, column ${finding.column}: ${finding.message}`)
     .join("\n");
-  codeViewerEditTextareaEl.title = diagnosticSummary;
   codeViewerEditTextareaEl.setAttribute(
     "aria-label",
     diagnosticSummary ? `Papyrus source editor. Linter findings:\n${diagnosticSummary}` : "Papyrus source editor. No linter findings.",
   );
+}
+
+// Keeps the textarea's tooltip matched to the source line under the mouse
+// cursor at `clientY`, since the textarea sits on top of (and intercepts
+// every pointer event meant for) the highlighted overlay beneath it - whose
+// own per-line findings would otherwise never actually be hoverable.
+function updateCodeViewerEditTooltip(clientY: number) {
+  if (!codeViewerEditTextareaEl) {
+    return;
+  }
+  const computed = window.getComputedStyle(codeViewerEditTextareaEl);
+  const lineHeight = parseFloat(computed.lineHeight);
+  const paddingTop = parseFloat(computed.paddingTop);
+  const rect = codeViewerEditTextareaEl.getBoundingClientRect();
+  const offsetY = clientY - rect.top + codeViewerEditTextareaEl.scrollTop - paddingTop;
+  const line = Math.floor(offsetY / lineHeight) + 1;
+  const lineFindings = codeViewerEditFindingsByLine.get(line);
+  codeViewerEditTextareaEl.title = lineFindings ? lineFindings.map((finding) => finding.message).join("\n") : "";
 }
 
 // Measures where the text caret currently renders inside `textarea`, using
@@ -2949,6 +2983,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerCloseEl = document.querySelector("#code-viewer-close");
   codeViewerViewEl = document.querySelector("#code-viewer-view");
   codeViewerEditEl = document.querySelector("#code-viewer-editor");
+  codeViewerEditGutterEl = document.querySelector("#code-viewer-editor-gutter");
   codeViewerEditHighlightEl = document.querySelector("#code-viewer-editor-highlight");
   codeViewerEditTextareaEl = document.querySelector("#code-viewer-editor-textarea");
   codeViewerEditButtonEl = document.querySelector("#code-viewer-edit");
@@ -3027,10 +3062,21 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerEditTextareaEl?.addEventListener("click", () => void updateAutocomplete());
   codeViewerEditTextareaEl?.addEventListener("keydown", (event) => handleAutocompleteKeydown(event));
   codeViewerEditTextareaEl?.addEventListener("blur", () => hideAutocomplete());
+  codeViewerEditTextareaEl?.addEventListener("mousemove", (event) => updateCodeViewerEditTooltip(event.clientY));
+  codeViewerEditTextareaEl?.addEventListener("mouseleave", () => {
+    if (codeViewerEditTextareaEl) {
+      codeViewerEditTextareaEl.title = "";
+    }
+  });
   codeViewerEditTextareaEl?.addEventListener("scroll", () => {
     if (codeViewerEditHighlightEl && codeViewerEditTextareaEl) {
       codeViewerEditHighlightEl.scrollTop = codeViewerEditTextareaEl.scrollTop;
       codeViewerEditHighlightEl.scrollLeft = codeViewerEditTextareaEl.scrollLeft;
+    }
+    if (codeViewerEditGutterEl && codeViewerEditTextareaEl) {
+      // The gutter has no horizontal scrollbar of its own (line numbers
+      // never need to scroll sideways), only vertical.
+      codeViewerEditGutterEl.scrollTop = codeViewerEditTextareaEl.scrollTop;
     }
   });
   codeViewerEl?.addEventListener("close", () => {
