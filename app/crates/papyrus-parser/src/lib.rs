@@ -531,6 +531,70 @@ EndProperty
     }
 
     #[test]
+    fn parse_returns_independent_asts_when_result_is_cached() {
+        let source = "ScriptName CachedAst extends Quest\n";
+        let mut first = parse(source).unwrap();
+        first.name = "ChangedByCaller".to_string();
+        first.extends = None;
+
+        let second = parse(source).unwrap();
+        assert_eq!(second.name, "CachedAst");
+        assert_eq!(second.extends.as_deref(), Some("Quest"));
+    }
+
+    #[test]
+    fn prime_cache_supplies_a_precomputed_ast_for_matching_source() {
+        let source = "ScriptName SourceName\n";
+        let mut precomputed = parse("ScriptName PrecomputedName Conditional\n").unwrap();
+        precomputed.line = 42;
+
+        prime_cache(source, precomputed.clone());
+
+        assert_eq!(parse(source).unwrap(), precomputed);
+    }
+
+    #[test]
+    fn primed_ast_is_ignored_for_a_different_source() {
+        let primed = parse("ScriptName PrimedAst\n").unwrap();
+        prime_cache("ScriptName PrimedSource\n", primed);
+
+        let parsed = parse("ScriptName ActualSource Hidden\n").unwrap();
+        assert_eq!(parsed.name, "ActualSource");
+        assert!(parsed.is_hidden);
+    }
+
+    #[test]
+    fn prime_tokenize_cache_supplies_precomputed_tokens_for_matching_source() {
+        use super::token::{Token, TokenKind};
+
+        let source = "ScriptName SourceTokens\n";
+        let precomputed = vec![
+            Token::new(TokenKind::Identifier("injected".to_string()), 7, 11),
+            Token::new(TokenKind::Eof, 7, 19),
+        ];
+
+        prime_tokenize_cache(source, precomputed.clone());
+
+        assert_eq!(tokenize(source).unwrap(), precomputed);
+    }
+
+    #[test]
+    fn primed_tokens_are_ignored_for_a_different_source() {
+        use super::token::{Keyword, Token, TokenKind};
+
+        prime_tokenize_cache(
+            "ScriptName PrimedTokens\n",
+            vec![Token::new(TokenKind::Eof, 99, 99)],
+        );
+
+        let tokens = tokenize("ScriptName ActualTokens\n").unwrap();
+        assert_eq!(tokens[0].kind, TokenKind::Keyword(Keyword::ScriptName));
+        assert_eq!(tokens[0].line, 1);
+        assert_eq!(tokens[0].col, 1);
+        assert!(tokens.len() > 1);
+    }
+
+    #[test]
     fn reports_lex_errors_with_location_and_message() {
         let error = parse("ScriptName Example\n@\n").unwrap_err();
 
