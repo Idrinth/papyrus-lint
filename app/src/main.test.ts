@@ -44,6 +44,7 @@ import {
   handleConfigPathOverrideChanged,
   handleDeletePresetClick,
   handleDroppedPaths,
+  handleEditorTabKeydown,
   handleExportIssuesClick,
   handleExportPresetClick,
   handleFixClick,
@@ -4577,6 +4578,21 @@ describe("code viewer edit mode", () => {
       expect(field.value).toContain("self.BProp");
     });
 
+    it("leaves Tab to the dropdown instead of also inserting a literal tab", async () => {
+      const field = await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [{ kind: "property", name: "AProp", type_name: { name: "Int", is_array: false } }],
+      });
+      await updateAutocomplete();
+
+      const event = new KeyboardEvent("keydown", { key: "Tab", cancelable: true });
+      handleAutocompleteKeydown(event);
+      handleEditorTabKeydown(event);
+
+      expect(field.value).toContain("self.AProp");
+      expect(field.value).not.toContain("\t");
+    });
+
     it("accepts a completion when its dropdown item is clicked", async () => {
       const field = await openWithCursorAfterSelfDot();
       invokeImplFor({
@@ -4674,6 +4690,46 @@ describe("code viewer edit mode", () => {
       vi.spyOn(console, "error").mockImplementation(() => {});
 
       await expect(listScriptMembers("Example")).resolves.toEqual([]);
+    });
+  });
+
+  describe("handleEditorTabKeydown", () => {
+    it("inserts a literal tab at the caret instead of letting focus leave the textarea", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      const field = textarea();
+      field.setSelectionRange(3, 3);
+
+      const event = new KeyboardEvent("keydown", { key: "Tab", cancelable: true });
+      handleEditorTabKeydown(event);
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(field.value).toBe("Int\t x = 1\n");
+      expect(field.selectionStart).toBe(4);
+    });
+
+    it("replaces the current selection with a tab", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      const field = textarea();
+      field.setSelectionRange(0, 3);
+
+      handleEditorTabKeydown(new KeyboardEvent("keydown", { key: "Tab", cancelable: true }));
+
+      expect(field.value).toBe("\t x = 1\n");
+    });
+
+    it("ignores keys other than Tab", async () => {
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      const field = textarea();
+      field.setSelectionRange(3, 3);
+
+      const event = new KeyboardEvent("keydown", { key: "Enter", cancelable: true });
+      handleEditorTabKeydown(event);
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(field.value).toBe("Int x = 1\n");
     });
   });
 });
