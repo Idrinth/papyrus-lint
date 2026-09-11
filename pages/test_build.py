@@ -43,6 +43,9 @@ class MarkdownHelpersTest(unittest.TestCase):
             ["right", "### Child", "also right"],
         )
 
+    def test_extract_section_returns_an_empty_section_at_end_of_document(self) -> None:
+        self.assertEqual(page_builder.extract_section(["# Guide", "## Empty"], "Empty", level=2), [])
+
     def test_render_inline_converts_supported_markdown_and_escapes_html(self) -> None:
         rendered = page_builder.render_inline(
             '<unsafe> **bold** `code & more` [docs](guide.html?x=1&y=2)'
@@ -87,6 +90,24 @@ class MarkdownHelpersTest(unittest.TestCase):
             '<code>&lt;script&gt;alert("x")&lt;/script&gt;</code>',
         )
         self.assertNotIn("<script>", rendered)
+
+    def test_render_inline_calls_the_link_rewriter_for_every_link_only(self) -> None:
+        rewritten = []
+
+        def rewrite(href: str) -> str:
+            rewritten.append(href)
+            return f"published/{href}"
+
+        rendered = page_builder.render_inline(
+            "See [one](one.md), `two.md`, and [three](three.md).", rewrite
+        )
+
+        self.assertEqual(rewritten, ["one.md", "three.md"])
+        self.assertEqual(
+            rendered,
+            'See <a href="published/one.md">one</a>, <code>two.md</code>, and '
+            '<a href="published/three.md">three</a>.',
+        )
 
     def test_split_table_row_preserves_escaped_pipes(self) -> None:
         self.assertEqual(
@@ -171,6 +192,14 @@ class MarkdownHelpersTest(unittest.TestCase):
             page_builder.first_code_block(["prose"])
         with self.assertRaisesRegex(SystemExit, "unterminated"):
             page_builder.first_code_block(["```console", "command"])
+
+    def test_first_code_block_ignores_prose_and_later_fenced_blocks(self) -> None:
+        self.assertEqual(
+            page_builder.first_code_block(
+                ["before", "```shell", "first", "```", "between", "```", "second", "```"]
+            ),
+            "first",
+        )
 
     def test_render_videos_list_embeds_each_video_and_escapes_title(self) -> None:
         result = page_builder.render_videos_list(
@@ -414,6 +443,13 @@ class MarkdownHelpersTest(unittest.TestCase):
     def test_highlight_code_supports_aliases_and_plain_text_fallback(self) -> None:
         self.assertIn('<span class="cm"># note</span>', page_builder.highlight_code("# note", "yml"))
         self.assertEqual(page_builder.highlight_code("<unsafe>", "text"), "&lt;unsafe&gt;")
+
+    def test_highlight_code_normalizes_language_names_case_insensitively(self) -> None:
+        result = page_builder.highlight_code("if true; then echo 12; fi", "BASH")
+
+        self.assertIn('<span class="kw">if</span>', result)
+        self.assertIn('<span class="kw">then</span>', result)
+        self.assertIn('<span class="kw">fi</span>', result)
 
     def test_markdown_to_html_flushes_a_final_paragraph(self) -> None:
         result = page_builder.markdown_to_html(["A paragraph", "continued without a blank line."])
@@ -997,6 +1033,10 @@ class MinifyTest(unittest.TestCase):
         result = page_builder.minify_css(source)
 
         self.assertEqual(result, "main{color:red;margin:0}.a,.b{display:flex}")
+
+    def test_minify_css_handles_empty_and_comment_only_stylesheets(self) -> None:
+        self.assertEqual(page_builder.minify_css(""), "")
+        self.assertEqual(page_builder.minify_css(" /* generated stylesheet */ \n"), "")
 
     def test_finalize_page_wraps_images_before_removing_template_comments(self) -> None:
         source = """<!-- generated -->
