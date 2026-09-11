@@ -1792,6 +1792,23 @@ export function handleAutocompleteKeydown(event: KeyboardEvent) {
   }
 }
 
+// A plain textarea's default Tab handling moves focus to the next control
+// instead of inserting a character, so Papyrus source (conventionally
+// tab-indented) couldn't be indented by hand at all. Runs after
+// handleAutocompleteKeydown, whose own Tab handling (accepting the
+// highlighted completion) already calls preventDefault() when the
+// dropdown is open, so this only inserts a literal tab when Tab reaches
+// the textarea uncaptured.
+export function handleEditorTabKeydown(event: KeyboardEvent) {
+  if (event.key !== "Tab" || event.defaultPrevented || !codeViewerEditTextareaEl) {
+    return;
+  }
+  event.preventDefault();
+  const textarea = codeViewerEditTextareaEl;
+  textarea.setRangeText("\t", textarea.selectionStart, textarea.selectionEnd, "end");
+  updateCodeViewerEditHighlight();
+}
+
 // A textarea's `value` getter always normalizes CR/CRLF line breaks to LF
 // (per the HTML spec's "API value" transform), even though its `value`
 // setter stores whatever was assigned verbatim. A CRLF-saved .psc file's
@@ -3122,6 +3139,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerEditTextareaEl?.addEventListener("input", () => void updateAutocomplete());
   codeViewerEditTextareaEl?.addEventListener("click", () => void updateAutocomplete());
   codeViewerEditTextareaEl?.addEventListener("keydown", (event) => handleAutocompleteKeydown(event));
+  codeViewerEditTextareaEl?.addEventListener("keydown", (event) => handleEditorTabKeydown(event));
   codeViewerEditTextareaEl?.addEventListener("blur", () => hideAutocomplete());
   codeViewerEditTextareaEl?.addEventListener("mousemove", (event) => {
     codeViewerEditLastMouseY = event.clientY;
