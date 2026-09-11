@@ -11,6 +11,7 @@
     "files_with_diagnostics",
     "total_diagnostics",
     "files_fixed",
+    "dry_run",
     "success"
   ],
   "properties": {
@@ -37,12 +38,16 @@
       "minimum": 0
     },
     "files_fixed": {
-      "description": "The number of scripts changed by automatic fixes, or null when the fix subcommand was not used.",
+      "description": "The number of scripts changed (or, under --dry-run, that would have been changed) by automatic fixes, or null when the fix subcommand was not used.",
       "type": [
         "integer",
         "null"
       ],
       "minimum": 0
+    },
+    "dry_run": {
+      "description": "Whether this run was fix --dry-run: no file was written, and each changed script's diff shows what would have changed instead.",
+      "type": "boolean"
     },
     "success": {
       "description": "Whether the lint result exits successfully under the configured failure thresholds.",
@@ -55,7 +60,8 @@
       "additionalProperties": false,
       "required": [
         "path",
-        "diagnostics"
+        "diagnostics",
+        "diff"
       ],
       "properties": {
         "path": {
@@ -69,6 +75,13 @@
           "items": {
             "$ref": "#/$defs/diagnostic"
           }
+        },
+        "diff": {
+          "description": "The standard unified diff between this script's original source and what fix would have written, or null unless run with fix --dry-run and this script would actually have changed.",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

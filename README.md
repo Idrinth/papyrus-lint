@@ -486,6 +486,7 @@ PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
 PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
 PapyrusLinterCLI fix --line 12 --type trailing-whitespace path/to/Example.psc
+PapyrusLinterCLI fix --dry-run path/to/project.achlist
 PapyrusLinterCLI --tag style path/to/project.achlist
 PapyrusLinterCLI fix --tag style path/to/project.achlist
 PapyrusLinterCLI --json path/to/project.achlist
@@ -632,6 +633,19 @@ out if applying the selected fix(es) would change the file's line count
 single original line number no longer identifies the same line in the
 result in that case.
 
+`fix` also accepts `--dry-run`, which computes the same fix(es) — honoring
+`--type`/`--tag`/`--line` the same way — but never writes them to disk.
+Instead, for each script that would change, a standard unified diff (the
+same hunk format `diff -u`/`git diff` produce, three lines of context)
+between the original and would-be-fixed source is printed as part of the
+report, so you can review exactly what a real `fix` run would change
+before actually running it. The diagnostics reported afterward still
+reflect the would-be-fixed source, the same as a real `fix` run, so
+`--dry-run` shows both what would change and what would still be left
+once it did. With `--json`, each file's diff (when non-empty) is carried
+in its own `diff` field instead of being interleaved with the plain-text
+report, and the top-level report carries a `dry_run` boolean.
+
 Every rule is also tagged with one or more kind keywords — `style`,
 `performance`, `correctness`, or `maintainability` — describing what class
 of fix its findings represent. `--tag <kind>` restricts a run to just one
@@ -666,13 +680,15 @@ An example valid report is:
       "path": "scripts/source/Example.psc",
       "diagnostics": [
         { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": "warning", "message": "[warning] Line contains trailing whitespace" }
-      ]
+      ],
+      "diff": null
     }
   ],
   "scripts_checked": 1,
   "files_with_diagnostics": 1,
   "total_diagnostics": 1,
   "files_fixed": null,
+  "dry_run": false,
   "success": true
 }
 ```
@@ -682,7 +698,12 @@ so a consumer can clear stale diagnostics for a file that's since become
 clean. `level` is always `"error"`, `"warning"`, or `"info"`. Every built-in lint
 sets a level; an untagged external diagnostic is conservatively reported as
 `"error"` — see `Diagnostic::level`. `files_fixed` is
-only present (non-`null`) when run with the `fix` subcommand. `success`
+only present (non-`null`) when run with the `fix` subcommand, and under
+`fix --dry-run` counts scripts that *would* have been fixed rather than
+scripts actually rewritten on disk. `dry_run` reports whether this was a
+`fix --dry-run` run; each file's `diff` is only non-`null` in that case,
+for a script that would actually have changed, and carries the standard
+unified diff between its original and would-be-fixed source. `success`
 reports whether the run would exit `0`; here it's `true` because a
 `[warning]`-level diagnostic doesn't fail the run under the default
 `fail_on_warning: false`.

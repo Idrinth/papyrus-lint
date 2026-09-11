@@ -415,6 +415,7 @@ PapyrusLinter fix path/to/project.achlist
 PapyrusLinter fix path/to/Example.psc
 PapyrusLinter fix --type trailing-whitespace path/to/Example.psc
 PapyrusLinter fix --line 12 --type trailing-whitespace path/to/Example.psc
+PapyrusLinter fix --dry-run path/to/project.achlist
 PapyrusLinter --tag style path/to/project.achlist
 PapyrusLinter fix --tag style path/to/project.achlist
 PapyrusLinter --json path/to/project.achlist
@@ -429,6 +430,7 @@ PapyrusLinter --progress --output path/to/report.txt path/to/project.achlist[/co
 The plain-text report is colorized automatically when run in a terminal (rule tags, error/warning/info levels, and the summary line); pass --color always or --color never to override the detection.
 --progress prints a live files-linted/total-files progress bar to stdout as each script finishes; it requires --output, since otherwise the report itself would be writing to stdout too.
 --tag <kind> (style, performance, correctness, or maintainability) restricts a run to just one class of rules; combine it with fix to only run that class's automatic fixes. Can't be combined with --type.
+fix --dry-run computes the same fix(es) without writing them to disk, printing a standard diff of what would change instead.
 init writes papyrus-lint.yaml from --preset strict, standard, or careful (defaults to strict, i.e. the settings shown above); any other name is looked up as <name>.yaml/.yml in a presets directory next to the executable, so you can define your own custom presets too. If a papyrus-lint.yaml/.yml sits next to the executable, its settings are merged in over the selected preset as your own baseline instead, so you only have to define them once.
 preset add <name> <path> saves an existing papyrus-lint.yaml/.yml as a user preset, so it becomes selectable via init --preset <name>. Refuses a blank name or one matching a built-in preset, and refuses to overwrite an existing preset of the same name unless you also pass --yes.
 Given a directory instead of an .achlist/.psc path, the CLI (and dropping a folder onto the desktop app) recursively scans it for .psc files at any subfolder depth and lints them all — useful for a mod (e.g. Requiem) with no .achlist whose scripts aren't laid out in a flat scripts/source folder.

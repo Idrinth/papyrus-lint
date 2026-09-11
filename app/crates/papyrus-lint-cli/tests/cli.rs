@@ -126,6 +126,27 @@ fn fix_mode_rewrites_a_script_through_the_binary_entry_point() {
 }
 
 #[test]
+fn fix_dry_run_prints_a_diff_without_writing_through_the_binary_entry_point() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example   \n");
+
+    let output = run_cli(&["fix", "--dry-run", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        fs::read_to_string(&script).expect("script should be unchanged"),
+        "ScriptName Example   \n"
+    );
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(stdout.contains(&format!("--- {}\n", script.display())));
+    assert!(stdout.contains("-ScriptName Example   \n"));
+    assert!(stdout.contains("+ScriptName Example\n"));
+    assert!(stdout.contains("(1 script(s) would be fixed.)"));
+}
+
+#[test]
 fn init_creates_a_config_in_the_process_working_directory() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
 
