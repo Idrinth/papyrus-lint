@@ -2619,17 +2619,19 @@ export function resetConfirmedProjectDirs() {
   confirmedProjectDirs.clear();
 }
 
-// The entry point every real drop (handleDroppedPaths) and the app's own
-// startup restore of the last project directory call instead of
+// The entry point every real drop (handleDroppedPaths) calls instead of
 // useProjectDir directly: it's what actually picks `dir`'s configuration
 // (via promptForConfigSelection, unless `dir` was already confirmed this
 // session) before handing off to useProjectDir to load and apply it,
 // keeping the Settings tab locked for the whole of that pick (see
 // setSettingsLocked) so it can never show/edit a configuration before one
 // has actually been chosen for the project in play. useProjectDir itself
-// stays reusable on its own (as plenty of tests do) for just loading an
+// stays reusable on its own (as plenty of tests do, and as the app's own
+// startup restore of the last project directory does) for just loading an
 // already-decided directory's configuration, without going through the
-// picker at all.
+// picker at all - the picker is for a project the user is actively
+// dropping into the app, not one merely remembered from a previous
+// session.
 export async function loadProjectConfig(dir: string): Promise<void> {
   if (!confirmedProjectDirs.has(dir)) {
     setSettingsLocked(true);
@@ -3024,10 +3026,13 @@ window.addEventListener("DOMContentLoaded", () => {
       configPickerEl?.close();
     }
   });
-  // No project's configuration has been picked yet at startup, so the
-  // Settings tab starts locked (see setSettingsLocked/useProjectDir); the
-  // markup itself also starts with the wrapping fieldset disabled, so this
-  // just keeps the notice paragraph in sync with it from the start.
+  // No project's configuration is loaded yet at startup, so the Settings
+  // tab starts locked (see setSettingsLocked); the markup itself also
+  // starts with the wrapping fieldset disabled, so this just keeps the
+  // notice paragraph in sync with it from the start. It unlocks once a
+  // configuration actually loads - either the remembered last project
+  // restoring silently (see the isTauri() block below) or a drop going
+  // through loadProjectConfig.
   setSettingsLocked(true);
 
   const initialTheme = loadStoredTheme();
@@ -3241,9 +3246,18 @@ window.addEventListener("DOMContentLoaded", () => {
     void loadRuleTags().then(applyRuleTags);
     void refreshPresetManagementTab();
 
+    // Restore the remembered project's configuration silently, without the
+    // config-picker dialog: that dialog exists to let the user decide which
+    // configuration applies to a project they're actively dropping into the
+    // app right now (see loadProjectConfig below), not to interrogate them
+    // about a directory from a previous session before they've done
+    // anything at all this time - especially since it may no longer be the
+    // project they mean to work on. Dropping that same project again still
+    // goes through the picker as usual, since useProjectDir alone doesn't
+    // mark it confirmed.
     const lastDir = lastProjectDir();
     if (lastDir) {
-      void loadProjectConfig(lastDir);
+      void useProjectDir(lastDir).then(() => setSettingsLocked(false));
     }
 
     getCurrentWebview().onDragDropEvent((event) => {

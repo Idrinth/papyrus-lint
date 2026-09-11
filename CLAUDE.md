@@ -887,10 +887,9 @@ after a drop resolves which project directory is actually in play, rather
 than showing/editing whatever configuration happened to be loaded
 previously (or the engine's silent defaults) before the user has even said
 which project it applies to. `loadProjectConfig` (`app/src/main.ts`) is
-what `handleDroppedPaths` and the app's own startup restore of the last
-project directory call, in place of calling `useProjectDir` directly: for
-a project directory not yet confirmed this session, it locks the entire
-Settings tab (`setSettingsLocked`, backed by a `<fieldset
+what `handleDroppedPaths` calls, in place of calling `useProjectDir`
+directly: for a project directory not yet confirmed this session, it locks
+the entire Settings tab (`setSettingsLocked`, backed by a `<fieldset
 id="settings-fieldset" disabled>` wrapping every Settings tab control, plus
 a `#settings-locked-notice` paragraph explaining why) and shows the
 `#config-picker` dialog (`promptForConfigSelection`) before doing anything
@@ -910,7 +909,17 @@ first time. `useProjectDir` itself stays a plain, reusable "load this
 already-decided directory's configuration" function with no dialog of its
 own, since other call sites — the "Configuration file" input changing,
 once the tab is already unlocked — need to reload a project's
-configuration without re-asking which one to use.
+configuration without re-asking which one to use. The app's own startup
+restore of the last project directory (`lastProjectDir()`) is one such
+call site: it calls `useProjectDir` directly rather than going through
+`loadProjectConfig`, so the app doesn't interrogate the user about a
+project's configuration — via the picker dialog, before the Settings tab
+even unlocks — before they've dropped anything at all this session, for a
+directory that's merely remembered from a previous one and may no longer
+be the project they mean to work on right now. It still unlocks the
+Settings tab once that silent restore finishes loading, and since it
+doesn't mark the directory confirmed, dropping that same project again
+still goes through the picker as usual.
 
 Editing the "Configuration file" input directly, once unlocked, still
 overrides project-directory discovery entirely the same way it always has:

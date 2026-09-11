@@ -4765,7 +4765,7 @@ describe("remaining failure and defensive paths", () => {
     expect(button.disabled).toBe(true);
   });
 
-  it("restores the remembered project and displays the app version on startup", async () => {
+  it("restores the remembered project's configuration silently and displays the app version on startup", async () => {
     localStorage.setItem("papyrus-lint:last-project-dir", "/remembered");
     invokeImplFor({
       get_app_version: () => "1.2.3",
@@ -4781,18 +4781,18 @@ describe("remaining failure and defensive paths", () => {
 
     document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
     await vi.waitFor(() => expect(version.textContent).toBe("v1.2.3"));
-    // The restored project's own configuration still isn't known yet until
-    // its picker is answered, same as any other not-yet-confirmed project.
-    expect(invokeMock).not.toHaveBeenCalledWith("load_lint_config", expect.anything());
 
-    await confirmDetectedConfig();
-
+    // Unlike a real drop, restoring the last remembered project at startup
+    // never shows the config-picker dialog - it loads that project's
+    // configuration right away, before the user has done anything this
+    // session.
+    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
     await vi.waitFor(() =>
       expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/remembered" }),
     );
   });
 
-  it("locks the Settings tab at startup until the restored project's configuration is picked", async () => {
+  it("unlocks the Settings tab once the restored project's configuration finishes loading at startup", async () => {
     localStorage.setItem("papyrus-lint:last-project-dir", "/remembered");
     invokeImplFor({
       load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
@@ -4805,8 +4805,6 @@ describe("remaining failure and defensive paths", () => {
     document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
 
     expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(true);
-
-    await confirmDetectedConfig();
 
     await vi.waitFor(() =>
       expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(false),
