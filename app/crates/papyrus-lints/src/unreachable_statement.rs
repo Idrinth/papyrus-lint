@@ -144,6 +144,16 @@ mod tests {
     }
 
     #[test]
+    fn flags_statement_after_return_inside_else_if_branch() {
+        let source = "ScriptName Example\n\nFunction Test()\n    If false\n        Int i = 1\n    ElseIf true\n        Return\n        Int j = 2\n    EndIf\nEndFunction\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 8);
+    }
+
+    #[test]
     fn flags_statement_after_return_inside_while_body() {
         let source = "ScriptName Example\n\nFunction Test()\n    While true\n        Return\n        Int i = 1\n    EndWhile\nEndFunction\n";
 
@@ -158,6 +168,43 @@ mod tests {
         let source = "ScriptName Example\n\nFunction Test()\n    If true\n        Return\n    EndIf\n    Int i = 1\nEndFunction\n";
 
         assert!(check(source).is_empty());
+    }
+
+    #[test]
+    fn reports_the_line_of_each_unreachable_statement_kind() {
+        let source = "ScriptName Example\n\nFunction Test()\n    Int i = 0\n    Return\n    Return\n    i = 1\n    Test()\n    If true\n    EndIf\n    While true\n    EndWhile\nEndFunction\n";
+
+        let diagnostics = check(source);
+        let lines: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect();
+
+        assert_eq!(lines, [6, 7, 8, 9, 11]);
+        assert!(diagnostics.iter().all(|diagnostic| diagnostic.column == 1));
+    }
+
+    #[test]
+    fn still_checks_the_body_of_an_unreachable_compound_statement() {
+        let source = "ScriptName Example\n\nFunction Test()\n    Return\n    If true\n        Return\n        Int i = 1\n    EndIf\nEndFunction\n";
+
+        let diagnostics = check(source);
+        let lines: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect();
+
+        assert_eq!(lines, [5, 7]);
+    }
+
+    #[test]
+    fn checks_event_bodies() {
+        let source = "ScriptName Example\n\nEvent OnInit()\n    Return\n    Int i = 1\nEndEvent\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 5);
     }
 
     #[test]
