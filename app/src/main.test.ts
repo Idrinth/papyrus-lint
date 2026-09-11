@@ -35,6 +35,7 @@ import {
   findCandidatePairRoot,
   formatIssuesAsJson,
   formatIssuesAsText,
+  getPresetLintConfig,
   handleAutocompleteKeydown,
   handleCodeViewerFixClick,
   handleCompileClick,
@@ -50,6 +51,7 @@ import {
   handleLintConfigChanged,
   handleMassFixClick,
   handleRenamePresetClick,
+  handleResetToPresetClick,
   handleSaveConfigAsPresetClick,
   handleScriptRootsChanged,
   hasFixableFindings,
@@ -80,6 +82,7 @@ import {
   matchesTagFilters,
   openCodeViewer,
   parsePscFiles,
+  populateResetPresetSelect,
   projectDirForAchlist,
   projectDirForDirectory,
   projectDirForPscPath,
@@ -1367,6 +1370,121 @@ describe("handleSaveConfigAsPresetClick", () => {
   });
 });
 
+describe("getPresetLintConfig", () => {
+  it("fetches the named preset's lint settings from the backend", async () => {
+    const config = { ...DEFAULT_LINT_CONFIG, semicolon: false };
+    invokeImplFor({ get_preset_lint_config: () => config });
+
+    await expect(getPresetLintConfig("careful")).resolves.toEqual(config);
+    expect(invokeMock).toHaveBeenCalledWith("get_preset_lint_config", { preset: "careful" });
+  });
+});
+
+describe("populateResetPresetSelect", () => {
+  it("rebuilds the dropdown's options from the given presets", () => {
+    populateResetPresetSelect([
+      { id: "strict", label: "Strict", description: "" },
+      { id: "team-style", label: "Team Style", description: "" },
+    ]);
+
+    const select = document.querySelector<HTMLSelectElement>("#reset-to-preset-select")!;
+    expect(Array.from(select.options).map((option) => [option.value, option.textContent])).toEqual([
+      ["strict", "Strict"],
+      ["team-style", "Team Style"],
+    ]);
+  });
+
+  it("keeps the previously selected preset selected across a rebuild", () => {
+    populateResetPresetSelect([
+      { id: "strict", label: "Strict", description: "" },
+      { id: "careful", label: "Careful", description: "" },
+    ]);
+    const select = document.querySelector<HTMLSelectElement>("#reset-to-preset-select")!;
+    select.value = "careful";
+
+    populateResetPresetSelect([
+      { id: "strict", label: "Strict", description: "" },
+      { id: "careful", label: "Careful", description: "" },
+      { id: "team-style", label: "Team Style", description: "" },
+    ]);
+
+    expect(select.value).toBe("careful");
+  });
+});
+
+describe("handleResetToPresetClick", () => {
+  beforeEach(async () => {
+    invokeImplFor({
+      load_lint_config: () => ({ ...DEFAULT_LINT_CONFIG, semicolon: true }),
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_project_info: () => ({
+        detected_script_roots: [],
+        used_configuration_file: "/proj/papyrus-lint.yaml",
+      }),
+    });
+    await useProjectDir("/proj");
+    populateResetPresetSelect([{ id: "careful", label: "Careful", description: "" }]);
+    invokeMock.mockClear();
+  });
+
+  it("does nothing when no preset is selected", async () => {
+    populateResetPresetSelect([]);
+
+    await handleResetToPresetClick();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("does nothing when the confirmation is declined", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    await handleResetToPresetClick();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("confirms, then applies and persists the selected preset's settings", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const config = { ...DEFAULT_LINT_CONFIG, semicolon: false };
+    invokeImplFor({
+      get_preset_lint_config: () => config,
+      save_lint_config: () => undefined,
+    });
+
+    await handleResetToPresetClick();
+    await Promise.resolve();
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'Reset all lint rule and formatting settings to the "Careful" preset? ' +
+        "This overwrites your current settings and can't be undone.",
+    );
+    expect(invokeMock).toHaveBeenCalledWith("get_preset_lint_config", { preset: "careful" });
+    expect(document.querySelector<HTMLSelectElement>("#semicolon-style")!.value).toBe("forbid");
+    expect(invokeMock).toHaveBeenCalledWith("save_lint_config", {
+      dir: "/proj",
+      config: expect.objectContaining({ semicolon: false }),
+    });
+  });
+
+  it("reports and logs a failure from the backend", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    vi.spyOn(window, "alert").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    invokeImplFor({
+      get_preset_lint_config: () => {
+        throw new Error("unknown preset");
+      },
+    });
+
+    await handleResetToPresetClick();
+
+    expect(window.alert).toHaveBeenCalledWith('Failed to reset settings to "Careful": Error: unknown preset');
+    expect(console.error).toHaveBeenCalled();
+  });
+});
+
 describe("isCustomPreset", () => {
   it("treats the three built-in preset ids as non-custom, case-insensitively", () => {
     expect(isCustomPreset({ id: "strict", label: "Strict", description: "" })).toBe(false);
@@ -1429,6 +1547,11 @@ describe("refreshPresetManagementTab / rename/delete/exportUserPreset", () => {
 
     expect(document.querySelector("#tab-presets")!.hasAttribute("hidden")).toBe(false);
     expect(document.querySelectorAll("#preset-management-list .preset-management__item").length).toBe(1);
+    expect(
+      Array.from(document.querySelectorAll<HTMLOptionElement>("#reset-to-preset-select option")).map(
+        (option) => option.value,
+      ),
+    ).toEqual(["team-style"]);
   });
 
   it("renameUserPreset invokes rename_user_preset with the given arguments", async () => {

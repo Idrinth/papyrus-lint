@@ -126,6 +126,8 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-repeated_getvalue" />
         </fieldset>
         <button type="button" id="save-config-as-preset">Save current settings as preset&hellip;</button>
+        <select id="reset-to-preset-select"></select>
+        <button type="button" id="reset-to-preset">Reset&hellip;</button>
         </fieldset>
       </div>
 
