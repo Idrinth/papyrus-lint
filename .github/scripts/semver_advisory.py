@@ -14,6 +14,7 @@ want to cut that release.
 
 Usage: semver_advisory.py <pull-requests.json> [current-tag]
            [--release-notes <path>] [--outputs <path>]
+           [--coverage-summary <path>]
 
 `pull-requests.json` is a JSON array of `{"number": ..., "title": ...,
 "labels": [...]}` objects, one per pull request merged since `current-tag`
@@ -27,6 +28,12 @@ for the recommended version (empty when no bump is recommended).
 `--outputs` also writes `{"bump": ..., "next_version": ...}` as JSON (both
 `null` when no bump is recommended), so the calling workflow can decide
 whether a draft release is needed without re-parsing the advisory text.
+`--coverage-summary` points at a Markdown file (built by the calling
+workflow via `coverage_summary.py`, the same as `release.yml`'s own
+`release-notes` job) to fold into the draft release body as a "Test
+coverage" section, so a maintainer reviewing the draft can see how well
+tested the codebase is without leaving GitHub. Omitted, or the file is
+missing/empty, just means the section is left out.
 """
 
 import argparse
@@ -134,14 +141,24 @@ def build_summary(
     return "\n".join(lines) + "\n"
 
 
-def build_release_notes(pull_requests: list[dict], bump: str | None, next_version: str | None) -> str:
+def build_release_notes(
+    pull_requests: list[dict],
+    bump: str | None,
+    next_version: str | None,
+    coverage_summary: str | None = None,
+) -> str:
     """Body for the draft release the calling workflow creates/updates for
     `next_version`. Kept deliberately simple (unlike the grouped-by-component
     changelist `release.yml` builds for an actual tagged release) since a
     real release replaces this draft's title/body once it's tagged; this is
     just enough for a maintainer reviewing the draft to see why that version
-    was recommended. Empty when no bump is recommended, since then there's
-    nothing to put in a draft release."""
+    was recommended, and how well tested the codebase currently is.
+    `coverage_summary`, when non-blank, is folded in verbatim as a "Test
+    coverage" section (the calling workflow builds it via
+    `coverage_summary.py` against the latest successful CI run's lcov
+    reports, the same way `release.yml` does for an actual tagged release).
+    Empty when no bump is recommended, since then there's nothing to put in
+    a draft release."""
     if bump is None or next_version is None:
         return ""
 
@@ -157,6 +174,13 @@ def build_release_notes(pull_requests: list[dict], bump: str | None, next_versio
     ]
     for pr in sorted(pull_requests, key=lambda pr: pr.get("number", 0)):
         lines.append(f"- #{pr.get('number')} {pr.get('title', '')}")
+
+    if coverage_summary and coverage_summary.strip():
+        lines.append("")
+        lines.append("### Test coverage")
+        lines.append("")
+        lines.append(coverage_summary.strip())
+
     return "\n".join(lines) + "\n"
 
 
@@ -176,6 +200,13 @@ def main() -> None:
         default=None,
         help='Write {"bump": ..., "next_version": ...} as JSON to this path.',
     )
+    parser.add_argument(
+        "--coverage-summary",
+        dest="coverage_summary_path",
+        default=None,
+        help="Path to a Markdown coverage summary (see coverage_summary.py) to fold into the "
+        "draft release notes as a Test coverage section.",
+    )
     args = parser.parse_args()
 
     current_tag = args.current_tag or None
@@ -189,8 +220,15 @@ def main() -> None:
     print(build_summary(current_tag, pull_requests, bump, next_version))
 
     if args.release_notes_path:
+        coverage_summary = None
+        if args.coverage_summary_path:
+            try:
+                with open(args.coverage_summary_path, encoding="utf-8") as handle:
+                    coverage_summary = handle.read()
+            except FileNotFoundError:
+                coverage_summary = None
         with open(args.release_notes_path, "w", encoding="utf-8") as handle:
-            handle.write(build_release_notes(pull_requests, bump, next_version))
+            handle.write(build_release_notes(pull_requests, bump, next_version, coverage_summary))
 
     if args.outputs_path:
         with open(args.outputs_path, "w", encoding="utf-8") as handle:

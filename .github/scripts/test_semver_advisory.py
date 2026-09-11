@@ -218,6 +218,24 @@ class BuildReleaseNotesTests(unittest.TestCase):
         notes = semver_advisory.build_release_notes(prs, "minor", "v1.1.0")
         self.assertLess(notes.index("#3"), notes.index("#12"))
 
+    def test_includes_a_coverage_section_when_a_summary_is_given(self) -> None:
+        prs = [{"number": 5, "title": "Add a feature", "labels": ["type: feature"]}]
+        notes = semver_advisory.build_release_notes(
+            prs, "minor", "v1.1.0", coverage_summary="| Module | Coverage |\n| --- | --- |\n"
+        )
+        self.assertIn("### Test coverage", notes)
+        self.assertIn("| Module | Coverage |", notes)
+
+    def test_omits_the_coverage_section_when_no_summary_is_given(self) -> None:
+        prs = [{"number": 5, "title": "Add a feature", "labels": ["type: feature"]}]
+        notes = semver_advisory.build_release_notes(prs, "minor", "v1.1.0")
+        self.assertNotIn("### Test coverage", notes)
+
+    def test_omits_the_coverage_section_when_the_summary_is_blank(self) -> None:
+        prs = [{"number": 5, "title": "Add a feature", "labels": ["type: feature"]}]
+        notes = semver_advisory.build_release_notes(prs, "minor", "v1.1.0", coverage_summary="   \n")
+        self.assertNotIn("### Test coverage", notes)
+
 
 class MainTests(unittest.TestCase):
     def test_main_prints_a_recommendation_for_the_given_pull_requests(self) -> None:
@@ -294,6 +312,72 @@ class MainTests(unittest.TestCase):
                 {"bump": "minor", "next_version": "v1.1.0"},
                 json.loads(outputs_path.read_text(encoding="utf-8")),
             )
+
+    def test_main_folds_a_coverage_summary_file_into_the_release_notes(self) -> None:
+        import contextlib
+        import io
+        from unittest import mock
+
+        prs = [{"number": 3, "title": "Add a feature", "labels": ["type: feature"]}]
+        with tempfile.TemporaryDirectory() as directory:
+            prs_path = Path(directory) / "prs.json"
+            prs_path.write_text(json.dumps(prs), encoding="utf-8")
+            notes_path = Path(directory) / "notes.md"
+            coverage_path = Path(directory) / "coverage.md"
+            coverage_path.write_text("| Module | Coverage |\n| --- | --- |\n", encoding="utf-8")
+
+            with (
+                mock.patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "semver_advisory.py",
+                        str(prs_path),
+                        "v1.0.0",
+                        "--release-notes",
+                        str(notes_path),
+                        "--coverage-summary",
+                        str(coverage_path),
+                    ],
+                ),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                semver_advisory.main()
+
+            notes = notes_path.read_text(encoding="utf-8")
+            self.assertIn("### Test coverage", notes)
+            self.assertIn("| Module | Coverage |", notes)
+
+    def test_main_ignores_a_missing_coverage_summary_file(self) -> None:
+        import contextlib
+        import io
+        from unittest import mock
+
+        prs = [{"number": 3, "title": "Add a feature", "labels": ["type: feature"]}]
+        with tempfile.TemporaryDirectory() as directory:
+            prs_path = Path(directory) / "prs.json"
+            prs_path.write_text(json.dumps(prs), encoding="utf-8")
+            notes_path = Path(directory) / "notes.md"
+
+            with (
+                mock.patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "semver_advisory.py",
+                        str(prs_path),
+                        "v1.0.0",
+                        "--release-notes",
+                        str(notes_path),
+                        "--coverage-summary",
+                        str(Path(directory) / "missing.md"),
+                    ],
+                ),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                semver_advisory.main()
+
+            self.assertNotIn("### Test coverage", notes_path.read_text(encoding="utf-8"))
 
     def test_main_writes_empty_release_notes_and_null_outputs_when_no_bump(self) -> None:
         import contextlib
