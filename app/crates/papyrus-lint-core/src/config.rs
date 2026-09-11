@@ -1696,6 +1696,49 @@ mod tests {
     }
 
     #[test]
+    fn init_matches_a_custom_preset_name_case_insensitively() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "Team-Style.yml", "semicolon: true\n");
+
+        let path = initialize_config_with_base(
+            dir.path(),
+            Some(base_dir.path()),
+            Preset::Custom("team-style".to_string()),
+        )
+        .expect("init should resolve a differently cased custom preset name");
+
+        assert_eq!(
+            load_config_from_path(&path).expect("generated config should parse"),
+            papyrus_lints::Config {
+                semicolon: true,
+                ..papyrus_lints::Config::default()
+            }
+        );
+    }
+
+    #[test]
+    fn invalid_custom_preset_does_not_leave_a_partial_project_config() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+        write_config(&presets_dir, "broken.yaml", "semicolon: [not a bool\n");
+
+        let error = initialize_config_with_base(
+            dir.path(),
+            Some(base_dir.path()),
+            Preset::Custom("broken".to_string()),
+        )
+        .expect_err("invalid custom preset YAML should be rejected");
+
+        assert!(!error.is_empty());
+        assert_eq!(config_file_path(dir.path()), None);
+    }
+
+    #[test]
     fn init_reports_an_error_for_an_unknown_custom_preset() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let base_dir = tempfile::tempdir().expect("failed to create temp dir");
