@@ -250,6 +250,42 @@ mod tests {
     }
 
     #[test]
+    fn flags_a_global_function_called_through_an_array_element() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(MyScript[] refs, Int i)\n    refs[i].IsGlobal()\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule, RULE);
+        assert_eq!(diagnostics[0].line, 4);
+        assert_eq!(diagnostics[0].column, 21);
+    }
+
+    #[test]
+    fn flags_a_global_function_called_through_a_cast() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(Form value)\n    (value as MyScript).IsGlobal()\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("calling it as 'MyScript.IsGlobal()'"));
+    }
+
+    #[test]
+    fn does_not_flag_a_call_on_an_array_itself() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(MyScript[] refs)\n    refs.IsGlobal()\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn does_not_flag_an_instance_function_called_through_a_local_variable() {
         let diagnostics = check_with(
             "ScriptName Example\n\nFunction Test(MyScript akRef)\n    akRef.NotGlobal()\nEndFunction\n",
@@ -301,6 +337,43 @@ EndState
         );
 
         assert_eq!(diagnostics.len(), 2);
+    }
+
+    #[test]
+    fn finds_calls_in_each_statement_and_expression_position() {
+        let diagnostics = check_with(
+            r#"ScriptName Example
+
+Function Test(MyScript akRef)
+    Bool initialized = akRef.IsGlobal()
+    initialized = akRef.IsGlobal()
+    If akRef.IsGlobal() && !akRef.IsGlobal()
+    ElseIf akRef.IsGlobal()
+    EndIf
+    While akRef.IsGlobal()
+        SomeCall(akRef.IsGlobal())
+    EndWhile
+    Return akRef.IsGlobal()
+EndFunction
+"#,
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 8);
+        assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule == RULE));
+    }
+
+    #[test]
+    fn resolves_type_and_function_names_case_insensitively() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(myscript akRef)\n    akRef.isglobal()\nEndFunction\n",
+            &mut FakeExternal,
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0]
+            .message
+            .contains("'isglobal' is declared Global on 'myscript'"));
     }
 
     #[test]
