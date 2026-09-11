@@ -1173,9 +1173,11 @@ class RepositoryConfigurationTest(unittest.TestCase):
     def test_video_catalog_has_unique_nonempty_ids_and_titles(self) -> None:
         videos = page_builder.json.loads(page_builder.VIDEOS_FILE.read_text(encoding="utf-8"))
         ids = [video["id"] for video in videos]
+        titles = [video["title"] for video in videos]
 
         self.assertTrue(videos)
         self.assertEqual(len(ids), len(set(ids)), "YouTube video IDs must be unique")
+        self.assertEqual(len(titles), len(set(titles)), "YouTube video titles must be unique")
         for video in videos:
             with self.subTest(video=video):
                 self.assertTrue(video["id"].strip())
