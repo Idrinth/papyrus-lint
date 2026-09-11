@@ -400,8 +400,6 @@ export function scriptRootsForAchlist(entries: string[]): string[] {
   return [...new Set(entries.filter(isPscPath).map(dirnameOf))];
 }
 
-const TRAILING_WHITESPACE_MESSAGE = "[warning] Line contains trailing whitespace";
-
 export function dirnameOf(path: string): string {
   const index = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
   return index === -1 ? path : path.slice(0, index);
@@ -1315,9 +1313,7 @@ export async function listScriptMembers(typeName: string): Promise<Member[]> {
 }
 
 export function hasFixableFindings(findings: Diagnostic[]): boolean {
-  return findings.some((finding) =>
-    finding.message === TRAILING_WHITESPACE_MESSAGE || finding.message.includes("end with a semicolon"),
-  );
+  return findings.some((finding) => isFixableFinding(finding));
 }
 
 // Parses and lints every path in `paths`, invoking `onOutcome` (if given) as

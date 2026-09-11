@@ -275,18 +275,34 @@ describe("escapeAttr", () => {
 describe("hasFixableFindings", () => {
   it("is true for trailing whitespace findings", () => {
     expect(
-      hasFixableFindings([{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]),
+      hasFixableFindings([
+        { line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" },
+      ]),
     ).toBe(true);
   });
 
   it("is true for semicolon findings", () => {
     expect(
-      hasFixableFindings([{ line: 1, column: 1, message: "[warning] Lines should end with a semicolon" }]),
+      hasFixableFindings([{ line: 1, column: 1, message: "[warning] Lines should end with a semicolon", rule: "semicolon" }]),
+    ).toBe(true);
+  });
+
+  it("is true for indentation findings", () => {
+    expect(
+      hasFixableFindings([{ line: 1, column: 1, message: "[warning] Wrong indentation", rule: "indentation" }]),
     ).toBe(true);
   });
 
   it("is false when no findings are auto-fixable", () => {
     expect(hasFixableFindings([{ line: 1, column: 1, message: "[error] forbidden function used" }])).toBe(false);
+  });
+
+  it("is false for a fixable rule whose finding notes it has no automatic fix", () => {
+    expect(
+      hasFixableFindings([
+        { line: 1, column: 1, message: "[warning] Bad casing (no automatic fix)", rule: "type-casing" },
+      ]),
+    ).toBe(false);
   });
 
   it("is false for an empty findings list", () => {
@@ -2053,7 +2069,11 @@ describe("buildPscResultItem / renderPscResults", () => {
 
   it("shows a fix button only when findings are auto-fixable", () => {
     const fixable = buildPscResultItem(
-      outcome({ findings: [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }] }),
+      outcome({
+        findings: [
+          { line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" },
+        ],
+      }),
     );
     expect(fixable!.querySelector(".psc-result__fix-button")).not.toBeNull();
 
@@ -3705,7 +3725,7 @@ describe("openCodeViewer", () => {
   it("shows the Apply fixes button when the loaded file has a fixable finding", async () => {
     invokeImplFor({ read_psc_file: () => "line one  \n" });
 
-    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]);
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" }]);
 
     expect(document.querySelector<HTMLButtonElement>("#code-viewer-fix")!.hidden).toBe(false);
   });
@@ -3725,7 +3745,7 @@ describe("handleCodeViewerFixClick", () => {
       read_psc_file: () => "line one  \n",
       repair_psc_file: () => [],
     });
-    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]);
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" }]);
   }
 
   it("disables the button, repairs the file, and re-renders the viewer with the re-read source", async () => {
@@ -3733,7 +3753,7 @@ describe("handleCodeViewerFixClick", () => {
       read_psc_file: vi.fn().mockResolvedValueOnce("line one  \n").mockResolvedValueOnce("line one\n"),
       repair_psc_file: () => [],
     });
-    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]);
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" }]);
     const button = document.querySelector<HTMLButtonElement>("#code-viewer-fix")!;
 
     const promise = handleCodeViewerFixClick();
@@ -3772,7 +3792,7 @@ describe("handleCodeViewerFixClick", () => {
       read_psc_file: () => "line one  \n",
       repair_psc_file: () => Promise.reject(new Error("disk full")),
     });
-    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }]);
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" }]);
     const button = document.querySelector<HTMLButtonElement>("#code-viewer-fix")!;
     vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -4592,7 +4612,7 @@ describe("wired DOM interactions", () => {
       path: "/a.psc",
       ok: true,
       detail: "parsed",
-      findings: [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace" }],
+      findings: [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" }],
     };
     const item = buildPscResultItem(outcome)!;
     document.body.append(item);
