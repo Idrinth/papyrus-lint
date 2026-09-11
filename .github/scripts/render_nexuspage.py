@@ -38,8 +38,8 @@ def coverage_totals(artifacts: Path) -> tuple[int, int]:
 def render(template: str, hit: int, found: int, version: str) -> str:
     """Replace each expected marker exactly once."""
     values = {
-        "hit": str(hit),
-        "found": str(found),
+        "hit": f"{hit:,}",
+        "found": f"{found:,}",
         "percentage": f"{hit / found * 100:.1f}",
         "version": version,
     }
