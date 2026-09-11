@@ -730,6 +730,32 @@ fn initialize_config_with_base(
         return Err(format!("config already exists at {}", path.display()));
     }
 
+    let base = resolve_preset_project_file(base_dir, &preset)?;
+
+    let path = dir.join(CONFIG_FILE_NAMES[0]);
+    let lint_yaml = papyrus_lints::config::to_yaml(&base.lint).map_err(|err| err.to_string())?;
+    let yaml = format!("{}{lint_yaml}", non_lint_yaml(&base)?);
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)
+        .map_err(|err| err.to_string())?;
+    file.write_all(with_field_comments(&yaml).as_bytes())
+        .map_err(|err| err.to_string())?;
+    Ok(path)
+}
+
+/// Resolves `preset`'s baseline configuration — layered over an
+/// executable-adjacent base config at `base_dir`, if one exists, the same
+/// way [`initialize_default_config`] does — into a full [`ProjectFile`].
+/// Shared by [`initialize_config_with_base`] (which writes the result out
+/// as a brand new project config file) and [`preset_lint_config`] (which
+/// only needs its lint settings, to reset an existing project's
+/// already-edited settings back to a preset in place).
+fn resolve_preset_project_file(
+    base_dir: Option<&Path>,
+    preset: &Preset,
+) -> Result<ProjectFile, String> {
     let preset_yaml = preset.yaml(base_dir)?;
     let preset_value: serde_yaml::Value =
         serde_yaml::from_str(&preset_yaml).map_err(|err| err.to_string())?;
@@ -748,19 +774,30 @@ fn initialize_config_with_base(
         None => preset_value,
     };
 
-    let base: ProjectFile = serde_yaml::from_value(merged_value).map_err(|err| err.to_string())?;
+    serde_yaml::from_value(merged_value).map_err(|err| err.to_string())
+}
 
-    let path = dir.join(CONFIG_FILE_NAMES[0]);
-    let lint_yaml = papyrus_lints::config::to_yaml(&base.lint).map_err(|err| err.to_string())?;
-    let yaml = format!("{}{lint_yaml}", non_lint_yaml(&base)?);
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(&path)
-        .map_err(|err| err.to_string())?;
-    file.write_all(with_field_comments(&yaml).as_bytes())
-        .map_err(|err| err.to_string())?;
-    Ok(path)
+/// Returns `preset`'s lint rule/formatting settings only — not the
+/// `compiler_path`/`additional_script_roots`/`compile_check`/
+/// `strict_achlist_scope` settings [`initialize_default_config`] also seeds
+/// a brand new project's file with, since a preset resetting an *existing*
+/// project's settings shouldn't touch those — merged with an optional
+/// executable-adjacent base config the same way. Used by the desktop app's
+/// Settings tab to overwrite its currently edited settings back to a
+/// preset in place, without requiring (or touching) a project config file
+/// the way [`initialize_default_config`] does.
+pub fn preset_lint_config(
+    base_dir: Option<&Path>,
+    preset: Preset,
+) -> Result<papyrus_lints::Config, String> {
+    Ok(resolve_preset_project_file(base_dir, &preset)?.lint)
+}
+
+/// Same as [`preset_lint_config`], but looks for the optional
+/// executable-adjacent base config next to the running executable (see
+/// [`executable_dir`]), the same as [`initialize_default_config`] does.
+pub fn preset_lint_config_default(preset: Preset) -> Result<papyrus_lints::Config, String> {
+    preset_lint_config(executable_dir().as_deref(), preset)
 }
 
 /// Looks for a papyrus-lint config file in `dir` and parses it into a
@@ -1925,6 +1962,70 @@ mod tests {
         // selected preset rather than the hardcoded built-in default.
         assert!(generated.contains("cyclomatic_complexity_warning: 20\n"));
         assert!(generated.contains("  trailing_whitespace: false\n"));
+    }
+
+    #[test]
+    fn preset_lint_config_matches_the_lint_settings_a_fresh_init_would_write() {
+        let config = preset_lint_config(None, Preset::Careful).expect("should resolve");
+
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = initialize_config_with_base(dir.path(), None, Preset::Careful)
+            .expect("init should succeed");
+        let initialized = load_config_from_path(&path).expect("failed to load generated config");
+
+        assert_eq!(config, initialized);
+    }
+
+    #[test]
+    fn preset_lint_config_ignores_a_pre_existing_project_config() {
+        // Unlike initialize_config_with_base, preset_lint_config never looks
+        // at (or requires the absence of) a project's own config file: it
+        // only resolves the preset's own settings, for resetting an
+        // existing project's already-edited settings back to it in place.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(dir.path(), "papyrus-lint.yaml", "semicolon: true\n");
+
+        let config = preset_lint_config(None, Preset::Strict).expect("should resolve");
+
+        assert_eq!(config, papyrus_lints::Config::default());
+    }
+
+    #[test]
+    fn preset_lint_config_is_still_layered_over_an_executable_adjacent_base_config() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(
+            base_dir.path(),
+            "papyrus-lint.yaml",
+            "semicolon: true\nrules:\n  property_sorting: true\n",
+        );
+
+        let config =
+            preset_lint_config(Some(base_dir.path()), Preset::Careful).expect("should resolve");
+
+        assert!(config.semicolon);
+        assert!(config.rules.property_sorting);
+        // Every other rule/setting still falls back to the selected preset
+        // rather than the hardcoded built-in default.
+        assert_eq!(config.cyclomatic_complexity_warning, 20);
+        assert!(!config.rules.trailing_whitespace);
+    }
+
+    #[test]
+    fn preset_lint_config_default_resolves_a_built_in_preset() {
+        assert_eq!(
+            preset_lint_config_default(Preset::Strict).expect("should resolve"),
+            papyrus_lints::Config::default()
+        );
+    }
+
+    #[test]
+    fn preset_lint_config_errors_on_an_unknown_custom_preset() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let error = preset_lint_config(Some(dir.path()), Preset::Custom("missing".to_string()))
+            .expect_err("should error");
+
+        assert!(error.contains("unknown preset 'missing'"));
     }
 
     #[test]

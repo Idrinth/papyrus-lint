@@ -85,6 +85,8 @@ let codeViewerFullscreenEl: HTMLButtonElement | null;
 let codeViewerAutocompleteEl: HTMLUListElement | null;
 let themeSelectEl: HTMLSelectElement | null;
 let saveConfigAsPresetButtonEl: HTMLButtonElement | null;
+let resetToPresetSelectEl: HTMLSelectElement | null;
+let resetToPresetButtonEl: HTMLButtonElement | null;
 let settingsFieldsetEl: HTMLFieldSetElement | null;
 let settingsLockedNoticeEl: HTMLElement | null;
 let configPickerEl: HTMLDialogElement | null;
@@ -652,6 +654,17 @@ export async function applyConfigPreset(dir: string, preset: string): Promise<vo
   }
 }
 
+// Fetches `preset`'s lint rule/formatting settings only (built-in or
+// user), via the backend's get_preset_lint_config command
+// (papyrus_lint_core::config::preset_lint_config_default) — the
+// config-only half of what applyConfigPreset seeds a brand new project's
+// file with. Used by handleResetToPresetClick to overwrite the Settings
+// tab's currently edited settings with a preset's own, in an existing
+// project that already has a configuration.
+export async function getPresetLintConfig(preset: string): Promise<LintConfig> {
+  return invoke<LintConfig>("get_preset_lint_config", { preset });
+}
+
 // Prompts for a name and saves the Settings tab's currently edited lint
 // configuration (currentLintConfig, kept in sync by handleLintConfigChanged)
 // as a new user preset under it, via the backend's save_config_as_preset
@@ -772,11 +785,70 @@ export function renderPresetManagementTab(presets: ConfigPreset[]) {
   }
 }
 
-// Reloads every configuration preset and re-renders the Presets tab from
-// it. Called on startup and after any action (saving, renaming, or
-// deleting a user preset) that could change which presets exist.
+// Reloads every configuration preset and re-renders the Presets tab, and
+// the Settings tab's "Reset to preset" dropdown, from it. Called on
+// startup and after any action (saving, renaming, or deleting a user
+// preset) that could change which presets exist.
 export async function refreshPresetManagementTab(): Promise<void> {
-  renderPresetManagementTab(await loadConfigPresets());
+  const presets = await loadConfigPresets();
+  renderPresetManagementTab(presets);
+  populateResetPresetSelect(presets);
+}
+
+// Rebuilds the Settings tab's "Reset to preset" dropdown (see
+// handleResetToPresetClick) from `presets` (built-in and user), kept in
+// sync with the Presets tab via refreshPresetManagementTab above.
+// Preserves the previously selected preset's id across a rebuild when it
+// still exists, so saving/renaming/deleting an unrelated preset doesn't
+// silently reset the dropdown back to its first option.
+export function populateResetPresetSelect(presets: ConfigPreset[]) {
+  if (!resetToPresetSelectEl) {
+    return;
+  }
+  const previous = resetToPresetSelectEl.value;
+  resetToPresetSelectEl.innerHTML = "";
+  for (const preset of presets) {
+    const option = document.createElement("option");
+    option.value = preset.id;
+    option.textContent = preset.label;
+    resetToPresetSelectEl.appendChild(option);
+  }
+  if (presets.some((preset) => preset.id === previous)) {
+    resetToPresetSelectEl.value = previous;
+  }
+}
+
+// Overwrites the Settings tab's currently edited lint rule/formatting
+// settings with the dropdown's selected preset's own, after confirming
+// since this discards whatever's currently configured and can't be
+// undone. Reuses applyLintConfigToUI/handleLintConfigChanged — the same
+// "populate the form, then read it back and persist" path any manual edit
+// already goes through — rather than a separate save call, so the reset
+// is written wherever settings are already being saved (the current
+// project directory, or an active "Configuration file" override).
+export async function handleResetToPresetClick(): Promise<void> {
+  const select = resetToPresetSelectEl;
+  if (!select || !select.value) {
+    return;
+  }
+  const label = select.options[select.selectedIndex]?.textContent ?? select.value;
+  if (
+    !window.confirm(
+      `Reset all lint rule and formatting settings to the "${label}" preset? ` +
+        "This overwrites your current settings and can't be undone.",
+    )
+  ) {
+    return;
+  }
+
+  try {
+    const config = await getPresetLintConfig(select.value);
+    applyLintConfigToUI(config);
+    handleLintConfigChanged();
+  } catch (error) {
+    console.error(error);
+    window.alert(`Failed to reset settings to "${label}": ${error}`);
+  }
 }
 
 // Prompts for `preset`'s new name, confirming an overwrite the same way
@@ -2987,6 +3059,9 @@ window.addEventListener("DOMContentLoaded", () => {
   exportIssuesButtonEl = document.querySelector("#export-issues-button");
   saveConfigAsPresetButtonEl = document.querySelector("#save-config-as-preset");
   saveConfigAsPresetButtonEl?.addEventListener("click", () => void handleSaveConfigAsPresetClick());
+  resetToPresetSelectEl = document.querySelector("#reset-to-preset-select");
+  resetToPresetButtonEl = document.querySelector("#reset-to-preset");
+  resetToPresetButtonEl?.addEventListener("click", () => void handleResetToPresetClick());
   presetManagementTabEl = document.querySelector("#tab-presets");
   presetManagementListEl = document.querySelector("#preset-management-list");
 

@@ -263,6 +263,25 @@ fn apply_config_preset(dir: String, preset: String) -> Result<(), String> {
     Ok(())
 }
 
+/// Returns the named preset's (built-in, or user preset found under the
+/// executable-adjacent `presets` directory) lint rule/formatting settings
+/// only, via [`config::preset_lint_config_default`] — not the
+/// project-level `compiler_path`/`additional_script_roots`/`compile_check`/
+/// `strict_achlist_scope` settings [`apply_config_preset`] also seeds a
+/// brand new project's file with. Used by the Settings tab's "Reset to
+/// preset" button to overwrite its currently edited settings back to a
+/// preset in place, after the user has confirmed discarding whatever's
+/// currently configured — unlike `apply_config_preset`, this never touches
+/// (or requires the absence of) a project's config file itself, since the
+/// frontend persists the returned settings through its own existing save
+/// path. Errors if `preset` doesn't name a known preset.
+#[tauri::command]
+fn get_preset_lint_config(preset: String) -> Result<papyrus_lints::Config, String> {
+    let preset = config::Preset::parse(&preset)
+        .ok_or_else(|| format!("unknown configuration preset: {preset}"))?;
+    config::preset_lint_config_default(preset)
+}
+
 /// Saves the desktop app's currently edited lint settings (the Settings
 /// tab's own fields, not the project-level `compiler_path`/`additional_script_roots`/
 /// `compile_check`/`strict_achlist_scope` next to them) as a new user
@@ -594,6 +613,7 @@ pub fn run() {
             save_script_roots,
             list_config_presets,
             apply_config_preset,
+            get_preset_lint_config,
             save_config_as_preset,
             rename_user_preset,
             delete_user_preset,
@@ -1040,6 +1060,22 @@ mod tests {
             "nonexistent".to_string(),
         )
         .expect_err("should reject an unknown preset");
+
+        assert!(error.contains("nonexistent"));
+    }
+
+    #[test]
+    fn get_preset_lint_config_resolves_a_built_in_preset() {
+        let config = get_preset_lint_config("careful".to_string()).unwrap();
+
+        assert_eq!(config.cyclomatic_complexity_warning, 20);
+        assert!(!config.rules.trailing_whitespace);
+    }
+
+    #[test]
+    fn get_preset_lint_config_rejects_an_unknown_preset() {
+        let error = get_preset_lint_config("nonexistent".to_string())
+            .expect_err("should reject an unknown preset");
 
         assert!(error.contains("nonexistent"));
     }

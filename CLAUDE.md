@@ -1144,6 +1144,32 @@ three buttons:
   backend functions above ever resolve a name matching
   `config::PRESET_NAMES`.
 
+The Settings tab also has a "Reset to preset…" control (a
+`#reset-to-preset-select` dropdown, listing every preset the same way the
+"Reset" button next to it is populated by `populateResetPresetSelect` —
+kept in sync with the Presets tab via `refreshPresetManagementTab`, since
+both list the same presets) for undoing a settings change gone wrong,
+rather than hand-editing every field back: `handleResetToPresetClick`
+confirms overwriting the currently edited settings (since, unlike
+`apply_config_preset`, this can discard settings already saved to a
+project's real config file, not just a scratch in-memory edit), then
+fetches the selected preset's lint settings via the `get_preset_lint_config`
+Tauri command and applies them through the exact same
+`applyLintConfigToUI`/`handleLintConfigChanged` path any manual field edit
+already goes through, so the reset is written wherever settings are
+already being saved (the current project directory, or an active
+"Configuration file" override) with no separate save codepath of its own.
+`get_preset_lint_config` wraps `papyrus-lint-core`'s new
+`config::preset_lint_config_default` — a sibling of
+`initialize_default_config` sharing its preset-resolution and
+executable-adjacent base-config-layering logic (`resolve_preset_project_file`)
+but returning just the resolved `papyrus_lints::Config` instead of writing
+a brand new project file, and neither refusing an already-existing config
+nor touching a project's own `compiler_path`/`additional_script_roots`/
+`compile_check`/`strict_achlist_scope` settings, since those aren't
+something resetting a project's *lint* settings back to a preset should
+touch.
+
 The desktop app's `parse_psc_file` command, both the app's and the CLI's
 cross-script lookups (`papyrus-lint-core`'s `function_table.rs`, used to
 resolve the "Argument type check"/"Return type check" lints across
