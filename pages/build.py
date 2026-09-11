@@ -113,6 +113,12 @@ FUNDING_PROVIDERS = {
 # index page. `kind` picks how build.py renders that file's own content.
 DOCS = [
     {
+        "filename": "examples.md",
+        "slug": "examples",
+        "kind": "markdown",
+        "blurb": "Real bugs Papyrus Lint catches that PapyrusCompiler.exe lets through, beyond the README's example.",
+    },
+    {
         "filename": "github-actions-example.md",
         "slug": "github-actions-example",
         "kind": "markdown",

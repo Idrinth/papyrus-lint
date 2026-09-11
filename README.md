@@ -40,6 +40,9 @@ the `Actor` value `b` to a `Bool` parameter.
 
 Just drop your file or archlist here and see the results.
 
+See [more examples](docs/examples.md) of bugs Papyrus Lint catches that
+`PapyrusCompiler.exe` lets through.
+
 ## What this is NOT
 
 - A compiler (this uses the standard papyrus compile under the hood)
