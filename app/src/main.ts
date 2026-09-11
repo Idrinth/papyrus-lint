@@ -1534,6 +1534,13 @@ function updateCodeViewerEditHighlight() {
 // cursor at `clientY`, since the textarea sits on top of (and intercepts
 // every pointer event meant for) the highlighted overlay beneath it - whose
 // own per-line findings would otherwise never actually be hoverable.
+//
+// Remembered so a scroll event (mouse wheel, keyboard navigation) can
+// re-evaluate the tooltip against the pointer's last known position even
+// though the pointer itself didn't move - otherwise scrolling a new line
+// under a stationary mouse would leave the previous line's tooltip showing.
+let codeViewerEditLastMouseY: number | null = null;
+
 function updateCodeViewerEditTooltip(clientY: number) {
   if (!codeViewerEditTextareaEl) {
     return;
@@ -3062,8 +3069,12 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerEditTextareaEl?.addEventListener("click", () => void updateAutocomplete());
   codeViewerEditTextareaEl?.addEventListener("keydown", (event) => handleAutocompleteKeydown(event));
   codeViewerEditTextareaEl?.addEventListener("blur", () => hideAutocomplete());
-  codeViewerEditTextareaEl?.addEventListener("mousemove", (event) => updateCodeViewerEditTooltip(event.clientY));
+  codeViewerEditTextareaEl?.addEventListener("mousemove", (event) => {
+    codeViewerEditLastMouseY = event.clientY;
+    updateCodeViewerEditTooltip(event.clientY);
+  });
   codeViewerEditTextareaEl?.addEventListener("mouseleave", () => {
+    codeViewerEditLastMouseY = null;
     if (codeViewerEditTextareaEl) {
       codeViewerEditTextareaEl.title = "";
     }
@@ -3077,6 +3088,13 @@ window.addEventListener("DOMContentLoaded", () => {
       // The gutter has no horizontal scrollbar of its own (line numbers
       // never need to scroll sideways), only vertical.
       codeViewerEditGutterEl.scrollTop = codeViewerEditTextareaEl.scrollTop;
+    }
+    // A wheel scroll or keyboard navigation can bring a different source
+    // line under a pointer that never itself moved, so re-evaluate the
+    // tooltip against the pointer's last known position instead of leaving
+    // it describing whichever line used to be underneath it.
+    if (codeViewerEditLastMouseY !== null) {
+      updateCodeViewerEditTooltip(codeViewerEditLastMouseY);
     }
   });
   codeViewerEl?.addEventListener("close", () => {

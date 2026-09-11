@@ -3888,6 +3888,74 @@ describe("code viewer edit mode", () => {
       expect(ta.title).toBe("");
     });
 
+    it("re-evaluates the tooltip on scroll, so a stationary pointer over a newly scrolled-in line isn't left describing the old one", async () => {
+      await openWithSource("line one\nline two\nline three\n", [
+        { line: 1, column: 1, message: "[info] first line" },
+        { line: 3, column: 1, message: "[warning] third line" },
+      ]);
+      enterCodeViewerEditMode();
+      const ta = textarea();
+      vi.spyOn(ta, "getBoundingClientRect").mockReturnValue({
+        top: 0,
+        left: 0,
+        bottom: 100,
+        right: 100,
+        width: 100,
+        height: 100,
+        x: 0,
+        y: 0,
+        toJSON() {},
+      } as DOMRect);
+      const computedStyle = vi.spyOn(window, "getComputedStyle").mockReturnValue({
+        lineHeight: "20px",
+        paddingTop: "10px",
+      } as CSSStyleDeclaration);
+
+      // Hover line 1 while unscrolled.
+      ta.dispatchEvent(new MouseEvent("mousemove", { clientY: 10 }));
+      expect(ta.title).toContain("[info] first line");
+
+      // Scroll line 3 underneath that same, still-stationary pointer
+      // position (scrollTop of 40px shifts offsetY from 0 to 40, i.e. line
+      // 3 under a mock that reports no scroll of its own).
+      Object.defineProperty(ta, "scrollTop", { value: 40, configurable: true });
+      ta.dispatchEvent(new Event("scroll"));
+
+      expect(ta.title).toContain("[warning] third line");
+      expect(ta.title).not.toContain("[info] first line");
+
+      computedStyle.mockRestore();
+    });
+
+    it("clears the tooltip on scroll once the mouse has already left the editor, instead of reusing a stale position", async () => {
+      await openWithSource("line one\nline two\nline three\n", [{ line: 1, column: 1, message: "[info] first line" }]);
+      enterCodeViewerEditMode();
+      const ta = textarea();
+      vi.spyOn(ta, "getBoundingClientRect").mockReturnValue({
+        top: 0,
+        left: 0,
+        bottom: 100,
+        right: 100,
+        width: 100,
+        height: 100,
+        x: 0,
+        y: 0,
+        toJSON() {},
+      } as DOMRect);
+      vi.spyOn(window, "getComputedStyle").mockReturnValue({
+        lineHeight: "20px",
+        paddingTop: "10px",
+      } as CSSStyleDeclaration);
+
+      ta.dispatchEvent(new MouseEvent("mousemove", { clientY: 10 }));
+      expect(ta.title).toContain("[info] first line");
+
+      ta.dispatchEvent(new MouseEvent("mouseleave"));
+      ta.dispatchEvent(new Event("scroll"));
+
+      expect(ta.title).toBe("");
+    });
+
     it("renders each blank source line as its own line element with no stray whitespace between line elements", async () => {
       // Regression test: the highlight overlay's line spans are `display:
       // block` (styles.css), so a literal "\n" joining them used to render,
