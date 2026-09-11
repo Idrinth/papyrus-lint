@@ -60,7 +60,6 @@ import {
   isCustomPreset,
   isFixableFinding,
   isPscPath,
-  lastProjectDir,
   levelOf,
   lintConfigFromUI,
   listScriptMembers,
@@ -88,7 +87,6 @@ import {
   refreshPresetManagementTab,
   relativePath,
   relintCurrentFiles,
-  rememberProjectDir,
   renameUserPreset,
   renderMassFixList,
   renderPresetManagementTab,
@@ -354,22 +352,6 @@ describe("isFixableFinding", () => {
         rule: "type-casing",
       }),
     ).toBe(true);
-  });
-});
-
-describe("project dir memory", () => {
-  it("round-trips through localStorage", () => {
-    expect(lastProjectDir()).toBeNull();
-    rememberProjectDir("/some/project");
-    expect(lastProjectDir()).toBe("/some/project");
-  });
-
-  it("lastProjectDir tolerates a broken localStorage", () => {
-    const getItemSpy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
-      throw new Error("blocked");
-    });
-    expect(lastProjectDir()).toBeNull();
-    getItemSpy.mockRestore();
   });
 });
 
@@ -743,7 +725,7 @@ describe("loadLintConfigFromPath / saveLintConfigToPath", () => {
 });
 
 describe("useProjectDir", () => {
-  it("loads the config, applies it to the UI, and remembers the directory", async () => {
+  it("loads the config and applies it to the UI", async () => {
     const custom: LintConfig = { ...DEFAULT_LINT_CONFIG, semicolon: true, indentation: "space" };
     invokeImplFor({
       load_lint_config: () => custom,
@@ -756,7 +738,6 @@ describe("useProjectDir", () => {
 
     expect(document.querySelector<HTMLSelectElement>("#semicolon-style")!.value).toBe("require");
     expect(document.querySelector<HTMLSelectElement>("#indentation-style")!.value).toBe("spaces");
-    expect(lastProjectDir()).toBe("/my/project");
   });
 
   it("populates the compiler path input from the backend", async () => {
@@ -3194,7 +3175,6 @@ describe("handleDroppedPaths", () => {
     await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/scripts/source");
-    expect(lastProjectDir()).toBe("/proj");
     expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc" });
     expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/Requiem/B.psc" });
   });
@@ -3214,7 +3194,7 @@ describe("handleDroppedPaths", () => {
     await confirmDetectedConfig();
     await pending;
 
-    expect(lastProjectDir()).toBe("/proj");
+    expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/proj" });
   });
 
   it("parses the achlist, loads project config, and lints each .psc entry", async () => {
@@ -3230,7 +3210,6 @@ describe("handleDroppedPaths", () => {
     await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/list.achlist");
-    expect(lastProjectDir()).toBe("/proj");
     // readme.txt isn't a .psc file, so only A.psc should have been linted.
     expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc" });
     expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "readme.txt" });
@@ -3265,7 +3244,6 @@ describe("handleDroppedPaths", () => {
     await confirmDetectedConfig();
     await pending;
 
-    expect(lastProjectDir()).toBe("/proj/somefolder/otherfolder");
     expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/proj/somefolder/otherfolder" });
   });
 
@@ -3295,7 +3273,6 @@ describe("handleDroppedPaths", () => {
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe(
       "Loaded /proj/scripts/source/A.psc",
     );
-    expect(lastProjectDir()).toBe("/proj");
     expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc" });
   });
 
@@ -4748,14 +4725,6 @@ describe("remaining failure and defensive paths", () => {
     await expect(import("./main").then(({ lintPscFile }) => lintPscFile("/a.psc"))).resolves.toEqual([]);
   });
 
-  it("rememberProjectDir tolerates unavailable storage", () => {
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-      throw new Error("blocked");
-    });
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(() => rememberProjectDir("/proj")).not.toThrow();
-  });
-
   it("reports repair failures without rejecting", async () => {
     invokeMock.mockRejectedValue(new Error("repair failed"));
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -4763,52 +4732,6 @@ describe("remaining failure and defensive paths", () => {
     const outcome: PscParseOutcome = { path: "/a.psc", ok: true, detail: "parsed", findings: [] };
     await expect(handleFixClick("/a.psc", outcome, button)).resolves.toBeUndefined();
     expect(button.disabled).toBe(true);
-  });
-
-  it("restores the remembered project's configuration silently and displays the app version on startup", async () => {
-    localStorage.setItem("papyrus-lint:last-project-dir", "/remembered");
-    invokeImplFor({
-      get_app_version: () => "1.2.3",
-      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
-      load_lint_config: () => DEFAULT_LINT_CONFIG,
-      load_compiler_path: () => null,
-      load_compile_check: () => false,
-      load_script_roots: () => [],
-    });
-    const version = document.createElement("span");
-    version.id = "app-version";
-    document.body.append(version);
-
-    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
-    await vi.waitFor(() => expect(version.textContent).toBe("v1.2.3"));
-
-    // Unlike a real drop, restoring the last remembered project at startup
-    // never shows the config-picker dialog - it loads that project's
-    // configuration right away, before the user has done anything this
-    // session.
-    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
-    await vi.waitFor(() =>
-      expect(invokeMock).toHaveBeenCalledWith("load_lint_config", { dir: "/remembered" }),
-    );
-  });
-
-  it("unlocks the Settings tab once the restored project's configuration finishes loading at startup", async () => {
-    localStorage.setItem("papyrus-lint:last-project-dir", "/remembered");
-    invokeImplFor({
-      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
-      load_lint_config: () => DEFAULT_LINT_CONFIG,
-      load_compiler_path: () => null,
-      load_compile_check: () => false,
-      load_script_roots: () => [],
-    });
-
-    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
-
-    expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(true);
-
-    await vi.waitFor(() =>
-      expect(document.querySelector<HTMLFieldSetElement>("#settings-fieldset")!.disabled).toBe(false),
-    );
   });
 
   it("resets a failed save label after the timeout", async () => {
