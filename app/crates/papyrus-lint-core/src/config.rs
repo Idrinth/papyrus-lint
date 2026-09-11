@@ -1559,6 +1559,19 @@ mod tests {
     }
 
     #[test]
+    fn list_user_preset_names_ignores_yaml_directories() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(dir.path(), "usable.YAML", "semicolon: true\n");
+        fs::create_dir(dir.path().join("misleading.yml"))
+            .expect("failed to create misleading directory");
+
+        assert_eq!(
+            list_user_preset_names(dir.path()),
+            vec!["usable".to_string()]
+        );
+    }
+
+    #[test]
     fn add_user_preset_creates_the_presets_dir_and_copies_the_source_file() {
         let base_dir = tempfile::tempdir().expect("failed to create temp dir");
         let source = base_dir.path().join("source.yaml");
@@ -2199,6 +2212,16 @@ mod tests {
     }
 
     #[test]
+    fn load_strict_achlist_scope_from_path_errors_on_invalid_yaml() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let path = dir.path().join("custom-config.yaml");
+        fs::write(&path, "strict_achlist_scope: [not a bool\n")
+            .expect("failed to write test config file");
+
+        assert!(load_strict_achlist_scope_from_path(&path).is_err());
+    }
+
+    #[test]
     fn saved_config_omits_strict_achlist_scope_when_disabled() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
 
@@ -2339,6 +2362,19 @@ mod tests {
     }
 
     #[test]
+    fn auto_detect_compiler_path_ignores_a_directory_named_like_the_executable() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let compiler_dir = root.path().join("Papyrus Compiler");
+        fs::create_dir(&compiler_dir).expect("failed to create compiler dir");
+        fs::create_dir(compiler_dir.join("PapyrusCompiler.exe"))
+            .expect("failed to create misleading executable directory");
+        let data_dir = root.path().join("Data");
+        fs::create_dir(&data_dir).expect("failed to create data dir");
+
+        assert_eq!(auto_detect_compiler_path(&data_dir), None);
+    }
+
+    #[test]
     fn resolve_compiler_path_prefers_explicit_override_over_auto_detection() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         let compiler_dir = root.path().join("Papyrus Compiler");
@@ -2383,5 +2419,22 @@ mod tests {
             resolve_compiler_path(dir.path()).expect("should succeed"),
             None
         );
+    }
+
+    #[test]
+    fn resolve_compiler_path_propagates_config_errors_before_auto_detection() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let compiler_dir = root.path().join("Papyrus Compiler");
+        fs::create_dir(&compiler_dir).expect("failed to create compiler dir");
+        fs::write(compiler_dir.join("PapyrusCompiler.exe"), b"").expect("failed to write stub exe");
+        let data_dir = root.path().join("Data");
+        fs::create_dir(&data_dir).expect("failed to create data dir");
+        write_config(
+            &data_dir,
+            "papyrus-lint.yaml",
+            "compiler_path: [not a path string]\n",
+        );
+
+        assert!(resolve_compiler_path(&data_dir).is_err());
     }
 }
