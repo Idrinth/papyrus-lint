@@ -444,6 +444,19 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertIn('<span class="cm"># note</span>', page_builder.highlight_code("# note", "yml"))
         self.assertEqual(page_builder.highlight_code("<unsafe>", "text"), "&lt;unsafe&gt;")
 
+    def test_highlight_code_marks_papyrus_keywords_types_strings_and_comments(self) -> None:
+        result = page_builder.highlight_code(
+            'ScriptName Example\n\n; note\nFunction Greet(Int aiCount)\n    Debug.Trace("hi")\nEndFunction',
+            "papyrus",
+        )
+
+        self.assertIn('<span class="kw">ScriptName</span>', result)
+        self.assertIn('<span class="kw">Function</span>', result)
+        self.assertIn('<span class="kw">EndFunction</span>', result)
+        self.assertIn('<span class="ty">Int</span>', result)
+        self.assertIn('<span class="cm">; note</span>', result)
+        self.assertIn('<span class="str">&quot;hi&quot;</span>', result)
+
     def test_highlight_code_normalizes_language_names_case_insensitively(self) -> None:
         result = page_builder.highlight_code("if true; then echo 12; fi", "BASH")
 
