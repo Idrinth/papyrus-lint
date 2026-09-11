@@ -527,7 +527,7 @@ class CheckSiteTest(unittest.TestCase):
             (dist / "index.html").write_text(
                 """<html lang="en"><head><title>Resources</title>
                 <link rel="stylesheet" href="styles.css">
-                <script src="app.js"></script></head><body>
+                <script src="app.js" defer></script></head><body>
                 <img src="pixel.svg" alt="Pixel">
                 </body></html>""",
                 encoding="utf-8",
