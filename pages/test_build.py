@@ -1135,6 +1135,87 @@ class ModernImageFormatsTest(unittest.TestCase):
         self.assertIn('<img loading="lazy" src="assets/second.jpg" class="shot">', result)
 
 
+class RepositoryConfigurationTest(unittest.TestCase):
+    """Keep build.py's checked-in inputs synchronized with its manifest data."""
+
+    def test_document_manifest_has_unique_slugs_and_readable_local_sources(self) -> None:
+        slugs = [doc["slug"] for doc in page_builder.DOCS]
+        filenames = [doc["filename"] for doc in page_builder.DOCS if "filename" in doc]
+
+        self.assertEqual(len(slugs), len(set(slugs)), "documentation slugs must be unique")
+        self.assertEqual(len(filenames), len(set(filenames)), "documentation sources must be unique")
+        for filename in filenames:
+            source = page_builder.DOCS_DIR / filename
+            with self.subTest(filename=filename):
+                self.assertTrue(source.is_file(), f"missing documentation source: {source}")
+                self.assertTrue(source.read_text(encoding="utf-8").strip())
+
+    def test_every_local_document_renders_with_metadata_and_a_source_link(self) -> None:
+        for doc in page_builder.DOCS:
+            if "content_url" in doc:
+                continue
+            with self.subTest(slug=doc["slug"]):
+                title, description, content = page_builder.render_doc(doc)
+
+                self.assertTrue(title.strip())
+                self.assertTrue(description.strip())
+                self.assertTrue(content.strip())
+                self.assertIn("View raw source on GitHub", content)
+                self.assertIn(f"/docs/{doc['filename']}", content)
+
+    def test_asset_manifest_points_to_files_and_modern_assets_are_a_subset(self) -> None:
+        self.assertLessEqual(page_builder.MODERN_FORMAT_ASSETS, page_builder.ASSETS.keys())
+        for output_name, source in page_builder.ASSETS.items():
+            with self.subTest(asset=output_name):
+                self.assertTrue(source.is_file(), f"missing site asset: {source}")
+                self.assertEqual(Path(output_name).suffix.lower(), source.suffix.lower())
+
+    def test_video_catalog_has_unique_nonempty_ids_and_titles(self) -> None:
+        videos = page_builder.json.loads(page_builder.VIDEOS_FILE.read_text(encoding="utf-8"))
+        ids = [video["id"] for video in videos]
+
+        self.assertTrue(videos)
+        self.assertEqual(len(ids), len(set(ids)), "YouTube video IDs must be unique")
+        for video in videos:
+            with self.subTest(video=video):
+                self.assertTrue(video["id"].strip())
+                self.assertTrue(video["title"].strip())
+
+    def test_page_templates_have_complete_shared_chrome_and_required_markers(self) -> None:
+        required_markers = {
+            "index.template.html": {"<!--CLI_EXAMPLES-->", "<!--DOCS_LIST-->"},
+            "videos.template.html": {"<!--VIDEOS_LIST-->"},
+            "action.template.html": {
+                "<!--ACTION_TITLE-->",
+                "<!--ACTION_DESCRIPTION-->",
+                "<!--ACTION_CONTENT-->",
+            },
+            "coverage.template.html": {"<!--COVERAGE_VERSION-->", "<!--COVERAGE_CONTENT-->"},
+            "docs.template.html": {
+                "<!--DOC_TITLE-->",
+                "<!--DOC_DESCRIPTION-->",
+                "<!--DOC_URL-->",
+                "<!--DOC_CONTENT-->",
+            },
+        }
+
+        for filename, markers in required_markers.items():
+            template = (page_builder.PAGES_DIR / filename).read_text(encoding="utf-8")
+            with self.subTest(template=filename):
+                self.assertIn("<!--SITE_HEADER-->", template)
+                self.assertIn("<!--SITE_FOOTER-->", template)
+                for marker in markers:
+                    self.assertIn(marker, template)
+
+    def test_index_template_has_exactly_one_marker_for_each_lint_category(self) -> None:
+        template = (page_builder.PAGES_DIR / "index.template.html").read_text(encoding="utf-8")
+
+        for category in page_builder.LINT_CATEGORIES:
+            marker = f"<!--LINT_TABLE:{category}-->"
+            with self.subTest(category=category):
+                self.assertEqual(template.count(marker), 1)
+
+
 class SitemapAndRobotsTest(unittest.TestCase):
     def test_sitemap_urls_lists_the_homepage_videos_page_and_every_doc(self) -> None:
         docs = [{"slug": "guide"}, {"slug": "missing"}]
