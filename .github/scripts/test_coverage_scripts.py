@@ -217,6 +217,13 @@ class RenderNexusPageTests(unittest.TestCase):
             "7 / 8 (~87.5%) v1.2.3", render_nexuspage.render(template, 7, 8, "v1.2.3")
         )
 
+    def test_render_formats_large_counts_with_thousands_separators(self) -> None:
+        template = "<COVERED_LINES> / <TOTAL_LINES> (~<COVERAGE_PERCENTAGE>%) <VERSION>"
+        self.assertEqual(
+            "27,484 / 27,965 (~98.3%) v1.2.3",
+            render_nexuspage.render(template, 27_484, 27_965, "v1.2.3"),
+        )
+
     def test_render_requires_every_marker_exactly_once(self) -> None:
         with self.assertRaisesRegex(ValueError, "expected exactly one <COVERED_LINES> marker, found 0"):
             render_nexuspage.render("<TOTAL_LINES> <COVERAGE_PERCENTAGE> <VERSION>", 1, 2, "v1.2.3")
