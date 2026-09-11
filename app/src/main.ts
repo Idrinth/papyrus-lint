@@ -359,7 +359,6 @@ export const DEFAULT_LINT_CONFIG: LintConfig = {
   assume_auto_properties_filled: false,
   rules: DEFAULT_RULES,
 };
-const LAST_PROJECT_DIR_KEY = "papyrus-lint:last-project-dir";
 const THEME_KEY = "papyrus-lint:theme";
 export const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];
 
@@ -2503,25 +2502,6 @@ export async function handleCompileClick(path: string, button: HTMLButtonElement
   }
 }
 
-// Remembers `dir` as the last project opened, so its config file can be
-// read again the next time the app starts.
-export function rememberProjectDir(dir: string) {
-  try {
-    localStorage.setItem(LAST_PROJECT_DIR_KEY, dir);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-export function lastProjectDir(): string | null {
-  try {
-    return localStorage.getItem(LAST_PROJECT_DIR_KEY);
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
 // Reads the Settings tab's "Configuration file" override input, trimmed. An
 // empty string means no override is set, so the lint config is auto-detected
 // from the current project directory as usual.
@@ -2602,7 +2582,6 @@ export async function useProjectDir(dir: string) {
   if (override && usedConfigurationFileEl) {
     usedConfigurationFileEl.textContent = override;
   }
-  rememberProjectDir(dir);
 }
 
 // Project directories already confirmed via promptForConfigSelection this
@@ -3029,10 +3008,9 @@ window.addEventListener("DOMContentLoaded", () => {
   // No project's configuration is loaded yet at startup, so the Settings
   // tab starts locked (see setSettingsLocked); the markup itself also
   // starts with the wrapping fieldset disabled, so this just keeps the
-  // notice paragraph in sync with it from the start. It unlocks once a
-  // configuration actually loads - either the remembered last project
-  // restoring silently (see the isTauri() block below) or a drop going
-  // through loadProjectConfig.
+  // notice paragraph in sync with it from the start. It stays locked until
+  // the user actually drops something this session and loadProjectConfig
+  // unlocks it - the app never restores a previous session's project.
   setSettingsLocked(true);
 
   const initialTheme = loadStoredTheme();
@@ -3245,20 +3223,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     void loadRuleTags().then(applyRuleTags);
     void refreshPresetManagementTab();
-
-    // Restore the remembered project's configuration silently, without the
-    // config-picker dialog: that dialog exists to let the user decide which
-    // configuration applies to a project they're actively dropping into the
-    // app right now (see loadProjectConfig below), not to interrogate them
-    // about a directory from a previous session before they've done
-    // anything at all this time - especially since it may no longer be the
-    // project they mean to work on. Dropping that same project again still
-    // goes through the picker as usual, since useProjectDir alone doesn't
-    // mark it confirmed.
-    const lastDir = lastProjectDir();
-    if (lastDir) {
-      void useProjectDir(lastDir).then(() => setSettingsLocked(false));
-    }
 
     getCurrentWebview().onDragDropEvent((event) => {
       if (event.payload.type === "over") {
