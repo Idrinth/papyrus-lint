@@ -296,7 +296,22 @@ binary target that crate also defines.
   otherwise acts on the recommendation itself; publishing (or discarding)
   the draft is still a maintainer's call. When no pull request carries a
   recognized `type: *` label, no bump is recommended and any existing
-  auto-generated draft is left untouched.
+  auto-generated draft is left untouched. The draft's notes also carry a
+  "Test coverage" section, so a maintainer can gauge how well tested the
+  codebase currently is before deciding whether to actually cut that
+  release: the job looks up the most recent successful `ci.yml` run on
+  `the-one` (excluding this in-progress run itself, which is what
+  `status=completed` filters out, so this is the latest run whose
+  coverage jobs actually finished — a commit or two behind `HEAD` rather
+  than tied to this exact push), downloads its `*coverage*` artifacts the
+  same way `release.yml`'s `release-notes` job does for a tagged release,
+  and aggregates them with the same `.github/scripts/coverage_summary.py`
+  into a Markdown table passed to `semver_advisory.py`'s
+  `--coverage-summary` flag, which folds it into the generated release
+  notes (`build_release_notes`) right after the pull request list. No
+  successful run found yet just renders as a "coverage data unavailable"
+  placeholder instead of failing the job, the same fallback
+  `pages/build.py`'s `coverage.html` uses.
 - **GitHub Pages browser smoke test job**: builds the site
   (`pages/build.py`) and then opens every one of its pages in headless
   Chromium via Playwright (`pages/browser_check.py`) to catch what

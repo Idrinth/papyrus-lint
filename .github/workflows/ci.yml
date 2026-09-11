@@ -112,6 +112,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: read
+      actions: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -142,11 +143,39 @@ jobs:
           done
           jq -s '.' pull-requests.jsonl > pull-requests.json
 
+      - name: Find latest successful CI run for coverage data
+        id: ci_run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?branch=the-one&event=push&status=completed" \
+            --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download coverage artifacts
+        if: steps.ci_run.outputs.run_id != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download "${{ steps.ci_run.outputs.run_id }}" \
+            --repo "${{ github.repository }}" \
+            -D coverage-artifacts \
+            -p '*coverage*'
+
+      - name: Build coverage summary
+        run: |
+          if [ -d coverage-artifacts ]; then
+            python3 .github/scripts/coverage_summary.py coverage-artifacts | tail -n +2 > semver-coverage-summary.md
+          else
+            echo "_Coverage data unavailable: no successful CI run found yet._" > semver-coverage-summary.md
+          fi
+
       - name: Build semantic version advisory
         run: |
           python3 .github/scripts/semver_advisory.py pull-requests.json "${{ steps.latest_tag.outputs.tag }}" \
             --release-notes semver-release-notes.md \
             --outputs semver-outputs.json \
+            --coverage-summary semver-coverage-summary.md \
             > semver-advisory.md
 
       - name: Publish semantic version advisory
