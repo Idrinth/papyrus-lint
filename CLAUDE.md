@@ -402,11 +402,16 @@ on all pull requests.
 
 A push to `the-one` that touches `pages/**`, `README.md`, `docs/**`,
 `resources/**`, or `app/src-tauri/icons/icon.png` (or the workflow file
-itself), a manual `workflow_dispatch` run, or `release.yml`'s
-`update-pages` job (see Releases below) invoking it as a `workflow_call`,
+itself), or a manual `workflow_dispatch` run (including one fired
+remotely by `release.yml`'s `update-pages` job, see Releases below),
 builds and deploys a discoverability landing page to GitHub Pages. The
 repository's Pages source must be set to "GitHub Actions" (Settings →
-Pages) for this workflow to publish successfully.
+Pages) for this workflow to publish successfully. The workflow also
+declares a `workflow_call` trigger with the same `version` input as
+`workflow_dispatch`, but nothing actually calls it that way (see
+`update-pages` below for why); it's kept only in case a future in-repo
+caller wants to invoke it directly on `the-one` without a network round
+trip through the GitHub API.
 
 The page's footer displays the current version via a `<!--VERSION-->`
 placeholder that `pages/build.py --version <tag>` fills in the same way
@@ -665,11 +670,24 @@ no endpoint to update a mod's page description, so
 `docs/nexuspage.bbcode` is not synced by this job and still needs to be
 pasted onto the mod page by hand.
 
-An `update-pages` job (after `release`) invokes `pages.yml` (see GitHub
-Pages above) as a reusable `workflow_call`, passing the tag
-(`github.ref_name`) as its `version` input, so the deployed GitHub Pages
-site's footer reflects the just-released version immediately rather than
-waiting for the next content-triggered deploy.
+An `update-pages` job (after `release`) triggers `pages.yml` (see GitHub
+Pages above) via `gh workflow run pages.yml --ref the-one -f version=...`,
+passing the tag (`github.ref_name`) as its `version` input, so the
+deployed GitHub Pages site's footer reflects the just-released version
+immediately rather than waiting for the next content-triggered deploy.
+It dispatches a separate run pinned to `the-one` rather than invoking
+`pages.yml` in-line as a `workflow_call` (which would otherwise seem the
+more obvious choice, and once ran that way): a reusable `workflow_call`
+runs on the caller's own ref, which for this tag-triggered workflow is
+the tag itself rather than a branch, and the `deploy` job's
+`github-pages` environment has a deployment branch policy that only
+allows `the-one` — so that run always failed with "Branch/tag not
+allowed to deploy to github-pages due to environment protection rules"
+regardless of the tag's actual content. Dispatching `pages.yml` to run
+on `the-one` keeps the ref a branch the environment allows, at the cost
+of the dispatched run no longer being nested under this workflow run (it
+shows up as its own `GitHub Pages` run) and needing its own `actions:
+write` permission to fire the dispatch.
 
 ## Merging
 
