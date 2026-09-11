@@ -1040,6 +1040,33 @@ Split into a private `add_user_preset_under(base_dir, ...)` the same way as
 can supply a controlled directory instead of depending on the test binary's
 own `current_exe()`.
 
+`papyrus-lint-cli`'s `doctor <path-to-achlist-or-psc-or-directory>`
+subcommand (`run_doctor` in `papyrus-lint-cli/src/lib.rs`) validates a
+project's setup — the paths its configuration assumes or names — without
+linting any script. It accepts the same `--config`/`--script-root` flags a
+plain lint/fix run does, so it reports on exactly the project a matching
+run would actually use, and resolves the achlist/`.psc`/directory input
+and the project root the same way `run` does
+(`find_candidate_pair_root`/`find_psc_project_root`). Each check (the
+input path itself existing; every listed `.achlist` entry existing on
+disk; the discovered or `--config`-named config file parsing; at least one
+of `scripts/source`/`source/scripts` existing under the project root;
+each configured `additional_script_roots`/`--script-root` entry resolving
+to an existing directory; a configured or auto-detected `compiler_path`
+pointing at an existing file) is collected as a `DoctorCheck` — an
+`ok`/`warning`/`error` `DoctorStatus` plus a message — rather than
+aborting the run on the first problem found, so a single invocation
+reports the full picture at once. `compiler_path` being unset and
+unauto-detectable is only ever a `warning` when `compile_check` is also
+enabled (checked separately, via `resolve_compiler_path`) — otherwise it's
+harmless and reported as `ok`, since the CLI itself never needs
+`compiler_path` outside that setting. Printed as one `[ok]`/`[warning]`/
+`[error] <message>` line per check in the plain-text report, or as a
+`DoctorReport` (`project_root`, `checks`, `success`) JSON document with
+`--json`; exits `0` if every check passed, `1` if any reported a `warning`
+or `error`, or `2` on a usage error, the same convention every other
+subcommand follows.
+
 `initialize_default_config` also looks for a `papyrus-lint.yaml`/`.yml`
 file next to the running executable (`config::executable_dir`, backed by
 `std::env::current_exe()`) and, if one exists, layers it over the selected
