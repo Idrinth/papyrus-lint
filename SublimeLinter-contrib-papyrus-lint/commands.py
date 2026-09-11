@@ -23,12 +23,14 @@ def _windows_startupinfo():
     return startupinfo
 
 
-class _PapyrusLintCliCommand(sublime_plugin.TextCommand):
-    """Shared helpers for locating and invoking the configured CLI executable.
+class _PapyrusLintCliSettings:
+    """Shared helpers for locating the configured CLI executable/config path.
 
-    Both `PapyrusLintFixCommand` and `PapyrusLintFixIssueCommand` need the
-    same `executable`/`config_path` linter settings, so that lookup lives
-    here rather than being duplicated in each command.
+    Mixed into both `_PapyrusLintCliCommand` (a `TextCommand`, for the
+    file-scoped fix commands below) and `PapyrusLintInitCommand` (a
+    `WindowCommand`, since `init` isn't scoped to any one file), so this
+    lookup lives in one place rather than being duplicated for each base
+    class.
     """
 
     def _executable(self):
@@ -43,6 +45,16 @@ class _PapyrusLintCliCommand(sublime_plugin.TextCommand):
     def _linter_settings():
         settings = sublime.load_settings('SublimeLinter.sublime-settings')
         return settings.get('linters', {}).get('papyrus-lint', {})
+
+
+class _PapyrusLintCliCommand(_PapyrusLintCliSettings, sublime_plugin.TextCommand):
+    """Shared helpers for locating and invoking the configured CLI executable.
+
+    Both `PapyrusLintFixCommand` and `PapyrusLintFixIssueCommand` need the
+    same `executable`/`config_path` linter settings, so that lookup lives
+    in `_PapyrusLintCliSettings` rather than being duplicated in each
+    command.
+    """
 
 
 class PapyrusLintFixCommand(_PapyrusLintCliCommand):
@@ -224,3 +236,111 @@ class PapyrusLintFixIssueCommand(_PapyrusLintCliCommand):
             candidates,
             key=lambda diagnostic: abs(diagnostic.get('column', target_column) - target_column),
         )
+
+
+class PapyrusLintInitCommand(_PapyrusLintCliSettings, sublime_plugin.WindowCommand):
+    """Runs `PapyrusLinterCLI init [--preset <name>]` to scaffold a config.
+
+    Unlike the fix commands above, this isn't scoped to any one file, so
+    it's a `WindowCommand` (available from the Command Palette only, not
+    the editor/explorer context menus) rather than a `TextCommand`. It
+    picks a target directory to run `init` in from the window's open
+    folder(s) - prompting when more than one is open - falling back to the
+    active view's own directory when no folder is open at all; then
+    prompts for the `--preset` to pass, mirroring the CLI's own built-in
+    choices (`strict`, `standard`, `careful`) plus a free-form entry for a
+    custom preset added via `PapyrusLinterCLI preset add` or the desktop
+    app's "Save current settings as preset..." button. Never overwrites an
+    existing papyrus-lint.yaml/.yml, the same as the CLI itself.
+    """
+
+    #: Shown in the preset quick panel, in the same order as the CLI's own
+    #: `--preset` documentation; the last entry opens a follow-up input
+    #: panel for a custom preset name instead of picking one of these.
+    PRESET_LABELS = ['strict (default)', 'standard', 'careful', 'Custom preset name…']
+
+    #: The `--preset` value for each of `PRESET_LABELS`' built-in entries,
+    #: by index; `None` omits `--preset` entirely (the CLI's own "strict"
+    #: default). Has no entry for the trailing "Custom preset name…" label,
+    #: which is handled separately via `_on_custom_preset_entered`.
+    PRESET_VALUES = [None, 'standard', 'careful']
+
+    def run(self):
+        folders = self.window.folders()
+        if len(folders) == 1:
+            self._start(folders[0])
+            return
+        if len(folders) > 1:
+            self.window.show_quick_panel(
+                folders, lambda index: self._on_folder_chosen(folders, index)
+            )
+            return
+
+        view = self.window.active_view()
+        file_name = view.file_name() if view else None
+        if not file_name:
+            sublime.error_message('PapyrusLint: open a folder or a saved file first.')
+            return
+        self._start(os.path.dirname(file_name))
+
+    def _on_folder_chosen(self, folders, index):
+        if index == -1:
+            return
+        self._start(folders[index])
+
+    def _start(self, directory):
+        self._directory = directory
+        self.window.show_quick_panel(self.PRESET_LABELS, self._on_preset_chosen)
+
+    def _on_preset_chosen(self, index):
+        if index == -1:
+            return
+        if index == len(self.PRESET_LABELS) - 1:
+            self.window.show_input_panel(
+                'Custom preset name:', '', self._on_custom_preset_entered, None, None
+            )
+            return
+        self._run_init(self.PRESET_VALUES[index])
+
+    def _on_custom_preset_entered(self, name):
+        name = name.strip()
+        if not name:
+            return
+        self._run_init(name)
+
+    def _run_init(self, preset):
+        startupinfo = _windows_startupinfo()
+
+        try:
+            executable = self._executable()
+        except OSError as err:
+            sublime.error_message(
+                f'PapyrusLint: failed to download or run the CLI: {err}'
+            )
+            return
+
+        command = [executable, 'init']
+        if preset:
+            command += ['--preset', preset]
+
+        try:
+            result = subprocess.run(
+                tuple(command),
+                capture_output=True,
+                cwd=self._directory,
+                startupinfo=startupinfo,
+            )
+        except OSError as err:
+            sublime.error_message(
+                f'PapyrusLint: failed to download or run the CLI: {err}'
+            )
+            return
+
+        if result.returncode != 0:
+            message = result.stderr.decode('utf-8', 'replace').strip()
+            sublime.error_message(
+                'PapyrusLint: init failed:\n{}'.format(message or 'unknown error')
+            )
+            return
+
+        sublime.status_message(result.stdout.decode('utf-8', 'replace').strip())

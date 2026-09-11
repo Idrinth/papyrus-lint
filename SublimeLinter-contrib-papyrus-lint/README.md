@@ -82,6 +82,19 @@ and every other rule's findings are left untouched. If the caret's line
 has no reported issue, or the issue there has no automatic fix, an error
 message explains why nothing changed.
 
+## Initializing a project
+
+A "PapyrusLint: Initialize Configuration" command (Command Palette only,
+since it's a project-wide action rather than one scoped to the current
+file) runs `PapyrusLinterCLI init [--preset <name>]` to scaffold a
+`papyrus-lint.yaml` in a project without overwriting an existing one. It
+picks a target directory from the window's open folder (prompting when
+more than one is open, or falling back to the active file's own directory
+when no folder is open at all), then prompts for a preset to start
+from — the built-in `strict` (the default), `standard`, or `careful`, or
+a custom preset name added via `PapyrusLinterCLI preset add` or the
+desktop app's "Save current settings as preset…" button.
+
 ## Testing
 
 The tests provide lightweight substitutes for the Sublime Text and

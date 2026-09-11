@@ -95,6 +95,96 @@ function toDiagnostic(entry: JsonDiagnostic): vscode.Diagnostic {
   return diagnostic;
 }
 
+function showCliLaunchFailure(result: CliResult): void {
+  void vscode.window.showErrorMessage(
+    `Papyrus Lint: could not download or run its CLI. Set "papyrusLint.cliPath" to override it. ` +
+      `(${result.stderr.trim()})`,
+  );
+}
+
+const CUSTOM_INIT_PRESET_LABEL = 'Custom preset name…';
+
+interface InitPresetQuickPickItem extends vscode.QuickPickItem {
+  /** The `--preset` value to pass, or `''` to omit `--preset` entirely (the CLI's own
+   * "strict" default), for every item except the custom one below. */
+  preset?: string;
+}
+
+function initPresetQuickPickItems(): InitPresetQuickPickItem[] {
+  return [
+    { label: 'strict (default)', preset: '', description: 'Every lint rule enabled at its strictest' },
+    { label: 'standard', preset: 'standard', description: 'A more relaxed baseline' },
+    { label: 'careful', preset: 'careful', description: 'The most relaxed baseline' },
+    { label: CUSTOM_INIT_PRESET_LABEL, description: 'A preset added via "preset add" or the desktop app' },
+  ];
+}
+
+/** Prompts for the `--preset` value `papyrusLint.initializeConfig` should pass to
+ * `PapyrusLinterCLI init`: `''` to omit the flag (the CLI's own "strict" default), a
+ * built-in preset name, or a custom one typed into a follow-up input box. Returns
+ * `undefined` if the user cancels at either step. */
+async function pickInitPreset(): Promise<string | undefined> {
+  const picked = await vscode.window.showQuickPick(initPresetQuickPickItems(), {
+    placeHolder: 'Select a papyrus-lint.yaml preset to start from',
+  });
+  if (!picked) {
+    return undefined;
+  }
+  if (picked.label !== CUSTOM_INIT_PRESET_LABEL) {
+    return picked.preset ?? '';
+  }
+  const custom = await vscode.window.showInputBox({
+    prompt: 'Name of a custom preset (added via "PapyrusLinterCLI preset add", or saved from the desktop app)',
+    placeHolder: 'e.g. team-style',
+  });
+  return custom?.trim() || undefined;
+}
+
+/** Resolves the project directory `papyrusLint.initializeConfig` should run `init` in:
+ * the workspace's sole folder, a prompt when several are open, or `undefined` (after
+ * showing an error) when no folder is open at all. */
+async function resolveInitDirectory(): Promise<string | undefined> {
+  const folders = vscode.workspace.workspaceFolders;
+  if (!folders || folders.length === 0) {
+    void vscode.window.showErrorMessage('Papyrus Lint: open a folder or workspace first.');
+    return undefined;
+  }
+  if (folders.length === 1) {
+    return folders[0].uri.fsPath;
+  }
+  const picked = await vscode.window.showWorkspaceFolderPick({
+    placeHolder: 'Select the project folder to initialize a papyrus-lint.yaml in',
+  });
+  return picked?.uri.fsPath;
+}
+
+/** Runs `PapyrusLinterCLI init [--preset <name>]` in `directory`, e.g. a right-clicked
+ * explorer folder or a workspace folder resolved via `resolveInitDirectory`, prompting
+ * for a preset first when `directory` isn't already given by the caller. */
+async function initializeConfig(output: vscode.OutputChannel, uri?: vscode.Uri): Promise<void> {
+  const directory = uri ? uri.fsPath : await resolveInitDirectory();
+  if (!directory) {
+    return;
+  }
+  const preset = await pickInitPreset();
+  if (preset === undefined) {
+    return;
+  }
+
+  const result = await runCli(preset ? ['init', '--preset', preset] : ['init'], directory);
+  if (result.code === -1) {
+    showCliLaunchFailure(result);
+    return;
+  }
+  if (result.code !== 0) {
+    const message = result.stderr.trim() || 'failed to initialize config.';
+    output.appendLine(`papyrus-lint: ${message}`);
+    void vscode.window.showErrorMessage(`Papyrus Lint: ${message}`);
+    return;
+  }
+  void vscode.window.showInformationMessage(`Papyrus Lint: ${result.stdout.trim()}`);
+}
+
 /** Resolves the `.psc` file a command should act on: the given `uri` (e.g. from an
  * explorer/editor context menu), falling back to the active editor. Saves it first if
  * it's open and has unsaved changes, since the CLI only ever reads from disk. */
@@ -185,10 +275,7 @@ class PapyrusLinter {
    * `uri`'s diagnostics from the report. Returns the parsed report on success. */
   private applyResult(uri: vscode.Uri, result: CliResult): JsonReport | undefined {
     if (result.code === -1) {
-      void vscode.window.showErrorMessage(
-        `Papyrus Lint: could not download or run its CLI. Set "papyrusLint.cliPath" to override it. ` +
-          `(${result.stderr.trim()})`,
-      );
+      showCliLaunchFailure(result);
       return undefined;
     }
 
@@ -290,6 +377,9 @@ export function activate(context: vscode.ExtensionContext): void {
         await linter.fixIssue(target, rule, line);
       }
     }),
+    vscode.commands.registerCommand('papyrusLint.initializeConfig', (uri?: vscode.Uri) =>
+      initializeConfig(output, uri),
+    ),
     vscode.languages.registerCodeActionsProvider(
       { language: PAPYRUS_LANGUAGE_ID, scheme: 'file' },
       new PapyrusFixIssueActionProvider(),
