@@ -15,7 +15,11 @@ pub const RULE: &str = "exclamation-spacing";
 /// is never flagged, and neither is a `!` with nothing but a line ending (or
 /// end of file) after it — inserting a space there would just be trailing
 /// whitespace, which the "Trailing whitespace" fix would strip right back
-/// off, so there's nothing this lint can usefully require.
+/// off, so there's nothing this lint can usefully require. A `!` directly
+/// followed by another `!` with no space in between (a chained/double
+/// negation like `!!bReady`) is left alone too: only the last `!` in such a
+/// run needs the trailing space, since spreading the run's own `!`s apart
+/// makes the idiom harder to read, not easier.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let protected = fragment_code::protected_lines(source);
     let tokens = match papyrus_parser::tokenize(source) {
@@ -32,6 +36,9 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         }
         let offset = line_starts[token.line - 1] + token.col - 1;
         let (start, end) = whitespace_run(bytes, offset);
+        if starts_another_negation(bytes, start, end) {
+            continue;
+        }
         if !at_end_of_line(bytes, end) && !is_single_space(bytes, start, end) {
             diagnostics.push(Diagnostic {
                 line: token.line,
@@ -65,6 +72,9 @@ pub fn repair(source: &str) -> String {
         }
         let offset = line_starts[token.line - 1] + token.col - 1;
         let (start, end) = whitespace_run(bytes, offset);
+        if starts_another_negation(bytes, start, end) {
+            continue;
+        }
         if !at_end_of_line(bytes, end) && !is_single_space(bytes, start, end) {
             ranges.push((start, end));
         }
@@ -98,6 +108,14 @@ fn whitespace_run(bytes: &[u8], offset: usize) -> (usize, usize) {
 
 fn is_single_space(bytes: &[u8], start: usize, end: usize) -> bool {
     end - start == 1 && bytes.get(start) == Some(&b' ')
+}
+
+/// Whether the `!` whose whitespace run is `[start, end)` is immediately
+/// followed by another `!` with no space in between, i.e. `start == end`
+/// (no whitespace at all was found) and the very next byte starts another
+/// negation.
+fn starts_another_negation(bytes: &[u8], start: usize, end: usize) -> bool {
+    start == end && bytes.get(end) == Some(&b'!')
 }
 
 /// Whether `end` sits at the end of the line (a `\n`/`\r`) or end of file,
@@ -209,11 +227,25 @@ comment /;
     }
 
     #[test]
-    fn flags_chained_negation_operators_separately() {
-        // `!!bReady` is two `!` tokens back to back; each is checked on its
-        // own, so both the outer and the inner one need their own space.
+    fn ignores_the_gap_between_chained_negation_operators() {
+        // `!!bReady` is two `!` tokens back to back; only the last one in
+        // the run needs its own trailing space, so exactly one diagnostic
+        // is expected here, for the second `!`.
         let diagnostics = check("If !!bReady\nEndIf\n");
-        assert_eq!(diagnostics.len(), 2);
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].column, 5);
+    }
+
+    #[test]
+    fn ignores_the_gap_in_a_longer_run_of_chained_negation_operators() {
+        let diagnostics = check("If !!!bReady\nEndIf\n");
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].column, 6);
+    }
+
+    #[test]
+    fn ignores_a_chained_negation_run_already_followed_by_a_single_space() {
+        assert!(check("If !! bReady\nEndIf\n").is_empty());
     }
 
     #[test]
@@ -284,8 +316,19 @@ EndFunction
     }
 
     #[test]
-    fn repair_fixes_chained_negation_operators() {
-        assert_eq!(repair("If !!bReady\nEndIf\n"), "If ! ! bReady\nEndIf\n");
+    fn repair_leaves_the_gap_between_chained_negation_operators_alone() {
+        assert_eq!(repair("If !!bReady\nEndIf\n"), "If !! bReady\nEndIf\n");
+    }
+
+    #[test]
+    fn repair_leaves_a_longer_run_of_chained_negation_operators_alone() {
+        assert_eq!(repair("If !!!bReady\nEndIf\n"), "If !!! bReady\nEndIf\n");
+    }
+
+    #[test]
+    fn repair_leaves_an_already_correct_chained_negation_run_untouched() {
+        let source = "If !! bReady\nEndIf\n";
+        assert_eq!(repair(source), source);
     }
 
     #[test]
