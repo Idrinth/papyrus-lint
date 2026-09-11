@@ -480,6 +480,8 @@ PapyrusLinterCLI init --preset standard
 PapyrusLinterCLI init --preset my-team
 PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml
 PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml --yes
+PapyrusLinterCLI doctor path/to/project.achlist
+PapyrusLinterCLI doctor --json path/to/project.achlist
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI path/to/scripts/source
 PapyrusLinterCLI fix path/to/project.achlist
@@ -526,6 +528,23 @@ selectable via `init --preset <name>` afterward (see Configuration above).
 It refuses a blank name or one matching a built-in preset (`strict`,
 `standard`, `careful`), and refuses to overwrite a preset that already
 exists under that name unless `--yes` is also given.
+
+`PapyrusLinterCLI doctor <path-to-achlist-or-psc-or-directory>` validates a
+project's setup without linting any script: that the given path itself
+exists (and, for an `.achlist`, that every entry it lists exists on disk);
+that a discovered — or `--config`-overridden — `papyrus-lint.yaml`/`.yml`
+actually parses; that at least one of `scripts/source`/`source/scripts`
+exists under the resolved project root; that each configured
+`additional_script_roots` entry (and any `--script-root` given alongside
+`doctor`) resolves to an existing directory; and that a configured, or
+auto-detected, `compiler_path` points at an existing file — warning
+instead if `compile_check` is enabled but no compiler path could be
+resolved at all. Each check is printed as its own `[ok]`/`[warning]`/
+`[error] <message>` line, or, with `--json`, as part of a single JSON
+document (`{"project_root", "checks": [{"status", "message"}, ...],
+"success"}`) instead. It exits `0` if every check passed, `1` if any
+reported a `warning` or `error`, or `2` on a usage error — the same
+convention every other subcommand follows.
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
 Given a single `.psc` path directly, it lints just that file, treating it

@@ -408,6 +408,8 @@ PapyrusLinter init --preset standard
 PapyrusLinter init --preset my-team
 PapyrusLinter preset add my-team path/to/papyrus-lint.yaml
 PapyrusLinter preset add my-team path/to/papyrus-lint.yaml --yes
+PapyrusLinter doctor path/to/project.achlist
+PapyrusLinter doctor --json path/to/project.achlist
 PapyrusLinter path/to/project.achlist
 PapyrusLinter path/to/Example.psc
 PapyrusLinter path/to/scripts/source
@@ -433,6 +435,7 @@ The plain-text report is colorized automatically when run in a terminal (rule ta
 fix --dry-run computes the same fix(es) without writing them to disk, printing a standard diff of what would change instead.
 init writes papyrus-lint.yaml from --preset strict, standard, or careful (defaults to strict, i.e. the settings shown above); any other name is looked up as <name>.yaml/.yml in a presets directory next to the executable, so you can define your own custom presets too. If a papyrus-lint.yaml/.yml sits next to the executable, its settings are merged in over the selected preset as your own baseline instead, so you only have to define them once.
 preset add <name> <path> saves an existing papyrus-lint.yaml/.yml as a user preset, so it becomes selectable via init --preset <name>. Refuses a blank name or one matching a built-in preset, and refuses to overwrite an existing preset of the same name unless you also pass --yes.
+doctor <path> checks a project's setup without linting anything: that the given achlist/psc/directory (and, for an achlist, every entry it lists) exists, that its config parses, that scripts/source or source/scripts exists, that any additional_script_roots/--script-root resolve to real directories, and that a configured or auto-detected compiler_path points at an existing file — printing one [ok]/[warning]/[error] line per check, or a single JSON document with --json.
 Given a directory instead of an .achlist/.psc path, the CLI (and dropping a folder onto the desktop app) recursively scans it for .psc files at any subfolder depth and lints them all — useful for a mod (e.g. Requiem) with no .achlist whose scripts aren't laid out in a flat scripts/source folder.
 
 [heading]Usage of AI[/heading]
