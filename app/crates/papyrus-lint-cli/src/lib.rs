@@ -63,6 +63,20 @@
 //! `property-sorting` relocating a property's declaration), since a single
 //! original line number no longer identifies the same line in the result.
 //!
+//! `fix` also accepts `--dry-run`, which computes the same fix(es) (honoring
+//! `--type`/`--tag`/`--line` the same way) but never writes them to disk:
+//! instead, for each script that would change, a standard unified diff
+//! (matching `diff -u`'s hunk format, three lines of context) between the
+//! original and would-be-fixed source is printed as part of the report,
+//! headed by `--- <path>`/`+++ <path>` lines using that script's already-
+//! resolved display path. The diagnostics reported afterward still reflect
+//! the would-be-fixed source, the same as a real `fix` run, so `--dry-run`
+//! shows both what would change and what would still be left afterward.
+//! With `--json`, each file's diff (when non-empty) is carried in its own
+//! `diff` field instead of being interleaved with the plain-text report; the
+//! top-level report also carries a `dry_run` boolean. `--dry-run` is a
+//! usage error without `fix`, the same as `--type`/`--line`.
+//!
 //! `--tag <kind>` (matched case-insensitively against the kind keyword(s)
 //! published by [`papyrus_lints::tags`], e.g. `style`, `performance`,
 //! `correctness`, `maintainability`) restricts a run to just one class of
@@ -169,6 +183,8 @@
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
 
+mod diff;
+
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
@@ -180,6 +196,8 @@ use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DI
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, write_psc_source};
 use papyrus_lint_core::{achlist, ast_cache, config};
 use serde::Serialize;
+
+use diff::unified_diff;
 
 /// Walks up `psc_path`'s ancestors looking for a directory pair matching
 /// one of [`CANDIDATE_DIRS`] (`scripts/source` or `source/scripts`,
@@ -255,7 +273,7 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 
 pub const USAGE: &str =
     "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
-PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>\n\n\
+PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n\
 PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n\
 PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n\
 Lints every .psc script listed in the given .achlist file, a single\n\
@@ -267,7 +285,9 @@ e.g. Data for Data\\Scripts\\Source\\abc.psc; falling back to defaults\n\
 if it has none).\n\n\
 With the `fix` subcommand, applies every automatic fix (see README.md)\n\
 to those scripts first, rewriting each one on disk if it changed, then\n\
-reports whatever diagnostics remain the same way.\n\n\
+reports whatever diagnostics remain the same way. With --dry-run, no\n\
+file is written; a standard diff of what would have changed is printed\n\
+instead.\n\n\
 With the `init` subcommand, creates a papyrus-lint.yaml in the current\n\
 working directory without overwriting an existing config, from the\n\
 selected --preset (strict, standard, or careful; defaults to strict,\n\
@@ -312,6 +332,8 @@ Options:\n\
                           1-indexed line, leaving every other line untouched.\n\
                           Combinable with --type. Errors if the fix would\n\
                           change the file's line count (e.g. property-sorting).\n\
+  --dry-run               fix only: don't write any changes to disk; print a\n\
+                          standard diff of what would change instead.\n\
   --tag <kind>            Restrict to rules tagged with this kind (e.g. style,\n\
                           performance, correctness, maintainability), matched\n\
                           case-insensitively. Without fix, limits the reported\n\
@@ -361,6 +383,10 @@ pub struct JsonDiagnostic {
 pub struct JsonFileReport {
     pub path: String,
     pub diagnostics: Vec<JsonDiagnostic>,
+    /// The standard unified diff between this script's original source and
+    /// what `fix` would have written, only non-`null` when run with `fix
+    /// --dry-run` and this script would actually have changed.
+    pub diff: Option<String>,
 }
 
 /// The full report printed to stdout by `--json`, in place of the
@@ -371,8 +397,14 @@ pub struct JsonReport {
     pub scripts_checked: usize,
     pub files_with_diagnostics: usize,
     pub total_diagnostics: usize,
-    /// Only present when run with the `fix` subcommand.
+    /// Only present when run with the `fix` subcommand. Under `--dry-run`,
+    /// counts scripts that *would* have been fixed rather than scripts
+    /// actually rewritten on disk.
     pub files_fixed: Option<usize>,
+    /// Whether this run was `fix --dry-run`: no file was written, and each
+    /// changed script's [`JsonFileReport::diff`] instead shows what would
+    /// have changed. Always `false` outside `fix --dry-run`.
+    pub dry_run: bool,
     /// Whether the run would exit `0`: no diagnostics counted as a
     /// failure per `fail_on_warning`/`fail_on_info` (see
     /// [`papyrus_lints::Config::should_fail_on`]).
@@ -519,6 +551,7 @@ pub fn run(
     let quiet_info = args.iter().any(|arg| arg == "--quiet-info");
     let short_paths = args.iter().any(|arg| arg == "--short-paths");
     let progress = args.iter().any(|arg| arg == "--progress");
+    let dry_run = args.iter().any(|arg| arg == "--dry-run");
 
     let mut config_path: Option<PathBuf> = None;
     let mut output_path: Option<PathBuf> = None;
@@ -533,7 +566,12 @@ pub fn run(
         .filter(|arg| {
             !matches!(
                 arg.as_str(),
-                "--json" | "--quiet-warnings" | "--quiet-info" | "--short-paths" | "--progress"
+                "--json"
+                    | "--quiet-warnings"
+                    | "--quiet-info"
+                    | "--short-paths"
+                    | "--progress"
+                    | "--dry-run"
             )
         })
         .cloned();
@@ -620,7 +658,7 @@ pub fn run(
         }
     };
 
-    if !fix && (type_filter.is_some() || line_filter.is_some()) {
+    if !fix && (type_filter.is_some() || line_filter.is_some() || dry_run) {
         let _ = write!(stderr, "{USAGE}");
         return 2;
     }
@@ -906,6 +944,9 @@ pub fn run(
             }
         };
 
+        let reported_path = display_path(script_path, function_table.root(), short_paths);
+
+        let mut file_diff: Option<String> = None;
         let source = if fix {
             let repaired = match tag_filter.as_deref() {
                 Some(tag) => {
@@ -928,7 +969,13 @@ pub fn run(
                 None => repaired,
             };
             if repaired != source {
-                if let Err(err) = write_psc_source(script_path, &repaired, encoding) {
+                if dry_run {
+                    let diff_text = unified_diff(&reported_path, &source, &repaired);
+                    if !json {
+                        let _ = write!(report_buf, "{diff_text}");
+                    }
+                    file_diff = Some(diff_text);
+                } else if let Err(err) = write_psc_source(script_path, &repaired, encoding) {
                     let _ = writeln!(
                         stderr,
                         "error: failed to write {}: {err}",
@@ -998,8 +1045,6 @@ pub fn run(
                 || (quiet_info && diagnostic.level() == "info"))
         });
 
-        let reported_path = display_path(script_path, function_table.root(), short_paths);
-
         for diagnostic in &diagnostics {
             if !json {
                 let _ = writeln!(
@@ -1023,6 +1068,7 @@ pub fn run(
                         message: d.message.clone(),
                     })
                     .collect(),
+                diff: file_diff,
             });
         }
 
@@ -1053,6 +1099,7 @@ pub fn run(
             files_with_diagnostics,
             total_diagnostics,
             files_fixed: fix.then_some(files_fixed),
+            dry_run,
             success,
         };
         let _ = writeln!(
@@ -1061,7 +1108,9 @@ pub fn run(
             serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
         );
     } else {
-        let fixed_suffix = if fix {
+        let fixed_suffix = if fix && dry_run {
+            format!(" ({files_fixed} script(s) would be fixed.)")
+        } else if fix {
             format!(" ({files_fixed} script(s) fixed.)")
         } else {
             String::new()
@@ -2631,6 +2680,75 @@ mod tests {
     }
 
     #[test]
+    fn fix_dry_run_prints_a_diff_without_writing_the_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        let original =
+            "ScriptName Example   \n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n";
+        write_file(&script_path, original);
+
+        let (code, stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--dry-run".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 1, "stderr: {stderr}");
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            original,
+            "--dry-run must never write to the file"
+        );
+        let expected_path = script_path.to_string_lossy();
+        assert!(stdout.contains(&format!("--- {expected_path}\n")));
+        assert!(stdout.contains(&format!("+++ {expected_path}\n")));
+        assert!(stdout.contains("-ScriptName Example   \n"));
+        assert!(stdout.contains("+ScriptName Example\n"));
+        assert!(stdout.contains("(1 script(s) would be fixed.)"));
+        assert!(stdout.contains("Game.GetPlayer"));
+    }
+
+    #[test]
+    fn fix_dry_run_prints_nothing_extra_for_an_already_clean_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--dry-run".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n"
+        );
+        assert!(!stdout.contains("---"));
+        assert!(stdout.contains("(0 script(s) would be fixed.)"));
+    }
+
+    #[test]
+    fn dry_run_without_fix_is_a_usage_error() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--dry-run".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example   \n"
+        );
+    }
+
+    #[test]
     fn prints_usage_when_fix_is_given_without_a_path() {
         let (code, _stdout, stderr) = run_captured(&["fix".to_string()]);
 
@@ -3161,6 +3279,41 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|d| d["message"].as_str().unwrap().contains("Game.GetPlayer")));
+    }
+
+    #[test]
+    fn json_flag_combines_with_fix_dry_run() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--dry-run".to_string(),
+            "--json".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 1, "stderr: {stderr}");
+        assert_eq!(
+            fs::read_to_string(dir.path().join("scripts/source/Example.psc")).unwrap(),
+            "ScriptName Example   \n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
+            "--dry-run must never write to the file, even combined with --json"
+        );
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(report["dry_run"], true);
+        assert_eq!(report["files_fixed"], 1);
+        let files = report["files"].as_array().unwrap();
+        let diff = files[0]["diff"].as_str().expect("diff should be a string");
+        assert!(diff.contains("-ScriptName Example   \n"));
+        assert!(diff.contains("+ScriptName Example\n"));
     }
 
     #[test]
