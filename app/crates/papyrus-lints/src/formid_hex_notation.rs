@@ -123,7 +123,14 @@ fn check_get_form_id_comparison(
     if receiver_start >= 2 {
         if let Some(op) = tokens.get(receiver_start - 1) {
             if is_comparison(&op.kind) {
-                if let Some(literal) = tokens.get(receiver_start - 2) {
+                let mut literal_index = receiver_start - 2;
+                if matches!(tokens[literal_index].kind, TokenKind::Minus) {
+                    let Some(previous_index) = literal_index.checked_sub(1) else {
+                        return;
+                    };
+                    literal_index = previous_index;
+                }
+                if let Some(literal) = tokens.get(literal_index) {
                     flag_if_decimal(literal, CONTEXT, diagnostics);
                 }
             }
@@ -278,6 +285,29 @@ mod tests {
     }
 
     #[test]
+    fn flags_negative_decimal_before_get_form_id() {
+        let diagnostics = check(
+            "ScriptName Example Extends Actor\n\nFunction Test()\n    If -1 <= Self.GetFormID()\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 4);
+        assert_eq!(diagnostics[0].column, 9);
+        assert!(diagnostics[0].message.contains("decimal (1)"));
+        assert!(diagnostics[0].message.contains("0x1"));
+    }
+
+    #[test]
+    fn flags_comparisons_against_chained_receivers() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(MyScript context)\n    If 42 != context.currentActor.GetFormID()\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 4);
+    }
+
+    #[test]
     fn does_not_flag_get_form_id_compared_to_a_runtime_value() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Actor akActor, Int aiOther)\n    If akActor.GetFormID() == aiOther\n    EndIf\n    If akActor.GetFormID() == GetOtherFormID()\n    EndIf\nEndFunction\n",
@@ -299,6 +329,24 @@ mod tests {
     fn does_not_flag_get_form_id_used_outside_a_comparison() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Actor akActor)\n    Int id = akActor.GetFormID()\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_treat_get_form_id_with_arguments_as_the_target_call() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    If GetFormID(1) == 42\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn ignores_target_names_in_comments_and_strings() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    ; GetFormID() == 42\n    String text = \"Game.GetFormFromFile(42)\"\nEndFunction\n",
         );
 
         assert!(diagnostics.is_empty());
@@ -385,6 +433,23 @@ mod tests {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(MyScript akOther)\n    akOther.GetFormFromFile(76935, \"Skyrim.esm\")\nEndFunction\n",
         );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_decimal_in_a_later_argument() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int aiFormID)\n    Form theForm = Game.GetFormFromFile(aiFormID, 76935)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_an_incomplete_get_form_from_file_call() {
+        let diagnostics =
+            check("ScriptName Example\n\nFunction Test()\n    Game.GetFormFromFile\nEndFunction\n");
 
         assert!(diagnostics.is_empty());
     }
