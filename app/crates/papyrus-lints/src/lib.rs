@@ -186,10 +186,13 @@ impl Diagnostic {
 /// A line carrying a trailing `; @disable <rule-id>[, <rule-id>...]`
 /// comment (e.g. `action = 1 ; @disable float-to-int`) has diagnostics from
 /// the named rule(s) suppressed on that line only; `; @disable` with no
-/// rule ids suppresses every lint on that line. See [`disable_comments`]
+/// rule ids suppresses every lint on that line. A `; @disable-file
+/// <rule-id>[, <rule-id>...]` comment does the same across the entire
+/// file, no matter which line it's written on; `; @disable-file` with no
+/// rule ids suppresses every lint in the file. See [`disable_comments`]
 /// for the rule ids each lint is matched against. This does not affect
-/// [`repair`], which still applies its fixes regardless of `@disable`
-/// comments.
+/// [`repair`], which still applies its fixes regardless of
+/// `@disable`/`@disable-file` comments.
 pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
     lint_with_external_arguments(source, config, &mut argument_types::NoExternalSignatures)
 }
@@ -635,6 +638,33 @@ mod tests {
     }
 
     #[test]
+    fn lint_honors_disable_file_comments_on_every_line() {
+        let source = "Foo(1,2) ; @disable-file comma-spacing\nBar(3,4)   \n";
+        let config = Config::default();
+
+        let diagnostics = lint(source, &config);
+
+        assert!(diagnostics.iter().all(|d| d.rule != comma_spacing::RULE));
+        assert!(diagnostics
+            .iter()
+            .any(|d| d.line == 2 && d.rule == trailing_whitespace::RULE));
+    }
+
+    #[test]
+    fn lint_bare_disable_file_comment_suppresses_every_rule_in_the_file() {
+        let source = "Foo(1,2)   ; @disable-file\nBar(3,4)   \n";
+        assert!(lint(source, &Config::default()).is_empty());
+    }
+
+    #[test]
+    fn lint_disable_file_directive_need_not_be_on_the_first_line() {
+        let source = "Foo(1,2)\nBar(3,4) ; @disable-file comma-spacing\n";
+        let diagnostics = lint(source, &Config::default());
+
+        assert!(diagnostics.iter().all(|d| d.rule != comma_spacing::RULE));
+    }
+
+    #[test]
     fn unused_disable_defaults_to_off() {
         let diagnostics = lint("Foo(1, 2) ; @disable made-up-rule\n", &Config::default());
 
@@ -666,6 +696,50 @@ mod tests {
             .iter()
             .any(|d| d.message.contains("float-to-int") && d.message.contains("does not produce")));
         assert!(unused.iter().all(|d| !d.message.contains("comma-spacing")));
+    }
+
+    #[test]
+    fn unused_disable_reports_unknown_and_untriggered_disable_file_rule_ids() {
+        let config = Config {
+            rules: config::Rules {
+                unused_disable: true,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+        let source = "Foo(1,2) ; @disable-file comma-spacing, made-up, float-to-int\n";
+
+        let diagnostics = lint(source, &config);
+        let unused: Vec<_> = diagnostics
+            .iter()
+            .filter(|d| d.rule == unused_disable::RULE)
+            .collect();
+
+        assert_eq!(unused.len(), 2);
+        assert!(unused
+            .iter()
+            .any(|d| d.message.contains("made-up") && d.message.contains("unknown")));
+        assert!(unused
+            .iter()
+            .any(|d| d.message.contains("float-to-int") && d.message.contains("does not produce")));
+        assert!(unused.iter().all(|d| !d.message.contains("comma-spacing")));
+    }
+
+    #[test]
+    fn unused_disable_reports_a_bare_disable_file_directive_on_a_clean_file() {
+        let config = Config {
+            rules: config::Rules {
+                unused_disable: true,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+
+        let diagnostics = lint("; @disable-file\n", &config);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule, unused_disable::RULE);
+        assert!(diagnostics[0].message.contains("@disable-file"));
     }
 
     #[test]
