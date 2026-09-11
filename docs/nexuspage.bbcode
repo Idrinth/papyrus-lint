@@ -223,7 +223,7 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td][/td]
 [/tr]
 [tr][td][b]Unguarded self-recursion[/b][/td]
-[td]Flags a function/event that calls itself with no If or While anywhere in its body at all, since nothing could then ever skip the recursive call — it recurses unconditionally until the call stack is exhausted. Very conservative: any If/While anywhere in the function, including the common guarded early-Return pattern, disqualifies it from this check.[/td]
+[td]Flags a function/event that calls itself with no If or While anywhere in its body at all, since nothing could then ever skip the recursive call — it recurses unconditionally until the call stack is exhausted. Very conservative: any If/While anywhere in the function, including the common guarded early-Return pattern, disqualifies it from this check. A GoToState to a different state that declares its own handler for the same function/event, before the self-call, counts as a guard too, covering the vanilla save-compatibility idiom.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]None used as an existing Form[/b][/td]
