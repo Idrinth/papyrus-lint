@@ -229,6 +229,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.ref_name }}" plugin-dist/* --clobber --repo "${{ github.repository }}"
 
+  update-pages:
+    name: Update GitHub Pages with release version
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Dispatch Pages rebuild on the-one
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          # pages.yml deploys to the "github-pages" environment, whose
+          # deployment branch policy only allows the-one. Calling it as a
+          # workflow_call from this tag-triggered workflow runs it on the
+          # tag's ref instead of a branch, which GitHub then refuses to
+          # deploy ("Branch/tag not allowed to deploy to github-pages due
+          # to environment protection rules"). Dispatching it as its own
+          # run on the-one keeps the ref a branch, so the deploy is
+          # actually allowed, while still passing this tag as the version
+          # to display.
+          #
+          # RELEASE_TAG is read from the environment rather than
+          # interpolating ${{ github.ref_name }} directly into the shell
+          # command, so a tag name can't inject shell syntax.
+          gh workflow run pages.yml \
+            --repo "${{ github.repository }}" \
+            --ref the-one \
+            -f version="$RELEASE_TAG"
+
   release-notes:
     name: Write release notes
     needs:
