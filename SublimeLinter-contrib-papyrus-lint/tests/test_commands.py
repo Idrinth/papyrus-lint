@@ -16,17 +16,24 @@ class FakeTextCommand:
         self.view = view
 
 
+class FakeWindowCommand:
+    def __init__(self, window):
+        self.window = window
+
+
 def load_commands_module(settings=None):
     if settings is None:
         settings = Mock()
         settings.get.side_effect = lambda _key, default=None: default
     sublime = types.ModuleType('sublime')
     sublime.error_message = Mock()
+    sublime.status_message = Mock()
     sublime.load_settings = Mock(return_value=settings)
     sublime.cache_path = Mock(return_value='/cache')
 
     sublime_plugin = types.ModuleType('sublime_plugin')
     sublime_plugin.TextCommand = FakeTextCommand
+    sublime_plugin.WindowCommand = FakeWindowCommand
     plugin_package = types.ModuleType('papyrus_lint_plugin')
     plugin_package.__path__ = [str(PLUGIN_ROOT)]
 
@@ -451,6 +458,206 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
                 capture_output=True,
                 startupinfo=None,
             ),
+        )
+
+
+class PapyrusLintInitCommandTests(unittest.TestCase):
+    def setUp(self):
+        self.module, self.sublime = load_commands_module()
+        self.window = Mock()
+        self.command = self.module.PapyrusLintInitCommand(self.window)
+
+    def test_starts_directly_when_a_single_folder_is_open(self):
+        self.window.folders.return_value = ['/project']
+
+        self.command.run()
+
+        self.window.show_quick_panel.assert_called_once_with(
+            self.module.PapyrusLintInitCommand.PRESET_LABELS,
+            self.command._on_preset_chosen,
+        )
+        self.assertEqual(self.command._directory, '/project')
+
+    def test_prompts_for_a_folder_when_several_are_open(self):
+        self.window.folders.return_value = ['/one', '/two']
+
+        self.command.run()
+
+        (folders, callback), _kwargs = self.window.show_quick_panel.call_args
+        self.assertEqual(folders, ['/one', '/two'])
+
+        self.window.show_quick_panel.reset_mock()
+        callback(1)
+
+        self.assertEqual(self.command._directory, '/two')
+        self.window.show_quick_panel.assert_called_once_with(
+            self.module.PapyrusLintInitCommand.PRESET_LABELS,
+            self.command._on_preset_chosen,
+        )
+
+    def test_cancelling_the_folder_prompt_is_a_no_op(self):
+        self.window.folders.return_value = ['/one', '/two']
+
+        self.command.run()
+        (_folders, callback), _kwargs = self.window.show_quick_panel.call_args
+        self.window.show_quick_panel.reset_mock()
+        callback(-1)
+
+        self.window.show_quick_panel.assert_not_called()
+
+    def test_falls_back_to_the_active_view_directory_when_no_folder_is_open(self):
+        self.window.folders.return_value = []
+        view = Mock()
+        view.file_name.return_value = '/scripts/Example.psc'
+        self.window.active_view.return_value = view
+
+        self.command.run()
+
+        self.assertEqual(self.command._directory, '/scripts')
+        self.window.show_quick_panel.assert_called_once()
+
+    def test_shows_an_error_when_no_folder_or_saved_file_is_available(self):
+        self.window.folders.return_value = []
+        self.window.active_view.return_value = None
+
+        self.command.run()
+
+        self.sublime.error_message.assert_called_once_with(
+            'PapyrusLint: open a folder or a saved file first.'
+        )
+        self.window.show_quick_panel.assert_not_called()
+
+    def test_cancelling_the_preset_panel_is_a_no_op(self):
+        with patch.object(self.command, '_run_init') as run_init:
+            self.command._on_preset_chosen(-1)
+
+        run_init.assert_not_called()
+
+    def test_choosing_a_built_in_preset_runs_init_with_its_value(self):
+        with patch.object(self.command, '_run_init') as run_init:
+            self.command._on_preset_chosen(0)
+            self.command._on_preset_chosen(1)
+            self.command._on_preset_chosen(2)
+
+        self.assertEqual(
+            run_init.call_args_list,
+            [unittest.mock.call(None), unittest.mock.call('standard'), unittest.mock.call('careful')],
+        )
+
+    def test_choosing_custom_preset_shows_an_input_panel(self):
+        self.command._on_preset_chosen(3)
+
+        self.window.show_input_panel.assert_called_once_with(
+            'Custom preset name:', '', self.command._on_custom_preset_entered, None, None
+        )
+
+    def test_blank_custom_preset_is_a_no_op(self):
+        with patch.object(self.command, '_run_init') as run_init:
+            self.command._on_custom_preset_entered('   ')
+
+        run_init.assert_not_called()
+
+    def test_custom_preset_is_trimmed_before_running_init(self):
+        with patch.object(self.command, '_run_init') as run_init:
+            self.command._on_custom_preset_entered('  team-style  ')
+
+        run_init.assert_called_once_with('team-style')
+
+    def test_successful_init_without_a_preset_shows_the_created_path(self):
+        self.command._directory = '/project'
+        result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
+
+        with patch.object(self.module.subprocess, 'run', return_value=result) as run:
+            self.command._run_init(None)
+
+        run.assert_called_once_with(
+            ('/cache/PapyrusLinterCLI', 'init'),
+            capture_output=True,
+            cwd='/project',
+            startupinfo=None,
+        )
+        self.sublime.status_message.assert_called_once_with('Created /project/papyrus-lint.yaml')
+        self.sublime.error_message.assert_not_called()
+
+    def test_successful_init_with_a_preset_passes_it_through(self):
+        self.command._directory = '/project'
+        result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
+
+        with patch.object(self.module.subprocess, 'run', return_value=result) as run:
+            self.command._run_init('careful')
+
+        run.assert_called_once_with(
+            ('/cache/PapyrusLinterCLI', 'init', '--preset', 'careful'),
+            capture_output=True,
+            cwd='/project',
+            startupinfo=None,
+        )
+
+    def test_init_failure_shows_decoded_stderr(self):
+        self.command._directory = '/project'
+        result = Mock(returncode=2, stderr=b'error: config already exists')
+
+        with patch.object(self.module.subprocess, 'run', return_value=result):
+            self.command._run_init(None)
+
+        self.sublime.error_message.assert_called_once_with(
+            'PapyrusLint: init failed:\nerror: config already exists'
+        )
+        self.sublime.status_message.assert_not_called()
+
+    def test_init_failure_with_no_stderr_has_a_fallback_message(self):
+        self.command._directory = '/project'
+        result = Mock(returncode=2, stderr=b'')
+
+        with patch.object(self.module.subprocess, 'run', return_value=result):
+            self.command._run_init(None)
+
+        self.sublime.error_message.assert_called_once_with(
+            'PapyrusLint: init failed:\nunknown error'
+        )
+
+    def test_os_error_running_the_cli_is_reported(self):
+        self.command._directory = '/project'
+
+        with patch.object(
+            self.module.subprocess, 'run', side_effect=OSError('not found')
+        ):
+            self.command._run_init(None)
+
+        self.sublime.error_message.assert_called_once_with(
+            'PapyrusLint: failed to download or run the CLI: not found'
+        )
+        self.sublime.status_message.assert_not_called()
+
+    def test_download_error_is_reported_without_running(self):
+        self.command._directory = '/project'
+        self.module.ensure_release_cli.side_effect = OSError('offline')
+
+        with patch.object(self.module.subprocess, 'run') as run:
+            self.command._run_init(None)
+
+        self.sublime.error_message.assert_called_once_with(
+            'PapyrusLint: failed to download or run the CLI: offline'
+        )
+        run.assert_not_called()
+
+    def test_configured_executable_is_used(self):
+        settings = Mock()
+        settings.get.return_value = {'papyrus-lint': {'executable': '/tools/custom-linter'}}
+        module, _sublime = load_commands_module(settings)
+        window = Mock()
+        command = module.PapyrusLintInitCommand(window)
+        command._directory = '/project'
+        result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
+
+        with patch.object(module.subprocess, 'run', return_value=result) as run:
+            command._run_init(None)
+
+        run.assert_called_once_with(
+            ('/tools/custom-linter', 'init'),
+            capture_output=True,
+            cwd='/project',
+            startupinfo=None,
         )
 
 

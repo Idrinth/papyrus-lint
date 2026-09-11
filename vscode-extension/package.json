@@ -62,6 +62,11 @@
         "command": "papyrusLint.fixIssue",
         "title": "Papyrus Lint: Fix This Issue",
         "category": "Papyrus Lint"
+      },
+      {
+        "command": "papyrusLint.initializeConfig",
+        "title": "Papyrus Lint: Initialize Configuration",
+        "category": "Papyrus Lint"
       }
     ],
     "menus": {
@@ -77,6 +82,9 @@
         {
           "command": "papyrusLint.fixIssue",
           "when": "false"
+        },
+        {
+          "command": "papyrusLint.initializeConfig"
         }
       ],
       "editor/context": [
@@ -100,6 +108,11 @@
         {
           "command": "papyrusLint.fixFile",
           "when": "resourceExtname == .psc",
+          "group": "papyrusLint"
+        },
+        {
+          "command": "papyrusLint.initializeConfig",
+          "when": "explorerResourceIsFolder",
           "group": "papyrusLint"
         }
       ]

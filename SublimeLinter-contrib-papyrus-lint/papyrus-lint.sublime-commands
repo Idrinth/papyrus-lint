@@ -6,5 +6,9 @@
     {
         "caption": "PapyrusLint: Fix This Issue",
         "command": "papyrus_lint_fix_issue"
+    },
+    {
+        "caption": "PapyrusLint: Initialize Configuration",
+        "command": "papyrus_lint_init"
     }
 ]

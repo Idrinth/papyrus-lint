@@ -23,6 +23,16 @@ for `.psc` files directly in the editor, by shelling out to
   --json <file>` to apply just that diagnostic's own rule on its own line,
   leaving every other issue in the file untouched. Unsaved changes are
   saved first, same as fixing the whole file.
+- **Papyrus Lint: Initialize Configuration** — runs `PapyrusLinterCLI init
+  [--preset <name>]` to scaffold a `papyrus-lint.yaml` (see the project
+  README's [Configuration](../README.md#configuration) section), without
+  overwriting an existing one. Available from the command palette (prompts
+  for the workspace folder to initialize when more than one is open) or a
+  folder's explorer context menu (initializes that folder directly).
+  Either way, prompts for a preset to start from — the built-in `strict`
+  (the default), `standard`, or `careful`, or a custom preset name added
+  via `PapyrusLinterCLI preset add` or the desktop app's "Save current
+  settings as preset…" button.
 
 Only the currently open/selected `.psc` file is linted or fixed — not the
 whole project's `.achlist` — since that's the unit the CLI's `--json`
