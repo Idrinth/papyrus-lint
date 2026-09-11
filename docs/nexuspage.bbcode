@@ -223,7 +223,7 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td][/td]
 [/tr]
 [tr][td][b]Unguarded self-recursion[/b][/td]
-[td]Flags a function/event that calls itself with nothing that could ever skip the recursive call, since it then recurses unconditionally until the call stack is exhausted. Conservative: a self-call nested inside an If/While is always left alone, a top-level While always disqualifies the function, and a top-level If only counts as a guard when it actually contains a Return somewhere within it — an If with no Return does nothing to stop the call and is still flagged.[/td]
+[td]Flags a function/event that calls itself with nothing that could ever skip the recursive call, since it then recurses unconditionally until the call stack is exhausted. Conservative: a self-call nested inside an If/While is always left alone, a top-level While always disqualifies the function, and a top-level If only counts as a guard when it actually contains a Return somewhere within it — an If with no Return does nothing to stop the call and is still flagged. A GoToState to a different state that declares its own handler for the same function/event, before the self-call, counts as a guard too, covering the vanilla save-compatibility idiom.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]None used as an existing Form[/b][/td]
