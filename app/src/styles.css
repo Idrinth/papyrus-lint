@@ -159,6 +159,12 @@ h1 {
   accent-color: var(--color-accent);
 }
 
+.contact-list__notice {
+  margin: 0 0 1em;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+
 .contact-list {
   list-style: none;
   padding: 0;
