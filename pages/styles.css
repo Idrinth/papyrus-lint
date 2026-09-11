@@ -472,7 +472,7 @@ table.lint-rules-table {
 
 .lint-rules-table th:first-child,
 .lint-rules-table td:first-child {
-  width: 14em;
+  width: 16em;
 }
 
 .lint-table th {
