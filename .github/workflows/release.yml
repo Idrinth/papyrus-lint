@@ -239,6 +239,7 @@ jobs:
       - name: Dispatch Pages rebuild on the-one
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
         run: |
           # pages.yml deploys to the "github-pages" environment, whose
           # deployment branch policy only allows the-one. Calling it as a
@@ -249,10 +250,14 @@ jobs:
           # run on the-one keeps the ref a branch, so the deploy is
           # actually allowed, while still passing this tag as the version
           # to display.
+          #
+          # RELEASE_TAG is read from the environment rather than
+          # interpolating ${{ github.ref_name }} directly into the shell
+          # command, so a tag name can't inject shell syntax.
           gh workflow run pages.yml \
             --repo "${{ github.repository }}" \
             --ref the-one \
-            -f version="${{ github.ref_name }}"
+            -f version="$RELEASE_TAG"
 
   release-notes:
     name: Write release notes
