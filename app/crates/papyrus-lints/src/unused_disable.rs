@@ -1,6 +1,7 @@
-//! Reports `@disable` directives which do not suppress a diagnostic.
+//! Reports `@disable`/`@disable-file` directives which do not suppress a
+//! diagnostic.
 
-use crate::{disable_comments::LineDisable, Diagnostic};
+use crate::{disable_comments::Directive, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id.
 pub const RULE: &str = "unused-disable";
@@ -13,7 +14,7 @@ pub(crate) fn check(
     let mut unused = Vec::new();
     for (line, disable) in disables.iter() {
         match disable {
-            LineDisable::All { column } => {
+            Directive::All { column } => {
                 if !diagnostics.iter().any(|diagnostic| diagnostic.line == line) {
                     unused.push(Diagnostic {
                         line,
@@ -25,7 +26,7 @@ pub(crate) fn check(
                     });
                 }
             }
-            LineDisable::Rules(rules) => {
+            Directive::Rules(rules) => {
                 for disabled in rules {
                     let known = known_rules.contains(&disabled.id.as_str());
                     let triggered = diagnostics.iter().any(|diagnostic| {
@@ -43,6 +44,46 @@ pub(crate) fn check(
                             column: disabled.column,
                             message: format!(
                                 "[warning] Unused @disable `{}`: {reason}",
+                                disabled.id
+                            ),
+                            rule: RULE,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    for (line, disable) in disables.file_iter() {
+        match disable {
+            Directive::All { column } => {
+                if diagnostics.is_empty() {
+                    unused.push(Diagnostic {
+                        line,
+                        column: *column,
+                        message:
+                            "[warning] Unused @disable-file: this file does not produce any diagnostics"
+                                .into(),
+                        rule: RULE,
+                    });
+                }
+            }
+            Directive::Rules(rules) => {
+                for disabled in rules {
+                    let known = known_rules.contains(&disabled.id.as_str());
+                    let triggered = diagnostics
+                        .iter()
+                        .any(|diagnostic| diagnostic.rule.eq_ignore_ascii_case(&disabled.id));
+                    if !known || !triggered {
+                        let reason = if known {
+                            "this file does not produce a diagnostic from that rule"
+                        } else {
+                            "the rule id is unknown"
+                        };
+                        unused.push(Diagnostic {
+                            line,
+                            column: disabled.column,
+                            message: format!(
+                                "[warning] Unused @disable-file `{}`: {reason}",
                                 disabled.id
                             ),
                             rule: RULE,
@@ -165,5 +206,48 @@ mod tests {
 
         assert_eq!(unused.len(), 1);
         assert!(unused[0].message.contains("unknown"));
+    }
+
+    #[test]
+    fn bare_disable_file_is_used_when_any_diagnostic_occurs_anywhere_in_the_file() {
+        let disables = Disables::scan("; @disable-file\nCall(1,2)\n");
+        let diagnostics = [diagnostic(2, "comma-spacing")];
+
+        assert!(check(&disables, &diagnostics, KNOWN_RULES).is_empty());
+    }
+
+    #[test]
+    fn bare_disable_file_is_unused_when_the_file_has_no_diagnostics() {
+        let disables = Disables::scan("; @disable-file\nCall(1, 2)\n");
+
+        let unused = check(&disables, &[], KNOWN_RULES);
+
+        assert_eq!(unused.len(), 1);
+        assert!(unused[0]
+            .message
+            .contains("this file does not produce any diagnostics"));
+    }
+
+    #[test]
+    fn named_disable_file_is_used_by_a_matching_diagnostic_on_any_line() {
+        let disables = Disables::scan("Call(1,2)\n; @disable-file comma-spacing\nCall(3,4)\n");
+        let diagnostics = [diagnostic(3, "comma-spacing")];
+
+        assert!(check(&disables, &diagnostics, KNOWN_RULES).is_empty());
+    }
+
+    #[test]
+    fn named_disable_file_distinguishes_unknown_and_untriggered_rules() {
+        let disables = Disables::scan("; @disable-file mystery-rule, trailing-whitespace\n");
+
+        let unused = check(&disables, &[], KNOWN_RULES);
+
+        assert_eq!(unused.len(), 2);
+        assert!(unused[0].message.contains("mystery-rule"));
+        assert!(unused[0].message.contains("unknown"));
+        assert!(unused[1].message.contains("trailing-whitespace"));
+        assert!(unused[1]
+            .message
+            .contains("this file does not produce a diagnostic"));
     }
 }

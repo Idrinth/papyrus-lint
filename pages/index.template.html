@@ -286,7 +286,9 @@
         <p id="disable" class="disable-note">
           Add a trailing <code>; @disable &lt;rule-id&gt;[, &lt;rule-id&gt;...]</code> comment to a line to suppress
           diagnostics from those rules on that line only (e.g. <code>action = 1 ; @disable float-to-int</code>); a
-          bare <code>; @disable</code> suppresses every rule on the line. See the
+          bare <code>; @disable</code> suppresses every rule on the line. A trailing
+          <code>; @disable-file &lt;rule-id&gt;[, &lt;rule-id&gt;...]</code> comment does the same across the whole
+          file instead, no matter which line it's written on. See the
           <a href="https://github.com/idrinth/papyrus-lint#disabling-a-lint-on-a-specific-line">README</a> for the
           full list of rule ids.
         </p>
