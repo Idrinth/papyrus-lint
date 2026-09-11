@@ -33,6 +33,11 @@ class IsLocalHrefTest(unittest.TestCase):
         self.assertTrue(browser_check.is_local_href("../assets/style.css"))
         self.assertTrue(browser_check.is_local_href("docs/guide.html#setup"))
 
+    def test_accepts_root_relative_and_query_only_urls(self) -> None:
+        self.assertTrue(browser_check.is_local_href("/docs/guide.html"))
+        self.assertTrue(browser_check.is_local_href("?print=1"))
+        self.assertTrue(browser_check.is_local_href("/?print=1#top"))
+
     def test_rejects_external_schemes(self) -> None:
         self.assertFalse(browser_check.is_local_href("http://example.com"))
         self.assertFalse(browser_check.is_local_href("https://example.com/page"))
@@ -43,6 +48,10 @@ class IsLocalHrefTest(unittest.TestCase):
         self.assertFalse(browser_check.is_local_href("//cdn.example.com/style.css"))
         self.assertFalse(browser_check.is_local_href("data:text/plain,hello"))
         self.assertFalse(browser_check.is_local_href("javascript:void(0)"))
+
+    def test_rejects_external_urls_regardless_of_scheme_casing(self) -> None:
+        self.assertFalse(browser_check.is_local_href("HTTPS://example.com/page"))
+        self.assertFalse(browser_check.is_local_href("HtTp://example.com/page"))
 
 
 class StartServerTest(unittest.TestCase):
@@ -248,6 +257,51 @@ class CheckSiteTest(unittest.TestCase):
 
         self.assertEqual(problems, [])
 
+    def test_resolves_fragments_on_directory_index_links(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            docs = dist / "docs"
+            docs.mkdir()
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Home</title></head><body>'
+                '<a href="docs/#install">Install</a>'
+                '<a href="docs/?view=compact#missing">Missing section</a>'
+                "</body></html>",
+                encoding="utf-8",
+            )
+            (docs / "index.html").write_text(
+                '<html lang="en"><head><title>Docs</title></head><body>'
+                '<h1 id="install">Install</h1></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "index.html: broken link: 'docs/?view=compact#missing' "
+                "(no element with id 'missing' on 'docs/index.html')"
+            ],
+        )
+
+    def test_accepts_links_to_existing_non_html_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            assets = dist / "assets"
+            assets.mkdir()
+            (dist / "index.html").write_text(
+                '<html lang="en"><head><title>Downloads</title></head><body>'
+                '<a href="assets/example.psc?download=1">Example script</a>'
+                "</body></html>",
+                encoding="utf-8",
+            )
+            (assets / "example.psc").write_text("Scriptname Example", encoding="utf-8")
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
     def test_checks_html_pages_recursively(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
@@ -351,6 +405,29 @@ class CheckSiteTest(unittest.TestCase):
             ],
         )
 
+    def test_checks_single_quoted_and_unquoted_href_attributes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                """<html lang="en"><head><title>Home</title></head><body>
+                <a href='single-missing.html'>Single quoted</a>
+                <a href=unquoted-missing.html>Unquoted</a>
+                </body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "index.html: broken link: 'single-missing.html' "
+                "(no such file 'single-missing.html')",
+                "index.html: broken link: 'unquoted-missing.html' "
+                "(no such file 'unquoted-missing.html')",
+            ],
+        )
+
     def test_detects_a_missing_fragment_on_the_same_page(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             dist = Path(directory)
@@ -437,6 +514,28 @@ class CheckSiteTest(unittest.TestCase):
                 '<html lang="en"><head><title>Home</title>'
                 '<script src="https://example.test/unavailable.js"></script>'
                 '</head><body></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
+    def test_allows_successful_local_stylesheets_scripts_and_images(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                """<html lang="en"><head><title>Resources</title>
+                <link rel="stylesheet" href="styles.css">
+                <script src="app.js" defer></script></head><body>
+                <img src="pixel.svg" alt="Pixel">
+                </body></html>""",
+                encoding="utf-8",
+            )
+            (dist / "styles.css").write_text("body { color: black; }", encoding="utf-8")
+            (dist / "app.js").write_text("document.body.dataset.loaded = 'true';", encoding="utf-8")
+            (dist / "pixel.svg").write_text(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"/>',
                 encoding="utf-8",
             )
 
