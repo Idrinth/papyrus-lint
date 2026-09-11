@@ -732,6 +732,39 @@ h1 {
 .code-viewer__editor {
   position: absolute;
   inset: 0;
+  display: flex;
+}
+
+/* Mirrors `.code-viewer__table`'s `.code-viewer__line-number` column in the
+ * read-only view above, so edit mode shows the same line numbers instead of
+ * losing them entirely once a script is opened for editing. Scrolled in
+ * lockstep with the textarea (see the "scroll" listener alongside the
+ * highlight layer's own) since it's a separate element rather than a table
+ * cell that would scroll with its row automatically. */
+.code-viewer__editor-gutter {
+  flex: none;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 0.75em 0.75em 0.75em 1em;
+  border-right: 1px solid var(--color-border);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  text-align: right;
+  white-space: pre;
+  user-select: none;
+}
+
+.code-viewer__editor-gutter-line {
+  display: block;
+  min-height: 1.4em;
+}
+
+.code-viewer__editor-code {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .code-viewer__compile-output {
