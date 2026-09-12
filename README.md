@@ -855,8 +855,12 @@ Next to it, an "Export for AI" button downloads the same currently
 filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
-[contract published as a JSON Schema](docs/papyrus-lint-ai-export.schema.json)).
-The document's top-level `$schema` field points directly to that schema so an
+contract published as a versioned JSON Schema:
+[v2](docs/papyrus-lint-ai-export.v2.schema.json), the current format
+described below, and [v1](docs/papyrus-lint-ai-export.v1.schema.json), the
+frozen contract older releases produced, kept around so a document from an
+older release can still be validated against the schema it was actually
+produced under). The document's top-level `$schema` field points directly to that schema so an
 assistant or validator can discover the exact contract without prior context. It contains
 a `header`
 identifying the tool name, running version,

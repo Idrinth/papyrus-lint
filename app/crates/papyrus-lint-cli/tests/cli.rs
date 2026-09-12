@@ -121,7 +121,7 @@ fn ai_format_includes_source_and_triggered_rule_details() {
         serde_json::from_slice(&output.stdout).expect("stdout should contain an AI export");
     assert_eq!(
         report["$schema"],
-        "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.schema.json"
+        "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json"
     );
     assert_eq!(report["header"]["tool"], "Papyrus Lint");
     assert_eq!(
