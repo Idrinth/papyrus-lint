@@ -41,6 +41,30 @@
     }
   },
   "$defs": {
+    "severity": {
+      "description": "A diagnostic severity bucket.",
+      "type": "string",
+      "enum": [
+        "error",
+        "warning",
+        "info"
+      ]
+    },
+    "importance": {
+      "description": "A rule's relative importance.",
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "ruleId": {
+      "description": "A stable, hyphenated lint rule identifier.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
     "filters": {
       "type": "object",
       "additionalProperties": false,
@@ -62,12 +86,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "type": "string",
-            "enum": [
-              "error",
-              "warning",
-              "info"
-            ]
+            "$ref": "#/$defs/severity"
           }
         },
         "importances": {
@@ -76,12 +95,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "type": "string",
-            "enum": [
-              "low",
-              "medium",
-              "high"
-            ]
+            "$ref": "#/$defs/importance"
           }
         },
         "rules": {
@@ -90,9 +104,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            "$ref": "#/$defs/ruleId"
           }
         },
         "auto_fixable_only": {
@@ -737,18 +749,11 @@
         },
         "rule": {
           "description": "The stable, hyphenated lint rule id, or `unknown` for a diagnostic without one.",
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          "$ref": "#/$defs/ruleId"
         },
         "level": {
           "description": "The diagnostic severity. Untagged external diagnostics are classified as errors.",
-          "type": "string",
-          "enum": [
-            "error",
-            "warning",
-            "info"
-          ]
+          "$ref": "#/$defs/severity"
         },
         "message": {
           "description": "The human-readable diagnostic message.",
@@ -783,9 +788,7 @@
       "properties": {
         "rule": {
           "description": "The stable, hyphenated identifier of the lint rule.",
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          "$ref": "#/$defs/ruleId"
         },
         "description": {
           "description": "The rule's detailed description, copied from its row in the project README's Implemented Lints tables.",
@@ -809,12 +812,7 @@
         },
         "importance": {
           "description": "The rule's relative importance.",
-          "type": "string",
-          "enum": [
-            "low",
-            "medium",
-            "high"
-          ]
+          "$ref": "#/$defs/importance"
         },
         "auto_fixable": {
           "description": "Whether Papyrus Lint can automatically fix this rule's findings.",
