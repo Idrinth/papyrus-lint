@@ -866,7 +866,13 @@ was generated; a `configuration` object containing the fully resolved lint
 settings used for the run (including all defaulted values); a
 `filters` object recording the GUI's active filename, severity, importance,
 rule, and auto-fixable-only filters, so the assistant can tell which findings
-the user intentionally excluded; a
+the user intentionally excluded — its `severities`, `importances`, and
+`rules` arrays are never empty, since the Lint results tab refuses to let
+every checkbox/option in one of those groups be deselected at once (an
+empty array would otherwise be ambiguous between "the user excluded
+everything" and "no restriction"), which also means the "Export
+issues"/"Export for AI" buttons can never produce an export with zero
+findings just by narrowing filters down to nothing; a
 `findings` section in the same shape the "Export issues" JSON format uses
 (minus its `files_with_diagnostics` count, always redundant here since every
 exported file already has at least one diagnostic),

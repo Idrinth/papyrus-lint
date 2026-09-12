@@ -115,12 +115,14 @@ import {
   scriptRootsFromUI,
   scriptRootsForAchlist,
   setSettingsLocked,
+  SEVERITIES,
   severityOf,
   showError,
   showLintProgress,
   showResult,
   storeTheme,
   switchTab,
+  TAG_IMPORTANCES,
   tagsForFinding,
   toggleCodeViewerFullscreen,
   updateAutocomplete,
@@ -1923,6 +1925,22 @@ describe("matchesTagFilters", () => {
     expect(matchesTagFilters(styleLow)).toBe(true);
   });
 
+  it("refuses to leave every importance deselected, so an export can never be silently emptied by the importance filter", () => {
+    useSampleTags();
+    for (const importance of TAG_IMPORTANCES) {
+      const el = document.querySelector<HTMLInputElement>(`#filter-importance-${importance}`)!;
+      el.checked = false;
+      el.dispatchEvent(new Event("change"));
+    }
+
+    // The last remaining importance ("high", the last entry in
+    // TAG_IMPORTANCES) refuses to uncheck.
+    const lastEl = document.querySelector<HTMLInputElement>("#filter-importance-high")!;
+    expect(lastEl.checked).toBe(true);
+    expect(matchesTagFilters(correctnessHigh)).toBe(true);
+    expect(matchesTagFilters(styleLow)).toBe(false);
+  });
+
   it("hides a non-auto-fixable finding when 'Auto-fixable only' is checked", () => {
     useSampleTags();
     document.querySelector<HTMLInputElement>("#filter-auto-fixable-only")!.checked = true;
@@ -1994,6 +2012,11 @@ describe("populateRuleFilterGroups (via applyRuleTags)", () => {
     applyRuleTags([
       { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       { rule: "comma-spacing", description: "Test description for comma spacing.", kinds: ["style"], importance: "low", auto_fixable: true },
+      // A rule of another kind, left selected throughout, so deselecting
+      // every style rule below doesn't leave the global activeRules set
+      // empty - the GUI refuses that regardless of which kind triggers it
+      // (see the "never leaves every rule deselected" test below).
+      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false },
     ]);
     const header = document.querySelector<HTMLInputElement>("#filter-kind-style")!;
     expect(header.checked).toBe(true);
@@ -2023,6 +2046,41 @@ describe("populateRuleFilterGroups (via applyRuleTags)", () => {
     header.checked = true;
     header.dispatchEvent(new Event("change"));
 
+    expect(select.options[0].selected).toBe(true);
+    expect(matchesTagFilters({ line: 1, column: 1, message: "x", rule: "trailing-whitespace" })).toBe(true);
+  });
+
+  it("refuses to leave every rule deselected via a kind's multiselect, so an export can never be silently emptied by the rule filter", () => {
+    applyRuleTags([
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false },
+    ]);
+    const styleSelect = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
+    styleSelect.options[0].selected = false;
+    styleSelect.dispatchEvent(new Event("change"));
+    // Allowed: a rule of another kind is still active.
+    expect(styleSelect.options[0].selected).toBe(false);
+
+    const correctnessSelect = document.querySelector<HTMLSelectElement>("#filter-rule-correctness")!;
+    correctnessSelect.options[0].selected = false;
+    correctnessSelect.dispatchEvent(new Event("change"));
+
+    // Deselecting the very last active rule (across every kind, not just
+    // this one's own select) is refused: it reverts back to selected.
+    expect(correctnessSelect.options[0].selected).toBe(true);
+    expect(matchesTagFilters({ line: 1, column: 1, message: "x", rule: "argument-types" })).toBe(true);
+  });
+
+  it("refuses to leave every rule deselected via a kind's header checkbox", () => {
+    applyRuleTags([{ rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true }]);
+    const header = document.querySelector<HTMLInputElement>("#filter-kind-style")!;
+    header.checked = false;
+    header.dispatchEvent(new Event("change"));
+
+    // The only known rule refuses to be fully deselected: the header and
+    // its select both revert.
+    expect(header.checked).toBe(true);
+    const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
     expect(select.options[0].selected).toBe(true);
     expect(matchesTagFilters({ line: 1, column: 1, message: "x", rule: "trailing-whitespace" })).toBe(true);
   });
@@ -2512,8 +2570,40 @@ describe("buildPscResultItem / renderPscResults", () => {
     }
   });
 
+  it("refuses to leave every severity deselected, so an export can never be silently emptied by the severity filters", () => {
+    // Every severity but the last one is still allowed to be deselected.
+    for (const severity of SEVERITIES.slice(0, -1)) {
+      const el = document.querySelector<HTMLInputElement>(`#filter-${severity}`)!;
+      el.checked = false;
+      el.dispatchEvent(new Event("change"));
+      expect(el.checked).toBe(false);
+    }
+
+    // The last remaining severity refuses to uncheck.
+    const lastEl = document.querySelector<HTMLInputElement>(`#filter-${SEVERITIES[SEVERITIES.length - 1]}`)!;
+    lastEl.checked = false;
+    lastEl.dispatchEvent(new Event("change"));
+    expect(lastEl.checked).toBe(true);
+
+    renderPscResults([outcome({ findings: [{ line: 1, column: 1, message: `[${SEVERITIES[SEVERITIES.length - 1]}] x` }] })]);
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
+
+    // Restore every severity checkbox so this doesn't leak into later tests.
+    for (const severity of SEVERITIES) {
+      const el = document.querySelector<HTMLInputElement>(`#filter-${severity}`)!;
+      el.checked = true;
+      el.dispatchEvent(new Event("change"));
+    }
+  });
+
   it("renderPscResults respects the active tag filters", () => {
-    applyRuleTags([{ rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true }]);
+    applyRuleTags([
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
+      // A second, untouched rule of another kind, so deselecting every
+      // style rule below doesn't leave the global activeRules set empty -
+      // the GUI refuses that regardless of which kind triggers it.
+      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false },
+    ]);
     try {
       document.querySelector<HTMLInputElement>("#filter-kind-style")!.checked = false;
       document.querySelector<HTMLInputElement>("#filter-kind-style")!.dispatchEvent(new Event("change"));
