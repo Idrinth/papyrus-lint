@@ -135,6 +135,37 @@ fn ai_format_includes_source_and_triggered_rule_details() {
 }
 
 #[test]
+fn ai_format_omits_scripts_without_diagnostics() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let scripts = dir.path().join("scripts/source");
+    write_file(
+        &scripts.join("WithIssues.psc"),
+        "ScriptName WithIssues   \n",
+    );
+    write_file(&scripts.join("Clean.psc"), "ScriptName Clean\n");
+
+    let output = run_cli(&["--format", "ai", &scripts.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain an AI export");
+    let files = report["findings"]["files"]
+        .as_array()
+        .expect("AI export files should be an array");
+    assert_eq!(report["findings"]["files_with_diagnostics"], 1);
+    assert_eq!(files.len(), 1);
+    assert!(files[0]["path"]
+        .as_str()
+        .expect("AI export path should be a string")
+        .ends_with("WithIssues.psc"));
+    assert!(!output
+        .stdout
+        .windows(b"Clean.psc".len())
+        .any(|window| window == b"Clean.psc"));
+}
+
+#[test]
 fn fix_mode_rewrites_a_script_through_the_binary_entry_point() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let script = dir.path().join("scripts/source/Example.psc");
