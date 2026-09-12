@@ -454,7 +454,7 @@
           "minimum": 1
         },
         "rule": {
-          "description": "The stable, hyphenated lint rule id, or `unknown` for a diagnostic without one.",
+          "description": "The stable, hyphenated lint rule id.",
           "$ref": "#/$defs/ruleId"
         },
         "level": {
