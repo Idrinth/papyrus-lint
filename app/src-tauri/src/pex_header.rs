@@ -200,6 +200,31 @@ mod tests {
     }
 
     #[test]
+    fn preserves_the_source_name_and_fixed_header_bytes_exactly() {
+        let bytes = sample_be_header("Nested/Name (final).psc", "user", "machine", &[]);
+
+        let patched = strip_personal_data(&bytes).expect("should strip");
+        let expected = sample_be_header("Nested/Name (final).psc", "", "", &[]);
+
+        assert_eq!(patched, expected);
+        assert_eq!(&patched[..STRINGS_START], &bytes[..STRINGS_START]);
+    }
+
+    #[test]
+    fn strips_non_utf8_personal_data_as_opaque_header_bytes() {
+        let mut bytes = sample_be_header("Foo.psc", "", "", &[0xCA, 0xFE]);
+        let user_length_offset = STRINGS_START + 2 + "Foo.psc".len();
+        bytes.splice(
+            user_length_offset..user_length_offset + 4,
+            [0, 2, 0xFF, 0x80, 0, 1, 0xFE],
+        );
+
+        let patched = strip_personal_data(&bytes).expect("binary names should still be stripped");
+
+        assert_eq!(patched, sample_be_header("Foo.psc", "", "", &[0xCA, 0xFE]));
+    }
+
+    #[test]
     fn returns_none_for_unrecognized_magic() {
         let bytes = vec![0, 1, 2, 3, 4, 5, 6, 7];
 
