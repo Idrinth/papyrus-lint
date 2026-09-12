@@ -3,7 +3,7 @@
 //! [`pex_header::strip_personal_data`] handles real-world output and not
 //! just synthesized headers.
 
-use papyrus_lint_lib::pex_header;
+use papyrus_lint_core::pex_header;
 
 const FIXTURE: &[u8] = include_bytes!("fixtures/IDR__TIF__05000235.pex");
 
