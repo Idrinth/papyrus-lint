@@ -538,7 +538,8 @@
       "required": [
         "files",
         "files_with_diagnostics",
-        "total_diagnostics"
+        "total_diagnostics",
+        "diagnostic_counts"
       ],
       "properties": {
         "files": {
@@ -556,6 +557,9 @@
           "description": "The total number of exported diagnostics across all files.",
           "type": "integer",
           "minimum": 0
+        },
+        "diagnostic_counts": {
+          "$ref": "#/$defs/diagnosticCounts"
         }
       }
     },
@@ -564,6 +568,7 @@
       "additionalProperties": false,
       "required": [
         "path",
+        "diagnostic_counts",
         "diagnostics",
         "source"
       ],
@@ -581,12 +586,26 @@
             "$ref": "#/$defs/diagnostic"
           }
         },
+        "diagnostic_counts": {
+          "$ref": "#/$defs/diagnosticCounts"
+        },
         "source": {
           "description": "This script's current on-disk contents, letting the assistant see the code each diagnostic refers to without the project open; an error message describing why it couldn't be read (e.g. it was moved or deleted since linting); or null when no source was attached at all.",
           "type": [
             "string",
             "null"
           ]
+        }
+      }
+    },
+    "diagnosticCounts": {
+      "description": "Counts of exported diagnostics grouped by rule id. Rules with no diagnostics are omitted.",
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9]+(?:-[a-z0-9]+)*$": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },

@@ -448,6 +448,7 @@ struct AiHeader {
 #[derive(Debug, Serialize)]
 struct AiFileReport {
     path: String,
+    diagnostic_counts: std::collections::BTreeMap<&'static str, usize>,
     diagnostics: Vec<JsonDiagnostic>,
     source: String,
 }
@@ -457,6 +458,17 @@ struct AiFindings {
     files: Vec<AiFileReport>,
     files_with_diagnostics: usize,
     total_diagnostics: usize,
+    diagnostic_counts: std::collections::BTreeMap<&'static str, usize>,
+}
+
+fn diagnostic_counts<'a>(
+    diagnostics: impl IntoIterator<Item = &'a JsonDiagnostic>,
+) -> std::collections::BTreeMap<&'static str, usize> {
+    let mut counts = std::collections::BTreeMap::new();
+    for diagnostic in diagnostics {
+        *counts.entry(diagnostic.rule).or_insert(0) += 1;
+    }
+    counts
 }
 
 #[derive(Debug, Serialize)]
@@ -1206,8 +1218,10 @@ pub fn run(
                 })
                 .collect();
             if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
+                let counts = diagnostic_counts(&json_diagnostics);
                 ai_files.push(AiFileReport {
                     path: reported_path.clone(),
+                    diagnostic_counts: counts,
                     diagnostics: json_diagnostics,
                     source: source.clone(),
                 });
@@ -1256,6 +1270,8 @@ pub fn run(
             serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
         );
     } else if output_format == OutputFormat::Ai {
+        let total_diagnostic_counts =
+            diagnostic_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
         let mut triggered_rules: Vec<&'static str> = ai_files
             .iter()
             .flat_map(|file| file.diagnostics.iter().map(|diagnostic| diagnostic.rule))
@@ -1287,6 +1303,7 @@ pub fn run(
                 files: ai_files,
                 files_with_diagnostics,
                 total_diagnostics,
+                diagnostic_counts: total_diagnostic_counts,
             },
             rule_details,
         };

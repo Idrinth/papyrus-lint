@@ -2494,11 +2494,19 @@ export async function formatIssuesForAi(
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.
   const baseReport = buildIssuesReport(files, true);
+  const diagnosticCounts = (diagnostics: { rule: string }[]): Record<string, number> => {
+    const counts: Record<string, number> = {};
+    for (const diagnostic of diagnostics) {
+      counts[diagnostic.rule] = (counts[diagnostic.rule] ?? 0) + 1;
+    }
+    return Object.fromEntries(Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)));
+  };
   const findings = {
     ...baseReport,
     files: await Promise.all(
       baseReport.files.map(async (fileReport, fileIndex) => ({
         ...fileReport,
+        diagnostic_counts: diagnosticCounts(fileReport.diagnostics),
         source: sources.get(fileReport.path) ?? null,
         diagnostics: await Promise.all(
           fileReport.diagnostics.map(async (diagnostic, diagnosticIndex) => {
@@ -2512,6 +2520,7 @@ export async function formatIssuesForAi(
         ),
       })),
     ),
+    diagnostic_counts: diagnosticCounts(baseReport.files.flatMap((file) => file.diagnostics)),
   };
 
   return JSON.stringify(
