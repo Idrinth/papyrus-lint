@@ -439,6 +439,8 @@ struct AiHeader {
     tool: &'static str,
     version: &'static str,
     website: &'static str,
+    target_game: &'static str,
+    generated_at: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -469,6 +471,38 @@ struct AiReport {
     header: AiHeader,
     findings: AiFindings,
     rule_details: Vec<AiRuleDetails>,
+}
+
+/// Returns the current UTC time in the millisecond-precision RFC 3339 form
+/// also produced by JavaScript's `Date.toISOString()` in the frontend.
+fn generated_at() -> String {
+    let elapsed = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default();
+    format_unix_timestamp(elapsed.as_secs(), elapsed.subsec_millis())
+}
+
+fn format_unix_timestamp(seconds: u64, milliseconds: u32) -> String {
+    let days = (seconds / 86_400) as i64;
+    let seconds_in_day = seconds % 86_400;
+    // Gregorian civil-from-days conversion (the epoch offset makes day zero
+    // 1970-01-01).
+    let z = days + 719_468;
+    let era = z.div_euclid(146_097);
+    let day_of_era = z - era * 146_097;
+    let year_of_era =
+        (day_of_era - day_of_era / 1_460 + day_of_era / 36_524 - day_of_era / 146_096) / 365;
+    let mut year = year_of_era + era * 400;
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let month_prime = (5 * day_of_year + 2) / 153;
+    let day = day_of_year - (153 * month_prime + 2) / 5 + 1;
+    let month = month_prime + if month_prime < 10 { 3 } else { -9 };
+    year += i64::from(month <= 2);
+    let hour = seconds_in_day / 3_600;
+    let minute = seconds_in_day % 3_600 / 60;
+    let second = seconds_in_day % 60;
+
+    format!("{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{milliseconds:03}Z")
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -1239,6 +1273,8 @@ pub fn run(
                 tool: "Papyrus Lint",
                 version: VERSION,
                 website: "https://papyrus-lint.idrinth.de",
+                target_game: "Skyrim SE/AE",
+                generated_at: generated_at(),
             },
             findings: AiFindings {
                 files: ai_files,
@@ -1836,6 +1872,15 @@ fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write)
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn unix_timestamps_are_formatted_as_utc_rfc3339() {
+        assert_eq!(format_unix_timestamp(0, 0), "1970-01-01T00:00:00.000Z");
+        assert_eq!(
+            format_unix_timestamp(1_709_251_199, 42),
+            "2024-02-29T23:59:59.042Z"
+        );
+    }
 
     fn write_file(path: &Path, contents: &str) {
         if let Some(parent) = path.parent() {

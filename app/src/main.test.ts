@@ -2862,7 +2862,7 @@ describe("formatIssuesForAi", () => {
     applyRuleTags([]);
   });
 
-  it("wraps the findings in a tool/version/website/target_game header, removes message severity prefixes, and includes rule_details", async () => {
+  it("wraps the findings in a tool/version/website/target_game/generated_at header, removes message severity prefixes, and includes rule_details", async () => {
     applyRuleTags([
       { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
@@ -2887,6 +2887,7 @@ describe("formatIssuesForAi", () => {
         version: "1.2.3",
         website: "https://papyrus-lint.idrinth.de",
         target_game: "Skyrim SE/AE",
+        generated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       },
       findings: {
         files: [
@@ -3174,6 +3175,7 @@ describe("Export issues button", () => {
       version: "9.9.9",
       website: "https://papyrus-lint.idrinth.de",
       target_game: "Skyrim SE/AE",
+      generated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
     });
     expect(contents.findings.files).toEqual([expect.objectContaining({ source: "ScriptName A\n" })]);
   });

@@ -124,6 +124,12 @@ fn ai_format_includes_source_and_triggered_rule_details() {
         report["header"]["website"],
         "https://papyrus-lint.idrinth.de"
     );
+    assert_eq!(report["header"]["target_game"], "Skyrim SE/AE");
+    let generated_at = report["header"]["generated_at"]
+        .as_str()
+        .expect("generated_at should be a string");
+    assert_eq!(generated_at.len(), 24);
+    assert!(generated_at.ends_with('Z'));
     assert_eq!(report["findings"]["files"][0]["source"], source);
     assert_eq!(
         report["findings"]["files"][0]["diagnostics"][0]["rule"],
