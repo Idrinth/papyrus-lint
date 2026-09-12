@@ -2,13 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json",
   "title": "Papyrus Lint Export for AI document",
-  "description": "The JSON document downloaded by the desktop app's Export for AI feature. It contains the currently filtered lint findings and metadata for each recognized rule represented in those findings.",
+  "description": "The JSON document downloaded by the desktop app's Export for AI feature. It contains the currently filtered lint findings, the effective lint configuration, and metadata for each recognized rule represented in those findings.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["header", "findings", "rule_details"],
+  "required": ["header", "config", "findings", "rule_details"],
   "properties": {
     "header": {
       "$ref": "#/$defs/header"
+    },
+    "config": {
+      "$ref": "#/$defs/config"
     },
     "findings": {
       "$ref": "#/$defs/findingsReport"
@@ -22,6 +25,33 @@
     }
   },
   "$defs": {
+    "config": {
+      "description": "The complete effective lint configuration used to produce the exported run, after defaults and project overrides have been applied.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semicolon", "indentation", "indentation_width", "identifier_casing", "cyclomatic_complexity_warning", "cyclomatic_complexity_error", "type_casing", "named_arguments", "min_wait_interval", "magic_numbers", "fail_on_warning", "fail_on_info", "bool_like_int", "assume_auto_properties_filled", "rules"],
+      "properties": {
+        "semicolon": { "type": "boolean" },
+        "indentation": { "type": "string", "enum": ["tab", "space"] },
+        "indentation_width": { "type": "integer", "minimum": 0 },
+        "identifier_casing": { "type": "string", "enum": ["camelCase", "PascalCase", "snake_case", "CONSTANT_CASE"] },
+        "cyclomatic_complexity_warning": { "type": "integer", "minimum": 0 },
+        "cyclomatic_complexity_error": { "type": "integer", "minimum": 0 },
+        "type_casing": { "type": "string", "enum": ["PascalCase", "camelCase", "lowercase", "UPPERCASE"] },
+        "named_arguments": { "type": "string", "enum": ["always", "instead_of_defaults", "never"] },
+        "min_wait_interval": { "type": "number", "minimum": 0 },
+        "magic_numbers": { "type": "string", "enum": ["loose", "strict"] },
+        "fail_on_warning": { "type": "boolean" },
+        "fail_on_info": { "type": "boolean" },
+        "bool_like_int": { "type": "boolean" },
+        "assume_auto_properties_filled": { "type": "boolean" },
+        "rules": {
+          "description": "Every known lint rule keyed by its configuration name, with true when enabled and false when disabled.",
+          "type": "object",
+          "additionalProperties": { "type": "boolean" }
+        }
+      }
+    },
     "header": {
       "type": "object",
       "additionalProperties": false,

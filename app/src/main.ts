@@ -2400,7 +2400,8 @@ async function readIssueFileSources(
 // and where to look up anything not covered below), the findings
 // themselves (see buildIssuesReport) with each file's current source text
 // attached (or null when `sources` has none for it - see
-// readIssueFileSources), and the full tag metadata (kind(s), importance,
+// readIssueFileSources), the effective lint configuration used for the run,
+// and the full tag metadata (kind(s), importance,
 // auto-fixability, and the rule's detailed description copied from its
 // README.md row; see papyrus_lints::tags) for every rule id that actually
 // appears among `files`' findings - giving the AI enough context about
@@ -2413,6 +2414,7 @@ export function formatIssuesForAi(
   files: FilteredIssuesFile[],
   version: string,
   sources: Map<string, string> = new Map(),
+  config: LintConfig = DEFAULT_LINT_CONFIG,
 ): string {
   const triggeredRules = new Set<string>();
   for (const file of files) {
@@ -2440,6 +2442,7 @@ export function formatIssuesForAi(
         version: version || "unknown",
         website: WEBSITE_URL,
       },
+      config,
       findings: { ...report, files: filesWithSource },
       rule_details: ruleDetails,
     },
@@ -2502,7 +2505,11 @@ export async function handleExportAiClick(): Promise<void> {
     return;
   }
   const [version, sources] = await Promise.all([loadAppVersion(), readIssueFileSources(files, currentPscOutcomes)]);
-  downloadTextFile("papyrus-lint-ai-export.json", formatIssuesForAi(files, version, sources), "application/json");
+  downloadTextFile(
+    "papyrus-lint-ai-export.json",
+    formatIssuesForAi(files, version, sources, currentLintConfig),
+    "application/json",
+  );
 }
 
 // Builds/refreshes the "mass fix" panel listing every rule with at least

@@ -2862,7 +2862,7 @@ describe("formatIssuesForAi", () => {
     applyRuleTags([]);
   });
 
-  it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website header, plus rule_details for every triggered rule", () => {
+  it("wraps the findings with metadata, the effective config, and rule_details for every triggered rule", () => {
     applyRuleTags([
       { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
@@ -2887,6 +2887,7 @@ describe("formatIssuesForAi", () => {
         version: "1.2.3",
         website: "https://papyrus-lint.idrinth.de",
       },
+      config: DEFAULT_LINT_CONFIG,
       findings: {
         ...asJson,
         files: asJson.files.map((file: { path: string }) => ({ ...file, source: null })),
@@ -2896,6 +2897,19 @@ describe("formatIssuesForAi", () => {
         { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       ],
     });
+  });
+
+  it("includes the effective configuration supplied for the exported run", () => {
+    const config = {
+      ...DEFAULT_LINT_CONFIG,
+      indentation: "space" as const,
+      indentation_width: 2,
+      rules: { ...DEFAULT_LINT_CONFIG.rules, trailing_whitespace: false },
+    };
+
+    const json = JSON.parse(formatIssuesForAi([], "1.0.0", new Map(), config));
+
+    expect(json.config).toEqual(config);
   });
 
   it("attaches each file's source from the given sources map, by its display path", () => {
