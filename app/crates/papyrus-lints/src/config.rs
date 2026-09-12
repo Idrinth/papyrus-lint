@@ -202,7 +202,11 @@ pub struct Config {
     /// "Cyclomatic complexity" lint flags it as a `[warning]`.
     pub cyclomatic_complexity_warning: usize,
     /// The cyclomatic complexity a function/event can reach before the
-    /// "Cyclomatic complexity" lint flags it as an `[error]`.
+    /// "Cyclomatic complexity" lint flags it as an `[error]`. A value below
+    /// [`Self::cyclomatic_complexity_warning`] is treated as equal to it
+    /// instead (see [`crate::cyclomatic_complexity::check`]), since an
+    /// `[error]` threshold lower than the `[warning]` one it's supposed to
+    /// escalate would otherwise be contradictory.
     pub cyclomatic_complexity_error: usize,
     /// The casing convention required of a script's declared type name
     /// (the identifier following `ScriptName`), checked by the "Type name

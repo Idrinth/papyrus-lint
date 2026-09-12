@@ -1199,6 +1199,10 @@ export function applyLintConfigToUI(config: LintConfig) {
 // Reads the formatting controls' current values into a LintConfig.
 export function lintConfigFromUI(): LintConfig {
   const indentation = indentationStyleEl?.value === "spaces" ? "space" : "tab";
+  const cyclomaticComplexityWarning = Math.max(
+    1,
+    cyclomaticComplexityWarningEl?.valueAsNumber || 10,
+  );
   const rules = { ...DEFAULT_RULES };
   for (const key of RULE_KEYS) {
     rules[key] = ruleEls[key]?.checked ?? DEFAULT_RULES[key];
@@ -1209,8 +1213,14 @@ export function lintConfigFromUI(): LintConfig {
     indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
     identifier_casing:
       (identifierCasingStyleEl?.value as IdentifierCasingStyle | undefined) ?? "PascalCase",
-    cyclomatic_complexity_warning: Math.max(1, cyclomaticComplexityWarningEl?.valueAsNumber || 10),
-    cyclomatic_complexity_error: Math.max(1, cyclomaticComplexityErrorEl?.valueAsNumber || 20),
+    cyclomatic_complexity_warning: cyclomaticComplexityWarning,
+    // Never below the warning threshold: an error severity that kicks in
+    // before the warning one would make the two settings contradict each
+    // other.
+    cyclomatic_complexity_error: Math.max(
+      cyclomaticComplexityWarning,
+      cyclomaticComplexityErrorEl?.valueAsNumber || 20,
+    ),
     type_casing: (typeCasingStyleEl?.value as TypeCasingStyle | undefined) ?? "PascalCase",
     named_arguments: (namedArgumentsStyleEl?.value as NamedArgumentsStyle | undefined) ?? "never",
     min_wait_interval: Math.max(

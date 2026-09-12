@@ -159,10 +159,12 @@
           ]
         },
         "cyclomatic_complexity_warning": {
+          "description": "The cyclomatic complexity a function/event can reach before the cyclomatic-complexity finding's severity is [warning].",
           "type": "integer",
           "minimum": 0
         },
         "cyclomatic_complexity_error": {
+          "description": "The cyclomatic complexity a function/event can reach before the cyclomatic-complexity finding's severity is [error]. This value as configured can be lower than cyclomatic_complexity_warning, but Papyrus Lint then treats it as equal to cyclomatic_complexity_warning when actually deciding a finding's severity, since a lower error threshold would otherwise contradict the warning one it's supposed to escalate.",
           "type": "integer",
           "minimum": 0
         },

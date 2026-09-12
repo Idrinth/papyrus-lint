@@ -19,11 +19,17 @@ pub const RULE: &str = "cyclomatic-complexity";
 /// Checks `source` for functions/events whose cyclomatic complexity exceeds
 /// `warning` or `error`. A function at or below `warning` is not flagged; one
 /// above `warning` but at or below `error` is flagged as `[warning]`; one
-/// above `error` is flagged as `[error]`.
+/// above `error` is flagged as `[error]`. `error` below `warning` (an
+/// otherwise contradictory pair — an `[error]` kicking in before the
+/// `[warning]` it's supposed to escalate) is treated as equal to `warning`
+/// instead, so the misconfiguration can only ever make more functions read
+/// `[error]` (by collapsing the `[warning]` band down to nothing), never
+/// silently drop or downgrade a finding that a sane pair would have reported.
 pub fn check(source: &str, warning: usize, error: usize) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
     };
+    let error = error.max(warning);
 
     all_functions(&script)
         .filter_map(|function| {
@@ -189,6 +195,21 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("Test"));
+    }
+
+    #[test]
+    fn treats_an_error_threshold_below_warning_as_equal_to_warning() {
+        let source = "ScriptName Example\n\nFunction Test()\n    If true\n        Int i = 1\n    EndIf\nEndFunction\n";
+
+        // Complexity is 2, above the warning threshold (1). A misconfigured
+        // error threshold (0) below it is normalized up to 1, so this reads
+        // [error] rather than silently going unflagged or downgrading to
+        // [warning] the way the raw, contradictory pair would suggest.
+        let diagnostics = check(source, 1, 0);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert!(diagnostics[0].message.starts_with("[error]"));
+        assert!(diagnostics[0].message.contains("(warning: 1, error: 1)"));
     }
 
     #[test]

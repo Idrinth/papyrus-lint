@@ -490,6 +490,15 @@ describe("lint config UI round trip", () => {
     expect(config.cyclomatic_complexity_error).toBe(1);
   });
 
+  it("lintConfigFromUI never lets the error threshold fall below the warning one", () => {
+    document.querySelector<HTMLInputElement>("#cyclomatic-complexity-warning")!.value = "30";
+    document.querySelector<HTMLInputElement>("#cyclomatic-complexity-error")!.value = "20";
+
+    const config = lintConfigFromUI();
+    expect(config.cyclomatic_complexity_warning).toBe(30);
+    expect(config.cyclomatic_complexity_error).toBe(30);
+  });
+
   it("applies and reads back identifier casing, named arguments, and fail-on-level settings", () => {
     applyLintConfigToUI({
       ...DEFAULT_LINT_CONFIG,
