@@ -3031,8 +3031,8 @@ describe("formatIssuesForAi", () => {
         files: [
           {
             path: "A.psc",
-            summary: { errors: 0, warnings: 1, info: 0 },
-            diagnostic_counts: { "trailing-whitespace": 1 },
+            severity_counts: { errors: 0, warnings: 1, info: 0 },
+            rule_counts: { "trailing-whitespace": 1 },
             diagnostics: [
               { line: 1, column: 1, rule: "trailing-whitespace", level: "warning", message: "trailing whitespace" },
             ],
@@ -3040,8 +3040,8 @@ describe("formatIssuesForAi", () => {
           },
           {
             path: "B.psc",
-            summary: { errors: 2, warnings: 0, info: 0 },
-            diagnostic_counts: { "compiler-error": 1, "forbidden-functions": 1 },
+            severity_counts: { errors: 2, warnings: 0, info: 0 },
+            rule_counts: { "compiler-error": 1, "forbidden-functions": 1 },
             diagnostics: [
               { line: 5, column: 3, rule: "forbidden-functions", level: "error", message: "forbidden function used" },
               {
@@ -3058,8 +3058,8 @@ describe("formatIssuesForAi", () => {
           },
         ],
         total_diagnostics: 3,
-        summary: { errors: 2, warnings: 1, info: 0 },
-        diagnostic_counts: { "compiler-error": 1, "forbidden-functions": 1, "trailing-whitespace": 1 },
+        severity_counts: { errors: 2, warnings: 1, info: 0 },
+        rule_counts: { "compiler-error": 1, "forbidden-functions": 1, "trailing-whitespace": 1 },
       },
       rule_details: [
         { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
