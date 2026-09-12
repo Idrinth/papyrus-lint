@@ -1359,7 +1359,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
                     self.assertIn(f'href="docs/{doc["slug"]}.html"', index)
 
             docs_index = (out_dir / "docs" / "index.html").read_text(encoding="utf-8")
-            self.assertIn('href="../index.html"', docs_index)
+            self.assertIn('href="../index.html#top"', docs_index)
             self.assertIn('src="../theme.js"', docs_index)
             self.assertIn('href="../styles.css"', docs_index)
             for doc in page_builder.DOCS:
