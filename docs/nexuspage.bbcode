@@ -58,7 +58,7 @@ These lints make scripts easier to read by enforcing a consistent look and feel.
 [td]✓[/td]
 [/tr]
 [tr][td][b]Exclamation mark spacing[/b][/td]
-[td]Flags a negation operator not followed by exactly one space.[/td]
+[td]Flags a negation operator not followed by exactly one space. In a chained negation such as !!bReady, only the final ! requires a trailing space.[/td]
 [td]✓[/td]
 [/tr]
 [tr][td][b]Type name casing[/b][/td]
@@ -403,7 +403,8 @@ rules:
   script_name_collision: true
   array_bounds: true
   readonly_property_write: true
-  default_property_value: false[/code][/spoiler]
+  default_property_value: false
+  unguarded_self_recursion: true[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.
