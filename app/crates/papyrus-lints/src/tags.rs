@@ -171,7 +171,7 @@ pub const RULE_TAGS: &[RuleTags] = &[
     },
     RuleTags {
         rule: crate::cyclomatic_complexity::RULE,
-        description: "Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`||` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20).",
+        description: "Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`||` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20); `cyclomatic_complexity_error` configured below `cyclomatic_complexity_warning` is treated as equal to it, since a lower error threshold would otherwise contradict the warning one it's supposed to escalate.",
         kinds: &["maintainability"],
         importance: Importance::Medium,
     },
