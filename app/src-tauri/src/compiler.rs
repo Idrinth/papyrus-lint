@@ -391,6 +391,54 @@ mod tests {
 
     #[test]
     #[cfg(unix)]
+    fn successful_compile_leaves_an_already_sanitized_pex_unchanged() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts").join("Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path = write_stub_compiler(root.path(), "#!/bin/sh\nexit 0\n");
+        let pex_path = root.path().join("Scripts").join("Example.pex");
+        let mut pex_bytes = vec![0xFA, 0x57, 0xC0, 0xDE, 3, 9];
+        pex_bytes.extend_from_slice(&1u16.to_be_bytes());
+        pex_bytes.extend_from_slice(&0u64.to_be_bytes());
+        for value in ["Example.psc", "", ""] {
+            pex_bytes.extend_from_slice(&(value.len() as u16).to_be_bytes());
+            pex_bytes.extend_from_slice(value.as_bytes());
+        }
+        fs::write(&pex_path, &pex_bytes).expect("failed to write sanitized pex");
+
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("compiler should run");
+
+        assert!(outcome.success);
+        assert!(!outcome.personal_data_stripped);
+        assert_eq!(
+            fs::read(pex_path).expect("pex should remain readable"),
+            pex_bytes
+        );
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn successful_compile_without_a_pex_does_not_report_stripping() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts").join("Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path = write_stub_compiler(root.path(), "#!/bin/sh\nexit 0\n");
+
+        let outcome =
+            compile_stub_with_retry(&compiler_path, &script_path).expect("compiler should run");
+
+        assert!(outcome.success);
+        assert!(!outcome.personal_data_stripped);
+        assert!(!root.path().join("Scripts/Example.pex").exists());
+    }
+
+    #[test]
+    #[cfg(unix)]
     fn passes_expected_arguments() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         let source_dir = root.path().join("Scripts").join("Source");
@@ -414,6 +462,49 @@ mod tests {
             output_dir.display(),
         );
         assert_eq!(outcome.stdout, expected);
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn passes_relative_and_absolute_additional_import_roots() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts").join("Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        fs::write(&script_path, "").expect("failed to write stub script");
+        let compiler_path = write_stub_compiler(
+            root.path(),
+            "#!/bin/sh\nfor arg in \"$@\"; do echo \"$arg\"; done\n",
+        );
+        fs::create_dir_all(root.path().join("Shared/Source"))
+            .expect("failed to create relative additional root");
+        let absolute = tempfile::tempdir().expect("failed to create additional root");
+
+        let outcome = compile_psc_file(
+            &compiler_path,
+            &script_path,
+            &[
+                "Shared/Source".to_string(),
+                absolute.path().to_string_lossy().into_owned(),
+            ],
+        )
+        .expect("compiler should run");
+
+        let import_arg = outcome
+            .stdout
+            .lines()
+            .find(|line| line.starts_with("-i="))
+            .expect("stub should echo the import argument");
+        assert_eq!(
+            import_arg,
+            format!(
+                "-i={};{};{};{}",
+                root.path().join("scripts/source").display(),
+                root.path().join("source/scripts").display(),
+                root.path().join("Shared/Source").display(),
+                absolute.path().display(),
+            )
+        );
     }
 
     #[test]
