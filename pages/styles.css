@@ -93,6 +93,13 @@ pre {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
+abbr[title] {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--color-text-muted);
+  text-underline-offset: 0.2em;
+}
+
 .site-header {
   position: sticky;
   top: 0;
