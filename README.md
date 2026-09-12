@@ -848,9 +848,10 @@ identifying the tool name, running version, and
 `findings` section in the exact same shape the "Export issues" JSON format
 uses; and a `rule_details` array carrying the full tag metadata (kind(s),
 importance, and whether it's auto-fixable) for every rule id that actually
-appears among the exported findings — giving the assistant enough context
-about each triggered rule to answer follow-up questions precisely without
-needing this project's own documentation on hand. Like "Export issues",
+appears among the exported findings and has known tag metadata (an
+unrecognized rule id is simply left out) — giving the assistant enough
+context about each triggered rule to answer follow-up questions precisely
+without needing this project's own documentation on hand. Like "Export issues",
 it's disabled whenever no finding currently passes the active filters.
 
 ## Compiling a script
