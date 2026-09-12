@@ -214,6 +214,20 @@
             "$ref": "#/$defs/ruleId"
           }
         }
+      },
+      "if": {
+        "properties": {
+          "indentation": {
+            "const": "space"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "indentation_width": {
+            "minimum": 1
+          }
+        }
       }
     },
     "header": {
