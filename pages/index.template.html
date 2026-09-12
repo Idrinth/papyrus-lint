@@ -384,7 +384,42 @@
       </section>
     </main>
 
+    <div id="lightbox" class="lightbox" hidden>
+      <button type="button" class="lightbox__close" aria-label="Close">&times;</button>
+      <img class="lightbox__image" src="" alt="" />
+    </div>
+
     <!--SITE_FOOTER-->
     <script src="downloads.js" defer></script>
+    <script>
+      (function () {
+        var lightbox = document.getElementById("lightbox");
+        var lightboxImage = lightbox.querySelector(".lightbox__image");
+
+        function openLightbox(image) {
+          lightboxImage.src = image.currentSrc || image.src;
+          lightboxImage.alt = image.alt;
+          lightbox.hidden = false;
+        }
+
+        function closeLightbox() {
+          lightbox.hidden = true;
+          lightboxImage.src = "";
+        }
+
+        document.querySelectorAll(".screenshots img").forEach(function (image) {
+          image.addEventListener("click", function () {
+            openLightbox(image);
+          });
+        });
+
+        lightbox.addEventListener("click", closeLightbox);
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && !lightbox.hidden) {
+            closeLightbox();
+          }
+        });
+      })();
+    </script>
   </body>
 </html>

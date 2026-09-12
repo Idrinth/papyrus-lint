@@ -2878,19 +2878,45 @@ describe("formatIssuesForAi", () => {
       },
     ];
 
-    expect(JSON.parse(formatIssuesForAi(files, "1.2.3"))).toEqual({
+    const withSourceOmitted = JSON.parse(formatIssuesForAi(files, "1.2.3"));
+    const asJson = JSON.parse(formatIssuesAsJson(files));
+    expect(withSourceOmitted).toEqual({
       header: {
         tool: "Papyrus Lint",
         version: "1.2.3",
         website: "https://papyrus-lint.idrinth.de",
         target_game: "Skyrim SE/AE",
       },
-      findings: JSON.parse(formatIssuesAsJson(files)),
+      findings: {
+        ...asJson,
+        files: asJson.files.map((file: { path: string }) => ({ ...file, source: null })),
+      },
       rule_details: [
         { rule: "forbidden-functions", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
         { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
       ],
     });
+  });
+
+  it("attaches each file's source from the given sources map, by its display path", () => {
+    const files = [
+      {
+        path: "A.psc",
+        findings: [{ line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" }],
+      },
+      {
+        path: "B.psc",
+        findings: [{ line: 5, column: 3, message: "[error] forbidden function used", rule: "forbidden-functions" }],
+      },
+    ];
+    const sources = new Map([["A.psc", "ScriptName A\n"]]);
+
+    const json = JSON.parse(formatIssuesForAi(files, "1.0.0", sources));
+
+    expect(json.findings.files).toEqual([
+      expect.objectContaining({ path: "A.psc", source: "ScriptName A\n" }),
+      expect.objectContaining({ path: "B.psc", source: null }),
+    ]);
   });
 
   it("reports the version as 'unknown' when none was given", () => {
@@ -3020,13 +3046,13 @@ describe("Export issues button", () => {
     expect(document.querySelector<HTMLButtonElement>("#export-ai-button")!.disabled).toBe(false);
   });
 
-  it("handleExportAiClick downloads a JSON file carrying the running app's version", async () => {
+  it("handleExportAiClick downloads a JSON file carrying the running app's version and each file's source", async () => {
     await populateCurrentPscOutcomes([finding]);
     // populateCurrentPscOutcomes's own invokeImplFor call doesn't stub
-    // get_app_version; overriding the mock again here only affects the
-    // lookup handleExportAiClick itself makes, since nothing else calls
-    // invoke() between here and the assertion below.
-    invokeImplFor({ get_app_version: () => "9.9.9" });
+    // get_app_version/read_psc_file; overriding the mock again here only
+    // affects the lookups handleExportAiClick itself makes, since nothing
+    // else calls invoke() between here and the assertion below.
+    invokeImplFor({ get_app_version: () => "9.9.9", read_psc_file: () => "ScriptName A\n" });
 
     const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-url");
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
@@ -3044,6 +3070,25 @@ describe("Export issues button", () => {
       website: "https://papyrus-lint.idrinth.de",
       target_game: "Skyrim SE/AE",
     });
+    expect(contents.findings.files).toEqual([expect.objectContaining({ source: "ScriptName A\n" })]);
+  });
+
+  it("handleExportAiClick still downloads a report when a file's source can't be read", async () => {
+    await populateCurrentPscOutcomes([finding]);
+    invokeImplFor({
+      get_app_version: () => "9.9.9",
+      read_psc_file: () => Promise.reject(new Error("boom")),
+    });
+
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-url");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+    await handleExportAiClick();
+
+    const [blob] = createObjectURL.mock.calls[0] as [Blob];
+    const contents = JSON.parse(await blob.text());
+    expect(contents.findings.files[0].source).toBe("<failed to read file: Error: boom>");
   });
 
   it("handleExportAiClick does nothing when there's nothing currently filtered", async () => {

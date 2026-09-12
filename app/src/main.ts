@@ -2364,18 +2364,58 @@ const TOOL_NAME = "Papyrus Lint";
 // is the fixed target its native rule data is written against.
 const TARGET_GAME = "Skyrim SE/AE";
 
+// Reads each of `files`' current on-disk source via the same read_psc_file
+// command the code viewer uses, keyed by each file's display path (see
+// FilteredIssuesFile.path) for formatIssuesForAi below to attach alongside
+// that file's findings - so an AI reasoning about the report can see the
+// actual surrounding code a diagnostic refers to without opening the
+// project itself. `outcomes` supplies the absolute path read_psc_file
+// needs, matched back to `files`' relative display path via the same
+// relativePath()/currentProjectDir pairing collectFilteredIssues used to
+// produce it in the first place. A read failure (e.g. the file was moved
+// or deleted since linting) reports the error as that file's source
+// instead of failing the whole export, since the rest of the report stays
+// useful without it.
+async function readIssueFileSources(
+  files: FilteredIssuesFile[],
+  outcomes: PscParseOutcome[],
+): Promise<Map<string, string>> {
+  const absolutePathsByDisplayPath = new Map<string, string>();
+  for (const outcome of outcomes) {
+    absolutePathsByDisplayPath.set(relativePath(outcome.path, currentProjectDir), outcome.path);
+  }
+  const sources = new Map<string, string>();
+  await Promise.all(
+    files.map(async (file) => {
+      const absolutePath = absolutePathsByDisplayPath.get(file.path) ?? file.path;
+      try {
+        sources.set(file.path, await invoke<string>("read_psc_file", { path: absolutePath }));
+      } catch (error) {
+        sources.set(file.path, `<failed to read file: ${String(error)}>`);
+      }
+    }),
+  );
+  return sources;
+}
+
 // Renders `files` as a single JSON document meant to be handed to an AI
 // assistant alongside a question about the results: a header identifying
 // the tool/version/website/target game (so the AI knows what produced
 // these findings and where to look up anything not covered below), the
-// findings themselves (see buildIssuesReport), and the full tag metadata
-// (kind(s), importance, auto-fixability; see papyrus_lints::tags) for every
-// rule id that actually appears among `files`' findings - giving the AI
-// enough context about each triggered rule to answer follow-up questions
-// precisely without needing the project's own documentation on hand.
-// `version` is the running app's version (see loadAppVersion), or "" if
-// that lookup failed.
-export function formatIssuesForAi(files: FilteredIssuesFile[], version: string): string {
+// findings themselves (see buildIssuesReport) with each file's current
+// source text attached (or null when `sources` has none for it - see
+// readIssueFileSources), and the full tag metadata (kind(s), importance,
+// auto-fixability; see papyrus_lints::tags) for every rule id that
+// actually appears among `files`' findings - giving the AI enough context
+// about each triggered rule, and the actual code each diagnostic refers
+// to, to answer follow-up questions precisely without needing the
+// project's own files or documentation on hand. `version` is the running
+// app's version (see loadAppVersion), or "" if that lookup failed.
+export function formatIssuesForAi(
+  files: FilteredIssuesFile[],
+  version: string,
+  sources: Map<string, string> = new Map(),
+): string {
   const triggeredRules = new Set<string>();
   for (const file of files) {
     for (const finding of file.findings) {
@@ -2389,6 +2429,12 @@ export function formatIssuesForAi(files: FilteredIssuesFile[], version: string):
     .map((rule) => ruleTagsByRule.get(rule))
     .filter((info): info is RuleTagsInfo => info !== undefined);
 
+  const report = buildIssuesReport(files);
+  const filesWithSource = report.files.map((file) => ({
+    ...file,
+    source: sources.get(file.path) ?? null,
+  }));
+
   return JSON.stringify(
     {
       header: {
@@ -2397,7 +2443,7 @@ export function formatIssuesForAi(files: FilteredIssuesFile[], version: string):
         website: WEBSITE_URL,
         target_game: TARGET_GAME,
       },
-      findings: buildIssuesReport(files),
+      findings: { ...report, files: filesWithSource },
       rule_details: ruleDetails,
     },
     null,
@@ -2450,15 +2496,16 @@ export function handleExportIssuesClick() {
 }
 
 // Downloads the currently filtered lint findings as a single "Export for
-// AI" JSON document (see formatIssuesForAi), independent of the "Export
-// format" selector above since this format is always JSON.
+// AI" JSON document (see formatIssuesForAi), each file's current source
+// attached (see readIssueFileSources), independent of the "Export format"
+// selector above since this format is always JSON.
 export async function handleExportAiClick(): Promise<void> {
   const files = collectFilteredIssues(currentPscOutcomes);
   if (files.length === 0) {
     return;
   }
-  const version = await loadAppVersion();
-  downloadTextFile("papyrus-lint-ai-export.json", formatIssuesForAi(files, version), "application/json");
+  const [version, sources] = await Promise.all([loadAppVersion(), readIssueFileSources(files, currentPscOutcomes)]);
+  downloadTextFile("papyrus-lint-ai-export.json", formatIssuesForAi(files, version, sources), "application/json");
 }
 
 // Builds/refreshes the "mass fix" panel listing every rule with at least
