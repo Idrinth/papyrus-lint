@@ -2478,6 +2478,18 @@ async function readIssueFileSources(
   return sources;
 }
 
+// The rule id papyrus_lints::Diagnostics never define themselves:
+// app/src-tauri/src/compile_diagnostics.rs's own `RULE` constant, attached
+// to a diagnostic parsed out of PapyrusCompiler.exe's own error output
+// (see lint_with_compile_check in app/src-tauri/src/lib.rs) rather than
+// raised by one of Papyrus Lint's own lint rules. formatIssuesForAi below
+// uses it to flag such a diagnostic as external in the AI export, since an
+// assistant reading the export otherwise has no way to tell a
+// compiler-reported syntax error apart from an ordinary lint finding.
+// Kept in sync by hand with that Rust constant, the same convention
+// FIXABLE_RULE_IDS follows for papyrus_lints::FIXABLE_RULE_IDS.
+const COMPILER_ERROR_RULE = "compiler-error";
+
 // Renders `files` as a single JSON document meant to be handed to an AI
 // assistant alongside a question about the results: a header identifying
 // the tool/version/website/target game and generation time (so the AI knows what produced
@@ -2485,7 +2497,11 @@ async function readIssueFileSources(
 // findings themselves (see buildIssuesReport) with each file's `source`
 // field set to whatever `sources` has for it - one of the four explicit
 // AiSource shapes (see readIssueFileSources), or `null` when `sources` has
-// no entry for that file at all - a `repair` field added to every
+// no entry for that file at all - an `external: true`/`source: "compiler"`
+// pair added to every diagnostic raised by PapyrusCompiler.exe itself
+// rather than one of Papyrus Lint's own rules (see COMPILER_ERROR_RULE
+// above), so the assistant can tell a compiler-reported error apart from
+// an ordinary lint finding - a `repair` field added to every
 // diagnostic from an auto-fixable rule Papyrus Lint could compute a fix
 // preview for (see previewRepairPscLine; omitted when the rule doesn't
 // actually change that line, e.g. type-casing's "no automatic fix" case, or
@@ -2544,11 +2560,15 @@ export async function formatIssuesForAi(
         diagnostics: await Promise.all(
           fileReport.diagnostics.map(async (diagnostic, diagnosticIndex) => {
             const finding = files[fileIndex].findings[diagnosticIndex];
+            const tagged =
+              diagnostic.rule === COMPILER_ERROR_RULE
+                ? { ...diagnostic, external: true, source: "compiler" }
+                : diagnostic;
             if (!finding.rule || !FIXABLE_RULE_IDS.has(finding.rule) || hasNoAutomaticFix(finding)) {
-              return diagnostic;
+              return tagged;
             }
             const repair = await previewRepairPscLine(files[fileIndex].path, finding.rule, finding.line);
-            return repair === null ? diagnostic : { ...diagnostic, repair };
+            return repair === null ? tagged : { ...tagged, repair };
           }),
         ),
       })),

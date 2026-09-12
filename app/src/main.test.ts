@@ -3031,6 +3031,33 @@ describe("formatIssuesForAi", () => {
     expect(JSON.parse(await formatIssuesForAi([], "1.0.0")).rule_details).toEqual([]);
   });
 
+  it("flags a compiler-reported diagnostic as external, leaving an ordinary lint finding untouched", async () => {
+    const files = [
+      {
+        path: "A.psc",
+        findings: [
+          { line: 8, column: 3, message: "[error] no viable alternative at character ';'", rule: "compiler-error" },
+          { line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" },
+        ],
+      },
+    ];
+
+    const json = JSON.parse(await formatIssuesForAi(files, "1.0.0"));
+
+    expect(json.findings.files[0].diagnostics).toEqual([
+      {
+        line: 8,
+        column: 3,
+        rule: "compiler-error",
+        level: "error",
+        message: "no viable alternative at character ';'",
+        external: true,
+        source: "compiler",
+      },
+      { line: 1, column: 1, rule: "trailing-whitespace", level: "warning", message: "trailing whitespace" },
+    ]);
+  });
+
   it("attaches a repair preview to a finding whose rule has an automatic fix", async () => {
     invokeImplFor({
       preview_repair_psc_line: (args) => {

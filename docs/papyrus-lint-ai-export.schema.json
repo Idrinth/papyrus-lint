@@ -749,6 +749,14 @@
           "type": "string",
           "minLength": 1
         },
+        "external": {
+          "description": "Present and `true` only for a diagnostic raised by a tool outside Papyrus Lint's own lint rules rather than one of Papyrus Lint's own rules; see `source` for which tool. Omitted for an ordinary lint finding.",
+          "const": true
+        },
+        "source": {
+          "description": "Which external tool raised this diagnostic. Present only alongside `external`. Currently always `compiler`, for a diagnostic parsed out of PapyrusCompiler.exe's own reported errors (rule `compiler-error`).",
+          "const": "compiler"
+        },
         "repair": {
           "description": "What this diagnostic's line would look like after applying its rule's automatic fix, present only for a diagnostic whose rule is auto-fixable (see rule_details) and only when Papyrus Lint could compute one. Omitted for a rule with no automatic fix, for a finding that fix wouldn't actually change (e.g. type-casing's own \"no automatic fix\" case), or when the fix would shift the file's line count elsewhere (e.g. property-sorting relocating a property's declaration).",
           "type": "string",

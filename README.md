@@ -883,7 +883,11 @@ handed to an external AI without exposing proprietary script text while the
 assistant can still tell files apart, or notice a file changed between
 exports, from the hash alone; or an object with `"type": "error"` carrying
 a `message` describing why the source couldn't be read (e.g. it was moved
-or deleted since linting) — and each diagnostic from an
+or deleted since linting) — each diagnostic raised by PapyrusCompiler.exe
+itself (rule `compiler-error`, see Compiling a script below) rather than
+one of Papyrus Lint's own rules also carries `"external": true` and
+`"source": "compiler"`, so the assistant can tell a compiler-reported
+syntax error apart from an ordinary lint finding; and each diagnostic from an
 auto-fixable rule also carries a `repair` field showing what that line
 would look like after applying the rule's automatic fix, computed without
 actually applying it — omitted when the fix wouldn't change that line at
