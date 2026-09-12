@@ -207,7 +207,7 @@
           "type": "boolean"
         },
         "enabled_rules": {
-          "description": "The hyphenated ids of every currently enabled lint rule, alphabetically sorted. A rule not listed here is disabled. Replaces a per-rule boolean flag object (one entry per rule, almost always identical across exports) with just the ids that differ from \"none enabled\", since that flag object was a large, mostly-constant block repeated on every export.",
+          "description": "The hyphenated ids of every currently enabled lint rule, alphabetically sorted. A rule not listed here is disabled. Disabled rules will not be listed in the findings.",
           "type": "array",
           "uniqueItems": true,
           "items": {
