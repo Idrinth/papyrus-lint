@@ -49,8 +49,21 @@
 //! empty) handler instead. If the target state declares no such handler,
 //! dispatch falls back to the empty state's own declaration, which may still
 //! be this exact function, so the call is left flagged in that case.
+//!
+//! A self-call nested directly inside a top-level `If`'s branch is normally
+//! left alone entirely (see above), since reaching it depends on that
+//! branch's own condition. The one exception, handled very conservatively by
+//! [`all_branches_recurse`]: when the `If` has an `Else` clause (so every
+//! possible path through it is covered) and every one of its branches —
+//! each `ElseIf` and the final `Else` alike — directly contains a self-call
+//! among its own top-level statements, then no matter which branch actually
+//! runs, the function calls itself again, so those calls are flagged after
+//! all. This still only looks at each branch's own directly-listed
+//! statements, the same as everywhere else in this lint: a self-call buried
+//! inside a further-nested `If`/`While` within a branch doesn't count
+//! towards that branch "always" recursing.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, Literal, Script, Stmt};
+use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
 
 use crate::Diagnostic;
 
@@ -76,6 +89,24 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             if !guarded_by_goto_state {
                 for expr in stmt_exprs(stmt) {
                     find_self_calls(expr, &name_lower, &mut diagnostics);
+                }
+                if let Stmt::If {
+                    branches,
+                    else_body,
+                    else_line,
+                    ..
+                } = stmt
+                {
+                    if all_branches_recurse(branches, else_body, *else_line, &name_lower) {
+                        for branch in branches {
+                            for expr in branch.body.iter().flat_map(stmt_exprs) {
+                                find_self_calls(expr, &name_lower, &mut diagnostics);
+                            }
+                        }
+                        for expr in else_body.iter().flat_map(stmt_exprs) {
+                            find_self_calls(expr, &name_lower, &mut diagnostics);
+                        }
+                    }
                 }
             }
             if let Stmt::Expr { value, .. } = stmt {
@@ -191,6 +222,72 @@ fn stmt_exprs(stmt: &Stmt) -> Vec<&Expr> {
         Stmt::Expr { value, .. } => vec![value],
         Stmt::Return { value, .. } => value.iter().collect(),
         Stmt::If { .. } | Stmt::While { .. } => Vec::new(),
+    }
+}
+
+/// Whether a top-level `If`'s branches, per the module documentation above,
+/// cover every possible path (it has an `Else` clause) and every one of
+/// them — each `branches` entry and `else_body` alike — directly contains a
+/// self-call among its own top-level statements (see [`branch_recurses`]),
+/// making the `If` as a whole an unconditional self-call no matter which
+/// branch actually runs.
+fn all_branches_recurse(
+    branches: &[IfBranch],
+    else_body: &[Stmt],
+    else_line: Option<usize>,
+    name_lower: &str,
+) -> bool {
+    else_line.is_some()
+        && branches
+            .iter()
+            .all(|branch| branch_recurses(&branch.body, name_lower))
+        && branch_recurses(else_body, name_lower)
+}
+
+/// Whether `body` directly contains a self-call among its own top-level
+/// statements' expressions (via [`stmt_exprs`], so a self-call nested inside
+/// a further `If`/`While` within `body` doesn't count — consistent with the
+/// rest of this lint always leaving those alone).
+fn branch_recurses(body: &[Stmt], name_lower: &str) -> bool {
+    body.iter()
+        .flat_map(stmt_exprs)
+        .any(|expr| expr_contains_self_call(expr, name_lower))
+}
+
+/// Non-recording sibling of [`find_self_calls`]: whether `expr` contains a
+/// call to the function's own name anywhere within it, applying the same
+/// short-circuit `&&`/`\|\|` exception.
+fn expr_contains_self_call(expr: &Expr, name_lower: &str) -> bool {
+    match expr {
+        Expr::Call { callee, args, .. } => {
+            let is_self_call = match &**callee {
+                Expr::Identifier(name) => name.to_lowercase() == name_lower,
+                Expr::Member { object, property } => {
+                    matches!(**object, Expr::Self_) && property.to_lowercase() == name_lower
+                }
+                _ => false,
+            };
+            is_self_call
+                || expr_contains_self_call(callee, name_lower)
+                || args
+                    .iter()
+                    .any(|arg| expr_contains_self_call(arg, name_lower))
+        }
+        Expr::NamedArg { value, .. } => expr_contains_self_call(value, name_lower),
+        Expr::Binary { left, op, right } => {
+            expr_contains_self_call(left, name_lower)
+                || (!matches!(op, BinaryOp::And | BinaryOp::Or)
+                    && expr_contains_self_call(right, name_lower))
+        }
+        Expr::Unary { operand, .. } => expr_contains_self_call(operand, name_lower),
+        Expr::Member { object, .. } => expr_contains_self_call(object, name_lower),
+        Expr::Index { object, index } => {
+            expr_contains_self_call(object, name_lower)
+                || expr_contains_self_call(index, name_lower)
+        }
+        Expr::Cast { value, .. } => expr_contains_self_call(value, name_lower),
+        Expr::NewArray { size, .. } => expr_contains_self_call(size, name_lower),
+        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => false,
     }
 }
 
@@ -391,6 +488,32 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 5);
+    }
+
+    #[test]
+    fn flags_every_branch_of_an_exhaustive_if_that_all_recurse() {
+        let source = "ScriptName Example\n\nFunction A()\n    If z == 1\n        A()\n        B()\n    ElseIf q == 9\n        B()\n        A()\n    Else\n        A()\n    EndIf\nEndFunction\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(diagnostics.len(), 3);
+        assert_eq!(diagnostics[0].line, 5);
+        assert_eq!(diagnostics[1].line, 9);
+        assert_eq!(diagnostics[2].line, 11);
+    }
+
+    #[test]
+    fn does_not_flag_an_exhaustive_if_when_one_branch_does_not_recurse() {
+        let source = "ScriptName Example\n\nFunction A()\n    If z == 1\n        A()\n    Else\n        B()\n    EndIf\nEndFunction\n";
+
+        assert!(check(source).is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_an_if_with_no_else_even_when_every_branch_recurses() {
+        let source = "ScriptName Example\n\nFunction A()\n    If z == 1\n        A()\n    ElseIf q == 9\n        A()\n    EndIf\nEndFunction\n";
+
+        assert!(check(source).is_empty());
     }
 
     #[test]
