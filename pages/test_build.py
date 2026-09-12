@@ -628,6 +628,18 @@ class DocsRenderingTest(unittest.TestCase):
                 {"content_url": "https://example.test/README.md"}
             )
 
+    def test_load_doc_source_reports_remote_timeout(self) -> None:
+        with (
+            patch.object(page_builder, "urlopen", side_effect=TimeoutError("timed out")),
+            self.assertRaisesRegex(
+                SystemExit,
+                "Could not download documentation from https://example.test/README.md: timed out",
+            ),
+        ):
+            page_builder.load_doc_source(
+                {"content_url": "https://example.test/README.md"}
+            )
+
     def test_load_doc_source_reports_invalid_remote_utf8(self) -> None:
         response = MagicMock()
         response.__enter__.return_value.read.return_value = b"\xff"
