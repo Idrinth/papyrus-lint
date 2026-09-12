@@ -1025,3 +1025,94 @@ fn doctor_checks_each_cli_script_root_through_the_binary_entry_point() {
     )));
     assert!(stdout.contains("PapyrusLinterCLI doctor: 1 problem(s) found."));
 }
+
+#[test]
+fn directory_input_recursively_lints_only_papyrus_scripts() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let scripts = dir.path().join("scripts/source");
+    write_file(&scripts.join("Clean.psc"), "ScriptName Clean\n");
+    write_file(&scripts.join("nested/Dirty.PSC"), "ScriptName Dirty   \n");
+    write_file(
+        &scripts.join("nested/NotPapyrus.txt"),
+        "ScriptName NotPapyrus   \n",
+    );
+
+    let output = run_cli(&["--json", &scripts.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain JSON");
+    assert_eq!(report["scripts_checked"], 2);
+    assert_eq!(report["files_with_diagnostics"], 1);
+    assert_eq!(report["total_diagnostics"], 1);
+    let files = report["files"]
+        .as_array()
+        .expect("files should be an array");
+    assert!(files.iter().any(|file| file["path"]
+        .as_str()
+        .is_some_and(|path| path.ends_with("Clean.psc"))));
+    assert!(files.iter().any(|file| file["path"]
+        .as_str()
+        .is_some_and(|path| path.ends_with("Dirty.PSC"))));
+    assert!(!files.iter().any(|file| file["path"]
+        .as_str()
+        .is_some_and(|path| path.ends_with("NotPapyrus.txt"))));
+}
+
+#[test]
+fn fix_directory_recursively_repairs_each_script() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let scripts = dir.path().join("scripts/source");
+    let first = scripts.join("First.psc");
+    let second = scripts.join("nested/Second.psc");
+    write_file(&first, "ScriptName First   \n");
+    write_file(&second, "ScriptName Second\t\n");
+
+    let output = run_cli(&["fix", &scripts.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        fs::read_to_string(first).expect("first script should be readable"),
+        "ScriptName First\n"
+    );
+    assert_eq!(
+        fs::read_to_string(second).expect("second script should be readable"),
+        "ScriptName Second\n"
+    );
+    assert!(String::from_utf8(output.stdout)
+        .expect("stdout should be UTF-8")
+        .contains("(2 script(s) fixed.)"));
+}
+
+#[test]
+fn progress_keeps_the_report_in_its_output_file_through_the_binary() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let scripts = dir.path().join("scripts/source");
+    let report_path = dir.path().join("lint-report.json");
+    write_file(&scripts.join("One.psc"), "ScriptName One\n");
+    write_file(&scripts.join("Two.psc"), "ScriptName Two   \n");
+
+    let output = run_cli(&[
+        "--json",
+        "--progress",
+        "--output",
+        &report_path.to_string_lossy(),
+        &scripts.to_string_lossy(),
+    ]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(stdout.contains("\rLinting: 1/2 files"));
+    assert!(stdout.contains("\rLinting: 2/2 files"));
+    assert!(!stdout.contains("\"scripts_checked\""));
+
+    let report: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(report_path).expect("JSON report should be written"),
+    )
+    .expect("output file should contain JSON");
+    assert_eq!(report["scripts_checked"], 2);
+    assert_eq!(report["total_diagnostics"], 1);
+}
