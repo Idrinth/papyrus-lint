@@ -234,9 +234,9 @@ describe("severity helpers", () => {
     expect(levelOf("[weird] not a real level")).toBeNull();
   });
 
-  it("severityOf falls back to 'other' when there is no level prefix", () => {
+  it("severityOf falls back to 'error' when there is no level prefix", () => {
     expect(severityOf("[error] boom")).toBe("error");
-    expect(severityOf("no prefix here")).toBe("other");
+    expect(severityOf("no prefix here")).toBe("error");
   });
 });
 
@@ -2897,7 +2897,7 @@ describe("formatIssuesForAi", () => {
       configuration: DEFAULT_LINT_CONFIG,
       filters: {
         filename_pattern: "",
-        severities: ["error", "warning", "info", "other"],
+        severities: ["error", "warning", "info"],
         importances: ["low", "medium", "high"],
         rules: ["forbidden-functions", "trailing-whitespace"],
         auto_fixable_only: false,
@@ -2971,7 +2971,7 @@ describe("formatIssuesForAi", () => {
 
     expect(json.filters).toEqual({
       filename_pattern: "*Quest?.psc",
-      severities: ["error", "warning", "other"],
+      severities: ["error", "warning"],
       importances: ["low", "medium"],
       rules: ["argument-types"],
       auto_fixable_only: true,

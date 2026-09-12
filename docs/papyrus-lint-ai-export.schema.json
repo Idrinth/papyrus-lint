@@ -65,8 +65,7 @@
             "enum": [
               "error",
               "warning",
-              "info",
-              "other"
+              "info"
             ]
           }
         },
