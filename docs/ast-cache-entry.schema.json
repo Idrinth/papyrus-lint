@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/ast-cache-entry.schema.json",
+  "$id": "https://papyrus-lint.idrinth.de/schema/ast-cache-entry.schema.json",
   "title": "Papyrus Lint AST cache entry",
   "description": "One `<md5-of-source-path>.json` file inside an `ast-cache` directory next to a running PapyrusLinterCLI/desktop app binary (see app/crates/papyrus-lint-core/src/ast_cache.rs). This describes entries whose `linter_version` is at or above MIN_COMPATIBLE_VERSION (currently 1.28.0) in that file: an entry is only ever read back by a linter build whose own MIN_COMPATIBLE_VERSION accepts its linter_version, so a consuming tool should apply the same check -- against its own known-compatible floor -- before relying on this schema, and must otherwise treat the entry as opaque and fall back to re-parsing the source itself. MIN_COMPATIBLE_VERSION only moves forward when a release changes this layout or the embedded `ast` shape incompatibly, so a schema fetched at a given linter_version stays valid for every later entry until the next such bump.",
   "type": "object",
