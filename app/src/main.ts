@@ -68,6 +68,7 @@ let ruleFilterSelectEls: Partial<Record<TagKind, HTMLSelectElement>> = {};
 let exportFormatEl: HTMLSelectElement | null;
 let exportIssuesButtonEl: HTMLButtonElement | null;
 let exportAiButtonEl: HTMLButtonElement | null;
+let exportAiHashSourceEl: HTMLInputElement | null;
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
 let codeViewerCloseEl: HTMLButtonElement | null;
@@ -2418,34 +2419,59 @@ const TOOL_NAME = "Papyrus Lint";
 // is the fixed target its native rule data is written against.
 const TARGET_GAME = "Skyrim SE/AE";
 
-// Reads each of `files`' current on-disk source via the same read_psc_file
-// command the code viewer uses, keyed by each file's display path (see
-// FilteredIssuesFile.path) for formatIssuesForAi below to attach alongside
-// that file's findings - so an AI reasoning about the report can see the
-// actual surrounding code a diagnostic refers to without opening the
-// project itself. `outcomes` supplies the absolute path read_psc_file
-// needs, matched back to `files`' relative display path via the same
-// relativePath()/currentProjectDir pairing collectFilteredIssues used to
-// produce it in the first place. A read failure (e.g. the file was moved
-// or deleted since linting) reports the error as that file's source
-// instead of failing the whole export, since the rest of the report stays
-// useful without it.
+// The four explicit shapes an AI export's per-file `source` field can take
+// (see formatIssuesForAi below): `null` when no source was attached at all;
+// `content` carrying the script's full on-disk text; `hash` carrying only
+// its md5 digest, selected via the "Redact source" checkbox next to the
+// "Export for AI" button (or the CLI's --hash-source flag) so a report can
+// be handed to an external AI without exposing proprietary script text
+// while still letting it tell files apart, or notice a file changed between
+// exports; and `error` describing why the source couldn't be read (e.g. the
+// file was moved or deleted since linting). Kept as a discriminated union
+// rather than a plain string so a consumer never has to guess which of
+// "full content" or "error message" a given string represents.
+export type AiSource =
+  | { type: "content"; content: string }
+  | { type: "hash"; algorithm: "md5"; hash: string }
+  | { type: "error"; message: string };
+
+// Reads each of `files`' current on-disk source (or, with `hashSource`, just
+// its md5 digest - see AiSource above) via the read_psc_file/hash_psc_file_md5
+// commands the code viewer and this redaction option use respectively, keyed
+// by each file's display path (see FilteredIssuesFile.path) for
+// formatIssuesForAi below to attach alongside that file's findings - so an AI
+// reasoning about the report can see the actual surrounding code a
+// diagnostic refers to (or, redacted, at least confirm which version of a
+// file it's looking at) without opening the project itself. `outcomes`
+// supplies the absolute path either command needs, matched back to `files`'
+// relative display path via the same relativePath()/currentProjectDir
+// pairing collectFilteredIssues used to produce it in the first place. A
+// read/hash failure (e.g. the file was moved or deleted since linting)
+// records an `error` entry instead of failing the whole export, since the
+// rest of the report stays useful without it.
 async function readIssueFileSources(
   files: FilteredIssuesFile[],
   outcomes: PscParseOutcome[],
-): Promise<Map<string, string>> {
+  hashSource: boolean,
+): Promise<Map<string, AiSource>> {
   const absolutePathsByDisplayPath = new Map<string, string>();
   for (const outcome of outcomes) {
     absolutePathsByDisplayPath.set(relativePath(outcome.path, currentProjectDir), outcome.path);
   }
-  const sources = new Map<string, string>();
+  const sources = new Map<string, AiSource>();
   await Promise.all(
     files.map(async (file) => {
       const absolutePath = absolutePathsByDisplayPath.get(file.path) ?? file.path;
       try {
-        sources.set(file.path, await invoke<string>("read_psc_file", { path: absolutePath }));
+        if (hashSource) {
+          const hash = await invoke<string>("hash_psc_file_md5", { path: absolutePath });
+          sources.set(file.path, { type: "hash", algorithm: "md5", hash });
+        } else {
+          const content = await invoke<string>("read_psc_file", { path: absolutePath });
+          sources.set(file.path, { type: "content", content });
+        }
       } catch (error) {
-        sources.set(file.path, `<failed to read file: ${String(error)}>`);
+        sources.set(file.path, { type: "error", message: String(error) });
       }
     }),
   );
@@ -2456,26 +2482,27 @@ async function readIssueFileSources(
 // assistant alongside a question about the results: a header identifying
 // the tool/version/website/target game and generation time (so the AI knows what produced
 // these findings and where to look up anything not covered below), the
-// findings themselves (see buildIssuesReport) with each file's current
-// source text attached (or null when `sources` has none for it - see
-// readIssueFileSources), a `repair` field added to every diagnostic from an
-// auto-fixable rule Papyrus Lint could compute a fix preview for (see
-// previewRepairPscLine; omitted when the rule doesn't actually change that
-// line, e.g. type-casing's "no automatic fix" case, or its fix would shift
-// the file's line count elsewhere), and the full tag metadata (kind(s),
-// importance, auto-fixability, and the rule's detailed description copied
-// from its README.md row; see papyrus_lints::tags) for every rule id that
-// actually appears among `files`' findings - giving the AI enough context
-// about each triggered rule, in the same detail the README gives a human
-// reader, the actual code each diagnostic refers to, and what its fix
-// would look like, to answer follow-up questions precisely without
-// needing the project's own files or documentation on hand. `version` is
-// the running app's version (see loadAppVersion), or "" if that lookup
-// failed.
+// findings themselves (see buildIssuesReport) with each file's `source`
+// field set to whatever `sources` has for it - one of the four explicit
+// AiSource shapes (see readIssueFileSources), or `null` when `sources` has
+// no entry for that file at all - a `repair` field added to every
+// diagnostic from an auto-fixable rule Papyrus Lint could compute a fix
+// preview for (see previewRepairPscLine; omitted when the rule doesn't
+// actually change that line, e.g. type-casing's "no automatic fix" case, or
+// its fix would shift the file's line count elsewhere), and the full tag
+// metadata (kind(s), importance, auto-fixability, and the rule's detailed
+// description copied from its README.md row; see papyrus_lints::tags) for
+// every rule id that actually appears among `files`' findings - giving the
+// AI enough context about each triggered rule, in the same detail the
+// README gives a human reader, the actual code each diagnostic refers to,
+// and what its fix would look like, to answer follow-up questions precisely
+// without needing the project's own files or documentation on hand.
+// `version` is the running app's version (see loadAppVersion), or "" if
+// that lookup failed.
 export async function formatIssuesForAi(
   files: FilteredIssuesFile[],
   version: string,
-  sources: Map<string, string> = new Map(),
+  sources: Map<string, AiSource> = new Map(),
   configuration: LintConfig = currentLintConfig,
 ): Promise<string> {
   const triggeredRules = new Set<string>();
@@ -2589,14 +2616,19 @@ export function handleExportIssuesClick() {
 
 // Downloads the currently filtered lint findings as a single "Export for
 // AI" JSON document (see formatIssuesForAi), each file's current source
-// attached (see readIssueFileSources), independent of the "Export format"
-// selector above since this format is always JSON.
+// attached (see readIssueFileSources) - as an md5 hash instead of its full
+// content when the "Redact source" checkbox is checked - independent of the
+// "Export format" selector above since this format is always JSON.
 export async function handleExportAiClick(): Promise<void> {
   const files = collectFilteredIssues(currentPscOutcomes);
   if (files.length === 0) {
     return;
   }
-  const [version, sources] = await Promise.all([loadAppVersion(), readIssueFileSources(files, currentPscOutcomes)]);
+  const hashSource = exportAiHashSourceEl?.checked ?? false;
+  const [version, sources] = await Promise.all([
+    loadAppVersion(),
+    readIssueFileSources(files, currentPscOutcomes, hashSource),
+  ]);
   downloadTextFile(
     "papyrus-lint-ai-export.json",
     await formatIssuesForAi(files, version, sources),
@@ -3386,6 +3418,7 @@ window.addEventListener("DOMContentLoaded", () => {
   exportFormatEl = document.querySelector("#export-format");
   exportIssuesButtonEl = document.querySelector("#export-issues-button");
   exportAiButtonEl = document.querySelector("#export-ai-button");
+  exportAiHashSourceEl = document.querySelector("#export-ai-hash-source");
   saveConfigAsPresetButtonEl = document.querySelector("#save-config-as-preset");
   saveConfigAsPresetButtonEl?.addEventListener("click", () => void handleSaveConfigAsPresetClick());
   resetToPresetSelectEl = document.querySelector("#reset-to-preset-select");

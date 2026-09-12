@@ -184,6 +184,10 @@ export const FIXTURE_HTML = `
               title="Export a self-contained JSON file with the Papyrus source, findings, rule details, and Papyrus Lint version—everything an AI assistant needs to help resolve the issues"
               disabled
             >Export for AI</button>
+            <label for="export-ai-hash-source">
+              <input type="checkbox" id="export-ai-hash-source" />
+              Redact source (attach hash only)
+            </label>
           </div>
           <ul id="psc-result-list"></ul>
         </div>
