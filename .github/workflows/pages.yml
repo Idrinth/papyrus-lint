@@ -1,15 +1,6 @@
 name: GitHub Pages
 
 on:
-  push:
-    branches: [the-one]
-    paths:
-      - 'pages/**'
-      - 'README.md'
-      - 'docs/**'
-      - 'resources/**'
-      - 'app/src-tauri/icons/icon.png'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
     inputs:
       version:

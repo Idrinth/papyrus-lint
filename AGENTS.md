@@ -420,18 +420,27 @@ on all pull requests.
 
 ## GitHub Pages (`.github/workflows/pages.yml`, `pages/build.py`)
 
-A push to `the-one` that touches `pages/**`, `README.md`, `docs/**`,
-`resources/**`, or `app/src-tauri/icons/icon.png` (or the workflow file
-itself), or a manual `workflow_dispatch` run (including one fired
-remotely by `release.yml`'s `update-pages` job, see Releases below),
-builds and deploys a discoverability landing page to GitHub Pages. The
-repository's Pages source must be set to "GitHub Actions" (Settings →
-Pages) for this workflow to publish successfully. The workflow also
-declares a `workflow_call` trigger with the same `version` input as
-`workflow_dispatch`, but nothing actually calls it that way (see
-`update-pages` below for why); it's kept only in case a future in-repo
-caller wants to invoke it directly on `the-one` without a network round
-trip through the GitHub API.
+A manual `workflow_dispatch` run (including one fired remotely by
+`release.yml`'s `update-pages` job, see Releases below) builds and deploys
+a discoverability landing page to GitHub Pages. It deliberately has no
+`push` trigger of its own: the site's footer always shows a specific
+released version (see "Determine version" below), and a push to `the-one`
+that merely touches `pages/**`/`README.md`/`docs/**`/etc. can land content
+— a lint table edit, a new doc, an in-progress `pages/` tweak — that isn't
+part of that released version yet. Deploying on every such push would
+publish that unreleased content immediately under the still-current
+release's version number, misrepresenting what that version actually
+contains. Instead, the site only ever redeploys when `update-pages`
+explicitly asks it to, right after a release tag's own assets are built,
+so the deployed content matches what that just-tagged version actually
+contains rather than whatever has since landed on `the-one`. The
+repository's Pages source must be set to "GitHub
+Actions" (Settings → Pages) for this workflow to publish successfully.
+The workflow also declares a `workflow_call` trigger with the same
+`version` input as `workflow_dispatch`, but nothing actually calls it
+that way (see `update-pages` below for why); it's kept only in case a
+future in-repo caller wants to invoke it directly on `the-one` without a
+network round trip through the GitHub API.
 
 The page's footer displays the current version via a `<!--VERSION-->`
 placeholder that `pages/build.py --version <tag>` fills in the same way
@@ -440,9 +449,10 @@ version itself before building: it takes the caller-supplied `version`
 input if `workflow_call`/`workflow_dispatch` provided one, otherwise
 falls back to querying `gh release view` for the repository's latest
 release tag; if neither resolves (e.g. no release exists yet), the page
-shows "unreleased". This keeps an ordinary content-triggered deploy
-showing the actual latest release, while `release.yml`'s `update-pages`
-job pins it explicitly to the tag it just built.
+shows "unreleased". A manual `workflow_dispatch` run with no `version`
+input (e.g. to preview an already-released site locally-triggered from
+the Actions tab) falls back the same way, while `release.yml`'s
+`update-pages` job pins it explicitly to the tag it just built.
 
 The same resolved version also drives the `coverage.html` subpage (see
 `pages/coverage.template.html` above): the `deploy` job resolves that
@@ -703,10 +713,10 @@ pasted onto the mod page by hand.
 
 An `update-pages` job (after `release`) triggers `pages.yml` (see GitHub
 Pages above) via `gh workflow run pages.yml --ref the-one -f version=...`,
-passing the tag (`github.ref_name`) as its `version` input, so the
-deployed GitHub Pages site's footer reflects the just-released version
-immediately rather than waiting for the next content-triggered deploy.
-It dispatches a separate run pinned to `the-one` rather than invoking
+passing the tag (`github.ref_name`) as its `version` input; this is the
+only thing that ever deploys the site, since `pages.yml` has no `push`
+trigger of its own (see GitHub Pages above for why). It dispatches a
+separate run pinned to `the-one` rather than invoking
 `pages.yml` in-line as a `workflow_call` (which would otherwise seem the
 more obvious choice, and once ran that way): a reusable `workflow_call`
 runs on the caller's own ref, which for this tag-triggered workflow is
