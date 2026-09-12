@@ -24,6 +24,10 @@
       "description": "The fully resolved lint configuration used to produce the findings, including defaults for settings omitted from the project's YAML file.",
       "$ref": "#/$defs/configuration"
     },
+    "filters": {
+      "description": "The desktop GUI result filters active when the export was generated. This is optional because these filters do not exist in non-GUI integrations.",
+      "$ref": "#/$defs/filters"
+    },
     "findings": {
       "$ref": "#/$defs/findingsReport"
     },
@@ -36,6 +40,64 @@
     }
   },
   "$defs": {
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filename_pattern",
+        "severities",
+        "importances",
+        "rules",
+        "auto_fixable_only"
+      ],
+      "properties": {
+        "filename_pattern": {
+          "description": "The filename search pattern, including any glob-like *, %, or ? characters; an empty string matches every file.",
+          "type": "string"
+        },
+        "severities": {
+          "description": "The diagnostic severity buckets selected in the GUI.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info",
+              "other"
+            ]
+          }
+        },
+        "importances": {
+          "description": "The rule importance levels selected in the GUI.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          }
+        },
+        "rules": {
+          "description": "The rule ids selected across the GUI's kind-grouped rule filters.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        },
+        "auto_fixable_only": {
+          "description": "Whether the GUI was restricted to findings from auto-fixable rules.",
+          "type": "boolean"
+        }
+      }
+    },
     "configuration": {
       "type": "object",
       "additionalProperties": false,

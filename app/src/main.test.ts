@@ -2891,6 +2891,13 @@ describe("formatIssuesForAi", () => {
         generated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       },
       configuration: DEFAULT_LINT_CONFIG,
+      filters: {
+        filename_pattern: "",
+        severities: ["error", "warning", "info", "other"],
+        importances: ["low", "medium", "high"],
+        rules: ["forbidden-functions", "trailing-whitespace"],
+        auto_fixable_only: false,
+      },
       findings: {
         files: [
           {
@@ -2927,6 +2934,47 @@ describe("formatIssuesForAi", () => {
     );
 
     expect(json.findings.files[0].diagnostics[0].message).toBe("external diagnostic");
+  });
+
+  it("records the GUI filters active when the export is generated", async () => {
+    applyRuleTags([
+      { rule: "argument-types", description: "Argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false },
+      { rule: "trailing-whitespace", description: "Trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
+    ]);
+    const filename = document.querySelector<HTMLInputElement>("#filename-filter")!;
+    filename.value = "*Quest?.psc";
+    filename.dispatchEvent(new Event("input"));
+    const severity = document.querySelector<HTMLInputElement>("#filter-info")!;
+    severity.checked = false;
+    severity.dispatchEvent(new Event("change"));
+    const importance = document.querySelector<HTMLInputElement>("#filter-importance-high")!;
+    importance.checked = false;
+    importance.dispatchEvent(new Event("change"));
+    const rule = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
+    rule.options[0].selected = false;
+    rule.dispatchEvent(new Event("change"));
+    const autoFixable = document.querySelector<HTMLInputElement>("#filter-auto-fixable-only")!;
+    autoFixable.checked = true;
+    autoFixable.dispatchEvent(new Event("change"));
+
+    const json = JSON.parse(await formatIssuesForAi([], "1.0.0"));
+
+    expect(json.filters).toEqual({
+      filename_pattern: "*Quest?.psc",
+      severities: ["error", "warning", "other"],
+      importances: ["low", "medium"],
+      rules: ["argument-types"],
+      auto_fixable_only: true,
+    });
+
+    filename.value = "";
+    filename.dispatchEvent(new Event("input"));
+    severity.checked = true;
+    severity.dispatchEvent(new Event("change"));
+    importance.checked = true;
+    importance.dispatchEvent(new Event("change"));
+    autoFixable.checked = false;
+    autoFixable.dispatchEvent(new Event("change"));
   });
 
   it("attaches each file's source from the given sources map, by its display path", async () => {

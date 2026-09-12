@@ -2050,6 +2050,27 @@ let tagImportanceFilterEls: Partial<Record<TagImportance, HTMLInputElement>> = {
 // filtering) once the backend's rule list loads.
 const activeRules = new Set<string>();
 
+// A serializable snapshot of the GUI-only result filters. The AI export
+// includes this alongside the already-filtered findings so its reader can
+// distinguish a genuinely clean category from one the user excluded.
+export interface ActiveFilters {
+  filename_pattern: string;
+  severities: Severity[];
+  importances: TagImportance[];
+  rules: string[];
+  auto_fixable_only: boolean;
+}
+
+function activeFiltersForExport(): ActiveFilters {
+  return {
+    filename_pattern: currentFilenameFilter,
+    severities: SEVERITIES.filter((severity) => activeSeverities.has(severity)),
+    importances: TAG_IMPORTANCES.filter((importance) => activeTagImportances.has(importance)),
+    rules: [...activeRules].sort((a, b) => a.localeCompare(b)),
+    auto_fixable_only: onlyAutoFixable,
+  };
+}
+
 // Looks up `finding`'s own rule's tag metadata, if any. A finding with no
 // rule (or one that isn't a papyrus-lints rule id at all, e.g. a
 // compiler-reported diagnostic - see app/src-tauri/src/compile_diagnostics.rs)
@@ -2504,6 +2525,7 @@ export async function formatIssuesForAi(
         generated_at: new Date().toISOString(),
       },
       configuration,
+      filters: activeFiltersForExport(),
       findings,
       rule_details: ruleDetails,
     },
