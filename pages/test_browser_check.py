@@ -93,6 +93,131 @@ class StartServerTest(unittest.TestCase):
                 server.server_close()
 
 
+class StaticScriptsTest(unittest.TestCase):
+    """Exercise the site's progressive-enhancement scripts in a real DOM."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.site_directory = tempfile.TemporaryDirectory()
+        Path(cls.site_directory.name, "index.html").write_text("<!doctype html>", encoding="utf-8")
+        cls.server, cls.base_url = browser_check.start_server(Path(cls.site_directory.name))
+        cls.playwright_context = browser_check.sync_playwright()
+        cls.playwright = cls.playwright_context.start()
+        cls.browser = cls.playwright.chromium.launch()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.browser.close()
+        cls.playwright_context.stop()
+        cls.server.shutdown()
+        cls.server.server_close()
+        cls.site_directory.cleanup()
+
+    def new_page(self):
+        page = self.browser.new_page()
+        self.addCleanup(page.close)
+        page.goto(self.base_url)
+        return page
+
+    def run_script(self, markup: str, script_name: str):
+        page = self.new_page()
+        page.set_content(markup)
+        page.add_script_tag(path=str(browser_check.PAGES_DIR / script_name))
+        return page
+
+    def test_theme_script_restores_and_changes_the_saved_theme(self) -> None:
+        page = self.new_page()
+        page.set_content(
+            '<select id="theme-select"><option>system</option>'
+            '<option>light</option><option>dark</option></select>'
+        )
+        page.evaluate("localStorage.setItem('papyrus-lint:theme', 'dark')")
+        page.add_script_tag(path=str(browser_check.PAGES_DIR / "theme.js"))
+
+        self.assertEqual(page.locator("#theme-select").input_value(), "dark")
+        page.locator("#theme-select").select_option("light")
+        self.assertEqual(page.locator("html").get_attribute("data-theme"), "light")
+        self.assertEqual(page.evaluate("localStorage.getItem('papyrus-lint:theme')"), "light")
+
+        page.locator("#theme-select").select_option("system")
+        self.assertIsNone(page.locator("html").get_attribute("data-theme"))
+
+    def test_theme_script_ignores_invalid_storage_and_tracks_header_height(self) -> None:
+        page = self.new_page()
+        page.set_content(
+            '<style>.site-header { height: 37px }</style><header class="site-header"></header>'
+            '<select id="theme-select"><option>system</option><option>light</option><option>dark</option></select>'
+        )
+        page.evaluate("localStorage.setItem('papyrus-lint:theme', 'sepia')")
+        page.add_script_tag(path=str(browser_check.PAGES_DIR / "theme.js"))
+
+        self.assertEqual(page.locator("#theme-select").input_value(), "system")
+        self.assertEqual(
+            page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--site-header-height')"),
+            "37px",
+        )
+
+    def test_download_script_builds_a_safe_os_specific_picker(self) -> None:
+        page = self.run_script(
+            """<div class="download-group">
+            <a id="download" data-download-toggle data-download-id="gui"
+               data-download-label="Choose the GUI build"
+               data-options='[{"os":"windows","file":"PapyrusLinter-windows-x64_setup.exe","label":"Windows"},
+                              {"os":"linux","file":"PapyrusLinter-linux-amd64.AppImage","label":"Linux"},
+                              {"os":"linux","file":"https://evil.test/payload","label":"Unsafe"}]'
+               href="https://github.com/idrinth/papyrus-lint/releases/latest">Download GUI</a>
+            </div>""",
+            "downloads.js",
+        )
+
+        self.assertEqual(page.locator("select option").all_text_contents(), ["Windows", "Linux"])
+        self.assertEqual(page.locator("select").input_value(), "PapyrusLinter-linux-amd64.AppImage")
+        self.assertEqual(page.locator("label").text_content(), "Choose the GUI build")
+        self.assertTrue(page.locator(".download-panel").is_hidden())
+
+        page.locator("#download").click()
+        self.assertTrue(page.locator("select").is_focused())
+        self.assertEqual(page.locator("#download").get_attribute("aria-expanded"), "true")
+        self.assertTrue(page.locator(".download-panel__go").get_attribute("href").endswith(".AppImage"))
+
+        page.locator("select").select_option("PapyrusLinter-windows-x64_setup.exe")
+        self.assertTrue(page.locator(".download-panel__go").get_attribute("href").endswith("_setup.exe"))
+
+    def test_download_picker_closes_on_outside_click_and_escape(self) -> None:
+        page = self.run_script(
+            """<div class="download-group"><a id="download" data-download-toggle
+               data-options='[{"file":"PapyrusLinterCLI-linux","label":"Linux"}]' href="#fallback">CLI</a></div>
+               <button id="outside">Outside</button>""",
+            "downloads.js",
+        )
+
+        page.locator("#download").click()
+        page.locator("#outside").click()
+        self.assertTrue(page.locator(".download-panel").is_hidden())
+        self.assertEqual(page.locator("#download").get_attribute("aria-expanded"), "false")
+
+        page.locator("#download").click()
+        page.keyboard.press("Escape")
+        self.assertTrue(page.locator(".download-panel").is_hidden())
+        self.assertTrue(page.locator("#download").is_focused())
+
+    def test_download_script_leaves_invalid_configuration_as_a_plain_link(self) -> None:
+        page = self.run_script(
+            """<a id="missing" data-download-toggle href="#missing">Missing</a>
+            <a id="malformed" data-download-toggle data-options="not json" href="#malformed">Malformed</a>
+            <a id="object" data-download-toggle data-options='{"file":"PapyrusLinterCLI-linux"}'
+               href="#object">Object</a>
+            <a id="unknown" data-download-toggle
+               data-options='[{"file":"unknown.exe","label":"Unknown"}]'
+               href="#unknown">Unknown</a>""",
+            "downloads.js",
+        )
+
+        self.assertEqual(page.locator(".download-panel").count(), 0)
+        for element_id in ("missing", "malformed", "object", "unknown"):
+            self.assertIsNone(page.locator(f"#{element_id}").get_attribute("aria-haspopup"))
+
+
 class CheckSiteTest(unittest.TestCase):
     def test_reports_no_html_files_without_starting_a_browser(self) -> None:
         with (
