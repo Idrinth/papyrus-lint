@@ -533,7 +533,6 @@ struct AiRuleDetails {
     description: &'static str,
     kinds: &'static [&'static str],
     importance: papyrus_lints::tags::Importance,
-    auto_fixable: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -1385,7 +1384,6 @@ pub fn run(
                 description: tags.description,
                 kinds: tags.kinds,
                 importance: tags.importance,
-                auto_fixable: tags.auto_fixable(),
             })
             .collect();
         let report = AiReport {

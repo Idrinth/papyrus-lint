@@ -2540,7 +2540,7 @@ const COMPILER_ERROR_RULE = "compiler-error";
 // preview for (see previewRepairPscLine; omitted when the rule doesn't
 // actually change that line, e.g. type-casing's "no automatic fix" case, or
 // its fix would shift the file's line count elsewhere), and the full tag
-// metadata (kind(s), importance, auto-fixability, and the rule's detailed
+// metadata (kind(s), importance, and the rule's detailed
 // description copied from its README.md row; see papyrus_lints::tags) for
 // every rule id that actually appears among `files`' findings - giving the
 // AI enough context about each triggered rule, in the same detail the
@@ -2567,7 +2567,8 @@ export async function formatIssuesForAi(
   const ruleDetails = [...triggeredRules]
     .sort((a, b) => a.localeCompare(b))
     .map((rule) => ruleTagsByRule.get(rule))
-    .filter((info): info is RuleTagsInfo => info !== undefined);
+    .filter((info): info is RuleTagsInfo => info !== undefined)
+    .map(({ rule, description, kinds, importance }) => ({ rule, description, kinds, importance }));
 
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.
