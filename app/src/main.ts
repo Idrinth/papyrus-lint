@@ -2528,11 +2528,17 @@ export async function formatIssuesForAi(
     }
     return Object.fromEntries(Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)));
   };
+  const summary = (diagnostics: { level: Severity }[]) => ({
+    errors: diagnostics.filter((diagnostic) => diagnostic.level === "error").length,
+    warnings: diagnostics.filter((diagnostic) => diagnostic.level === "warning").length,
+    info: diagnostics.filter((diagnostic) => diagnostic.level === "info").length,
+  });
   const findings = {
     ...baseReport,
     files: await Promise.all(
       baseReport.files.map(async (fileReport, fileIndex) => ({
         ...fileReport,
+        summary: summary(fileReport.diagnostics),
         diagnostic_counts: diagnosticCounts(fileReport.diagnostics),
         source: sources.get(fileReport.path) ?? null,
         diagnostics: await Promise.all(
@@ -2547,6 +2553,7 @@ export async function formatIssuesForAi(
         ),
       })),
     ),
+    summary: summary(baseReport.files.flatMap((file) => file.diagnostics)),
     diagnostic_counts: diagnosticCounts(baseReport.files.flatMap((file) => file.diagnostics)),
   };
 
