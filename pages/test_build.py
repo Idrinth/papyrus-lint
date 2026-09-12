@@ -464,6 +464,45 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertIn('<span class="kw">then</span>', result)
         self.assertIn('<span class="kw">fi</span>', result)
 
+    def test_highlight_code_marks_json_numbers_literals_and_escaped_strings(self) -> None:
+        result = page_builder.highlight_code(
+            r'{"message": "say \"hello\"", "ratio": -1.25e+3, "missing": null}',
+            "json-schema",
+        )
+
+        self.assertIn('<span class="str">&quot;message&quot;</span>', result)
+        self.assertIn(
+            '<span class="str">&quot;say \\&quot;hello\\&quot;&quot;</span>', result
+        )
+        self.assertIn('<span class="num">-1.25e+3</span>', result)
+        self.assertIn('<span class="kw">null</span>', result)
+
+    def test_highlight_code_marks_yaml_tokens_without_coloring_number_like_words(self) -> None:
+        result = page_builder.highlight_code(
+            'enabled: yes\ncount: -12.5\nrelease: v1.2\nlabel: "safe" # note', "yaml"
+        )
+
+        self.assertIn('<span class="kw">yes</span>', result)
+        self.assertIn('<span class="num">-12.5</span>', result)
+        self.assertIn('<span class="str">&quot;safe&quot;</span>', result)
+        self.assertIn('<span class="cm"># note</span>', result)
+        self.assertNotIn('v<span class="num">1.2</span>', result)
+
+    def test_highlight_code_marks_shell_and_bbcode_specific_syntax(self) -> None:
+        shell = page_builder.highlight_code(
+            "for item in 'two words'; do echo \"$item\"; done # note", "sh"
+        )
+        bbcode = page_builder.highlight_code("[b]Safe[/b] <unsafe>", "bbcode")
+
+        for keyword in ("for", "in", "do", "done"):
+            self.assertIn(f'<span class="kw">{keyword}</span>', shell)
+        self.assertIn('<span class="str">&#x27;two words&#x27;</span>', shell)
+        self.assertIn('<span class="cm"># note</span>', shell)
+        self.assertEqual(
+            bbcode,
+            '<span class="tag">[b]</span>Safe<span class="tag">[/b]</span> &lt;unsafe&gt;',
+        )
+
     def test_markdown_to_html_flushes_a_final_paragraph(self) -> None:
         result = page_builder.markdown_to_html(["A paragraph", "continued without a blank line."])
 
@@ -506,6 +545,15 @@ class MarkdownHelpersTest(unittest.TestCase):
             '<pre class="code-block" tabindex="0"><code>'
             '&lt;script data-x=&quot;1&quot;&gt;</code></pre>',
         )
+
+    def test_markdown_to_html_escapes_an_untrusted_fence_language(self) -> None:
+        result = page_builder.markdown_to_html(
+            ['```yaml" onmouseover="alert(1)', "enabled: true", "```"]
+        )
+
+        self.assertIn('class="code-block language-yaml&quot;" tabindex="0"', result)
+        self.assertNotIn("onmouseover=", result)
+        self.assertIn("enabled: true", result)
 
     def test_first_paragraph_returns_empty_text_when_there_is_no_prose(self) -> None:
         self.assertEqual(page_builder.first_paragraph(["# Title", "", "## Subtitle"]), "")
