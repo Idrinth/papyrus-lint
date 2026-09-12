@@ -6,7 +6,11 @@
 //! in this crate. Only the script's own declared name is checked — a
 //! script's `Extends` target is a type declared (and presumably already
 //! checked) elsewhere, so flagging it here would just repeat that other
-//! script's diagnostic under the wrong file.
+//! script's diagnostic under the wrong file. A leading acronym prefix
+//! (`IDR__TIF__050000F5`, `USSEP_MyQuestScript`) that CreationKit or modding
+//! convention enforces is stripped before checking casing (see
+//! [`strip_known_prefix`]), since that part of the name can't be renamed at
+//! all.
 
 use papyrus_parser::token::{Keyword, TokenKind};
 use serde::{Deserialize, Serialize};
@@ -109,12 +113,53 @@ fn first_letter_case(name: &str) -> Option<bool> {
         .map(char::is_uppercase)
 }
 
+/// Strips up to two leading acronym-prefix segments — one or more uppercase
+/// letters immediately followed by one or more underscores — from `name`,
+/// returning whatever remains. CreationKit itself names a dialogue
+/// fragment's script this way (e.g. `IDR__TIF__050000F5`, the quest's own
+/// editor ID followed by a literal `TIF` marker), and modders conventionally
+/// prefix their own scripts with an uppercase mod acronym for the same
+/// reason (e.g. `USSEP_MyQuestScript`) — in both cases the prefix can't be
+/// renamed without breaking the naming scheme it belongs to, so casing is
+/// checked (and repaired) against the rest of the name instead. Returns
+/// `name` itself unchanged if stripping would consume the whole thing, or if
+/// it carries no such prefix at all.
+fn strip_known_prefix(name: &str) -> &str {
+    let mut rest = name;
+    for _ in 0..2 {
+        let letters_end = rest
+            .char_indices()
+            .take_while(|(_, c)| c.is_ascii_uppercase())
+            .last()
+            .map_or(0, |(index, c)| index + c.len_utf8());
+        if letters_end == 0 {
+            break;
+        }
+        let underscore_end = rest[letters_end..]
+            .char_indices()
+            .take_while(|(_, c)| *c == '_')
+            .last()
+            .map_or(letters_end, |(index, _)| letters_end + index + 1);
+        if underscore_end == letters_end {
+            break;
+        }
+        rest = &rest[underscore_end..];
+    }
+    if rest.is_empty() {
+        name
+    } else {
+        rest
+    }
+}
+
 /// Checks `source`'s declared `ScriptName` against `style`. A script with
 /// no `ScriptName` statement, or one that fails to lex, yields no
-/// diagnostics. A violation that [`repair`] can't actually fix (e.g. a name
-/// with underscores under `PascalCase`/`camelCase`) says so in its own
-/// message, so callers don't present it as automatically fixable when it
-/// isn't.
+/// diagnostics. Casing is checked against the name with any leading
+/// CreationKit/mod-acronym prefix stripped (see [`strip_known_prefix`]), so
+/// such a prefix's own casing never triggers a violation. A violation that
+/// [`repair`] can't actually fix (e.g. a name with underscores under
+/// `PascalCase`/`camelCase`) says so in its own message, so callers don't
+/// present it as automatically fixable when it isn't.
 pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return Vec::new();
@@ -131,14 +176,15 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
         let TokenKind::Identifier(name) = &name_token.kind else {
             return Vec::new();
         };
-        if style.matches(name) {
+        let checked = strip_known_prefix(name);
+        if style.matches(checked) {
             return Vec::new();
         }
         // A violation this rule can't actually repair (see `Style::fixable`)
         // says so in its own message, since the frontend otherwise has no
         // way to tell such a finding apart from one this rule's automatic
         // fix can resolve.
-        let unfixable_note = if style.fixable(name) {
+        let unfixable_note = if style.fixable(checked) {
             ""
         } else {
             " (fixing this would rename the script, so no automatic fix is applied)"
@@ -158,8 +204,10 @@ pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
 
 /// Rewrites the declared `ScriptName` identifier to match `style` when letter
 /// casing alone can do so. Only the declaration is changed; references to
-/// other types (including the `Extends` target) are left untouched. A repair
-/// that would add or remove characters is skipped so the declaration remains
+/// other types (including the `Extends` target) are left untouched. Any
+/// leading CreationKit/mod-acronym prefix (see [`strip_known_prefix`]) is
+/// left as-is; only the remainder of the name is rewritten. A repair that
+/// would add or remove characters is skipped so the declaration remains
 /// compatible with its filename. Invalid source is returned verbatim.
 pub fn repair(source: &str, style: Style) -> String {
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
@@ -177,14 +225,16 @@ pub fn repair(source: &str, style: Style) -> String {
         let TokenKind::Identifier(name) = &name_token.kind else {
             return source.to_string();
         };
+        let checked = strip_known_prefix(name);
         // PascalCase/camelCase also prohibit underscores, but removing one
         // would be a substantive rename and break the required
         // filename/ScriptName match. Only apply a repair when changing case
         // alone can make the declaration conform.
-        if !style.fixable(name) {
+        if !style.fixable(checked) {
             return source.to_string();
         }
-        let replacement = style.apply(name);
+        let prefix_len = name.len() - checked.len();
+        let replacement = format!("{}{}", &name[..prefix_len], style.apply(checked));
 
         let line_start = if name_token.line == 1 {
             0
@@ -239,14 +289,51 @@ mod tests {
     }
 
     #[test]
-    fn pascal_case_notes_the_unfixable_double_underscore_convention() {
-        // Compiler-generated fragment scripts (e.g. dialogue Topic Info
-        // fragments) are always named like this; the double underscores can
-        // never be removed automatically without renaming the script and
-        // its file.
-        let diagnostics = check("ScriptName IDR__TIF__050000F5\n", Style::PascalCase);
+    fn ignores_a_creationkit_fragment_style_prefix() {
+        // CreationKit itself names dialogue Topic Info fragment scripts this
+        // way (`<QuestEditorID>__TIF__<FormID>`); the two leading
+        // uppercase-acronym-plus-underscores segments are stripped before
+        // checking casing, so the remainder (all digits/uppercase) matches
+        // PascalCase trivially instead of being flagged as an unfixable
+        // underscore violation.
+        assert!(check("ScriptName IDR__TIF__050000F5\n", Style::PascalCase).is_empty());
+    }
+
+    #[test]
+    fn ignores_a_mod_acronym_prefix() {
+        // A modder's own uppercase-acronym prefix (single underscore) is
+        // stripped the same way, so only `MyQuestScript` is checked.
+        assert!(check("ScriptName USSEP_MyQuestScript\n", Style::PascalCase).is_empty());
+    }
+
+    #[test]
+    fn does_not_treat_a_single_leading_capital_as_a_prefix() {
+        // "My_QuestScript" isn't a recognized acronym prefix (the uppercase
+        // run before the underscore is just the name's own first letter),
+        // so this is still flagged, and still unfixable since removing the
+        // underscore would be a substantive rename.
+        let diagnostics = check("ScriptName My_QuestScript\n", Style::PascalCase);
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("no automatic fix"));
+    }
+
+    #[test]
+    fn repair_leaves_a_recognized_prefix_untouched() {
+        assert_eq!(
+            repair("ScriptName USSEP_myQuestScript\n", Style::PascalCase),
+            "ScriptName USSEP_MyQuestScript\n"
+        );
+    }
+
+    #[test]
+    fn strip_known_prefix_handles_up_to_two_segments() {
+        assert_eq!(strip_known_prefix("IDR__TIF__050000F5"), "050000F5");
+        assert_eq!(strip_known_prefix("USSEP_MyQuestScript"), "MyQuestScript");
+        assert_eq!(strip_known_prefix("MyQuestScript"), "MyQuestScript");
+        assert_eq!(strip_known_prefix("My_QuestScript"), "My_QuestScript");
+        // A name that's entirely a prefix (nothing left after stripping) is
+        // returned unchanged rather than reduced to an empty string.
+        assert_eq!(strip_known_prefix("USSEP_"), "USSEP_");
     }
 
     #[test]
