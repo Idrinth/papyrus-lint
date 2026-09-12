@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from io import StringIO
@@ -12,6 +13,18 @@ from urllib.error import URLError
 from PIL import Image
 
 from pages import build as page_builder
+
+
+class PublishedSchemaTest(unittest.TestCase):
+    def test_ai_export_external_diagnostic_fields_require_each_other(self) -> None:
+        schema = json.loads(
+            (page_builder.DOCS_DIR / "papyrus-lint-ai-export.schema.json").read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(
+            schema["$defs"]["diagnostic"]["dependentRequired"],
+            {"external": ["source"], "source": ["external"]},
+        )
 
 
 class MarkdownHelpersTest(unittest.TestCase):
