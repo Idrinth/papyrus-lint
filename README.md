@@ -868,7 +868,9 @@ settings used for the run (including all defaulted values); a
 rule, and auto-fixable-only filters, so the assistant can tell which findings
 the user intentionally excluded; a
 `findings` section in the same shape the "Export issues" JSON format uses,
-except each file entry also carries a `source` field explicitly naming
+with a `summary` of error, warning, and info counts both for every individual
+file and for the complete export, while each file entry also carries a
+`source` field explicitly naming
 which of four forms it takes: `null` when no source was attached at all; an
 object with `"type": "content"` carrying that script's full current on-disk
 contents, so the assistant can see the exact code each diagnostic refers to

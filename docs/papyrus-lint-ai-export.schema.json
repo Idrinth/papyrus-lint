@@ -539,6 +539,7 @@
         "files",
         "files_with_diagnostics",
         "total_diagnostics",
+        "summary",
         "diagnostic_counts"
       ],
       "properties": {
@@ -558,6 +559,9 @@
           "type": "integer",
           "minimum": 0
         },
+        "summary": {
+          "$ref": "#/$defs/summary"
+        },
         "diagnostic_counts": {
           "$ref": "#/$defs/diagnosticCounts"
         }
@@ -568,6 +572,7 @@
       "additionalProperties": false,
       "required": [
         "path",
+        "summary",
         "diagnostic_counts",
         "diagnostics",
         "source"
@@ -588,6 +593,9 @@
         },
         "diagnostic_counts": {
           "$ref": "#/$defs/diagnosticCounts"
+        },
+        "summary": {
+          "$ref": "#/$defs/summary"
         },
         "source": {
           "description": "How this script's source is represented: null when none was attached at all; otherwise an object whose \"type\" names which of the other three forms it takes.",
@@ -616,6 +624,30 @@
         "^[a-z0-9]+(?:-[a-z0-9]+)*$": {
           "type": "integer",
           "minimum": 1
+        }
+      }
+    },
+    "summary": {
+      "description": "Counts of exported diagnostics grouped by severity.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "errors",
+        "warnings",
+        "info"
+      ],
+      "properties": {
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0
         }
       }
     },

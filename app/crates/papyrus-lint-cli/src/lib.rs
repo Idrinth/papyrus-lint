@@ -483,6 +483,7 @@ enum AiSource {
 #[derive(Debug, Serialize)]
 struct AiFileReport {
     path: String,
+    summary: AiSummary,
     diagnostic_counts: std::collections::BTreeMap<&'static str, usize>,
     diagnostics: Vec<JsonDiagnostic>,
     source: AiSource,
@@ -493,7 +494,28 @@ struct AiFindings {
     files: Vec<AiFileReport>,
     files_with_diagnostics: usize,
     total_diagnostics: usize,
+    summary: AiSummary,
     diagnostic_counts: std::collections::BTreeMap<&'static str, usize>,
+}
+
+#[derive(Debug, Default, Serialize)]
+struct AiSummary {
+    errors: usize,
+    warnings: usize,
+    info: usize,
+}
+
+fn diagnostic_summary<'a>(diagnostics: impl IntoIterator<Item = &'a JsonDiagnostic>) -> AiSummary {
+    let mut summary = AiSummary::default();
+    for diagnostic in diagnostics {
+        match diagnostic.level {
+            "error" => summary.errors += 1,
+            "warning" => summary.warnings += 1,
+            "info" => summary.info += 1,
+            _ => {}
+        }
+    }
+    summary
 }
 
 fn diagnostic_counts<'a>(
@@ -1261,6 +1283,7 @@ pub fn run(
                 .collect();
             if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
                 let counts = diagnostic_counts(&json_diagnostics);
+                let summary = diagnostic_summary(&json_diagnostics);
                 let ai_source = if hash_source {
                     AiSource::Hash {
                         algorithm: "md5",
@@ -1273,6 +1296,7 @@ pub fn run(
                 };
                 ai_files.push(AiFileReport {
                     path: reported_path.clone(),
+                    summary,
                     diagnostic_counts: counts,
                     diagnostics: json_diagnostics,
                     source: ai_source,
@@ -1324,6 +1348,8 @@ pub fn run(
     } else if output_format == OutputFormat::Ai {
         let total_diagnostic_counts =
             diagnostic_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
+        let total_summary =
+            diagnostic_summary(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
         let mut triggered_rules: Vec<&'static str> = ai_files
             .iter()
             .flat_map(|file| file.diagnostics.iter().map(|diagnostic| diagnostic.rule))
@@ -1355,6 +1381,7 @@ pub fn run(
                 files: ai_files,
                 files_with_diagnostics,
                 total_diagnostics,
+                summary: total_summary,
                 diagnostic_counts: total_diagnostic_counts,
             },
             rule_details,
