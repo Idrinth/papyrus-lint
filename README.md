@@ -844,7 +844,8 @@ filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
 [contract published as a JSON Schema](docs/papyrus-lint-ai-export.schema.json)):
-a `header` identifying the tool name, running version, and
+a `header` identifying the tool name, running version, generation time (as
+an RFC 3339 UTC timestamp in `generated_at`), and
 [project website](https://papyrus-lint.idrinth.de) for further lookups; a
 `findings` section in the same shape the "Export issues" JSON format uses,
 except each file entry also carries a `source` field with that script's

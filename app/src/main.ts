@@ -2396,8 +2396,9 @@ async function readIssueFileSources(
 
 // Renders `files` as a single JSON document meant to be handed to an AI
 // assistant alongside a question about the results: a header identifying
-// the tool/version/website (so the AI knows what produced these findings
-// and where to look up anything not covered below), the findings
+// the tool/version/website and generation time (so the AI knows what
+// produced these findings and where to look up anything not covered below),
+// the findings
 // themselves (see buildIssuesReport) with each file's current source text
 // attached (or null when `sources` has none for it - see
 // readIssueFileSources), and the full tag metadata (kind(s), importance,
@@ -2439,6 +2440,7 @@ export function formatIssuesForAi(
         tool: TOOL_NAME,
         version: version || "unknown",
         website: WEBSITE_URL,
+        generated_at: new Date().toISOString(),
       },
       findings: { ...report, files: filesWithSource },
       rule_details: ruleDetails,

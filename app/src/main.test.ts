@@ -2862,7 +2862,7 @@ describe("formatIssuesForAi", () => {
     applyRuleTags([]);
   });
 
-  it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website header, plus rule_details for every triggered rule", () => {
+  it("wraps the same findings shape as formatIssuesAsJson in a timestamped tool/version/website header, plus rule_details for every triggered rule", () => {
     applyRuleTags([
       { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
@@ -2886,6 +2886,7 @@ describe("formatIssuesForAi", () => {
         tool: "Papyrus Lint",
         version: "1.2.3",
         website: "https://papyrus-lint.idrinth.de",
+        generated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       },
       findings: {
         ...asJson,
@@ -3068,6 +3069,7 @@ describe("Export issues button", () => {
       tool: "Papyrus Lint",
       version: "9.9.9",
       website: "https://papyrus-lint.idrinth.de",
+      generated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
     });
     expect(contents.findings.files).toEqual([expect.objectContaining({ source: "ScriptName A\n" })]);
   });

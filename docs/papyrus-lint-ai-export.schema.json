@@ -25,7 +25,7 @@
     "header": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["tool", "version", "website"],
+      "required": ["tool", "version", "website", "generated_at"],
       "properties": {
         "tool": {
           "description": "The application that produced this document.",
@@ -39,6 +39,11 @@
         "website": {
           "description": "The Papyrus Lint website, where additional rule and configuration documentation is available.",
           "const": "https://papyrus-lint.idrinth.de"
+        },
+        "generated_at": {
+          "description": "The UTC date and time when this export was generated, in RFC 3339 format.",
+          "type": "string",
+          "format": "date-time"
         }
       }
     },
