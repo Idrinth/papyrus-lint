@@ -476,6 +476,8 @@ mod tests {
             root.path(),
             "#!/bin/sh\nfor arg in \"$@\"; do echo \"$arg\"; done\n",
         );
+        fs::create_dir_all(root.path().join("Shared/Source"))
+            .expect("failed to create relative additional root");
         let absolute = tempfile::tempdir().expect("failed to create additional root");
 
         let outcome = compile_psc_file(
