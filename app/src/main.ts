@@ -2372,6 +2372,21 @@ export function formatIssuesAsText(files: FilteredIssuesFile[]): string {
   return lines.join("\n");
 }
 
+// Returns `files` with each file's findings sorted by (line, column), so a
+// file's diagnostics list in reading order (top to bottom, left to right)
+// rather than papyrus_lints::lint()'s own rule-registration order - the same
+// ordering the CLI's `--json`/`--ai` output already gets from its own
+// `diagnostics.sort_by_key(|d| (d.line, d.column))`
+// (papyrus-lint-cli/src/lib.rs). A stable sort, so two findings at the exact
+// same position (e.g. a lint diagnostic and a compiler-reported one) keep
+// their original relative order.
+function sortedByPosition(files: FilteredIssuesFile[]): FilteredIssuesFile[] {
+  return files.map((file) => ({
+    ...file,
+    findings: [...file.findings].sort((a, b) => a.line - b.line || a.column - b.column),
+  }));
+}
+
 // Shared by formatIssuesAsJson and formatIssuesForAi: `files` as a plain
 // object mirroring the CLI's own `--json` report shape
 // (JsonReport/JsonFileReport/JsonDiagnostic in papyrus-lint-cli/src/lib.rs).
@@ -2402,7 +2417,7 @@ function buildIssuesReport(files: FilteredIssuesFile[], stripSeverityPrefix = fa
 // Renders `files` as JSON, mirroring the shape of the CLI's own `--json`
 // report so both can be consumed by the same tooling.
 export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
-  return JSON.stringify(buildIssuesReport(files), null, 2);
+  return JSON.stringify(buildIssuesReport(sortedByPosition(files)), null, 2);
 }
 
 // The desktop app's own homepage, where an AI reading an "Export for AI"
@@ -2522,8 +2537,9 @@ export async function formatIssuesForAi(
   sources: Map<string, AiSource> = new Map(),
   configuration: LintConfig = currentLintConfig,
 ): Promise<string> {
+  const sortedFiles = sortedByPosition(files);
   const triggeredRules = new Set<string>();
-  for (const file of files) {
+  for (const file of sortedFiles) {
     for (const finding of file.findings) {
       if (finding.rule) {
         triggeredRules.add(finding.rule);
@@ -2537,7 +2553,7 @@ export async function formatIssuesForAi(
 
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.
-  const baseReport = buildIssuesReport(files, true);
+  const baseReport = buildIssuesReport(sortedFiles, true);
   const diagnosticCounts = (diagnostics: { rule: string }[]): Record<string, number> => {
     const counts: Record<string, number> = {};
     for (const diagnostic of diagnostics) {
@@ -2559,7 +2575,7 @@ export async function formatIssuesForAi(
         source: sources.get(fileReport.path) ?? null,
         diagnostics: await Promise.all(
           fileReport.diagnostics.map(async (diagnostic, diagnosticIndex) => {
-            const finding = files[fileIndex].findings[diagnosticIndex];
+            const finding = sortedFiles[fileIndex].findings[diagnosticIndex];
             const tagged =
               diagnostic.rule === COMPILER_ERROR_RULE
                 ? { ...diagnostic, external: true, source: "compiler" }
@@ -2567,7 +2583,7 @@ export async function formatIssuesForAi(
             if (!finding.rule || !FIXABLE_RULE_IDS.has(finding.rule) || hasNoAutomaticFix(finding)) {
               return tagged;
             }
-            const repair = await previewRepairPscLine(files[fileIndex].path, finding.rule, finding.line);
+            const repair = await previewRepairPscLine(sortedFiles[fileIndex].path, finding.rule, finding.line);
             return repair === null ? tagged : { ...tagged, repair };
           }),
         ),

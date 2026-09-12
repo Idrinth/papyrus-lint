@@ -2853,6 +2853,25 @@ describe("formatIssuesAsJson", () => {
       total_diagnostics: 0,
     });
   });
+
+  it("orders a file's diagnostics by line then column, regardless of the order findings were collected in", () => {
+    const json = formatIssuesAsJson([
+      {
+        path: "A.psc",
+        findings: [
+          { line: 8, column: 3, message: "[error] no viable alternative", rule: "compiler-error" },
+          { line: 1, column: 5, message: "[warning] trailing whitespace", rule: "trailing-whitespace" },
+          { line: 1, column: 1, message: "[info] consider renaming", rule: "identifier-casing" },
+        ],
+      },
+    ]);
+
+    expect(JSON.parse(json).files[0].diagnostics.map((d: { line: number; column: number }) => [d.line, d.column])).toEqual([
+      [1, 1],
+      [1, 5],
+      [8, 3],
+    ]);
+  });
 });
 
 describe("formatIssuesForAi", () => {
@@ -3044,6 +3063,7 @@ describe("formatIssuesForAi", () => {
     const json = JSON.parse(await formatIssuesForAi(files, "1.0.0"));
 
     expect(json.findings.files[0].diagnostics).toEqual([
+      { line: 1, column: 1, rule: "trailing-whitespace", level: "warning", message: "trailing whitespace" },
       {
         line: 8,
         column: 3,
@@ -3053,7 +3073,6 @@ describe("formatIssuesForAi", () => {
         external: true,
         source: "compiler",
       },
-      { line: 1, column: 1, rule: "trailing-whitespace", level: "warning", message: "trailing whitespace" },
     ]);
   });
 
