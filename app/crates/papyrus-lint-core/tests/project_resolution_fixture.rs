@@ -3,9 +3,9 @@ use std::path::Path;
 
 use papyrus_lint_core::achlist::parse_achlist;
 use papyrus_lint_core::script_locator::{
-    build_script_index, conflicting_script_versions_among, conflicting_script_versions_in_index,
-    detected_script_roots, find_psc_file_in_index, find_psc_files_recursively,
-    CONFLICTING_SCRIPT_VERSIONS_RULE,
+    build_script_index, conflicting_script_versions, conflicting_script_versions_among,
+    conflicting_script_versions_in_index, detected_script_roots, find_psc_file,
+    find_psc_file_in_index, find_psc_files_recursively, CONFLICTING_SCRIPT_VERSIONS_RULE,
 };
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, PscEncoding};
 
@@ -54,6 +54,59 @@ fn indexed_resolution_uses_search_root_precedence_and_reports_later_conflicts() 
     assert!(diagnostics[0]
         .message
         .contains(&fallback.display().to_string()));
+}
+
+#[test]
+fn direct_resolution_accepts_names_with_or_without_an_extension() {
+    let project = tempfile::tempdir().expect("failed to create project directory");
+    let source = project.path().join("source/scripts/MixedCase.PSC");
+    write_file(&source, "ScriptName MixedCase\n");
+
+    assert_eq!(
+        find_psc_file(project.path(), "mixedcase", &[]),
+        Some(source.clone())
+    );
+    assert_eq!(
+        find_psc_file(project.path(), "MIXEDCASE.PSC", &[]),
+        Some(source)
+    );
+    assert_eq!(find_psc_file(project.path(), "missing", &[]), None);
+}
+
+#[test]
+fn direct_conflict_detection_scans_conventional_and_configured_roots() {
+    let project = tempfile::tempdir().expect("failed to create project directory");
+    let selected = project.path().join("scripts/source/Example.psc");
+    let conventional_conflict = project.path().join("source/scripts/example.PSC");
+    let configured_conflict = project.path().join("imports/EXAMPLE.psc");
+    let identical_copy = project.path().join("identical/Example.psc");
+    write_file(&selected, "ScriptName Example\n");
+    write_file(&conventional_conflict, "ScriptName Example extends Form\n");
+    write_file(&configured_conflict, "ScriptName Example extends Quest\n");
+    write_file(&identical_copy, "ScriptName Example\n");
+
+    let additional_roots = vec![
+        "imports".to_string(),
+        "identical".to_string(),
+        "missing".to_string(),
+    ];
+    let diagnostics = conflicting_script_versions(&selected, project.path(), &additional_roots);
+    let mut expected_conflicts = [conventional_conflict, configured_conflict];
+    expected_conflicts.sort();
+
+    assert_eq!(diagnostics.len(), 2);
+    assert!(diagnostics[0]
+        .message
+        .contains(&expected_conflicts[0].display().to_string()));
+    assert!(diagnostics[1]
+        .message
+        .contains(&expected_conflicts[1].display().to_string()));
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule == CONFLICTING_SCRIPT_VERSIONS_RULE));
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| !diagnostic.message.contains("identical")));
 }
 
 #[test]
