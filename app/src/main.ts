@@ -2377,22 +2377,63 @@ export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
 const WEBSITE_URL = "https://papyrus-lint.idrinth.de";
 const TOOL_NAME = "Papyrus Lint";
 
+// Reads each of `files`' current on-disk source via the same read_psc_file
+// command the code viewer uses, keyed by each file's display path (see
+// FilteredIssuesFile.path) for formatIssuesForAi below to attach alongside
+// that file's findings - so an AI reasoning about the report can see the
+// actual surrounding code a diagnostic refers to without opening the
+// project itself. `outcomes` supplies the absolute path read_psc_file
+// needs, matched back to `files`' relative display path via the same
+// relativePath()/currentProjectDir pairing collectFilteredIssues used to
+// produce it in the first place. A read failure (e.g. the file was moved
+// or deleted since linting) reports the error as that file's source
+// instead of failing the whole export, since the rest of the report stays
+// useful without it.
+async function readIssueFileSources(
+  files: FilteredIssuesFile[],
+  outcomes: PscParseOutcome[],
+): Promise<Map<string, string>> {
+  const absolutePathsByDisplayPath = new Map<string, string>();
+  for (const outcome of outcomes) {
+    absolutePathsByDisplayPath.set(relativePath(outcome.path, currentProjectDir), outcome.path);
+  }
+  const sources = new Map<string, string>();
+  await Promise.all(
+    files.map(async (file) => {
+      const absolutePath = absolutePathsByDisplayPath.get(file.path) ?? file.path;
+      try {
+        sources.set(file.path, await invoke<string>("read_psc_file", { path: absolutePath }));
+      } catch (error) {
+        sources.set(file.path, `<failed to read file: ${String(error)}>`);
+      }
+    }),
+  );
+  return sources;
+}
+
 // Renders `files` as a single JSON document meant to be handed to an AI
 // assistant alongside a question about the results: a header identifying
 // the tool/version/website (so the AI knows what produced these findings
 // and where to look up anything not covered below), the findings
-// themselves (see buildIssuesReport) - with a `repair` field added to every
-// diagnostic from an auto-fixable rule Papyrus Lint could compute a fix
-// preview for (see previewRepairPscLine; omitted when the rule doesn't
-// actually change that line, e.g. type-casing's "no automatic fix" case, or
-// its fix would shift the file's line count elsewhere) - and the full tag
-// metadata (kind(s), importance, auto-fixability; see papyrus_lints::tags)
-// for every rule id that actually appears among `files`' findings - giving
-// the AI enough context about each triggered rule, and what its fix would
-// look like, to answer follow-up questions precisely without needing the
-// project's own documentation on hand. `version` is the running app's
-// version (see loadAppVersion), or "" if that lookup failed.
-export async function formatIssuesForAi(files: FilteredIssuesFile[], version: string): Promise<string> {
+// themselves (see buildIssuesReport) with each file's current source text
+// attached (or null when `sources` has none for it - see
+// readIssueFileSources), and a `repair` field added to every diagnostic from
+// an auto-fixable rule Papyrus Lint could compute a fix preview for (see
+// previewRepairPscLine; omitted when the rule doesn't actually change that
+// line, e.g. type-casing's "no automatic fix" case, or its fix would shift
+// the file's line count elsewhere) - and the full tag metadata (kind(s),
+// importance, auto-fixability; see papyrus_lints::tags) for every rule id
+// that actually appears among `files`' findings - giving the AI enough
+// context about each triggered rule, the actual code each diagnostic refers
+// to, and what its fix would look like, to answer follow-up questions
+// precisely without needing the project's own files or documentation on
+// hand. `version` is the running app's version (see loadAppVersion), or ""
+// if that lookup failed.
+export async function formatIssuesForAi(
+  files: FilteredIssuesFile[],
+  version: string,
+  sources: Map<string, string> = new Map(),
+): Promise<string> {
   const triggeredRules = new Set<string>();
   for (const file of files) {
     for (const finding of file.findings) {
@@ -2412,6 +2453,7 @@ export async function formatIssuesForAi(files: FilteredIssuesFile[], version: st
     files: await Promise.all(
       baseReport.files.map(async (fileReport, fileIndex) => ({
         ...fileReport,
+        source: sources.get(fileReport.path) ?? null,
         diagnostics: await Promise.all(
           fileReport.diagnostics.map(async (diagnostic, diagnosticIndex) => {
             const finding = files[fileIndex].findings[diagnosticIndex];
@@ -2486,15 +2528,20 @@ export function handleExportIssuesClick() {
 }
 
 // Downloads the currently filtered lint findings as a single "Export for
-// AI" JSON document (see formatIssuesForAi), independent of the "Export
-// format" selector above since this format is always JSON.
+// AI" JSON document (see formatIssuesForAi), each file's current source
+// attached (see readIssueFileSources), independent of the "Export format"
+// selector above since this format is always JSON.
 export async function handleExportAiClick(): Promise<void> {
   const files = collectFilteredIssues(currentPscOutcomes);
   if (files.length === 0) {
     return;
   }
-  const version = await loadAppVersion();
-  downloadTextFile("papyrus-lint-ai-export.json", await formatIssuesForAi(files, version), "application/json");
+  const [version, sources] = await Promise.all([loadAppVersion(), readIssueFileSources(files, currentPscOutcomes)]);
+  downloadTextFile(
+    "papyrus-lint-ai-export.json",
+    await formatIssuesForAi(files, version, sources),
+    "application/json",
+  );
 }
 
 // Builds/refreshes the "mass fix" panel listing every rule with at least
