@@ -848,7 +848,9 @@ Next to it, an "Export for AI" button downloads the same currently
 filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
-[contract published as a JSON Schema](docs/papyrus-lint-ai-export.schema.json)):
+[contract published as a JSON Schema](docs/papyrus-lint-ai-export.schema.json)).
+The document's top-level `$schema` field points directly to that schema so an
+assistant or validator can discover the exact contract without prior context. It contains
 a `header`
 identifying the tool name, running version,
 [project website](https://papyrus-lint.idrinth.de) for further lookups, and

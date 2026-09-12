@@ -2882,6 +2882,7 @@ describe("formatIssuesForAi", () => {
 
     const withSourceOmitted = JSON.parse(await formatIssuesForAi(files, "1.2.3"));
     expect(withSourceOmitted).toEqual({
+      $schema: "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json",
       header: {
         tool: "Papyrus Lint",
         version: "1.2.3",
