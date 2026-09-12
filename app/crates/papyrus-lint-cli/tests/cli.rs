@@ -1115,3 +1115,100 @@ fn progress_keeps_the_report_in_its_output_file_through_the_binary() {
     assert_eq!(report["scripts_checked"], 2);
     assert_eq!(report["total_diagnostics"], 1);
 }
+
+#[test]
+fn format_json_equals_form_lints_a_relative_script_path() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let relative_script = Path::new("scripts/source/Example.psc");
+    write_file(&dir.path().join(relative_script), "ScriptName Example   \n");
+
+    let output = run_cli_in(&["--format=json", "scripts/source/Example.psc"], dir.path());
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain JSON");
+    assert_eq!(report["scripts_checked"], 1);
+    assert_eq!(report["total_diagnostics"], 1);
+    assert_eq!(
+        report["files"][0]["diagnostics"][0]["rule"],
+        "trailing-whitespace"
+    );
+}
+
+#[test]
+fn json_dry_run_reports_the_diff_without_rewriting_the_script() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let original = "ScriptName Example   \n";
+    write_file(&script, original);
+
+    let output = run_cli(&["--json", "fix", "--dry-run", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        fs::read_to_string(&script).expect("script should remain readable"),
+        original
+    );
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain JSON");
+    assert_eq!(report["dry_run"], true);
+    assert_eq!(report["files_fixed"], 1);
+    let diff = report["files"][0]["diff"]
+        .as_str()
+        .expect("changed file should include a diff");
+    assert!(diff.contains("-ScriptName Example   \n"));
+    assert!(diff.contains("+ScriptName Example\n"));
+    assert!(report["files"][0]["diagnostics"]
+        .as_array()
+        .expect("diagnostics should be an array")
+        .is_empty());
+}
+
+#[test]
+fn plain_output_file_receives_the_report_without_stdout_noise() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let report_path = dir.path().join("reports/lint.txt");
+    write_file(&script, "ScriptName Example   \n");
+    fs::create_dir_all(report_path.parent().expect("report should have a parent"))
+        .expect("failed to create report directory");
+
+    let output = run_cli(&[
+        "--output",
+        &report_path.to_string_lossy(),
+        &script.to_string_lossy(),
+    ]);
+
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    assert!(output.stderr.is_empty());
+    let report = fs::read_to_string(report_path).expect("plain report should be readable");
+    assert!(report.contains("trailing-whitespace"));
+    assert!(report.contains("1 problem(s) found in 1 of 1 script(s)"));
+}
+
+#[test]
+fn unknown_format_is_a_usage_error_without_creating_an_output_file() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let report_path = dir.path().join("lint.txt");
+    write_file(&script, "ScriptName Example\n");
+
+    let output = run_cli(&[
+        "--format",
+        "xml",
+        "--output",
+        &report_path.to_string_lossy(),
+        &script.to_string_lossy(),
+    ]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
+        "error: --format must be 'plain', 'json', or 'ai', got 'xml'\n"
+    );
+    assert!(!report_path.exists());
+}
