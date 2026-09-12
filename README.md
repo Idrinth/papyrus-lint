@@ -867,7 +867,10 @@ identifying the tool name, running version,
 [project website](https://papyrus-lint.idrinth.de) for further lookups, and
 target game (`Skyrim SE/AE`), plus the UTC date and time at which the export
 was generated; a `configuration` object containing the fully resolved lint
-settings used for the run (including all defaulted values); a
+settings used for the run (including all defaulted values) - its
+`enabled_rules` field lists just the hyphenated ids of the rules currently
+switched on, alphabetically sorted, rather than repeating every rule's own
+boolean flag (a rule not listed there is disabled); a
 `filters` object recording the GUI's active filename, severity, importance,
 rule, and auto-fixable-only filters, so the assistant can tell which findings
 the user intentionally excluded — its `severities`, `importances`, and

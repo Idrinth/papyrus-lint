@@ -2420,6 +2420,24 @@ export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
   return JSON.stringify(buildIssuesReport(sortedByPosition(files)), null, 2);
 }
 
+// The AI export's own `configuration` shape (see formatIssuesForAi below):
+// the same resolved LintConfig a lint run used, except its `rules` object
+// (58 individual enable flags, each with its own description in the
+// schema) is replaced with a compact, alphabetically sorted
+// `enabled_rules` list of just the hyphenated ids that are currently on -
+// no information is lost, since a rule absent from the list is simply
+// disabled, but every export no longer repeats a large, mostly-constant
+// block of booleans. Mirrors papyrus_lints::Rules::enabled_ids and
+// papyrus-lint-cli's own ai_configuration in app/crates/papyrus-lint-cli/src/lib.rs.
+export function aiConfiguration(config: LintConfig): Record<string, unknown> {
+  const { rules, ...rest } = config;
+  const enabledRules = Object.entries(rules)
+    .filter(([, enabled]) => enabled)
+    .map(([name]) => name.replace(/_/g, "-"))
+    .sort((a, b) => a.localeCompare(b));
+  return { ...rest, enabled_rules: enabledRules };
+}
+
 // The desktop app's own homepage, where an AI reading an "Export for AI"
 // document (see formatIssuesForAi) can look up rule/configuration
 // documentation beyond what rule_details itself carries.
@@ -2604,7 +2622,7 @@ export async function formatIssuesForAi(
         target_game: TARGET_GAME,
         generated_at: new Date().toISOString(),
       },
-      configuration,
+      configuration: aiConfiguration(configuration),
       filters: activeFiltersForExport(),
       findings,
       rule_details: ruleDetails,

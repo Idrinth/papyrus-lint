@@ -15,6 +15,7 @@ import { mountFixture } from "./test/fixture";
 import {
   DEFAULT_LINT_CONFIG,
   DEFAULT_RULES,
+  aiConfiguration,
   applyAutocompleteSelection,
   applyLintConfigToUI,
   applyConfigPreset,
@@ -2964,6 +2965,21 @@ describe("formatIssuesAsJson", () => {
   });
 });
 
+describe("aiConfiguration", () => {
+  it("replaces the rules object with a sorted list of just the enabled rule ids", () => {
+    const config = { ...DEFAULT_LINT_CONFIG, rules: { ...DEFAULT_RULES, trailing_whitespace: false, property_sorting: true } };
+
+    const result = aiConfiguration(config);
+
+    expect(result.rules).toBeUndefined();
+    expect(result.semicolon).toBe(DEFAULT_LINT_CONFIG.semicolon);
+    expect(result.enabled_rules).not.toContain("trailing-whitespace");
+    expect(result.enabled_rules).toContain("property-sorting");
+    expect(result.enabled_rules).toContain("argument-types");
+    expect(result.enabled_rules).toEqual([...(result.enabled_rules as string[])].sort());
+  });
+});
+
 describe("formatIssuesForAi", () => {
   // ruleTagsByRule is module state that outlives mountFixture(); reset it so
   // it doesn't leak into later tests (see the loadRuleTags/applyRuleTags
@@ -3003,7 +3019,7 @@ describe("formatIssuesForAi", () => {
         target_game: "Skyrim SE/AE",
         generated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       },
-      configuration: DEFAULT_LINT_CONFIG,
+      configuration: aiConfiguration(DEFAULT_LINT_CONFIG),
       filters: {
         filename_pattern: "",
         severities: ["error", "warning", "info"],

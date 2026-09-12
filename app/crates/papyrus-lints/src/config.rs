@@ -423,6 +423,30 @@ pub struct Rules {
     pub unguarded_self_recursion: bool,
 }
 
+impl Rules {
+    /// The hyphenated ids of every enabled rule here, alphabetically
+    /// sorted. Property names are mapped to rule ids by replacing
+    /// underscores with hyphens (see this struct's own docs above), so
+    /// this stays correct without listing each field by hand as new rules
+    /// are added. Used by the AI export's compact `enabled_rules` list
+    /// (`papyrus-lint-cli`'s `AiReport`/the desktop app's
+    /// `formatIssuesForAi`) instead of repeating this struct's full set of
+    /// boolean flags on every export.
+    pub fn enabled_ids(&self) -> Vec<String> {
+        let value = serde_json::to_value(self).expect("Rules always serializes to an object");
+        let object = value
+            .as_object()
+            .expect("Rules serializes as a JSON object");
+        let mut ids: Vec<String> = object
+            .iter()
+            .filter(|(_, enabled)| enabled.as_bool() == Some(true))
+            .map(|(name, _)| name.replace('_', "-"))
+            .collect();
+        ids.sort();
+        ids
+    }
+}
+
 impl Default for Rules {
     fn default() -> Self {
         Self {
@@ -573,6 +597,22 @@ mod tests {
     fn empty_document_yields_defaults() {
         assert_eq!(parse("").unwrap(), Config::default());
         assert_eq!(parse("   \n").unwrap(), Config::default());
+    }
+
+    #[test]
+    fn enabled_ids_hyphenates_names_sorts_and_omits_disabled_rules() {
+        let rules = Rules {
+            property_sorting: true,     // false by default
+            trailing_whitespace: false, // true by default
+            ..Rules::default()
+        };
+        let ids = rules.enabled_ids();
+
+        assert!(!ids.contains(&"trailing-whitespace".to_string()));
+        assert!(ids.contains(&"property-sorting".to_string()));
+        assert!(ids.contains(&"argument-types".to_string()));
+        assert!(ids.is_sorted());
+        assert!(ids.iter().all(|id| !id.contains('_')));
     }
 
     #[test]

@@ -135,10 +135,12 @@ fn ai_format_includes_source_and_triggered_rule_details() {
     assert_eq!(generated_at.len(), 24);
     assert!(generated_at.ends_with('Z'));
     assert_eq!(report["configuration"]["semicolon"], false);
-    assert_eq!(
-        report["configuration"]["rules"]["trailing_whitespace"],
-        true
-    );
+    assert!(report["configuration"]["rules"].is_null());
+    let enabled_rules = report["configuration"]["enabled_rules"]
+        .as_array()
+        .expect("enabled_rules should be an array");
+    assert!(enabled_rules.contains(&serde_json::json!("trailing-whitespace")));
+    assert!(!enabled_rules.contains(&serde_json::json!("property-sorting")));
     assert_eq!(report["findings"]["files"][0]["source"]["type"], "content");
     assert_eq!(report["findings"]["files"][0]["source"]["content"], source);
     assert_eq!(
