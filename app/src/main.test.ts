@@ -1798,6 +1798,7 @@ describe("loadAppVersion", () => {
 describe("loadRuleTags / applyRuleTags", () => {
   const trailingWhitespaceTags: RuleTagsInfo = {
     rule: "trailing-whitespace",
+    description: "Test description for trailing whitespace.",
     kinds: ["style"],
     importance: "low",
     auto_fixable: true,
@@ -1848,8 +1849,8 @@ describe("matchesTagFilters", () => {
   // beforeEach.
   function useSampleTags() {
     applyRuleTags([
-      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
-      { rule: "argument-types", kinds: ["correctness"], importance: "high", auto_fixable: false },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false },
     ]);
   }
 
@@ -1936,8 +1937,8 @@ describe("matchesTagFilters", () => {
 
 describe("populateRuleFilterGroups (via applyRuleTags)", () => {
   const sampleTags: RuleTagsInfo[] = [
-    { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
-    { rule: "argument-types", kinds: ["performance", "correctness"], importance: "high", auto_fixable: false },
+    { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
+    { rule: "argument-types", description: "Test description for argument types.", kinds: ["performance", "correctness"], importance: "high", auto_fixable: false },
   ];
 
   // ruleTagsByRule/activeRules are module state that outlives mountFixture();
@@ -1990,8 +1991,8 @@ describe("populateRuleFilterGroups (via applyRuleTags)", () => {
 
   it("unchecks a kind's header checkbox once every rule in its select is deselected, and marks it indeterminate for a partial selection", () => {
     applyRuleTags([
-      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
-      { rule: "comma-spacing", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "comma-spacing", description: "Test description for comma spacing.", kinds: ["style"], importance: "low", auto_fixable: true },
     ]);
     const header = document.querySelector<HTMLInputElement>("#filter-kind-style")!;
     expect(header.checked).toBe(true);
@@ -2012,7 +2013,7 @@ describe("populateRuleFilterGroups (via applyRuleTags)", () => {
   });
 
   it("checking a kind's header checkbox re-selects every rule in its select", () => {
-    applyRuleTags([{ rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true }]);
+    applyRuleTags([{ rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true }]);
     const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
     select.options[0].selected = false;
     select.dispatchEvent(new Event("change"));
@@ -2368,7 +2369,7 @@ describe("buildPscResultItem / renderPscResults", () => {
     // See the matchesTagFilters describe block above for why applyRuleTags
     // is called synchronously right here, with no `await` before it.
     applyRuleTags([
-      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
     ]);
     try {
       const item = buildPscResultItem(
@@ -2387,7 +2388,7 @@ describe("buildPscResultItem / renderPscResults", () => {
   });
 
   it("omits the auto-fixable badge for a fixable rule's finding that its own message says can't be fixed", () => {
-    applyRuleTags([{ rule: "type-casing", kinds: ["style"], importance: "low", auto_fixable: true }]);
+    applyRuleTags([{ rule: "type-casing", description: "Test description for type casing.", kinds: ["style"], importance: "low", auto_fixable: true }]);
     try {
       const item = buildPscResultItem(
         outcome({
@@ -2421,8 +2422,8 @@ describe("buildPscResultItem / renderPscResults", () => {
 
   it("hides a finding whose rule is deselected in its kind's 'Filter by rule' multiselect", () => {
     applyRuleTags([
-      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
-      { rule: "comma-spacing", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "comma-spacing", description: "Test description for comma spacing.", kinds: ["style"], importance: "low", auto_fixable: true },
     ]);
     try {
       const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
@@ -2511,7 +2512,7 @@ describe("buildPscResultItem / renderPscResults", () => {
   });
 
   it("renderPscResults respects the active tag filters", () => {
-    applyRuleTags([{ rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true }]);
+    applyRuleTags([{ rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true }]);
     try {
       document.querySelector<HTMLInputElement>("#filter-kind-style")!.checked = false;
       document.querySelector<HTMLInputElement>("#filter-kind-style")!.dispatchEvent(new Event("change"));
@@ -2863,8 +2864,8 @@ describe("formatIssuesForAi", () => {
 
   it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website/target_game header, plus rule_details for every triggered rule", () => {
     applyRuleTags([
-      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
-      { rule: "forbidden-functions", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
     ]);
 
     const files = [
@@ -2892,8 +2893,8 @@ describe("formatIssuesForAi", () => {
         files: asJson.files.map((file: { path: string }) => ({ ...file, source: null })),
       },
       rule_details: [
-        { rule: "forbidden-functions", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
-        { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+        { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
+        { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       ],
     });
   });

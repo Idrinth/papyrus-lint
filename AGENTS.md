@@ -827,13 +827,20 @@ engine.
 `papyrus-lints`' `tags` module publishes a `RuleTags` entry — kind
 keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
 `"maintainability"`), an `Importance` (`Low`/`Medium`/`High`) rating how
-much fixing that rule matters for keeping a codebase maintainable, and an
+much fixing that rule matters for keeping a codebase maintainable, a
+`description` copied verbatim from that rule's row in the README's
+[Implemented Lints](README.md#implemented-lints) tables (kept in sync by
+hand the same way `docs/nexuspage.bbcode`'s own lint descriptions are —
+see "Keeping agent instructions synchronized" below), and an
 `auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
 separately, so the two can never drift apart — for every id in
 `KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
 desktop app's `list_rule_tags` Tauri command (`app/src-tauri/src/lib.rs`)
 exposes the same metadata to the frontend as a JSON-friendly
-`RuleTagsInfo` per rule; `app/src/main.ts` fetches it once at startup
+`RuleTagsInfo` per rule (its `description` is also what the Lint results
+tab's "Export for AI" button carries in each `rule_details` entry — see
+the README's Export for AI documentation); `app/src/main.ts` fetches it
+once at startup
 (`loadRuleTags`/`applyRuleTags`), indexes it by rule id, and uses it both
 to render each lint finding's kind/importance/auto-fixable badges (see
 `buildFindingTagsEl`) and to drive the Lint results tab's filters
