@@ -919,6 +919,38 @@ class VideosPageTest(unittest.TestCase):
         self.assertIn("<footer>v2&lt;&amp;&quot;</footer>", output)
 
 
+class ImprintPageTest(unittest.TestCase):
+    def test_build_imprint_page_applies_shared_chrome(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            includes_dir = pages_dir / "includes"
+            out_dir = root / "out"
+            includes_dir.mkdir(parents=True)
+            out_dir.mkdir()
+            (pages_dir / "imprint.template.html").write_text(
+                "<!--SITE_HEADER--><main>Legal Notice</main><!--SITE_FOOTER-->",
+                encoding="utf-8",
+            )
+            (includes_dir / "header.html").write_text("<header>Imprint</header>", encoding="utf-8")
+            (includes_dir / "footer.html").write_text(
+                "<footer><!--VERSION--></footer>", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "INCLUDES_DIR", includes_dir),
+                patch.object(page_builder, "render_funding_links", return_value=""),
+            ):
+                page_builder.build_imprint_page(out_dir, 'v2<&"')
+
+            output = (out_dir / "imprint.html").read_text(encoding="utf-8")
+
+        self.assertIn("<header>Imprint</header>", output)
+        self.assertIn("Legal Notice", output)
+        self.assertIn("<footer>v2&lt;&amp;&quot;</footer>", output)
+
+
 class ActionPageTest(unittest.TestCase):
     def test_build_action_page_renders_the_downloaded_readme_and_replaces_markers(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1206,6 +1238,7 @@ class RepositoryConfigurationTest(unittest.TestCase):
                 "<!--ACTION_CONTENT-->",
             },
             "coverage.template.html": {"<!--COVERAGE_VERSION-->", "<!--COVERAGE_CONTENT-->"},
+            "imprint.template.html": set(),
             "docs.template.html": {
                 "<!--DOC_TITLE-->",
                 "<!--DOC_DESCRIPTION-->",
@@ -1249,6 +1282,7 @@ class SitemapAndRobotsTest(unittest.TestCase):
                 "https://example.test/action.html",
                 "https://example.test/videos.html",
                 "https://example.test/coverage.html",
+                "https://example.test/imprint.html",
                 "https://example.test/docs/index.html",
                 "https://example.test/docs/guide.html",
             ],
@@ -1320,6 +1354,9 @@ PapyrusLinterCLI example.psc
             (pages_dir / "action.template.html").write_text(
                 "<!--ACTION_TITLE--><!--ACTION_DESCRIPTION--><!--ACTION_CONTENT-->",
                 encoding="utf-8",
+            )
+            (pages_dir / "imprint.template.html").write_text(
+                "<main>Legal Notice</main>", encoding="utf-8"
             )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
             (pages_dir / "theme.js").write_text("/* theme js */", encoding="utf-8")
@@ -1408,11 +1445,15 @@ PapyrusLinterCLI example.psc
             self.assertIn(f"<loc>{page_builder.SITE_URL}action.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}videos.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}coverage.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{page_builder.SITE_URL}imprint.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}docs/index.html</loc>", sitemap_output)
 
             coverage_output = (out_dir / "coverage.html").read_text(encoding="utf-8")
             self.assertIn("v1.2.3", coverage_output)
             self.assertIn("Coverage data isn't available for this build.", coverage_output)
+
+            imprint_output = (out_dir / "imprint.html").read_text(encoding="utf-8")
+            self.assertIn("Legal Notice", imprint_output)
 
     def test_build_rejects_a_missing_lint_table_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
