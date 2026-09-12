@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.schema.json",
   "title": "Papyrus Lint Export for AI document",
-  "description": "The JSON document downloaded by the desktop app's Export for AI feature. It contains the currently filtered lint findings and metadata for each recognized rule represented in those findings.",
+  "description": "The JSON document produced by the desktop app's Export for AI feature or the CLI's --format ai option. It contains the GUI's currently filtered lint findings, or the CLI's unfiltered findings, and metadata for each recognized rule represented in those findings.",
   "type": "object",
   "additionalProperties": false,
   "required": [
