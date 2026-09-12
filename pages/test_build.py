@@ -1315,6 +1315,71 @@ class SitemapAndRobotsTest(unittest.TestCase):
         )
 
 
+class RepositoryBuildIntegrationTest(unittest.TestCase):
+    """Exercise the complete builder against the repository's real inputs."""
+
+    def test_real_site_build_renders_every_page_and_asset(self) -> None:
+        action_response = MagicMock()
+        action_response.__enter__.return_value.read.return_value = (
+            b"# Papyrus Lint Action\n\nLint Papyrus projects in GitHub Actions.\n"
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            out_dir = Path(directory) / "site"
+            with patch.object(page_builder, "urlopen", return_value=action_response):
+                page_builder.build(out_dir, version="v9.8.7")
+
+            expected_html = {
+                "index.html",
+                "action.html",
+                "videos.html",
+                "coverage.html",
+                "imprint.html",
+                "docs/index.html",
+                *(f"docs/{doc['slug']}.html" for doc in page_builder.DOCS),
+            }
+            built_html = {
+                path.relative_to(out_dir).as_posix() for path in out_dir.rglob("*.html")
+            }
+            self.assertEqual(built_html, expected_html)
+
+            for relative_path in sorted(expected_html):
+                with self.subTest(page=relative_path):
+                    output = (out_dir / relative_path).read_text(encoding="utf-8")
+                    self.assertIn("<!doctype html>", output.lower())
+                    self.assertIn("v9.8.7", output)
+                    self.assertNotIn("<!--", output)
+
+            index = (out_dir / "index.html").read_text(encoding="utf-8")
+            for category in page_builder.LINT_CATEGORIES:
+                with self.subTest(lint_category=category):
+                    self.assertIn(f"<h3>{category}</h3>", index)
+            for doc in page_builder.DOCS:
+                with self.subTest(homepage_doc=doc["slug"]):
+                    self.assertIn(f'href="docs/{doc["slug"]}.html"', index)
+
+            docs_index = (out_dir / "docs" / "index.html").read_text(encoding="utf-8")
+            self.assertIn('href="../index.html#top"', docs_index)
+            self.assertIn('src="../theme.js"', docs_index)
+            self.assertIn('href="../styles.css"', docs_index)
+            for doc in page_builder.DOCS:
+                with self.subTest(docs_index_doc=doc["slug"]):
+                    self.assertIn(f'href="{doc["slug"]}.html"', docs_index)
+
+            self.assertEqual(
+                (out_dir / "CNAME").read_text(encoding="utf-8"),
+                page_builder.CNAME_FILE.read_text(encoding="utf-8"),
+            )
+            for output_name in page_builder.ASSETS:
+                with self.subTest(asset=output_name):
+                    self.assertTrue((out_dir / "assets" / output_name).is_file())
+            for output_name in page_builder.MODERN_FORMAT_ASSETS:
+                stem = Path(output_name).stem
+                with self.subTest(modern_asset=output_name):
+                    self.assertTrue((out_dir / "assets" / f"{stem}.webp").is_file())
+                    self.assertTrue((out_dir / "assets" / f"{stem}.avif").is_file())
+
+
 class BuildTest(unittest.TestCase):
     def test_build_replaces_content_copies_assets_and_cleans_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
