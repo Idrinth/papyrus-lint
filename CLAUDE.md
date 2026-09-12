@@ -873,8 +873,18 @@ independent filter dimension of its own. The separate "Show
 importance"/"Auto-fixable only" filters are unaffected. A finding whose
 rule carries no tag metadata (e.g. a compiler-reported diagnostic; see
 `app/src-tauri/src/compile_diagnostics.rs`) always passes those filters
-rather than being hidden. The CLI's `--tag <kind>` flag builds on the
-same metadata to run only one kind's worth of lints/fixes at a time,
+rather than being hidden. None of the "Show severities", "Filter by tag /
+rule" (across every kind's multiselect combined, not per kind), or "Show
+importance" groups can ever be left with every one of their own
+checkboxes/options deselected — the last remaining one in a group refuses
+to uncheck, reverting the DOM back to its prior state via
+`syncRuleFilterSelections` for the rule case — since an empty `severities`/
+`importances`/`rules` selection would otherwise be ambiguous between "the
+user excluded everything" and "no restriction" once exported (see the
+Export for AI `filters` object below), and would silently make "Export
+issues"/"Export for AI" produce an empty export. The CLI's `--tag <kind>`
+flag builds on the same metadata to run only one kind's worth of
+lints/fixes at a time,
 matched case-insensitively against a rule's `kinds` (e.g. `--tag style`):
 given without `fix`, it restricts the reported diagnostics to matching
 rules; given with `fix`, it also restricts which automatic fixes run, via

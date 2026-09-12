@@ -56,8 +56,9 @@
           "type": "string"
         },
         "severities": {
-          "description": "The diagnostic severity buckets selected in the GUI.",
+          "description": "The diagnostic severity buckets selected in the GUI. The GUI never lets every bucket in a filter group (severities, importances, or rules) be deselected at once, so this is never empty; a bucket left out here was deliberately excluded, not \"no restriction\".",
           "type": "array",
+          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "type": "string",
@@ -70,8 +71,9 @@
           }
         },
         "importances": {
-          "description": "The rule importance levels selected in the GUI.",
+          "description": "The rule importance levels selected in the GUI. Never empty; see severities above for why.",
           "type": "array",
+          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "type": "string",
@@ -83,8 +85,9 @@
           }
         },
         "rules": {
-          "description": "The rule ids selected across the GUI's kind-grouped rule filters.",
+          "description": "The rule ids selected across the GUI's kind-grouped rule filters. Never empty; see severities above for why. A finding whose rule carries no known tag metadata (e.g. a compiler-reported diagnostic) is exempt from this filter and importances, so it can still appear in findings even though its own rule id isn't listed here.",
           "type": "array",
+          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "type": "string",

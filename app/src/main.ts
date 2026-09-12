@@ -3554,6 +3554,14 @@ window.addEventListener("DOMContentLoaded", () => {
   for (const severity of SEVERITIES) {
     severityFilterEls[severity]?.addEventListener("change", () => {
       const checked = severityFilterEls[severity]?.checked ?? true;
+      // Refuse to leave every severity deselected: an empty `severities`
+      // filter can never mean "no restriction" (see activeFiltersForExport/
+      // the AI export schema), so it must not be reachable from the GUI at
+      // all - revert the checkbox instead of letting the set empty out.
+      if (!checked && activeSeverities.size === 1) {
+        severityFilterEls[severity]!.checked = true;
+        return;
+      }
       if (checked) {
         activeSeverities.add(severity);
       } else {
@@ -3568,6 +3576,25 @@ window.addEventListener("DOMContentLoaded", () => {
     renderPscResults(currentPscOutcomes);
   });
 
+  // Applies a rule selection change (from either a kind's multiselect or its
+  // header "select all"/"select none" checkbox, both below) computed by
+  // `apply`, then reverts it in full if the result would leave activeRules
+  // empty across every kind - the same "at least one bucket" guarantee
+  // severities/importances enforce above, kept here as one helper since a
+  // rule can only be judged empty globally, not per-select.
+  function applyRuleSelectionChange(apply: () => void) {
+    const previousActiveRules = new Set(activeRules);
+    apply();
+    if (activeRules.size === 0) {
+      activeRules.clear();
+      for (const rule of previousActiveRules) {
+        activeRules.add(rule);
+      }
+    }
+    syncRuleFilterSelections();
+    renderPscResults(currentPscOutcomes);
+  }
+
   tagKindFilterEls = Object.fromEntries(
     TAG_KINDS.map((kind) => [kind, document.querySelector<HTMLInputElement>(`#filter-kind-${kind}`)]),
   ) as Partial<Record<TagKind, HTMLInputElement>>;
@@ -3576,15 +3603,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // Selecting/deselecting an individual rule in this kind's multiselect.
     select?.addEventListener("change", () => {
-      for (const option of select.options) {
-        if (option.selected) {
-          activeRules.add(option.value);
-        } else {
-          activeRules.delete(option.value);
+      applyRuleSelectionChange(() => {
+        for (const option of select.options) {
+          if (option.selected) {
+            activeRules.add(option.value);
+          } else {
+            activeRules.delete(option.value);
+          }
         }
-      }
-      syncRuleFilterSelections();
-      renderPscResults(currentPscOutcomes);
+      });
     });
 
     // The kind's own header checkbox: a "select all"/"select none" toggle
@@ -3593,15 +3620,15 @@ window.addEventListener("DOMContentLoaded", () => {
     // above).
     tagKindFilterEls[kind]?.addEventListener("change", () => {
       const checked = tagKindFilterEls[kind]?.checked ?? true;
-      for (const option of select?.options ?? []) {
-        if (checked) {
-          activeRules.add(option.value);
-        } else {
-          activeRules.delete(option.value);
+      applyRuleSelectionChange(() => {
+        for (const option of select?.options ?? []) {
+          if (checked) {
+            activeRules.add(option.value);
+          } else {
+            activeRules.delete(option.value);
+          }
         }
-      }
-      syncRuleFilterSelections();
-      renderPscResults(currentPscOutcomes);
+      });
     });
   }
 
@@ -3614,6 +3641,11 @@ window.addEventListener("DOMContentLoaded", () => {
   for (const importance of TAG_IMPORTANCES) {
     tagImportanceFilterEls[importance]?.addEventListener("change", () => {
       const checked = tagImportanceFilterEls[importance]?.checked ?? true;
+      // Same "at least one bucket" guarantee as the severity filters above.
+      if (!checked && activeTagImportances.size === 1) {
+        tagImportanceFilterEls[importance]!.checked = true;
+        return;
+      }
       if (checked) {
         activeTagImportances.add(importance);
       } else {
