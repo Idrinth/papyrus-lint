@@ -33,6 +33,14 @@ Function DoSomething(Actor a, Actor b, Form SomeItem)
 EndFunction
 ```
 
+If you don't want this to turn up, because you actually meant what you wrote:
+
+```papyrus
+Function DoSomething(Actor a, Actor b, Form SomeItem)
+    a.RemoveItem(SomeItem, 1, b); @disable 
+EndFunction
+```
+
 The strict boolean check identifies this issue because the first call passes
 the `Actor` value `b` to a `Bool` parameter. This specific mistake cost me a
 good two hours finding manually in one of my mods.
