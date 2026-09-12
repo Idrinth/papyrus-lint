@@ -3,8 +3,9 @@ use std::path::Path;
 
 use papyrus_lint_core::achlist::parse_achlist;
 use papyrus_lint_core::script_locator::{
-    build_script_index, conflicting_script_versions_in_index, find_psc_file_in_index,
-    find_psc_files_recursively, CONFLICTING_SCRIPT_VERSIONS_RULE,
+    build_script_index, conflicting_script_versions_among, conflicting_script_versions_in_index,
+    detected_script_roots, find_psc_file_in_index, find_psc_files_recursively,
+    CONFLICTING_SCRIPT_VERSIONS_RULE,
 };
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, PscEncoding};
 
@@ -74,4 +75,81 @@ fn recursive_discovery_returns_a_deterministic_achlist_ready_file_set() {
 
     assert_eq!(discovered, expected);
     assert!(discovered.iter().all(|path| path.is_file()));
+}
+
+#[test]
+fn additional_root_layout_pair_is_indexed_after_conventional_roots() {
+    let project = tempfile::tempdir().expect("failed to create project directory");
+    let conventional = project.path().join("scripts/source/Shared.psc");
+    let configured = project.path().join("imports/source/scripts/shared.PSC");
+    let paired = project.path().join("imports/scripts/source/Paired.psc");
+    write_file(&conventional, "ScriptName Shared\n");
+    write_file(&configured, "ScriptName Shared extends Quest\n");
+    write_file(&paired, "ScriptName Paired\n");
+
+    let additional_roots = vec!["imports/source/scripts".to_string()];
+    let roots = detected_script_roots(project.path(), &additional_roots);
+    let index = build_script_index(project.path(), &additional_roots);
+
+    assert_eq!(
+        roots,
+        vec![
+            project.path().join("scripts/source"),
+            project.path().join("imports/source/scripts"),
+            project.path().join("imports/scripts/source"),
+        ]
+    );
+    assert_eq!(
+        find_psc_file_in_index(&index, "shared.psc"),
+        Some(conventional)
+    );
+    assert_eq!(find_psc_file_in_index(&index, "PAIRED"), Some(paired));
+}
+
+#[test]
+fn identical_known_script_copies_do_not_report_a_conflict() {
+    let project = tempfile::tempdir().expect("failed to create project directory");
+    let first = project.path().join("one/Example.psc");
+    let second = project.path().join("two/example.PSC");
+    write_file(&first, "ScriptName Example\n");
+    write_file(&second, "ScriptName Example\n");
+
+    let diagnostics =
+        conflicting_script_versions_among(&first, &[first.clone(), second.clone(), second]);
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn known_script_conflicts_are_sorted_and_deduplicated() {
+    let project = tempfile::tempdir().expect("failed to create project directory");
+    let selected = project.path().join("selected/Example.psc");
+    let conflict_a = project.path().join("a/example.PSC");
+    let conflict_b = project.path().join("b/EXAMPLE.psc");
+    let unrelated = project.path().join("c/Other.psc");
+    write_file(&selected, "ScriptName Example\n");
+    write_file(&conflict_a, "ScriptName Example extends Form\n");
+    write_file(&conflict_b, "ScriptName Example extends Quest\n");
+    write_file(&unrelated, "ScriptName Other\n");
+
+    let diagnostics = conflicting_script_versions_among(
+        &selected,
+        &[
+            conflict_b.clone(),
+            unrelated,
+            conflict_a.clone(),
+            conflict_b.clone(),
+        ],
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+    assert!(diagnostics[0]
+        .message
+        .contains(&conflict_a.display().to_string()));
+    assert!(diagnostics[1]
+        .message
+        .contains(&conflict_b.display().to_string()));
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule == CONFLICTING_SCRIPT_VERSIONS_RULE));
 }
