@@ -516,7 +516,8 @@
         },
         "website": {
           "description": "The Papyrus Lint website, where additional rule and configuration documentation is available.",
-          "type": "string"
+          "type": "string",
+          "format": "uri"
         },
         "target_game": {
           "description": "The Papyrus dialect/engine these findings and rule details were produced for. Papyrus Lint has no per-project game/edition setting, so this is fixed.",
@@ -525,7 +526,8 @@
         "generated_at": {
           "description": "The UTC date and time at which this export was generated, in RFC 3339 format.",
           "type": "string",
-          "format": "date-time"
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
         }
       }
     },
