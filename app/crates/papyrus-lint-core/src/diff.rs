@@ -367,4 +367,66 @@ mod tests {
 
         assert_eq!(hunk_count, 1);
     }
+
+    #[test]
+    fn insertion_into_empty_file_uses_zero_old_range() {
+        let diff = unified_diff("new.psc", "", "ScriptName New\nFunction Run()\n");
+
+        assert_eq!(
+            diff,
+            "--- new.psc\n\
+             +++ new.psc\n\
+             @@ -0,0 +1,2 @@\n\
+             +ScriptName New\n\
+             +Function Run()\n"
+        );
+    }
+
+    #[test]
+    fn deletion_of_entire_file_uses_zero_new_range() {
+        let diff = unified_diff("removed.psc", "ScriptName Old\n", "");
+
+        assert_eq!(
+            diff,
+            "--- removed.psc\n\
+             +++ removed.psc\n\
+             @@ -1,1 +0,0 @@\n\
+             -ScriptName Old\n"
+        );
+    }
+
+    #[test]
+    fn preserves_carriage_returns_in_crlf_source() {
+        let diff = unified_diff("windows.psc", "one\r\ntwo \r\n", "one\r\ntwo\r\n");
+
+        assert!(diff.contains(" one\r\n"));
+        assert!(diff.contains("-two \r\n"));
+        assert!(diff.contains("+two\r\n"));
+    }
+
+    #[test]
+    fn trailing_newline_alone_is_not_treated_as_a_line_change() {
+        assert_eq!(unified_diff("a.psc", "one\ntwo", "one\ntwo\n"), "");
+    }
+
+    #[test]
+    fn oversized_lcs_input_falls_back_to_a_whole_file_replacement() {
+        // 4,472 lines per side make the LCS matrix larger than
+        // MAX_LCS_CELLS, exercising the bounded-memory fallback.
+        let original = (0..4_472)
+            .map(|line| format!("old-{line}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let updated = (0..4_472)
+            .map(|line| format!("new-{line}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let diff = unified_diff("large.psc", &original, &updated);
+
+        assert!(diff.starts_with("--- large.psc\n+++ large.psc\n@@ -1,4472 +1,4472 @@\n-old-0\n"));
+        assert!(diff.contains("-old-4471\n+new-0\n"));
+        assert!(diff.ends_with("+new-4471\n"));
+        assert_eq!(diff.matches("@@ ").count(), 1);
+    }
 }
