@@ -25,7 +25,7 @@
     "header": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["tool", "version", "website"],
+      "required": ["tool", "version", "website", "target_game"],
       "properties": {
         "tool": {
           "description": "The application that produced this document.",
@@ -39,6 +39,10 @@
         "website": {
           "description": "The Papyrus Lint website, where additional rule and configuration documentation is available.",
           "const": "https://papyrus-lint.idrinth.de"
+        },
+        "target_game": {
+          "description": "The Papyrus dialect/engine these findings and rule details were produced for. Papyrus Lint has no per-project game/edition setting, so this is fixed.",
+          "const": "Skyrim SE/AE"
         }
       }
     },

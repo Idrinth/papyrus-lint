@@ -845,8 +845,9 @@ assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
 [contract published as a JSON Schema](docs/papyrus-lint-ai-export.schema.json)):
 a `header`
-identifying the tool name, running version, and
-[project website](https://papyrus-lint.idrinth.de) for further lookups; a
+identifying the tool name, running version,
+[project website](https://papyrus-lint.idrinth.de) for further lookups, and
+target game (`Skyrim SE/AE`); a
 `findings` section in the exact same shape the "Export issues" JSON format
 uses; and a `rule_details` array carrying the full tag metadata (kind(s),
 importance, and whether it's auto-fixable) for every rule id that actually

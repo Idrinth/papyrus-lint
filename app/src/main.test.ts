@@ -2861,7 +2861,7 @@ describe("formatIssuesForAi", () => {
     applyRuleTags([]);
   });
 
-  it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website header, plus rule_details for every triggered rule", () => {
+  it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website/target_game header, plus rule_details for every triggered rule", () => {
     applyRuleTags([
       { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
       { rule: "forbidden-functions", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
@@ -2883,6 +2883,7 @@ describe("formatIssuesForAi", () => {
         tool: "Papyrus Lint",
         version: "1.2.3",
         website: "https://papyrus-lint.idrinth.de",
+        target_game: "Skyrim SE/AE",
       },
       findings: JSON.parse(formatIssuesAsJson(files)),
       rule_details: [
@@ -3041,6 +3042,7 @@ describe("Export issues button", () => {
       tool: "Papyrus Lint",
       version: "9.9.9",
       website: "https://papyrus-lint.idrinth.de",
+      target_game: "Skyrim SE/AE",
     });
   });
 
