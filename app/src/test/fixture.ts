@@ -178,7 +178,12 @@ export const FIXTURE_HTML = `
               <option value="json">JSON</option>
             </select>
             <button type="button" id="export-issues-button" disabled>Export issues</button>
-            <button type="button" id="export-ai-button" disabled>Export for AI</button>
+            <button
+              type="button"
+              id="export-ai-button"
+              title="Export a self-contained JSON file with the Papyrus source, findings, rule details, and Papyrus Lint version—everything an AI assistant needs to help resolve the issues"
+              disabled
+            >Export for AI</button>
           </div>
           <ul id="psc-result-list"></ul>
         </div>
