@@ -121,7 +121,7 @@
           "enum": ["error", "warning", "info"]
         },
         "message": {
-          "description": "The human-readable diagnostic message, including its severity prefix when classified.",
+          "description": "The human-readable diagnostic message.",
           "type": "string",
           "minLength": 1
         }
