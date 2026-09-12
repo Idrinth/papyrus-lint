@@ -489,7 +489,8 @@
         "rule",
         "description",
         "kinds",
-        "importance"
+        "importance",
+        "auto_fixable"
       ],
       "properties": {
         "rule": {
@@ -519,6 +520,10 @@
         "importance": {
           "description": "The rule's relative importance.",
           "$ref": "#/$defs/importance"
+        },
+        "auto_fixable": {
+          "description": "Whether Papyrus Lint can automatically fix this rule's findings.",
+          "type": "boolean"
         }
       }
     }

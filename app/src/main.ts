@@ -2568,7 +2568,7 @@ export async function formatIssuesForAi(
     .sort((a, b) => a.localeCompare(b))
     .map((rule) => ruleTagsByRule.get(rule))
     .filter((info): info is RuleTagsInfo => info !== undefined)
-    .map(({ rule, description, kinds, importance }) => ({ rule, description, kinds, importance }));
+    .map(({ rule, description, kinds, importance, auto_fixable }) => ({ rule, description, kinds, importance, auto_fixable }));
 
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.

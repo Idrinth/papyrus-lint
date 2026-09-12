@@ -910,7 +910,7 @@ all (e.g. `type-casing`'s own "no automatic fix" case) or would shift the
 file's line count elsewhere (e.g. `property-sorting` relocating a
 property's declaration), so an assistant can see a fix's effect without
 asking the user to apply it first; and a `rule_details` array carrying the
-rule metadata (kind(s), importance, and the
+rule metadata (kind(s), importance, whether it is auto-fixable, and the
 rule's own detailed `description`, copied verbatim from its row in the
 [Implemented Lints](#implemented-lints) table above) for every rule id
 that actually appears among the exported findings and has known tag

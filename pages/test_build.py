@@ -16,14 +16,14 @@ from pages import build as page_builder
 
 
 class PublishedSchemaTest(unittest.TestCase):
-    def test_ai_export_rule_details_do_not_expose_auto_fixability(self) -> None:
+    def test_ai_export_rule_details_expose_auto_fixability(self) -> None:
         schema = json.loads(
             (page_builder.DOCS_DIR / "papyrus-lint-ai-export.v2.schema.json").read_text(encoding="utf-8")
         )
 
         rule_detail = schema["$defs"]["ruleDetail"]
-        self.assertNotIn("auto_fixable", rule_detail["required"])
-        self.assertNotIn("auto_fixable", rule_detail["properties"])
+        self.assertIn("auto_fixable", rule_detail["required"])
+        self.assertEqual(rule_detail["properties"]["auto_fixable"]["type"], "boolean")
 
     def test_ai_export_external_diagnostic_fields_require_each_other(self) -> None:
         schema = json.loads(
