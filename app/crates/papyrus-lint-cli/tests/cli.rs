@@ -130,6 +130,11 @@ fn ai_format_includes_source_and_triggered_rule_details() {
         .expect("generated_at should be a string");
     assert_eq!(generated_at.len(), 24);
     assert!(generated_at.ends_with('Z'));
+    assert_eq!(report["configuration"]["semicolon"], false);
+    assert_eq!(
+        report["configuration"]["rules"]["trailing_whitespace"],
+        true
+    );
     assert_eq!(report["findings"]["files"][0]["source"], source);
     assert_eq!(
         report["findings"]["files"][0]["diagnostics"][0]["rule"],

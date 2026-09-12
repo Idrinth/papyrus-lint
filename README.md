@@ -853,7 +853,8 @@ a `header`
 identifying the tool name, running version,
 [project website](https://papyrus-lint.idrinth.de) for further lookups, and
 target game (`Skyrim SE/AE`), plus the UTC date and time at which the export
-was generated; a
+was generated; a `configuration` object containing the fully resolved lint
+settings used for the run (including all defaulted values); a
 `findings` section in the same shape the "Export issues" JSON format uses,
 except each file entry also carries a `source` field with that script's
 current on-disk contents (or an error message describing why it couldn't
