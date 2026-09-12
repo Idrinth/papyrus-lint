@@ -34,6 +34,7 @@
     "rule_details": {
       "description": "Tag metadata for each recognized rule represented in findings. Triggered rule ids for which Papyrus Lint has no metadata are omitted.",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/ruleDetail"
       }
