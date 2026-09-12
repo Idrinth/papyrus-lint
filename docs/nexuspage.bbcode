@@ -9,6 +9,10 @@ This compiles, but the likely desired version is:
     a.RemoveItem(SomeItem, 1, false, b);
 EndFunction [/code]
 This would be found by the Strict Boolean Rule. [url=https://papyrus-lint.idrinth.de/docs/examples.html]More examples here.[/url]
+If you actually meant it, feel free to disable the lint:
+[code]Function DoSomething(Actor a, Actor b, Form SomeItem)
+    a.RemoveItem(SomeItem, 1, false, b); @disable
+EndFunction [/code]
 [heading]What this is NOT[/heading]
 [list]
 [*]A compiler[/*]
