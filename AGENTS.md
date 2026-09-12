@@ -1279,6 +1279,28 @@ a validated AST/token stream for that same source text -- namely
 `ast_cache::get`/`get_tokens`, above -- insert it directly instead of
 leaving the pass's first `parse()`/`tokenize()` call to compute it.
 
+The desktop app's code viewer has a "Preview fixes" button next to its
+whole-file "Apply fixes" button, the GUI counterpart of the CLI's
+`fix --dry-run`: `app/src/main.ts`'s `handleCodeViewerPreviewFixClick`/
+`previewRepairPscFile` call the `preview_repair_psc_file` Tauri command
+(`app/src-tauri/src/lib.rs`), which computes the same whole-file repair
+(`papyrus_lints::repair`) `repair_psc_file` applies but never writes it to
+disk, returning a standard unified diff (empty when nothing would change)
+instead. `renderDiffOutput` shows that diff in a `<pre id="code-viewer-
+diff-output">` panel beneath the viewer, coloring added/removed/context/
+header lines via their own `code-viewer__diff-line--*` class the way a
+typical diff viewer does. The diff renderer itself
+(`unified_diff`) lives in `papyrus_lint_core::diff` — moved there from
+`papyrus-lint-cli`'s own formerly-private `diff` module, which now imports
+it from there instead — so the CLI's `fix --dry-run` and the desktop app's
+`preview_repair_psc_file` command share the exact same diff output. The
+"Preview fixes" button shares "Apply fixes"'s visibility rule (view mode
+only, at least one fixable finding remaining) via
+`updateCodeViewerFixButtonsVisibility`; the shown preview itself is
+cleared again on switching to Edit or once a real "Apply fixes" run
+actually changes the file, since a stale preview would no longer be
+accurate at that point.
+
 ## Keeping agent instructions synchronized
 
 `AGENTS.md` and `CLAUDE.md` must contain the same project guidance. Whenever

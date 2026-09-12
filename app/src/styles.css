@@ -796,6 +796,43 @@ h1 {
   overflow-wrap: break-word;
 }
 
+.code-viewer__diff-output {
+  flex: none;
+  margin: 0;
+  padding: 0.5em 1em;
+  max-height: 14em;
+  overflow: auto;
+  border-top: 1px solid var(--color-border);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.8em;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.code-viewer__diff-output--error {
+  color: var(--color-error-strong);
+}
+
+.code-viewer__diff-line--add {
+  display: block;
+  color: var(--color-success-strong);
+}
+
+.code-viewer__diff-line--remove {
+  display: block;
+  color: var(--color-error-strong);
+}
+
+.code-viewer__diff-line--hunk,
+.code-viewer__diff-line--file {
+  display: block;
+  color: var(--color-text-muted);
+}
+
+.code-viewer__diff-line--context {
+  display: block;
+}
+
 .code-viewer__editor-highlight,
 .code-viewer__editor-textarea {
   position: absolute;

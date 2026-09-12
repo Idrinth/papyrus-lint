@@ -200,6 +200,7 @@ export const FIXTURE_HTML = `
       <div class="code-viewer__actions">
         <button type="button" id="code-viewer-edit" class="code-viewer__action">Edit</button>
         <button type="button" id="code-viewer-fix" class="code-viewer__action" hidden>Apply fixes</button>
+        <button type="button" id="code-viewer-preview-fix" class="code-viewer__action" hidden>Preview fixes</button>
         <button type="button" id="code-viewer-save" class="code-viewer__action" hidden>Save</button>
         <button type="button" id="code-viewer-save-compile" class="code-viewer__action" hidden>Save &amp; Compile</button>
         <button type="button" id="code-viewer-cancel" class="code-viewer__action" hidden>Cancel</button>
@@ -220,6 +221,7 @@ export const FIXTURE_HTML = `
         </div>
       </div>
       <pre id="code-viewer-compile-output" class="code-viewer__compile-output" hidden></pre>
+      <pre id="code-viewer-diff-output" class="code-viewer__diff-output" hidden></pre>
     </div>
   </dialog>
 

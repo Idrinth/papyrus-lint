@@ -200,21 +200,18 @@
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
 
-mod diff;
-
 use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use papyrus_lint_core::diff::unified_diff;
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, write_psc_source};
 use papyrus_lint_core::{achlist, ast_cache, config};
 use serde::Serialize;
-
-use diff::unified_diff;
 
 /// Walks up `psc_path`'s ancestors looking for a directory pair matching
 /// one of [`CANDIDATE_DIRS`] (`scripts/source` or `source/scripts`,

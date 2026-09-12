@@ -1,14 +1,16 @@
 //! Renders a standard unified diff (the same hunk format `diff -u`/`git
 //! diff` produce) between a script's original source and the source an
-//! automatic fix would produce, for the `fix --dry-run` flag (see
-//! `lib.rs`): shows what a fix *would* change without writing anything to
-//! disk.
+//! automatic fix would produce, for previewing a fix without writing it to
+//! disk: the CLI's `fix --dry-run` flag and the desktop app's code viewer
+//! "Preview fixes" button (`preview_repair_psc_file` in
+//! `app/src-tauri/src/lib.rs`) both call [`unified_diff`] to show what a fix
+//! *would* change.
 //!
 //! This is a small self-contained line-based diff (an LCS alignment,
 //! grouped into hunks with three lines of context, matching `diff -u`'s
-//! default) rather than a dependency on an external diff crate, since the
-//! CLI doesn't otherwise need one. It doesn't emit `diff`'s "\ No newline
-//! at end of file" marker for a file that doesn't end in a trailing
+//! default) rather than a dependency on an external diff crate, since
+//! neither caller otherwise needs one. It doesn't emit `diff`'s "\ No
+//! newline at end of file" marker for a file that doesn't end in a trailing
 //! newline — a rare case for a `.psc` script, and the diff is meant for a
 //! human to review rather than to be fed back into `patch`.
 
@@ -238,7 +240,7 @@ fn format_hunk_header(group: &[OpRange]) -> String {
 /// labeling both sides with `path_display` (the same path shown for this
 /// script elsewhere in the report). Returns an empty string when the two
 /// are identical.
-pub(crate) fn unified_diff(path_display: &str, original: &str, updated: &str) -> String {
+pub fn unified_diff(path_display: &str, original: &str, updated: &str) -> String {
     let old = split_lines(original);
     let new = split_lines(updated);
     if old == new {

@@ -800,6 +800,16 @@ refreshing the viewer's highlighted source in place, so fixing a file no
 longer requires closing the viewer and going back to the Lint results
 list first. It disappears again once nothing is left to fix.
 
+Next to it, a "Preview fixes" button computes that same whole-file repair
+without writing it to disk, rendering a standard unified diff (the same
+hunk format `diff -u`/`git diff` produce) beneath the viewer instead — the
+desktop app's equivalent of the CLI's `fix --dry-run`, for reviewing what
+"Apply fixes" would change before actually running it. It shares "Apply
+fixes"'s visibility (view mode only, and only while a fixable finding
+remains) but never touches the file, the viewer's findings, or the Lint
+results list; the shown preview is cleared again once you switch to Edit
+or actually apply a fix.
+
 The Lint results tab also has a "Mass fix an issue" panel, listing every
 auto-fixable rule with at least one finding anywhere among the currently
 loaded scripts (e.g. "Trailing whitespace (37)") next to a "Fix all ... in
