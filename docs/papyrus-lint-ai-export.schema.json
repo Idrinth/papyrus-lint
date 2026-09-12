@@ -38,7 +38,7 @@
         },
         "website": {
           "description": "The Papyrus Lint website, where additional rule and configuration documentation is available.",
-          "const": "https://papyrus-lint.idrinth.de"
+          "type": "string"
         }
       }
     },
