@@ -873,7 +873,9 @@ empty array would otherwise be ambiguous between "the user excluded
 everything" and "no restriction"), which also means the "Export
 issues"/"Export for AI" buttons can never produce an export with zero
 findings just by narrowing filters down to nothing; a
-`findings` section in the same shape the "Export issues" JSON format uses,
+`findings` section in the same shape the "Export issues" JSON format uses
+(minus its `files_with_diagnostics` count, always redundant here since every
+exported file already has at least one diagnostic),
 with a `summary` of error, warning, and info counts both for every individual
 file and for the complete export, while each file entry also carries a
 `source` field explicitly naming

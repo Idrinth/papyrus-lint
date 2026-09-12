@@ -34,6 +34,7 @@
     "rule_details": {
       "description": "Tag metadata for each recognized rule represented in findings. Triggered rule ids for which Papyrus Lint has no metadata are omitted.",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/ruleDetail"
       }
@@ -65,8 +66,7 @@
             "enum": [
               "error",
               "warning",
-              "info",
-              "other"
+              "info"
             ]
           }
         },
@@ -134,7 +134,8 @@
         },
         "indentation_width": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "A value of 0 is only valid for tabs. For spaces the value will be equal or greater 1"
         },
         "identifier_casing": {
           "type": "string",
@@ -535,12 +536,11 @@
       }
     },
     "findingsReport": {
-      "description": "The filtered findings, in the same shape as the desktop app's Export issues JSON report.",
+      "description": "The filtered findings, in the same shape as the desktop app's Export issues JSON report except without a `files_with_diagnostics` count: every exported file already has at least one diagnostic (see `fileReport`), so that count would always equal `files`' own length.",
       "type": "object",
       "additionalProperties": false,
       "required": [
         "files",
-        "files_with_diagnostics",
         "total_diagnostics",
         "summary",
         "diagnostic_counts"
@@ -551,11 +551,6 @@
           "items": {
             "$ref": "#/$defs/fileReport"
           }
-        },
-        "files_with_diagnostics": {
-          "description": "The number of exported files that have at least one diagnostic.",
-          "type": "integer",
-          "minimum": 0
         },
         "total_diagnostics": {
           "description": "The total number of exported diagnostics across all files.",

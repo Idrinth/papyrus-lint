@@ -1458,10 +1458,12 @@ export async function parsePscFiles(
 }
 
 // Diagnostic messages are prefixed with `[level] `; every built-in lint
-// tags one, but a message with no recognized prefix still falls back to
-// the "other" severity rather than being misclassified.
-export type Severity = "error" | "warning" | "info" | "other";
-export const SEVERITIES: Severity[] = ["error", "warning", "info", "other"];
+// tags one, so a message with no recognized prefix never actually occurs in
+// practice, but severityOf still classifies it as "error" (matching
+// Diagnostic::level()'s own fallback in papyrus-lints/src/lib.rs) rather
+// than misclassifying it as something less visible.
+export type Severity = "error" | "warning" | "info";
+export const SEVERITIES: Severity[] = ["error", "warning", "info"];
 
 export function levelOf(message: string): "error" | "warning" | "info" | null {
   const match = /^\[(error|warning|info)\]/.exec(message);
@@ -2025,7 +2027,7 @@ export function toggleCodeViewerFullscreen() {
 }
 
 export function severityOf(message: string): Severity {
-  return levelOf(message) ?? "other";
+  return levelOf(message) ?? "error";
 }
 
 // Which severities are currently shown in the lint results list; all are
@@ -2081,12 +2083,11 @@ export function tagsForFinding(finding: Diagnostic): RuleTagsInfo | undefined {
 }
 
 // Whether `finding` passes the active tag/rule, importance, and
-// auto-fixable filters. A finding with no tag metadata always passes, the
-// same way an unrecognized severity still falls back to the always-shown
-// "other" bucket instead of being silently dropped. A finding whose rule is
-// known always has a truthy `finding.rule` (tagsForFinding only returns tag
-// metadata when it does), so once `tags` is present activeRules.has() below
-// is checking the same rule id that produced it. Every finding also passes
+// auto-fixable filters. A finding with no tag metadata always passes. A
+// finding whose rule is known always has a truthy `finding.rule`
+// (tagsForFinding only returns tag metadata when it does), so once `tags`
+// is present activeRules.has() below is checking the same rule id that
+// produced it. Every finding also passes
 // while the backend's rule list hasn't loaded yet, since tagsForFinding
 // (and so `tags`) is undefined for all of them until then.
 export function matchesTagFilters(finding: Diagnostic): boolean {
@@ -2550,7 +2551,6 @@ export async function formatIssuesForAi(
     info: diagnostics.filter((diagnostic) => diagnostic.level === "info").length,
   });
   const findings = {
-    ...baseReport,
     files: await Promise.all(
       baseReport.files.map(async (fileReport, fileIndex) => ({
         ...fileReport,
@@ -2573,6 +2573,7 @@ export async function formatIssuesForAi(
         ),
       })),
     ),
+    total_diagnostics: baseReport.total_diagnostics,
     summary: summary(baseReport.files.flatMap((file) => file.diagnostics)),
     diagnostic_counts: diagnosticCounts(baseReport.files.flatMap((file) => file.diagnostics)),
   };
