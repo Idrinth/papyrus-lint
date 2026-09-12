@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.schema.json",
+  "$id": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json",
   "title": "Papyrus Lint Export for AI document",
   "description": "The JSON document produced by the desktop app's Export for AI feature or the CLI's --format ai option. It contains the GUI's currently filtered lint findings, or the CLI's unfiltered findings, and metadata for each recognized rule represented in those findings.",
   "type": "object",
@@ -15,7 +15,7 @@
   "properties": {
     "$schema": {
       "description": "The canonical JSON Schema for validating and interpreting this AI export document.",
-      "const": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.schema.json"
+      "const": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json"
     },
     "header": {
       "$ref": "#/$defs/header"
@@ -41,6 +41,30 @@
     }
   },
   "$defs": {
+    "severity": {
+      "description": "A diagnostic severity bucket.",
+      "type": "string",
+      "enum": [
+        "error",
+        "warning",
+        "info"
+      ]
+    },
+    "importance": {
+      "description": "A rule's relative importance.",
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "ruleId": {
+      "description": "A stable, hyphenated lint rule identifier.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
     "filters": {
       "type": "object",
       "additionalProperties": false,
@@ -62,12 +86,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "type": "string",
-            "enum": [
-              "error",
-              "warning",
-              "info"
-            ]
+            "$ref": "#/$defs/severity"
           }
         },
         "importances": {
@@ -76,12 +95,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "type": "string",
-            "enum": [
-              "low",
-              "medium",
-              "high"
-            ]
+            "$ref": "#/$defs/importance"
           }
         },
         "rules": {
@@ -90,9 +104,7 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "type": "string",
-            "minLength": 1,
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            "$ref": "#/$defs/ruleId"
           }
         },
         "auto_fixable_only": {
@@ -119,7 +131,7 @@
         "fail_on_info",
         "bool_like_int",
         "assume_auto_properties_filled",
-        "rules"
+        "enabled_rules"
       ],
       "properties": {
         "semicolon": {
@@ -194,307 +206,13 @@
         "assume_auto_properties_filled": {
           "type": "boolean"
         },
-        "rules": {
-          "$ref": "#/$defs/rules"
-        }
-      }
-    },
-    "rules": {
-      "type": "object",
-      "description": "Rule enable flags. Each boolean states whether its rule is enabled. Property names use snake_case and map to hyphenated rule ids by replacing underscores with hyphens (`trailing_whitespace` maps to `trailing-whitespace`). These flags are distinct from same-named top-level configuration properties, which select a mode or setting rather than enabling a rule.",
-      "additionalProperties": false,
-      "required": [
-        "trailing_whitespace",
-        "comma_spacing",
-        "forbidden_functions",
-        "formid_hex_notation",
-        "slow_functions",
-        "unused_getter",
-        "unused_property",
-        "semicolon",
-        "float_int_conversion",
-        "int_division_to_float",
-        "strict_boolean",
-        "argument_types",
-        "return_types",
-        "function_override",
-        "argument_naming",
-        "numeric_comparison",
-        "indentation",
-        "cyclomatic_complexity",
-        "unreachable_statement",
-        "static_condition",
-        "division_by_zero",
-        "empty_body",
-        "unused_local_variable",
-        "variable_used_before_assignment",
-        "none_form_usage",
-        "local_variable_shadowing",
-        "parameter_reassignment",
-        "chain_whitespace",
-        "exclamation_spacing",
-        "identifier_casing",
-        "type_casing",
-        "named_arguments",
-        "operator_spacing",
-        "property_sorting",
-        "explicit_return",
-        "unchecked_form_parameter",
-        "unchecked_cast",
-        "useless_downcast",
-        "unresolved_script",
-        "non_global_function_call",
-        "static_function_call_via_instance",
-        "short_wait_interval",
-        "state_function_signature",
-        "goto_state",
-        "too_many_states",
-        "multiple_auto_states",
-        "conflicting_script_versions",
-        "unused_disable",
-        "magic_numbers",
-        "native_function_usage",
-        "repeated_getvalue",
-        "global_variable_setvalue",
-        "invariant_loop_condition",
-        "script_name_collision",
-        "array_bounds",
-        "readonly_property_write",
-        "default_property_value",
-        "unguarded_self_recursion"
-      ],
-      "properties": {
-        "trailing_whitespace": {
-          "type": "boolean",
-          "description": "Whether the `trailing-whitespace` rule is enabled."
-        },
-        "comma_spacing": {
-          "type": "boolean",
-          "description": "Whether the `comma-spacing` rule is enabled."
-        },
-        "forbidden_functions": {
-          "type": "boolean",
-          "description": "Whether the `forbidden-functions` rule is enabled."
-        },
-        "formid_hex_notation": {
-          "type": "boolean",
-          "description": "Whether the `formid-hex-notation` rule is enabled."
-        },
-        "slow_functions": {
-          "type": "boolean",
-          "description": "Whether the `slow-functions` rule is enabled."
-        },
-        "unused_getter": {
-          "type": "boolean",
-          "description": "Whether the `unused-getter` rule is enabled."
-        },
-        "unused_property": {
-          "type": "boolean",
-          "description": "Whether the `unused-property` rule is enabled."
-        },
-        "semicolon": {
-          "type": "boolean",
-          "description": "Whether the `semicolon` rule is enabled."
-        },
-        "float_int_conversion": {
-          "type": "boolean",
-          "description": "Whether the `float-int-conversion` rule is enabled."
-        },
-        "int_division_to_float": {
-          "type": "boolean",
-          "description": "Whether the `int-division-to-float` rule is enabled."
-        },
-        "strict_boolean": {
-          "type": "boolean",
-          "description": "Whether the `strict-boolean` rule is enabled."
-        },
-        "argument_types": {
-          "type": "boolean",
-          "description": "Whether the `argument-types` rule is enabled."
-        },
-        "return_types": {
-          "type": "boolean",
-          "description": "Whether the `return-types` rule is enabled."
-        },
-        "function_override": {
-          "type": "boolean",
-          "description": "Whether the `function-override` rule is enabled."
-        },
-        "argument_naming": {
-          "type": "boolean",
-          "description": "Whether the `argument-naming` rule is enabled."
-        },
-        "numeric_comparison": {
-          "type": "boolean",
-          "description": "Whether the `numeric-comparison` rule is enabled."
-        },
-        "indentation": {
-          "type": "boolean",
-          "description": "Whether the `indentation` rule is enabled."
-        },
-        "cyclomatic_complexity": {
-          "type": "boolean",
-          "description": "Whether the `cyclomatic-complexity` rule is enabled."
-        },
-        "unreachable_statement": {
-          "type": "boolean",
-          "description": "Whether the `unreachable-statement` rule is enabled."
-        },
-        "static_condition": {
-          "type": "boolean",
-          "description": "Whether the `static-condition` rule is enabled."
-        },
-        "division_by_zero": {
-          "type": "boolean",
-          "description": "Whether the `division-by-zero` rule is enabled."
-        },
-        "empty_body": {
-          "type": "boolean",
-          "description": "Whether the `empty-body` rule is enabled."
-        },
-        "unused_local_variable": {
-          "type": "boolean",
-          "description": "Whether the `unused-local-variable` rule is enabled."
-        },
-        "variable_used_before_assignment": {
-          "type": "boolean",
-          "description": "Whether the `variable-used-before-assignment` rule is enabled."
-        },
-        "none_form_usage": {
-          "type": "boolean",
-          "description": "Whether the `none-form-usage` rule is enabled."
-        },
-        "local_variable_shadowing": {
-          "type": "boolean",
-          "description": "Whether the `local-variable-shadowing` rule is enabled."
-        },
-        "parameter_reassignment": {
-          "type": "boolean",
-          "description": "Whether the `parameter-reassignment` rule is enabled."
-        },
-        "chain_whitespace": {
-          "type": "boolean",
-          "description": "Whether the `chain-whitespace` rule is enabled."
-        },
-        "exclamation_spacing": {
-          "type": "boolean",
-          "description": "Whether the `exclamation-spacing` rule is enabled."
-        },
-        "identifier_casing": {
-          "type": "boolean",
-          "description": "Whether the `identifier-casing` rule is enabled."
-        },
-        "type_casing": {
-          "type": "boolean",
-          "description": "Whether the `type-casing` rule is enabled."
-        },
-        "named_arguments": {
-          "type": "boolean",
-          "description": "Whether the `named-arguments` rule is enabled."
-        },
-        "operator_spacing": {
-          "type": "boolean",
-          "description": "Whether the `operator-spacing` rule is enabled."
-        },
-        "property_sorting": {
-          "type": "boolean",
-          "description": "Whether the `property-sorting` rule is enabled."
-        },
-        "explicit_return": {
-          "type": "boolean",
-          "description": "Whether the `explicit-return` rule is enabled."
-        },
-        "unchecked_form_parameter": {
-          "type": "boolean",
-          "description": "Whether the `unchecked-form-parameter` rule is enabled."
-        },
-        "unchecked_cast": {
-          "type": "boolean",
-          "description": "Whether the `unchecked-cast` rule is enabled."
-        },
-        "useless_downcast": {
-          "type": "boolean",
-          "description": "Whether the `useless-downcast` rule is enabled."
-        },
-        "unresolved_script": {
-          "type": "boolean",
-          "description": "Whether the `unresolved-script` rule is enabled."
-        },
-        "non_global_function_call": {
-          "type": "boolean",
-          "description": "Whether the `non-global-function-call` rule is enabled."
-        },
-        "static_function_call_via_instance": {
-          "type": "boolean",
-          "description": "Whether the `static-function-call-via-instance` rule is enabled."
-        },
-        "short_wait_interval": {
-          "type": "boolean",
-          "description": "Whether the `short-wait-interval` rule is enabled."
-        },
-        "state_function_signature": {
-          "type": "boolean",
-          "description": "Whether the `state-function-signature` rule is enabled."
-        },
-        "goto_state": {
-          "type": "boolean",
-          "description": "Whether the `goto-state` rule is enabled."
-        },
-        "too_many_states": {
-          "type": "boolean",
-          "description": "Whether the `too-many-states` rule is enabled."
-        },
-        "multiple_auto_states": {
-          "type": "boolean",
-          "description": "Whether the `multiple-auto-states` rule is enabled."
-        },
-        "conflicting_script_versions": {
-          "type": "boolean",
-          "description": "Whether the `conflicting-script-versions` rule is enabled."
-        },
-        "unused_disable": {
-          "type": "boolean",
-          "description": "Whether the `unused-disable` rule is enabled."
-        },
-        "magic_numbers": {
-          "type": "boolean",
-          "description": "Whether the `magic-numbers` rule is enabled."
-        },
-        "native_function_usage": {
-          "type": "boolean",
-          "description": "Whether the `native-function-usage` rule is enabled."
-        },
-        "repeated_getvalue": {
-          "type": "boolean",
-          "description": "Whether the `repeated-getvalue` rule is enabled."
-        },
-        "global_variable_setvalue": {
-          "type": "boolean",
-          "description": "Whether the `global-variable-setvalue` rule is enabled."
-        },
-        "invariant_loop_condition": {
-          "type": "boolean",
-          "description": "Whether the `invariant-loop-condition` rule is enabled."
-        },
-        "script_name_collision": {
-          "type": "boolean",
-          "description": "Whether the `script-name-collision` rule is enabled."
-        },
-        "array_bounds": {
-          "type": "boolean",
-          "description": "Whether the `array-bounds` rule is enabled."
-        },
-        "readonly_property_write": {
-          "type": "boolean",
-          "description": "Whether the `readonly-property-write` rule is enabled."
-        },
-        "default_property_value": {
-          "type": "boolean",
-          "description": "Whether the `default-property-value` rule is enabled."
-        },
-        "unguarded_self_recursion": {
-          "type": "boolean",
-          "description": "Whether the `unguarded-self-recursion` rule is enabled."
+        "enabled_rules": {
+          "description": "The hyphenated ids of every currently enabled lint rule, alphabetically sorted. A rule not listed here is disabled. Replaces a per-rule boolean flag object (one entry per rule, almost always identical across exports) with just the ids that differ from \"none enabled\", since that flag object was a large, mostly-constant block repeated on every export.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ruleId"
+          }
         }
       }
     },
@@ -737,18 +455,11 @@
         },
         "rule": {
           "description": "The stable, hyphenated lint rule id, or `unknown` for a diagnostic without one.",
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          "$ref": "#/$defs/ruleId"
         },
         "level": {
           "description": "The diagnostic severity. Untagged external diagnostics are classified as errors.",
-          "type": "string",
-          "enum": [
-            "error",
-            "warning",
-            "info"
-          ]
+          "$ref": "#/$defs/severity"
         },
         "message": {
           "description": "The human-readable diagnostic message.",
@@ -783,9 +494,7 @@
       "properties": {
         "rule": {
           "description": "The stable, hyphenated identifier of the lint rule.",
-          "type": "string",
-          "minLength": 1,
-          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          "$ref": "#/$defs/ruleId"
         },
         "description": {
           "description": "The rule's detailed description, copied from its row in the project README's Implemented Lints tables.",
@@ -809,12 +518,7 @@
         },
         "importance": {
           "description": "The rule's relative importance.",
-          "type": "string",
-          "enum": [
-            "low",
-            "medium",
-            "high"
-          ]
+          "$ref": "#/$defs/importance"
         },
         "auto_fixable": {
           "description": "Whether Papyrus Lint can automatically fix this rule's findings.",

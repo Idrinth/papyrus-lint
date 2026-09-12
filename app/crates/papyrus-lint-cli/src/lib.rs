@@ -541,9 +541,31 @@ struct AiReport {
     #[serde(rename = "$schema")]
     schema: &'static str,
     header: AiHeader,
-    configuration: papyrus_lints::Config,
+    configuration: serde_json::Value,
     findings: AiFindings,
     rule_details: Vec<AiRuleDetails>,
+}
+
+/// The AI export's own `configuration` shape: the same resolved
+/// [`papyrus_lints::Config`] a lint run used, except its `rules` object
+/// (58 individual enable flags, each with its own description in the
+/// schema) is replaced with a compact, alphabetically sorted
+/// `enabled_rules` list of just the ids that are currently on (see
+/// [`papyrus_lints::config::Rules::enabled_ids`]) - no information is
+/// lost, since a rule absent from the list is simply disabled, but every
+/// export no longer repeats a large, mostly-constant block of booleans.
+/// Mirrors `aiConfiguration` in `app/src/main.ts`.
+fn ai_configuration(config: &papyrus_lints::Config) -> serde_json::Value {
+    let mut value = serde_json::to_value(config).expect("Config always serializes to an object");
+    let object = value
+        .as_object_mut()
+        .expect("Config serializes as a JSON object");
+    object.remove("rules");
+    object.insert(
+        "enabled_rules".to_string(),
+        serde_json::Value::from(config.rules.enabled_ids()),
+    );
+    value
 }
 
 /// Returns the current UTC time in the millisecond-precision RFC 3339 form
@@ -1367,7 +1389,7 @@ pub fn run(
             })
             .collect();
         let report = AiReport {
-            schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.schema.json",
+            schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json",
             header: AiHeader {
                 tool: "Papyrus Lint",
                 version: VERSION,
@@ -1375,7 +1397,7 @@ pub fn run(
                 target_game: "Skyrim SE/AE",
                 generated_at: generated_at(),
             },
-            configuration: lint_config.clone(),
+            configuration: ai_configuration(&lint_config),
             findings: AiFindings {
                 files: ai_files,
                 total_diagnostics,
