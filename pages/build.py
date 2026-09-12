@@ -783,6 +783,16 @@ def build_action_page(out_dir: Path, version: str = "") -> None:
     (out_dir / "action.html").write_text(finalize_page(page), encoding="utf-8")
 
 
+def build_imprint_page(out_dir: Path, version: str = "") -> None:
+    """Renders the fully static legal-notice page (no build-time content of
+    its own to substitute in, unlike every other page above) into
+    imprint.html, so it still shares the site's header/footer/version chrome
+    like every other page."""
+    template = (PAGES_DIR / "imprint.template.html").read_text(encoding="utf-8")
+    page = render_shared_components(template, "", version)
+    (out_dir / "imprint.html").write_text(finalize_page(page), encoding="utf-8")
+
+
 def load_coverage_summary():
     """Loads .github/scripts/coverage_summary.py by file path (see
     COVERAGE_SUMMARY_SCRIPT above) so the coverage subpage shares its
@@ -947,6 +957,7 @@ def sitemap_urls(doc_results: dict) -> list[str]:
         f"{SITE_URL}action.html",
         f"{SITE_URL}videos.html",
         f"{SITE_URL}coverage.html",
+        f"{SITE_URL}imprint.html",
         f"{SITE_URL}docs/index.html",
     ]
     for doc in DOCS:
@@ -1030,6 +1041,7 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
     build_videos_page(out_dir, version)
     build_action_page(out_dir, version)
     build_coverage_page(out_dir, coverage_dir, version)
+    build_imprint_page(out_dir, version)
     build_sitemap(out_dir, doc_results)
     build_robots_txt(out_dir)
 

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("papyrus-lint:theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+        } catch (error) {
+          /* localStorage unavailable (e.g. disabled); fall back to the
+             system theme via the CSS media query. */
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Legal Notice · Papyrus Lint</title>
+    <meta name="description" content="Legal notice (Impressum) and contact information for the Papyrus Lint project, published under German law." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Papyrus Lint" />
+    <meta property="og:url" content="<!--SITE_URL-->imprint.html" />
+    <link rel="canonical" href="<!--SITE_URL-->imprint.html" />
+    <meta property="og:title" content="Legal Notice · Papyrus Lint" />
+    <meta property="og:description" content="Legal notice (Impressum) and contact information for the Papyrus Lint project, published under German law." />
+    <meta property="og:image" content="<!--SITE_URL-->assets/logo.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Legal Notice · Papyrus Lint" />
+    <meta name="twitter:description" content="Legal notice (Impressum) and contact information for the Papyrus Lint project, published under German law." />
+    <meta name="twitter:image" content="<!--SITE_URL-->assets/logo.jpg" />
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="preload" href="fonts/cinzel-v26-latin-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <!--SITE_HEADER-->
+
+    <main id="top">
+      <section class="hero doc-hero" style="border-top: none">
+        <p class="doc-breadcrumb"><a href="index.html#top">&larr; Back to home</a></p>
+        <h1>Legal Notice</h1>
+      </section>
+
+      <section class="doc-content" style="border-top: none">
+        <h2>Information according to § 5 TMG</h2>
+        <p>Björn Büttner<br />Böllerts Höfe 4<br />45479 Mülheim an der Ruhr</p>
+
+        <h2>Contact</h2>
+        <p>Phone: +4917647945826<br />Email: webmaster@bjoern-buettner.me</p>
+
+        <h2>Responsible for content according to § 55 Abs. 2 RStV</h2>
+        <p>Björn Büttner<br />Böllerts Höfe 4<br />45479 Mülheim an der Ruhr</p>
+
+        <h2>Disclaimer</h2>
+
+        <h3>Liability for Links</h3>
+        <p>
+          Our website contains links to external third-party websites, over whose content we have no influence.
+          Therefore, we cannot accept any liability for this external content. The respective provider or operator
+          of the linked pages is always responsible for the content of the linked pages. The linked pages were
+          checked for possible legal violations at the time of linking. Illegal content was not recognisable at
+          the time of linking. However, permanent monitoring of the content of the linked pages is not reasonable
+          without concrete evidence of a violation of the law. If we become aware of any infringements, we will
+          remove such links immediately.
+        </p>
+
+        <h3>Data Protection</h3>
+        <p>
+          The use of our website is generally possible without providing personal data. As far as personal data
+          (e.g. name, address or email addresses) is collected on our pages, this is always done on a voluntary
+          basis as far as possible. This data will not be passed on to third parties without your express consent.
+        </p>
+        <p>
+          We point out that data transmission over the Internet (e.g. communication by email) can have security
+          gaps. Complete protection of data against access by third parties is not possible.
+        </p>
+        <p>
+          The use of contact data published within the framework of the imprint obligation by third parties for
+          sending unsolicited advertising and information materials is hereby expressly prohibited. The operators
+          of the pages expressly reserve the right to take legal action in the event of unsolicited sending of
+          advertising information, such as spam emails.
+        </p>
+      </section>
+    </main>
+
+    <!--SITE_FOOTER-->
+  </body>
+</html>

@@ -144,9 +144,14 @@ desktop app's binary at all.
     │                            # GitHub Action's own README fetched at build
     │                            # time (see action.template.html below).
     ├── coverage.template.html  # with content converted straight from README.md,
+    ├── imprint.template.html   # renders imprint.html, a fully static legal
+    │                            # notice (Impressum) with no build-time
+    │                            # content of its own beyond the shared header/
+    │                            # footer, linked from the footer on every page
     ├── includes/               # shared page chrome inserted during the build
     │   ├── header.html         # with depth-aware links for root/docs pages
-    │   └── footer.html         # and one source for release/contact details
+    │   └── footer.html         # and one source for release/contact/legal
+    │                            # notice details
     ├── styles.css              # and renders coverage.html, a per-module/per-file
     ├── CNAME                   # line coverage breakdown for the latest release
     │                            # (see coverage.template.html below). The site's
@@ -514,7 +519,8 @@ on every build so GitHub Pages keeps serving it there across each
 Actions-based deploy, rather than relying solely on the custom-domain
 setting under Settings → Pages. `build.py` also writes a `sitemap.xml`
 (`sitemap_urls`/`build_sitemap`, rooted at `SITE_URL`) listing the
-homepage, `action.html`, `videos.html`, `coverage.html`, `docs/index.html`,
+homepage, `action.html`, `videos.html`, `coverage.html`, `imprint.html`,
+`docs/index.html`,
 and every `DOCS` entry's own subpage — built from the same lists that
 generate those pages, so it can't drift out of sync with what's actually
 published — and a `robots.txt` (`build_robots_txt`) allowing all crawling
@@ -604,6 +610,16 @@ version shown in the footer, finds that commit's most recent successful
 `ci.yml` run the same way `release.yml`'s `release-notes` job does,
 downloads its coverage artifacts if one exists, and passes them straight
 to `--coverage-dir`.
+
+`pages/imprint.template.html` renders into `pages/dist/imprint.html`, the
+legal notice (Impressum) required for a site operated from Germany. Unlike
+every other page above, it carries no build-time placeholder for its own
+body content at all — `build_imprint_page` just runs it through
+`render_shared_components` for the shared header/footer/version chrome,
+since the legal text itself never changes at build time. It's linked from
+`pages/includes/footer.html` (as "Legal Notice") rather than the main nav,
+so every page across the site — not just the homepage — carries a direct
+link to it, as German law (§5 TMG) requires.
 
 ## Releases (`.github/workflows/release.yml`)
 
