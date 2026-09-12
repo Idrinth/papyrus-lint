@@ -35,6 +35,7 @@ import {
   findCandidatePairRoot,
   formatIssuesAsJson,
   formatIssuesAsText,
+  formatIssuesForAi,
   getPresetLintConfig,
   handleAutocompleteKeydown,
   handleCodeViewerFixClick,
@@ -46,6 +47,7 @@ import {
   handleDeletePresetClick,
   handleDroppedPaths,
   handleEditorTabKeydown,
+  handleExportAiClick,
   handleExportIssuesClick,
   handleExportPresetClick,
   handleFixClick,
@@ -2851,6 +2853,67 @@ describe("formatIssuesAsJson", () => {
   });
 });
 
+describe("formatIssuesForAi", () => {
+  // ruleTagsByRule is module state that outlives mountFixture(); reset it so
+  // it doesn't leak into later tests (see the loadRuleTags/applyRuleTags
+  // describe block for why this matters).
+  afterEach(() => {
+    applyRuleTags([]);
+  });
+
+  it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website header, plus rule_details for every triggered rule", () => {
+    applyRuleTags([
+      { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+      { rule: "forbidden-functions", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
+    ]);
+
+    const files = [
+      {
+        path: "A.psc",
+        findings: [{ line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" }],
+      },
+      {
+        path: "B.psc",
+        findings: [{ line: 5, column: 3, message: "[error] forbidden function used", rule: "forbidden-functions" }],
+      },
+    ];
+
+    expect(JSON.parse(formatIssuesForAi(files, "1.2.3"))).toEqual({
+      header: {
+        tool: "Papyrus Lint",
+        version: "1.2.3",
+        website: "https://papyrus-lint.idrinth.de",
+      },
+      findings: JSON.parse(formatIssuesAsJson(files)),
+      rule_details: [
+        { rule: "forbidden-functions", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
+        { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
+      ],
+    });
+  });
+
+  it("reports the version as 'unknown' when none was given", () => {
+    expect(JSON.parse(formatIssuesForAi([], "")).header.version).toBe("unknown");
+  });
+
+  it("omits a triggered rule from rule_details when no tag metadata is known for it", () => {
+    applyRuleTags([]);
+
+    const json = JSON.parse(
+      formatIssuesForAi(
+        [{ path: "A.psc", findings: [{ line: 1, column: 1, message: "[warning] x", rule: "some-rule" }] }],
+        "1.0.0",
+      ),
+    );
+
+    expect(json.rule_details).toEqual([]);
+  });
+
+  it("returns no rule_details for no files", () => {
+    expect(JSON.parse(formatIssuesForAi([], "1.0.0")).rule_details).toEqual([]);
+  });
+});
+
 describe("Export issues button", () => {
   const finding: Diagnostic = {
     line: 1,
@@ -2944,6 +3007,49 @@ describe("Export issues button", () => {
     const createObjectURL = vi.spyOn(URL, "createObjectURL");
 
     handleExportIssuesClick();
+
+    expect(createObjectURL).not.toHaveBeenCalled();
+  });
+
+  it("updateExportIssuesButtonState keeps the 'Export for AI' button in sync with 'Export issues'", () => {
+    updateExportIssuesButtonState([{ path: "/a.psc", ok: false, detail: "boom", findings: [] }]);
+    expect(document.querySelector<HTMLButtonElement>("#export-ai-button")!.disabled).toBe(true);
+
+    updateExportIssuesButtonState([{ path: "/a.psc", ok: true, detail: "", findings: [finding] }]);
+    expect(document.querySelector<HTMLButtonElement>("#export-ai-button")!.disabled).toBe(false);
+  });
+
+  it("handleExportAiClick downloads a JSON file carrying the running app's version", async () => {
+    await populateCurrentPscOutcomes([finding]);
+    // populateCurrentPscOutcomes's own invokeImplFor call doesn't stub
+    // get_app_version; overriding the mock again here only affects the
+    // lookup handleExportAiClick itself makes, since nothing else calls
+    // invoke() between here and the assertion below.
+    invokeImplFor({ get_app_version: () => "9.9.9" });
+
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-url");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+    await handleExportAiClick();
+
+    expect(createObjectURL).toHaveBeenCalledTimes(1);
+    const [blob] = createObjectURL.mock.calls[0] as [Blob];
+    expect(blob.type).toBe("application/json");
+    const contents = JSON.parse(await blob.text());
+    expect(contents.header).toEqual({
+      tool: "Papyrus Lint",
+      version: "9.9.9",
+      website: "https://papyrus-lint.idrinth.de",
+    });
+  });
+
+  it("handleExportAiClick does nothing when there's nothing currently filtered", async () => {
+    await populateCurrentPscOutcomes([]);
+
+    const createObjectURL = vi.spyOn(URL, "createObjectURL");
+
+    await handleExportAiClick();
 
     expect(createObjectURL).not.toHaveBeenCalled();
   });

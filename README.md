@@ -839,6 +839,21 @@ and `total_diagnostics` counts), restricted to the currently filtered
 files/findings, so both can be consumed by the same tooling. The button
 is disabled whenever no finding currently passes the active filters.
 
+Next to it, an "Export for AI" button downloads the same currently
+filtered findings as a single JSON document tailored for handing to an AI
+assistant alongside a question about the results, independent of the
+"Export format" selector above (this format is always JSON): a `header`
+identifying the tool name, running version, and
+[project website](https://papyrus-lint.idrinth.de) for further lookups; a
+`findings` section in the exact same shape the "Export issues" JSON format
+uses; and a `rule_details` array carrying the full tag metadata (kind(s),
+importance, and whether it's auto-fixable) for every rule id that actually
+appears among the exported findings and has known tag metadata (an
+unrecognized rule id is simply left out) — giving the assistant enough
+context about each triggered rule to answer follow-up questions precisely
+without needing this project's own documentation on hand. Like "Export issues",
+it's disabled whenever no finding currently passes the active filters.
+
 ## Compiling a script
 
 Each `.psc` file listed on the Lint results tab has a "Compile" button that

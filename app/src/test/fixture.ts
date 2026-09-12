@@ -178,6 +178,7 @@ export const FIXTURE_HTML = `
               <option value="json">JSON</option>
             </select>
             <button type="button" id="export-issues-button" disabled>Export issues</button>
+            <button type="button" id="export-ai-button" disabled>Export for AI</button>
           </div>
           <ul id="psc-result-list"></ul>
         </div>
