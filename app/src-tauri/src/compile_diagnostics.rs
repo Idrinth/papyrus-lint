@@ -36,6 +36,10 @@ pub const RULE: &str = "compiler-error";
 /// compiler couldn't even locate the script to compile) is clamped to `1`,
 /// matching [`Diagnostic`]'s documented 1-indexed convention.
 pub fn parse_compile_errors(outcome: &CompileOutcome) -> Vec<Diagnostic> {
+    if outcome.success {
+        return Vec::new();
+    }
+
     outcome
         .stdout
         .lines()
@@ -106,6 +110,18 @@ mod tests {
             stdout: "Batch compile of 1 files finished. 1 succeeded, 0 failed.\n".to_string(),
             stderr: String::new(),
             personal_data_stripped: true,
+        };
+
+        assert!(parse_compile_errors(&outcome).is_empty());
+    }
+
+    #[test]
+    fn successful_compile_ignores_location_shaped_status_output() {
+        let outcome = CompileOutcome {
+            success: true,
+            stdout: "Example.psc(8,3): informational compiler output\n".to_string(),
+            stderr: "Example.psc(9,4): stale output from a wrapper\n".to_string(),
+            personal_data_stripped: false,
         };
 
         assert!(parse_compile_errors(&outcome).is_empty());
@@ -281,6 +297,25 @@ mod tests {
         assert_eq!(diagnostic.line, 3);
         assert_eq!(diagnostic.column, 8);
         assert_eq!(diagnostic.message, "[error] bad expression");
+    }
+
+    #[test]
+    fn chooses_the_rightmost_valid_marker_when_a_path_contains_coordinates() {
+        let diagnostic = parse_line("C:\\Build (12,34): archive\\Example.psc(7,8): real error")
+            .expect("the source location should win over a marker-shaped path segment");
+
+        assert_eq!(diagnostic.line, 7);
+        assert_eq!(diagnostic.column, 8);
+        assert_eq!(diagnostic.message, "[error] real error");
+    }
+
+    #[test]
+    fn accepts_the_largest_platform_coordinates_without_overflowing() {
+        let line = format!("Example.psc({0},{0}): boundary", usize::MAX);
+        let diagnostic = parse_line(&line).expect("usize::MAX is still a valid coordinate");
+
+        assert_eq!(diagnostic.line, usize::MAX);
+        assert_eq!(diagnostic.column, usize::MAX);
     }
 
     #[test]
