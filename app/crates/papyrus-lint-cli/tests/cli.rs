@@ -107,6 +107,34 @@ fn json_mode_lints_a_script_through_the_binary_entry_point() {
 }
 
 #[test]
+fn ai_format_includes_source_and_triggered_rule_details() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let source = "ScriptName Example   \n";
+    write_file(&script, source);
+
+    let output = run_cli(&["--format", "ai", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain an AI export");
+    assert_eq!(report["header"]["tool"], "Papyrus Lint");
+    assert_eq!(
+        report["header"]["website"],
+        "https://papyrus-lint.idrinth.de"
+    );
+    assert_eq!(report["findings"]["files"][0]["source"], source);
+    assert_eq!(
+        report["findings"]["files"][0]["diagnostics"][0]["rule"],
+        "trailing-whitespace"
+    );
+    assert_eq!(report["rule_details"][0]["rule"], "trailing-whitespace");
+    assert!(report["rule_details"][0]["description"].is_string());
+    assert_eq!(report["rule_details"][0]["auto_fixable"], true);
+}
+
+#[test]
 fn fix_mode_rewrites_a_script_through_the_binary_entry_point() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let script = dir.path().join("scripts/source/Example.psc");

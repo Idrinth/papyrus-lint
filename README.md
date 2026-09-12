@@ -501,6 +501,7 @@ PapyrusLinterCLI fix --dry-run path/to/project.achlist
 PapyrusLinterCLI --tag style path/to/project.achlist
 PapyrusLinterCLI fix --tag style path/to/project.achlist
 PapyrusLinterCLI --json path/to/project.achlist
+PapyrusLinterCLI --format ai path/to/project.achlist
 PapyrusLinterCLI --json fix path/to/project.achlist
 PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
 PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
@@ -690,7 +691,11 @@ kind keyword.
 Given the `--json` flag (combinable with `fix`, in either argument order),
 the CLI prints a single JSON document to stdout instead of the plain-text
 lines and summary, so editor plugins and other tooling can consume the
-report without scraping text. The output contract is published as a
+report without scraping text. `--format json` is its equivalent;
+`--format plain` explicitly selects the default output. `--format ai` instead
+produces the same AI export as the desktop app: JSON containing the tool header,
+findings, each affected file's source, and metadata for every triggered rule.
+The normal JSON output contract is published as a
 [JSON Schema](docs/papyrus-lint-report.schema.json) using JSON Schema Draft 2020-12,
 so integrations can generate types and validate saved or streamed reports:
 
