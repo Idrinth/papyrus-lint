@@ -2861,11 +2861,12 @@ describe("formatIssuesForAi", () => {
     applyRuleTags([]);
   });
 
-  it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website header, plus rule_details for every triggered rule", () => {
+  it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website header, plus rule_details for every triggered rule", async () => {
     applyRuleTags([
       { rule: "trailing-whitespace", kinds: ["style"], importance: "low", auto_fixable: true },
       { rule: "forbidden-functions", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
     ]);
+    invokeImplFor({ preview_repair_psc_line: () => null });
 
     const files = [
       {
@@ -2878,7 +2879,7 @@ describe("formatIssuesForAi", () => {
       },
     ];
 
-    expect(JSON.parse(formatIssuesForAi(files, "1.2.3"))).toEqual({
+    expect(JSON.parse(await formatIssuesForAi(files, "1.2.3"))).toEqual({
       header: {
         tool: "Papyrus Lint",
         version: "1.2.3",
@@ -2892,15 +2893,15 @@ describe("formatIssuesForAi", () => {
     });
   });
 
-  it("reports the version as 'unknown' when none was given", () => {
-    expect(JSON.parse(formatIssuesForAi([], "")).header.version).toBe("unknown");
+  it("reports the version as 'unknown' when none was given", async () => {
+    expect(JSON.parse(await formatIssuesForAi([], "")).header.version).toBe("unknown");
   });
 
-  it("omits a triggered rule from rule_details when no tag metadata is known for it", () => {
+  it("omits a triggered rule from rule_details when no tag metadata is known for it", async () => {
     applyRuleTags([]);
 
     const json = JSON.parse(
-      formatIssuesForAi(
+      await formatIssuesForAi(
         [{ path: "A.psc", findings: [{ line: 1, column: 1, message: "[warning] x", rule: "some-rule" }] }],
         "1.0.0",
       ),
@@ -2909,8 +2910,78 @@ describe("formatIssuesForAi", () => {
     expect(json.rule_details).toEqual([]);
   });
 
-  it("returns no rule_details for no files", () => {
-    expect(JSON.parse(formatIssuesForAi([], "1.0.0")).rule_details).toEqual([]);
+  it("returns no rule_details for no files", async () => {
+    expect(JSON.parse(await formatIssuesForAi([], "1.0.0")).rule_details).toEqual([]);
+  });
+
+  it("attaches a repair preview to a finding whose rule has an automatic fix", async () => {
+    invokeImplFor({
+      preview_repair_psc_line: (args) => {
+        const { rule, line } = args as { rule: string; line: number };
+        return rule === "trailing-whitespace" && line === 1 ? "clean line" : null;
+      },
+    });
+    const files = [
+      {
+        path: "A.psc",
+        findings: [{ line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" }],
+      },
+    ];
+
+    const json = JSON.parse(await formatIssuesForAi(files, "1.0.0"));
+
+    expect(json.findings.files[0].diagnostics[0].repair).toBe("clean line");
+    expect(invokeMock).toHaveBeenCalledWith(
+      "preview_repair_psc_line",
+      expect.objectContaining({ path: "A.psc", rule: "trailing-whitespace", line: 1 }),
+    );
+  });
+
+  it("omits the repair field when no preview could be computed", async () => {
+    invokeImplFor({ preview_repair_psc_line: () => null });
+    const files = [
+      {
+        path: "A.psc",
+        findings: [{ line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" }],
+      },
+    ];
+
+    const json = JSON.parse(await formatIssuesForAi(files, "1.0.0"));
+
+    expect(json.findings.files[0].diagnostics[0]).not.toHaveProperty("repair");
+  });
+
+  it("never requests a repair preview for a rule with no automatic fix", async () => {
+    const files = [
+      {
+        path: "A.psc",
+        findings: [{ line: 1, column: 1, message: "[error] forbidden function used", rule: "forbidden-functions" }],
+      },
+    ];
+
+    await formatIssuesForAi(files, "1.0.0");
+
+    expect(invokeMock).not.toHaveBeenCalledWith("preview_repair_psc_line", expect.anything());
+  });
+
+  it("never requests a repair preview for a fixable rule's finding that itself has no automatic fix", async () => {
+    const files = [
+      {
+        path: "A.psc",
+        findings: [
+          {
+            line: 1,
+            column: 1,
+            message: "[warning] rename to PascalCase (no automatic fix: name already used elsewhere)",
+            rule: "type-casing",
+          },
+        ],
+      },
+    ];
+
+    await formatIssuesForAi(files, "1.0.0");
+
+    expect(invokeMock).not.toHaveBeenCalledWith("preview_repair_psc_line", expect.anything());
   });
 });
 
@@ -3022,10 +3093,10 @@ describe("Export issues button", () => {
   it("handleExportAiClick downloads a JSON file carrying the running app's version", async () => {
     await populateCurrentPscOutcomes([finding]);
     // populateCurrentPscOutcomes's own invokeImplFor call doesn't stub
-    // get_app_version; overriding the mock again here only affects the
-    // lookup handleExportAiClick itself makes, since nothing else calls
-    // invoke() between here and the assertion below.
-    invokeImplFor({ get_app_version: () => "9.9.9" });
+    // get_app_version, and handleExportAiClick also requests a repair
+    // preview for the fixable finding above (see formatIssuesForAi); this
+    // replaces the whole mock implementation, so both are stubbed here.
+    invokeImplFor({ get_app_version: () => "9.9.9", preview_repair_psc_line: () => null });
 
     const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-url");
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});

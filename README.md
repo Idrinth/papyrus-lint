@@ -848,7 +848,14 @@ a `header`
 identifying the tool name, running version, and
 [project website](https://papyrus-lint.idrinth.de) for further lookups; a
 `findings` section in the exact same shape the "Export issues" JSON format
-uses; and a `rule_details` array carrying the full tag metadata (kind(s),
+uses, except that each diagnostic from an auto-fixable rule also carries a
+`repair` field showing what that line would look like after applying the
+rule's automatic fix, computed without actually applying it — omitted when
+the fix wouldn't change that line at all (e.g. `type-casing`'s own "no
+automatic fix" case) or would shift the file's line count elsewhere (e.g.
+`property-sorting` relocating a property's declaration), so an assistant can
+see a fix's effect without asking the user to apply it first; and a
+`rule_details` array carrying the full tag metadata (kind(s),
 importance, and whether it's auto-fixable) for every rule id that actually
 appears among the exported findings and has known tag metadata (an
 unrecognized rule id is simply left out) — giving the assistant enough
