@@ -2924,7 +2924,6 @@ describe("formatIssuesForAi", () => {
             source: null,
           },
         ],
-        files_with_diagnostics: 2,
         total_diagnostics: 3,
         summary: { errors: 1, warnings: 1, info: 1 },
         diagnostic_counts: { "forbidden-functions": 1, "trailing-whitespace": 1, unknown: 1 },

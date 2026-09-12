@@ -867,7 +867,9 @@ settings used for the run (including all defaulted values); a
 `filters` object recording the GUI's active filename, severity, importance,
 rule, and auto-fixable-only filters, so the assistant can tell which findings
 the user intentionally excluded; a
-`findings` section in the same shape the "Export issues" JSON format uses,
+`findings` section in the same shape the "Export issues" JSON format uses
+(minus its `files_with_diagnostics` count, always redundant here since every
+exported file already has at least one diagnostic),
 with a `summary` of error, warning, and info counts both for every individual
 file and for the complete export, while each file entry also carries a
 `source` field explicitly naming

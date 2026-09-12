@@ -492,7 +492,6 @@ struct AiFileReport {
 #[derive(Debug, Serialize)]
 struct AiFindings {
     files: Vec<AiFileReport>,
-    files_with_diagnostics: usize,
     total_diagnostics: usize,
     summary: AiSummary,
     diagnostic_counts: std::collections::BTreeMap<&'static str, usize>,
@@ -1379,7 +1378,6 @@ pub fn run(
             configuration: lint_config.clone(),
             findings: AiFindings {
                 files: ai_files,
-                files_with_diagnostics,
                 total_diagnostics,
                 summary: total_summary,
                 diagnostic_counts: total_diagnostic_counts,
