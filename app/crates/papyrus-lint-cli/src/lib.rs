@@ -4530,4 +4530,81 @@ mod tests {
             .iter()
             .all(|check| check["status"] == "ok"));
     }
+
+    #[test]
+    fn direct_psc_detection_is_case_insensitive() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script = dir.path().join("Example.PSC");
+        write_file(&script, "ScriptName Example   \n");
+
+        let (code, stdout, stderr) = run_captured(&[script.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stderr.is_empty());
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
+    }
+
+    #[test]
+    fn doctor_reports_a_malformed_achlist_and_continues_other_checks() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let achlist = dir.path().join("broken.achlist");
+        write_file(&achlist, "not json");
+
+        let (code, stdout, stderr) =
+            run_captured(&["doctor".to_string(), achlist.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stderr.is_empty());
+        assert!(stdout.contains("[error] failed to parse achlist"));
+        assert!(stdout.contains("[ok] project root resolved to"));
+        assert!(stdout.contains("PapyrusLinterCLI doctor:"));
+    }
+
+    #[test]
+    fn doctor_rejects_missing_flag_values() {
+        for flag in ["--config", "--script-root"] {
+            let (code, stdout, stderr) = run_captured(&["doctor".to_string(), flag.to_string()]);
+
+            assert_eq!(code, 2, "flag: {flag}");
+            assert!(stdout.is_empty(), "flag: {flag}");
+            assert!(stderr.contains("Usage: PapyrusLinterCLI"), "flag: {flag}");
+        }
+    }
+
+    #[test]
+    fn doctor_rejects_extra_positional_arguments() {
+        let (code, stdout, stderr) = run_captured(&[
+            "doctor".to_string(),
+            "first.psc".to_string(),
+            "second.psc".to_string(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn output_replaces_an_existing_report_instead_of_appending() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script = dir.path().join("Example.psc");
+        let report = dir.path().join("report.txt");
+        write_file(&script, "ScriptName Example\n");
+        write_file(&report, "stale report contents that must disappear\n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--output".to_string(),
+            report.to_string_lossy().into_owned(),
+            script.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stdout.is_empty());
+        assert!(stderr.is_empty());
+        assert_eq!(
+            fs::read_to_string(report).expect("failed to read report"),
+            "PapyrusLinterCLI: no problems found in 1 script(s).\n"
+        );
+    }
 }
