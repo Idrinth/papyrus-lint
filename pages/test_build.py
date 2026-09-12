@@ -35,6 +35,21 @@ class PublishedSchemaTest(unittest.TestCase):
             {"external": ["source"], "source": ["external"]},
         )
 
+    def test_ai_export_space_indentation_requires_positive_width(self) -> None:
+        schema = json.loads(
+            (page_builder.DOCS_DIR / "papyrus-lint-ai-export.v2.schema.json").read_text(encoding="utf-8")
+        )
+
+        configuration = schema["$defs"]["configuration"]
+        self.assertEqual(
+            configuration["if"],
+            {"properties": {"indentation": {"const": "space"}}},
+        )
+        self.assertEqual(
+            configuration["then"],
+            {"properties": {"indentation_width": {"minimum": 1}}},
+        )
+
 
 class MarkdownHelpersTest(unittest.TestCase):
     def test_extract_section_stops_at_same_or_shallower_heading(self) -> None:
