@@ -139,7 +139,8 @@ fn ai_format_includes_source_and_triggered_rule_details() {
         report["configuration"]["rules"]["trailing_whitespace"],
         true
     );
-    assert_eq!(report["findings"]["files"][0]["source"], source);
+    assert_eq!(report["findings"]["files"][0]["source"]["type"], "content");
+    assert_eq!(report["findings"]["files"][0]["source"]["content"], source);
     assert_eq!(
         report["findings"]["files"][0]["diagnostics"][0]["rule"],
         "trailing-whitespace"
@@ -178,6 +179,46 @@ fn ai_format_omits_scripts_without_diagnostics() {
         .stdout
         .windows(b"Clean.psc".len())
         .any(|window| window == b"Clean.psc"));
+}
+
+#[test]
+fn ai_format_hash_source_reports_an_md5_digest_instead_of_the_full_content() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let source = "ScriptName Example   \n";
+    write_file(&script, source);
+
+    let output = run_cli(&["--format", "ai", "--hash-source", &script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain an AI export");
+    assert_eq!(report["findings"]["files"][0]["source"]["type"], "hash");
+    assert_eq!(report["findings"]["files"][0]["source"]["algorithm"], "md5");
+    assert_eq!(
+        report["findings"]["files"][0]["source"]["hash"],
+        papyrus_lint_core::content_hash::md5_hex(source)
+    );
+    assert!(!output
+        .stdout
+        .windows(source.len())
+        .any(|window| window == source.as_bytes()));
+}
+
+#[test]
+fn hash_source_without_format_ai_is_a_usage_error() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example\n");
+
+    let output = run_cli(&["--hash-source", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert_eq!(
+        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
+        "error: --hash-source requires --format ai\n"
+    );
 }
 
 #[test]

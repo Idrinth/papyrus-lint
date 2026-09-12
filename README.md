@@ -502,6 +502,7 @@ PapyrusLinterCLI --tag style path/to/project.achlist
 PapyrusLinterCLI fix --tag style path/to/project.achlist
 PapyrusLinterCLI --json path/to/project.achlist
 PapyrusLinterCLI --format ai path/to/project.achlist
+PapyrusLinterCLI --format ai --hash-source path/to/project.achlist
 PapyrusLinterCLI --json fix path/to/project.achlist
 PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
 PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
@@ -695,6 +696,12 @@ report without scraping text. `--format json` is its equivalent;
 `--format plain` explicitly selects the default output. `--format ai` instead
 produces the same AI export as the desktop app: JSON containing the tool header,
 findings, each affected file's source, and metadata for every triggered rule.
+Given alongside `--format ai`, `--hash-source` replaces each file's exported
+source with an md5 hash of its content instead of the full text — e.g. to
+hand a report to an external AI assistant without exposing proprietary
+script text, while a viewer can still tell files apart, or notice a file
+changed between exports, from the hash alone. It's a usage error without
+`--format ai`.
 The normal JSON output contract is published as a
 [JSON Schema](docs/papyrus-lint-report.schema.json) using JSON Schema Draft 2020-12,
 so integrations can generate types and validate saved or streamed reports:
@@ -861,11 +868,20 @@ settings used for the run (including all defaulted values); a
 rule, and auto-fixable-only filters, so the assistant can tell which findings
 the user intentionally excluded; a
 `findings` section in the same shape the "Export issues" JSON format uses,
-except each file entry also carries a `source` field with that script's
-current on-disk contents (or an error message describing why it couldn't
-be read, e.g. if it was moved or deleted since linting) — so the assistant
-can see the exact code each diagnostic refers to without needing the
-project's own files open alongside the report — and each diagnostic from an
+except each file entry also carries a `source` field explicitly naming
+which of four forms it takes: `null` when no source was attached at all; an
+object with `"type": "content"` carrying that script's full current on-disk
+contents, so the assistant can see the exact code each diagnostic refers to
+without needing the project's own files open alongside the report; an
+object with `"type": "hash"` carrying an `algorithm` (currently always
+`md5`) and `hash` instead, selected via the "Redact source (attach hash
+only)" checkbox next to the "Export for AI" button (or the CLI's
+`--hash-source` flag; see Command-line interface above), so a report can be
+handed to an external AI without exposing proprietary script text while the
+assistant can still tell files apart, or notice a file changed between
+exports, from the hash alone; or an object with `"type": "error"` carrying
+a `message` describing why the source couldn't be read (e.g. it was moved
+or deleted since linting) — and each diagnostic from an
 auto-fixable rule also carries a `repair` field showing what that line
 would look like after applying the rule's automatic fix, computed without
 actually applying it — omitted when the fix wouldn't change that line at

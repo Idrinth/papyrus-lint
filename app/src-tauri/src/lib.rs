@@ -7,7 +7,9 @@ use std::path::{Path, PathBuf};
 use papyrus_lint_core::source_encoding::{
     read_psc_source, read_psc_source_with_encoding, write_psc_source,
 };
-use papyrus_lint_core::{achlist, ast_cache, config, function_table, presets, script_locator};
+use papyrus_lint_core::{
+    achlist, ast_cache, config, content_hash, function_table, presets, script_locator,
+};
 
 #[derive(Debug, PartialEq, serde::Serialize)]
 struct ProjectInfo {
@@ -126,6 +128,18 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
 #[tauri::command]
 fn read_psc_file(path: String) -> Result<String, String> {
     read_psc_source(Path::new(&path)).map_err(|err| err.to_string())
+}
+
+/// Reads the `.psc` file at `path` and returns the lowercase hex MD5 digest
+/// of its contents, for the "Export for AI" feature's "Redact source"
+/// option (see `formatIssuesForAi`/`readIssueFileSources` in
+/// `app/src/main.ts`): an assistant can still tell files apart, or notice a
+/// file changed between exports, from this hash without seeing its actual
+/// source text.
+#[tauri::command]
+fn hash_psc_file_md5(path: String) -> Result<String, String> {
+    let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
+    Ok(content_hash::md5_hex(&source))
 }
 
 /// Writes `contents` to the `.psc` file at `path`, replacing it on disk.
@@ -646,6 +660,7 @@ pub fn run() {
             lint_papyrus_script,
             parse_psc_file,
             read_psc_file,
+            hash_psc_file_md5,
             write_psc_file,
             load_lint_config,
             save_lint_config,
@@ -745,6 +760,26 @@ mod tests {
     }
 
     #[test]
+    fn hash_psc_file_md5_reports_the_md5_digest_of_the_files_current_contents() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&path, source).unwrap();
+        let path_string = path.to_string_lossy().into_owned();
+
+        assert_eq!(
+            hash_psc_file_md5(path_string.clone()).unwrap(),
+            content_hash::md5_hex(source)
+        );
+
+        std::fs::write(&path, "ScriptName Changed\n").unwrap();
+        assert_ne!(
+            hash_psc_file_md5(path_string).unwrap(),
+            content_hash::md5_hex(source)
+        );
+    }
+
+    #[test]
     fn psc_file_commands_decode_cp1252_source_for_the_viewer_and_parser() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Example.psc");
@@ -792,6 +827,7 @@ mod tests {
         let path = missing.to_string_lossy().into_owned();
 
         assert!(read_psc_file(path.clone()).is_err());
+        assert!(hash_psc_file_md5(path.clone()).is_err());
         assert!(write_psc_file(path.clone(), "ScriptName Example\n".to_string()).is_err());
         assert!(parse_psc_file(path.clone()).is_err());
         assert!(lint_psc_file(
