@@ -17,10 +17,13 @@ struct ProjectInfo {
 
 /// A JSON-friendly copy of one [`papyrus_lints::tags::RuleTags`] entry, for
 /// the frontend to group/filter lint findings by (e.g. "show me only
-/// performance findings", or "only auto-fixable ones").
+/// performance findings", or "only auto-fixable ones") and to include the
+/// full rule description in the "Export for AI" document (see
+/// `formatIssuesForAi` in `app/src/main.ts`).
 #[derive(Debug, PartialEq, serde::Serialize)]
 struct RuleTagsInfo {
     rule: String,
+    description: &'static str,
     kinds: Vec<&'static str>,
     importance: papyrus_lints::tags::Importance,
     auto_fixable: bool,
@@ -36,6 +39,7 @@ fn list_rule_tags() -> Vec<RuleTagsInfo> {
         .iter()
         .map(|tags| RuleTagsInfo {
             rule: tags.rule.to_string(),
+            description: tags.description,
             kinds: tags.kinds.to_vec(),
             importance: tags.importance,
             auto_fixable: tags.auto_fixable(),
@@ -693,6 +697,7 @@ mod tests {
             .iter()
             .find(|info| info.rule == papyrus_lints::trailing_whitespace::RULE)
             .expect("trailing-whitespace should be tagged");
+        assert!(!trailing_whitespace.description.is_empty());
         assert_eq!(trailing_whitespace.kinds, vec!["style"]);
         assert_eq!(
             trailing_whitespace.importance,

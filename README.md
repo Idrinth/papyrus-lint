@@ -844,8 +844,7 @@ filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
 [contract published as a JSON Schema](docs/papyrus-lint-ai-export.schema.json)):
-a `header`
-identifying the tool name, running version, and
+a `header` identifying the tool name, running version, and
 [project website](https://papyrus-lint.idrinth.de) for further lookups; a
 `findings` section in the same shape the "Export issues" JSON format uses,
 except each file entry also carries a `source` field with that script's
@@ -860,13 +859,16 @@ all (e.g. `type-casing`'s own "no automatic fix" case) or would shift the
 file's line count elsewhere (e.g. `property-sorting` relocating a
 property's declaration), so an assistant can see a fix's effect without
 asking the user to apply it first; and a `rule_details` array carrying the
-full tag metadata (kind(s), importance, and whether it's auto-fixable) for
-every rule id that actually appears among the exported findings and has
-known tag metadata (an unrecognized rule id is simply left out) — giving
-the assistant enough context about each triggered rule to answer
-follow-up questions precisely without needing this project's own
-documentation on hand. Like "Export issues", it's disabled whenever no
-finding currently passes the active filters.
+full tag metadata (kind(s), importance, whether it's auto-fixable, and the
+rule's own detailed `description`, copied verbatim from its row in the
+[Implemented Lints](#implemented-lints) table above) for every rule id
+that actually appears among the exported findings and has known tag
+metadata (an unrecognized rule id is simply left out) — giving the
+assistant enough context about each triggered rule, in the same detail
+this README gives a human reader, to answer follow-up questions precisely
+without needing this project's own documentation on hand. Like "Export
+issues", it's disabled whenever no finding currently passes the active
+filters.
 
 ## Compiling a script
 
