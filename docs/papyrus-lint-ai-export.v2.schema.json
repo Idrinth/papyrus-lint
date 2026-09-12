@@ -243,7 +243,7 @@
         },
         "target_game": {
           "description": "The Papyrus dialect/engine these findings and rule details were produced for. Papyrus Lint has no per-project game/edition setting, so this is fixed.",
-          "const": "Skyrim SE/AE"
+          "enum": ["Skyrim SE/AE"]
         },
         "generated_at": {
           "description": "The UTC date and time at which this export was generated, in RFC 3339 format.",
@@ -276,6 +276,7 @@
           "minimum": 0
         },
         "summary": {
+          "description": "The sum of all file summaries.",
           "$ref": "#/$defs/summary"
         },
         "diagnostic_counts": {
@@ -398,12 +399,12 @@
           "const": "hash"
         },
         "algorithm": {
-          "const": "md5"
+          "enum": ["md5"]
         },
         "hash": {
-          "description": "The lowercase hex MD5 digest of this script's current on-disk contents.",
+          "description": "The lowercase hex digest of this script's current on-disk contents.",
           "type": "string",
-          "pattern": "^[0-9a-f]{32}$"
+          "pattern": "^[0-9a-f]+$"
         }
       }
     },
