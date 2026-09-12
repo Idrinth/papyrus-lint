@@ -538,7 +538,8 @@
       "required": [
         "files",
         "files_with_diagnostics",
-        "total_diagnostics"
+        "total_diagnostics",
+        "diagnostic_counts"
       ],
       "properties": {
         "files": {
@@ -556,6 +557,9 @@
           "description": "The total number of exported diagnostics across all files.",
           "type": "integer",
           "minimum": 0
+        },
+        "diagnostic_counts": {
+          "$ref": "#/$defs/diagnosticCounts"
         }
       }
     },
@@ -564,6 +568,7 @@
       "additionalProperties": false,
       "required": [
         "path",
+        "diagnostic_counts",
         "diagnostics",
         "source"
       ],
@@ -581,6 +586,9 @@
             "$ref": "#/$defs/diagnostic"
           }
         },
+        "diagnostic_counts": {
+          "$ref": "#/$defs/diagnosticCounts"
+        },
         "source": {
           "description": "How this script's source is represented: null when none was attached at all; otherwise an object whose \"type\" names which of the other three forms it takes.",
           "oneOf": [
@@ -597,6 +605,17 @@
               "$ref": "#/$defs/sourceError"
             }
           ]
+        }
+      }
+    },
+    "diagnosticCounts": {
+      "description": "Counts of exported diagnostics grouped by rule id. Rules with no diagnostics are omitted.",
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9]+(?:-[a-z0-9]+)*$": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },

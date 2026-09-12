@@ -2903,6 +2903,7 @@ describe("formatIssuesForAi", () => {
         files: [
           {
             path: "A.psc",
+            diagnostic_counts: { "trailing-whitespace": 1 },
             diagnostics: [
               { line: 1, column: 1, rule: "trailing-whitespace", level: "warning", message: "trailing whitespace" },
             ],
@@ -2910,6 +2911,7 @@ describe("formatIssuesForAi", () => {
           },
           {
             path: "B.psc",
+            diagnostic_counts: { "forbidden-functions": 1 },
             diagnostics: [
               { line: 5, column: 3, rule: "forbidden-functions", level: "error", message: "forbidden function used" },
             ],
@@ -2918,6 +2920,7 @@ describe("formatIssuesForAi", () => {
         ],
         files_with_diagnostics: 2,
         total_diagnostics: 2,
+        diagnostic_counts: { "forbidden-functions": 1, "trailing-whitespace": 1 },
       },
       rule_details: [
         { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
