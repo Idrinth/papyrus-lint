@@ -3054,8 +3054,8 @@ describe("formatIssuesForAi", () => {
         diagnostic_counts: { "forbidden-functions": 1, "trailing-whitespace": 1, unknown: 1 },
       },
       rule_details: [
-        { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium" },
-        { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low" },
+        { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
+        { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       ],
     });
   });

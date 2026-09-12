@@ -165,7 +165,7 @@ fn ai_format_includes_source_and_triggered_rule_details() {
     );
     assert_eq!(report["rule_details"][0]["rule"], "trailing-whitespace");
     assert!(report["rule_details"][0]["description"].is_string());
-    assert!(report["rule_details"][0].get("auto_fixable").is_none());
+    assert_eq!(report["rule_details"][0]["auto_fixable"], true);
 }
 
 #[test]
