@@ -2889,6 +2889,7 @@ describe("formatIssuesForAi", () => {
         target_game: "Skyrim SE/AE",
         generated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
       },
+      configuration: DEFAULT_LINT_CONFIG,
       findings: {
         files: [
           {

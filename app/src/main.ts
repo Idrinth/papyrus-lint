@@ -249,6 +249,7 @@ export interface LintRules {
   explicit_return: boolean;
   unchecked_form_parameter: boolean;
   unchecked_cast: boolean;
+  useless_downcast: boolean;
   unresolved_script: boolean;
   non_global_function_call: boolean;
   static_function_call_via_instance: boolean;
@@ -266,7 +267,9 @@ export interface LintRules {
   invariant_loop_condition: boolean;
   script_name_collision: boolean;
   array_bounds: boolean;
+  readonly_property_write: boolean;
   default_property_value: boolean;
+  unguarded_self_recursion: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -330,6 +333,7 @@ export const DEFAULT_RULES: LintRules = {
   explicit_return: true,
   unchecked_form_parameter: false,
   unchecked_cast: true,
+  useless_downcast: true,
   unresolved_script: true,
   non_global_function_call: true,
   static_function_call_via_instance: true,
@@ -347,7 +351,9 @@ export const DEFAULT_RULES: LintRules = {
   invariant_loop_condition: true,
   script_name_collision: true,
   array_bounds: true,
+  readonly_property_write: true,
   default_property_value: false,
+  unguarded_self_recursion: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
@@ -2447,6 +2453,7 @@ export async function formatIssuesForAi(
   files: FilteredIssuesFile[],
   version: string,
   sources: Map<string, string> = new Map(),
+  configuration: LintConfig = currentLintConfig,
 ): Promise<string> {
   const triggeredRules = new Set<string>();
   for (const file of files) {
@@ -2493,6 +2500,7 @@ export async function formatIssuesForAi(
         target_game: TARGET_GAME,
         generated_at: new Date().toISOString(),
       },
+      configuration,
       findings,
       rule_details: ruleDetails,
     },

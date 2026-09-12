@@ -469,6 +469,7 @@ struct AiRuleDetails {
 #[derive(Debug, Serialize)]
 struct AiReport {
     header: AiHeader,
+    configuration: papyrus_lints::Config,
     findings: AiFindings,
     rule_details: Vec<AiRuleDetails>,
 }
@@ -1276,6 +1277,7 @@ pub fn run(
                 target_game: "Skyrim SE/AE",
                 generated_at: generated_at(),
             },
+            configuration: lint_config.clone(),
             findings: AiFindings {
                 files: ai_files,
                 files_with_diagnostics,
