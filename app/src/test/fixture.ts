@@ -149,7 +149,6 @@ export const FIXTURE_HTML = `
             <input type="checkbox" id="filter-error" checked />
             <input type="checkbox" id="filter-warning" checked />
             <input type="checkbox" id="filter-info" checked />
-            <input type="checkbox" id="filter-other" checked />
           </fieldset>
           <fieldset id="psc-result-tag-filters">
             <input type="checkbox" id="filter-kind-style" checked />
