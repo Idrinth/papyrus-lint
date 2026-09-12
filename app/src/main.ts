@@ -67,6 +67,7 @@ let autoFixableFilterEl: HTMLInputElement | null;
 let ruleFilterSelectEls: Partial<Record<TagKind, HTMLSelectElement>> = {};
 let exportFormatEl: HTMLSelectElement | null;
 let exportIssuesButtonEl: HTMLButtonElement | null;
+let exportAiButtonEl: HTMLButtonElement | null;
 let codeViewerEl: HTMLDialogElement | null;
 let codeViewerTitleEl: HTMLElement | null;
 let codeViewerCloseEl: HTMLButtonElement | null;
@@ -2319,10 +2320,10 @@ export function formatIssuesAsText(files: FilteredIssuesFile[]): string {
   return lines.join("\n");
 }
 
-// Renders `files` as JSON, mirroring the shape of the CLI's own `--json`
-// report (JsonReport/JsonFileReport/JsonDiagnostic in
-// papyrus-lint-cli/src/lib.rs) so both can be consumed by the same tooling.
-export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
+// Shared by formatIssuesAsJson and formatIssuesForAi: `files` as a plain
+// object mirroring the CLI's own `--json` report shape
+// (JsonReport/JsonFileReport/JsonDiagnostic in papyrus-lint-cli/src/lib.rs).
+function buildIssuesReport(files: FilteredIssuesFile[]) {
   let totalDiagnostics = 0;
   const jsonFiles = files.map((file) => {
     totalDiagnostics += file.findings.length;
@@ -2337,11 +2338,59 @@ export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
       })),
     };
   });
+  return {
+    files: jsonFiles,
+    files_with_diagnostics: jsonFiles.length,
+    total_diagnostics: totalDiagnostics,
+  };
+}
+
+// Renders `files` as JSON, mirroring the shape of the CLI's own `--json`
+// report so both can be consumed by the same tooling.
+export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
+  return JSON.stringify(buildIssuesReport(files), null, 2);
+}
+
+// The desktop app's own homepage, where an AI reading an "Export for AI"
+// document (see formatIssuesForAi) can look up rule/configuration
+// documentation beyond what rule_details itself carries.
+const WEBSITE_URL = "https://papyrus-lint.idrinth.de";
+const TOOL_NAME = "Papyrus Lint";
+
+// Renders `files` as a single JSON document meant to be handed to an AI
+// assistant alongside a question about the results: a header identifying
+// the tool/version/website (so the AI knows what produced these findings
+// and where to look up anything not covered below), the findings
+// themselves (see buildIssuesReport), and the full tag metadata (kind(s),
+// importance, auto-fixability; see papyrus_lints::tags) for every rule id
+// that actually appears among `files`' findings - giving the AI enough
+// context about each triggered rule to answer follow-up questions
+// precisely without needing the project's own documentation on hand.
+// `version` is the running app's version (see loadAppVersion), or "" if
+// that lookup failed.
+export function formatIssuesForAi(files: FilteredIssuesFile[], version: string): string {
+  const triggeredRules = new Set<string>();
+  for (const file of files) {
+    for (const finding of file.findings) {
+      if (finding.rule) {
+        triggeredRules.add(finding.rule);
+      }
+    }
+  }
+  const ruleDetails = [...triggeredRules]
+    .sort((a, b) => a.localeCompare(b))
+    .map((rule) => ruleTagsByRule.get(rule))
+    .filter((info): info is RuleTagsInfo => info !== undefined);
+
   return JSON.stringify(
     {
-      files: jsonFiles,
-      files_with_diagnostics: jsonFiles.length,
-      total_diagnostics: totalDiagnostics,
+      header: {
+        tool: TOOL_NAME,
+        version: version || "unknown",
+        website: WEBSITE_URL,
+      },
+      findings: buildIssuesReport(files),
+      rule_details: ruleDetails,
     },
     null,
     2,
@@ -2366,11 +2415,15 @@ function downloadTextFile(filename: string, contents: string, mimeType: string) 
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
-// Enables the "Export issues" button only while there's at least one
-// currently filtered finding to export.
+// Enables the "Export issues"/"Export for AI" buttons only while there's at
+// least one currently filtered finding to export.
 export function updateExportIssuesButtonState(outcomes: PscParseOutcome[]) {
+  const disabled = collectFilteredIssues(outcomes).length === 0;
   if (exportIssuesButtonEl) {
-    exportIssuesButtonEl.disabled = collectFilteredIssues(outcomes).length === 0;
+    exportIssuesButtonEl.disabled = disabled;
+  }
+  if (exportAiButtonEl) {
+    exportAiButtonEl.disabled = disabled;
   }
 }
 
@@ -2386,6 +2439,18 @@ export function handleExportIssuesClick() {
   } else {
     downloadTextFile("papyrus-lint-issues.txt", formatIssuesAsText(files), "text/plain");
   }
+}
+
+// Downloads the currently filtered lint findings as a single "Export for
+// AI" JSON document (see formatIssuesForAi), independent of the "Export
+// format" selector above since this format is always JSON.
+export async function handleExportAiClick(): Promise<void> {
+  const files = collectFilteredIssues(currentPscOutcomes);
+  if (files.length === 0) {
+    return;
+  }
+  const version = await loadAppVersion();
+  downloadTextFile("papyrus-lint-ai-export.json", formatIssuesForAi(files, version), "application/json");
 }
 
 // Builds/refreshes the "mass fix" panel listing every rule with at least
@@ -3169,6 +3234,7 @@ window.addEventListener("DOMContentLoaded", () => {
   ) as Partial<Record<TagKind, HTMLSelectElement>>;
   exportFormatEl = document.querySelector("#export-format");
   exportIssuesButtonEl = document.querySelector("#export-issues-button");
+  exportAiButtonEl = document.querySelector("#export-ai-button");
   saveConfigAsPresetButtonEl = document.querySelector("#save-config-as-preset");
   saveConfigAsPresetButtonEl?.addEventListener("click", () => void handleSaveConfigAsPresetClick());
   resetToPresetSelectEl = document.querySelector("#reset-to-preset-select");
@@ -3352,6 +3418,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   exportIssuesButtonEl?.addEventListener("click", () => handleExportIssuesClick());
+  exportAiButtonEl?.addEventListener("click", () => void handleExportAiClick());
 
   configPathOverrideEl?.addEventListener("change", handleConfigPathOverrideChanged);
   compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
