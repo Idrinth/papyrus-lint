@@ -481,6 +481,26 @@ fn repair_psc_file(
     ))
 }
 
+/// Like [`repair_psc_file`], but never writes anything to disk: computes the
+/// same whole-file automatic fix and returns a standard unified diff (the
+/// same `diff -u`/`git diff` hunk format `PapyrusLinterCLI fix --dry-run`
+/// prints, via [`papyrus_lint_core::diff::unified_diff`]) between the
+/// original source and what applying the fix would produce, or an empty
+/// string if nothing would change. Drives the code viewer's "Preview
+/// fixes" button, so a user can see what "Apply fixes" would do before
+/// committing to it.
+#[tauri::command]
+fn preview_repair_psc_file(path: String, config: papyrus_lints::Config) -> Result<String, String> {
+    let path = Path::new(&path);
+    let source = read_psc_source(path).map_err(|err| err.to_string())?;
+    let repaired = papyrus_lints::repair(&source, &config);
+    Ok(papyrus_lint_core::diff::unified_diff(
+        &path.display().to_string(),
+        &source,
+        &repaired,
+    ))
+}
+
 /// Like [`repair_psc_file`], but applies only the automatic fix for `rule`
 /// (a [`papyrus_lints::FIXABLE_RULE_IDS`] id), and restricts its effect to
 /// `line` (1-indexed) — leaving every other line untouched — via
@@ -620,6 +640,7 @@ pub fn run() {
             export_user_preset,
             lint_psc_file,
             repair_psc_file,
+            preview_repair_psc_file,
             repair_psc_finding,
             repair_psc_file_rule,
             compile_psc_file,
@@ -794,6 +815,54 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|diagnostic| { diagnostic.rule == papyrus_lints::forbidden_functions::RULE }));
+    }
+
+    #[test]
+    fn preview_repair_psc_file_returns_a_diff_without_writing_the_file() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let original = "ScriptName Example  \n\nFunction Run()\n\tGame.GetPlayer()\nEndFunction\n";
+        std::fs::write(&path, original).unwrap();
+
+        let diff = preview_repair_psc_file(
+            path.to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+        )
+        .unwrap();
+
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
+        assert!(diff.contains("-ScriptName Example  \n"));
+        assert!(diff.contains("+ScriptName Example\n"));
+    }
+
+    #[test]
+    fn preview_repair_psc_file_returns_an_empty_diff_for_an_already_clean_file() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+
+        let diff = preview_repair_psc_file(
+            path.to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+        )
+        .unwrap();
+
+        assert_eq!(diff, "");
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "ScriptName Example\n"
+        );
+    }
+
+    #[test]
+    fn preview_repair_psc_file_reports_io_errors_instead_of_panicking() {
+        let missing = tempdir().unwrap().path().join("missing.psc");
+
+        assert!(preview_repair_psc_file(
+            missing.to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+        )
+        .is_err());
     }
 
     #[test]

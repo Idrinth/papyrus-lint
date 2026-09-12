@@ -77,10 +77,12 @@ let codeViewerEditHighlightEl: HTMLElement | null;
 let codeViewerEditTextareaEl: HTMLTextAreaElement | null;
 let codeViewerEditButtonEl: HTMLButtonElement | null;
 let codeViewerFixButtonEl: HTMLButtonElement | null;
+let codeViewerPreviewFixButtonEl: HTMLButtonElement | null;
 let codeViewerSaveButtonEl: HTMLButtonElement | null;
 let codeViewerSaveCompileButtonEl: HTMLButtonElement | null;
 let codeViewerCancelButtonEl: HTMLButtonElement | null;
 let codeViewerCompileOutputEl: HTMLElement | null;
+let codeViewerDiffOutputEl: HTMLElement | null;
 let codeViewerFullscreenEl: HTMLButtonElement | null;
 let codeViewerAutocompleteEl: HTMLUListElement | null;
 let themeSelectEl: HTMLSelectElement | null;
@@ -1255,6 +1257,18 @@ export async function repairPscFile(path: string): Promise<Diagnostic[]> {
   });
 }
 
+// Computes the same whole-file automatic fix repairPscFile would apply, but
+// never writes it to disk: returns a standard unified diff of what would
+// change (or an empty string if nothing would), the same output
+// `PapyrusLinterCLI fix --dry-run` prints. Drives the code viewer's
+// "Preview fixes" button.
+export async function previewRepairPscFile(path: string): Promise<string> {
+  return invoke<string>("preview_repair_psc_file", {
+    path,
+    config: currentLintConfig,
+  });
+}
+
 // Rule ids with an automatic fix (papyrus_lints::FIXABLE_RULE_IDS), used to
 // decide which findings offer the per-finding "Fix this issue" button. Kept
 // in sync by hand with FIXABLE_RULE_IDS in
@@ -1523,21 +1537,24 @@ function setCodeViewerMode(mode: "view" | "edit") {
   if (codeViewerSaveButtonEl) codeViewerSaveButtonEl.hidden = mode !== "edit";
   if (codeViewerSaveCompileButtonEl) codeViewerSaveCompileButtonEl.hidden = mode !== "edit";
   if (codeViewerCancelButtonEl) codeViewerCancelButtonEl.hidden = mode !== "edit";
-  updateCodeViewerFixButtonVisibility();
+  updateCodeViewerFixButtonsVisibility();
 }
 
-// Shows the "Apply fixes" button only in view mode, and only while the
-// currently loaded file still has at least one fixable finding (the same
-// check the Lint results list uses to decide whether to show its own
-// per-file "Apply fixes" button), so it disappears on its own once nothing
-// is left to fix. Called both on every mode change and whenever
-// codeViewerState's findings change without a mode change (e.g. right
-// after a fix is applied).
-function updateCodeViewerFixButtonVisibility() {
-  if (!codeViewerFixButtonEl) {
-    return;
+// Shows the "Apply fixes"/"Preview fixes" buttons only in view mode, and
+// only while the currently loaded file still has at least one fixable
+// finding (the same check the Lint results list uses to decide whether to
+// show its own per-file "Apply fixes" button), so they disappear on their
+// own once nothing is left to fix. Called both on every mode change and
+// whenever codeViewerState's findings change without a mode change (e.g.
+// right after a fix is applied).
+function updateCodeViewerFixButtonsVisibility() {
+  const hidden = codeViewerMode !== "view" || !hasFixableFindings(codeViewerState?.findings ?? []);
+  if (codeViewerFixButtonEl) {
+    codeViewerFixButtonEl.hidden = hidden;
   }
-  codeViewerFixButtonEl.hidden = codeViewerMode !== "view" || !hasFixableFindings(codeViewerState?.findings ?? []);
+  if (codeViewerPreviewFixButtonEl) {
+    codeViewerPreviewFixButtonEl.hidden = hidden;
+  }
 }
 
 // Findings for the script currently open in edit mode, grouped by line -
@@ -1835,6 +1852,7 @@ export function enterCodeViewerEditMode() {
   codeViewerEditTextareaEl.value = codeViewerState.source;
   updateCodeViewerEditHighlight();
   hideCompileOutput(codeViewerCompileOutputEl);
+  hideDiffOutput(codeViewerDiffOutputEl);
   setCodeViewerMode("edit");
   codeViewerEditTextareaEl.focus();
 }
@@ -1946,6 +1964,7 @@ export async function openCodeViewer(path: string, findings: Diagnostic[], focus
   codeViewerState = null;
   setCodeViewerMode("view");
   hideCompileOutput(codeViewerCompileOutputEl);
+  hideDiffOutput(codeViewerDiffOutputEl);
   codeViewerTitleEl.textContent = path;
   codeViewerViewEl.textContent = "Loading…";
   codeViewerEl.showModal();
@@ -1959,7 +1978,7 @@ export async function openCodeViewer(path: string, findings: Diagnostic[], focus
   }
 
   codeViewerState = { path, source, findings };
-  updateCodeViewerFixButtonVisibility();
+  updateCodeViewerFixButtonsVisibility();
   renderCodeViewerView(source, findings, focusLine);
 }
 
@@ -2459,6 +2478,7 @@ export async function handleCodeViewerFixClick() {
     const source = await invoke<string>("read_psc_file", { path });
     codeViewerState = { path, source, findings };
     renderCodeViewerView(source, findings);
+    hideDiffOutput(codeViewerDiffOutputEl);
 
     const outcome = currentPscOutcomes.find((candidate) => candidate.path === path);
     if (outcome) {
@@ -2468,10 +2488,33 @@ export async function handleCodeViewerFixClick() {
   } catch (error) {
     console.error(error);
   } finally {
-    updateCodeViewerFixButtonVisibility();
+    updateCodeViewerFixButtonsVisibility();
     if (codeViewerFixButtonEl) {
       codeViewerFixButtonEl.disabled = false;
     }
+  }
+}
+
+// The code viewer's "Preview fixes" button: computes the same fix
+// handleCodeViewerFixClick would apply, but never writes it to disk,
+// rendering a standard diff of what would change instead (see
+// previewRepairPscFile/preview_repair_psc_file) - the GUI counterpart of
+// `PapyrusLinterCLI fix --dry-run`. Leaves codeViewerState/the Lint results
+// list untouched, since nothing on disk actually changed.
+export async function handleCodeViewerPreviewFixClick() {
+  if (!codeViewerState || !codeViewerPreviewFixButtonEl || !codeViewerDiffOutputEl) {
+    return;
+  }
+  const { path } = codeViewerState;
+  codeViewerPreviewFixButtonEl.disabled = true;
+  try {
+    const diff = await previewRepairPscFile(path);
+    renderDiffOutput(codeViewerDiffOutputEl, diff);
+  } catch (error) {
+    console.error(error);
+    renderDiffOutput(codeViewerDiffOutputEl, String(error), true);
+  } finally {
+    codeViewerPreviewFixButtonEl.disabled = false;
   }
 }
 
@@ -2550,6 +2593,56 @@ function hideCompileOutput(outputEl: HTMLElement | null) {
   outputEl.hidden = true;
   outputEl.textContent = "";
   outputEl.classList.remove("psc-result__compile-output--ok", "psc-result__compile-output--error");
+}
+
+// Classifies one line of a unified diff (see papyrus_lint_core::diff's
+// `--- `/`+++ `/`@@ `/`+`/`-` conventions) for `renderDiffOutput` below, so
+// each kind of line can be colored distinctly the way a typical diff viewer
+// does.
+function diffLineClass(line: string): string {
+  if (line.startsWith("@@")) return "code-viewer__diff-line--hunk";
+  if (line.startsWith("+++") || line.startsWith("---")) return "code-viewer__diff-line--file";
+  if (line.startsWith("+")) return "code-viewer__diff-line--add";
+  if (line.startsWith("-")) return "code-viewer__diff-line--remove";
+  return "code-viewer__diff-line--context";
+}
+
+// Renders `diffText` (a standard unified diff, as returned by
+// previewRepairPscFile/PapyrusLinterCLI's `fix --dry-run`) in `outputEl`,
+// coloring added/removed/context lines the way a typical diff viewer does.
+// An empty `diffText` (nothing would change) is reported as such rather
+// than left blank, and `isError` styles a failure to compute the preview
+// the same way a failed compile is styled.
+function renderDiffOutput(outputEl: HTMLElement, diffText: string, isError = false) {
+  outputEl.hidden = false;
+  outputEl.classList.toggle("code-viewer__diff-output--error", isError);
+  if (isError) {
+    outputEl.textContent = diffText;
+    return;
+  }
+  if (diffText === "") {
+    outputEl.textContent = "No changes would be made.";
+    return;
+  }
+  const lines = diffText.replace(/\n$/, "").split("\n");
+  // Each line is already `display: block` (see styles.css), so it needs no
+  // separator to end up on its own line - joining with "\n" would add a
+  // literal newline character between spans that, because the panel is
+  // `white-space: pre-wrap`, renders as its own extra blank line on top of
+  // each line's own block-level break, doubling up the spacing.
+  outputEl.innerHTML = lines.map((line) => `<span class="${diffLineClass(line)}">${escapeAttr(line)}</span>`).join("");
+}
+
+// Hides and clears a previous fix preview, if any is showing (e.g. from an
+// earlier file in the same code viewer session, or a stale preview left
+// over from before a real "Apply fixes" ran).
+function hideDiffOutput(outputEl: HTMLElement | null) {
+  if (!outputEl) {
+    return;
+  }
+  outputEl.hidden = true;
+  outputEl.textContent = "";
+  outputEl.classList.remove("code-viewer__diff-output--error");
 }
 
 // Compiles `path` via PapyrusCompiler.exe and shows the result in
@@ -3061,10 +3154,12 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerEditTextareaEl = document.querySelector("#code-viewer-editor-textarea");
   codeViewerEditButtonEl = document.querySelector("#code-viewer-edit");
   codeViewerFixButtonEl = document.querySelector("#code-viewer-fix");
+  codeViewerPreviewFixButtonEl = document.querySelector("#code-viewer-preview-fix");
   codeViewerSaveButtonEl = document.querySelector("#code-viewer-save");
   codeViewerSaveCompileButtonEl = document.querySelector("#code-viewer-save-compile");
   codeViewerCancelButtonEl = document.querySelector("#code-viewer-cancel");
   codeViewerCompileOutputEl = document.querySelector("#code-viewer-compile-output");
+  codeViewerDiffOutputEl = document.querySelector("#code-viewer-diff-output");
   codeViewerFullscreenEl = document.querySelector("#code-viewer-fullscreen");
   codeViewerAutocompleteEl = document.querySelector("#code-viewer-autocomplete");
   themeSelectEl = document.querySelector("#theme-select");
@@ -3132,6 +3227,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   codeViewerEditButtonEl?.addEventListener("click", () => enterCodeViewerEditMode());
   codeViewerFixButtonEl?.addEventListener("click", () => void handleCodeViewerFixClick());
+  codeViewerPreviewFixButtonEl?.addEventListener("click", () => void handleCodeViewerPreviewFixClick());
   codeViewerCancelButtonEl?.addEventListener("click", () => cancelCodeViewerEditMode());
   codeViewerSaveButtonEl?.addEventListener("click", () => void saveCodeViewerEdits());
   codeViewerSaveCompileButtonEl?.addEventListener("click", () => void saveAndCompileCodeViewerEdits());
