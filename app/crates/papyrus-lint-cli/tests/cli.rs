@@ -185,7 +185,6 @@ fn ai_format_omits_scripts_without_diagnostics() {
     let files = report["findings"]["files"]
         .as_array()
         .expect("AI export files should be an array");
-    assert_eq!(report["findings"]["files_with_diagnostics"], 1);
     assert_eq!(files.len(), 1);
     assert!(files[0]["path"]
         .as_str()

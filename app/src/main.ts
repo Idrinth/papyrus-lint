@@ -2550,7 +2550,6 @@ export async function formatIssuesForAi(
     info: diagnostics.filter((diagnostic) => diagnostic.level === "info").length,
   });
   const findings = {
-    ...baseReport,
     files: await Promise.all(
       baseReport.files.map(async (fileReport, fileIndex) => ({
         ...fileReport,
@@ -2573,6 +2572,7 @@ export async function formatIssuesForAi(
         ),
       })),
     ),
+    total_diagnostics: baseReport.total_diagnostics,
     summary: summary(baseReport.files.flatMap((file) => file.diagnostics)),
     diagnostic_counts: diagnosticCounts(baseReport.files.flatMap((file) => file.diagnostics)),
   };
