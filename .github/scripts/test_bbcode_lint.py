@@ -28,6 +28,17 @@ class BbcodeLintTests(unittest.TestCase):
     def test_accepts_nexus_list_items(self) -> None:
         self.assertEqual([], self.messages("[list][*]One[/*][*]Two[/*][/list]"))
 
+    def test_accepts_every_supported_tag(self) -> None:
+        text = "".join(f"[{tag}]content[/{tag}]" for tag in sorted(bbcode_lint.KNOWN_TAGS))
+
+        self.assertEqual([], self.messages(text))
+
+    def test_accepts_equals_signs_inside_an_argument(self) -> None:
+        self.assertEqual(
+            [],
+            self.messages("[url=https://example.com/search?q=a=b]Example[/url]"),
+        )
+
     def test_reports_unclosed_tag(self) -> None:
         self.assertEqual(["tag [b] is not closed"], self.messages("[b]text"))
 
@@ -38,6 +49,15 @@ class BbcodeLintTests(unittest.TestCase):
                 "closing tag [/i] does not match open [b]",
             ],
             self.messages("[i][b]text[/i][/b]"),
+        )
+
+    def test_reports_multiple_unclosed_tags_in_source_order(self) -> None:
+        issues = bbcode_lint.lint("before [b]bold [i]italic")
+
+        self.assertEqual([7, 15], [issue.offset for issue in issues])
+        self.assertEqual(
+            ["tag [b] is not closed", "tag [i] is not closed"],
+            [issue.message for issue in issues],
         )
 
     def test_reports_unknown_tag(self) -> None:

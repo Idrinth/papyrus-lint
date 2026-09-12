@@ -45,6 +45,23 @@ class CoverageSummaryTests(unittest.TestCase):
 
             self.assertEqual((15, 10), coverage_summary.parse_lcov(report))
 
+    def test_parse_lcov_ignores_other_numeric_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text(
+                "TN:unit\nSF:example.py\nFNF:9\nFNH:8\nBRF:7\nBRH:6\nLF:5\nLH:4\nend_of_record\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual((5, 4), coverage_summary.parse_lcov(report))
+
+    def test_parse_lcov_accepts_an_empty_report(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text("", encoding="utf-8")
+
+            self.assertEqual((0, 0), coverage_summary.parse_lcov(report))
+
     def test_parse_lcov_returns_none_for_missing_report(self) -> None:
         self.assertIsNone(coverage_summary.parse_lcov(Path("does-not-exist.info")))
 
@@ -231,6 +248,19 @@ class RenderNexusPageTests(unittest.TestCase):
         template = "<COVERED_LINES> <COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE> <VERSION>"
         with self.assertRaisesRegex(ValueError, "expected exactly one <COVERED_LINES> marker, found 2"):
             render_nexuspage.render(template, 1, 2, "v1.2.3")
+
+    def test_render_rejects_duplicate_non_count_markers(self) -> None:
+        for marker in ("<COVERAGE_PERCENTAGE>", "<VERSION>"):
+            with self.subTest(marker=marker):
+                template = (
+                    "<COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE> <VERSION> "
+                    + marker
+                )
+                with self.assertRaisesRegex(
+                    ValueError,
+                    f"expected exactly one {marker} marker, found 2",
+                ):
+                    render_nexuspage.render(template, 1, 2, "v1.2.3")
 
     def test_render_rejects_missing_total_percentage_and_version_markers(self) -> None:
         with self.assertRaisesRegex(ValueError, "expected exactly one <TOTAL_LINES> marker, found 0"):
