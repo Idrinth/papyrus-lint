@@ -2386,6 +2386,8 @@ export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
 // document (see formatIssuesForAi) can look up rule/configuration
 // documentation beyond what rule_details itself carries.
 const WEBSITE_URL = "https://papyrus-lint.idrinth.de";
+const AI_EXPORT_SCHEMA_URL =
+  "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json";
 const TOOL_NAME = "Papyrus Lint";
 // The Papyrus dialect/engine version these findings were produced for, so
 // an AI reading the export doesn't have to guess whether a suggestion (e.g.
@@ -2493,6 +2495,7 @@ export async function formatIssuesForAi(
 
   return JSON.stringify(
     {
+      $schema: AI_EXPORT_SCHEMA_URL,
       header: {
         tool: TOOL_NAME,
         version: version || "unknown",

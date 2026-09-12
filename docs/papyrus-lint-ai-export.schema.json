@@ -6,12 +6,17 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
+    "$schema",
     "header",
     "configuration",
     "findings",
     "rule_details"
   ],
   "properties": {
+    "$schema": {
+      "description": "The canonical JSON Schema for validating and interpreting this AI export document.",
+      "const": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json"
+    },
     "header": {
       "$ref": "#/$defs/header"
     },

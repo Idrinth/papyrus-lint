@@ -470,6 +470,8 @@ struct AiRuleDetails {
 
 #[derive(Debug, Serialize)]
 struct AiReport {
+    #[serde(rename = "$schema")]
+    schema: &'static str,
     header: AiHeader,
     configuration: papyrus_lints::Config,
     findings: AiFindings,
@@ -1272,6 +1274,7 @@ pub fn run(
             })
             .collect();
         let report = AiReport {
+            schema: "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json",
             header: AiHeader {
                 tool: "Papyrus Lint",
                 version: VERSION,

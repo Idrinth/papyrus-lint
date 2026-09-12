@@ -119,6 +119,10 @@ fn ai_format_includes_source_and_triggered_rule_details() {
     assert!(output.stderr.is_empty());
     let report: serde_json::Value =
         serde_json::from_slice(&output.stdout).expect("stdout should contain an AI export");
+    assert_eq!(
+        report["$schema"],
+        "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json"
+    );
     assert_eq!(report["header"]["tool"], "Papyrus Lint");
     assert_eq!(
         report["header"]["website"],
