@@ -3004,7 +3004,7 @@ describe("formatIssuesForAi", () => {
         path: "B.psc",
         findings: [
           { line: 5, column: 3, message: "[error] forbidden function used", rule: "forbidden-functions" },
-          { line: 6, column: 1, message: "[info] consider renaming" },
+          { line: 6, column: 1, message: "[error] compiler failure", rule: "compiler-error" },
         ],
       },
     ];
@@ -3040,18 +3040,26 @@ describe("formatIssuesForAi", () => {
           },
           {
             path: "B.psc",
-            summary: { errors: 1, warnings: 0, info: 1 },
-            diagnostic_counts: { "forbidden-functions": 1, unknown: 1 },
+            summary: { errors: 2, warnings: 0, info: 0 },
+            diagnostic_counts: { "compiler-error": 1, "forbidden-functions": 1 },
             diagnostics: [
               { line: 5, column: 3, rule: "forbidden-functions", level: "error", message: "forbidden function used" },
-              { line: 6, column: 1, rule: "unknown", level: "info", message: "consider renaming" },
+              {
+                line: 6,
+                column: 1,
+                rule: "compiler-error",
+                level: "error",
+                message: "compiler failure",
+                external: true,
+                source: "compiler",
+              },
             ],
             source: null,
           },
         ],
         total_diagnostics: 3,
-        summary: { errors: 1, warnings: 1, info: 1 },
-        diagnostic_counts: { "forbidden-functions": 1, "trailing-whitespace": 1, unknown: 1 },
+        summary: { errors: 2, warnings: 1, info: 0 },
+        diagnostic_counts: { "compiler-error": 1, "forbidden-functions": 1, "trailing-whitespace": 1 },
       },
       rule_details: [
         { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium" },
