@@ -168,6 +168,9 @@ export const TAG_KINDS: TagKind[] = ["style", "performance", "correctness", "mai
 // command (papyrus_lints::tags::RuleTags, made JSON-friendly).
 export interface RuleTagsInfo {
   rule: string;
+  // The rule's detailed description, copied from its row in README.md's
+  // Implemented Lints tables (see papyrus_lints::tags::RuleTags).
+  description: string;
   kinds: string[];
   importance: TagImportance;
   auto_fixable: boolean;
@@ -2398,12 +2401,14 @@ async function readIssueFileSources(
 // themselves (see buildIssuesReport) with each file's current source text
 // attached (or null when `sources` has none for it - see
 // readIssueFileSources), and the full tag metadata (kind(s), importance,
-// auto-fixability; see papyrus_lints::tags) for every rule id that
-// actually appears among `files`' findings - giving the AI enough context
-// about each triggered rule, and the actual code each diagnostic refers
-// to, to answer follow-up questions precisely without needing the
-// project's own files or documentation on hand. `version` is the running
-// app's version (see loadAppVersion), or "" if that lookup failed.
+// auto-fixability, and the rule's detailed description copied from its
+// README.md row; see papyrus_lints::tags) for every rule id that actually
+// appears among `files`' findings - giving the AI enough context about
+// each triggered rule, in the same detail the README gives a human
+// reader, and the actual code each diagnostic refers to, to answer
+// follow-up questions precisely without needing the project's own files
+// or documentation on hand. `version` is the running app's version (see
+// loadAppVersion), or "" if that lookup failed.
 export function formatIssuesForAi(
   files: FilteredIssuesFile[],
   version: string,

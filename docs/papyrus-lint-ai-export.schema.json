@@ -122,13 +122,18 @@
     "ruleDetail": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["rule", "kinds", "importance", "auto_fixable"],
+      "required": ["rule", "description", "kinds", "importance", "auto_fixable"],
       "properties": {
         "rule": {
           "description": "The stable, hyphenated identifier of the lint rule.",
           "type": "string",
           "minLength": 1,
           "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "description": {
+          "description": "The rule's detailed description, copied from its row in the project README's Implemented Lints tables.",
+          "type": "string",
+          "minLength": 1
         },
         "kinds": {
           "description": "The classes of issue this rule detects.",
