@@ -108,7 +108,7 @@ class StaticScriptsTest(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls.browser.close()
-        cls.playwright_context.stop()
+        cls.playwright.stop()
         cls.server.shutdown()
         cls.server.server_close()
         cls.site_directory.cleanup()
@@ -124,6 +124,9 @@ class StaticScriptsTest(unittest.TestCase):
         page.set_content(markup)
         page.add_script_tag(path=str(browser_check.PAGES_DIR / script_name))
         return page
+
+    def is_focused(self, locator) -> bool:
+        return locator.evaluate("element => element === document.activeElement")
 
     def test_theme_script_restores_and_changes_the_saved_theme(self) -> None:
         page = self.new_page()
@@ -176,7 +179,7 @@ class StaticScriptsTest(unittest.TestCase):
         self.assertTrue(page.locator(".download-panel").is_hidden())
 
         page.locator("#download").click()
-        self.assertTrue(page.locator("select").is_focused())
+        self.assertTrue(self.is_focused(page.locator("select")))
         self.assertEqual(page.locator("#download").get_attribute("aria-expanded"), "true")
         self.assertTrue(page.locator(".download-panel__go").get_attribute("href").endswith(".AppImage"))
 
@@ -199,7 +202,7 @@ class StaticScriptsTest(unittest.TestCase):
         page.locator("#download").click()
         page.keyboard.press("Escape")
         self.assertTrue(page.locator(".download-panel").is_hidden())
-        self.assertTrue(page.locator("#download").is_focused())
+        self.assertTrue(self.is_focused(page.locator("#download")))
 
     def test_download_script_leaves_invalid_configuration_as_a_plain_link(self) -> None:
         page = self.run_script(
