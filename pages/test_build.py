@@ -578,6 +578,14 @@ class MarkdownHelpersTest(unittest.TestCase):
 
         self.assertEqual(page_builder.first_paragraph(lines), "Introductory text.")
 
+    def test_first_paragraph_stops_when_a_heading_follows_prose(self) -> None:
+        lines = ["Opening summary.", "continues here.", "## Details", "Not part of the summary."]
+
+        self.assertEqual(
+            page_builder.first_paragraph(lines),
+            "Opening summary. continues here.",
+        )
+
 
 class DocsRenderingTest(unittest.TestCase):
     def test_load_doc_source_downloads_remote_documentation(self) -> None:
@@ -764,6 +772,40 @@ class DocsRenderingTest(unittest.TestCase):
         self.assertIn("&lt;unsafe&gt; &amp; text", content)
         self.assertNotIn("<unsafe>", content)
         self.assertIn("View raw source on GitHub", content)
+
+    def test_render_doc_highlights_yaml_and_bbcode_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "config.yaml").write_text(
+                'enabled: true\nlabel: "stable" # documented\n', encoding="utf-8"
+            )
+            (docs_dir / "listing.bbcode").write_text(
+                "[b]Important[/b]", encoding="utf-8"
+            )
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                yaml_doc = page_builder.render_doc(
+                    {
+                        "filename": "config.yaml",
+                        "kind": "yaml",
+                        "title": "Configuration",
+                        "description": "Settings",
+                    }
+                )
+                bbcode_doc = page_builder.render_doc(
+                    {
+                        "filename": "listing.bbcode",
+                        "kind": "bbcode",
+                        "title": "Listing",
+                        "description": "Source",
+                    }
+                )
+
+        self.assertIn('<span class="kw">true</span>', yaml_doc[2])
+        self.assertIn('<span class="str">&quot;stable&quot;</span>', yaml_doc[2])
+        self.assertIn('<span class="cm"># documented</span>', yaml_doc[2])
+        self.assertIn('<span class="tag">[b]</span>', bbcode_doc[2])
+        self.assertIn('<span class="tag">[/b]</span>', bbcode_doc[2])
 
     def test_render_doc_uses_filename_defaults_for_schema_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1868,6 +1910,23 @@ class CoveragePageTest(unittest.TestCase):
 
         self.assertEqual(result, [("src/invalid-\ufffd.rs", 1, 1)])
 
+    def test_parse_lcov_files_handles_empty_and_zero_coverage_records(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text(
+                "TN:site-builder\n"
+                "SF:pages/empty.py\nend_of_record\n"
+                "SF:pages/untested.py\nLF:3\nLH:0\nBRF:2\nBRH:0\nend_of_record\n",
+                encoding="utf-8",
+            )
+
+            result = page_builder.parse_lcov_files(report)
+
+        self.assertEqual(
+            result,
+            [("pages/empty.py", 0, 0), ("pages/untested.py", 3, 0)],
+        )
+
     def test_render_coverage_table_renders_rows_with_percentage_and_counts(self) -> None:
         coverage_summary = page_builder.load_coverage_summary()
         result = page_builder.render_coverage_table([("src/one.rs", 10, 8)], coverage_summary)
@@ -1988,6 +2047,24 @@ class CoveragePageTest(unittest.TestCase):
         self.assertEqual((found, hit, any_report), (4, 3, True))
         self.assertNotIn("<h3>", result)
         self.assertIn("<code>src/only.py</code>", result)
+
+    def test_render_coverage_entry_sorts_equal_percentages_by_source_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report = root / "lcov.info"
+            report.write_text(
+                "SF:pages/z-last.py\nLF:4\nLH:2\nend_of_record\n"
+                "SF:pages/a-first.py\nLF:2\nLH:1\nend_of_record\n",
+                encoding="utf-8",
+            )
+            coverage_summary = page_builder.load_coverage_summary()
+
+            found, hit, any_report, result = page_builder.render_coverage_entry(
+                root, "Pages", "lcov.info", coverage_summary
+            )
+
+        self.assertEqual((found, hit, any_report), (6, 3, True))
+        self.assertLess(result.index("pages/a-first.py"), result.index("pages/z-last.py"))
 
     def test_render_coverage_entry_escapes_nested_group_names(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
