@@ -34,7 +34,8 @@ EndFunction
 ```
 
 The strict boolean check identifies this issue because the first call passes
-the `Actor` value `b` to a `Bool` parameter.
+the `Actor` value `b` to a `Bool` parameter. This specific mistake cost me a
+good two hours finding manually in one of my mods.
 
 ![Papyrus Lint Import](resources/papyrus-lint-import.png)
 
