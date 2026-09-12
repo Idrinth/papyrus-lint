@@ -324,8 +324,10 @@ Options:\n\
   -h, --help              Show this help message\n\
   -V, --version           Print the PapyrusLinterCLI version\n\
   --json                  Print the report as JSON (alias for --format json)\n\
-  --format <format>       Print as plain text, JSON, or an AI export with source\n\
-                          and triggered-rule details (plain, json, or ai)\n\
+  --format <format>       Print as plain text, JSON, or a self-contained AI export\n\
+                          with source, diagnostics, triggered-rule details, and\n\
+                          tool/version metadata—everything an AI needs to assist\n\
+                          (plain, json, or ai)\n\
   --quiet-warnings        Hide warning-level diagnostics from the report\n\
   --quiet-info            Hide info-level diagnostics from the report\n\
   --short-paths           Strip the project root from each script's path in\n\
@@ -1975,6 +1977,7 @@ mod tests {
 
         assert_eq!(code, 2);
         assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+        assert!(stderr.contains("everything an AI needs to assist"));
     }
 
     #[test]

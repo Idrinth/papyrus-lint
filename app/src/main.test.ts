@@ -3140,6 +3140,10 @@ describe("Export issues button", () => {
   });
 
   it("updateExportIssuesButtonState keeps the 'Export for AI' button in sync with 'Export issues'", () => {
+    expect(document.querySelector<HTMLButtonElement>("#export-ai-button")!.title).toContain(
+      "everything an AI assistant needs",
+    );
+
     updateExportIssuesButtonState([{ path: "/a.psc", ok: false, detail: "boom", findings: [] }]);
     expect(document.querySelector<HTMLButtonElement>("#export-ai-button")!.disabled).toBe(true);
 
