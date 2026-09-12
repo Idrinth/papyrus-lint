@@ -131,7 +131,8 @@
         },
         "indentation_width": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "A value of 0 is only valid for tabs. For spaces the value will be equal or greater 1"
         },
         "identifier_casing": {
           "type": "string",
