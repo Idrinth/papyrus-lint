@@ -1208,6 +1208,30 @@ class RepositoryConfigurationTest(unittest.TestCase):
                 self.assertIn("View raw source on GitHub", content)
                 self.assertIn(f"/docs/{doc['filename']}", content)
 
+    def test_copy_json_schemas_publishes_only_schemata_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            docs_dir = root / "docs"
+            docs_dir.mkdir()
+            (docs_dir / "first.schema.json").write_bytes(b'{"title": "First"}\n')
+            (docs_dir / "second.schema.json").write_bytes(b'{\n  "type": "object"\n}\n')
+            (docs_dir / "ordinary.json").write_bytes(b"{}\n")
+            out_dir = root / "site"
+            out_dir.mkdir()
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                page_builder.copy_json_schemas(out_dir)
+
+            self.assertEqual(
+                (out_dir / "schema" / "first.schema.json").read_bytes(),
+                b'{"title": "First"}\n',
+            )
+            self.assertEqual(
+                (out_dir / "schema" / "second.schema.json").read_bytes(),
+                b'{\n  "type": "object"\n}\n',
+            )
+            self.assertFalse((out_dir / "schema" / "ordinary.json").exists())
+
     def test_asset_manifest_points_to_files_and_modern_assets_are_a_subset(self) -> None:
         self.assertLessEqual(page_builder.MODERN_FORMAT_ASSETS, page_builder.ASSETS.keys())
         for output_name, source in page_builder.ASSETS.items():
@@ -1365,6 +1389,15 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
             for doc in page_builder.DOCS:
                 with self.subTest(docs_index_doc=doc["slug"]):
                     self.assertIn(f'href="{doc["slug"]}.html"', docs_index)
+
+            expected_schemas = {
+                path.name: path.read_bytes()
+                for path in page_builder.DOCS_DIR.glob(page_builder.SCHEMA_GLOB)
+            }
+            published_schemas = {
+                path.name: path.read_bytes() for path in (out_dir / "schema").glob("*.json")
+            }
+            self.assertEqual(published_schemas, expected_schemas)
 
             self.assertEqual(
                 (out_dir / "CNAME").read_text(encoding="utf-8"),

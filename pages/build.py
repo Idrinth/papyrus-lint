@@ -71,6 +71,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
 DOCS_DIR = ROOT / "docs"
+SCHEMA_GLOB = "*.schema.json"
 
 # .github/scripts isn't an importable package (its directory name starts
 # with a dot), so the coverage subpage loads it by file path instead. This
@@ -746,6 +747,14 @@ def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None
     (docs_out_dir / "index.html").write_text(finalize_page(index_page), encoding="utf-8")
 
 
+def copy_json_schemas(out_dir: Path) -> None:
+    """Publish every docs schema unchanged at /schema/<filename>."""
+    schema_out_dir = out_dir / "schema"
+    schema_out_dir.mkdir()
+    for source in sorted(DOCS_DIR.glob(SCHEMA_GLOB)):
+        shutil.copyfile(source, schema_out_dir / source.name)
+
+
 def render_videos_list(videos: list[dict]) -> str:
     items = []
     for video in videos:
@@ -1044,6 +1053,7 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
     shutil.copyfile(CNAME_FILE, out_dir / "CNAME")
 
     build_doc_pages(out_dir, doc_results, version)
+    copy_json_schemas(out_dir)
     build_videos_page(out_dir, version)
     build_action_page(out_dir, version)
     build_coverage_page(out_dir, coverage_dir, version)
