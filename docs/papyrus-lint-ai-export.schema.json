@@ -25,7 +25,7 @@
     "header": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["tool", "version", "website", "target_game"],
+      "required": ["tool", "version", "website", "target_game", "generated_at"],
       "properties": {
         "tool": {
           "description": "The application that produced this document.",
@@ -43,6 +43,11 @@
         "target_game": {
           "description": "The Papyrus dialect/engine these findings and rule details were produced for. Papyrus Lint has no per-project game/edition setting, so this is fixed.",
           "const": "Skyrim SE/AE"
+        },
+        "generated_at": {
+          "description": "The UTC date and time at which this export was generated, in RFC 3339 format.",
+          "type": "string",
+          "format": "date-time"
         }
       }
     },

@@ -2425,7 +2425,7 @@ async function readIssueFileSources(
 
 // Renders `files` as a single JSON document meant to be handed to an AI
 // assistant alongside a question about the results: a header identifying
-// the tool/version/website/target game (so the AI knows what produced
+// the tool/version/website/target game and generation time (so the AI knows what produced
 // these findings and where to look up anything not covered below), the
 // findings themselves (see buildIssuesReport) with each file's current
 // source text attached (or null when `sources` has none for it - see
@@ -2491,6 +2491,7 @@ export async function formatIssuesForAi(
         version: version || "unknown",
         website: WEBSITE_URL,
         target_game: TARGET_GAME,
+        generated_at: new Date().toISOString(),
       },
       findings,
       rule_details: ruleDetails,
