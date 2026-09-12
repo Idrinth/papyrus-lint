@@ -207,7 +207,8 @@ jobs:
           if [ -n "$EXISTING_TAG" ]; then
             echo "Updating existing draft release $EXISTING_TAG."
             gh release edit "$EXISTING_TAG" --repo "${{ github.repository }}" \
-              --title "$NEXT_VERSION" --notes-file semver-release-notes.md
+              --title "$NEXT_VERSION" --notes-file semver-release-notes.md \
+              --target "${{ github.sha }}"
           else
             echo "Creating draft release $NEXT_VERSION."
             gh release create "$NEXT_VERSION" --repo "${{ github.repository }}" \

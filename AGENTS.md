@@ -291,10 +291,13 @@ binary target that crate also defines.
   looks up any existing draft release whose body carries a
   `<!-- semver-advisory: auto-generated draft -->` marker (never touching
   a draft a maintainer created by hand, which carries no such marker),
-  and either updates that draft's title/notes in place (recommendation
-  unchanged since the last push), deletes and recreates it under the new
-  tag (recommendation changed, e.g. a later push adds a `type: breaking
-  change` label), or creates a fresh one (no existing draft) via
+  and either updates that draft's title/notes/target commit in place
+  (recommendation unchanged since the last push — the target commit is
+  re-pointed at the current push's SHA every time, not just on creation,
+  so the draft never lags behind and a maintainer can't accidentally
+  publish it against a stale, hours-old commit), deletes and recreates it
+  under the new tag (recommendation changed, e.g. a later push adds a
+  `type: breaking change` label), or creates a fresh one (no existing draft) via
   `semver_advisory.py`'s own `--release-notes`/`--outputs` output. A
   draft release carries no real git tag until it's published — GitHub
   only creates the tag then — so this never triggers `release.yml` or
