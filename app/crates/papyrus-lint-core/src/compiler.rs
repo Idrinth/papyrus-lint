@@ -8,17 +8,17 @@
 //!
 //! `<script path>` names the `.psc` file being compiled. Its parent is
 //! conventionally `scripts/source` or `source/scripts` under a project's root — see
-//! [`papyrus_lint_core::script_locator`]) and `<output dir>` is its parent, matching
+//! [`crate::script_locator`]) and `<output dir>` is its parent, matching
 //! the layout Bethesda's tooling expects: a `Source` directory holding
 //! `.psc` files sits inside the `Scripts` directory that receives the
 //! compiled `.pex` output.
 //!
 //! `-i` accepts multiple import directories separated by `;`, so it's
-//! always given both of [`papyrus_lint_core::script_locator`]'s known source
+//! always given both of [`crate::script_locator`]'s known source
 //! directories under the project root, not just the one the script being
 //! compiled happens to live in — letting it import from either layout —
 //! plus any of the project's configured `additional_script_roots` (see
-//! [`papyrus_lint_core::config::load_script_roots`]), so a script that
+//! [`crate::config::load_script_roots`]), so a script that
 //! imports from a shared library location outside those two conventional
 //! directories still compiles. The compiler is run with its own containing
 //! directory as the working directory, so it can resolve the bundled
@@ -106,7 +106,7 @@ fn resolve_locations(script_path: &Path) -> Result<(&Path, PathBuf), String> {
 }
 
 /// Builds the `-i` argument's value: `root`'s two known source directories
-/// (see [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`]) plus
+/// (see [`crate::script_locator::CANDIDATE_DIRS`]) plus
 /// `additional_roots` (the project's configured `additional_script_roots`,
 /// resolved relative to `root` unless already absolute), joined with `;`
 /// as PapyrusCompiler.exe expects for multiple import directories, so a
@@ -119,10 +119,10 @@ fn import_dirs(source_dir: &Path, root: Option<&Path>, additional_roots: &[Strin
         return source_dir.display().to_string();
     };
 
-    papyrus_lint_core::script_locator::CANDIDATE_DIRS
+    crate::script_locator::CANDIDATE_DIRS
         .iter()
         .map(|dir| root.join(dir))
-        .chain(papyrus_lint_core::script_locator::resolve_additional_roots(
+        .chain(crate::script_locator::resolve_additional_roots(
             root,
             additional_roots,
         ))
@@ -174,7 +174,7 @@ fn run_compiler(
 /// Compiles the `.psc` file at `script_path` using the compiler executable
 /// at `compiler_path`. `additional_roots` are the project's configured
 /// `additional_script_roots` (see
-/// [`papyrus_lint_core::config::load_script_roots`]), included in the `-i`
+/// [`crate::config::load_script_roots`]), included in the `-i`
 /// argument alongside the two conventional source directories.
 ///
 /// Returns `Err` when the compiler process itself couldn't be run or its

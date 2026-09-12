@@ -38,20 +38,10 @@ desktop app's binary at all.
 │   │   └── src/
 │   │       ├── main.rs           # Binary entry point: no args -> lib::run() (GUI),
 │   │       │                     # args -> papyrus_lint_cli::run() (CLI mode)
-│   │       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
-│   │       │                     # parse_papyrus_script, lint_papyrus_script,
-│   │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
-│   │       │                     # repair_psc_file), built on papyrus-lint-core
-│   │       ├── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button,
-│   │       │                     # then strips personal data from the compiled .pex;
-│   │       │                     # also compiles into a throwaway temp dir (never
-│   │       │                     # touching the project's real output) for the
-│   │       │                     # compile_check lint setting, below
-│   │       ├── compile_diagnostics.rs # Parses PapyrusCompiler.exe's own reported
-│   │       │                     # errors, from compiler.rs's temp-dir compile, into
-│   │       │                     # lint Diagnostics for the compile_check setting
-│   │       └── pex_header.rs      # Parses a compiled .pex file's header just far
-│   │                             # enough to blank its userName/machineName fields
+│   │       └── lib.rs            # Registers Tauri commands (parse_achlist_file,
+│   │                             # parse_papyrus_script, lint_papyrus_script,
+│   │                             # parse_psc_file, load_lint_config, lint_psc_file,
+│   │                             # repair_psc_file), built on papyrus-lint-core
 │   └── crates/
 │       ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
 │       │   └── src/               # for the Papyrus language. No lint rules live
@@ -102,9 +92,23 @@ desktop app's binary at all.
 │       │       │                       # literal name, with no .psc in the
 │       │       │                       # project; reads rules/native-globals.yaml
 │       │       │                       # via a build-time-generated array (build.rs)
-│       │       └── presets.rs          # Label/description metadata for the desktop
-│       │                               # app's first-run preset picker, layered over
-│       │                               # config::Preset (see Configuration below)
+│       │       ├── presets.rs          # Label/description metadata for the desktop
+│       │       │                       # app's first-run preset picker, layered over
+│       │       │                       # config::Preset (see Configuration below)
+│       │       ├── compiler.rs         # Runs PapyrusCompiler.exe for the desktop
+│       │       │                       # app's "Compile" button, then strips personal
+│       │       │                       # data from the compiled .pex; also compiles
+│       │       │                       # into a throwaway temp dir (never touching
+│       │       │                       # the project's real output) for the
+│       │       │                       # compile_check lint setting, honored by both
+│       │       │                       # the desktop app and the CLI, below
+│       │       ├── compile_diagnostics.rs # Parses PapyrusCompiler.exe's own reported
+│       │       │                          # errors, from compiler.rs's temp-dir
+│       │       │                          # compile, into lint Diagnostics for the
+│       │       │                          # compile_check setting
+│       │       └── pex_header.rs       # Parses a compiled .pex file's header just
+│       │                               # far enough to blank its userName/
+│       │                               # machineName fields
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           └── src/                # achlist's scripts against its project's
 │               ├── lib.rs           # papyrus-lint.yaml and prints the results.
@@ -872,7 +876,7 @@ selection as indeterminate; `updateTagKindHeaderCheckbox`) rather than an
 independent filter dimension of its own. The separate "Show
 importance"/"Auto-fixable only" filters are unaffected. A finding whose
 rule carries no tag metadata (e.g. a compiler-reported diagnostic; see
-`app/src-tauri/src/compile_diagnostics.rs`) always passes those filters
+`app/crates/papyrus-lint-core/src/compile_diagnostics.rs`) always passes those filters
 rather than being hidden. None of the "Show severities", "Filter by tag /
 rule" (across every kind's multiselect combined, not per kind), or "Show
 importance" groups can ever be left with every one of their own
@@ -1019,13 +1023,16 @@ still follow the loaded project directory.
 
 Configuration controls formatting, lint enablement, complexity thresholds,
 CLI failure levels, and the compiler path. It also controls whether the
-desktop app's `lint_psc_file`/`repair_psc_file` commands additionally run
-PapyrusCompiler.exe against a dropped `.psc` as part of linting it
-(`compile_check`, off by default), merging in any errors it reports (see
-`app/src-tauri/src/compile_diagnostics.rs`) alongside the lint engine's
-own; unlike the "Compile"/"Save & Compile" buttons, this always compiles
-into a throwaway temporary directory rather than the project's real
-output directory. See the [README configuration
+desktop app's `lint_psc_file`/`repair_psc_file` commands, and the CLI's own
+per-script lint loop, additionally run PapyrusCompiler.exe against a `.psc`
+as part of linting it (`compile_check`, off by default — the CLI reads it,
+and the resolved `compiler_path`, from the project root's own config the
+same way its `doctor` subcommand already did, regardless of `--config`),
+merging in any errors it reports (see
+`app/crates/papyrus-lint-core/src/compile_diagnostics.rs`) alongside the
+lint engine's own; unlike the "Compile"/"Save & Compile" buttons, this
+always compiles into a throwaway temporary directory rather than the
+project's real output directory. See the [README configuration
 reference](README.md#configuration) for the per-key documentation, and
 [`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — the
 same file `PapyrusLinterCLI init` writes and the one the README links to

@@ -220,7 +220,7 @@ use papyrus_lint_core::diff::unified_diff;
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, write_psc_source};
-use papyrus_lint_core::{achlist, ast_cache, config, content_hash};
+use papyrus_lint_core::{achlist, ast_cache, compile_diagnostics, compiler, config, content_hash};
 use serde::Serialize;
 
 /// Walks up `psc_path`'s ancestors looking for a directory pair matching
@@ -1104,6 +1104,31 @@ pub fn run(
         }
     }
 
+    // Read from the project root's own config the same way `doctor` reports
+    // on them (see `run_doctor`), regardless of `--config` — `compile_check`
+    // and `compiler_path` aren't part of the lint settings a `--config`
+    // override replaces. `compiler_path` is only resolved when `compile_check`
+    // is actually enabled, since it's otherwise unused.
+    let compile_check = match config::load_compile_check(&project_root) {
+        Ok(value) => value,
+        Err(err) => {
+            let _ = writeln!(stderr, "error: failed to load lint config: {err}");
+            return 2;
+        }
+    };
+    let compiler_path = if compile_check {
+        match config::resolve_compiler_path(&project_root) {
+            Ok(path) => path.unwrap_or_default(),
+            Err(err) => {
+                let _ = writeln!(stderr, "error: failed to load lint config: {err}");
+                return 2;
+            }
+        }
+    } else {
+        String::new()
+    };
+    let compiler_path = compiler_path.trim().to_string();
+
     let mut function_table =
         FunctionTable::new_with_additional_roots(project_root, additional_script_roots);
     if strict_achlist_scope {
@@ -1259,6 +1284,20 @@ pub fn run(
                         &script_index,
                     ),
                 );
+            }
+        }
+        // Mirrors the desktop app's `lint_with_compile_check`: a
+        // `compiler_path` that can't be run at all (missing/misconfigured)
+        // is silently left out rather than failing the whole lint run.
+        if compile_check && !compiler_path.is_empty() {
+            if let Ok(outcome) = compiler::check_psc_file(
+                Path::new(&compiler_path),
+                script_path,
+                function_table.additional_roots(),
+            ) {
+                if !outcome.success {
+                    diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
+                }
             }
         }
         if let Some(tag) = tag_filter.as_deref() {
@@ -4778,6 +4817,88 @@ mod tests {
         assert!(stdout.contains(
             "[warning] compile_check is enabled but no PapyrusCompiler.exe could be resolved"
         ));
+    }
+
+    #[cfg(unix)]
+    fn write_stub_compiler(dir: &Path, script: &str) -> PathBuf {
+        use std::os::unix::fs::PermissionsExt;
+
+        let path = dir.join("stub-compiler.sh");
+        write_file(&path, script);
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o755))
+            .expect("failed to make stub compiler executable");
+        path
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn compile_check_merges_compiler_reported_errors_into_the_lint_report() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = dir.path().join("scripts/source");
+        let script = source_dir.join("Example.psc");
+        write_file(&script, "ScriptName Example\n");
+        let compiler_path = write_stub_compiler(
+            dir.path(),
+            "#!/bin/sh\necho \"Example.psc(3,4): custom compiler error\" >&2\nexit 1\n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            &format!(
+                "compile_check: true\ncompiler_path: {}\n",
+                compiler_path.display()
+            ),
+        );
+
+        let (code, stdout, _stderr) =
+            run_captured(&["--json".to_string(), script.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("\"rule\": \"compiler-error\""));
+        assert!(stdout.contains("custom compiler error"));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn compile_check_disabled_by_default_ignores_a_failing_compiler() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = dir.path().join("scripts/source");
+        let script = source_dir.join("Example.psc");
+        write_file(&script, "ScriptName Example\n");
+        let compiler_path = write_stub_compiler(
+            dir.path(),
+            "#!/bin/sh\necho \"Example.psc(3,4): custom compiler error\" >&2\nexit 1\n",
+        );
+        // No `compile_check: true`, only a configured `compiler_path` — the
+        // compiler must never be invoked at all when the setting is off.
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            &format!("compiler_path: {}\n", compiler_path.display()),
+        );
+
+        let (code, stdout, _stderr) =
+            run_captured(&["--json".to_string(), script.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(!stdout.contains("compiler-error"));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn compile_check_is_ignored_when_no_compiler_path_can_be_resolved() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = dir.path().join("scripts/source");
+        let script = source_dir.join("Example.psc");
+        write_file(&script, "ScriptName Example\n");
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "compile_check: true\n",
+        );
+
+        let (code, stdout, _stderr) =
+            run_captured(&["--json".to_string(), script.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(!stdout.contains("compiler-error"));
     }
 
     #[test]

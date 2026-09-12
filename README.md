@@ -343,17 +343,18 @@ Each key:
   below) — useful when a script imports from a shared library location
   outside the project. The CLI also accepts one or more `--script-root
   <path>` flags on top of this setting (see Command-line interface below).
-- `compile_check`: whether the desktop app also runs PapyrusCompiler.exe
-  against a dropped `.psc` as part of linting it — set via the app's
-  Settings tab, alongside `compiler_path`. `false` by default, since it's
-  slower than the lint engine's own, dependency-free checks and requires a
-  configured compiler path. When enabled, PapyrusCompiler.exe's own
-  reported errors (e.g. a syntax mistake the lint engine's more forgiving
-  parser lets through) are added to the results as `[error]` diagnostics,
-  the same way the app's other lints are. Compiles into a throwaway
-  temporary directory rather than the project's real output directory, so
-  enabling this never touches (or requires write access to) the project's
-  actual compiled `.pex` output — see Compiling a script below.
+- `compile_check`: whether the desktop app and the CLI also run
+  PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
+  app's Settings tab, alongside `compiler_path`. `false` by default, since
+  it's slower than the lint engine's own, dependency-free checks and
+  requires a configured compiler path. When enabled, PapyrusCompiler.exe's
+  own reported errors (e.g. a syntax mistake the lint engine's more
+  forgiving parser lets through) are added to the results as `[error]`
+  diagnostics, the same way the app's other lints are. Compiles into a
+  throwaway temporary directory rather than the project's real output
+  directory, so enabling this never touches (or requires write access to)
+  the project's actual compiled `.pex` output — see Compiling a script
+  below.
 - `strict_achlist_scope`: `false` by default. When an `.achlist`'s entries
   live in arbitrary, non-conventional source directories, the CLI needs
   some way to let those entries resolve each other for the "Argument type
@@ -971,17 +972,19 @@ doesn't leak who built it or what machine they built it on. A note is
 added to the compile output when this happens.
 
 Enabling `compile_check` (see Configuration above) also runs
-PapyrusCompiler.exe as part of linting a dropped `.psc` — automatically,
-not just from the "Compile"/"Save & Compile" buttons — and reports any
-errors it finds as `[error]` diagnostics alongside the lint engine's own,
-so a syntax mistake the compiler itself rejects (but the lint engine's
-own, more forgiving parser doesn't) still shows up in the results. Unlike
-the "Compile" button above, this always compiles into a throwaway
-temporary directory rather than the project's real `Scripts` output
-directory, so it never overwrites (or requires write access to) the
-project's actual compiled `.pex` output, and never needs the
-personal-data stripping described above — the compiled output is
-discarded either way.
+PapyrusCompiler.exe as part of linting a `.psc` — automatically, not just
+from the "Compile"/"Save & Compile" buttons — and reports any errors it
+finds as `[error]` diagnostics alongside the lint engine's own, so a
+syntax mistake the compiler itself rejects (but the lint engine's own,
+more forgiving parser doesn't) still shows up in the results. Unlike the
+"Compile" button above, this always compiles into a throwaway temporary
+directory rather than the project's real `Scripts` output directory, so
+it never overwrites (or requires write access to) the project's actual
+compiled `.pex` output, and never needs the personal-data stripping
+described above — the compiled output is discarded either way. The CLI
+honors the same setting during a normal lint/fix run (not just its own
+`doctor` subcommand's validation of it), reading `compile_check` and
+`compiler_path` from the resolved project's `papyrus-lint.yaml`/`.yml`.
 
 ## Thank Yous
 
