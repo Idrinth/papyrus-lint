@@ -2381,6 +2381,13 @@ export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
 // documentation beyond what rule_details itself carries.
 const WEBSITE_URL = "https://papyrus-lint.idrinth.de";
 const TOOL_NAME = "Papyrus Lint";
+// The Papyrus dialect/engine version these findings were produced for, so
+// an AI reading the export doesn't have to guess whether a suggestion (e.g.
+// referencing a native type only added in a later game/edition) actually
+// applies. Papyrus Lint has no per-project game/edition setting of its own
+// (see rules/native-types.yaml's shared Skyrim/Fallout 4 fallback), so this
+// is the fixed target its native rule data is written against.
+const TARGET_GAME = "Skyrim SE/AE";
 
 // Reads each of `files`' current on-disk source via the same read_psc_file
 // command the code viewer uses, keyed by each file's display path (see
@@ -2418,10 +2425,10 @@ async function readIssueFileSources(
 
 // Renders `files` as a single JSON document meant to be handed to an AI
 // assistant alongside a question about the results: a header identifying
-// the tool/version/website (so the AI knows what produced these findings
-// and where to look up anything not covered below), the findings
-// themselves (see buildIssuesReport) with each file's current source text
-// attached (or null when `sources` has none for it - see
+// the tool/version/website/target game (so the AI knows what produced
+// these findings and where to look up anything not covered below), the
+// findings themselves (see buildIssuesReport) with each file's current
+// source text attached (or null when `sources` has none for it - see
 // readIssueFileSources), a `repair` field added to every diagnostic from an
 // auto-fixable rule Papyrus Lint could compute a fix preview for (see
 // previewRepairPscLine; omitted when the rule doesn't actually change that
@@ -2483,6 +2490,7 @@ export async function formatIssuesForAi(
         tool: TOOL_NAME,
         version: version || "unknown",
         website: WEBSITE_URL,
+        target_game: TARGET_GAME,
       },
       findings,
       rule_details: ruleDetails,
