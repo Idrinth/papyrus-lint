@@ -582,11 +582,78 @@
           }
         },
         "source": {
-          "description": "This script's current on-disk contents, letting the assistant see the code each diagnostic refers to without the project open; an error message describing why it couldn't be read (e.g. it was moved or deleted since linting); or null when no source was attached at all.",
-          "type": [
-            "string",
-            "null"
+          "description": "How this script's source is represented: null when none was attached at all; otherwise an object whose \"type\" names which of the other three forms it takes.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sourceContent"
+            },
+            {
+              "$ref": "#/$defs/sourceHash"
+            },
+            {
+              "$ref": "#/$defs/sourceError"
+            }
           ]
+        }
+      }
+    },
+    "sourceContent": {
+      "description": "This script's current on-disk contents, letting the assistant see the code each diagnostic refers to without the project open.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "content"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "sourceHash": {
+      "description": "This script's content hash instead of its full text, attached via the desktop app's \"Redact source\" export option or the CLI's --hash-source flag so a report can be shared without exposing proprietary script text; a viewer can still tell files apart, or notice a file changed between exports, from the hash alone.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "algorithm",
+        "hash"
+      ],
+      "properties": {
+        "type": {
+          "const": "hash"
+        },
+        "algorithm": {
+          "const": "md5"
+        },
+        "hash": {
+          "description": "The lowercase hex MD5 digest of this script's current on-disk contents.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        }
+      }
+    },
+    "sourceError": {
+      "description": "Why this script's source couldn't be attached, e.g. it was moved or deleted since linting.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "message"
+      ],
+      "properties": {
+        "type": {
+          "const": "error"
+        },
+        "message": {
+          "type": "string"
         }
       }
     },

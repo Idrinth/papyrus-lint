@@ -451,10 +451,19 @@ h1 {
 
 .psc-result__export {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5em;
   margin: 0 0 1em;
   font-size: 0.9em;
+}
+
+.psc-result__export-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .psc-result__export select {

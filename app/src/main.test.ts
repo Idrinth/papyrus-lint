@@ -127,6 +127,7 @@ import {
   updateExportIssuesButtonState,
   updateLintProgress,
   useProjectDir,
+  type AiSource,
   type ConfigSelectionResult,
   type Diagnostic,
   type LintConfig,
@@ -2989,12 +2990,12 @@ describe("formatIssuesForAi", () => {
         findings: [{ line: 5, column: 3, message: "[error] forbidden function used", rule: "forbidden-functions" }],
       },
     ];
-    const sources = new Map([["A.psc", "ScriptName A\n"]]);
+    const sources = new Map<string, AiSource>([["A.psc", { type: "content", content: "ScriptName A\n" }]]);
 
     const json = JSON.parse(await formatIssuesForAi(files, "1.0.0", sources));
 
     expect(json.findings.files).toEqual([
-      expect.objectContaining({ path: "A.psc", source: "ScriptName A\n" }),
+      expect.objectContaining({ path: "A.psc", source: { type: "content", content: "ScriptName A\n" } }),
       expect.objectContaining({ path: "B.psc", source: null }),
     ]);
   });
@@ -3231,7 +3232,9 @@ describe("Export issues button", () => {
       target_game: "Skyrim SE/AE",
       generated_at: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/),
     });
-    expect(contents.findings.files).toEqual([expect.objectContaining({ source: "ScriptName A\n" })]);
+    expect(contents.findings.files).toEqual([
+      expect.objectContaining({ source: { type: "content", content: "ScriptName A\n" } }),
+    ]);
   });
 
   it("handleExportAiClick still downloads a report when a file's source can't be read", async () => {
@@ -3250,7 +3253,31 @@ describe("Export issues button", () => {
 
     const [blob] = createObjectURL.mock.calls[0] as [Blob];
     const contents = JSON.parse(await blob.text());
-    expect(contents.findings.files[0].source).toBe("<failed to read file: Error: boom>");
+    expect(contents.findings.files[0].source).toEqual({ type: "error", message: "Error: boom" });
+  });
+
+  it("handleExportAiClick attaches an md5 hash instead of full content when 'Redact source' is checked", async () => {
+    await populateCurrentPscOutcomes([finding]);
+    invokeImplFor({
+      get_app_version: () => "9.9.9",
+      hash_psc_file_md5: () => "d41d8cd98f00b204e9800998ecf8427e",
+      preview_repair_psc_line: () => null,
+    });
+    document.querySelector<HTMLInputElement>("#export-ai-hash-source")!.checked = true;
+
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-url");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+    await handleExportAiClick();
+
+    const [blob] = createObjectURL.mock.calls[0] as [Blob];
+    const contents = JSON.parse(await blob.text());
+    expect(contents.findings.files[0].source).toEqual({
+      type: "hash",
+      algorithm: "md5",
+      hash: "d41d8cd98f00b204e9800998ecf8427e",
+    });
   });
 
   it("handleExportAiClick does nothing when there's nothing currently filtered", async () => {

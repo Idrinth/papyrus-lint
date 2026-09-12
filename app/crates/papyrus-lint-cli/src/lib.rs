@@ -1,8 +1,8 @@
 //! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
-//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
+//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
+//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
 //! PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]
 //! PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]
 //! PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>
@@ -145,6 +145,16 @@
 //! `--quiet-warnings` and `--quiet-info` omit diagnostics of the corresponding
 //! severity from either report format without changing the process exit code.
 //!
+//! `--format ai` (see [`AiFileReport`]) produces the same self-contained
+//! export the desktop app's "Export for AI" button downloads: each
+//! resolved script's diagnostics alongside its `source` — an object naming
+//! which of `content` (the script's full text, the default) or `hash` (its
+//! MD5 digest instead, selected via `--hash-source`) it carries. `--hash-
+//! source` lets a report be handed to an external AI assistant without
+//! exposing proprietary script text, while a viewer can still tell files
+//! apart, or notice a file changed between exports, from the hash alone;
+//! it's a usage error without `--format ai`.
+//!
 //! With `--short-paths` (combinable with `fix`/`--json` in any order), each
 //! script's path in the report (plain text or JSON) has the project root's
 //! path stripped from its beginning, the same way the desktop app shortens
@@ -210,7 +220,7 @@ use papyrus_lint_core::diff::unified_diff;
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, write_psc_source};
-use papyrus_lint_core::{achlist, ast_cache, config};
+use papyrus_lint_core::{achlist, ast_cache, config, content_hash};
 use serde::Serialize;
 
 /// Walks up `psc_path`'s ancestors looking for a directory pair matching
@@ -286,8 +296,8 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
-PapyrusLinterCLI [--json | --format <plain|json|ai>] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n\
+    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
+PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n\
 PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n\
 PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n\
 PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>\n\n\
@@ -328,6 +338,10 @@ Options:\n\
                           with source, diagnostics, triggered-rule details, and\n\
                           tool/version metadata—everything an AI needs to assist\n\
                           (plain, json, or ai)\n\
+  --hash-source           --format ai only: report each file's source as an\n\
+                          md5 hash instead of its full content, e.g. to avoid\n\
+                          exposing proprietary script text to an external AI.\n\
+                          A usage error without --format ai.\n\
   --quiet-warnings        Hide warning-level diagnostics from the report\n\
   --quiet-info            Hide info-level diagnostics from the report\n\
   --short-paths           Strip the project root from each script's path in\n\
@@ -445,11 +459,32 @@ struct AiHeader {
     generated_at: String,
 }
 
+/// How an [`AiFileReport`]'s source is represented: the CLI always has a
+/// script's contents in hand by the time it builds one (a read failure
+/// aborts the whole run earlier instead), so unlike the desktop app's own
+/// "Export for AI" feature (see `formatIssuesForAi` in `app/src/main.ts`,
+/// whose `source` field also covers a read-error or "nothing attached"
+/// case), the CLI only ever emits one of these two shapes.
+#[derive(Debug, Serialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+enum AiSource {
+    /// The script's full on-disk contents.
+    Content { content: String },
+    /// The script's content hash instead of its full text, selected via
+    /// `--hash-source` so a report can be handed to an AI without exposing
+    /// proprietary script text; a viewer can still tell files apart, or
+    /// notice a file changed between exports, from the hash alone.
+    Hash {
+        algorithm: &'static str,
+        hash: String,
+    },
+}
+
 #[derive(Debug, Serialize)]
 struct AiFileReport {
     path: String,
     diagnostics: Vec<JsonDiagnostic>,
-    source: String,
+    source: AiSource,
 }
 
 #[derive(Debug, Serialize)]
@@ -662,6 +697,7 @@ pub fn run(
     let short_paths = args.iter().any(|arg| arg == "--short-paths");
     let progress = args.iter().any(|arg| arg == "--progress");
     let dry_run = args.iter().any(|arg| arg == "--dry-run");
+    let hash_source = args.iter().any(|arg| arg == "--hash-source");
 
     let mut config_path: Option<PathBuf> = None;
     let mut output_path: Option<PathBuf> = None;
@@ -683,6 +719,7 @@ pub fn run(
                     | "--short-paths"
                     | "--progress"
                     | "--dry-run"
+                    | "--hash-source"
             )
         })
         .cloned();
@@ -769,6 +806,11 @@ pub fn run(
         }
     };
     let json = output_format != OutputFormat::Plain;
+
+    if hash_source && output_format != OutputFormat::Ai {
+        let _ = writeln!(stderr, "error: --hash-source requires --format ai");
+        return 2;
+    }
 
     let color_choice = match color_flag.as_deref() {
         None | Some("auto") => ColorChoice::Auto,
@@ -1206,10 +1248,20 @@ pub fn run(
                 })
                 .collect();
             if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
+                let ai_source = if hash_source {
+                    AiSource::Hash {
+                        algorithm: "md5",
+                        hash: content_hash::md5_hex(&source),
+                    }
+                } else {
+                    AiSource::Content {
+                        content: source.clone(),
+                    }
+                };
                 ai_files.push(AiFileReport {
                     path: reported_path.clone(),
                     diagnostics: json_diagnostics,
-                    source: source.clone(),
+                    source: ai_source,
                 });
             } else if output_format == OutputFormat::Json {
                 json_files.push(JsonFileReport {

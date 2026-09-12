@@ -11,6 +11,7 @@
 pub mod achlist;
 pub mod ast_cache;
 pub mod config;
+pub mod content_hash;
 pub mod diff;
 pub mod function_table;
 mod native_globals;
