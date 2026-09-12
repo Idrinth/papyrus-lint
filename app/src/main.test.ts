@@ -2862,7 +2862,7 @@ describe("formatIssuesForAi", () => {
     applyRuleTags([]);
   });
 
-  it("wraps the same findings shape as formatIssuesAsJson in a tool/version/website header, plus rule_details for every triggered rule", () => {
+  it("wraps the findings in a tool/version/website/target_game header, removes message severity prefixes, and includes rule_details", () => {
     applyRuleTags([
       { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
@@ -2880,22 +2880,49 @@ describe("formatIssuesForAi", () => {
     ];
 
     const withSourceOmitted = JSON.parse(formatIssuesForAi(files, "1.2.3"));
-    const asJson = JSON.parse(formatIssuesAsJson(files));
     expect(withSourceOmitted).toEqual({
       header: {
         tool: "Papyrus Lint",
         version: "1.2.3",
         website: "https://papyrus-lint.idrinth.de",
+        target_game: "Skyrim SE/AE",
       },
       findings: {
-        ...asJson,
-        files: asJson.files.map((file: { path: string }) => ({ ...file, source: null })),
+        files: [
+          {
+            path: "A.psc",
+            diagnostics: [
+              { line: 1, column: 1, rule: "trailing-whitespace", level: "warning", message: "trailing whitespace" },
+            ],
+            source: null,
+          },
+          {
+            path: "B.psc",
+            diagnostics: [
+              { line: 5, column: 3, rule: "forbidden-functions", level: "error", message: "forbidden function used" },
+            ],
+            source: null,
+          },
+        ],
+        files_with_diagnostics: 2,
+        total_diagnostics: 2,
       },
       rule_details: [
         { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },
         { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true },
       ],
     });
+  });
+
+  it("leaves a message without a recognized severity prefix unchanged", () => {
+    const json = JSON.parse(
+      formatIssuesForAi(
+        [{ path: "A.psc", findings: [{ line: 1, column: 1, message: "external diagnostic", rule: "some-rule" }] }],
+        "1.0.0",
+      ),
+    );
+
+    expect(json.findings.files[0].diagnostics[0].message).toBe("external diagnostic");
   });
 
   it("attaches each file's source from the given sources map, by its display path", () => {
@@ -3068,6 +3095,7 @@ describe("Export issues button", () => {
       tool: "Papyrus Lint",
       version: "9.9.9",
       website: "https://papyrus-lint.idrinth.de",
+      target_game: "Skyrim SE/AE",
     });
     expect(contents.findings.files).toEqual([expect.objectContaining({ source: "ScriptName A\n" })]);
   });
