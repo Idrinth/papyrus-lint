@@ -718,6 +718,14 @@
         "level",
         "message"
       ],
+      "dependentRequired": {
+        "external": [
+          "source"
+        ],
+        "source": [
+          "external"
+        ]
+      },
       "properties": {
         "line": {
           "description": "The 1-indexed source line where the diagnostic starts.",
