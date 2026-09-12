@@ -842,7 +842,9 @@ is disabled whenever no finding currently passes the active filters.
 Next to it, an "Export for AI" button downloads the same currently
 filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
-"Export format" selector above (this format is always JSON): a `header`
+"Export format" selector above (this format is always JSON, with its
+[contract published as a JSON Schema](docs/papyrus-lint-ai-export.schema.json)):
+a `header`
 identifying the tool name, running version, and
 [project website](https://papyrus-lint.idrinth.de) for further lookups; a
 `findings` section in the exact same shape the "Export issues" JSON format
