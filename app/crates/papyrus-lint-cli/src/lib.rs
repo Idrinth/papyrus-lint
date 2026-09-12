@@ -1,8 +1,8 @@
 //! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
-//! PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
+//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
+//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
 //! PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]
 //! PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]
 //! PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>
@@ -286,8 +286,8 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
-PapyrusLinterCLI [--json] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n\
+    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
+PapyrusLinterCLI [--json | --format <plain|json|ai>] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n\
 PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n\
 PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n\
 PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>\n\n\
@@ -323,7 +323,9 @@ check (or a single JSON document with --json).\n\n\
 Options:\n\
   -h, --help              Show this help message\n\
   -V, --version           Print the PapyrusLinterCLI version\n\
-  --json                  Print the report to stdout as JSON instead of plain text\n\
+  --json                  Print the report as JSON (alias for --format json)\n\
+  --format <format>       Print as plain text, JSON, or an AI export with source\n\
+                          and triggered-rule details (plain, json, or ai)\n\
   --quiet-warnings        Hide warning-level diagnostics from the report\n\
   --quiet-info            Hide info-level diagnostics from the report\n\
   --short-paths           Strip the project root from each script's path in\n\
@@ -430,6 +432,50 @@ pub struct JsonReport {
     /// failure per `fail_on_warning`/`fail_on_info` (see
     /// [`papyrus_lints::Config::should_fail_on`]).
     pub success: bool,
+}
+
+#[derive(Debug, Serialize)]
+struct AiHeader {
+    tool: &'static str,
+    version: &'static str,
+    website: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct AiFileReport {
+    path: String,
+    diagnostics: Vec<JsonDiagnostic>,
+    source: String,
+}
+
+#[derive(Debug, Serialize)]
+struct AiFindings {
+    files: Vec<AiFileReport>,
+    files_with_diagnostics: usize,
+    total_diagnostics: usize,
+}
+
+#[derive(Debug, Serialize)]
+struct AiRuleDetails {
+    rule: &'static str,
+    description: &'static str,
+    kinds: &'static [&'static str],
+    importance: papyrus_lints::tags::Importance,
+    auto_fixable: bool,
+}
+
+#[derive(Debug, Serialize)]
+struct AiReport {
+    header: AiHeader,
+    findings: AiFindings,
+    rule_details: Vec<AiRuleDetails>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum OutputFormat {
+    Plain,
+    Json,
+    Ai,
 }
 
 const ANSI_RESET: &str = "\x1b[0m";
@@ -571,7 +617,7 @@ pub fn run(
         return run_doctor(&args[1..], stdout, stderr);
     }
 
-    let json = args.iter().any(|arg| arg == "--json");
+    let json_flag = args.iter().any(|arg| arg == "--json");
     let quiet_warnings = args.iter().any(|arg| arg == "--quiet-warnings");
     let quiet_info = args.iter().any(|arg| arg == "--quiet-info");
     let short_paths = args.iter().any(|arg| arg == "--short-paths");
@@ -585,6 +631,7 @@ pub fn run(
     let mut line_filter: Option<String> = None;
     let mut tag_filter: Option<String> = None;
     let mut color_flag: Option<String> = None;
+    let mut format_flag: Option<String> = None;
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
     let mut input = args
         .iter()
@@ -643,6 +690,14 @@ pub fn run(
             tag_filter = Some(value);
         } else if let Some(value) = arg.strip_prefix("--tag=") {
             tag_filter = Some(value.to_string());
+        } else if arg == "--format" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            format_flag = Some(value);
+        } else if let Some(value) = arg.strip_prefix("--format=") {
+            format_flag = Some(value.to_string());
         } else if arg == "--color" {
             let Some(value) = input.next() else {
                 let _ = write!(stderr, "{USAGE}");
@@ -656,6 +711,25 @@ pub fn run(
         }
     }
     let args = positional_and_flags;
+
+    if json_flag && format_flag.is_some() {
+        let _ = writeln!(stderr, "error: --json and --format can't be combined");
+        return 2;
+    }
+    let output_format = match format_flag.as_deref() {
+        None if json_flag => OutputFormat::Json,
+        None | Some("plain") => OutputFormat::Plain,
+        Some("json") => OutputFormat::Json,
+        Some("ai") => OutputFormat::Ai,
+        Some(value) => {
+            let _ = writeln!(
+                stderr,
+                "error: --format must be 'plain', 'json', or 'ai', got '{value}'"
+            );
+            return 2;
+        }
+    };
+    let json = output_format != OutputFormat::Plain;
 
     let color_choice = match color_flag.as_deref() {
         None | Some("auto") => ColorChoice::Auto,
@@ -951,6 +1025,7 @@ pub fn run(
     let mut files_fixed = 0usize;
     let mut should_fail = false;
     let mut json_files: Vec<JsonFileReport> = Vec::new();
+    let mut ai_files: Vec<AiFileReport> = Vec::new();
     // Buffered so `--output <path>` can redirect the whole report to a file
     // instead of stdout, without duplicating the printing logic below.
     let mut report_buf: Vec<u8> = Vec::new();
@@ -1081,20 +1156,29 @@ pub fn run(
         }
 
         if json {
-            json_files.push(JsonFileReport {
-                path: reported_path,
-                diagnostics: diagnostics
-                    .iter()
-                    .map(|d| JsonDiagnostic {
-                        line: d.line,
-                        column: d.column,
-                        rule: d.rule,
-                        level: d.level(),
-                        message: d.message.clone(),
-                    })
-                    .collect(),
-                diff: file_diff,
-            });
+            let json_diagnostics: Vec<JsonDiagnostic> = diagnostics
+                .iter()
+                .map(|d| JsonDiagnostic {
+                    line: d.line,
+                    column: d.column,
+                    rule: d.rule,
+                    level: d.level(),
+                    message: d.message.clone(),
+                })
+                .collect();
+            if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
+                ai_files.push(AiFileReport {
+                    path: reported_path.clone(),
+                    diagnostics: json_diagnostics,
+                    source: source.clone(),
+                });
+            } else if output_format == OutputFormat::Json {
+                json_files.push(JsonFileReport {
+                    path: reported_path,
+                    diagnostics: json_diagnostics,
+                    diff: file_diff,
+                });
+            }
         }
 
         if !diagnostics.is_empty() {
@@ -1117,7 +1201,7 @@ pub fn run(
 
     let success = !should_fail;
 
-    if json {
+    if output_format == OutputFormat::Json {
         let report = JsonReport {
             files: json_files,
             scripts_checked: script_paths.len(),
@@ -1126,6 +1210,42 @@ pub fn run(
             files_fixed: fix.then_some(files_fixed),
             dry_run,
             success,
+        };
+        let _ = writeln!(
+            report_buf,
+            "{}",
+            serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
+        );
+    } else if output_format == OutputFormat::Ai {
+        let mut triggered_rules: Vec<&'static str> = ai_files
+            .iter()
+            .flat_map(|file| file.diagnostics.iter().map(|diagnostic| diagnostic.rule))
+            .collect();
+        triggered_rules.sort_unstable();
+        triggered_rules.dedup();
+        let rule_details = triggered_rules
+            .into_iter()
+            .filter_map(papyrus_lints::tags::tags_for)
+            .map(|tags| AiRuleDetails {
+                rule: tags.rule,
+                description: tags.description,
+                kinds: tags.kinds,
+                importance: tags.importance,
+                auto_fixable: tags.auto_fixable(),
+            })
+            .collect();
+        let report = AiReport {
+            header: AiHeader {
+                tool: "Papyrus Lint",
+                version: VERSION,
+                website: "https://papyrus-lint.idrinth.de",
+            },
+            findings: AiFindings {
+                files: ai_files,
+                files_with_diagnostics,
+                total_diagnostics,
+            },
+            rule_details,
         };
         let _ = writeln!(
             report_buf,
