@@ -69,7 +69,7 @@
     "fileReport": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "diagnostics"],
+      "required": ["path", "diagnostics", "source"],
       "properties": {
         "path": {
           "description": "The script path relative to the currently loaded project when possible.",
@@ -83,6 +83,10 @@
           "items": {
             "$ref": "#/$defs/diagnostic"
           }
+        },
+        "source": {
+          "description": "This script's current on-disk contents, letting the assistant see the code each diagnostic refers to without the project open; an error message describing why it couldn't be read (e.g. it was moved or deleted since linting); or null when no source was attached at all.",
+          "type": ["string", "null"]
         }
       }
     },
