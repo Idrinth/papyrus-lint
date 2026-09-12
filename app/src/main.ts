@@ -2326,7 +2326,7 @@ export function formatIssuesAsText(files: FilteredIssuesFile[]): string {
 // Shared by formatIssuesAsJson and formatIssuesForAi: `files` as a plain
 // object mirroring the CLI's own `--json` report shape
 // (JsonReport/JsonFileReport/JsonDiagnostic in papyrus-lint-cli/src/lib.rs).
-function buildIssuesReport(files: FilteredIssuesFile[]) {
+function buildIssuesReport(files: FilteredIssuesFile[], stripSeverityPrefix = false) {
   let totalDiagnostics = 0;
   const jsonFiles = files.map((file) => {
     totalDiagnostics += file.findings.length;
@@ -2337,7 +2337,9 @@ function buildIssuesReport(files: FilteredIssuesFile[]) {
         column: finding.column,
         rule: finding.rule ?? "unknown",
         level: severityOf(finding.message),
-        message: finding.message,
+        message: stripSeverityPrefix
+          ? finding.message.replace(/^\[(?:error|warning|info)\]\s*/, "")
+          : finding.message,
       })),
     };
   });
@@ -2427,7 +2429,9 @@ export function formatIssuesForAi(
     .map((rule) => ruleTagsByRule.get(rule))
     .filter((info): info is RuleTagsInfo => info !== undefined);
 
-  const report = buildIssuesReport(files);
+  // `level` carries the severity separately, so avoid repeating its internal
+  // message prefix in the AI-focused representation.
+  const report = buildIssuesReport(files, true);
   const filesWithSource = report.files.map((file) => ({
     ...file,
     source: sources.get(file.path) ?? null,
