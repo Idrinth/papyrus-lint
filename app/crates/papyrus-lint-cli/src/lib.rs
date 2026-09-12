@@ -1274,7 +1274,7 @@ pub fn run(
             })
             .collect();
         let report = AiReport {
-            schema: "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json",
+            schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.schema.json",
             header: AiHeader {
                 tool: "Papyrus Lint",
                 version: VERSION,

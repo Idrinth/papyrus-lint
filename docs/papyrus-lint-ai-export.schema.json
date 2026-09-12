@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json",
+  "$id": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.schema.json",
   "title": "Papyrus Lint Export for AI document",
   "description": "The JSON document downloaded by the desktop app's Export for AI feature. It contains the currently filtered lint findings and metadata for each recognized rule represented in those findings.",
   "type": "object",
@@ -15,7 +15,7 @@
   "properties": {
     "$schema": {
       "description": "The canonical JSON Schema for validating and interpreting this AI export document.",
-      "const": "https://raw.githubusercontent.com/idrinth/papyrus-lint/the-one/docs/papyrus-lint-ai-export.schema.json"
+      "const": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.schema.json"
     },
     "header": {
       "$ref": "#/$defs/header"
