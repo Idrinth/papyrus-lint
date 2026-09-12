@@ -72,6 +72,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
 DOCS_DIR = ROOT / "docs"
 SCHEMA_GLOB = "*.schema.json"
+AI_EXPORT_V1_SCHEMA = "papyrus-lint-ai-export.v1.schema.json"
+AI_EXPORT_LEGACY_SCHEMA = "papyrus-lint-ai-export.schema.json"
 
 # .github/scripts isn't an importable package (its directory name starts
 # with a dot), so the coverage subpage loads it by file path instead. This
@@ -754,11 +756,15 @@ def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None
 
 
 def copy_json_schemas(out_dir: Path) -> None:
-    """Publish every docs schema unchanged at /schema/<filename>."""
+    """Publish docs schemas and the legacy AI-export URL under /schema/."""
     schema_out_dir = out_dir / "schema"
     schema_out_dir.mkdir()
     for source in sorted(DOCS_DIR.glob(SCHEMA_GLOB)):
         shutil.copyfile(source, schema_out_dir / source.name)
+    shutil.copyfile(
+        DOCS_DIR / AI_EXPORT_V1_SCHEMA,
+        schema_out_dir / AI_EXPORT_LEGACY_SCHEMA,
+    )
 
 
 def render_videos_list(videos: list[dict]) -> str:

@@ -1330,6 +1330,7 @@ class RepositoryConfigurationTest(unittest.TestCase):
             docs_dir.mkdir()
             (docs_dir / "first.schema.json").write_bytes(b'{"title": "First"}\n')
             (docs_dir / "second.schema.json").write_bytes(b'{\n  "type": "object"\n}\n')
+            (docs_dir / page_builder.AI_EXPORT_V1_SCHEMA).write_bytes(b'{"title": "AI export v1"}\n')
             (docs_dir / "ordinary.json").write_bytes(b"{}\n")
             out_dir = root / "site"
             out_dir.mkdir()
@@ -1344,6 +1345,10 @@ class RepositoryConfigurationTest(unittest.TestCase):
             self.assertEqual(
                 (out_dir / "schema" / "second.schema.json").read_bytes(),
                 b'{\n  "type": "object"\n}\n',
+            )
+            self.assertEqual(
+                (out_dir / "schema" / page_builder.AI_EXPORT_LEGACY_SCHEMA).read_bytes(),
+                b'{"title": "AI export v1"}\n',
             )
             self.assertFalse((out_dir / "schema" / "ordinary.json").exists())
 
@@ -1509,6 +1514,9 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
                 path.name: path.read_bytes()
                 for path in page_builder.DOCS_DIR.glob(page_builder.SCHEMA_GLOB)
             }
+            expected_schemas[page_builder.AI_EXPORT_LEGACY_SCHEMA] = (
+                page_builder.DOCS_DIR / page_builder.AI_EXPORT_V1_SCHEMA
+            ).read_bytes()
             published_schemas = {
                 path.name: path.read_bytes() for path in (out_dir / "schema").glob("*.json")
             }
