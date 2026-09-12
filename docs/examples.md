@@ -192,10 +192,49 @@ always a forgotten `If` rather than something intentional. The
 `Get*` call (or an expression built from one) whose result is discarded
 this way.
 
+## Silencing a lint for code that's already correct
+
+```papyrus
+ScriptName Example extends Quest
+
+Actor Property playerRef Auto
+
+Function GetPlayer()
+    If ! playerRef
+        playerRef = Game.GetPlayer()
+    EndIf
+    Return playerRef
+EndFunction
+```
+
+The **Forbidden/discouraged function usage** lint (`forbidden-functions`)
+flags every call to `Game.GetPlayer()` as an `[error]`, since
+`rules/forbidden-functions.yaml` recommends caching the result in an
+`Actor Property PlayerRef Auto` instead of calling it repeatedly. This
+function already does exactly that — `playerRef` is only assigned once,
+the first time it's still unset — but the lint can't see that the call is
+guarded, so it still fires on the one call this idiom actually makes.
+Rather than rewriting the very caching pattern the lint's own message
+recommends just to dodge a false positive, silence that one line with a
+trailing `; @disable forbidden-functions` comment instead:
+
+```papyrus
+ScriptName Example extends Quest
+
+Actor Property playerRef Auto
+
+Function GetPlayer()
+    If ! playerRef
+        playerRef = Game.GetPlayer() ; @disable forbidden-functions
+    EndIf
+    Return playerRef
+EndFunction
+```
+
 ---
 
 See the README's [Implemented Lints table](../README.md#implemented-lints)
 for the full list, including the purely style/formatting lints not shown
 here, and [Disabling a lint on a specific
-line](../README.md#disabling-a-lint-on-a-specific-line) for suppressing a
-single false positive with `; @disable`.
+line](../README.md#disabling-a-lint-on-a-specific-line) for the full
+`; @disable`/`; @disable-file` directive syntax.
