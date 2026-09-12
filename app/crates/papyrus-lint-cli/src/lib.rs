@@ -450,6 +450,35 @@ struct AiFileReport {
     path: String,
     diagnostics: Vec<JsonDiagnostic>,
     source: String,
+    summary: AiSeveritySummary,
+}
+
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+struct AiSeveritySummary {
+    errors: usize,
+    warnings: usize,
+    info: usize,
+}
+
+impl AiSeveritySummary {
+    fn from_diagnostics(diagnostics: &[JsonDiagnostic]) -> Self {
+        let mut summary = Self::default();
+        for diagnostic in diagnostics {
+            match diagnostic.level {
+                "error" => summary.errors += 1,
+                "warning" => summary.warnings += 1,
+                "info" => summary.info += 1,
+                _ => {}
+            }
+        }
+        summary
+    }
+
+    fn add(&mut self, other: Self) {
+        self.errors += other.errors;
+        self.warnings += other.warnings;
+        self.info += other.info;
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -457,6 +486,7 @@ struct AiFindings {
     files: Vec<AiFileReport>,
     files_with_diagnostics: usize,
     total_diagnostics: usize,
+    summary: AiSeveritySummary,
 }
 
 #[derive(Debug, Serialize)]
@@ -1206,10 +1236,12 @@ pub fn run(
                 })
                 .collect();
             if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
+                let summary = AiSeveritySummary::from_diagnostics(&json_diagnostics);
                 ai_files.push(AiFileReport {
                     path: reported_path.clone(),
                     diagnostics: json_diagnostics,
                     source: source.clone(),
+                    summary,
                 });
             } else if output_format == OutputFormat::Json {
                 json_files.push(JsonFileReport {
@@ -1256,6 +1288,10 @@ pub fn run(
             serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
         );
     } else if output_format == OutputFormat::Ai {
+        let mut summary = AiSeveritySummary::default();
+        for file in &ai_files {
+            summary.add(file.summary);
+        }
         let mut triggered_rules: Vec<&'static str> = ai_files
             .iter()
             .flat_map(|file| file.diagnostics.iter().map(|diagnostic| diagnostic.rule))
@@ -1287,6 +1323,7 @@ pub fn run(
                 files: ai_files,
                 files_with_diagnostics,
                 total_diagnostics,
+                summary,
             },
             rule_details,
         };

@@ -538,7 +538,8 @@
       "required": [
         "files",
         "files_with_diagnostics",
-        "total_diagnostics"
+        "total_diagnostics",
+        "summary"
       ],
       "properties": {
         "files": {
@@ -556,6 +557,10 @@
           "description": "The total number of exported diagnostics across all files.",
           "type": "integer",
           "minimum": 0
+        },
+        "summary": {
+          "description": "Counts of exported diagnostics by severity across all files.",
+          "$ref": "#/$defs/severitySummary"
         }
       }
     },
@@ -565,7 +570,8 @@
       "required": [
         "path",
         "diagnostics",
-        "source"
+        "source",
+        "summary"
       ],
       "properties": {
         "path": {
@@ -587,6 +593,33 @@
             "string",
             "null"
           ]
+        },
+        "summary": {
+          "description": "Counts of this script's exported diagnostics by severity.",
+          "$ref": "#/$defs/severitySummary"
+        }
+      }
+    },
+    "severitySummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "errors",
+        "warnings",
+        "info"
+      ],
+      "properties": {
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0
         }
       }
     },

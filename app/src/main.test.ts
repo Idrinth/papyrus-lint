@@ -2906,6 +2906,7 @@ describe("formatIssuesForAi", () => {
               { line: 1, column: 1, rule: "trailing-whitespace", level: "warning", message: "trailing whitespace" },
             ],
             source: null,
+            summary: { errors: 0, warnings: 1, info: 0 },
           },
           {
             path: "B.psc",
@@ -2913,10 +2914,12 @@ describe("formatIssuesForAi", () => {
               { line: 5, column: 3, rule: "forbidden-functions", level: "error", message: "forbidden function used" },
             ],
             source: null,
+            summary: { errors: 1, warnings: 0, info: 0 },
           },
         ],
         files_with_diagnostics: 2,
         total_diagnostics: 2,
+        summary: { errors: 1, warnings: 1, info: 0 },
       },
       rule_details: [
         { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false },

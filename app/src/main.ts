@@ -2418,6 +2418,26 @@ const TOOL_NAME = "Papyrus Lint";
 // is the fixed target its native rule data is written against.
 const TARGET_GAME = "Skyrim SE/AE";
 
+interface AiSeveritySummary {
+  errors: number;
+  warnings: number;
+  info: number;
+}
+
+function severitySummary(diagnostics: { level: Severity }[]): AiSeveritySummary {
+  const summary: AiSeveritySummary = { errors: 0, warnings: 0, info: 0 };
+  for (const diagnostic of diagnostics) {
+    if (diagnostic.level === "error") {
+      summary.errors += 1;
+    } else if (diagnostic.level === "warning") {
+      summary.warnings += 1;
+    } else if (diagnostic.level === "info") {
+      summary.info += 1;
+    }
+  }
+  return summary;
+}
+
 // Reads each of `files`' current on-disk source via the same read_psc_file
 // command the code viewer uses, keyed by each file's display path (see
 // FilteredIssuesFile.path) for formatIssuesForAi below to attach alongside
@@ -2494,24 +2514,27 @@ export async function formatIssuesForAi(
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.
   const baseReport = buildIssuesReport(files, true);
+  const fileReports = await Promise.all(
+    baseReport.files.map(async (fileReport, fileIndex) => ({
+      ...fileReport,
+      source: sources.get(fileReport.path) ?? null,
+      summary: severitySummary(fileReport.diagnostics),
+      diagnostics: await Promise.all(
+        fileReport.diagnostics.map(async (diagnostic, diagnosticIndex) => {
+          const finding = files[fileIndex].findings[diagnosticIndex];
+          if (!finding.rule || !FIXABLE_RULE_IDS.has(finding.rule) || hasNoAutomaticFix(finding)) {
+            return diagnostic;
+          }
+          const repair = await previewRepairPscLine(files[fileIndex].path, finding.rule, finding.line);
+          return repair === null ? diagnostic : { ...diagnostic, repair };
+        }),
+      ),
+    })),
+  );
   const findings = {
     ...baseReport,
-    files: await Promise.all(
-      baseReport.files.map(async (fileReport, fileIndex) => ({
-        ...fileReport,
-        source: sources.get(fileReport.path) ?? null,
-        diagnostics: await Promise.all(
-          fileReport.diagnostics.map(async (diagnostic, diagnosticIndex) => {
-            const finding = files[fileIndex].findings[diagnosticIndex];
-            if (!finding.rule || !FIXABLE_RULE_IDS.has(finding.rule) || hasNoAutomaticFix(finding)) {
-              return diagnostic;
-            }
-            const repair = await previewRepairPscLine(files[fileIndex].path, finding.rule, finding.line);
-            return repair === null ? diagnostic : { ...diagnostic, repair };
-          }),
-        ),
-      })),
-    ),
+    files: fileReports,
+    summary: severitySummary(fileReports.flatMap((file) => file.diagnostics)),
   };
 
   return JSON.stringify(

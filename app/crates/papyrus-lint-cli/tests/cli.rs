@@ -141,6 +141,14 @@ fn ai_format_includes_source_and_triggered_rule_details() {
     );
     assert_eq!(report["findings"]["files"][0]["source"], source);
     assert_eq!(
+        report["findings"]["files"][0]["summary"],
+        serde_json::json!({"errors": 0, "warnings": 1, "info": 0})
+    );
+    assert_eq!(
+        report["findings"]["summary"],
+        serde_json::json!({"errors": 0, "warnings": 1, "info": 0})
+    );
+    assert_eq!(
         report["findings"]["files"][0]["diagnostics"][0]["rule"],
         "trailing-whitespace"
     );
