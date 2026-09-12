@@ -254,14 +254,14 @@
       }
     },
     "findingsReport": {
-      "description": "The filtered findings, in the same shape as the desktop app's Export issues JSON report except without a `files_with_diagnostics` count: every exported file already has at least one diagnostic (see `fileReport`), so that count would always equal `files`' own length.",
+      "description": "The filtered findings. Every exported file has at least one diagnostic (see `fileReport`).",
       "type": "object",
       "additionalProperties": false,
       "required": [
         "files",
         "total_diagnostics",
-        "summary",
-        "diagnostic_counts"
+        "severity_counts",
+        "rule_counts"
       ],
       "properties": {
         "files": {
@@ -275,12 +275,12 @@
           "type": "integer",
           "minimum": 0
         },
-        "summary": {
-          "description": "The sum of all file summaries.",
-          "$ref": "#/$defs/summary"
+        "severity_counts": {
+          "description": "The sum of all file severity counts.",
+          "$ref": "#/$defs/severityCounts"
         },
-        "diagnostic_counts": {
-          "$ref": "#/$defs/diagnosticCounts"
+        "rule_counts": {
+          "$ref": "#/$defs/ruleCounts"
         }
       }
     },
@@ -289,8 +289,8 @@
       "additionalProperties": false,
       "required": [
         "path",
-        "summary",
-        "diagnostic_counts",
+        "severity_counts",
+        "rule_counts",
         "diagnostics",
         "source"
       ],
@@ -308,11 +308,11 @@
             "$ref": "#/$defs/diagnostic"
           }
         },
-        "diagnostic_counts": {
-          "$ref": "#/$defs/diagnosticCounts"
+        "rule_counts": {
+          "$ref": "#/$defs/ruleCounts"
         },
-        "summary": {
-          "$ref": "#/$defs/summary"
+        "severity_counts": {
+          "$ref": "#/$defs/severityCounts"
         },
         "source": {
           "description": "How this script's source is represented: null when none was attached at all; otherwise an object whose \"type\" names which of the other three forms it takes.",
@@ -333,7 +333,7 @@
         }
       }
     },
-    "diagnosticCounts": {
+    "ruleCounts": {
       "description": "Counts of exported diagnostics grouped by rule id. Rules with no diagnostics are omitted.",
       "type": "object",
       "additionalProperties": false,
@@ -344,7 +344,7 @@
         }
       }
     },
-    "summary": {
+    "severityCounts": {
       "description": "Counts of exported diagnostics grouped by severity.",
       "type": "object",
       "additionalProperties": false,

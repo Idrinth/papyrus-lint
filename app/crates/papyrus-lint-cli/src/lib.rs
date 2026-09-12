@@ -483,8 +483,8 @@ enum AiSource {
 #[derive(Debug, Serialize)]
 struct AiFileReport {
     path: String,
-    summary: AiSummary,
-    diagnostic_counts: std::collections::BTreeMap<&'static str, usize>,
+    severity_counts: AiSeverityCounts,
+    rule_counts: std::collections::BTreeMap<&'static str, usize>,
     diagnostics: Vec<JsonDiagnostic>,
     source: AiSource,
 }
@@ -493,31 +493,33 @@ struct AiFileReport {
 struct AiFindings {
     files: Vec<AiFileReport>,
     total_diagnostics: usize,
-    summary: AiSummary,
-    diagnostic_counts: std::collections::BTreeMap<&'static str, usize>,
+    severity_counts: AiSeverityCounts,
+    rule_counts: std::collections::BTreeMap<&'static str, usize>,
 }
 
 #[derive(Debug, Default, Serialize)]
-struct AiSummary {
+struct AiSeverityCounts {
     errors: usize,
     warnings: usize,
     info: usize,
 }
 
-fn diagnostic_summary<'a>(diagnostics: impl IntoIterator<Item = &'a JsonDiagnostic>) -> AiSummary {
-    let mut summary = AiSummary::default();
+fn severity_counts<'a>(
+    diagnostics: impl IntoIterator<Item = &'a JsonDiagnostic>,
+) -> AiSeverityCounts {
+    let mut counts = AiSeverityCounts::default();
     for diagnostic in diagnostics {
         match diagnostic.level {
-            "error" => summary.errors += 1,
-            "warning" => summary.warnings += 1,
-            "info" => summary.info += 1,
+            "error" => counts.errors += 1,
+            "warning" => counts.warnings += 1,
+            "info" => counts.info += 1,
             _ => {}
         }
     }
-    summary
+    counts
 }
 
-fn diagnostic_counts<'a>(
+fn rule_counts<'a>(
     diagnostics: impl IntoIterator<Item = &'a JsonDiagnostic>,
 ) -> std::collections::BTreeMap<&'static str, usize> {
     let mut counts = std::collections::BTreeMap::new();
@@ -1303,8 +1305,8 @@ pub fn run(
                 })
                 .collect();
             if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
-                let counts = diagnostic_counts(&json_diagnostics);
-                let summary = diagnostic_summary(&json_diagnostics);
+                let rule_counts = rule_counts(&json_diagnostics);
+                let severity_counts = severity_counts(&json_diagnostics);
                 let ai_source = if hash_source {
                     AiSource::Hash {
                         algorithm: "md5",
@@ -1317,8 +1319,8 @@ pub fn run(
                 };
                 ai_files.push(AiFileReport {
                     path: reported_path.clone(),
-                    summary,
-                    diagnostic_counts: counts,
+                    severity_counts,
+                    rule_counts,
                     diagnostics: json_diagnostics,
                     source: ai_source,
                 });
@@ -1367,10 +1369,10 @@ pub fn run(
             serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
         );
     } else if output_format == OutputFormat::Ai {
-        let total_diagnostic_counts =
-            diagnostic_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
-        let total_summary =
-            diagnostic_summary(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
+        let total_rule_counts =
+            rule_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
+        let total_severity_counts =
+            severity_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
         let mut triggered_rules: Vec<&'static str> = ai_files
             .iter()
             .flat_map(|file| file.diagnostics.iter().map(|diagnostic| diagnostic.rule))
@@ -1401,8 +1403,8 @@ pub fn run(
             findings: AiFindings {
                 files: ai_files,
                 total_diagnostics,
-                summary: total_summary,
-                diagnostic_counts: total_diagnostic_counts,
+                severity_counts: total_severity_counts,
+                rule_counts: total_rule_counts,
             },
             rule_details,
         };

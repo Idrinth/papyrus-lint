@@ -2573,14 +2573,14 @@ export async function formatIssuesForAi(
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.
   const baseReport = buildIssuesReport(sortedFiles, true);
-  const diagnosticCounts = (diagnostics: { rule: string }[]): Record<string, number> => {
+  const ruleCounts = (diagnostics: { rule: string }[]): Record<string, number> => {
     const counts: Record<string, number> = {};
     for (const diagnostic of diagnostics) {
       counts[diagnostic.rule] = (counts[diagnostic.rule] ?? 0) + 1;
     }
     return Object.fromEntries(Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)));
   };
-  const summary = (diagnostics: { level: Severity }[]) => ({
+  const severityCounts = (diagnostics: { level: Severity }[]) => ({
     errors: diagnostics.filter((diagnostic) => diagnostic.level === "error").length,
     warnings: diagnostics.filter((diagnostic) => diagnostic.level === "warning").length,
     info: diagnostics.filter((diagnostic) => diagnostic.level === "info").length,
@@ -2589,8 +2589,8 @@ export async function formatIssuesForAi(
     files: await Promise.all(
       baseReport.files.map(async (fileReport, fileIndex) => ({
         ...fileReport,
-        summary: summary(fileReport.diagnostics),
-        diagnostic_counts: diagnosticCounts(fileReport.diagnostics),
+        severity_counts: severityCounts(fileReport.diagnostics),
+        rule_counts: ruleCounts(fileReport.diagnostics),
         source: sources.get(fileReport.path) ?? null,
         diagnostics: await Promise.all(
           fileReport.diagnostics.map(async (diagnostic, diagnosticIndex) => {
@@ -2609,8 +2609,8 @@ export async function formatIssuesForAi(
       })),
     ),
     total_diagnostics: baseReport.total_diagnostics,
-    summary: summary(baseReport.files.flatMap((file) => file.diagnostics)),
-    diagnostic_counts: diagnosticCounts(baseReport.files.flatMap((file) => file.diagnostics)),
+    severity_counts: severityCounts(baseReport.files.flatMap((file) => file.diagnostics)),
+    rule_counts: ruleCounts(baseReport.files.flatMap((file) => file.diagnostics)),
   };
 
   return JSON.stringify(
