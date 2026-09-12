@@ -124,6 +124,11 @@
           "description": "The human-readable diagnostic message.",
           "type": "string",
           "minLength": 1
+        },
+        "repair": {
+          "description": "What this diagnostic's line would look like after applying its rule's automatic fix, present only for a diagnostic whose rule is auto-fixable (see rule_details) and only when Papyrus Lint could compute one. Omitted for a rule with no automatic fix, for a finding that fix wouldn't actually change (e.g. type-casing's own \"no automatic fix\" case), or when the fix would shift the file's line count elsewhere (e.g. property-sorting relocating a property's declaration).",
+          "type": "string",
+          "minLength": 1
         }
       }
     },

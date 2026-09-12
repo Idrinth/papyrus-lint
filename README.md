@@ -858,17 +858,24 @@ except each file entry also carries a `source` field with that script's
 current on-disk contents (or an error message describing why it couldn't
 be read, e.g. if it was moved or deleted since linting) — so the assistant
 can see the exact code each diagnostic refers to without needing the
-project's own files open alongside the report; and a `rule_details` array
-carrying the full tag metadata (kind(s), importance, whether it's
-auto-fixable, and the rule's own detailed `description`, copied verbatim
-from its row in the [Implemented Lints](#implemented-lints) table above)
-for every rule id that actually appears among the exported findings and
-has known tag metadata (an unrecognized rule id is simply left out) —
-giving the assistant enough context about each triggered rule, in the
-same detail this README gives a human reader, to answer follow-up
-questions precisely without needing this project's own documentation on
-hand. Like "Export issues", it's disabled whenever no finding currently
-passes the active filters.
+project's own files open alongside the report — and each diagnostic from an
+auto-fixable rule also carries a `repair` field showing what that line
+would look like after applying the rule's automatic fix, computed without
+actually applying it — omitted when the fix wouldn't change that line at
+all (e.g. `type-casing`'s own "no automatic fix" case) or would shift the
+file's line count elsewhere (e.g. `property-sorting` relocating a
+property's declaration), so an assistant can see a fix's effect without
+asking the user to apply it first; and a `rule_details` array carrying the
+full tag metadata (kind(s), importance, whether it's auto-fixable, and the
+rule's own detailed `description`, copied verbatim from its row in the
+[Implemented Lints](#implemented-lints) table above) for every rule id
+that actually appears among the exported findings and has known tag
+metadata (an unrecognized rule id is simply left out) — giving the
+assistant enough context about each triggered rule, in the same detail
+this README gives a human reader, to answer follow-up questions precisely
+without needing this project's own documentation on hand. Like "Export
+issues", it's disabled whenever no finding currently passes the active
+filters.
 
 ## Compiling a script
 

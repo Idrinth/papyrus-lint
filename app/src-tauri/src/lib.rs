@@ -505,6 +505,29 @@ fn preview_repair_psc_file(path: String, config: papyrus_lints::Config) -> Resul
     ))
 }
 
+/// Applies only the automatic fix for `rule` (a
+/// [`papyrus_lints::FIXABLE_RULE_IDS`] id) and returns what `line`
+/// (1-indexed) would look like afterward, via
+/// [`papyrus_lints::repaired_line`], without writing anything to disk.
+/// Returns `None` when there's nothing meaningful to preview: the fix
+/// doesn't change the file at all, it would shift the line count elsewhere
+/// (e.g. `property-sorting` relocating a property's declaration), or it
+/// simply doesn't touch `line`. Drives the "Export for AI" document's
+/// per-finding `repair` preview (see `formatIssuesForAi` in
+/// `app/src/main.ts`), so an AI reading the export can see each
+/// auto-fixable finding's fix without applying it first.
+#[tauri::command]
+fn preview_repair_psc_line(
+    path: String,
+    config: papyrus_lints::Config,
+    rule: String,
+    line: usize,
+) -> Result<Option<String>, String> {
+    let path = Path::new(&path);
+    let source = read_psc_source(path).map_err(|err| err.to_string())?;
+    Ok(papyrus_lints::repaired_line(&source, &config, &rule, line))
+}
+
 /// Like [`repair_psc_file`], but applies only the automatic fix for `rule`
 /// (a [`papyrus_lints::FIXABLE_RULE_IDS`] id), and restricts its effect to
 /// `line` (1-indexed) — leaving every other line untouched — via
@@ -645,6 +668,7 @@ pub fn run() {
             lint_psc_file,
             repair_psc_file,
             preview_repair_psc_file,
+            preview_repair_psc_line,
             repair_psc_finding,
             repair_psc_file_rule,
             compile_psc_file,
@@ -866,6 +890,58 @@ mod tests {
         assert!(preview_repair_psc_file(
             missing.to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn preview_repair_psc_line_returns_the_fixed_line_without_writing_the_file() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let original = "Function Run(Int left,Int right)\nEndFunction\n";
+        std::fs::write(&path, original).unwrap();
+
+        let repaired = preview_repair_psc_line(
+            path.to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            "comma-spacing".to_string(),
+            1,
+        )
+        .unwrap();
+
+        assert_eq!(
+            repaired.as_deref(),
+            Some("Function Run(Int left, Int right)")
+        );
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), original);
+    }
+
+    #[test]
+    fn preview_repair_psc_line_is_none_when_nothing_would_change() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+
+        let repaired = preview_repair_psc_line(
+            path.to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            "trailing-whitespace".to_string(),
+            1,
+        )
+        .unwrap();
+
+        assert_eq!(repaired, None);
+    }
+
+    #[test]
+    fn preview_repair_psc_line_reports_io_errors_instead_of_panicking() {
+        let missing = tempdir().unwrap().path().join("missing.psc");
+
+        assert!(preview_repair_psc_line(
+            missing.to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            "trailing-whitespace".to_string(),
+            1,
         )
         .is_err());
     }

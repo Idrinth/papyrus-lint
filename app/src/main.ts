@@ -1273,6 +1273,26 @@ export async function previewRepairPscFile(path: string): Promise<string> {
   });
 }
 
+// Computes just `rule`'s automatic fix and returns what `line` (1-indexed)
+// would look like afterward, without writing anything to disk or touching
+// any other line - `null` when there's nothing meaningful to show (the fix
+// doesn't change the file, would shift the line count elsewhere, or simply
+// doesn't touch `line`). Drives formatIssuesForAi's per-finding `repair`
+// preview, below.
+async function previewRepairPscLine(path: string, rule: string, line: number): Promise<string | null> {
+  try {
+    return await invoke<string | null>("preview_repair_psc_line", {
+      path,
+      config: currentLintConfig,
+      rule,
+      line,
+    });
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 // Rule ids with an automatic fix (papyrus_lints::FIXABLE_RULE_IDS), used to
 // decide which findings offer the per-finding "Fix this issue" button. Kept
 // in sync by hand with FIXABLE_RULE_IDS in
@@ -2409,20 +2429,25 @@ async function readIssueFileSources(
 // these findings and where to look up anything not covered below), the
 // findings themselves (see buildIssuesReport) with each file's current
 // source text attached (or null when `sources` has none for it - see
-// readIssueFileSources), and the full tag metadata (kind(s), importance,
-// auto-fixability, and the rule's detailed description copied from its
-// README.md row; see papyrus_lints::tags) for every rule id that actually
-// appears among `files`' findings - giving the AI enough context about
-// each triggered rule, in the same detail the README gives a human
-// reader, and the actual code each diagnostic refers to, to answer
-// follow-up questions precisely without needing the project's own files
-// or documentation on hand. `version` is the running app's version (see
-// loadAppVersion), or "" if that lookup failed.
-export function formatIssuesForAi(
+// readIssueFileSources), a `repair` field added to every diagnostic from an
+// auto-fixable rule Papyrus Lint could compute a fix preview for (see
+// previewRepairPscLine; omitted when the rule doesn't actually change that
+// line, e.g. type-casing's "no automatic fix" case, or its fix would shift
+// the file's line count elsewhere), and the full tag metadata (kind(s),
+// importance, auto-fixability, and the rule's detailed description copied
+// from its README.md row; see papyrus_lints::tags) for every rule id that
+// actually appears among `files`' findings - giving the AI enough context
+// about each triggered rule, in the same detail the README gives a human
+// reader, the actual code each diagnostic refers to, and what its fix
+// would look like, to answer follow-up questions precisely without
+// needing the project's own files or documentation on hand. `version` is
+// the running app's version (see loadAppVersion), or "" if that lookup
+// failed.
+export async function formatIssuesForAi(
   files: FilteredIssuesFile[],
   version: string,
   sources: Map<string, string> = new Map(),
-): string {
+): Promise<string> {
   const triggeredRules = new Set<string>();
   for (const file of files) {
     for (const finding of file.findings) {
@@ -2438,11 +2463,26 @@ export function formatIssuesForAi(
 
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.
-  const report = buildIssuesReport(files, true);
-  const filesWithSource = report.files.map((file) => ({
-    ...file,
-    source: sources.get(file.path) ?? null,
-  }));
+  const baseReport = buildIssuesReport(files, true);
+  const findings = {
+    ...baseReport,
+    files: await Promise.all(
+      baseReport.files.map(async (fileReport, fileIndex) => ({
+        ...fileReport,
+        source: sources.get(fileReport.path) ?? null,
+        diagnostics: await Promise.all(
+          fileReport.diagnostics.map(async (diagnostic, diagnosticIndex) => {
+            const finding = files[fileIndex].findings[diagnosticIndex];
+            if (!finding.rule || !FIXABLE_RULE_IDS.has(finding.rule) || hasNoAutomaticFix(finding)) {
+              return diagnostic;
+            }
+            const repair = await previewRepairPscLine(files[fileIndex].path, finding.rule, finding.line);
+            return repair === null ? diagnostic : { ...diagnostic, repair };
+          }),
+        ),
+      })),
+    ),
+  };
 
   return JSON.stringify(
     {
@@ -2452,7 +2492,7 @@ export function formatIssuesForAi(
         website: WEBSITE_URL,
         target_game: TARGET_GAME,
       },
-      findings: { ...report, files: filesWithSource },
+      findings,
       rule_details: ruleDetails,
     },
     null,
@@ -2514,7 +2554,11 @@ export async function handleExportAiClick(): Promise<void> {
     return;
   }
   const [version, sources] = await Promise.all([loadAppVersion(), readIssueFileSources(files, currentPscOutcomes)]);
-  downloadTextFile("papyrus-lint-ai-export.json", formatIssuesForAi(files, version, sources), "application/json");
+  downloadTextFile(
+    "papyrus-lint-ai-export.json",
+    await formatIssuesForAi(files, version, sources),
+    "application/json",
+  );
 }
 
 // Builds/refreshes the "mass fix" panel listing every rule with at least

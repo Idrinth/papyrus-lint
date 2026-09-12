@@ -557,6 +557,33 @@ pub fn restrict_to_line(original: &str, repaired: &str, target_line: usize) -> O
     )
 }
 
+/// Applies just `rule`'s automatic fix (a [`FIXABLE_RULE_IDS`] id) to
+/// `source` and returns what `target_line` (1-indexed) would look like
+/// afterward, or `None` if there's nothing meaningful to show: `rule`'s fix
+/// doesn't change `source` at all, applying it would shift the line count
+/// (via [`restrict_to_line`], the same case that fix's own `Diagnostic`
+/// shouldn't be treated as fixable in place), `target_line` doesn't exist in
+/// `source`, or the fix doesn't actually touch `target_line` itself. Powers
+/// the desktop app's "Export for AI" document, which attaches this preview
+/// to each exported finding from an auto-fixable rule so an AI reading it
+/// can see the fix without having to apply it first.
+pub fn repaired_line(
+    source: &str,
+    config: &Config,
+    rule: &str,
+    target_line: usize,
+) -> Option<String> {
+    let repaired = repair_filtered(source, config, Some(rule));
+    if repaired == source {
+        return None;
+    }
+    let restricted = restrict_to_line(source, &repaired, target_line)?;
+    let index = target_line.checked_sub(1)?;
+    let original_line = source.split('\n').nth(index)?;
+    let restricted_line = restricted.split('\n').nth(index)?;
+    (restricted_line != original_line).then(|| restricted_line.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -893,6 +920,59 @@ mod tests {
         assert_eq!(
             restrict_to_line(original, repaired, 2).as_deref(),
             Some("Call(1,2)\nreplacement")
+        );
+    }
+
+    #[test]
+    fn repaired_line_returns_just_the_target_line_after_the_fix() {
+        let source = "Call(1,2)\nCall(3,4)\nCall(5,6)\n";
+        let config = Config::default();
+
+        assert_eq!(
+            repaired_line(source, &config, comma_spacing::RULE, 2).as_deref(),
+            Some("Call(3, 4)")
+        );
+    }
+
+    #[test]
+    fn repaired_line_is_none_when_the_rule_does_not_change_the_source_at_all() {
+        let source = "Call(1, 2)\n";
+
+        assert_eq!(
+            repaired_line(source, &Config::default(), comma_spacing::RULE, 1),
+            None
+        );
+    }
+
+    #[test]
+    fn repaired_line_is_none_when_the_fix_shifts_the_line_count() {
+        let source =
+            "ScriptName Example\n\nInt Property Zulu = 1 Auto\nActor Property Alpha Auto\n";
+        let config = config_with(|c| c.rules.property_sorting = true);
+
+        assert_eq!(
+            repaired_line(source, &config, property_sorting::RULE, 3),
+            None
+        );
+    }
+
+    #[test]
+    fn repaired_line_is_none_for_an_out_of_range_line() {
+        let source = "Call(1,2)\n";
+
+        assert_eq!(
+            repaired_line(source, &Config::default(), comma_spacing::RULE, 99),
+            None
+        );
+    }
+
+    #[test]
+    fn repaired_line_is_none_when_the_fix_touches_other_lines_but_not_the_target_one() {
+        let source = "Call(1,2)\nCall(3, 4)\n";
+
+        assert_eq!(
+            repaired_line(source, &Config::default(), comma_spacing::RULE, 2),
+            None
         );
     }
 
