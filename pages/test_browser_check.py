@@ -160,6 +160,19 @@ class StaticScriptsTest(unittest.TestCase):
             "37px",
         )
 
+    def test_theme_script_tolerates_pages_without_optional_header_controls(self) -> None:
+        page = self.run_script("<main>Standalone content</main>", "theme.js")
+
+        self.assertEqual(page.locator("main").text_content(), "Standalone content")
+        self.assertIsNone(page.locator("html").get_attribute("data-theme"))
+        self.assertEqual(
+            page.evaluate(
+                "getComputedStyle(document.documentElement)"
+                ".getPropertyValue('--site-header-height')"
+            ),
+            "",
+        )
+
     def test_download_script_builds_a_safe_os_specific_picker(self) -> None:
         page = self.run_script(
             """<div class="download-group">
@@ -203,6 +216,21 @@ class StaticScriptsTest(unittest.TestCase):
         page.keyboard.press("Escape")
         self.assertTrue(page.locator(".download-panel").is_hidden())
         self.assertTrue(self.is_focused(page.locator("#download")))
+
+    def test_download_picker_toggle_closes_its_open_panel(self) -> None:
+        page = self.run_script(
+            """<div class="download-group"><a id="download" data-download-toggle
+               data-options='[{"file":"PapyrusLinterCLI-linux","label":"Linux"}]'
+               href="#fallback">CLI</a></div>""",
+            "downloads.js",
+        )
+
+        page.locator("#download").click()
+        self.assertFalse(page.locator(".download-panel").is_hidden())
+
+        page.locator("#download").click()
+        self.assertTrue(page.locator(".download-panel").is_hidden())
+        self.assertEqual(page.locator("#download").get_attribute("aria-expanded"), "false")
 
     def test_download_script_leaves_invalid_configuration_as_a_plain_link(self) -> None:
         page = self.run_script(
