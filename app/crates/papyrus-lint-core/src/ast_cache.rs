@@ -852,6 +852,93 @@ mod tests {
     }
 
     #[test]
+    fn get_tokens_is_a_miss_when_the_file_was_modified_after_caching() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &sample_tokens(),
+            COMPATIBLE_VERSION,
+        );
+
+        let changed_time = std::time::SystemTime::now() + std::time::Duration::from_secs(120);
+        let file = std::fs::File::open(&source_path).unwrap();
+        file.set_modified(changed_time).unwrap();
+
+        assert_eq!(get_tokens_in(cache_dir.path(), &source_path, source), None);
+    }
+
+    #[test]
+    fn get_tokens_is_a_miss_when_the_source_file_was_deleted() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &sample_tokens(),
+            COMPATIBLE_VERSION,
+        );
+        std::fs::remove_file(&source_path).unwrap();
+
+        assert_eq!(get_tokens_in(cache_dir.path(), &source_path, source), None);
+    }
+
+    #[test]
+    fn put_tokens_is_a_noop_when_the_source_file_does_not_exist() {
+        let cache_dir = tempdir().unwrap();
+        let missing_source = cache_dir.path().join("Missing.psc");
+
+        put_tokens_in(
+            cache_dir.path(),
+            &missing_source,
+            "ScriptName Missing\n",
+            &sample_tokens(),
+            COMPATIBLE_VERSION,
+        );
+
+        assert!(!cache_file_path(cache_dir.path(), &missing_source).exists());
+    }
+
+    #[test]
+    fn writes_are_silently_ignored_when_the_cache_directory_is_a_file() {
+        let root = tempdir().unwrap();
+        let cache_path = root.path().join("not-a-directory");
+        std::fs::write(&cache_path, "occupied").unwrap();
+        let source_path = root.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        put_in(
+            &cache_path,
+            &source_path,
+            source,
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
+        put_tokens_in(
+            &cache_path,
+            &source_path,
+            source,
+            &sample_tokens(),
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(std::fs::read_to_string(&cache_path).unwrap(), "occupied");
+        assert_eq!(get_in(&cache_path, &source_path, source), None);
+        assert_eq!(get_tokens_in(&cache_path, &source_path, source), None);
+    }
+
+    #[test]
     fn putting_tokens_preserves_an_already_cached_ast() {
         let cache_dir = tempdir().unwrap();
         let project_dir = tempdir().unwrap();
