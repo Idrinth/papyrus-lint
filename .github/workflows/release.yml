@@ -229,6 +229,85 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.ref_name }}" plugin-dist/* --clobber --repo "${{ github.repository }}"
 
+  sign-release-assets:
+    name: Sign release assets
+    needs:
+      - nexus-page
+      - release
+      - vscode-plugin
+      - sublime-plugin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir release-assets
+
+      - name: Verify expected release assets are present
+        run: |
+          # Fixed-name assets each job listed in `needs` above is expected to
+          # upload (the release job's Tauri bundles are excluded since their
+          # names vary by platform/version). If a future asset-producing job
+          # forgets to add itself to `needs`, or an existing job stops
+          # uploading one of these, this fails loudly instead of that asset
+          # silently shipping unsigned.
+          expected=(
+            "PapyrusLinterCLI-linux"
+            "PapyrusLinterCLI-macos"
+            "PapyrusLinterCLI-windows.exe"
+            "papyrus-lint.yaml"
+            "papyrus-lint-vscode.vsix"
+            "SublimeLinter-contrib-papyrus-lint.zip"
+          )
+          missing=0
+          for name in "${expected[@]}"; do
+            if [ ! -f "release-assets/$name" ]; then
+              echo "::error::Expected release asset '$name' was not downloaded; a sign-release-assets dependency may be missing." >&2
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Sign and verify release assets
+        env:
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+        run: |
+          # A rerun may download signatures from an earlier attempt. Remove them
+          # so signatures are never treated as input artifacts themselves.
+          find release-assets -type f -name '*.sigstore.json' -delete
+
+          # The Nexus page changelog is plain-text documentation, not a
+          # downloadable artifact anyone verifies before use, so it's left
+          # unsigned.
+          while IFS= read -r -d '' asset; do
+            bundle="${asset}.sigstore.json"
+            cosign sign-blob --yes --bundle "$bundle" "$asset"
+            cosign verify-blob \
+              --bundle "$bundle" \
+              --certificate-identity "$CERTIFICATE_IDENTITY" \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              "$asset"
+          done < <(find release-assets -name 'nexuspage-*.bbcode' -prune -o -type f -print0)
+
+      - name: Upload signatures to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          find release-assets -type f -name '*.sigstore.json' -print0 \
+            | xargs -0 gh release upload "${{ github.ref_name }}" \
+                --clobber --repo "${{ github.repository }}"
+
   update-pages:
     name: Update GitHub Pages with release version
     needs: release
