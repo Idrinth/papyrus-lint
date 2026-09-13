@@ -146,6 +146,17 @@ class MarkdownHelpersTest(unittest.TestCase):
             '<a href="published/three.md">three</a>.',
         )
 
+    def test_render_inline_escapes_ampersands_in_rewritten_link_targets_once(self) -> None:
+        result = page_builder.render_inline(
+            "[filtered](search.md)",
+            lambda _href: "results.html?kind=lint&state=open",
+        )
+
+        self.assertEqual(
+            result,
+            '<a href="results.html?kind=lint&amp;state=open">filtered</a>',
+        )
+
     def test_split_table_row_preserves_escaped_pipes(self) -> None:
         self.assertEqual(
             page_builder.split_table_row(r"| Name | a \| b | yes |"),
@@ -237,6 +248,11 @@ class MarkdownHelpersTest(unittest.TestCase):
             ),
             "first",
         )
+
+    def test_first_code_block_accepts_indented_fences_and_preserves_code_indent(self) -> None:
+        lines = ["prose", "   ```console", "  command --flag", "   ```"]
+
+        self.assertEqual(page_builder.first_code_block(lines), "  command --flag")
 
     def test_render_videos_list_embeds_each_video_and_escapes_title(self) -> None:
         result = page_builder.render_videos_list(
@@ -408,6 +424,16 @@ class MarkdownHelpersTest(unittest.TestCase):
 
         self.assertIn(">Support this project</a>", result)
         self.assertIn('href="https://example.test/support"', result)
+
+    def test_render_funding_links_encodes_provider_handles_as_path_segments(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            funding_file = Path(directory) / "FUNDING.yml"
+            funding_file.write_text("github: user/name\n", encoding="utf-8")
+
+            result = page_builder.render_funding_links(funding_file)
+
+        self.assertIn("https://github.com/sponsors/user%2Fname", result)
+        self.assertNotIn("sponsors/user/name", result)
 
     def test_resolve_doc_href_handles_docs_repository_and_external_links(self) -> None:
         with (
@@ -591,6 +617,14 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertIn('class="code-block language-yaml&quot;" tabindex="0"', result)
         self.assertNotIn("onmouseover=", result)
         self.assertIn("enabled: true", result)
+
+    def test_markdown_to_html_keeps_backticks_inside_a_code_block_literal(self) -> None:
+        result = page_builder.markdown_to_html(
+            ["```shell", "echo ``` is data", "```", "Afterwards"]
+        )
+
+        self.assertIn("<code>echo ``` is data</code>", result)
+        self.assertTrue(result.endswith("<p>Afterwards</p>"))
 
     def test_first_paragraph_returns_empty_text_when_there_is_no_prose(self) -> None:
         self.assertEqual(page_builder.first_paragraph(["# Title", "", "## Subtitle"]), "")
