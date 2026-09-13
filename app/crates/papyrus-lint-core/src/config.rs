@@ -38,8 +38,9 @@ struct ProjectFile {
     /// `compiler_path`, above) against a `.psc` as part of linting it,
     /// surfacing any errors it reports as additional `[error]` diagnostics
     /// alongside the lint engine's own findings. `false` by default: it's
-    /// opt-in since it requires a configured compiler path and is slower
-    /// than the lint engine's own, dependency-free checks. Compiles to a
+    /// opt-in since it requires a compiler path — configured or
+    /// auto-detected — and is slower than the lint engine's own,
+    /// dependency-free checks. Compiles to a
     /// throwaway temporary directory rather than the project's real output
     /// directory, so enabling it never touches (or requires write access
     /// to) the project's actual compiled `.pex` output.

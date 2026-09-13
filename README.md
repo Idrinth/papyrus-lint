@@ -347,7 +347,8 @@ Each key:
   PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
   app's Settings tab, alongside `compiler_path`. `false` by default, since
   it's slower than the lint engine's own, dependency-free checks and
-  requires a configured compiler path. When enabled, PapyrusCompiler.exe's
+  requires a compiler path — configured or auto-detected (see
+  `compiler_path` above). When enabled, PapyrusCompiler.exe's
   own reported errors (e.g. a syntax mistake the lint engine's more
   forgiving parser lets through) are added to the results as `[error]`
   diagnostics, the same way the app's other lints are. Compiles into a
