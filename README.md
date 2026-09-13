@@ -778,6 +778,27 @@ run `cargo build --release --manifest-path
 app/crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
 `PapyrusLinterCLI`.
 
+Every file attached to a release has a matching `.sigstore.json` bundle.
+The release workflow signs these bundles keylessly with [Sigstore](https://www.sigstore.dev/),
+using GitHub Actions' short-lived OpenID Connect identity, and records the
+signature in Sigstore's transparency log. After installing `cosign`, verify a
+download by keeping it next to its bundle and running (replace the file name
+and tag as needed):
+
+```bash
+cosign verify-blob \
+  --bundle PapyrusLinterCLI-linux.sigstore.json \
+  --certificate-identity \
+    https://github.com/Idrinth/papyrus-lint/.github/workflows/release.yml@refs/tags/v1.2.3 \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  PapyrusLinterCLI-linux
+```
+
+This verifies both that the downloaded bytes have not changed and that they
+were signed by this repository's tag-triggered release workflow. The signing
+key is ephemeral, so there is no long-lived release-signing secret to rotate
+or expose.
+
 The preferred way to run Papyrus Lint in CI is the [Papyrus Lint GitHub
 Action](https://github.com/marketplace/actions/papyrus-lint)
 (`idrinth/papyrus-lint-action`), which downloads `PapyrusLinterCLI` for you
