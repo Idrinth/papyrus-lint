@@ -1,14 +1,11 @@
-pub mod compile_diagnostics;
-pub mod compiler;
-pub mod pex_header;
-
 use std::path::{Path, PathBuf};
 
 use papyrus_lint_core::source_encoding::{
     read_psc_source, read_psc_source_with_encoding, write_psc_source,
 };
 use papyrus_lint_core::{
-    achlist, ast_cache, config, content_hash, function_table, presets, script_locator,
+    achlist, ast_cache, compile_diagnostics, compiler, config, content_hash, function_table,
+    presets, script_locator,
 };
 
 #[derive(Debug, PartialEq, serde::Serialize)]

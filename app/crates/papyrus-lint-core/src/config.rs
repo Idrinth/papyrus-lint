@@ -34,16 +34,16 @@ struct ProjectFile {
     compiler_path: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     additional_script_roots: Vec<String>,
-    /// Whether the desktop app also runs PapyrusCompiler.exe (at
-    /// `compiler_path`, above) against a dropped `.psc` as part of linting
-    /// it, surfacing any errors it reports as additional `[error]`
-    /// diagnostics alongside the lint engine's own findings. `false` by
-    /// default: it's opt-in since it requires a configured compiler path
-    /// and is slower than the lint engine's own, dependency-free checks.
-    /// Compiles to a throwaway temporary directory rather than the
-    /// project's real output directory, so enabling it never touches (or
-    /// requires write access to) the project's actual compiled `.pex`
-    /// output.
+    /// Whether the desktop app and the CLI also run PapyrusCompiler.exe (at
+    /// `compiler_path`, above) against a `.psc` as part of linting it,
+    /// surfacing any errors it reports as additional `[error]` diagnostics
+    /// alongside the lint engine's own findings. `false` by default: it's
+    /// opt-in since it requires a compiler path — configured or
+    /// auto-detected — and is slower than the lint engine's own,
+    /// dependency-free checks. Compiles to a
+    /// throwaway temporary directory rather than the project's real output
+    /// directory, so enabling it never touches (or requires write access
+    /// to) the project's actual compiled `.pex` output.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     compile_check: bool,
     /// Whether the CLI resolves cross-script lookups among an `.achlist`'s
