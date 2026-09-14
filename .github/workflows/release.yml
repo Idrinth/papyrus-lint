@@ -169,7 +169,7 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.ref_name }}" cli-dist/* --clobber --repo "${{ github.repository }}"
+        run: gh release upload "$GITHUB_REF" cli-dist/* --clobber --repo "${{ github.repository }}"
 
   vscode-plugin:
     runs-on: ubuntu-latest
@@ -203,7 +203,7 @@ jobs:
       - name: Upload editor plugins to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.ref_name }}" plugin-dist/* --clobber --repo "${{ github.repository }}"
+        run: gh release upload "$GITHUB_REF" plugin-dist/* --clobber --repo "${{ github.repository }}"
 
   sublime-plugin:
     runs-on: ubuntu-latest
@@ -227,7 +227,7 @@ jobs:
       - name: Upload editor plugin to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.ref_name }}" plugin-dist/* --clobber --repo "${{ github.repository }}"
+        run: gh release upload "$GITHUB_REF" plugin-dist/* --clobber --repo "${{ github.repository }}"
 
   sign-release-assets:
     name: Sign release assets
@@ -293,7 +293,7 @@ jobs:
       - name: Upload signatures to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.ref_name }}" "signatures/*.sigstore.json" --clobber --repo "${{ github.repository }}"
+        run: gh release upload "$GITHUB_REF" "signatures/*.sigstore.json" --clobber --repo "${{ github.repository }}"
 
   update-pages:
     name: Update GitHub Pages with release version
