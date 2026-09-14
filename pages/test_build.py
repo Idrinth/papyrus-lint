@@ -471,6 +471,32 @@ class MarkdownHelpersTest(unittest.TestCase):
             "First line with `code` continues here.",
         )
 
+    def test_first_paragraph_skips_a_leading_fenced_example(self) -> None:
+        lines = [
+            "# Guide",
+            "```papyrus",
+            "ScriptName Example",
+            "",
+            "; blank lines inside the example are not prose",
+            "```",
+            "## Overview",
+            "The first real paragraph",
+            "continues here.",
+            "",
+            "A later paragraph.",
+        ]
+
+        self.assertEqual(
+            page_builder.first_paragraph(lines),
+            "The first real paragraph continues here.",
+        )
+
+    def test_first_paragraph_returns_empty_for_code_and_headings_only(self) -> None:
+        self.assertEqual(
+            page_builder.first_paragraph(["# Guide", "```text", "example", "```"]),
+            "",
+        )
+
     def test_markdown_to_html_renders_headings_paragraphs_and_code(self) -> None:
         result = page_builder.markdown_to_html(
             [
@@ -596,6 +622,15 @@ class MarkdownHelpersTest(unittest.TestCase):
             result,
             '<pre class="code-block language-text" tabindex="0"><code>first\n  second</code></pre>',
         )
+
+    def test_markdown_to_html_keeps_blank_lines_inside_code_blocks(self) -> None:
+        result = page_builder.markdown_to_html(
+            ["Before.", "", "```papyrus", "Function Run()", "", "EndFunction", "```", "After."]
+        )
+
+        self.assertIn("Run()\n\n", result)
+        self.assertIn('<span class="kw">EndFunction</span>', result)
+        self.assertEqual(result.count("<p>"), 2)
 
     def test_markdown_to_html_escapes_headings_and_code_blocks(self) -> None:
         result = page_builder.markdown_to_html(
@@ -2017,6 +2052,31 @@ class CoveragePageTest(unittest.TestCase):
             result,
             [("pages/empty.py", 0, 0), ("pages/untested.py", 3, 0)],
         )
+
+    def test_parse_lcov_files_ignores_an_unterminated_record(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text(
+                "SF:pages/complete.py\nLF:4\nLH:3\nend_of_record\n"
+                "SF:pages/incomplete.py\nLF:10\nLH:9\n",
+                encoding="utf-8",
+            )
+
+            result = page_builder.parse_lcov_files(report)
+
+        self.assertEqual(result, [("pages/complete.py", 4, 3)])
+
+    def test_parse_lcov_files_adds_repeated_line_summaries_within_a_record(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory, "lcov.info")
+            report.write_text(
+                "SF:pages/build.py\nLF:3\nLH:2\nLF:4\nLH:1\nend_of_record\n",
+                encoding="utf-8",
+            )
+
+            result = page_builder.parse_lcov_files(report)
+
+        self.assertEqual(result, [("pages/build.py", 7, 3)])
 
     def test_render_coverage_table_renders_rows_with_percentage_and_counts(self) -> None:
         coverage_summary = page_builder.load_coverage_summary()
