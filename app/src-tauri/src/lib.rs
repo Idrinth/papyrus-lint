@@ -972,6 +972,25 @@ mod tests {
     }
 
     #[test]
+    fn preview_repair_psc_line_is_none_for_a_different_line() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let original = "ScriptName Example\n\nFunction Run(Int left,Int right)\nEndFunction\n";
+        std::fs::write(&path, original).unwrap();
+
+        let repaired = preview_repair_psc_line(
+            path.to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            papyrus_lints::comma_spacing::RULE.to_string(),
+            1,
+        )
+        .unwrap();
+
+        assert_eq!(repaired, None);
+        assert_eq!(std::fs::read_to_string(path).unwrap(), original);
+    }
+
+    #[test]
     fn preview_repair_psc_line_reports_io_errors_instead_of_panicking() {
         let missing = tempdir().unwrap().path().join("missing.psc");
 
@@ -1073,6 +1092,37 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|diagnostic| diagnostic.rule == papyrus_lints::comma_spacing::RULE));
+    }
+
+    #[test]
+    fn targeted_repair_commands_report_io_errors_without_creating_a_file() {
+        let dir = tempdir().unwrap();
+        let missing = dir.path().join("missing.psc");
+        let path = missing.to_string_lossy().into_owned();
+        let root = dir.path().to_string_lossy().into_owned();
+
+        assert!(repair_psc_finding(
+            path.clone(),
+            root.clone(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            1,
+        )
+        .is_err());
+        assert!(repair_psc_file_rule(
+            path,
+            root,
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::trailing_whitespace::RULE.to_string(),
+        )
+        .is_err());
+        assert!(!missing.exists());
     }
 
     #[test]
