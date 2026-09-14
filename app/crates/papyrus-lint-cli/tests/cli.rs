@@ -1211,3 +1211,82 @@ fn unknown_format_is_a_usage_error_without_creating_an_output_file() {
     );
     assert!(!report_path.exists());
 }
+
+#[test]
+fn json_flag_cannot_be_combined_with_an_explicit_format() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("Example.psc");
+    write_file(&script, "ScriptName Example\n");
+
+    let output = run_cli(&["--json", "--format=plain", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
+        "error: --json and --format can't be combined\n"
+    );
+}
+
+#[test]
+fn progress_without_an_output_file_is_a_usage_error() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("Example.psc");
+    write_file(&script, "ScriptName Example\n");
+
+    let output = run_cli(&["--progress", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
+        "error: --progress requires --output <path>\n"
+    );
+}
+
+#[test]
+fn fix_rejects_combining_rule_and_tag_filters_without_modifying_the_script() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("Example.psc");
+    let original = "ScriptName Example   \n";
+    write_file(&script, original);
+
+    let output = run_cli(&[
+        "fix",
+        "--type=trailing-whitespace",
+        "--tag=style",
+        &script.to_string_lossy(),
+    ]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
+        "error: --type and --tag can't be combined\n"
+    );
+    assert_eq!(
+        fs::read_to_string(script).expect("failed to read script"),
+        original
+    );
+}
+
+#[test]
+fn fix_rejects_zero_as_a_line_number_without_modifying_the_script() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("Example.psc");
+    let original = "ScriptName Example   \n";
+    write_file(&script, original);
+
+    let output = run_cli(&["fix", "--line=0", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
+        "error: --line must be a positive integer, got '0'\n"
+    );
+    assert_eq!(
+        fs::read_to_string(script).expect("failed to read script"),
+        original
+    );
+}
