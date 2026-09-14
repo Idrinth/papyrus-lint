@@ -22,3 +22,4 @@ pub mod pex_header;
 pub mod presets;
 pub mod script_locator;
 pub mod source_encoding;
+pub mod stale_pex;

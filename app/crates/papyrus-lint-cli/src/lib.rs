@@ -1286,6 +1286,9 @@ pub fn run(
                 );
             }
         }
+        if lint_config.rules.stale_compiled_output {
+            diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));
+        }
         // Mirrors the desktop app's `lint_with_compile_check`: a
         // `compiler_path` that can't be run at all (missing/misconfigured)
         // is silently left out rather than failing the whole lint run.
@@ -3807,6 +3810,90 @@ mod tests {
         assert_eq!(
             stdout.matches("[conflicting-script-versions]").count(),
             2,
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn flags_a_script_newer_than_its_compiled_pex() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        let pex_path = dir.path().join("scripts/Example.pex");
+        write_file(&script_path, "ScriptName Example\n");
+        write_file(&pex_path, "");
+
+        let now = std::time::SystemTime::now();
+        let pex_file = fs::File::open(&pex_path).expect("failed to open pex file");
+        pex_file
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .expect("failed to set pex mtime");
+        let script_file = fs::File::open(&script_path).expect("failed to open script file");
+        script_file
+            .set_modified(now)
+            .expect("failed to set script mtime");
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            stdout.contains("[stale-compiled-output]"),
+            "stdout: {stdout}"
+        );
+        assert!(stdout.contains("[info]"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn does_not_flag_a_script_older_than_its_compiled_pex() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        let pex_path = dir.path().join("scripts/Example.pex");
+        write_file(&script_path, "ScriptName Example\n");
+        write_file(&pex_path, "");
+
+        let now = std::time::SystemTime::now();
+        let script_file = fs::File::open(&script_path).expect("failed to open script file");
+        script_file
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .expect("failed to set script mtime");
+        let pex_file = fs::File::open(&pex_path).expect("failed to open pex file");
+        pex_file.set_modified(now).expect("failed to set pex mtime");
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[stale-compiled-output]"),
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn stale_compiled_output_can_be_disabled() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        let pex_path = dir.path().join("scripts/Example.pex");
+        write_file(&script_path, "ScriptName Example\n");
+        write_file(&pex_path, "");
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  stale_compiled_output: false\n",
+        );
+
+        let now = std::time::SystemTime::now();
+        let pex_file = fs::File::open(&pex_path).expect("failed to open pex file");
+        pex_file
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .expect("failed to set pex mtime");
+        let script_file = fs::File::open(&script_path).expect("failed to open script file");
+        script_file
+            .set_modified(now)
+            .expect("failed to set script mtime");
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[stale-compiled-output]"),
             "stdout: {stdout}"
         );
     }

@@ -106,9 +106,14 @@ desktop app's binary at all.
 │       │       │                          # errors, from compiler.rs's temp-dir
 │       │       │                          # compile, into lint Diagnostics for the
 │       │       │                          # compile_check setting
-│       │       └── pex_header.rs       # Parses a compiled .pex file's header just
-│       │                               # far enough to blank its userName/
-│       │                               # machineName fields
+│       │       ├── pex_header.rs       # Parses a compiled .pex file's header just
+│       │       │                       # far enough to blank its userName/
+│       │       │                       # machineName fields
+│       │       └── stale_pex.rs        # The "Stale compiled output" project lint:
+│       │                               # flags a .psc file whose compiled .pex is
+│       │                               # older than the script itself, a common
+│       │                               # sign someone forgot to recompile after
+│       │                               # editing it
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           └── src/                # achlist's scripts against its project's
 │               ├── lib.rs           # papyrus-lint.yaml and prints the results.
@@ -1032,7 +1037,22 @@ merging in any errors it reports (see
 `app/crates/papyrus-lint-core/src/compile_diagnostics.rs`) alongside the
 lint engine's own; unlike the "Compile"/"Save & Compile" buttons, this
 always compiles into a throwaway temporary directory rather than the
-project's real output directory. See the [README configuration
+project's real output directory.
+
+The same `lint_with_compile_check`/CLI per-script lint loop also runs the
+"Stale compiled output" project lint (`rules.stale_compiled_output`, on by
+default; see `app/crates/papyrus-lint-core/src/stale_pex.rs`) whenever
+linting a `.psc` with project context: it compares the script's own
+last-modified time against its conventionally located compiled `.pex`
+(the source directory's own parent, e.g. `Scripts/Example.pex` for
+`Scripts/Source/Example.psc` — the same location `compiler.rs` compiles
+to), reporting an `[info]` diagnostic when the script is newer, since
+that usually means someone edited it and forgot to recompile. A script
+with no `.pex` there yet (never compiled, or compiled somewhere else)
+isn't flagged — this only compares timestamps once both files are known
+to exist.
+
+See the [README configuration
 reference](README.md#configuration) for the per-key documentation, and
 [`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — the
 same file `PapyrusLinterCLI init` writes and the one the README links to

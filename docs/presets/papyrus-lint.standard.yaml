@@ -10,8 +10,9 @@
 # informational, or maintainability-advisory with no correctness/
 # performance stake of their own — identifier/type casing, named-argument
 # style, property sorting, unused-property/-local-variable/-disable-directive
-# advisories, function-override/useless-downcast info notices, parameter
-# reassignment, and the "call a Global via an instance" style nit.
+# advisories, function-override/useless-downcast/stale-compiled-output info
+# notices, parameter reassignment, and the "call a Global via an instance"
+# style nit.
 # `unused_getter` stays on: unlike the others in that family, it's tagged
 # "correctness" as well as "maintainability" (medium importance), since an
 # unused getter can also mean the property it reads was never wired up.
@@ -117,6 +118,7 @@ rules:
   too_many_states: true
   multiple_auto_states: true
   conflicting_script_versions: true
+  stale_compiled_output: false      # was true: [info]-only "heads up", not a likely mistake
   unused_disable: false
   magic_numbers: false
   native_function_usage: false
