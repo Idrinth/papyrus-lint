@@ -271,7 +271,7 @@ jobs:
           )
           mkdir signatures
           missing=0
-          for name in "${FILES2SIGN[@]}"; do
+          for name in "${files2sign[@]}"; do
             bundle="signatures/${name}.sigstore.json"
             asset="release-assets/{$name}"
             if [ ! -f "$asset" ]; then
