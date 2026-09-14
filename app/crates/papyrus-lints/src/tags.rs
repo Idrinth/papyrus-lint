@@ -338,6 +338,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Medium,
     },
     RuleTags {
+        rule: "stale-compiled-output",
+        description: "Flags, as an `[info]`, a `.psc` file whose compiled `.pex` output (looked up at the conventional location alongside the source, e.g. `Scripts/Example.pex` for `Scripts/Source/Example.psc`) is older than the script itself — usually a sign the script was edited after it was last compiled. Only flagged when a `.pex` already exists at that location; a script that's never been compiled at all isn't flagged. Only available when linting a file with project context in the desktop app or CLI.",
+        kinds: &["maintainability"],
+        importance: Importance::Low,
+    },
+    RuleTags {
         rule: crate::unused_disable::RULE,
         description: "Flags, as a `[warning]`, each rule id in an `@disable`/`@disable-file` comment that is unknown or does not suppress a diagnostic from that rule (on its line for `@disable`, anywhere in the file for `@disable-file`). A bare `@disable` is flagged when its line has no diagnostics to suppress; a bare `@disable-file` is flagged when the whole file has none. Disabled by default; opt in with `rules.unused_disable`.",
         kinds: &["maintainability"],

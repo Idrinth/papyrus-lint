@@ -67,6 +67,7 @@
 //!   too_many_states: true
 //!   multiple_auto_states: true
 //!   conflicting_script_versions: true
+//!   stale_compiled_output: true
 //!   magic_numbers: false
 //!   native_function_usage: false
 //!   repeated_getvalue: false
@@ -388,6 +389,11 @@ pub struct Rules {
     pub multiple_auto_states: bool,
     /// The "Conflicting script versions" project lint.
     pub conflicting_script_versions: bool,
+    /// The "Stale compiled output" project lint: flags a `.psc` whose
+    /// compiled `.pex` output is older than the source itself. Only
+    /// available when linting a file with project context in the desktop
+    /// app or CLI, the same as [`Self::conflicting_script_versions`].
+    pub stale_compiled_output: bool,
     /// The "Unused disable directive" lint. Defaults to `false`.
     pub unused_disable: bool,
     /// The "Magic numbers" lint. Like [`Self::property_sorting`] and
@@ -501,6 +507,7 @@ impl Default for Rules {
             too_many_states: true,
             multiple_auto_states: true,
             conflicting_script_versions: true,
+            stale_compiled_output: true,
             unused_disable: false,
             magic_numbers: false,
             native_function_usage: false,
@@ -674,6 +681,7 @@ mod tests {
         assert!(config.rules.too_many_states);
         assert!(config.rules.multiple_auto_states);
         assert!(config.rules.conflicting_script_versions);
+        assert!(config.rules.stale_compiled_output);
         assert!(!config.rules.unused_disable);
         // Also disabled by default: many existing scripts contain plenty of
         // unremarkable literal numbers a project may not want flagged all

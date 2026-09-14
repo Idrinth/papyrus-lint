@@ -171,6 +171,10 @@ Catches mistakes that still compile fine but can misbehave once the game is actu
 [td]Flags same-named scripts with different contents in separate source directories.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Stale compiled output[/b][/td]
+[td]Flags a .psc file whose compiled .pex is older than the script itself, usually meaning it was edited and never recompiled.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]FormID hex notation[/b][/td]
 [td]Flags a FormID literal compared against GetFormID() or passed to Game.GetFormFromFile that isn't written in hexadecimal.[/td]
 [td][/td]
@@ -394,6 +398,7 @@ rules:
   too_many_states: true
   multiple_auto_states: true
   conflicting_script_versions: true
+  stale_compiled_output: true
   unused_disable: false
   magic_numbers: false
   native_function_usage: false

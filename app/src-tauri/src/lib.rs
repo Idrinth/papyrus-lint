@@ -5,7 +5,7 @@ use papyrus_lint_core::source_encoding::{
 };
 use papyrus_lint_core::{
     achlist, ast_cache, compile_diagnostics, compiler, config, content_hash, function_table,
-    presets, script_locator,
+    presets, script_locator, stale_pex,
 };
 
 #[derive(Debug, PartialEq, serde::Serialize)]
@@ -377,7 +377,9 @@ fn compile_psc_file(
 }
 
 /// Runs every lint rule against `source` (via `function_table`, for
-/// cross-script lookups), then, if `compile_check` is set and
+/// cross-script lookups), then, if `rules.stale_compiled_output` is
+/// enabled, checks `path`'s conventionally located compiled `.pex` against
+/// it (see [`stale_pex::check`]), then, if `compile_check` is set and
 /// `compiler_path` isn't blank, also runs PapyrusCompiler.exe against the
 /// script at `path` (into a throwaway temporary directory — see
 /// [`compiler::check_psc_file`]) and appends any errors it reports (see
@@ -405,6 +407,9 @@ fn lint_with_compile_check(
             function_table.root(),
             function_table.additional_roots(),
         ));
+    }
+    if config.rules.stale_compiled_output {
+        diagnostics.extend(stale_pex::check(path));
     }
 
     let compiler_path = compiler_path.trim();
@@ -1560,6 +1565,84 @@ mod tests {
         .unwrap();
 
         assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn lint_psc_file_flags_a_script_newer_than_its_compiled_pex() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Example.psc");
+        let pex_path = dir.path().join("Scripts/Example.pex");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        std::fs::write(&pex_path, "").unwrap();
+
+        let now = std::time::SystemTime::now();
+        std::fs::File::open(&pex_path)
+            .unwrap()
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .unwrap();
+        std::fs::File::open(&path)
+            .unwrap()
+            .set_modified(now)
+            .unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule == stale_pex::RULE
+                && diagnostic.message.starts_with("[info]")));
+    }
+
+    #[test]
+    fn lint_psc_file_ignores_stale_compiled_output_when_disabled() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Example.psc");
+        let pex_path = dir.path().join("Scripts/Example.pex");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        std::fs::write(&pex_path, "").unwrap();
+
+        let now = std::time::SystemTime::now();
+        std::fs::File::open(&pex_path)
+            .unwrap()
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .unwrap();
+        std::fs::File::open(&path)
+            .unwrap()
+            .set_modified(now)
+            .unwrap();
+
+        let config = papyrus_lints::Config {
+            rules: papyrus_lints::config::Rules {
+                stale_compiled_output: false,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            config,
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != stale_pex::RULE));
     }
 
     #[test]
