@@ -131,7 +131,7 @@ jobs:
         with:
           projectPath: app
           tagName: ${{ github.ref_name }}
-          releaseName: "Papyrus Lint ${{ github.ref_name }}"
+          releaseName: "${{ github.ref_name }}"
           releaseBody: "Automated release for ${{ github.ref_name }}. See the commit history for details."
           releaseDraft: false
           prerelease: false
@@ -293,8 +293,7 @@ jobs:
       - name: Upload signatures to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "${{ github.ref_name }}" "signatures/*.sigstore.json" --clobber --repo "${{ github.repository }}"
+        run: gh release upload "${{ github.ref_name }}" "signatures/*.sigstore.json" --clobber --repo "${{ github.repository }}"
 
   update-pages:
     name: Update GitHub Pages with release version
