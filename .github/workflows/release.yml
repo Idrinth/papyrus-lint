@@ -273,7 +273,7 @@ jobs:
           missing=0
           for name in "${files2sign[@]}"; do
             bundle="signatures/${name}.sigstore.json"
-            asset="release-assets/{$name}"
+            asset="release-assets/${name}"
             if [ ! -f "$asset" ]; then
               echo "::error::Expected release asset '$name' was not downloaded; a sign-release-assets dependency may be missing." >&2
               missing=1
