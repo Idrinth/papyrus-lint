@@ -251,6 +251,7 @@ export interface LintRules {
   unchecked_form_parameter: boolean;
   unchecked_cast: boolean;
   useless_downcast: boolean;
+  impossible_cast: boolean;
   unresolved_script: boolean;
   non_global_function_call: boolean;
   static_function_call_via_instance: boolean;
@@ -339,6 +340,7 @@ export const DEFAULT_RULES: LintRules = {
   unchecked_form_parameter: false,
   unchecked_cast: true,
   useless_downcast: true,
+  impossible_cast: true,
   unresolved_script: true,
   non_global_function_call: true,
   static_function_call_via_instance: true,

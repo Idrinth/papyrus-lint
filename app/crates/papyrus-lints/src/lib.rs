@@ -27,6 +27,7 @@ pub mod global_variable_increment;
 pub mod global_variable_setvalue;
 pub mod goto_state;
 pub mod identifier_casing;
+pub mod impossible_cast;
 pub mod indentation;
 pub mod int_division_to_float;
 pub mod invariant_loop_condition;
@@ -115,6 +116,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     unchecked_form_parameter::RULE,
     unchecked_cast::RULE,
     useless_downcast::RULE,
+    impossible_cast::RULE,
     unresolved_script::RULE,
     non_global_function_call::RULE,
     static_function_call_via_instance::RULE,
@@ -364,6 +366,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.useless_downcast {
         diagnostics.extend(useless_downcast::check_with(source, external));
+    }
+    if rules.impossible_cast {
+        diagnostics.extend(impossible_cast::check_with(source, external));
     }
     if rules.short_wait_interval {
         diagnostics.extend(short_wait_interval::check(source, config.min_wait_interval));
@@ -1730,5 +1735,51 @@ mod tests {
             &mut FakeExternalWithRenamedParentParam,
         );
         assert!(disabled.iter().all(|d| d.rule != argument_naming::RULE));
+    }
+
+    struct FakeExternalWithUnrelatedAncestry;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithUnrelatedAncestry {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
+            None
+        }
+
+        fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
+            sub_type.eq_ignore_ascii_case(super_type)
+        }
+
+        fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
+            type_name.eq_ignore_ascii_case("Armor") || type_name.eq_ignore_ascii_case("Weapon")
+        }
+    }
+
+    /// Like `function_override_flag_gates_only_its_own_lint` above:
+    /// `impossible_cast` also needs `lint_with_external_arguments`'s
+    /// `external` resolver to ever fire (see `impossible_cast`'s module
+    /// docs), so its own `rules.impossible_cast` gate is checked here
+    /// instead of in the main loop.
+    #[test]
+    fn impossible_cast_flag_gates_only_its_own_lint() {
+        let source =
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    Weapon b = akArmor as Weapon\nEndFunction\n";
+
+        let enabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnrelatedAncestry,
+        );
+        assert!(enabled.iter().any(|d| d.rule == impossible_cast::RULE));
+
+        let disabled_config = config_with(|c| c.rules.impossible_cast = false);
+        let disabled = lint_with_external_arguments(
+            source,
+            &disabled_config,
+            &mut FakeExternalWithUnrelatedAncestry,
+        );
+        assert!(disabled.iter().all(|d| d.rule != impossible_cast::RULE));
     }
 }
