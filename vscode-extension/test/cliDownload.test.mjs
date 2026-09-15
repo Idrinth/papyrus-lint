@@ -28,7 +28,7 @@ function loadCliDownload(responses = []) {
             }
 
             const response = Readable.from(next?.body ?? 'downloaded CLI');
-            response.statusCode = next?.statusCode ?? 200;
+            response.statusCode = next && Object.hasOwn(next, 'statusCode') ? next.statusCode : 200;
             response.headers = next?.headers ?? {};
             response.resume = response.resume.bind(response);
             callback(response);
@@ -127,6 +127,16 @@ describe('ensureReleaseCli', () => {
     assert.deepEqual(files, []);
   });
 
+  it('reports an unknown status when the response has no HTTP status code', async () => {
+    const storage = await temporaryDirectory();
+    const { cliDownload } = loadCliDownload([{ statusCode: undefined }]);
+
+    await assert.rejects(
+      cliDownload.ensureReleaseCli(storage, '3.0.2', 'linux'),
+      /download returned HTTP unknown/,
+    );
+  });
+
   it('rejects redirects without a usable destination', async () => {
     const storage = await temporaryDirectory();
     const { cliDownload } = loadCliDownload([{ statusCode: 302 }]);
@@ -135,5 +145,20 @@ describe('ensureReleaseCli', () => {
       cliDownload.ensureReleaseCli(storage, '4.0.0', 'linux'),
       /too many or invalid redirects/,
     );
+  });
+
+  it('stops following redirects after five hops', async () => {
+    const storage = await temporaryDirectory();
+    const redirects = Array.from({ length: 6 }, (_, index) => ({
+      statusCode: 302,
+      headers: { location: `/redirect-${index + 1}` },
+    }));
+    const { cliDownload, requests } = loadCliDownload(redirects);
+
+    await assert.rejects(
+      cliDownload.ensureReleaseCli(storage, '4.0.1', 'linux'),
+      /too many or invalid redirects/,
+    );
+    assert.equal(requests.length, 6);
   });
 });

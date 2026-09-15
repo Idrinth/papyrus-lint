@@ -281,6 +281,18 @@ describe('extension activation and commands', () => {
     ]);
   });
 
+  it('treats a missing fix count as no automatic fix', async () => {
+    const harness = createHarness({
+      result: { error: null, stdout: validReport({ files_fixed: null }), stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.fixIssue')(uri('/project/Test.psc'), 'forbidden-functions', 5);
+
+    assert.deepEqual(harness.messages.information, [
+      'Papyrus Lint: "forbidden-functions" on line 5 of Test.psc has no automatic fix.',
+    ]);
+  });
+
   it('does not report a fix outcome when fixing one issue returns malformed JSON', async () => {
     const harness = createHarness({
       result: { error: null, stdout: 'not json', stderr: '' },
@@ -481,6 +493,18 @@ describe('papyrusLint.initializeConfig', () => {
     assert.deepEqual(harness.execCalls[0].args, ['init', '--preset', 'careful']);
   });
 
+  it('uses the default preset when a built-in quick-pick item omits its value', async () => {
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri('/project') }],
+      quickPickResult: { label: 'strict (default)' },
+      result: { error: null, stdout: 'Created /project/papyrus-lint.yaml\n', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.initializeConfig')();
+
+    assert.deepEqual(harness.execCalls[0].args, ['init']);
+  });
+
   it('prompts for and passes a custom preset name', async () => {
     const harness = createHarness({
       workspaceFolders: [{ uri: uri('/project') }],
@@ -570,6 +594,19 @@ describe('papyrusLint.initializeConfig', () => {
       'Papyrus Lint: error: failed to initialize config: papyrus-lint.yaml already exists',
     ]);
     assert.deepEqual(harness.messages.information, []);
+  });
+
+  it('supplies a fallback message when initialization fails without stderr', async () => {
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri('/project') }],
+      quickPickResult: { label: 'strict (default)', preset: '' },
+      result: { error: Object.assign(new Error('usage'), { code: 2 }), stdout: '', stderr: '  ' },
+    });
+
+    await harness.commands.get('papyrusLint.initializeConfig')();
+
+    assert.deepEqual(harness.output.lines, ['papyrus-lint: failed to initialize config.']);
+    assert.deepEqual(harness.messages.error, ['Papyrus Lint: failed to initialize config.']);
   });
 
   it('reports a CLI launch failure the same way as linting does', async () => {
