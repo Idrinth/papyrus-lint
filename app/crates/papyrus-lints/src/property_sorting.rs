@@ -120,7 +120,7 @@ pub fn repair(source: &str) -> String {
     }
 
     let mut sorted = with_spans.clone();
-    sorted.sort_by(|a, b| sort_key(a.0).cmp(&sort_key(b.0)));
+    sorted.sort_by_key(|a| sort_key(a.0));
 
     let total_lines = chunks.len();
     let mut result = String::with_capacity(source.len() + 64);
