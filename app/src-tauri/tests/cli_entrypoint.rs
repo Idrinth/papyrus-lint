@@ -145,3 +145,82 @@ fn desktop_binary_rejects_extra_positional_arguments() {
         papyrus_lint_cli::USAGE
     );
 }
+
+#[test]
+fn desktop_binary_dry_run_reports_fixes_without_changing_the_script() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("NeedsFix.psc");
+    let source = "ScriptName NeedsFix   \n";
+    std::fs::write(&script, source).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--json", "fix", "--dry-run", script.to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(std::fs::read_to_string(&script).unwrap(), source);
+
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["dry_run"], true);
+    assert_eq!(report["files"][0]["diagnostics"], serde_json::json!([]));
+    let diff = report["files"][0]["diff"]
+        .as_str()
+        .expect("changed file should include a diff");
+    assert!(diff.contains("-ScriptName NeedsFix   "));
+    assert!(diff.contains("+ScriptName NeedsFix"));
+}
+
+#[test]
+fn desktop_binary_fix_writes_changes_to_the_script() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("NeedsFix.psc");
+    std::fs::write(&script, "ScriptName NeedsFix   \n").unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--json", "fix", script.to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        std::fs::read_to_string(&script).unwrap(),
+        "ScriptName NeedsFix\n"
+    );
+
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["success"], true);
+    assert_eq!(report["files"][0]["diagnostics"], serde_json::json!([]));
+}
+
+#[test]
+fn desktop_binary_recursively_lints_a_directory() {
+    let temp = tempfile::tempdir().unwrap();
+    let nested = temp.path().join("nested").join("deeper");
+    std::fs::create_dir_all(&nested).unwrap();
+    let top_level = temp.path().join("TopLevel.psc");
+    let nested_script = nested.join("Nested.psc");
+    std::fs::write(&top_level, "ScriptName TopLevel\n").unwrap();
+    std::fs::write(&nested_script, "ScriptName Nested\n").unwrap();
+    std::fs::write(nested.join("ignored.txt"), "ScriptName Ignored\n").unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--json", temp.path().to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["scripts_checked"], 2);
+    let paths: Vec<&str> = report["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|file| file["path"].as_str().unwrap())
+        .collect();
+    assert!(paths.contains(&top_level.to_str().unwrap()));
+    assert!(paths.contains(&nested_script.to_str().unwrap()));
+}
