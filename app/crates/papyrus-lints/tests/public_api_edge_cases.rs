@@ -1,11 +1,16 @@
 //! Edge-case coverage for the crate's black-box lint and repair API.
 
 use papyrus_lints::{
+    add_disable_comment,
     argument_types::{ExternalSignatures, ParamInfo},
-    lint, repair, repair_filtered, restrict_to_line,
+    lint, repair, repair_filtered, repaired_line, restrict_to_line,
     tags::{tags_for, Importance, RULE_TAGS},
     Config, KNOWN_RULE_IDS,
 };
+
+fn rules(ids: &[&str]) -> Vec<String> {
+    ids.iter().map(|id| (*id).to_string()).collect()
+}
 
 struct FunctionKindResolver;
 
@@ -96,6 +101,74 @@ fn line_restriction_can_apply_a_fix_to_the_first_or_last_line() {
     assert_eq!(
         restrict_to_line(original, &repaired, 2),
         Some("Call(1,2)\nCall(3, 4)".to_string())
+    );
+}
+
+#[test]
+fn repaired_line_returns_only_the_requested_fix_preview() {
+    let source = "Call(1,2)\r\nCall(3,4)\r\n";
+
+    assert_eq!(
+        repaired_line(source, &Config::default(), "comma-spacing", 2),
+        Some("Call(3, 4)\r".to_string())
+    );
+}
+
+#[test]
+fn repaired_line_rejects_unknown_rules_and_unchanged_lines() {
+    let source = "Call(1,2)\nCall(3, 4)\n";
+
+    assert_eq!(
+        repaired_line(source, &Config::default(), "not-a-rule", 1),
+        None
+    );
+    assert_eq!(
+        repaired_line(source, &Config::default(), "comma-spacing", 2),
+        None
+    );
+}
+
+#[test]
+fn public_disable_comment_can_suppress_multiple_rules_on_one_line() {
+    let source = "Call(1,2)  \nCall(3,4)  \n";
+    let updated = add_disable_comment(source, 1, &rules(&["comma-spacing", "trailing-whitespace"]));
+    let diagnostics = lint(&updated, &Config::default());
+
+    assert_eq!(
+        updated,
+        "Call(1,2)   ; @disable comma-spacing, trailing-whitespace\nCall(3,4)  \n"
+    );
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.line != 1));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.line == 2 && diagnostic.rule == "comma-spacing"));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.line == 2 && diagnostic.rule == "trailing-whitespace"));
+}
+
+#[test]
+fn public_disable_comment_merges_without_duplicating_rule_ids() {
+    let source = "Call(1,2) ; note @disable COMMA-SPACING\r\n";
+
+    assert_eq!(
+        add_disable_comment(source, 1, &rules(&["comma-spacing", "operator-spacing"])),
+        "Call(1,2) ; note @disable COMMA-SPACING, operator-spacing\r\n"
+    );
+}
+
+#[test]
+fn public_disable_comment_is_a_noop_without_a_valid_target_and_rules() {
+    let source = "Call(1,2)\n";
+
+    assert_eq!(add_disable_comment(source, 1, &[]), source);
+    assert_eq!(
+        add_disable_comment(source, 0, &rules(&["comma-spacing"])),
+        source
+    );
+    assert_eq!(
+        add_disable_comment(source, 3, &rules(&["comma-spacing"])),
+        source
     );
 }
 
