@@ -235,7 +235,11 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td][/td]
 [/tr]
 [tr][td][b]Array bounds[/b][/td]
-[td]Flags a literal index into a local array that falls outside the constant size it was declared with (e.g. new Float[3] followed by a[5]), since Papyrus silently no-ops the access instead of raising an error. Also flags a new array whose own literal size exceeds the engine's 128-element cap; that cap doesn't apply to array Properties or natively-returned arrays, so those aren't checked against it.[/td]
+[td]Flags a literal index into a local array that falls outside the constant size it was declared with (e.g. new Float[3] followed by a[5]), since Papyrus silently no-ops the access instead of raising an error.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Array size range[/b][/td]
+[td]Flags, as an error, a new array whose own literal size falls outside 0 to 128, since Papyrus hard-caps a script-created array at 128 elements and a negative size makes no sense; doesn't apply to array Properties or natively-returned arrays, so those aren't checked against it.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Empty loop/conditional body[/b][/td]
@@ -439,6 +443,7 @@ rules:
   invariant_loop_condition: true
   script_name_collision: true
   array_bounds: true
+  array_size_range: true
   readonly_property_write: true
   default_property_value: false
   unguarded_self_recursion: true
