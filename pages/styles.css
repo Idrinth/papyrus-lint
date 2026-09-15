@@ -330,15 +330,9 @@ section > h2:first-child {
 
 .example {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(18em, 1fr));
   gap: 1.5em;
   align-items: start;
-}
-
-@media (max-width: 46em) {
-  .example {
-    grid-template-columns: 1fr;
-  }
 }
 
 .example figure {

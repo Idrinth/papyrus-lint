@@ -149,10 +149,18 @@
     a.RemoveItem(SomeItem, 1, <span class="kw">false</span>, b);
 <span class="kw">EndFunction</span></code></pre>
           </figure>
+          <figure>
+            <figcaption>Or, if you meant it, silence it</figcaption>
+            <pre class="code-block"><code><span class="kw">Function</span> DoSomething(<span class="ty">Actor</span> a, <span class="ty">Actor</span> b, <span class="ty">Form</span> SomeItem)
+    a.RemoveItem(SomeItem, 1, b); <span class="cm">; @disable</span>
+<span class="kw">EndFunction</span></code></pre>
+          </figure>
         </div>
         <p class="section-intro">
           The <strong>Strict boolean check</strong> lint catches this: the first call passes the <code>Actor</code>
-          value <code>b</code> to a <code>Bool</code> parameter.
+          value <code>b</code> to a <code>Bool</code> parameter — a mistake that cost real debugging time in one of
+          the author's own mods. A trailing <a href="#disable"><code>; @disable</code></a> comment silences it on
+          that line, for the rare case where you actually meant to write it that way.
         </p>
       </section>
 
