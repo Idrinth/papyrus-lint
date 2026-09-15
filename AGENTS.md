@@ -405,10 +405,15 @@ binary target that crate also defines.
   by a single invocation. It needs none of `rust-clippy`'s Tauri system
   dependencies or build cache, since checking formatting never compiles
   anything, so it runs in parallel with `rust-clippy` instead of after it.
-- **Rust clippy job** (`rust-clippy`): runs `cargo clippy --all-targets --
-  -D warnings` against `app/src-tauri/Cargo.toml`. Runs in parallel with
-  `rust-fmt` (both only `need` the `labels` job); `rust-test` (below)
-  `needs` both.
+- **Rust clippy job** (`rust-clippy`): a matrix over `app/src-tauri` and all
+  four reusable crates under `app/crates` (the same five crates `rust-test`
+  below covers) runs `cargo clippy --all-targets -- -D warnings` against
+  each crate's own `Cargo.toml` — not just `app/src-tauri` — since they're
+  separate crates rather than workspace members and so aren't checked
+  together by a single invocation. Only the `app/src-tauri` leg installs
+  Tauri's Linux system dependencies, since the other four crates don't need
+  them. Runs in parallel with `rust-fmt` (both only `need` the `labels`
+  job); `rust-test` (below) `needs` both.
 - **Rust test job**: a matrix over `app/src-tauri`, `app/crates/papyrus-parser`,
   `app/crates/papyrus-lints`, `app/crates/papyrus-lint-core`, and
   `app/crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.

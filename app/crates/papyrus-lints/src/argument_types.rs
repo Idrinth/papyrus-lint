@@ -313,8 +313,7 @@ fn walk_expr<E: ExternalSignatures>(
         } => {
             if let Some((name, params)) = resolve_signature(callee, env, locals, external) {
                 check_args(
-                    *line,
-                    *col,
+                    (*line, *col),
                     &name,
                     &params,
                     args,
@@ -385,8 +384,7 @@ fn resolve_signature<E: ExternalSignatures>(
 }
 
 fn check_args<E: ExternalSignatures>(
-    line: usize,
-    col: usize,
+    (line, col): (usize, usize),
     function_name: &str,
     params: &[ParamInfo],
     args: &[Expr],

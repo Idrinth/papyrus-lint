@@ -101,7 +101,8 @@ fn line_restriction_can_apply_a_fix_to_the_first_or_last_line() {
 
 #[test]
 fn opt_in_rules_are_dispatched_by_the_public_lint_api() {
-    let cases: &[(&str, &str, fn(&mut Config))] = &[
+    type OptInCase = (&'static str, &'static str, fn(&mut Config));
+    let cases: &[OptInCase] = &[
         (
             "property-sorting",
             "ScriptName Example\n\nInt Property Zulu Auto\nActor Property Alpha Auto\n",
