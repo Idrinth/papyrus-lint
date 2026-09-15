@@ -23,6 +23,7 @@ pub mod forbidden_functions;
 pub mod formid_hex_notation;
 pub mod fragment_code;
 pub mod function_override;
+pub mod get_state_comparison;
 pub mod global_variable_increment;
 pub mod global_variable_setvalue;
 pub mod goto_state;
@@ -120,6 +121,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     static_function_call_via_instance::RULE,
     short_wait_interval::RULE,
     goto_state::RULE,
+    get_state_comparison::RULE,
     state_count::TOO_MANY_STATES_RULE,
     state_count::MULTIPLE_AUTO_STATES_RULE,
     "conflicting-script-versions",
@@ -370,6 +372,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.goto_state {
         diagnostics.extend(goto_state::check_with(source, external));
+    }
+    if rules.get_state_comparison {
+        diagnostics.extend(get_state_comparison::check_with(source, external));
     }
     if rules.too_many_states {
         diagnostics.extend(state_count::check_too_many_states_with(source, external));
@@ -1393,6 +1398,12 @@ mod tests {
                 goto_state::RULE,
                 Config::default(),
                 config_with(|c| c.rules.goto_state = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    If GetState() == \"Missing\"\n    EndIf\nEndFunction\n",
+                get_state_comparison::RULE,
+                Config::default(),
+                config_with(|c| c.rules.get_state_comparison = false),
             ),
             (
                 many_states_source.as_str(),

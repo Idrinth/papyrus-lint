@@ -326,6 +326,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Medium,
     },
     RuleTags {
+        rule: crate::get_state_comparison::RULE,
+        description: "Flags, as an `[error]`, a `GetState() == \"Name\"`/`GetState() != \"Name\"` comparison (bare or `self.GetState()`) whose named state isn't declared as a `State` on this script, since a typo'd or renamed state name still compiles fine but the comparison then silently, permanently evaluates the opposite of what was intended — a check against a state that can never be the current one is always `false`, and its negation always `true`. `GetState() == \"\"`, checking whether the script is currently in the empty state, is always valid. Only a literal string operand is checked; one built from anything else is left unflagged rather than guessed at. A target undeclared on this script is only flagged when this script has no `Extends` target at all, since it may otherwise be declared on a script further up that (unresolved) `Extends` chain — the same forward-declaration case `goto-state` allows. When linting a `.psc` file dropped in the app, that chain is resolved from the project root too, the same way `goto-state` resolves its own.",
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
+    RuleTags {
         rule: crate::state_count::TOO_MANY_STATES_RULE,
         description: "Flags, as an `[error]`, a script whose named `State` blocks, combined with every `State` declared anywhere in its `Extends` ancestry (a same-named state declared more than once along the way counts once), exceed 127 — the [CreationKit wiki's State Reference](https://ck.uesp.net/wiki/State_Reference) documents a hard engine limit of 128 states including the empty state, past which the game and CK refuse to load the script. Only the script's own declared states are counted when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too, the same way the argument/return type checks resolve their own.",
         kinds: &["correctness"],

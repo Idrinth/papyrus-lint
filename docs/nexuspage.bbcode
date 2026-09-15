@@ -167,6 +167,10 @@ Catches mistakes that still compile fine but can misbehave once the game is actu
 [td]Flags states that are undefined, likely because of typos.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]GetState() comparison[/b][/td]
+[td]Flags a GetState() == "Name"/!= "Name" comparison against an undefined state, since it then always evaluates to the same result instead of raising an error.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Total named state count[/b][/td]
 [td]Flags a file if the number of states exceeds the possible 128.[/td]
 [td][/td]
@@ -412,6 +416,7 @@ rules:
   short_wait_interval: true
   state_function_signature: true
   goto_state: true
+  get_state_comparison: true
   too_many_states: true
   multiple_auto_states: true
   conflicting_script_versions: true
