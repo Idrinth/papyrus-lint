@@ -735,13 +735,28 @@ jobs:
         run: cargo fmt --manifest-path "${{ matrix.crate }}/Cargo.toml" -- --check
 
   rust-clippy:
-    name: Rust (clippy)
+    name: Rust (clippy) (${{ matrix.name }})
     needs: labels
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - crate: app/src-tauri
+            name: src-tauri
+          - crate: app/crates/papyrus-parser
+            name: papyrus-parser
+          - crate: app/crates/papyrus-lints
+            name: papyrus-lints
+          - crate: app/crates/papyrus-lint-core
+            name: papyrus-lint-core
+          - crate: app/crates/papyrus-lint-cli
+            name: papyrus-lint-cli
     steps:
       - uses: actions/checkout@v7
 
       - name: Install Tauri Linux dependencies
+        if: matrix.crate == 'app/src-tauri'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
@@ -752,10 +767,10 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: app/src-tauri
+          workspaces: ${{ matrix.crate }}
 
       - name: Clippy
-        run: cargo clippy --manifest-path app/src-tauri/Cargo.toml --all-targets -- -D warnings
+        run: cargo clippy --manifest-path "${{ matrix.crate }}/Cargo.toml" --all-targets -- -D warnings
 
   rust-test:
     name: Rust test (${{ matrix.name }})
