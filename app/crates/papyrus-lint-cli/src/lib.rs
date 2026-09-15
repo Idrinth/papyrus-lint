@@ -2170,6 +2170,129 @@ mod tests {
         );
     }
 
+    #[test]
+    fn unix_timestamps_handle_calendar_boundaries_and_millisecond_padding() {
+        assert_eq!(
+            format_unix_timestamp(31_535_999, 7),
+            "1970-12-31T23:59:59.007Z"
+        );
+        assert_eq!(
+            format_unix_timestamp(31_536_000, 70),
+            "1971-01-01T00:00:00.070Z"
+        );
+        assert_eq!(
+            format_unix_timestamp(951_782_400, 999),
+            "2000-02-29T00:00:00.999Z"
+        );
+    }
+
+    #[test]
+    fn severity_counts_tallies_each_known_level_and_ignores_unknown_levels() {
+        let diagnostics = [
+            JsonDiagnostic {
+                line: 1,
+                column: 1,
+                rule: "first-rule",
+                level: "error",
+                message: "first".to_string(),
+            },
+            JsonDiagnostic {
+                line: 2,
+                column: 1,
+                rule: "second-rule",
+                level: "warning",
+                message: "second".to_string(),
+            },
+            JsonDiagnostic {
+                line: 3,
+                column: 1,
+                rule: "third-rule",
+                level: "info",
+                message: "third".to_string(),
+            },
+            JsonDiagnostic {
+                line: 4,
+                column: 1,
+                rule: "future-rule",
+                level: "notice",
+                message: "future".to_string(),
+            },
+        ];
+
+        let counts = severity_counts(&diagnostics);
+
+        assert_eq!(counts.errors, 1);
+        assert_eq!(counts.warnings, 1);
+        assert_eq!(counts.info, 1);
+    }
+
+    #[test]
+    fn rule_counts_aggregates_duplicates_in_sorted_rule_order() {
+        let diagnostics = [
+            JsonDiagnostic {
+                line: 1,
+                column: 1,
+                rule: "z-rule",
+                level: "warning",
+                message: "first".to_string(),
+            },
+            JsonDiagnostic {
+                line: 2,
+                column: 1,
+                rule: "a-rule",
+                level: "warning",
+                message: "second".to_string(),
+            },
+            JsonDiagnostic {
+                line: 3,
+                column: 1,
+                rule: "z-rule",
+                level: "warning",
+                message: "third".to_string(),
+            },
+        ];
+
+        let counts = rule_counts(&diagnostics);
+
+        assert_eq!(
+            counts.keys().copied().collect::<Vec<_>>(),
+            ["a-rule", "z-rule"]
+        );
+        assert_eq!(counts["a-rule"], 1);
+        assert_eq!(counts["z-rule"], 2);
+    }
+
+    #[test]
+    fn ai_configuration_replaces_rule_flags_with_enabled_rule_ids() {
+        let config = papyrus_lints::Config::default();
+
+        let value = ai_configuration(&config);
+        let object = value
+            .as_object()
+            .expect("configuration should be an object");
+        let enabled = object["enabled_rules"]
+            .as_array()
+            .expect("enabled_rules should be an array");
+
+        assert!(!object.contains_key("rules"));
+        assert!(enabled.contains(&serde_json::json!("trailing-whitespace")));
+        assert!(!enabled.contains(&serde_json::json!("property-sorting")));
+    }
+
+    #[test]
+    fn display_path_only_shortens_paths_when_requested() {
+        let path = Path::new("project/scripts/source/Example.psc");
+        let root = Path::new("project");
+
+        assert_eq!(
+            display_path(path, root, true),
+            Path::new("scripts/source/Example.psc")
+                .display()
+                .to_string()
+        );
+        assert_eq!(display_path(path, root, false), path.display().to_string());
+    }
+
     fn write_file(path: &Path, contents: &str) {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).expect("failed to create parent dir");
