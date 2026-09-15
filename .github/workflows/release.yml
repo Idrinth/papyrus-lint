@@ -354,9 +354,7 @@ jobs:
   update-pages:
     name: Update GitHub Pages with release version
     needs:
-    - release
-    - sublime-plugin
-    - vscode-plugin
+    - virustotal-scan
     runs-on: ubuntu-latest
     permissions:
       actions: write
@@ -607,9 +605,7 @@ jobs:
   nexus-upload:
     name: Publish release to Nexus Mods
     needs: 
-      - vscode-plugin
-      - sublime-plugin
-      - release-notes
+      - virustotal-scan
     runs-on: ubuntu-latest
     permissions:
       contents: read
