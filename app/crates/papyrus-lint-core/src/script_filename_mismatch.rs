@@ -27,8 +27,12 @@ pub const RULE: &str = "script-filename-mismatch";
 /// rather than part of its file name. Unlike every rule in `papyrus-lints`
 /// itself, this can't be filtered by `; @disable`/`; @disable-file` inside
 /// [`papyrus_lints::lint`]/[`papyrus_lints::lint_with_external_arguments`]
-/// (this check needs `script_path`, which neither ever sees), so it honors
-/// a matching directive itself via [`papyrus_lints::is_disabled`] instead.
+/// directly (this check needs `script_path`, which neither ever sees), so
+/// this always returns the diagnostic regardless of any directive; a caller
+/// merges it in via
+/// [`papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`]
+/// instead, which honors a matching directive (and validates it as used)
+/// the same way it does for every other diagnostic.
 pub fn check(script_path: &Path, source: &str) -> Option<Diagnostic> {
     let file_stem = script_path.file_stem()?.to_str()?;
     let tokens = papyrus_parser::tokenize(source).ok()?;
@@ -54,9 +58,6 @@ pub fn check(script_path: &Path, source: &str) -> Option<Diagnostic> {
             last_segment = segment.clone();
         }
         if last_segment.eq_ignore_ascii_case(file_stem) {
-            return None;
-        }
-        if papyrus_lints::is_disabled(source, name_token.line, RULE) {
             return None;
         }
         return Some(Diagnostic {
@@ -161,33 +162,22 @@ mod tests {
     }
 
     #[test]
-    fn honors_a_disable_comment_naming_this_rule_on_the_scriptname_line() {
+    fn does_not_honor_a_disable_comment_itself_since_the_caller_filters_it_in() {
+        // `check` no longer applies `; @disable`/`; @disable-file` itself —
+        // see this module's own docs above. A caller merges its result into
+        // `papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`
+        // instead, which filters it (and validates the directive as used)
+        // the same way it does for every other diagnostic; that's covered by
+        // integration tests in `papyrus-lint-cli` and `src-tauri`.
         assert!(check(
             Path::new("Other.psc"),
             "ScriptName Example ; @disable script-filename-mismatch\n"
         )
-        .is_none());
-    }
-
-    #[test]
-    fn honors_a_bare_disable_comment_on_the_scriptname_line() {
-        assert!(check(Path::new("Other.psc"), "ScriptName Example ; @disable\n").is_none());
-    }
-
-    #[test]
-    fn honors_a_disable_file_comment_naming_this_rule() {
+        .is_some());
+        assert!(check(Path::new("Other.psc"), "ScriptName Example ; @disable\n").is_some());
         assert!(check(
             Path::new("Other.psc"),
             "ScriptName Example\n; @disable-file script-filename-mismatch\n"
-        )
-        .is_none());
-    }
-
-    #[test]
-    fn does_not_honor_a_disable_comment_naming_a_different_rule() {
-        assert!(check(
-            Path::new("Other.psc"),
-            "ScriptName Example ; @disable some-other-rule\n"
         )
         .is_some());
     }
