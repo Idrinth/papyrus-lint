@@ -20,6 +20,21 @@ fn desktop_binary_forwards_version_requests_to_the_cli() {
 }
 
 #[test]
+fn desktop_binary_forwards_the_short_version_flag_to_the_cli() {
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .arg("-V")
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        format!("PapyrusLinterCLI {}\n", papyrus_lint_cli::VERSION)
+    );
+    assert!(output.stderr.is_empty());
+}
+
+#[test]
 fn desktop_binary_forwards_help_requests_and_the_cli_exit_code() {
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
         .arg("--help")
@@ -100,6 +115,28 @@ fn desktop_binary_preserves_the_cli_failure_code_and_json_diagnostics() {
         })
         .expect("Game.GetPlayer should produce a forbidden-functions diagnostic");
     assert_eq!(forbidden_function["line"], 4);
+}
+
+#[test]
+fn desktop_binary_preserves_plain_text_diagnostics() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Findings.psc");
+    std::fs::write(&script, "ScriptName Findings   \n").unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .arg(&script)
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains(&script.display().to_string()));
+    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(
+        !stdout.contains('\x1b'),
+        "piped output must not contain ANSI color"
+    );
 }
 
 #[test]

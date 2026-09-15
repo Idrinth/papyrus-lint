@@ -786,6 +786,19 @@ mod tests {
     }
 
     #[test]
+    fn lint_papyrus_script_honors_disabled_rules() {
+        let source = "ScriptName Example\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n";
+        let mut config = papyrus_lints::Config::default();
+        config.rules.forbidden_functions = false;
+
+        let diagnostics = lint_papyrus_script(source, config);
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::forbidden_functions::RULE));
+    }
+
+    #[test]
     fn psc_file_commands_round_trip_contents_and_parse_the_written_script() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Example.psc");
@@ -805,6 +818,21 @@ mod tests {
     }
 
     #[test]
+    fn write_psc_file_truncates_longer_existing_contents() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName MuchLongerOriginalName\n").unwrap();
+
+        write_psc_file(
+            path.to_string_lossy().into_owned(),
+            "ScriptName Short\n".to_string(),
+        )
+        .unwrap();
+
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "ScriptName Short\n");
+    }
+
+    #[test]
     fn hash_psc_file_md5_reports_the_md5_digest_of_the_files_current_contents() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Example.psc");
@@ -821,6 +849,20 @@ mod tests {
         assert_ne!(
             hash_psc_file_md5(path_string).unwrap(),
             content_hash::md5_hex(source)
+        );
+    }
+
+    #[test]
+    fn hash_psc_file_md5_hashes_the_decoded_cp1252_source() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let mut bytes = b"ScriptName Example\n; caf".to_vec();
+        bytes.extend_from_slice(&[0xE9, b'\n']);
+        std::fs::write(&path, bytes).unwrap();
+
+        assert_eq!(
+            hash_psc_file_md5(path.to_string_lossy().into_owned()).unwrap(),
+            content_hash::md5_hex("ScriptName Example\n; café\n")
         );
     }
 
@@ -1543,6 +1585,21 @@ mod tests {
                         .to_string_lossy()
                         .into_owned()
                 ),
+            }
+        );
+    }
+
+    #[test]
+    fn project_info_is_empty_when_the_project_has_no_known_layout_or_config() {
+        let dir = tempdir().unwrap();
+
+        let info = load_project_info(dir.path().to_string_lossy().into_owned()).unwrap();
+
+        assert_eq!(
+            info,
+            ProjectInfo {
+                detected_script_roots: Vec::new(),
+                used_configuration_file: None,
             }
         );
     }
