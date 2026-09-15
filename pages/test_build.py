@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import runpy
 import tempfile
 import unittest
 from io import StringIO
@@ -1707,6 +1708,20 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
 
 
 class BuildTest(unittest.TestCase):
+    def test_script_entry_point_displays_command_line_help(self) -> None:
+        output = StringIO()
+
+        with (
+            patch("sys.argv", [str(page_builder.__file__), "--help"]),
+            patch("sys.stdout", output),
+            self.assertRaisesRegex(SystemExit, "0"),
+        ):
+            runpy.run_path(str(page_builder.__file__), run_name="__main__")
+
+        help_text = output.getvalue()
+        self.assertIn("usage:", help_text)
+        self.assertIn("--coverage-dir", help_text)
+
     def test_build_replaces_content_copies_assets_and_cleans_output(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
