@@ -24,7 +24,11 @@ pub const RULE: &str = "script-filename-mismatch";
 /// `ScriptName User:MyScript`, stored at `Scripts/Source/User/MyScript.psc`)
 /// is compared by its final `:`-separated segment only, since the leading
 /// namespace segment(s) are encoded as the script's containing subfolder
-/// rather than part of its file name.
+/// rather than part of its file name. Unlike every rule in `papyrus-lints`
+/// itself, this can't be filtered by `; @disable`/`; @disable-file` inside
+/// [`papyrus_lints::lint`]/[`papyrus_lints::lint_with_external_arguments`]
+/// (this check needs `script_path`, which neither ever sees), so it honors
+/// a matching directive itself via [`papyrus_lints::is_disabled`] instead.
 pub fn check(script_path: &Path, source: &str) -> Option<Diagnostic> {
     let file_stem = script_path.file_stem()?.to_str()?;
     let tokens = papyrus_parser::tokenize(source).ok()?;
@@ -50,6 +54,9 @@ pub fn check(script_path: &Path, source: &str) -> Option<Diagnostic> {
             last_segment = segment.clone();
         }
         if last_segment.eq_ignore_ascii_case(file_stem) {
+            return None;
+        }
+        if papyrus_lints::is_disabled(source, name_token.line, RULE) {
             return None;
         }
         return Some(Diagnostic {
@@ -151,5 +158,37 @@ mod tests {
 
         assert_eq!(diagnostic.line, 3);
         assert_eq!(diagnostic.column, 14);
+    }
+
+    #[test]
+    fn honors_a_disable_comment_naming_this_rule_on_the_scriptname_line() {
+        assert!(check(
+            Path::new("Other.psc"),
+            "ScriptName Example ; @disable script-filename-mismatch\n"
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn honors_a_bare_disable_comment_on_the_scriptname_line() {
+        assert!(check(Path::new("Other.psc"), "ScriptName Example ; @disable\n").is_none());
+    }
+
+    #[test]
+    fn honors_a_disable_file_comment_naming_this_rule() {
+        assert!(check(
+            Path::new("Other.psc"),
+            "ScriptName Example\n; @disable-file script-filename-mismatch\n"
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn does_not_honor_a_disable_comment_naming_a_different_rule() {
+        assert!(check(
+            Path::new("Other.psc"),
+            "ScriptName Example ; @disable some-other-rule\n"
+        )
+        .is_some());
     }
 }

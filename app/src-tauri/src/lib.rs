@@ -1966,6 +1966,60 @@ mod tests {
     }
 
     #[test]
+    fn lint_psc_file_honors_a_disable_comment_for_script_filename_mismatch() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Other.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example ; @disable script-filename-mismatch\n",
+        )
+        .unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != script_filename_mismatch::RULE));
+    }
+
+    #[test]
+    fn lint_psc_file_honors_a_disable_file_comment_for_script_filename_mismatch() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Other.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example\n; @disable-file script-filename-mismatch\n",
+        )
+        .unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != script_filename_mismatch::RULE));
+    }
+
+    #[test]
     fn lint_psc_file_reports_conflicting_script_versions() {
         let dir = tempdir().unwrap();
         let first_root = dir.path().join("scripts/source");

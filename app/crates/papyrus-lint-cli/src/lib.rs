@@ -4290,6 +4290,42 @@ mod tests {
     }
 
     #[test]
+    fn script_filename_mismatch_can_be_suppressed_with_a_disable_comment() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Other.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example ; @disable script-filename-mismatch\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[script-filename-mismatch]"),
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn script_filename_mismatch_can_be_suppressed_with_a_disable_file_comment() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Other.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n; @disable-file script-filename-mismatch\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[script-filename-mismatch]"),
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
     fn resolves_cross_script_argument_types_from_the_projects_configured_script_root() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let shared_dir = tempfile::tempdir().expect("failed to create temp dir");

@@ -196,7 +196,7 @@ Catches mistakes that still compile fine but can misbehave once the game is actu
 [td][/td]
 [/tr]
 [tr][td][b]ScriptName/filename mismatch[/b][/td]
-[td]Flags a .psc file whose declared ScriptName doesn't match its own file name, aside from casing, since Papyrus rejects that at compile time.[/td]
+[td]Flags a .psc file whose declared ScriptName doesn't match its own file name, aside from casing, since Papyrus rejects that at compile time. A namespaced name (e.g. User:MyScript) is compared by its final segment only.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Read-only (AutoReadOnly) property write[/b][/td]

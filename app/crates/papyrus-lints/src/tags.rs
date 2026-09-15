@@ -363,7 +363,7 @@ pub const RULE_TAGS: &[RuleTags] = &[
     },
     RuleTags {
         rule: "script-filename-mismatch",
-        description: "Flags, as an `[error]`, a `.psc` file whose declared `ScriptName` doesn't match its own file name, aside from casing, since Papyrus resolves/compiles a script by matching the two and rejects a mismatch at compile time. Only available when linting a file with a known path in the desktop app or CLI.",
+        description: "Flags, as an `[error]`, a `.psc` file whose declared `ScriptName` doesn't match its own file name, aside from casing (e.g. `ScriptName Example` in a file named `Other.psc`), since Papyrus resolves/compiles a script by matching the two and rejects a mismatch at compile time. A Fallout 4-style namespaced name (e.g. `ScriptName User:MyScript`, stored at `Scripts/Source/User/MyScript.psc`) is compared by its final `:`-separated segment only, since the namespace itself is encoded as the script's containing subfolder rather than part of its file name. Only available when linting a file with a known path in the desktop app or CLI.",
         kinds: &["correctness"],
         importance: Importance::High,
     },
