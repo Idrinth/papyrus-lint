@@ -157,6 +157,22 @@ class MarkdownHelpersTest(unittest.TestCase):
             '<a href="results.html?kind=lint&amp;state=open">filtered</a>',
         )
 
+    def test_render_inline_escapes_quotes_without_treating_plain_text_as_an_attribute(self) -> None:
+        result = page_builder.render_inline('The "quoted" value links to [docs](guide.md).')
+
+        self.assertEqual(
+            result,
+            'The "quoted" value links to <a href="guide.md">docs</a>.',
+        )
+
+    def test_render_inline_does_not_rewrite_an_unclosed_markdown_link(self) -> None:
+        rewrite = MagicMock()
+
+        result = page_builder.render_inline("Read [the guide](guide.md", rewrite)
+
+        self.assertEqual(result, "Read [the guide](guide.md")
+        rewrite.assert_not_called()
+
     def test_split_table_row_preserves_escaped_pipes(self) -> None:
         self.assertEqual(
             page_builder.split_table_row(r"| Name | a \| b | yes |"),
@@ -167,6 +183,12 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertEqual(
             page_builder.split_table_row("Name | Description | Auto-Fix"),
             ["Name", "Description", "Auto-Fix"],
+        )
+
+    def test_split_table_row_preserves_empty_cells(self) -> None:
+        self.assertEqual(
+            page_builder.split_table_row("| | middle | |"),
+            ["", "middle", ""],
         )
 
     def test_render_lint_table_renders_rows_and_fix_indicator(self) -> None:
@@ -1271,6 +1293,14 @@ class MinifyTest(unittest.TestCase):
         self.assertIn(pre_block, result)
         self.assertEqual(result.count("\n"), 1)
 
+    def test_minify_html_preserves_pre_blocks_with_greater_than_signs_in_attributes(self) -> None:
+        pre_block = '<pre data-example="1 > 0">first\n  second</pre>'
+
+        result = page_builder.minify_html(f"<main>\n{pre_block}\n</main>")
+
+        self.assertIn(pre_block, result)
+        self.assertEqual(result.count("\n"), 1)
+
     def test_minify_css_strips_comments_and_collapses_whitespace(self) -> None:
         source = """/* header */
         main {
@@ -1960,6 +1990,13 @@ class CoveragePageTest(unittest.TestCase):
             ),
             "app/crates/papyrus-lints/src/lib.rs",
         )
+
+    def test_normalize_source_path_uses_the_last_checkout_marker(self) -> None:
+        result = page_builder.normalize_source_path(
+            "/cache/papyrus-lint/archive/papyrus-lint/pages/build.py"
+        )
+
+        self.assertEqual(result, "pages/build.py")
 
     def test_parse_lcov_files_returns_none_for_a_missing_report(self) -> None:
         self.assertIsNone(page_builder.parse_lcov_files(Path("does-not-exist.info")))
