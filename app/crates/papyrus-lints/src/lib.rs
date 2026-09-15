@@ -43,6 +43,7 @@ pub mod readonly_property_write;
 pub mod repeated_getvalue;
 pub mod return_types;
 pub mod script_name_collision;
+pub mod self_assignment;
 pub mod semicolon;
 pub mod short_wait_interval;
 pub mod slow_functions;
@@ -133,6 +134,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     readonly_property_write::RULE,
     default_property_value::RULE,
     unguarded_self_recursion::RULE,
+    self_assignment::RULE,
 ];
 
 use serde::Serialize;
@@ -402,6 +404,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.unguarded_self_recursion {
         diagnostics.extend(unguarded_self_recursion::check(source));
+    }
+    if rules.self_assignment {
+        diagnostics.extend(self_assignment::check(source));
     }
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
@@ -1444,6 +1449,12 @@ mod tests {
                 unguarded_self_recursion::RULE,
                 Config::default(),
                 config_with(|c| c.rules.unguarded_self_recursion = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int a = 10\n    a = a\nEndFunction\n",
+                self_assignment::RULE,
+                Config::default(),
+                config_with(|c| c.rules.self_assignment = false),
             ),
         ];
 

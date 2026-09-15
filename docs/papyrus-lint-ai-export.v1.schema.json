@@ -194,7 +194,8 @@
         "array_bounds",
         "readonly_property_write",
         "default_property_value",
-        "unguarded_self_recursion"
+        "unguarded_self_recursion",
+        "self_assignment"
       ],
       "properties": {
         "trailing_whitespace": {
@@ -369,6 +370,9 @@
           "type": "boolean"
         },
         "unguarded_self_recursion": {
+          "type": "boolean"
+        },
+        "self_assignment": {
           "type": "boolean"
         }
       }

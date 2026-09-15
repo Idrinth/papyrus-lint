@@ -79,6 +79,7 @@
 //!   readonly_property_write: true
 //!   default_property_value: false
 //!   unguarded_self_recursion: true
+//!   self_assignment: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -434,6 +435,8 @@ pub struct Rules {
     pub default_property_value: bool,
     /// The "Unguarded self-recursion" lint.
     pub unguarded_self_recursion: bool,
+    /// The "Self-assignment" lint.
+    pub self_assignment: bool,
 }
 
 impl Rules {
@@ -523,6 +526,7 @@ impl Default for Rules {
             readonly_property_write: true,
             default_property_value: false,
             unguarded_self_recursion: true,
+            self_assignment: true,
         }
     }
 }
@@ -713,6 +717,7 @@ mod tests {
         // their properties.
         assert!(!config.rules.default_property_value);
         assert!(config.rules.unguarded_self_recursion);
+        assert!(config.rules.self_assignment);
     }
 
     #[test]

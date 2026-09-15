@@ -421,6 +421,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::High,
     },
+    RuleTags {
+        rule: crate::self_assignment::RULE,
+        description: "Flags, as a `[warning]`, a plain `=` assignment whose right-hand side is the exact same reference as its own target (e.g. `a = a`, `Self.Foo = Self.Foo`, `akRef.Foo = akRef.Foo`), since it can never change the value it reads and is almost always a copy-paste mistake or leftover from a refactor. Only a bare identifier or a chain of member accesses rooted at one (or at `Self`) is ever compared this way; a call, an index, or any other expression shape never counts as a self-assignment, since re-evaluating it on both sides of the same line isn't guaranteed to read the same value twice. A compound assignment (`+=`, `-=`, ...) is never flagged, since unlike plain `=` it does change the target's value.",
+        kinds: &["correctness"],
+        importance: Importance::Medium,
+    },
 ];
 
 #[cfg(test)]

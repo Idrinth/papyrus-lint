@@ -234,6 +234,10 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td]Flags a function/event that calls itself with nothing that could ever skip the recursive call, since it then recurses unconditionally until the call stack is exhausted. Conservative: a self-call nested inside an If/While is always left alone, a top-level While always disqualifies the function, and a top-level If only counts as a guard when it actually contains a Return somewhere within it — an If with no Return does nothing to stop the call and is still flagged. A GoToState to a different state that declares its own handler for the same function/event, before the self-call, counts as a guard too, covering the vanilla save-compatibility idiom. Exception: if every branch of an If/Elseif/Else covering every path directly calls itself, it's flagged anyway, since it recurses no matter which branch runs.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Self-assignment[/b][/td]
+[td]Flags a plain = assignment whose right side is the exact same reference as its own target (e.g. a = a, Self.Foo = Self.Foo), since it can never change the value and is almost always a mistake. Only a bare name or a chain of member accesses is compared this way; calls, indexes, and compound assignments (+=, ...) are never flagged.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]None used as an existing Form[/b][/td]
 [td]Flags a member/method access on a local variable or script-level property that's still known to be None. Set assume_auto_properties_filled to stop assuming an unset Auto/AutoReadOnly property starts out None; it's still tracked once code assigns it None directly.[/td]
 [td][/td]
@@ -414,7 +418,8 @@ rules:
   array_bounds: true
   readonly_property_write: true
   default_property_value: false
-  unguarded_self_recursion: true[/code][/spoiler]
+  unguarded_self_recursion: true
+  self_assignment: true[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

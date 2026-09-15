@@ -119,3 +119,4 @@ rules:
   readonly_property_write: true
   default_property_value: false
   unguarded_self_recursion: true
+  self_assignment: true

@@ -153,6 +153,34 @@ Function CountDown(Int seconds)
 EndFunction
 ```
 
+## Self-assignment
+
+```papyrus
+ScriptName Example
+
+Function Reset(Int startingHealth)
+    Int health = startingHealth
+    health = health
+    Debug.Notification("Health reset to " + health)
+EndFunction
+```
+
+`health = health` reads and writes the exact same value, so it has no
+effect at all — a leftover from a refactor, most likely a dropped
+right-hand side that was meant to compute something else. The
+**Self-assignment** lint (`self-assignment`) flags it; the fix is either to
+remove the pointless line or to assign the value that was actually
+intended:
+
+```papyrus
+ScriptName Example
+
+Function Reset(Int startingHealth)
+    Int health = startingHealth
+    Debug.Notification("Health reset to " + health)
+EndFunction
+```
+
 ## Short update interval
 
 ```papyrus
