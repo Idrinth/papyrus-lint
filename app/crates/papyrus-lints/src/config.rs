@@ -66,6 +66,7 @@
 //!   short_wait_interval: true
 //!   state_function_signature: true
 //!   goto_state: true
+//!   get_state_comparison: true
 //!   too_many_states: true
 //!   multiple_auto_states: true
 //!   conflicting_script_versions: true
@@ -392,6 +393,8 @@ pub struct Rules {
     pub state_function_signature: bool,
     /// The "GoToState state reference" lint.
     pub goto_state: bool,
+    /// The "GetState() comparison" lint.
+    pub get_state_comparison: bool,
     /// The "Total named state count" lint.
     pub too_many_states: bool,
     /// The "Multiple Auto states" lint.
@@ -521,6 +524,7 @@ impl Default for Rules {
             short_wait_interval: true,
             state_function_signature: true,
             goto_state: true,
+            get_state_comparison: true,
             too_many_states: true,
             multiple_auto_states: true,
             conflicting_script_versions: true,
@@ -700,6 +704,7 @@ mod tests {
         assert!(config.rules.short_wait_interval);
         assert!(config.rules.state_function_signature);
         assert!(config.rules.goto_state);
+        assert!(config.rules.get_state_comparison);
         assert!(config.rules.too_many_states);
         assert!(config.rules.multiple_auto_states);
         assert!(config.rules.conflicting_script_versions);
