@@ -5318,4 +5318,102 @@ mod tests {
             "PapyrusLinterCLI: no problems found in 1 script(s).\n"
         );
     }
+
+    #[test]
+    fn ai_format_reports_source_metadata_counts_and_rule_details() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let dirty = dir.path().join("Dirty.psc");
+        let clean = dir.path().join("Clean.psc");
+        let dirty_source = "ScriptName Dirty   \n";
+        write_file(&dirty, dirty_source);
+        write_file(&clean, "ScriptName Clean\n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--format=ai".to_string(),
+            dir.path().to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stderr.is_empty());
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("AI report should be valid JSON");
+        assert_eq!(
+            report["$schema"],
+            "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json"
+        );
+        assert_eq!(report["header"]["tool"], "Papyrus Lint");
+        assert_eq!(report["header"]["target_game"], "Skyrim SE/AE");
+        assert_eq!(report["findings"]["total_diagnostics"], 1);
+        assert_eq!(report["findings"]["severity_counts"]["warnings"], 1);
+        assert_eq!(report["findings"]["rule_counts"]["trailing-whitespace"], 1);
+        assert_eq!(report["findings"]["files"].as_array().unwrap().len(), 1);
+        assert_eq!(report["findings"]["files"][0]["source"]["type"], "content");
+        assert_eq!(
+            report["findings"]["files"][0]["source"]["content"],
+            dirty_source
+        );
+        assert_eq!(report["rule_details"][0]["rule"], "trailing-whitespace");
+        assert_eq!(report["rule_details"][0]["auto_fixable"], true);
+        assert!(report["configuration"]["enabled_rules"].is_array());
+        assert!(report["configuration"].get("rules").is_none());
+    }
+
+    #[test]
+    fn ai_hash_source_replaces_script_contents_with_an_md5_digest() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script = dir.path().join("Example.psc");
+        let source = "ScriptName Example   \n";
+        write_file(&script, source);
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--format".to_string(),
+            "ai".to_string(),
+            "--hash-source".to_string(),
+            script.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("AI report should be valid JSON");
+        let source_report = &report["findings"]["files"][0]["source"];
+        assert_eq!(source_report["type"], "hash");
+        assert_eq!(source_report["algorithm"], "md5");
+        assert_eq!(source_report["hash"], content_hash::md5_hex(source));
+        assert!(source_report.get("content").is_none());
+        assert!(!stdout.contains(source));
+    }
+
+    #[test]
+    fn hash_source_without_ai_format_is_a_usage_error() {
+        let (code, stdout, stderr) =
+            run_captured(&["--hash-source".to_string(), "Example.psc".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert_eq!(stderr, "error: --hash-source requires --format ai\n");
+    }
+
+    #[test]
+    fn format_flag_rejects_unknown_values_and_conflicts_with_json() {
+        let (unknown_code, unknown_stdout, unknown_stderr) =
+            run_captured(&["--format=yaml".to_string(), "Example.psc".to_string()]);
+        assert_eq!(unknown_code, 2);
+        assert!(unknown_stdout.is_empty());
+        assert_eq!(
+            unknown_stderr,
+            "error: --format must be 'plain', 'json', or 'ai', got 'yaml'\n"
+        );
+
+        let (conflict_code, conflict_stdout, conflict_stderr) = run_captured(&[
+            "--json".to_string(),
+            "--format=json".to_string(),
+            "Example.psc".to_string(),
+        ]);
+        assert_eq!(conflict_code, 2);
+        assert!(conflict_stdout.is_empty());
+        assert_eq!(
+            conflict_stderr,
+            "error: --json and --format can't be combined\n"
+        );
+    }
 }
