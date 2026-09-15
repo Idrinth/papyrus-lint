@@ -12,20 +12,27 @@ vi.mock("@tauri-apps/api/webview", () => ({
 
 import {
   DEFAULT_LINT_CONFIG,
+  applyAutocompleteSelection,
   applyLintConfigToUI,
   applyProjectInfoToUI,
   applyRuleTags,
   applyScriptRootsToUI,
   hideLintProgress,
+  handleAutocompleteKeydown,
+  handleEditorTabKeydown,
   lintConfigFromUI,
   openCodeViewer,
+  populateResetPresetSelect,
+  renderPresetManagementTab,
   renderMassFixList,
   renderPscResults,
+  requestCloseCodeViewer,
   saveAndCompileCodeViewerEdits,
   saveCodeViewerEdits,
   showLintProgress,
   showResult,
   toggleCodeViewerFullscreen,
+  updateAutocomplete,
   updateLintProgress,
 } from "./main";
 
@@ -54,10 +61,26 @@ describe("frontend helpers without mounted UI", () => {
     expect(() => showResult("list.achlist", ["A.psc"], null)).not.toThrow();
     expect(() => renderMassFixList([])).not.toThrow();
     expect(() => renderPscResults([])).not.toThrow();
+    expect(() => renderPresetManagementTab([])).not.toThrow();
+    expect(() => populateResetPresetSelect([])).not.toThrow();
     expect(() => showLintProgress(2)).not.toThrow();
     expect(() => updateLintProgress(1, 2)).not.toThrow();
     expect(() => hideLintProgress()).not.toThrow();
     expect(() => toggleCodeViewerFullscreen()).not.toThrow();
+  });
+
+  it("makes editor helpers safe no-ops before the editor is mounted", async () => {
+    await expect(updateAutocomplete()).resolves.toBeUndefined();
+    expect(() => applyAutocompleteSelection(0)).not.toThrow();
+
+    const autocompleteEvent = new KeyboardEvent("keydown", { key: "Enter", cancelable: true });
+    expect(() => handleAutocompleteKeydown(autocompleteEvent)).not.toThrow();
+    expect(autocompleteEvent.defaultPrevented).toBe(false);
+
+    const tabEvent = new KeyboardEvent("keydown", { key: "Tab", cancelable: true });
+    expect(() => handleEditorTabKeydown(tabEvent)).not.toThrow();
+    expect(tabEvent.defaultPrevented).toBe(false);
+    expect(() => requestCloseCodeViewer()).not.toThrow();
   });
 
   it("does not read, save, or compile a file when the code viewer is unavailable", async () => {
