@@ -731,6 +731,30 @@ no endpoint to update a mod's page description, so
 `docs/nexuspage.bbcode` is not synced by this job and still needs to be
 pasted onto the mod page by hand.
 
+A `virustotal-scan` job (after `release`, `sublime-plugin`, `vscode-plugin`,
+and `release-notes` all succeed) submits every executable and archive
+attached to the release — the three `PapyrusLinterCLI-*` binaries, each
+platform's desktop installer/package (`*setup.exe`, `.msi`, `.rpm`,
+`.deb`, `.AppImage`, `.dmg`, `.app.tar.gz`), the VS Code `.vsix`, and the
+SublimeLinter plugin `.zip` — to VirusTotal for scanning, via
+[`cssnr/virustotal-action`](https://github.com/cssnr/virustotal-action),
+authenticating with the `VIRUSTOTAL_API_KEY` repo secret. It downloads
+just those named assets off the release (the same set
+`sign-release-assets` signs) rather than scanning every attached file, so
+non-binary assets (the Nexus page, the default config, the
+`sign-release-assets` job's own `.sigstore.json` signatures) are left
+out; it runs independently of `sign-release-assets` itself, since
+scanning and signing don't touch the same release data. It resolves the
+tag's release id itself (`gh api repos/.../releases/tags/<tag>`) rather
+than relying on a `release` event's own context, since this workflow
+triggers on a tag push instead. `update_release: true` has the action
+append a "🛡️ VirusTotal Results" section, linking each scanned file to
+its VirusTotal report, directly onto the release notes — which is why
+this job `needs` `release-notes` and runs after it rather than
+alongside it: `release-notes` overwrites the release body wholesale, so
+scanning any earlier would have its appended results immediately
+discarded.
+
 An `update-pages` job (after `release`) triggers `pages.yml` (see GitHub
 Pages above) via `gh workflow run pages.yml --ref the-one -f version=...`,
 passing the tag (`github.ref_name`) as its `version` input; this is the
