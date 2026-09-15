@@ -211,6 +211,10 @@ has diagnostics from the named rule(s) suppressed for that line only, e.g.:
 action = 1 ; @disable float-to-int
 ```
 
+The desktop app's code viewer can add this comment for you instead of
+typing it by hand — see its per-line "Ignore" button
+[above](#fixing-lint-findings).
+
 `; @disable` with no rule ids suppresses every lint on that line. Matching
 against the directive's rule id(s) is case-insensitive. This only affects
 linting — it does not change what automatic fixes do to that line. The rule ids, one per
@@ -855,6 +859,19 @@ fixes"'s visibility (view mode only, and only while a fixable finding
 remains) but never touches the file, the viewer's findings, or the Lint
 results list; the shown preview is cleared again once you switch to Edit
 or actually apply a fix.
+
+Every line in the code viewer that has at least one finding also gets its
+own small "Fix"/"Ignore" buttons next to it, in view mode. "Fix" only
+appears when at least one of that line's findings is auto-fixable, and
+applies each such finding's own fix restricted to that line, the same way
+"Fix this issue" does — a rule whose fix would shift other lines (e.g.
+`property-sorting`) is silently skipped rather than blocking the rest.
+"Ignore" appears whenever at least one finding on the line carries a rule
+id, and adds a [`; @disable <rule-id>[, <rule-id>...]`](#disabling-a-lint-on-a-specific-line)
+comment naming every rule found on that line instead of fixing it — merging
+into an already-present `; @disable` comment on that line rather than
+adding a second one, so clicking it again after a later run flags something
+new just extends the same comment.
 
 The Lint results tab also has a "Mass fix an issue" panel, listing every
 auto-fixable rule with at least one finding anywhere among the currently

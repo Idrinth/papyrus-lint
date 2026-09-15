@@ -100,6 +100,76 @@ impl Disables {
     }
 }
 
+/// Adds an `@disable` directive covering every rule id in `rules` to `line`
+/// (1-indexed) of `source`, driving the code viewer's per-line "Ignore"
+/// button. If `line` already carries a bare `@disable` (suppressing every
+/// rule already), it's left untouched, since there's nothing left for it to
+/// disable. If it already names some rules, any of `rules` not already
+/// covered are merged into that same directive instead of appending a
+/// second `@disable` -- a second occurrence would be invisible to
+/// [`parse_directive`], which only ever looks for the first one in a line's
+/// comment. An empty `rules` list, or a `line` outside `source`, leaves
+/// `source` untouched.
+pub(crate) fn add_disable_directive(source: &str, line: usize, rules: &[String]) -> String {
+    if rules.is_empty() {
+        return source.to_string();
+    }
+    let Some(index) = line.checked_sub(1) else {
+        return source.to_string();
+    };
+    let lines: Vec<&str> = source.split('\n').collect();
+    if lines.get(index).is_none() {
+        return source.to_string();
+    }
+    let replaced = add_disable_directive_to_line(lines[index], rules);
+    lines
+        .iter()
+        .enumerate()
+        .map(|(i, original)| {
+            if i == index {
+                replaced.as_str()
+            } else {
+                original
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn add_disable_directive_to_line(line: &str, rules: &[String]) -> String {
+    let (content, trailing_cr) = match line.strip_suffix('\r') {
+        Some(stripped) => (stripped, "\r"),
+        None => (line, ""),
+    };
+
+    match parse_directive(content, "@disable") {
+        Some(Directive::All { .. }) => line.to_string(),
+        Some(Directive::Rules(existing)) => {
+            let mut seen: HashSet<String> = existing.into_iter().map(|rule| rule.id).collect();
+            let additions: Vec<&str> = rules
+                .iter()
+                .filter(|rule| seen.insert(rule.to_ascii_lowercase()))
+                .map(String::as_str)
+                .collect();
+            if additions.is_empty() {
+                return line.to_string();
+            }
+            format!("{content}, {}{trailing_cr}", additions.join(", "))
+        }
+        None => {
+            let separator = if line_comment_text(content).is_some() {
+                " "
+            } else {
+                " ; "
+            };
+            format!(
+                "{content}{separator}@disable {}{trailing_cr}",
+                rules.join(", ")
+            )
+        }
+    }
+}
+
 /// Finds a `keyword` (`@disable` or `@disable-file`) directive within
 /// `line`'s trailing line comment, if it has one.
 fn parse_directive(line: &str, keyword: &str) -> Option<Directive> {
@@ -340,5 +410,101 @@ mod tests {
         assert_eq!(rules.len(), 1);
         assert_eq!(rules[0].id, "float-to-int");
         assert!(disables.iter().next().is_none());
+    }
+
+    fn rules(ids: &[&str]) -> Vec<String> {
+        ids.iter().map(|id| id.to_string()).collect()
+    }
+
+    #[test]
+    fn add_disable_directive_appends_a_new_comment_to_a_bare_line() {
+        let updated =
+            add_disable_directive("action = 1\nother = 2\n", 1, &rules(&["float-to-int"]));
+        assert_eq!(updated, "action = 1 ; @disable float-to-int\nother = 2\n");
+    }
+
+    #[test]
+    fn add_disable_directive_joins_multiple_rules_with_commas() {
+        let updated = add_disable_directive(
+            "action = 1\n",
+            1,
+            &rules(&["float-to-int", "strict-boolean"]),
+        );
+        assert_eq!(
+            updated,
+            "action = 1 ; @disable float-to-int, strict-boolean\n"
+        );
+    }
+
+    #[test]
+    fn add_disable_directive_extends_an_unrelated_trailing_comment() {
+        let updated =
+            add_disable_directive("action = 1 ; some note\n", 1, &rules(&["float-to-int"]));
+        assert_eq!(updated, "action = 1 ; some note @disable float-to-int\n");
+    }
+
+    #[test]
+    fn add_disable_directive_merges_into_an_existing_rule_list() {
+        let updated = add_disable_directive(
+            "action = 1 ; @disable float-to-int\n",
+            1,
+            &rules(&["strict-boolean"]),
+        );
+        assert_eq!(
+            updated,
+            "action = 1 ; @disable float-to-int, strict-boolean\n"
+        );
+    }
+
+    #[test]
+    fn add_disable_directive_skips_rules_already_covered() {
+        let updated = add_disable_directive(
+            "action = 1 ; @disable float-to-int, strict-boolean\n",
+            1,
+            &rules(&["strict-boolean", "float-to-int"]),
+        );
+        assert_eq!(
+            updated,
+            "action = 1 ; @disable float-to-int, strict-boolean\n"
+        );
+    }
+
+    #[test]
+    fn add_disable_directive_leaves_a_bare_disable_untouched() {
+        let updated =
+            add_disable_directive("action = 1 ; @disable\n", 1, &rules(&["float-to-int"]));
+        assert_eq!(updated, "action = 1 ; @disable\n");
+    }
+
+    #[test]
+    fn add_disable_directive_only_touches_the_target_line() {
+        let updated =
+            add_disable_directive("action = 1\nother = 2\n", 2, &rules(&["float-to-int"]));
+        assert_eq!(updated, "action = 1\nother = 2 ; @disable float-to-int\n");
+    }
+
+    #[test]
+    fn add_disable_directive_preserves_a_trailing_carriage_return() {
+        let updated = add_disable_directive("action = 1\r\n", 1, &rules(&["float-to-int"]));
+        assert_eq!(updated, "action = 1 ; @disable float-to-int\r\n");
+    }
+
+    #[test]
+    fn add_disable_directive_is_a_noop_for_an_empty_rule_list() {
+        let source = "action = 1\n";
+        assert_eq!(add_disable_directive(source, 1, &[]), source);
+    }
+
+    #[test]
+    fn add_disable_directive_is_a_noop_for_an_out_of_range_line() {
+        let source = "action = 1\n";
+        assert_eq!(
+            add_disable_directive(source, 99, &rules(&["float-to-int"])),
+            source
+        );
+        assert_eq!(
+            add_disable_directive(source, 0, &rules(&["float-to-int"])),
+            source
+        );
     }
 }

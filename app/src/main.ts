@@ -1382,6 +1382,24 @@ export async function repairPscFileRule(path: string, rule: string): Promise<Dia
   });
 }
 
+// Adds (or extends) an `; @disable <rules>` comment on `line`, silencing
+// every named rule there instead of fixing it — the code viewer's per-line
+// "Ignore" button, the inverse of repairPscFinding's per-line "Fix" button.
+// See add_disable_comment_to_psc_line/papyrus_lints::add_disable_comment on
+// the backend for the exact merging rules.
+export async function addDisableCommentToPscLine(path: string, rules: string[], line: number): Promise<Diagnostic[]> {
+  return invoke<Diagnostic[]>("add_disable_comment_to_psc_line", {
+    path,
+    root: currentProjectDir ?? "",
+    config: currentLintConfig,
+    additionalRoots: effectiveScriptRoots(),
+    compilerPath: currentCompilerPath,
+    compileCheck: currentCompileCheck,
+    rules,
+    line,
+  });
+}
+
 // Human-readable names for FIXABLE_RULE_IDS, used to label each rule in the
 // "mass fix" panel instead of its raw id. Kept in sync by hand with each
 // rule's own settings-tab checkbox label text in index.html.
@@ -1532,6 +1550,34 @@ function findingsGroupedByLine(findings: Diagnostic[]): Map<number, Diagnostic[]
   return findingsByLine;
 }
 
+// Builds the per-line "Fix"/"Ignore" buttons for `lineNumber`'s own table
+// cell: "Fix" only when at least one of `lineFindings` has an automatic fix
+// (isFixableFinding), "Ignore" only when at least one carries a rule id at
+// all (a rule-less finding, e.g. a compiler diagnostic, can't be named in an
+// `@disable` comment). Neither button is shown when neither applies, so an
+// unremarkable line's actions cell stays empty. The click itself is handled
+// by a single delegated listener on codeViewerViewEl (see
+// handleCodeViewerLineActionClick), since this HTML is rebuilt from a
+// string on every render rather than built up via individual DOM nodes with
+// their own listeners.
+function buildLineActionsHtml(lineNumber: number, lineFindings: Diagnostic[] | undefined): string {
+  if (!lineFindings || lineFindings.length === 0) {
+    return "";
+  }
+  const buttons: string[] = [];
+  if (lineFindings.some((finding) => isFixableFinding(finding))) {
+    buttons.push(
+      `<button type="button" class="code-viewer__line-action code-viewer__line-action--fix" data-line-action="fix" data-line="${lineNumber}">Fix</button>`,
+    );
+  }
+  if (lineFindings.some((finding) => finding.rule !== undefined)) {
+    buttons.push(
+      `<button type="button" class="code-viewer__line-action code-viewer__line-action--ignore" data-line-action="ignore" data-line="${lineNumber}">Ignore</button>`,
+    );
+  }
+  return buttons.join("");
+}
+
 // Renders `source`'s syntax-highlighted, read-only table view with
 // `findings` marked on their lines. If `focusLine` is given, scrolls that
 // line into view and briefly flashes it, so a click on a specific finding
@@ -1556,6 +1602,7 @@ function renderCodeViewerView(source: string, findings: Diagnostic[], focusLine?
       `<tr id="code-viewer-line-${lineNumber}"${rowClass}${title}>` +
       `<td class="code-viewer__line-number">${lineNumber}</td>` +
       `<td class="code-viewer__line-code">${lineHtml}</td>` +
+      `<td class="code-viewer__line-actions">${buildLineActionsHtml(lineNumber, lineFindings)}</td>` +
       `</tr>`
     );
   });
@@ -2818,6 +2865,120 @@ export async function handleCodeViewerFixClick() {
   }
 }
 
+// Dispatches a click anywhere in the read-only view's table to the right
+// per-line handler below, reading which line and which action
+// (buildLineActionsHtml's "fix"/"ignore" buttons) off the clicked button's
+// own data attributes — the buttons are rebuilt from an HTML string on
+// every render, so they're wired up through one delegated listener on
+// codeViewerViewEl rather than individual per-button listeners that would
+// need reattaching each time.
+async function handleCodeViewerLineActionClick(event: MouseEvent) {
+  if (!(event.target instanceof Element)) {
+    return;
+  }
+  const button = event.target.closest<HTMLButtonElement>("button[data-line-action]");
+  if (!button) {
+    return;
+  }
+  const line = Number(button.dataset.line);
+  if (!Number.isInteger(line)) {
+    return;
+  }
+  if (button.dataset.lineAction === "fix") {
+    await handleCodeViewerFixLineClick(line, button);
+  } else if (button.dataset.lineAction === "ignore") {
+    await handleCodeViewerIgnoreLineClick(line, button);
+  }
+}
+
+// The code viewer's per-line "Fix" button: applies every fixable finding's
+// own automatic fix on `line` (see repairPscFinding), one rule at a time so
+// a rule whose fix would shift other lines (e.g. property-sorting
+// relocating a declaration) can fail and be skipped without blocking the
+// rest, then refreshes the viewer and the matching Lint results list entry
+// in place - the per-line counterpart of handleCodeViewerFixClick's
+// whole-file "Apply fixes".
+export async function handleCodeViewerFixLineClick(line: number, button: HTMLButtonElement) {
+  if (!codeViewerState) {
+    return;
+  }
+  const { path, findings: initialFindings } = codeViewerState;
+  const rules = Array.from(
+    new Set(
+      initialFindings
+        .filter((finding) => finding.line === line && isFixableFinding(finding))
+        .map((finding) => finding.rule as string),
+    ),
+  );
+  if (rules.length === 0) {
+    return;
+  }
+  button.disabled = true;
+  try {
+    let findings = initialFindings;
+    for (const rule of rules) {
+      try {
+        findings = await repairPscFinding(path, rule, line);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    const source = await invoke<string>("read_psc_file", { path });
+    codeViewerState = { path, source, findings };
+    renderCodeViewerView(source, findings);
+    hideDiffOutput(codeViewerDiffOutputEl);
+    updateCodeViewerFixButtonsVisibility();
+
+    const outcome = currentPscOutcomes.find((candidate) => candidate.path === path);
+    if (outcome) {
+      outcome.findings = findings;
+      renderPscResults(currentPscOutcomes);
+    }
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// The code viewer's per-line "Ignore" button: adds (or extends) an
+// `; @disable <rules>` comment covering every rule id found on `line` (see
+// addDisableCommentToPscLine), silencing those findings instead of fixing
+// them, then refreshes the viewer and the matching Lint results list entry
+// in place the same way handleCodeViewerFixLineClick does.
+export async function handleCodeViewerIgnoreLineClick(line: number, button: HTMLButtonElement) {
+  if (!codeViewerState) {
+    return;
+  }
+  const { path, findings: initialFindings } = codeViewerState;
+  const rules = Array.from(
+    new Set(
+      initialFindings
+        .filter((finding) => finding.line === line && finding.rule !== undefined)
+        .map((finding) => finding.rule as string),
+    ),
+  );
+  if (rules.length === 0) {
+    return;
+  }
+  button.disabled = true;
+  try {
+    const findings = await addDisableCommentToPscLine(path, rules, line);
+    const source = await invoke<string>("read_psc_file", { path });
+    codeViewerState = { path, source, findings };
+    renderCodeViewerView(source, findings);
+    updateCodeViewerFixButtonsVisibility();
+
+    const outcome = currentPscOutcomes.find((candidate) => candidate.path === path);
+    if (outcome) {
+      outcome.findings = findings;
+      renderPscResults(currentPscOutcomes);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 // The code viewer's "Preview fixes" button: computes the same fix
 // handleCodeViewerFixClick would apply, but never writes it to disk,
 // rendering a standard diff of what would change instead (see
@@ -3538,6 +3699,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   codeViewerCloseEl?.addEventListener("click", () => requestCloseCodeViewer());
   codeViewerFullscreenEl?.addEventListener("click", toggleCodeViewerFullscreen);
+  codeViewerViewEl?.addEventListener("click", (event) => void handleCodeViewerLineActionClick(event));
   codeViewerEl?.addEventListener("click", (event) => {
     if (event.target === codeViewerEl) {
       requestCloseCodeViewer();

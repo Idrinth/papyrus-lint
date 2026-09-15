@@ -632,6 +632,48 @@ fn repair_psc_file_rule(
     ))
 }
 
+/// Adds (or extends) an `; @disable <rules>` comment on `line` (1-indexed)
+/// of the named `.psc` file, covering every id in `rules` — the code
+/// viewer's per-line "Ignore" button, the inverse of
+/// [`repair_psc_finding`]'s per-line "Fix": rather than fixing the findings
+/// on that line, it silences them via
+/// [`papyrus_lints::add_disable_comment`] instead. Re-lints the file
+/// afterward and returns its updated diagnostics, the same as every other
+/// mutating command here.
+#[tauri::command]
+#[allow(clippy::too_many_arguments)]
+fn add_disable_comment_to_psc_line(
+    path: String,
+    root: String,
+    config: papyrus_lints::Config,
+    additional_roots: Vec<String>,
+    compiler_path: String,
+    compile_check: bool,
+    rules: Vec<String>,
+    line: usize,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let path = Path::new(&path);
+    let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
+    let updated = papyrus_lints::add_disable_comment(&source, line, &rules);
+    if updated != source {
+        write_psc_source(path, &updated, encoding).map_err(|err| err.to_string())?;
+    }
+    ast_cache::ensure_primed(path, &updated);
+    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
+        PathBuf::from(root),
+        additional_roots.clone(),
+    );
+    Ok(lint_with_compile_check(
+        path,
+        &updated,
+        &config,
+        &mut function_table,
+        &additional_roots,
+        &compiler_path,
+        compile_check,
+    ))
+}
+
 /// Lists every function and property available on an object of type
 /// `type_name` (including those inherited via `Extends`), for driving the
 /// code viewer's editor autocompletion. See [`lint_psc_file`] for
@@ -688,6 +730,7 @@ pub fn run() {
             preview_repair_psc_line,
             repair_psc_finding,
             repair_psc_file_rule,
+            add_disable_comment_to_psc_line,
             compile_psc_file,
             list_script_members
         ])
@@ -1095,6 +1138,54 @@ mod tests {
     }
 
     #[test]
+    fn add_disable_comment_to_psc_line_adds_the_directive_and_relints() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "Call(1,2)\n").unwrap();
+
+        let diagnostics = add_disable_comment_to_psc_line(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            vec![papyrus_lints::comma_spacing::RULE.to_string()],
+            1,
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "Call(1,2) ; @disable comma-spacing\n"
+        );
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::comma_spacing::RULE));
+    }
+
+    #[test]
+    fn add_disable_comment_to_psc_line_leaves_the_file_untouched_for_an_empty_rule_list() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "Call(1,2)\n").unwrap();
+
+        add_disable_comment_to_psc_line(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            Vec::new(),
+            1,
+        )
+        .unwrap();
+
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "Call(1,2)\n");
+    }
+
+    #[test]
     fn targeted_repair_commands_report_io_errors_without_creating_a_file() {
         let dir = tempdir().unwrap();
         let missing = dir.path().join("missing.psc");
@@ -1113,13 +1204,24 @@ mod tests {
         )
         .is_err());
         assert!(repair_psc_file_rule(
+            path.clone(),
+            root.clone(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::trailing_whitespace::RULE.to_string(),
+        )
+        .is_err());
+        assert!(add_disable_comment_to_psc_line(
             path,
             root,
             papyrus_lints::Config::default(),
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            vec![papyrus_lints::trailing_whitespace::RULE.to_string()],
+            1,
         )
         .is_err());
         assert!(!missing.exists());
