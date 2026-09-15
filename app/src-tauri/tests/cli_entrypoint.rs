@@ -72,3 +72,73 @@ fn desktop_binary_propagates_an_invalid_input_error() {
     );
     assert!(stderr.contains(&missing.display().to_string()));
 }
+
+#[test]
+fn desktop_binary_preserves_the_cli_failure_code_and_json_diagnostics() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Findings.psc");
+    std::fs::write(
+        &script,
+        "ScriptName Findings\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--json", script.to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["success"], false);
+    assert_eq!(
+        report["files"][0]["diagnostics"][0]["rule"],
+        "forbidden-function"
+    );
+    assert_eq!(report["files"][0]["diagnostics"][0]["line"], 4);
+}
+
+#[test]
+fn desktop_binary_lints_every_script_listed_in_an_achlist() {
+    let temp = tempfile::tempdir().unwrap();
+    let first = temp.path().join("First.psc");
+    let second = temp.path().join("Second.psc");
+    let achlist = temp.path().join("scripts.achlist");
+    std::fs::write(&first, "ScriptName First\n").unwrap();
+    std::fs::write(&second, "ScriptName Second\n").unwrap();
+    std::fs::write(&achlist, r#"["First.psc", "Second.psc"]"#).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--json", achlist.to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["scripts_checked"], 2);
+    let paths: Vec<&str> = report["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|file| file["path"].as_str().unwrap())
+        .collect();
+    assert!(paths.contains(&first.to_str().unwrap()));
+    assert!(paths.contains(&second.to_str().unwrap()));
+}
+
+#[test]
+fn desktop_binary_rejects_extra_positional_arguments() {
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["First.psc", "Second.psc"])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).unwrap(),
+        papyrus_lint_cli::USAGE
+    );
+}
