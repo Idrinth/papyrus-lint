@@ -134,6 +134,11 @@ fn opt_in_rules_are_dispatched_by_the_public_lint_api() {
             |config| config.rules.global_variable_setvalue = true,
         ),
         (
+            "default-property-value",
+            "ScriptName Example\n\nInt Property Count Auto\n",
+            |config| config.rules.default_property_value = true,
+        ),
+        (
             "unused-disable",
             "ScriptName Example\n\nFunction Test() ; @disable comma-spacing\nEndFunction\n",
             |config| config.rules.unused_disable = true,
@@ -152,6 +157,27 @@ fn opt_in_rules_are_dispatched_by_the_public_lint_api() {
             "public lint API did not dispatch opted-in rule {rule}: {diagnostics:?}"
         );
     }
+}
+
+#[test]
+fn default_property_value_is_opt_in_and_honors_line_disable_comments() {
+    let source = "ScriptName Example\n\nBool Property Ready Auto ; @disable DEFAULT-PROPERTY-VALUE\nInt Property Count Auto\n";
+
+    assert!(lint(source, &Config::default())
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "default-property-value"));
+
+    let mut config = Config::default();
+    config.rules.default_property_value = true;
+    let diagnostics: Vec<_> = lint(source, &config)
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "default-property-value")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 1));
+    assert!(diagnostics[0].message.contains("Count"));
+    assert_eq!(diagnostics[0].level(), "warning");
 }
 
 #[test]
