@@ -1019,6 +1019,24 @@ sooner. This mirrors the CLI's own `--threads` default without changing
 order and `onOutcome` still fires in completion order as each script
 finishes.
 
+Every Tauri command that touches the filesystem, parses/lints/repairs a
+script, or spawns PapyrusCompiler.exe is declared `#[tauri::command(async)]`
+in `app/src-tauri/src/lib.rs`, rather than a plain `#[tauri::command]`. A
+synchronous command with no `async`/`(async)` marking is dispatched inline
+on Tauri's main/UI event-loop thread, so without this attribute a single
+lint/repair/compile call — and the concurrent batch described above —
+blocks window rendering and input until it returns, which is what made the
+app appear to hang while linting a large `.achlist`/directory drop.
+`(async)` keeps each command's own Rust signature an ordinary synchronous
+`fn` (so the `#[cfg(test)]` module further down still calls every one of
+them directly, with no `.await`) while making Tauri route its actual
+dispatch through `tauri::async_runtime::spawn_blocking`, onto its blocking
+thread pool — which is what lets the batch concurrency described above
+genuinely run each invocation on its own thread rather than queueing on the
+UI thread. `get_app_version` and `list_rule_tags` are the only two commands
+left as plain `#[tauri::command]`, since both just return an in-memory
+constant/static table and complete instantly on the main thread regardless.
+
 The desktop app picks each project's lint configuration explicitly, right
 after a drop resolves which project directory is actually in play, rather
 than showing/editing whatever configuration happened to be loaded

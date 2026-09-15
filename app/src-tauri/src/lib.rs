@@ -55,7 +55,7 @@ fn get_app_version() -> &'static str {
 }
 
 /// Parses the `.achlist` file at `path` and returns the resolved paths it lists.
-#[tauri::command]
+#[tauri::command(async)]
 fn parse_achlist_file(path: String) -> Result<Vec<String>, String> {
     let entries = achlist::parse_achlist(&PathBuf::from(path)).map_err(|err| err.to_string())?;
 
@@ -73,7 +73,7 @@ fn parse_achlist_file(path: String) -> Result<Vec<String>, String> {
 /// `scripts/source`. Returns an error if `path` isn't an existing
 /// directory, so the frontend can fall back to its usual
 /// "drop a single .achlist or .psc file" error.
-#[tauri::command]
+#[tauri::command(async)]
 fn list_psc_files_recursively(path: String) -> Result<Vec<String>, String> {
     let dir = PathBuf::from(&path);
     if !dir.is_dir() {
@@ -86,12 +86,12 @@ fn list_psc_files_recursively(path: String) -> Result<Vec<String>, String> {
         .collect())
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 fn parse_papyrus_script(source: &str) -> Result<papyrus_parser::ast::Script, String> {
     papyrus_parser::parse(source).map_err(|e| e.to_string())
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 fn lint_papyrus_script(
     source: &str,
     config: papyrus_lints::Config,
@@ -103,7 +103,7 @@ fn lint_papyrus_script(
 /// reusing a disk-backed cache (see [`ast_cache`]) keyed by `path`'s
 /// content and modification time when the file hasn't changed since it was
 /// last parsed.
-#[tauri::command]
+#[tauri::command(async)]
 fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
@@ -122,7 +122,7 @@ fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
 
 /// Reads the `.psc` file at `path` and returns its raw source text, for the
 /// frontend's syntax-highlighted code viewer.
-#[tauri::command]
+#[tauri::command(async)]
 fn read_psc_file(path: String) -> Result<String, String> {
     read_psc_source(Path::new(&path)).map_err(|err| err.to_string())
 }
@@ -133,7 +133,7 @@ fn read_psc_file(path: String) -> Result<String, String> {
 /// `app/src/main.ts`): an assistant can still tell files apart, or notice a
 /// file changed between exports, from this hash without seeing its actual
 /// source text.
-#[tauri::command]
+#[tauri::command(async)]
 fn hash_psc_file_md5(path: String) -> Result<String, String> {
     let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
     Ok(content_hash::md5_hex(&source))
@@ -142,7 +142,7 @@ fn hash_psc_file_md5(path: String) -> Result<String, String> {
 /// Writes `contents` to the `.psc` file at `path`, replacing it on disk.
 /// Used by the frontend's code viewer to persist edits made in its edit
 /// mode.
-#[tauri::command]
+#[tauri::command(async)]
 fn write_psc_file(path: String, contents: String) -> Result<(), String> {
     std::fs::write(&path, contents).map_err(|err| err.to_string())
 }
@@ -151,7 +151,7 @@ fn write_psc_file(path: String, contents: String) -> Result<(), String> {
 /// directory containing the `.achlist` file) and returns the lint
 /// configuration it describes, falling back to the default configuration
 /// if `dir` has no config file.
-#[tauri::command]
+#[tauri::command(async)]
 fn load_lint_config(dir: String) -> Result<papyrus_lints::Config, String> {
     config::load_config(&PathBuf::from(dir))
 }
@@ -159,7 +159,7 @@ fn load_lint_config(dir: String) -> Result<papyrus_lints::Config, String> {
 /// Writes `config` to `dir`'s papyrus-lint YAML config file (creating it,
 /// as `papyrus-lint.yaml`, if `dir` has none yet), so the formatting
 /// selected in the UI is remembered for next time.
-#[tauri::command]
+#[tauri::command(async)]
 fn save_lint_config(dir: String, config: papyrus_lints::Config) -> Result<(), String> {
     config::save_config(&PathBuf::from(dir), &config)
 }
@@ -169,7 +169,7 @@ fn save_lint_config(dir: String, config: papyrus_lints::Config) -> Result<(), St
 /// Settings tab's "Configuration file" override, letting the user point the
 /// app at a specific papyrus-lint.yaml/.yml instead of relying on the one
 /// auto-detected next to the dropped `.achlist`/`.psc`.
-#[tauri::command]
+#[tauri::command(async)]
 fn load_lint_config_from_path(path: String) -> Result<papyrus_lints::Config, String> {
     config::load_config_from_path(&PathBuf::from(path))
 }
@@ -177,7 +177,7 @@ fn load_lint_config_from_path(path: String) -> Result<papyrus_lints::Config, Str
 /// Writes `config` to the exact file at `path`, creating it if it doesn't
 /// exist yet. The save-side counterpart of [`load_lint_config_from_path`],
 /// used while the Settings tab's "Configuration file" override is set.
-#[tauri::command]
+#[tauri::command(async)]
 fn save_lint_config_to_path(path: String, config: papyrus_lints::Config) -> Result<(), String> {
     config::save_config_at_path(&PathBuf::from(path), &config)
 }
@@ -187,7 +187,7 @@ fn save_lint_config_to_path(path: String, config: papyrus_lints::Config) -> Resu
 /// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompiler.exe`
 /// relative to `dir` (the directory containing the `.achlist` file).
 /// Returns `null` if neither is available.
-#[tauri::command]
+#[tauri::command(async)]
 fn load_compiler_path(dir: String) -> Result<Option<String>, String> {
     config::resolve_compiler_path(&PathBuf::from(dir))
 }
@@ -195,7 +195,7 @@ fn load_compiler_path(dir: String) -> Result<Option<String>, String> {
 /// Persists an explicit PapyrusCompiler.exe path override to `dir`'s
 /// papyrus-lint config file. Passing an empty (or blank) string clears
 /// the override, reverting to auto-detection.
-#[tauri::command]
+#[tauri::command(async)]
 fn save_compiler_path(dir: String, path: String) -> Result<(), String> {
     let path = path.trim();
     config::save_compiler_path(
@@ -207,14 +207,14 @@ fn save_compiler_path(dir: String, path: String) -> Result<(), String> {
 /// Returns whether `dir`'s project enables running PapyrusCompiler.exe as
 /// part of linting a dropped `.psc` (see [`lint_psc_file`]/
 /// [`compiler::check_psc_file`]), `false` by default.
-#[tauri::command]
+#[tauri::command(async)]
 fn load_compile_check(dir: String) -> Result<bool, String> {
     config::load_compile_check(&PathBuf::from(dir))
 }
 
 /// Persists whether `dir`'s project runs PapyrusCompiler.exe as part of
 /// linting a dropped `.psc`.
-#[tauri::command]
+#[tauri::command(async)]
 fn save_compile_check(dir: String, enabled: bool) -> Result<(), String> {
     config::save_compile_check(&PathBuf::from(dir), enabled)
 }
@@ -225,14 +225,14 @@ fn save_compile_check(dir: String, enabled: bool) -> Result<(), String> {
 /// when resolving cross-script lookups (the "Argument type check"/"Return
 /// type check" lints, autocompletion) and are appended to the compiler's
 /// `-i` argument.
-#[tauri::command]
+#[tauri::command(async)]
 fn load_script_roots(dir: String) -> Result<Vec<String>, String> {
     config::load_script_roots(&PathBuf::from(dir))
 }
 
 /// Reports the project paths discovered by the backend for display in the
 /// Settings tab. Only script search directories that exist are included.
-#[tauri::command]
+#[tauri::command(async)]
 fn load_project_info(dir: String) -> Result<ProjectInfo, String> {
     let root = PathBuf::from(dir);
     let additional_roots = config::load_script_roots(&root)?;
@@ -248,7 +248,7 @@ fn load_project_info(dir: String) -> Result<ProjectInfo, String> {
 
 /// Persists `roots` as `dir`'s configured additional script root
 /// directories.
-#[tauri::command]
+#[tauri::command(async)]
 fn save_script_roots(dir: String, roots: Vec<String>) -> Result<(), String> {
     config::save_script_roots(&PathBuf::from(dir), &roots)
 }
@@ -258,7 +258,7 @@ fn save_script_roots(dir: String, roots: Vec<String>) -> Result<(), String> {
 /// the running executable (see [`papyrus_lint_core::presets`]) — for the
 /// frontend's first-run picker shown when a project directory has no
 /// `papyrus-lint.yaml`/`.yml` yet.
-#[tauri::command]
+#[tauri::command(async)]
 fn list_config_presets() -> Vec<presets::PresetInfo> {
     presets::all()
 }
@@ -270,7 +270,7 @@ fn list_config_presets() -> Vec<presets::PresetInfo> {
 /// refuses to replace an existing config file, and still layers in an
 /// executable-adjacent base config over the selected preset if one exists.
 /// Errors if `preset` doesn't name a known preset.
-#[tauri::command]
+#[tauri::command(async)]
 fn apply_config_preset(dir: String, preset: String) -> Result<(), String> {
     let preset = config::Preset::parse(&preset)
         .ok_or_else(|| format!("unknown configuration preset: {preset}"))?;
@@ -290,7 +290,7 @@ fn apply_config_preset(dir: String, preset: String) -> Result<(), String> {
 /// (or requires the absence of) a project's config file itself, since the
 /// frontend persists the returned settings through its own existing save
 /// path. Errors if `preset` doesn't name a known preset.
-#[tauri::command]
+#[tauri::command(async)]
 fn get_preset_lint_config(preset: String) -> Result<papyrus_lints::Config, String> {
     let preset = config::Preset::parse(&preset)
         .ok_or_else(|| format!("unknown configuration preset: {preset}"))?;
@@ -306,7 +306,7 @@ fn get_preset_lint_config(preset: String) -> Result<papyrus_lints::Config, Strin
 /// `--preset <name>`) afterward. Refuses to replace an existing same-named
 /// preset (matched case-insensitively) unless `overwrite` is true. Errors
 /// if `name` is blank or matches a built-in preset name.
-#[tauri::command]
+#[tauri::command(async)]
 fn save_config_as_preset(
     config: papyrus_lints::Config,
     name: String,
@@ -323,7 +323,7 @@ fn save_config_as_preset(
 /// case-insensitively) unless `overwrite` is true. Errors if `new_name` is
 /// blank, matches a built-in preset name, or `old_name` doesn't name an
 /// existing user preset.
-#[tauri::command]
+#[tauri::command(async)]
 fn rename_user_preset(old_name: String, new_name: String, overwrite: bool) -> Result<(), String> {
     config::rename_user_preset(&old_name, &new_name, overwrite)?;
     Ok(())
@@ -333,7 +333,7 @@ fn rename_user_preset(old_name: String, new_name: String, overwrite: bool) -> Re
 /// `presets` directory [`list_config_presets`]/[`save_config_as_preset`]
 /// use, for the desktop app's preset management tab. Errors if no preset
 /// named `name` exists.
-#[tauri::command]
+#[tauri::command(async)]
 fn delete_user_preset(name: String) -> Result<(), String> {
     config::delete_user_preset(&name)
 }
@@ -341,7 +341,7 @@ fn delete_user_preset(name: String) -> Result<(), String> {
 /// Returns the raw YAML content of the user preset named `name`, for the
 /// desktop app's preset management tab to offer as a download. Errors if
 /// no preset named `name` exists.
-#[tauri::command]
+#[tauri::command(async)]
 fn export_user_preset(name: String) -> Result<String, String> {
     config::read_user_preset_yaml(&name)
 }
@@ -356,7 +356,7 @@ fn export_user_preset(name: String) -> Result<String, String> {
 /// couldn't be run; a script that fails to compile is still reported as
 /// `Ok`, with [`compiler::CompileOutcome::success`] false and the
 /// compiler's stdout/stderr carrying the reported errors.
-#[tauri::command]
+#[tauri::command(async)]
 fn compile_psc_file(
     path: String,
     compiler_path: String,
@@ -438,7 +438,7 @@ fn lint_with_compile_check(
 /// `compile_check` (see [`load_compiler_path`]/[`load_compile_check`])
 /// control whether PapyrusCompiler.exe's own errors are merged in too —
 /// see [`lint_with_compile_check`].
-#[tauri::command]
+#[tauri::command(async)]
 fn lint_psc_file(
     path: String,
     root: String,
@@ -470,7 +470,7 @@ fn lint_psc_file(
 /// repaired source back to disk, and returns the diagnostics that remain.
 /// See [`lint_psc_file`] for `root`/`additional_roots`/`compiler_path`/
 /// `compile_check`.
-#[tauri::command]
+#[tauri::command(async)]
 fn repair_psc_file(
     path: String,
     root: String,
@@ -509,7 +509,7 @@ fn repair_psc_file(
 /// string if nothing would change. Drives the code viewer's "Preview
 /// fixes" button, so a user can see what "Apply fixes" would do before
 /// committing to it.
-#[tauri::command]
+#[tauri::command(async)]
 fn preview_repair_psc_file(path: String, config: papyrus_lints::Config) -> Result<String, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
@@ -532,7 +532,7 @@ fn preview_repair_psc_file(path: String, config: papyrus_lints::Config) -> Resul
 /// per-finding `repair` preview (see `formatIssuesForAi` in
 /// `app/src/main.ts`), so an AI reading the export can see each
 /// auto-fixable finding's fix without applying it first.
-#[tauri::command]
+#[tauri::command(async)]
 fn preview_repair_psc_line(
     path: String,
     config: papyrus_lints::Config,
@@ -554,7 +554,7 @@ fn preview_repair_psc_line(
 /// number then no longer identifies the same line in the result; the
 /// frontend surfaces that error and points the user at "Apply fixes"
 /// instead.
-#[tauri::command]
+#[tauri::command(async)]
 #[allow(clippy::too_many_arguments)]
 fn repair_psc_finding(
     path: String,
@@ -599,7 +599,7 @@ fn repair_psc_finding(
 /// it drives the frontend's "mass fix" action, which repeats this call
 /// across every file in the current results to clear one issue project-wide
 /// (e.g. every trailing-whitespace finding) in one go.
-#[tauri::command]
+#[tauri::command(async)]
 #[allow(clippy::too_many_arguments)]
 fn repair_psc_file_rule(
     path: String,
@@ -640,7 +640,7 @@ fn repair_psc_file_rule(
 /// [`papyrus_lints::add_disable_comment`] instead. Re-lints the file
 /// afterward and returns its updated diagnostics, the same as every other
 /// mutating command here.
-#[tauri::command]
+#[tauri::command(async)]
 #[allow(clippy::too_many_arguments)]
 fn add_disable_comment_to_psc_line(
     path: String,
@@ -678,7 +678,7 @@ fn add_disable_comment_to_psc_line(
 /// `type_name` (including those inherited via `Extends`), for driving the
 /// code viewer's editor autocompletion. See [`lint_psc_file`] for
 /// `root`/`additional_roots`.
-#[tauri::command]
+#[tauri::command(async)]
 fn list_script_members(
     root: String,
     type_name: String,
