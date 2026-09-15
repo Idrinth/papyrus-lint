@@ -832,6 +832,22 @@ class DocsRenderingTest(unittest.TestCase):
         self.assertEqual(title, "notes.md")
         self.assertEqual(description, "Opening paragraph.")
 
+    def test_render_doc_keeps_a_non_title_heading_in_the_markdown_body(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            docs_dir = Path(directory)
+            (docs_dir / "notes.md").write_text(
+                "## Overview\n\nOpening paragraph.\n", encoding="utf-8"
+            )
+
+            with patch.object(page_builder, "DOCS_DIR", docs_dir):
+                title, description, content = page_builder.render_doc(
+                    {"filename": "notes.md", "slug": "notes", "kind": "markdown"}
+                )
+
+        self.assertEqual(title, "notes.md")
+        self.assertEqual(description, "Opening paragraph.")
+        self.assertIn("<h2>Overview</h2>", content)
+
     def test_render_doc_handles_an_empty_markdown_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             docs_dir = Path(directory)
@@ -1364,6 +1380,23 @@ class ModernImageFormatsTest(unittest.TestCase):
                 self.assertEqual((webp_image.mode, webp_image.size), ("RGB", (3, 2)))
             with Image.open(out_dir / "logo.avif") as avif_image:
                 self.assertEqual((avif_image.mode, avif_image.size), ("RGB", (3, 2)))
+
+    def test_convert_to_modern_formats_keeps_an_rgb_jpeg_without_converting_it(self) -> None:
+        image = MagicMock(mode="RGB")
+        image_context = MagicMock()
+        image_context.__enter__.return_value = image
+
+        with patch.object(page_builder.Image, "open", return_value=image_context):
+            page_builder.convert_to_modern_formats(Path("logo.JPG"), Path("output"))
+
+        image.convert.assert_not_called()
+        self.assertEqual(
+            image.save.call_args_list,
+            [
+                unittest.mock.call(Path("output/logo.webp"), lossless=False, quality=80),
+                unittest.mock.call(Path("output/logo.avif"), lossless=False, quality=65),
+            ],
+        )
 
     def test_wrap_images_with_modern_sources_wraps_only_known_assets(self) -> None:
         with patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"logo-small.jpg"}):
