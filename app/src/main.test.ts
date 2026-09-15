@@ -2239,6 +2239,47 @@ describe("parsePscFiles / repairPscFile", () => {
     expect(seen).toEqual(["A.psc", "B.psc"]);
   });
 
+  it("caps concurrent work at the machine's hardware concurrency instead of starting every file at once", async () => {
+    const original = Object.getOwnPropertyDescriptor(navigator, "hardwareConcurrency");
+    Object.defineProperty(navigator, "hardwareConcurrency", { value: 2, configurable: true });
+    try {
+      const started: string[] = [];
+      const pendingResolvers = new Map<string, (findings: Diagnostic[]) => void>();
+      invokeImplFor({
+        parse_psc_file: (args) => ({ name: (args as { path: string }).path }),
+        lint_psc_file: (args) => {
+          const path = (args as { path: string }).path;
+          started.push(path);
+          return new Promise<Diagnostic[]>((resolve) => {
+            pendingResolvers.set(path, resolve);
+          });
+        },
+      });
+
+      const result = parsePscFiles(["A.psc", "B.psc", "C.psc"]);
+
+      for (let i = 0; i < 5; i++) {
+        await Promise.resolve();
+      }
+      expect([...started].sort()).toEqual(["A.psc", "B.psc"]);
+
+      pendingResolvers.get("A.psc")?.([]);
+      for (let i = 0; i < 5; i++) {
+        await Promise.resolve();
+      }
+      expect([...started].sort()).toEqual(["A.psc", "B.psc", "C.psc"]);
+
+      pendingResolvers.get("B.psc")?.([]);
+      pendingResolvers.get("C.psc")?.([]);
+      const outcomes = await result;
+      expect(outcomes.map((outcome) => outcome.path)).toEqual(["A.psc", "B.psc", "C.psc"]);
+    } finally {
+      if (original) {
+        Object.defineProperty(navigator, "hardwareConcurrency", original);
+      }
+    }
+  });
+
   it("lint_psc_file forwards the currently configured compiler path and compile-check setting", async () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,

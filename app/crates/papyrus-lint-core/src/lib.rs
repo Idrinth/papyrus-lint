@@ -18,6 +18,7 @@ pub mod diff;
 pub mod function_table;
 mod native_globals;
 mod native_types;
+pub mod parallel;
 pub mod pex_header;
 pub mod presets;
 pub mod script_locator;

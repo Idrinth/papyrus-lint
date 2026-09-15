@@ -109,6 +109,9 @@ desktop app's binary at all.
 │       │       ├── pex_header.rs       # Parses a compiled .pex file's header just
 │       │       │                       # far enough to blank its userName/
 │       │       │                       # machineName fields
+│       │       ├── parallel.rs         # Dependency-free worker pool (map_in_parallel)
+│       │       │                       # spreading per-script work across threads,
+│       │       │                       # used by the CLI's --threads flag
 │       │       └── stale_pex.rs        # The "Stale compiled output" project lint:
 │       │                               # flags a .psc file whose compiled .pex is
 │       │                               # older than the script itself, a common
@@ -974,6 +977,47 @@ scanned at all — with `script_locator::conflicting_script_versions_among`
 covering the one case directory scanning otherwise catches for free: two
 listed entries sharing a file name. It defaults to `false` so an existing
 achlist-based project's resolution/diagnostics don't change underneath it.
+
+The CLI's per-script lint loop (and `fix`) reads, fixes, and lints multiple
+scripts at once instead of one at a time, via
+`papyrus_lint_core::parallel::map_in_parallel` — a small, dependency-free
+worker pool (`std::thread::scope` plus a shared work queue) that hands
+results back in the scripts' original order regardless of which order the
+worker threads actually finish them in, so the plain-text/JSON/AI report
+(and a `--progress` bar's own file-count sequence) is identical no matter
+the thread count. The number of workers is controlled by `--threads <n>`
+(a positive integer; defaults to `parallel::default_thread_count()`, the
+machine's available parallelism), with `--threads 1` forcing the previous
+fully sequential behavior. Every script is otherwise independent, so the
+one thing worker threads actually share is the run's single
+`FunctionTable` (cross-script argument/return type lookups): it's wrapped
+in a `Mutex` and accessed through `function_table::SharedFunctionTable`, an
+`ExternalSignatures` adapter that locks only for the duration of one
+lookup (each forwarded through the `ExternalSignatures` trait itself via
+fully qualified syntax, so it can't drift from `FunctionTable`'s own trait
+impl) rather than for a whole script's lint pass — since `FunctionTable`
+caches everything it resolves, that's typically one lock acquisition per
+referenced type, not per lookup. This is also why `ast_cache`'s own
+accessors (`get`/`put`/`get_tokens`/`put_tokens`/`ensure_primed`) serialize
+on a single process-wide lock: `std::fs::write` isn't atomic, and two
+scripts linted at once can both need the same cross-script dependency's
+cache entry at the same moment; a corrupted read already fell back to a
+fresh parse before this (caching is a pure optimization — see
+`ast_cache`'s own module docs), so this closes a wasted-reparse gap rather
+than a correctness one, and covers the desktop app's own per-file Tauri
+commands too, which were already running concurrently across a batch drop
+(see below) without this. The desktop app's own frontend caps how many
+scripts it works on at once the same way, in `parsePscFiles`
+(`app/src/main.ts`): `mapWithConcurrency` bounds concurrent `parse_psc_file`/
+`lint_psc_file` invocations to `parseConcurrencyLimit()` (the browser's
+`navigator.hardwareConcurrency`, or `4` if that's unavailable), rather than
+firing every resolved script's pair of Tauri commands at once — each
+dispatched to its own thread by Tauri, so far more in flight than the
+machine has cores to run them on just adds contention without finishing
+sooner. This mirrors the CLI's own `--threads` default without changing
+`parsePscFiles`'s existing contract: results still resolve in `paths`' own
+order and `onOutcome` still fires in completion order as each script
+finishes.
 
 The desktop app picks each project's lint configuration explicitly, right
 after a drop resolves which project directory is actually in play, rather

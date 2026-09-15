@@ -206,6 +206,16 @@
 //! output is never colorized, since it's meant for tooling rather than a
 //! terminal.
 //!
+//! With `--threads <n>` (combinable with every flag above), up to `<n>`
+//! scripts are read, fixed, and linted concurrently instead of one at a
+//! time, via [`papyrus_lint_core::parallel::map_in_parallel`] — the
+//! reported diagnostics/JSON/AI output is unaffected, since results are
+//! always reassembled in the scripts' original order regardless of which
+//! order the worker threads actually finish them in. Defaults to the
+//! machine's available parallelism ([`papyrus_lint_core::parallel::default_thread_count`]);
+//! `--threads 1` forces the previous fully sequential behavior. `<n>` must
+//! be a positive integer.
+//!
 //! This crate is used both by the standalone `PapyrusLinterCLI` binary
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
@@ -214,10 +224,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 
 use papyrus_lint_core::diff::unified_diff;
-use papyrus_lint_core::function_table::FunctionTable;
+use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, write_psc_source};
 use papyrus_lint_core::{achlist, ast_cache, compile_diagnostics, compiler, config, content_hash};
@@ -296,8 +307,8 @@ fn find_psc_project_root(psc_path: &Path) -> PathBuf {
 }
 
 pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
-PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n\
+    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
+PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n\
 PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n\
 PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n\
 PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>\n\n\
@@ -364,6 +375,11 @@ Options:\n\
   --color <when>          Colorize the plain-text report: auto (default),\n\
                           always, or never. auto colors only when stdout is a\n\
                           terminal, --output isn't used, and NO_COLOR is unset.\n\
+  --threads <n>           Read/fix/lint up to <n> scripts concurrently instead\n\
+                          of one at a time. Defaults to the machine's available\n\
+                          parallelism; --threads 1 forces sequential processing.\n\
+                          Output is always reassembled in the same order\n\
+                          regardless of thread count.\n\
   --type <rule-id>        fix only: apply only this rule's automatic fix\n\
                           (e.g. trailing-whitespace or trailing_whitespace)\n\
                           instead of every enabled one.\n\
@@ -682,6 +698,30 @@ fn format_diagnostic_line(
     )
 }
 
+/// One script's worth of work from the parallel lint loop in [`run`],
+/// collected by its worker so the main thread can fold it into the overall
+/// report afterward in the script's original (not completion) order --
+/// see [`papyrus_lint_core::parallel::map_in_parallel`].
+struct FileOutcome {
+    /// This file's own slice of the plain-text report (a dry-run diff, if
+    /// any, followed by its diagnostic lines), empty in JSON/AI mode.
+    plain_text: Vec<u8>,
+    json_file: Option<JsonFileReport>,
+    ai_file: Option<AiFileReport>,
+    /// Whether any of this file's diagnostics (even one hidden by
+    /// `--quiet-warnings`/`--quiet-info`) crosses the configured
+    /// `fail_on_warning`/`fail_on_info` threshold.
+    should_fail: bool,
+    /// Whether this file has at least one diagnostic left after quiet
+    /// filtering, i.e. one that's actually reported.
+    has_diagnostics: bool,
+    /// How many diagnostics are left after quiet filtering.
+    diagnostic_count: usize,
+    /// Whether `fix` actually changed this file (or, under `--dry-run`,
+    /// would have).
+    fixed: bool,
+}
+
 /// Runs the CLI against `args` (the program's arguments, excluding the
 /// binary name itself), writing lint output to `stdout` and usage/error
 /// text to `stderr`. Returns the process exit code: `0` if linting found
@@ -702,7 +742,7 @@ fn format_diagnostic_line(
 /// `Stdout` capable of answering that question on its own.
 pub fn run(
     args: &[String],
-    stdout: &mut impl Write,
+    stdout: &mut (impl Write + Send),
     stderr: &mut impl Write,
     stdout_is_terminal: bool,
 ) -> u8 {
@@ -764,6 +804,7 @@ pub fn run(
     let mut tag_filter: Option<String> = None;
     let mut color_flag: Option<String> = None;
     let mut format_flag: Option<String> = None;
+    let mut threads_flag: Option<String> = None;
     let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
     let mut input = args
         .iter()
@@ -839,6 +880,14 @@ pub fn run(
             color_flag = Some(value);
         } else if let Some(value) = arg.strip_prefix("--color=") {
             color_flag = Some(value.to_string());
+        } else if arg == "--threads" {
+            let Some(value) = input.next() else {
+                let _ = write!(stderr, "{USAGE}");
+                return 2;
+            };
+            threads_flag = Some(value);
+        } else if let Some(value) = arg.strip_prefix("--threads=") {
+            threads_flag = Some(value.to_string());
         } else {
             positional_and_flags.push(arg);
         }
@@ -964,6 +1013,26 @@ pub fn run(
             }
         },
         None => None,
+    };
+
+    // Defaults to the machine's available parallelism, matching the same
+    // default the desktop app's own already-concurrent per-file Tauri
+    // commands get for free from Tauri's blocking thread pool (see
+    // `papyrus_lint_core::parallel`'s module docs). `--threads 1` forces
+    // fully sequential processing, e.g. for easier-to-reproduce diagnostics
+    // or a constrained CI runner.
+    let thread_count: usize = match threads_flag {
+        Some(value) => match value.parse::<usize>() {
+            Ok(threads) if threads >= 1 => threads,
+            _ => {
+                let _ = writeln!(
+                    stderr,
+                    "error: --threads must be a positive integer, got '{value}'"
+                );
+                return 2;
+            }
+        },
+        None => papyrus_lint_core::parallel::default_thread_count(),
     };
 
     let is_psc_file = input_path
@@ -1194,199 +1263,251 @@ pub fn run(
     let mut report_buf: Vec<u8> = Vec::new();
 
     let total_scripts = script_paths.len();
-    for (file_index, script_path) in script_paths.iter().enumerate() {
-        let (source, encoding) = match read_psc_source_with_encoding(script_path) {
-            Ok(result) => result,
-            Err(err) => {
-                let _ = writeln!(
-                    stderr,
-                    "error: failed to read {}: {err}",
-                    script_path.display()
-                );
-                return 2;
-            }
-        };
+    let function_table_root = function_table.root().to_path_buf();
+    let function_table_additional_roots = function_table.additional_roots().to_vec();
+    // Every script is otherwise independent, so this table's own cache
+    // (of other scripts' cross-referenced signatures) is the only thing
+    // `--threads` workers below actually share -- through
+    // `SharedFunctionTable`, which locks it only for the duration of a
+    // single lookup rather than a whole script's lint pass. Progress
+    // ("--progress") is likewise reported through a shared counter rather
+    // than each worker's own position in `script_paths`, since completion
+    // order no longer matches input order once more than one thread is
+    // involved -- the final report still is, via `map_in_parallel`'s
+    // ordering guarantee.
+    let function_table = Mutex::new(function_table);
+    let progress_completed = AtomicUsize::new(0);
+    let stdout_dyn: &mut (dyn Write + Send) = stdout;
+    let progress_stdout: Mutex<&mut (dyn Write + Send)> = Mutex::new(stdout_dyn);
 
-        let reported_path = display_path(script_path, function_table.root(), short_paths);
+    let file_results: Vec<Result<FileOutcome, String>> =
+        papyrus_lint_core::parallel::map_in_parallel(
+            (0..total_scripts).collect(),
+            thread_count,
+            |file_index| -> Result<FileOutcome, String> {
+                let script_path = &script_paths[file_index];
+                let (source, encoding) =
+                    read_psc_source_with_encoding(script_path).map_err(|err| {
+                        format!("error: failed to read {}: {err}", script_path.display())
+                    })?;
 
-        let mut file_diff: Option<String> = None;
-        let source = if fix {
-            let repaired = match tag_filter.as_deref() {
-                Some(tag) => {
-                    papyrus_lints::repair_filtered_by_tag(&source, &lint_config, Some(tag))
-                }
-                None => papyrus_lints::repair_filtered(&source, &lint_config, rule_filter),
-            };
-            let repaired = match target_line {
-                Some(line) => match papyrus_lints::restrict_to_line(&source, &repaired, line) {
-                    Some(restricted) => restricted,
-                    None => {
-                        let _ = writeln!(
-                            stderr,
-                            "error: --line can't be applied to {} because a fix changes the file's line count (e.g. property-sorting); use --type to restrict to a line-preserving fix, or omit --line",
-                            script_path.display()
-                        );
-                        return 2;
+                let reported_path = display_path(script_path, &function_table_root, short_paths);
+
+                let mut file_diff: Option<String> = None;
+                let mut plain_text: Vec<u8> = Vec::new();
+                let mut fixed_this_file = false;
+                let source = if fix {
+                    let repaired = match tag_filter.as_deref() {
+                        Some(tag) => {
+                            papyrus_lints::repair_filtered_by_tag(&source, &lint_config, Some(tag))
+                        }
+                        None => papyrus_lints::repair_filtered(&source, &lint_config, rule_filter),
+                    };
+                    let repaired = match target_line {
+                    Some(line) => papyrus_lints::restrict_to_line(&source, &repaired, line)
+                        .ok_or_else(|| {
+                            format!(
+                                "error: --line can't be applied to {} because a fix changes the file's line count (e.g. property-sorting); use --type to restrict to a line-preserving fix, or omit --line",
+                                script_path.display()
+                            )
+                        })?,
+                    None => repaired,
+                };
+                    if repaired != source {
+                        if dry_run {
+                            let diff_text = unified_diff(&reported_path, &source, &repaired);
+                            if !json {
+                                let _ = write!(plain_text, "{diff_text}");
+                            }
+                            file_diff = Some(diff_text);
+                        } else {
+                            write_psc_source(script_path, &repaired, encoding).map_err(|err| {
+                                format!("error: failed to write {}: {err}", script_path.display())
+                            })?;
+                        }
+                        fixed_this_file = true;
                     }
-                },
-                None => repaired,
-            };
-            if repaired != source {
-                if dry_run {
-                    let diff_text = unified_diff(&reported_path, &source, &repaired);
-                    if !json {
-                        let _ = write!(report_buf, "{diff_text}");
-                    }
-                    file_diff = Some(diff_text);
-                } else if let Err(err) = write_psc_source(script_path, &repaired, encoding) {
-                    let _ = writeln!(
-                        stderr,
-                        "error: failed to write {}: {err}",
-                        script_path.display()
-                    );
-                    return 2;
-                }
-                files_fixed += 1;
-            }
-            repaired
-        } else {
-            source
-        };
+                    repaired
+                } else {
+                    source
+                };
 
-        ast_cache::ensure_primed(script_path, &source);
-        let mut diagnostics =
-            papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut function_table);
-        if lint_config.rules.conflicting_script_versions {
-            if strict_achlist_scope {
-                // No directories were added to `additional_script_roots` in
-                // this mode (see above), so `conflicting_script_versions`'s
-                // own directory scan would find nothing among achlist
-                // entries anyway; comparing the achlist's own listed
-                // entries directly is what actually catches a same-named
-                // collision here, without re-reporting one directory
-                // scanning might otherwise also find (e.g. two entries
-                // whose directories both also happen to be configured
-                // `additional_script_roots`).
-                if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
-                    if let Some(same_named) = scripts_by_name.get(&name.to_ascii_lowercase()) {
+                ast_cache::ensure_primed(script_path, &source);
+                let mut diagnostics = {
+                    let mut shared = SharedFunctionTable(&function_table);
+                    papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut shared)
+                };
+                if lint_config.rules.conflicting_script_versions {
+                    if strict_achlist_scope {
+                        // No directories were added to `additional_script_roots` in
+                        // this mode (see above), so `conflicting_script_versions`'s
+                        // own directory scan would find nothing among achlist
+                        // entries anyway; comparing the achlist's own listed
+                        // entries directly is what actually catches a same-named
+                        // collision here, without re-reporting one directory
+                        // scanning might otherwise also find (e.g. two entries
+                        // whose directories both also happen to be configured
+                        // `additional_script_roots`).
+                        if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
+                            if let Some(same_named) =
+                                scripts_by_name.get(&name.to_ascii_lowercase())
+                            {
+                                diagnostics.extend(
+                                papyrus_lint_core::script_locator::conflicting_script_versions_among(
+                                    script_path,
+                                    same_named,
+                                ),
+                            );
+                            }
+                        }
+                    } else {
                         diagnostics.extend(
-                            papyrus_lint_core::script_locator::conflicting_script_versions_among(
+                            papyrus_lint_core::script_locator::conflicting_script_versions_in_index(
                                 script_path,
-                                same_named,
+                                &script_index,
                             ),
                         );
                     }
                 }
-            } else {
-                diagnostics.extend(
-                    papyrus_lint_core::script_locator::conflicting_script_versions_in_index(
-                        script_path,
-                        &script_index,
-                    ),
-                );
-            }
-        }
-        if lint_config.rules.stale_compiled_output {
-            diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));
-        }
-        // Mirrors the desktop app's `lint_with_compile_check`: a
-        // `compiler_path` that can't be run at all (missing/misconfigured)
-        // is silently left out rather than failing the whole lint run.
-        if compile_check && !compiler_path.is_empty() {
-            if let Ok(outcome) = compiler::check_psc_file(
-                Path::new(&compiler_path),
-                script_path,
-                function_table.additional_roots(),
-            ) {
-                if !outcome.success {
-                    diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
+                if lint_config.rules.stale_compiled_output {
+                    diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));
                 }
-            }
-        }
-        if let Some(tag) = tag_filter.as_deref() {
-            diagnostics.retain(|diagnostic| {
-                papyrus_lints::tags::tags_for(diagnostic.rule).is_some_and(|rule_tags| {
-                    rule_tags
-                        .kinds
+                // Mirrors the desktop app's `lint_with_compile_check`: a
+                // `compiler_path` that can't be run at all (missing/misconfigured)
+                // is silently left out rather than failing the whole lint run.
+                if compile_check && !compiler_path.is_empty() {
+                    if let Ok(outcome) = compiler::check_psc_file(
+                        Path::new(&compiler_path),
+                        script_path,
+                        &function_table_additional_roots,
+                    ) {
+                        if !outcome.success {
+                            diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
+                        }
+                    }
+                }
+                if let Some(tag) = tag_filter.as_deref() {
+                    diagnostics.retain(|diagnostic| {
+                        papyrus_lints::tags::tags_for(diagnostic.rule).is_some_and(|rule_tags| {
+                            rule_tags
+                                .kinds
+                                .iter()
+                                .any(|kind| kind.eq_ignore_ascii_case(tag))
+                        })
+                    });
+                }
+                diagnostics.sort_by_key(|d| (d.line, d.column));
+
+                // Quiet flags only affect presentation. A hidden diagnostic still
+                // participates in the configured failure threshold and exit code.
+                let file_should_fail = diagnostics
+                    .iter()
+                    .any(|diagnostic| lint_config.should_fail_on(diagnostic));
+                diagnostics.retain(|diagnostic| {
+                    !((quiet_warnings && diagnostic.level() == "warning")
+                        || (quiet_info && diagnostic.level() == "info"))
+                });
+
+                for diagnostic in &diagnostics {
+                    if !json {
+                        let _ = writeln!(
+                            plain_text,
+                            "{}",
+                            format_diagnostic_line(&reported_path, diagnostic, use_color)
+                        );
+                    }
+                }
+
+                let mut json_file = None;
+                let mut ai_file = None;
+                if json {
+                    let json_diagnostics: Vec<JsonDiagnostic> = diagnostics
                         .iter()
-                        .any(|kind| kind.eq_ignore_ascii_case(tag))
-                })
-            });
-        }
-        diagnostics.sort_by_key(|d| (d.line, d.column));
-
-        // Quiet flags only affect presentation. A hidden diagnostic still
-        // participates in the configured failure threshold and exit code.
-        for diagnostic in &diagnostics {
-            should_fail = should_fail || lint_config.should_fail_on(diagnostic);
-        }
-        diagnostics.retain(|diagnostic| {
-            !((quiet_warnings && diagnostic.level() == "warning")
-                || (quiet_info && diagnostic.level() == "info"))
-        });
-
-        for diagnostic in &diagnostics {
-            if !json {
-                let _ = writeln!(
-                    report_buf,
-                    "{}",
-                    format_diagnostic_line(&reported_path, diagnostic, use_color)
-                );
-            }
-        }
-
-        if json {
-            let json_diagnostics: Vec<JsonDiagnostic> = diagnostics
-                .iter()
-                .map(|d| JsonDiagnostic {
-                    line: d.line,
-                    column: d.column,
-                    rule: d.rule,
-                    level: d.level(),
-                    message: d.message.clone(),
-                })
-                .collect();
-            if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
-                let rule_counts = rule_counts(&json_diagnostics);
-                let severity_counts = severity_counts(&json_diagnostics);
-                let ai_source = if hash_source {
-                    AiSource::Hash {
-                        algorithm: "md5",
-                        hash: content_hash::md5_hex(&source),
+                        .map(|d| JsonDiagnostic {
+                            line: d.line,
+                            column: d.column,
+                            rule: d.rule,
+                            level: d.level(),
+                            message: d.message.clone(),
+                        })
+                        .collect();
+                    if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
+                        let rule_counts = rule_counts(&json_diagnostics);
+                        let severity_counts = severity_counts(&json_diagnostics);
+                        let ai_source = if hash_source {
+                            AiSource::Hash {
+                                algorithm: "md5",
+                                hash: content_hash::md5_hex(&source),
+                            }
+                        } else {
+                            AiSource::Content {
+                                content: source.clone(),
+                            }
+                        };
+                        ai_file = Some(AiFileReport {
+                            path: reported_path.clone(),
+                            severity_counts,
+                            rule_counts,
+                            diagnostics: json_diagnostics,
+                            source: ai_source,
+                        });
+                    } else if output_format == OutputFormat::Json {
+                        json_file = Some(JsonFileReport {
+                            path: reported_path,
+                            diagnostics: json_diagnostics,
+                            diff: file_diff,
+                        });
                     }
-                } else {
-                    AiSource::Content {
-                        content: source.clone(),
-                    }
-                };
-                ai_files.push(AiFileReport {
-                    path: reported_path.clone(),
-                    severity_counts,
-                    rule_counts,
-                    diagnostics: json_diagnostics,
-                    source: ai_source,
-                });
-            } else if output_format == OutputFormat::Json {
-                json_files.push(JsonFileReport {
-                    path: reported_path,
-                    diagnostics: json_diagnostics,
-                    diff: file_diff,
-                });
-            }
-        }
+                }
 
-        if !diagnostics.is_empty() {
+                let has_diagnostics = !diagnostics.is_empty();
+                let diagnostic_count = diagnostics.len();
+
+                if progress {
+                    let completed = progress_completed.fetch_add(1, Ordering::SeqCst) + 1;
+                    let mut stdout = progress_stdout
+                        .lock()
+                        .unwrap_or_else(|poisoned| poisoned.into_inner());
+                    let _ = write!(stdout, "\rLinting: {completed}/{total_scripts} files");
+                    let _ = stdout.flush();
+                }
+
+                Ok(FileOutcome {
+                    plain_text,
+                    json_file,
+                    ai_file,
+                    should_fail: file_should_fail,
+                    has_diagnostics,
+                    diagnostic_count,
+                    fixed: fixed_this_file,
+                })
+            },
+        );
+
+    if let Some(message) = file_results.iter().find_map(|result| result.as_ref().err()) {
+        let _ = writeln!(stderr, "{message}");
+        return 2;
+    }
+
+    let stdout = progress_stdout
+        .into_inner()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    for result in file_results {
+        let outcome = result.expect("checked for errors above");
+        report_buf.extend_from_slice(&outcome.plain_text);
+        if let Some(json_file) = outcome.json_file {
+            json_files.push(json_file);
+        }
+        if let Some(ai_file) = outcome.ai_file {
+            ai_files.push(ai_file);
+        }
+        should_fail = should_fail || outcome.should_fail;
+        if outcome.has_diagnostics {
             files_with_diagnostics += 1;
-            total_diagnostics += diagnostics.len();
+            total_diagnostics += outcome.diagnostic_count;
         }
-
-        if progress {
-            let _ = write!(
-                stdout,
-                "\rLinting: {}/{total_scripts} files",
-                file_index + 1
-            );
-            let _ = stdout.flush();
+        if outcome.fixed {
+            files_fixed += 1;
         }
     }
     if progress {
@@ -3372,6 +3493,97 @@ mod tests {
 
         assert_eq!(code, 2);
         assert!(stderr.contains("--line must be a positive integer"));
+    }
+
+    #[test]
+    fn threads_flag_rejects_a_non_positive_value() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--threads=0".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("--threads must be a positive integer"));
+    }
+
+    #[test]
+    fn threads_flag_rejects_a_non_numeric_value() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--threads".to_string(),
+            "many".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("--threads must be a positive integer"));
+    }
+
+    #[test]
+    fn threads_flag_without_a_value_prints_usage() {
+        let (code, _stdout, stderr) = run_captured(&["--threads".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    // Builds an achlist with enough scripts, several of them cross-referencing
+    // a shared base script, that a multi-threaded run actually exercises
+    // more than one worker thread and more than one `SharedFunctionTable`
+    // lookup collision -- then checks a `--threads 1` (fully sequential) run
+    // and the default multi-threaded run agree byte-for-byte, since threading
+    // is only ever meant to change how fast a run finishes, never what it
+    // reports or in what order.
+    #[test]
+    fn threaded_and_sequential_runs_report_identical_results() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Base.psc"),
+            "ScriptName Base\n\nFunction DoThing(int arg1)\nEndFunction\n",
+        );
+        let mut entries = vec!["\"scripts/source/Base.psc\"".to_string()];
+        for i in 0..12 {
+            let name = format!("Child{i}");
+            write_file(
+                &dir.path().join(format!("scripts/source/{name}.psc")),
+                &format!(
+                    "ScriptName {name} Extends Base\n\nFunction UseIt()\n    DoThing(\"wrong type\")   \nEndFunction\n"
+                ),
+            );
+            entries.push(format!("\"scripts/source/{name}.psc\""));
+        }
+        write_file(
+            &dir.path().join("sources.achlist"),
+            &format!("[{}]", entries.join(", ")),
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (sequential_code, sequential_stdout, _) = run_captured(&[
+            "--threads=1".to_string(),
+            "--short-paths".to_string(),
+            "--json".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+        let (parallel_code, parallel_stdout, _) = run_captured(&[
+            "--threads=8".to_string(),
+            "--short-paths".to_string(),
+            "--json".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(sequential_code, parallel_code);
+        assert_eq!(sequential_stdout, parallel_stdout);
+        // Sanity check that this fixture actually triggers diagnostics
+        // (the argument-type mismatch on every child script), rather than
+        // both runs trivially agreeing on an empty report.
+        assert!(sequential_stdout.contains("argument-types"));
     }
 
     #[test]

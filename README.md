@@ -519,6 +519,8 @@ PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
 PapyrusLinterCLI --short-paths path/to/project.achlist
 PapyrusLinterCLI --color never path/to/project.achlist
 PapyrusLinterCLI --progress --output path/to/report.txt path/to/project.achlist
+PapyrusLinterCLI --threads 8 path/to/project.achlist
+PapyrusLinterCLI --threads 1 path/to/project.achlist
 ```
 
 `PapyrusLinterCLI init` creates a `papyrus-lint.yaml` in the current working
@@ -640,6 +642,14 @@ stdout is a real terminal, `--output` isn't used (a file is never a
 terminal), and the `NO_COLOR` environment variable isn't set; `always`/
 `never` override that detection outright. `--json` output is never
 colorized, since it's meant for tooling rather than a terminal.
+
+Given `--threads <n>` (combinable with every flag above), up to `<n>`
+scripts are read, fixed, and linted at once instead of one at a time —
+useful on a large `.achlist` or a directory scan with hundreds of scripts.
+Defaults to the machine's available parallelism; `--threads 1` forces the
+previous fully sequential behavior. The report is always assembled in the
+scripts' original order regardless of thread count, so `--threads` never
+changes what's reported — only how long it takes.
 
 Each `.psc` file is decoded as UTF-8 when it's valid UTF-8, or as
 Windows-1252 (CP1252) — the Creation Kit/Papyrus compiler's own default

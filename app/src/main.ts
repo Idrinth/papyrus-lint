@@ -1462,29 +1462,63 @@ export function hasFixableFindings(findings: Diagnostic[]): boolean {
   return findings.some((finding) => isFixableFinding(finding));
 }
 
+// How many scripts parsePscFiles works on at once, mirroring the CLI's own
+// --threads default (papyrus_lint_core::parallel::default_thread_count): the
+// machine's hardware concurrency, so dropping a large achlist doesn't fire
+// every one of its scripts' worth of Tauri commands at the same instant —
+// each is dispatched to its own thread, and Rust's own parsing/linting work
+// is CPU-bound, so far more in flight than the machine has cores to run them
+// on just adds contention without finishing any of them sooner. Falls back
+// to 4 when the runtime doesn't report hardwareConcurrency (or reports an
+// implausible non-positive value).
+function parseConcurrencyLimit(): number {
+  const cores = typeof navigator === "object" && navigator ? navigator.hardwareConcurrency : 0;
+  return cores && cores > 0 ? cores : 4;
+}
+
+// Runs `fn` over every item in `items`, at most `limit` calls in flight at
+// once, resolving to their results in `items`' own order regardless of which
+// order they actually finish in — the same ordering guarantee
+// Promise.all(items.map(fn)) gives, but without starting every call at once.
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+  async function worker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await fn(items[index], index);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 // Parses and lints every path in `paths`, invoking `onOutcome` (if given) as
 // each one finishes rather than waiting for the whole batch — the caller can
 // use that to render results incrementally instead of freezing until the
-// slowest file completes. Outcomes are otherwise still resolved concurrently,
-// so `onOutcome` fires in completion order, not necessarily `paths`' order.
+// slowest file completes. Outcomes are otherwise still resolved concurrently
+// (up to parseConcurrencyLimit() at once), so `onOutcome` fires in
+// completion order, not necessarily `paths`' own order.
 export async function parsePscFiles(
   paths: string[],
   onOutcome?: (outcome: PscParseOutcome) => void,
 ): Promise<PscParseOutcome[]> {
-  return Promise.all(
-    paths.map(async (path) => {
-      let outcome: PscParseOutcome;
-      try {
-        const script = await invoke<PapyrusScript>("parse_psc_file", { path });
-        const findings = await lintPscFile(path);
-        outcome = { path, ok: true, detail: `parsed as "${script.name}"`, findings };
-      } catch (error) {
-        outcome = { path, ok: false, detail: String(error), findings: [] };
-      }
-      onOutcome?.(outcome);
-      return outcome;
-    }),
-  );
+  return mapWithConcurrency(paths, parseConcurrencyLimit(), async (path) => {
+    let outcome: PscParseOutcome;
+    try {
+      const script = await invoke<PapyrusScript>("parse_psc_file", { path });
+      const findings = await lintPscFile(path);
+      outcome = { path, ok: true, detail: `parsed as "${script.name}"`, findings };
+    } catch (error) {
+      outcome = { path, ok: false, detail: String(error), findings: [] };
+    }
+    onOutcome?.(outcome);
+    return outcome;
+  });
 }
 
 // Diagnostic messages are prefixed with `[level] `; every built-in lint
