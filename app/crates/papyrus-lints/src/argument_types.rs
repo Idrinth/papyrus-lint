@@ -142,6 +142,22 @@ pub trait ExternalSignatures {
     fn is_global_function(&mut self, _type_name: &str, _function_name: &str) -> Option<bool> {
         None
     }
+
+    /// Whether `type_name`'s full `Extends` ancestry can be walked all the
+    /// way to a definite root — a script with no `Extends` at all, or a
+    /// native engine type from `rules/native-types.yaml` with no further
+    /// parent — rather than trailing off at some type along the way this
+    /// crate simply has no data for. Used by the "Impossible cast" lint
+    /// (`crate::impossible_cast`) to tell two types *proven* unrelated
+    /// (neither's fully-resolved chain reaches the other) apart from two
+    /// types [`Self::is_subtype`] merely couldn't relate for lack of data —
+    /// only the former is safe to flag as a cast that can never succeed.
+    ///
+    /// The default always says no, keeping existing behavior for callers
+    /// that can't resolve scripts (see [`NoExternalSignatures`]).
+    fn ancestry_fully_known(&mut self, _type_name: &str) -> bool {
+        false
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a

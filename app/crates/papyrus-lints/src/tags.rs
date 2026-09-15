@@ -296,6 +296,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Low,
     },
     RuleTags {
+        rule: crate::impossible_cast::RULE,
+        description: "Flags, as a `[warning]`, an explicit `as` cast proven to never succeed: neither the value's known type nor the cast's target type extends the other, directly or transitively (e.g. `Armor a` followed by `Weapon b = a as Weapon`, since `Armor` and `Weapon` are unrelated types that both directly extend `Form`), so the cast always evaluates to `None` no matter what the value actually holds. Only a cast whose value's type can be determined locally (locals, parameters, properties, `Self`/`Parent`, literals, and other resolvable expressions) is checked, the same restriction \"Useless downcast\" places on its own value type; primitive types (`Int`, `Float`, `Bool`, `String`) are never flagged. Since Papyrus scripts have single inheritance, two types are unrelated exactly when neither's `Extends` chain reaches the other, but this is only ever flagged once both the value's and the target's chains are confirmed to resolve all the way to a definite root — a script with no `Extends` at all, or a native engine type from `rules/native-types.yaml` with no further parent — rather than merely failing to find a relation for lack of data; only checked when linting a `.psc` file dropped in the app, the same way \"Useless downcast\" resolves an ancestor-type cast, including through the native engine type fallback.",
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
+    RuleTags {
         rule: crate::unresolved_script::RULE,
         description: "Flags, as a `[warning]`, an unresolved parent in `Extends`, an unresolved type annotation, or a call through Papyrus's static/global call syntax (e.g. `MyMissingScript.DoThing()`) whose target script can't be found. Primitive types and native engine types are recognized without project-side source. Only a call whose object is a bare identifier not already known as a local variable, parameter, or property is considered a script reference at all — one resolved through a variable or property is left to the \"Argument type check\"/\"Return type check\" lints instead. Only checked when linting with project context, by resolving names against `.psc` files under the project root the same way the argument/return type checks do, with native types and singleton scripts supplied by the built-in rule data.",
         kinds: &["correctness"],

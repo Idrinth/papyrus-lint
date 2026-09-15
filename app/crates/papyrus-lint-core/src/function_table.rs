@@ -325,6 +325,51 @@ impl FunctionTable {
         false
     }
 
+    /// Whether `type_name`'s full `Extends` ancestry resolves all the way to
+    /// a definite root: a script found (and parsed) with no `Extends` line
+    /// at all, or — once project resolution runs out — a native engine type
+    /// from [`crate::native_types`] with no further parent. Matched
+    /// case-insensitively, mirroring [`Self::is_subtype`]'s own walk (and
+    /// falling back to [`crate::native_types::parent_of`] the same way past
+    /// the point where project resolution runs out), but tracking whether
+    /// the walk actually reached a confirmed root rather than just whether
+    /// it reached a particular type. A circular `Extends` chain, or a type
+    /// along the way this table has no data for at all (not a project
+    /// script, not in the native fallback), means the ancestry is *not*
+    /// fully known. Used by the "Impossible cast" lint
+    /// (`papyrus_lints::impossible_cast`) to tell a value/target pair
+    /// *proven* unrelated (both sides fully resolved, per
+    /// [`papyrus_lints::argument_types::ExternalSignatures::ancestry_fully_known`])
+    /// apart from one this table simply doesn't have enough information
+    /// about.
+    pub fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                return false; // circular Extends chain; never confidently resolved
+            }
+            self.ensure_loaded(&name);
+
+            current = match self.scripts.get(&name).and_then(Option::as_ref) {
+                Some(script) => match &script.extends {
+                    Some(parent) => Some(parent.to_ascii_lowercase()),
+                    None => return true, // an explicit script with no Extends is a definite root
+                },
+                None => match crate::native_types::parent_of(&name) {
+                    Some(parent) => Some(parent.to_string()),
+                    // No further parent: only a genuine root if the native
+                    // table actually knows this type at all.
+                    None => return crate::native_types::is_known(&name),
+                },
+            };
+            visited.push(name);
+        }
+
+        false
+    }
+
     /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
     /// or transitively), declares a property named `property_name`. Both
     /// names are matched case-insensitively. Returns `false` if
@@ -587,6 +632,10 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
         self.lookup_function(type_name, function_name)
             .map(|signature| signature.is_global)
     }
+
+    fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
+        self.ancestry_fully_known(type_name)
+    }
 }
 
 /// A thread-safe [`ExternalSignatures`](papyrus_lints::argument_types::ExternalSignatures)
@@ -688,6 +737,17 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             &mut *table,
             type_name,
             function_name,
+        )
+    }
+
+    fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::ancestry_fully_known(
+            &mut *table,
+            type_name,
         )
     }
 }
@@ -1162,6 +1222,76 @@ mod tests {
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
         assert!(!table.is_subtype("A", "SomethingElse"));
+    }
+
+    #[test]
+    fn ancestry_fully_known_true_for_a_script_with_no_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "Form", "ScriptName Form\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.ancestry_fully_known("Form"));
+    }
+
+    #[test]
+    fn ancestry_fully_known_true_for_a_project_chain_ending_in_a_native_root() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "MyQuestScript",
+            "ScriptName MyQuestScript Extends Quest\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.ancestry_fully_known("MyQuestScript"));
+    }
+
+    #[test]
+    fn ancestry_fully_known_true_for_native_engine_types_with_no_project_script() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.ancestry_fully_known("Armor"));
+        assert!(table.ancestry_fully_known("Weapon"));
+        assert!(table.ancestry_fully_known("Actor"));
+        assert!(table.ancestry_fully_known("Form"));
+    }
+
+    #[test]
+    fn ancestry_fully_known_false_for_an_unresolvable_type() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.ancestry_fully_known("SomeModsQuestScript"));
+    }
+
+    #[test]
+    fn ancestry_fully_known_false_when_a_project_script_extends_an_unresolvable_type() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Child",
+            "ScriptName Child Extends SomeModsQuestScript\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.ancestry_fully_known("Child"));
+    }
+
+    #[test]
+    fn ancestry_fully_known_does_not_infinite_loop_on_circular_extends() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(root.path(), "A", "ScriptName A Extends B\n");
+        write_script(root.path(), "B", "ScriptName B Extends A\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(!table.ancestry_fully_known("A"));
     }
 
     #[test]

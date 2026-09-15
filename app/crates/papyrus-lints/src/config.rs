@@ -59,6 +59,7 @@
 //!   unchecked_form_parameter: false
 //!   unchecked_cast: true
 //!   useless_downcast: true
+//!   impossible_cast: true
 //!   unresolved_script: true
 //!   non_global_function_call: true
 //!   static_function_call_via_instance: true
@@ -376,6 +377,8 @@ pub struct Rules {
     pub unchecked_cast: bool,
     /// The "Useless downcast" lint.
     pub useless_downcast: bool,
+    /// The "Impossible cast" lint.
+    pub impossible_cast: bool,
     /// The "Unresolved script reference" lint.
     pub unresolved_script: bool,
     /// The "Non-static function call" lint.
@@ -508,6 +511,7 @@ impl Default for Rules {
             unchecked_form_parameter: false,
             unchecked_cast: true,
             useless_downcast: true,
+            impossible_cast: true,
             unresolved_script: true,
             non_global_function_call: true,
             static_function_call_via_instance: true,
@@ -685,6 +689,7 @@ mod tests {
         assert!(!config.rules.unchecked_form_parameter);
         assert!(config.rules.unchecked_cast);
         assert!(config.rules.useless_downcast);
+        assert!(config.rules.impossible_cast);
         assert!(config.rules.unresolved_script);
         assert!(config.rules.non_global_function_call);
         assert!(config.rules.static_function_call_via_instance);

@@ -266,6 +266,10 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td]Flags a member/method access on the result of an As cast before that result has been checked against None. Never flags CreationKit's own fragment boilerplate cast (e.g. Actor akSpeaker = akSpeakerRef as Actor).[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Impossible cast[/b][/td]
+[td]Flags an As cast proven to never succeed, e.g. Weapon b = a as Weapon where a is an Armor, since Armor and Weapon are unrelated types. Only flagged once both types are confirmed to resolve to a known root.[/td]
+[td][/td]
+[/tr]
 [/table][/spoiler]
 [size=4][b]Other[/b][/size]
 Everything else, from unused code and excessive complexity to naming and style preferences.
