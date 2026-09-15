@@ -46,6 +46,7 @@ pub mod return_types;
 pub mod script_name_collision;
 pub mod self_assignment;
 pub mod semicolon;
+pub mod setvalue_in_loop;
 pub mod short_wait_interval;
 pub mod slow_functions;
 pub mod state_count;
@@ -130,6 +131,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     repeated_getvalue::RULE,
     global_variable_setvalue::RULE,
     global_variable_increment::RULE,
+    setvalue_in_loop::RULE,
     invariant_loop_condition::RULE,
     script_name_collision::RULE,
     array_bounds::RULE,
@@ -391,6 +393,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.global_variable_increment {
         diagnostics.extend(global_variable_increment::check(source));
+    }
+    if rules.setvalue_in_loop {
+        diagnostics.extend(setvalue_in_loop::check(source));
     }
     if rules.invariant_loop_condition {
         diagnostics.extend(invariant_loop_condition::check(source));
@@ -1424,6 +1429,12 @@ mod tests {
                 global_variable_increment::RULE,
                 Config::default(),
                 config_with(|c| c.rules.global_variable_increment = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(GlobalVariable gv, Int a)\n    While a > 0\n        gv.SetValue(a)\n        a -= 1\n    EndWhile\nEndFunction\n",
+                setvalue_in_loop::RULE,
+                Config::default(),
+                config_with(|c| c.rules.setvalue_in_loop = false),
             ),
             (
                 "ScriptName Example\n\nFunction Test()\n    Int n = 5\n    While n < 10\n        Debug.Trace(\"y\")\n    EndWhile\nEndFunction\n",

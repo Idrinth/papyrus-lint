@@ -267,6 +267,7 @@ export interface LintRules {
   repeated_getvalue: boolean;
   global_variable_setvalue: boolean;
   global_variable_increment: boolean;
+  setvalue_in_loop: boolean;
   invariant_loop_condition: boolean;
   script_name_collision: boolean;
   array_bounds: boolean;
@@ -354,6 +355,7 @@ export const DEFAULT_RULES: LintRules = {
   repeated_getvalue: false,
   global_variable_setvalue: false,
   global_variable_increment: true,
+  setvalue_in_loop: true,
   invariant_loop_condition: true,
   script_name_collision: true,
   array_bounds: true,

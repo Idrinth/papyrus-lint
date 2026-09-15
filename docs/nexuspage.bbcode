@@ -104,6 +104,10 @@ To keep scripts running smoothly, this flags calls and patterns known to run slo
 [td]Flags gv.SetValue(gv.GetValue() + x), since GlobalVariable's native Mod(x) call does the same thing in one call instead of two.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Repeated GlobalVariable.SetValue() calls in a loop[/b][/td]
+[td]Flags a SetValue/SetValueInt call inside a While loop's body, since it then runs on every iteration; not flagged if the loop also calls Utility.Wait/RegisterForUpdate.[/td]
+[td][/td]
+[/tr]
 [/table][/spoiler]
 [b][size=4]Reliability[/size][/b]
 Catches mistakes that still compile fine but can misbehave once the game is actually running.

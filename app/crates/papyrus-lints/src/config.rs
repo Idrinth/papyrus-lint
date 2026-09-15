@@ -74,6 +74,7 @@
 //!   repeated_getvalue: false
 //!   global_variable_setvalue: false
 //!   global_variable_increment: true
+//!   setvalue_in_loop: true
 //!   invariant_loop_condition: true
 //!   script_name_collision: true
 //!   array_bounds: true
@@ -422,6 +423,8 @@ pub struct Rules {
     pub global_variable_setvalue: bool,
     /// The "GlobalVariable increment via SetValue(GetValue() + x)" lint.
     pub global_variable_increment: bool,
+    /// The "Repeated GlobalVariable.SetValue() calls in a loop" lint.
+    pub setvalue_in_loop: bool,
     /// The "Invariant loop condition" lint.
     pub invariant_loop_condition: bool,
     /// The "Property/variable named as script" lint.
@@ -524,6 +527,7 @@ impl Default for Rules {
             repeated_getvalue: false,
             global_variable_setvalue: false,
             global_variable_increment: true,
+            setvalue_in_loop: true,
             invariant_loop_condition: true,
             script_name_collision: true,
             array_bounds: true,
@@ -713,6 +717,7 @@ mod tests {
         // not a proof the flagged write is actually redundant.
         assert!(!config.rules.global_variable_setvalue);
         assert!(config.rules.global_variable_increment);
+        assert!(config.rules.setvalue_in_loop);
         assert!(config.rules.invariant_loop_condition);
         assert!(config.rules.script_name_collision);
         assert!(config.rules.array_bounds);
