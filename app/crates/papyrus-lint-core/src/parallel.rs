@@ -90,6 +90,11 @@ mod tests {
     use std::sync::Barrier;
 
     #[test]
+    fn default_thread_count_is_never_zero() {
+        assert!(default_thread_count() >= 1);
+    }
+
+    #[test]
     fn preserves_input_order_regardless_of_thread_count() {
         let items: Vec<i32> = (0..50).collect();
         let results = map_in_parallel(items.clone(), 8, |n| n * 2);
