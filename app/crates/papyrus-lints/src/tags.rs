@@ -362,6 +362,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Low,
     },
     RuleTags {
+        rule: "script-filename-mismatch",
+        description: "Flags, as an `[error]`, a `.psc` file whose declared `ScriptName` doesn't match its own file name, aside from casing, since Papyrus resolves/compiles a script by matching the two and rejects a mismatch at compile time. Only available when linting a file with a known path in the desktop app or CLI.",
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
+    RuleTags {
         rule: crate::unused_disable::RULE,
         description: "Flags, as a `[warning]`, each rule id in an `@disable`/`@disable-file` comment that is unknown or does not suppress a diagnostic from that rule (on its line for `@disable`, anywhere in the file for `@disable-file`). A bare `@disable` is flagged when its line has no diagnostics to suppress; a bare `@disable-file` is flagged when the whole file has none. Disabled by default; opt in with `rules.unused_disable`.",
         kinds: &["maintainability"],

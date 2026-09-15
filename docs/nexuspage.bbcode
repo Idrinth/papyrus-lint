@@ -195,6 +195,10 @@ Catches mistakes that still compile fine but can misbehave once the game is actu
 [td]Flags a script-level Property or variable whose name matches the script it's declared in, since Papyrus fails to compile it.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]ScriptName/filename mismatch[/b][/td]
+[td]Flags a .psc file whose declared ScriptName doesn't match its own file name, aside from casing, since Papyrus rejects that at compile time.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Read-only (AutoReadOnly) property write[/b][/td]
 [td]Flags an assignment to a property declared AutoReadOnly, since Papyrus rejects that at compile time. Matches the property's bare name or Self.PropertyName; a bare name shadowed by a same-named local/parameter is left alone.[/td]
 [td][/td]
@@ -425,6 +429,7 @@ rules:
   multiple_auto_states: true
   conflicting_script_versions: true
   stale_compiled_output: true
+  script_filename_mismatch: true
   unused_disable: false
   magic_numbers: false
   native_function_usage: false

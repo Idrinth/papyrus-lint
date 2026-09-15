@@ -128,6 +128,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     state_count::MULTIPLE_AUTO_STATES_RULE,
     "conflicting-script-versions",
     "stale-compiled-output",
+    "script-filename-mismatch",
     unused_disable::RULE,
     magic_numbers::RULE,
     variable_used_before_assignment::RULE,

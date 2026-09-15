@@ -5,7 +5,7 @@ use papyrus_lint_core::source_encoding::{
 };
 use papyrus_lint_core::{
     achlist, ast_cache, compile_diagnostics, compiler, config, content_hash, function_table,
-    presets, script_locator, stale_pex,
+    presets, script_filename_mismatch, script_locator, stale_pex,
 };
 
 #[derive(Debug, PartialEq, serde::Serialize)]
@@ -379,7 +379,9 @@ fn compile_psc_file(
 /// Runs every lint rule against `source` (via `function_table`, for
 /// cross-script lookups), then, if `rules.stale_compiled_output` is
 /// enabled, checks `path`'s conventionally located compiled `.pex` against
-/// it (see [`stale_pex::check`]), then, if `compile_check` is set and
+/// it (see [`stale_pex::check`]), then, if `rules.script_filename_mismatch`
+/// is enabled, checks `path`'s file name against `source`'s declared
+/// `ScriptName` (see [`script_filename_mismatch::check`]), then, if `compile_check` is set and
 /// `compiler_path` isn't blank, also runs PapyrusCompiler.exe against the
 /// script at `path` (into a throwaway temporary directory — see
 /// [`compiler::check_psc_file`]) and appends any errors it reports (see
@@ -410,6 +412,9 @@ fn lint_with_compile_check(
     }
     if config.rules.stale_compiled_output {
         diagnostics.extend(stale_pex::check(path));
+    }
+    if config.rules.script_filename_mismatch {
+        diagnostics.extend(script_filename_mismatch::check(path, source));
     }
 
     let compiler_path = compiler_path.trim();
@@ -1905,6 +1910,59 @@ mod tests {
         assert!(diagnostics
             .iter()
             .all(|diagnostic| diagnostic.rule != stale_pex::RULE));
+    }
+
+    #[test]
+    fn lint_psc_file_reports_script_filename_mismatch() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Other.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics.iter().any(|diagnostic| diagnostic.rule
+            == script_filename_mismatch::RULE
+            && diagnostic.message.starts_with("[error]")));
+    }
+
+    #[test]
+    fn lint_psc_file_ignores_script_filename_mismatch_when_disabled() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Other.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+
+        let config = papyrus_lints::Config {
+            rules: papyrus_lints::config::Rules {
+                script_filename_mismatch: false,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            config,
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != script_filename_mismatch::RULE));
     }
 
     #[test]

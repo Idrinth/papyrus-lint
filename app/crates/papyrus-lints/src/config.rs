@@ -71,6 +71,7 @@
 //!   multiple_auto_states: true
 //!   conflicting_script_versions: true
 //!   stale_compiled_output: true
+//!   script_filename_mismatch: true
 //!   magic_numbers: false
 //!   native_function_usage: false
 //!   repeated_getvalue: false
@@ -406,6 +407,12 @@ pub struct Rules {
     /// available when linting a file with project context in the desktop
     /// app or CLI, the same as [`Self::conflicting_script_versions`].
     pub stale_compiled_output: bool,
+    /// The "ScriptName/filename mismatch" project lint: flags a `.psc`
+    /// whose declared `ScriptName` doesn't match its own file name, aside
+    /// from casing. Only available when linting a file with a known path in
+    /// the desktop app or CLI, the same as [`Self::stale_compiled_output`],
+    /// but unlike it doesn't need project context.
+    pub script_filename_mismatch: bool,
     /// The "Unused disable directive" lint. Defaults to `false`.
     pub unused_disable: bool,
     /// The "Magic numbers" lint. Like [`Self::property_sorting`] and
@@ -529,6 +536,7 @@ impl Default for Rules {
             multiple_auto_states: true,
             conflicting_script_versions: true,
             stale_compiled_output: true,
+            script_filename_mismatch: true,
             unused_disable: false,
             magic_numbers: false,
             native_function_usage: false,

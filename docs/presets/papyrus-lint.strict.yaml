@@ -110,6 +110,7 @@ rules:
   multiple_auto_states: true
   conflicting_script_versions: true
   stale_compiled_output: true
+  script_filename_mismatch: true
   unused_disable: false
   magic_numbers: false
   native_function_usage: false

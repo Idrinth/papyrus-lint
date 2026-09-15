@@ -21,6 +21,7 @@ mod native_types;
 pub mod parallel;
 pub mod pex_header;
 pub mod presets;
+pub mod script_filename_mismatch;
 pub mod script_locator;
 pub mod source_encoding;
 pub mod stale_pex;

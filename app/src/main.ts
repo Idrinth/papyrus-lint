@@ -262,6 +262,7 @@ export interface LintRules {
   multiple_auto_states: boolean;
   conflicting_script_versions: boolean;
   stale_compiled_output: boolean;
+  script_filename_mismatch: boolean;
   unused_disable: boolean;
   magic_numbers: boolean;
   native_function_usage: boolean;
@@ -351,6 +352,7 @@ export const DEFAULT_RULES: LintRules = {
   multiple_auto_states: true,
   conflicting_script_versions: true,
   stale_compiled_output: true,
+  script_filename_mismatch: true,
   unused_disable: false,
   magic_numbers: false,
   native_function_usage: false,
