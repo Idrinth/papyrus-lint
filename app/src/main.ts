@@ -266,6 +266,7 @@ export interface LintRules {
   native_function_usage: boolean;
   repeated_getvalue: boolean;
   global_variable_setvalue: boolean;
+  global_variable_increment: boolean;
   invariant_loop_condition: boolean;
   script_name_collision: boolean;
   array_bounds: boolean;
@@ -352,6 +353,7 @@ export const DEFAULT_RULES: LintRules = {
   native_function_usage: false,
   repeated_getvalue: false,
   global_variable_setvalue: false,
+  global_variable_increment: true,
   invariant_loop_condition: true,
   script_name_collision: true,
   array_bounds: true,

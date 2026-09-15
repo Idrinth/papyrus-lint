@@ -100,6 +100,10 @@ To keep scripts running smoothly, this flags calls and patterns known to run slo
 [td]Flags GetValue() called on the same global more than once across an If/ElseIf chain's conditions, since it can be cached in a local variable instead. Disabled by default.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]GlobalVariable increment via SetValue(GetValue() + x)[/b][/td]
+[td]Flags gv.SetValue(gv.GetValue() + x), since GlobalVariable's native Mod(x) call does the same thing in one call instead of two.[/td]
+[td][/td]
+[/tr]
 [/table][/spoiler]
 [b][size=4]Reliability[/size][/b]
 Catches mistakes that still compile fine but can misbehave once the game is actually running.
@@ -413,6 +417,7 @@ rules:
   native_function_usage: false
   repeated_getvalue: false
   global_variable_setvalue: false
+  global_variable_increment: true
   invariant_loop_condition: true
   script_name_collision: true
   array_bounds: true
