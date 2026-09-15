@@ -298,9 +298,7 @@ jobs:
   virustotal-scan:
     name: Scan release assets with VirusTotal
     needs:
-      - release
-      - sublime-plugin
-      - vscode-plugin
+      - sign-release-assets
       - release-notes
     runs-on: ubuntu-latest
     permissions:
