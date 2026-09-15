@@ -7,7 +7,7 @@ use papyrus_parser::token::TokenKind;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "chain-whitespace";
 
-const WHITESPACE: [u8; 2] = [b' ', b'\t'];
+const WHITESPACE: [u8; 2] = *b" \t";
 
 /// Checks for a `.` member/method access whose adjacent character, on
 /// either side and on the same line, is a space or tab, since that
