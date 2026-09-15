@@ -1180,6 +1180,42 @@ mod tests {
     }
 
     #[test]
+    fn targeted_repairs_leave_a_clean_file_untouched() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&path, source).unwrap();
+        let path_string = path.to_string_lossy().into_owned();
+        let root = dir.path().to_string_lossy().into_owned();
+
+        let finding_diagnostics = repair_psc_finding(
+            path_string.clone(),
+            root.clone(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            1,
+        )
+        .unwrap();
+        let file_diagnostics = repair_psc_file_rule(
+            path_string,
+            root,
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::trailing_whitespace::RULE.to_string(),
+        )
+        .unwrap();
+
+        assert!(finding_diagnostics.is_empty());
+        assert!(file_diagnostics.is_empty());
+        assert_eq!(std::fs::read_to_string(path).unwrap(), source);
+    }
+
+    #[test]
     fn add_disable_comment_to_psc_line_adds_the_directive_and_relints() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Example.psc");
@@ -1559,6 +1595,23 @@ mod tests {
     }
 
     #[test]
+    fn lint_config_from_path_commands_report_parse_and_write_errors() {
+        let dir = tempdir().unwrap();
+        let invalid = dir.path().join("invalid.yaml");
+        std::fs::write(&invalid, "semicolon: [").unwrap();
+
+        assert!(load_lint_config_from_path(invalid.to_string_lossy().into_owned()).is_err());
+        assert!(save_lint_config_to_path(
+            dir.path()
+                .join("missing/config.yaml")
+                .to_string_lossy()
+                .into_owned(),
+            Default::default(),
+        )
+        .is_err());
+    }
+
+    #[test]
     fn project_info_reports_detected_roots_and_configuration_file() {
         let dir = tempdir().unwrap();
         let scripts = dir.path().join("scripts/source");
@@ -1855,6 +1908,36 @@ mod tests {
     }
 
     #[test]
+    fn lint_psc_file_reports_conflicting_script_versions() {
+        let dir = tempdir().unwrap();
+        let first_root = dir.path().join("scripts/source");
+        let second_root = dir.path().join("source/scripts");
+        std::fs::create_dir_all(&first_root).unwrap();
+        std::fs::create_dir_all(&second_root).unwrap();
+        let path = first_root.join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        std::fs::write(
+            second_root.join("Example.psc"),
+            "ScriptName Example\n; a different version\n",
+        )
+        .unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.rule == script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE
+        }));
+    }
+
+    #[test]
     #[cfg(unix)]
     fn lint_psc_file_merges_in_compiler_reported_errors_when_enabled() {
         use std::os::unix::fs::PermissionsExt;
@@ -2024,5 +2107,34 @@ mod tests {
 
         assert!(outcome.success);
         assert_eq!(outcome.stdout, "command wrapper\n");
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn compile_command_returns_a_failed_compiler_outcome() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let script_path = source_dir.join("Example.psc");
+        std::fs::write(&script_path, "ScriptName Example\n").unwrap();
+        let compiler_path = dir.path().join("compiler.sh");
+        std::fs::write(
+            &compiler_path,
+            "#!/bin/sh\necho compile failed >&2\nexit 1\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&compiler_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+        let outcome = compile_psc_file(
+            script_path.to_string_lossy().into_owned(),
+            compiler_path.to_string_lossy().into_owned(),
+            Vec::new(),
+        )
+        .unwrap();
+
+        assert!(!outcome.success);
+        assert_eq!(outcome.stderr, "compile failed\n");
     }
 }
