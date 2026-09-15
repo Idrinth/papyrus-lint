@@ -537,6 +537,10 @@ table.lint-rules-table {
   font-weight: 700;
 }
 
+.lint-table tbody tr:target {
+  background: var(--color-hover-bg);
+}
+
 .disable-note {
   margin-top: 1.5em;
   padding: 1em 1.25em;

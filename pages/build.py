@@ -340,7 +340,8 @@ def render_lint_table(section_lines: list[str]) -> str:
         cells = split_table_row(raw_row)
         name, desc = cells[0], cells[1]
         fix = cells[2] if len(cells) > 2 else ""
-        out.append("<tr>")
+        row_id = html.escape(f"lint-{slugify(name)}", quote=True)
+        out.append(f'<tr id="{row_id}">')
         out.append(f"<td>{render_inline(name)}</td>")
         out.append(f"<td>{render_inline(desc)}</td>")
         out.append('<td class="fix-yes">✓</td>' if fix.strip() else "<td></td>")
@@ -427,6 +428,14 @@ def strip_markdown_inline(text: str) -> str:
     where HTML markup isn't allowed (an HTML attribute value)."""
     text = INLINE_LINK_RE.sub(r"\1", text)
     return text.replace("`", "").replace("**", "")
+
+
+def slugify(text: str) -> str:
+    """Converts text (e.g. a lint table row's Markdown-formatted name) into
+    a lowercase, hyphen-separated identifier usable as an HTML id/URL
+    fragment."""
+    plain = strip_markdown_inline(text).lower()
+    return re.sub(r"[^a-z0-9]+", "-", plain).strip("-")
 
 
 def first_paragraph(lines: list[str]) -> str:
