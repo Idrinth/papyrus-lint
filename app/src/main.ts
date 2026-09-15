@@ -1338,6 +1338,7 @@ const FIXABLE_RULE_IDS = new Set([
   "operator-spacing",
   "type-casing",
   "trailing-whitespace",
+  "global-variable-increment",
 ]);
 
 // A rule in FIXABLE_RULE_IDS can still report a violation it can't actually
@@ -1425,6 +1426,7 @@ const FIXABLE_RULE_DISPLAY_NAMES: Record<string, string> = {
   "operator-spacing": "Spacing around logical/comparison operators",
   "type-casing": "Type name casing",
   "trailing-whitespace": "Trailing whitespace",
+  "global-variable-increment": "GlobalVariable increment via SetValue(GetValue() + x)",
 };
 
 export function massFixRuleDisplayName(rule: string): string {

@@ -452,6 +452,7 @@ pub const FIXABLE_RULE_IDS: &[&str] = &[
     operator_spacing::RULE,
     type_casing::RULE,
     trailing_whitespace::RULE,
+    global_variable_increment::RULE,
 ];
 
 /// Applies every automatic fix to `source`, including the semicolon and
@@ -549,8 +550,13 @@ fn repair_with(source: &str, config: &Config, applies: impl Fn(&str) -> bool) ->
     } else {
         source
     };
-    if rules.trailing_whitespace && applies(trailing_whitespace::RULE) {
+    let source = if rules.trailing_whitespace && applies(trailing_whitespace::RULE) {
         trailing_whitespace::repair(&source)
+    } else {
+        source
+    };
+    if rules.global_variable_increment && applies(global_variable_increment::RULE) {
+        global_variable_increment::repair(&source)
     } else {
         source
     }
