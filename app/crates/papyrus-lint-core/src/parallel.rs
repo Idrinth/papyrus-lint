@@ -85,7 +85,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
     use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::Barrier;
 
     #[test]
     fn preserves_input_order_regardless_of_thread_count() {
@@ -129,5 +131,50 @@ mod tests {
         });
         assert_eq!(counter.load(Ordering::SeqCst), 200);
         assert_eq!(results, (0..200).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn a_single_item_runs_on_the_calling_thread_even_with_many_threads_requested() {
+        let calling_thread = std::thread::current().id();
+
+        let worker_threads = map_in_parallel(vec!["only"], 8, |_| std::thread::current().id());
+
+        assert_eq!(worker_threads, vec![calling_thread]);
+    }
+
+    #[test]
+    fn workers_run_items_concurrently() {
+        let barrier = Barrier::new(4);
+
+        let worker_threads = map_in_parallel(vec![(); 4], 4, |_| {
+            barrier.wait();
+            std::thread::current().id()
+        });
+
+        assert_eq!(worker_threads.into_iter().collect::<HashSet<_>>().len(), 4);
+    }
+
+    #[test]
+    fn supports_borrowed_items_results_and_closure_state() {
+        let prefix = String::from("script");
+        let suffixes = [String::from("one"), String::from("two")];
+        let items = suffixes.iter().collect();
+
+        let results = map_in_parallel(items, 2, |suffix| format!("{prefix}-{suffix}"));
+
+        assert_eq!(results, ["script-one", "script-two"]);
+    }
+
+    #[test]
+    fn more_workers_than_items_still_processes_each_item_once() {
+        let counter = AtomicUsize::new(0);
+
+        let results = map_in_parallel(vec![2, 3], 64, |n| {
+            counter.fetch_add(1, Ordering::SeqCst);
+            n * n
+        });
+
+        assert_eq!(results, vec![4, 9]);
+        assert_eq!(counter.load(Ordering::SeqCst), 2);
     }
 }
