@@ -132,6 +132,15 @@ mod tests {
     }
 
     #[test]
+    fn reports_columns_in_characters_for_non_ascii_source() {
+        let diagnostics = check("String greeting = \"Héllo 🌍\"  \n");
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 1);
+        assert_eq!(diagnostics[0].column, 28);
+    }
+
+    #[test]
     fn repairs_trailing_spaces() {
         assert_eq!(repair("ScriptName Example  \n"), "ScriptName Example\n");
     }
@@ -148,8 +157,22 @@ mod tests {
     }
 
     #[test]
+    fn empty_source_is_unchanged() {
+        assert_eq!(repair(""), "");
+        assert!(check("").is_empty());
+    }
+
+    #[test]
     fn preserves_crlf_line_endings() {
         assert_eq!(repair("Int x = 1  \r\n"), "Int x = 1\r\n");
+    }
+
+    #[test]
+    fn preserves_each_ending_in_a_mixed_line_ending_file() {
+        assert_eq!(
+            repair("Line one  \r\nLine two\t\nLine three   "),
+            "Line one\r\nLine two\nLine three"
+        );
     }
 
     #[test]
@@ -189,5 +212,13 @@ mod tests {
         let source = "Line one \r\nLine two\t\n\tLine three   ";
         let repaired = repair(source);
         assert!(check(&repaired).is_empty());
+    }
+
+    #[test]
+    fn repair_is_idempotent() {
+        let source = "Line one \r\nLine two\t\n\tLine three   ";
+        let repaired = repair(source);
+
+        assert_eq!(repair(&repaired), repaired);
     }
 }
