@@ -88,11 +88,11 @@ fn load_project_file(dir: &Path) -> Result<ProjectFile, String> {
         return Ok(ProjectFile::default());
     };
 
-    let contents = fs::read_to_string(&path).map_err(|err| err.to_string())?;
+    let contents = fs::read_to_string(&path).map_err(|err| format!("{}: {err}", path.display()))?;
     if contents.trim().is_empty() {
         return Ok(ProjectFile::default());
     }
-    serde_yaml::from_str(&contents).map_err(|err| err.to_string())
+    serde_yaml::from_str(&contents).map_err(|err| format!("{}: {err}", path.display()))
 }
 
 /// The explanatory comment shown above each top-level key in the README's
