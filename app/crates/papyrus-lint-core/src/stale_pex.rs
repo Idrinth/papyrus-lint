@@ -26,7 +26,9 @@ pub const RULE: &str = "stale-compiled-output";
 fn pex_path_for(script_path: &Path) -> Option<std::path::PathBuf> {
     let stem = script_path.file_stem()?;
     let output_dir = script_path.parent()?.parent()?;
-    Some(output_dir.join(stem).with_extension("pex"))
+    let mut output_name = stem.to_os_string();
+    output_name.push(".pex");
+    Some(output_dir.join(output_name))
 }
 
 /// Compares `script_path`'s last-modified time against its conventionally
@@ -132,6 +134,18 @@ mod tests {
     }
 
     #[test]
+    fn ignores_a_missing_script_even_when_the_compiled_output_exists() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts").join("Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        let pex_path = root.path().join("Scripts").join("Example.pex");
+        fs::write(pex_path, "").expect("failed to write compiled output");
+
+        assert!(check(&script_path).is_none());
+    }
+
+    #[test]
     fn ignores_a_script_with_no_grandparent_directory() {
         let script_path = Path::new("Example.psc");
 
@@ -146,5 +160,20 @@ mod tests {
             pex_path_for(script_path),
             Some(std::path::PathBuf::from("/game/Data/Scripts/Example.pex"))
         );
+    }
+
+    #[test]
+    fn pex_path_for_replaces_only_the_final_source_extension() {
+        let script_path = Path::new("/game/Data/Scripts/Source/Quest.v2.PSC");
+
+        assert_eq!(
+            pex_path_for(script_path),
+            Some(std::path::PathBuf::from("/game/Data/Scripts/Quest.v2.pex"))
+        );
+    }
+
+    #[test]
+    fn pex_path_for_rejects_a_path_without_a_file_name() {
+        assert_eq!(pex_path_for(Path::new("/")), None);
     }
 }

@@ -369,6 +369,60 @@ mod tests {
     }
 
     #[test]
+    fn changes_with_exactly_twice_the_context_between_them_share_a_hunk() {
+        let old = "change-one\n1\n2\n3\n4\n5\n6\nchange-two\n";
+        let new = "updated-one\n1\n2\n3\n4\n5\n6\nupdated-two\n";
+
+        let diff = unified_diff("a.psc", old, new);
+
+        assert_eq!(diff.matches("@@ ").count(), 1);
+        assert!(diff.contains("@@ -1,8 +1,8 @@"));
+    }
+
+    #[test]
+    fn one_more_than_twice_the_context_splits_changes_into_two_hunks() {
+        let old = "change-one\n1\n2\n3\n4\n5\n6\n7\nchange-two\n";
+        let new = "updated-one\n1\n2\n3\n4\n5\n6\n7\nupdated-two\n";
+
+        let diff = unified_diff("a.psc", old, new);
+
+        assert_eq!(diff.matches("@@ ").count(), 2);
+        assert!(diff.contains("@@ -1,4 +1,4 @@"));
+        assert!(diff.contains("@@ -6,4 +6,4 @@"));
+        assert!(!diff.contains(" 4\n"));
+    }
+
+    #[test]
+    fn appending_to_a_file_reports_the_insertion_after_the_last_old_line() {
+        let diff = unified_diff("a.psc", "one\ntwo\n", "one\ntwo\nthree\n");
+
+        assert_eq!(
+            diff,
+            "--- a.psc\n\
+             +++ a.psc\n\
+             @@ -1,2 +1,3 @@\n\
+             \x20one\n\
+             \x20two\n\
+             +three\n"
+        );
+    }
+
+    #[test]
+    fn prepending_to_a_file_keeps_following_lines_as_context() {
+        let diff = unified_diff("a.psc", "one\ntwo\n", "zero\none\ntwo\n");
+
+        assert_eq!(
+            diff,
+            "--- a.psc\n\
+             +++ a.psc\n\
+             @@ -1,2 +1,3 @@\n\
+             +zero\n\
+             \x20one\n\
+             \x20two\n"
+        );
+    }
+
+    #[test]
     fn insertion_into_empty_file_uses_zero_old_range() {
         let diff = unified_diff("new.psc", "", "ScriptName New\nFunction Run()\n");
 
