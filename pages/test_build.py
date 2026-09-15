@@ -206,6 +206,8 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertIn("<strong>Useful</strong>", result)
         self.assertEqual(result.count('<td class="fix-yes">✓</td>'), 1)
         self.assertIn("<td>second</td>", result)
+        self.assertIn('<tr id="lint-first">', result)
+        self.assertIn('<tr id="lint-second">', result)
 
     def test_render_lint_table_rejects_missing_table(self) -> None:
         with self.assertRaisesRegex(SystemExit, "expected a Lint/Description"):
@@ -248,6 +250,18 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertIn("<td>&lt;unsafe&gt;</td>", result)
         self.assertIn("Never render &lt;script&gt; or \"quotes\"", result)
         self.assertNotIn("<script>", result)
+        self.assertIn('<tr id="lint-unsafe">', result)
+
+    def test_slugify_strips_markdown_and_punctuation(self) -> None:
+        self.assertEqual(page_builder.slugify("**Trailing whitespace**"), "trailing-whitespace")
+        self.assertEqual(
+            page_builder.slugify("`Int/Int division` widened to Float"),
+            "int-int-division-widened-to-float",
+        )
+        self.assertEqual(
+            page_builder.slugify("GlobalVariable increment via SetValue(GetValue() + x)"),
+            "globalvariable-increment-via-setvalue-getvalue-x",
+        )
 
     def test_first_code_block_returns_contents(self) -> None:
         self.assertEqual(
