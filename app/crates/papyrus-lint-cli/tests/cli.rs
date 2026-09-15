@@ -1290,3 +1290,98 @@ fn fix_rejects_zero_as_a_line_number_without_modifying_the_script() {
         original
     );
 }
+
+#[test]
+fn threaded_directory_lint_keeps_json_files_in_stable_path_order() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let scripts = dir.path().join("scripts/source");
+    // Deliberately create these in a different order from the one expected in
+    // the report. Worker completion and filesystem iteration order must not
+    // leak into machine-readable output.
+    for name in ["Zulu", "Alpha", "Middle"] {
+        write_file(
+            &scripts.join(format!("{name}.psc")),
+            &format!("ScriptName {name}   \n"),
+        );
+    }
+
+    let output = run_cli(&[
+        "--threads",
+        "3",
+        "--short-paths",
+        "--json",
+        &scripts.to_string_lossy(),
+    ]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain JSON");
+    let paths: Vec<_> = report["files"]
+        .as_array()
+        .expect("files should be an array")
+        .iter()
+        .map(|file| file["path"].as_str().expect("path should be a string"))
+        .collect();
+    assert_eq!(
+        paths,
+        [
+            "scripts/source/Alpha.psc",
+            "scripts/source/Middle.psc",
+            "scripts/source/Zulu.psc"
+        ]
+    );
+}
+
+#[test]
+fn threaded_fix_repairs_every_script_through_the_binary_entry_point() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let scripts = dir.path().join("scripts/source");
+    let script_paths: Vec<_> = (0..8)
+        .map(|index| scripts.join(format!("Example{index}.psc")))
+        .collect();
+    for (index, script) in script_paths.iter().enumerate() {
+        write_file(script, &format!("ScriptName Example{index}   \n"));
+    }
+
+    let output = run_cli(&[
+        "fix",
+        "--threads=4",
+        "--type=trailing-whitespace",
+        &scripts.to_string_lossy(),
+    ]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stdout).expect("stdout should be UTF-8"),
+        "PapyrusLinterCLI: no problems found in 8 script(s). (8 script(s) fixed.)\n"
+    );
+    for (index, script) in script_paths.iter().enumerate() {
+        assert_eq!(
+            fs::read_to_string(script).expect("fixed script should be readable"),
+            format!("ScriptName Example{index}\n")
+        );
+    }
+}
+
+#[test]
+fn invalid_thread_count_is_rejected_before_fixing_a_script() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("Example.psc");
+    let original = "ScriptName Example   \n";
+    write_file(&script, original);
+
+    let output = run_cli(&["fix", "--threads", "many", &script.to_string_lossy()]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
+        "error: --threads must be a positive integer, got 'many'\n"
+    );
+    assert_eq!(
+        fs::read_to_string(script).expect("script should be readable"),
+        original
+    );
+}
