@@ -40,6 +40,7 @@
 //!   cyclomatic_complexity: true
 //!   unreachable_statement: true
 //!   static_condition: true
+//!   unreachable_elseif: true
 //!   division_by_zero: true
 //!   empty_body: true
 //!   unused_local_variable: true
@@ -332,6 +333,8 @@ pub struct Rules {
     pub unreachable_statement: bool,
     /// The "Static condition" lint.
     pub static_condition: bool,
+    /// The "Unreachable elseif" lint.
+    pub unreachable_elseif: bool,
     /// The "Division by zero" lint.
     pub division_by_zero: bool,
     /// The "Empty loop/conditional body" lint.
@@ -480,6 +483,7 @@ impl Default for Rules {
             cyclomatic_complexity: true,
             unreachable_statement: true,
             static_condition: true,
+            unreachable_elseif: true,
             division_by_zero: true,
             empty_body: true,
             unused_local_variable: true,
@@ -650,6 +654,7 @@ mod tests {
         assert!(config.rules.cyclomatic_complexity);
         assert!(config.rules.unreachable_statement);
         assert!(config.rules.static_condition);
+        assert!(config.rules.unreachable_elseif);
         assert!(config.rules.division_by_zero);
         assert!(config.rules.empty_body);
         assert!(config.rules.unused_local_variable);

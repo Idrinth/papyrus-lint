@@ -64,6 +64,7 @@ rules:
   cyclomatic_complexity: true
   unreachable_statement: true
   static_condition: true
+  unreachable_elseif: true
   division_by_zero: true
   empty_body: true
   unused_local_variable: true

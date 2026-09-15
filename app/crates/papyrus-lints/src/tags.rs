@@ -188,6 +188,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Medium,
     },
     RuleTags {
+        rule: crate::unreachable_elseif::RULE,
+        description: "Flags, as a `[warning]`, an `ElseIf` branch whose condition can never be true because an earlier branch of the same `If` (the `If` itself or a prior `ElseIf`) already covers every value that would satisfy it (e.g. `If x > 9` followed by `ElseIf x > 10`). Only a direct relational comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`) between the exact same left-hand expression and a numeric literal is checked; a compound `&&`/`||` condition, a non-numeric operand, or a differently-shaped left-hand expression is left unflagged rather than guessed at.",
+        kinds: &["correctness", "maintainability"],
+        importance: Importance::Medium,
+    },
+    RuleTags {
         rule: crate::division_by_zero::RULE,
         description: "Flags, as a `[warning]`, a `/` or `%` whose right-hand operand is a compile-time-constant zero (e.g. `x / 0`, `x % 0.0`, `x / (1 - 1)`), since that crashes the script at runtime. Only a divisor built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at.",
         kinds: &["correctness"],
