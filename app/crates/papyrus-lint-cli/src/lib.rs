@@ -1372,6 +1372,12 @@ pub fn run(
                 if lint_config.rules.stale_compiled_output {
                     diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));
                 }
+                if lint_config.rules.script_filename_mismatch {
+                    diagnostics.extend(papyrus_lint_core::script_filename_mismatch::check(
+                        script_path,
+                        &source,
+                    ));
+                }
                 // Mirrors the desktop app's `lint_with_compile_check`: a
                 // `compiler_path` that can't be run at all (missing/misconfigured)
                 // is silently left out rather than failing the whole lint run.
@@ -4082,7 +4088,7 @@ mod tests {
         );
         write_file(
             &dir.path().join("mods/two/Example.psc"),
-            "ScriptName ExampleV2\n",
+            "ScriptName Example\n; a different version\n",
         );
         write_file(
             &dir.path().join("scripts.achlist"),
@@ -4124,7 +4130,7 @@ mod tests {
         );
         write_file(
             &dir.path().join("source/scripts/Example.psc"),
-            "ScriptName ExampleV2\n",
+            "ScriptName Example\n; a different version\n",
         );
         write_file(
             &dir.path().join("scripts.achlist"),
@@ -4229,6 +4235,92 @@ mod tests {
         assert_eq!(code, 0, "stderr: {stderr}");
         assert!(
             !stdout.contains("[stale-compiled-output]"),
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn flags_a_script_name_that_does_not_match_its_file_name() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Other.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1, "stderr: {stderr}");
+        assert!(
+            stdout.contains("[script-filename-mismatch]"),
+            "stdout: {stdout}"
+        );
+        assert!(stdout.contains("[error]"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn does_not_flag_a_script_name_matching_its_file_name() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[script-filename-mismatch]"),
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn script_filename_mismatch_can_be_disabled() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Other.psc");
+        write_file(&script_path, "ScriptName Example\n");
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  script_filename_mismatch: false\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[script-filename-mismatch]"),
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn script_filename_mismatch_can_be_suppressed_with_a_disable_comment() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Other.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example ; @disable script-filename-mismatch\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[script-filename-mismatch]"),
+            "stdout: {stdout}"
+        );
+    }
+
+    #[test]
+    fn script_filename_mismatch_can_be_suppressed_with_a_disable_file_comment() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Other.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n; @disable-file script-filename-mismatch\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[script-filename-mismatch]"),
             "stdout: {stdout}"
         );
     }

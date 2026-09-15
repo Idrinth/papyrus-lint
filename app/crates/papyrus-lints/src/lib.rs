@@ -128,6 +128,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     state_count::MULTIPLE_AUTO_STATES_RULE,
     "conflicting-script-versions",
     "stale-compiled-output",
+    "script-filename-mismatch",
     unused_disable::RULE,
     magic_numbers::RULE,
     variable_used_before_assignment::RULE,
@@ -627,6 +628,20 @@ pub fn repaired_line(
 /// `target_line` leaves `source` untouched.
 pub fn add_disable_comment(source: &str, target_line: usize, rules: &[String]) -> String {
     disable_comments::add_disable_directive(source, target_line, rules)
+}
+
+/// Whether `rule` is suppressed on `line` (1-indexed) of `source` by an
+/// `@disable`/`@disable-file` directive (see [`disable_comments`]), matched
+/// the same case-insensitive way [`lint`]/[`lint_with_external_arguments`]
+/// match their own diagnostics. Lets a caller outside this crate honor the
+/// same directives for a diagnostic it computed itself rather than through
+/// [`lint`]/[`lint_with_external_arguments`] — namely `papyrus-lint-core`'s
+/// project-level lints (`stale-compiled-output`, `conflicting-script-versions`,
+/// `script-filename-mismatch`), which need more than just `source` (a file
+/// path, or another script's contents) to run and so can't be dispatched
+/// from inside [`lint_with_external_arguments`] itself.
+pub fn is_disabled(source: &str, line: usize, rule: &str) -> bool {
+    disable_comments::Disables::scan(source).is_disabled(line, rule)
 }
 
 #[cfg(test)]
