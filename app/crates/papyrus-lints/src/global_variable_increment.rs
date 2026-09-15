@@ -82,7 +82,7 @@ pub fn repair(source: &str) -> String {
     for function in all_functions(&script) {
         collect_edits(&function.body, &tokens, &line_starts, source, &mut edits);
     }
-    edits.sort_by(|a, b| b.0.cmp(&a.0));
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.0));
 
     let mut repaired = source.to_string();
     for (start, end, replacement) in edits {
