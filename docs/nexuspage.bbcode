@@ -210,6 +210,10 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td]Flags conditions that resolve the same every time due to this likely being a mistake.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Unreachable elseif[/b][/td]
+[td]Flags an ElseIf whose condition can never be true because an earlier branch already covers it.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Division by zero[/b][/td]
 [td]Flags divisions by zero where they are likely to happen.[/td]
 [td][/td]
@@ -371,6 +375,7 @@ rules:
   cyclomatic_complexity: true
   unreachable_statement: true
   static_condition: true
+  unreachable_elseif: true
   division_by_zero: true
   empty_body: true
   unused_local_variable: true

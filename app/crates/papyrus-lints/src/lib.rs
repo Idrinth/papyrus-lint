@@ -57,6 +57,7 @@ pub mod type_casing;
 pub mod unchecked_cast;
 pub mod unchecked_form_parameter;
 pub mod unguarded_self_recursion;
+pub mod unreachable_elseif;
 pub mod unreachable_statement;
 pub mod unresolved_script;
 pub mod unused_disable;
@@ -93,6 +94,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     cyclomatic_complexity::RULE,
     unreachable_statement::RULE,
     static_condition::RULE,
+    unreachable_elseif::RULE,
     division_by_zero::RULE,
     empty_body::RULE,
     unused_local_variable::RULE,
@@ -302,6 +304,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.static_condition {
         diagnostics.extend(static_condition::check(source));
+    }
+    if rules.unreachable_elseif {
+        diagnostics.extend(unreachable_elseif::check(source));
     }
     if rules.division_by_zero {
         diagnostics.extend(division_by_zero::check(source));
