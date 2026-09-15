@@ -695,6 +695,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
 #[cfg(test)]
 mod tests {
     use super::*;
+    use papyrus_lints::argument_types::ExternalSignatures;
     use std::fs;
     use std::path::Path;
 
@@ -703,6 +704,56 @@ mod tests {
         fs::create_dir_all(&source_dir).expect("failed to create source dir");
         fs::write(source_dir.join(format!("{name}.psc")), contents)
             .expect("failed to write test script file");
+    }
+
+    #[test]
+    fn exposes_the_configured_project_and_additional_roots() {
+        let root = PathBuf::from("/example/project");
+        let additional_roots = vec!["shared/scripts".to_string(), "/sdk/source".to_string()];
+
+        let table =
+            FunctionTable::new_with_additional_roots(root.clone(), additional_roots.clone());
+
+        assert_eq!(table.root(), root);
+        assert_eq!(table.additional_roots(), additional_roots);
+    }
+
+    #[test]
+    fn shared_function_table_forwards_every_external_signature_lookup() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Helpers",
+            "ScriptName Helpers\n\nFunction Run() Global\nEndFunction\n",
+        );
+        write_script(root.path(), "Child", "ScriptName Child Extends Helpers\n");
+        write_script(
+            root.path(),
+            "Properties",
+            "ScriptName Properties\n\nString Property Name Auto\n",
+        );
+        write_script(
+            root.path(),
+            "States",
+            "ScriptName States\n\nState Active\nEndState\n",
+        );
+        let table = Mutex::new(FunctionTable::new(root.path().to_path_buf()));
+        let mut shared = SharedFunctionTable(&table);
+
+        let params = shared
+            .lookup("Helpers", "Run")
+            .expect("function should resolve through the adapter");
+        assert!(params.is_empty());
+        assert!(shared.is_subtype("Child", "Helpers"));
+        assert!(shared.has_property("Properties", "Name"));
+        assert!(shared.script_exists("Child"));
+        assert!(shared.type_exists("Int"));
+        assert!(shared.has_state("States", "Active"));
+        assert_eq!(
+            shared.ancestor_states("States"),
+            vec![("active".to_string(), false)]
+        );
+        assert_eq!(shared.is_global_function("Helpers", "Run"), Some(true));
     }
 
     #[test]
