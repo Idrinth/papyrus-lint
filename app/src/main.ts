@@ -272,6 +272,7 @@ export interface LintRules {
   readonly_property_write: boolean;
   default_property_value: boolean;
   unguarded_self_recursion: boolean;
+  self_assignment: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -357,6 +358,7 @@ export const DEFAULT_RULES: LintRules = {
   readonly_property_write: true,
   default_property_value: false,
   unguarded_self_recursion: true,
+  self_assignment: true,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
