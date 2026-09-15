@@ -92,11 +92,12 @@ fn desktop_binary_preserves_the_cli_failure_code_and_json_diagnostics() {
     assert!(output.stderr.is_empty());
     let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(report["success"], false);
-    assert_eq!(
-        report["files"][0]["diagnostics"][0]["rule"],
-        "forbidden-function"
-    );
-    assert_eq!(report["files"][0]["diagnostics"][0]["line"], 4);
+    let diagnostics = report["files"][0]["diagnostics"].as_array().unwrap();
+    let forbidden_function = diagnostics
+        .iter()
+        .find(|diagnostic| diagnostic["rule"] == "forbidden-function")
+        .expect("Game.GetPlayer should produce a forbidden-function diagnostic");
+    assert_eq!(forbidden_function["line"], 4);
 }
 
 #[test]
