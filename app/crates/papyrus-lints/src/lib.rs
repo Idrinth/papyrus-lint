@@ -585,6 +585,20 @@ pub fn repaired_line(
     (restricted_line != original_line).then(|| restricted_line.to_string())
 }
 
+/// Adds (or extends) an `; @disable <rules>` line comment on `target_line`
+/// (1-indexed) of `source`, covering every rule id in `rules` — the inverse
+/// of [`repaired_line`]'s per-line "Fix": rather than fixing the findings on
+/// that line, it silences them, driving the desktop app's per-line "Ignore"
+/// button in the code viewer. See
+/// [`crate::disable_comments::add_disable_directive`] for the exact
+/// merging/formatting rules. A rule already covered by an existing
+/// directive on that line, or a bare `@disable` already covering every
+/// rule, is left as-is; an empty `rules` list or an out-of-range
+/// `target_line` leaves `source` untouched.
+pub fn add_disable_comment(source: &str, target_line: usize, rules: &[String]) -> String {
+    disable_comments::add_disable_directive(source, target_line, rules)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -975,6 +989,21 @@ mod tests {
             repaired_line(source, &Config::default(), comma_spacing::RULE, 2),
             None
         );
+    }
+
+    #[test]
+    fn add_disable_comment_suppresses_the_named_rule_on_the_target_line() {
+        let source = "Call(1,2)  \n";
+        let config = Config::default();
+        assert!(!lint(source, &config).is_empty());
+
+        let updated = add_disable_comment(source, 1, &[comma_spacing::RULE.to_string()]);
+        let remaining: Vec<_> = lint(&updated, &config)
+            .into_iter()
+            .filter(|finding| finding.rule == comma_spacing::RULE)
+            .collect();
+
+        assert!(remaining.is_empty());
     }
 
     #[test]

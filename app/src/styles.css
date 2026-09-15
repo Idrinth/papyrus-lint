@@ -953,6 +953,29 @@ h1 {
   vertical-align: top;
 }
 
+.code-viewer__line-actions {
+  width: 1%;
+  padding: 0 0.75em 0 0;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.code-viewer__line-action {
+  padding: 0.05em 0.5em;
+  margin-left: 0.4em;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 4px;
+  background-color: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.code-viewer__line-action:hover {
+  background-color: var(--color-hover-bg);
+}
+
 .code-viewer__line--error {
   background-color: var(--color-error-bg);
 }
