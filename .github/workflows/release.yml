@@ -295,6 +295,62 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "$GITHUB_REF_NAME" "signatures/*.sigstore.json" --clobber --repo "${{ github.repository }}"
 
+  virustotal-scan:
+    name: Scan release assets with VirusTotal
+    needs:
+      - release
+      - sublime-plugin
+      - vscode-plugin
+      - release-notes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Resolve release ID
+        id: release_id
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_ID=$(gh api "repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}" --jq .id)
+          echo "id=$RELEASE_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download release executables and archives
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p scan-assets
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir scan-assets \
+            -p "PapyrusLinterCLI-linux" \
+            -p "PapyrusLinterCLI-macos" \
+            -p "PapyrusLinterCLI-windows.exe" \
+            -p "PapyrusLinter-windows-x64_setup.exe" \
+            -p "PapyrusLinter-windows-x64.msi" \
+            -p "PapyrusLinter-linux-x86_64.rpm" \
+            -p "PapyrusLinter-linux-amd64.deb" \
+            -p "PapyrusLinter-linux-amd64.AppImage" \
+            -p "PapyrusLinter-darwin-aarch64.dmg" \
+            -p "PapyrusLinter-darwin-aarch64.app.tar.gz" \
+            -p "papyrus-lint-vscode.vsix" \
+            -p "SublimeLinter-contrib-papyrus-lint.zip"
+
+      # Runs after release-notes so its own release-notes-editing step (which
+      # rewrites the notes wholesale) can't clobber the results this appends;
+      # update_release: true is what gives the release notes their "quick
+      # result overview" of the scan, and summary: true mirrors it into this
+      # job's own step summary.
+      - name: VirusTotal Action
+        uses: cssnr/virustotal-action@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
+          file_globs: scan-assets/*
+          release_id: ${{ steps.release_id.outputs.id }}
+          sha256: true
+          update_release: true
+
   update-pages:
     name: Update GitHub Pages with release version
     needs:
