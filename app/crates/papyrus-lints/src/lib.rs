@@ -23,6 +23,7 @@ pub mod forbidden_functions;
 pub mod formid_hex_notation;
 pub mod fragment_code;
 pub mod function_override;
+pub mod global_variable_increment;
 pub mod global_variable_setvalue;
 pub mod goto_state;
 pub mod identifier_casing;
@@ -125,6 +126,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     native_function_usage::RULE,
     repeated_getvalue::RULE,
     global_variable_setvalue::RULE,
+    global_variable_increment::RULE,
     invariant_loop_condition::RULE,
     script_name_collision::RULE,
     array_bounds::RULE,
@@ -379,6 +381,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.global_variable_setvalue {
         diagnostics.extend(global_variable_setvalue::check(source));
+    }
+    if rules.global_variable_increment {
+        diagnostics.extend(global_variable_increment::check(source));
     }
     if rules.invariant_loop_condition {
         diagnostics.extend(invariant_loop_condition::check(source));
@@ -1403,6 +1408,12 @@ mod tests {
                 global_variable_setvalue::RULE,
                 config_with(|c| c.rules.global_variable_setvalue = true),
                 Config::default(),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(GlobalVariable gv, Float x)\n    gv.SetValue(gv.GetValue() + x)\nEndFunction\n",
+                global_variable_increment::RULE,
+                Config::default(),
+                config_with(|c| c.rules.global_variable_increment = false),
             ),
             (
                 "ScriptName Example\n\nFunction Test()\n    Int n = 5\n    While n < 10\n        Debug.Trace(\"y\")\n    EndWhile\nEndFunction\n",

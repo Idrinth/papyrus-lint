@@ -189,6 +189,7 @@
         "native_function_usage",
         "repeated_getvalue",
         "global_variable_setvalue",
+        "global_variable_increment",
         "invariant_loop_condition",
         "script_name_collision",
         "array_bounds",
@@ -351,6 +352,9 @@
           "type": "boolean"
         },
         "global_variable_setvalue": {
+          "type": "boolean"
+        },
+        "global_variable_increment": {
           "type": "boolean"
         },
         "invariant_loop_condition": {
