@@ -23,6 +23,20 @@
 //! here is swallowed and simply falls through to a fresh parse, never
 //! surfaced as a lint error.
 //!
+//! Every public accessor below serializes on a single process-wide
+//! [`CACHE_LOCK`], since two scripts linted at once (the CLI's
+//! [`crate::parallel`]-based worker pool, or the desktop app's own already-
+//! concurrent per-file Tauri commands) can both resolve the same
+//! cross-script dependency at the same moment, and [`std::fs::write`] isn't
+//! atomic: two unsynchronized writers to the very same cache file could
+//! interleave into invalid JSON. A corrupt read already falls back to a
+//! fresh parse (see above), so that alone was never unsound, but it did
+//! mean a hot shared script (e.g. a common base class) could pay for a
+//! redundant reparse on every such collision. Holding the lock across an
+//! entire accessor call — including its own file I/O and (de)serialization,
+//! but never the caller's actual parse/lint work — keeps that cost to the
+//! disk access itself rather than serializing the CPU-bound work around it.
+//!
 //! Each entry also carries the lexer's token stream
 //! (`papyrus_parser::tokenize()`'s output) alongside the AST, via
 //! [`get_tokens`]/[`put_tokens`], sharing the same freshness metadata as
@@ -45,11 +59,17 @@
 //! `source` once itself and writes a fresh disk entry for next time.
 
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use std::time::UNIX_EPOCH;
 
 use serde::{Deserialize, Serialize};
 
 const CACHE_DIR_NAME: &str = "ast-cache";
+
+/// Guards every public accessor below against concurrent access from
+/// multiple lint workers at once — see the module docs above for why this
+/// is needed despite each entry living in its own file.
+static CACHE_LOCK: Mutex<()> = Mutex::new(());
 
 /// The oldest linter release whose AST cache entries the running binary
 /// still accepts. See the module docs above for when to bump this.
@@ -213,6 +233,9 @@ fn put_tokens_in(
 /// error -- the caller should parse `source` fresh in that case. See
 /// [`get_in`] for the in-memory priming a hit also does.
 pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
+    let _guard = CACHE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     get_in(&cache_dir()?, source_path, source)
 }
 
@@ -220,6 +243,9 @@ pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Scri
 /// for later [`get`] calls. Any failure (e.g. an unwritable install
 /// directory) is silently ignored.
 pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) {
+    let _guard = CACHE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(dir) = cache_dir() {
         put_in(&dir, source_path, source, ast, env!("CARGO_PKG_VERSION"));
     }
@@ -232,6 +258,9 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
 /// error -- the caller should tokenize `source` fresh in that case. See
 /// [`get_tokens_in`] for the in-memory priming a hit also does.
 pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser::token::Token>> {
+    let _guard = CACHE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     get_tokens_in(&cache_dir()?, source_path, source)
 }
 
@@ -239,6 +268,9 @@ pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser
 /// cache for later [`get_tokens`] calls. Any failure (e.g. an unwritable
 /// install directory) is silently ignored.
 pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::token::Token]) {
+    let _guard = CACHE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(dir) = cache_dir() {
         put_tokens_in(&dir, source_path, source, tokens, env!("CARGO_PKG_VERSION"));
     }
@@ -271,6 +303,9 @@ fn ensure_primed_in(dir: &Path, source_path: &Path, source: &str, linter_version
 /// CLI invocations -- skips both re-parsing and re-tokenizing it there too,
 /// not just in `get`/`get_tokens`'s other existing callers.
 pub fn ensure_primed(source_path: &Path, source: &str) {
+    let _guard = CACHE_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     let Some(dir) = cache_dir() else {
         return;
     };

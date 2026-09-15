@@ -47,7 +47,7 @@ fn detach_unused_windows_console(_args: &[String]) {}
 
 fn dispatch(
     args: &[String],
-    stdout: &mut impl io::Write,
+    stdout: &mut (impl io::Write + Send),
     stderr: &mut impl io::Write,
     stdout_is_terminal: bool,
     launch_desktop: impl FnOnce(),

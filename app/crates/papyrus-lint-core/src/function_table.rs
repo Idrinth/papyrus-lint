@@ -12,7 +12,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use serde::Serialize;
 
@@ -586,6 +586,109 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
     fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
         self.lookup_function(type_name, function_name)
             .map(|signature| signature.is_global)
+    }
+}
+
+/// A thread-safe [`ExternalSignatures`](papyrus_lints::argument_types::ExternalSignatures)
+/// adapter over a [`FunctionTable`] shared by multiple lint workers at once
+/// (see [`crate::parallel`]): each trait method locks the underlying table
+/// only for the duration of that one lookup, rather than for a whole lint
+/// pass, so concurrently linted scripts only ever contend with each other
+/// at the comparatively rare moment one actually needs another script's
+/// signature -- typically a single lock acquisition per referenced type,
+/// since `FunctionTable` caches everything it resolves -- not for the
+/// CPU-bound parsing/rule work surrounding it.
+///
+/// Every method is forwarded through the [`ExternalSignatures`] trait
+/// itself (via fully qualified syntax), rather than reimplementing this
+/// type's logic (e.g. `type_exists`'s primitive-type/native-type fallback,
+/// which isn't a plain delegate to an inherent method), so this adapter
+/// can never drift out of sync with `FunctionTable`'s own trait impl above.
+pub struct SharedFunctionTable<'a>(pub &'a Mutex<FunctionTable>);
+
+impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'_> {
+    fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::lookup(
+            &mut *table,
+            type_name,
+            function_name,
+        )
+    }
+
+    fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::is_subtype(
+            &mut *table,
+            sub_type,
+            super_type,
+        )
+    }
+
+    fn has_property(&mut self, type_name: &str, property_name: &str) -> bool {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::has_property(
+            &mut *table,
+            type_name,
+            property_name,
+        )
+    }
+
+    fn script_exists(&mut self, type_name: &str) -> bool {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::script_exists(&mut *table, type_name)
+    }
+
+    fn type_exists(&mut self, type_name: &str) -> bool {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::type_exists(&mut *table, type_name)
+    }
+
+    fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::has_state(
+            &mut *table,
+            type_name,
+            state_name,
+        )
+    }
+
+    fn ancestor_states(&mut self, type_name: &str) -> Vec<(String, bool)> {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::ancestor_states(&mut *table, type_name)
+    }
+
+    fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::is_global_function(
+            &mut *table,
+            type_name,
+            function_name,
+        )
     }
 }
 
