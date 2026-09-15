@@ -980,6 +980,26 @@ mod tests {
     }
 
     #[test]
+    fn add_preset_errors_have_actionable_display_messages() {
+        let invalid = AddPresetError::InvalidName("strict".to_string()).to_string();
+        assert!(invalid.contains("'strict' can't be used as a preset name"));
+        assert!(PRESET_NAMES.iter().all(|name| invalid.contains(name)));
+
+        assert_eq!(
+            AddPresetError::AlreadyExists(PathBuf::from("presets/custom.yaml")).to_string(),
+            "a preset already exists at presets/custom.yaml"
+        );
+        assert_eq!(
+            AddPresetError::BaseDirUnavailable.to_string(),
+            "could not determine the running executable's directory"
+        );
+        assert_eq!(
+            AddPresetError::Io("permission denied".to_string()).to_string(),
+            "permission denied"
+        );
+    }
+
+    #[test]
     fn returns_defaults_when_no_config_file_present() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
 
