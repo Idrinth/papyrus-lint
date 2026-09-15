@@ -814,6 +814,26 @@ mod tests {
             vec![("active".to_string(), false)]
         );
         assert_eq!(shared.is_global_function("Helpers", "Run"), Some(true));
+        assert!(shared.ancestry_fully_known("Child"));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn known_scripts_ignore_paths_whose_file_stem_is_not_utf8() {
+        use std::ffi::OsString;
+        use std::os::unix::ffi::OsStringExt;
+
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let invalid_path = root.path().join(OsString::from_vec(vec![
+            b'E', b'x', 0xFF, b'.', b'p', b's', b'c',
+        ]));
+        let valid_path = root.path().join("Example.psc");
+        fs::write(&valid_path, "ScriptName Example\n").expect("failed to write valid script");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf())
+            .with_known_scripts(&[invalid_path, valid_path]);
+
+        assert!(table.script_exists("Example"));
     }
 
     #[test]
