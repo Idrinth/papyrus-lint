@@ -109,6 +109,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "Call()\n",
             &default_config,
         ),
+        (
+            "global-variable-increment",
+            "ScriptName Example\n\nFunction Run(GlobalVariable gv, Float x)\n    gv.SetValue(gv.GetValue() + x)\nEndFunction\n",
+            "ScriptName Example\n\nFunction Run(GlobalVariable gv, Float x)\n    gv.Mod(x)\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();
