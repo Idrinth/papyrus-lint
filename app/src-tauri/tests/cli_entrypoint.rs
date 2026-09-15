@@ -95,8 +95,10 @@ fn desktop_binary_preserves_the_cli_failure_code_and_json_diagnostics() {
     let diagnostics = report["files"][0]["diagnostics"].as_array().unwrap();
     let forbidden_function = diagnostics
         .iter()
-        .find(|diagnostic| diagnostic["rule"] == "forbidden-function")
-        .expect("Game.GetPlayer should produce a forbidden-function diagnostic");
+        .find(|diagnostic| {
+            diagnostic["rule"].as_str() == Some(papyrus_lints::forbidden_functions::RULE)
+        })
+        .expect("Game.GetPlayer should produce a forbidden-functions diagnostic");
     assert_eq!(forbidden_function["line"], 4);
 }
 
