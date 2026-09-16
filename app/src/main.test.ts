@@ -1545,6 +1545,30 @@ describe("renderPresetManagementTab", () => {
     expect(items[0].querySelectorAll(".preset-management__button").length).toBe(3);
   });
 
+  it("wires each custom preset action button to its browser interaction", async () => {
+    const prompt = vi.spyOn(window, "prompt").mockReturnValue(null);
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:preset");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    invokeImplFor({ export_user_preset: () => "semicolon_style: require\n" });
+
+    renderPresetManagementTab([
+      ...builtIns,
+      { id: "team-style", label: "Team Style", description: "Our house rules." },
+    ]);
+    const buttons = document.querySelectorAll<HTMLButtonElement>(".preset-management__button");
+
+    buttons[0].click();
+    buttons[1].click();
+    buttons[2].click();
+
+    expect(prompt).toHaveBeenCalledWith('Rename preset "Team Style" to:', "Team Style");
+    expect(confirm).toHaveBeenCalledWith('Delete preset "Team Style"? This can\'t be undone.');
+    await vi.waitFor(() => expect(createObjectURL).toHaveBeenCalledTimes(1));
+    expect(invokeMock).toHaveBeenCalledWith("export_user_preset", { name: "team-style" });
+  });
+
   it("switches back to the Settings tab if the active Presets tab's last custom preset disappears", () => {
     renderPresetManagementTab([...builtIns, { id: "team-style", label: "Team Style", description: "" }]);
     switchTab("presets");
