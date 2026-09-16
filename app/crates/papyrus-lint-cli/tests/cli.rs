@@ -104,6 +104,23 @@ fn json_mode_lints_a_script_through_the_binary_entry_point() {
         report["files"][0]["diagnostics"][0]["rule"],
         "trailing-whitespace"
     );
+    assert_eq!(
+        report["files"][0]["diagnostics"][0]["doc_url"],
+        "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"
+    );
+}
+
+#[test]
+fn plain_text_output_links_a_tagged_rule_to_its_documentation() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Example.psc");
+    write_file(&script, "ScriptName Example   \n");
+
+    let output = run_cli(&[&script.to_string_lossy()]);
+
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"));
 }
 
 #[test]
@@ -121,7 +138,7 @@ fn ai_format_includes_source_and_triggered_rule_details() {
         serde_json::from_slice(&output.stdout).expect("stdout should contain an AI export");
     assert_eq!(
         report["$schema"],
-        "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json"
+        "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json"
     );
     assert_eq!(report["header"]["tool"], "Papyrus Lint");
     assert_eq!(
@@ -163,6 +180,10 @@ fn ai_format_includes_source_and_triggered_rule_details() {
     assert_eq!(report["rule_details"][0]["rule"], "trailing-whitespace");
     assert!(report["rule_details"][0]["description"].is_string());
     assert_eq!(report["rule_details"][0]["auto_fixable"], true);
+    assert_eq!(
+        report["rule_details"][0]["doc_url"],
+        "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"
+    );
 }
 
 #[test]
