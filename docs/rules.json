@@ -2,7 +2,6 @@
   {
     "id": "trailing-whitespace",
     "name": "Trailing whitespace",
-    "doc_slug": "trailing-whitespace",
     "category": "Formatting",
     "tags": [
       "style"
@@ -17,7 +16,6 @@
   {
     "id": "comma-spacing",
     "name": "Space after comma",
-    "doc_slug": "space-after-comma",
     "category": "Formatting",
     "tags": [
       "style"
@@ -32,7 +30,6 @@
   {
     "id": "forbidden-functions",
     "name": "Forbidden/discouraged function usage",
-    "doc_slug": "forbidden-discouraged-function-usage",
     "category": "Performance",
     "tags": [
       "performance",
@@ -47,7 +44,6 @@
   {
     "id": "formid-hex-notation",
     "name": "FormID hex notation",
-    "doc_slug": "formid-hex-notation",
     "category": "Reliability",
     "tags": [
       "correctness",
@@ -62,7 +58,6 @@
   {
     "id": "slow-functions",
     "name": "Slow function usage",
-    "doc_slug": "slow-function-usage",
     "category": "Performance",
     "tags": [
       "performance"
@@ -76,7 +71,6 @@
   {
     "id": "unused-getter",
     "name": "Getter usage without saving result",
-    "doc_slug": "getter-usage-without-saving-result",
     "category": "Reliability",
     "tags": [
       "correctness",
@@ -91,7 +85,6 @@
   {
     "id": "unused-property",
     "name": "Unused script properties",
-    "doc_slug": "unused-script-properties",
     "category": "Other",
     "tags": [
       "maintainability"
@@ -105,7 +98,6 @@
   {
     "id": "semicolon",
     "name": "Semicolon at end of line",
-    "doc_slug": "semicolon-at-end-of-line",
     "category": "Formatting",
     "tags": [
       "style"
@@ -120,7 +112,6 @@
   {
     "id": "float-to-int",
     "name": "Implicit Float-to-Int conversion",
-    "doc_slug": "implicit-float-to-int-conversion",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -134,7 +125,6 @@
   {
     "id": "int-division-to-float",
     "name": "Int/Int division widened to Float",
-    "doc_slug": "int-int-division-widened-to-float",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -148,7 +138,6 @@
   {
     "id": "strict-boolean",
     "name": "Strict boolean check",
-    "doc_slug": "strict-boolean-check",
     "category": "Reliability",
     "tags": [
       "correctness",
@@ -163,7 +152,6 @@
   {
     "id": "argument-types",
     "name": "Argument type check",
-    "doc_slug": "argument-type-check",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -177,7 +165,6 @@
   {
     "id": "return-types",
     "name": "Return type check",
-    "doc_slug": "return-type-check",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -191,7 +178,6 @@
   {
     "id": "function-override",
     "name": "Inherited function override",
-    "doc_slug": "inherited-function-override",
     "category": "Reliability",
     "tags": [
       "maintainability"
@@ -205,7 +191,6 @@
   {
     "id": "argument-naming",
     "name": "Argument naming consistency",
-    "doc_slug": "argument-naming-consistency",
     "category": "Reliability",
     "tags": [
       "correctness",
@@ -220,7 +205,6 @@
   {
     "id": "argument-override-types",
     "name": "Argument override type check",
-    "doc_slug": "argument-override-type-check",
     "category": "Reliability",
     "tags": [
       "correctness",
@@ -235,7 +219,6 @@
   {
     "id": "state-function-signature",
     "name": "State function signature mismatch",
-    "doc_slug": "state-function-signature-mismatch",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -249,7 +232,6 @@
   {
     "id": "numeric-comparison",
     "name": "Strict numeric type check",
-    "doc_slug": "strict-numeric-type-check",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -263,7 +245,6 @@
   {
     "id": "indentation",
     "name": "Formatting checks",
-    "doc_slug": "formatting-checks",
     "category": "Formatting",
     "tags": [
       "style"
@@ -278,7 +259,6 @@
   {
     "id": "cyclomatic-complexity",
     "name": "Cyclomatic complexity",
-    "doc_slug": "cyclomatic-complexity",
     "category": "Other",
     "tags": [
       "maintainability"
@@ -292,7 +272,6 @@
   {
     "id": "unreachable-statement",
     "name": "Unreachable statement",
-    "doc_slug": "unreachable-statement",
     "category": "Bugprone",
     "tags": [
       "correctness",
@@ -307,7 +286,6 @@
   {
     "id": "static-condition",
     "name": "Static condition",
-    "doc_slug": "static-condition",
     "category": "Bugprone",
     "tags": [
       "correctness",
@@ -322,7 +300,6 @@
   {
     "id": "unreachable-elseif",
     "name": "Unreachable elseif",
-    "doc_slug": "unreachable-elseif",
     "category": "Bugprone",
     "tags": [
       "correctness",
@@ -337,7 +314,6 @@
   {
     "id": "division-by-zero",
     "name": "Division by zero",
-    "doc_slug": "division-by-zero",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -351,7 +327,6 @@
   {
     "id": "empty-body",
     "name": "Empty loop/conditional body",
-    "doc_slug": "empty-loop-conditional-body",
     "category": "Bugprone",
     "tags": [
       "correctness",
@@ -366,7 +341,6 @@
   {
     "id": "unused-local-variable",
     "name": "Unused or write-only local variables",
-    "doc_slug": "unused-or-write-only-local-variables",
     "category": "Other",
     "tags": [
       "maintainability"
@@ -380,7 +354,6 @@
   {
     "id": "none-form-usage",
     "name": "None used as an existing Form",
-    "doc_slug": "none-used-as-an-existing-form",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -394,7 +367,6 @@
   {
     "id": "local-variable-shadowing",
     "name": "Local variable shadowing",
-    "doc_slug": "local-variable-shadowing",
     "category": "Bugprone",
     "tags": [
       "correctness",
@@ -409,7 +381,6 @@
   {
     "id": "parameter-reassignment",
     "name": "Parameter reassignment",
-    "doc_slug": "parameter-reassignment",
     "category": "Bugprone",
     "tags": [
       "maintainability"
@@ -423,7 +394,6 @@
   {
     "id": "chain-whitespace",
     "name": "Whitespace interrupting property/method chaining",
-    "doc_slug": "whitespace-interrupting-property-method-chaining",
     "category": "Formatting",
     "tags": [
       "style"
@@ -438,7 +408,6 @@
   {
     "id": "exclamation-spacing",
     "name": "Exclamation mark spacing",
-    "doc_slug": "exclamation-mark-spacing",
     "category": "Formatting",
     "tags": [
       "style"
@@ -453,7 +422,6 @@
   {
     "id": "identifier-casing",
     "name": "Identifier casing",
-    "doc_slug": "identifier-casing",
     "category": "Formatting",
     "tags": [
       "style"
@@ -467,7 +435,6 @@
   {
     "id": "type-casing",
     "name": "Type name casing",
-    "doc_slug": "type-name-casing",
     "category": "Formatting",
     "tags": [
       "style"
@@ -481,7 +448,6 @@
   {
     "id": "named-arguments",
     "name": "Prefer named arguments",
-    "doc_slug": "prefer-named-arguments",
     "category": "Other",
     "tags": [
       "style",
@@ -496,7 +462,6 @@
   {
     "id": "operator-spacing",
     "name": "Spacing around logical/comparison operators",
-    "doc_slug": "spacing-around-logical-comparison-operators",
     "category": "Formatting",
     "tags": [
       "style"
@@ -511,7 +476,6 @@
   {
     "id": "assignment-operator-spacing",
     "name": "Spacing around assignment operators",
-    "doc_slug": "spacing-around-assignment-operators",
     "category": "Formatting",
     "tags": [
       "style"
@@ -526,7 +490,6 @@
   {
     "id": "property-sorting",
     "name": "Property sorting",
-    "doc_slug": "property-sorting",
     "category": "Formatting",
     "tags": [
       "style"
@@ -540,7 +503,6 @@
   {
     "id": "explicit-return",
     "name": "Explicit return on every path",
-    "doc_slug": "explicit-return-on-every-path",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -554,7 +516,6 @@
   {
     "id": "unchecked-form-parameter",
     "name": "Form parameter used without a None check",
-    "doc_slug": "form-parameter-used-without-a-none-check",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -568,7 +529,6 @@
   {
     "id": "unchecked-array-element",
     "name": "Array element used without a None check",
-    "doc_slug": "array-element-used-without-a-none-check",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -582,7 +542,6 @@
   {
     "id": "unchecked-cast",
     "name": "Unchecked cast",
-    "doc_slug": "unchecked-cast",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -596,7 +555,6 @@
   {
     "id": "useless-downcast",
     "name": "Useless downcast",
-    "doc_slug": "useless-downcast",
     "category": "Other",
     "tags": [
       "maintainability"
@@ -610,7 +568,6 @@
   {
     "id": "impossible-cast",
     "name": "Impossible cast",
-    "doc_slug": "impossible-cast",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -624,7 +581,6 @@
   {
     "id": "unresolved-script",
     "name": "Unresolved script reference",
-    "doc_slug": "unresolved-script-reference",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -638,7 +594,6 @@
   {
     "id": "non-global-function-call",
     "name": "Non-static function call",
-    "doc_slug": "non-static-function-call",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -652,7 +607,6 @@
   {
     "id": "static-function-call-via-instance",
     "name": "Static function called via instance",
-    "doc_slug": "static-function-called-via-instance",
     "category": "Reliability",
     "tags": [
       "maintainability"
@@ -666,7 +620,6 @@
   {
     "id": "short-wait-interval",
     "name": "Short wait/update interval",
-    "doc_slug": "short-wait-update-interval",
     "category": "Performance",
     "tags": [
       "performance"
@@ -680,7 +633,6 @@
   {
     "id": "goto-state",
     "name": "GoToState state reference",
-    "doc_slug": "gotostate-state-reference",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -694,7 +646,6 @@
   {
     "id": "get-state-comparison",
     "name": "GetState() comparison",
-    "doc_slug": "getstate-comparison",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -708,7 +659,6 @@
   {
     "id": "too-many-named-states",
     "name": "Total named state count",
-    "doc_slug": "total-named-state-count",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -722,7 +672,6 @@
   {
     "id": "multiple-auto-states",
     "name": "Multiple Auto states",
-    "doc_slug": "multiple-auto-states",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -736,7 +685,6 @@
   {
     "id": "conflicting-script-versions",
     "name": "Conflicting script versions",
-    "doc_slug": "conflicting-script-versions",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -750,7 +698,6 @@
   {
     "id": "stale-compiled-output",
     "name": "Stale compiled output",
-    "doc_slug": "stale-compiled-output",
     "category": "Reliability",
     "tags": [
       "maintainability"
@@ -764,7 +711,6 @@
   {
     "id": "script-filename-mismatch",
     "name": "ScriptName/filename mismatch",
-    "doc_slug": "scriptname-filename-mismatch",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -778,7 +724,6 @@
   {
     "id": "unused-disable",
     "name": "Unused disable directive",
-    "doc_slug": "unused-disable-directive",
     "category": "Other",
     "tags": [
       "maintainability"
@@ -792,7 +737,6 @@
   {
     "id": "magic-numbers",
     "name": "Magic numbers",
-    "doc_slug": "magic-numbers",
     "category": "Other",
     "tags": [
       "maintainability"
@@ -806,7 +750,6 @@
   {
     "id": "variable-used-before-assignment",
     "name": "Local variable used before assignment",
-    "doc_slug": "local-variable-used-before-assignment",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -820,7 +763,6 @@
   {
     "id": "native-function-usage",
     "name": "Non-base-game native function usage",
-    "doc_slug": "non-base-game-native-function-usage",
     "category": "Other",
     "tags": [
       "maintainability"
@@ -834,7 +776,6 @@
   {
     "id": "repeated-getvalue",
     "name": "Repeated GlobalVariable.GetValue() calls",
-    "doc_slug": "repeated-globalvariable-getvalue-calls",
     "category": "Performance",
     "tags": [
       "performance"
@@ -848,7 +789,6 @@
   {
     "id": "global-variable-setvalue",
     "name": "GlobalVariable no-op write",
-    "doc_slug": "globalvariable-no-op-write",
     "category": "Other",
     "tags": [
       "correctness",
@@ -863,7 +803,6 @@
   {
     "id": "global-variable-increment",
     "name": "GlobalVariable increment via SetValue(GetValue() + x)",
-    "doc_slug": "globalvariable-increment-via-setvalue-getvalue-x",
     "category": "Performance",
     "tags": [
       "performance"
@@ -877,7 +816,6 @@
   {
     "id": "setvalue-in-loop",
     "name": "Repeated GlobalVariable.SetValue() calls in a loop",
-    "doc_slug": "repeated-globalvariable-setvalue-calls-in-a-loop",
     "category": "Performance",
     "tags": [
       "performance"
@@ -891,7 +829,6 @@
   {
     "id": "invariant-loop-condition",
     "name": "Invariant loop condition",
-    "doc_slug": "invariant-loop-condition",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -905,7 +842,6 @@
   {
     "id": "script-name-collision",
     "name": "Property/variable named as script",
-    "doc_slug": "property-variable-named-as-script",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -919,7 +855,6 @@
   {
     "id": "array-bounds",
     "name": "Array bounds",
-    "doc_slug": "array-bounds",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -933,7 +868,6 @@
   {
     "id": "array-size-range",
     "name": "Array size range",
-    "doc_slug": "array-size-range",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -947,7 +881,6 @@
   {
     "id": "readonly-property-write",
     "name": "Read-only (AutoReadOnly) property write",
-    "doc_slug": "read-only-autoreadonly-property-write",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -961,7 +894,6 @@
   {
     "id": "default-property-value",
     "name": "Default property value",
-    "doc_slug": "default-property-value",
     "category": "Other",
     "tags": [
       "style",
@@ -976,7 +908,6 @@
   {
     "id": "unguarded-self-recursion",
     "name": "Unguarded self-recursion",
-    "doc_slug": "unguarded-self-recursion",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -990,7 +921,6 @@
   {
     "id": "self-assignment",
     "name": "Self-assignment",
-    "doc_slug": "self-assignment",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -1004,7 +934,6 @@
   {
     "id": "unnecessary-function",
     "name": "Unnecessary function",
-    "doc_slug": "unnecessary-function",
     "category": "Other",
     "tags": [
       "maintainability",
@@ -1019,7 +948,6 @@
   {
     "id": "unknown-actor-value",
     "name": "Unknown Actor Value",
-    "doc_slug": "unknown-actor-value",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -1033,7 +961,6 @@
   {
     "id": "repeated-setoutfit",
     "name": "Repeated Actor.SetOutfit() calls",
-    "doc_slug": "repeated-actor-setoutfit-calls",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -1047,7 +974,6 @@
   {
     "id": "missing-doc-comment",
     "name": "Missing documentation comment",
-    "doc_slug": "missing-documentation-comment",
     "category": "Other",
     "tags": [
       "maintainability",
@@ -1062,7 +988,6 @@
   {
     "id": "invalid-random-range",
     "name": "Invalid random range",
-    "doc_slug": "invalid-random-range",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -1076,7 +1001,6 @@
   {
     "id": "float-equality",
     "name": "Float equality comparison",
-    "doc_slug": "float-equality-comparison",
     "category": "Reliability",
     "tags": [
       "correctness"
@@ -1090,7 +1014,6 @@
   {
     "id": "missing-update-handler",
     "name": "Missing update event handler",
-    "doc_slug": "missing-update-event-handler",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -1104,7 +1027,6 @@
   {
     "id": "unused-import",
     "name": "Unused import",
-    "doc_slug": "unused-import",
     "category": "Other",
     "tags": [
       "maintainability"
@@ -1118,7 +1040,6 @@
   {
     "id": "event-signature-mismatch",
     "name": "Event signature mismatch",
-    "doc_slug": "event-signature-mismatch",
     "category": "Bugprone",
     "tags": [
       "correctness"
@@ -1132,7 +1053,6 @@
   {
     "id": "circular-dependency",
     "name": "Circular script dependency",
-    "doc_slug": "circular-script-dependency",
     "category": "Reliability",
     "tags": [
       "maintainability"

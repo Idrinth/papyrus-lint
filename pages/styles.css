@@ -419,15 +419,6 @@ pre.code-block {
   cursor: pointer;
 }
 
-.lint-category {
-  margin-top: 2em;
-}
-
-.lint-category h3 {
-  font-size: 1.05em;
-  margin-bottom: 0.5em;
-}
-
 .lint-table-wrap {
   overflow-x: auto;
 }

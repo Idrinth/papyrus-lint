@@ -75,20 +75,20 @@ CI treats clippy warnings as errors.
 3. **Do not duplicate agent docs.** Edit `AGENTS.md` (this index) or a
    file under `docs/agent/`. `CLAUDE.md` must remain a pointer to this
    file, not a copy of it.
-4. **Lint descriptions have two hand-edited consumers.** A README
-   Implemented Lints row is the source of truth. The same change must
-   update that rule's entry in `docs/rules.json` (`name`, `definition` +
-   `doc_slug`, a shorter `description` blurb matching
-   `docs/nexuspage.bbcode`'s own style, `tags`, `severity`, `fixable`,
-   `importance`, `category`). Everything else is generated from
-   `docs/rules.json`, not hand-edited: `pages/build.py` builds the website
-   tables from the README directly, so the site needs no manual lint-table
-   edit; `.github/scripts/generate_nexuspage_tables.py` builds
-   `docs/nexuspage.bbcode`'s five lint tables (CI's `bbcode` job fails if
-   it drifts — run it after editing `docs/rules.json`); and `build.rs`
-   compiles `app/crates/papyrus-lints`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`
-   (`src/registry.rs`) and `RULE_TAGS` (`src/tags.rs`) from it at build
-   time.
+4. **`docs/rules.json` is the single source of truth for lint metadata.**
+   A rule's entry there (`id`, `name`, `definition` — the long text,
+   `description` — a shorter blurb matching `docs/nexuspage.bbcode`'s own
+   style, `category`, `tags`, `severity`, `importance`, `fixable`) is what
+   every other consumer generates from. Nothing else is hand-edited from
+   it: `build.rs` compiles `app/crates/papyrus-lints`'s
+   `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`) and `RULE_TAGS`
+   (`src/tags.rs`) from it at build time; `pages/build.py` generates the
+   website's searchable `rules.html` straight from it; and
+   `.github/scripts/generate_nexuspage_tables.py` generates
+   `docs/nexuspage.bbcode`'s five lint tables from it too — CI's `bbcode`
+   job fails if that's skipped and it drifts. `README.md`'s own
+   "Implemented Lints" section only keeps a short per-category blurb and a
+   link to `rules.html` — it carries no per-rule text to keep in sync.
 5. **Match the file you are in.** Don't invent a new module layout, naming
    scheme, or comment style in a file that already has one.
 6. **Don't gold-plate.** A bug fix does not need a surrounding refactor.
@@ -104,23 +104,27 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `collect_diagnostics` dispatch, and `apply_repairs` if it auto-fixes.
 3. `app/crates/papyrus-lints/src/config.rs` — field on `Rules` and its
    `Default` (and the rustdoc yaml example at the top of the file).
-4. `README.md` Implemented Lints table.
-5. `docs/rules.json` — a new entry: `id`, `name`, `doc_slug` (from the
-   README row title, slugified), `definition` (verbatim README cell),
-   `tags`, `importance`, `severity`, `fixable`, `category` (one of
-   `Formatting`, `Performance`, `Reliability`, `Bugprone`, `Other`,
-   matching the README `###` section the row lives under), and a short
-   `description` blurb matching `docs/nexuspage.bbcode`'s style. Run
+4. `docs/rules.json` — a new entry: `id`, `name`, `definition` (the long,
+   README-style description), a short `description` blurb matching
+   `docs/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
+   `Performance`, `Reliability`, `Bugprone`, `Other`), `tags`,
+   `importance`, `severity`, and `fixable`. Run
    `.github/scripts/generate_nexuspage_tables.py docs/rules.json
    docs/nexuspage.bbcode` afterwards to regenerate its lint tables; CI's
    `bbcode` job fails if that's skipped. `build.rs` generates
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and `tags.rs`'s
-   `RULE_TAGS` from this file at build time — don't hand-edit those.
-   A new `"low"` importance rule is turned off by default in the
-   generated `standard`/`careful` presets (see
-   `papyrus-lint-config/build.rs`); add `"kept_in_standard": true` to its
-   entry only if it belongs with the handful of cheap, auto-fixable
-   formatting rules `standard` keeps on regardless.
+   `RULE_TAGS` from this file at build time — don't hand-edit those;
+   `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
+   the rule id alone, so it needs no separate slug field either. A new
+   `"low"` importance rule is turned off by default in the generated
+   `standard`/`careful` presets too (see `papyrus-lint-config/build.rs`);
+   add `"kept_in_standard": true` to its entry only if it belongs with the
+   handful of cheap, auto-fixable formatting rules `standard` keeps on
+   regardless.
+5. `README.md`'s "Implemented Lints" section — add a one-line mention
+   under the matching category blurb only if the category's own summary
+   no longer describes what the new rule does; the per-rule reference
+   lives on `rules.html`, not in the README.
 
 Rules should inspect source/tokens so they still run on scripts that
 don't parse. Configurable behavior goes on `&papyrus_lints::Config`, not

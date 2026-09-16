@@ -72,7 +72,7 @@ mod tests {
         assert!(trailing_whitespace.auto_fixable);
         assert_eq!(
             trailing_whitespace.doc_url,
-            "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"
+            "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace"
         );
 
         let argument_types = tags

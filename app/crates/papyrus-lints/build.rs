@@ -75,7 +75,6 @@ struct RawKnownEvent {
 #[derive(serde::Deserialize)]
 struct RawRuleTag {
     id: String,
-    doc_slug: String,
     tags: Vec<String>,
     importance: String,
     /// The rule's detailed description (see `RuleTags::description`).
@@ -385,8 +384,8 @@ fn compile_rule_tags(manifest_dir: &str, out_dir: &str) {
             .collect::<Vec<_>>()
             .join(", ");
         generated.push_str(&format!(
-            "    RuleTags {{ rule: {:?}, doc_slug: {:?}, description: {:?}, kinds: &[{kinds}], importance: {importance} }},\n",
-            rule.id, rule.doc_slug, rule.definition
+            "    RuleTags {{ rule: {:?}, description: {:?}, kinds: &[{kinds}], importance: {importance} }},\n",
+            rule.id, rule.definition
         ));
     }
     generated.push_str("];\n");
