@@ -123,13 +123,15 @@ pub(crate) fn repair_psc_finding(
     // See `repair_psc_file`'s own comment: built before the fix so
     // "unused-import"'s fix (if `rule` names it) can resolve through it too.
     let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
-    let repaired = papyrus_lints::repair_filtered_with_external_arguments(
+    let repaired = papyrus_lints::repair_selected_with_external_arguments(
         &source,
         &config,
         &mut function_table,
         Some(rule.as_str()),
-    );
-    let repaired = papyrus_lints::restrict_to_line(&source, &repaired, line).ok_or_else(|| {
+        None,
+        Some(line),
+    )
+    .ok_or_else(|| {
         "Fixing this issue would change other lines in the file; use \"Apply fixes\" instead."
             .to_string()
     })?;

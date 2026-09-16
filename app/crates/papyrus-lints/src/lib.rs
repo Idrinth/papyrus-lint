@@ -306,6 +306,37 @@ pub fn repair_filtered_by_tag_with_external_arguments<E: argument_types::Externa
     })
 }
 
+/// Combines [`repair_filtered_with_external_arguments`] and
+/// [`repair_filtered_by_tag_with_external_arguments`] with an optional
+/// [`restrict_to_line`] step, the exact selection both the CLI's `fix`
+/// command and the desktop app's per-finding/per-rule repair commands need:
+/// `tag_filter`, when `Some`, takes precedence over `rule_filter` (a caller
+/// only ever sets one); `target_line`, when `Some`, restricts the result to
+/// that line the same way [`restrict_to_line`] does. Returns `Err(())` in
+/// `target_line`'s place — a fix that changes the file's line count (e.g.
+/// `property-sorting` relocating a property's declaration) — the same way
+/// [`restrict_to_line`] itself does, since the two callers report that
+/// failure with different wording of their own.
+pub fn repair_selected_with_external_arguments<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    rule_filter: Option<&str>,
+    tag_filter: Option<&str>,
+    target_line: Option<usize>,
+) -> Option<String> {
+    let repaired = match tag_filter {
+        Some(tag) => {
+            repair_filtered_by_tag_with_external_arguments(source, config, external, Some(tag))
+        }
+        None => repair_filtered_with_external_arguments(source, config, external, rule_filter),
+    };
+    match target_line {
+        Some(line) => restrict_to_line(source, &repaired, line),
+        None => Some(repaired),
+    }
+}
+
 /// Shared implementation behind the three `_with_external_arguments`
 /// functions above: applies every self-contained fix via [`repair_with`]
 /// (unaffected by `external`), then — if `config.rules.unused_import` is
