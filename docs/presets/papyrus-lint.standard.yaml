@@ -109,6 +109,7 @@ rules:
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false
+  unchecked_array_element: false
   unchecked_cast: true
   useless_downcast: false          # was true: [info]-only, not a likely mistake
   impossible_cast: true

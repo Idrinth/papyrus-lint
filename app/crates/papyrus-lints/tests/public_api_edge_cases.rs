@@ -187,6 +187,11 @@ fn opt_in_rules_are_dispatched_by_the_public_lint_api() {
             |config| config.rules.unchecked_form_parameter = true,
         ),
         (
+            "unchecked-array-element",
+            "ScriptName Example\n\nFunction Test()\n    Actor[] act = new Actor[3]\n    act[2].Kill()\nEndFunction\n",
+            |config| config.rules.unchecked_array_element = true,
+        ),
+        (
             "magic-numbers",
             "ScriptName Example\n\nFunction Test()\n    DoThing(42)\nEndFunction\n",
             |config| config.rules.magic_numbers = true,
