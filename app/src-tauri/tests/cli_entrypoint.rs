@@ -421,7 +421,7 @@ fn desktop_binary_forwards_ai_format_reports() {
     assert!(output.stderr.is_empty());
     let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(report["header"]["tool"], "Papyrus Lint");
-    assert!(report["files"][0]["diagnostics"]
+    assert!(report["findings"]["files"][0]["diagnostics"]
         .as_array()
         .unwrap()
         .iter()

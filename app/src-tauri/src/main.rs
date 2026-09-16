@@ -339,7 +339,7 @@ mod tests {
         assert_eq!(code, ExitCode::SUCCESS);
         let report: serde_json::Value = serde_json::from_slice(&stdout).unwrap();
         assert_eq!(report["header"]["tool"], "Papyrus Lint");
-        assert!(report["files"][0]["diagnostics"]
+        assert!(report["findings"]["files"][0]["diagnostics"]
             .as_array()
             .unwrap()
             .iter()
