@@ -28,11 +28,14 @@ use papyrus_parser::ast::{FunctionDecl, Param, Script, TypeName};
 
 use crate::Diagnostic;
 
+/// One parameter of a [`KnownEventRule`]'s expected signature.
 pub struct EventArg {
     pub type_name: &'static str,
     pub name: &'static str,
 }
 
+/// One `rules/known-events.yaml` entry: an event's name, the Form that
+/// first declares it, and its exact expected parameter list.
 pub struct KnownEventRule {
     pub event: &'static str,
     pub form: &'static str,
@@ -107,6 +110,8 @@ fn signature_matches(params: &[Param], expected: &[EventArg]) -> bool {
         })
 }
 
+/// Renders a declared `Event`'s parameter list as `Type name, ...`, for the
+/// mismatch diagnostic's message.
 fn describe_params(params: &[Param]) -> String {
     params
         .iter()
@@ -115,6 +120,9 @@ fn describe_params(params: &[Param]) -> String {
         .join(", ")
 }
 
+/// Renders a [`KnownEventRule`]'s expected parameter list the same way
+/// [`describe_params`] renders a declared one, so both can be shown side by
+/// side in the mismatch diagnostic's message.
 fn describe_args(args: &[EventArg]) -> String {
     args.iter()
         .map(|arg| format!("{} {}", arg.type_name, arg.name))
@@ -122,6 +130,8 @@ fn describe_args(args: &[EventArg]) -> String {
         .join(", ")
 }
 
+/// Renders a parsed [`TypeName`] the way it's written in Papyrus source
+/// (`Type` or `Type[]`).
 fn type_display(type_name: &TypeName) -> String {
     if type_name.is_array {
         format!("{}[]", type_name.name)
