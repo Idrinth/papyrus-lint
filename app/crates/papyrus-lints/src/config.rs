@@ -88,6 +88,7 @@
 //!   self_assignment: true
 //!   unnecessary_function: true
 //!   unknown_actor_value: false
+//!   repeated_setoutfit: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -474,6 +475,8 @@ pub struct Rules {
     /// [`Self::default_property_value`], this defaults to `false`: see
     /// [`crate::actor_value`].
     pub unknown_actor_value: bool,
+    /// The "Repeated Actor.SetOutfit() calls" lint.
+    pub repeated_setoutfit: bool,
 }
 
 impl Rules {
@@ -572,6 +575,7 @@ impl Default for Rules {
             self_assignment: true,
             unnecessary_function: true,
             unknown_actor_value: false,
+            repeated_setoutfit: true,
         }
     }
 }
@@ -773,6 +777,7 @@ mod tests {
         // additional, custom Actor Values that have no way to appear in
         // rules/actor-values.yaml.
         assert!(!config.rules.unknown_actor_value);
+        assert!(config.rules.repeated_setoutfit);
     }
 
     #[test]

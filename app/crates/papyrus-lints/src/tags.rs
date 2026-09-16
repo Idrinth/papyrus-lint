@@ -475,6 +475,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::Medium,
     },
+    RuleTags {
+        rule: crate::repeated_setoutfit::RULE,
+        description: "Flags, as a `[warning]`, a second `SetOutfit(...)` call passing the exact same argument(s) as an earlier call on the same receiver, with nothing between them guaranteed to have changed what that receiver is wearing (e.g. `akActor.SetOutfit(MyOutfit)` followed later by another `akActor.SetOutfit(MyOutfit)`), since Bethesda's engine is known to mishandle a redundant repeated `SetOutfit` call, sometimes leaving the actor with no visible equipment until something re-equips them. Like \"Repeated GlobalVariable.GetValue() calls\", a call's receiver can't generally be resolved back to an `Actor`/`ActorBase`-typed script, so this matches by the `SetOutfit` method name alone (case-insensitively); the whole argument list is compared, so a different `abSleepOutfit` flag is never flagged as a repeat. Only tracks calls within the same straight-line statement list, resetting fresh (from a copy of the outer state) on entering a nested `If`/`Else`/`While` body, so a change made only inside one never carries forward to code after it.",
+        kinds: &["correctness"],
+        importance: Importance::Medium,
+    },
 ];
 
 #[cfg(test)]

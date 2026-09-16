@@ -113,3 +113,4 @@ rules:
   self_assignment: true
   unnecessary_function: true
   unknown_actor_value: false
+  repeated_setoutfit: true

@@ -138,3 +138,4 @@ rules:
   self_assignment: true
   unnecessary_function: false
   unknown_actor_value: false
+  repeated_setoutfit: true

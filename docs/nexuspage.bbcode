@@ -262,6 +262,10 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td]Flags a plain = assignment whose right side is the exact same reference as its own target (e.g. a = a, Self.Foo = Self.Foo), since it can never change the value and is almost always a mistake. Only a bare name or a chain of member accesses is compared this way; calls, indexes, and compound assignments (+=, ...) are never flagged.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Repeated Actor.SetOutfit() calls[/b][/td]
+[td]Flags a second SetOutfit(...) call passing the exact same outfit (and other arguments) as an earlier call on the same receiver, with nothing in between guaranteed to have changed what they're wearing, since a redundant repeated SetOutfit call is known to sometimes leave the actor with no visible equipment. Matches by the SetOutfit method name alone, case-insensitively, without resolving the receiver to an Actor.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]None used as an existing Form[/b][/td]
 [td]Flags a member/method access on a local variable or script-level property that's still known to be None. Set assume_auto_properties_filled to stop assuming an unset Auto/AutoReadOnly property starts out None; it's still tracked once code assigns it None directly.[/td]
 [td][/td]
@@ -457,7 +461,8 @@ rules:
   unguarded_self_recursion: true
   self_assignment: true
   unnecessary_function: true
-  unknown_actor_value: false[/code][/spoiler]
+  unknown_actor_value: false
+  repeated_setoutfit: true[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.
