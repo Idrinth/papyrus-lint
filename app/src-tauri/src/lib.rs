@@ -14,6 +14,15 @@ struct ProjectInfo {
     used_configuration_file: Option<String>,
 }
 
+fn project_function_table(
+    root: String,
+    additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
+) -> function_table::FunctionTable {
+    function_table::FunctionTable::new_with_additional_roots(PathBuf::from(root), additional_roots)
+        .with_lookup_roots(lookup_roots)
+}
+
 /// A JSON-friendly copy of one [`papyrus_lints::tags::RuleTags`] entry, for
 /// the frontend to group/filter lint findings by (e.g. "show me only
 /// performance findings", or "only auto-fixable ones") and to include the
@@ -235,6 +244,16 @@ fn load_script_roots(dir: String) -> Result<Vec<String>, String> {
     config::load_script_roots(&PathBuf::from(dir))
 }
 
+/// Returns `dir`'s configured analysis-only lookup directories (see
+/// [`papyrus_lint_core::function_table::FunctionTable::with_lookup_roots`]),
+/// if any. These are searched only after conventional/`additional_script_roots`
+/// directories, never linted, and never considered by
+/// `conflicting_script_versions`.
+#[tauri::command(async)]
+fn load_lookup_script_roots(dir: String) -> Result<Vec<String>, String> {
+    config::load_lookup_script_roots(&PathBuf::from(dir))
+}
+
 /// Reports the project paths discovered by the backend for display in the
 /// Settings tab. Only script search directories that exist are included.
 #[tauri::command(async)]
@@ -256,6 +275,12 @@ fn load_project_info(dir: String) -> Result<ProjectInfo, String> {
 #[tauri::command(async)]
 fn save_script_roots(dir: String, roots: Vec<String>) -> Result<(), String> {
     config::save_script_roots(&PathBuf::from(dir), &roots)
+}
+
+/// Persists `roots` as `dir`'s configured analysis-only lookup directories.
+#[tauri::command(async)]
+fn save_lookup_script_roots(dir: String, roots: Vec<String>) -> Result<(), String> {
+    config::save_lookup_script_roots(&PathBuf::from(dir), &roots)
 }
 
 /// Returns every configuration preset's identity/description — the three
@@ -286,8 +311,8 @@ fn apply_config_preset(dir: String, preset: String) -> Result<(), String> {
 /// Returns the named preset's (built-in, or user preset found under the
 /// executable-adjacent `presets` directory) lint rule/formatting settings
 /// only, via [`config::preset_lint_config_default`] — not the
-/// project-level `compiler_path`/`additional_script_roots`/`compile_check`/
-/// `strict_achlist_scope` settings [`apply_config_preset`] also seeds a
+/// project-level `compiler_path`/`additional_script_roots`/`lookup_script_roots`/
+/// `compile_check`/`strict_achlist_scope` settings [`apply_config_preset`] also seeds a
 /// brand new project's file with. Used by the Settings tab's "Reset to
 /// preset" button to overwrite its currently edited settings back to a
 /// preset in place, after the user has confirmed discarding whatever's
@@ -304,7 +329,7 @@ fn get_preset_lint_config(preset: String) -> Result<papyrus_lints::Config, Strin
 
 /// Saves the desktop app's currently edited lint settings (the Settings
 /// tab's own fields, not the project-level `compiler_path`/`additional_script_roots`/
-/// `compile_check`/`strict_achlist_scope` next to them) as a new user
+/// `lookup_script_roots`/`compile_check`/`strict_achlist_scope` next to them) as a new user
 /// preset named `name`, in the same executable-adjacent `presets`
 /// directory [`list_config_presets`]/[`apply_config_preset`] use, so it's
 /// immediately selectable from the first-run picker (or the CLI's
@@ -465,26 +490,28 @@ fn lint_with_compile_check(
 /// accept a returned value whose script under `root` extends the declared
 /// return type. `additional_roots` are the project's configured additional
 /// script roots (see [`load_script_roots`]), searched the same way
-/// alongside `root`'s conventional source directories. `compiler_path` and
+/// alongside `root`'s conventional source directories. `lookup_roots` are
+/// analysis-only fallback directories (see [`load_lookup_script_roots`]),
+/// searched only after those, never linted, and ignored by
+/// `conflicting_script_versions`. `compiler_path` and
 /// `compile_check` (see [`load_compiler_path`]/[`load_compile_check`])
 /// control whether PapyrusCompiler.exe's own errors are merged in too —
 /// see [`lint_with_compile_check`].
 #[tauri::command(async)]
+#[allow(clippy::too_many_arguments)]
 fn lint_psc_file(
     path: String,
     root: String,
     config: papyrus_lints::Config,
     additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
     compiler_path: String,
     compile_check: bool,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
     ast_cache::ensure_primed(path, &source);
-    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
-        PathBuf::from(root),
-        additional_roots.clone(),
-    );
+    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
     Ok(lint_with_compile_check(
         path,
         &source,
@@ -502,11 +529,13 @@ fn lint_psc_file(
 /// See [`lint_psc_file`] for `root`/`additional_roots`/`compiler_path`/
 /// `compile_check`.
 #[tauri::command(async)]
+#[allow(clippy::too_many_arguments)]
 fn repair_psc_file(
     path: String,
     root: String,
     config: papyrus_lints::Config,
     additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
     compiler_path: String,
     compile_check: bool,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
@@ -516,10 +545,7 @@ fn repair_psc_file(
     // call, since "unused-import" -- unlike every other fixable rule -- can
     // only resolve which imports are unused through this project's own
     // cross-script resolver (see `papyrus_lints::repair_with_external_arguments`).
-    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
-        PathBuf::from(root),
-        additional_roots.clone(),
-    );
+    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
     let repaired =
         papyrus_lints::repair_with_external_arguments(&source, &config, &mut function_table);
     if repaired != source {
@@ -597,6 +623,7 @@ fn repair_psc_finding(
     root: String,
     config: papyrus_lints::Config,
     additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
     compiler_path: String,
     compile_check: bool,
     rule: String,
@@ -606,10 +633,7 @@ fn repair_psc_finding(
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     // See `repair_psc_file`'s own comment: built before the fix so
     // "unused-import"'s fix (if `rule` names it) can resolve through it too.
-    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
-        PathBuf::from(root),
-        additional_roots.clone(),
-    );
+    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
     let repaired = papyrus_lints::repair_filtered_with_external_arguments(
         &source,
         &config,
@@ -649,6 +673,7 @@ fn repair_psc_file_rule(
     root: String,
     config: papyrus_lints::Config,
     additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
     compiler_path: String,
     compile_check: bool,
     rule: String,
@@ -657,10 +682,7 @@ fn repair_psc_file_rule(
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     // See `repair_psc_file`'s own comment: built before the fix so
     // "unused-import"'s fix (if `rule` names it) can resolve through it too.
-    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
-        PathBuf::from(root),
-        additional_roots.clone(),
-    );
+    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
     let repaired = papyrus_lints::repair_filtered_with_external_arguments(
         &source,
         &config,
@@ -697,6 +719,7 @@ fn add_disable_comment_to_psc_line(
     root: String,
     config: papyrus_lints::Config,
     additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
     compiler_path: String,
     compile_check: bool,
     rules: Vec<String>,
@@ -709,10 +732,7 @@ fn add_disable_comment_to_psc_line(
         write_psc_source(path, &updated, encoding).map_err(|err| err.to_string())?;
     }
     ast_cache::ensure_primed(path, &updated);
-    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
-        PathBuf::from(root),
-        additional_roots.clone(),
-    );
+    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
     Ok(lint_with_compile_check(
         path,
         &updated,
@@ -733,11 +753,9 @@ fn list_script_members(
     root: String,
     type_name: String,
     additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
 ) -> Vec<function_table::Member> {
-    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
-        PathBuf::from(root),
-        additional_roots,
-    );
+    let mut function_table = project_function_table(root, additional_roots, lookup_roots);
     function_table.list_members(&type_name)
 }
 
@@ -765,8 +783,10 @@ pub fn run() {
             load_compile_check,
             save_compile_check,
             load_script_roots,
+            load_lookup_script_roots,
             load_project_info,
             save_script_roots,
+            save_lookup_script_roots,
             list_config_presets,
             apply_config_preset,
             get_preset_lint_config,
@@ -1004,6 +1024,7 @@ mod tests {
             missing.parent().unwrap().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -1012,6 +1033,7 @@ mod tests {
             path,
             missing.parent().unwrap().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1033,6 +1055,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1071,6 +1094,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1220,6 +1244,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             papyrus_lints::comma_spacing::RULE.to_string(),
@@ -1260,6 +1285,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             papyrus_lints::unused_import::RULE.to_string(),
@@ -1284,6 +1310,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             config,
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1310,6 +1337,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1350,6 +1378,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             papyrus_lints::unused_import::RULE.to_string(),
@@ -1382,6 +1411,7 @@ mod tests {
             root.clone(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             papyrus_lints::trailing_whitespace::RULE.to_string(),
@@ -1392,6 +1422,7 @@ mod tests {
             path_string,
             root,
             Default::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1414,6 +1445,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1442,6 +1474,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             Vec::new(),
@@ -1464,6 +1497,7 @@ mod tests {
             root.clone(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             papyrus_lints::trailing_whitespace::RULE.to_string(),
@@ -1475,6 +1509,7 @@ mod tests {
             root.clone(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             papyrus_lints::trailing_whitespace::RULE.to_string(),
@@ -1484,6 +1519,7 @@ mod tests {
             path,
             root,
             papyrus_lints::Config::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1940,6 +1976,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -1961,6 +1998,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -1988,6 +2026,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2012,6 +2051,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             papyrus_lints::trailing_whitespace::RULE.to_string(),
@@ -2028,6 +2068,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -2101,6 +2142,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2144,6 +2186,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             config,
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2166,6 +2209,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -2197,6 +2241,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             config,
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2224,6 +2269,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2250,6 +2296,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -2280,6 +2327,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -2317,6 +2365,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             config,
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -2373,6 +2422,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             config,
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2422,6 +2472,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             config,
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2465,6 +2516,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             config,
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -2510,6 +2562,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             config,
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2547,6 +2600,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             config,
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -2583,6 +2637,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             config,
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -2703,6 +2758,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             "Child".to_string(),
             Vec::new(),
+            Vec::new(),
         );
 
         let names: std::collections::HashSet<_> =
@@ -2727,9 +2783,31 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             "Shared".to_string(),
             vec![shared.path().to_string_lossy().into_owned()],
+            Vec::new(),
         );
 
         assert_eq!(members.len(), 1);
+    }
+
+    #[test]
+    fn list_script_members_resolves_a_type_via_a_lookup_script_root() {
+        let dir = tempdir().unwrap();
+        let vanilla = tempdir().unwrap();
+        std::fs::write(
+            vanilla.path().join("Shared.psc"),
+            "ScriptName Shared\n\nInt Property MyValue Auto\n",
+        )
+        .unwrap();
+
+        let members = list_script_members(
+            dir.path().to_string_lossy().into_owned(),
+            "Shared".to_string(),
+            Vec::new(),
+            vec![vanilla.path().to_string_lossy().into_owned()],
+        );
+
+        assert_eq!(members.len(), 1);
+        assert_eq!(members[0].name(), "MyValue");
     }
 
     #[test]
@@ -2739,6 +2817,7 @@ mod tests {
         assert!(list_script_members(
             dir.path().to_string_lossy().into_owned(),
             "Missing".to_string(),
+            Vec::new(),
             Vec::new(),
         )
         .is_empty());
@@ -2758,6 +2837,7 @@ mod tests {
         let members = list_script_members(
             dir.path().to_string_lossy().into_owned(),
             "eXaMpLe".to_string(),
+            Vec::new(),
             Vec::new(),
         );
 

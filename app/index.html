@@ -114,6 +114,14 @@
               placeholder="One directory per line, relative to the project root or absolute"
             ></textarea>
           </div>
+          <div class="script-roots-setting">
+            <label for="lookup-script-roots">Lookup script roots (analysis only)</label>
+            <textarea
+              id="lookup-script-roots"
+              rows="3"
+              placeholder="One directory per line; used only as a last-resort fallback for type/function lookup, never linted"
+            ></textarea>
+          </div>
           <label for="semicolon-style">Trailing semicolons</label>
           <select id="semicolon-style">
             <option value="forbid">Remove where possible</option>
