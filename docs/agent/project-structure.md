@@ -57,6 +57,13 @@
 │       │                           # one lint pass over a script only lexes/
 │       │                           # parses it once no matter how many lint
 │       │                           # rules each ask for their own tokens/AST
+│       ├── papyrus-ast-cache/    # Standalone crate: disk-backed cache of
+│       │   └── src/lib.rs         # parsed .psc ASTs/token streams, keyed by
+│       │                          # content MD5 + mtime + linter version;
+│       │                          # depends only on papyrus-parser, so it's
+│       │                          # reusable on its own. papyrus-lint-core
+│       │                          # re-exports it as its own ast_cache
+│       │                          # module (see below)
 │       ├── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
 │       │   ├── build.rs           # (not the AST) so they still run on scripts
 │       │   └── src/                # that don't parse cleanly.
@@ -81,9 +88,8 @@
 │       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
 │       │   └── src/               # and the CLI, independent of Tauri:
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
-│       │       ├── ast_cache.rs    # Disk-backed cache of parsed .psc ASTs, keyed by
-│       │       │                   # content MD5 + mtime + linter version, shared by
-│       │       │                   # the desktop app and the CLI (via function_table.rs)
+│       │       ├── lib.rs          # Re-exports papyrus-ast-cache (see above) as
+│       │       │                   # this crate's own ast_cache module
 │       │       ├── script_locator.rs   # Finds .psc files by name under
 │       │       │                       # scripts/source or source/scripts
 │       │       ├── function_table.rs   # Cross-script function signature lookup,
@@ -238,8 +244,9 @@
     └── requirements-browser-check.txt  # Pinned Playwright version for the above
 ```
 
-`papyrus-parser`, `papyrus-lints`, `papyrus-lint-config`, `papyrus-lint-core`,
-and `papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
+`papyrus-parser`, `papyrus-ast-cache`, `papyrus-lints`, `papyrus-lint-config`,
+`papyrus-lint-core`, and `papyrus-lint-cli` are separate crates (not yet
+Cargo workspace members,
 just path dependencies of each other and of `app/src-tauri`) so the lint
 engine and project-resolution logic stay reusable independent of the Tauri
 app — which is what lets `papyrus-lint-cli` link against them without

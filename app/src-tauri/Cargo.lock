@@ -2446,6 +2446,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "papyrus-ast-cache"
+version = "0.1.0"
+dependencies = [
+ "md5",
+ "papyrus-parser",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "papyrus-lint"
 version = "0.1.0"
 dependencies = [
@@ -2491,6 +2501,7 @@ version = "0.1.0"
 dependencies = [
  "encoding_rs",
  "md5",
+ "papyrus-ast-cache",
  "papyrus-lint-config",
  "papyrus-lints",
  "papyrus-parser",
