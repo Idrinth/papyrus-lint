@@ -73,6 +73,10 @@ These lints make scripts easier to read by enforcing a consistent look and feel.
 [td]Requires exactly one space on either side of logical operators.[/td]
 [td]✓[/td]
 [/tr]
+[tr][td][b]Spacing around assignment operators[/b][/td]
+[td]Requires exactly one space on either side of =, +=, -=, *=, /=, and %=.[/td]
+[td]✓[/td]
+[/tr]
 [tr][td][b]Property sorting[/b][/td]
 [td]Flag declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the ScriptName line, before any variable, function, or state declaration.[/td]
 [td]✓[/td]
@@ -366,7 +370,7 @@ Everything else, from unused code and excessive complexity to naming and style p
 [td][/td]
 [/tr]
 [/table][/spoiler]
-The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
+The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, operator spacing, and assignment operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
 [heading]Configuration file[/heading]
 All settings following are the default, the file will automatically be loaded from a directory two levels above the psc file(s). This means it is in your Data directory in any normal installation. The desktop app asks which preset to start from (strict/standard/careful, plus any user preset - see below) the first time it opens a project with no config file yet.
 [spoiler][code]# Path to PapyrusCompiler.exe, or null to auto-detect it
@@ -450,6 +454,7 @@ rules:
   type_casing: true
   named_arguments: true
   operator_spacing: true
+  assignment_operator_spacing: true
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false

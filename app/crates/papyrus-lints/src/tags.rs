@@ -331,6 +331,13 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Low,
     },
     RuleTags {
+        rule: crate::assignment_operator_spacing::RULE,
+        doc_slug: "spacing-around-assignment-operators",
+        description: "Requires, as a `[warning]`, exactly one space on either side of `=`, `+=`, `-=`, `*=`, `/=`, and `%=`. A side whose whitespace reaches a newline (the operator opens or closes a statement continued across physical lines) is left unchecked on that side. The fix normalizes each flagged side to a single space, without reaching across a newline.",
+        kinds: &["style"],
+        importance: Importance::Low,
+    },
+    RuleTags {
         rule: crate::property_sorting::RULE,
         doc_slug: "property-sorting",
         description: "Flags, as a `[warning]`, a `Property` declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the `ScriptName` line, before any variable, function, or state declaration (an `Import` isn't tracked closely enough to count against this). Disabled by default, since reordering a script's declared properties is a more invasive change than the rest of these lints; a project opts in via `rules.property_sorting`. The fix relocates each property's own declaration lines (its full `Property`/`EndProperty` block, for a non-auto property) as a group right after `ScriptName`, in sorted order; a documentation comment placed directly above a property is left behind rather than moved with it.",

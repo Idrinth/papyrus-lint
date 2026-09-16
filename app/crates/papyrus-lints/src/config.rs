@@ -55,6 +55,7 @@
 //!   type_casing: true
 //!   named_arguments: true
 //!   operator_spacing: true
+//!   assignment_operator_spacing: true
 //!   property_sorting: false
 //!   explicit_return: true
 //!   unchecked_form_parameter: false
@@ -393,6 +394,8 @@ pub struct Rules {
     pub named_arguments: bool,
     /// The "Spacing around logical/comparison operators" lint/fix.
     pub operator_spacing: bool,
+    /// The "Spacing around assignment operators" lint/fix.
+    pub assignment_operator_spacing: bool,
     /// The "Property sorting" lint/fix. Unlike every other field here,
     /// this defaults to `false`: see [`crate::property_sorting`].
     pub property_sorting: bool,
@@ -583,6 +586,7 @@ impl Default for Rules {
             type_casing: true,
             named_arguments: true,
             operator_spacing: true,
+            assignment_operator_spacing: true,
             property_sorting: false,
             explicit_return: true,
             unchecked_form_parameter: false,
@@ -768,6 +772,7 @@ mod tests {
         assert!(config.rules.type_casing);
         assert!(config.rules.named_arguments);
         assert!(config.rules.operator_spacing);
+        assert!(config.rules.assignment_operator_spacing);
         // Unlike every rule above, sorting reorders a script's structure,
         // so this one defaults to disabled until a project opts in.
         assert!(!config.rules.property_sorting);

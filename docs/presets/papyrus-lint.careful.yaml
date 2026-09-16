@@ -104,6 +104,7 @@ rules:
   type_casing: false
   named_arguments: false
   operator_spacing: false          # was true: pure style
+  assignment_operator_spacing: false # was true: pure style
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false

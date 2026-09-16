@@ -98,6 +98,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             &default_config,
         ),
         (
+            "assignment-operator-spacing",
+            "Left=Right\n",
+            "Left = Right\n",
+            &default_config,
+        ),
+        (
             "type-casing",
             "ScriptName myScript\n",
             "ScriptName MyScript\n",

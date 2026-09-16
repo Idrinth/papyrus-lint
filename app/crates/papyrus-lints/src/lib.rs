@@ -11,6 +11,7 @@ pub mod argument_override_types;
 pub mod argument_types;
 pub mod array_bounds;
 pub mod array_size_range;
+pub mod assignment_operator_spacing;
 pub mod chain_whitespace;
 pub mod comma_spacing;
 pub mod config;
@@ -122,6 +123,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     type_casing::RULE,
     named_arguments::RULE,
     operator_spacing::RULE,
+    assignment_operator_spacing::RULE,
     property_sorting::RULE,
     explicit_return::RULE,
     unchecked_form_parameter::RULE,
@@ -397,6 +399,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     if rules.operator_spacing {
         diagnostics.extend(operator_spacing::check(source));
     }
+    if rules.assignment_operator_spacing {
+        diagnostics.extend(assignment_operator_spacing::check(source));
+    }
     if rules.named_arguments {
         diagnostics.extend(named_arguments::check(source, config.named_arguments));
     }
@@ -523,6 +528,7 @@ pub const FIXABLE_RULE_IDS: &[&str] = &[
     chain_whitespace::RULE,
     exclamation_spacing::RULE,
     operator_spacing::RULE,
+    assignment_operator_spacing::RULE,
     type_casing::RULE,
     trailing_whitespace::RULE,
     global_variable_increment::RULE,
@@ -615,6 +621,12 @@ fn repair_with(source: &str, config: &Config, applies: impl Fn(&str) -> bool) ->
     };
     let source = if rules.operator_spacing && applies(operator_spacing::RULE) {
         operator_spacing::repair(&source)
+    } else {
+        source
+    };
+    let source = if rules.assignment_operator_spacing && applies(assignment_operator_spacing::RULE)
+    {
+        assignment_operator_spacing::repair(&source)
     } else {
         source
     };
@@ -1473,6 +1485,12 @@ mod tests {
                 operator_spacing::RULE,
                 Config::default(),
                 config_with(|c| c.rules.operator_spacing = false),
+            ),
+            (
+                "a=b\n",
+                assignment_operator_spacing::RULE,
+                Config::default(),
+                config_with(|c| c.rules.assignment_operator_spacing = false),
             ),
             (
                 "ScriptName Example\n\nInt Property bad_name = 1 Auto\n",
