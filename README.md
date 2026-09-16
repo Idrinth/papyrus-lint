@@ -547,6 +547,9 @@ PapyrusLinterCLI --color never path/to/project.achlist
 PapyrusLinterCLI --progress --output path/to/report.txt path/to/project.achlist
 PapyrusLinterCLI --threads 8 path/to/project.achlist
 PapyrusLinterCLI --threads 1 path/to/project.achlist
+PapyrusLinterCLI --blob "ScriptName Example extends ObjectReference"
+PapyrusLinterCLI --json --blob "ScriptName Example extends ObjectReference"
+PapyrusLinterCLI --config path/to/papyrus-lint.yaml --blob "ScriptName Example extends ObjectReference"
 ```
 
 `PapyrusLinterCLI init` creates a `papyrus-lint.yaml` in the current working
@@ -637,6 +640,26 @@ searched for `.psc` files alongside `scripts/source`/`source/scripts` and
 the project's configured `additional_script_roots` (see Configuration
 above) — letting a caller add a script root for a single run without
 editing the project's config file.
+
+Given `--blob <source>` in place of a path argument, the CLI lints
+`<source>` directly as raw Papyrus source text instead of resolving an
+`.achlist`/`.psc`/directory from disk — useful for linting a script buffer
+that isn't (yet, or ever) saved as a real file, e.g. from an editor
+extension or another tool that already has the text in memory. The
+diagnostics are reported under the literal path `<blob>`. There's no real
+project behind a blob, so cross-script "Argument type check"/"Return type
+check" resolution, the `conflicting_script_versions`/
+`stale_compiled_output`/`script_filename_mismatch` project lints, and
+`compile_check` don't apply — a call into another script is treated the
+same as a call into an unknown one. `--config <path>` still selects an
+explicit configuration file to lint the blob against; without it, the
+engine's default configuration applies, since there's no project root to
+discover one from. `--blob` is combinable with `--json`/`--format`/
+`--hash-source`/`--quiet-warnings`/`--quiet-info`/`--tag`/`--color`/
+`--output`, in any argument order, but it's a usage error alongside a path
+argument, `fix`, `--type`, `--line`, `--dry-run`, `--script-root`,
+`--progress`, or `--threads` — none of which mean anything without a real
+file to resolve scripts around or write fixes back to.
 
 Given `--output <path>` (combinable with `fix`/`--json`/`--config`/
 `--script-root`, in any argument order), the report — plain text or JSON,
