@@ -74,6 +74,7 @@ expected of a pull request.
 │           ├── src/                # achlist's scripts against its project's
 │           │   ├── lib.rs           # run() + public API; also linked into
 │           │   │                    # src-tauri for its CLI mode
+│           │   ├── args.rs          # Flag / subcommand parsing for run()
 │           │   ├── project.rs       # Project-root discovery from .psc paths
 │           │   ├── output.rs        # Plain/JSON/AI report types and formatting
 │           │   ├── init.rs          # `init` / `preset add`
