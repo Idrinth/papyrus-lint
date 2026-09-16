@@ -49,6 +49,9 @@
 │   │       │                     # script roots, project info
 │   │       ├── config_presets.rs # Built-in and user configuration presets
 │   │       ├── lint.rs           # lint_psc_file, compile_psc_file, list_script_members
+│   │       ├── lint_tests.rs     # lint.rs's unit tests, `#[path]`-included as its
+│   │       │                     # `mod tests` so lint.rs's own size tracks its
+│   │       │                     # actual (small) implementation
 │   │       └── repair.rs         # Apply/preview fixes and per-line @disable
 │   └── crates/
 │       ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
@@ -71,11 +74,18 @@
 │       │                          # module (see below)
 │       ├── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
 │       │   ├── build.rs           # (not the AST) so they still run on scripts
-│       │   └── src/                # that don't parse cleanly.
+│       │   └── src/                # that don't parse cleanly. Every file with
+│       │       │                   # unit tests keeps them in a sibling
+│       │       │                   # `<name>_tests.rs`, `#[path]`-included as
+│       │       │                   # its `mod tests`, so a file's own size
+│       │       │                   # tracks its implementation, not its tests.
 │       │       ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
+│       │       ├── lib_tests.rs               # lib.rs's unit tests
 │       │       ├── config.rs                  # Config type (YAML-deserializable) passed
 │       │       │                              # to every check/fix job
+│       │       ├── config_tests.rs            # config.rs's unit tests
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
+│       │       ├── trailing_whitespace_tests.rs # trailing_whitespace.rs's unit tests
 │       │       ├── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
 │       │       │                              # via a build-time-generated array
 │       │       ├── native_function_usage.rs   # Reads rules/native-methods.yaml via a
