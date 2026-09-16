@@ -37,7 +37,7 @@ Do not paste those files back into this index. Update the file you read.
 | frontend | `app/src` | Vanilla TypeScript. No framework. |
 | VS Code | `vscode-extension/` | Editor integration. |
 | Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
-| rule data | `rules/*.yaml`, `docs/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`. |
+| rule data | `rules/*.yaml`, `docs/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`; `docs/rules.json`'s `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
 
 The six reusable crates are **path dependencies, not Cargo workspace
 members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each
@@ -115,7 +115,12 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and `tags.rs`'s
    `RULE_TAGS` from this file at build time — don't hand-edit those;
    `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
-   the rule id alone, so it needs no separate slug field either.
+   the rule id alone, so it needs no separate slug field either. A new
+   `"low"` importance rule is turned off by default in the generated
+   `standard`/`careful` presets too (see `papyrus-lint-config/build.rs`);
+   add `"kept_in_standard": true` to its entry only if it belongs with the
+   handful of cheap, auto-fixable formatting rules `standard` keeps on
+   regardless.
 5. `README.md`'s "Implemented Lints" section — add a one-line mention
    under the matching category blurb only if the category's own summary
    no longer describes what the new rule does; the per-rule reference

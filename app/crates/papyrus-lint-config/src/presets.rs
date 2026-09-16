@@ -30,8 +30,14 @@ use crate::{
 
 /// A named baseline `init` can generate `papyrus-lint.yaml` from, selected
 /// via the CLI's `--preset <name>` flag (see [`Preset::parse`]). See
-/// `docs/presets/` for each built-in preset's own annotated YAML and the
-/// reasoning behind what it turns on/off relative to the others.
+/// `docs/presets/` for each built-in preset's own small overwrite YAML (a
+/// header comment plus any non-rule settings it changes, e.g. `careful`'s
+/// relaxed cyclomatic complexity thresholds) and the reasoning behind what
+/// it turns on/off relative to the others. `build.rs` layers that overwrite
+/// file onto `docs/papyrus-lint.default.yaml`, plus (for `standard`/
+/// `careful`) every `rules:` toggle `docs/rules.json` tags `"low"`
+/// importance and doesn't mark `kept_in_standard`, into the full YAML this
+/// module embeds.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Preset {
     /// Everything on, including pure style/naming nits. Identical to the
@@ -89,24 +95,32 @@ impl Preset {
         }
     }
 
-    /// This preset's baseline YAML content: for a built-in preset, the
-    /// checked-in `docs/presets/papyrus-lint.<preset>.yaml` contents
-    /// compiled into the binary; for [`Self::Custom`], the contents of the
-    /// matching `<name>.yaml`/`.yml` file under `base_dir`'s
+    /// This preset's baseline YAML content: for a built-in preset, `build.rs`
+    /// layers the checked-in `docs/presets/papyrus-lint.<preset>.yaml`
+    /// overwrite file (a header comment plus any non-rule settings the
+    /// preset changes) and, for `standard`/`careful`, every `rules:` toggle
+    /// `docs/rules.json` says to turn off (see `build.rs`'s
+    /// `preset_rule_value`), onto `docs/papyrus-lint.default.yaml`, and
+    /// writes the result to `$OUT_DIR/papyrus-lint.<preset>.yaml`, which is
+    /// compiled into the binary here; for [`Self::Custom`], the contents of
+    /// the matching `<name>.yaml`/`.yml` file under `base_dir`'s
     /// [`USER_PRESETS_DIR_NAME`] directory. Errors if `base_dir` is
     /// unavailable, has no such directory, or it has no file matching
     /// `name`.
     fn yaml(&self, base_dir: Option<&Path>) -> Result<Cow<'static, str>, String> {
         match self {
-            Self::Strict => Ok(Cow::Borrowed(include_str!(
-                "../../../../docs/presets/papyrus-lint.strict.yaml"
-            ))),
-            Self::Standard => Ok(Cow::Borrowed(include_str!(
-                "../../../../docs/presets/papyrus-lint.standard.yaml"
-            ))),
-            Self::Careful => Ok(Cow::Borrowed(include_str!(
-                "../../../../docs/presets/papyrus-lint.careful.yaml"
-            ))),
+            Self::Strict => Ok(Cow::Borrowed(include_str!(concat!(
+                env!("OUT_DIR"),
+                "/papyrus-lint.strict.yaml"
+            )))),
+            Self::Standard => Ok(Cow::Borrowed(include_str!(concat!(
+                env!("OUT_DIR"),
+                "/papyrus-lint.standard.yaml"
+            )))),
+            Self::Careful => Ok(Cow::Borrowed(include_str!(concat!(
+                env!("OUT_DIR"),
+                "/papyrus-lint.careful.yaml"
+            )))),
             Self::Custom(name) => {
                 let path = user_presets_dir_under(base_dir)
                     .and_then(|dir| find_user_preset_file(&dir, name));

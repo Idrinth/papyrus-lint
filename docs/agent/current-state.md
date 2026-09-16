@@ -496,10 +496,16 @@ baseline `presets::Preset` (`papyrus-lint-config/src/presets.rs`) it generates
 identical to `papyrus_lints::Config::default()` (and to
 `docs/papyrus-lint.default.yaml`), so plain `init` — no `--preset` — is
 unaffected by the flag existing at all; `standard` and `careful` are less
-noisy. Each built-in preset's own annotated YAML lives under
-[`docs/presets/`](docs/presets/) (`papyrus-lint.strict.yaml`,
-`.standard.yaml`, `.careful.yaml`) and is compiled into the binary via
-`include_str!`, rather than read from disk at runtime.
+noisy. Each built-in preset's own full, annotated YAML is generated at
+build time by `papyrus-lint-config/build.rs` — not checked in — from the
+small `docs/presets/papyrus-lint.<name>.yaml` overwrite file (a header
+comment plus any non-rule settings the preset changes, e.g. `careful`'s
+relaxed cyclomatic complexity thresholds), `docs/papyrus-lint.default.yaml`,
+and (for `standard`/`careful`) `docs/rules.json`'s `importance`/
+`kept_in_standard` fields, which decide which `rules:` toggles get turned
+off; the merged YAML is written to `$OUT_DIR/papyrus-lint.<name>.yaml` and
+compiled into the binary via `include_str!`, rather than read from disk at
+runtime.
 
 Any other name is resolved as a user preset instead:
 `presets::Preset::parse` accepts any non-blank name that isn't one of the
