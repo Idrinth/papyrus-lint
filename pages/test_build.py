@@ -84,6 +84,21 @@ class MarkdownHelpersTest(unittest.TestCase):
     def test_extract_section_returns_an_empty_section_at_end_of_document(self) -> None:
         self.assertEqual(page_builder.extract_section(["# Guide", "## Empty"], "Empty", level=2), [])
 
+    def test_extract_section_includes_deeper_headings_until_its_parent_closes(self) -> None:
+        lines = [
+            "## Wanted",
+            "### First child",
+            "child body",
+            "#### Grandchild",
+            "grandchild body",
+            "# Next top-level section",
+        ]
+
+        self.assertEqual(
+            page_builder.extract_section(lines, "Wanted", level=2),
+            ["### First child", "child body", "#### Grandchild", "grandchild body"],
+        )
+
     def test_render_inline_converts_supported_markdown_and_escapes_html(self) -> None:
         rendered = page_builder.render_inline(
             '<unsafe> **bold** `code & more` [docs](guide.html?x=1&y=2)'
@@ -190,6 +205,12 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertEqual(
             page_builder.split_table_row("| | middle | |"),
             ["", "middle", ""],
+        )
+
+    def test_split_table_row_only_unescapes_pipes_not_other_backslashes(self) -> None:
+        self.assertEqual(
+            page_builder.split_table_row(r"| path | C:\scripts\source \| generated |"),
+            ["path", r"C:\scripts\source | generated"],
         )
 
     def test_render_lint_table_renders_rows_and_fix_indicator(self) -> None:

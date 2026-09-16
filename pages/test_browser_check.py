@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import runpy
 import tempfile
 import unittest
 import urllib.error
@@ -830,6 +831,18 @@ class CheckSiteTest(unittest.TestCase):
 
 
 class MainTest(unittest.TestCase):
+    def test_script_entry_point_exits_with_the_main_result(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            missing = Path(directory) / "missing"
+            with (
+                patch("sys.argv", [str(browser_check.__file__), "--dist", str(missing)]),
+                contextlib.redirect_stderr(io.StringIO()),
+                self.assertRaises(SystemExit) as raised,
+            ):
+                runpy.run_path(str(browser_check.__file__), run_name="__main__")
+
+        self.assertEqual(raised.exception.code, 2)
+
     def test_reports_an_error_when_the_dist_directory_is_missing(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             missing = Path(directory) / "does-not-exist"
