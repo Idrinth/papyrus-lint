@@ -9,7 +9,7 @@ import unittest
 from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 
 from PIL import Image
 
@@ -758,6 +758,26 @@ class DocsRenderingTest(unittest.TestCase):
                 {"content_url": "https://example.test/README.md"}
             )
 
+    def test_load_doc_source_reports_an_http_error_with_the_source_url(self) -> None:
+        error = HTTPError(
+            "https://example.test/missing.md",
+            404,
+            "Not Found",
+            hdrs=None,
+            fp=None,
+        )
+
+        with (
+            patch.object(page_builder, "urlopen", side_effect=error),
+            self.assertRaisesRegex(
+                SystemExit,
+                "Could not download documentation from https://example.test/missing.md: HTTP Error 404",
+            ),
+        ):
+            page_builder.load_doc_source(
+                {"content_url": "https://example.test/missing.md"}
+            )
+
     def test_load_doc_source_reports_remote_timeout(self) -> None:
         with (
             patch.object(page_builder, "urlopen", side_effect=TimeoutError("timed out")),
@@ -1464,6 +1484,80 @@ class ModernImageFormatsTest(unittest.TestCase):
         self.assertIn('srcset="assets/first.avif"', result)
         self.assertIn('srcset="assets/second.webp"', result)
         self.assertIn('<img loading="lazy" src="assets/second.jpg" class="shot">', result)
+
+
+class BuilderEdgeCaseCoverageTest(unittest.TestCase):
+    def test_highlight_code_escapes_a_known_language_with_no_tokens(self) -> None:
+        self.assertEqual(
+            page_builder.highlight_code("plain <value> & text", "json"),
+            "plain &lt;value&gt; &amp; text",
+        )
+
+    def test_render_funding_links_returns_empty_markup_for_an_empty_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            funding_file = Path(directory) / "FUNDING.yml"
+            funding_file.write_text("\n# No funding configured\n", encoding="utf-8")
+
+            result = page_builder.render_funding_links(funding_file)
+
+        self.assertEqual(result, "")
+
+    def test_render_shared_components_replaces_repeated_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            includes_dir = Path(directory)
+            (includes_dir / "header.html").write_text("<header>Header</header>", encoding="utf-8")
+            (includes_dir / "footer.html").write_text("<footer>Footer</footer>", encoding="utf-8")
+
+            with (
+                patch.object(page_builder, "INCLUDES_DIR", includes_dir),
+                patch.object(page_builder, "render_funding_links", return_value=""),
+            ):
+                result = page_builder.render_shared_components(
+                    "<!--SITE_HEADER--><main></main><!--SITE_HEADER--><!--SITE_FOOTER-->",
+                    "",
+                    "",
+                )
+
+        self.assertEqual(result.count("<header>Header</header>"), 2)
+        self.assertTrue(result.endswith("<footer>Footer</footer>"))
+
+    def test_parse_lcov_files_keeps_a_source_with_no_line_summaries(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "lcov.info"
+            report.write_text("SF:empty.py\nend_of_record\n", encoding="utf-8")
+
+            rows = page_builder.parse_lcov_files(report)
+
+        self.assertEqual(rows, [("empty.py", 0, 0)])
+
+    def test_render_coverage_entry_reports_a_missing_leaf(self) -> None:
+        coverage_summary = MagicMock()
+
+        with tempfile.TemporaryDirectory() as directory:
+            result = page_builder.render_coverage_entry(
+                Path(directory), "Missing", "missing/lcov.info", coverage_summary
+            )
+
+        self.assertEqual(
+            result,
+            (0, 0, False, '<p class="section-intro">No report.</p>'),
+        )
+        coverage_summary.pct.assert_not_called()
+
+    def test_sitemap_urls_omits_configured_docs_without_rendered_results(self) -> None:
+        docs = [
+            {"slug": "rendered"},
+            {"slug": "not-rendered"},
+        ]
+
+        with (
+            patch.object(page_builder, "DOCS", docs),
+            patch.object(page_builder, "SITE_URL", "https://example.test/"),
+        ):
+            urls = page_builder.sitemap_urls({"rendered": {"title": "Rendered"}})
+
+        self.assertIn("https://example.test/docs/rendered.html", urls)
+        self.assertNotIn("https://example.test/docs/not-rendered.html", urls)
 
 
 class RepositoryConfigurationTest(unittest.TestCase):
