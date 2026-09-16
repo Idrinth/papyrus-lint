@@ -86,7 +86,11 @@ CI treats clippy warnings as errors.
    website's searchable `rules.html` straight from it; and
    `.github/scripts/generate_nexuspage_tables.py` generates
    `docs/nexuspage.bbcode`'s five lint tables from it too — CI's `bbcode`
-   job fails if that's skipped and it drifts. `README.md`'s own
+   job fails if the checked-in copy drifts, and `release.yml`'s `nexus-page`
+   job re-runs the same generator against the tagged commit's own
+   `docs/rules.json` before packaging the version-specific Nexus page, so
+   the shipped page's tables can never ship stale even if that CI check
+   were ever bypassed. `README.md`'s own
    "Implemented Lints" section only keeps a short per-category blurb and a
    link to `rules.html` — it carries no per-rule text to keep in sync.
 5. **Match the file you are in.** Don't invent a new module layout, naming

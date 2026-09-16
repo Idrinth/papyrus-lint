@@ -37,6 +37,9 @@ jobs:
             --dir coverage-artifacts \
             --pattern '*coverage*'
 
+      - name: Regenerate Nexus page lint tables from rules.json
+        run: python3 .github/scripts/generate_nexuspage_tables.py docs/rules.json docs/nexuspage.bbcode
+
       - name: Generate version-specific Nexus page
         run: |
           python3 .github/scripts/render_nexuspage.py \
