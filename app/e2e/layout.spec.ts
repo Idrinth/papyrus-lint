@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 // These run against a real Chromium layout engine (see playwright.config.ts)
 // specifically to catch element-size regressions the jsdom-based Vitest
@@ -153,4 +153,106 @@ test("code viewer highlight overlay keeps blank lines the same height as their n
   for (const height of rest) {
     expect(height).toBeCloseTo(first, 0);
   }
+});
+
+async function openTallCodeViewer(page: Page, mode: "view" | "edit") {
+  await page.goto("/");
+  await page.evaluate((nextMode) => {
+    const lines = Array.from({ length: 200 }, (_, index) => `Scriptname Line${index} extends Quest`);
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+    const view = document.querySelector<HTMLElement>("#code-viewer-view")!;
+    const editor = document.querySelector<HTMLElement>("#code-viewer-editor")!;
+    const textarea = document.querySelector<HTMLTextAreaElement>("#code-viewer-editor-textarea")!;
+    const highlight = document.querySelector("#code-viewer-editor-highlight code")!;
+    const source = lines.join("\n");
+
+    view.innerHTML =
+      "<table class=\"code-viewer__table\"><tbody>" +
+      lines
+        .map(
+          (line, index) =>
+            `<tr><td class="code-viewer__line-number">${index + 1}</td>` +
+            `<td class="code-viewer__line-code">${line}</td></tr>`,
+        )
+        .join("") +
+      "</tbody></table>";
+    textarea.value = source;
+    highlight.innerHTML = lines.map((line) => `<span class="code-viewer__editor-line">${line}</span>`).join("");
+
+    view.hidden = nextMode !== "view";
+    editor.hidden = nextMode !== "edit";
+    dialog.showModal();
+  }, mode);
+}
+
+test("fullscreen code viewer covers the viewport so the page behind cannot show a scrollbar", async ({ page }) => {
+  // Regression: `.code-viewer--fullscreen` used 100vw/100vh without resetting
+  // the UA dialog's auto margins, so the box sat offset from the viewport
+  // and the document's scrollbar (the element behind the dialog) was the
+  // one on the right edge. Dragging it scrolled the page, not the viewer.
+  await openTallCodeViewer(page, "view");
+
+  await page.locator("#code-viewer-fullscreen").click();
+
+  const geometry = await page.evaluate(() => {
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+    const box = dialog.getBoundingClientRect();
+    return {
+      x: box.x,
+      y: box.y,
+      width: box.width,
+      height: box.height,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      htmlOverflow: getComputedStyle(document.documentElement).overflow,
+    };
+  });
+
+  expect(geometry.x).toBeCloseTo(0, 0);
+  expect(geometry.y).toBeCloseTo(0, 0);
+  expect(geometry.width).toBeCloseTo(geometry.viewportWidth, 0);
+  expect(geometry.height).toBeCloseTo(geometry.viewportHeight, 0);
+  expect(geometry.htmlOverflow).toBe("hidden");
+
+  const stage = page.locator(".code-viewer__stage");
+  await expect(stage).toBeVisible();
+  const scrolled = await stage.evaluate((el) => {
+    el.scrollTop = 400;
+    return el.scrollTop;
+  });
+  expect(scrolled).toBeGreaterThan(0);
+
+  const pageScroll = await page.evaluate(() => document.documentElement.scrollTop);
+  expect(pageScroll).toBe(0);
+});
+
+test("edit-mode scrollbar at the dialog edge belongs to the textarea, not the view behind it", async ({ page }) => {
+  await openTallCodeViewer(page, "edit");
+  await page.locator("#code-viewer-fullscreen").click();
+
+  const hit = await page.evaluate(() => {
+    const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+    const stage = document.querySelector<HTMLElement>(".code-viewer__stage")!;
+    const highlight = document.querySelector<HTMLElement>("#code-viewer-editor-highlight")!;
+    const box = dialog.getBoundingClientRect();
+    const atRight = document.elementFromPoint(box.right - 8, box.top + box.height / 2);
+    return {
+      tag: atRight?.tagName ?? null,
+      id: atRight instanceof HTMLElement ? atRight.id : null,
+      stageOverflow: getComputedStyle(stage).overflow,
+      highlightPointerEvents: getComputedStyle(highlight).pointerEvents,
+    };
+  });
+
+  expect(hit.tag).toBe("TEXTAREA");
+  expect(hit.id).toBe("code-viewer-editor-textarea");
+  expect(hit.stageOverflow).toBe("hidden");
+  expect(hit.highlightPointerEvents).toBe("none");
+
+  const textarea = page.locator("#code-viewer-editor-textarea");
+  const scrolled = await textarea.evaluate((el) => {
+    el.scrollTop = 400;
+    return el.scrollTop;
+  });
+  expect(scrolled).toBeGreaterThan(0);
 });

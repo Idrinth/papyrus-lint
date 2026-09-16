@@ -679,11 +679,22 @@ h1 {
 }
 
 .code-viewer--fullscreen {
-  width: 100vw;
-  height: 100vh;
-  max-width: 100vw;
-  max-height: 100vh;
+  /* 100vw/100vh plus the UA dialog's auto margins leaves the box offset
+   * from the viewport, so the page behind peeks out and its scrollbar
+   * sits on the right edge — the bar the user grabs, which then scrolls
+   * the wrong element. Pin the dialog to the viewport instead. */
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
   border-radius: 0;
+}
+
+html:has(.code-viewer--fullscreen[open]) {
+  overflow: hidden;
 }
 
 .code-viewer__header {
@@ -762,9 +773,18 @@ h1 {
   overflow: auto;
 }
 
+/* Edit mode's overlay is `position: absolute; inset: 0` over this stage.
+ * If the stage itself still scrolls, its bar sits in the gutter beside
+ * that overlay — visually the editor's scrollbar, but it moves the
+ * (hidden) view behind it. The textarea is the scroller in edit mode. */
+.code-viewer__stage:has(> .code-viewer__editor:not([hidden])) {
+  overflow: hidden;
+}
+
 .code-viewer__editor {
   position: absolute;
   inset: 0;
+  z-index: 1;
   display: flex;
 }
 
@@ -878,6 +898,16 @@ h1 {
 .code-viewer__editor-highlight {
   pointer-events: none;
   color: inherit;
+  /* Keep the classic-scrollbar gutter so this layer stays aligned with
+   * the textarea, but never paint a thumb. The textarea is transparent,
+   * so a visible bar here is the one the user sees and tries to drag —
+   * and `pointer-events: none` means those drags do nothing. */
+  scrollbar-color: transparent transparent;
+}
+
+.code-viewer__editor-highlight::-webkit-scrollbar-thumb,
+.code-viewer__editor-highlight::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .code-viewer__editor-line {
@@ -901,6 +931,15 @@ h1 {
   -webkit-text-fill-color: transparent;
   caret-color: var(--color-text);
   outline: none;
+}
+
+/* WebKit (the desktop app's Linux webview) skips painting a scrollbar on
+ * a fully transparent textarea, which is what lets the highlight layer's
+ * bar show through. Styling the thumb is enough to get a real, draggable
+ * bar without hiding the highlighted text underneath. */
+.code-viewer__editor-textarea::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 6px;
 }
 
 /* WebKit (the desktop app's Linux webview) paints selected text with the
