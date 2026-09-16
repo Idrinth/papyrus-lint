@@ -819,13 +819,7 @@ pub fn run(
     // whether `stdout` itself is one. `NO_COLOR` (https://no-color.org/)
     // is honored the same way most CLIs do: any non-empty or empty value
     // disables auto-coloring.
-    let use_color = match color_choice {
-        ColorChoice::Always => true,
-        ColorChoice::Never => false,
-        ColorChoice::Auto => {
-            output_path.is_none() && stdout_is_terminal && std::env::var_os("NO_COLOR").is_none()
-        }
-    };
+    let use_color = resolve_color(color_choice, output_path.as_deref(), stdout_is_terminal);
 
     let mut total_diagnostics = 0usize;
     let mut files_with_diagnostics = 0usize;
@@ -998,27 +992,13 @@ pub fn run(
                         }
                     }
                 }
-                if let Some(tag) = tag_filter.as_deref() {
-                    diagnostics.retain(|diagnostic| {
-                        papyrus_lints::tags::tags_for(diagnostic.rule).is_some_and(|rule_tags| {
-                            rule_tags
-                                .kinds
-                                .iter()
-                                .any(|kind| kind.eq_ignore_ascii_case(tag))
-                        })
-                    });
-                }
-                diagnostics.sort_by_key(|d| (d.line, d.column));
-
-                // Quiet flags only affect presentation. A hidden diagnostic still
-                // participates in the configured failure threshold and exit code.
-                let file_should_fail = diagnostics
-                    .iter()
-                    .any(|diagnostic| lint_config.should_fail_on(diagnostic));
-                diagnostics.retain(|diagnostic| {
-                    !((quiet_warnings && diagnostic.level() == "warning")
-                        || (quiet_info && diagnostic.level() == "info"))
-                });
+                let file_should_fail = finalize_diagnostics(
+                    &mut diagnostics,
+                    &lint_config,
+                    tag_filter.as_deref(),
+                    quiet_warnings,
+                    quiet_info,
+                );
 
                 for diagnostic in &diagnostics {
                     if !json {
@@ -1033,17 +1013,7 @@ pub fn run(
                 let mut json_file = None;
                 let mut ai_file = None;
                 if json {
-                    let json_diagnostics: Vec<JsonDiagnostic> = diagnostics
-                        .iter()
-                        .map(|d| JsonDiagnostic {
-                            line: d.line,
-                            column: d.column,
-                            rule: d.rule,
-                            level: d.level(),
-                            message: d.message.clone(),
-                            doc_url: doc_url_for(d.rule),
-                        })
-                        .collect();
+                    let json_diagnostics = to_json_diagnostics(&diagnostics);
                     if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
                         let rule_counts = rule_counts(&json_diagnostics);
                         let severity_counts = severity_counts(&json_diagnostics);
@@ -1139,57 +1109,10 @@ pub fn run(
             dry_run,
             success,
         };
-        let _ = writeln!(
-            report_buf,
-            "{}",
-            serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
-        );
+        write_json_report(&mut report_buf, &report);
     } else if output_format == OutputFormat::Ai {
-        let total_rule_counts =
-            rule_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
-        let total_severity_counts =
-            severity_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
-        let mut triggered_rules: Vec<&'static str> = ai_files
-            .iter()
-            .flat_map(|file| file.diagnostics.iter().map(|diagnostic| diagnostic.rule))
-            .collect();
-        triggered_rules.sort_unstable();
-        triggered_rules.dedup();
-        let rule_details = triggered_rules
-            .into_iter()
-            .filter_map(papyrus_lints::tags::tags_for)
-            .map(|tags| AiRuleDetails {
-                rule: tags.rule,
-                description: tags.description,
-                kinds: tags.kinds,
-                importance: tags.importance,
-                auto_fixable: tags.auto_fixable(),
-                doc_url: tags.doc_url(),
-            })
-            .collect();
-        let report = AiReport {
-            schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
-            header: AiHeader {
-                tool: "Papyrus Lint",
-                version: VERSION,
-                website: "https://papyrus-lint.idrinth.de",
-                target_game: "Skyrim SE/AE",
-                generated_at: generated_at(),
-            },
-            configuration: ai_configuration(&lint_config),
-            findings: AiFindings {
-                files: ai_files,
-                total_diagnostics,
-                severity_counts: total_severity_counts,
-                rule_counts: total_rule_counts,
-            },
-            rule_details,
-        };
-        let _ = writeln!(
-            report_buf,
-            "{}",
-            serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
-        );
+        let report = build_ai_report(&lint_config, ai_files, total_diagnostics);
+        write_json_report(&mut report_buf, &report);
     } else {
         let fixed_suffix = if fix && dry_run {
             format!(" ({files_fixed} script(s) would be fixed.)")

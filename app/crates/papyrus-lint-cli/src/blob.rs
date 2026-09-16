@@ -6,7 +6,6 @@ use papyrus_lint_config as config;
 use papyrus_lint_core::content_hash;
 
 use crate::output::*;
-use crate::VERSION;
 
 /// Lints `source` directly as an in-memory "blob" of Papyrus source text —
 /// e.g. a script buffer piped in from an editor or another tool — instead of
@@ -62,49 +61,18 @@ pub(crate) fn run_blob(
     };
 
     let mut diagnostics = papyrus_lints::lint(source, &lint_config);
-    if let Some(tag) = tag_filter {
-        diagnostics.retain(|diagnostic| {
-            papyrus_lints::tags::tags_for(diagnostic.rule).is_some_and(|rule_tags| {
-                rule_tags
-                    .kinds
-                    .iter()
-                    .any(|kind| kind.eq_ignore_ascii_case(tag))
-            })
-        });
-    }
-    diagnostics.sort_by_key(|d| (d.line, d.column));
+    let should_fail = finalize_diagnostics(
+        &mut diagnostics,
+        &lint_config,
+        tag_filter,
+        quiet_warnings,
+        quiet_info,
+    );
 
-    // Quiet flags only affect presentation; a hidden diagnostic still
-    // participates in the configured failure threshold and exit code, the
-    // same as a normal file's diagnostics do in `run`.
-    let should_fail = diagnostics
-        .iter()
-        .any(|diagnostic| lint_config.should_fail_on(diagnostic));
-    diagnostics.retain(|diagnostic| {
-        !((quiet_warnings && diagnostic.level() == "warning")
-            || (quiet_info && diagnostic.level() == "info"))
-    });
-
-    let use_color = match color_choice {
-        ColorChoice::Always => true,
-        ColorChoice::Never => false,
-        ColorChoice::Auto => {
-            output_path.is_none() && stdout_is_terminal && std::env::var_os("NO_COLOR").is_none()
-        }
-    };
+    let use_color = resolve_color(color_choice, output_path, stdout_is_terminal);
 
     let total_diagnostics = diagnostics.len();
-    let json_diagnostics: Vec<JsonDiagnostic> = diagnostics
-        .iter()
-        .map(|d| JsonDiagnostic {
-            line: d.line,
-            column: d.column,
-            rule: d.rule,
-            level: d.level(),
-            message: d.message.clone(),
-            doc_url: doc_url_for(d.rule),
-        })
-        .collect();
+    let json_diagnostics = to_json_diagnostics(&diagnostics);
 
     let mut report_buf: Vec<u8> = Vec::new();
 
@@ -123,11 +91,7 @@ pub(crate) fn run_blob(
                 dry_run: false,
                 success: !should_fail,
             };
-            let _ = writeln!(
-                report_buf,
-                "{}",
-                serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
-            );
+            write_json_report(&mut report_buf, &report);
         }
         OutputFormat::Ai => {
             let ai_files = if json_diagnostics.is_empty() {
@@ -153,52 +117,8 @@ pub(crate) fn run_blob(
                     source: ai_source,
                 }]
             };
-            let total_rule_counts =
-                rule_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
-            let total_severity_counts =
-                severity_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
-            let mut triggered_rules: Vec<&'static str> = ai_files
-                .iter()
-                .flat_map(|file| file.diagnostics.iter().map(|diagnostic| diagnostic.rule))
-                .collect();
-            triggered_rules.sort_unstable();
-            triggered_rules.dedup();
-            let rule_details = triggered_rules
-                .into_iter()
-                .filter_map(papyrus_lints::tags::tags_for)
-                .map(|tags| AiRuleDetails {
-                    rule: tags.rule,
-                    description: tags.description,
-                    kinds: tags.kinds,
-                    importance: tags.importance,
-                    auto_fixable: tags.auto_fixable(),
-                    doc_url: tags.doc_url(),
-                })
-                .collect();
-            let report = AiReport {
-                schema:
-                    "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
-                header: AiHeader {
-                    tool: "Papyrus Lint",
-                    version: VERSION,
-                    website: "https://papyrus-lint.idrinth.de",
-                    target_game: "Skyrim SE/AE",
-                    generated_at: generated_at(),
-                },
-                configuration: ai_configuration(&lint_config),
-                findings: AiFindings {
-                    files: ai_files,
-                    total_diagnostics,
-                    severity_counts: total_severity_counts,
-                    rule_counts: total_rule_counts,
-                },
-                rule_details,
-            };
-            let _ = writeln!(
-                report_buf,
-                "{}",
-                serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
-            );
+            let report = build_ai_report(&lint_config, ai_files, total_diagnostics);
+            write_json_report(&mut report_buf, &report);
         }
         OutputFormat::Plain => {
             for diagnostic in &diagnostics {

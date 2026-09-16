@@ -26,6 +26,26 @@ pub(crate) fn doc_url_for(rule: &str) -> Option<String> {
     papyrus_lints::tags::tags_for(rule).map(|tags| tags.doc_url())
 }
 
+/// Converts a script's (or the `--blob` source's) already-finalized
+/// diagnostics into their `--json`/`--format ai` shape. Shared by
+/// [`crate::run`] and [`crate::run_blob`] so the two never disagree on how a
+/// [`papyrus_lints::Diagnostic`] maps onto the reported JSON fields.
+pub(crate) fn to_json_diagnostics(
+    diagnostics: &[papyrus_lints::Diagnostic],
+) -> Vec<JsonDiagnostic> {
+    diagnostics
+        .iter()
+        .map(|d| JsonDiagnostic {
+            line: d.line,
+            column: d.column,
+            rule: d.rule,
+            level: d.level(),
+            message: d.message.clone(),
+            doc_url: doc_url_for(d.rule),
+        })
+        .collect()
+}
+
 /// One resolved script's diagnostics, as printed by `--json`. Every
 /// resolved script gets an entry, even one with no diagnostics, so a
 /// consumer (e.g. an editor plugin) can clear stale diagnostics for a
