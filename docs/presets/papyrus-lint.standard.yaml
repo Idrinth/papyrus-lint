@@ -142,3 +142,4 @@ rules:
   unnecessary_function: false      # was true: maintainability/performance advisory, no correctness stake
   unknown_actor_value: false
   repeated_setoutfit: true
+  missing_doc_comment: false

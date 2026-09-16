@@ -90,6 +90,7 @@
 //!   unnecessary_function: true
 //!   unknown_actor_value: false
 //!   repeated_setoutfit: true
+//!   missing_doc_comment: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -98,7 +99,8 @@
 //! and falls back to its default. `property_sorting`,
 //! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`,
 //! `repeated_getvalue`, `global_variable_setvalue`,
-//! `default_property_value`, and `unknown_actor_value` are the exceptions:
+//! `default_property_value`, `unknown_actor_value`, and
+//! `missing_doc_comment` are the exceptions:
 //! they default to `false`.
 //! `property_sorting` reorders a script's declared properties, a more
 //! invasive change than the rest of these rules; `unchecked_form_parameter`
@@ -118,8 +120,11 @@
 //! already rely on Papyrus's own implicit per-type defaults for some or
 //! all of their properties; `unknown_actor_value` defaults off because a
 //! project's own plugin can define additional, custom Actor Values that
-//! have no way to appear in `rules/actor-values.yaml`. All eight need a
-//! project to opt in explicitly.
+//! have no way to appear in `rules/actor-values.yaml`; `missing_doc_comment`
+//! defaults off because most existing scripts have no documentation
+//! comments at all, and enabling it would otherwise flag literally every
+//! `ScriptName`/`Property`/`Function`/`Event` declaration in such a project
+//! at once. All nine need a project to opt in explicitly.
 //!
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
 //! is `false` by default: see [`Config::assume_auto_properties_filled`].
@@ -480,6 +485,13 @@ pub struct Rules {
     pub unknown_actor_value: bool,
     /// The "Repeated Actor.SetOutfit() calls" lint.
     pub repeated_setoutfit: bool,
+    /// The "Missing documentation comment" lint. Like
+    /// [`Self::property_sorting`], [`Self::unchecked_form_parameter`],
+    /// [`Self::magic_numbers`], [`Self::native_function_usage`],
+    /// [`Self::repeated_getvalue`], [`Self::global_variable_setvalue`],
+    /// [`Self::default_property_value`], and [`Self::unknown_actor_value`],
+    /// this defaults to `false`: see [`crate::missing_doc_comment`].
+    pub missing_doc_comment: bool,
 }
 
 impl Rules {
@@ -580,6 +592,7 @@ impl Default for Rules {
             unnecessary_function: true,
             unknown_actor_value: false,
             repeated_setoutfit: true,
+            missing_doc_comment: false,
         }
     }
 }
@@ -783,6 +796,10 @@ mod tests {
         // rules/actor-values.yaml.
         assert!(!config.rules.unknown_actor_value);
         assert!(config.rules.repeated_setoutfit);
+        // Also disabled by default: most existing scripts have no
+        // documentation comments at all, and enabling this would otherwise
+        // flag literally every declaration in such a project at once.
+        assert!(!config.rules.missing_doc_comment);
     }
 
     #[test]

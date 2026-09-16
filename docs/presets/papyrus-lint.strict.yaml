@@ -130,3 +130,4 @@ rules:
   unnecessary_function: true
   unknown_actor_value: false
   repeated_setoutfit: true
+  missing_doc_comment: false

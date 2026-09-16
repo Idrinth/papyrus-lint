@@ -37,6 +37,7 @@ pub mod int_division_to_float;
 pub mod invariant_loop_condition;
 pub mod local_variable_shadowing;
 pub mod magic_numbers;
+pub mod missing_doc_comment;
 pub mod named_arguments;
 pub mod native_function_usage;
 pub mod non_global_function_call;
@@ -154,6 +155,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     unnecessary_function::RULE,
     actor_value::RULE,
     repeated_setoutfit::RULE,
+    missing_doc_comment::RULE,
 ];
 
 use serde::Serialize;
@@ -480,6 +482,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.repeated_setoutfit {
         diagnostics.extend(repeated_setoutfit::check(source));
+    }
+    if rules.missing_doc_comment {
+        diagnostics.extend(missing_doc_comment::check(source));
     }
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
@@ -1654,6 +1659,12 @@ mod tests {
                 repeated_setoutfit::RULE,
                 Config::default(),
                 config_with(|c| c.rules.repeated_setoutfit = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\nEndFunction\n",
+                missing_doc_comment::RULE,
+                config_with(|c| c.rules.missing_doc_comment = true),
+                Config::default(),
             ),
         ];
 

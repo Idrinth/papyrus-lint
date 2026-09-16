@@ -487,6 +487,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::Medium,
     },
+    RuleTags {
+        rule: crate::missing_doc_comment::RULE,
+        description: "Flags, as a `[warning]`, a script header (`ScriptName`), `Property` declaration, or `Function`/`Event` declaration with no documentation comment (CreationKit's own `{ ... }` syntax, rendered as a tooltip in the script picker or property editor) on the line immediately following it. Disabled by default, since most existing scripts have no documentation comments at all and enabling it would otherwise flag literally every declaration in such a project at once; opt in with `rules.missing_doc_comment`.",
+        kinds: &["maintainability", "style"],
+        importance: Importance::Low,
+    },
 ];
 
 #[cfg(test)]
