@@ -1,0 +1,21 @@
+# Register-function/Event-handler pairs for the "Missing update event
+# handler" lint (see papyrus-lints/src/missing_update_handler.rs), which
+# flags a call to `register` with no matching `event` declared anywhere in
+# the same script, since the engine then has nothing to call once the
+# registered timer fires and the call has no effect.
+#
+# Each entry:
+#   register: the RegisterFor* function name, as written in Papyrus source
+#   event:    the Event name the engine calls once `register`'s timer fires
+
+- register: RegisterForUpdate
+  event: OnUpdate
+
+- register: RegisterForSingleUpdate
+  event: OnUpdate
+
+- register: RegisterForUpdateGameTime
+  event: OnUpdateGameTime
+
+- register: RegisterForSingleUpdateGameTime
+  event: OnUpdateGameTime

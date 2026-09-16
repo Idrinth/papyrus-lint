@@ -133,3 +133,4 @@ rules:
   missing_doc_comment: false
   invalid_random_range: true
   float_equality: false
+  missing_update_handler: false
