@@ -1421,6 +1421,28 @@ mod tests {
     }
 
     #[test]
+    fn list_psc_files_recursively_accepts_an_empty_directory() {
+        let dir = tempdir().unwrap();
+
+        let files = list_psc_files_recursively(dir.path().to_string_lossy().into_owned()).unwrap();
+
+        assert!(files.is_empty());
+    }
+
+    #[test]
+    fn list_psc_files_recursively_ignores_similarly_named_non_psc_files() {
+        let dir = tempdir().unwrap();
+        let script = dir.path().join("Actual.psc");
+        std::fs::write(&script, "ScriptName Actual\n").unwrap();
+        std::fs::write(dir.path().join("Backup.psc.bak"), "ScriptName Backup\n").unwrap();
+        std::fs::write(dir.path().join("Notes.txt"), "ScriptName Notes\n").unwrap();
+
+        let files = list_psc_files_recursively(dir.path().to_string_lossy().into_owned()).unwrap();
+
+        assert_eq!(files, vec![script.to_string_lossy().into_owned()]);
+    }
+
+    #[test]
     fn parse_commands_report_invalid_papyrus() {
         let invalid = "Function MissingScriptName()\nEndFunction\n";
         assert!(parse_papyrus_script(invalid).is_err());
@@ -2535,6 +2557,27 @@ mod tests {
     }
 
     #[test]
+    fn list_script_members_matches_type_names_case_insensitively() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("scripts/source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::write(
+            source_dir.join("Example.psc"),
+            "ScriptName Example\n\nString Property DisplayName Auto\n",
+        )
+        .unwrap();
+
+        let members = list_script_members(
+            dir.path().to_string_lossy().into_owned(),
+            "eXaMpLe".to_string(),
+            Vec::new(),
+        );
+
+        assert_eq!(members.len(), 1);
+        assert_eq!(members[0].name(), "DisplayName");
+    }
+
+    #[test]
     #[cfg(unix)]
     fn compile_command_trims_the_executable_path_and_returns_its_output() {
         use std::os::unix::fs::PermissionsExt;
@@ -2586,5 +2629,35 @@ mod tests {
 
         assert!(!outcome.success);
         assert_eq!(outcome.stderr, "compile failed\n");
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn compile_command_forwards_additional_script_roots() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        let additional_root = dir.path().join("Shared Scripts");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        std::fs::create_dir_all(&additional_root).unwrap();
+        let script_path = source_dir.join("Example.psc");
+        std::fs::write(&script_path, "ScriptName Example\n").unwrap();
+        let compiler_path = dir.path().join("compiler.sh");
+        std::fs::write(&compiler_path, "#!/bin/sh\nprintf '%s\\n' \"$@\"\n").unwrap();
+        std::fs::set_permissions(&compiler_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+        let outcome = compile_psc_file(
+            script_path.to_string_lossy().into_owned(),
+            compiler_path.to_string_lossy().into_owned(),
+            vec![additional_root.to_string_lossy().into_owned()],
+        )
+        .unwrap();
+
+        assert!(outcome.success);
+        assert!(outcome
+            .stdout
+            .contains(&additional_root.to_string_lossy().into_owned()));
+        assert!(outcome.stdout.contains("Example.psc"));
     }
 }
