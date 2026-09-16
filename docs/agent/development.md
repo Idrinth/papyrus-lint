@@ -29,7 +29,7 @@
     https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
 - Rust backend only: `cargo check` / `cargo test` from `app/src-tauri/`.
-  `app/src-tauri/build.rs` generates `icons/` from `resources/logo.png`
+  `app/src-tauri/build.rs` generates `icons/` from `shared/images/logo.png`
   during the build, so those platform-specific PNG/ICO/ICNS variants are
   not checked in (except `icons/icon.png`, which the Pages builder copies).
 - Parser crate only: `cargo test` from `app/crates/papyrus-parser/`.
