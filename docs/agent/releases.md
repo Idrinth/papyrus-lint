@@ -2,7 +2,22 @@
 # Releases
  (`.github/workflows/release.yml`)
 
-Pushing a tag matching `v*.*.*` triggers a release job that syncs the
+Pushing a tag matching `v*.*.*` triggers a `nexus-page` job that
+regenerates `docs/nexuspage.bbcode`'s five lint tables from that tagged
+commit's own `docs/rules.json` (`.github/scripts/generate_nexuspage_tables.py
+docs/rules.json docs/nexuspage.bbcode`, run without `--check`, so it
+rewrites the file in this job's own checkout rather than verifying it) —
+this runs even though CI's `bbcode` job already blocks a drifted
+`docs/nexuspage.bbcode` from merging, so the packaged page can never ship
+stale tables regardless of whether that check was ever bypassed. It then
+downloads the coverage artifacts from the tagged commit's most recent
+successful `ci.yml` run and calls `.github/scripts/render_nexuspage.py` to
+fill in that freshly-regenerated file's `<COVERED_LINES>`/`<TOTAL_LINES>`/
+`<COVERAGE_PERCENTAGE>`/`<VERSION>` markers, attaching the result as
+`nexuspage-<tag>.bbcode` to the GitHub release (creating it if it doesn't
+already exist).
+
+A separate release job syncs the
 tag's version into `app/src-tauri/tauri.conf.json`, `app/package.json`,
 `app/src-tauri/Cargo.toml`, and all six reusable crates' `Cargo.toml` files, then
 builds the Tauri desktop app (binary name `PapyrusLinter`) on Linux,

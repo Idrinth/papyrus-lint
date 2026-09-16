@@ -23,6 +23,10 @@
   finally runs `.github/scripts/generate_nexuspage_tables.py --check` to
   confirm `docs/nexuspage.bbcode`'s five lint tables are still what
   `docs/rules.json` would generate (see "Adding a lint" in AGENTS.md).
+  `release.yml`'s `nexus-page` job also regenerates those tables from
+  scratch before packaging a tagged release (see Releases below), so this
+  check is a merge-time gate for the checked-in copy, not the only thing
+  standing between a `docs/rules.json` edit and a stale shipped page.
 - **Semantic version advisory job** (`semver-advisory`, pushes to `the-one`
   only): gathers every pull request merged since the latest `v*.*.*` release
   tag (via the GitHub API, walking `git log <tag>..HEAD`) and passes their
