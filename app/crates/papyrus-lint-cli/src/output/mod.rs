@@ -41,6 +41,57 @@ pub(crate) enum OutputFormat {
     Ai,
 }
 
+/// Finalizes one script's (or the `--blob` source's) diagnostics: applies
+/// `--tag` filtering, sorts by location, determines whether any diagnostic
+/// -- even one about to be hidden below -- crosses the configured
+/// `fail_on_warning`/`fail_on_info` threshold, then applies
+/// `--quiet-warnings`/`--quiet-info`. Returns that failure verdict, computed
+/// before the quiet flags hide anything, so a hidden diagnostic still
+/// affects the exit code the same as a shown one. Shared by the per-file
+/// lint pass in [`crate::run`] and [`crate::run_blob`] so the two can't
+/// drift on what counts as a failure versus what's merely hidden from the
+/// report.
+pub(crate) fn finalize_diagnostics(
+    diagnostics: &mut Vec<papyrus_lints::Diagnostic>,
+    lint_config: &papyrus_lints::Config,
+    tag_filter: Option<&str>,
+    quiet_warnings: bool,
+    quiet_info: bool,
+) -> bool {
+    if let Some(tag) = tag_filter {
+        diagnostics.retain(|diagnostic| {
+            papyrus_lints::tags::tags_for(diagnostic.rule).is_some_and(|rule_tags| {
+                rule_tags
+                    .kinds
+                    .iter()
+                    .any(|kind| kind.eq_ignore_ascii_case(tag))
+            })
+        });
+    }
+    diagnostics.sort_by_key(|d| (d.line, d.column));
+
+    let should_fail = diagnostics
+        .iter()
+        .any(|diagnostic| lint_config.should_fail_on(diagnostic));
+    diagnostics.retain(|diagnostic| {
+        !((quiet_warnings && diagnostic.level() == "warning")
+            || (quiet_info && diagnostic.level() == "info"))
+    });
+    should_fail
+}
+
+/// Serializes `report` as pretty-printed JSON, followed by a trailing
+/// newline, into `buf` -- the shared tail of every `--json`/`--format ai`
+/// branch in [`crate::run`] and [`crate::run_blob`].
+pub(crate) fn write_json_report(buf: &mut Vec<u8>, report: &impl serde::Serialize) {
+    use std::io::Write;
+    let _ = writeln!(
+        buf,
+        "{}",
+        serde_json::to_string_pretty(report).unwrap_or_else(|_| "{}".to_string())
+    );
+}
+
 /// One script's worth of work from the parallel lint loop in [`run`],
 /// collected by its worker so the main thread can fold it into the overall
 /// report afterward in the script's original (not completion) order --

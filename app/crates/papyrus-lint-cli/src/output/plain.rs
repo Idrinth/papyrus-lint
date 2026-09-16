@@ -16,6 +16,25 @@ pub(crate) enum ColorChoice {
     Never,
 }
 
+/// Resolves whether the plain-text report should actually be colorized,
+/// given `--color <when>`, whether the report is being redirected to a file
+/// via `--output` (never a terminal), and whether stdout itself is one.
+/// Shared by [`crate::run`] and [`crate::run_blob`] so `--color auto`'s
+/// behavior can't drift between the two entry points.
+pub(crate) fn resolve_color(
+    color_choice: ColorChoice,
+    output_path: Option<&std::path::Path>,
+    stdout_is_terminal: bool,
+) -> bool {
+    match color_choice {
+        ColorChoice::Always => true,
+        ColorChoice::Never => false,
+        ColorChoice::Auto => {
+            output_path.is_none() && stdout_is_terminal && std::env::var_os("NO_COLOR").is_none()
+        }
+    }
+}
+
 /// Wraps `text` in `code`/reset ANSI escapes when `use_color` is true,
 /// otherwise returns it unchanged.
 pub(crate) fn colorize(text: &str, code: &str, use_color: bool) -> String {

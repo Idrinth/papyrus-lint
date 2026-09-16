@@ -103,6 +103,58 @@ pub(crate) struct AiReport {
     pub(crate) rule_details: Vec<AiRuleDetails>,
 }
 
+/// Assembles the full `--format ai` report from `ai_files` (one entry per
+/// script/blob with at least one diagnostic) and the resolved lint
+/// configuration used to produce them. Shared by [`crate::run`] and
+/// [`crate::run_blob`] so the AI export's schema, header, and rule-detail
+/// derivation can't drift between a normal run and a `--blob` one.
+pub(crate) fn build_ai_report(
+    lint_config: &papyrus_lints::Config,
+    ai_files: Vec<AiFileReport>,
+    total_diagnostics: usize,
+) -> AiReport {
+    let total_rule_counts = rule_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
+    let total_severity_counts =
+        severity_counts(ai_files.iter().flat_map(|file| file.diagnostics.iter()));
+    let mut triggered_rules: Vec<&'static str> = ai_files
+        .iter()
+        .flat_map(|file| file.diagnostics.iter().map(|diagnostic| diagnostic.rule))
+        .collect();
+    triggered_rules.sort_unstable();
+    triggered_rules.dedup();
+    let rule_details = triggered_rules
+        .into_iter()
+        .filter_map(papyrus_lints::tags::tags_for)
+        .map(|tags| AiRuleDetails {
+            rule: tags.rule,
+            description: tags.description,
+            kinds: tags.kinds,
+            importance: tags.importance,
+            auto_fixable: tags.auto_fixable(),
+            doc_url: tags.doc_url(),
+        })
+        .collect();
+
+    AiReport {
+        schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
+        header: AiHeader {
+            tool: "Papyrus Lint",
+            version: crate::VERSION,
+            website: "https://papyrus-lint.idrinth.de",
+            target_game: "Skyrim SE/AE",
+            generated_at: generated_at(),
+        },
+        configuration: ai_configuration(lint_config),
+        findings: AiFindings {
+            files: ai_files,
+            total_diagnostics,
+            severity_counts: total_severity_counts,
+            rule_counts: total_rule_counts,
+        },
+        rule_details,
+    }
+}
+
 /// The AI export's own `configuration` shape: the same resolved
 /// [`papyrus_lints::Config`] a lint run used, except its `rules` object
 /// (58 individual enable flags, each with its own description in the
