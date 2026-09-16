@@ -40,6 +40,7 @@ pub mod invariant_loop_condition;
 pub mod local_variable_shadowing;
 pub mod magic_numbers;
 pub mod missing_doc_comment;
+pub mod missing_update_handler;
 pub mod named_arguments;
 pub mod native_function_usage;
 pub mod non_global_function_call;
@@ -160,6 +161,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     missing_doc_comment::RULE,
     invalid_random_range::RULE,
     float_equality::RULE,
+    missing_update_handler::RULE,
 ];
 
 use serde::Serialize;
@@ -495,6 +497,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.float_equality {
         diagnostics.extend(float_equality::check(source));
+    }
+    if rules.missing_update_handler {
+        diagnostics.extend(missing_update_handler::check(source));
     }
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
@@ -1686,6 +1691,12 @@ mod tests {
                 "ScriptName Example\n\nFunction Test(Float a, Float b)\n    If a == b\n    EndIf\nEndFunction\n",
                 float_equality::RULE,
                 config_with(|c| c.rules.float_equality = true),
+                Config::default(),
+            ),
+            (
+                "ScriptName Example\n\nFunction Start()\n    RegisterForUpdate(7.0)\nEndFunction\n",
+                missing_update_handler::RULE,
+                config_with(|c| c.rules.missing_update_handler = true),
                 Config::default(),
             ),
         ];

@@ -250,6 +250,10 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td]Flags, as an error, a Utility.RandomInt/RandomFloat call whose first argument isn't smaller than its second, since that never produces any actual randomness.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Missing update event handler[/b][/td]
+[td]Flags, as a warning, a RegisterForUpdate/RegisterForSingleUpdate/RegisterForUpdateGameTime/RegisterForSingleUpdateGameTime call with no matching OnUpdate/OnUpdateGameTime Event declared anywhere in the script, since the registration then has no effect. Disabled by default, since a matching Event declared on a script it Extends would otherwise be misreported as missing.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Array bounds[/b][/td]
 [td]Flags a literal index into a local array that falls outside the constant size it was declared with (e.g. new Float[3] followed by a[5]), since Papyrus silently no-ops the access instead of raising an error.[/td]
 [td][/td]
@@ -482,7 +486,8 @@ rules:
   repeated_setoutfit: true
   missing_doc_comment: false
   invalid_random_range: true
-  float_equality: false[/code][/spoiler]
+  float_equality: false
+  missing_update_handler: false[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

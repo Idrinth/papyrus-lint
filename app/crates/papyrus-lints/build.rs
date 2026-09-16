@@ -1,10 +1,12 @@
 //! Compiles `rules/forbidden-functions.yaml`, `rules/slow-functions.yaml`,
-//! `rules/native-methods.yaml`, and `rules/actor-values.yaml` into static
-//! Rust arrays at build time, so `forbidden_functions::check`,
-//! `slow_functions::check`, `native_function_usage::check`, and
-//! `actor_value::check` never parse YAML at runtime (see
+//! `rules/native-methods.yaml`, `rules/actor-values.yaml`, and
+//! `rules/update-event-handlers.yaml` into static Rust arrays at build
+//! time, so `forbidden_functions::check`, `slow_functions::check`,
+//! `native_function_usage::check`, `actor_value::check`, and
+//! `missing_update_handler::check` never parse YAML at runtime (see
 //! `src/forbidden_functions.rs`, `src/slow_functions.rs`,
-//! `src/native_function_usage.rs`, and `src/actor_value.rs`).
+//! `src/native_function_usage.rs`, `src/actor_value.rs`, and
+//! `src/missing_update_handler.rs`).
 
 use std::env;
 use std::fs;
@@ -41,6 +43,12 @@ struct RawNativeMethod {
     function: String,
 }
 
+#[derive(serde::Deserialize)]
+struct RawUpdateEventPair {
+    register: String,
+    event: String,
+}
+
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
@@ -49,6 +57,7 @@ fn main() {
     compile_slow_functions(&manifest_dir, &out_dir);
     compile_native_methods(&manifest_dir, &out_dir);
     compile_actor_values(&manifest_dir, &out_dir);
+    compile_update_event_pairs(&manifest_dir, &out_dir);
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
@@ -203,6 +212,45 @@ fn compile_actor_values(manifest_dir: &str, out_dir: &str) {
     generated.push_str("];\n");
 
     let dest = Path::new(out_dir).join("actor_values_data.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated rule data to {}: {err}",
+            dest.display()
+        )
+    });
+}
+
+fn compile_update_event_pairs(manifest_dir: &str, out_dir: &str) {
+    let yaml_path = Path::new(manifest_dir).join("../../../rules/update-event-handlers.yaml");
+    println!("cargo:rerun-if-changed={}", yaml_path.display());
+
+    let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read update-event-handlers rules at {}: {err}",
+            yaml_path.display()
+        )
+    });
+    let pairs: Vec<RawUpdateEventPair> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+        panic!(
+            "failed to parse update-event-handlers rules at {}: {err}",
+            yaml_path.display()
+        )
+    });
+
+    let mut generated = String::new();
+    generated.push_str(
+        "/// Compiled from `rules/update-event-handlers.yaml` by `build.rs`. Do not edit by hand.\n",
+    );
+    generated.push_str("pub static UPDATE_EVENT_PAIRS: &[UpdateEventPairRule] = &[\n");
+    for pair in &pairs {
+        generated.push_str(&format!(
+            "    UpdateEventPairRule {{ register: {:?}, event: {:?} }},\n",
+            pair.register, pair.event
+        ));
+    }
+    generated.push_str("];\n");
+
+    let dest = Path::new(out_dir).join("update_event_pairs_data.rs");
     fs::write(&dest, generated).unwrap_or_else(|err| {
         panic!(
             "failed to write generated rule data to {}: {err}",
