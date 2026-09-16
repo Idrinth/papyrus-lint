@@ -720,6 +720,8 @@ jobs:
             name: papyrus-parser
           - crate: app/crates/papyrus-lints
             name: papyrus-lints
+          - crate: app/crates/papyrus-lint-config
+            name: papyrus-lint-config
           - crate: app/crates/papyrus-lint-core
             name: papyrus-lint-core
           - crate: app/crates/papyrus-lint-cli
@@ -748,6 +750,8 @@ jobs:
             name: papyrus-parser
           - crate: app/crates/papyrus-lints
             name: papyrus-lints
+          - crate: app/crates/papyrus-lint-config
+            name: papyrus-lint-config
           - crate: app/crates/papyrus-lint-core
             name: papyrus-lint-core
           - crate: app/crates/papyrus-lint-cli
@@ -786,6 +790,8 @@ jobs:
             name: papyrus-parser
           - crate: app/crates/papyrus-lints
             name: papyrus-lints
+          - crate: app/crates/papyrus-lint-config
+            name: papyrus-lint-config
           - crate: app/crates/papyrus-lint-core
             name: papyrus-lint-core
           - crate: app/crates/papyrus-lint-cli

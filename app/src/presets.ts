@@ -52,7 +52,7 @@ export async function applyConfigPreset(dir: string, preset: string): Promise<vo
 
 // Fetches `preset`'s lint rule/formatting settings only (built-in or
 // user), via the backend's get_preset_lint_config command
-// (papyrus_lint_core::config::preset_lint_config_default) — the
+// (papyrus_lint_config::preset_lint_config_default) — the
 // config-only half of what applyConfigPreset seeds a brand new project's
 // file with. Used by handleResetToPresetClick to overwrite the Settings
 // tab's currently edited settings with a preset's own, in an existing
@@ -64,7 +64,7 @@ export async function getPresetLintConfig(preset: string): Promise<LintConfig> {
 // Prompts for a name and saves the Settings tab's currently edited lint
 // configuration (currentLintConfig, kept in sync by handleLintConfigChanged)
 // as a new user preset under it, via the backend's save_config_as_preset
-// command (papyrus_lint_core::config::save_user_preset) — the same
+// command (papyrus_lint_config::save_user_preset) — the same
 // executable-adjacent "presets" directory loadConfigPresets/applyConfigPreset
 // above already read from, so the saved preset is immediately selectable
 // from the first-run picker (or the CLI's --preset <name>) afterward.
@@ -95,7 +95,7 @@ export async function handleSaveConfigAsPresetClick(): Promise<void> {
   }
 }
 
-// The three built-in presets' own ids (see papyrus_lint_core::config::PRESET_NAMES),
+// The three built-in presets' own ids (see papyrus_lint_config::PRESET_NAMES),
 // kept in sync by hand the same way FIXABLE_RULE_IDS is: everything
 // loadConfigPresets returns that isn't one of these is a user preset, since
 // config::save_user_preset/rename_user_preset always refuse a name matching
@@ -107,19 +107,19 @@ export function isCustomPreset(preset: ConfigPreset): boolean {
 }
 
 // Renames the user preset `oldName` to `newName`, via the backend's
-// rename_user_preset command (papyrus_lint_core::config::rename_user_preset).
+// rename_user_preset command (papyrus_lint_config::rename_user_preset).
 export async function renameUserPreset(oldName: string, newName: string, overwrite: boolean): Promise<void> {
   await invoke("rename_user_preset", { oldName, newName, overwrite });
 }
 
 // Deletes the user preset `name`, via the backend's delete_user_preset
-// command (papyrus_lint_core::config::delete_user_preset).
+// command (papyrus_lint_config::delete_user_preset).
 export async function deleteUserPreset(name: string): Promise<void> {
   await invoke("delete_user_preset", { name });
 }
 
 // Fetches the user preset `name`'s raw YAML content, via the backend's
-// export_user_preset command (papyrus_lint_core::config::read_user_preset_yaml),
+// export_user_preset command (papyrus_lint_config::read_user_preset_yaml),
 // for handleExportPresetClick to offer as a download.
 export async function exportUserPreset(name: string): Promise<string> {
   return invoke<string>("export_user_preset", { name });
@@ -316,7 +316,7 @@ export async function handleExportPresetClick(preset: ConfigPreset): Promise<voi
 // `{ kind: "preset", preset }` once one of the inline preset options -
 // shown only when the project has no configuration file yet, since
 // initializing from a preset requires there to be none (see
-// applyConfigPreset/papyrus_lint_core::config::initialize_default_config)
+// applyConfigPreset/papyrus_lint_config::initialize_default_config)
 // - is clicked. Resolves immediately with `{ kind: "detected" }` if the
 // dialog isn't present in the DOM (e.g. a minimal test fixture).
 export async function promptForConfigSelection(projectInfo: ProjectInfo): Promise<ConfigSelectionResult> {

@@ -9,15 +9,12 @@ build = "build.rs"
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_yaml = "0.9"
 encoding_rs = "0.8"
 md5 = "0.7"
 tempfile = "3"
 papyrus-parser = { path = "../papyrus-parser" }
 papyrus-lints = { path = "../papyrus-lints" }
-
-[target.'cfg(windows)'.dependencies]
-winreg = "0.55"
+papyrus-lint-config = { path = "../papyrus-lint-config" }
 
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }

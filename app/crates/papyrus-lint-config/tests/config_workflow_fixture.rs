@@ -4,7 +4,7 @@
 
 use std::fs;
 
-use papyrus_lint_core::config::{
+use papyrus_lint_config::{
     config_file_path, load_compile_check, load_compiler_path, load_lookup_script_roots,
     load_script_roots, load_strict_achlist_scope, save_compile_check, save_compiler_path,
     save_lookup_script_roots, save_script_roots,

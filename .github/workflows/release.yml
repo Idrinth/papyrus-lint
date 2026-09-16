@@ -99,6 +99,7 @@ jobs:
               'app/crates/papyrus-lint-cli/Cargo.toml',
               'app/crates/papyrus-parser/Cargo.toml',
               'app/crates/papyrus-lints/Cargo.toml',
+              'app/crates/papyrus-lint-config/Cargo.toml',
               'app/crates/papyrus-lint-core/Cargo.toml',
             ];
             for (const cratePath of cratesCargoPaths) {

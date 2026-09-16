@@ -23,6 +23,7 @@ MODULES = [
                 "Crates",
                 [
                     ("papyrus-lint-cli", "rust-coverage-papyrus-lint-cli/lcov.info"),
+                    ("papyrus-lint-config", "rust-coverage-papyrus-lint-config/lcov.info"),
                     ("papyrus-lint-core", "rust-coverage-papyrus-lint-core/lcov.info"),
                     ("papyrus-lints", "rust-coverage-papyrus-lints/lcov.info"),
                     ("papyrus-parser", "rust-coverage-papyrus-parser/lcov.info"),

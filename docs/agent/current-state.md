@@ -434,7 +434,7 @@ Editing the "Configuration file" input directly, once unlocked, still
 overrides project-directory discovery entirely the same way it always has:
 when set, the app reads/writes lint settings at that exact path instead —
 via the `load_lint_config_from_path`/`save_lint_config_to_path` Tauri
-commands, which wrap `papyrus_lint_core::config::load_config_from_path`
+commands, which wrap `papyrus_lint_config::load_config_from_path`
 (also used by the CLI's own `--config <path>`) and
 `config::save_config_at_path`. Unlike before, it's no longer remembered in
 `localStorage` independent of the loaded project: a value chosen for one
@@ -482,16 +482,16 @@ same file `PapyrusLinterCLI init` writes and the one the README links to
 instead of dumping inline — for the complete default file. That file must
 stay byte-for-byte identical to `PapyrusLinterCLI init`'s output (built
 from `papyrus_lints::Config::default()` and the `FIELD_COMMENTS` table in
-`papyrus-lint-core/src/config.rs`, which is what actually generates the
-per-key comments): `papyrus-lint-core`'s
-`config::tests::default_config_matches_the_checked_in_docs_copy` test
+`papyrus-lint-config/src/lib.rs`, which is what actually generates the
+per-key comments): `papyrus-lint-config`'s
+`tests::default_config_matches_the_checked_in_docs_copy` test
 fails CI if they drift, so regenerate it with `PapyrusLinterCLI init`
 (and update `FIELD_COMMENTS`/README together) whenever a default or a
 field comment changes.
 
 `PapyrusLinterCLI init` also accepts `--preset <strict|standard|careful|name>`
 (matched case-insensitively, defaulting to `strict`), which selects the
-baseline `config::Preset` (`papyrus-lint-core/src/config.rs`) it generates
+baseline `config::Preset` (`papyrus-lint-config/src/lib.rs`) it generates
 `papyrus-lint.yaml` from, in place of the hardcoded default. `strict` is
 identical to `papyrus_lints::Config::default()` (and to
 `docs/papyrus-lint.default.yaml`), so plain `init` — no `--preset` — is
@@ -621,8 +621,8 @@ for a name, then — if `list_config_presets` already lists a preset under it
 outright, since `config::Preset::parse` always resolves those first) —
 confirms overwriting it before calling the `save_config_as_preset` Tauri
 command with the currently edited `LintConfig`, the name, and whether to
-overwrite. That command wraps `papyrus-lint-core`'s
-`config::save_user_preset`, which writes just the lint settings (not a
+overwrite. That command wraps `papyrus-lint-config`'s
+`save_user_preset`, which writes just the lint settings (not a
 project's own `compiler_path`/`additional_script_roots`/`lookup_script_roots`/`compile_check`/
 `strict_achlist_scope`, which aren't something a reusable preset should
 hardcode) as `<name>.yaml` under the same executable-adjacent `presets`
@@ -650,7 +650,7 @@ three buttons:
   the same "cancel on a blank prompt" and "confirm before overwriting an
   already-used name" rules `handleSaveConfigAsPresetClick` does, then
   calls the `rename_user_preset` Tauri command
-  (`papyrus_lint_core::config::rename_user_preset`), which finds the
+  (`papyrus_lint_config::rename_user_preset`), which finds the
   preset's existing `<name>.yaml`/`.yml` file in the executable-adjacent
   `presets` directory and renames it in place — refusing a blank or
   built-in new name the same way `save_user_preset` does, and preserving
@@ -684,8 +684,8 @@ Tauri command and applies them through the exact same
 already goes through, so the reset is written wherever settings are
 already being saved (the current project directory, or an active
 "Configuration file" override) with no separate save codepath of its own.
-`get_preset_lint_config` wraps `papyrus-lint-core`'s new
-`config::preset_lint_config_default` — a sibling of
+`get_preset_lint_config` wraps `papyrus-lint-config`'s
+`preset_lint_config_default` — a sibling of
 `initialize_default_config` sharing its preset-resolution and
 executable-adjacent base-config-layering logic (`resolve_preset_project_file`)
 but returning just the resolved `papyrus_lints::Config` instead of writing

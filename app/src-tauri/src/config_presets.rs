@@ -2,7 +2,8 @@
 
 use std::path::PathBuf;
 
-use papyrus_lint_core::{config, presets};
+use papyrus_lint_config as config;
+use papyrus_lint_core::presets;
 
 /// Returns every configuration preset's identity/description — the three
 /// built-ins plus any user preset found under a `presets` directory next to
