@@ -444,6 +444,20 @@ class MarkdownHelpersTest(unittest.TestCase):
             with self.assertRaisesRegex(SystemExit, "must be an HTTP\\(S\\) URL"):
                 page_builder.render_funding_links(funding_file)
 
+    def test_render_funding_links_rejects_custom_urls_without_a_web_host(self) -> None:
+        invalid_urls = ("https:///missing-host", "mailto:maintainer@example.test")
+
+        for invalid_url in invalid_urls:
+            with self.subTest(url=invalid_url), tempfile.TemporaryDirectory() as directory:
+                funding_file = Path(directory) / "FUNDING.yml"
+                funding_file.write_text(f"custom: {invalid_url}\n", encoding="utf-8")
+
+                with self.assertRaisesRegex(
+                    SystemExit,
+                    f"custom funding link must be an HTTP\\(S\\) URL: {invalid_url}",
+                ):
+                    page_builder.render_funding_links(funding_file)
+
     def test_render_funding_links_skips_comments_malformed_lines_and_unknown_providers(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             funding_file = Path(directory) / "FUNDING.yml"
@@ -2157,6 +2171,18 @@ command
         build.assert_called_once_with(output_dir, "", None)
         self.assertEqual(stdout.getvalue(), f"Built site into {output_dir}\n")
 
+    def test_main_uses_the_pages_dist_directory_when_out_is_omitted(self) -> None:
+        with (
+            patch("sys.argv", ["build.py"]),
+            patch.object(page_builder, "build") as build,
+            patch("sys.stdout", new_callable=StringIO) as stdout,
+        ):
+            page_builder.main()
+
+        expected_output = page_builder.PAGES_DIR / "dist"
+        build.assert_called_once_with(expected_output, "", None)
+        self.assertEqual(stdout.getvalue(), f"Built site into {expected_output}\n")
+
     def test_main_passes_an_explicit_version_to_build(self) -> None:
         output_dir = Path("versioned-output")
 
@@ -2243,6 +2269,13 @@ class CoveragePageTest(unittest.TestCase):
     def test_normalize_source_path_uses_the_last_checkout_marker(self) -> None:
         result = page_builder.normalize_source_path(
             "/cache/papyrus-lint/archive/papyrus-lint/pages/build.py"
+        )
+
+        self.assertEqual(result, "pages/build.py")
+
+    def test_normalize_source_path_strips_surrounding_whitespace_before_matching(self) -> None:
+        result = page_builder.normalize_source_path(
+            "  /home/runner/work/papyrus-lint/papyrus-lint/pages/build.py  "
         )
 
         self.assertEqual(result, "pages/build.py")
@@ -2442,6 +2475,21 @@ class CoveragePageTest(unittest.TestCase):
 
         self.assertIn("Total line coverage: <strong>n/a</strong> (0/0)", result)
 
+    def test_build_coverage_content_treats_an_empty_report_as_available(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            report_dir = root / "empty"
+            report_dir.mkdir()
+            (report_dir / "lcov.info").write_text("", encoding="utf-8")
+            coverage_summary = page_builder.load_coverage_summary()
+            coverage_summary.MODULES = [("Tooling", [("empty report", "empty/lcov.info")])]
+
+            result = page_builder.build_coverage_content(root, coverage_summary)
+
+        self.assertIn("Total line coverage: <strong>n/a</strong> (0/0)", result)
+        self.assertIn("No files reported.", result)
+        self.assertNotIn("No report.", result)
+
     def test_render_coverage_entry_recurses_through_nested_groups(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -2582,6 +2630,26 @@ class CoveragePageTest(unittest.TestCase):
         self.assertIn("papyrus-parser", output)
         self.assertIn("src/lib.rs", output)
         self.assertNotIn("Coverage data isn&#x27;t available", output)
+
+    def test_build_coverage_page_escapes_the_version_label(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text(
+                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
+                encoding="utf-8",
+            )
+
+            with patch.object(page_builder, "PAGES_DIR", pages_dir):
+                page_builder.build_coverage_page(out_dir, None, 'v1<&"')
+
+            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+
+        self.assertIn("<title>v1&lt;&amp;&quot;</title>", output)
+        self.assertNotIn('v1<&"', output)
 
     def test_build_coverage_page_rejects_a_template_without_the_content_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

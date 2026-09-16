@@ -44,6 +44,16 @@
           "type": "string",
           "default": "",
           "description": "Path to a papyrus-lint config file to use instead of the one PapyrusLinterCLI would otherwise discover from the project root. Leave empty to use the default discovery."
+        },
+        "papyrusLint.liveLint": {
+          "type": "boolean",
+          "default": true,
+          "description": "Lint a Papyrus document's current, possibly unsaved contents as you type (via PapyrusLinterCLI's --blob flag), in addition to linting it on open/save. Turn off to only lint on open/save."
+        },
+        "papyrusLint.liveLintDebounceMs": {
+          "type": "number",
+          "default": 400,
+          "description": "How long to wait, in milliseconds, after the last keystroke in a Papyrus document before running a live lint of its current contents."
         }
       }
     },

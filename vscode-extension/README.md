@@ -14,6 +14,17 @@ for `.psc` files directly in the editor, by shelling out to
   rule's own documentation on the
   [project website](https://papyrus-lint.idrinth.de) when its `doc_url`
   is known — a compiler-reported diagnostic keeps a plain, unlinked code).
+- **Live linting**: as you type, the document's current (possibly unsaved)
+  contents are also linted directly via `PapyrusLinterCLI --json --blob
+  <text>`, debounced so a burst of keystrokes triggers one lint pass
+  shortly after the last of them rather than one per keystroke. This runs
+  alongside the open/save lint above and only updates diagnostics — it
+  never touches the file on disk. Since `--blob` lints in isolation (no
+  project root to resolve), it skips cross-script checks and, unless
+  `papyrusLint.configPath` is set, the project's own
+  `papyrus-lint.yaml`/`.yml` in favor of the CLI's defaults; the full,
+  project-aware lint still runs again on save. Controlled by the
+  `papyrusLint.liveLint`/`papyrusLint.liveLintDebounceMs` settings below.
 - **Papyrus Lint: Lint Current File** — re-lints on demand, from the
   command palette, the editor context menu, or a `.psc` file's explorer
   context menu.
@@ -59,6 +70,11 @@ output is scoped to for a single-file invocation.
   the CLI via `--config`, overriding the `papyrus-lint.yaml`/`.yml` it
   would otherwise discover from the project root. Leave empty (the
   default) to use that discovery as normal.
+- `papyrusLint.liveLint`: whether to lint a document's current, possibly
+  unsaved contents as you type (see "Live linting" above). Defaults to
+  `true`; set to `false` to only lint on open/save.
+- `papyrusLint.liveLintDebounceMs`: how long, in milliseconds, to wait
+  after the last keystroke before running a live lint. Defaults to `400`.
 
 ## Contact
 

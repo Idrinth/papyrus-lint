@@ -43,6 +43,20 @@ function withConfigOverride(args: string[]): string[] {
   return override ? ['--config', override, ...args] : args;
 }
 
+/** Whether live, as-you-type linting (via `--blob`, see `PapyrusLinter.lintBlob`)
+ * is enabled. Defaults to on; a user can turn it off if spawning the CLI on every
+ * pause in typing is more overhead than they want. */
+function liveLintEnabled(): boolean {
+  return vscode.workspace.getConfiguration('papyrusLint').get<boolean>('liveLint', true);
+}
+
+/** How long to wait, in milliseconds, after the last keystroke in a Papyrus
+ * document before running a live `--blob` lint of its current (possibly unsaved)
+ * contents. Exposed as a setting mainly so tests can drive it down to `0`. */
+function liveLintDebounceMs(): number {
+  return vscode.workspace.getConfiguration('papyrusLint').get<number>('liveLintDebounceMs', 400);
+}
+
 async function runCli(args: string[], cwd: string): Promise<CliResult> {
   let executable: string;
   try {
@@ -247,6 +261,23 @@ class PapyrusLinter {
     this.applyResult(uri, result);
   }
 
+  /** Live, as-you-type counterpart to `lint`: lints `document`'s current in-memory
+   * contents directly via the CLI's `--blob` flag instead of its saved-to-disk
+   * contents, so a diagnostic reflects what's actually in the editor even before
+   * it's saved. Unlike `lint`, this skips every piece of project-level machinery
+   * (cross-script resolution, and — unless `papyrusLint.configPath` is set — the
+   * project's own papyrus-lint.yaml/.yml) the same way the CLI's `--blob` flag
+   * itself does, and never pops an error message box: it runs on every pause in
+   * typing, so a transient failure (e.g. a download hiccup) is logged to the
+   * output channel instead of interrupting the user. */
+  async lintBlob(document: vscode.TextDocument): Promise<void> {
+    const result = await runCli(
+      withConfigOverride(['--json', '--blob', document.getText()]),
+      path.dirname(document.uri.fsPath),
+    );
+    this.applyResult(document.uri, result, false);
+  }
+
   async fix(uri: vscode.Uri): Promise<void> {
     const result = await runCli(
       withConfigOverride(['fix', '--json', uri.fsPath]),
@@ -292,10 +323,16 @@ class PapyrusLinter {
   }
 
   /** Runs a CLI invocation's result through error handling and, on success, updates
-   * `uri`'s diagnostics from the report. Returns the parsed report on success. */
-  private applyResult(uri: vscode.Uri, result: CliResult): JsonReport | undefined {
+   * `uri`'s diagnostics from the report. Returns the parsed report on success. Every
+   * failure is always logged to the output channel; `notify` (default `true`) also
+   * controls whether it's additionally surfaced as an error message box, which
+   * `lintBlob` above disables since it runs unattended on every pause in typing. */
+  private applyResult(uri: vscode.Uri, result: CliResult, notify = true): JsonReport | undefined {
     if (result.code === -1) {
-      showCliLaunchFailure(result);
+      this.output.appendLine(`papyrus-lint: ${result.stderr.trim()}`);
+      if (notify) {
+        showCliLaunchFailure(result);
+      }
       return undefined;
     }
 
@@ -304,7 +341,9 @@ class PapyrusLinter {
     if (result.code === 2) {
       const message = result.stderr.trim() || 'failed to lint file.';
       this.output.appendLine(`papyrus-lint: ${message}`);
-      void vscode.window.showErrorMessage(`Papyrus Lint: ${message}`);
+      if (notify) {
+        void vscode.window.showErrorMessage(`Papyrus Lint: ${message}`);
+      }
       return undefined;
     }
 
@@ -312,9 +351,11 @@ class PapyrusLinter {
     if (!report) {
       this.output.appendLine('papyrus-lint: failed to parse CLI output as JSON:');
       this.output.appendLine(result.stdout);
-      void vscode.window.showErrorMessage(
-        'Papyrus Lint: could not parse the CLI output; see the "Papyrus Lint" output channel.',
-      );
+      if (notify) {
+        void vscode.window.showErrorMessage(
+          'Papyrus Lint: could not parse the CLI output; see the "Papyrus Lint" output channel.',
+        );
+      }
       return undefined;
     }
 
@@ -356,6 +397,39 @@ class PapyrusFixIssueActionProvider implements vscode.CodeActionProvider {
   }
 }
 
+/** Per-document debounce timers backing `scheduleLiveLint`, keyed by the document
+ * uri's string form. Module-level rather than per-activation since `activate` only
+ * ever runs once per extension host, the same way `automaticCli` above is. */
+const liveLintTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+/** Cancels a document's pending live lint, if any (e.g. on close, where linting a
+ * document that's gone would be pointless and `document.getText()` may throw). */
+function cancelLiveLint(document: vscode.TextDocument): void {
+  const key = document.uri.toString();
+  const timer = liveLintTimers.get(key);
+  if (timer !== undefined) {
+    clearTimeout(timer);
+    liveLintTimers.delete(key);
+  }
+}
+
+/** Debounces `linter.lintBlob(document)` so a burst of keystrokes triggers one CLI
+ * run `liveLintDebounceMs()` after the last of them, not one per keystroke. */
+function scheduleLiveLint(linter: PapyrusLinter, document: vscode.TextDocument): void {
+  if (!isPapyrusDocument(document) || !liveLintEnabled()) {
+    return;
+  }
+  cancelLiveLint(document);
+  const key = document.uri.toString();
+  liveLintTimers.set(
+    key,
+    setTimeout(() => {
+      liveLintTimers.delete(key);
+      void linter.lintBlob(document);
+    }, liveLintDebounceMs()),
+  );
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   extensionVersion = String(context.extension.packageJSON.version);
   automaticCliStorage = context.globalStorageUri.fsPath;
@@ -367,7 +441,9 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument((document) => void linter.lintDocument(document)),
     vscode.workspace.onDidSaveTextDocument((document) => void linter.lintDocument(document)),
+    vscode.workspace.onDidChangeTextDocument((event) => scheduleLiveLint(linter, event.document)),
     vscode.workspace.onDidCloseTextDocument((document) => {
+      cancelLiveLint(document);
       if (isPapyrusDocument(document)) {
         linter.clear(document.uri);
       }

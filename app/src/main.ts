@@ -1270,6 +1270,24 @@ export function handleLintConfigChanged() {
   }
 }
 
+// Lints `source` directly, in-process (the same `lint_papyrus_script`
+// Tauri command `app/src-tauri/src/lib.rs` wraps around
+// `papyrus_lints::lint`), instead of a `.psc` path on disk. Used by the
+// code viewer's edit mode for live, as-you-type feedback on the textarea's
+// current (possibly unsaved) contents - see `scheduleLiveEditLint` below.
+// Unlike `lintPscFile`, this never resolves cross-script lookups (there's
+// no project root to resolve them against), the same tradeoff the CLI's
+// own `--blob` flag makes for editor extensions that only have the
+// buffer's text in memory.
+export async function lintPapyrusScript(source: string): Promise<Diagnostic[]> {
+  try {
+    return await invoke<Diagnostic[]>("lint_papyrus_script", { source, config: currentLintConfig });
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
 export async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", {
@@ -1675,6 +1693,7 @@ function setCodeViewerMode(mode: "view" | "edit") {
   codeViewerMode = mode;
   if (mode !== "edit") {
     hideAutocomplete();
+    cancelLiveEditLint();
   }
   if (codeViewerViewEl) codeViewerViewEl.hidden = mode !== "view";
   if (codeViewerEditEl) codeViewerEditEl.hidden = mode !== "edit";
@@ -1705,8 +1724,70 @@ function updateCodeViewerFixButtonsVisibility() {
 // Findings for the script currently open in edit mode, grouped by line -
 // refreshed by every `updateCodeViewerEditHighlight()` call below, and read
 // by `updateCodeViewerEditTooltip` so a mouse move doesn't have to regroup
-// `codeViewerState.findings` on every event.
+// `codeViewerEditLiveFindings` on every event.
 let codeViewerEditFindingsByLine: Map<number, Diagnostic[]> = new Map();
+
+// The findings `updateCodeViewerEditHighlight` renders while in edit mode:
+// seeded from `codeViewerState.findings` (the last on-disk lint) on
+// entering edit mode, then kept live by `scheduleLiveEditLint` as the user
+// types, so the highlighted severities reflect the textarea's current,
+// possibly unsaved contents rather than going stale until the next save.
+let codeViewerEditLiveFindings: Diagnostic[] = [];
+
+// Debounce timer and staleness guard backing `scheduleLiveEditLint`, the
+// same pattern `autocompleteRequestId` uses above: a later keystroke may
+// start a new live lint (or leave edit mode entirely) while an earlier
+// one is still in flight, so a stale response must not clobber it.
+let codeViewerLiveLintTimer: ReturnType<typeof window.setTimeout> | null = null;
+let codeViewerLiveLintRequestId = 0;
+const LIVE_EDIT_LINT_DEBOUNCE_MS = 400;
+
+// Cancels any pending or in-flight live lint, e.g. when leaving edit mode
+// (see `setCodeViewerMode`) - linting a textarea that's no longer being
+// edited would be pointless, and a response arriving after that point must
+// not overwrite whatever's shown next. Exported so tests can reset this
+// module-level timer between runs the same way `resetConfirmedProjectDirs`
+// resets other such state.
+export function cancelLiveEditLint(): void {
+  if (codeViewerLiveLintTimer !== null) {
+    window.clearTimeout(codeViewerLiveLintTimer);
+    codeViewerLiveLintTimer = null;
+  }
+  codeViewerLiveLintRequestId += 1;
+}
+
+// Debounces a live lint of the edit-mode textarea's current contents via
+// `lintPapyrusScript`, so a burst of keystrokes triggers one CLI-equivalent
+// lint pass `LIVE_EDIT_LINT_DEBOUNCE_MS` after the last of them rather than
+// one per keystroke. Called from the textarea's own "input" listener.
+function scheduleLiveEditLint(): void {
+  if (codeViewerMode !== "edit") {
+    return;
+  }
+  if (codeViewerLiveLintTimer !== null) {
+    window.clearTimeout(codeViewerLiveLintTimer);
+  }
+  codeViewerLiveLintTimer = window.setTimeout(() => {
+    codeViewerLiveLintTimer = null;
+    void runLiveEditLint();
+  }, LIVE_EDIT_LINT_DEBOUNCE_MS);
+}
+
+async function runLiveEditLint(): Promise<void> {
+  if (!codeViewerEditTextareaEl || codeViewerMode !== "edit") {
+    return;
+  }
+  const requestId = ++codeViewerLiveLintRequestId;
+  const findings = await lintPapyrusScript(codeViewerEditTextareaEl.value);
+  // A later keystroke may have started a new live lint (or left edit mode
+  // entirely) while this one was in flight; don't clobber it with a stale
+  // response.
+  if (requestId !== codeViewerLiveLintRequestId || !codeViewerEditTextareaEl || codeViewerMode !== "edit") {
+    return;
+  }
+  codeViewerEditLiveFindings = findings;
+  updateCodeViewerEditHighlight();
+}
 
 // Re-renders the edit mode's syntax-highlighted overlay and line-number
 // gutter from the textarea's current value, keeping both in sync as the
@@ -1716,7 +1797,7 @@ function updateCodeViewerEditHighlight() {
   if (!code || !codeViewerEditTextareaEl) {
     return;
   }
-  const findings = codeViewerState?.findings ?? [];
+  const findings = codeViewerEditLiveFindings;
   const findingsByLine = findingsGroupedByLine(findings);
   codeViewerEditFindingsByLine = findingsByLine;
   const highlightedLines = highlightPapyrusLines(codeViewerEditTextareaEl.value);
@@ -1994,6 +2075,8 @@ export function enterCodeViewerEditMode() {
   if (!codeViewerState || !codeViewerEditTextareaEl) {
     return;
   }
+  cancelLiveEditLint();
+  codeViewerEditLiveFindings = codeViewerState.findings;
   codeViewerEditTextareaEl.value = codeViewerState.source;
   updateCodeViewerEditHighlight();
   hideCompileOutput(codeViewerCompileOutputEl);
@@ -3791,6 +3874,7 @@ window.addEventListener("DOMContentLoaded", () => {
   codeViewerSaveCompileButtonEl?.addEventListener("click", () => void saveAndCompileCodeViewerEdits());
   codeViewerEditTextareaEl?.addEventListener("input", () => updateCodeViewerEditHighlight());
   codeViewerEditTextareaEl?.addEventListener("input", () => void updateAutocomplete());
+  codeViewerEditTextareaEl?.addEventListener("input", () => scheduleLiveEditLint());
   codeViewerEditTextareaEl?.addEventListener("click", () => void updateAutocomplete());
   codeViewerEditTextareaEl?.addEventListener("keydown", (event) => handleAutocompleteKeydown(event));
   codeViewerEditTextareaEl?.addEventListener("keydown", (event) => handleEditorTabKeydown(event));

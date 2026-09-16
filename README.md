@@ -138,6 +138,7 @@ usage for problems the compiler itself doesn't flag.
 | **Argument override type check** | Flags, as a `[warning]`, a function or event declared on this script whose parameter count or parameter types don't match the corresponding parameters of the same-named function declared on the script it `Extends` (directly or transitively) — a call resolved against a parent-typed reference still binds against the parent's exact declared parameter list, so a mismatched override either fails to compile against such a reference or silently receives arguments meant for a differently-shaped signature. A parameter count mismatch is reported once for the whole declaration; a matching count is then compared type by type (exact match, case-insensitively, with no widening/subtype leniency, unlike the "Argument type check"/"Return type check" lints). Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked. | |
 | **State function signature mismatch** | Flags, as an `[error]`, a function or event declared inside a `State` block whose parameter count/types or return type doesn't match the same-named declaration in the script's "empty state" (the one declared directly on the script, outside any `State` block) — Papyrus requires these to match identically for the state version to be recognized as an override of the empty-state one at all, rather than becoming a distinct, effectively unreachable function. Only compared against an empty-state declaration already present on the script being linted; a state function may instead validly match one declared on a parent script (per the language spec), which this lint has no way to resolve, so that case is left unflagged. | |
 | **Strict numeric type check** | Flags implicit comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without an explicit cast making the comparison exact. Only comparisons whose operand types can be determined locally are checked. | |
+| **Float equality comparison** | Flags, as an `[info]`, a direct `==`/`!=` comparison between two `Float` values, since floating-point rounding error can make two values that are conceptually the same compare unequal (or vice versa) at runtime. Only comparisons whose operand types can be determined locally are checked, the same restriction "Strict numeric type check" places on its own. Disabled by default, since a project may deliberately compare two `Float` values it knows are computed the exact same way; opt in with `rules.float_equality`. | |
 | **Explicit return on every path** | Flags, as an `[error]`, a typed function/event with a code path that falls off the end of its body without a `Return`, since Papyrus then silently returns that type's default value (`0`, `""`, `False`, or `None`) instead of one the author chose. A `Return` with no value still counts as long as it's reached (`return_types` covers a value's actual type); an `If` only counts when every branch, including an `Else`, returns, and a `While` loop is never assumed to guarantee one since it may run zero times. A native function has no body to inspect and is never flagged. | |
 | **Unresolved script reference** | Flags, as a `[warning]`, an unresolved parent in `Extends`, an unresolved type annotation, or a call through Papyrus's static/global call syntax (e.g. `MyMissingScript.DoThing()`) whose target script can't be found. Primitive types and native engine types are recognized without project-side source. Only a call whose object is a bare identifier not already known as a local variable, parameter, or property is considered a script reference at all — one resolved through a variable or property is left to the "Argument type check"/"Return type check" lints instead. Only checked when linting with project context, by resolving names against `.psc` files under the project root the same way the argument/return type checks do, with native types and singleton scripts supplied by the built-in rule data. | |
 | **Non-static function call** | Flags, as an `[error]`, a call through Papyrus's static/global call syntax (e.g. `MyScript.DoThing()`) whose target function resolves but isn't declared `Global` on that script, since Papyrus only allows that syntax to reach a script's `Global` functions — calling an ordinary instance function that way fails to compile. Uses the same "bare identifier not already known as a local variable, parameter, or property" rule as the "Unresolved script reference" lint above to tell a script reference apart from an instance call; a call whose script or function can't be resolved at all is left unflagged (see that lint instead). Only checked when linting with project context, by resolving the target script's functions the same way the argument/return type checks do. | |
@@ -248,8 +249,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `global-variable-setvalue`, `setvalue-in-loop`, `script-name-collision`,
 `array-bounds`, `array-size-range`,
 `default-property-value`, `unguarded-self-recursion`, `self-assignment`,
-`unnecessary-function`, `unknown-actor-value`, `missing-doc-comment`, and
-`invalid-random-range`.
+`unnecessary-function`, `unknown-actor-value`, `missing-doc-comment`,
+`invalid-random-range`, and `float-equality`.
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where
@@ -924,6 +925,17 @@ fixes"'s visibility (view mode only, and only while a fixable finding
 remains) but never touches the file, the viewer's findings, or the Lint
 results list; the shown preview is cleared again once you switch to Edit
 or actually apply a fix.
+
+While editing a script in the code viewer, its highlighted severities
+update live as you type: a short pause after each edit re-lints the
+editor's current (unsaved) text directly, in-process, the same lint pass
+the CLI itself runs — so a fixed or newly introduced issue shows up
+immediately instead of only after "Save". Until that first live lint
+completes (or if it's still catching up with the latest keystroke), the
+findings from the last save are shown instead, so the editor never goes
+blank while you type. This is purely visual: nothing is written to disk,
+and the project's Lint results list is only refreshed once you actually
+save.
 
 Every line in the code viewer that has at least one finding also gets its
 own small "Fix"/"Ignore" buttons next to it, in view mode. "Fix" only

@@ -18,12 +18,38 @@ class FakeLintMatch:
         self.__dict__.update(kwargs)
 
 
+class FakeRegion:
+    """Stand-in for `sublime.Region`, only ever spanning the whole buffer here."""
+
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+
+class FakeView:
+    """Stand-in for `sublime.View`, exposing just what `cmd()` reads off it."""
+
+    def __init__(self, text='', dirty=False):
+        self._text = text
+        self._dirty = dirty
+
+    def is_dirty(self):
+        return self._dirty
+
+    def size(self):
+        return len(self._text)
+
+    def substr(self, region):
+        return self._text[region.a:region.b]
+
+
 class FakeLinter:
-    def __init__(self, settings=None):
+    def __init__(self, settings=None, view=None):
         self.logger = Mock()
         self.notify_failure = Mock()
         self.name = 'papyrus-lint'
         self.settings = settings if settings is not None else {}
+        self.view = view if view is not None else FakeView()
 
 
 class FakePermanentError(Exception):
@@ -40,6 +66,7 @@ def load_linter_module():
     package.lint = lint_module
     sublime = types.ModuleType('sublime')
     sublime.cache_path = lambda: '/tmp/sublime-cache'
+    sublime.Region = FakeRegion
 
     plugin_package = types.ModuleType('papyrus_lint_plugin')
     plugin_package.__path__ = [str(PLUGIN_ROOT)]
@@ -95,6 +122,43 @@ class PapyrusLintTests(unittest.TestCase):
 
         self.assertEqual(
             self.linter.cmd(), ['/tools/PapyrusLinter', '--json', '${file}']
+        )
+
+    def test_cmd_passes_the_buffer_as_a_blob_when_the_view_has_unsaved_changes(self):
+        self.linter.settings = {'executable': '/tools/PapyrusLinterCLI'}
+        self.linter.view = FakeView(text='ScriptName Test\n', dirty=True)
+
+        self.assertEqual(
+            self.linter.cmd(),
+            ['/tools/PapyrusLinterCLI', '--json', '--blob', 'ScriptName Test\n'],
+        )
+
+    def test_cmd_still_inserts_config_flag_before_a_blob(self):
+        self.linter.settings = {
+            'executable': '/tools/PapyrusLinterCLI',
+            'config_path': '/project/custom-lint.yaml',
+        }
+        self.linter.view = FakeView(text='ScriptName Test\n', dirty=True)
+
+        self.assertEqual(
+            self.linter.cmd(),
+            [
+                '/tools/PapyrusLinterCLI',
+                '--json',
+                '--config',
+                '/project/custom-lint.yaml',
+                '--blob',
+                'ScriptName Test\n',
+            ],
+        )
+
+    def test_cmd_uses_the_real_file_once_the_view_is_saved(self):
+        self.linter.settings = {'executable': '/tools/PapyrusLinterCLI'}
+        self.linter.view = FakeView(text='ScriptName Test\n', dirty=False)
+
+        self.assertEqual(
+            self.linter.cmd(),
+            ['/tools/PapyrusLinterCLI', '--json', '${file}'],
         )
 
     def test_cmd_downloads_matching_cli_when_executable_is_not_configured(self):

@@ -21,6 +21,7 @@ pub mod division_by_zero;
 pub mod empty_body;
 pub mod exclamation_spacing;
 pub mod explicit_return;
+pub mod float_equality;
 pub mod float_int_conversion;
 pub mod forbidden_functions;
 pub mod formid_hex_notation;
@@ -158,6 +159,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     repeated_setoutfit::RULE,
     missing_doc_comment::RULE,
     invalid_random_range::RULE,
+    float_equality::RULE,
 ];
 
 use serde::Serialize;
@@ -490,6 +492,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.missing_doc_comment {
         diagnostics.extend(missing_doc_comment::check(source));
+    }
+    if rules.float_equality {
+        diagnostics.extend(float_equality::check(source));
     }
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
@@ -1676,6 +1681,12 @@ mod tests {
                 invalid_random_range::RULE,
                 Config::default(),
                 config_with(|c| c.rules.invalid_random_range = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Float a, Float b)\n    If a == b\n    EndIf\nEndFunction\n",
+                float_equality::RULE,
+                config_with(|c| c.rules.float_equality = true),
+                Config::default(),
             ),
         ];
 

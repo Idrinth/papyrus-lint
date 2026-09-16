@@ -151,6 +151,10 @@ Catches mistakes that still compile fine but can misbehave once the game is actu
 [td]Flags implicit comparisons between ints and floats that rely on Papyrus doing type conversions.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Float equality comparison[/b][/td]
+[td]Flags a direct == or != between two floats, since rounding error can make them compare unequal even when conceptually the same. Disabled by default.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Explicit return on every path[/b][/td]
 [td]Flags a typed function/event with a code path that falls off the end of its body without a Return.[/td]
 [td][/td]
@@ -477,7 +481,8 @@ rules:
   unknown_actor_value: false
   repeated_setoutfit: true
   missing_doc_comment: false
-  invalid_random_range: true[/code][/spoiler]
+  invalid_random_range: true
+  float_equality: false[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

@@ -20,13 +20,24 @@ class PapyrusLint(Linter):
     `PapyrusLinterCLI` (from https://github.com/Idrinth/papyrus-lint) reads
     the file straight off disk rather than accepting it on stdin, and uses
     its containing directory to look up an optional `papyrus-lint.yaml`/
-    `.yml` configuration next to it, so this linter only checks a script
-    once it's saved (there's no `on_stdin` here). It's run with `--json`
-    so diagnostics are parsed from PapyrusLinterCLI's structured report
-    (see `JsonReport` in app/crates/papyrus-lint-cli/src/lib.rs) instead of
-    scraping its plain-text output. The `config_path` setting (see
-    `defaults` below) passes `--config <path>` to the CLI, overriding its
-    project-root `papyrus-lint.yaml`/`.yml` discovery.
+    `.yml` configuration next to it. For a saved view with no unsaved
+    changes, `cmd()` passes it that real file path, getting the CLI's full
+    project-aware lint (cross-script argument/return type checks, the
+    project's own `papyrus-lint.yaml`/`.yml`, ...). For a view with unsaved
+    changes, it instead passes the view's current buffer contents via the
+    CLI's `--blob` flag, so SublimeLinter's background linting (which reruns
+    `cmd()` as the buffer changes, per the user's `lint_mode` setting) shows
+    live feedback on what's actually in the editor rather than stale
+    results from the last save. `--blob` skips project-root discovery
+    entirely (there's no real file to resolve one from), so a live,
+    unsaved lint only reflects an explicit `config_path` override, not the
+    project's own `papyrus-lint.yaml`/`.yml` — the same tradeoff the CLI's
+    `--blob` flag itself documents. It's run with `--json` so diagnostics
+    are parsed from PapyrusLinterCLI's structured report (see `JsonReport`
+    in app/crates/papyrus-lint-cli/src/lib.rs) instead of scraping its
+    plain-text output. The `config_path` setting (see `defaults` below)
+    passes `--config <path>` to the CLI, overriding its project-root
+    `papyrus-lint.yaml`/`.yml` discovery, in either mode.
     """
 
     executable = 'PapyrusLinterCLI'
@@ -46,7 +57,12 @@ class PapyrusLint(Linter):
         not one of SublimeLinter's built-ins, so it's read directly from
         `self.settings` here rather than via a `${...}` substitution in a
         static `cmd` tuple, which would leave a stray empty argument when
-        unset.
+        unset. The final argument is either the real `${file}` path (a
+        saved view with no unsaved changes) or `--blob <buffer contents>`
+        (an unsaved view), read directly off `self.view` rather than via a
+        `${...}` substitution, since neither is a simple textual
+        substitution SublimeLinter's own placeholders support. See the
+        class docstring above for why these two modes exist.
         """
         executable = self.settings.get('executable') or ensure_release_cli(
             sublime.cache_path()
@@ -55,7 +71,10 @@ class PapyrusLint(Linter):
         config_path = (self.settings.get('config_path') or '').strip()
         if config_path:
             command += ['--config', config_path]
-        command.append('${file}')
+        if self.view.is_dirty():
+            command += ['--blob', self.view.substr(sublime.Region(0, self.view.size()))]
+        else:
+            command.append('${file}')
         return command
 
     def find_errors(self, output):
