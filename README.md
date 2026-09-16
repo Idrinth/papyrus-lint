@@ -135,7 +135,7 @@ usage for problems the compiler itself doesn't flag.
 | **Return type check** | Flags `Return` statements whose value's type doesn't match the enclosing function's declared return type (e.g. returning a `String` from a Function declared `Int`), allowing the implicit `Int`-to-`Float` widening Papyrus itself allows, as well as returning an object whose script extends (directly or transitively) the declared return type (e.g. returning an `Armor` from a Function declared `Form`, or an `Actor` from a Function declared `ObjectReference`). When linting a `.psc` file dropped in the app, a returned value's own script's `Extends` chain is resolved from the project root to allow compatible subtypes there too, with the same native-type fallback used by the argument type check for engine types like `Actor`/`ObjectReference`/`Form`. A `Return` whose value's type can't be determined, or with no declared return type, is skipped rather than guessed at. | |
 | **Inherited function override** | Flags, as an `[info]`, a function declared on this script that shares its name with a function declared on the script it `Extends` (directly or transitively) — the local declaration silently replaces the inherited one. This is often intentional (e.g. overriding an `Event OnInit()` handler), so it's informational rather than a warning. Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked (state-based override is a separate mechanism from `Extends`). | |
 | **Argument naming consistency** | Flags, as a `[warning]`, a function declared on this script whose parameter name doesn't match (case-insensitively) the corresponding parameter of the same-named function declared on the script it `Extends` (directly or transitively) — since Papyrus resolves a named-argument call against the declared type of the reference it's called through, a renamed parameter on an override can silently misdirect (or fail to compile) a caller using the parent's names. Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked, and only parameter positions present on both declarations are compared. | |
-| **Argument override type check** | Flags, as a `[warning]`, a function or event declared on this script whose parameter count or parameter types don't match the corresponding parameters of the same-named function declared on the script it `Extends` (directly or transitively) — a call resolved against a parent-typed reference still binds against the parent's exact declared parameter list, so a mismatched override either fails to compile against such a reference or silently receives arguments meant for a differently-shaped signature. A parameter count mismatch is reported once for the whole declaration; a matching count is then compared type by type (exact match, case-insensitively, with no widening/subtype leniency, unlike the "Argument type check"/"Return type check" lints). Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked. | |
+| **Argument override type check** | Flags, as an `[error]`, a function or event declared on this script whose parameter count or parameter types don't match the corresponding parameters of the same-named function declared on the script it `Extends` (directly or transitively) — a call resolved against a parent-typed reference still binds against the parent's exact declared parameter list, so a mismatched override either fails to compile against such a reference or silently receives arguments meant for a differently-shaped signature. A parameter count mismatch is reported once for the whole declaration; a matching count is then compared type by type (exact match, case-insensitively, with no widening/subtype leniency, unlike the "Argument type check"/"Return type check" lints). Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked. | |
 | **State function signature mismatch** | Flags, as an `[error]`, a function or event declared inside a `State` block whose parameter count/types or return type doesn't match the same-named declaration in the script's "empty state" (the one declared directly on the script, outside any `State` block) — Papyrus requires these to match identically for the state version to be recognized as an override of the empty-state one at all, rather than becoming a distinct, effectively unreachable function. Only compared against an empty-state declaration already present on the script being linted; a state function may instead validly match one declared on a parent script (per the language spec), which this lint has no way to resolve, so that case is left unflagged. | |
 | **Strict numeric type check** | Flags implicit comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without an explicit cast making the comparison exact. Only comparisons whose operand types can be determined locally are checked. | |
 | **Float equality comparison** | Flags, as an `[info]`, a direct `==`/`!=` comparison between two `Float` values, since floating-point rounding error can make two values that are conceptually the same compare unequal (or vice versa) at runtime. Only comparisons whose operand types can be determined locally are checked, the same restriction "Strict numeric type check" places on its own. Disabled by default, since a project may deliberately compare two `Float` values it knows are computed the exact same way; opt in with `rules.float_equality`. | |
@@ -616,8 +616,10 @@ directories up. A scanned directory's own resolved scripts are tried the
 same way first, falling back to the scanned directory itself as the
 project root if none of them match that layout. If no config exists
 there, the documented defaults apply. Each diagnostic found is printed as
-`<path>:<line>:<column>: [<rule>] <message>`, followed by a one-line
-summary. Calls to functions declared on other scripts under the project
+`<path>:<line>:<column>: [<rule>] <message>`, followed by that rule's own
+documentation link on the [project website](https://papyrus-lint.idrinth.de)
+when it has known tag metadata (a compiler-reported diagnostic doesn't),
+then a one-line summary. Calls to functions declared on other scripts under the project
 root are resolved the same way the desktop app resolves them, so the
 CLI's "Argument type check"/"Return type check" results match what
 dropping the same `.achlist` into the app would report.
@@ -787,7 +789,7 @@ An example valid report is:
     {
       "path": "scripts/source/Example.psc",
       "diagnostics": [
-        { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": "warning", "message": "[warning] Line contains trailing whitespace" }
+        { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": "warning", "message": "[warning] Line contains trailing whitespace", "doc_url": "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" }
       ],
       "diff": null
     }
@@ -805,7 +807,11 @@ Every resolved script gets a `files` entry, even one with no diagnostics,
 so a consumer can clear stale diagnostics for a file that's since become
 clean. `level` is always `"error"`, `"warning"`, or `"info"`. Every built-in lint
 sets a level; an untagged external diagnostic is conservatively reported as
-`"error"` — see `Diagnostic::level`. `files_fixed` is
+`"error"` — see `Diagnostic::level`. Each diagnostic's `doc_url` is that
+rule's own documentation link on the
+[project website](https://papyrus-lint.idrinth.de) (its row on the
+[Implemented Lints](#implemented-lints) table), or `null` for a rule with
+no known tag metadata (e.g. a compiler-reported diagnostic). `files_fixed` is
 only present (non-`null`) when run with the `fix` subcommand, and under
 `fix --dry-run` counts scripts that *would* have been fixed rather than
 scripts actually rewritten on disk. `dry_run` reports whether this was a
@@ -961,7 +967,12 @@ above it. The text format is one `<path>:<line>:<column>: [<rule>]
 uses; the JSON format mirrors the shape of the CLI's own `--json` report
 (a `files` array of `{path, diagnostics}`, plus `files_with_diagnostics`
 and `total_diagnostics` counts), restricted to the currently filtered
-files/findings, so both can be consumed by the same tooling. The button
+files/findings, so both can be consumed by the same tooling. Each
+diagnostic also carries a `doc_url` field — that rule's own documentation
+link on the [project website](https://papyrus-lint.idrinth.de) (its row
+on the [Implemented Lints](#implemented-lints) table), or `null` for a
+rule with no known tag metadata (e.g. a compiler-reported diagnostic) —
+so a finding can be linked straight to its explanation. The button
 is disabled whenever no finding currently passes the active filters.
 
 Next to it, an "Export for AI" button downloads the same currently
@@ -969,11 +980,12 @@ filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
 contract published as a versioned JSON Schema:
-[v2](docs/papyrus-lint-ai-export.v2.schema.json), the current format
-described below, and [v1](docs/papyrus-lint-ai-export.v1.schema.json), the
-frozen contract older releases produced, kept around so a document from an
-older release can still be validated against the schema it was actually
-produced under). The document's top-level `$schema` field points directly to that schema so an
+[v3](docs/papyrus-lint-ai-export.v3.schema.json), the current format
+described below, and [v2](docs/papyrus-lint-ai-export.v2.schema.json) and
+[v1](docs/papyrus-lint-ai-export.v1.schema.json), the frozen contracts
+older releases produced, kept around so a document from an older release
+can still be validated against the schema it was actually produced
+under). The document's top-level `$schema` field points directly to that schema so an
 assistant or validator can discover the exact contract without prior context. It contains
 a `header`
 identifying the tool name, running version,
@@ -1022,9 +1034,11 @@ actually applying it — omitted when the fix wouldn't change that line at
 all (e.g. `type-casing`'s own "no automatic fix" case) or would shift the
 file's line count elsewhere (e.g. `property-sorting` relocating a
 property's declaration), so an assistant can see a fix's effect without
-asking the user to apply it first; and a `rule_details` array carrying the
-rule metadata (kind(s), importance, whether it is auto-fixable, and the
-rule's own detailed `description`, copied verbatim from its row in the
+asking the user to apply it first; a `doc_url` field on each diagnostic,
+the same rule-documentation link "Export issues" carries above; and a
+`rule_details` array carrying the rule metadata (kind(s), importance,
+whether it is auto-fixable, its own `doc_url`, and the rule's own detailed
+`description`, copied verbatim from its row in the
 [Implemented Lints](#implemented-lints) table above) for every rule id
 that actually appears among the exported findings and has known tag
 metadata (an unrecognized rule id is simply left out) — giving the

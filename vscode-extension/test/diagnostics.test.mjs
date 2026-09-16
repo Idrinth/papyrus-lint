@@ -32,6 +32,7 @@ describe('normalizeDiagnostic', () => {
         rule: 'forbidden-function',
         level: 'warning',
         message: 'Do not call this function.',
+        doc_url: 'https://papyrus-lint.idrinth.de/#lint-forbidden-discouraged-function-usage',
       }),
       {
         line: 3,
@@ -39,8 +40,22 @@ describe('normalizeDiagnostic', () => {
         level: 'warning',
         message: 'Do not call this function.',
         rule: 'forbidden-function',
+        docUrl: 'https://papyrus-lint.idrinth.de/#lint-forbidden-discouraged-function-usage',
       },
     );
+  });
+
+  it('passes through a null doc_url for a rule with no known tag metadata', () => {
+    const normalized = normalizeDiagnostic({
+      line: 1,
+      column: 1,
+      rule: 'compiler-error',
+      level: 'error',
+      message: 'syntax error',
+      doc_url: null,
+    });
+
+    assert.equal(normalized.docUrl, null);
   });
 
   it('maps informational and absent levels', () => {
