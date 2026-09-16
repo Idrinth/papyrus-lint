@@ -622,8 +622,10 @@ directories up. A scanned directory's own resolved scripts are tried the
 same way first, falling back to the scanned directory itself as the
 project root if none of them match that layout. If no config exists
 there, the documented defaults apply. Each diagnostic found is printed as
-`<path>:<line>:<column>: [<rule>] <message>`, followed by a one-line
-summary. Calls to functions declared on other scripts under the project
+`<path>:<line>:<column>: [<rule>] <message>`, followed by that rule's own
+documentation link on the [project website](https://papyrus-lint.idrinth.de)
+when it has known tag metadata (a compiler-reported diagnostic doesn't),
+then a one-line summary. Calls to functions declared on other scripts under the project
 root are resolved the same way the desktop app resolves them, so the
 CLI's "Argument type check"/"Return type check" results match what
 dropping the same `.achlist` into the app would report.
@@ -793,7 +795,7 @@ An example valid report is:
     {
       "path": "scripts/source/Example.psc",
       "diagnostics": [
-        { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": "warning", "message": "[warning] Line contains trailing whitespace" }
+        { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": "warning", "message": "[warning] Line contains trailing whitespace", "doc_url": "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" }
       ],
       "diff": null
     }
@@ -811,7 +813,11 @@ Every resolved script gets a `files` entry, even one with no diagnostics,
 so a consumer can clear stale diagnostics for a file that's since become
 clean. `level` is always `"error"`, `"warning"`, or `"info"`. Every built-in lint
 sets a level; an untagged external diagnostic is conservatively reported as
-`"error"` — see `Diagnostic::level`. `files_fixed` is
+`"error"` — see `Diagnostic::level`. Each diagnostic's `doc_url` is that
+rule's own documentation link on the
+[project website](https://papyrus-lint.idrinth.de) (its row on the
+[Implemented Lints](#implemented-lints) table), or `null` for a rule with
+no known tag metadata (e.g. a compiler-reported diagnostic). `files_fixed` is
 only present (non-`null`) when run with the `fix` subcommand, and under
 `fix --dry-run` counts scripts that *would* have been fixed rather than
 scripts actually rewritten on disk. `dry_run` reports whether this was a
@@ -967,7 +973,12 @@ above it. The text format is one `<path>:<line>:<column>: [<rule>]
 uses; the JSON format mirrors the shape of the CLI's own `--json` report
 (a `files` array of `{path, diagnostics}`, plus `files_with_diagnostics`
 and `total_diagnostics` counts), restricted to the currently filtered
-files/findings, so both can be consumed by the same tooling. The button
+files/findings, so both can be consumed by the same tooling. Each
+diagnostic also carries a `doc_url` field — that rule's own documentation
+link on the [project website](https://papyrus-lint.idrinth.de) (its row
+on the [Implemented Lints](#implemented-lints) table), or `null` for a
+rule with no known tag metadata (e.g. a compiler-reported diagnostic) —
+so a finding can be linked straight to its explanation. The button
 is disabled whenever no finding currently passes the active filters.
 
 Next to it, an "Export for AI" button downloads the same currently
@@ -975,11 +986,12 @@ filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
 contract published as a versioned JSON Schema:
-[v2](docs/papyrus-lint-ai-export.v2.schema.json), the current format
-described below, and [v1](docs/papyrus-lint-ai-export.v1.schema.json), the
-frozen contract older releases produced, kept around so a document from an
-older release can still be validated against the schema it was actually
-produced under). The document's top-level `$schema` field points directly to that schema so an
+[v3](docs/papyrus-lint-ai-export.v3.schema.json), the current format
+described below, and [v2](docs/papyrus-lint-ai-export.v2.schema.json) and
+[v1](docs/papyrus-lint-ai-export.v1.schema.json), the frozen contracts
+older releases produced, kept around so a document from an older release
+can still be validated against the schema it was actually produced
+under). The document's top-level `$schema` field points directly to that schema so an
 assistant or validator can discover the exact contract without prior context. It contains
 a `header`
 identifying the tool name, running version,
@@ -1028,9 +1040,11 @@ actually applying it — omitted when the fix wouldn't change that line at
 all (e.g. `type-casing`'s own "no automatic fix" case) or would shift the
 file's line count elsewhere (e.g. `property-sorting` relocating a
 property's declaration), so an assistant can see a fix's effect without
-asking the user to apply it first; and a `rule_details` array carrying the
-rule metadata (kind(s), importance, whether it is auto-fixable, and the
-rule's own detailed `description`, copied verbatim from its row in the
+asking the user to apply it first; a `doc_url` field on each diagnostic,
+the same rule-documentation link "Export issues" carries above; and a
+`rule_details` array carrying the rule metadata (kind(s), importance,
+whether it is auto-fixable, its own `doc_url`, and the rule's own detailed
+`description`, copied verbatim from its row in the
 [Implemented Lints](#implemented-lints) table above) for every rule id
 that actually appears among the exported findings and has known tag
 metadata (an unrecognized rule id is simply left out) — giving the
