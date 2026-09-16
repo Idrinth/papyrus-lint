@@ -1,12 +1,16 @@
 //! Locates and loads a project's papyrus-lint YAML configuration file,
 //! producing the [`papyrus_lints::Config`] passed to every check/fix job,
 //! and the app-level settings (currently just the PapyrusCompiler.exe path)
-//! that live in the same file alongside it.
+//! that live in the same file alongside it. Presets — named baseline
+//! configurations `init` (or the desktop app's first-run picker) can
+//! generate a project's `papyrus-lint.yaml` from — are [`presets`].
 
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
+
+pub mod presets;
 
 /// Candidate config file names, checked in order, inside a project's
 /// directory (conventionally the directory containing its `.achlist`

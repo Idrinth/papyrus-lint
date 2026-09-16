@@ -1,8 +1,9 @@
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use papyrus_lint_config as config;
+use papyrus_lint_core::achlist;
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
-use papyrus_lint_core::{achlist, config};
 use serde::Serialize;
 
 use crate::project::{find_candidate_pair_root, find_psc_project_root};

@@ -62,10 +62,11 @@ expected of a pull request.
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
 │       │       └── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
 │       │                                        # via a build-time-generated array
+│       ├── papyrus-lint-config/  # Locates/loads/saves a project's
+│       │   └── src/               # papyrus-lint.yaml and presets
 │       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
 │       │   └── src/               # and the CLI, independent of Tauri:
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
-│       │       ├── config.rs       # Locates/loads a project's papyrus-lint.yaml
 │       │       ├── script_locator.rs   # Finds .psc files by name under
 │       │       │                       # scripts/source or source/scripts
 │       │       └── function_table.rs   # Cross-script function signature lookup,
@@ -95,8 +96,8 @@ expected of a pull request.
     └── test/                # Node-based unit tests
 ```
 
-`papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
-`papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
+`papyrus-parser`, `papyrus-lints`, `papyrus-lint-config`, `papyrus-lint-core`,
+and `papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
 just path dependencies of each other and of `app/src-tauri`) so the lint
 engine and project-resolution logic stay reusable independent of the Tauri
 app — which is what lets `papyrus-lint-cli` link against them without
@@ -128,6 +129,7 @@ notes). `CLAUDE.md` is a pointer to `AGENTS.md`, not a second copy.
 - Rust backend only: `cargo check` / `cargo test` from `app/src-tauri/`.
 - Parser crate only: `cargo test` from `app/crates/papyrus-parser/`.
 - Lints crate only: `cargo test` from `app/crates/papyrus-lints/`.
+- Config crate only: `cargo test` from `app/crates/papyrus-lint-config/`.
 - Shared project-resolution crate only: `cargo test` from
   `app/crates/papyrus-lint-core/`.
 - CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --
@@ -158,8 +160,9 @@ the same checks locally first:
 - **VS Code extension job**: from `vscode-extension/`, runs `npm test`,
   `npm run lint`, and `npm run compile`.
 - **Rust test job**: a matrix over `app/src-tauri`, `app/crates/papyrus-parser`,
-  `app/crates/papyrus-lints`, `app/crates/papyrus-lint-core`, and
-  `app/crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
+  `app/crates/papyrus-lints`, `app/crates/papyrus-lint-config`,
+  `app/crates/papyrus-lint-core`, and `app/crates/papyrus-lint-cli` runs
+  each crate's tests via `cargo llvm-cov`.
   If you touched any of those crates, run `cargo test` (or `cargo
   llvm-cov`, to also see coverage — see the
   [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) docs for

@@ -34,6 +34,7 @@
   not checked in (except `icons/icon.png`, which the Pages builder copies).
 - Parser crate only: `cargo test` from `app/crates/papyrus-parser/`.
 - Lints crate only: `cargo test` from `app/crates/papyrus-lints/`.
+- Config crate only: `cargo test` from `app/crates/papyrus-lint-config/`.
 - Shared project-resolution crate only: `cargo test` from
   `app/crates/papyrus-lint-core/`.
 - CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --

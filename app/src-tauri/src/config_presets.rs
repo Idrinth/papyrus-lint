@@ -2,6 +2,7 @@
 
 use std::path::PathBuf;
 
+use papyrus_lint_config::presets as config_presets;
 use papyrus_lint_core::presets;
 
 /// Returns every configuration preset's identity/description — the three
@@ -17,21 +18,21 @@ pub(crate) fn list_config_presets() -> Vec<presets::PresetInfo> {
 /// Seeds `dir`'s papyrus-lint config file from the named preset (a built-in
 /// one, or a user preset found under the executable-adjacent `presets`
 /// directory), for the frontend's first-run picker, via the same
-/// [`presets::initialize_default_config`] the CLI's `init --preset` uses:
+/// [`config_presets::initialize_default_config`] the CLI's `init --preset` uses:
 /// refuses to replace an existing config file, and still layers in an
 /// executable-adjacent base config over the selected preset if one exists.
 /// Errors if `preset` doesn't name a known preset.
 #[tauri::command(async)]
 pub(crate) fn apply_config_preset(dir: String, preset: String) -> Result<(), String> {
-    let preset = presets::Preset::parse(&preset)
+    let preset = config_presets::Preset::parse(&preset)
         .ok_or_else(|| format!("unknown configuration preset: {preset}"))?;
-    presets::initialize_default_config(&PathBuf::from(dir), preset)?;
+    config_presets::initialize_default_config(&PathBuf::from(dir), preset)?;
     Ok(())
 }
 
 /// Returns the named preset's (built-in, or user preset found under the
 /// executable-adjacent `presets` directory) lint rule/formatting settings
-/// only, via [`presets::preset_lint_config_default`] — not the
+/// only, via [`config_presets::preset_lint_config_default`] — not the
 /// project-level `compiler_path`/`additional_script_roots`/`lookup_script_roots`/
 /// `compile_check`/`strict_achlist_scope` settings [`apply_config_preset`] also seeds a
 /// brand new project's file with. Used by the Settings tab's "Reset to
@@ -43,9 +44,9 @@ pub(crate) fn apply_config_preset(dir: String, preset: String) -> Result<(), Str
 /// path. Errors if `preset` doesn't name a known preset.
 #[tauri::command(async)]
 pub(crate) fn get_preset_lint_config(preset: String) -> Result<papyrus_lints::Config, String> {
-    let preset = presets::Preset::parse(&preset)
+    let preset = config_presets::Preset::parse(&preset)
         .ok_or_else(|| format!("unknown configuration preset: {preset}"))?;
-    presets::preset_lint_config_default(preset)
+    config_presets::preset_lint_config_default(preset)
 }
 
 /// Saves the desktop app's currently edited lint settings (the Settings
@@ -63,7 +64,7 @@ pub(crate) fn save_config_as_preset(
     name: String,
     overwrite: bool,
 ) -> Result<(), String> {
-    presets::save_user_preset(&name, &config, overwrite)?;
+    config_presets::save_user_preset(&name, &config, overwrite)?;
     Ok(())
 }
 
@@ -80,7 +81,7 @@ pub(crate) fn rename_user_preset(
     new_name: String,
     overwrite: bool,
 ) -> Result<(), String> {
-    presets::rename_user_preset(&old_name, &new_name, overwrite)?;
+    config_presets::rename_user_preset(&old_name, &new_name, overwrite)?;
     Ok(())
 }
 
@@ -90,7 +91,7 @@ pub(crate) fn rename_user_preset(
 /// named `name` exists.
 #[tauri::command(async)]
 pub(crate) fn delete_user_preset(name: String) -> Result<(), String> {
-    presets::delete_user_preset(&name)
+    config_presets::delete_user_preset(&name)
 }
 
 /// Returns the raw YAML content of the user preset named `name`, for the
@@ -98,7 +99,7 @@ pub(crate) fn delete_user_preset(name: String) -> Result<(), String> {
 /// no preset named `name` exists.
 #[tauri::command(async)]
 pub(crate) fn export_user_preset(name: String) -> Result<String, String> {
-    presets::read_user_preset_yaml(&name)
+    config_presets::read_user_preset_yaml(&name)
 }
 
 #[cfg(test)]

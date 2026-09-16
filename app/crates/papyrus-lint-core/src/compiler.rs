@@ -18,7 +18,7 @@
 //! directories under the project root, not just the one the script being
 //! compiled happens to live in — letting it import from either layout —
 //! plus any of the project's configured `additional_script_roots` (see
-//! [`crate::config::load_script_roots`]), so a script that
+//! [`papyrus_lint_config::load_script_roots`]), so a script that
 //! imports from a shared library location outside those two conventional
 //! directories still compiles. The compiler is run with its own containing
 //! directory as the working directory, so it can resolve the bundled
@@ -174,7 +174,7 @@ fn run_compiler(
 /// Compiles the `.psc` file at `script_path` using the compiler executable
 /// at `compiler_path`. `additional_roots` are the project's configured
 /// `additional_script_roots` (see
-/// [`crate::config::load_script_roots`]), included in the `-i`
+/// [`papyrus_lint_config::load_script_roots`]), included in the `-i`
 /// argument alongside the two conventional source directories.
 ///
 /// Returns `Err` when the compiler process itself couldn't be run or its

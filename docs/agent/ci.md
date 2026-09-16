@@ -142,31 +142,31 @@
   text coverage summary is posted to the job's step summary and an lcov
   report is uploaded as the `vscode-extension-coverage` artifact.
 - **Rust fmt job** (`rust-fmt`): runs `cargo fmt --check` against every
-  crate's own `Cargo.toml` (`app/src-tauri` and all four reusable crates
+  crate's own `Cargo.toml` (`app/src-tauri` and all five reusable crates
   under `app/crates`) — not just `app/src-tauri` — since they're separate
   crates rather than workspace members and so aren't formatted together
   by a single invocation. It needs none of `rust-clippy`'s Tauri system
   dependencies or build cache, since checking formatting never compiles
   anything, so it runs in parallel with `rust-clippy` instead of after it.
 - **Rust clippy job** (`rust-clippy`): a matrix over `app/src-tauri` and all
-  four reusable crates under `app/crates` (the same five crates `rust-test`
+  five reusable crates under `app/crates` (the same six crates `rust-test`
   below covers) runs `cargo clippy --all-targets -- -D warnings` against
   each crate's own `Cargo.toml` — not just `app/src-tauri` — since they're
   separate crates rather than workspace members and so aren't checked
   together by a single invocation. Only the `app/src-tauri` leg installs
-  Tauri's Linux system dependencies, since the other four crates don't need
+  Tauri's Linux system dependencies, since the other five crates don't need
   them. Runs in parallel with `rust-fmt` (both only `need` the `labels`
   job); `rust-test` (below) `needs` both.
 - **Rust test job**: a matrix over `app/src-tauri`, `app/crates/papyrus-parser`,
-  `app/crates/papyrus-lints`, `app/crates/papyrus-lint-core`, and
-  `app/crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
-  Each matrix leg posts its text coverage summary to the job's step
-  summary and uploads its lcov report as a `rust-coverage-<crate>`
-  artifact.
+  `app/crates/papyrus-lints`, `app/crates/papyrus-lint-config`,
+  `app/crates/papyrus-lint-core`, and `app/crates/papyrus-lint-cli` runs
+  each crate's tests via `cargo llvm-cov`. Each matrix leg posts its text
+  coverage summary to the job's step summary and uploads its lcov report
+  as a `rust-coverage-<crate>` artifact.
 - **Coverage summary comment job** (`coverage-comment`, pull requests
   only): downloads every job's lcov artifact and runs
   `.github/scripts/coverage_summary.py` to aggregate line coverage by
-  module — App (`src-tauri`, the frontend, and Crates — the four reusable
+  module — App (`src-tauri`, the frontend, and Crates — the five reusable
   crates combined, nested underneath it), editor plugins (the VS Code
   extension and the Sublime Text plugin combined), and Tooling (CI tooling
   and the Pages builder) — posting the result as a single markdown table,

@@ -1,7 +1,7 @@
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-use papyrus_lint_core::presets;
+use papyrus_lint_config::presets;
 
 pub(crate) fn initialize_config(
     dir: &Path,
@@ -136,7 +136,7 @@ pub(crate) fn report_add_user_preset(
 mod tests {
     use super::*;
     use crate::test_support::*;
-    use papyrus_lint_core::{config, presets};
+    use papyrus_lint_config::{self as config, presets};
     use std::fs;
     use std::path::PathBuf;
 
