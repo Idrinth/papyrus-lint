@@ -133,6 +133,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(name = \"hi\")\nEndFunction\n",
             &named_arguments_config,
         ),
+        (
+            "unnecessary-function",
+            "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n",
+            "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller()\n    B()\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();

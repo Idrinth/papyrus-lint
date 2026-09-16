@@ -9,8 +9,20 @@
 //! other events too, which is a reasonable reason for it to exist on its
 //! own. This works from the parsed AST, so a script that doesn't parse
 //! cleanly is left unchecked rather than guessed at.
+//!
+//! [`repair`] handles the specific, common shape of a single-statement
+//! function that's nothing but a "pure forwarding" wrapper around another
+//! call — see its own docs for exactly what that requires. It rewrites
+//! every call site to call straight through to the wrapped function
+//! instead, but leaves the wrapper's own declaration in place: this crate
+//! never sees whether some other script still calls it directly, so
+//! [`check`] keeps flagging it afterward rather than this silently
+//! deleting something another file may depend on.
 
-use papyrus_parser::ast::{FunctionDecl, Script};
+use std::collections::HashMap;
+
+use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Param, Script, Stmt};
+use papyrus_parser::token::{Token, TokenKind};
 
 use crate::Diagnostic;
 
@@ -47,6 +59,346 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
             .iter()
             .flat_map(|state| state.functions.iter()),
     )
+}
+
+/// Rewrites every call site of a "pure forwarding" wrapper function into a
+/// direct call to whatever it wraps, leaving the wrapper's own declaration
+/// untouched (see the module docs for why).
+///
+/// A `Function` only qualifies as a wrapper here when: its body is exactly
+/// one statement, that statement is itself nothing but a call (`B(...)`,
+/// not an assignment/return/condition/...); every one of the wrapper's own
+/// parameters is passed into that call, by name and in the same order, as
+/// a bare identifier (so `Function A(Int x, Bool y)` must call `B(x, y)`,
+/// not `B(y, x)` or `B(x, true)`); none of the wrapper's parameters carries
+/// a default value (a call site omitting one to fall back on it would
+/// silently pick up whatever default `B` has instead, which may differ or
+/// not exist); and no other function or event anywhere in the script
+/// (including a state override) shares its name, since a call site could
+/// then be reaching a different implementation this pass never looked at.
+/// The wrapped call itself must be a bare `Name(...)` call or a single
+/// `Object.Name(...)` member call whose object is `Self` or a plain
+/// identifier (e.g. a property) — a deeper chain, an indexed/computed
+/// callee, or a call to `Parent.Name(...)` (a different, per-instance
+/// target) is left alone rather than guessed at.
+///
+/// Once a wrapper qualifies, every call to it anywhere in the script
+/// (nested inside expressions, conditions, other calls' arguments, ...) is
+/// rewritten to call the wrapped function directly instead, keeping that
+/// call site's own argument list exactly as written — safe precisely
+/// because the wrapper forwards every parameter unchanged. A call site
+/// that passes any argument by name (`A(argB = 1)`) is left alone even
+/// then: after rewriting, that name would be resolved against the wrapped
+/// function's own parameters, which may not share the wrapper's names.
+pub fn repair(source: &str) -> String {
+    let (Ok(script), Ok(tokens)) = (
+        papyrus_parser::parse(source),
+        papyrus_parser::tokenize(source),
+    ) else {
+        return source.to_string();
+    };
+    let ctx = SourceContext {
+        tokens: &tokens,
+        line_starts: line_starts(source),
+        source,
+    };
+
+    let mut name_counts: HashMap<String, usize> = HashMap::new();
+    for function in all_functions(&script) {
+        *name_counts.entry(function.name.to_lowercase()).or_insert(0) += 1;
+    }
+
+    let mut wrapped_callees: HashMap<String, String> = HashMap::new();
+    for function in all_functions(&script) {
+        if function.is_event || function.body.len() != 1 {
+            continue;
+        }
+        let key = function.name.to_lowercase();
+        if name_counts.get(&key).copied().unwrap_or(0) != 1 {
+            continue;
+        }
+        if function.params.iter().any(|param| param.default.is_some()) {
+            continue;
+        }
+        let Stmt::Expr { value, .. } = &function.body[0] else {
+            continue;
+        };
+        let Expr::Call {
+            callee,
+            args,
+            line,
+            col,
+        } = value
+        else {
+            continue;
+        };
+        if !forwards_params(args, &function.params) {
+            continue;
+        }
+        let Some(text) = callee_source_text(callee, *line, *col, &ctx) else {
+            continue;
+        };
+        wrapped_callees.insert(key, text);
+    }
+
+    if wrapped_callees.is_empty() {
+        return source.to_string();
+    }
+
+    let mut edits = Vec::new();
+    for function in all_functions(&script) {
+        collect_call_site_edits(&function.body, &wrapped_callees, &ctx, &mut edits);
+    }
+    if edits.is_empty() {
+        return source.to_string();
+    }
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.0));
+
+    let mut repaired = source.to_string();
+    for (start, end, replacement) in edits {
+        repaired.replace_range(start..end, &replacement);
+    }
+    repaired
+}
+
+/// Bundles the pieces [`repair`]'s helpers need to translate an AST node
+/// back into a source span: the token stream, each line's starting byte
+/// offset (see [`line_starts`]/[`token_offset`]), and the source text
+/// itself.
+struct SourceContext<'a> {
+    tokens: &'a [Token],
+    line_starts: Vec<usize>,
+    source: &'a str,
+}
+
+/// Whether `args` is exactly `params`, forwarded by name and in order, as
+/// bare identifiers — the only shape [`repair`] trusts enough to reuse a
+/// call site's own arguments unchanged against the wrapped call.
+fn forwards_params(args: &[Expr], params: &[Param]) -> bool {
+    args.len() == params.len()
+        && args.iter().zip(params).all(|(arg, param)| {
+            matches!(arg, Expr::Identifier(name) if name.eq_ignore_ascii_case(&param.name))
+        })
+}
+
+/// The lowercased simple name a call's `callee` invokes, and how many
+/// tokens (immediately preceding the call's own opening paren) that name
+/// spans: `1` for a bare `Name(...)` call, `3` for a single
+/// `Object.Name(...)` member call (the token sequence `<object> Dot
+/// <property>`), where `<object>` is `Self` or a plain identifier.
+/// Anything less direct (a deeper member chain, `Parent.Name(...)`, an
+/// indexed/cast/computed callee, ...) returns `None` rather than being
+/// guessed at.
+fn simple_callee(callee: &Expr) -> Option<(String, usize)> {
+    match callee {
+        Expr::Identifier(name) => Some((name.to_lowercase(), 1)),
+        Expr::Member { object, property }
+            if matches!(object.as_ref(), Expr::Identifier(_) | Expr::Self_) =>
+        {
+            Some((property.to_lowercase(), 3))
+        }
+        _ => None,
+    }
+}
+
+/// The source text of `callee` itself (e.g. `B` or `Self.B`), recovered by
+/// locating the call's own opening paren (`line`/`col`, the position
+/// `Expr::Call` records for it) among `ctx`'s tokens and slicing back the
+/// number of tokens [`simple_callee`] says the callee spans.
+fn callee_source_text(
+    callee: &Expr,
+    line: usize,
+    col: usize,
+    ctx: &SourceContext,
+) -> Option<String> {
+    let (_, token_span) = simple_callee(callee)?;
+    let open_index = open_paren_index(ctx.tokens, line, col)?;
+    let start_index = open_index.checked_sub(token_span)?;
+    let start_offset = token_offset(&ctx.line_starts, &ctx.tokens[start_index]);
+    let open_offset = token_offset(&ctx.line_starts, &ctx.tokens[open_index]);
+    let text = ctx.source[start_offset..open_offset].trim_end();
+    (!text.is_empty()).then(|| text.to_string())
+}
+
+/// Walks every statement in `body` (and any nested `If`/`While` body,
+/// condition, or expression) looking for a call site to rewrite; see
+/// [`collect_call_site_edits_in_expr`].
+fn collect_call_site_edits(
+    body: &[Stmt],
+    wrapped_callees: &HashMap<String, String>,
+    ctx: &SourceContext,
+    edits: &mut Vec<(usize, usize, String)>,
+) {
+    for stmt in body {
+        match stmt {
+            Stmt::If {
+                branches,
+                else_body,
+                ..
+            } => {
+                for IfBranch {
+                    condition, body, ..
+                } in branches
+                {
+                    collect_call_site_edits_in_expr(condition, wrapped_callees, ctx, edits);
+                    collect_call_site_edits(body, wrapped_callees, ctx, edits);
+                }
+                collect_call_site_edits(else_body, wrapped_callees, ctx, edits);
+            }
+            Stmt::While {
+                condition, body, ..
+            } => {
+                collect_call_site_edits_in_expr(condition, wrapped_callees, ctx, edits);
+                collect_call_site_edits(body, wrapped_callees, ctx, edits);
+            }
+            Stmt::VarDecl(decl) => {
+                if let Some(value) = &decl.value {
+                    collect_call_site_edits_in_expr(value, wrapped_callees, ctx, edits);
+                }
+            }
+            Stmt::Assign { target, value, .. } => {
+                collect_call_site_edits_in_expr(target, wrapped_callees, ctx, edits);
+                collect_call_site_edits_in_expr(value, wrapped_callees, ctx, edits);
+            }
+            Stmt::Expr { value, .. } => {
+                collect_call_site_edits_in_expr(value, wrapped_callees, ctx, edits);
+            }
+            Stmt::Return { value, .. } => {
+                if let Some(value) = value {
+                    collect_call_site_edits_in_expr(value, wrapped_callees, ctx, edits);
+                }
+            }
+        }
+    }
+}
+
+/// Looks for a call site to rewrite at `expr` itself, then recurses into
+/// every sub-expression that could contain another one (a call's own
+/// callee/arguments, either side of a binary/unary/member/index
+/// expression, a cast's value, or a `new` array's size).
+fn collect_call_site_edits_in_expr(
+    expr: &Expr,
+    wrapped_callees: &HashMap<String, String>,
+    ctx: &SourceContext,
+    edits: &mut Vec<(usize, usize, String)>,
+) {
+    match expr {
+        Expr::Call {
+            callee,
+            args,
+            line,
+            col,
+        } => {
+            if let Some(edit) =
+                build_call_site_edit(callee, args, *line, *col, wrapped_callees, ctx)
+            {
+                edits.push(edit);
+            }
+            collect_call_site_edits_in_expr(callee, wrapped_callees, ctx, edits);
+            for arg in args {
+                collect_call_site_edits_in_expr(arg, wrapped_callees, ctx, edits);
+            }
+        }
+        Expr::NamedArg { value, .. } => {
+            collect_call_site_edits_in_expr(value, wrapped_callees, ctx, edits);
+        }
+        Expr::Binary { left, right, .. } => {
+            collect_call_site_edits_in_expr(left, wrapped_callees, ctx, edits);
+            collect_call_site_edits_in_expr(right, wrapped_callees, ctx, edits);
+        }
+        Expr::Unary { operand, .. } => {
+            collect_call_site_edits_in_expr(operand, wrapped_callees, ctx, edits);
+        }
+        Expr::Member { object, .. } => {
+            collect_call_site_edits_in_expr(object, wrapped_callees, ctx, edits);
+        }
+        Expr::Index { object, index } => {
+            collect_call_site_edits_in_expr(object, wrapped_callees, ctx, edits);
+            collect_call_site_edits_in_expr(index, wrapped_callees, ctx, edits);
+        }
+        Expr::Cast { value, .. } => {
+            collect_call_site_edits_in_expr(value, wrapped_callees, ctx, edits);
+        }
+        Expr::NewArray { size, .. } => {
+            collect_call_site_edits_in_expr(size, wrapped_callees, ctx, edits);
+        }
+        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+    }
+}
+
+/// Builds the `(start, end, replacement)` edit rewriting a single call site
+/// (`callee(args)`, whose call's own opening paren is at `line`/`col`)
+/// into the wrapped call it should reach instead, or `None` if it doesn't
+/// resolve to one of `wrapped_callees` at all, or uses a named argument
+/// (see [`repair`]'s own docs for why that blocks the rewrite).
+fn build_call_site_edit(
+    callee: &Expr,
+    args: &[Expr],
+    line: usize,
+    col: usize,
+    wrapped_callees: &HashMap<String, String>,
+    ctx: &SourceContext,
+) -> Option<(usize, usize, String)> {
+    let (name, token_span) = simple_callee(callee)?;
+    let replacement_callee = wrapped_callees.get(&name)?;
+    if args.iter().any(|arg| matches!(arg, Expr::NamedArg { .. })) {
+        return None;
+    }
+
+    let open_index = open_paren_index(ctx.tokens, line, col)?;
+    let close_index = matching_close_paren(ctx.tokens, open_index)?;
+    let callee_start_index = open_index.checked_sub(token_span)?;
+
+    let callee_start_offset = token_offset(&ctx.line_starts, &ctx.tokens[callee_start_index]);
+    let args_start_offset = token_offset(&ctx.line_starts, &ctx.tokens[open_index]) + 1;
+    let close_offset = token_offset(&ctx.line_starts, &ctx.tokens[close_index]);
+    let args_text = ctx.source[args_start_offset..close_offset].trim();
+
+    Some((
+        callee_start_offset,
+        close_offset + 1,
+        format!("{replacement_callee}({args_text})"),
+    ))
+}
+
+/// Finds the token index of the `(` at exactly `line`/`col` — the position
+/// `Expr::Call` records for its own opening paren.
+fn open_paren_index(tokens: &[Token], line: usize, col: usize) -> Option<usize> {
+    tokens
+        .iter()
+        .position(|token| token.line == line && token.col == col && token.kind == TokenKind::LParen)
+}
+
+fn matching_close_paren(tokens: &[Token], open_index: usize) -> Option<usize> {
+    let mut depth = 0usize;
+    for (index, token) in tokens.iter().enumerate().skip(open_index) {
+        match token.kind {
+            TokenKind::LParen => depth += 1,
+            TokenKind::RParen => {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(index);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn line_starts(source: &str) -> Vec<usize> {
+    std::iter::once(0)
+        .chain(
+            source
+                .bytes()
+                .enumerate()
+                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
+        )
+        .collect()
+}
+
+fn token_offset(line_starts: &[usize], token: &Token) -> usize {
+    line_starts[token.line - 1] + token.col - 1
 }
 
 #[cfg(test)]
@@ -107,5 +459,111 @@ mod tests {
     #[test]
     fn does_not_crash_on_unparseable_source() {
         assert!(check("ScriptName Example\n\nFunction A(\nEndFunction\n").is_empty());
+    }
+
+    #[test]
+    fn repair_inlines_call_sites_of_a_zero_argument_wrapper() {
+        let source = "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
+
+        let repaired = repair(source);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller()\n    B()\nEndFunction\n"
+        );
+        // The wrapper's own declaration is left in place, so it's still
+        // flagged (as is `Caller`, now itself a single-statement wrapper).
+        assert_eq!(check(&repaired).len(), 2);
+    }
+
+    #[test]
+    fn repair_inlines_call_sites_of_a_pass_through_wrapper() {
+        let source = "ScriptName Example\n\nFunction A(Int x, Bool y)\n    B(x, y)\nEndFunction\n\nFunction Caller()\n    A(1, true)\nEndFunction\n";
+
+        let repaired = repair(source);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction A(Int x, Bool y)\n    B(x, y)\nEndFunction\n\nFunction Caller()\n    B(1, true)\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_rewrites_a_self_qualified_call_site_to_a_self_qualified_wrapped_call() {
+        let source = "ScriptName Example\n\nFunction A()\n    Self.B()\nEndFunction\n\nFunction Caller()\n    Self.A()\nEndFunction\n";
+
+        let repaired = repair(source);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction A()\n    Self.B()\nEndFunction\n\nFunction Caller()\n    Self.B()\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_rewrites_a_call_nested_inside_another_expression() {
+        let source = "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller(Bool cond)\n    If cond && A()\n        C(A())\n    EndIf\nEndFunction\n";
+
+        let repaired = repair(source);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller(Bool cond)\n    If cond && B()\n        C(B())\n    EndIf\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_leaves_a_wrapper_whose_arguments_are_not_a_pure_forward_untouched() {
+        let source = "ScriptName Example\n\nFunction A(Int x, Int y)\n    B(y, x)\nEndFunction\n\nFunction Caller()\n    A(1, 2)\nEndFunction\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_a_wrapper_with_a_defaulted_parameter_untouched() {
+        let source = "ScriptName Example\n\nFunction A(Int x = 1)\n    B(x)\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_a_call_site_using_a_named_argument_untouched() {
+        let source = "ScriptName Example\n\nFunction A(Int x)\n    B(x)\nEndFunction\n\nFunction Caller()\n    A(x = 1)\nEndFunction\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_a_wrapper_alone_when_its_name_is_shared_by_a_state_override() {
+        let source = "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nState Active\n    Function A()\n        C()\n    EndFunction\nEndState\n\nFunction Caller()\n    A()\nEndFunction\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_a_function_whose_single_statement_is_not_a_call_untouched() {
+        let source = "ScriptName Example\n\nFunction A()\n    Int x = 1\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_leaves_a_call_to_parent_untouched() {
+        let source = "ScriptName Example\n\nFunction A()\n    Parent.A()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_is_a_no_op_when_no_wrapper_qualifies() {
+        let source = "ScriptName Example\n\nFunction A()\n    B()\n    C()\nEndFunction\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn does_not_crash_repairing_unparseable_source() {
+        let source = "ScriptName Example\n\nFunction A(\nEndFunction\n";
+        assert_eq!(repair(source), source);
     }
 }

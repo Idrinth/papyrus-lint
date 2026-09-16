@@ -520,6 +520,10 @@ fn every_filtered_fixer_respects_its_deserialized_rule_switch() {
             "global-variable-increment",
             "ScriptName Example\n\nFunction Test(GlobalVariable value)\n    value.SetValue(value.GetValue() + 1.0)\nEndFunction\n",
         ),
+        (
+            "unnecessary-function",
+            "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n",
+        ),
     ];
 
     for (rule, source) in cases {
