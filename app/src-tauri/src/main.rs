@@ -291,4 +291,92 @@ mod tests {
         let error = String::from_utf8(stderr).unwrap();
         assert_eq!(error, papyrus_lint_cli::USAGE);
     }
+
+    #[test]
+    fn doctor_is_forwarded_to_the_cli() {
+        let temp = tempfile::tempdir().unwrap();
+        let script = temp.path().join("scripts/source/Example.psc");
+        std::fs::create_dir_all(script.parent().unwrap()).unwrap();
+        std::fs::write(&script, "ScriptName Example\n").unwrap();
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = dispatch(
+            &["doctor".to_string(), script.display().to_string()],
+            &mut stdout,
+            &mut stderr,
+            false,
+            || panic!("desktop app must not launch in CLI mode"),
+        );
+
+        assert_eq!(code, ExitCode::SUCCESS);
+        let report = String::from_utf8(stdout).unwrap();
+        assert!(report.contains("[ok]"));
+        assert!(report.contains("no problems found"));
+        assert!(stderr.is_empty());
+    }
+
+    #[test]
+    fn ai_format_is_forwarded_to_the_cli() {
+        let temp = tempfile::tempdir().unwrap();
+        let script = temp.path().join("Example.psc");
+        std::fs::write(&script, "ScriptName Example   \n").unwrap();
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = dispatch(
+            &[
+                "--format".to_string(),
+                "ai".to_string(),
+                script.display().to_string(),
+            ],
+            &mut stdout,
+            &mut stderr,
+            false,
+            || panic!("desktop app must not launch in CLI mode"),
+        );
+
+        assert_eq!(code, ExitCode::SUCCESS);
+        let report: serde_json::Value = serde_json::from_slice(&stdout).unwrap();
+        assert_eq!(report["header"]["tool"], "Papyrus Lint");
+        assert!(report["files"][0]["diagnostics"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|diagnostic| {
+                diagnostic["rule"].as_str() == Some(papyrus_lints::trailing_whitespace::RULE)
+            }));
+        assert!(stderr.is_empty());
+    }
+
+    #[test]
+    fn tag_filter_is_forwarded_to_the_cli() {
+        let temp = tempfile::tempdir().unwrap();
+        let script = temp.path().join("Example.psc");
+        std::fs::write(
+            &script,
+            "ScriptName Example   \n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+        )
+        .unwrap();
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = dispatch(
+            &[
+                "--tag".to_string(),
+                "style".to_string(),
+                script.display().to_string(),
+            ],
+            &mut stdout,
+            &mut stderr,
+            false,
+            || panic!("desktop app must not launch in CLI mode"),
+        );
+
+        assert_eq!(code, ExitCode::SUCCESS);
+        let report = String::from_utf8(stdout).unwrap();
+        assert!(report.contains("[trailing-whitespace]"));
+        assert!(!report.contains("forbidden-function"));
+        assert!(stderr.is_empty());
+    }
 }
