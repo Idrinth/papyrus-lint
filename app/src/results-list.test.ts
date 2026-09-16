@@ -92,8 +92,8 @@ describe("matchesTagFilters", () => {
   // beforeEach.
   function useSampleTags() {
     applyRuleTags([
-      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
-      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/#lint-argument-types" },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
+      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-argument-types" },
     ]);
   }
 
@@ -196,8 +196,8 @@ describe("matchesTagFilters", () => {
 
 describe("populateRuleFilterGroups (via applyRuleTags)", () => {
   const sampleTags: RuleTagsInfo[] = [
-    { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
-    { rule: "argument-types", description: "Test description for argument types.", kinds: ["performance", "correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/#lint-argument-types" },
+    { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
+    { rule: "argument-types", description: "Test description for argument types.", kinds: ["performance", "correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-argument-types" },
   ];
 
   // ruleTagsByRule/activeRules are module state that outlives mountFixture();
@@ -250,13 +250,13 @@ describe("populateRuleFilterGroups (via applyRuleTags)", () => {
 
   it("unchecks a kind's header checkbox once every rule in its select is deselected, and marks it indeterminate for a partial selection", () => {
     applyRuleTags([
-      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
-      { rule: "comma-spacing", description: "Test description for comma spacing.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-comma-spacing" },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
+      { rule: "comma-spacing", description: "Test description for comma spacing.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-comma-spacing" },
       // A rule of another kind, left selected throughout, so deselecting
       // every style rule below doesn't leave the global activeRules set
       // empty - the GUI refuses that regardless of which kind triggers it
       // (see the "never leaves every rule deselected" test below).
-      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/#lint-argument-types" },
+      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-argument-types" },
     ]);
     const header = document.querySelector<HTMLInputElement>("#filter-kind-style")!;
     expect(header.checked).toBe(true);
@@ -277,7 +277,7 @@ describe("populateRuleFilterGroups (via applyRuleTags)", () => {
   });
 
   it("checking a kind's header checkbox re-selects every rule in its select", () => {
-    applyRuleTags([{ rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" }]);
+    applyRuleTags([{ rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" }]);
     const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
     select.options[0].selected = false;
     select.dispatchEvent(new Event("change"));
@@ -292,8 +292,8 @@ describe("populateRuleFilterGroups (via applyRuleTags)", () => {
 
   it("refuses to leave every rule deselected via a kind's multiselect, so an export can never be silently emptied by the rule filter", () => {
     applyRuleTags([
-      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
-      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/#lint-argument-types" },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
+      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-argument-types" },
     ]);
     const styleSelect = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
     styleSelect.options[0].selected = false;
@@ -312,7 +312,7 @@ describe("populateRuleFilterGroups (via applyRuleTags)", () => {
   });
 
   it("refuses to leave every rule deselected via a kind's header checkbox", () => {
-    applyRuleTags([{ rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" }]);
+    applyRuleTags([{ rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" }]);
     const header = document.querySelector<HTMLInputElement>("#filter-kind-style")!;
     header.checked = false;
     header.dispatchEvent(new Event("change"));
@@ -445,7 +445,7 @@ describe("buildPscResultItem / renderPscResults", () => {
     // See the matchesTagFilters describe block above for why applyRuleTags
     // is called synchronously right here, with no `await` before it.
     applyRuleTags([
-      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
     ]);
     try {
       const item = buildPscResultItem(
@@ -459,7 +459,7 @@ describe("buildPscResultItem / renderPscResults", () => {
       expect(badgeText).toContain("low importance");
       expect(badgeText).toContain("auto-fixable");
       const docsLink = item!.querySelector<HTMLAnchorElement>(".psc-result__tag-badge--docs-link");
-      expect(docsLink?.href).toBe("https://papyrus-lint.idrinth.de/#lint-trailing-whitespace");
+      expect(docsLink?.href).toBe("https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace");
       expect(docsLink?.target).toBe("_blank");
     } finally {
       applyRuleTags([]);
@@ -467,7 +467,7 @@ describe("buildPscResultItem / renderPscResults", () => {
   });
 
   it("omits the auto-fixable badge for a fixable rule's finding that its own message says can't be fixed", () => {
-    applyRuleTags([{ rule: "type-casing", description: "Test description for type casing.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-type-casing" }]);
+    applyRuleTags([{ rule: "type-casing", description: "Test description for type casing.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-type-casing" }]);
     try {
       const item = buildPscResultItem(
         outcome({
@@ -501,8 +501,8 @@ describe("buildPscResultItem / renderPscResults", () => {
 
   it("hides a finding whose rule is deselected in its kind's 'Filter by rule' multiselect", () => {
     applyRuleTags([
-      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
-      { rule: "comma-spacing", description: "Test description for comma spacing.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-comma-spacing" },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
+      { rule: "comma-spacing", description: "Test description for comma spacing.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-comma-spacing" },
     ]);
     try {
       const select = document.querySelector<HTMLSelectElement>("#filter-rule-style")!;
@@ -623,11 +623,11 @@ describe("buildPscResultItem / renderPscResults", () => {
 
   it("renderPscResults respects the active tag filters", () => {
     applyRuleTags([
-      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
       // A second, untouched rule of another kind, so deselecting every
       // style rule below doesn't leave the global activeRules set empty -
       // the GUI refuses that regardless of which kind triggers it.
-      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/#lint-argument-types" },
+      { rule: "argument-types", description: "Test description for argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-argument-types" },
     ]);
     try {
       document.querySelector<HTMLInputElement>("#filter-kind-style")!.checked = false;
@@ -690,6 +690,16 @@ describe("handleFixClick", () => {
     await promise;
 
     expect(outcome.findings).toEqual(remaining);
+  });
+
+  it("reports repair failures without rejecting", async () => {
+    invokeMock.mockRejectedValue(new Error("repair failed"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const button = document.createElement("button");
+    const outcome: PscParseOutcome = { path: "/a.psc", ok: true, detail: "parsed", findings: [] };
+
+    await expect(handleFixClick("/a.psc", outcome, button)).resolves.toBeUndefined();
+    expect(button.disabled).toBe(true);
   });
 });
 
@@ -952,8 +962,8 @@ describe("formatIssuesForAi", () => {
 
   it("wraps the findings in a tool/version/website/target_game/generated_at header, removes message severity prefixes, and includes rule_details", async () => {
     applyRuleTags([
-      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
-      { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/#lint-forbidden-functions" },
+      { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
+      { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions" },
     ]);
     invokeImplFor({ preview_repair_psc_line: () => null });
 
@@ -1002,7 +1012,7 @@ describe("formatIssuesForAi", () => {
                 rule: "trailing-whitespace",
                 level: "warning",
                 message: "trailing whitespace",
-                doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace",
+                doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace",
               },
             ],
             source: null,
@@ -1018,7 +1028,7 @@ describe("formatIssuesForAi", () => {
                 rule: "forbidden-functions",
                 level: "error",
                 message: "forbidden function used",
-                doc_url: "https://papyrus-lint.idrinth.de/#lint-forbidden-functions",
+                doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions",
               },
               {
                 line: 6,
@@ -1039,8 +1049,8 @@ describe("formatIssuesForAi", () => {
         rule_counts: { "compiler-error": 1, "forbidden-functions": 1, "trailing-whitespace": 1 },
       },
       rule_details: [
-        { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/#lint-forbidden-functions" },
-        { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
+        { rule: "forbidden-functions", description: "Test description for forbidden functions.", kinds: ["performance", "correctness"], importance: "medium", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions" },
+        { rule: "trailing-whitespace", description: "Test description for trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
       ],
     });
   });
@@ -1058,8 +1068,8 @@ describe("formatIssuesForAi", () => {
 
   it("records the GUI filters active when the export is generated", async () => {
     applyRuleTags([
-      { rule: "argument-types", description: "Argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/#lint-argument-types" },
-      { rule: "trailing-whitespace", description: "Trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace" },
+      { rule: "argument-types", description: "Argument types.", kinds: ["correctness"], importance: "high", auto_fixable: false, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-argument-types" },
+      { rule: "trailing-whitespace", description: "Trailing whitespace.", kinds: ["style"], importance: "low", auto_fixable: true, doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" },
     ]);
     const filename = document.querySelector<HTMLInputElement>("#filename-filter")!;
     filename.value = "*Quest?.psc";

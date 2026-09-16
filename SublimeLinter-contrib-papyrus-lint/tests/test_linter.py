@@ -262,13 +262,13 @@ class PapyrusLintTests(unittest.TestCase):
                 'column': 1,
                 'rule': 'trailing-whitespace',
                 'message': '[warning] Trailing whitespace.',
-                'doc_url': 'https://papyrus-lint.idrinth.de/#lint-trailing-whitespace',
+                'doc_url': 'https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace',
             }
         )
 
         self.assertEqual(
             match.message,
-            'Trailing whitespace. (see: https://papyrus-lint.idrinth.de/#lint-trailing-whitespace)',
+            'Trailing whitespace. (see: https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)',
         )
 
     def test_a_null_doc_url_leaves_the_message_untouched(self):

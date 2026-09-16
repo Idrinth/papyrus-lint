@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Builds the GitHub Pages site from the templates under pages/.
 
-Substitutes the lint tables and CLI usage examples in the template with
-content converted directly from README.md's own tables/code blocks, so
-that documentation never has to be kept in sync by hand in two places.
+Substitutes the CLI usage examples in the template with content converted
+directly from README.md's own code blocks, so that documentation never has
+to be kept in sync by hand in two places.
 Also renders every document listed in DOCS (including remotely sourced
 documentation) into its own browsable subpage under docs/ (via
 pages/docs.template.html), with lightweight build-time syntax highlighting
@@ -45,8 +45,9 @@ entry rather than filed under docs/ as if it were reference material.
 Also renders rules.html (via pages/rules.template.html, see
 render_rules_table/build_rules_page), a searchable/filterable reference of
 every lint rule generated straight from docs/rules.json's own metadata
-(id, severity, tags, auto-fix support, full documented behavior) rather
-than README.md's own shorter lint tables.
+(id, severity, tags, auto-fix support, full documented behavior); the
+homepage itself only links to it rather than duplicating any of that
+content.
 Also renders coverage.html (via pages/coverage.template.html), a per-module,
 per-file line coverage breakdown built from a directory of downloaded lcov
 reports passed as --coverage-dir (parsed and formatted by
@@ -93,11 +94,8 @@ SCHEMA_GLOB = "*.schema.json"
 AI_EXPORT_V1_SCHEMA = "papyrus-lint-ai-export.v1.schema.json"
 AI_EXPORT_LEGACY_SCHEMA = "papyrus-lint-ai-export.schema.json"
 
-LINT_CATEGORIES = ["Formatting", "Performance", "Reliability", "Bugprone", "Other"]
-
 # docs/rules.json's own richer rule metadata (id/severity/tags/fixable/full
-# definition, one entry per lint) - unlike LINT_CATEGORIES above, which
-# groups README.md's own tables by heading, this file has no notion of that
+# definition, one entry per lint) has no notion of README.md's five-category
 # grouping, so rules.html instead lists every rule in one searchable/
 # filterable table (see render_rules_table/build_rules_page below). Kept in
 # display order so severity/tag filter checkboxes render in a stable,
@@ -258,7 +256,6 @@ HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 INLINE_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 INLINE_CODE_RE = re.compile(r"`([^`]+)`")
 INLINE_BOLD_RE = re.compile(r"\*\*([^*]+)\*\*")
-ROW_SPLIT_RE = re.compile(r"(?<!\\)\|")
 
 CSS_IMPORT_RE = re.compile(r"""@import\s+(?:url\(\s*["']?([^"')]+)["']?\s*\)|["']([^"']+)["'])\s*;""")
 
@@ -334,40 +331,6 @@ def render_inline(text: str, link_rewrite=None) -> str:
     return escaped
 
 
-def split_table_row(line: str) -> list[str]:
-    line = line.strip()
-    if line.startswith("|"):
-        line = line[1:]
-    if line.endswith("|"):
-        line = line[:-1]
-    return [cell.replace("\\|", "|").strip() for cell in ROW_SPLIT_RE.split(line)]
-
-
-def render_lint_table(section_lines: list[str]) -> str:
-    rows = [line for line in section_lines if line.strip().startswith("|")]
-    if len(rows) < 3:
-        raise SystemExit("README.md: expected a Lint/Description/Auto-Fix table, found none")
-    header = split_table_row(rows[0])
-    # rows[1] is the "| --- | --- | --- |" separator row.
-    out = ['<div class="lint-table-wrap">', '<table class="lint-table lint-rules-table">', "<thead><tr>"]
-    for cell in header:
-        out.append(f"<th>{html.escape(cell)}</th>")
-    out.append("</tr></thead>")
-    out.append("<tbody>")
-    for raw_row in rows[2:]:
-        cells = split_table_row(raw_row)
-        name, desc = cells[0], cells[1]
-        fix = cells[2] if len(cells) > 2 else ""
-        row_id = html.escape(f"lint-{slugify(name)}", quote=True)
-        out.append(f'<tr id="{row_id}">')
-        out.append(f"<td>{render_inline(name)}</td>")
-        out.append(f"<td>{render_inline(desc)}</td>")
-        out.append('<td class="fix-yes">✓</td>' if fix.strip() else "<td></td>")
-        out.append("</tr>")
-    out.append("</tbody></table></div>")
-    return "\n".join(out)
-
-
 def load_rules() -> list[dict]:
     return json.loads(RULES_FILE.read_text(encoding="utf-8"))
 
@@ -405,10 +368,9 @@ def render_rules_filter_bar(rules: list[dict]) -> str:
 
 
 def render_rules_table(rules: list[dict]) -> str:
-    """Renders every docs/rules.json rule into one table, styled like
-    render_lint_table's README-derived tables but carrying the richer
-    metadata (severity, tags, id, full definition) that file doesn't have.
-    Each row's data-* attributes are what rules.js filters against."""
+    """Renders every docs/rules.json rule into one table, carrying its full
+    metadata (severity, tags, id, full definition). Each row's data-*
+    attributes are what rules.js filters against."""
     out = [
         '<div class="lint-table-wrap">',
         '<table class="lint-table lint-rules-table" id="rules-table">',
@@ -451,10 +413,9 @@ def render_rules_table(rules: list[dict]) -> str:
 def build_rules_page(out_dir: Path, version: str = "") -> None:
     """Renders docs/rules.json into rules.html (via rules.template.html), a
     full, searchable/filterable reference of every lint rule the linter
-    implements - unlike the homepage's own lint tables (LINT_CATEGORIES
-    above), generated straight from the linter's own rule metadata rather
-    than README.md's tables, so it carries each rule's id, severity, tags,
-    and full documented behavior rather than just a short description."""
+    implements, generated straight from the linter's own rule metadata so
+    it carries each rule's id, severity, tags, and full documented behavior
+    rather than just a short description."""
     rules = load_rules()
     template = (PAGES_DIR / "rules.template.html").read_text(encoding="utf-8")
     if "<!--RULES_CONTENT-->" not in template:
@@ -544,14 +505,6 @@ def strip_markdown_inline(text: str) -> str:
     where HTML markup isn't allowed (an HTML attribute value)."""
     text = INLINE_LINK_RE.sub(r"\1", text)
     return text.replace("`", "").replace("**", "")
-
-
-def slugify(text: str) -> str:
-    """Converts text (e.g. a lint table row's Markdown-formatted name) into
-    a lowercase, hyphen-separated identifier usable as an HTML id/URL
-    fragment."""
-    plain = strip_markdown_inline(text).lower()
-    return re.sub(r"[^a-z0-9]+", "-", plain).strip("-")
 
 
 def first_paragraph(lines: list[str]) -> str:
@@ -922,13 +875,7 @@ def build_robots_txt(out_dir: Path) -> None:
 
 def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) -> None:
     readme_lines = (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    lints_section = extract_section(readme_lines, "Implemented Lints", level=2)
     cli_section = extract_section(readme_lines, "Command-line interface", level=2)
-
-    lint_tables = {
-        category: render_lint_table(extract_section(lints_section, category, level=3))
-        for category in LINT_CATEGORIES
-    }
     cli_examples = html.escape(first_code_block(cli_section))
 
     doc_results = {}
@@ -937,11 +884,6 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
         doc_results[doc["slug"]] = {"title": title, "description": description, "content_html": content_html}
 
     template = (PAGES_DIR / "index.template.html").read_text(encoding="utf-8")
-    for category, table_html in lint_tables.items():
-        marker = f"<!--LINT_TABLE:{category}-->"
-        if marker not in template:
-            raise SystemExit(f"index.template.html: missing marker {marker}")
-        template = template.replace(marker, table_html)
     cli_marker = "<!--CLI_EXAMPLES-->"
     if cli_marker not in template:
         raise SystemExit(f"index.template.html: missing marker {cli_marker}")
