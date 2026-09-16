@@ -1367,6 +1367,7 @@ const FIXABLE_RULE_IDS = new Set([
   "type-casing",
   "trailing-whitespace",
   "global-variable-increment",
+  "unnecessary-function",
 ]);
 
 // A rule in FIXABLE_RULE_IDS can still report a violation it can't actually
