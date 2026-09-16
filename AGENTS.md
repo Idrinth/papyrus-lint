@@ -63,9 +63,14 @@ desktop app's binary at all.
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
 │       │       ├── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
 │       │       │                              # via a build-time-generated array
-│       │       └── native_function_usage.rs   # Reads rules/native-methods.yaml via a
-│       │                                      # build-time-generated array; disabled by
-│       │                                      # default
+│       │       ├── native_function_usage.rs   # Reads rules/native-methods.yaml via a
+│       │       │                              # build-time-generated array; disabled by
+│       │       │                              # default
+│       │       └── actor_value.rs             # Flags a call to an Actor Value function
+│       │                                      # (GetActorValue, SetActorValue, ...) whose
+│       │                                      # argument isn't a known Actor Value; reads
+│       │                                      # rules/actor-values.yaml via a build-time-
+│       │                                      # generated array; disabled by default
 │       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
 │       │   └── src/               # and the CLI, independent of Tauri:
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
@@ -134,9 +139,12 @@ desktop app's binary at all.
 │   ├── native-types.yaml         # Native engine class hierarchy fallback (see
 │   │                              # papyrus-lint-core/src/native_types.rs above);
 │   │                              # compiled in by papyrus-lint-core/build.rs
-│   └── native-globals.yaml       # Native singleton scripts always called by
-│                                  # literal name (see native_globals.rs above);
-│                                  # compiled in by papyrus-lint-core/build.rs
+│   ├── native-globals.yaml       # Native singleton scripts always called by
+│   │                                  # literal name (see native_globals.rs above);
+│   │                                  # compiled in by papyrus-lint-core/build.rs
+│   └── actor-values.yaml         # Skyrim's built-in Actor Values (see
+│                                  # actor_value.rs above); compiled in by
+│                                  # papyrus-lints/build.rs
 ├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
 │   ├── linter.py                          # runs PapyrusLinterCLI against a saved
 │   ├── messages.json                      # .psc file and parses its output

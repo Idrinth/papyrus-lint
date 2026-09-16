@@ -137,3 +137,4 @@ rules:
   unguarded_self_recursion: true
   self_assignment: true
   unnecessary_function: false
+  unknown_actor_value: false

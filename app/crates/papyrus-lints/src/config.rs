@@ -87,6 +87,7 @@
 //!   unguarded_self_recursion: true
 //!   self_assignment: true
 //!   unnecessary_function: true
+//!   unknown_actor_value: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -94,8 +95,9 @@
 //! with the top-level keys, `rules` and any key within it may be omitted
 //! and falls back to its default. `property_sorting`,
 //! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`,
-//! `repeated_getvalue`, `global_variable_setvalue`, and
-//! `default_property_value` are the exceptions: they default to `false`.
+//! `repeated_getvalue`, `global_variable_setvalue`,
+//! `default_property_value`, and `unknown_actor_value` are the exceptions:
+//! they default to `false`.
 //! `property_sorting` reorders a script's declared properties, a more
 //! invasive change than the rest of these rules; `unchecked_form_parameter`
 //! defaults off because many scripts intentionally accept a possibly-`None`
@@ -112,7 +114,10 @@
 //! write it flags is redundant, only that the branch never checked;
 //! `default_property_value` defaults off because many existing scripts
 //! already rely on Papyrus's own implicit per-type defaults for some or
-//! all of their properties. All seven need a project to opt in explicitly.
+//! all of their properties; `unknown_actor_value` defaults off because a
+//! project's own plugin can define additional, custom Actor Values that
+//! have no way to appear in `rules/actor-values.yaml`. All eight need a
+//! project to opt in explicitly.
 //!
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
 //! is `false` by default: see [`Config::assume_auto_properties_filled`].
@@ -462,6 +467,13 @@ pub struct Rules {
     pub self_assignment: bool,
     /// The "Unnecessary function" lint.
     pub unnecessary_function: bool,
+    /// The "Unknown Actor Value" lint. Like [`Self::property_sorting`],
+    /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`],
+    /// [`Self::native_function_usage`], [`Self::repeated_getvalue`],
+    /// [`Self::global_variable_setvalue`], and
+    /// [`Self::default_property_value`], this defaults to `false`: see
+    /// [`crate::actor_value`].
+    pub unknown_actor_value: bool,
 }
 
 impl Rules {
@@ -559,6 +571,7 @@ impl Default for Rules {
             unguarded_self_recursion: true,
             self_assignment: true,
             unnecessary_function: true,
+            unknown_actor_value: false,
         }
     }
 }
@@ -756,6 +769,10 @@ mod tests {
         assert!(config.rules.unguarded_self_recursion);
         assert!(config.rules.self_assignment);
         assert!(config.rules.unnecessary_function);
+        // Also disabled by default: a project's own plugin can define
+        // additional, custom Actor Values that have no way to appear in
+        // rules/actor-values.yaml.
+        assert!(!config.rules.unknown_actor_value);
     }
 
     #[test]

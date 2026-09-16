@@ -345,6 +345,30 @@ mod tests {
     }
 
     #[test]
+    fn normalizes_negated_literals_and_inclusive_upper_bounds() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int x)\n    If -5 >= x\n    ElseIf x < -6\n    EndIf\n    If -5 > x\n    ElseIf x <= -6\n    EndIf\nEndFunction\n",
+        );
+
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.line)
+                .collect::<Vec<_>>(),
+            [5, 8]
+        );
+    }
+
+    #[test]
+    fn skips_non_interval_current_and_earlier_branches() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Int x)\n    If x != 5\n    ElseIf x > 10\n    EndIf\n    If x > 5\n    ElseIf x != 10\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn matches_the_same_member_access_expression() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    If Self.Health > 9\n    ElseIf Self.Health > 10\n    EndIf\nEndFunction\n",

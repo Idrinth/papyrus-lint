@@ -277,6 +277,7 @@ export interface LintRules {
   default_property_value: boolean;
   unguarded_self_recursion: boolean;
   self_assignment: boolean;
+  unknown_actor_value: boolean;
 }
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
@@ -367,6 +368,7 @@ export const DEFAULT_RULES: LintRules = {
   default_property_value: false,
   unguarded_self_recursion: true,
   self_assignment: true,
+  unknown_actor_value: false,
 };
 
 export const DEFAULT_LINT_CONFIG: LintConfig = {
@@ -2863,7 +2865,6 @@ export function renderPscResults(outcomes: PscParseOutcome[]) {
   pscResultListEl.replaceChildren(...items);
   pscResultEl.removeAttribute("hidden");
   updateExportIssuesButtonState(outcomes);
-  switchTab("lint");
 }
 
 export async function handleFixClick(path: string, outcome: PscParseOutcome, button: HTMLButtonElement) {
@@ -3507,6 +3508,7 @@ export async function handleDroppedPaths(paths: string[]) {
       const generation = ++currentParseGeneration;
       const projectDir = projectDirForAchlist(achlistPath, entries);
       showResult(achlistPath, entries, projectDir);
+      switchTab("lint");
       renderPscResults(currentPscOutcomes);
 
       await loadProjectConfig(projectDir);
@@ -3541,6 +3543,7 @@ export async function handleDroppedPaths(paths: string[]) {
     lintResultsStale = false;
     const generation = ++currentParseGeneration;
     showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
+    switchTab("lint");
     renderPscResults(currentPscOutcomes);
 
     await loadProjectConfig(projectDirForPscPath(pscPath));
@@ -3578,6 +3581,7 @@ export async function handleDroppedPaths(paths: string[]) {
       const generation = ++currentParseGeneration;
       const projectDir = projectDirForDirectory(dirPath, entries);
       showResult(dirPath, entries, projectDir);
+      switchTab("lint");
       renderPscResults(currentPscOutcomes);
 
       await loadProjectConfig(projectDir);

@@ -139,3 +139,4 @@ rules:
   unguarded_self_recursion: true
   self_assignment: true
   unnecessary_function: false      # was true: maintainability/performance advisory, no correctness stake
+  unknown_actor_value: false

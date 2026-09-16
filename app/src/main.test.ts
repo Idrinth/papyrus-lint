@@ -2612,14 +2612,19 @@ describe("buildPscResultItem / renderPscResults", () => {
     expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(true);
   });
 
-  it("renderPscResults switches to the lint tab and lists visible findings", () => {
+  it("renderPscResults lists visible findings without forcing the lint tab", () => {
     switchTab("import");
     renderPscResults([
       outcome({ findings: [{ line: 1, column: 1, message: "[error] bad" }] }),
       outcome({ path: "/b.psc" }),
     ]);
 
-    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
+    // Rendering results (e.g. a progressive update mid-analysis, or a
+    // fix/ignore action) must never yank the user back to the Lint results
+    // tab if they've switched away - only an explicit switchTab call (see
+    // handleDroppedPaths/relintCurrentFiles) should do that, and only once,
+    // at the start of a fresh analysis.
+    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(true);
     expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(false);
     expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(1);
   });
@@ -4087,6 +4092,46 @@ describe("handleDroppedPaths", () => {
     vi.advanceTimersByTime(2000);
     expect(document.querySelector<HTMLElement>("#lint-progress")!.hidden).toBe(true);
     vi.useRealTimers();
+  });
+
+  it("does not force the user back to the lint tab if they switch away while later files are still being analyzed", async () => {
+    let resolveB: (findings: Diagnostic[]) => void = () => {};
+    const pendingB = new Promise<Diagnostic[]>((resolve) => {
+      resolveB = resolve;
+    });
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc", "B.psc"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: (args) => ({ name: (args as { path: string }).path }),
+      lint_psc_file: (args) =>
+        (args as { path: string }).path === "B.psc"
+          ? pendingB
+          : [{ line: 1, column: 1, message: "[warning] from A" }],
+    });
+
+    const drop = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    // Let A's parse+lint pass resolve, but not B's, which is still pending.
+    for (let i = 0; i < 30; i++) {
+      await Promise.resolve();
+    }
+    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(false);
+
+    // The user switches away from the Lint results tab while B is still
+    // being analyzed in the background.
+    switchTab("settings");
+
+    resolveB([{ line: 2, column: 1, message: "[warning] from B" }]);
+    await drop;
+
+    // B finishing (and re-rendering the results list) must not have yanked
+    // the user back to the Lint results tab.
+    expect(document.querySelector<HTMLElement>("#panel-lint")!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>("#panel-settings")!.hidden).toBe(false);
+    expect(document.querySelectorAll("#psc-result-list > li")).toHaveLength(2);
   });
 
   it("ignores a stale drop's straggling outcome once a newer drop has started, instead of mixing it into the newer results", async () => {

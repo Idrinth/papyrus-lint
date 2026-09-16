@@ -151,6 +151,7 @@ usage for problems the compiler itself doesn't flag.
 | **Property/variable named as script** | Flags, as an `[error]`, a script-level `Property` or variable whose name matches (case-insensitively) the name of the script it's declared in, since Papyrus rejects such a script at compile time. A local variable declared inside a function/event (see "Local variable shadowing" above) isn't checked by this lint. | |
 | **ScriptName/filename mismatch** | Flags, as an `[error]`, a `.psc` file whose declared `ScriptName` doesn't match its own file name, aside from casing (e.g. `ScriptName Example` in a file named `Other.psc`), since Papyrus resolves/compiles a script by matching the two and rejects a mismatch at compile time. A Fallout 4-style namespaced name (e.g. `ScriptName User:MyScript`, stored at `Scripts/Source/User/MyScript.psc`) is compared by its final `:`-separated segment only, since the namespace itself is encoded as the script's containing subfolder rather than part of its file name. Only available when linting a file with a known path in the desktop app or CLI. | |
 | **Read-only (AutoReadOnly) property write** | Flags, as an `[error]`, an assignment (`=`, `+=`, `-=`, ...) targeting a script-level property declared `AutoReadOnly` (e.g. `Float Property a = 0.1 AutoReadOnly`), since Papyrus rejects that assignment at compile time — an `AutoReadOnly` property can only ever hold its declared initial value. Matched by the property's bare name or as `Self.PropertyName`; a bare name shadowed by a same-named local variable or parameter in the enclosing function refers to that local/parameter instead and is never flagged, while a `Self.`-qualified write is always flagged regardless of shadowing. | |
+| **Unknown Actor Value** | Flags, as a `[warning]`, a call to an Actor Value function (`GetActorValue`, `SetActorValue`, `ModActorValue`, `DamageActorValue`, and the rest of that family) whose Actor Value name argument doesn't match one of Skyrim's built-in Actor Values, listed in `rules/actor-values.yaml` — a strong signal of a typo (e.g. `GetActorValue("Helth")`). Matches by function name alone (case-insensitively), regardless of receiver, the same way "Forbidden/discouraged function usage" does; only a plain string literal argument is checked, one built from a variable or any other expression is left unflagged rather than guessed at. Disabled by default, since a project's own plugin can define additional, custom Actor Values that have no way to appear in `rules/actor-values.yaml`; opt in with `rules.unknown_actor_value`. | |
 
 ### Bugprone
 
@@ -242,8 +243,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `stale-compiled-output`, `script-filename-mismatch`, `unused-disable`, `magic-numbers`, `native-function-usage`,
 `global-variable-setvalue`, `setvalue-in-loop`, `script-name-collision`,
 `array-bounds`, `array-size-range`,
-`default-property-value`, `unguarded-self-recursion`, `self-assignment`, and
-`unnecessary-function`.
+`default-property-value`, `unguarded-self-recursion`, `self-assignment`,
+`unnecessary-function`, and `unknown-actor-value`.
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where
@@ -445,7 +446,8 @@ Each key:
   default. Every key defaults to `true` except `property_sorting`,
   `unchecked_form_parameter`, `unused_disable`, `magic_numbers`,
   `native_function_usage`, `repeated_getvalue`,
-  `global_variable_setvalue`, and `default_property_value`, which default to
+  `global_variable_setvalue`, `default_property_value`, and
+  `unknown_actor_value`, which default to
   `false`: reordering a script's declared properties is a more invasive
   change than the rest of these lints, many scripts intentionally accept a
   possibly-`None` Form and defer the check to a caller or a later branch,
@@ -456,8 +458,10 @@ Each key:
   need to be warned about it, a chain that reads the same global more than
   once is often written that way deliberately for readability, the
   `GlobalVariable` no-op write lint's `Else`-branch case is a heuristic
-  rather than a proven no-op, and many existing scripts already rely on
-  Papyrus's implicit per-type defaults for some or all of their properties.
+  rather than a proven no-op, many existing scripts already rely on
+  Papyrus's implicit per-type defaults for some or all of their properties,
+  and a project's own plugin can define additional, custom Actor Values
+  that have no way to appear in `rules/actor-values.yaml`.
   The key names match the lints listed above:
   `trailing_whitespace`, `comma_spacing`, `forbidden_functions`,
   `formid_hex_notation`, `slow_functions`, `unused_getter`,
@@ -477,7 +481,7 @@ Each key:
   `script_name_collision`, `array_bounds`, `array_size_range`,
   `readonly_property_write`,
   `default_property_value`, `unguarded_self_recursion`,
-  `self_assignment`, and `unnecessary_function`.
+  `self_assignment`, `unnecessary_function`, and `unknown_actor_value`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
