@@ -34,6 +34,9 @@ page, is rewritten into a <picture> offering those smaller formats ahead
 of the original as a fallback (see wrap_images_with_modern_sources).
 Every generated HTML page and the stylesheet are minified (see
 minify_html/minify_css) before being written into the output directory.
+`pages/styles.css` imports the shared visual identity from
+`shared/theme.css`; those `@import`s are inlined (see inline_css_imports)
+so the deployed site still ships a single stylesheet.
 Also renders action.html (via pages/action.template.html), the
 papyrus-lint-action GitHub Action's own README fetched fresh on every build
 (see ACTION_DOC/build_action_page), reachable from the main nav's "Action"
@@ -246,6 +249,7 @@ CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
 CSS_WHITESPACE_RUN_RE = re.compile(r"\s+")
 CSS_SYNTAX_SPACE_RE = re.compile(r"\s*([{}:;,])\s*")
 CSS_TRAILING_SEMICOLON_RE = re.compile(r";}")
+CSS_IMPORT_RE = re.compile(r"""@import\s+(?:url\(\s*["']?([^"')]+)["']?\s*\)|["']([^"']+)["'])\s*;""")
 
 # Matches a local (not http(s), e.g. a shields.io badge) <img> tag whose src
 # points into assets/ (optionally prefixed with ../, as docs/*.html pages do).
@@ -280,6 +284,33 @@ def minify_css(text: str) -> str:
     result = CSS_WHITESPACE_RUN_RE.sub(" ", result).strip()
     result = CSS_SYNTAX_SPACE_RE.sub(r"\1", result)
     return CSS_TRAILING_SEMICOLON_RE.sub("}", result)
+
+
+def inline_css_imports(text: str, origin: Path, seen: set[Path] | None = None) -> str:
+    """Inlines relative `@import` rules so the deployed stylesheet stays a
+    single file. Remote (`http:`, `https:`, protocol-relative) imports are
+    left untouched. A missing or cyclical import fails the build rather
+    than shipping a stylesheet that 404s a dependency at runtime."""
+    origin = origin.resolve()
+    visited = set() if seen is None else set(seen)
+    if origin in visited:
+        raise SystemExit(f"{origin}: cyclical @import")
+    visited.add(origin)
+
+    def replace(match: re.Match[str]) -> str:
+        rel = match.group(1) or match.group(2)
+        if rel.startswith(("http:", "https:", "//")):
+            return match.group(0)
+        imported = (origin.parent / rel).resolve()
+        if not imported.is_file():
+            raise SystemExit(f"{origin}: @import not found: {rel}")
+        imported_text = imported.read_text(encoding="utf-8")
+        inlined = inline_css_imports(imported_text, imported, visited)
+        if inlined and not inlined.endswith("\n"):
+            inlined += "\n"
+        return inlined
+
+    return CSS_IMPORT_RE.sub(replace, text)
 
 
 def extract_section(lines: list[str], heading_text: str, level: int) -> list[str]:
@@ -1063,7 +1094,8 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True)
     (out_dir / "index.html").write_text(finalize_page(template), encoding="utf-8")
-    css = (PAGES_DIR / "styles.css").read_text(encoding="utf-8")
+    css_path = PAGES_DIR / "styles.css"
+    css = inline_css_imports(css_path.read_text(encoding="utf-8"), css_path)
     (out_dir / "styles.css").write_text(minify_css(css), encoding="utf-8")
     shutil.copyfile(PAGES_DIR / "theme.js", out_dir / "theme.js")
     shutil.copyfile(PAGES_DIR / "downloads.js", out_dir / "downloads.js")

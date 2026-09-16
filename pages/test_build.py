@@ -1407,6 +1407,79 @@ class MinifyTest(unittest.TestCase):
         self.assertEqual(page_builder.minify_css(""), "")
         self.assertEqual(page_builder.minify_css(" /* generated stylesheet */ \n"), "")
 
+    def test_inline_css_imports_inlines_relative_url_imports(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            shared = root / "shared"
+            shared.mkdir()
+            (shared / "theme.css").write_text(":root { color: blue; }\n", encoding="utf-8")
+            pages = root / "pages"
+            pages.mkdir()
+            source = pages / "styles.css"
+            source.write_text(
+                '@import url("../shared/theme.css");\nmain { color: red; }\n',
+                encoding="utf-8",
+            )
+
+            result = page_builder.inline_css_imports(source.read_text(encoding="utf-8"), source)
+
+            self.assertEqual(result, ":root { color: blue; }\n\nmain { color: red; }\n")
+
+    def test_inline_css_imports_inlines_quoted_imports_and_nested_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            tokens = root / "tokens.css"
+            tokens.write_text(":root { --accent: #396cd8; }\n", encoding="utf-8")
+            theme = root / "theme.css"
+            theme.write_text('@import url("tokens.css");\nbody { margin: 0; }\n', encoding="utf-8")
+            source = root / "styles.css"
+            source.write_text('@import "theme.css";\nh1 { color: navy; }\n', encoding="utf-8")
+
+            result = page_builder.inline_css_imports(source.read_text(encoding="utf-8"), source)
+
+            self.assertEqual(
+                result,
+                ":root { --accent: #396cd8; }\n\nbody { margin: 0; }\n\nh1 { color: navy; }\n",
+            )
+
+    def test_inline_css_imports_leaves_remote_imports_untouched(self) -> None:
+        source = Path("/tmp/styles.css")
+        text = '@import url("https://example.test/theme.css");\nmain { color: red; }\n'
+
+        result = page_builder.inline_css_imports(text, source)
+
+        self.assertEqual(result, text)
+
+    def test_inline_css_imports_rejects_a_missing_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "styles.css"
+            source.write_text('@import url("missing.css");\n', encoding="utf-8")
+
+            with self.assertRaisesRegex(SystemExit, "@import not found: missing.css"):
+                page_builder.inline_css_imports(source.read_text(encoding="utf-8"), source)
+
+    def test_inline_css_imports_rejects_a_cycle(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            a = root / "a.css"
+            b = root / "b.css"
+            a.write_text('@import url("b.css");\n', encoding="utf-8")
+            b.write_text('@import url("a.css");\n', encoding="utf-8")
+
+            with self.assertRaisesRegex(SystemExit, "cyclical @import"):
+                page_builder.inline_css_imports(a.read_text(encoding="utf-8"), a)
+
+    def test_repo_styles_inline_the_shared_theme(self) -> None:
+        css_path = page_builder.PAGES_DIR / "styles.css"
+
+        result = page_builder.inline_css_imports(css_path.read_text(encoding="utf-8"), css_path)
+
+        self.assertNotIn("@import", result)
+        self.assertIn("--color-accent:", result)
+        self.assertIn("--font-display:", result)
+        self.assertIn("@font-face", result)
+        self.assertIn(".button--primary", result)
+
     def test_finalize_page_wraps_images_before_removing_template_comments(self) -> None:
         source = """<!-- generated -->
         <main>
@@ -1898,6 +1971,12 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
                 (out_dir / "CNAME").read_text(encoding="utf-8"),
                 page_builder.CNAME_FILE.read_text(encoding="utf-8"),
             )
+            css = (out_dir / "styles.css").read_text(encoding="utf-8")
+            self.assertNotIn("@import", css)
+            self.assertIn("--color-accent:", css)
+            self.assertIn("--font-display:", css)
+            self.assertIn(".button--primary", css)
+            self.assertIn("@font-face", css)
             for output_name in page_builder.ASSETS:
                 with self.subTest(asset=output_name):
                     self.assertTrue((out_dir / "assets" / output_name).is_file())

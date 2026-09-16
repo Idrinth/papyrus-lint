@@ -105,7 +105,7 @@
   job's step summary and an lcov report is uploaded as the
   `sublime-extension-coverage` artifact.
 - **Frontend CSS lint job**: in `app/`, `npm ci`, then `npm run lint:css`
-  (stylelint) over `src/**/*.css`.
+  (stylelint) over `src/**/*.css` and `../shared/**/*.css`.
 - **Frontend job**: in `app/`, `npm ci`, then `npm run lint` (ESLint), `npm
   run test:coverage` (Vitest unit tests, instrumented for coverage), and `npm
   run build` (typecheck & Vite build). The text coverage summary is

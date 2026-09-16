@@ -25,7 +25,7 @@
 │   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for the UI tests
 │   │   ├── test/mocks.ts        # Shared Tauri spies for the UI tests
 │   │   ├── test/harness.ts      # Shared helpers/hooks for the UI tests
-│   │   └── styles.css
+│   │   └── styles.css           # App chrome; imports shared/theme.css
 │   ├── e2e/                  # Playwright specs (real Chromium, not jsdom):
 │   │   └── layout.spec.ts       # catches element-size/layout regressions
 │   ├── playwright.config.ts  # Config for the e2e/ specs above
@@ -138,6 +138,11 @@
 │           │   └── main.rs          # Thin binary entry point around lib::run()
 │           └── tests/               # Binary e2e tests, one file per src module
 ├── resources/                # Images used by README.md (logo, screenshots)
+├── shared/
+│   └── theme.css             # Palette, canvas, and primitives shared by
+│                              # app/src/styles.css and pages/styles.css so
+│                              # the desktop app and the website cannot drift
+
 ├── rules/
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
 │   ├── slow-functions.yaml       # Slow calls and their faster alternatives
@@ -181,7 +186,11 @@
     │   ├── header.html         # with depth-aware links for root/docs pages
     │   └── footer.html         # and one source for release/contact/legal
     │                            # notice details
-    ├── styles.css              # and renders coverage.html, a per-module/per-file
+    ├── styles.css              # Site layout/components; imports
+    │                            # shared/theme.css for the palette/canvas.
+    │                            # build.py inlines that import (and minifies)
+    │                            # so the deployed site is still one file.
+    │                            # Also renders coverage.html, a per-module/per-file
     ├── CNAME                   # line coverage breakdown for the latest release
     │                            # (see coverage.template.html below). The site's
     │                            # custom domain (papyrus-lint.idrinth.de);
