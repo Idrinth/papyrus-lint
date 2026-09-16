@@ -115,7 +115,16 @@ Actor Property PlayerRef Auto
 float _cachedValue = 0.0
 "#;
         let script = parse(src).unwrap();
-        assert_eq!(script.imports, vec!["Utility", "Debug"]);
+        assert_eq!(
+            script
+                .imports
+                .iter()
+                .map(|i| i.name.as_str())
+                .collect::<Vec<_>>(),
+            vec!["Utility", "Debug"]
+        );
+        assert_eq!(script.imports[0].line, 4);
+        assert_eq!(script.imports[1].line, 5);
         assert_eq!(script.properties.len(), 3);
 
         let max_count = &script.properties[0];

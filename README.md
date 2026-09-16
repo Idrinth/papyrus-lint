@@ -196,6 +196,7 @@ preferences.
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Unused script properties** | Flags `Property` declarations whose name is never referenced anywhere else in the script. | |
+| **Unused import** | Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script (e.g. `Import Utility` with no bare `Wait(...)` call anywhere), since that's the only thing an `Import` actually does for a script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at. | |
 | **Cyclomatic complexity** | Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`\|\|` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20); `cyclomatic_complexity_error` configured below `cyclomatic_complexity_warning` is treated as equal to it, since a lower error threshold would otherwise contradict the warning one it's supposed to escalate. | |
 | **Unused or write-only local variables** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose value is never read: either it's never referenced again at all, or it's only ever reassigned (`name = ...`) without that new value ever being read back. Reading a variable via a compound assignment (`name += ...`, etc.) or through a member/index expression built from it (`name.Foo`, `name[0]`) counts as a use. Function parameters and script properties aren't locals and are never flagged by this lint. | |
 | **Prefer named arguments** | Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting. | |
@@ -254,7 +255,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `array-bounds`, `array-size-range`,
 `default-property-value`, `unguarded-self-recursion`, `self-assignment`,
 `unnecessary-function`, `unknown-actor-value`, `missing-doc-comment`,
-`invalid-random-range`, `float-equality`, and `missing-update-handler`.
+`invalid-random-range`, `float-equality`, `missing-update-handler`, and
+`unused-import`.
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where
@@ -498,8 +500,8 @@ Each key:
   `readonly_property_write`,
   `default_property_value`, `unguarded_self_recursion`,
   `self_assignment`, `unnecessary_function`, `unknown_actor_value`,
-  `missing_doc_comment`, `invalid_random_range`, and
-  `missing_update_handler`.
+  `missing_doc_comment`, `invalid_random_range`,
+  `missing_update_handler`, and `unused_import`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

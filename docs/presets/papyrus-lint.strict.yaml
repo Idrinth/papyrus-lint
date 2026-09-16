@@ -135,3 +135,4 @@ rules:
   invalid_random_range: true
   float_equality: false
   missing_update_handler: false
+  unused_import: true

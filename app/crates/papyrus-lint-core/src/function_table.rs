@@ -611,6 +611,10 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
         self.script_exists(type_name)
     }
 
+    fn can_resolve_script(&mut self, type_name: &str) -> bool {
+        self.script_exists(type_name)
+    }
+
     fn type_exists(&mut self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         matches!(
@@ -698,6 +702,17 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         papyrus_lints::argument_types::ExternalSignatures::script_exists(&mut *table, type_name)
+    }
+
+    fn can_resolve_script(&mut self, type_name: &str) -> bool {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::can_resolve_script(
+            &mut *table,
+            type_name,
+        )
     }
 
     fn type_exists(&mut self, type_name: &str) -> bool {
@@ -807,6 +822,8 @@ mod tests {
         assert!(shared.is_subtype("Child", "Helpers"));
         assert!(shared.has_property("Properties", "Name"));
         assert!(shared.script_exists("Child"));
+        assert!(shared.can_resolve_script("Child"));
+        assert!(!shared.can_resolve_script("Missing"));
         assert!(shared.type_exists("Int"));
         assert!(shared.has_state("States", "Active"));
         assert_eq!(

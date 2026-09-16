@@ -617,6 +617,13 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::Medium,
     },
+    RuleTags {
+        rule: crate::unused_import::RULE,
+        doc_slug: "unused-import",
+        description: "Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at.",
+        kinds: &["maintainability"],
+        importance: Importance::Low,
+    },
 ];
 
 #[cfg(test)]

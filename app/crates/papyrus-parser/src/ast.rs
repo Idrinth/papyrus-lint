@@ -16,7 +16,7 @@ pub struct Script {
     pub extends: Option<String>,
     pub is_hidden: bool,
     pub is_conditional: bool,
-    pub imports: Vec<String>,
+    pub imports: Vec<ImportDecl>,
     pub properties: Vec<PropertyDecl>,
     pub variables: Vec<VariableDecl>,
     pub functions: Vec<FunctionDecl>,
@@ -25,6 +25,16 @@ pub struct Script {
     /// tooling (see `property-sorting` in `papyrus-lints`) locate the
     /// `ScriptName` declaration without re-scanning the original source
     /// text for it.
+    pub line: usize,
+}
+
+/// A single `Import <ScriptName>` statement, alongside the line it's
+/// declared on. Lets downstream tooling (see `unused-import` in
+/// `papyrus-lints`) point a diagnostic at the statement itself without
+/// re-scanning the original source text for it.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ImportDecl {
+    pub name: String,
     pub line: usize,
 }
 

@@ -143,6 +143,19 @@ pub trait ExternalSignatures {
         None
     }
 
+    /// Whether `type_name`'s script can be located by this resolver at
+    /// all, with enough project data to answer for it. Used by the "Unused
+    /// import" lint (`crate::unused_import`) as a gate before flagging an
+    /// `Import` as unused: unlike [`Self::script_exists`], whose default
+    /// assumes yes (so a caller that can't resolve scripts doesn't get a
+    /// missing script spuriously flagged), this defaults to `false` — a
+    /// caller with no project resolution (see [`NoExternalSignatures`]) has
+    /// no way to tell a genuinely unused import from one it simply has no
+    /// data for, so nothing is ever flagged without it.
+    fn can_resolve_script(&mut self, _type_name: &str) -> bool {
+        false
+    }
+
     /// Whether `type_name`'s full `Extends` ancestry can be walked all the
     /// way to a definite root — a script with no `Extends` at all, or a
     /// native engine type from `rules/native-types.yaml` with no further
