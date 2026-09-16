@@ -321,6 +321,10 @@ Everything else, from unused code and excessive complexity to naming and style p
 [td]Flags Property declarations whose name is never referenced anywhere else in the script.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Unused import[/b][/td]
+[td]Flags an Import statement whose script never has one of its Global functions called unqualified anywhere in this script. Only checked with project context.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Cyclomatic complexity[/b][/td]
 [td]Flags functions/events whose cyclomatic complexity exceeds a configurable threshold. A configured error threshold below the warning one is treated as equal to it.[/td]
 [td][/td]
@@ -487,7 +491,8 @@ rules:
   missing_doc_comment: false
   invalid_random_range: true
   float_equality: false
-  missing_update_handler: false[/code][/spoiler]
+  missing_update_handler: false
+  unused_import: true[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

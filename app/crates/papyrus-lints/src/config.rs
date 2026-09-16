@@ -94,6 +94,7 @@
 //!   invalid_random_range: true
 //!   float_equality: false
 //!   missing_update_handler: false
+//!   unused_import: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -519,6 +520,8 @@ pub struct Rules {
     /// [`Self::float_equality`], this defaults to `false`: see
     /// [`crate::missing_update_handler`].
     pub missing_update_handler: bool,
+    /// The "Unused import" lint.
+    pub unused_import: bool,
 }
 
 impl Rules {
@@ -623,6 +626,7 @@ impl Default for Rules {
             invalid_random_range: true,
             float_equality: false,
             missing_update_handler: false,
+            unused_import: true,
         }
     }
 }
@@ -840,6 +844,7 @@ mod tests {
         // instead declared on a script it Extends would otherwise be
         // misreported as having no handler at all.
         assert!(!config.rules.missing_update_handler);
+        assert!(config.rules.unused_import);
     }
 
     #[test]

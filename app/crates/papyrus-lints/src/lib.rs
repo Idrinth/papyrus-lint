@@ -76,6 +76,7 @@ pub mod unreachable_statement;
 pub mod unresolved_script;
 pub mod unused_disable;
 pub mod unused_getter;
+pub mod unused_import;
 pub mod unused_local_variable;
 pub mod unused_property;
 pub mod useless_downcast;
@@ -162,6 +163,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     invalid_random_range::RULE,
     float_equality::RULE,
     missing_update_handler::RULE,
+    unused_import::RULE,
 ];
 
 use serde::Serialize;
@@ -500,6 +502,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.missing_update_handler {
         diagnostics.extend(missing_update_handler::check(source));
+    }
+    if rules.unused_import {
+        diagnostics.extend(unused_import::check_with(source, external));
     }
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
@@ -1997,5 +2002,45 @@ mod tests {
             &mut FakeExternalWithUnrelatedAncestry,
         );
         assert!(disabled.iter().all(|d| d.rule != impossible_cast::RULE));
+    }
+
+    struct FakeExternalWithUnusedImport;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithUnusedImport {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
+            None
+        }
+
+        fn can_resolve_script(&mut self, type_name: &str) -> bool {
+            type_name.eq_ignore_ascii_case("Helpers")
+        }
+    }
+
+    /// Like `function_override_flag_gates_only_its_own_lint` above:
+    /// `unused_import` also needs `lint_with_external_arguments`'s
+    /// `external` resolver to ever fire, so its own `rules.unused_import`
+    /// gate is checked here instead of in the main loop.
+    #[test]
+    fn unused_import_flag_gates_only_its_own_lint() {
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+
+        let enabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+        );
+        assert!(enabled.iter().any(|d| d.rule == unused_import::RULE));
+
+        let disabled_config = config_with(|c| c.rules.unused_import = false);
+        let disabled = lint_with_external_arguments(
+            source,
+            &disabled_config,
+            &mut FakeExternalWithUnusedImport,
+        );
+        assert!(disabled.iter().all(|d| d.rule != unused_import::RULE));
     }
 }

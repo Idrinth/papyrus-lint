@@ -179,10 +179,11 @@ impl Parser {
 
     fn parse_member(&mut self, script: &mut Script) -> PResult<()> {
         if self.at_keyword(Keyword::Import) {
+            let line = self.current().line;
             self.advance();
             let name = self.expect_identifier()?;
             self.expect_terminator()?;
-            script.imports.push(name);
+            script.imports.push(ImportDecl { name, line });
             return Ok(());
         }
 
