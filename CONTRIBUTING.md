@@ -11,10 +11,16 @@ expected of a pull request.
 ├── app/                     # The desktop app: Tauri (Rust + TypeScript) shell
 │   │                        # and its frontend, with their npm/cargo config
 │   ├── src/                  # Frontend (TypeScript, vanilla, no framework)
-│   │   ├── main.ts              # Drag-and-drop UI logic, calls into Tauri commands
+│   │   ├── main.ts              # Drag-and-drop UI façade: types, project/config
+│   │   │                        # wiring, drop/lint orchestration; re-exports the
+│   │   │                        # feature modules below
+│   │   ├── presets.ts           # Config presets: picker, save/reset, Presets tab
+│   │   ├── code-viewer.ts       # Code viewer dialog: open/close, view, line fix/ignore
+│   │   ├── results-list.ts      # Lint results list, filters, mass-fix, export
+│   │   ├── live-edit.ts         # Code viewer edit mode: live lint, autocomplete, save
 │   │   ├── highlight.ts         # Standalone Papyrus syntax highlighter for the
 │   │   │                        # code viewer dialog
-│   │   ├── main.test.ts         # Vitest unit tests for main.ts
+│   │   ├── main.test.ts         # Vitest unit tests for main.ts and its modules
 │   │   ├── highlight.test.ts    # Vitest unit tests for highlight.ts
 │   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for main.test.ts
 │   │   └── styles.css
