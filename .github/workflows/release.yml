@@ -506,14 +506,22 @@ jobs:
                 type_tag="[${joined:2}] "
               fi
 
+              # Wrap any "@name"/"@org/team" mention in the PR title in
+              # backticks before it lands in the GitHub release notes, so it
+              # renders as literal text instead of GitHub turning it into a
+              # user/team mention (and notifying them). The plain-text Nexus
+              # changelog below keeps the raw title, since backticks would
+              # just show up literally there.
+              release_title=$(printf '%s' "$title" | sed -E 's/@([A-Za-z0-9](-?[A-Za-z0-9\/])*)/`&`/g')
+
               if [ "${#matched_indices[@]}" -eq 0 ]; then
                 if [ "$is_doc" -eq 1 ]; then
                   continue
                 fi
-                echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/other.md"
+                echo "- [#$number]($url) ${type_tag}$release_title" >> "$WORKDIR/other.md"
               else
                 for i in "${matched_indices[@]}"; do
-                  echo "- [#$number]($url) ${type_tag}$title" >> "$WORKDIR/group_$i.md"
+                  echo "- [#$number]($url) ${type_tag}$release_title" >> "$WORKDIR/group_$i.md"
                 done
               fi
               if [ "$nexus_excluded" -eq 0 ]; then

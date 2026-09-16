@@ -141,6 +141,16 @@ def build_summary(
     return "\n".join(lines) + "\n"
 
 
+MENTION_RE = re.compile(r"@([A-Za-z0-9](?:-?[A-Za-z0-9/])*)")
+
+
+def escape_mentions(text: str) -> str:
+    """Wraps any "@name"/"@org/team" mention in backticks so GitHub renders
+    it as literal text in the release body instead of turning it into a
+    user/team mention (and notifying them)."""
+    return MENTION_RE.sub(lambda match: f"`{match.group(0)}`", text)
+
+
 def build_release_notes(
     pull_requests: list[dict],
     bump: str | None,
@@ -173,7 +183,7 @@ def build_release_notes(
         "",
     ]
     for pr in sorted(pull_requests, key=lambda pr: pr.get("number", 0)):
-        lines.append(f"- #{pr.get('number')} {pr.get('title', '')}")
+        lines.append(f"- #{pr.get('number')} {escape_mentions(pr.get('title', ''))}")
 
     if coverage_summary and coverage_summary.strip():
         lines.append("")

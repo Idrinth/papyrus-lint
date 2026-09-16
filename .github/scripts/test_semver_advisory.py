@@ -236,6 +236,29 @@ class BuildReleaseNotesTests(unittest.TestCase):
         notes = semver_advisory.build_release_notes(prs, "minor", "v1.1.0", coverage_summary="   \n")
         self.assertNotIn("### Test coverage", notes)
 
+    def test_escapes_a_mention_in_a_pull_request_title(self) -> None:
+        prs = [{"number": 5, "title": "Thanks @octocat for the report", "labels": ["type: feature"]}]
+        notes = semver_advisory.build_release_notes(prs, "minor", "v1.1.0")
+        self.assertIn("- #5 Thanks `@octocat` for the report", notes)
+
+
+class EscapeMentionsTests(unittest.TestCase):
+    def test_wraps_a_plain_mention_in_backticks(self) -> None:
+        self.assertEqual("fix by `@octocat`", semver_advisory.escape_mentions("fix by @octocat"))
+
+    def test_wraps_a_team_mention_in_backticks(self) -> None:
+        self.assertEqual(
+            "cc `@idrinth/maintainers`", semver_advisory.escape_mentions("cc @idrinth/maintainers")
+        )
+
+    def test_leaves_text_with_no_mention_unchanged(self) -> None:
+        self.assertEqual("no mentions here", semver_advisory.escape_mentions("no mentions here"))
+
+    def test_wraps_every_mention_in_text_with_several(self) -> None:
+        self.assertEqual(
+            "`@alice` and `@bob`", semver_advisory.escape_mentions("@alice and @bob")
+        )
+
 
 class MainTests(unittest.TestCase):
     def test_main_prints_a_recommendation_for_the_given_pull_requests(self) -> None:
