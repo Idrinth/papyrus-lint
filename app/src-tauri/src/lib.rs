@@ -2848,4 +2848,290 @@ mod tests {
             .contains(&additional_root.to_string_lossy().into_owned()));
         assert!(outcome.stdout.contains("Example.psc"));
     }
+
+    #[test]
+    fn apply_config_preset_rejects_a_blank_preset_name() {
+        let dir = tempdir().unwrap();
+
+        let error =
+            apply_config_preset(dir.path().to_string_lossy().into_owned(), "   ".to_string())
+                .expect_err("blank preset should be rejected");
+
+        assert!(error.contains("unknown configuration preset"));
+    }
+
+    #[test]
+    fn get_preset_lint_config_rejects_a_blank_preset_name() {
+        let error = get_preset_lint_config(" \t ".to_string())
+            .expect_err("blank preset should be rejected");
+
+        assert!(error.contains("unknown configuration preset"));
+    }
+
+    #[test]
+    fn get_preset_lint_config_resolves_each_built_in_preset_case_insensitively() {
+        let strict = get_preset_lint_config("strict".to_string()).unwrap();
+        assert!(strict.rules.trailing_whitespace);
+        assert!(strict.rules.identifier_casing);
+
+        let standard = get_preset_lint_config("STANDARD".to_string()).unwrap();
+        assert!(standard.rules.trailing_whitespace);
+        assert!(!standard.rules.identifier_casing);
+
+        let careful = get_preset_lint_config(" Careful ".to_string()).unwrap();
+        assert!(!careful.rules.trailing_whitespace);
+        assert_eq!(careful.cyclomatic_complexity_warning, 20);
+    }
+
+    #[test]
+    fn load_compiler_path_auto_detects_an_adjacent_compiler_executable() {
+        let root = tempdir().unwrap();
+        let compiler_dir = root.path().join("Papyrus Compiler");
+        std::fs::create_dir(&compiler_dir).unwrap();
+        let compiler = compiler_dir.join("PapyrusCompiler.exe");
+        std::fs::write(&compiler, b"").unwrap();
+        let data_dir = root.path().join("Data");
+        std::fs::create_dir(&data_dir).unwrap();
+
+        assert_eq!(
+            load_compiler_path(data_dir.to_string_lossy().into_owned()).unwrap(),
+            Some(compiler.to_string_lossy().into_owned())
+        );
+    }
+
+    #[test]
+    fn achlist_command_returns_an_empty_list_for_an_empty_array() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("scripts.achlist");
+        std::fs::write(&path, "[]").unwrap();
+
+        assert_eq!(
+            parse_achlist_file(path.to_string_lossy().into_owned()).unwrap(),
+            Vec::<String>::new()
+        );
+    }
+
+    #[test]
+    fn lint_psc_file_resolves_argument_types_through_additional_script_roots() {
+        let extra = tempdir().unwrap();
+        std::fs::write(
+            extra.path().join("Helpers.psc"),
+            "ScriptName Helpers\n\nFunction NeedInt(Int count)\nEndFunction\n",
+        )
+        .unwrap();
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Caller.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Caller\n\nFunction Run(Helpers helper)\n    helper.NeedInt(\"nope\")\nEndFunction\n",
+        )
+        .unwrap();
+        let extra_root = extra.path().to_string_lossy().into_owned();
+
+        let without_roots = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+        assert!(without_roots
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::argument_types::RULE));
+
+        let with_roots = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            vec![extra_root],
+            String::new(),
+            false,
+        )
+        .unwrap();
+        assert!(with_roots.iter().any(|diagnostic| {
+            diagnostic.rule == papyrus_lints::argument_types::RULE
+                && diagnostic.message.contains("expects Int")
+                && diagnostic.message.contains("got String")
+        }));
+    }
+
+    #[test]
+    fn lint_psc_file_reports_conflicting_script_versions_in_an_additional_root() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("scripts/source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        let extra = tempdir().unwrap();
+        std::fs::write(
+            extra.path().join("Example.psc"),
+            "ScriptName Example\n; a different version\n",
+        )
+        .unwrap();
+
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            vec![extra.path().to_string_lossy().into_owned()],
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.rule == script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE
+        }));
+    }
+
+    #[test]
+    fn repair_psc_file_removes_an_unused_import_from_an_additional_script_root() {
+        let extra = tempdir().unwrap();
+        std::fs::write(
+            extra.path().join("Helpers.psc"),
+            "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        )
+        .unwrap();
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n",
+        )
+        .unwrap();
+
+        let diagnostics = repair_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            vec![extra.path().to_string_lossy().into_owned()],
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "ScriptName Example\n\n\nFunction Test()\nEndFunction\n"
+        );
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_import::RULE));
+    }
+
+    #[test]
+    fn add_disable_comment_to_psc_line_covers_multiple_rules_and_merges_into_an_existing_directive()
+    {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "Call(1,2)  \n").unwrap();
+        let path_string = path.to_string_lossy().into_owned();
+        let root = dir.path().to_string_lossy().into_owned();
+
+        add_disable_comment_to_psc_line(
+            path_string.clone(),
+            root.clone(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            vec![
+                papyrus_lints::comma_spacing::RULE.to_string(),
+                papyrus_lints::trailing_whitespace::RULE.to_string(),
+            ],
+            1,
+        )
+        .unwrap();
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "Call(1,2)   ; @disable comma-spacing, trailing-whitespace\n"
+        );
+
+        let diagnostics = add_disable_comment_to_psc_line(
+            path_string,
+            root,
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            vec![papyrus_lints::trailing_whitespace::RULE.to_string()],
+            1,
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "Call(1,2)   ; @disable comma-spacing, trailing-whitespace\n"
+        );
+        assert!(diagnostics.iter().all(|diagnostic| {
+            diagnostic.rule != papyrus_lints::comma_spacing::RULE
+                && diagnostic.rule != papyrus_lints::trailing_whitespace::RULE
+        }));
+    }
+
+    #[test]
+    fn add_disable_comment_to_psc_line_preserves_a_cp1252_encoded_files_encoding() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let mut source = b"Call(1,2)\n; caf".to_vec();
+        source.extend_from_slice(&[0xE9, b'\n']);
+        std::fs::write(&path, &source).unwrap();
+
+        add_disable_comment_to_psc_line(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            vec![papyrus_lints::comma_spacing::RULE.to_string()],
+            1,
+        )
+        .unwrap();
+
+        let mut expected = b"Call(1,2) ; @disable comma-spacing\n; caf".to_vec();
+        expected.extend_from_slice(&[0xE9, b'\n']);
+        assert_eq!(std::fs::read(path).unwrap(), expected);
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn repair_psc_file_merges_in_compiler_reported_errors_when_enabled() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        let compiler_path = dir.path().join("compiler.sh");
+        std::fs::write(
+            &compiler_path,
+            "#!/bin/sh\necho \"Example.psc(2,1): missing EndFunction\" >&2\nexit 1\n",
+        )
+        .unwrap();
+        std::fs::set_permissions(&compiler_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+        let diagnostics = repair_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            Default::default(),
+            Vec::new(),
+            compiler_path.to_string_lossy().into_owned(),
+            true,
+        )
+        .unwrap();
+
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.rule == compile_diagnostics::RULE
+                && diagnostic.line == 2
+                && diagnostic.column == 1
+        }));
+        assert_eq!(
+            std::fs::read_to_string(path).unwrap(),
+            "ScriptName Example\n"
+        );
+    }
 }
