@@ -438,7 +438,8 @@ Options:\n\
   --line <n>              fix only: apply the selected fix(es) only to this\n\
                           1-indexed line, leaving every other line untouched.\n\
                           Combinable with --type. Errors if the fix would\n\
-                          change the file's line count (e.g. property-sorting).\n\
+                          change the file's line count (e.g. property-sorting\n\
+                          or unused-import).\n\
   --dry-run               fix only: don't write any changes to disk; print a\n\
                           standard diff of what would change instead.\n\
   --tag <kind>            Restrict to rules tagged with this kind (e.g. style,\n\
@@ -1432,11 +1433,27 @@ pub fn run(
                 let mut plain_text: Vec<u8> = Vec::new();
                 let mut fixed_this_file = false;
                 let source = if fix {
+                    // The "unused-import" fix, unlike every other fixable
+                    // rule, can only resolve which imports are actually
+                    // unused through this project's own cross-script
+                    // resolver -- the same `SharedFunctionTable` the lint
+                    // pass below uses -- so the fix step needs one too, via
+                    // `papyrus_lints`' `_with_external_arguments` repair
+                    // family (see that module's own docs).
+                    let mut shared = SharedFunctionTable(&function_table);
                     let repaired = match tag_filter.as_deref() {
-                        Some(tag) => {
-                            papyrus_lints::repair_filtered_by_tag(&source, &lint_config, Some(tag))
-                        }
-                        None => papyrus_lints::repair_filtered(&source, &lint_config, rule_filter),
+                        Some(tag) => papyrus_lints::repair_filtered_by_tag_with_external_arguments(
+                            &source,
+                            &lint_config,
+                            &mut shared,
+                            Some(tag),
+                        ),
+                        None => papyrus_lints::repair_filtered_with_external_arguments(
+                            &source,
+                            &lint_config,
+                            &mut shared,
+                            rule_filter,
+                        ),
                     };
                     let repaired = match target_line {
                     Some(line) => papyrus_lints::restrict_to_line(&source, &repaired, line)
@@ -4428,6 +4445,100 @@ mod tests {
 
         assert_eq!(code, 2);
         assert!(stderr.starts_with("error:"));
+    }
+
+    #[test]
+    fn fix_removes_an_unused_import_resolved_through_the_project_root() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Helpers.psc"),
+            "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        );
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Helpers.psc", "scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stdout: {stdout}, stderr: {stderr}");
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n\n\nFunction Test()\nEndFunction\n"
+        );
+        assert!(stdout.contains("(1 script(s) fixed.)"));
+    }
+
+    #[test]
+    fn fix_type_filter_for_unused_import_only_touches_that_rule() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Helpers.psc"),
+            "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        );
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\n    Call(1,2)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Helpers.psc", "scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--type=unused-import".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n\n\nFunction Test()\n    Call(1,2)\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn fix_line_filter_errors_when_removing_an_unused_import_changes_the_line_count() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Helpers.psc"),
+            "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        );
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Helpers.psc", "scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--line=3".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("changes the file's line count"));
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n"
+        );
     }
 
     #[test]

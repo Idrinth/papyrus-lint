@@ -354,6 +354,17 @@ describe("isFixableFinding", () => {
     expect(isFixableFinding({ line: 1, column: 1, message: "[error] bad" })).toBe(false);
   });
 
+  it("is true for an unused-import finding, since its fix removes the whole line", () => {
+    expect(
+      isFixableFinding({
+        line: 3,
+        column: 1,
+        message: "[warning] Import 'Helpers' is never used: none of its Global functions are called unqualified anywhere in this script",
+        rule: "unused-import",
+      }),
+    ).toBe(true);
+  });
+
   it("is false for a type-casing finding its own message says has no automatic fix", () => {
     expect(
       isFixableFinding({
@@ -2863,6 +2874,7 @@ describe("massFixRuleDisplayName", () => {
   it("returns the human-readable name for a known fixable rule", () => {
     expect(massFixRuleDisplayName("trailing-whitespace")).toBe("Trailing whitespace");
     expect(massFixRuleDisplayName("comma-spacing")).toBe("Space after comma");
+    expect(massFixRuleDisplayName("unused-import")).toBe("Unused import");
   });
 
   it("falls back to the raw rule id for an unrecognized rule", () => {

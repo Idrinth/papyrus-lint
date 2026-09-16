@@ -198,7 +198,7 @@ preferences.
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Unused script properties** | Flags `Property` declarations whose name is never referenced anywhere else in the script. | |
-| **Unused import** | Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script (e.g. `Import Utility` with no bare `Wait(...)` call anywhere), since that's the only thing an `Import` actually does for a script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at. | |
+| **Unused import** | Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script (e.g. `Import Utility` with no bare `Wait(...)` call anywhere), since that's the only thing an `Import` actually does for a script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at. The fix removes the whole `Import` line; like the check itself, it only ever runs with that same project context, so it's a no-op without it. | ✓ |
 | **Cyclomatic complexity** | Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`\|\|` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20); `cyclomatic_complexity_error` configured below `cyclomatic_complexity_warning` is treated as equal to it, since a lower error threshold would otherwise contradict the warning one it's supposed to escalate. | |
 | **Unused or write-only local variables** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose value is never read: either it's never referenced again at all, or it's only ever reassigned (`name = ...`) without that new value ever being read back. Reading a variable via a compound assignment (`name += ...`, etc.) or through a member/index expression built from it (`name.Foo`, `name[0]`) counts as a use. Function parameters and script properties aren't locals and are never flagged by this lint. | |
 | **Prefer named arguments** | Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting. The fix inserts the matching parameter name ahead of each flagged argument, leaving an already-named argument and the call's other text untouched. | ✓ |
@@ -749,9 +749,9 @@ are only valid alongside `fix` and can be combined. `--type` errors out on
 a rule id that doesn't exist, or that exists but has no automatic fix
 (e.g. `forbidden-functions`, which can only be reported); `--line` errors
 out if applying the selected fix(es) would change the file's line count
-(e.g. `property-sorting` relocating a property's declaration), since a
-single original line number no longer identifies the same line in the
-result in that case.
+(e.g. `property-sorting` relocating a property's declaration, or
+`unused-import` removing a whole `Import` line), since a single original
+line number no longer identifies the same line in the result in that case.
 
 `fix` also accepts `--dry-run`, which computes the same fix(es) — honoring
 `--type`/`--tag`/`--line` the same way — but never writes them to disk.
@@ -925,9 +925,10 @@ applying just that one finding's fix and restricting it to that finding's
 own line, leaving every other line and finding untouched — the desktop
 app's equivalent of the CLI's `fix --type <rule-id> --line <n>`. If that
 fix would change the file's line count elsewhere (e.g. `property-sorting`
-relocating a property's declaration), it fails instead of applying
-anything, showing the error inline next to the finding; the whole-file
-"Apply fixes" button has no such restriction and always applies cleanly.
+relocating a property's declaration, or `unused-import` removing a whole
+`Import` line), it fails instead of applying anything, showing the error
+inline next to the finding; the whole-file "Apply fixes" button has no
+such restriction and always applies cleanly.
 
 The code viewer has the same whole-file "Apply fixes" button built in,
 next to "Edit" in its header, whenever the file it's currently showing has
@@ -962,7 +963,8 @@ own small "Fix"/"Ignore" buttons next to it, in view mode. "Fix" only
 appears when at least one of that line's findings is auto-fixable, and
 applies each such finding's own fix restricted to that line, the same way
 "Fix this issue" does — a rule whose fix would shift other lines (e.g.
-`property-sorting`) is silently skipped rather than blocking the rest.
+`property-sorting`, or `unused-import` removing its own `Import` line) is
+silently skipped rather than blocking the rest.
 "Ignore" appears whenever at least one finding on the line carries a rule
 id, and adds a [`; @disable <rule-id>[, <rule-id>...]`](#disabling-a-lint-on-a-specific-line)
 comment naming every rule found on that line instead of fixing it — merging

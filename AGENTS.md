@@ -882,10 +882,32 @@ raw source or lexer tokens rather than requiring a successfully parsed AST.
 Automatic repair is available for trailing whitespace, comma spacing,
 semicolons, indentation, whitespace around member-access dots, spacing
 around `!` negation, spacing around logical/comparison operators, spacing
-around assignment operators, and property sorting (disabled by default;
-see the README). The desktop app,
+around assignment operators, property sorting (disabled by default;
+see the README), and the unused-import lint. The desktop app,
 standalone CLI, and editor extensions all use the same lint and repair
 engine.
+
+Unlike every other fixable rule, `unused-import`'s fix (`unused_import::repair_with`)
+can only ever resolve which `Import` lines are actually unused through the
+same project-wide `ExternalSignatures` resolver its own `check_with` already
+needs (see the parser/lint architecture above): `papyrus_lints::repair`/
+`repair_filtered`/`repair_filtered_by_tag` — which never see such a resolver
+— leave it a no-op, the same way plain `unused_import::check` never flags
+anything either. A caller that does have one calls the sibling
+`repair_with_external_arguments`/`repair_filtered_with_external_arguments`/
+`repair_filtered_by_tag_with_external_arguments` functions instead, mirroring
+`lint_with_external_arguments`'s own split from plain `lint`. The CLI's
+`fix` (via its per-script `SharedFunctionTable`) and the desktop app's
+`repair_psc_file`/`repair_psc_finding`/`repair_psc_file_rule` Tauri commands
+(via their own per-call `FunctionTable`, built before the fix instead of
+after it) both use these external-aware entry points so "Apply fixes"/
+`fix`/the mass-fix button actually remove a resolved-unused `Import` line;
+`preview_repair_psc_file`/`preview_repair_psc_line` still call the plain,
+resolver-less functions, so their previews never include this fix. Removing
+a whole `Import` line always changes the file's total line count, so the
+per-line "Fix this issue" button/`fix --line <n>` always rejects it as a
+line-count-shifting fix, the same way `property-sorting` relocating a
+property already does.
 
 `papyrus-lints`' `tags` module publishes a `RuleTags` entry — kind
 keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,

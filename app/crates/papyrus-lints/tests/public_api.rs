@@ -139,6 +139,16 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller()\n    B()\nEndFunction\n",
             &default_config,
         ),
+        (
+            // Unlike every other fixable rule, "unused-import" can only ever
+            // be resolved through a project-wide external resolver (see
+            // `repair_with_external_arguments`), so the plain, resolver-less
+            // public API this test exercises is always a no-op for it.
+            "unused-import",
+            "ScriptName Example\n\nImport Utility\n",
+            "ScriptName Example\n\nImport Utility\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();

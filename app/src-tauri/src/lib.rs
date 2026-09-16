@@ -512,15 +512,20 @@ fn repair_psc_file(
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
-    let repaired = papyrus_lints::repair(&source, &config);
-    if repaired != source {
-        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
-    }
-    ast_cache::ensure_primed(path, &repaired);
+    // Built before the fix, rather than after it like `lint_psc_file`'s own
+    // call, since "unused-import" -- unlike every other fixable rule -- can
+    // only resolve which imports are unused through this project's own
+    // cross-script resolver (see `papyrus_lints::repair_with_external_arguments`).
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
         additional_roots.clone(),
     );
+    let repaired =
+        papyrus_lints::repair_with_external_arguments(&source, &config, &mut function_table);
+    if repaired != source {
+        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
+    }
+    ast_cache::ensure_primed(path, &repaired);
     Ok(lint_with_compile_check(
         path,
         &repaired,
@@ -599,7 +604,18 @@ fn repair_psc_finding(
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
-    let repaired = papyrus_lints::repair_filtered(&source, &config, Some(rule.as_str()));
+    // See `repair_psc_file`'s own comment: built before the fix so
+    // "unused-import"'s fix (if `rule` names it) can resolve through it too.
+    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
+        PathBuf::from(root),
+        additional_roots.clone(),
+    );
+    let repaired = papyrus_lints::repair_filtered_with_external_arguments(
+        &source,
+        &config,
+        &mut function_table,
+        Some(rule.as_str()),
+    );
     let repaired = papyrus_lints::restrict_to_line(&source, &repaired, line).ok_or_else(|| {
         "Fixing this issue would change other lines in the file; use \"Apply fixes\" instead."
             .to_string()
@@ -608,10 +624,6 @@ fn repair_psc_finding(
         write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
     }
     ast_cache::ensure_primed(path, &repaired);
-    let mut function_table = function_table::FunctionTable::new_with_additional_roots(
-        PathBuf::from(root),
-        additional_roots.clone(),
-    );
     Ok(lint_with_compile_check(
         path,
         &repaired,
@@ -643,15 +655,22 @@ fn repair_psc_file_rule(
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
-    let repaired = papyrus_lints::repair_filtered(&source, &config, Some(rule.as_str()));
-    if repaired != source {
-        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
-    }
-    ast_cache::ensure_primed(path, &repaired);
+    // See `repair_psc_file`'s own comment: built before the fix so
+    // "unused-import"'s fix (if `rule` names it) can resolve through it too.
     let mut function_table = function_table::FunctionTable::new_with_additional_roots(
         PathBuf::from(root),
         additional_roots.clone(),
     );
+    let repaired = papyrus_lints::repair_filtered_with_external_arguments(
+        &source,
+        &config,
+        &mut function_table,
+        Some(rule.as_str()),
+    );
+    if repaired != source {
+        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
+    }
+    ast_cache::ensure_primed(path, &repaired);
     Ok(lint_with_compile_check(
         path,
         &repaired,
@@ -1033,6 +1052,41 @@ mod tests {
     }
 
     #[test]
+    fn repair_psc_file_removes_an_unused_import_resolved_through_the_project() {
+        let dir = tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
+        std::fs::write(
+            dir.path().join("scripts/source/Helpers.psc"),
+            "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        )
+        .unwrap();
+        let path = dir.path().join("scripts/source/Example.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n",
+        )
+        .unwrap();
+
+        let diagnostics = repair_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "ScriptName Example\n\n\nFunction Test()\nEndFunction\n"
+        );
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_import::RULE));
+    }
+
+    #[test]
     fn preview_repair_psc_file_returns_a_diff_without_writing_the_file() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Example.psc");
@@ -1185,6 +1239,39 @@ mod tests {
     }
 
     #[test]
+    fn repair_psc_finding_rejects_removing_an_unused_import_since_it_shifts_the_line_count() {
+        // Like `property-sorting`, removing an `Import` line always changes
+        // the file's total line count, so the per-line "Fix this issue"
+        // button can never apply it -- only "Apply fixes"/the mass-fix
+        // button (see `repair_psc_file`/`repair_psc_file_rule` above) can.
+        let dir = tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
+        std::fs::write(
+            dir.path().join("scripts/source/Helpers.psc"),
+            "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        )
+        .unwrap();
+        let path = dir.path().join("scripts/source/Example.psc");
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+        std::fs::write(&path, source).unwrap();
+
+        let error = repair_psc_finding(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::unused_import::RULE.to_string(),
+            3,
+        )
+        .unwrap_err();
+
+        assert!(error.contains("Apply fixes"));
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), source);
+    }
+
+    #[test]
     fn repair_psc_finding_rejects_a_fix_that_would_change_the_line_count() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Example.psc");
@@ -1237,6 +1324,45 @@ mod tests {
         assert!(diagnostics
             .iter()
             .all(|diagnostic| diagnostic.rule != papyrus_lints::trailing_whitespace::RULE));
+        assert!(diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.rule == papyrus_lints::comma_spacing::RULE));
+    }
+
+    #[test]
+    fn repair_psc_file_rule_removes_an_unused_import_resolved_through_the_project() {
+        let dir = tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
+        std::fs::write(
+            dir.path().join("scripts/source/Helpers.psc"),
+            "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        )
+        .unwrap();
+        let path = dir.path().join("scripts/source/Example.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\n    Call(1,2)\nEndFunction\n",
+        )
+        .unwrap();
+
+        let diagnostics = repair_psc_file_rule(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            papyrus_lints::Config::default(),
+            Vec::new(),
+            String::new(),
+            false,
+            papyrus_lints::unused_import::RULE.to_string(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            std::fs::read_to_string(&path).unwrap(),
+            "ScriptName Example\n\n\nFunction Test()\n    Call(1,2)\nEndFunction\n"
+        );
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_import::RULE));
         assert!(diagnostics
             .iter()
             .any(|diagnostic| diagnostic.rule == papyrus_lints::comma_spacing::RULE));
