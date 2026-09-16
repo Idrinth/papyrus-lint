@@ -19,7 +19,10 @@
 - **CI scripts and Nexus page BBCode job**: runs the dependency-free Python
   scripts' unit tests with coverage, publishes the text summary, uploads the
   lcov report as the `ci-scripts-coverage` artifact, then checks
-  `docs/nexuspage.bbcode` for unknown, mismatched, and unclosed tags.
+  `docs/nexuspage.bbcode` for unknown, mismatched, and unclosed tags, and
+  finally runs `.github/scripts/generate_nexuspage_tables.py --check` to
+  confirm `docs/nexuspage.bbcode`'s five lint tables are still what
+  `docs/rules.json` would generate (see "Adding a lint" in AGENTS.md).
 - **Semantic version advisory job** (`semver-advisory`, pushes to `the-one`
   only): gathers every pull request merged since the latest `v*.*.*` release
   tag (via the GitHub API, walking `git log <tag>..HEAD`) and passes their
