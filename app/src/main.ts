@@ -1,10 +1,31 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { type Member } from "./autocomplete";
-import { bindPresets, applyConfigPreset, promptForConfigSelection, refreshPresetManagementTab } from "./presets";
+import { bindPresets, refreshPresetManagementTab } from "./presets";
 import { bindCodeViewer, openCodeViewer } from "./code-viewer";
 import { bindLiveEdit } from "./live-edit";
 import { bindResultsList, populateRuleFilterGroups, renderPscResults } from "./results-list";
+import {
+  isAchlistPath,
+  isPscPath,
+  projectDirForAchlist,
+  projectDirForDirectory,
+  projectDirForPscPath,
+  relativePath,
+  scriptRootsForAchlist,
+} from "./path";
+import { bindLintProgress, scheduleHideLintProgress, showLintProgress, updateLintProgress } from "./progress";
+import { bindConfigSettings, currentLintConfig } from "./config";
+import {
+  bindProjectSettings,
+  currentCompileCheck,
+  currentCompilerPath,
+  currentLookupScriptRoots,
+  currentProjectDir,
+  effectiveScriptRoots,
+  loadProjectConfig,
+  setAchlistScriptRoots,
+} from "./project";
 
 
 export {
@@ -72,6 +93,70 @@ export {
   tagsForFinding,
   updateExportIssuesButtonState,
 } from "./results-list";
+export {
+  dirnameOf,
+  findCandidatePairRoot,
+  isAchlistPath,
+  isPscPath,
+  projectDirForAchlist,
+  projectDirForDirectory,
+  projectDirForPscPath,
+  relativePath,
+  scriptRootsForAchlist,
+} from "./path";
+export {
+  hideLintProgress,
+  scheduleHideLintProgress,
+  showLintProgress,
+  updateLintProgress,
+} from "./progress";
+export {
+  applyLintConfigToUI,
+  currentLintConfig,
+  DEFAULT_LINT_CONFIG,
+  DEFAULT_RULES,
+  handleLintConfigChanged,
+  lintConfigFromUI,
+  loadLintConfig,
+  loadLintConfigFromPath,
+  RULE_KEYS,
+  saveLintConfig,
+  saveLintConfigToPath,
+  type IdentifierCasingStyle,
+  type LintConfig,
+  type LintRules,
+  type MagicNumbersMode,
+  type NamedArgumentsStyle,
+  type TypeCasingStyle,
+} from "./config";
+export {
+  applyLookupScriptRootsToUI,
+  applyProjectInfoToUI,
+  applyScriptRootsToUI,
+  configPathOverride,
+  currentProjectDir,
+  handleCompileCheckChanged,
+  handleCompilerPathChanged,
+  handleConfigPathOverrideChanged,
+  handleLookupScriptRootsChanged,
+  handleScriptRootsChanged,
+  loadCompileCheck,
+  loadCompilerPath,
+  loadLookupScriptRoots,
+  loadProjectConfig,
+  loadProjectInfo,
+  loadScriptRoots,
+  lookupScriptRootsFromUI,
+  resetConfirmedProjectDirs,
+  saveCompileCheck,
+  saveCompilerPath,
+  saveLookupScriptRoots,
+  saveScriptRoots,
+  scriptRootsFromUI,
+  setSettingsLocked,
+  useProjectDir,
+  type ProjectInfo,
+} from "./project";
 
 
 let appVersionEl: HTMLElement | null;
@@ -80,16 +165,6 @@ let dropZoneErrorEl: HTMLElement | null;
 let resultEl: HTMLElement | null;
 let resultTitleEl: HTMLElement | null;
 let resultListEl: HTMLElement | null;
-let lintProgressEl: HTMLElement | null;
-let lintProgressLabelEl: HTMLElement | null;
-let lintProgressBarEl: HTMLProgressElement | null;
-let lintProgressHideTimer: ReturnType<typeof setTimeout> | null = null;
-let indentationStyleEl: HTMLSelectElement | null;
-let indentationWidthEl: HTMLInputElement | null;
-let typeCasingStyleEl: HTMLSelectElement | null;
-let identifierCasingStyleEl: HTMLSelectElement | null;
-let namedArgumentsStyleEl: HTMLSelectElement | null;
-let magicNumbersModeEl: HTMLSelectElement | null;
 export let currentPscOutcomes: PscParseOutcome[] = [];
 // Set whenever a setting affecting lint output (formatting/rule config,
 // compiler path, compile-check toggle, additional/lookup script roots, or the
@@ -98,34 +173,22 @@ export let currentPscOutcomes: PscParseOutcome[] = [];
 // the active settings. Checked by the Lint results tab button so switching
 // to it re-lints the same files instead of silently showing stale findings.
 let lintResultsStale = false;
+
+// Marks the currently shown lint results as no longer reflecting the active
+// settings (see lintResultsStale above). Called by config.ts/project.ts
+// whenever a setting affecting lint output changes, since lintResultsStale
+// itself stays private to the drop/lint orchestration in this file.
+export function markLintResultsStale() {
+  lintResultsStale = true;
+}
+
 // Bumped by handleDroppedPaths every time a new drop starts parsing/linting;
 // a still-running drop's parsePscFiles callback checks its own snapshot of
 // this against the current value before touching currentPscOutcomes, so a
 // straggling outcome from a drop superseded by a newer one can't get mixed
 // into the newer drop's results.
 let currentParseGeneration = 0;
-let configPathOverrideEl: HTMLInputElement | null;
-let compilerPathEl: HTMLInputElement | null;
-let compileCheckEl: HTMLInputElement | null;
-let scriptRootsEl: HTMLTextAreaElement | null;
-let lookupScriptRootsEl: HTMLTextAreaElement | null;
-let detectedScriptRootsEl: HTMLOutputElement | null;
-let usedConfigurationFileEl: HTMLOutputElement | null;
-let semicolonStyleEl: HTMLSelectElement | null;
-let cyclomaticComplexityWarningEl: HTMLInputElement | null;
-let cyclomaticComplexityErrorEl: HTMLInputElement | null;
-let minWaitIntervalEl: HTMLInputElement | null;
-let failOnWarningEl: HTMLInputElement | null;
-let failOnInfoEl: HTMLInputElement | null;
-let boolLikeIntEl: HTMLInputElement | null;
-let assumeAutoPropertiesFilledEl: HTMLInputElement | null;
-let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 let themeSelectEl: HTMLSelectElement | null;
-let settingsFieldsetEl: HTMLFieldSetElement | null;
-let settingsLockedNoticeEl: HTMLElement | null;
-
-const ACHLIST_EXTENSION = ".achlist";
-const PSC_EXTENSION = ".psc";
 
 export const TAB_IDS = ["import", "settings", "presets", "files", "lint", "contact"] as const;
 type TabId = (typeof TAB_IDS)[number];
@@ -143,14 +206,6 @@ export function switchTab(tab: TabId) {
       panel.hidden = !active;
     }
   }
-}
-
-export function isAchlistPath(path: string): boolean {
-  return path.toLowerCase().endsWith(ACHLIST_EXTENSION);
-}
-
-export function isPscPath(path: string): boolean {
-  return path.toLowerCase().endsWith(PSC_EXTENSION);
 }
 
 export interface PapyrusScript {
@@ -207,11 +262,6 @@ export interface CompileOutcome {
   personal_data_stripped: boolean;
 }
 
-export interface ProjectInfo {
-  detected_script_roots: string[];
-  used_configuration_file: string | null;
-}
-
 // One configuration preset's identity/description — a built-in one, or a
 // user preset found under a presets directory next to the executable — as
 // returned by the backend's list_config_presets command
@@ -235,633 +285,15 @@ export type ConfigSelectionResult =
   | { kind: "path"; path: string }
   | { kind: "preset"; preset: string };
 
-export interface LintRules {
-  trailing_whitespace: boolean;
-  comma_spacing: boolean;
-  forbidden_functions: boolean;
-  formid_hex_notation: boolean;
-  slow_functions: boolean;
-  unused_getter: boolean;
-  unused_property: boolean;
-  semicolon: boolean;
-  float_int_conversion: boolean;
-  int_division_to_float: boolean;
-  strict_boolean: boolean;
-  argument_types: boolean;
-  return_types: boolean;
-  function_override: boolean;
-  argument_naming: boolean;
-  argument_override_types: boolean;
-  numeric_comparison: boolean;
-  indentation: boolean;
-  cyclomatic_complexity: boolean;
-  unreachable_statement: boolean;
-  static_condition: boolean;
-  division_by_zero: boolean;
-  empty_body: boolean;
-  unused_local_variable: boolean;
-  variable_used_before_assignment: boolean;
-  none_form_usage: boolean;
-  local_variable_shadowing: boolean;
-  parameter_reassignment: boolean;
-  chain_whitespace: boolean;
-  exclamation_spacing: boolean;
-  identifier_casing: boolean;
-  type_casing: boolean;
-  named_arguments: boolean;
-  operator_spacing: boolean;
-  property_sorting: boolean;
-  explicit_return: boolean;
-  unchecked_form_parameter: boolean;
-  unchecked_array_element: boolean;
-  unchecked_cast: boolean;
-  useless_downcast: boolean;
-  impossible_cast: boolean;
-  unresolved_script: boolean;
-  non_global_function_call: boolean;
-  static_function_call_via_instance: boolean;
-  short_wait_interval: boolean;
-  state_function_signature: boolean;
-  goto_state: boolean;
-  too_many_states: boolean;
-  multiple_auto_states: boolean;
-  conflicting_script_versions: boolean;
-  stale_compiled_output: boolean;
-  script_filename_mismatch: boolean;
-  unused_disable: boolean;
-  magic_numbers: boolean;
-  native_function_usage: boolean;
-  repeated_getvalue: boolean;
-  global_variable_setvalue: boolean;
-  global_variable_increment: boolean;
-  setvalue_in_loop: boolean;
-  invariant_loop_condition: boolean;
-  script_name_collision: boolean;
-  array_bounds: boolean;
-  readonly_property_write: boolean;
-  default_property_value: boolean;
-  unguarded_self_recursion: boolean;
-  self_assignment: boolean;
-  unknown_actor_value: boolean;
-}
-
-export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
-export type IdentifierCasingStyle = "camelCase" | "PascalCase" | "snake_case" | "CONSTANT_CASE";
-export type NamedArgumentsStyle = "always" | "instead_of_defaults" | "never";
-export type MagicNumbersMode = "loose" | "strict";
-
-export interface LintConfig {
-  semicolon: boolean;
-  indentation: "tab" | "space";
-  indentation_width: number;
-  identifier_casing: IdentifierCasingStyle;
-  cyclomatic_complexity_warning: number;
-  cyclomatic_complexity_error: number;
-  type_casing: TypeCasingStyle;
-  named_arguments: NamedArgumentsStyle;
-  min_wait_interval: number;
-  magic_numbers: MagicNumbersMode;
-  fail_on_warning: boolean;
-  fail_on_info: boolean;
-  bool_like_int: boolean;
-  assume_auto_properties_filled: boolean;
-  rules: LintRules;
-}
-
-export const DEFAULT_RULES: LintRules = {
-  trailing_whitespace: true,
-  comma_spacing: true,
-  forbidden_functions: true,
-  formid_hex_notation: true,
-  slow_functions: true,
-  unused_getter: true,
-  unused_property: true,
-  semicolon: true,
-  float_int_conversion: true,
-  int_division_to_float: true,
-  strict_boolean: true,
-  argument_types: true,
-  return_types: true,
-  function_override: true,
-  argument_naming: true,
-  argument_override_types: true,
-  numeric_comparison: true,
-  indentation: true,
-  cyclomatic_complexity: true,
-  unreachable_statement: true,
-  static_condition: true,
-  division_by_zero: true,
-  empty_body: true,
-  unused_local_variable: true,
-  variable_used_before_assignment: true,
-  none_form_usage: true,
-  local_variable_shadowing: true,
-  parameter_reassignment: true,
-  chain_whitespace: true,
-  exclamation_spacing: true,
-  identifier_casing: true,
-  type_casing: true,
-  named_arguments: true,
-  operator_spacing: true,
-  property_sorting: false,
-  explicit_return: true,
-  unchecked_form_parameter: false,
-  unchecked_array_element: false,
-  unchecked_cast: true,
-  useless_downcast: true,
-  impossible_cast: true,
-  unresolved_script: true,
-  non_global_function_call: true,
-  static_function_call_via_instance: true,
-  short_wait_interval: true,
-  state_function_signature: true,
-  goto_state: true,
-  too_many_states: true,
-  multiple_auto_states: true,
-  conflicting_script_versions: true,
-  stale_compiled_output: true,
-  script_filename_mismatch: true,
-  unused_disable: false,
-  magic_numbers: false,
-  native_function_usage: false,
-  repeated_getvalue: false,
-  global_variable_setvalue: false,
-  global_variable_increment: true,
-  setvalue_in_loop: true,
-  invariant_loop_condition: true,
-  script_name_collision: true,
-  array_bounds: true,
-  readonly_property_write: true,
-  default_property_value: false,
-  unguarded_self_recursion: true,
-  self_assignment: true,
-  unknown_actor_value: false,
-};
-
-export const DEFAULT_LINT_CONFIG: LintConfig = {
-  semicolon: false,
-  indentation: "tab",
-  indentation_width: 4,
-  identifier_casing: "PascalCase",
-  cyclomatic_complexity_warning: 10,
-  cyclomatic_complexity_error: 20,
-  type_casing: "PascalCase",
-  named_arguments: "never",
-  min_wait_interval: 0.1,
-  magic_numbers: "loose",
-  fail_on_warning: false,
-  fail_on_info: false,
-  bool_like_int: true,
-  assume_auto_properties_filled: false,
-  rules: DEFAULT_RULES,
-};
 const THEME_KEY = "papyrus-lint:theme";
-export const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];
 
 export type Theme = "system" | "light" | "dark";
 const THEMES: Theme[] = ["system", "light", "dark"];
 
-export let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;
-// The project root (see projectDirForAchlist/projectDirForPscPath), also
-// used by the "Argument type check" lint to resolve calls to functions
-// declared on other scripts under it.
-export let currentProjectDir: string | null = null;
-// The PapyrusCompiler.exe path to use for the "Compile" button, kept in
-// sync with the Settings tab's input (see handleCompilerPathChanged).
-let currentCompilerPath = "";
-// Whether linting also runs PapyrusCompiler.exe against a dropped .psc,
-// kept in sync with the Settings tab's checkbox (see
-// handleCompileCheckChanged).
-let currentCompileCheck = false;
-// Extra directories (besides scripts/source and source/scripts under the
-// project root) to search for .psc files when resolving cross-script
-// lookups, kept in sync with the Settings tab's textarea (see
-// handleScriptRootsChanged).
-let currentScriptRoots: string[] = [];
-// Extra directories searched only as a last-resort fallback when resolving
-// a script by name for analysis (cross-script type/function lookups,
-// Extends, autocompletion). Scripts found only here are never linted, and
-// these directories are never considered by conflicting-script-versions.
-// Kept in sync with the Settings tab's "Lookup script roots" textarea.
-let currentLookupScriptRoots: string[] = [];
-// Source directories inferred from the entries in the currently loaded
-// achlist. These are runtime-only roots: unlike currentScriptRoots, they are
-// not displayed as user configuration or persisted to papyrus-lint.yaml.
-let currentAchlistScriptRoots: string[] = [];
 // Every built-in lint rule's tag metadata, keyed by rule id, fetched once
 // from the backend (see loadRuleTags) and used both to render each
 // finding's tag badges and to drive the tag filters below.
 export let ruleTagsByRule: Map<string, RuleTagsInfo> = new Map();
-
-function effectiveScriptRoots(): string[] {
-  return [...new Set([...currentScriptRoots, ...currentAchlistScriptRoots])];
-}
-
-export function scriptRootsForAchlist(entries: string[]): string[] {
-  return [...new Set(entries.filter(isPscPath).map(dirnameOf))];
-}
-
-export function dirnameOf(path: string): string {
-  const index = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
-  return index === -1 ? path : path.slice(0, index);
-}
-
-function basenameOf(path: string): string {
-  const index = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
-  return index === -1 ? path : path.slice(index + 1);
-}
-
-// `path` itself, followed by each of its ancestor directories up to the
-// root (where dirnameOf stops changing anything), mirroring Rust's
-// `Path::ancestors()`.
-function ancestorsOf(path: string): string[] {
-  const ancestors = [path];
-  let current = path;
-  for (;;) {
-    const parent = dirnameOf(current);
-    if (parent === current) {
-      return ancestors;
-    }
-    ancestors.push(parent);
-    current = parent;
-  }
-}
-
-// (outer, inner) pairs, mirroring papyrus-lint-cli's `CANDIDATE_DIRS`
-// (`scripts/source`, `source/scripts`).
-const CANDIDATE_DIR_PAIRS: readonly (readonly [string, string])[] = [
-  ["scripts", "source"],
-  ["source", "scripts"],
-];
-
-// Mirrors papyrus-lint-cli's `find_candidate_pair_root`: walks up `path`'s
-// ancestors looking for a `scripts/source`/`source/scripts` directory pair
-// (matched case-insensitively), and returns the directory above that pair,
-// or null if no such pair appears anywhere in `path`'s ancestry.
-export function findCandidatePairRoot(path: string): string | null {
-  const ancestors = ancestorsOf(path);
-  for (let i = 1; i < ancestors.length - 1; i++) {
-    const innerName = basenameOf(ancestors[i]).toLowerCase();
-    const outerName = basenameOf(ancestors[i + 1]).toLowerCase();
-    const matches = CANDIDATE_DIR_PAIRS.some(([outer, inner]) => outer === outerName && inner === innerName);
-    if (matches) {
-      return dirnameOf(ancestors[i + 1]);
-    }
-  }
-  return null;
-}
-
-// Finds the project root for a dropped `.achlist`: tries each of its
-// resolved `.psc` entries' own position under a `scripts/source`/
-// `source/scripts` directory pair first (see findCandidatePairRoot), so a
-// project whose `.achlist` doesn't live in the project root itself (e.g. it
-// was dropped next to a game's `Data` directory while the project lives in
-// a subfolder) still resolves correctly. Falls back to the achlist's own
-// parent directory (the conventional layout) if none of its entries match.
-export function projectDirForAchlist(achlistPath: string, entries: string[]): string {
-  for (const entry of entries) {
-    if (!isPscPath(entry)) {
-      continue;
-    }
-    const root = findCandidatePairRoot(entry);
-    if (root) {
-      return root;
-    }
-  }
-  return dirnameOf(achlistPath);
-}
-
-// Finds the project root for a dropped directory (see handleDroppedPaths'
-// directory-scan mode, for a project with no .achlist at all whose scripts
-// are spread across arbitrarily nested subfolders, e.g. Requiem's own
-// layout): tries each recursively-found .psc entry's own position under a
-// `scripts/source`/`source/scripts` directory pair first (see
-// findCandidatePairRoot), the same way projectDirForAchlist does for an
-// achlist's entries. Falls back to the dropped directory itself if none of
-// the entries match that layout, since there's no achlist file whose parent
-// directory would otherwise apply.
-export function projectDirForDirectory(dirPath: string, entries: string[]): string {
-  for (const entry of entries) {
-    const root = findCandidatePairRoot(entry);
-    if (root) {
-      return root;
-    }
-  }
-  return dirPath;
-}
-
-// Formats `path` relative to `base` (the project root; see
-// projectDirForAchlist/projectDirForPscPath) for display in the lint
-// results list, so long absolute paths stay readable. Falls back to the
-// absolute path if `base` isn't known yet or `path` doesn't live under it.
-export function relativePath(path: string, base: string | null): string {
-  if (!base) {
-    return path;
-  }
-  for (const sep of ["/", "\\"]) {
-    const prefix = base.endsWith(sep) ? base : `${base}${sep}`;
-    if (path.startsWith(prefix)) {
-      return path.slice(prefix.length);
-    }
-  }
-  return path;
-}
-
-// Looks for a papyrus-lint YAML config file in `dir`, falling back to the
-// default configuration if none is found.
-export async function loadLintConfig(dir: string): Promise<LintConfig> {
-  try {
-    return await invoke<LintConfig>("load_lint_config", { dir });
-  } catch (error) {
-    console.error(error);
-    return DEFAULT_LINT_CONFIG;
-  }
-}
-
-// Persists `config` to `dir`'s papyrus-lint YAML config file so the
-// formatting selected in the UI is remembered for next time.
-export async function saveLintConfig(dir: string, config: LintConfig): Promise<void> {
-  try {
-    await invoke("save_lint_config", { dir, config });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Reads and parses the config file at the exact `path` given, bypassing the
-// project-directory discovery loadLintConfig does. Backs the Settings tab's
-// "Configuration file" override.
-export async function loadLintConfigFromPath(path: string): Promise<LintConfig> {
-  try {
-    return await invoke<LintConfig>("load_lint_config_from_path", { path });
-  } catch (error) {
-    console.error(error);
-    return DEFAULT_LINT_CONFIG;
-  }
-}
-
-// Persists `config` to the exact file at `path`, creating it if it doesn't
-// exist yet. The save-side counterpart of loadLintConfigFromPath, used
-// while the Settings tab's "Configuration file" override is set.
-export async function saveLintConfigToPath(path: string, config: LintConfig): Promise<void> {
-  try {
-    await invoke("save_lint_config_to_path", { path, config });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Returns the PapyrusCompiler.exe path to use for `dir`'s project: an
-// explicit override saved to its papyrus-lint config file, or, absent
-// one, a path auto-detected at `../Papyrus Compiler/PapyrusCompiler.exe`
-// relative to `dir`. Returns an empty string if neither is available or
-// the lookup fails.
-export async function loadCompilerPath(dir: string): Promise<string> {
-  try {
-    return (await invoke<string | null>("load_compiler_path", { dir })) ?? "";
-  } catch (error) {
-    console.error(error);
-    return "";
-  }
-}
-
-// Persists an explicit PapyrusCompiler.exe path override to `dir`'s
-// papyrus-lint config file. Passing an empty string clears the override,
-// reverting to auto-detection.
-export async function saveCompilerPath(dir: string, path: string): Promise<void> {
-  try {
-    await invoke("save_compiler_path", { dir, path });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Returns whether `dir`'s project runs PapyrusCompiler.exe against a
-// dropped .psc as part of linting it. Returns false if the lookup fails.
-export async function loadCompileCheck(dir: string): Promise<boolean> {
-  try {
-    return await invoke<boolean>("load_compile_check", { dir });
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
-
-// Persists whether `dir`'s project runs PapyrusCompiler.exe against a
-// dropped .psc as part of linting it.
-export async function saveCompileCheck(dir: string, enabled: boolean): Promise<void> {
-  try {
-    await invoke("save_compile_check", { dir, enabled });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Returns `dir`'s configured additional script root directories, if any.
-// Returns an empty array if none are configured or the lookup fails.
-export async function loadScriptRoots(dir: string): Promise<string[]> {
-  try {
-    return await invoke<string[]>("load_script_roots", { dir });
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
-
-// Returns `dir`'s configured analysis-only lookup directories, if any.
-// Returns an empty array if none are configured or the lookup fails.
-export async function loadLookupScriptRoots(dir: string): Promise<string[]> {
-  try {
-    return await invoke<string[]>("load_lookup_script_roots", { dir });
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
-
-export async function loadProjectInfo(dir: string): Promise<ProjectInfo> {
-  try {
-    return await invoke<ProjectInfo>("load_project_info", { dir });
-  } catch (error) {
-    console.error(error);
-    return { detected_script_roots: [], used_configuration_file: null };
-  }
-}
-
-export function applyProjectInfoToUI(info: ProjectInfo) {
-  if (detectedScriptRootsEl) {
-    detectedScriptRootsEl.textContent = info.detected_script_roots.length
-      ? info.detected_script_roots.join("\n")
-      : "None detected";
-  }
-  if (usedConfigurationFileEl) {
-    usedConfigurationFileEl.textContent = info.used_configuration_file ?? "None (using defaults)";
-  }
-}
-
-// Fetches every configuration preset's identity/description — built-in
-
-// Persists `roots` as `dir`'s configured additional script root
-// directories.
-export async function saveScriptRoots(dir: string, roots: string[]): Promise<void> {
-  try {
-    await invoke("save_script_roots", { dir, roots });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Persists `roots` as `dir`'s configured analysis-only lookup directories.
-export async function saveLookupScriptRoots(dir: string, roots: string[]): Promise<void> {
-  try {
-    await invoke("save_lookup_script_roots", { dir, roots });
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Fetches every built-in lint rule's tag metadata (kind(s), importance, and
-// whether it's auto-fixable; see papyrus_lints::tags) from the Rust
-// backend, for grouping/filtering the lint results by tag. Returns an
-// empty array if the lookup fails.
-export async function loadRuleTags(): Promise<RuleTagsInfo[]> {
-  try {
-    return (await invoke<RuleTagsInfo[]>("list_rule_tags")) ?? [];
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
-
-// Indexes `tags` by rule id (for tagsForFinding/matchesTagFilters below),
-// rebuilds each tag kind's "Filter by rule" multiselect from the same list,
-// and re-renders the current lint results, so any already-listed findings
-// pick up their tag badges/filtering once the lookup resolves.
-export function applyRuleTags(tags: RuleTagsInfo[]) {
-  ruleTagsByRule = new Map(tags.map((info) => [info.rule, info]));
-  populateRuleFilterGroups(tags);
-  renderPscResults(currentPscOutcomes);
-}
-
-// Fetches the desktop app's version from the Rust backend, so it can be
-// shown to the user. Returns an empty string if the lookup fails.
-export async function loadAppVersion(): Promise<string> {
-  try {
-    return await invoke<string>("get_app_version");
-  } catch (error) {
-    console.error(error);
-    return "";
-  }
-}
-
-// Reflects `config` onto the formatting controls without firing their
-// `change` listeners (assigning `.value` does not dispatch `change`).
-export function applyLintConfigToUI(config: LintConfig) {
-  if (semicolonStyleEl) {
-    semicolonStyleEl.value = config.semicolon ? "require" : "forbid";
-  }
-  if (indentationStyleEl) {
-    indentationStyleEl.value = config.indentation === "space" ? "spaces" : "tabs";
-  }
-  if (indentationWidthEl) {
-    indentationWidthEl.value = String(config.indentation_width);
-    indentationWidthEl.disabled = config.indentation !== "space";
-  }
-  if (cyclomaticComplexityWarningEl) {
-    cyclomaticComplexityWarningEl.value = String(config.cyclomatic_complexity_warning);
-  }
-  if (cyclomaticComplexityErrorEl) {
-    cyclomaticComplexityErrorEl.value = String(config.cyclomatic_complexity_error);
-  }
-  if (minWaitIntervalEl) {
-    minWaitIntervalEl.value = String(config.min_wait_interval);
-  }
-  if (typeCasingStyleEl) {
-    typeCasingStyleEl.value = config.type_casing;
-  }
-  if (identifierCasingStyleEl) {
-    identifierCasingStyleEl.value = config.identifier_casing;
-  }
-  if (namedArgumentsStyleEl) {
-    namedArgumentsStyleEl.value = config.named_arguments;
-  }
-  if (magicNumbersModeEl) {
-    magicNumbersModeEl.value = config.magic_numbers;
-  }
-  if (failOnWarningEl) {
-    failOnWarningEl.checked = config.fail_on_warning;
-  }
-  if (failOnInfoEl) {
-    failOnInfoEl.checked = config.fail_on_info;
-  }
-  if (boolLikeIntEl) {
-    boolLikeIntEl.checked = config.bool_like_int;
-  }
-  if (assumeAutoPropertiesFilledEl) {
-    assumeAutoPropertiesFilledEl.checked = config.assume_auto_properties_filled;
-  }
-  for (const key of RULE_KEYS) {
-    const el = ruleEls[key];
-    if (el) {
-      el.checked = config.rules[key];
-    }
-  }
-}
-
-// Reads the formatting controls' current values into a LintConfig.
-export function lintConfigFromUI(): LintConfig {
-  const indentation = indentationStyleEl?.value === "spaces" ? "space" : "tab";
-  const cyclomaticComplexityWarning = Math.max(
-    1,
-    cyclomaticComplexityWarningEl?.valueAsNumber || 10,
-  );
-  const rules = { ...DEFAULT_RULES };
-  for (const key of RULE_KEYS) {
-    rules[key] = ruleEls[key]?.checked ?? DEFAULT_RULES[key];
-  }
-  return {
-    semicolon: semicolonStyleEl?.value === "require",
-    indentation,
-    indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
-    identifier_casing:
-      (identifierCasingStyleEl?.value as IdentifierCasingStyle | undefined) ?? "PascalCase",
-    cyclomatic_complexity_warning: cyclomaticComplexityWarning,
-    // Never below the warning threshold: an error severity that kicks in
-    // before the warning one would make the two settings contradict each
-    // other.
-    cyclomatic_complexity_error: Math.max(
-      cyclomaticComplexityWarning,
-      cyclomaticComplexityErrorEl?.valueAsNumber || 20,
-    ),
-    type_casing: (typeCasingStyleEl?.value as TypeCasingStyle | undefined) ?? "PascalCase",
-    named_arguments: (namedArgumentsStyleEl?.value as NamedArgumentsStyle | undefined) ?? "never",
-    min_wait_interval: Math.max(
-      0,
-      minWaitIntervalEl && Number.isFinite(minWaitIntervalEl.valueAsNumber)
-        ? minWaitIntervalEl.valueAsNumber
-        : 0.1,
-    ),
-    magic_numbers: (magicNumbersModeEl?.value as MagicNumbersMode | undefined) ?? "loose",
-    fail_on_warning: failOnWarningEl?.checked ?? false,
-    fail_on_info: failOnInfoEl?.checked ?? false,
-    bool_like_int: boolLikeIntEl?.checked ?? true,
-    assume_auto_properties_filled: assumeAutoPropertiesFilledEl?.checked ?? false,
-    rules,
-  };
-}
-
-// Called whenever a formatting control changes: updates the in-memory
-// config and, if a project directory is known, persists it to disk.
-export function handleLintConfigChanged() {
-  currentLintConfig = lintConfigFromUI();
-  lintResultsStale = true;
-  const override = configPathOverride();
-  if (override) {
-    void saveLintConfigToPath(override, currentLintConfig);
-  } else if (currentProjectDir) {
-    void saveLintConfig(currentProjectDir, currentLintConfig);
-  }
-}
 
 // Lints `source` directly, in-process (the same `lint_papyrus_script`
 // Tauri command `app/src-tauri/src/files.rs` wraps around
@@ -1203,34 +635,6 @@ export function showResult(path: string, entries: string[], base: string | null)
 }
 
 
-// Reads the Settings tab's "Configuration file" override input, trimmed. An
-// empty string means no override is set, so the lint config is auto-detected
-// from the current project directory as usual.
-export function configPathOverride(): string {
-  return configPathOverrideEl?.value.trim() ?? "";
-}
-
-// Locks (while `locked`) or unlocks the entire Settings tab. A project's
-// configuration is picked per drop (see promptForConfigSelection/
-// useProjectDir below), so until that pick is made for the
-// currently-loading project, the Settings tab must not be shown/editable at
-// all - otherwise it'd display (and let the user edit) the previous
-// project's configuration, or the engine's silent defaults, before this
-// drop's own configuration is even known, which doesn't make sense once
-// more than one project is involved. The native <fieldset disabled>
-// wrapping every Settings tab control (settingsFieldsetEl) handles
-// keyboard/mouse interaction and accessibility on its own; the notice
-// paragraph is a sibling of that fieldset (so it stays visible/announced
-// while locked) explaining why the tab is inert.
-export function setSettingsLocked(locked: boolean) {
-  if (settingsFieldsetEl) {
-    settingsFieldsetEl.disabled = locked;
-  }
-  if (settingsLockedNoticeEl) {
-    settingsLockedNoticeEl.hidden = !locked;
-  }
-}
-
 // Applies `theme` to the document: "system" removes any override, leaving
 // the prefers-color-scheme media query in styles.css in control; "light"
 // and "dark" set a data-theme attribute that overrides it.
@@ -1262,176 +666,6 @@ export function loadStoredTheme(): Theme {
   }
 }
 
-export async function useProjectDir(dir: string) {
-  currentProjectDir = dir;
-  const override = configPathOverride();
-  const projectInfo = override ? null : await loadProjectInfo(dir);
-
-  currentLintConfig = override ? await loadLintConfigFromPath(override) : await loadLintConfig(dir);
-  applyLintConfigToUI(currentLintConfig);
-  currentCompilerPath = await loadCompilerPath(dir);
-  if (compilerPathEl) {
-    compilerPathEl.value = currentCompilerPath;
-  }
-  currentCompileCheck = await loadCompileCheck(dir);
-  if (compileCheckEl) {
-    compileCheckEl.checked = currentCompileCheck;
-  }
-  currentScriptRoots = await loadScriptRoots(dir);
-  applyScriptRootsToUI(currentScriptRoots);
-  currentLookupScriptRoots = await loadLookupScriptRoots(dir);
-  applyLookupScriptRootsToUI(currentLookupScriptRoots);
-  applyProjectInfoToUI(projectInfo ?? (await loadProjectInfo(dir)));
-  if (override && usedConfigurationFileEl) {
-    usedConfigurationFileEl.textContent = override;
-  }
-}
-
-// Project directories already confirmed via promptForConfigSelection this
-// session (see loadProjectConfig below), so re-linting the same project
-// again (e.g. dropping the same achlist a second time) doesn't re-show the
-// picker every time - only a directory not yet seen this session needs to
-// go through it.
-const confirmedProjectDirs = new Set<string>();
-
-// Exposed for tests only: forgets every directory confirmed this session,
-// so a test reusing the same directory string as an earlier one isn't
-// short-circuited by that earlier test's confirmation.
-export function resetConfirmedProjectDirs() {
-  confirmedProjectDirs.clear();
-}
-
-// The entry point every real drop (handleDroppedPaths) calls instead of
-// useProjectDir directly: it's what actually picks `dir`'s configuration
-// (via promptForConfigSelection, unless `dir` was already confirmed this
-// session) before handing off to useProjectDir to load and apply it,
-// keeping the Settings tab locked for the whole of that pick (see
-// setSettingsLocked) so it can never show/edit a configuration before one
-// has actually been chosen for the project in play. useProjectDir itself
-// stays reusable on its own (as plenty of tests do, and as the app's own
-// startup restore of the last project directory does) for just loading an
-// already-decided directory's configuration, without going through the
-// picker at all - the picker is for a project the user is actively
-// dropping into the app, not one merely remembered from a previous
-// session.
-export async function loadProjectConfig(dir: string): Promise<void> {
-  if (!confirmedProjectDirs.has(dir)) {
-    setSettingsLocked(true);
-    const decision = await promptForConfigSelection(await loadProjectInfo(dir));
-    if (decision.kind === "preset") {
-      await applyConfigPreset(dir, decision.preset);
-    }
-    if (configPathOverrideEl) {
-      configPathOverrideEl.value = decision.kind === "path" ? decision.path : "";
-    }
-    confirmedProjectDirs.add(dir);
-  }
-  await useProjectDir(dir);
-  setSettingsLocked(false);
-}
-
-// Called when the "Configuration file" override input changes: reloads the
-// current project's lint configuration from the new source (the override
-// path, or back to auto-detection if it was cleared). Only reachable once
-// the Settings tab is unlocked, i.e. after that project's configuration has
-// already been picked via loadProjectConfig, so this never re-shows that
-// picker - it's ordinary editing of an already-picked configuration.
-export async function handleConfigPathOverrideChanged() {
-  lintResultsStale = true;
-  if (currentProjectDir) {
-    await useProjectDir(currentProjectDir);
-    // useProjectDir may have replaced currentLintConfig (and the other
-    // settings it reloads) after a relint already ran against the old
-    // values, if the Lint results tab was clicked while this reload was
-    // still in flight (relintCurrentFiles clears lintResultsStale as soon
-    // as it starts, well before this await resolves). Re-marking it stale
-    // here, unconditionally, is what makes the next tab switch re-lint
-    // against the config this reload actually settled on, regardless of
-    // whether that race happened.
-    lintResultsStale = true;
-  }
-}
-
-// Called when the PapyrusCompiler.exe path input changes: updates the path
-// used by the "Compile" button and persists it to the current project's
-// config file (if a project is loaded).
-export function handleCompilerPathChanged() {
-  currentCompilerPath = compilerPathEl?.value ?? "";
-  lintResultsStale = true;
-  if (currentProjectDir && compilerPathEl) {
-    void saveCompilerPath(currentProjectDir, compilerPathEl.value);
-  }
-}
-
-// Called when the "Also check with PapyrusCompiler.exe while linting"
-// checkbox changes: updates whether lintPscFile/repairPscFile include
-// compiler-reported errors, and persists the choice to the current
-// project's config file (if a project is loaded).
-export function handleCompileCheckChanged() {
-  currentCompileCheck = compileCheckEl?.checked ?? false;
-  lintResultsStale = true;
-  if (currentProjectDir) {
-    void saveCompileCheck(currentProjectDir, currentCompileCheck);
-  }
-}
-
-// Splits the additional script roots textarea's value into one directory
-// per non-blank line.
-export function scriptRootsFromUI(): string[] {
-  return (scriptRootsEl?.value ?? "")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-}
-
-// Reflects `roots` onto the additional script roots textarea, one per line.
-export function applyScriptRootsToUI(roots: string[]) {
-  if (scriptRootsEl) {
-    scriptRootsEl.value = roots.join("\n");
-  }
-}
-
-// Called when the additional script roots textarea changes: updates the
-// roots used to resolve cross-script lookups/the compiler's -i argument,
-// and persists them to the current project's config file (if a project is
-// loaded).
-export function handleScriptRootsChanged() {
-  currentScriptRoots = scriptRootsFromUI();
-  lintResultsStale = true;
-  if (currentProjectDir) {
-    void saveScriptRoots(currentProjectDir, currentScriptRoots);
-  }
-}
-
-// Splits the lookup script roots textarea's value into one directory
-// per non-blank line.
-export function lookupScriptRootsFromUI(): string[] {
-  return (lookupScriptRootsEl?.value ?? "")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
-}
-
-// Reflects `roots` onto the lookup script roots textarea, one per line.
-export function applyLookupScriptRootsToUI(roots: string[]) {
-  if (lookupScriptRootsEl) {
-    lookupScriptRootsEl.value = roots.join("\n");
-  }
-}
-
-// Called when the lookup script roots textarea changes: updates the
-// analysis-only fallback directories used to resolve cross-script lookups,
-// and persists them to the current project's config file (if a project is
-// loaded). These are never mixed into additional script roots, so they are
-// not linted and are ignored by conflicting-script-versions.
-export function handleLookupScriptRootsChanged() {
-  currentLookupScriptRoots = lookupScriptRootsFromUI();
-  lintResultsStale = true;
-  if (currentProjectDir) {
-    void saveLookupScriptRoots(currentProjectDir, currentLookupScriptRoots);
-  }
-}
-
 // Compiles the `.psc` file at `path` with the currently configured
 // PapyrusCompiler.exe path, reproducing the invocation Creation Kit
 // tooling uses to compile a single script out of its source directory.
@@ -1443,71 +677,43 @@ export async function compilePscFile(path: string): Promise<CompileOutcome> {
   });
 }
 
-// A bare `.psc` file conventionally lives two directories under the project
-// root (e.g. `Data/Scripts/Source/abc.psc` under `Data`), matching
-// papyrus-lint-cli's handling of a `.psc` path given directly (see its
-// `root_ancestor_levels`) so a project's `papyrus-lint.yaml` and
-// cross-script lookups are still found for a script dropped on its own,
-// without an `.achlist`.
-export function projectDirForPscPath(path: string): string {
-  return dirnameOf(dirnameOf(dirnameOf(path)));
-}
+// Fetches every configuration preset's identity/description — built-in
+// plus any user preset (see ConfigPreset) — for the config-picker dialog's
+// inline preset list — indexes rule tags and re-renders the current lint
+// results (see applyRuleTags below).
 
-// How long the finished progress bar stays visible before
-// scheduleHideLintProgress() hides it, so a run that finishes quickly
-// doesn't just flash on and off.
-const LINT_PROGRESS_HIDE_DELAY_MS = 2000;
-
-// Shows the progress bar reset to 0/`total`, for a drop about to start
-// parsing/linting `total` files.
-export function showLintProgress(total: number) {
-  if (lintProgressHideTimer !== null) {
-    clearTimeout(lintProgressHideTimer);
-    lintProgressHideTimer = null;
-  }
-  if (!lintProgressEl || !lintProgressLabelEl || !lintProgressBarEl) {
-    return;
-  }
-  if (total === 0) {
-    lintProgressEl.hidden = true;
-    return;
-  }
-  lintProgressBarEl.max = total;
-  lintProgressBarEl.value = 0;
-  lintProgressLabelEl.textContent = `Linting 0 / ${total} files`;
-  lintProgressEl.hidden = false;
-}
-
-export function updateLintProgress(processed: number, total: number) {
-  if (!lintProgressEl || !lintProgressLabelEl || !lintProgressBarEl) {
-    return;
-  }
-  lintProgressBarEl.value = processed;
-  lintProgressLabelEl.textContent = `Linting ${processed} / ${total} files`;
-}
-
-export function hideLintProgress() {
-  if (lintProgressHideTimer !== null) {
-    clearTimeout(lintProgressHideTimer);
-    lintProgressHideTimer = null;
-  }
-  if (lintProgressEl) {
-    lintProgressEl.hidden = true;
+// Fetches every built-in lint rule's tag metadata (kind(s), importance, and
+// whether it's auto-fixable; see papyrus_lints::tags) from the Rust
+// backend, for grouping/filtering the lint results by tag. Returns an
+// empty array if the lookup fails.
+export async function loadRuleTags(): Promise<RuleTagsInfo[]> {
+  try {
+    return (await invoke<RuleTagsInfo[]>("list_rule_tags")) ?? [];
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }
 
-// Hides the progress bar after a short grace period instead of instantly,
-// so the finished state stays visible long enough to register before it
-// disappears. A drop that starts again in the meantime (showLintProgress)
-// cancels this timer, so the bar isn't hidden out from under it.
-export function scheduleHideLintProgress(delayMs = LINT_PROGRESS_HIDE_DELAY_MS) {
-  if (lintProgressHideTimer !== null) {
-    clearTimeout(lintProgressHideTimer);
+// Indexes `tags` by rule id (for tagsForFinding/matchesTagFilters below),
+// rebuilds each tag kind's "Filter by rule" multiselect from the same list,
+// and re-renders the current lint results, so any already-listed findings
+// pick up their tag badges/filtering once the lookup resolves.
+export function applyRuleTags(tags: RuleTagsInfo[]) {
+  ruleTagsByRule = new Map(tags.map((info) => [info.rule, info]));
+  populateRuleFilterGroups(tags);
+  renderPscResults(currentPscOutcomes);
+}
+
+// Fetches the desktop app's version from the Rust backend, so it can be
+// shown to the user. Returns an empty string if the lookup fails.
+export async function loadAppVersion(): Promise<string> {
+  try {
+    return await invoke<string>("get_app_version");
+  } catch (error) {
+    console.error(error);
+    return "";
   }
-  lintProgressHideTimer = window.setTimeout(() => {
-    lintProgressHideTimer = null;
-    hideLintProgress();
-  }, delayMs);
 }
 
 export async function handleDroppedPaths(paths: string[]) {
@@ -1531,7 +737,7 @@ export async function handleDroppedPaths(paths: string[]) {
       renderPscResults(currentPscOutcomes);
 
       await loadProjectConfig(projectDir);
-      currentAchlistScriptRoots = scriptRootsForAchlist(entries);
+      setAchlistScriptRoots(scriptRootsForAchlist(entries));
       const pscEntries = entries.filter(isPscPath);
       showLintProgress(pscEntries.length);
       await parsePscFiles(pscEntries, (outcome) => {
@@ -1566,7 +772,7 @@ export async function handleDroppedPaths(paths: string[]) {
     renderPscResults(currentPscOutcomes);
 
     await loadProjectConfig(projectDirForPscPath(pscPath));
-    currentAchlistScriptRoots = [];
+    setAchlistScriptRoots([]);
     showLintProgress(1);
     await parsePscFiles([pscPath], (outcome) => {
       if (generation !== currentParseGeneration) {
@@ -1604,7 +810,7 @@ export async function handleDroppedPaths(paths: string[]) {
       renderPscResults(currentPscOutcomes);
 
       await loadProjectConfig(projectDir);
-      currentAchlistScriptRoots = scriptRootsForAchlist(entries);
+      setAchlistScriptRoots(scriptRootsForAchlist(entries));
       showLintProgress(entries.length);
       await parsePscFiles(entries, (outcome) => {
         if (generation !== currentParseGeneration) {
@@ -1666,48 +872,15 @@ window.addEventListener("DOMContentLoaded", () => {
   resultEl = document.querySelector("#achlist-result");
   resultTitleEl = document.querySelector("#achlist-result-title");
   resultListEl = document.querySelector("#achlist-result-list");
-  lintProgressEl = document.querySelector("#lint-progress");
-  lintProgressLabelEl = document.querySelector("#lint-progress-label");
-  lintProgressBarEl = document.querySelector("#lint-progress-bar");
-  configPathOverrideEl = document.querySelector("#config-path-override");
-  compilerPathEl = document.querySelector("#compiler-path");
-  compileCheckEl = document.querySelector("#compile-check");
-  scriptRootsEl = document.querySelector("#script-roots");
-  lookupScriptRootsEl = document.querySelector("#lookup-script-roots");
-  detectedScriptRootsEl = document.querySelector("#detected-script-roots");
-  usedConfigurationFileEl = document.querySelector("#used-configuration-file");
-  semicolonStyleEl = document.querySelector("#semicolon-style");
-  indentationStyleEl = document.querySelector("#indentation-style");
-  indentationWidthEl = document.querySelector("#indentation-width");
-  typeCasingStyleEl = document.querySelector("#type-casing-style");
-  identifierCasingStyleEl = document.querySelector("#identifier-casing-style");
-  namedArgumentsStyleEl = document.querySelector("#named-arguments-style");
-  magicNumbersModeEl = document.querySelector("#magic-numbers-mode");
-  cyclomaticComplexityWarningEl = document.querySelector("#cyclomatic-complexity-warning");
-  cyclomaticComplexityErrorEl = document.querySelector("#cyclomatic-complexity-error");
-  minWaitIntervalEl = document.querySelector("#min-wait-interval");
-  failOnWarningEl = document.querySelector("#fail-on-warning");
-  failOnInfoEl = document.querySelector("#fail-on-info");
-  boolLikeIntEl = document.querySelector("#bool-like-int");
-  assumeAutoPropertiesFilledEl = document.querySelector("#assume-auto-properties-filled");
-  ruleEls = Object.fromEntries(
-    RULE_KEYS.map((key) => [key, document.querySelector<HTMLInputElement>(`#rule-${key}`)]),
-  ) as Partial<Record<keyof LintRules, HTMLInputElement>>;
+  themeSelectEl = document.querySelector("#theme-select");
+
   bindPresets();
   bindCodeViewer();
   bindLiveEdit();
   bindResultsList();
-
-  themeSelectEl = document.querySelector("#theme-select");
-  settingsFieldsetEl = document.querySelector("#settings-fieldset");
-  settingsLockedNoticeEl = document.querySelector("#settings-locked-notice");
-  // No project's configuration is loaded yet at startup, so the Settings
-  // tab starts locked (see setSettingsLocked); the markup itself also
-  // starts with the wrapping fieldset disabled, so this just keeps the
-  // notice paragraph in sync with it from the start. It stays locked until
-  // the user actually drops something this session and loadProjectConfig
-  // unlocks it - the app never restores a previous session's project.
-  setSettingsLocked(true);
+  bindProjectSettings();
+  bindConfigSettings();
+  bindLintProgress();
 
   const initialTheme = loadStoredTheme();
   if (themeSelectEl) {
@@ -1719,34 +892,6 @@ window.addEventListener("DOMContentLoaded", () => {
     storeTheme(theme);
     applyTheme(theme);
   });
-
-  configPathOverrideEl?.addEventListener("change", handleConfigPathOverrideChanged);
-  compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
-  compileCheckEl?.addEventListener("change", handleCompileCheckChanged);
-  scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);
-  lookupScriptRootsEl?.addEventListener("change", handleLookupScriptRootsChanged);
-  semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
-  indentationStyleEl?.addEventListener("change", () => {
-    if (indentationWidthEl) {
-      indentationWidthEl.disabled = indentationStyleEl?.value !== "spaces";
-    }
-    handleLintConfigChanged();
-  });
-  indentationWidthEl?.addEventListener("change", handleLintConfigChanged);
-  typeCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
-  identifierCasingStyleEl?.addEventListener("change", handleLintConfigChanged);
-  namedArgumentsStyleEl?.addEventListener("change", handleLintConfigChanged);
-  magicNumbersModeEl?.addEventListener("change", handleLintConfigChanged);
-  cyclomaticComplexityWarningEl?.addEventListener("change", handleLintConfigChanged);
-  cyclomaticComplexityErrorEl?.addEventListener("change", handleLintConfigChanged);
-  minWaitIntervalEl?.addEventListener("change", handleLintConfigChanged);
-  failOnWarningEl?.addEventListener("change", handleLintConfigChanged);
-  failOnInfoEl?.addEventListener("change", handleLintConfigChanged);
-  boolLikeIntEl?.addEventListener("change", handleLintConfigChanged);
-  assumeAutoPropertiesFilledEl?.addEventListener("change", handleLintConfigChanged);
-  for (const key of RULE_KEYS) {
-    ruleEls[key]?.addEventListener("change", handleLintConfigChanged);
-  }
 
   for (const id of TAB_IDS) {
     const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);
