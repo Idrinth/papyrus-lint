@@ -21,4 +21,4 @@ rayon = "1.12.0"
 
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }
-serde_yaml = "0.9"
+serde_norway = "0.9"

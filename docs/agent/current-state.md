@@ -576,7 +576,7 @@ file next to the running executable (`config::executable_dir`, backed by
 `std::env::current_exe()`) and, if one exists, layers it over the selected
 preset's own YAML instead of using the preset alone: any key it sets
 overrides the preset, any key it omits still falls back to the preset.
-This is a recursive per-key merge over `serde_yaml::Value` (`deep_merge`)
+This is a recursive per-key merge over `serde_norway::Value` (`deep_merge`)
 rather than serde's own `#[serde(default)]` handling, since which
 "default" a key falls back to now depends on the chosen preset at runtime
 instead of being fixed at compile time; the merge covers `rules:`'s own

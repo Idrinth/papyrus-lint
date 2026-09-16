@@ -113,7 +113,7 @@ fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
             yaml_path.display()
         )
     });
-    let rules: Vec<RawForbiddenRule> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+    let rules: Vec<RawForbiddenRule> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
         panic!(
             "failed to parse forbidden-functions rules at {}: {err}",
             yaml_path.display()
@@ -159,7 +159,7 @@ fn compile_slow_functions(manifest_dir: &str, out_dir: &str) {
             yaml_path.display()
         )
     });
-    let rules: Vec<RawSlowRule> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+    let rules: Vec<RawSlowRule> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
         panic!(
             "failed to parse slow-functions rules at {}: {err}",
             yaml_path.display()
@@ -198,7 +198,7 @@ fn compile_native_methods(manifest_dir: &str, out_dir: &str) {
             yaml_path.display()
         )
     });
-    let rules: Vec<RawNativeMethod> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+    let rules: Vec<RawNativeMethod> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
         panic!(
             "failed to parse native-methods rules at {}: {err}",
             yaml_path.display()
@@ -237,7 +237,7 @@ fn compile_actor_values(manifest_dir: &str, out_dir: &str) {
             yaml_path.display()
         )
     });
-    let values: Vec<String> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+    let values: Vec<String> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
         panic!(
             "failed to parse actor-values rules at {}: {err}",
             yaml_path.display()
@@ -273,7 +273,7 @@ fn compile_update_event_pairs(manifest_dir: &str, out_dir: &str) {
             yaml_path.display()
         )
     });
-    let pairs: Vec<RawUpdateEventPair> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+    let pairs: Vec<RawUpdateEventPair> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
         panic!(
             "failed to parse update-event-handlers rules at {}: {err}",
             yaml_path.display()
@@ -312,7 +312,7 @@ fn compile_known_events(manifest_dir: &str, out_dir: &str) {
             yaml_path.display()
         )
     });
-    let events: Vec<RawKnownEvent> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+    let events: Vec<RawKnownEvent> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
         panic!(
             "failed to parse known-events rules at {}: {err}",
             yaml_path.display()

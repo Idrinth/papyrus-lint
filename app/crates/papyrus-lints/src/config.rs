@@ -634,7 +634,7 @@ impl Config {
 /// An error parsing a lint config file.
 #[derive(Debug)]
 pub enum ConfigError {
-    Yaml(serde_yaml::Error),
+    Yaml(serde_norway::Error),
 }
 
 impl fmt::Display for ConfigError {
@@ -647,8 +647,8 @@ impl fmt::Display for ConfigError {
 
 impl std::error::Error for ConfigError {}
 
-impl From<serde_yaml::Error> for ConfigError {
-    fn from(err: serde_yaml::Error) -> Self {
+impl From<serde_norway::Error> for ConfigError {
+    fn from(err: serde_norway::Error) -> Self {
         ConfigError::Yaml(err)
     }
 }
@@ -661,14 +661,14 @@ pub fn parse(yaml: &str) -> Result<Config, ConfigError> {
     if yaml.trim().is_empty() {
         return Ok(Config::default());
     }
-    Ok(serde_yaml::from_str(yaml)?)
+    Ok(serde_norway::from_str(yaml)?)
 }
 
 /// Serializes a [`Config`] back into the YAML document format read by
 /// [`parse`], so the desktop app can persist the formatting selected in
 /// its UI.
 pub fn to_yaml(config: &Config) -> Result<String, ConfigError> {
-    Ok(serde_yaml::to_string(config)?)
+    Ok(serde_norway::to_string(config)?)
 }
 
 #[cfg(test)]
