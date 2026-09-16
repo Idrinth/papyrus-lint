@@ -75,17 +75,20 @@ CI treats clippy warnings as errors.
 3. **Do not duplicate agent docs.** Edit `AGENTS.md` (this index) or a
    file under `docs/agent/`. `CLAUDE.md` must remain a pointer to this
    file, not a copy of it.
-4. **Lint descriptions have three consumers.** A README Implemented Lints
-   row is the source of truth. The same change must update the matching
-   entry in `docs/rules.json` (`definition` + `doc_slug`, and a shorter
-   `description` blurb matching `docs/nexuspage.bbcode`'s own style).
-   `pages/build.py` generates the website tables from the README, and
-   `.github/scripts/generate_nexuspage_tables.py` generates
-   `docs/nexuspage.bbcode`'s five lint tables from `docs/rules.json`, so
-   neither needs a manual lint-table edit; CI's `bbcode` job fails if
-   `docs/nexuspage.bbcode` drifts from `docs/rules.json`.
-   `app/crates/papyrus-lints/src/tags.rs`'s `RULE_TAGS` is also generated
-   from `docs/rules.json`, by `build.rs` — never edit `tags.rs` by hand.
+4. **Lint descriptions have two hand-edited consumers.** A README
+   Implemented Lints row is the source of truth. The same change must
+   update that rule's entry in `docs/rules.json` (`name`, `definition` +
+   `doc_slug`, a shorter `description` blurb matching
+   `docs/nexuspage.bbcode`'s own style, `tags`, `severity`, `fixable`,
+   `importance`, `category`). Everything else is generated from
+   `docs/rules.json`, not hand-edited: `pages/build.py` builds the website
+   tables from the README directly, so the site needs no manual lint-table
+   edit; `.github/scripts/generate_nexuspage_tables.py` builds
+   `docs/nexuspage.bbcode`'s five lint tables (CI's `bbcode` job fails if
+   it drifts — run it after editing `docs/rules.json`); and `build.rs`
+   compiles `app/crates/papyrus-lints`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`
+   (`src/registry.rs`) and `RULE_TAGS` (`src/tags.rs`) from it at build
+   time.
 5. **Match the file you are in.** Don't invent a new module layout, naming
    scheme, or comment style in a file that already has one.
 6. **Don't gold-plate.** A bug fix does not need a surrounding refactor.
@@ -97,22 +100,22 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
 
 1. `app/crates/papyrus-lints/src/<rule>.rs` — check (and optional repair)
    plus tests.
-2. `app/crates/papyrus-lints/src/lib.rs` — `pub mod`, `KNOWN_RULE_IDS`,
-   `lint_with_external_arguments_and_extra_diagnostics` dispatch, and
-   `FIXABLE_RULE_IDS` / repair dispatch if it auto-fixes.
+2. `app/crates/papyrus-lints/src/lib.rs` — `pub mod`; `src/registry.rs`'s
+   `collect_diagnostics` dispatch, and `apply_repairs` if it auto-fixes.
 3. `app/crates/papyrus-lints/src/config.rs` — field on `Rules` and its
    `Default` (and the rustdoc yaml example at the top of the file).
-4. `docs/rules.json` — new entry: `id` (the rule id), `name` (the README
-   row title), `doc_slug` (that title, slugified), `definition` (verbatim
-   README cell), `tags`, `importance`, `severity`, `fixable`, `category`
-   (one of `Formatting`, `Performance`, `Reliability`, `Bugprone`, `Other`,
+4. `README.md` Implemented Lints table.
+5. `docs/rules.json` — a new entry: `id`, `name`, `doc_slug` (from the
+   README row title, slugified), `definition` (verbatim README cell),
+   `tags`, `importance`, `severity`, `fixable`, `category` (one of
+   `Formatting`, `Performance`, `Reliability`, `Bugprone`, `Other`,
    matching the README `###` section the row lives under), and a short
-   `description` blurb matching `docs/nexuspage.bbcode`'s style. `build.rs`
-   compiles this into `app/crates/papyrus-lints/src/tags.rs`'s `RULE_TAGS`
-   at build time. Run `.github/scripts/generate_nexuspage_tables.py
-   docs/rules.json docs/nexuspage.bbcode` afterwards to regenerate its
-   lint tables; CI's `bbcode` job fails if that's skipped.
-5. `README.md` Implemented Lints table.
+   `description` blurb matching `docs/nexuspage.bbcode`'s style. Run
+   `.github/scripts/generate_nexuspage_tables.py docs/rules.json
+   docs/nexuspage.bbcode` afterwards to regenerate its lint tables; CI's
+   `bbcode` job fails if that's skipped. `build.rs` generates
+   `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and `tags.rs`'s
+   `RULE_TAGS` from this file at build time — don't hand-edit those.
 
 Rules should inspect source/tokens so they still run on scripts that
 don't parse. Configurable behavior goes on `&papyrus_lints::Config`, not
@@ -125,9 +128,11 @@ If the rule introduces a new *kind* keyword (not `style` /
 
 ## Docs sync (humans and AI)
 
-- README lint tables → `docs/rules.json` (rule 4). `tags.rs` and
-  `docs/nexuspage.bbcode`'s own lint tables are both generated from
-  `docs/rules.json`, not hand-edited.
+- README lint tables → `docs/rules.json` (rule 4). `docs/rules.json` →
+  `docs/nexuspage.bbcode`'s lint tables (via
+  `.github/scripts/generate_nexuspage_tables.py`) and `papyrus-lints`'s
+  `registry.rs`/`tags.rs` (via `build.rs`) — all generated, never
+  hand-edited.
 - README CLI usage / default config → `docs/nexuspage.bbcode` CLI or
   configuration section (hand-edited; not covered by the generator
   above). Other README edits do not need a Nexus update.
