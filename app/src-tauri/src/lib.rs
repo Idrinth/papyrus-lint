@@ -3018,6 +3018,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
         )
@@ -3031,6 +3032,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             vec![extra_root],
+            Vec::new(),
             String::new(),
             false,
         )
@@ -3061,6 +3063,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             vec![extra.path().to_string_lossy().into_owned()],
+            Vec::new(),
             String::new(),
             false,
         )
@@ -3092,6 +3095,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
             vec![extra.path().to_string_lossy().into_owned()],
+            Vec::new(),
             String::new(),
             false,
         )
@@ -3120,6 +3124,7 @@ mod tests {
             root.clone(),
             papyrus_lints::Config::default(),
             Vec::new(),
+            Vec::new(),
             String::new(),
             false,
             vec![
@@ -3138,6 +3143,7 @@ mod tests {
             path_string,
             root,
             papyrus_lints::Config::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -3168,6 +3174,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
+            Vec::new(),
             Vec::new(),
             String::new(),
             false,
@@ -3203,6 +3210,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
             Vec::new(),
             compiler_path.to_string_lossy().into_owned(),
             true,
