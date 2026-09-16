@@ -499,6 +499,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::High,
     },
+    RuleTags {
+        rule: crate::float_equality::RULE,
+        description: "Flags, as an `[info]`, a direct `==`/`!=` comparison between two `Float` values, since floating-point rounding error can make two values that are conceptually the same compare unequal (or vice versa) at runtime. Only comparisons whose operand types can be determined locally are checked, the same restriction \"Strict numeric type check\" places on its own. Disabled by default, since a project may deliberately compare two `Float` values it knows are computed the exact same way; opt in with `rules.float_equality`.",
+        kinds: &["correctness"],
+        importance: Importance::Medium,
+    },
 ];
 
 #[cfg(test)]
