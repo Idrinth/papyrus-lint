@@ -829,6 +829,55 @@ class CheckSiteTest(unittest.TestCase):
 
         self.assertEqual(problems, [])
 
+    def test_detects_interactive_elements_without_accessible_names(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                """<html lang="en"><head><title>Controls</title></head><body>
+                <a href="target.html"></a><button id="submit"></button>
+                <input type="text" name="query"><select id="choice"><option></option></select>
+                <textarea></textarea><input type="hidden">
+                </body></html>""",
+                encoding="utf-8",
+            )
+            (dist / "target.html").write_text(
+                '<html lang="en"><head><title>Target</title></head><body></body></html>',
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(
+            problems,
+            [
+                "index.html: document error: interactive element '<a> (target.html)' has no accessible name",
+                "index.html: document error: interactive element '<button#submit>' has no accessible name",
+                "index.html: document error: interactive element '<input> (query)' has no accessible name",
+                "index.html: document error: interactive element '<select#choice>' has no accessible name",
+                "index.html: document error: interactive element '<textarea>' has no accessible name",
+            ],
+        )
+
+    def test_accepts_the_supported_sources_of_accessible_names(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            dist = Path(directory)
+            (dist / "index.html").write_text(
+                """<html lang="en"><head><title>Controls</title></head><body>
+                <a href="#"><img alt="Home"></a>
+                <button aria-label="Close"></button>
+                <span id="search-name">Search</span><input aria-labelledby="search-name">
+                <label>Theme <select><option>Dark</option></select></label>
+                <label for="notes">Notes</label><textarea id="notes"></textarea>
+                <input type="submit" value="Save"><input type="image" alt="Upload">
+                <button title="More options"></button>
+                </body></html>""",
+                encoding="utf-8",
+            )
+
+            problems = browser_check.check_site(dist)
+
+        self.assertEqual(problems, [])
+
 
 class MainTest(unittest.TestCase):
     def test_script_entry_point_exits_with_the_main_result(self) -> None:
