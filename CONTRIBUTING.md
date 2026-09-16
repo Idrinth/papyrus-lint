@@ -18,9 +18,14 @@ expected of a pull request.
 │   │   ├── code-viewer.ts       # Code viewer dialog: open/close, view, line fix/ignore
 │   │   ├── results-list.ts      # Lint results list, filters, mass-fix, export
 │   │   ├── live-edit.ts         # Code viewer edit mode: live lint, autocomplete, save
+│   │   ├── path.ts              # Path/project-root resolution helpers (pure functions)
+│   │   ├── progress.ts          # Lint results progress bar
+│   │   ├── config.ts            # LintConfig: types, load/save, Settings tab formatting UI
+│   │   ├── project.ts           # Project dir/compiler/script roots: load/save, Settings UI
 │   │   ├── highlight.ts         # Standalone Papyrus syntax highlighter for the
 │   │   │                        # code viewer dialog
-│   │   ├── main.test.ts         # Vitest unit tests for main.ts
+│   │   ├── main.test.ts         # Vitest unit tests for main.ts and its path/progress/
+│   │   │                        # config/project modules
 │   │   ├── presets.test.ts      # Vitest unit tests for presets.ts
 │   │   ├── code-viewer.test.ts  # Vitest unit tests for code-viewer.ts
 │   │   ├── results-list.test.ts # Vitest unit tests for results-list.ts
