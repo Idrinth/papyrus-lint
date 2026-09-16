@@ -53,29 +53,20 @@ pub(crate) fn fix_file(
     // `_with_external_arguments` repair family (see that module's own
     // docs).
     let mut shared = SharedFunctionTable(function_table);
-    let repaired = match tag_filter {
-        Some(tag) => papyrus_lints::repair_filtered_by_tag_with_external_arguments(
-            &source,
-            lint_config,
-            &mut shared,
-            Some(tag),
-        ),
-        None => papyrus_lints::repair_filtered_with_external_arguments(
-            &source,
-            lint_config,
-            &mut shared,
-            rule_filter,
-        ),
-    };
-    let repaired = match target_line {
-        Some(line) => papyrus_lints::restrict_to_line(&source, &repaired, line).ok_or_else(|| {
-            format!(
-                "error: --line can't be applied to {} because a fix changes the file's line count (e.g. property-sorting); use --type to restrict to a line-preserving fix, or omit --line",
-                script_path.display()
-            )
-        })?,
-        None => repaired,
-    };
+    let repaired = papyrus_lints::repair_selected_with_external_arguments(
+        &source,
+        lint_config,
+        &mut shared,
+        rule_filter,
+        tag_filter,
+        target_line,
+    )
+    .ok_or_else(|| {
+        format!(
+            "error: --line can't be applied to {} because a fix changes the file's line count (e.g. property-sorting); use --type to restrict to a line-preserving fix, or omit --line",
+            script_path.display()
+        )
+    })?;
 
     let mut plain_text: Vec<u8> = Vec::new();
     let mut diff = None;
