@@ -177,7 +177,15 @@
   with groups and their entries sorted alphabetically, updated in place on
   subsequent pushes, as a PR comment (and to the job's step summary).
   Comment posting is best-effort (`continue-on-error`) since forked PRs get
-  a read-only `GITHUB_TOKEN`.
+  a read-only `GITHUB_TOKEN`. Each row also carries an "Est. CRAP" column:
+  none of this project's coverage tools measure real cyclomatic complexity,
+  so `crap_estimate()` substitutes each module's average executable lines
+  per function (from lcov's `FNF`/`LF` fields) for `comp(m)` in the
+  standard CRAP formula (`comp(m)^2 * (1 - cov(m))^3 + comp(m)`) against
+  its line coverage — an estimate, not a textbook CRAP score, and called
+  out as such in the comment's footnote. A leaf report with no `FNF` data
+  (or that's missing entirely) renders `n/a` there like the rest of its
+  row.
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
