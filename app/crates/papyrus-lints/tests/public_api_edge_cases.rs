@@ -212,6 +212,11 @@ fn opt_in_rules_are_dispatched_by_the_public_lint_api() {
             |config| config.rules.default_property_value = true,
         ),
         (
+            "unknown-actor-value",
+            "ScriptName Example\n\nFunction Test(Actor target)\n    target.GetActorValue(\"Helth\")\nEndFunction\n",
+            |config| config.rules.unknown_actor_value = true,
+        ),
+        (
             "unused-disable",
             "ScriptName Example\n\nFunction Test() ; @disable comma-spacing\nEndFunction\n",
             |config| config.rules.unused_disable = true,
@@ -251,6 +256,32 @@ fn default_property_value_is_opt_in_and_honors_line_disable_comments() {
     assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 1));
     assert!(diagnostics[0].message.contains("Count"));
     assert_eq!(diagnostics[0].level(), "warning");
+}
+
+#[test]
+fn unknown_actor_value_is_opt_in_and_honors_file_disable_comments() {
+    let source = "ScriptName Example ; @disable-file UNKNOWN-ACTOR-VALUE\n\nFunction Test(Actor target)\n    target.GetActorValue(\"Helth\")\nEndFunction\n";
+
+    assert!(lint(source, &Config::default())
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "unknown-actor-value"));
+
+    let mut config = Config::default();
+    config.rules.unknown_actor_value = true;
+    assert!(lint(source, &config)
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "unknown-actor-value"));
+
+    let source = source.replace(" ; @disable-file UNKNOWN-ACTOR-VALUE", "");
+    let diagnostics: Vec<_> = lint(&source, &config)
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "unknown-actor-value")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 12));
+    assert_eq!(diagnostics[0].level(), "warning");
+    assert!(diagnostics[0].message.contains("Helth"));
 }
 
 #[test]
@@ -404,6 +435,10 @@ fn every_filtered_fixer_respects_its_deserialized_rule_switch() {
         ("operator-spacing", "If Left==Right\nEndIf\n"),
         ("type-casing", "ScriptName myScript\n"),
         ("trailing-whitespace", "Call()  \n"),
+        (
+            "global-variable-increment",
+            "ScriptName Example\n\nFunction Test(GlobalVariable value)\n    value.SetValue(value.GetValue() + 1.0)\nEndFunction\n",
+        ),
     ];
 
     for (rule, source) in cases {
