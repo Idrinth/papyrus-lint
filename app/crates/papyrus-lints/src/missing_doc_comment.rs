@@ -73,6 +73,18 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     diagnostics
 }
 
+/// The `{ ... }` documentation comment immediately following the
+/// declaration that starts on `line` (1-indexed), if any. Placement
+/// matches [`check`]: after the header's last physical line
+/// (backslash-continued headers included). Returns the comment's inner
+/// text with the surrounding `{`/`}` stripped and leading/trailing
+/// whitespace trimmed; multi-line comments keep their inner newlines.
+/// Empty `{ }` comments (which still satisfy [`check`]) yield `None`,
+/// since there's nothing to show a tooltip.
+pub fn documentation_comment(source: &str, tokens: &[Token], line: usize) -> Option<String> {
+    brace_comment_starting_on_line(source, last_physical_line(line, tokens) + 1)
+}
+
 /// Every function declared directly on the script, plus every function
 /// declared in each of its states.
 fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
@@ -133,9 +145,59 @@ fn last_physical_line(line: usize, tokens: &[Token]) -> usize {
         .map_or(line, |token| token.line)
 }
 
+/// Inner text of a `{ ... }` comment whose opening `{` is the first
+/// non-whitespace character on 1-indexed `line`. Mirrors the lexer's
+/// `skip_brace_comment`: the comment runs to the first `}`, and may span
+/// further physical lines. Returns `None` when that line doesn't open a
+/// comment, the comment is unterminated, or its inner text is empty.
+fn brace_comment_starting_on_line(source: &str, line: usize) -> Option<String> {
+    if line == 0 {
+        return None;
+    }
+    let mut current_line = 1usize;
+    let mut line_start = 0usize;
+    for (idx, ch) in source.char_indices() {
+        if current_line == line {
+            break;
+        }
+        if ch == '\n' {
+            current_line += 1;
+            line_start = idx + 1;
+        }
+    }
+    if current_line != line {
+        return None;
+    }
+    let rest = &source[line_start..];
+    let trimmed = rest.trim_start_matches([' ', '\t', '\r']);
+    let skipped = rest.len() - trimmed.len();
+    if rest[..skipped].contains('\n') {
+        return None;
+    }
+    let mut chars = trimmed.chars();
+    if chars.next() != Some('{') {
+        return None;
+    }
+    let inner_with_tail = chars.as_str();
+    let end = inner_with_tail.find('}')?;
+    let inner = inner_with_tail[..end]
+        .replace("\r\n", "\n")
+        .replace('\r', "\n");
+    let text = inner.trim();
+    if text.is_empty() {
+        None
+    } else {
+        Some(text.to_string())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn tokens_of(source: &str) -> Vec<Token> {
+        papyrus_parser::tokenize(source).expect("test source should tokenize")
+    }
 
     #[test]
     fn flags_script_header_with_no_doc_comment() {
@@ -276,5 +338,58 @@ mod tests {
         assert!(diagnostics
             .iter()
             .any(|d| d.message.contains("Property `MyProperty`")));
+    }
+
+    #[test]
+    fn documentation_comment_returns_the_inner_text() {
+        let source =
+            "ScriptName Example\n{Documentation for my cool script here!}\n\nFunction Test()\nEndFunction\n";
+        let tokens = tokens_of(source);
+
+        assert_eq!(
+            documentation_comment(source, &tokens, 1).as_deref(),
+            Some("Documentation for my cool script here!")
+        );
+    }
+
+    #[test]
+    fn documentation_comment_keeps_inner_newlines_of_a_multi_line_comment() {
+        let source =
+            "ScriptName Example\n{Documentation for my cool script here!\nI can even use more than one line...}\n";
+        let tokens = tokens_of(source);
+
+        assert_eq!(
+            documentation_comment(source, &tokens, 1).as_deref(),
+            Some("Documentation for my cool script here!\nI can even use more than one line...")
+        );
+    }
+
+    #[test]
+    fn documentation_comment_follows_a_backslash_continued_header() {
+        let source =
+            "ScriptName Example\n{doc}\n\nFunction DoThing(Int a, \\\n    Int b)\n{Explains what DoThing does}\nEndFunction\n";
+        let tokens = tokens_of(source);
+
+        assert_eq!(
+            documentation_comment(source, &tokens, 4).as_deref(),
+            Some("Explains what DoThing does")
+        );
+    }
+
+    #[test]
+    fn documentation_comment_is_none_when_the_declaration_has_no_comment() {
+        let source = "ScriptName Example\n\nFunction DoThing()\nEndFunction\n";
+        let tokens = tokens_of(source);
+
+        assert_eq!(documentation_comment(source, &tokens, 1), None);
+        assert_eq!(documentation_comment(source, &tokens, 3), None);
+    }
+
+    #[test]
+    fn documentation_comment_is_none_for_an_empty_brace_comment() {
+        let source = "ScriptName Example\n{   }\n";
+        let tokens = tokens_of(source);
+
+        assert_eq!(documentation_comment(source, &tokens, 1), None);
     }
 }

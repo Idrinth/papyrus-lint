@@ -21,7 +21,10 @@ use papyrus_parser::ast::{FunctionDecl, PropertyDecl, Script, TypeName};
 
 use crate::source_encoding::read_psc_source;
 
-use crate::script_locator::{find_psc_file, find_psc_file_in_index, ScriptIndex};
+use crate::script_locator::{
+    build_lookup_index, find_psc_file, find_psc_file_in_index, find_psc_file_in_lookup_roots,
+    ScriptIndex,
+};
 
 /// The parameters (name and type) and return type of a single function, as
 /// declared on a script.
@@ -41,10 +44,16 @@ pub struct FunctionSignature {
     /// every ordinary call site resolves against per the language's state
     /// machine).
     pub state: Option<String>,
+    /// Inner text of the `{ ... }` documentation comment on the line
+    /// immediately after this function's header, if any. Placement matches
+    /// `papyrus_lints::missing_doc_comment` (including backslash-continued
+    /// headers). `None` when the declaration has no such comment, or the
+    /// comment is empty. Carried through to editor autocompletion / hover.
+    pub doc: Option<String>,
 }
 
 impl FunctionSignature {
-    fn from_decl(decl: &FunctionDecl) -> Self {
+    fn from_decl(decl: &FunctionDecl, doc: Option<String>) -> Self {
         FunctionSignature {
             name: decl.name.clone(),
             params: decl
@@ -60,6 +69,7 @@ impl FunctionSignature {
             is_native: decl.is_native,
             is_event: decl.is_event,
             state: decl.state.clone(),
+            doc,
         }
     }
 }
@@ -69,13 +79,18 @@ impl FunctionSignature {
 pub struct PropertySignature {
     pub name: String,
     pub type_name: TypeName,
+    /// Inner text of the `{ ... }` documentation comment on the line
+    /// immediately after this property's header, if any. Same placement
+    /// rules as [`FunctionSignature::doc`].
+    pub doc: Option<String>,
 }
 
 impl PropertySignature {
-    fn from_decl(decl: &PropertyDecl) -> Self {
+    fn from_decl(decl: &PropertyDecl, doc: Option<String>) -> Self {
         PropertySignature {
             name: decl.name.clone(),
             type_name: decl.type_name.clone(),
+            doc,
         }
     }
 }
@@ -113,7 +128,13 @@ struct ScriptFunctions {
 }
 
 impl ScriptFunctions {
-    fn from_script(script: &Script) -> Self {
+    fn from_script(script: &Script, source: &str) -> Self {
+        let tokens = papyrus_parser::tokenize(source).ok();
+        let doc_for = |line: usize| {
+            tokens.as_ref().and_then(|tokens| {
+                papyrus_lints::missing_doc_comment::documentation_comment(source, tokens, line)
+            })
+        };
         let mut states: HashMap<String, bool> = HashMap::new();
         for state in &script.states {
             let is_auto = states
@@ -124,7 +145,12 @@ impl ScriptFunctions {
         let mut functions: HashMap<String, FunctionSignature> = script
             .functions
             .iter()
-            .map(|f| (f.name.to_ascii_lowercase(), FunctionSignature::from_decl(f)))
+            .map(|f| {
+                (
+                    f.name.to_ascii_lowercase(),
+                    FunctionSignature::from_decl(f, doc_for(f.line)),
+                )
+            })
             .collect();
         // A function declared only inside a `State` block (with no
         // matching declaration in the empty state) is still a real,
@@ -138,13 +164,18 @@ impl ScriptFunctions {
             for f in &state.functions {
                 functions
                     .entry(f.name.to_ascii_lowercase())
-                    .or_insert_with(|| FunctionSignature::from_decl(f));
+                    .or_insert_with(|| FunctionSignature::from_decl(f, doc_for(f.line)));
             }
         }
         let properties = script
             .properties
             .iter()
-            .map(|p| (p.name.to_ascii_lowercase(), PropertySignature::from_decl(p)))
+            .map(|p| {
+                (
+                    p.name.to_ascii_lowercase(),
+                    PropertySignature::from_decl(p, doc_for(p.line)),
+                )
+            })
             .collect();
 
         ScriptFunctions {
@@ -167,6 +198,10 @@ impl ScriptFunctions {
 pub struct FunctionTable {
     root: PathBuf,
     additional_roots: Vec<String>,
+    /// Analysis-only fallback directories, searched after `root` /
+    /// `additional_roots` (and after `known_scripts` in strict-scope mode).
+    /// Never used for collision checks.
+    lookup_roots: Vec<String>,
     /// When `Some`, resolution is restricted to exactly the scripts
     /// registered here by name (lowercased file stem -> path), plus native
     /// singleton globals (see [`Self::script_exists`]/[`Self::ensure_loaded`])
@@ -177,11 +212,16 @@ pub struct FunctionTable {
     /// Populated wholesale by [`Self::with_known_scripts`] from an explicit
     /// list of paths (e.g. an `.achlist`'s own entries). `None` (the
     /// default) preserves ordinary directory-based resolution instead.
+    /// [`Self::with_lookup_roots`] is still consulted as a last-resort
+    /// fallback, so vanilla game scripts can resolve without being listed.
     known_scripts: Option<HashMap<String, PathBuf>>,
     /// Snapshot of ordinary directory-based resolution, when the caller has
     /// already scanned the search roots. Unlike `known_scripts`, this does
     /// not change resolution scope; it only avoids repeating directory reads.
     script_index: Option<Arc<ScriptIndex>>,
+    /// Snapshot of analysis-only lookup directories (see
+    /// [`Self::with_lookup_roots`]), built the same way as `script_index`.
+    lookup_index: Option<Arc<ScriptIndex>>,
     scripts: HashMap<String, Option<ScriptFunctions>>,
 }
 
@@ -202,8 +242,10 @@ impl FunctionTable {
         FunctionTable {
             root,
             additional_roots: Vec::new(),
+            lookup_roots: Vec::new(),
             known_scripts: None,
             script_index: None,
+            lookup_index: None,
             scripts: HashMap::new(),
         }
     }
@@ -215,10 +257,24 @@ impl FunctionTable {
         FunctionTable {
             root,
             additional_roots,
+            lookup_roots: Vec::new(),
             known_scripts: None,
             script_index: None,
+            lookup_index: None,
             scripts: HashMap::new(),
         }
+    }
+
+    /// Analysis-only fallback directories, searched after the project's own
+    /// roots (and after `known_scripts` in strict-scope mode). Scripts found
+    /// only here are never linted and are never considered by
+    /// `conflicting_script_versions`.
+    pub fn with_lookup_roots(mut self, lookup_roots: Vec<String>) -> Self {
+        if !lookup_roots.is_empty() {
+            self.lookup_index = Some(Arc::new(build_lookup_index(&self.root, &lookup_roots)));
+        }
+        self.lookup_roots = lookup_roots;
+        self
     }
 
     /// Switches this table into known-scripts mode, where only `paths` (by
@@ -233,7 +289,8 @@ impl FunctionTable {
     /// works, without treating their parent directories as search roots
     /// (which would also expose every other file in them, including one
     /// under the conventional `scripts/source`/`source/scripts` layout).
-    /// When two given paths share a file stem, the first one wins, matching
+    /// [`Self::with_lookup_roots`] is still consulted afterwards, so a
+    /// vanilla game script can resolve without being listed. When two given paths share a file stem, the first one wins, matching
     /// a directory search's own first-match-wins order; a real conflict
     /// between such paths is instead reported by
     /// [`crate::script_locator::conflicting_script_versions_among`].
@@ -530,27 +587,43 @@ impl FunctionTable {
     /// like `MyMissingScript.DoThing()`.
     pub fn script_exists(&mut self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
-        let found = match &self.known_scripts {
-            Some(known) => known.contains_key(&name_lower),
+        self.resolve_script_path(&name_lower).is_some()
+            || crate::native_globals::is_known(&name_lower)
+    }
+
+    fn resolve_script_path(&self, name_lower: &str) -> Option<PathBuf> {
+        let primary = match &self.known_scripts {
+            Some(known) => known.get(&name_lower.to_ascii_lowercase()).cloned(),
             None => match &self.script_index {
-                Some(index) => find_psc_file_in_index(index, &name_lower).is_some(),
-                None => find_psc_file(&self.root, &name_lower, &self.additional_roots).is_some(),
+                Some(index) => find_psc_file_in_index(index, name_lower),
+                None => find_psc_file(&self.root, name_lower, &self.additional_roots),
             },
         };
-        found || crate::native_globals::is_known(&name_lower)
+        primary.or_else(|| self.resolve_lookup_script_path(name_lower))
+    }
+
+    fn resolve_lookup_script_path(&self, name_lower: &str) -> Option<PathBuf> {
+        if let Some(index) = &self.lookup_index {
+            return find_psc_file_in_index(index, name_lower);
+        }
+        if self.lookup_roots.is_empty() {
+            return None;
+        }
+        find_psc_file_in_lookup_roots(&self.root, name_lower, &self.lookup_roots)
     }
 
     /// Parses and caches the script named `name_lower`, if it hasn't been
     /// already. In known-scripts mode (see [`Self::with_known_scripts`]),
-    /// only an O(1) lookup against the registered map is ever done; a name
-    /// not registered there simply doesn't resolve, without falling back to
-    /// [`find_psc_file`] at all. Otherwise, `name_lower` is looked up with
-    /// [`find_psc_file`] as before `with_known_scripts` existed. Reuses the
-    /// on-disk [`crate::ast_cache`] when the script's content and
-    /// modification time haven't changed since it was last parsed, so
-    /// repeatedly resolving the same cross-script lookup (across separate
-    /// CLI invocations, or separate desktop app commands) skips re-parsing
-    /// it.
+    /// only an O(1) lookup against the registered map is ever done against
+    /// the project's own scripts; a name not registered there still falls
+    /// back to [`Self::with_lookup_roots`] so vanilla game scripts can
+    /// resolve without being listed. Otherwise, `name_lower` is looked up
+    /// with [`find_psc_file`] as before `with_known_scripts` existed, then
+    /// lookup roots. Reuses the on-disk [`crate::ast_cache`] when the
+    /// script's content and modification time haven't changed since it was
+    /// last parsed, so repeatedly resolving the same cross-script lookup
+    /// (across separate CLI invocations, or separate desktop app commands)
+    /// skips re-parsing it.
     fn ensure_loaded(&mut self, name_lower: &str) {
         if self.scripts.contains_key(name_lower) {
             return;
@@ -563,28 +636,22 @@ impl FunctionTable {
         // that by lowercasing internally before matching a directory entry,
         // so the known-scripts map (keyed by an already-lowercased stem)
         // has to do the same explicitly here.
-        let resolved_path = match &self.known_scripts {
-            Some(known) => known.get(&name_lower.to_ascii_lowercase()).cloned(),
-            None => match &self.script_index {
-                Some(index) => find_psc_file_in_index(index, name_lower),
-                None => find_psc_file(&self.root, name_lower, &self.additional_roots),
-            },
-        };
+        let resolved_path = self.resolve_script_path(name_lower);
 
-        let script = resolved_path
-            .and_then(|path| {
-                let source = read_psc_source(&path).ok()?;
-                if let Some(cached) = crate::ast_cache::get(&path, &source) {
-                    return Some(cached);
-                }
+        let script = resolved_path.and_then(|path| {
+            let source = read_psc_source(&path).ok()?;
+            let parsed = if let Some(cached) = crate::ast_cache::get(&path, &source) {
+                cached
+            } else {
                 let parsed = papyrus_parser::parse(&source).ok()?;
                 crate::ast_cache::put(&path, &source, &parsed);
                 if let Ok(tokens) = papyrus_parser::tokenize(&source) {
                     crate::ast_cache::put_tokens(&path, &source, &tokens);
                 }
-                Some(parsed)
-            })
-            .map(|script| ScriptFunctions::from_script(&script));
+                parsed
+            };
+            Some(ScriptFunctions::from_script(&parsed, &source))
+        });
 
         self.scripts.insert(name_lower.to_string(), script);
     }
@@ -1040,6 +1107,73 @@ mod tests {
             .lookup_function("Shared", "DoThing")
             .expect("function should be found via the additional root");
         assert_eq!(signature.name, "DoThing");
+    }
+
+    #[test]
+    fn with_lookup_roots_resolves_a_script_as_a_fallback() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+        fs::write(
+            vanilla.path().join("Actor.psc"),
+            "ScriptName Actor\n\nFunction DamageActorValue(String av, Float value)\nEndFunction\n",
+        )
+        .expect("failed to write vanilla script");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf())
+            .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+
+        let signature = table
+            .lookup_function("Actor", "DamageActorValue")
+            .expect("function should be found via the lookup root");
+        assert_eq!(signature.name, "DamageActorValue");
+        assert!(table.script_exists("Actor"));
+    }
+
+    #[test]
+    fn lookup_roots_do_not_override_a_project_script_of_the_same_name() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source = root.path().join("scripts/source");
+        fs::create_dir_all(&source).expect("failed to create source dir");
+        fs::write(
+            source.join("Actor.psc"),
+            "ScriptName Actor\n\nFunction FromProject()\nEndFunction\n",
+        )
+        .expect("failed to write project script");
+        let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+        fs::write(
+            vanilla.path().join("Actor.psc"),
+            "ScriptName Actor\n\nFunction FromVanilla()\nEndFunction\n",
+        )
+        .expect("failed to write vanilla script");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf())
+            .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+
+        assert!(table.lookup_function("Actor", "FromProject").is_some());
+        assert!(table.lookup_function("Actor", "FromVanilla").is_none());
+    }
+
+    #[test]
+    fn with_known_scripts_still_falls_back_to_lookup_roots() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let listed_dir = tempfile::tempdir().expect("failed to create temp dir");
+        let listed_path = listed_dir.path().join("Listed.psc");
+        fs::write(&listed_path, "ScriptName Listed\n").expect("failed to write listed script");
+        let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+        fs::write(
+            vanilla.path().join("Actor.psc"),
+            "ScriptName Actor\n\nFunction DamageActorValue(String av, Float value)\nEndFunction\n",
+        )
+        .expect("failed to write vanilla script");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf())
+            .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()])
+            .with_known_scripts(&[listed_path]);
+
+        assert!(table.script_exists("Listed"));
+        assert!(table.script_exists("Actor"));
+        assert!(!table.script_exists("Unlisted"));
+        assert!(table.lookup_function("Actor", "DamageActorValue").is_some());
     }
 
     #[test]
@@ -1732,6 +1866,69 @@ mod tests {
         let names: HashSet<_> = members.iter().map(Member::name).collect();
 
         assert_eq!(names, HashSet::from(["DoA", "DoB"]));
+    }
+
+    #[test]
+    fn list_members_includes_documentation_comments() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n{A documented script}\n\nInt Property MyValue Auto\n{The stored value}\n\nInt Function Bar(Float a)\n{Does the thing}\n    Return 1\nEndFunction\n\nFunction Undocumented()\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("Foo");
+
+        let bar = members.iter().find_map(|member| match member {
+            Member::Function(signature) if signature.name == "Bar" => Some(signature),
+            _ => None,
+        });
+        assert_eq!(
+            bar.and_then(|signature| signature.doc.as_deref()),
+            Some("Does the thing")
+        );
+
+        let undocumented = members.iter().find_map(|member| match member {
+            Member::Function(signature) if signature.name == "Undocumented" => Some(signature),
+            _ => None,
+        });
+        assert_eq!(
+            undocumented.and_then(|signature| signature.doc.as_ref()),
+            None
+        );
+
+        let property = members.iter().find_map(|member| match member {
+            Member::Property(signature) if signature.name == "MyValue" => Some(signature),
+            _ => None,
+        });
+        assert_eq!(
+            property.and_then(|signature| signature.doc.as_deref()),
+            Some("The stored value")
+        );
+    }
+
+    #[test]
+    fn list_members_carries_an_inherited_members_documentation_comment() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Base",
+            "ScriptName Base\n\nFunction DoThing()\n{Inherited help}\nEndFunction\n",
+        );
+        write_script(root.path(), "Child", "ScriptName Child Extends Base\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("Child");
+        let do_thing = members.iter().find_map(|member| match member {
+            Member::Function(signature) if signature.name == "DoThing" => Some(signature),
+            _ => None,
+        });
+
+        assert_eq!(
+            do_thing.and_then(|signature| signature.doc.as_deref()),
+            Some("Inherited help")
+        );
     }
 
     #[test]

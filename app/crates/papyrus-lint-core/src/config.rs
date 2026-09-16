@@ -34,6 +34,21 @@ struct ProjectFile {
     compiler_path: Option<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     additional_script_roots: Vec<String>,
+    /// Extra directories searched only as a last-resort fallback when
+    /// resolving a script by name for analysis (cross-script type/function
+    /// lookups, `Extends`, autocompletion). Scripts found only here are
+    /// never linted, and these directories are never considered by
+    /// `conflicting_script_versions`. Intended for the game's own vanilla
+    /// sources (e.g. Skyrim Special Edition's `Data/Scripts/Source` and
+    /// `Data/Source/Scripts`).
+    lookup_script_roots: Vec<String>,
+    /// Whether the loaded YAML actually contained a `lookup_script_roots`
+    /// key. Missing is treated as "not yet configured", so creating or
+    /// updating a config can fill Skyrim Special Edition's vanilla source
+    /// directories from the Windows registry. An explicit empty list is
+    /// left empty rather than re-filled.
+    #[serde(skip)]
+    lookup_script_roots_explicit: bool,
     /// Whether the desktop app and the CLI also run PapyrusCompiler.exe (at
     /// `compiler_path`, above) against a `.psc` as part of linting it,
     /// surfacing any errors it reports as additional `[error]` diagnostics
@@ -66,6 +81,24 @@ struct ProjectFile {
     lint: papyrus_lints::Config,
 }
 
+/// Registry keys (under `HKEY_LOCAL_MACHINE`) consulted for Skyrim Special
+/// Edition's install directory when seeding [`ProjectFile::lookup_script_roots`].
+#[cfg(windows)]
+const SKYRIM_SE_REGISTRY_KEYS: [&str; 2] = [
+    r"Software\Bethesda Softworks\Skyrim Special Edition",
+    r"Software\Wow6432Node\Bethesda Softworks\Skyrim Special Edition",
+];
+
+/// Registry value name holding Skyrim Special Edition's install path.
+#[cfg(windows)]
+const SKYRIM_SE_REGISTRY_VALUE: &str = "installed path";
+
+/// Vanilla Papyrus source directories, relative to a Skyrim Special Edition
+/// install root. Both layouts exist across CK/game versions; only those
+/// that actually exist are ever seeded into a config.
+const SKYRIM_SCRIPT_SOURCE_RELATIVE_DIRS: [&str; 2] =
+    ["Data/Scripts/Source", "Data/Source/Scripts"];
+
 /// Finds a project's existing config file in `dir`, if any.
 fn existing_config_path(dir: &Path) -> Option<PathBuf> {
     CONFIG_FILE_NAMES
@@ -87,12 +120,39 @@ fn load_project_file(dir: &Path) -> Result<ProjectFile, String> {
     let Some(path) = existing_config_path(dir) else {
         return Ok(ProjectFile::default());
     };
+    load_project_file_from_path(&path)
+}
 
-    let contents = fs::read_to_string(&path).map_err(|err| format!("{}: {err}", path.display()))?;
+/// Reads and parses the papyrus-lint YAML at `path`. Empty files become
+/// [`ProjectFile::default`]. A file that does not yet contain
+/// `lookup_script_roots` is seeded in memory with Skyrim Special Edition's
+/// vanilla source directories when those can be found (see
+/// [`detected_skyrim_script_lookup_dirs`]); an explicit empty list is kept.
+fn load_project_file_from_path(path: &Path) -> Result<ProjectFile, String> {
+    let contents = fs::read_to_string(path).map_err(|err| format!("{}: {err}", path.display()))?;
+    project_file_from_yaml(&contents).map_err(|err| format!("{}: {err}", path.display()))
+}
+
+fn project_file_from_yaml(contents: &str) -> Result<ProjectFile, String> {
     if contents.trim().is_empty() {
         return Ok(ProjectFile::default());
     }
-    serde_yaml::from_str(&contents).map_err(|err| format!("{}: {err}", path.display()))
+    let mut project: ProjectFile = serde_yaml::from_str(contents).map_err(|err| err.to_string())?;
+    project.lookup_script_roots_explicit = yaml_has_top_level_key(contents, "lookup_script_roots");
+    if !project.lookup_script_roots_explicit {
+        merge_lookup_roots(
+            &mut project.lookup_script_roots,
+            &detected_skyrim_script_lookup_dirs(),
+        );
+    }
+    Ok(project)
+}
+
+fn yaml_has_top_level_key(contents: &str, key: &str) -> bool {
+    let Ok(serde_yaml::Value::Mapping(map)) = serde_yaml::from_str(contents) else {
+        return false;
+    };
+    map.contains_key(serde_yaml::Value::String(key.to_string()))
 }
 
 /// The explanatory comment shown above each top-level key in the README's
@@ -109,6 +169,15 @@ const FIELD_COMMENTS: &[(&str, &str)] = &[
         "additional_script_roots",
         "# Extra directories (relative to the project root, or absolute) to search\n\
          # for .psc files, besides scripts/source and source/scripts",
+    ),
+    (
+        "lookup_script_roots",
+        "# Extra directories searched only as a fallback when resolving other\n\
+         # scripts for analysis (argument/return types, Extends, autocompletion).\n\
+         # Scripts found only here are never linted, and these directories are\n\
+         # ignored by conflicting-script-versions. Creating or updating a config\n\
+         # fills Skyrim Special Edition's Data/Scripts/Source and Data/Source/Scripts\n\
+         # when the install path can be read from the Windows registry",
     ),
     (
         "compile_check",
@@ -190,7 +259,9 @@ fn save_project_file(dir: &Path, project: &ProjectFile) -> Result<(), String> {
 /// from a project directory) and [`save_config_at_path`] (which targets an
 /// explicit file directly).
 fn save_project_file_at(path: &Path, project: &ProjectFile) -> Result<(), String> {
-    let yaml = serde_yaml::to_string(project).map_err(|err| err.to_string())?;
+    let mut project = project.clone();
+    seed_lookup_script_roots(&mut project);
+    let yaml = serde_yaml::to_string(&project).map_err(|err| err.to_string())?;
     fs::write(path, with_field_comments(&yaml)).map_err(|err| err.to_string())
 }
 
@@ -214,6 +285,7 @@ fn non_lint_yaml(project: &ProjectFile) -> Result<String, String> {
     struct NonLintFields<'a> {
         compiler_path: &'a Option<String>,
         additional_script_roots: &'a [String],
+        lookup_script_roots: &'a [String],
         compile_check: bool,
         strict_achlist_scope: bool,
     }
@@ -221,6 +293,7 @@ fn non_lint_yaml(project: &ProjectFile) -> Result<String, String> {
     serde_yaml::to_string(&NonLintFields {
         compiler_path: &project.compiler_path,
         additional_script_roots: &project.additional_script_roots,
+        lookup_script_roots: &project.lookup_script_roots,
         compile_check: project.compile_check,
         strict_achlist_scope: project.strict_achlist_scope,
     })
@@ -504,8 +577,9 @@ fn find_user_preset_file(dir: &Path, name: &str) -> Option<PathBuf> {
 /// (`--preset <name>`, or the desktop app's "Save current settings as
 /// preset" button/first-run picker). Only the lint settings themselves are
 /// written, not a project's own `compiler_path`/`additional_script_roots`/
-/// `compile_check`/`strict_achlist_scope`, since those are specific to a
-/// project rather than something a reusable preset should hardcode.
+/// `lookup_script_roots`/`compile_check`/`strict_achlist_scope`, since those
+/// are specific to a project rather than something a reusable preset should
+/// hardcode.
 ///
 /// Refuses a blank name, and refuses a name matching one of
 /// [`PRESET_NAMES`] (case-insensitively), since [`Preset::parse`] always
@@ -730,7 +804,8 @@ fn initialize_config_with_base(
         return Err(format!("config already exists at {}", path.display()));
     }
 
-    let base = resolve_preset_project_file(base_dir, &preset)?;
+    let mut base = resolve_preset_project_file(base_dir, &preset)?;
+    seed_lookup_script_roots(&mut base);
 
     let path = dir.join(CONFIG_FILE_NAMES[0]);
     let lint_yaml = papyrus_lints::config::to_yaml(&base.lint).map_err(|err| err.to_string())?;
@@ -778,10 +853,10 @@ fn resolve_preset_project_file(
 }
 
 /// Returns `preset`'s lint rule/formatting settings only — not the
-/// `compiler_path`/`additional_script_roots`/`compile_check`/
-/// `strict_achlist_scope` settings [`initialize_default_config`] also seeds
-/// a brand new project's file with, since a preset resetting an *existing*
-/// project's settings shouldn't touch those — merged with an optional
+/// `compiler_path`/`additional_script_roots`/`lookup_script_roots`/
+/// `compile_check`/`strict_achlist_scope` settings [`initialize_default_config`]
+/// also seeds a brand new project's file with, since a preset resetting an
+/// *existing* project's settings shouldn't touch those — merged with an optional
 /// executable-adjacent base config the same way. Used by the desktop app's
 /// Settings tab to overwrite its currently edited settings back to a
 /// preset in place, without requiring (or touching) a project config file
@@ -819,8 +894,7 @@ pub fn load_config_from_path(path: &Path) -> Result<papyrus_lints::Config, Strin
     if contents.trim().is_empty() {
         return Ok(papyrus_lints::Config::default());
     }
-    let project: ProjectFile = serde_yaml::from_str(&contents).map_err(|err| err.to_string())?;
-    Ok(project.lint)
+    Ok(project_file_from_yaml(&contents)?.lint)
 }
 
 /// Writes `config` to `dir`'s papyrus-lint YAML config file, preserving
@@ -840,12 +914,7 @@ pub fn save_config(dir: &Path, config: &papyrus_lints::Config) -> Result<(), Str
 /// stored in that file; creates the file if `path` doesn't exist yet.
 pub fn save_config_at_path(path: &Path, config: &papyrus_lints::Config) -> Result<(), String> {
     let mut project = if path.is_file() {
-        let contents = fs::read_to_string(path).map_err(|err| err.to_string())?;
-        if contents.trim().is_empty() {
-            ProjectFile::default()
-        } else {
-            serde_yaml::from_str(&contents).map_err(|err| err.to_string())?
-        }
+        load_project_file_from_path(path)?
     } else {
         ProjectFile::default()
     };
@@ -912,8 +981,7 @@ pub fn load_strict_achlist_scope_from_path(path: &Path) -> Result<bool, String> 
     if contents.trim().is_empty() {
         return Ok(false);
     }
-    let project: ProjectFile = serde_yaml::from_str(&contents).map_err(|err| err.to_string())?;
-    Ok(project.strict_achlist_scope)
+    Ok(project_file_from_yaml(&contents)?.strict_achlist_scope)
 }
 
 /// Reads `dir`'s papyrus-lint config file and returns the additional script
@@ -942,6 +1010,142 @@ pub fn save_script_roots(dir: &Path, roots: &[String]) -> Result<(), String> {
         .filter(|root| !root.is_empty())
         .collect();
     save_project_file(dir, &project)
+}
+
+/// Reads `dir`'s papyrus-lint config file and returns the analysis-only
+/// lookup directories it lists (see [`crate::script_locator`] /
+/// [`crate::function_table::FunctionTable::with_lookup_roots`]). These are
+/// searched only after the conventional and `additional_script_roots`
+/// directories, never linted, and never considered by
+/// `conflicting_script_versions`. Empty (or blank) entries are dropped. A
+/// config that does not yet set the key is seeded in memory with Skyrim
+/// Special Edition's vanilla source directories when those can be found
+/// (see [`detected_skyrim_script_lookup_dirs`]).
+pub fn load_lookup_script_roots(dir: &Path) -> Result<Vec<String>, String> {
+    Ok(trimmed_roots(load_project_file(dir)?.lookup_script_roots))
+}
+
+/// Reads an explicit config file at `path` (see [`load_config_from_path`])
+/// and returns its `lookup_script_roots`, the same way
+/// [`load_lookup_script_roots`] does for a project directory's own
+/// papyrus-lint.yaml/.yml. Used so a `--config <path>` override still
+/// honors analysis-only lookup directories from the file it names.
+pub fn load_lookup_script_roots_from_path(path: &Path) -> Result<Vec<String>, String> {
+    Ok(trimmed_roots(
+        load_project_file_from_path(path)?.lookup_script_roots,
+    ))
+}
+
+/// Persists `roots` as `dir`'s papyrus-lint config file's analysis-only
+/// lookup directories, preserving its other settings. Empty (or blank)
+/// entries are dropped. Setting this (including to an empty list) marks
+/// the key as explicit so a later save does not re-fill Skyrim's vanilla
+/// source directories from the registry.
+pub fn save_lookup_script_roots(dir: &Path, roots: &[String]) -> Result<(), String> {
+    let mut project = load_project_file(dir)?;
+    project.lookup_script_roots = trimmed_roots(roots.iter().cloned());
+    project.lookup_script_roots_explicit = true;
+    save_project_file(dir, &project)
+}
+
+fn trimmed_roots(roots: impl IntoIterator<Item = String>) -> Vec<String> {
+    roots
+        .into_iter()
+        .map(|root| root.trim().to_string())
+        .filter(|root| !root.is_empty())
+        .collect()
+}
+
+/// Skyrim Special Edition's install directory from the Windows registry,
+/// if one of [`SKYRIM_SE_REGISTRY_KEYS`] contains a usable
+/// [`SKYRIM_SE_REGISTRY_VALUE`]. Always `None` on non-Windows platforms,
+/// and `None` when the recorded path is not an existing directory.
+pub fn detected_skyrim_install_path() -> Option<PathBuf> {
+    #[cfg(windows)]
+    {
+        read_skyrim_install_path_from_registry().filter(|path| path.is_dir())
+    }
+    #[cfg(not(windows))]
+    {
+        None
+    }
+}
+
+#[cfg(windows)]
+fn read_skyrim_install_path_from_registry() -> Option<PathBuf> {
+    use winreg::enums::HKEY_LOCAL_MACHINE;
+    use winreg::RegKey;
+
+    let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
+    for key_path in SKYRIM_SE_REGISTRY_KEYS {
+        let Ok(key) = hklm.open_subkey(key_path) else {
+            continue;
+        };
+        let Ok(value) = key.get_value::<String, _>(SKYRIM_SE_REGISTRY_VALUE) else {
+            continue;
+        };
+        let path = PathBuf::from(value.trim());
+        if !path.as_os_str().is_empty() {
+            return Some(path);
+        }
+    }
+    None
+}
+
+/// Vanilla Papyrus source directories under Skyrim Special Edition's
+/// install, used to seed [`ProjectFile::lookup_script_roots`]. Only
+/// directories that currently exist are returned.
+pub fn detected_skyrim_script_lookup_dirs() -> Vec<String> {
+    detected_skyrim_install_path()
+        .map(|install| script_lookup_dirs_for_skyrim_install(&install))
+        .unwrap_or_default()
+}
+
+/// Returns `{install}/Data/Scripts/Source` and `{install}/Data/Source/Scripts`
+/// when those directories exist.
+fn script_lookup_dirs_for_skyrim_install(install: &Path) -> Vec<String> {
+    SKYRIM_SCRIPT_SOURCE_RELATIVE_DIRS
+        .iter()
+        .map(|relative| install.join(relative))
+        .filter(|path| path.is_dir())
+        .map(|path| path.to_string_lossy().into_owned())
+        .collect()
+}
+
+fn seed_lookup_script_roots(project: &mut ProjectFile) {
+    if project.lookup_script_roots_explicit {
+        return;
+    }
+    merge_lookup_roots(
+        &mut project.lookup_script_roots,
+        &detected_skyrim_script_lookup_dirs(),
+    );
+    project.lookup_script_roots_explicit = true;
+}
+
+fn merge_lookup_roots(roots: &mut Vec<String>, extra: &[String]) {
+    for dir in extra {
+        let dir = dir.trim();
+        if dir.is_empty() {
+            continue;
+        }
+        if roots
+            .iter()
+            .any(|existing| lookup_paths_equal(existing, dir))
+        {
+            continue;
+        }
+        roots.push(dir.to_string());
+    }
+}
+
+fn lookup_paths_equal(left: &str, right: &str) -> bool {
+    fn normalize(path: &str) -> String {
+        path.replace('\\', "/")
+            .trim_end_matches('/')
+            .to_ascii_lowercase()
+    }
+    normalize(left) == normalize(right)
 }
 
 /// Looks for `PapyrusCompiler.exe` under a `Papyrus Compiler` directory one
@@ -1189,10 +1393,20 @@ mod tests {
         let docs_copy =
             fs::read_to_string(&docs_path).expect("failed to read docs/papyrus-lint.default.yaml");
 
-        assert_eq!(
-            generated, docs_copy,
-            "docs/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
-        );
+        let detected = detected_skyrim_script_lookup_dirs();
+        if detected.is_empty() {
+            assert_eq!(
+                generated, docs_copy,
+                "docs/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
+            );
+        } else {
+            for dir in &detected {
+                assert!(
+                    generated.contains(dir),
+                    "init should fill lookup_script_roots with {dir}"
+                );
+            }
+        }
     }
 
     #[test]
@@ -2457,6 +2671,179 @@ mod tests {
             load_script_roots(dir.path()).expect("should succeed"),
             vec!["../SharedScripts".to_string()]
         );
+    }
+
+    #[test]
+    fn load_lookup_script_roots_returns_empty_when_unset() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert_eq!(
+            load_lookup_script_roots(dir.path()).expect("should succeed"),
+            Vec::<String>::new()
+        );
+    }
+
+    #[test]
+    fn save_and_load_lookup_script_roots_round_trips_without_disturbing_other_settings() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        save_script_roots(dir.path(), &["../SharedScripts".to_string()])
+            .expect("saving script roots should succeed");
+
+        save_lookup_script_roots(
+            dir.path(),
+            &[
+                "  C:/Skyrim/Data/Scripts/Source  ".to_string(),
+                "  ".to_string(),
+                "C:/Skyrim/Data/Source/Scripts".to_string(),
+            ],
+        )
+        .expect("saving lookup roots should succeed");
+
+        assert_eq!(
+            load_lookup_script_roots(dir.path()).expect("should succeed"),
+            vec![
+                "C:/Skyrim/Data/Scripts/Source".to_string(),
+                "C:/Skyrim/Data/Source/Scripts".to_string()
+            ]
+        );
+        assert_eq!(
+            load_script_roots(dir.path()).expect("should succeed"),
+            vec!["../SharedScripts".to_string()]
+        );
+    }
+
+    #[test]
+    fn save_lookup_script_roots_empty_is_kept_explicit_and_not_refilled() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        save_lookup_script_roots(dir.path(), &["C:/Skyrim/Data/Scripts/Source".to_string()])
+            .expect("saving lookup roots should succeed");
+
+        save_lookup_script_roots(dir.path(), &[]).expect("clearing lookup roots should succeed");
+
+        assert_eq!(
+            load_lookup_script_roots(dir.path()).expect("should succeed"),
+            Vec::<String>::new()
+        );
+        let contents = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+            .expect("failed to read saved config");
+        assert!(contents.contains("lookup_script_roots:"));
+    }
+
+    #[test]
+    fn load_lookup_script_roots_trims_entries_from_yaml() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(
+            dir.path(),
+            "papyrus-lint.yaml",
+            "lookup_script_roots:\n  - '  C:/Skyrim/Data/Scripts/Source  '\n  - '   '\n",
+        );
+
+        assert_eq!(
+            load_lookup_script_roots(dir.path()).expect("should succeed"),
+            vec!["C:/Skyrim/Data/Scripts/Source".to_string()]
+        );
+    }
+
+    #[test]
+    fn save_config_preserves_existing_lookup_script_roots() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        save_lookup_script_roots(dir.path(), &["C:/Skyrim/Data/Scripts/Source".to_string()])
+            .expect("saving lookup roots should succeed");
+
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            ..papyrus_lints::Config::default()
+        };
+        save_config(dir.path(), &config).expect("saving lint config should succeed");
+
+        assert_eq!(
+            load_lookup_script_roots(dir.path()).expect("should succeed"),
+            vec!["C:/Skyrim/Data/Scripts/Source".to_string()]
+        );
+    }
+
+    #[test]
+    fn script_lookup_dirs_for_skyrim_install_returns_existing_source_directories() {
+        let install = tempfile::tempdir().expect("failed to create temp dir");
+        let scripts_source = install.path().join("Data/Scripts/Source");
+        let source_scripts = install.path().join("Data/Source/Scripts");
+        fs::create_dir_all(&scripts_source).expect("failed to create Scripts/Source");
+        fs::create_dir_all(&source_scripts).expect("failed to create Source/Scripts");
+
+        let dirs = script_lookup_dirs_for_skyrim_install(install.path());
+
+        assert_eq!(
+            dirs,
+            vec![
+                scripts_source.to_string_lossy().into_owned(),
+                source_scripts.to_string_lossy().into_owned()
+            ]
+        );
+    }
+
+    #[test]
+    fn script_lookup_dirs_for_skyrim_install_omits_missing_directories() {
+        let install = tempfile::tempdir().expect("failed to create temp dir");
+        let scripts_source = install.path().join("Data/Scripts/Source");
+        fs::create_dir_all(&scripts_source).expect("failed to create Scripts/Source");
+
+        let dirs = script_lookup_dirs_for_skyrim_install(install.path());
+
+        assert_eq!(dirs, vec![scripts_source.to_string_lossy().into_owned()]);
+    }
+
+    #[test]
+    fn merge_lookup_roots_appends_unique_paths_ignoring_slash_and_case() {
+        let mut roots = vec!["C:/Games/Skyrim Special Edition/Data/Scripts/Source".to_string()];
+        merge_lookup_roots(
+            &mut roots,
+            &[
+                r"c:\Games\Skyrim Special Edition\Data\Scripts\Source".to_string(),
+                "C:/Games/Skyrim Special Edition/Data/Source/Scripts".to_string(),
+            ],
+        );
+
+        assert_eq!(
+            roots,
+            vec![
+                "C:/Games/Skyrim Special Edition/Data/Scripts/Source".to_string(),
+                "C:/Games/Skyrim Special Edition/Data/Source/Scripts".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn seed_lookup_script_roots_fills_only_when_the_key_was_missing() {
+        let mut unset = ProjectFile::default();
+        merge_lookup_roots(
+            &mut unset.lookup_script_roots,
+            &["C:/Skyrim/Data/Scripts/Source".to_string()],
+        );
+        assert_eq!(
+            unset.lookup_script_roots,
+            vec!["C:/Skyrim/Data/Scripts/Source".to_string()]
+        );
+
+        let mut explicit = ProjectFile {
+            lookup_script_roots_explicit: true,
+            ..ProjectFile::default()
+        };
+        seed_lookup_script_roots(&mut explicit);
+        assert!(explicit.lookup_script_roots.is_empty());
+    }
+
+    #[test]
+    fn updating_a_config_without_lookup_script_roots_writes_the_key() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_config(dir.path(), "papyrus-lint.yaml", "semicolon: true\n");
+
+        save_script_roots(dir.path(), &["../SharedScripts".to_string()])
+            .expect("saving script roots should succeed");
+
+        let contents = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+            .expect("failed to read saved config");
+        assert!(contents.contains("lookup_script_roots:"));
+        assert!(contents.contains("semicolon: true"));
     }
 
     #[test]

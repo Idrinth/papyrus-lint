@@ -22,19 +22,37 @@ pub const CANDIDATE_DIRS: [&str; 2] = ["scripts/source", "source/scripts"];
 /// `root` unless it's already absolute (see [`resolve_additional_roots`]).
 ///
 /// Returns the path to the first match found, or `None` if none of those
-/// locations contains a matching file.
+/// locations contains a matching file. Analysis-only lookup directories
+/// (see [`find_psc_file_in_lookup_roots`]) are not searched here.
 pub fn find_psc_file(root: &Path, name: &str, additional_roots: &[String]) -> Option<PathBuf> {
+    find_named_psc(
+        CANDIDATE_DIRS
+            .iter()
+            .map(|dir| root.join(dir))
+            .chain(resolve_additional_roots(root, additional_roots)),
+        name,
+    )
+}
+
+/// Searches only `lookup_roots` (resolved like [`resolve_additional_roots`])
+/// for a `.psc` file matching `name`. Used as a last-resort fallback after
+/// [`find_psc_file`] when resolving scripts for analysis; these directories
+/// are never linted and are never fed to [`conflicting_script_versions`].
+pub fn find_psc_file_in_lookup_roots(
+    root: &Path,
+    name: &str,
+    lookup_roots: &[String],
+) -> Option<PathBuf> {
+    find_named_psc(resolve_additional_roots(root, lookup_roots), name)
+}
+
+fn find_named_psc(dirs: impl IntoIterator<Item = PathBuf>, name: &str) -> Option<PathBuf> {
     let name_lower = name.to_ascii_lowercase();
     let target = if name_lower.ends_with(".psc") {
         name_lower
     } else {
         format!("{name_lower}.psc")
     };
-
-    let dirs = CANDIDATE_DIRS
-        .iter()
-        .map(|dir| root.join(dir))
-        .chain(resolve_additional_roots(root, additional_roots));
 
     for dir in dirs {
         let Ok(entries) = fs::read_dir(&dir) else {
@@ -251,9 +269,20 @@ pub fn find_psc_file_in_index(index: &ScriptIndex, name: &str) -> Option<PathBuf
 /// [`find_psc_file_in_index`] for name resolution and
 /// [`conflicting_script_versions_in_index`] for each script being checked.
 pub fn build_script_index(root: &Path, additional_roots: &[String]) -> ScriptIndex {
+    index_psc_files(detected_script_roots(root, additional_roots))
+}
+
+/// Like [`build_script_index`], but indexes only analysis-only lookup
+/// directories (see [`find_psc_file_in_lookup_roots`]). The result is used
+/// for name resolution, never for [`conflicting_script_versions_in_index`].
+pub fn build_lookup_index(root: &Path, lookup_roots: &[String]) -> ScriptIndex {
+    index_psc_files(resolve_additional_roots(root, lookup_roots))
+}
+
+fn index_psc_files(dirs: impl IntoIterator<Item = PathBuf>) -> ScriptIndex {
     let mut index: ScriptIndex = HashMap::new();
 
-    for search_root in detected_script_roots(root, additional_roots) {
+    for search_root in dirs {
         let Ok(entries) = fs::read_dir(search_root) else {
             continue;
         };
@@ -694,6 +723,47 @@ mod tests {
         fs::write(alternate.join("Example.psc"), "same").expect("failed to write alternate script");
 
         assert!(conflicting_script_versions(&script, root.path(), &[]).is_empty());
+    }
+
+    #[test]
+    fn find_psc_file_in_lookup_roots_finds_a_script_outside_the_project() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+        let expected = write_file(vanilla.path(), "Actor.psc");
+
+        let result = find_psc_file_in_lookup_roots(
+            root.path(),
+            "Actor",
+            &[vanilla.path().to_string_lossy().into_owned()],
+        );
+
+        assert_eq!(result, Some(expected));
+        assert_eq!(find_psc_file(root.path(), "Actor", &[]), None);
+    }
+
+    #[test]
+    fn conflicting_script_versions_ignores_lookup_roots() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let primary = root.path().join("scripts/source");
+        fs::create_dir_all(&primary).expect("failed to create primary root");
+        let script = write_file(&primary, "Actor.psc");
+        fs::write(&script, "ScriptName Actor\n").expect("failed to write project script");
+
+        let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+        fs::write(
+            vanilla.path().join("Actor.psc"),
+            "ScriptName Actor Native\n",
+        )
+        .expect("failed to write vanilla script");
+        let lookup = vec![vanilla.path().to_string_lossy().into_owned()];
+
+        assert!(conflicting_script_versions(&script, root.path(), &[]).is_empty());
+        assert!(find_psc_file_in_lookup_roots(root.path(), "Actor", &lookup).is_some());
+        assert_eq!(
+            conflicting_script_versions(&script, root.path(), &lookup).len(),
+            1,
+            "additional_script_roots still report collisions, unlike lookup roots"
+        );
     }
 
     #[test]

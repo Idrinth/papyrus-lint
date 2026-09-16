@@ -236,6 +236,19 @@ Like the CLI's `--blob`, this is a purely local, in-editor lint: it never
 writes to disk, and the project's Lint results list is only refreshed once
 the edit is actually saved (`persistCodeViewerEdits`, unchanged).
 
+Edit-mode hover and `.`-triggered autocompletion also surface the `{ ... }`
+documentation comments that `missing-doc-comment` already checks for.
+`papyrus_lints::missing_doc_comment::documentation_comment` extracts the
+inner text (same last-physical-line / backslash-continued-header placement
+as the lint itself); `FunctionTable` carries it on each
+`FunctionSignature`/`PropertySignature` `doc` field so `list_script_members`
+returns it for members resolved from disk (including inherited ones). The
+frontend (`app/src/autocomplete.ts`) additionally scans the unsaved buffer
+so a comment typed since the last save still shows: hovering a ScriptName /
+Property / Function / Event header (or a use of that name) puts the comment
+in the textarea's `title` above any lint findings for the line, and the
+active autocompletion item renders it under its signature.
+
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are
 forgiving of an achlist that doesn't live in the project root itself (e.g.
@@ -301,6 +314,24 @@ scanned at all — with `script_locator::conflicting_script_versions_among`
 covering the one case directory scanning otherwise catches for free: two
 listed entries sharing a file name. It defaults to `false` so an existing
 achlist-based project's resolution/diagnostics don't change underneath it.
+
+`lookup_script_roots` is a separate, analysis-only fallback: directories
+searched by `FunctionTable::with_lookup_roots` only after the conventional
+`scripts/source`/`source/scripts` pair and `additional_script_roots`, used
+to resolve argument/return types, `Extends`, and autocompletion against
+vanilla game sources without treating those files as part of the project.
+Scripts found only there are never linted, `conflicting_script_versions`
+never scans them (`build_script_index`/`detected_script_roots` stay on
+conventional + additional roots), and they are not appended to the
+compiler's `-i` argument. Creating a config (`init`, the desktop first-run
+preset picker) or updating one that does not yet set the key fills Skyrim
+Special Edition's `Data/Scripts/Source` and `Data/Source/Scripts` when
+those exist and the install path can be read from the Windows registry
+(`HKLM\Software\Bethesda Softworks\Skyrim Special Edition` or
+`HKLM\Software\Wow6432Node\Bethesda Softworks\Skyrim Special Edition`,
+value `installed path`); an explicit empty list is left empty. The CLI
+reads this from whichever config file is in effect (the project root's
+own, or `--config`), the same as `strict_achlist_scope`.
 
 The CLI's per-script lint loop (and `fix`) reads, fixes, and lints multiple
 scripts at once instead of one at a time, via
@@ -413,8 +444,8 @@ reverts to the normal auto-detection described above. Editing lint
 settings while an override is active saves to that file (creating it if it
 doesn't exist yet, preserving any other settings — e.g. `compiler_path` —
 already stored in it) instead of the current project directory's own
-config file; `compiler_path`, `compile_check`, and
-`additional_script_roots` themselves are unaffected by this override and
+config file; `compiler_path`, `compile_check`,
+`additional_script_roots`, and `lookup_script_roots` themselves are unaffected by this override and
 still follow the loaded project directory.
 
 Configuration controls formatting, lint enablement, complexity thresholds,
@@ -516,7 +547,9 @@ input path itself existing; every listed `.achlist` entry existing on
 disk; the discovered or `--config`-named config file parsing; at least one
 of `scripts/source`/`source/scripts` existing under the project root;
 each configured `additional_script_roots`/`--script-root` entry resolving
-to an existing directory; a configured or auto-detected `compiler_path`
+to an existing directory; each configured `lookup_script_roots` entry
+resolving to an existing directory (analysis-only fallback; never linted,
+never scanned by `conflicting_script_versions`); a configured or auto-detected `compiler_path`
 pointing at an existing file) is collected as a `DoctorCheck` — an
 `ok`/`warning`/`error` `DoctorStatus` plus a message — rather than
 aborting the run on the first problem found, so a single invocation
@@ -589,7 +622,7 @@ confirms overwriting it before calling the `save_config_as_preset` Tauri
 command with the currently edited `LintConfig`, the name, and whether to
 overwrite. That command wraps `papyrus-lint-core`'s
 `config::save_user_preset`, which writes just the lint settings (not a
-project's own `compiler_path`/`additional_script_roots`/`compile_check`/
+project's own `compiler_path`/`additional_script_roots`/`lookup_script_roots`/`compile_check`/
 `strict_achlist_scope`, which aren't something a reusable preset should
 hardcode) as `<name>.yaml` under the same executable-adjacent `presets`
 directory the picker above and `list_user_preset_names` read from —
@@ -657,7 +690,7 @@ executable-adjacent base-config-layering logic (`resolve_preset_project_file`)
 but returning just the resolved `papyrus_lints::Config` instead of writing
 a brand new project file, and neither refusing an already-existing config
 nor touching a project's own `compiler_path`/`additional_script_roots`/
-`compile_check`/`strict_achlist_scope` settings, since those aren't
+`lookup_script_roots`/`compile_check`/`strict_achlist_scope` settings, since those aren't
 something resetting a project's *lint* settings back to a preset should
 touch.
 

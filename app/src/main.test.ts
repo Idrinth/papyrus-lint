@@ -24,6 +24,7 @@ import {
   applyRuleTags,
   applyTheme,
   applyScriptRootsToUI,
+  applyLookupScriptRootsToUI,
   buildPscResultItem,
   cancelCodeViewerEditMode,
   cancelLiveEditLint,
@@ -63,6 +64,7 @@ import {
   handleResetToPresetClick,
   handleSaveConfigAsPresetClick,
   handleScriptRootsChanged,
+  handleLookupScriptRootsChanged,
   hasFixableFindings,
   hideAutocomplete,
   hideLintProgress,
@@ -86,6 +88,7 @@ import {
   loadRuleTags,
   loadStoredTheme,
   loadScriptRoots,
+  loadLookupScriptRoots,
   massFixRuleCounts,
   massFixRuleDisplayName,
   matchesFilenameFilter,
@@ -117,8 +120,10 @@ import {
   saveLintConfig,
   saveLintConfigToPath,
   saveScriptRoots,
+  saveLookupScriptRoots,
   scheduleHideLintProgress,
   scriptRootsFromUI,
+  lookupScriptRootsFromUI,
   scriptRootsForAchlist,
   setSettingsLocked,
   SEVERITIES,
@@ -145,7 +150,9 @@ import {
 
 function invokeImplFor(handlers: Record<string, (args: unknown) => unknown>) {
   invokeMock.mockImplementation((command: string, args: unknown) => {
-    const handler = handlers[command];
+    const handler =
+      handlers[command] ??
+      (command === "load_lookup_script_roots" ? () => [] : undefined);
     if (!handler) {
       return Promise.reject(new Error(`unexpected command: ${command}`));
     }
@@ -645,6 +652,28 @@ describe("lint config UI round trip", () => {
       roots: ["../SharedScripts", "/abs/OtherScripts"],
     });
   });
+
+  it("handleLookupScriptRootsChanged persists the roots once a project dir is known", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_lookup_script_roots: () => [],
+    });
+    await useProjectDir("/proj");
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLTextAreaElement>("#lookup-script-roots")!.value =
+      "C:/Skyrim/Data/Scripts/Source\n\n  C:/Skyrim/Data/Source/Scripts  \n";
+    handleLookupScriptRootsChanged();
+    await Promise.resolve();
+
+    expect(invokeMock).toHaveBeenCalledWith("save_lookup_script_roots", {
+      dir: "/proj",
+      roots: ["C:/Skyrim/Data/Scripts/Source", "C:/Skyrim/Data/Source/Scripts"],
+    });
+  });
 });
 
 describe("configuration file override", () => {
@@ -704,6 +733,32 @@ describe("scriptRootsFromUI / applyScriptRootsToUI", () => {
 
     expect(document.querySelector<HTMLTextAreaElement>("#script-roots")!.value).toBe(
       "../SharedScripts\n/abs/OtherScripts",
+    );
+  });
+});
+
+describe("lookupScriptRootsFromUI / applyLookupScriptRootsToUI", () => {
+  it("lookupScriptRootsFromUI splits non-blank lines and trims whitespace", () => {
+    document.querySelector<HTMLTextAreaElement>("#lookup-script-roots")!.value =
+      "  C:/Skyrim/Data/Scripts/Source  \n\nC:/Skyrim/Data/Source/Scripts\n";
+
+    expect(lookupScriptRootsFromUI()).toEqual([
+      "C:/Skyrim/Data/Scripts/Source",
+      "C:/Skyrim/Data/Source/Scripts",
+    ]);
+  });
+
+  it("lookupScriptRootsFromUI returns an empty array for a blank textarea", () => {
+    document.querySelector<HTMLTextAreaElement>("#lookup-script-roots")!.value = "   \n  \n";
+
+    expect(lookupScriptRootsFromUI()).toEqual([]);
+  });
+
+  it("applyLookupScriptRootsToUI joins roots with newlines", () => {
+    applyLookupScriptRootsToUI(["C:/Skyrim/Data/Scripts/Source", "C:/Skyrim/Data/Source/Scripts"]);
+
+    expect(document.querySelector<HTMLTextAreaElement>("#lookup-script-roots")!.value).toBe(
+      "C:/Skyrim/Data/Scripts/Source\nC:/Skyrim/Data/Source/Scripts",
     );
   });
 });
@@ -823,6 +878,22 @@ describe("useProjectDir", () => {
 
     expect(document.querySelector<HTMLTextAreaElement>("#script-roots")!.value).toBe(
       "../SharedScripts\n/abs/OtherScripts",
+    );
+  });
+
+  it("populates the lookup script roots textarea from the backend", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      load_lookup_script_roots: () => ["C:/Skyrim/Data/Scripts/Source", "C:/Skyrim/Data/Source/Scripts"],
+    });
+
+    await useProjectDir("/my/project");
+
+    expect(document.querySelector<HTMLTextAreaElement>("#lookup-script-roots")!.value).toBe(
+      "C:/Skyrim/Data/Scripts/Source\nC:/Skyrim/Data/Source/Scripts",
     );
   });
 
@@ -2235,6 +2306,48 @@ describe("loadScriptRoots / saveScriptRoots", () => {
   });
 });
 
+describe("loadLookupScriptRoots / saveLookupScriptRoots", () => {
+  it("loadLookupScriptRoots returns the backend's configured roots", async () => {
+    invokeImplFor({
+      load_lookup_script_roots: () => ["C:/Skyrim/Data/Scripts/Source", "C:/Skyrim/Data/Source/Scripts"],
+    });
+
+    await expect(loadLookupScriptRoots("/proj")).resolves.toEqual([
+      "C:/Skyrim/Data/Scripts/Source",
+      "C:/Skyrim/Data/Source/Scripts",
+    ]);
+    expect(invokeMock).toHaveBeenCalledWith("load_lookup_script_roots", { dir: "/proj" });
+  });
+
+  it("loadLookupScriptRoots returns an empty array on failure", async () => {
+    invokeMock.mockRejectedValue(new Error("no such file"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(loadLookupScriptRoots("/proj")).resolves.toEqual([]);
+  });
+
+  it("saveLookupScriptRoots forwards the roots to the backend", async () => {
+    invokeImplFor({ save_lookup_script_roots: () => undefined });
+
+    await expect(
+      saveLookupScriptRoots("/proj", ["C:/Skyrim/Data/Scripts/Source"]),
+    ).resolves.toBeUndefined();
+    expect(invokeMock).toHaveBeenCalledWith("save_lookup_script_roots", {
+      dir: "/proj",
+      roots: ["C:/Skyrim/Data/Scripts/Source"],
+    });
+  });
+
+  it("saveLookupScriptRoots swallows backend errors", async () => {
+    invokeMock.mockRejectedValue(new Error("disk full"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(
+      saveLookupScriptRoots("/proj", ["C:/Skyrim/Data/Scripts/Source"]),
+    ).resolves.toBeUndefined();
+  });
+});
+
 describe("parsePscFiles / repairPscFile", () => {
   it("reports a successful parse with its lint findings", async () => {
     invokeImplFor({
@@ -2330,6 +2443,7 @@ describe("parsePscFiles / repairPscFile", () => {
       load_compiler_path: () => "C:\\Tools\\PapyrusCompiler.exe",
       load_compile_check: () => true,
       load_script_roots: () => [],
+      load_lookup_script_roots: () => ["C:/Skyrim/Data/Scripts/Source"],
       parse_psc_file: () => ({ name: "MyScript" }),
       lint_psc_file: () => [],
     });
@@ -2342,6 +2456,7 @@ describe("parsePscFiles / repairPscFile", () => {
       root: "/proj",
       config: expect.anything(),
       additionalRoots: expect.anything(),
+      lookupRoots: ["C:/Skyrim/Data/Scripts/Source"],
       compilerPath: "C:\\Tools\\PapyrusCompiler.exe",
       compileCheck: true,
     });
@@ -2357,6 +2472,7 @@ describe("parsePscFiles / repairPscFile", () => {
       root: expect.any(String),
       config: expect.anything(),
       additionalRoots: expect.anything(),
+      lookupRoots: expect.anything(),
       compilerPath: expect.any(String),
       compileCheck: expect.any(Boolean),
     });
@@ -2383,6 +2499,7 @@ describe("parsePscFiles / repairPscFile", () => {
       root: expect.any(String),
       config: expect.anything(),
       additionalRoots: expect.anything(),
+      lookupRoots: expect.anything(),
       compilerPath: expect.any(String),
       compileCheck: expect.any(Boolean),
       rule: "comma-spacing",
@@ -2400,6 +2517,7 @@ describe("parsePscFiles / repairPscFile", () => {
       root: expect.any(String),
       config: expect.anything(),
       additionalRoots: expect.anything(),
+      lookupRoots: expect.anything(),
       compilerPath: expect.any(String),
       compileCheck: expect.any(Boolean),
       rule: "trailing-whitespace",
@@ -2418,6 +2536,7 @@ describe("parsePscFiles / repairPscFile", () => {
       root: expect.any(String),
       config: expect.anything(),
       additionalRoots: expect.anything(),
+      lookupRoots: expect.anything(),
       compilerPath: expect.any(String),
       compileCheck: expect.any(Boolean),
       rules: ["comma-spacing", "trailing-whitespace"],
@@ -5864,6 +5983,113 @@ describe("code viewer edit mode", () => {
       vi.spyOn(console, "error").mockImplementation(() => {});
 
       await expect(listScriptMembers("Example")).resolves.toEqual([]);
+    });
+
+    it("shows the active member's documentation comment as help under its label", async () => {
+      await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [
+          {
+            kind: "function",
+            name: "GetName",
+            params: [],
+            return_type: { name: "String", is_array: false },
+            is_global: false,
+            is_native: true,
+            is_event: false,
+            doc: "The display name of this form",
+          },
+          { kind: "property", name: "TargetRef", type_name: { name: "ObjectReference", is_array: false }, doc: "Where we go" },
+        ],
+      });
+
+      await updateAutocomplete();
+
+      const active = autocompleteEl().querySelector(".code-viewer__autocomplete-item--active");
+      expect(active?.querySelector(".code-viewer__autocomplete-item-doc")?.textContent).toBe("The display name of this form");
+      expect(autocompleteEl().querySelectorAll(".code-viewer__autocomplete-item-doc")).toHaveLength(1);
+
+      handleAutocompleteKeydown(new KeyboardEvent("keydown", { key: "ArrowDown", cancelable: true }));
+
+      const nextActive = autocompleteEl().querySelector(".code-viewer__autocomplete-item--active");
+      expect(nextActive?.querySelector(".code-viewer__autocomplete-item-doc")?.textContent).toBe("Where we go");
+    });
+
+    it("overlays unsaved documentation comments from the buffer onto self members", async () => {
+      const source = "ScriptName Example\n{script}\n\nFunction GetName()\n{Fresh local help}\nEndFunction\n\nFunction Run()\n    self.\nEndFunction\n";
+      await openWithSource(source);
+      enterCodeViewerEditMode();
+      const field = textarea();
+      const cursor = field.value.indexOf("self.") + "self.".length;
+      field.setSelectionRange(cursor, cursor);
+      invokeImplFor({
+        list_script_members: () => [
+          {
+            kind: "function",
+            name: "GetName",
+            params: [],
+            return_type: null,
+            is_global: false,
+            is_native: false,
+            is_event: false,
+            doc: "stale disk copy",
+          },
+        ],
+      });
+
+      await updateAutocomplete();
+
+      expect(autocompleteEl().querySelector(".code-viewer__autocomplete-item-doc")?.textContent).toBe("Fresh local help");
+    });
+  });
+
+  describe("documentation hover", () => {
+    function hoverLine(line: number) {
+      const ta = textarea();
+      vi.spyOn(ta, "getBoundingClientRect").mockReturnValue({
+        top: 0,
+        left: 0,
+        bottom: 200,
+        right: 200,
+        width: 200,
+        height: 200,
+        x: 0,
+        y: 0,
+        toJSON() {},
+      } as DOMRect);
+      vi.spyOn(window, "getComputedStyle").mockReturnValue({
+        lineHeight: "20px",
+        paddingTop: "10px",
+        paddingLeft: "0px",
+        fontSize: "",
+        fontFamily: "",
+        fontWeight: "",
+        letterSpacing: "",
+      } as CSSStyleDeclaration);
+      const clientY = 10 + (line - 1) * 20;
+      ta.dispatchEvent(new MouseEvent("mousemove", { clientX: 0, clientY }));
+    }
+
+    it("shows a declaration's documentation comment when hovering its header line", async () => {
+      await openWithSource("ScriptName Example\n{A documented script}\n\nFunction DoThing()\n{Does the thing}\nEndFunction\n");
+      enterCodeViewerEditMode();
+
+      hoverLine(1);
+      expect(textarea().title).toBe("A documented script");
+
+      hoverLine(4);
+      expect(textarea().title).toBe("Does the thing");
+    });
+
+    it("keeps lint findings in the tooltip under the documentation comment", async () => {
+      await openWithSource("ScriptName Example\n{A documented script}\n\nFunction DoThing()\nEndFunction\n", [
+        { line: 1, column: 1, message: "[info] first line" },
+      ]);
+      enterCodeViewerEditMode();
+
+      hoverLine(1);
+      expect(textarea().title).toContain("A documented script");
+      expect(textarea().title).toContain("[info] first line");
     });
   });
 

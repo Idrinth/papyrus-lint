@@ -295,6 +295,38 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
         }
     }
 
+    let lookup_script_roots = match config_path.as_deref().map_or_else(
+        || config::load_lookup_script_roots(&project_root),
+        config::load_lookup_script_roots_from_path,
+    ) {
+        Ok(roots) => roots,
+        Err(err) => {
+            checks.push(DoctorCheck::error(format!(
+                "failed to load lookup_script_roots: {err}"
+            )));
+            Vec::new()
+        }
+    };
+    for root in &lookup_script_roots {
+        let path = Path::new(root);
+        let resolved = if path.is_absolute() {
+            path.to_path_buf()
+        } else {
+            project_root.join(path)
+        };
+        if resolved.is_dir() {
+            checks.push(DoctorCheck::ok(format!(
+                "lookup script root (analysis only) {} exists",
+                resolved.display()
+            )));
+        } else {
+            checks.push(DoctorCheck::warning(format!(
+                "configured lookup script root {} does not exist",
+                resolved.display()
+            )));
+        }
+    }
+
     let conventional_roots: Vec<PathBuf> = CANDIDATE_DIRS
         .iter()
         .map(|dir| project_root.join(dir))

@@ -375,6 +375,24 @@ Each key:
   below) — useful when a script imports from a shared library location
   outside the project. The CLI also accepts one or more `--script-root
   <path>` flags on top of this setting (see Command-line interface below).
+- `lookup_script_roots`: extra directories searched only as a last-resort
+  fallback when resolving a script by name for analysis — argument/return
+  types, `Extends`, autocompletion — set via the app's Settings tab, one
+  per line. Each entry is resolved relative to the project root unless
+  it's already an absolute path. They are searched only after the two
+  conventional directories and `additional_script_roots` above, are never
+  linted themselves, are ignored by `conflicting-script-versions`, and are
+  not added to the compiler's `-i` argument. Intended for the game's own
+  vanilla sources so a project can type-check against them without treating
+  them as part of the project. Creating a new config (`init`, or the
+  desktop app's first-run preset picker) or updating an existing config
+  that does not yet set this key fills Skyrim Special Edition's
+  `Data/Scripts/Source` and `Data/Source/Scripts` when those directories
+  exist and the install path can be read from the Windows registry
+  (`HKLM\Software\Bethesda Softworks\Skyrim Special Edition` or
+  `HKLM\Software\Wow6432Node\Bethesda Softworks\Skyrim Special Edition`,
+  value `installed path`). An explicit empty list is left empty rather
+  than re-filled.
 - `compile_check`: whether the desktop app and the CLI also run
   PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
   app's Settings tab, alongside `compiler_path`. `false` by default, since
@@ -522,8 +540,9 @@ PapyrusCompiler.exe path field on the Settings tab works the same way,
 except it's pre-filled with an auto-detected path (see `compiler_path`
 above) rather than a fixed default when the project has no explicit
 override saved yet. The additional script roots textarea (see
-`additional_script_roots` above) works the same way too, one directory per
-line.
+`additional_script_roots` above) and the lookup script roots textarea
+(see `lookup_script_roots` above) work the same way too, one directory
+per line.
 
 ## Command-line interface
 
@@ -607,7 +626,8 @@ that a discovered — or `--config`-overridden — `papyrus-lint.yaml`/`.yml`
 actually parses; that at least one of `scripts/source`/`source/scripts`
 exists under the resolved project root; that each configured
 `additional_script_roots` entry (and any `--script-root` given alongside
-`doctor`) resolves to an existing directory; and that a configured, or
+`doctor`) and each configured `lookup_script_roots` entry resolves to an
+existing directory; and that a configured, or
 auto-detected, `compiler_path` points at an existing file — warning
 instead if `compile_check` is enabled but no compiler path could be
 resolved at all. Each check is printed as its own `[ok]`/`[warning]`/
@@ -652,8 +672,9 @@ named `papyrus-lint.yaml`/`.yml`. Both editor plugins expose this as a
 `config_path`/`configPath` setting (see their own READMEs). Since the
 project root's own config file is bypassed entirely in that case, so is
 its `additional_script_roots`; use `--script-root` (below) to add any
-script roots back explicitly. `strict_achlist_scope` is still read from
-`<path>` itself, the same as every other lint setting, since it isn't tied
+script roots back explicitly. `lookup_script_roots` and
+`strict_achlist_scope` are still read from
+`<path>` itself, the same as every other lint setting, since they aren't tied
 to the project root the way `additional_script_roots` is.
 
 Given one or more `--script-root <path>` flags (combinable with

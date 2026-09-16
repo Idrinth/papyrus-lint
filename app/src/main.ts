@@ -92,7 +92,7 @@ let namedArgumentsStyleEl: HTMLSelectElement | null;
 let magicNumbersModeEl: HTMLSelectElement | null;
 export let currentPscOutcomes: PscParseOutcome[] = [];
 // Set whenever a setting affecting lint output (formatting/rule config,
-// compiler path, compile-check toggle, additional script roots, or the
+// compiler path, compile-check toggle, additional/lookup script roots, or the
 // configuration file override) changes after currentPscOutcomes was last
 // populated, so a currently showing lint results list no longer reflects
 // the active settings. Checked by the Lint results tab button so switching
@@ -108,6 +108,7 @@ let configPathOverrideEl: HTMLInputElement | null;
 let compilerPathEl: HTMLInputElement | null;
 let compileCheckEl: HTMLInputElement | null;
 let scriptRootsEl: HTMLTextAreaElement | null;
+let lookupScriptRootsEl: HTMLTextAreaElement | null;
 let detectedScriptRootsEl: HTMLOutputElement | null;
 let usedConfigurationFileEl: HTMLOutputElement | null;
 let semicolonStyleEl: HTMLSelectElement | null;
@@ -437,6 +438,12 @@ let currentCompileCheck = false;
 // lookups, kept in sync with the Settings tab's textarea (see
 // handleScriptRootsChanged).
 let currentScriptRoots: string[] = [];
+// Extra directories searched only as a last-resort fallback when resolving
+// a script by name for analysis (cross-script type/function lookups,
+// Extends, autocompletion). Scripts found only here are never linted, and
+// these directories are never considered by conflicting-script-versions.
+// Kept in sync with the Settings tab's "Lookup script roots" textarea.
+let currentLookupScriptRoots: string[] = [];
 // Source directories inferred from the entries in the currently loaded
 // achlist. These are runtime-only roots: unlike currentScriptRoots, they are
 // not displayed as user configuration or persisted to papyrus-lint.yaml.
@@ -661,6 +668,17 @@ export async function loadScriptRoots(dir: string): Promise<string[]> {
   }
 }
 
+// Returns `dir`'s configured analysis-only lookup directories, if any.
+// Returns an empty array if none are configured or the lookup fails.
+export async function loadLookupScriptRoots(dir: string): Promise<string[]> {
+  try {
+    return await invoke<string[]>("load_lookup_script_roots", { dir });
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
 export async function loadProjectInfo(dir: string): Promise<ProjectInfo> {
   try {
     return await invoke<ProjectInfo>("load_project_info", { dir });
@@ -688,6 +706,15 @@ export function applyProjectInfoToUI(info: ProjectInfo) {
 export async function saveScriptRoots(dir: string, roots: string[]): Promise<void> {
   try {
     await invoke("save_script_roots", { dir, roots });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Persists `roots` as `dir`'s configured analysis-only lookup directories.
+export async function saveLookupScriptRoots(dir: string, roots: string[]): Promise<void> {
+  try {
+    await invoke("save_lookup_script_roots", { dir, roots });
   } catch (error) {
     console.error(error);
   }
@@ -861,6 +888,7 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
       root: currentProjectDir ?? "",
       config: currentLintConfig,
       additionalRoots: effectiveScriptRoots(),
+      lookupRoots: currentLookupScriptRoots,
       compilerPath: currentCompilerPath,
       compileCheck: currentCompileCheck,
     });
@@ -876,6 +904,7 @@ export async function repairPscFile(path: string): Promise<Diagnostic[]> {
     root: currentProjectDir ?? "",
     config: currentLintConfig,
     additionalRoots: effectiveScriptRoots(),
+    lookupRoots: currentLookupScriptRoots,
     compilerPath: currentCompilerPath,
     compileCheck: currentCompileCheck,
   });
@@ -964,6 +993,7 @@ export async function repairPscFinding(path: string, rule: string, line: number)
     root: currentProjectDir ?? "",
     config: currentLintConfig,
     additionalRoots: effectiveScriptRoots(),
+    lookupRoots: currentLookupScriptRoots,
     compilerPath: currentCompilerPath,
     compileCheck: currentCompileCheck,
     rule,
@@ -981,6 +1011,7 @@ export async function repairPscFileRule(path: string, rule: string): Promise<Dia
     root: currentProjectDir ?? "",
     config: currentLintConfig,
     additionalRoots: effectiveScriptRoots(),
+    lookupRoots: currentLookupScriptRoots,
     compilerPath: currentCompilerPath,
     compileCheck: currentCompileCheck,
     rule,
@@ -998,6 +1029,7 @@ export async function addDisableCommentToPscLine(path: string, rules: string[], 
     root: currentProjectDir ?? "",
     config: currentLintConfig,
     additionalRoots: effectiveScriptRoots(),
+    lookupRoots: currentLookupScriptRoots,
     compilerPath: currentCompilerPath,
     compileCheck: currentCompileCheck,
     rules,
@@ -1021,6 +1053,7 @@ export async function listScriptMembers(typeName: string): Promise<Member[]> {
       root: currentProjectDir ?? "",
       typeName,
       additionalRoots: effectiveScriptRoots(),
+      lookupRoots: currentLookupScriptRoots,
     });
   } catch (error) {
     console.error(error);
@@ -1246,6 +1279,8 @@ export async function useProjectDir(dir: string) {
   }
   currentScriptRoots = await loadScriptRoots(dir);
   applyScriptRootsToUI(currentScriptRoots);
+  currentLookupScriptRoots = await loadLookupScriptRoots(dir);
+  applyLookupScriptRootsToUI(currentLookupScriptRoots);
   applyProjectInfoToUI(projectInfo ?? (await loadProjectInfo(dir)));
   if (override && usedConfigurationFileEl) {
     usedConfigurationFileEl.textContent = override;
@@ -1365,6 +1400,35 @@ export function handleScriptRootsChanged() {
   lintResultsStale = true;
   if (currentProjectDir) {
     void saveScriptRoots(currentProjectDir, currentScriptRoots);
+  }
+}
+
+// Splits the lookup script roots textarea's value into one directory
+// per non-blank line.
+export function lookupScriptRootsFromUI(): string[] {
+  return (lookupScriptRootsEl?.value ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+// Reflects `roots` onto the lookup script roots textarea, one per line.
+export function applyLookupScriptRootsToUI(roots: string[]) {
+  if (lookupScriptRootsEl) {
+    lookupScriptRootsEl.value = roots.join("\n");
+  }
+}
+
+// Called when the lookup script roots textarea changes: updates the
+// analysis-only fallback directories used to resolve cross-script lookups,
+// and persists them to the current project's config file (if a project is
+// loaded). These are never mixed into additional script roots, so they are
+// not linted and are ignored by conflicting-script-versions.
+export function handleLookupScriptRootsChanged() {
+  currentLookupScriptRoots = lookupScriptRootsFromUI();
+  lintResultsStale = true;
+  if (currentProjectDir) {
+    void saveLookupScriptRoots(currentProjectDir, currentLookupScriptRoots);
   }
 }
 
@@ -1609,6 +1673,7 @@ window.addEventListener("DOMContentLoaded", () => {
   compilerPathEl = document.querySelector("#compiler-path");
   compileCheckEl = document.querySelector("#compile-check");
   scriptRootsEl = document.querySelector("#script-roots");
+  lookupScriptRootsEl = document.querySelector("#lookup-script-roots");
   detectedScriptRootsEl = document.querySelector("#detected-script-roots");
   usedConfigurationFileEl = document.querySelector("#used-configuration-file");
   semicolonStyleEl = document.querySelector("#semicolon-style");
@@ -1659,6 +1724,7 @@ window.addEventListener("DOMContentLoaded", () => {
   compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
   compileCheckEl?.addEventListener("change", handleCompileCheckChanged);
   scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);
+  lookupScriptRootsEl?.addEventListener("change", handleLookupScriptRootsChanged);
   semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
   indentationStyleEl?.addEventListener("change", () => {
     if (indentationWidthEl) {

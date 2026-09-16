@@ -41,6 +41,7 @@ export const FIXTURE_HTML = `
         <input id="compiler-path" type="text" />
         <input id="compile-check" type="checkbox" />
         <textarea id="script-roots"></textarea>
+        <textarea id="lookup-script-roots"></textarea>
         <select id="semicolon-style">
           <option value="forbid">Remove where possible</option>
           <option value="require">Add to non-empty lines</option>
