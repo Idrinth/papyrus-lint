@@ -5,6 +5,7 @@
 //! (rather than the parsed AST) so they still run on scripts that don't
 //! parse cleanly.
 
+pub mod actor_value;
 pub mod argument_naming;
 pub mod argument_types;
 pub mod array_bounds;
@@ -146,6 +147,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     default_property_value::RULE,
     unguarded_self_recursion::RULE,
     self_assignment::RULE,
+    actor_value::RULE,
 ];
 
 use serde::Serialize;
@@ -458,6 +460,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.self_assignment {
         diagnostics.extend(self_assignment::check(source));
+    }
+    if rules.unknown_actor_value {
+        diagnostics.extend(actor_value::check(source));
     }
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
@@ -1614,6 +1619,12 @@ mod tests {
                 self_assignment::RULE,
                 Config::default(),
                 config_with(|c| c.rules.self_assignment = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Actor akActor)\n    akActor.GetActorValue(\"NotARealActorValue\")\nEndFunction\n",
+                actor_value::RULE,
+                config_with(|c| c.rules.unknown_actor_value = true),
+                Config::default(),
             ),
         ];
 
