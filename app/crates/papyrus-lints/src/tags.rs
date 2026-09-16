@@ -505,6 +505,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::Medium,
     },
+    RuleTags {
+        rule: crate::missing_update_handler::RULE,
+        description: "Flags, as a `[warning]`, a call to `RegisterForUpdate`, `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` in a script that declares no matching `Event` (`OnUpdate` or `OnUpdateGameTime`, per `rules/update-event-handlers.yaml`) anywhere in it, since the engine then has nothing to call once the registered timer fires and the registration has no effect. Matches by function name alone (case-insensitively), regardless of receiver, the same way \"Forbidden/discouraged function usage\" does; a matching `Event` is recognized in any `State` block, not just the empty state. Disabled by default, since it only ever sees a single script's own source, and a matching `Event` declared on a script it `Extends` would otherwise be misreported as missing; opt in with `rules.missing_update_handler`.",
+        kinds: &["correctness"],
+        importance: Importance::Medium,
+    },
 ];
 
 #[cfg(test)]

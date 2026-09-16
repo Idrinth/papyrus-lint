@@ -93,6 +93,7 @@
 //!   missing_doc_comment: false
 //!   invalid_random_range: true
 //!   float_equality: false
+//!   missing_update_handler: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -102,8 +103,8 @@
 //! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`,
 //! `repeated_getvalue`, `global_variable_setvalue`,
 //! `default_property_value`, `unknown_actor_value`,
-//! `missing_doc_comment`, and `float_equality` are the exceptions:
-//! they default to `false`.
+//! `missing_doc_comment`, `float_equality`, and `missing_update_handler`
+//! are the exceptions: they default to `false`.
 //! `property_sorting` reorders a script's declared properties, a more
 //! invasive change than the rest of these rules; `unchecked_form_parameter`
 //! defaults off because many scripts intentionally accept a possibly-`None`
@@ -129,7 +130,11 @@
 //! at once; `float_equality` defaults off because a project may
 //! deliberately compare two `Float` values it knows are computed the exact
 //! same way, and enabling it by default would flag every such comparison
-//! as a false positive. All ten need a project to opt in explicitly.
+//! as a false positive; `missing_update_handler` defaults off because it
+//! only ever sees a single script's own source, so a `RegisterFor*` call
+//! whose matching `Event` is instead declared on a script it `Extends`
+//! would otherwise be misreported as having no handler at all. All eleven
+//! need a project to opt in explicitly.
 //!
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
 //! is `false` by default: see [`Config::assume_auto_properties_filled`].
@@ -506,6 +511,14 @@ pub struct Rules {
     /// [`Self::unknown_actor_value`], and [`Self::missing_doc_comment`],
     /// this defaults to `false`: see [`crate::float_equality`].
     pub float_equality: bool,
+    /// The "Missing update event handler" lint. Like [`Self::property_sorting`],
+    /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`],
+    /// [`Self::native_function_usage`], [`Self::repeated_getvalue`],
+    /// [`Self::global_variable_setvalue`], [`Self::default_property_value`],
+    /// [`Self::unknown_actor_value`], [`Self::missing_doc_comment`], and
+    /// [`Self::float_equality`], this defaults to `false`: see
+    /// [`crate::missing_update_handler`].
+    pub missing_update_handler: bool,
 }
 
 impl Rules {
@@ -609,6 +622,7 @@ impl Default for Rules {
             missing_doc_comment: false,
             invalid_random_range: true,
             float_equality: false,
+            missing_update_handler: false,
         }
     }
 }
@@ -821,6 +835,11 @@ mod tests {
         // Float values it knows are computed the exact same way, which
         // would otherwise be a false positive.
         assert!(!config.rules.float_equality);
+        // Also disabled by default: this only ever sees a single script's
+        // own source, so a RegisterFor* call whose matching Event is
+        // instead declared on a script it Extends would otherwise be
+        // misreported as having no handler at all.
+        assert!(!config.rules.missing_update_handler);
     }
 
     #[test]
