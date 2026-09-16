@@ -48,6 +48,22 @@ for the configuration format. Under the hood, this
 linter runs `PapyrusLinterCLI --json` and parses its structured JSON
 report rather than scraping plain-text output.
 
+## Live linting
+
+A saved `.psc` file with no unsaved changes is linted from disk as
+described above, getting the CLI's full project-aware lint (cross-script
+argument/return type checks, the project's own `papyrus-lint.yaml`/`.yml`,
+...). A view with unsaved changes is instead linted from its current
+buffer contents directly, via `PapyrusLinterCLI --blob`, so
+[SublimeLinter's background linting](http://www.sublimelinter.com/en/stable/lint_modes.html)
+(as configured by the standard `lint_mode` setting) shows live feedback on
+what's actually in the editor rather than stale results from the last
+save. Since `--blob` lints in isolation, with no real project root to
+resolve, a live lint on an unsaved view only honors an explicit
+`config_path` override (see above); it doesn't discover the project's own
+`papyrus-lint.yaml`/`.yml`, and skips cross-script checks entirely — the
+same tradeoff the CLI's `--blob` flag itself makes.
+
 To use a config file somewhere other than that inferred project root, set
 `config_path` (either as a linter setting, or per-project) to its path;
 this linter (and the fix command below) then passes it to the CLI via

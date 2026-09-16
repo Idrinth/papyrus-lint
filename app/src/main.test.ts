@@ -26,6 +26,7 @@ import {
   applyScriptRootsToUI,
   buildPscResultItem,
   cancelCodeViewerEditMode,
+  cancelLiveEditLint,
   clearError,
   collectFilteredIssues,
   configPathOverride,
@@ -72,6 +73,7 @@ import {
   isPscPath,
   levelOf,
   lintConfigFromUI,
+  lintPapyrusScript,
   listScriptMembers,
   loadAppVersion,
   loadCompileCheck,
@@ -156,6 +158,11 @@ beforeEach(() => {
   localStorage.clear();
   mountFixture();
   resetConfirmedProjectDirs();
+  // A previous test's live-lint debounce timer (see scheduleLiveEditLint in
+  // main.ts) would otherwise fire against this test's fresh DOM/mocks once
+  // its delay elapses, so it's cancelled up front the same way
+  // resetConfirmedProjectDirs above resets other module-level state.
+  cancelLiveEditLint();
 });
 
 // Waits for the "select this project's configuration" dialog
@@ -193,6 +200,7 @@ async function loadProjectConfigConfirmed(dir: string): Promise<void> {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  cancelLiveEditLint();
 });
 
 describe("path helpers", () => {
@@ -5197,6 +5205,106 @@ describe("code viewer edit mode", () => {
       enterCodeViewerEditMode();
 
       expect(panelHidden("#code-viewer-editor")).toBe(true);
+    });
+  });
+
+  describe("live linting while editing (scheduleLiveEditLint)", () => {
+    it("lints the textarea's current contents via lint_papyrus_script after debouncing an edit", async () => {
+      vi.useFakeTimers();
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      invokeImplFor({
+        lint_papyrus_script: () => [{ line: 1, column: 1, message: "[error] broken edit" }],
+      });
+
+      textarea().value = "Int x = 2\n";
+      textarea().dispatchEvent(new Event("input"));
+      await vi.advanceTimersByTimeAsync(400);
+
+      expect(invokeMock).toHaveBeenCalledWith(
+        "lint_papyrus_script",
+        expect.objectContaining({ source: "Int x = 2\n" }),
+      );
+      expect(highlightCode().querySelectorAll(".code-viewer__line--error")).toHaveLength(1);
+      vi.useRealTimers();
+    });
+
+    it("coalesces rapid successive edits into a single debounced lint", async () => {
+      vi.useFakeTimers();
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      invokeImplFor({ lint_papyrus_script: () => [] });
+
+      textarea().value = "Int x = 12\n";
+      textarea().dispatchEvent(new Event("input"));
+      await vi.advanceTimersByTimeAsync(100);
+      textarea().value = "Int x = 123\n";
+      textarea().dispatchEvent(new Event("input"));
+      await vi.advanceTimersByTimeAsync(400);
+
+      const liveLintCalls = invokeMock.mock.calls.filter(([command]) => command === "lint_papyrus_script");
+      expect(liveLintCalls).toHaveLength(1);
+      expect(liveLintCalls[0][1]).toMatchObject({ source: "Int x = 123\n" });
+      vi.useRealTimers();
+    });
+
+    it("keeps the last saved findings visible until the first live lint resolves", async () => {
+      vi.useFakeTimers();
+      await openWithSource("Int x = 1\n", [{ line: 1, column: 1, message: "[warning] stale" }]);
+      enterCodeViewerEditMode();
+
+      expect(highlightCode().querySelectorAll(".code-viewer__line--warning")).toHaveLength(1);
+      vi.useRealTimers();
+    });
+
+    it("discards a stale response once edit mode is left before it resolves", async () => {
+      vi.useFakeTimers();
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      let resolveLint: (value: unknown) => void = () => {};
+      invokeImplFor({
+        lint_papyrus_script: () =>
+          new Promise((resolve) => {
+            resolveLint = resolve;
+          }),
+      });
+
+      textarea().value = "Int x = 2\n";
+      textarea().dispatchEvent(new Event("input"));
+      await vi.advanceTimersByTimeAsync(400);
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      cancelCodeViewerEditMode();
+      resolveLint([{ line: 1, column: 1, message: "[error] too late" }]);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(document.querySelectorAll("#code-viewer-editor-highlight .code-viewer__line--error")).toHaveLength(0);
+      vi.useRealTimers();
+    });
+
+    it("does not schedule a live lint once edit mode has already been left", async () => {
+      vi.useFakeTimers();
+      await openWithSource("Int x = 1\n");
+      enterCodeViewerEditMode();
+      textarea().value = "Int x = 2\n";
+      textarea().dispatchEvent(new Event("input"));
+      vi.spyOn(window, "confirm").mockReturnValue(true);
+      cancelCodeViewerEditMode();
+
+      await vi.advanceTimersByTimeAsync(400);
+
+      expect(invokeMock.mock.calls.some(([command]) => command === "lint_papyrus_script")).toBe(false);
+      vi.useRealTimers();
+    });
+
+    it("lintPapyrusScript returns no findings and logs a failed live lint instead of throwing", async () => {
+      invokeMock.mockRejectedValue(new Error("cli unavailable"));
+      vi.spyOn(console, "error").mockImplementation(() => {});
+
+      const findings = await lintPapyrusScript("ScriptName Test\n");
+
+      expect(findings).toEqual([]);
+      expect(console.error).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 
