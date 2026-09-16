@@ -150,7 +150,7 @@
 │       │       ├── pex_header.rs       # Parses a compiled .pex file's header just
 │       │       │                       # far enough to blank its userName/
 │       │       │                       # machineName fields
-│       │       ├── parallel.rs         # Dependency-free worker pool (map_in_parallel)
+│       │       ├── parallel.rs         # rayon-backed worker pool (map_in_parallel)
 │       │       │                       # spreading per-script work across threads,
 │       │       │                       # used by the CLI's --threads flag
 │       │       └── stale_pex.rs        # The "Stale compiled output" project lint:
