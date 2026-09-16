@@ -473,6 +473,37 @@ mod tests {
     }
 
     #[test]
+    fn flags_a_self_call_on_the_eager_side_of_short_circuit_operators() {
+        let source = "ScriptName Example\n\nBool Function Foo(Bool cond)\n    Bool first = Foo(false) && cond\n    Return Foo(false) || cond\nEndFunction\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.line)
+                .collect::<Vec<_>>(),
+            [4, 5]
+        );
+    }
+
+    #[test]
+    fn does_not_flag_a_self_call_gated_by_short_circuit_or() {
+        let source =
+            "ScriptName Example\n\nBool Function Foo(Bool cond)\n    Return cond || Self.Foo(false)\nEndFunction\n";
+
+        assert!(check(source).is_empty());
+    }
+
+    #[test]
+    fn does_not_treat_a_same_named_method_on_another_object_as_a_self_call() {
+        let source =
+            "ScriptName Example\n\nFunction Foo(Example other)\n    other.Foo(None)\nEndFunction\n";
+
+        assert!(check(source).is_empty());
+    }
+
+    #[test]
     fn does_not_flag_a_native_function() {
         let source = "ScriptName Example\n\nFunction Foo() Native\n";
 
@@ -546,6 +577,33 @@ mod tests {
     }
 
     #[test]
+    fn still_flags_when_gotostate_has_a_non_literal_target() {
+        let source = "ScriptName Example\n\nState Done\n    Function Foo(String targetState)\n    EndFunction\nEndState\n\nFunction Foo(String targetState)\n    GoToState(targetState)\n    Foo(targetState)\nEndFunction\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 10);
+    }
+
+    #[test]
+    fn ignores_gotostate_calls_made_on_another_object() {
+        let source = "ScriptName Example\n\nState Done\n    Function Foo(Example other)\n    EndFunction\nEndState\n\nFunction Foo(Example other)\n    other.GoToState(\"Done\")\n    Foo(other)\nEndFunction\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, 10);
+    }
+
+    #[test]
+    fn matches_gotostate_targets_and_handlers_case_insensitively() {
+        let source = "ScriptName Example\n\nState Done\n    Function Foo()\n    EndFunction\nEndState\n\nFunction Foo()\n    GoToState(\"dOnE\")\n    Foo()\nEndFunction\n";
+
+        assert!(check(source).is_empty());
+    }
+
+    #[test]
     fn still_flags_when_gotostate_targets_the_functions_own_state() {
         let source = "ScriptName Example\n\nState Active\n    Event OnActivate(ObjectReference akActivator)\n        GoToState(\"Active\")\n        OnActivate(akActivator)\n    EndEvent\nEndState\n";
 
@@ -593,6 +651,13 @@ mod tests {
                 .collect::<Vec<_>>(),
             [5, 7]
         );
+    }
+
+    #[test]
+    fn nested_conditional_self_calls_do_not_make_a_branch_always_recurse() {
+        let source = "ScriptName Example\n\nFunction Foo(Bool first, Bool second)\n    If first\n        If second\n            Foo(first, second)\n        EndIf\n    Else\n        Foo(first, second)\n    EndIf\nEndFunction\n";
+
+        assert!(check(source).is_empty());
     }
 
     #[test]
