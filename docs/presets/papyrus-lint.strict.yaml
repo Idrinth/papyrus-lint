@@ -131,3 +131,4 @@ rules:
   unknown_actor_value: false
   repeated_setoutfit: true
   missing_doc_comment: false
+  invalid_random_range: true

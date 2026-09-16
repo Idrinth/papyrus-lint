@@ -493,6 +493,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["maintainability", "style"],
         importance: Importance::Low,
     },
+    RuleTags {
+        rule: crate::invalid_random_range::RULE,
+        description: "Flags, as an `[error]`, a call to `Utility.RandomInt` or `Utility.RandomFloat` whose first two arguments both fold to compile-time-constant numbers with the first not smaller than the second, since both native functions require their first argument (the minimum) to be smaller than their second (the maximum) — a call with the bounds equal or reversed never produces any actual randomness. `Utility.RandomInt`/`Utility.RandomFloat` are only matched when qualified by that literal script name, the same way the \"Short wait/update interval\" lint treats `Utility.Wait`. Only an argument built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at.",
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
 ];
 
 #[cfg(test)]

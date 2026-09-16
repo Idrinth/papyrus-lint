@@ -91,6 +91,7 @@
 //!   unknown_actor_value: false
 //!   repeated_setoutfit: true
 //!   missing_doc_comment: false
+//!   invalid_random_range: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -492,6 +493,8 @@ pub struct Rules {
     /// [`Self::default_property_value`], and [`Self::unknown_actor_value`],
     /// this defaults to `false`: see [`crate::missing_doc_comment`].
     pub missing_doc_comment: bool,
+    /// The "Invalid random range" lint.
+    pub invalid_random_range: bool,
 }
 
 impl Rules {
@@ -593,6 +596,7 @@ impl Default for Rules {
             unknown_actor_value: false,
             repeated_setoutfit: true,
             missing_doc_comment: false,
+            invalid_random_range: true,
         }
     }
 }
@@ -800,6 +804,7 @@ mod tests {
         // documentation comments at all, and enabling this would otherwise
         // flag literally every declaration in such a project at once.
         assert!(!config.rules.missing_doc_comment);
+        assert!(config.rules.invalid_random_range);
     }
 
     #[test]

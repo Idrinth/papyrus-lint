@@ -242,6 +242,10 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td]Flags divisions by zero where they are likely to happen.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Invalid random range[/b][/td]
+[td]Flags, as an error, a Utility.RandomInt/RandomFloat call whose first argument isn't smaller than its second, since that never produces any actual randomness.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Array bounds[/b][/td]
 [td]Flags a literal index into a local array that falls outside the constant size it was declared with (e.g. new Float[3] followed by a[5]), since Papyrus silently no-ops the access instead of raising an error.[/td]
 [td][/td]
@@ -472,7 +476,8 @@ rules:
   unnecessary_function: true
   unknown_actor_value: false
   repeated_setoutfit: true
-  missing_doc_comment: false[/code][/spoiler]
+  missing_doc_comment: false
+  invalid_random_range: true[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.
