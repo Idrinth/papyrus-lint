@@ -221,6 +221,11 @@ fn opt_in_rules_are_dispatched_by_the_public_lint_api() {
             "ScriptName Example\n\nFunction Test() ; @disable comma-spacing\nEndFunction\n",
             |config| config.rules.unused_disable = true,
         ),
+        (
+            "missing-doc-comment",
+            "ScriptName Example\n\nFunction Test()\nEndFunction\n",
+            |config| config.rules.missing_doc_comment = true,
+        ),
     ];
 
     for (rule, source, enable) in cases {
@@ -282,6 +287,35 @@ fn unknown_actor_value_is_opt_in_and_honors_file_disable_comments() {
     assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 12));
     assert_eq!(diagnostics[0].level(), "warning");
     assert!(diagnostics[0].message.contains("Helth"));
+}
+
+#[test]
+fn missing_doc_comment_is_opt_in_and_honors_line_disable_comments() {
+    // The ScriptName header carries its own doc comment, so only the
+    // undocumented Function below is at stake here.
+    let source =
+        "ScriptName Example\n{doc}\n\nFunction Test() ; @disable MISSING-DOC-COMMENT\nEndFunction\n";
+
+    assert!(lint(source, &Config::default())
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "missing-doc-comment"));
+
+    let mut config = Config::default();
+    config.rules.missing_doc_comment = true;
+    assert!(lint(source, &config)
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "missing-doc-comment"));
+
+    let source = source.replace(" ; @disable MISSING-DOC-COMMENT", "");
+    let diagnostics: Vec<_> = lint(&source, &config)
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "missing-doc-comment")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (4, 1));
+    assert_eq!(diagnostics[0].level(), "warning");
+    assert!(diagnostics[0].message.contains("Function `Test`"));
 }
 
 #[test]

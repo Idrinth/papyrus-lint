@@ -202,6 +202,7 @@ preferences.
 | **GlobalVariable no-op write** | Flags, as a `[warning]`, a `SetValue`/`SetValueInt` call on a `GlobalVariable`-like receiver that writes a value an enclosing `If`/`ElseIf`/`Else` chain never proves is different from the value already there — either a branch writing back the exact literal its own `GetValue()`/`GetValueInt() == literal` condition just confirmed is already current, or the trailing `Else` of a chain that reads the same receiver elsewhere writing a literal with no condition of its own ruling out that value already being current, e.g. an `Else` unconditionally calling `gv.SetValue(0.0)` after an `If gv.GetValue() == 1.0` branch, where it should usually become an explicit `ElseIf gv.GetValue() != 0.0` instead. Only a `SetValue`/`SetValueInt` call standing alone as its own statement, guarded by a plain equality check against a literal, is considered; anything less direct is left unflagged rather than guessed at. Disabled by default, since the `Else` case is a heuristic rather than a proven no-op; opt in with `rules.global_variable_setvalue`. | |
 | **Default property value** | Flags, as a `[warning]`, a `Bool`/`Int`/`Float`/`String` `Auto`/`AutoReadOnly` property declared with no explicit default value (e.g. `Int Property Count Auto` rather than `Int Property Count = 0 Auto`), since it then silently falls back to Papyrus's own implicit per-type default (`False`, `0`, `0.0`, or `""`) instead of a value the author actually chose. Object-typed properties, array-typed properties, and full (non-`Auto`/`AutoReadOnly`) properties are never flagged. Disabled by default, since many existing scripts already rely on Papyrus's implicit defaults for some or all of their properties; opt in with `rules.default_property_value`. | |
 | **Unnecessary function** | Flags, as an `[info]`, a `Function` whose body consists of exactly one statement, since it adds an indirection without doing enough on its own to justify a separate declaration — a caller could just as well inline that one statement instead. `Event`s are never flagged: they're declared by the engine rather than the script's own author, so a single-statement handler may well be forwarding to shared logic used by other events too. | |
+| **Missing documentation comment** | Flags, as a `[warning]`, a script header (`ScriptName`), `Property` declaration, or `Function`/`Event` declaration with no documentation comment — CreationKit's own `{ ... }` syntax, rendered as a tooltip when hovering the script in the script picker or a property in the property editor — on the line immediately following it. Disabled by default, since most existing scripts have none of these comments at all and enabling it would otherwise flag literally every declaration in such a project at once; opt in with `rules.missing_doc_comment`. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, chain whitespace, exclamation mark spacing, and
@@ -246,7 +247,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `global-variable-setvalue`, `setvalue-in-loop`, `script-name-collision`,
 `array-bounds`, `array-size-range`,
 `default-property-value`, `unguarded-self-recursion`, `self-assignment`,
-`unnecessary-function`, and `unknown-actor-value`.
+`unnecessary-function`, `unknown-actor-value`, and `missing-doc-comment`.
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where
@@ -448,8 +449,8 @@ Each key:
   default. Every key defaults to `true` except `property_sorting`,
   `unchecked_form_parameter`, `unused_disable`, `magic_numbers`,
   `native_function_usage`, `repeated_getvalue`,
-  `global_variable_setvalue`, `default_property_value`, and
-  `unknown_actor_value`, which default to
+  `global_variable_setvalue`, `default_property_value`,
+  `unknown_actor_value`, and `missing_doc_comment`, which default to
   `false`: reordering a script's declared properties is a more invasive
   change than the rest of these lints, many scripts intentionally accept a
   possibly-`None` Form and defer the check to a caller or a later branch,
@@ -462,8 +463,10 @@ Each key:
   `GlobalVariable` no-op write lint's `Else`-branch case is a heuristic
   rather than a proven no-op, many existing scripts already rely on
   Papyrus's implicit per-type defaults for some or all of their properties,
-  and a project's own plugin can define additional, custom Actor Values
-  that have no way to appear in `rules/actor-values.yaml`.
+  a project's own plugin can define additional, custom Actor Values
+  that have no way to appear in `rules/actor-values.yaml`, and most
+  existing scripts have no documentation comments at all, so flagging
+  every declaration missing one would be noisy until a project opts in.
   The key names match the lints listed above:
   `trailing_whitespace`, `comma_spacing`, `forbidden_functions`,
   `formid_hex_notation`, `slow_functions`, `unused_getter`,
@@ -483,7 +486,8 @@ Each key:
   `script_name_collision`, `array_bounds`, `array_size_range`,
   `readonly_property_write`,
   `default_property_value`, `unguarded_self_recursion`,
-  `self_assignment`, `unnecessary_function`, and `unknown_actor_value`.
+  `self_assignment`, `unnecessary_function`, `unknown_actor_value`, and
+  `missing_doc_comment`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
