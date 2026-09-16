@@ -944,6 +944,28 @@ predicate). `--tag` can't be combined with `--type`, since the two select
 overlapping things (one rule vs. one kind of rule), and an unrecognized
 tag is a usage error.
 
+The CLI also accepts `--blob <source>` in place of an achlist/`.psc`/
+directory path: `run_blob` in `papyrus-lint-cli/src/lib.rs` lints `<source>`
+directly, via plain `papyrus_lints::lint` (no
+`ExternalSignatures`/`FunctionTable`, since there's no project root to
+resolve other scripts against), and reports it under the literal path
+`<blob>`. This is for a script buffer that isn't (yet, or ever) saved to
+disk, e.g. from an editor extension that already has the text in memory,
+so it skips every piece of project-level machinery a normal run needs
+(project root discovery, cross-script argument/return type resolution, the
+`conflicting_script_versions`/`stale_compiled_output`/
+`script_filename_mismatch` project lints, `compile_check`). `--config
+<path>` still selects an explicit configuration file to lint the blob
+against; omitted, `papyrus_lints::Config::default()` applies, since there's
+no project root to discover one from. It shares `--tag`'s own normalization/
+validation (factored into `normalize_tag_filter`, used by both the normal
+run and `run_blob`) and reuses the same `JsonReport`/`AiReport` shapes a
+normal run produces, just with a single `<blob>`-named file entry. `--blob`
+is a usage error combined with a path argument, `fix`, `--type`, `--line`,
+`--dry-run`, `--script-root`, `--progress`, or `--threads` — none of which
+mean anything without a real file to resolve scripts around or write fixes
+back to.
+
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are
 forgiving of an achlist that doesn't live in the project root itself (e.g.
