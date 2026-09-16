@@ -1,19 +1,21 @@
 //! Compiles `rules/forbidden-functions.yaml`, `rules/slow-functions.yaml`,
 //! `rules/native-methods.yaml`, `rules/actor-values.yaml`,
-//! `rules/update-event-handlers.yaml`, and `rules/known-events.yaml` into
-//! static Rust arrays at build time, so `forbidden_functions::check`,
-//! `slow_functions::check`, `native_function_usage::check`,
-//! `actor_value::check`, `missing_update_handler::check`, and
-//! `event_signature::check` never parse YAML at runtime (see
+//! `rules/update-event-handlers.yaml`, `rules/known-events.yaml`, and
+//! `docs/rules.json` into static Rust arrays at build time, so
+//! `forbidden_functions::check`, `slow_functions::check`,
+//! `native_function_usage::check`, `actor_value::check`,
+//! `missing_update_handler::check`, `event_signature::check`, and
+//! `tags::RULE_TAGS` never parse their rule data at runtime (see
 //! `src/forbidden_functions.rs`, `src/slow_functions.rs`,
 //! `src/native_function_usage.rs`, `src/actor_value.rs`,
-//! `src/missing_update_handler.rs`, and `src/event_signature.rs`).
+//! `src/missing_update_handler.rs`, `src/event_signature.rs`, and
+//! `src/tags.rs`).
 //!
-//! Also compiles `docs/rules.json` — the machine-readable metadata for
-//! every lint rule — into `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`
-//! (`src/registry.rs`) and `RULE_TAGS` (`src/tags.rs`), so that JSON file
-//! is the single source of truth for those constants instead of three
-//! hand-maintained copies of the same rule list.
+//! `docs/rules.json` is also compiled into `KNOWN_RULE_IDS`/
+//! `FIXABLE_RULE_IDS` (`src/registry.rs`), in the JSON array's own order,
+//! so those stay in the same order as `RULE_TAGS` (see `tags.rs`'s
+//! `published_rule_tags_have_the_same_order_and_cardinality_as_known_rules`
+//! test).
 
 use std::env;
 use std::fs;
@@ -71,14 +73,21 @@ struct RawKnownEvent {
 }
 
 #[derive(serde::Deserialize)]
-struct RawRuleMeta {
+struct RawRuleTag {
     id: String,
-    tags: Vec<String>,
-    severity: String,
-    fixable: bool,
     doc_slug: String,
+    tags: Vec<String>,
     importance: String,
+    /// The rule's detailed description (see `RuleTags::description`).
+    /// `docs/rules.json` also carries a shorter `description` field (the
+    /// `docs/nexuspage.bbcode` blurb), which this doesn't need.
     definition: String,
+}
+
+#[derive(serde::Deserialize)]
+struct RawRuleId {
+    id: String,
+    fixable: bool,
 }
 
 fn main() {
@@ -91,7 +100,8 @@ fn main() {
     compile_actor_values(&manifest_dir, &out_dir);
     compile_update_event_pairs(&manifest_dir, &out_dir);
     compile_known_events(&manifest_dir, &out_dir);
-    compile_rule_metadata(&manifest_dir, &out_dir);
+    compile_rule_tags(&manifest_dir, &out_dir);
+    compile_known_rule_ids(&manifest_dir, &out_dir);
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
@@ -339,54 +349,22 @@ fn compile_known_events(manifest_dir: &str, out_dir: &str) {
     });
 }
 
-/// Compiles `docs/rules.json` into `known_rule_ids_data.rs` (`KNOWN_RULE_IDS`
-/// / `FIXABLE_RULE_IDS`, `include!`d by `src/registry.rs`) and
-/// `rule_tags_data.rs` (`RULE_TAGS`, `include!`d by `src/tags.rs`), in the
-/// JSON array's own order, so the two stay in the same order (see
-/// `tags.rs`'s `published_rule_tags_have_the_same_order_and_cardinality_as_known_rules`
-/// test).
-fn compile_rule_metadata(manifest_dir: &str, out_dir: &str) {
+fn compile_rule_tags(manifest_dir: &str, out_dir: &str) {
     let json_path = Path::new(manifest_dir).join("../../../docs/rules.json");
     println!("cargo:rerun-if-changed={}", json_path.display());
 
-    let json_src = fs::read_to_string(&json_path).unwrap_or_else(|err| {
+    let json_src = fs::read_to_string(&json_path)
+        .unwrap_or_else(|err| panic!("failed to read rule tags at {}: {err}", json_path.display()));
+    let rules: Vec<RawRuleTag> = serde_json::from_str(&json_src).unwrap_or_else(|err| {
         panic!(
-            "failed to read rule metadata at {}: {err}",
-            json_path.display()
-        )
-    });
-    let rules: Vec<RawRuleMeta> = serde_json::from_str(&json_src).unwrap_or_else(|err| {
-        panic!(
-            "failed to parse rule metadata at {}: {err}",
+            "failed to parse rule tags at {}: {err}",
             json_path.display()
         )
     });
 
-    let mut ids = String::new();
-    ids.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
-    ids.push_str("pub const KNOWN_RULE_IDS: &[&str] = &[\n");
-    for rule in &rules {
-        ids.push_str(&format!("    {:?},\n", rule.id));
-    }
-    ids.push_str("];\n\n");
-    ids.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
-    ids.push_str("pub const FIXABLE_RULE_IDS: &[&str] = &[\n");
-    for rule in rules.iter().filter(|rule| rule.fixable) {
-        ids.push_str(&format!("    {:?},\n", rule.id));
-    }
-    ids.push_str("];\n");
-
-    let ids_dest = Path::new(out_dir).join("known_rule_ids_data.rs");
-    fs::write(&ids_dest, ids).unwrap_or_else(|err| {
-        panic!(
-            "failed to write generated rule data to {}: {err}",
-            ids_dest.display()
-        )
-    });
-
-    let mut tags = String::new();
-    tags.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
-    tags.push_str("pub const RULE_TAGS: &[RuleTags] = &[\n");
+    let mut generated = String::new();
+    generated.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    generated.push_str("pub static RULE_TAGS: &[RuleTags] = &[\n");
     for rule in &rules {
         let importance = match rule.importance.as_str() {
             "low" => "Importance::Low",
@@ -397,29 +375,64 @@ fn compile_rule_metadata(manifest_dir: &str, out_dir: &str) {
                 rule.id
             ),
         };
-        match rule.severity.as_str() {
-            "error" | "warning" | "info" => {}
-            other => panic!(
-                "docs/rules.json: unknown severity `{other}` for {}",
-                rule.id
-            ),
+        if rule.tags.is_empty() {
+            panic!("docs/rules.json: {} has no tags", rule.id);
         }
-        let mut kinds = String::new();
-        for kind in &rule.tags {
-            kinds.push_str(&format!("{kind:?}, "));
-        }
-        tags.push_str(&format!(
+        let kinds = rule
+            .tags
+            .iter()
+            .map(|t| format!("{t:?}"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        generated.push_str(&format!(
             "    RuleTags {{ rule: {:?}, doc_slug: {:?}, description: {:?}, kinds: &[{kinds}], importance: {importance} }},\n",
             rule.id, rule.doc_slug, rule.definition
         ));
     }
-    tags.push_str("];\n");
+    generated.push_str("];\n");
 
-    let tags_dest = Path::new(out_dir).join("rule_tags_data.rs");
-    fs::write(&tags_dest, tags).unwrap_or_else(|err| {
+    let dest = Path::new(out_dir).join("rule_tags_data.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
         panic!(
             "failed to write generated rule data to {}: {err}",
-            tags_dest.display()
+            dest.display()
+        )
+    });
+}
+
+/// Compiles `docs/rules.json` into `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`
+/// (`include!`d by `src/registry.rs`), in the JSON array's own order —
+/// see this module's own doc comment.
+fn compile_known_rule_ids(manifest_dir: &str, out_dir: &str) {
+    let json_path = Path::new(manifest_dir).join("../../../docs/rules.json");
+    println!("cargo:rerun-if-changed={}", json_path.display());
+
+    let json_src = fs::read_to_string(&json_path)
+        .unwrap_or_else(|err| panic!("failed to read rule ids at {}: {err}", json_path.display()));
+    let rules: Vec<RawRuleId> = serde_json::from_str(&json_src).unwrap_or_else(|err| {
+        panic!("failed to parse rule ids at {}: {err}", json_path.display())
+    });
+
+    let mut generated = String::new();
+    generated.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    generated.push_str("pub const KNOWN_RULE_IDS: &[&str] = &[\n");
+    for rule in &rules {
+        generated.push_str(&format!("    {:?},\n", rule.id));
+    }
+    generated.push_str("];\n\n");
+    generated
+        .push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    generated.push_str("pub const FIXABLE_RULE_IDS: &[&str] = &[\n");
+    for rule in rules.iter().filter(|rule| rule.fixable) {
+        generated.push_str(&format!("    {:?},\n", rule.id));
+    }
+    generated.push_str("];\n");
+
+    let dest = Path::new(out_dir).join("known_rule_ids_data.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated rule data to {}: {err}",
+            dest.display()
         )
     });
 }

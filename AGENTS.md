@@ -37,7 +37,7 @@ Do not paste those files back into this index. Update the file you read.
 | frontend | `app/src` | Vanilla TypeScript. No framework. |
 | VS Code | `vscode-extension/` | Editor integration. |
 | Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
-| rule data | `rules/*.yaml` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`. |
+| rule data | `rules/*.yaml`, `docs/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`. |
 
 The six reusable crates are **path dependencies, not Cargo workspace
 members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each
@@ -77,12 +77,13 @@ CI treats clippy warnings as errors.
    file, not a copy of it.
 4. **Lint descriptions have two hand-edited consumers.** A README
    Implemented Lints row is the source of truth. The same change must
-   update that rule's entry in `docs/rules.json` (`name`, `description`,
-   `definition`, `category`, `tags`, `severity`, `fixable`, `doc_slug`,
-   `importance`). Everything else is generated from `docs/rules.json`, not
-   hand-edited: `pages/build.py` builds the website tables from the README
-   directly, so the site needs no manual lint-table edit;
-   `.github/scripts/generate_nexuspage_tables.py` builds
+   update that rule's entry in `docs/rules.json` (`name`, `definition` +
+   `doc_slug`, a shorter `description` blurb matching
+   `docs/nexuspage.bbcode`'s own style, `tags`, `severity`, `fixable`,
+   `importance`, `category`). Everything else is generated from
+   `docs/rules.json`, not hand-edited: `pages/build.py` builds the website
+   tables from the README directly, so the site needs no manual lint-table
+   edit; `.github/scripts/generate_nexuspage_tables.py` builds
    `docs/nexuspage.bbcode`'s five lint tables (CI's `bbcode` job fails if
    it drifts — run it after editing `docs/rules.json`); and `build.rs`
    compiles `app/crates/papyrus-lints`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`
@@ -104,17 +105,17 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
 3. `app/crates/papyrus-lints/src/config.rs` — field on `Rules` and its
    `Default` (and the rustdoc yaml example at the top of the file).
 4. `README.md` Implemented Lints table.
-5. `docs/rules.json` — a new entry: `id`, `name`, `category` (one of
+5. `docs/rules.json` — a new entry: `id`, `name`, `doc_slug` (from the
+   README row title, slugified), `definition` (verbatim README cell),
+   `tags`, `importance`, `severity`, `fixable`, `category` (one of
    `Formatting`, `Performance`, `Reliability`, `Bugprone`, `Other`,
-   matching the README `###` section the row lives under), `tags`,
-   `severity`, `fixable`, `doc_slug` (from the README row title,
-   slugified), `importance`, `description` (short blurb), `definition`
-   (verbatim README cell). Run `.github/scripts/generate_nexuspage_tables.py
-   docs/rules.json docs/nexuspage.bbcode` afterwards to regenerate its
-   lint tables; CI's `bbcode` job fails if that's skipped. `build.rs`
-   generates `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and
-   `tags.rs`'s `RULE_TAGS` from this file at build time — don't hand-edit
-   those.
+   matching the README `###` section the row lives under), and a short
+   `description` blurb matching `docs/nexuspage.bbcode`'s style. Run
+   `.github/scripts/generate_nexuspage_tables.py docs/rules.json
+   docs/nexuspage.bbcode` afterwards to regenerate its lint tables; CI's
+   `bbcode` job fails if that's skipped. `build.rs` generates
+   `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and `tags.rs`'s
+   `RULE_TAGS` from this file at build time — don't hand-edit those.
 
 Rules should inspect source/tokens so they still run on scripts that
 don't parse. Configurable behavior goes on `&papyrus_lints::Config`, not
@@ -130,7 +131,7 @@ If the rule introduces a new *kind* keyword (not `style` /
 - README lint tables → `docs/rules.json` (rule 4). `docs/rules.json` →
   `docs/nexuspage.bbcode`'s lint tables (via
   `.github/scripts/generate_nexuspage_tables.py`) and `papyrus-lints`'s
-  `registry.rs`/`tags.rs` (via `build.rs`) — both generated, never
+  `registry.rs`/`tags.rs` (via `build.rs`) — all generated, never
   hand-edited.
 - README CLI usage / default config → `docs/nexuspage.bbcode` CLI or
   configuration section (hand-edited; not covered by the generator
