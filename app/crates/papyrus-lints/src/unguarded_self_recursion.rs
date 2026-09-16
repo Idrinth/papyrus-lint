@@ -564,4 +564,41 @@ mod tests {
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 9);
     }
+
+    #[test]
+    fn finds_self_calls_nested_in_every_eager_expression_shape() {
+        let source = "ScriptName Example\n\nInt Function Foo(Int[] values)\n    Int negated = -Foo(values)\n    Int indexed = values[Foo(values)]\n    Int casted = Foo(values) as Int\n    Int[] sized = new Int[Foo(values)]\n    Consume(value = Foo(values))\n    Return negated + indexed + casted + sized[0]\nEndFunction\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.line)
+                .collect::<Vec<_>>(),
+            [4, 5, 6, 7, 8]
+        );
+    }
+
+    #[test]
+    fn exhaustive_branches_recognize_nested_self_calls_in_expression_shapes() {
+        let source = "ScriptName Example\n\nInt Function Foo(Int[] values, Bool choose)\n    If choose\n        Int first = -Foo(values, choose)\n    Else\n        Consume(value = values[Foo(values, choose)])\n    EndIf\nEndFunction\n";
+
+        let diagnostics = check(source);
+
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.line)
+                .collect::<Vec<_>>(),
+            [5, 7]
+        );
+    }
+
+    #[test]
+    fn nested_while_return_is_treated_as_a_possible_guard() {
+        let source = "ScriptName Example\n\nFunction Foo(Int x)\n    If x <= 0\n        While x < -1\n            Return\n        EndWhile\n    EndIf\n    Foo(x - 1)\nEndFunction\n";
+
+        assert!(check(source).is_empty());
+    }
 }
