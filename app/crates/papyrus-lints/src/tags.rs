@@ -464,6 +464,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Medium,
     },
     RuleTags {
+        rule: crate::unnecessary_function::RULE,
+        description: "Flags, as an `[info]`, a `Function` whose body consists of exactly one statement, since it adds an indirection without doing enough on its own to justify a separate declaration — a caller could just as well inline that one statement instead. `Event`s are never flagged: they're declared by the engine rather than the script's own author, so a single-statement handler may well be forwarding to shared logic used by other events too.",
+        kinds: &["maintainability", "performance"],
+        importance: Importance::Low,
+    },
+    RuleTags {
         rule: crate::actor_value::RULE,
         description: "Flags, as a `[warning]`, a call to an Actor Value function (`GetActorValue`, `SetActorValue`, `ModActorValue`, `DamageActorValue`, and the rest of that family) whose Actor Value name argument doesn't match one of Skyrim's built-in Actor Values, listed in `rules/actor-values.yaml` — a strong signal of a typo. Matches by function name alone (case-insensitively), regardless of receiver, the same way \"Forbidden/discouraged function usage\" does; only a plain string literal argument is checked, one built from a variable or any other expression is left unflagged rather than guessed at. Disabled by default, since a project's own plugin can define additional, custom Actor Values that have no way to appear in `rules/actor-values.yaml`; opt in with `rules.unknown_actor_value`.",
         kinds: &["correctness"],

@@ -199,6 +199,7 @@ preferences.
 | **Non-base-game native function usage** | Flags, as a `[warning]`, a `Native` function/event declared on a script whose name isn't one of the base game's own native functions, listed in `rules/native-methods.yaml` — a strong signal it's instead supplied by SKSE/F4SE or some other native extension the project depends on. Disabled by default, since plenty of mods intentionally depend on such an extension and don't need to be warned about it; opt in with `rules.native_function_usage`. | |
 | **GlobalVariable no-op write** | Flags, as a `[warning]`, a `SetValue`/`SetValueInt` call on a `GlobalVariable`-like receiver that writes a value an enclosing `If`/`ElseIf`/`Else` chain never proves is different from the value already there — either a branch writing back the exact literal its own `GetValue()`/`GetValueInt() == literal` condition just confirmed is already current, or the trailing `Else` of a chain that reads the same receiver elsewhere writing a literal with no condition of its own ruling out that value already being current, e.g. an `Else` unconditionally calling `gv.SetValue(0.0)` after an `If gv.GetValue() == 1.0` branch, where it should usually become an explicit `ElseIf gv.GetValue() != 0.0` instead. Only a `SetValue`/`SetValueInt` call standing alone as its own statement, guarded by a plain equality check against a literal, is considered; anything less direct is left unflagged rather than guessed at. Disabled by default, since the `Else` case is a heuristic rather than a proven no-op; opt in with `rules.global_variable_setvalue`. | |
 | **Default property value** | Flags, as a `[warning]`, a `Bool`/`Int`/`Float`/`String` `Auto`/`AutoReadOnly` property declared with no explicit default value (e.g. `Int Property Count Auto` rather than `Int Property Count = 0 Auto`), since it then silently falls back to Papyrus's own implicit per-type default (`False`, `0`, `0.0`, or `""`) instead of a value the author actually chose. Object-typed properties, array-typed properties, and full (non-`Auto`/`AutoReadOnly`) properties are never flagged. Disabled by default, since many existing scripts already rely on Papyrus's implicit defaults for some or all of their properties; opt in with `rules.default_property_value`. | |
+| **Unnecessary function** | Flags, as an `[info]`, a `Function` whose body consists of exactly one statement, since it adds an indirection without doing enough on its own to justify a separate declaration — a caller could just as well inline that one statement instead. `Event`s are never flagged: they're declared by the engine rather than the script's own author, so a single-statement handler may well be forwarding to shared logic used by other events too. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
 semicolon, indentation, chain whitespace, exclamation mark spacing, and
@@ -242,8 +243,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `stale-compiled-output`, `script-filename-mismatch`, `unused-disable`, `magic-numbers`, `native-function-usage`,
 `global-variable-setvalue`, `setvalue-in-loop`, `script-name-collision`,
 `array-bounds`, `array-size-range`,
-`default-property-value`, `unguarded-self-recursion`, `self-assignment`, and
-`unknown-actor-value`.
+`default-property-value`, `unguarded-self-recursion`, `self-assignment`,
+`unnecessary-function`, and `unknown-actor-value`.
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where
@@ -480,7 +481,7 @@ Each key:
   `script_name_collision`, `array_bounds`, `array_size_range`,
   `readonly_property_write`,
   `default_property_value`, `unguarded_self_recursion`,
-  `self_assignment`, and `unknown_actor_value`.
+  `self_assignment`, `unnecessary_function`, and `unknown_actor_value`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

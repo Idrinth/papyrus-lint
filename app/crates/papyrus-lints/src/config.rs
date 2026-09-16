@@ -86,6 +86,7 @@
 //!   default_property_value: false
 //!   unguarded_self_recursion: true
 //!   self_assignment: true
+//!   unnecessary_function: true
 //!   unknown_actor_value: false
 //! ```
 //!
@@ -464,6 +465,8 @@ pub struct Rules {
     pub unguarded_self_recursion: bool,
     /// The "Self-assignment" lint.
     pub self_assignment: bool,
+    /// The "Unnecessary function" lint.
+    pub unnecessary_function: bool,
     /// The "Unknown Actor Value" lint. Like [`Self::property_sorting`],
     /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`],
     /// [`Self::native_function_usage`], [`Self::repeated_getvalue`],
@@ -567,6 +570,7 @@ impl Default for Rules {
             default_property_value: false,
             unguarded_self_recursion: true,
             self_assignment: true,
+            unnecessary_function: true,
             unknown_actor_value: false,
         }
     }
@@ -764,6 +768,7 @@ mod tests {
         assert!(!config.rules.default_property_value);
         assert!(config.rules.unguarded_self_recursion);
         assert!(config.rules.self_assignment);
+        assert!(config.rules.unnecessary_function);
         // Also disabled by default: a project's own plugin can define
         // additional, custom Actor Values that have no way to appear in
         // rules/actor-values.yaml.
