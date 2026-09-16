@@ -137,8 +137,8 @@
 │           │   ├── test_support.rs  # Shared helpers for each file's unit tests
 │           │   └── main.rs          # Thin binary entry point around lib::run()
 │           └── tests/               # Binary e2e tests, one file per src module
-├── resources/                # Images used by README.md (logo, screenshots)
 ├── shared/
+│   ├── images/               # Images used by README.md (logo, screenshots)
 │   └── theme.css             # Palette, canvas, and primitives shared by
 │                              # app/src/styles.css and pages/styles.css so
 │                              # the desktop app and the website cannot drift
@@ -206,7 +206,7 @@
     │                            # coverage.html (via coverage.template.html, see
     │                            # GitHub Pages below), and assembles pages/dist/
     │                            # (git-ignored), copying
-    │                            # its assets/ images from resources/ and the
+    │                            # its assets/ images from shared/images/ and the
     │                            # app icon rather than committing duplicates of
     │                            # either under pages/, generating a WebP/AVIF
     │                            # sibling of each one rendered as an <img> and
@@ -238,4 +238,3 @@ pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
 depends on `papyrus-lint-cli` too, purely for its `run()` function (its
 `main.rs` calls straight into it for CLI mode), not for the `PapyrusLinterCLI`
 binary target that crate also defines.
-
