@@ -93,7 +93,8 @@
         "column",
         "rule",
         "level",
-        "message"
+        "message",
+        "doc_url"
       ],
       "properties": {
         "line": {
@@ -125,6 +126,14 @@
           "description": "The human-readable diagnostic message, including its severity prefix when classified.",
           "type": "string",
           "minLength": 1
+        },
+        "doc_url": {
+          "description": "This rule's own documentation link on the project website, so a consumer can jump straight to its explanation, or null for a rule with no known tag metadata (e.g. a compiler-reported diagnostic).",
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
         }
       }
     }

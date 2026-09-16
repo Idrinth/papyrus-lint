@@ -5,7 +5,10 @@ This package provides an interface to
 `PapyrusLinterCLI` binary or the desktop app's `PapyrusLinter` executable for
 [SublimeLinter](http://sublimelinter.com).
 It will be used with files that have the `source.papyrus` scope, i.e. a
-Papyrus syntax package installed in Sublime Text.
+Papyrus syntax package installed in Sublime Text. Each reported
+diagnostic's message ends with a link to that rule's own documentation on
+the [project website](https://papyrus-lint.idrinth.de) whenever the CLI's
+`--json` output knows one for it (a compiler-reported diagnostic doesn't).
 
 ## Installation
 

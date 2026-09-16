@@ -175,6 +175,9 @@ export interface RuleTagsInfo {
   kinds: string[];
   importance: TagImportance;
   auto_fixable: boolean;
+  // This rule's own documentation link (papyrus_lints::tags::RuleTags::doc_url),
+  // for linking a finding straight to its explanation on the project website.
+  doc_url: string;
 }
 
 export interface CompileOutcome {
@@ -2418,6 +2421,14 @@ function buildFindingTagsEl(finding: Diagnostic): HTMLElement | null {
     tagsEl.append(fixableBadge);
   }
 
+  const docsLink = document.createElement("a");
+  docsLink.classList.add("psc-result__tag-badge", "psc-result__tag-badge--docs-link");
+  docsLink.href = tags.doc_url;
+  docsLink.target = "_blank";
+  docsLink.rel = "noopener noreferrer";
+  docsLink.textContent = "docs";
+  tagsEl.append(docsLink);
+
   return tagsEl;
 }
 
@@ -2596,6 +2607,7 @@ function buildIssuesReport(files: FilteredIssuesFile[], stripSeverityPrefix = fa
         message: stripSeverityPrefix
           ? finding.message.replace(/^\[(?:error|warning|info)\]\s*/, "")
           : finding.message,
+        doc_url: (finding.rule ? ruleTagsByRule.get(finding.rule)?.doc_url : undefined) ?? null,
       })),
     };
   });
@@ -2635,7 +2647,7 @@ export function aiConfiguration(config: LintConfig): Record<string, unknown> {
 // documentation beyond what rule_details itself carries.
 const WEBSITE_URL = "https://papyrus-lint.idrinth.de";
 const AI_EXPORT_SCHEMA_URL =
-  "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json";
+  "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json";
 const TOOL_NAME = "Papyrus Lint";
 // The Papyrus dialect/engine version these findings were produced for, so
 // an AI reading the export doesn't have to guess whether a suggestion (e.g.
@@ -2760,7 +2772,14 @@ export async function formatIssuesForAi(
     .sort((a, b) => a.localeCompare(b))
     .map((rule) => ruleTagsByRule.get(rule))
     .filter((info): info is RuleTagsInfo => info !== undefined)
-    .map(({ rule, description, kinds, importance, auto_fixable }) => ({ rule, description, kinds, importance, auto_fixable }));
+    .map(({ rule, description, kinds, importance, auto_fixable, doc_url }) => ({
+      rule,
+      description,
+      kinds,
+      importance,
+      auto_fixable,
+      doc_url,
+    }));
 
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.
