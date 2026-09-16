@@ -83,14 +83,10 @@ CI treats clippy warnings as errors.
    it: `build.rs` compiles `app/crates/papyrus-lints`'s
    `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`) and `RULE_TAGS`
    (`src/tags.rs`) from it at build time; `pages/build.py` generates the
-   website's searchable `rules.html` straight from it; and
-   `docs/nexuspage.bbcode`'s five `[spoiler][table][/table][/spoiler]`
-   blocks carry no checked-in rows at all — `release.yml`'s `nexus-page`
-   job fills them in by running
-   `.github/scripts/generate_nexuspage_tables.py` against the tagged
-   commit's own `docs/rules.json` before packaging the version-specific
-   Nexus page, so there is nothing for CI to keep in sync between
-   releases. `README.md`'s own
+   website's searchable `rules.html` straight from it; and release tooling
+   fills in `docs/nexuspage.bbcode`'s five lint tables from it (see
+   Releases in `docs/agent/releases.md`) — the checked-in file carries no
+   rows itself. `README.md`'s own
    "Implemented Lints" section only keeps a short per-category blurb and a
    link to `rules.html` — it carries no per-rule text to keep in sync.
 5. **Match the file you are in.** Don't invent a new module layout, naming
@@ -114,10 +110,8 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `docs/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
    `Performance`, `Reliability`, `Bugprone`, `Other`), `tags`,
    `importance`, `severity`, and `fixable`. No Nexus page regeneration step
-   is needed here — `docs/nexuspage.bbcode` carries no checked-in tables,
-   `release.yml`'s `nexus-page` job fills them in from `docs/rules.json`
-   at release time (see Releases in `docs/agent/releases.md`). `build.rs`
-   generates
+   is needed here — that happens at release time (see Releases in
+   `docs/agent/releases.md`). `build.rs` generates
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and `tags.rs`'s
    `RULE_TAGS` from this file at build time — don't hand-edit those;
    `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
@@ -144,8 +138,8 @@ If the rule introduces a new *kind* keyword (not `style` /
 ## Docs sync (humans and AI)
 
 - README lint tables → `docs/rules.json` (rule 4). `docs/rules.json` →
-  `docs/nexuspage.bbcode`'s lint tables (filled in at release time by
-  `.github/scripts/generate_nexuspage_tables.py`, never checked in) and
+  `docs/nexuspage.bbcode`'s lint tables (filled in at release time, never
+  checked in — see Releases in `docs/agent/releases.md`) and
   `papyrus-lints`'s `registry.rs`/`tags.rs` (via `build.rs`) — all
   generated, never hand-edited.
 - README CLI usage / default config → `docs/nexuspage.bbcode` CLI or
