@@ -424,7 +424,7 @@ fn non_global_calls_honor_disable_comments_and_the_rule_switch() {
         .all(|diagnostic| diagnostic.rule != "non-global-function-call"));
 
     let disabled: Config =
-        serde_yaml::from_str("rules:\n  non_global_function_call: false\n").unwrap();
+        serde_norway::from_str("rules:\n  non_global_function_call: false\n").unwrap();
     let source =
         "ScriptName Example\n\nFunction Run()\n    Library.InstanceMethod()\nEndFunction\n";
     assert!(lint_with_function_kinds(source, &disabled)
@@ -438,7 +438,7 @@ fn lint_with_function_kinds(source: &str, config: &Config) -> Vec<papyrus_lints:
 
 #[test]
 fn default_enabled_rules_can_be_disabled_through_deserialized_config() {
-    let config: Config = serde_yaml::from_str(
+    let config: Config = serde_norway::from_str(
         "rules:\n  script_name_collision: false\n  invariant_loop_condition: false\n",
     )
     .unwrap();
@@ -481,7 +481,7 @@ fn repeated_setoutfit_is_dispatched_and_honors_line_disable_comments() {
 
 #[test]
 fn repeated_setoutfit_can_be_disabled_through_deserialized_config() {
-    let config: Config = serde_yaml::from_str("rules:\n  repeated_setoutfit: false\n").unwrap();
+    let config: Config = serde_norway::from_str("rules:\n  repeated_setoutfit: false\n").unwrap();
     let source = concat!(
         "ScriptName Example\n\n",
         "Function Dress(Actor Target, Outfit Clothes)\n",
@@ -529,7 +529,7 @@ fn every_filtered_fixer_respects_its_deserialized_rule_switch() {
     for (rule, source) in cases {
         let config_key = rule.replace('-', "_");
         let enabled_yaml = format!("rules:\n  {config_key}: true\n");
-        let enabled: Config = serde_yaml::from_str(&enabled_yaml).unwrap();
+        let enabled: Config = serde_norway::from_str(&enabled_yaml).unwrap();
         assert_ne!(
             repair_filtered(source, &enabled, Some(rule)),
             source,
@@ -537,7 +537,7 @@ fn every_filtered_fixer_respects_its_deserialized_rule_switch() {
         );
 
         let disabled_yaml = format!("rules:\n  {config_key}: false\n");
-        let disabled: Config = serde_yaml::from_str(&disabled_yaml).unwrap();
+        let disabled: Config = serde_norway::from_str(&disabled_yaml).unwrap();
         assert_eq!(
             repair_filtered(source, &disabled, Some(rule)),
             source,

@@ -138,7 +138,8 @@ fn project_file_from_yaml(contents: &str) -> Result<ProjectFile, String> {
     if contents.trim().is_empty() {
         return Ok(ProjectFile::default());
     }
-    let mut project: ProjectFile = serde_yaml::from_str(contents).map_err(|err| err.to_string())?;
+    let mut project: ProjectFile =
+        serde_norway::from_str(contents).map_err(|err| err.to_string())?;
     project.lookup_script_roots_explicit = yaml_has_top_level_key(contents, "lookup_script_roots");
     if !project.lookup_script_roots_explicit {
         merge_lookup_roots(
@@ -150,10 +151,10 @@ fn project_file_from_yaml(contents: &str) -> Result<ProjectFile, String> {
 }
 
 fn yaml_has_top_level_key(contents: &str, key: &str) -> bool {
-    let Ok(serde_yaml::Value::Mapping(map)) = serde_yaml::from_str(contents) else {
+    let Ok(serde_norway::Value::Mapping(map)) = serde_norway::from_str(contents) else {
         return false;
     };
-    map.contains_key(serde_yaml::Value::String(key.to_string()))
+    map.contains_key(serde_norway::Value::String(key.to_string()))
 }
 
 /// The explanatory comment shown above each top-level key in the README's
@@ -262,7 +263,7 @@ fn save_project_file(dir: &Path, project: &ProjectFile) -> Result<(), String> {
 fn save_project_file_at(path: &Path, project: &ProjectFile) -> Result<(), String> {
     let mut project = project.clone();
     seed_lookup_script_roots(&mut project);
-    let yaml = serde_yaml::to_string(&project).map_err(|err| err.to_string())?;
+    let yaml = serde_norway::to_string(&project).map_err(|err| err.to_string())?;
     fs::write(path, with_field_comments(&yaml)).map_err(|err| err.to_string())
 }
 
@@ -291,7 +292,7 @@ pub(crate) fn non_lint_yaml(project: &ProjectFile) -> Result<String, String> {
         strict_achlist_scope: bool,
     }
 
-    serde_yaml::to_string(&NonLintFields {
+    serde_norway::to_string(&NonLintFields {
         compiler_path: &project.compiler_path,
         additional_script_roots: &project.additional_script_roots,
         lookup_script_roots: &project.lookup_script_roots,

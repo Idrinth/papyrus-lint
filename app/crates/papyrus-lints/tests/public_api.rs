@@ -435,7 +435,7 @@ fn public_lint_entry_point_uses_external_signatures_and_subtyping() {
 
 #[test]
 fn deserialized_formatting_config_drives_public_repair() {
-    let config: Config = serde_yaml::from_str(
+    let config: Config = serde_norway::from_str(
         "semicolon: true\nindentation: space\nindentation_width: 2\nrules:\n  identifier_casing: false\n",
     )
     .unwrap();
@@ -532,7 +532,7 @@ fn raw_source_rules_still_report_when_the_script_does_not_parse() {
 
 #[test]
 fn yaml_rule_switches_gate_both_public_lint_and_repair() {
-    let config: Config = serde_yaml::from_str(
+    let config: Config = serde_norway::from_str(
         "rules:\n  comma_spacing: false\n  trailing_whitespace: false\n  identifier_casing: false\n",
     )
     .unwrap();
@@ -710,7 +710,7 @@ fn opt_in_rule_is_disabled_by_default_through_the_public_api() {
 #[test]
 fn yaml_can_enable_an_opt_in_rule_through_the_public_api() {
     let config: Config =
-        serde_yaml::from_str("rules:\n  global_variable_setvalue: true\n").unwrap();
+        serde_norway::from_str("rules:\n  global_variable_setvalue: true\n").unwrap();
     let source = "ScriptName Example\n\nGlobalVariable Property Toggle Auto\n\nFunction Run()\n    If Toggle.GetValue() == 1.0\n        Toggle.SetValue(1.0)\n    Else\n        Toggle.SetValue(0.0)\n    EndIf\nEndFunction\n";
 
     let diagnostics: Vec<_> = lint(source, &config)

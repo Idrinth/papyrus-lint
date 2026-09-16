@@ -37,7 +37,7 @@ fn compile_native_types(manifest_dir: &str, out_dir: &str) {
             yaml_path.display()
         )
     });
-    let rules: Vec<RawNativeType> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+    let rules: Vec<RawNativeType> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
         panic!(
             "failed to parse native-types rules at {}: {err}",
             yaml_path.display()
@@ -77,7 +77,7 @@ fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
             yaml_path.display()
         )
     });
-    let rules: Vec<RawNativeGlobal> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+    let rules: Vec<RawNativeGlobal> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
         panic!(
             "failed to parse native-globals rules at {}: {err}",
             yaml_path.display()

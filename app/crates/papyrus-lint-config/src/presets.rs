@@ -496,9 +496,9 @@ fn read_user_preset_yaml_under(base_dir: Option<&Path>, name: &str) -> Result<St
 /// Used to layer an executable-adjacent base config over a selected
 /// [`Preset`]'s own YAML, the same key-by-key override semantics a project's
 /// own `papyrus-lint.yaml` already gets over the engine's built-in defaults.
-fn deep_merge(base: serde_yaml::Value, over: serde_yaml::Value) -> serde_yaml::Value {
+fn deep_merge(base: serde_norway::Value, over: serde_norway::Value) -> serde_norway::Value {
     match (base, over) {
-        (serde_yaml::Value::Mapping(mut base_map), serde_yaml::Value::Mapping(over_map)) => {
+        (serde_norway::Value::Mapping(mut base_map), serde_norway::Value::Mapping(over_map)) => {
             for (key, value) in over_map {
                 let merged = match base_map.remove(&key) {
                     Some(base_value) => deep_merge(base_value, value),
@@ -506,7 +506,7 @@ fn deep_merge(base: serde_yaml::Value, over: serde_yaml::Value) -> serde_yaml::V
                 };
                 base_map.insert(key, merged);
             }
-            serde_yaml::Value::Mapping(base_map)
+            serde_norway::Value::Mapping(base_map)
         }
         (_, over) => over,
     }
@@ -574,8 +574,8 @@ fn resolve_preset_project_file(
     preset: &Preset,
 ) -> Result<ProjectFile, String> {
     let preset_yaml = preset.yaml(base_dir)?;
-    let preset_value: serde_yaml::Value =
-        serde_yaml::from_str(&preset_yaml).map_err(|err| err.to_string())?;
+    let preset_value: serde_norway::Value =
+        serde_norway::from_str(&preset_yaml).map_err(|err| err.to_string())?;
 
     let merged_value = match base_dir.and_then(existing_config_path) {
         Some(base_path) => {
@@ -583,15 +583,15 @@ fn resolve_preset_project_file(
             if contents.trim().is_empty() {
                 preset_value
             } else {
-                let override_value: serde_yaml::Value =
-                    serde_yaml::from_str(&contents).map_err(|err| err.to_string())?;
+                let override_value: serde_norway::Value =
+                    serde_norway::from_str(&contents).map_err(|err| err.to_string())?;
                 deep_merge(preset_value, override_value)
             }
         }
         None => preset_value,
     };
 
-    serde_yaml::from_value(merged_value).map_err(|err| err.to_string())
+    serde_norway::from_value(merged_value).map_err(|err| err.to_string())
 }
 
 /// Returns `preset`'s lint rule/formatting settings only — not the
@@ -678,7 +678,7 @@ mod tests {
     fn every_built_in_preset_yaml_parses_into_a_project_file() {
         for preset in [Preset::Strict, Preset::Standard, Preset::Careful] {
             let yaml = preset.yaml(None).expect("built-in preset should resolve");
-            serde_yaml::from_str::<ProjectFile>(&yaml)
+            serde_norway::from_str::<ProjectFile>(&yaml)
                 .unwrap_or_else(|err| panic!("{preset:?} preset failed to parse: {err}"));
         }
     }
@@ -790,7 +790,7 @@ mod tests {
             .yaml(Some(base_dir.path()))
             .expect("saved preset should resolve");
         let saved: papyrus_lints::Config =
-            serde_yaml::from_str(&yaml).expect("saved preset should parse as a lint config");
+            serde_norway::from_str(&yaml).expect("saved preset should parse as a lint config");
         assert_eq!(saved, config);
     }
 
@@ -870,7 +870,7 @@ mod tests {
             .filter_map(Result::ok)
             .collect();
         assert_eq!(entries.len(), 1);
-        let saved: papyrus_lints::Config = serde_yaml::from_str(
+        let saved: papyrus_lints::Config = serde_norway::from_str(
             &Preset::Custom("my-preset".to_string())
                 .yaml(Some(base_dir.path()))
                 .expect("saved preset should resolve"),
