@@ -248,6 +248,41 @@ mod tests {
     }
 
     #[test]
+    fn checks_comparisons_in_every_statement_position() {
+        let diagnostics = check(
+            "ScriptName Example\n\nBool Function Compare(Float a, Float b)\n    Bool local = a == b\n    local = a != b\n    Consume(a == b)\n    While a != b\n        local = a == b\n        Return a != b\n    EndWhile\nEndFunction\n",
+        );
+
+        let lines: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect();
+        assert_eq!(lines, [4, 5, 6, 7, 8, 9]);
+    }
+
+    #[test]
+    fn walks_nested_expression_kinds() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Consume(Bool value)\nEndFunction\n\nFunction Test(Float a, Float b, Float[] values)\n    If !(a == b)\n    EndIf\n    Consume(value = (a != b))\n    values[(a == b) as Int] = 1.0\nEndFunction\n",
+        );
+
+        let lines: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect();
+        assert_eq!(lines, [7, 9, 10]);
+    }
+
+    #[test]
+    fn skips_a_comparison_when_the_left_type_is_unknown() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Float value)\n    If GetValue() == value\n    EndIf\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn does_not_crash_on_unparseable_source() {
         let diagnostics = check("ScriptName Example\n\nFunction Test(\nEndFunction\n");
         assert!(diagnostics.is_empty());
