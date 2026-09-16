@@ -15,6 +15,7 @@
   --color-border-strong: rgba(15, 15, 15, 0.35);
   --color-hover-bg: rgba(15, 15, 15, 0.1);
   --color-flagged-bg: rgba(15, 15, 15, 0.08);
+  --color-grid: rgba(15, 15, 15, 0.035);
   --color-accent: #396cd8;
   --color-accent-toggle: #396cd8;
   --color-error: #d83939;
@@ -35,6 +36,10 @@
 
   color: var(--color-text);
   background-color: var(--color-bg);
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: 32px 32px;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -1232,6 +1237,7 @@ h1 {
     --color-border-strong: rgba(246, 246, 246, 0.35);
     --color-hover-bg: rgba(246, 246, 246, 0.15);
     --color-flagged-bg: rgba(246, 246, 246, 0.08);
+    --color-grid: rgba(246, 246, 246, 0.035);
     --color-accent-toggle: #24c8db;
     --color-error: #ff6b6b;
     --color-error-strong: #ff6b6b;
@@ -1264,6 +1270,7 @@ h1 {
   --color-border-strong: rgba(246, 246, 246, 0.35);
   --color-hover-bg: rgba(246, 246, 246, 0.15);
   --color-flagged-bg: rgba(246, 246, 246, 0.08);
+  --color-grid: rgba(246, 246, 246, 0.035);
   --color-accent-toggle: #24c8db;
   --color-error: #ff6b6b;
   --color-error-strong: #ff6b6b;
