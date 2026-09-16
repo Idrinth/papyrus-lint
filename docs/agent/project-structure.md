@@ -90,6 +90,10 @@
 │       │       │                       # tracks the State block it came from (if
 │       │       │                       # any), preferring the empty state's own
 │       │       │                       # declaration over a same-named override
+│       │       ├── script_functions.rs # Converts a parsed .psc AST into the
+│       │       │                       # FunctionSignature/PropertySignature/Member
+│       │       │                       # types function_table.rs looks up and
+│       │       │                       # caches (and re-exports from there)
 │       │       ├── native_types.rs     # Fallback Extends hierarchy for native
 │       │       │                       # engine types (Actor, ObjectReference,
 │       │       │                       # Form, ...) with no .psc in the project;
