@@ -242,10 +242,7 @@ def render_list(rows: list[tuple[str, int]], formatter) -> list[str]:
 
 
 def notice_line(title: str, rows: list[tuple[str, int]], formatter) -> str:
-    if not rows:
-        message = "none"
-    else:
-        message = "; ".join(f"{path} ({formatter(value)})" for path, value in rows)
+    message = "none" if not rows else "; ".join(f"{path} ({formatter(value)})" for path, value in rows)
     return f"::notice title={title}::{message}"
 
 
@@ -281,10 +278,12 @@ def render_report(
             "#### Longest files (LOC)",
             *render_list(loc_rows, str),
             "",
-            "_Size and LOC cover `.rs` / `.ts` / `.js` / `.py` / `.css` / `.html` / `.json` / `.yaml` / `.toml` / `.md` "
-            "outside build and vendor directories. Exports count unrestricted-looking `pub` items in Rust, `export` / "
-            "`module.exports` in JS/TS, and public top-level `def`/`class` names in Python. Uncovered lines come from "
-            "the job's downloaded `lcov.info` artifacts._",
+            "_Size and LOC cover `.rs` / `.ts` / `.js` / `.py` / `.css` / "
+            "`.html` / `.json` / `.yaml` / `.toml` / `.md` outside build "
+            "and vendor directories. Exports count unrestricted-looking "
+            "`pub` items in Rust, `export` / `module.exports` in JS/TS, "
+            "and public top-level `def`/`class` names in Python. Uncovered "
+            "lines come from the job's downloaded `lcov.info` artifacts._",
         ]
     )
     return "\n".join(lines)
@@ -297,11 +296,7 @@ def build_rankings(
     size_rows = top_n([(path, size) for path, size, _, _ in metrics], top)
     export_rows = top_n([(path, exports) for path, _, _, exports in metrics], top)
     loc_rows = top_n([(path, loc) for path, _, loc, _ in metrics], top)
-    uncovered_rows: list[tuple[str, int]] | None
-    if lcov_dir is None:
-        uncovered_rows = None
-    else:
-        uncovered_rows = top_n(list(parse_uncovered_lines(lcov_dir, root).items()), top)
+    uncovered_rows = None if lcov_dir is None else top_n(list(parse_uncovered_lines(lcov_dir, root).items()), top)
     return size_rows, export_rows, uncovered_rows, loc_rows
 
 
