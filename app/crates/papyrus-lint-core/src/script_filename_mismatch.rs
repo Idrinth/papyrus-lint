@@ -105,6 +105,26 @@ mod tests {
     }
 
     #[test]
+    fn ignores_a_scriptname_without_a_declared_name() {
+        assert!(check(Path::new("Example.psc"), "ScriptName").is_none());
+    }
+
+    #[test]
+    fn ignores_a_scriptname_followed_by_a_non_identifier() {
+        assert!(check(Path::new("Example.psc"), "ScriptName 123\n").is_none());
+    }
+
+    #[test]
+    fn ignores_an_incomplete_namespace() {
+        assert!(check(Path::new("Example.psc"), "ScriptName User:\n").is_none());
+    }
+
+    #[test]
+    fn ignores_a_namespace_segment_that_is_not_an_identifier() {
+        assert!(check(Path::new("Example.psc"), "ScriptName User:123\n").is_none());
+    }
+
+    #[test]
     fn ignores_a_script_that_fails_to_lex() {
         assert!(check(
             Path::new("Other.psc"),
@@ -116,6 +136,17 @@ mod tests {
     #[test]
     fn ignores_a_path_with_no_file_stem() {
         assert!(check(Path::new("/"), "ScriptName Example\n").is_none());
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn ignores_a_path_with_a_non_utf8_file_stem() {
+        use std::ffi::OsStr;
+        use std::os::unix::ffi::OsStrExt;
+
+        let path = Path::new(OsStr::from_bytes(b"Example\xFF.psc"));
+
+        assert!(check(path, "ScriptName Example\n").is_none());
     }
 
     #[test]
