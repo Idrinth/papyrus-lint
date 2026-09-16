@@ -612,6 +612,27 @@ impl FunctionTable {
         find_psc_file_in_lookup_roots(&self.root, name_lower, &self.lookup_roots)
     }
 
+    /// Every property type declared directly on `type_name`'s own script,
+    /// in its original case, not extended through `Extends`. Returns an
+    /// empty list if `type_name`'s script can't be found or parsed. Used by
+    /// the "Circular script dependency" lint
+    /// (`papyrus_lints::circular_dependency`) to follow a chain of
+    /// `Property` declarations across scripts looking for one that leads
+    /// back to the script it started from.
+    pub fn property_types(&mut self, type_name: &str) -> Vec<String> {
+        let name_lower = type_name.to_ascii_lowercase();
+        self.ensure_loaded(&name_lower);
+
+        let Some(script) = self.scripts.get(&name_lower).and_then(Option::as_ref) else {
+            return Vec::new();
+        };
+        script
+            .properties
+            .values()
+            .map(|property| property.type_name.name.clone())
+            .collect()
+    }
+
     /// Parses and caches the script named `name_lower`, if it hasn't been
     /// already. In known-scripts mode (see [`Self::with_known_scripts`]),
     /// only an O(1) lookup against the registered map is ever done against
@@ -706,6 +727,10 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
 
     fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
         self.ancestry_fully_known(type_name)
+    }
+
+    fn property_types(&mut self, type_name: &str) -> Vec<String> {
+        self.property_types(type_name)
     }
 }
 
@@ -832,6 +857,14 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             type_name,
         )
     }
+
+    fn property_types(&mut self, type_name: &str) -> Vec<String> {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::argument_types::ExternalSignatures::property_types(&mut *table, type_name)
+    }
 }
 
 #[cfg(test)]
@@ -888,6 +921,7 @@ mod tests {
         assert!(params.is_empty());
         assert!(shared.is_subtype("Child", "Helpers"));
         assert!(shared.has_property("Properties", "Name"));
+        assert_eq!(shared.property_types("Properties"), vec!["String"]);
         assert!(shared.script_exists("Child"));
         assert!(shared.can_resolve_script("Child"));
         assert!(!shared.can_resolve_script("Missing"));
@@ -1564,6 +1598,36 @@ mod tests {
 
         assert!(!table.has_property("Foo", "DoesNotExist"));
         assert!(!table.has_property("Missing", "Anything"));
+    }
+
+    #[test]
+    fn property_types_lists_only_this_scripts_own_declared_property_types() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Base",
+            "ScriptName Base\n\nInt Property Inherited Auto\n",
+        );
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo Extends Base\n\nBar Property MyBar Auto\nInt Property MyValue Auto\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let mut types = table.property_types("Foo");
+        types.sort();
+
+        assert_eq!(types, vec!["Bar".to_string(), "Int".to_string()]);
+    }
+
+    #[test]
+    fn property_types_is_empty_for_an_unresolvable_type() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+
+        assert!(table.property_types("Missing").is_empty());
     }
 
     #[test]

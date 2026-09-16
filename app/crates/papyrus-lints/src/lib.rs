@@ -13,6 +13,7 @@ pub mod array_bounds;
 pub mod array_size_range;
 pub mod assignment_operator_spacing;
 pub mod chain_whitespace;
+pub mod circular_dependency;
 pub mod comma_spacing;
 pub mod config;
 pub mod cyclomatic_complexity;
@@ -1514,6 +1515,53 @@ mod tests {
             &mut FakeExternalWithMissingScript,
         );
         assert!(disabled.iter().all(|d| d.rule != unresolved_script::RULE));
+    }
+
+    struct FakeExternalWithCircularProperty;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithCircularProperty {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
+            None
+        }
+
+        fn property_types(&mut self, type_name: &str) -> Vec<String> {
+            if type_name.eq_ignore_ascii_case("B") {
+                vec!["Example".to_string()]
+            } else {
+                Vec::new()
+            }
+        }
+    }
+
+    /// Like `function_override_flag_gates_only_its_own_lint` above:
+    /// `circular_dependency` also needs `lint_with_external_arguments`'s
+    /// `external` resolver to ever fire, so its own
+    /// `rules.circular_dependency` gate is checked here instead of in the
+    /// main loop. It also defaults to `false` (see `config::Rules`), unlike
+    /// every rule the main loop covers, so both configs here are built from
+    /// `config_with` rather than one being `Config::default()`.
+    #[test]
+    fn circular_dependency_flag_gates_only_its_own_lint() {
+        let source = "ScriptName Example\n\nB Property Little Auto\n";
+
+        let enabled_config = config_with(|c| c.rules.circular_dependency = true);
+        let enabled = lint_with_external_arguments(
+            source,
+            &enabled_config,
+            &mut FakeExternalWithCircularProperty,
+        );
+        assert!(enabled.iter().any(|d| d.rule == circular_dependency::RULE));
+
+        let disabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithCircularProperty,
+        );
+        assert!(disabled.iter().all(|d| d.rule != circular_dependency::RULE));
     }
 
     struct FakeExternalWithNonGlobalFunction;

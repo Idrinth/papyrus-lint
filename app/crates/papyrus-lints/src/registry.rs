@@ -10,9 +10,9 @@ use crate::argument_types::ExternalSignatures;
 use crate::config::{Config, Rules};
 use crate::{
     actor_value, argument_naming, argument_override_types, argument_types, array_bounds,
-    array_size_range, assignment_operator_spacing, chain_whitespace, comma_spacing,
-    cyclomatic_complexity, default_property_value, division_by_zero, empty_body, event_signature,
-    exclamation_spacing, explicit_return, float_equality, float_int_conversion,
+    array_size_range, assignment_operator_spacing, chain_whitespace, circular_dependency,
+    comma_spacing, cyclomatic_complexity, default_property_value, division_by_zero, empty_body,
+    event_signature, exclamation_spacing, explicit_return, float_equality, float_int_conversion,
     forbidden_functions, formid_hex_notation, function_override, get_state_comparison,
     global_variable_increment, global_variable_setvalue, goto_state, identifier_casing,
     impossible_cast, indentation, int_division_to_float, invalid_random_range,
@@ -118,6 +118,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     missing_update_handler::RULE,
     unused_import::RULE,
     event_signature::RULE,
+    circular_dependency::RULE,
 ];
 
 /// Rule ids with an automatic fix, in the order [`apply_repairs`] applies them.
@@ -223,6 +224,7 @@ pub fn default_rules() -> Rules {
         missing_update_handler: false,
         unused_import: true,
         event_signature_mismatch: false,
+        circular_dependency: false,
     }
 }
 
@@ -468,6 +470,9 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
     }
     if rules.event_signature_mismatch {
         diagnostics.extend(event_signature::check(source));
+    }
+    if rules.circular_dependency {
+        diagnostics.extend(circular_dependency::check_with(source, external));
     }
     diagnostics
 }

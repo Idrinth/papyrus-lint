@@ -219,6 +219,10 @@ Catches mistakes that still compile fine but can misbehave once the game is actu
 [td]Flags a call to an Actor Value function (GetActorValue, SetActorValue, ModActorValue, DamageActorValue, ...) whose Actor Value name isn't one of Skyrim's built-in ones, a strong sign of a typo. Only a plain string literal argument is checked. Disabled by default, since a project's own plugin can define custom Actor Values.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Circular script dependency[/b][/td]
+[td]Flags a Property whose declared type, followed through that script's own Property declarations, eventually leads back to the script being linted (e.g. script A declaring a B Property while script B declares an A Property). A property typed as its own script isn't flagged. Disabled by default, since two scripts intentionally referencing each other for two-way communication is a common, legitimate design.[/td]
+[td][/td]
+[/tr]
 [/table][/spoiler]
 [size=4][b]Bugprone[/b][/size]
 Flags patterns that compile clean but crash or silently do the wrong thing at runtime.
