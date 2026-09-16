@@ -508,6 +508,7 @@ fn every_filtered_fixer_respects_its_deserialized_rule_switch() {
         ("chain-whitespace", "Value . Call()\n"),
         ("exclamation-spacing", "If !Ready\nEndIf\n"),
         ("operator-spacing", "If Left==Right\nEndIf\n"),
+        ("assignment-operator-spacing", "Left=Right\n"),
         ("type-casing", "ScriptName myScript\n"),
         ("trailing-whitespace", "Call()  \n"),
         (

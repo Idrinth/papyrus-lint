@@ -79,6 +79,7 @@ rules:
   type_casing: true
   named_arguments: true
   operator_spacing: true
+  assignment_operator_spacing: true
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false
