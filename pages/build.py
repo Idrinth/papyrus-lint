@@ -12,14 +12,14 @@ shell, and BBCode sources. The
 templates receive their
 shared header and footer from pages/includes/, so site chrome has a single
 source of truth - including the header's System/Light/Dark theme switch,
-wired up by pages/theme.js (copied into the output directory verbatim) and
+wired up by pages/theme.js (minified into the output directory) and
 backed by a small blocking inline script duplicated into each template's
 own <head> (before the stylesheet link, to set an already-persisted
 light/dark override ahead of first paint and avoid a flash of the wrong
 theme), the same "system"/"light"/"dark" scheme and localStorage key the
 desktop app's own theme switch uses. The homepage's hero "Download
 GUI"/"Download CLI" buttons are progressively enhanced the same way, by
-pages/downloads.js (also copied verbatim): without it they're plain links
+pages/downloads.js (also minified): without it they're plain links
 to the latest GitHub release page, encoded via each button's own
 data-options attribute; with it, clicking one opens a quick-select panel
 of that release's actual per-platform assets instead, pre-selected by the
@@ -32,8 +32,12 @@ an <img> also gets a WebP and an AVIF sibling (see
 convert_to_modern_formats), and every such <img> tag, in every generated
 page, is rewritten into a <picture> offering those smaller formats ahead
 of the original as a fallback (see wrap_images_with_modern_sources).
-Every generated HTML page and the stylesheet are minified (see
-minify_html/minify_css) before being written into the output directory.
+Every generated HTML page, the stylesheet, and the site scripts are minified
+(see minify_html/minify_css/minify_js) before being written into the output
+directory.
+`pages/styles.css` imports the shared visual identity from
+`shared/theme.css`; those `@import`s are inlined (see inline_css_imports)
+so the deployed site still ships a single stylesheet.
 Also renders action.html (via pages/action.template.html), the
 papyrus-lint-action GitHub Action's own README fetched fresh on every build
 (see ACTION_DOC/build_action_page), reachable from the main nav's "Action"
@@ -67,6 +71,11 @@ from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 
 from PIL import Image
+
+try:
+    from pages.minify import minify_css, minify_html, minify_js
+except ImportError:  # running as pages/build.py
+    from minify import minify_css, minify_html, minify_js
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
@@ -205,15 +214,15 @@ VIDEOS_FILE = PAGES_DIR / "videos.json"
 INCLUDES_DIR = PAGES_DIR / "includes"
 
 ASSETS = {
-    "logo-small.jpg": ROOT / "resources" / "logo-small.jpg",
-    "logo.jpg": ROOT / "resources" / "logo.jpg",
-    "papyrus-lint-import.png": ROOT / "resources" / "papyrus-lint-import.png",
-    "papyrus-lint-results.png": ROOT / "resources" / "papyrus-lint-results.png",
-    "papyrus-lint-viewer.png": ROOT / "resources" / "papyrus-lint-viewer.png",
-    "papyrus-lint-vscode.png": ROOT / "resources" / "papyrus-lint-vscode.png",
-    "papyrus-lint-massfix.png": ROOT / "resources" / "papyrus-lint-massfix.png",
-    "papyrus-lint-cli.png": ROOT / "resources" / "papyrus-lint-cli.png",
-    "favicon.png": ROOT / "app" / "src-tauri" / "icons" / "icon.png",
+    "logo-small.jpg": ROOT / "shared" / "images" / "logo-small.jpg",
+    "logo.jpg": ROOT / "shared" / "images" / "logo.jpg",
+    "papyrus-lint-import.png": ROOT / "shared" / "images" / "papyrus-lint-import.png",
+    "papyrus-lint-results.png": ROOT / "shared" / "images" / "papyrus-lint-results.png",
+    "papyrus-lint-viewer.png": ROOT / "shared" / "images" / "papyrus-lint-viewer.png",
+    "papyrus-lint-vscode.png": ROOT / "shared" / "images" / "papyrus-lint-vscode.png",
+    "papyrus-lint-massfix.png": ROOT / "shared" / "images" / "papyrus-lint-massfix.png",
+    "papyrus-lint-cli.png": ROOT / "shared" / "images" / "papyrus-lint-cli.png",
+    "favicon.png": ROOT/ "shared" / "images" / "logo.png",
 }
 
 # The ASSETS entries actually rendered as <img> elements on the page (as
@@ -238,48 +247,38 @@ INLINE_CODE_RE = re.compile(r"`([^`]+)`")
 INLINE_BOLD_RE = re.compile(r"\*\*([^*]+)\*\*")
 ROW_SPLIT_RE = re.compile(r"(?<!\\)\|")
 
-PRE_BLOCK_RE = re.compile(r"<pre\b[^>]*>.*?</pre>", re.DOTALL | re.IGNORECASE)
-HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
-TAG_GAP_RE = re.compile(r">\s+<")
-WHITESPACE_RUN_RE = re.compile(r"\s+")
-CSS_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
-CSS_WHITESPACE_RUN_RE = re.compile(r"\s+")
-CSS_SYNTAX_SPACE_RE = re.compile(r"\s*([{}:;,])\s*")
-CSS_TRAILING_SEMICOLON_RE = re.compile(r";}")
+CSS_IMPORT_RE = re.compile(r"""@import\s+(?:url\(\s*["']?([^"')]+)["']?\s*\)|["']([^"']+)["'])\s*;""")
 
 # Matches a local (not http(s), e.g. a shields.io badge) <img> tag whose src
 # points into assets/ (optionally prefixed with ../, as docs/*.html pages do).
 IMG_ASSET_TAG_RE = re.compile(r'<img\b[^>]*\ssrc="((?:\.\./)?assets/([\w.-]+)\.(?:png|jpg))"[^>]*/?>')
 
 
-def minify_html(text: str) -> str:
-    """Minifies static HTML for deployment: strips comments and collapses
-    every run of insignificant whitespace (including line breaks) down to
-    a single space, while leaving <pre>...</pre> blocks untouched since
-    their whitespace (the CLI/config/schema examples) is significant."""
-    blocks: list[str] = []
+def inline_css_imports(text: str, origin: Path, seen: set[Path] | None = None) -> str:
+    """Inlines relative `@import` rules so the deployed stylesheet stays a
+    single file. Remote (`http:`, `https:`, protocol-relative) imports are
+    left untouched. A missing or cyclical import fails the build rather
+    than shipping a stylesheet that 404s a dependency at runtime."""
+    origin = origin.resolve()
+    visited = set() if seen is None else set(seen)
+    if origin in visited:
+        raise SystemExit(f"{origin}: cyclical @import")
+    visited.add(origin)
 
-    def stash(match: re.Match[str]) -> str:
-        blocks.append(match.group(0))
-        return f"\x00{len(blocks) - 1}\x00"
+    def replace(match: re.Match[str]) -> str:
+        rel = match.group(1) or match.group(2)
+        if rel.startswith(("http:", "https:", "//")):
+            return match.group(0)
+        imported = (origin.parent / rel).resolve()
+        if not imported.is_file():
+            raise SystemExit(f"{origin}: @import not found: {rel}")
+        imported_text = imported.read_text(encoding="utf-8")
+        inlined = inline_css_imports(imported_text, imported, visited)
+        if inlined and not inlined.endswith("\n"):
+            inlined += "\n"
+        return inlined
 
-    result = PRE_BLOCK_RE.sub(stash, text)
-    result = HTML_COMMENT_RE.sub("", result)
-    result = TAG_GAP_RE.sub("><", result)
-    result = WHITESPACE_RUN_RE.sub(" ", result)
-    result = result.strip()
-    return re.sub(r"\x00(\d+)\x00", lambda m: blocks[int(m.group(1))], result)
-
-
-def minify_css(text: str) -> str:
-    """Minifies CSS for deployment: strips comments and collapses
-    whitespace, which carries no meaning in this stylesheet's syntax
-    outside of string/url literals (none of which contain whitespace
-    here)."""
-    result = CSS_COMMENT_RE.sub("", text)
-    result = CSS_WHITESPACE_RUN_RE.sub(" ", result).strip()
-    result = CSS_SYNTAX_SPACE_RE.sub(r"\1", result)
-    return CSS_TRAILING_SEMICOLON_RE.sub("}", result)
+    return CSS_IMPORT_RE.sub(replace, text)
 
 
 def extract_section(lines: list[str], heading_text: str, level: int) -> list[str]:
@@ -1063,10 +1062,17 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True)
     (out_dir / "index.html").write_text(finalize_page(template), encoding="utf-8")
-    css = (PAGES_DIR / "styles.css").read_text(encoding="utf-8")
+    css_path = PAGES_DIR / "styles.css"
+    css = inline_css_imports(css_path.read_text(encoding="utf-8"), css_path)
     (out_dir / "styles.css").write_text(minify_css(css), encoding="utf-8")
-    shutil.copyfile(PAGES_DIR / "theme.js", out_dir / "theme.js")
-    shutil.copyfile(PAGES_DIR / "downloads.js", out_dir / "downloads.js")
+    (out_dir / "theme.js").write_text(
+        minify_js((PAGES_DIR / "theme.js").read_text(encoding="utf-8")),
+        encoding="utf-8",
+    )
+    (out_dir / "downloads.js").write_text(
+        minify_js((PAGES_DIR / "downloads.js").read_text(encoding="utf-8")),
+        encoding="utf-8",
+    )
 
     assets_dir = out_dir / "assets"
     assets_dir.mkdir()

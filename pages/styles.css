@@ -1,3 +1,5 @@
+@import url("../shared/theme.css");
+
 /* optional (not swap): Cinzel only heads large text (the hero h1 in
    particular), where a late swap from the fallback font reflows/rewraps
    the whole heading - visible as a large Cumulative Layout Shift. optional
@@ -23,49 +25,6 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  --color-text: #0f0f0f;
-  --color-text-muted: rgba(15, 15, 15, 0.6);
-  --color-bg: #f6f6f6;
-  --color-surface: #ffffff;
-  --color-border: rgba(15, 15, 15, 0.15);
-  --color-border-strong: rgba(15, 15, 15, 0.35);
-  --color-hover-bg: rgba(15, 15, 15, 0.1);
-  --color-grid: rgba(15, 15, 15, 0.035);
-  --color-accent: #396cd8;
-  --color-accent-toggle: #396cd8;
-  --color-error: #d83939;
-  --color-warning: #b8860b;
-  --color-success: #2f8f3f;
-  --code-comment: #6a9955;
-  --code-string: #a31515;
-  --code-number: #098658;
-  --code-keyword: #0000ff;
-
-  color: var(--color-text);
-  background-color: var(--color-bg);
-  background-image:
-    linear-gradient(var(--color-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
-  background-size: 32px 32px;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 html {
   /* Offsets in-page anchor jumps (nav links, direct #fragment URLs) by the
      sticky site header's actual height, set by theme.js, so the jump
@@ -74,14 +33,10 @@ html {
   scroll-padding-top: var(--site-header-height, 5em);
 }
 
-body {
-  margin: 0;
-}
-
 h1,
 h2,
 h3 {
-  font-family: "Cinzel", Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -91,11 +46,6 @@ h3 {
 
 a {
   color: var(--color-accent-toggle);
-}
-
-code,
-pre {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 abbr[title] {
@@ -169,27 +119,9 @@ abbr[title] {
   text-decoration: underline;
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
-
 .theme-switch select {
   padding: 0.35em 0.6em;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 6px;
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font: inherit;
   font-size: 0.9em;
-  cursor: pointer;
 }
 
 main {
@@ -368,7 +300,7 @@ pre.code-block {
 }
 
 .code-block .ty {
-  color: #267f99;
+  color: var(--code-type);
 }
 
 .code-block .cm {
@@ -796,35 +728,7 @@ table.lint-rules-table {
   text-decoration: underline;
 }
 
-/*
- * Dark palette: applied automatically when the system prefers dark and the
- * user hasn't forced light mode, or unconditionally once the user picks
- * "Dark" in the header's theme switch (which sets data-theme on the root
- * element via theme.js/the blocking inline script in each page's <head>).
- * "System" (the default) leaves data-theme unset, so only the media query
- * below decides - the same scheme the desktop app's own theme switch uses.
- */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --color-text: #f6f6f6;
-    --color-text-muted: rgba(246, 246, 246, 0.6);
-    --color-bg: #2f2f2f;
-    --color-surface: #262626;
-    --color-border: rgba(246, 246, 246, 0.15);
-    --color-border-strong: rgba(246, 246, 246, 0.35);
-    --color-hover-bg: rgba(246, 246, 246, 0.15);
-    --color-grid: rgba(246, 246, 246, 0.035);
-    --color-accent-toggle: #24c8db;
-    --color-accent: #24c8db;
-    --color-error: #ff6b6b;
-    --color-warning: #e0b23c;
-    --color-success: #6bd67f;
-    --code-string: #ce9178;
-    --code-number: #b5cea8;
-    --code-keyword: #569cd6;
-  }
-
   :root:not([data-theme="light"]) .button--primary {
     color: #10282b;
   }
@@ -832,34 +736,6 @@ table.lint-rules-table {
   :root:not([data-theme="light"]) .button--primary:hover {
     background-color: #1fb2c4;
   }
-
-  :root:not([data-theme="light"]) .code-block .ty {
-    color: #4ec9b0;
-  }
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --color-text: #f6f6f6;
-  --color-text-muted: rgba(246, 246, 246, 0.6);
-  --color-bg: #2f2f2f;
-  --color-surface: #262626;
-  --color-border: rgba(246, 246, 246, 0.15);
-  --color-border-strong: rgba(246, 246, 246, 0.35);
-  --color-hover-bg: rgba(246, 246, 246, 0.15);
-  --color-grid: rgba(246, 246, 246, 0.035);
-  --color-accent-toggle: #24c8db;
-  --color-accent: #24c8db;
-  --color-error: #ff6b6b;
-  --color-warning: #e0b23c;
-  --color-success: #6bd67f;
-  --code-string: #ce9178;
-  --code-number: #b5cea8;
-  --code-keyword: #569cd6;
 }
 
 :root[data-theme="dark"] .button--primary {
@@ -868,8 +744,4 @@ table.lint-rules-table {
 
 :root[data-theme="dark"] .button--primary:hover {
   background-color: #1fb2c4;
-}
-
-:root[data-theme="dark"] .code-block .ty {
-  color: #4ec9b0;
 }

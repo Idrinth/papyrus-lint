@@ -1,7 +1,11 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
+const appDir = path.dirname(fileURLToPath(import.meta.url));
+const sharedDir = path.resolve(appDir, "../shared");
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
@@ -22,6 +26,10 @@ export default defineConfig(async () => ({
           port: 1421,
         }
       : undefined,
+    fs: {
+      // shared/theme.css lives one directory above the Vite root
+      allow: [appDir, sharedDir],
+    },
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],

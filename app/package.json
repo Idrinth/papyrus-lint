@@ -12,7 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "test:browser": "playwright test",
     "lint": "eslint .",
-    "lint:css": "stylelint \"src/**/*.css\""
+    "lint:css": "stylelint \"src/**/*.css\" \"../shared/**/*.css\""
   },
   "dependencies": {
     "@fontsource/cinzel": "^5.3.0",

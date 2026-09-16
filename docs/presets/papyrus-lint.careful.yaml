@@ -28,6 +28,13 @@ compiler_path: null
 # Extra directories (relative to the project root, or absolute) to search
 # for .psc files, besides scripts/source and source/scripts
 additional_script_roots: []
+# Extra directories searched only as a fallback when resolving other
+# scripts for analysis (argument/return types, Extends, autocompletion).
+# Scripts found only here are never linted, and these directories are
+# ignored by conflicting-script-versions. Creating or updating a config
+# fills Skyrim Special Edition's Data/Scripts/Source and Data/Source/Scripts
+# when the install path can be read from the Windows registry
+lookup_script_roots: []
 # true, false; also runs PapyrusCompiler.exe (into a throwaway temporary
 # directory) as part of linting a dropped .psc, reporting its errors
 # alongside the lint engine's own. Requires compiler_path to be set/

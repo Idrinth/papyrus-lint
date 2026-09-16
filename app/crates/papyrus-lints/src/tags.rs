@@ -4,8 +4,8 @@
 //! to keeping a codebase maintainable, whether they're auto-fixable, and a
 //! detailed description of the rule (copied from its row in README.md's
 //! Implemented Lints tables, kept in sync by hand the same way
-//! `docs/nexuspage.bbcode`'s own lint descriptions are — see "Keeping agent
-//! instructions synchronized" in CLAUDE.md/AGENTS.md). This module only
+//! `docs/nexuspage.bbcode`'s own lint descriptions are — see "Docs sync"
+//! in AGENTS.md). This module only
 //! exposes that metadata; [`crate::repair_filtered_by_tag`] and the CLI's
 //! `--tag <kind>` flag are what actually filter lints/fixes down to one
 //! kind at a time, built on top of it.
@@ -36,8 +36,8 @@ pub struct RuleTags {
     /// rule's row in README.md's Implemented Lints tables) this rule's row
     /// renders under on the project website's homepage, so
     /// [`RuleTags::doc_url`] can link straight to it. Kept in sync by hand
-    /// the same way `description` below is — see "Keeping agent
-    /// instructions synchronized" in CLAUDE.md/AGENTS.md — since it's
+    /// the same way `description` below is — see "Docs sync" in AGENTS.md —
+    /// since it's
     /// derived from the README row's own display name rather than this
     /// rule's id, and the two don't always match (e.g. `comma-spacing`'s
     /// row is titled "Space after comma", slugifying to
@@ -102,7 +102,7 @@ pub const RULE_TAGS: &[RuleTags] = &[
     RuleTags {
         rule: crate::forbidden_functions::RULE,
         doc_slug: "forbidden-discouraged-function-usage",
-        description: "Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry.",
+        description: "Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. A `Debug.*` call (`Trace`, `TraceStack`, `Notification`) nested inside an `If`/`ElseIf` whose condition is a simple identifier (or `Self`/`Parent`/identifier member chain) whose name contains `debug` (case-insensitively, e.g. `If IsDebugMode`) is left unflagged, since that is already a debug-flag guard; an `Else` of that chain, a negated or compound condition, or a name that doesn't look like a debug flag is still flagged.",
         kinds: &["performance", "correctness"],
         importance: Importance::Medium,
     },

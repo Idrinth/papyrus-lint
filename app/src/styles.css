@@ -1,52 +1,5 @@
 @import "@fontsource/cinzel/700.css";
-
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  --color-text: #0f0f0f;
-  --color-text-muted: rgba(15, 15, 15, 0.4);
-  --color-bg: #f6f6f6;
-  --color-surface: #ffffff;
-  --color-border: rgba(15, 15, 15, 0.15);
-  --color-border-strong: rgba(15, 15, 15, 0.35);
-  --color-hover-bg: rgba(15, 15, 15, 0.1);
-  --color-flagged-bg: rgba(15, 15, 15, 0.08);
-  --color-grid: rgba(15, 15, 15, 0.035);
-  --color-accent: #396cd8;
-  --color-accent-toggle: #396cd8;
-  --color-error: #d83939;
-  --color-error-strong: #b02a2a;
-  --color-error-bg: rgba(216, 57, 57, 0.12);
-  --color-warning: #b8860b;
-  --color-warning-bg: rgba(184, 134, 11, 0.12);
-  --color-info-bg: rgba(57, 108, 216, 0.1);
-  --color-success: #2f8f3f;
-  --color-success-strong: #1f6b2f;
-  --color-autocomplete-border: rgba(15, 15, 15, 0.2);
-  --color-autocomplete-active-bg: rgba(36, 132, 219, 0.18);
-  --code-comment: #6a9955;
-  --code-string: #a31515;
-  --code-number: #098658;
-  --code-keyword: #0000ff;
-  --code-type: #267f99;
-
-  color: var(--color-text);
-  background-color: var(--color-bg);
-  background-image:
-    linear-gradient(var(--color-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
-  background-size: 32px 32px;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
+@import "../../shared/theme.css";
 
 .container {
   margin: 0;
@@ -59,7 +12,7 @@
 
 h1 {
   text-align: center;
-  font-family: "Cinzel", Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -73,32 +26,10 @@ h1 {
   opacity: 0.6;
 }
 
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
-
 .theme-switch {
   position: fixed;
   top: 1em;
   right: 1em;
-}
-
-.theme-switch select {
-  padding: 0.25em 0.5em;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 6px;
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font: inherit;
-  cursor: pointer;
 }
 
 .tabs {
@@ -679,11 +610,22 @@ h1 {
 }
 
 .code-viewer--fullscreen {
-  width: 100vw;
-  height: 100vh;
-  max-width: 100vw;
-  max-height: 100vh;
+  /* 100vw/100vh plus the UA dialog's auto margins leaves the box offset
+   * from the viewport, so the page behind peeks out and its scrollbar
+   * sits on the right edge — the bar the user grabs, which then scrolls
+   * the wrong element. Pin the dialog to the viewport instead. */
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
   border-radius: 0;
+}
+
+html:has(.code-viewer--fullscreen[open]) {
+  overflow: hidden;
 }
 
 .code-viewer__header {
@@ -762,9 +704,18 @@ h1 {
   overflow: auto;
 }
 
+/* Edit mode's overlay is `position: absolute; inset: 0` over this stage.
+ * If the stage itself still scrolls, its bar sits in the gutter beside
+ * that overlay — visually the editor's scrollbar, but it moves the
+ * (hidden) view behind it. The textarea is the scroller in edit mode. */
+.code-viewer__stage:has(> .code-viewer__editor:not([hidden])) {
+  overflow: hidden;
+}
+
 .code-viewer__editor {
   position: absolute;
   inset: 0;
+  z-index: 1;
   display: flex;
 }
 
@@ -789,7 +740,7 @@ h1 {
   box-sizing: border-box;
   padding: 0.75em 0.75em 0.75em 1em;
   border-right: 1px solid var(--color-border);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   line-height: 1.4;
   color: var(--color-text-muted);
@@ -817,7 +768,7 @@ h1 {
   overflow: auto;
   border-top: 1px solid var(--color-border);
   border-left: 3px solid transparent;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.8em;
   white-space: pre-wrap;
   overflow-wrap: break-word;
@@ -830,7 +781,7 @@ h1 {
   max-height: 14em;
   overflow: auto;
   border-top: 1px solid var(--color-border);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.8em;
   white-space: pre-wrap;
   overflow-wrap: break-word;
@@ -867,7 +818,7 @@ h1 {
   margin: 0;
   padding: 0.75em 1em;
   border: none;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   line-height: 1.4;
   white-space: pre;
@@ -878,6 +829,16 @@ h1 {
 .code-viewer__editor-highlight {
   pointer-events: none;
   color: inherit;
+  /* Keep the classic-scrollbar gutter so this layer stays aligned with
+   * the textarea, but never paint a thumb. The textarea is transparent,
+   * so a visible bar here is the one the user sees and tries to drag —
+   * and `pointer-events: none` means those drags do nothing. */
+  scrollbar-color: transparent transparent;
+}
+
+.code-viewer__editor-highlight::-webkit-scrollbar-thumb,
+.code-viewer__editor-highlight::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .code-viewer__editor-line {
@@ -901,6 +862,15 @@ h1 {
   -webkit-text-fill-color: transparent;
   caret-color: var(--color-text);
   outline: none;
+}
+
+/* WebKit (the desktop app's Linux webview) skips painting a scrollbar on
+ * a fully transparent textarea, which is what lets the highlight layer's
+ * bar show through. Styling the thumb is enough to get a real, draggable
+ * bar without hiding the highlighted text underneath. */
+.code-viewer__editor-textarea::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 6px;
 }
 
 /* WebKit (the desktop app's Linux webview) paints selected text with the
@@ -927,15 +897,32 @@ h1 {
   border: 1px solid var(--color-autocomplete-border);
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(15, 15, 15, 0.25);
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
   text-align: left;
 }
 
 .code-viewer__autocomplete-item {
   padding: 0.2em 0.6em;
-  white-space: nowrap;
   cursor: pointer;
+}
+
+.code-viewer__autocomplete-item-label {
+  display: block;
+  white-space: nowrap;
+}
+
+.code-viewer__autocomplete-item-doc {
+  display: block;
+  margin-top: 0.25em;
+  padding-top: 0.25em;
+  border-top: 1px solid var(--color-border);
+  max-width: 36em;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  color: var(--color-text-muted);
+  font-size: 0.95em;
+  line-height: 1.35;
 }
 
 .code-viewer__autocomplete-item--active {
@@ -945,7 +932,7 @@ h1 {
 .code-viewer__table {
   width: 100%;
   border-collapse: collapse;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-family: var(--font-mono);
   font-size: 0.85em;
 }
 
@@ -1217,73 +1204,4 @@ h1 {
 
 .cm-type {
   color: var(--code-type);
-}
-
-/*
- * Dark palette: applied automatically when the system prefers dark and the
- * user hasn't forced light mode, or unconditionally once the user picks
- * "Dark" in the theme switch (which sets data-theme on the root element).
- * "System" (the default) leaves data-theme unset, so only the media query
- * below decides.
- */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
-    --color-text: #f6f6f6;
-    --color-text-muted: rgba(246, 246, 246, 0.4);
-    --color-bg: #2f2f2f;
-    --color-surface: #2f2f2f;
-    --color-border: rgba(246, 246, 246, 0.15);
-    --color-border-strong: rgba(246, 246, 246, 0.35);
-    --color-hover-bg: rgba(246, 246, 246, 0.15);
-    --color-flagged-bg: rgba(246, 246, 246, 0.08);
-    --color-grid: rgba(246, 246, 246, 0.035);
-    --color-accent-toggle: #24c8db;
-    --color-error: #ff6b6b;
-    --color-error-strong: #ff6b6b;
-    --color-error-bg: rgba(255, 107, 107, 0.18);
-    --color-warning: #e0b23c;
-    --color-warning-bg: rgba(224, 178, 60, 0.18);
-    --color-info-bg: rgba(36, 200, 219, 0.15);
-    --color-success: #6bd67f;
-    --color-success-strong: #6bd67f;
-    --color-autocomplete-border: rgba(246, 246, 246, 0.25);
-    --color-autocomplete-active-bg: rgba(36, 200, 219, 0.2);
-    --code-string: #ce9178;
-    --code-number: #b5cea8;
-    --code-keyword: #569cd6;
-    --code-type: #4ec9b0;
-  }
-}
-
-:root[data-theme="light"] {
-  color-scheme: light;
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --color-text: #f6f6f6;
-  --color-text-muted: rgba(246, 246, 246, 0.4);
-  --color-bg: #2f2f2f;
-  --color-surface: #2f2f2f;
-  --color-border: rgba(246, 246, 246, 0.15);
-  --color-border-strong: rgba(246, 246, 246, 0.35);
-  --color-hover-bg: rgba(246, 246, 246, 0.15);
-  --color-flagged-bg: rgba(246, 246, 246, 0.08);
-  --color-grid: rgba(246, 246, 246, 0.035);
-  --color-accent-toggle: #24c8db;
-  --color-error: #ff6b6b;
-  --color-error-strong: #ff6b6b;
-  --color-error-bg: rgba(255, 107, 107, 0.18);
-  --color-warning: #e0b23c;
-  --color-warning-bg: rgba(224, 178, 60, 0.18);
-  --color-info-bg: rgba(36, 200, 219, 0.15);
-  --color-success: #6bd67f;
-  --color-success-strong: #6bd67f;
-  --color-autocomplete-border: rgba(246, 246, 246, 0.25);
-  --color-autocomplete-active-bg: rgba(36, 200, 219, 0.2);
-  --code-string: #ce9178;
-  --code-number: #b5cea8;
-  --code-keyword: #569cd6;
-  --code-type: #4ec9b0;
 }

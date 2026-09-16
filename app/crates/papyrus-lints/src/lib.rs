@@ -86,93 +86,14 @@ pub mod unused_property;
 pub mod useless_downcast;
 pub mod variable_used_before_assignment;
 
+mod registry;
+
 /// Every rule id [`lint`]/[`lint_with_external_arguments`] can report,
 /// matched against `; @disable <rule-id>` directives (see
 /// [`disable_comments`]) and validated against by callers (e.g. the CLI's
 /// `fix --type <rule-id>`) that need to tell an unknown rule id apart from
 /// a known one with no automatic fix (see [`FIXABLE_RULE_IDS`]).
-pub const KNOWN_RULE_IDS: &[&str] = &[
-    trailing_whitespace::RULE,
-    comma_spacing::RULE,
-    forbidden_functions::RULE,
-    formid_hex_notation::RULE,
-    slow_functions::RULE,
-    unused_getter::RULE,
-    unused_property::RULE,
-    semicolon::RULE,
-    float_int_conversion::RULE,
-    int_division_to_float::RULE,
-    strict_boolean::RULE,
-    argument_types::RULE,
-    return_types::RULE,
-    function_override::RULE,
-    argument_naming::RULE,
-    argument_override_types::RULE,
-    state_function_signature::RULE,
-    numeric_comparison::RULE,
-    indentation::RULE,
-    cyclomatic_complexity::RULE,
-    unreachable_statement::RULE,
-    static_condition::RULE,
-    unreachable_elseif::RULE,
-    division_by_zero::RULE,
-    empty_body::RULE,
-    unused_local_variable::RULE,
-    none_form_usage::RULE,
-    local_variable_shadowing::RULE,
-    parameter_reassignment::RULE,
-    chain_whitespace::RULE,
-    exclamation_spacing::RULE,
-    identifier_casing::RULE,
-    type_casing::RULE,
-    named_arguments::RULE,
-    operator_spacing::RULE,
-    assignment_operator_spacing::RULE,
-    property_sorting::RULE,
-    explicit_return::RULE,
-    unchecked_form_parameter::RULE,
-    unchecked_array_element::RULE,
-    unchecked_cast::RULE,
-    useless_downcast::RULE,
-    impossible_cast::RULE,
-    unresolved_script::RULE,
-    non_global_function_call::RULE,
-    static_function_call_via_instance::RULE,
-    short_wait_interval::RULE,
-    goto_state::RULE,
-    get_state_comparison::RULE,
-    state_count::TOO_MANY_STATES_RULE,
-    state_count::MULTIPLE_AUTO_STATES_RULE,
-    "conflicting-script-versions",
-    "stale-compiled-output",
-    "script-filename-mismatch",
-    unused_disable::RULE,
-    magic_numbers::RULE,
-    variable_used_before_assignment::RULE,
-    native_function_usage::RULE,
-    repeated_getvalue::RULE,
-    global_variable_setvalue::RULE,
-    global_variable_increment::RULE,
-    setvalue_in_loop::RULE,
-    invariant_loop_condition::RULE,
-    script_name_collision::RULE,
-    array_bounds::RULE,
-    array_size_range::RULE,
-    readonly_property_write::RULE,
-    default_property_value::RULE,
-    unguarded_self_recursion::RULE,
-    self_assignment::RULE,
-    unnecessary_function::RULE,
-    actor_value::RULE,
-    repeated_setoutfit::RULE,
-    missing_doc_comment::RULE,
-    invalid_random_range::RULE,
-    float_equality::RULE,
-    missing_update_handler::RULE,
-    unused_import::RULE,
-    event_signature::RULE,
-    circular_dependency::RULE,
-];
+pub use registry::{FIXABLE_RULE_IDS, KNOWN_RULE_IDS};
 
 use serde::Serialize;
 
@@ -285,276 +206,17 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     external: &mut E,
     extra_diagnostics: Vec<Diagnostic>,
 ) -> Vec<Diagnostic> {
-    let rules = &config.rules;
-    let mut diagnostics = Vec::new();
-    if rules.trailing_whitespace {
-        diagnostics.extend(trailing_whitespace::check(source));
-    }
-    if rules.comma_spacing {
-        diagnostics.extend(comma_spacing::check(source));
-    }
-    if rules.forbidden_functions {
-        diagnostics.extend(forbidden_functions::check(source));
-    }
-    if rules.slow_functions {
-        diagnostics.extend(slow_functions::check(source));
-    }
-    if rules.formid_hex_notation {
-        diagnostics.extend(formid_hex_notation::check(source));
-    }
-    if rules.unused_getter {
-        diagnostics.extend(unused_getter::check(source));
-    }
-    if rules.float_int_conversion {
-        diagnostics.extend(float_int_conversion::check(source));
-    }
-    if rules.int_division_to_float {
-        diagnostics.extend(int_division_to_float::check(source));
-    }
-    if rules.unused_property {
-        diagnostics.extend(unused_property::check(source));
-    }
-    if rules.strict_boolean {
-        diagnostics.extend(strict_boolean::check(source, config.bool_like_int));
-    }
-    if rules.numeric_comparison {
-        diagnostics.extend(numeric_comparison::check(source));
-    }
-    if rules.semicolon {
-        diagnostics.extend(semicolon::check(source, config.semicolon_style()));
-    }
-    if rules.indentation {
-        diagnostics.extend(indentation::check(source, config.indentation_unit()));
-    }
-    if rules.argument_types {
-        diagnostics.extend(argument_types::check_with(source, external));
-    }
-    if rules.return_types {
-        diagnostics.extend(return_types::check_with(source, external));
-    }
-    if rules.unresolved_script {
-        diagnostics.extend(unresolved_script::check_with(source, external));
-    }
-    if rules.non_global_function_call {
-        diagnostics.extend(non_global_function_call::check_with(source, external));
-    }
-    if rules.static_function_call_via_instance {
-        diagnostics.extend(static_function_call_via_instance::check_with(
-            source, external,
-        ));
-    }
-    if rules.local_variable_shadowing {
-        diagnostics.extend(local_variable_shadowing::check_with(source, external));
-    }
-    if rules.parameter_reassignment {
-        diagnostics.extend(parameter_reassignment::check(source));
-    }
-    if rules.function_override {
-        diagnostics.extend(function_override::check_with(source, external));
-    }
-    if rules.argument_naming {
-        diagnostics.extend(argument_naming::check_with(source, external));
-    }
-    if rules.argument_override_types {
-        diagnostics.extend(argument_override_types::check_with(source, external));
-    }
-    if rules.state_function_signature {
-        diagnostics.extend(state_function_signature::check(source));
-    }
-    if rules.cyclomatic_complexity {
-        diagnostics.extend(cyclomatic_complexity::check(
-            source,
-            config.cyclomatic_complexity_warning,
-            config.cyclomatic_complexity_error,
-        ));
-    }
-    if rules.unreachable_statement {
-        diagnostics.extend(unreachable_statement::check(source));
-    }
-    if rules.static_condition {
-        diagnostics.extend(static_condition::check(source));
-    }
-    if rules.unreachable_elseif {
-        diagnostics.extend(unreachable_elseif::check(source));
-    }
-    if rules.division_by_zero {
-        diagnostics.extend(division_by_zero::check(source));
-    }
-    if rules.invalid_random_range {
-        diagnostics.extend(invalid_random_range::check(source));
-    }
-    if rules.empty_body {
-        diagnostics.extend(empty_body::check(source));
-    }
-    if rules.unused_local_variable {
-        diagnostics.extend(unused_local_variable::check(source));
-    }
-    if rules.variable_used_before_assignment {
-        diagnostics.extend(variable_used_before_assignment::check(source));
-    }
-    if rules.none_form_usage {
-        diagnostics.extend(none_form_usage::check(
-            source,
-            config.assume_auto_properties_filled,
-        ));
-    }
-    if rules.chain_whitespace {
-        diagnostics.extend(chain_whitespace::check(source));
-    }
-    if rules.exclamation_spacing {
-        diagnostics.extend(exclamation_spacing::check(source));
-    }
-    if rules.operator_spacing {
-        diagnostics.extend(operator_spacing::check(source));
-    }
-    if rules.assignment_operator_spacing {
-        diagnostics.extend(assignment_operator_spacing::check(source));
-    }
-    if rules.named_arguments {
-        diagnostics.extend(named_arguments::check(source, config.named_arguments));
-    }
-    if rules.identifier_casing {
-        diagnostics.extend(identifier_casing::check(source, config.identifier_casing));
-    }
-    if rules.type_casing {
-        diagnostics.extend(type_casing::check(source, config.type_casing));
-    }
-    if rules.property_sorting {
-        diagnostics.extend(property_sorting::check(source));
-    }
-    if rules.explicit_return {
-        diagnostics.extend(explicit_return::check(source));
-    }
-    if rules.unchecked_form_parameter {
-        diagnostics.extend(unchecked_form_parameter::check(source));
-    }
-    if rules.unchecked_array_element {
-        diagnostics.extend(unchecked_array_element::check(source));
-    }
-    if rules.unchecked_cast {
-        diagnostics.extend(unchecked_cast::check(source));
-    }
-    if rules.useless_downcast {
-        diagnostics.extend(useless_downcast::check_with(source, external));
-    }
-    if rules.impossible_cast {
-        diagnostics.extend(impossible_cast::check_with(source, external));
-    }
-    if rules.short_wait_interval {
-        diagnostics.extend(short_wait_interval::check(source, config.min_wait_interval));
-    }
-    if rules.goto_state {
-        diagnostics.extend(goto_state::check_with(source, external));
-    }
-    if rules.get_state_comparison {
-        diagnostics.extend(get_state_comparison::check_with(source, external));
-    }
-    if rules.too_many_states {
-        diagnostics.extend(state_count::check_too_many_states_with(source, external));
-    }
-    if rules.multiple_auto_states {
-        diagnostics.extend(state_count::check_multiple_auto_states_with(
-            source, external,
-        ));
-    }
-    if rules.magic_numbers {
-        diagnostics.extend(magic_numbers::check(source, config.magic_numbers));
-    }
-    if rules.native_function_usage {
-        diagnostics.extend(native_function_usage::check(source));
-    }
-    if rules.repeated_getvalue {
-        diagnostics.extend(repeated_getvalue::check(source));
-    }
-    if rules.global_variable_setvalue {
-        diagnostics.extend(global_variable_setvalue::check(source));
-    }
-    if rules.global_variable_increment {
-        diagnostics.extend(global_variable_increment::check(source));
-    }
-    if rules.setvalue_in_loop {
-        diagnostics.extend(setvalue_in_loop::check(source));
-    }
-    if rules.invariant_loop_condition {
-        diagnostics.extend(invariant_loop_condition::check(source));
-    }
-    if rules.script_name_collision {
-        diagnostics.extend(script_name_collision::check(source));
-    }
-    if rules.array_bounds {
-        diagnostics.extend(array_bounds::check(source));
-    }
-    if rules.array_size_range {
-        diagnostics.extend(array_size_range::check(source));
-    }
-    if rules.readonly_property_write {
-        diagnostics.extend(readonly_property_write::check(source));
-    }
-    if rules.default_property_value {
-        diagnostics.extend(default_property_value::check(source));
-    }
-    if rules.unguarded_self_recursion {
-        diagnostics.extend(unguarded_self_recursion::check(source));
-    }
-    if rules.self_assignment {
-        diagnostics.extend(self_assignment::check(source));
-    }
-    if rules.unnecessary_function {
-        diagnostics.extend(unnecessary_function::check(source));
-    }
-    if rules.unknown_actor_value {
-        diagnostics.extend(actor_value::check(source));
-    }
-    if rules.repeated_setoutfit {
-        diagnostics.extend(repeated_setoutfit::check(source));
-    }
-    if rules.missing_doc_comment {
-        diagnostics.extend(missing_doc_comment::check(source));
-    }
-    if rules.float_equality {
-        diagnostics.extend(float_equality::check(source));
-    }
-    if rules.missing_update_handler {
-        diagnostics.extend(missing_update_handler::check(source));
-    }
-    if rules.unused_import {
-        diagnostics.extend(unused_import::check_with(source, external));
-    }
-    if rules.event_signature_mismatch {
-        diagnostics.extend(event_signature::check(source));
-    }
-    if rules.circular_dependency {
-        diagnostics.extend(circular_dependency::check_with(source, external));
-    }
+    let mut diagnostics = registry::collect_diagnostics(source, config, external);
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
-    let unused_disables = rules
+    let unused_disables = config
+        .rules
         .unused_disable
         .then(|| unused_disable::check(&disables, &diagnostics, KNOWN_RULE_IDS));
     diagnostics.retain(|diagnostic| !disables.is_disabled(diagnostic.line, diagnostic.rule));
     diagnostics.extend(unused_disables.into_iter().flatten());
     diagnostics
 }
-
-/// Rule ids with an automatic fix, in the order [`repair`] applies them.
-/// Every other id in [`KNOWN_RULE_IDS`] can only be reported, never fixed.
-pub const FIXABLE_RULE_IDS: &[&str] = &[
-    identifier_casing::RULE,
-    slow_functions::RULE,
-    semicolon::RULE,
-    indentation::RULE,
-    property_sorting::RULE,
-    comma_spacing::RULE,
-    chain_whitespace::RULE,
-    exclamation_spacing::RULE,
-    operator_spacing::RULE,
-    assignment_operator_spacing::RULE,
-    type_casing::RULE,
-    trailing_whitespace::RULE,
-    global_variable_increment::RULE,
-    named_arguments::RULE,
-    unnecessary_function::RULE,
-];
 
 /// Applies every automatic fix to `source`, including the semicolon and
 /// indentation style selected by `config`, and returns the repaired text.
@@ -595,88 +257,81 @@ pub fn repair_filtered_by_tag(source: &str, config: &Config, tag: Option<&str>) 
     })
 }
 
+/// Like [`repair`], but also applies the "unused-import" fix (see
+/// [`unused_import::repair_with`]), resolving each `Import`'s usage through
+/// `external` — the same [`argument_types::ExternalSignatures`] resolver
+/// [`lint_with_external_arguments`] uses for that rule's own diagnostics.
+/// Every other fix in [`FIXABLE_RULE_IDS`] behaves exactly as it does under
+/// [`repair`], since only "unused-import" needs project-wide context to
+/// resolve anything at all.
+pub fn repair_with_external_arguments<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+) -> String {
+    repair_filtered_with_external_arguments(source, config, external, None)
+}
+
+/// Like [`repair_filtered`], but also resolves "unused-import" through
+/// `external`, the same way [`repair_with_external_arguments`] does.
+pub fn repair_filtered_with_external_arguments<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    rule_filter: Option<&str>,
+) -> String {
+    repair_with_external(source, config, external, |rule| {
+        rule_filter.is_none_or(|filter| filter == rule)
+    })
+}
+
+/// Like [`repair_filtered_by_tag`], but also resolves "unused-import"
+/// through `external`, the same way [`repair_with_external_arguments`]
+/// does.
+pub fn repair_filtered_by_tag_with_external_arguments<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    tag: Option<&str>,
+) -> String {
+    repair_with_external(source, config, external, |rule| {
+        tag.is_none_or(|tag| {
+            tags::tags_for(rule).is_some_and(|rule_tags| {
+                rule_tags
+                    .kinds
+                    .iter()
+                    .any(|kind| kind.eq_ignore_ascii_case(tag))
+            })
+        })
+    })
+}
+
+/// Shared implementation behind the three `_with_external_arguments`
+/// functions above: applies every self-contained fix via [`repair_with`]
+/// (unaffected by `external`), then — if `config.rules.unused_import` is
+/// enabled and `applies` accepts [`unused_import::RULE`] — removes every
+/// `Import` line [`unused_import::check_with`] resolves as unused through
+/// `external`.
+fn repair_with_external<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    applies: impl Fn(&str) -> bool,
+) -> String {
+    let source = repair_with(source, config, &applies);
+    if config.rules.unused_import && applies(unused_import::RULE) {
+        unused_import::repair_with(&source, external)
+    } else {
+        source
+    }
+}
+
 /// Shared implementation behind [`repair_filtered`] and
 /// [`repair_filtered_by_tag`]: applies every fix in [`FIXABLE_RULE_IDS`]
 /// whose ruleset is enabled in `config.rules` and whose rule id `applies`
 /// accepts.
 fn repair_with(source: &str, config: &Config, applies: impl Fn(&str) -> bool) -> String {
-    let rules = &config.rules;
-    let source = if rules.identifier_casing && applies(identifier_casing::RULE) {
-        identifier_casing::repair(source, config.identifier_casing)
-    } else {
-        source.to_string()
-    };
-    let source = if rules.slow_functions && applies(slow_functions::RULE) {
-        slow_functions::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.semicolon && applies(semicolon::RULE) {
-        semicolon::repair(&source, config.semicolon_style())
-    } else {
-        source
-    };
-    let source = if rules.indentation && applies(indentation::RULE) {
-        indentation::repair(&source, config.indentation_unit())
-    } else {
-        source
-    };
-    let source = if rules.property_sorting && applies(property_sorting::RULE) {
-        property_sorting::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.comma_spacing && applies(comma_spacing::RULE) {
-        comma_spacing::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.chain_whitespace && applies(chain_whitespace::RULE) {
-        chain_whitespace::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.exclamation_spacing && applies(exclamation_spacing::RULE) {
-        exclamation_spacing::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.operator_spacing && applies(operator_spacing::RULE) {
-        operator_spacing::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.assignment_operator_spacing && applies(assignment_operator_spacing::RULE)
-    {
-        assignment_operator_spacing::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.type_casing && applies(type_casing::RULE) {
-        type_casing::repair(&source, config.type_casing)
-    } else {
-        source
-    };
-    let source = if rules.trailing_whitespace && applies(trailing_whitespace::RULE) {
-        trailing_whitespace::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.global_variable_increment && applies(global_variable_increment::RULE) {
-        global_variable_increment::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.named_arguments && applies(named_arguments::RULE) {
-        named_arguments::repair(&source, config.named_arguments)
-    } else {
-        source
-    };
-    if rules.unnecessary_function && applies(unnecessary_function::RULE) {
-        unnecessary_function::repair(&source)
-    } else {
-        source
-    }
+    registry::apply_repairs(source, config, applies)
 }
 
 /// Rebuilds a repair result so only `target_line` (1-indexed) differs from
@@ -2146,5 +1801,93 @@ mod tests {
             &mut FakeExternalWithUnusedImport,
         );
         assert!(disabled.iter().all(|d| d.rule != unused_import::RULE));
+    }
+
+    #[test]
+    fn repair_with_external_arguments_removes_an_unused_import_resolved_through_external() {
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+
+        let repaired = repair_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+        );
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\n\nFunction Test()\nEndFunction\n"
+        );
+        assert_eq!(
+            repair(source, &Config::default()),
+            source,
+            "the plain, resolver-less repair must remain a no-op for unused-import"
+        );
+    }
+
+    #[test]
+    fn repair_filtered_with_external_arguments_only_removes_the_named_rule() {
+        let source =
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\n    Call(1,2)\nEndFunction\n";
+
+        let unused_import_only = repair_filtered_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            Some(unused_import::RULE),
+        );
+        assert_eq!(
+            unused_import_only,
+            "ScriptName Example\n\n\nFunction Test()\n    Call(1,2)\nEndFunction\n"
+        );
+
+        let comma_only = repair_filtered_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            Some(comma_spacing::RULE),
+        );
+        assert_eq!(
+            comma_only,
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\n    Call(1, 2)\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_filtered_by_tag_with_external_arguments_matches_unused_imports_own_tag() {
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+
+        let maintainability = repair_filtered_by_tag_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            Some("maintainability"),
+        );
+        assert_eq!(
+            maintainability,
+            "ScriptName Example\n\n\nFunction Test()\nEndFunction\n"
+        );
+
+        let style_only = repair_filtered_by_tag_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            Some("style"),
+        );
+        assert_eq!(style_only, source);
+    }
+
+    #[test]
+    fn repair_with_external_arguments_skips_unused_import_when_its_rule_is_disabled() {
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+        let disabled_config = config_with(|c| c.rules.unused_import = false);
+
+        assert_eq!(
+            repair_with_external_arguments(
+                source,
+                &disabled_config,
+                &mut FakeExternalWithUnusedImport
+            ),
+            source
+        );
     }
 }

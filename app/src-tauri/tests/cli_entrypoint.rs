@@ -299,3 +299,181 @@ fn desktop_binary_recursively_lints_a_directory() {
     assert!(paths.contains(&top_level.to_str().unwrap()));
     assert!(paths.contains(&nested_script.to_str().unwrap()));
 }
+
+#[test]
+fn desktop_binary_lints_inline_source_without_a_file() {
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args([
+            "--json",
+            "--blob",
+            "ScriptName Inline\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+        ])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["success"], false);
+    assert_eq!(report["scripts_checked"], 1);
+    assert_eq!(report["files"][0]["path"], "<blob>");
+    assert!(report["files"][0]["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|diagnostic| {
+            diagnostic["rule"].as_str() == Some(papyrus_lints::forbidden_functions::RULE)
+                && diagnostic["line"] == 4
+        }));
+}
+
+#[test]
+fn desktop_binary_rejects_combining_inline_source_with_a_path() {
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--blob", "ScriptName Inline\n", "Example.psc"])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).unwrap(),
+        "error: --blob can't be combined with a path argument (or `fix`)\n"
+    );
+}
+
+#[test]
+fn desktop_binary_can_apply_one_fix_type_without_applying_others() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("TargetedFix.psc");
+    std::fs::write(
+        &script,
+        "ScriptName TargetedFix   \n\nFunction Run(Int left,Int right)\nEndFunction\n",
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args([
+            "--json",
+            "fix",
+            "--type",
+            papyrus_lints::trailing_whitespace::RULE,
+            script.to_str().unwrap(),
+        ])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        std::fs::read_to_string(&script).unwrap(),
+        "ScriptName TargetedFix\n\nFunction Run(Int left,Int right)\nEndFunction\n"
+    );
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["files_fixed"], 1);
+    assert!(report["files"][0]["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|diagnostic| {
+            diagnostic["rule"].as_str() == Some(papyrus_lints::comma_spacing::RULE)
+        }));
+    assert!(report["files"][0]["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|diagnostic| {
+            diagnostic["rule"].as_str() != Some(papyrus_lints::trailing_whitespace::RULE)
+        }));
+}
+
+#[test]
+fn desktop_binary_forwards_doctor_and_its_success_status() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("scripts/source/Example.psc");
+    std::fs::create_dir_all(script.parent().unwrap()).unwrap();
+    std::fs::write(&script, "ScriptName Example\n").unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["doctor", script.to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let stdout = String::from_utf8(output.stdout).unwrap();
+    assert!(stdout.contains("[ok]"));
+    assert!(stdout.contains("no problems found"));
+}
+
+#[test]
+fn desktop_binary_forwards_ai_format_reports() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Example.psc");
+    std::fs::write(&script, "ScriptName Example   \n").unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--format", "ai", script.to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["header"]["tool"], "Papyrus Lint");
+    assert!(report["findings"]["files"][0]["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|diagnostic| {
+            diagnostic["rule"].as_str() == Some(papyrus_lints::trailing_whitespace::RULE)
+        }));
+}
+
+#[test]
+fn desktop_binary_forwards_a_tag_filter() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Example.psc");
+    std::fs::write(
+        &script,
+        "ScriptName Example   \n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+    )
+    .unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--json", "--tag", "style", script.to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let diagnostics = report["files"][0]["diagnostics"].as_array().unwrap();
+    assert!(diagnostics.iter().any(|diagnostic| {
+        diagnostic["rule"].as_str() == Some(papyrus_lints::trailing_whitespace::RULE)
+    }));
+    assert!(diagnostics.iter().all(|diagnostic| {
+        diagnostic["rule"].as_str() != Some(papyrus_lints::forbidden_functions::RULE)
+    }));
+}
+
+#[test]
+fn desktop_binary_init_creates_a_config_in_the_working_directory() {
+    let temp = tempfile::tempdir().unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .arg("init")
+        .current_dir(temp.path())
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let config_path = temp.path().join("papyrus-lint.yaml");
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        format!("Created {}\n", config_path.display())
+    );
+    let config = std::fs::read_to_string(config_path).unwrap();
+    assert!(config.contains("trailing_whitespace: true"));
+}

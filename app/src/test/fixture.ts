@@ -1,6 +1,7 @@
 // A minimal DOM fixture mirroring the elements index.html defines that
-// main.ts's DOMContentLoaded handler looks up by id. Kept in one place so
-// tests build the same structure main.ts expects to wire up.
+// main.ts (and its feature modules) look up by id on DOMContentLoaded.
+// Kept in one place so the per-module UI tests build the same structure they
+// expect to wire up.
 export const FIXTURE_HTML = `
   <div class="theme-switch">
     <select id="theme-select">
@@ -41,6 +42,7 @@ export const FIXTURE_HTML = `
         <input id="compiler-path" type="text" />
         <input id="compile-check" type="checkbox" />
         <textarea id="script-roots"></textarea>
+        <textarea id="lookup-script-roots"></textarea>
         <select id="semicolon-style">
           <option value="forbid">Remove where possible</option>
           <option value="require">Add to non-empty lines</option>

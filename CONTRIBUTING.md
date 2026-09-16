@@ -11,12 +11,24 @@ expected of a pull request.
 ├── app/                     # The desktop app: Tauri (Rust + TypeScript) shell
 │   │                        # and its frontend, with their npm/cargo config
 │   ├── src/                  # Frontend (TypeScript, vanilla, no framework)
-│   │   ├── main.ts              # Drag-and-drop UI logic, calls into Tauri commands
+│   │   ├── main.ts              # Drag-and-drop UI façade: types, project/config
+│   │   │                        # wiring, drop/lint orchestration; re-exports the
+│   │   │                        # feature modules below
+│   │   ├── presets.ts           # Config presets: picker, save/reset, Presets tab
+│   │   ├── code-viewer.ts       # Code viewer dialog: open/close, view, line fix/ignore
+│   │   ├── results-list.ts      # Lint results list, filters, mass-fix, export
+│   │   ├── live-edit.ts         # Code viewer edit mode: live lint, autocomplete, save
 │   │   ├── highlight.ts         # Standalone Papyrus syntax highlighter for the
 │   │   │                        # code viewer dialog
 │   │   ├── main.test.ts         # Vitest unit tests for main.ts
+│   │   ├── presets.test.ts      # Vitest unit tests for presets.ts
+│   │   ├── code-viewer.test.ts  # Vitest unit tests for code-viewer.ts
+│   │   ├── results-list.test.ts # Vitest unit tests for results-list.ts
+│   │   ├── live-edit.test.ts    # Vitest unit tests for live-edit.ts
 │   │   ├── highlight.test.ts    # Vitest unit tests for highlight.ts
-│   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for main.test.ts
+│   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for the UI tests
+│   │   ├── test/mocks.ts        # Shared Tauri spies for the UI tests
+│   │   ├── test/harness.ts      # Shared helpers/hooks for the UI tests
 │   │   └── styles.css
 │   ├── index.html            # Frontend entry point (Vite)
 │   ├── package.json          # npm scripts/deps for the frontend and Tauri CLI
@@ -24,11 +36,16 @@ expected of a pull request.
 │   │   └── src/
 │   │       ├── main.rs           # Binary entry point: no args -> lib::run() (GUI),
 │   │       │                     # args -> papyrus_lint_cli::run() (CLI mode)
-│   │       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
-│   │       │                     # parse_papyrus_script, lint_papyrus_script,
-│   │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
-│   │       │                     # repair_psc_file), built on papyrus-lint-core
-│   │       └── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button
+│   │       ├── lib.rs            # Façade: registers Tauri commands from the
+│   │       │                     # modules below and starts the GUI
+│   │       ├── meta.rs           # get_app_version, list_rule_tags
+│   │       ├── files.rs          # Achlist/directory listing, .psc read/write/
+│   │       │                     # hash/parse, in-memory parse/lint
+│   │       ├── lint_config.rs    # papyrus-lint.yaml, compiler path, compile_check,
+│   │       │                     # script roots, project info
+│   │       ├── config_presets.rs # Built-in and user configuration presets
+│   │       ├── lint.rs           # lint_psc_file, compile_psc_file, list_script_members
+│   │       └── repair.rs         # Apply/preview fixes and per-line @disable
 │   └── crates/
 │       ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
 │       │   └── src/               # for the Papyrus language. No lint rules live
@@ -54,12 +71,19 @@ expected of a pull request.
 │       │       └── function_table.rs   # Cross-script function signature lookup,
 │       │                               # for the argument/return type check lints
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
-│           └── src/                # achlist's scripts against its project's
-│               ├── lib.rs           # papyrus-lint.yaml and prints the results.
-│               │                    # run() here is the shared logic; also
-│               │                    # linked into src-tauri for its CLI mode.
-│               └── main.rs          # Thin binary entry point around lib::run()
-├── resources/                # Images used by README.md (logo, screenshots)
+│           ├── src/                # achlist's scripts against its project's
+│           │   ├── lib.rs           # run() + public API; also linked into
+│           │   │                    # src-tauri for its CLI mode
+│           │   ├── project.rs       # Project-root discovery from .psc paths
+│           │   ├── output.rs        # Plain/JSON/AI report types and formatting
+│           │   ├── init.rs          # `init` / `preset add`
+│           │   ├── blob.rs          # `--blob` in-memory lint
+│           │   ├── doctor.rs        # `doctor` subcommand
+│           │   ├── test_support.rs  # Shared helpers for each file's unit tests
+│           │   └── main.rs          # Thin binary entry point around lib::run()
+│           └── tests/               # Binary e2e tests, one file per src module
+├── shared/
+│   └── images/               # Images used by README.md (logo, screenshots)
 ├── rules/
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
 │   └── slow-functions.yaml       # Slow calls and faster alternatives; both are
@@ -80,6 +104,10 @@ pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
 depends on `papyrus-lint-cli` too, purely for its `run()` function (its
 `main.rs` calls straight into it for CLI mode), not for the
 `PapyrusLinterCLI` binary target that crate also defines.
+
+Agent-oriented guidance lives in [`AGENTS.md`](AGENTS.md) (a short index)
+and [`docs/agent/`](docs/agent/) (CI, Pages, releases, implementation
+notes). `CLAUDE.md` is a pointer to `AGENTS.md`, not a second copy.
 
 ## Development setup
 
@@ -188,9 +216,10 @@ Lint rules live in `app/crates/papyrus-lints/src`; the complete current set and
 each rule's behavior are documented in the [Implemented Lints
 table](README.md#implemented-lints). Rules generally inspect raw source or
 lexer tokens so they keep running on scripts that do not parse cleanly. Follow
-that approach for a new rule where practical, register its check (and optional
-repair) in `app/crates/papyrus-lints/src/lib.rs`, and add its enable switch and
-default in `app/crates/papyrus-lints/src/config.rs`.
+that approach for a new rule where practical, then register it in
+`app/crates/papyrus-lints/src/registry.rs` (known/fixable ids, `collect_diagnostics`,
+`apply_repairs` if it has a fix, and `default_rules`) and add its enable switch
+on `Rules` in `app/crates/papyrus-lints/src/config.rs`.
 
 A lint/fix job receives a `&papyrus_lints::Config`, deserialized from a
 project's optional `papyrus-lint.yaml`/`.yml`, so user-configurable behavior

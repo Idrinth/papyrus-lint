@@ -1,0 +1,169 @@
+/*
+ * Shared visual identity for the desktop app (`app/src/styles.css`) and the
+ * GitHub Pages site (`pages/styles.css`). Both stylesheets import this file
+ * so the palette, canvas, and a handful of primitives cannot drift apart.
+ *
+ * Font *files* stay with each consumer: the app loads Cinzel via
+ * `@fontsource`, the site self-hosts Cinzel/Inter as woff2. This file only
+ * names the stacks.
+ */
+
+:root {
+  --font-sans: Inter, Avenir, Helvetica, Arial, sans-serif;
+  --font-display: "Cinzel", Inter, Avenir, Helvetica, Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  --color-text: #0f0f0f;
+  --color-text-muted: rgba(15, 15, 15, 0.4);
+  --color-bg: #f6f6f6;
+  --color-surface: #ffffff;
+  --color-border: rgba(15, 15, 15, 0.15);
+  --color-border-strong: rgba(15, 15, 15, 0.35);
+  --color-hover-bg: rgba(15, 15, 15, 0.1);
+  --color-flagged-bg: rgba(15, 15, 15, 0.08);
+  --color-grid: rgba(15, 15, 15, 0.035);
+  --color-accent: #396cd8;
+  --color-accent-toggle: #396cd8;
+  --color-error: #d83939;
+  --color-error-strong: #b02a2a;
+  --color-error-bg: rgba(216, 57, 57, 0.12);
+  --color-warning: #b8860b;
+  --color-warning-bg: rgba(184, 134, 11, 0.12);
+  --color-info-bg: rgba(57, 108, 216, 0.1);
+  --color-success: #2f8f3f;
+  --color-success-strong: #1f6b2f;
+  --color-autocomplete-border: rgba(15, 15, 15, 0.2);
+  --color-autocomplete-active-bg: rgba(36, 132, 219, 0.18);
+  --code-comment: #6a9955;
+  --code-string: #a31515;
+  --code-number: #098658;
+  --code-keyword: #0000ff;
+  --code-type: #267f99;
+
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  background-image:
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.theme-switch select {
+  padding: 0.25em 0.5em;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+/*
+ * Dark palette: applied automatically when the system prefers dark and the
+ * user hasn't forced light mode, or unconditionally once the user picks
+ * "Dark" in a theme switch (which sets data-theme on the root element).
+ * "System" (the default) leaves data-theme unset, so only the media query
+ * below decides. The desktop app and the website share the same
+ * "system"/"light"/"dark" scheme, localStorage key, and data-theme
+ * attribute (see applyTheme/loadStoredTheme and pages/theme.js).
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-text: #f6f6f6;
+    --color-text-muted: rgba(246, 246, 246, 0.4);
+    --color-bg: #2f2f2f;
+    --color-surface: #262626;
+    --color-border: rgba(246, 246, 246, 0.15);
+    --color-border-strong: rgba(246, 246, 246, 0.35);
+    --color-hover-bg: rgba(246, 246, 246, 0.15);
+    --color-flagged-bg: rgba(246, 246, 246, 0.08);
+    --color-grid: rgba(246, 246, 246, 0.035);
+    --color-accent: #24c8db;
+    --color-accent-toggle: #24c8db;
+    --color-error: #ff6b6b;
+    --color-error-strong: #ff6b6b;
+    --color-error-bg: rgba(255, 107, 107, 0.18);
+    --color-warning: #e0b23c;
+    --color-warning-bg: rgba(224, 178, 60, 0.18);
+    --color-info-bg: rgba(36, 200, 219, 0.15);
+    --color-success: #6bd67f;
+    --color-success-strong: #6bd67f;
+    --color-autocomplete-border: rgba(246, 246, 246, 0.25);
+    --color-autocomplete-active-bg: rgba(36, 200, 219, 0.2);
+    --code-string: #ce9178;
+    --code-number: #b5cea8;
+    --code-keyword: #569cd6;
+    --code-type: #4ec9b0;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-text: #f6f6f6;
+  --color-text-muted: rgba(246, 246, 246, 0.4);
+  --color-bg: #2f2f2f;
+  --color-surface: #262626;
+  --color-border: rgba(246, 246, 246, 0.15);
+  --color-border-strong: rgba(246, 246, 246, 0.35);
+  --color-hover-bg: rgba(246, 246, 246, 0.15);
+  --color-flagged-bg: rgba(246, 246, 246, 0.08);
+  --color-grid: rgba(246, 246, 246, 0.035);
+  --color-accent: #24c8db;
+  --color-accent-toggle: #24c8db;
+  --color-error: #ff6b6b;
+  --color-error-strong: #ff6b6b;
+  --color-error-bg: rgba(255, 107, 107, 0.18);
+  --color-warning: #e0b23c;
+  --color-warning-bg: rgba(224, 178, 60, 0.18);
+  --color-info-bg: rgba(36, 200, 219, 0.15);
+  --color-success: #6bd67f;
+  --color-success-strong: #6bd67f;
+  --color-autocomplete-border: rgba(246, 246, 246, 0.25);
+  --color-autocomplete-active-bg: rgba(36, 200, 219, 0.2);
+  --code-string: #ce9178;
+  --code-number: #b5cea8;
+  --code-keyword: #569cd6;
+  --code-type: #4ec9b0;
+}

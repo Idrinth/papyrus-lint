@@ -1,6 +1,6 @@
 # Papyrus Lint [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint) [![Discord Server](https://img.shields.io/badge/discord-server-5865F2?logo=discord)](link=https://discord.gg/idrinth) [![NexusMods](https://img.shields.io/badge/nexusmods-page-yellow)](https://www.nexusmods.com/skyrimspecialedition/mods/189862) [![GitHub](https://img.shields.io/badge/github-repo-white?logo=github)](https://github.com/idrinth/papyrus-lint) [![Action](https://img.shields.io/badge/GitHubAction-Ready-Purple?logo=GitHub&label=Action&color=purple)](https://github.com/marketplace/actions/papyrus-lint) [![Feedback](https://img.shields.io/badge/feedback-tally-orange)](https://tally.so/r/aQL1dB)
 
-![Papyrus Lint logo](resources/logo-small.jpg)
+![Papyrus Lint logo](shared/images/logo-small.jpg)
 
 **Papyrus Lint goes far beyond style: it catches bugs that CreationKit's
 compiler lets through.**
@@ -45,7 +45,7 @@ The strict boolean check identifies this issue because the first call passes
 the `Actor` value `b` to a `Bool` parameter. This specific mistake cost me a
 good two hours finding manually in one of my mods.
 
-![Papyrus Lint Import](resources/papyrus-lint-import.png)
+![Papyrus Lint Import](shared/images/papyrus-lint-import.png)
 
 Just drop your file or archlist here and see the results.
 
@@ -60,7 +60,7 @@ See [more examples](docs/examples.md) of bugs Papyrus Lint catches that
 - A replacement for proper testing
 - An AI or AI-powered
 
-![Papyrus Lint VSCode Extension](resources/papyrus-lint-vscode.png)
+![Papyrus Lint VSCode Extension](shared/images/papyrus-lint-vscode.png)
 
 ## What is a linter?
 
@@ -82,11 +82,11 @@ judgment for whether a flagged line needs changing, and use the
 silence a specific rule on a specific line (or [`; @disable-file`](#disabling-a-lint-on-a-specific-line)
 to silence it across the whole file) when you've decided it doesn't apply.
 
-![Papyrus Lint Results](resources/papyrus-lint-results.png)
+![Papyrus Lint Results](shared/images/papyrus-lint-results.png)
 
 ## Implemented Lints
 
-![Papyrus Lint Viewer](resources/papyrus-lint-viewer.png)
+![Papyrus Lint Viewer](shared/images/papyrus-lint-viewer.png)
 
 ### Formatting
 
@@ -115,7 +115,7 @@ or on a frequent update.
 
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
-| **Forbidden/discouraged function usage** | Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. | |
+| **Forbidden/discouraged function usage** | Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. A `Debug.*` call (`Trace`, `TraceStack`, `Notification`) nested inside an `If`/`ElseIf` whose condition is a simple identifier (or `Self`/`Parent`/identifier member chain) whose name contains `debug` (case-insensitively, e.g. `If IsDebugMode`) is left unflagged, since that is already a debug-flag guard; an `Else` of that chain, a negated or compound condition, or a name that doesn't look like a debug flag is still flagged. | |
 | **Slow function usage** | Flags calls to functions listed in `rules/slow-functions.yaml` that have a faster equivalent available, and suggests the quicker alternative. The fix replaces the complete call with that rule's supplied replacement, preserving the original argument where the replacement uses the `value` placeholder. | ✓ |
 | **Short wait/update interval** | Flags, as a `[warning]`, a call to `Utility.Wait`, `RegisterForUpdate`, `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` whose interval argument folds to a compile-time-constant number below the configurable `min_wait_interval` (default `0.1`), since an interval that short runs far more often than is typically useful and can add up to meaningful performance overhead. `Utility.Wait` is only matched when qualified by that literal script name, the same way the "Forbidden/discouraged function usage" lint treats native singletons; the `RegisterFor*` family matches unqualified or through any receiver. Only an argument built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. | |
 | **Repeated GlobalVariable.GetValue() calls** | Flags, as an `[info]`, a `GetValue()` call repeated on the same receiver across the conditions of a single `If`/`ElseIf` chain (e.g. `If gv.GetValue() == 1.0` / `ElseIf gv.GetValue() == 2.0`), since none of the chain's earlier branch bodies run before a later condition is evaluated, so the value can't have changed between those reads — it can be read into a local variable once ahead of the chain instead. Like "Slow function usage", a call's receiver can't generally be resolved back to a `GlobalVariable`-typed script, so this matches by the `GetValue` method name alone (case-insensitively, with no arguments); it's the only native method with that name (see `rules/native-methods.yaml`), so this doesn't misfire on unrelated types. Disabled by default, since a chain that reads the same global more than once is often written that way deliberately for readability and the performance cost is usually negligible outside a hot code path; a project opts in via `rules.repeated_getvalue`. | |
@@ -199,7 +199,7 @@ preferences.
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Unused script properties** | Flags `Property` declarations whose name is never referenced anywhere else in the script. | |
-| **Unused import** | Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script (e.g. `Import Utility` with no bare `Wait(...)` call anywhere), since that's the only thing an `Import` actually does for a script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at. | |
+| **Unused import** | Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script (e.g. `Import Utility` with no bare `Wait(...)` call anywhere), since that's the only thing an `Import` actually does for a script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at. The fix removes the whole `Import` line; like the check itself, it only ever runs with that same project context, so it's a no-op without it. | ✓ |
 | **Cyclomatic complexity** | Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`\|\|` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20); `cyclomatic_complexity_error` configured below `cyclomatic_complexity_warning` is treated as equal to it, since a lower error threshold would otherwise contradict the warning one it's supposed to escalate. | |
 | **Unused or write-only local variables** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose value is never read: either it's never referenced again at all, or it's only ever reassigned (`name = ...`) without that new value ever being read back. Reading a variable via a compound assignment (`name += ...`, etc.) or through a member/index expression built from it (`name.Foo`, `name[0]`) counts as a use. Function parameters and script properties aren't locals and are never flagged by this lint. | |
 | **Prefer named arguments** | Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting. The fix inserts the matching parameter name ahead of each flagged argument, leaving an already-named argument and the call's other text untouched. | ✓ |
@@ -222,7 +222,7 @@ within it. Reformatting the rest of that block (fragment headers, the
 generated function signature, `EndFunction`, or the markers themselves)
 would make CreationKit fail to recognize the fragment.
 
-![Papyrus Lint Mass Fix](resources/papyrus-lint-massfix.png)
+![Papyrus Lint Mass Fix](shared/images/papyrus-lint-massfix.png)
 
 ## Disabling a lint on a specific line
 
@@ -376,6 +376,24 @@ Each key:
   below) — useful when a script imports from a shared library location
   outside the project. The CLI also accepts one or more `--script-root
   <path>` flags on top of this setting (see Command-line interface below).
+- `lookup_script_roots`: extra directories searched only as a last-resort
+  fallback when resolving a script by name for analysis — argument/return
+  types, `Extends`, autocompletion — set via the app's Settings tab, one
+  per line. Each entry is resolved relative to the project root unless
+  it's already an absolute path. They are searched only after the two
+  conventional directories and `additional_script_roots` above, are never
+  linted themselves, are ignored by `conflicting-script-versions`, and are
+  not added to the compiler's `-i` argument. Intended for the game's own
+  vanilla sources so a project can type-check against them without treating
+  them as part of the project. Creating a new config (`init`, or the
+  desktop app's first-run preset picker) or updating an existing config
+  that does not yet set this key fills Skyrim Special Edition's
+  `Data/Scripts/Source` and `Data/Source/Scripts` when those directories
+  exist and the install path can be read from the Windows registry
+  (`HKLM\Software\Bethesda Softworks\Skyrim Special Edition` or
+  `HKLM\Software\Wow6432Node\Bethesda Softworks\Skyrim Special Edition`,
+  value `installed path`). An explicit empty list is left empty rather
+  than re-filled.
 - `compile_check`: whether the desktop app and the CLI also run
   PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
   app's Settings tab, alongside `compiler_path`. `false` by default, since
@@ -523,12 +541,13 @@ PapyrusCompiler.exe path field on the Settings tab works the same way,
 except it's pre-filled with an auto-detected path (see `compiler_path`
 above) rather than a fixed default when the project has no explicit
 override saved yet. The additional script roots textarea (see
-`additional_script_roots` above) works the same way too, one directory per
-line.
+`additional_script_roots` above) and the lookup script roots textarea
+(see `lookup_script_roots` above) work the same way too, one directory
+per line.
 
 ## Command-line interface
 
-![Papyrus Lint CLI example](resources/papyrus-lint-cli.png)
+![Papyrus Lint CLI example](shared/images/papyrus-lint-cli.png)
 
 Besides its GUI, Papyrus Lint can lint non-interactively from the
 command line two ways: by passing an `.achlist` (or a single `.psc`, or a
@@ -608,7 +627,8 @@ that a discovered — or `--config`-overridden — `papyrus-lint.yaml`/`.yml`
 actually parses; that at least one of `scripts/source`/`source/scripts`
 exists under the resolved project root; that each configured
 `additional_script_roots` entry (and any `--script-root` given alongside
-`doctor`) resolves to an existing directory; and that a configured, or
+`doctor`) and each configured `lookup_script_roots` entry resolves to an
+existing directory; and that a configured, or
 auto-detected, `compiler_path` points at an existing file — warning
 instead if `compile_check` is enabled but no compiler path could be
 resolved at all. Each check is printed as its own `[ok]`/`[warning]`/
@@ -653,8 +673,9 @@ named `papyrus-lint.yaml`/`.yml`. Both editor plugins expose this as a
 `config_path`/`configPath` setting (see their own READMEs). Since the
 project root's own config file is bypassed entirely in that case, so is
 its `additional_script_roots`; use `--script-root` (below) to add any
-script roots back explicitly. `strict_achlist_scope` is still read from
-`<path>` itself, the same as every other lint setting, since it isn't tied
+script roots back explicitly. `lookup_script_roots` and
+`strict_achlist_scope` are still read from
+`<path>` itself, the same as every other lint setting, since they aren't tied
 to the project root the way `additional_script_roots` is.
 
 Given one or more `--script-root <path>` flags (combinable with
@@ -750,9 +771,9 @@ are only valid alongside `fix` and can be combined. `--type` errors out on
 a rule id that doesn't exist, or that exists but has no automatic fix
 (e.g. `forbidden-functions`, which can only be reported); `--line` errors
 out if applying the selected fix(es) would change the file's line count
-(e.g. `property-sorting` relocating a property's declaration), since a
-single original line number no longer identifies the same line in the
-result in that case.
+(e.g. `property-sorting` relocating a property's declaration, or
+`unused-import` removing a whole `Import` line), since a single original
+line number no longer identifies the same line in the result in that case.
 
 `fix` also accepts `--dry-run`, which computes the same fix(es) — honoring
 `--type`/`--tag`/`--line` the same way — but never writes them to disk.
@@ -926,9 +947,10 @@ applying just that one finding's fix and restricting it to that finding's
 own line, leaving every other line and finding untouched — the desktop
 app's equivalent of the CLI's `fix --type <rule-id> --line <n>`. If that
 fix would change the file's line count elsewhere (e.g. `property-sorting`
-relocating a property's declaration), it fails instead of applying
-anything, showing the error inline next to the finding; the whole-file
-"Apply fixes" button has no such restriction and always applies cleanly.
+relocating a property's declaration, or `unused-import` removing a whole
+`Import` line), it fails instead of applying anything, showing the error
+inline next to the finding; the whole-file "Apply fixes" button has no
+such restriction and always applies cleanly.
 
 The code viewer has the same whole-file "Apply fixes" button built in,
 next to "Edit" in its header, whenever the file it's currently showing has
@@ -963,7 +985,8 @@ own small "Fix"/"Ignore" buttons next to it, in view mode. "Fix" only
 appears when at least one of that line's findings is auto-fixable, and
 applies each such finding's own fix restricted to that line, the same way
 "Fix this issue" does — a rule whose fix would shift other lines (e.g.
-`property-sorting`) is silently skipped rather than blocking the rest.
+`property-sorting`, or `unused-import` removing its own `Import` line) is
+silently skipped rather than blocking the rest.
 "Ignore" appears whenever at least one finding on the line carries a rule
 id, and adds a [`; @disable <rule-id>[, <rule-id>...]`](#disabling-a-lint-on-a-specific-line)
 comment naming every rule found on that line instead of fixing it — merging

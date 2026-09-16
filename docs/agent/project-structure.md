@@ -1,0 +1,240 @@
+<!-- Extracted from AGENTS.md so the always-on agent index stays small. -->
+# Project structure
+
+
+```text
+.
+├── app/                     # The desktop app: Tauri (Rust + TypeScript) shell
+│   │                        # and its frontend, with their npm/cargo config
+│   ├── src/                  # Frontend (TypeScript, vanilla, no framework)
+│   │   ├── main.ts              # Drag-and-drop UI façade: types, project/config
+│   │   │                        # wiring, drop/lint orchestration; re-exports the
+│   │   │                        # feature modules below
+│   │   ├── presets.ts           # Config presets: picker, save/reset, Presets tab
+│   │   ├── code-viewer.ts       # Code viewer dialog: open/close, view, line fix/ignore
+│   │   ├── results-list.ts      # Lint results list, filters, mass-fix, export
+│   │   ├── live-edit.ts         # Code viewer edit mode: live lint, autocomplete, save
+│   │   ├── highlight.ts         # Standalone Papyrus syntax highlighter for the
+│   │   │                        # code viewer dialog
+│   │   ├── main.test.ts         # Vitest unit tests for main.ts
+│   │   ├── presets.test.ts      # Vitest unit tests for presets.ts
+│   │   ├── code-viewer.test.ts  # Vitest unit tests for code-viewer.ts
+│   │   ├── results-list.test.ts # Vitest unit tests for results-list.ts
+│   │   ├── live-edit.test.ts    # Vitest unit tests for live-edit.ts
+│   │   ├── highlight.test.ts    # Vitest unit tests for highlight.ts
+│   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for the UI tests
+│   │   ├── test/mocks.ts        # Shared Tauri spies for the UI tests
+│   │   ├── test/harness.ts      # Shared helpers/hooks for the UI tests
+│   │   └── styles.css           # App chrome; imports shared/theme.css
+│   ├── e2e/                  # Playwright specs (real Chromium, not jsdom):
+│   │   └── layout.spec.ts       # catches element-size/layout regressions
+│   ├── playwright.config.ts  # Config for the e2e/ specs above
+│   ├── index.html            # Frontend entry point (Vite)
+│   ├── package.json          # npm scripts/deps for the frontend and Tauri CLI
+│   ├── src-tauri/            # Tauri desktop app shell (Rust)
+│   │   └── src/
+│   │       ├── main.rs           # Binary entry point: no args -> lib::run() (GUI),
+│   │       │                     # args -> papyrus_lint_cli::run() (CLI mode)
+│   │       ├── lib.rs            # Façade: registers Tauri commands from the
+│   │       │                     # modules below and starts the GUI
+│   │       ├── meta.rs           # get_app_version, list_rule_tags
+│   │       ├── files.rs          # Achlist/directory listing, .psc read/write/
+│   │       │                     # hash/parse, in-memory parse/lint
+│   │       ├── lint_config.rs    # papyrus-lint.yaml, compiler path, compile_check,
+│   │       │                     # script roots, project info
+│   │       ├── config_presets.rs # Built-in and user configuration presets
+│   │       ├── lint.rs           # lint_psc_file, compile_psc_file, list_script_members
+│   │       └── repair.rs         # Apply/preview fixes and per-line @disable
+│   └── crates/
+│       ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
+│       │   └── src/               # for the Papyrus language. No lint rules live
+│       │       ├── lexer.rs        # here — see papyrus-lints below.
+│       │       ├── token.rs
+│       │       ├── ast.rs
+│       │       ├── parser.rs
+│       │       └── cache.rs        # In-memory memoization of parse()/tokenize()
+│       │                           # against the most recently seen source, so
+│       │                           # one lint pass over a script only lexes/
+│       │                           # parses it once no matter how many lint
+│       │                           # rules each ask for their own tokens/AST
+│       ├── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
+│       │   ├── build.rs           # (not the AST) so they still run on scripts
+│       │   └── src/                # that don't parse cleanly.
+│       │       ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
+│       │       ├── config.rs                  # Config type (YAML-deserializable) passed
+│       │       │                              # to every check/fix job
+│       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
+│       │       ├── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
+│       │       │                              # via a build-time-generated array
+│       │       ├── native_function_usage.rs   # Reads rules/native-methods.yaml via a
+│       │       │                              # build-time-generated array; disabled by
+│       │       │                              # default
+│       │       └── actor_value.rs             # Flags a call to an Actor Value function
+│       │                                      # (GetActorValue, SetActorValue, ...) whose
+│       │                                      # argument isn't a known Actor Value; reads
+│       │                                      # rules/actor-values.yaml via a build-time-
+│       │                                      # generated array; disabled by default
+│       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
+│       │   └── src/               # and the CLI, independent of Tauri:
+│       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
+│       │       ├── ast_cache.rs    # Disk-backed cache of parsed .psc ASTs, keyed by
+│       │       │                   # content MD5 + mtime + linter version, shared by
+│       │       │                   # the desktop app and the CLI (via function_table.rs)
+│       │       ├── config.rs       # Locates/loads a project's papyrus-lint.yaml
+│       │       ├── script_locator.rs   # Finds .psc files by name under
+│       │       │                       # scripts/source or source/scripts
+│       │       ├── function_table.rs   # Cross-script function signature lookup,
+│       │       │                       # for the argument/return type check lints
+│       │       │                       # and script_exists() for the unresolved
+│       │       │                       # script reference lint; each signature
+│       │       │                       # tracks the State block it came from (if
+│       │       │                       # any), preferring the empty state's own
+│       │       │                       # declaration over a same-named override
+│       │       ├── native_types.rs     # Fallback Extends hierarchy for native
+│       │       │                       # engine types (Actor, ObjectReference,
+│       │       │                       # Form, ...) with no .psc in the project;
+│       │       │                       # reads rules/native-types.yaml via a
+│       │       │                       # build-time-generated array (build.rs)
+│       │       ├── native_globals.rs   # Known native singleton scripts (Game,
+│       │       │                       # Utility, Debug, ...) always called by
+│       │       │                       # literal name, with no .psc in the
+│       │       │                       # project; reads rules/native-globals.yaml
+│       │       │                       # via a build-time-generated array (build.rs)
+│       │       ├── presets.rs          # Label/description metadata for the desktop
+│       │       │                       # app's first-run preset picker, layered over
+│       │       │                       # config::Preset (see Configuration below)
+│       │       ├── compiler.rs         # Runs PapyrusCompiler.exe for the desktop
+│       │       │                       # app's "Compile" button, then strips personal
+│       │       │                       # data from the compiled .pex; also compiles
+│       │       │                       # into a throwaway temp dir (never touching
+│       │       │                       # the project's real output) for the
+│       │       │                       # compile_check lint setting, honored by both
+│       │       │                       # the desktop app and the CLI, below
+│       │       ├── compile_diagnostics.rs # Parses PapyrusCompiler.exe's own reported
+│       │       │                          # errors, from compiler.rs's temp-dir
+│       │       │                          # compile, into lint Diagnostics for the
+│       │       │                          # compile_check setting
+│       │       ├── pex_header.rs       # Parses a compiled .pex file's header just
+│       │       │                       # far enough to blank its userName/
+│       │       │                       # machineName fields
+│       │       ├── parallel.rs         # Dependency-free worker pool (map_in_parallel)
+│       │       │                       # spreading per-script work across threads,
+│       │       │                       # used by the CLI's --threads flag
+│       │       └── stale_pex.rs        # The "Stale compiled output" project lint:
+│       │                               # flags a .psc file whose compiled .pex is
+│       │                               # older than the script itself, a common
+│       │                               # sign someone forgot to recompile after
+│       │                               # editing it
+│       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
+│           ├── src/                # achlist's scripts against its project's
+│           │   ├── lib.rs           # run() + public API; also linked into
+│           │   │                    # src-tauri for its CLI mode
+│           │   ├── project.rs       # Project-root discovery from .psc paths
+│           │   ├── output.rs        # Plain/JSON/AI report types and formatting
+│           │   ├── init.rs          # `init` / `preset add`
+│           │   ├── blob.rs          # `--blob` in-memory lint
+│           │   ├── doctor.rs        # `doctor` subcommand
+│           │   ├── test_support.rs  # Shared helpers for each file's unit tests
+│           │   └── main.rs          # Thin binary entry point around lib::run()
+│           └── tests/               # Binary e2e tests, one file per src module
+├── shared/
+│   ├── images/               # Images used by README.md (logo, screenshots)
+│   └── theme.css             # Palette, canvas, and primitives shared by
+│                              # app/src/styles.css and pages/styles.css so
+│                              # the desktop app and the website cannot drift
+
+├── rules/
+│   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
+│   ├── slow-functions.yaml       # Slow calls and their faster alternatives
+│   ├── native-methods.yaml       # Base-game native functions (see
+│   │                             # native_function_usage.rs above); all three
+│   │                             # files above are compiled in by
+│   │                             # papyrus-lints/build.rs
+│   ├── native-types.yaml         # Native engine class hierarchy fallback (see
+│   │                              # papyrus-lint-core/src/native_types.rs above);
+│   │                              # compiled in by papyrus-lint-core/build.rs
+│   ├── native-globals.yaml       # Native singleton scripts always called by
+│   │                                  # literal name (see native_globals.rs above);
+│   │                                  # compiled in by papyrus-lint-core/build.rs
+│   └── actor-values.yaml         # Skyrim's built-in Actor Values (see
+│                                  # actor_value.rs above); compiled in by
+│                                  # papyrus-lints/build.rs
+├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
+│   ├── linter.py                          # runs PapyrusLinterCLI against a saved
+│   ├── messages.json                      # .psc file and parses its output
+│   ├── messages/install.txt               # into SublimeLinter diagnostics; kept
+│   ├── README.md                          # here for development but installed/
+│   └── LICENSE                            # distributed as its own package.
+├── vscode-extension/        # VS Code extension (TypeScript): lints and fixes
+│   ├── package.json          # .psc files by invoking PapyrusLinterCLI --json
+│   ├── src/extension.ts      # Commands, process execution, and diagnostics
+│   └── test/                 # Node-based extension unit tests
+└── pages/                   # Source for the GitHub Pages discoverability site
+    ├── index.template.html    # (see GitHub Pages below): index.template.html is
+    ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel
+    ├── videos.template.html    # headings, the same light/dark palette); build.py
+    ├── videos.json             # substitutes its lint-table/CLI-example placeholders
+    ├── action.template.html    # and renders action.html, the papyrus-lint-action
+    │                            # GitHub Action's own README fetched at build
+    │                            # time (see action.template.html below).
+    ├── coverage.template.html  # with content converted straight from README.md,
+    ├── imprint.template.html   # renders imprint.html, a fully static legal
+    │                            # notice (Impressum) with no build-time
+    │                            # content of its own beyond the shared header/
+    │                            # footer, linked from the footer on every page
+    ├── includes/               # shared page chrome inserted during the build
+    │   ├── header.html         # with depth-aware links for root/docs pages
+    │   └── footer.html         # and one source for release/contact/legal
+    │                            # notice details
+    ├── styles.css              # Site layout/components; imports
+    │                            # shared/theme.css for the palette/canvas.
+    │                            # build.py inlines that import (and minifies)
+    │                            # so the deployed site is still one file.
+    │                            # Also renders coverage.html, a per-module/per-file
+    ├── CNAME                   # line coverage breakdown for the latest release
+    │                            # (see coverage.template.html below). The site's
+    │                            # custom domain (papyrus-lint.idrinth.de);
+    │                            # build.py copies CNAME into pages/dist/ so
+    │                            # GitHub Pages keeps serving it across every
+    │                            # Actions-based deploy.
+    ├── fonts/                  # renders every docs/* file into a browsable subpage
+    │   ├── cinzel-v26-latin-700.woff2  # (via docs.template.html) linked from a
+    │   └── inter-v20-latin-variable.woff2  # Documentation section, renders
+    ├── build.py                # videos.json's list of YouTube videos into
+    │                            # videos.html (via videos.template.html), a
+    │                            # --coverage-dir of downloaded lcov reports into
+    │                            # coverage.html (via coverage.template.html, see
+    │                            # GitHub Pages below), and assembles pages/dist/
+    │                            # (git-ignored), copying
+    │                            # its assets/ images from shared/images/ and the
+    │                            # app icon rather than committing duplicates of
+    │                            # either under pages/, generating a WebP/AVIF
+    │                            # sibling of each one rendered as an <img> and
+    │                            # rewriting that <img> into a <picture> offering
+    │                            # them (see GitHub Pages below), its fonts/
+    │                            # woff2 files as-is so styles.css's @font-face
+    │                            # rules self-host Cinzel/Inter instead of
+    │                            # pulling them from
+    │                            # fonts.googleapis.com/fonts.gstatic.com
+    │                            # (avoiding a third-party request on every page
+    │                            # load), and a sitemap.xml/robots.txt pair (see
+    │                            # GitHub Pages below) rooted at SITE_URL.
+    ├── requirements-build.txt  # Pinned Pillow version build.py's image
+    │                            # conversion above depends on.
+    ├── browser_check.py        # Opens every page under a built pages/dist in
+    │                            # headless Chromium (see CI below) to catch
+    │                            # console/page errors and broken internal
+    │                            # links/anchors that build.py's own unit
+    │                            # tests, working against small fixtures, can't
+    └── requirements-browser-check.txt  # Pinned Playwright version for the above
+```
+
+`papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
+`papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
+just path dependencies of each other and of `app/src-tauri`) so the lint
+engine and project-resolution logic stay reusable independent of the Tauri
+app — which is what lets `papyrus-lint-cli` link against them without
+pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
+depends on `papyrus-lint-cli` too, purely for its `run()` function (its
+`main.rs` calls straight into it for CLI mode), not for the `PapyrusLinterCLI`
+binary target that crate also defines.

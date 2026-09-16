@@ -174,6 +174,40 @@ class StaticScriptsTest(unittest.TestCase):
             "",
         )
 
+    def test_theme_script_tolerates_unavailable_local_storage(self) -> None:
+        page = self.new_page()
+        page.set_content(
+            '<select id="theme-select"><option>system</option>'
+            '<option>light</option><option>dark</option></select>'
+        )
+        page.evaluate(
+            """() => {
+                Storage.prototype.getItem = () => { throw new Error('storage blocked'); };
+                Storage.prototype.setItem = () => { throw new Error('storage blocked'); };
+            }"""
+        )
+        page.add_script_tag(path=str(browser_check.PAGES_DIR / "theme.js"))
+
+        self.assertEqual(page.locator("#theme-select").input_value(), "system")
+        page.locator("#theme-select").select_option("dark")
+        self.assertEqual(page.locator("html").get_attribute("data-theme"), "dark")
+
+    def test_theme_script_falls_back_to_window_resize_without_resize_observer(self) -> None:
+        page = self.new_page()
+        page.set_content('<style>.site-header { height: 24px }</style><header class="site-header"></header>')
+        page.evaluate("delete window.ResizeObserver")
+        page.add_script_tag(path=str(browser_check.PAGES_DIR / "theme.js"))
+
+        page.locator(".site-header").evaluate("element => element.style.height = '51px'")
+        page.evaluate("window.dispatchEvent(new Event('resize'))")
+        self.assertEqual(
+            page.evaluate(
+                "getComputedStyle(document.documentElement)"
+                ".getPropertyValue('--site-header-height')"
+            ),
+            "51px",
+        )
+
     def test_download_script_builds_a_safe_os_specific_picker(self) -> None:
         page = self.run_script(
             """<div class="download-group">
@@ -248,6 +282,39 @@ class StaticScriptsTest(unittest.TestCase):
         self.assertEqual(page.locator(".download-panel").count(), 0)
         for element_id in ("missing", "malformed", "object", "unknown"):
             self.assertIsNone(page.locator(f"#{element_id}").get_attribute("aria-haspopup"))
+
+    def test_download_script_uses_default_accessible_label_and_id(self) -> None:
+        page = self.run_script(
+            """<div><a id="download" data-download-toggle
+               data-options='[{"file":"PapyrusLinterCLI-linux","label":"Linux CLI"}]'
+               href="#fallback">CLI</a></div>""",
+            "downloads.js",
+        )
+
+        self.assertEqual(page.locator("label").get_attribute("for"), "download-download-select")
+        self.assertEqual(page.locator("label").text_content(), "Choose a download")
+        self.assertEqual(page.locator("select").get_attribute("id"), "download-download-select")
+        self.assertEqual(page.locator("select option").text_content(), "Linux CLI")
+
+    def test_download_script_enhances_every_valid_toggle_independently(self) -> None:
+        page = self.run_script(
+            """<div class="download-group"><a id="gui" data-download-toggle data-download-id="gui"
+               data-options='[{"file":"PapyrusLinter-windows-x64.msi","label":"Windows"}]'
+               href="#gui-fallback">GUI</a></div>
+            <div class="download-group"><a id="cli" data-download-toggle data-download-id="cli"
+               data-options='[{"file":"PapyrusLinterCLI-macos","label":"macOS"}]'
+               href="#cli-fallback">CLI</a></div>""",
+            "downloads.js",
+        )
+
+        self.assertEqual(page.locator(".download-panel").count(), 2)
+        page.locator("#gui").click()
+        self.assertFalse(page.locator("#gui-download-select").is_hidden())
+        self.assertTrue(page.locator("#cli-download-select").is_hidden())
+
+        page.locator("#cli").click()
+        self.assertTrue(page.locator("#gui-download-select").is_hidden())
+        self.assertFalse(page.locator("#cli-download-select").is_hidden())
 
 
 class CheckSiteTest(unittest.TestCase):

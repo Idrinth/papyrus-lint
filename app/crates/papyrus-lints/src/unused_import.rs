@@ -16,6 +16,12 @@
 //! every import when using [`NoExternalSignatures`], which never resolves
 //! anything — is never flagged, so this can't mistake a lack of project
 //! data for proof an import goes unused.
+//!
+//! [`repair_with`] removes exactly the `Import` lines [`check_with`]
+//! flags, deleting each whole line (including its line ending) rather than
+//! leaving a blank one behind; [`repair`] is its [`check`] counterpart,
+//! never removing anything since [`NoExternalSignatures`] never resolves a
+//! script either.
 
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
 
@@ -73,6 +79,45 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
         });
     }
     diagnostics
+}
+
+/// Removes every `Import` line [`check`] flags — which, since it never
+/// resolves anything (see [`NoExternalSignatures`]), is none at all. See
+/// [`repair_with`] to actually remove imports resolved unused through a
+/// project's own external signatures.
+pub fn repair(source: &str) -> String {
+    repair_with(source, &mut NoExternalSignatures)
+}
+
+/// Like [`repair`], but removes every `Import` line [`check_with`] flags
+/// as unused through `external`, deleting each whole line (including its
+/// line ending) rather than leaving a blank line in its place. A script
+/// that doesn't parse cleanly, or that [`check_with`] finds nothing to
+/// flag in, is returned unchanged.
+pub fn repair_with<E: ExternalSignatures>(source: &str, external: &mut E) -> String {
+    let lines_to_remove: std::collections::HashSet<usize> = check_with(source, external)
+        .into_iter()
+        .map(|diagnostic| diagnostic.line)
+        .collect();
+    if lines_to_remove.is_empty() {
+        return source.to_string();
+    }
+
+    let mut result = String::with_capacity(source.len());
+    let mut rest = source;
+    let mut line_number = 1usize;
+    while !rest.is_empty() {
+        let (line_and_ending, remainder) = match rest.find('\n') {
+            Some(index) => (&rest[..=index], &rest[index + 1..]),
+            None => (rest, ""),
+        };
+        if !lines_to_remove.contains(&line_number) {
+            result.push_str(line_and_ending);
+        }
+        rest = remainder;
+        line_number += 1;
+    }
+    result
 }
 
 /// Iterates every function declared directly on a script, plus every
@@ -252,5 +297,60 @@ mod tests {
             &mut FakeExternal,
         );
         assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn repair_removes_only_the_unused_imports_line() {
+        let source = "ScriptName A\n\nImport B ; provided BC, so loaded\nImport D ; unused\n\nFunction C()\n    BC()\nEndFunction\n";
+
+        let repaired = repair_with(source, &mut FakeExternal);
+
+        assert_eq!(
+            repaired,
+            "ScriptName A\n\nImport B ; provided BC, so loaded\n\nFunction C()\n    BC()\nEndFunction\n"
+        );
+        assert!(check_with(&repaired, &mut FakeExternal).is_empty());
+    }
+
+    #[test]
+    fn repair_removes_multiple_unused_import_lines() {
+        let source = "ScriptName A\n\nImport B\nImport D\n\nFunction C()\nEndFunction\n";
+
+        let repaired = repair_with(source, &mut FakeExternal);
+
+        assert_eq!(repaired, "ScriptName A\n\n\nFunction C()\nEndFunction\n");
+    }
+
+    #[test]
+    fn repair_leaves_a_used_imports_only_script_unchanged() {
+        let source = "ScriptName A\n\nImport B\n\nFunction C()\n    BC()\nEndFunction\n";
+
+        assert_eq!(repair_with(source, &mut FakeExternal), source);
+    }
+
+    #[test]
+    fn repair_without_a_resolver_never_removes_anything() {
+        let source = "ScriptName A\n\nImport B\nImport D\n\nFunction C()\n    BC()\nEndFunction\n";
+
+        assert_eq!(repair(source), source);
+    }
+
+    #[test]
+    fn repair_preserves_crlf_line_endings() {
+        let source = "ScriptName A\r\n\r\nImport D\r\n\r\nFunction C()\r\nEndFunction\r\n";
+
+        let repaired = repair_with(source, &mut FakeExternal);
+
+        assert_eq!(
+            repaired,
+            "ScriptName A\r\n\r\n\r\nFunction C()\r\nEndFunction\r\n"
+        );
+    }
+
+    #[test]
+    fn repair_does_not_crash_on_unparseable_source() {
+        let source = "ScriptName A\n\nImport B\n\nFunction C(\nEndFunction\n";
+
+        assert_eq!(repair_with(source, &mut FakeExternal), source);
     }
 }
