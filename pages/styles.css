@@ -677,6 +677,116 @@ table.lint-rules-table {
   font-size: 0.85em;
 }
 
+.rules-content {
+  max-width: 64em;
+}
+
+.rules-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1em 1.5em;
+  margin: 1.5em 0 0.75em;
+  padding: 1em 1.25em;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background-color: var(--color-surface);
+}
+
+.rules-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6em;
+}
+
+#rules-search {
+  min-width: 16em;
+  padding: 0.4em 0.6em;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.9em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rules-count {
+  margin: 0 0 1em;
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+}
+
+.rules-content .lint-rules-table th:nth-child(2),
+.rules-content .lint-rules-table td:nth-child(2) {
+  width: 6em;
+}
+
+.rules-content .lint-rules-table th:nth-child(3),
+.rules-content .lint-rules-table td:nth-child(3) {
+  width: 11em;
+}
+
+.severity-badge {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.severity-badge--error {
+  color: var(--color-error-strong);
+  background-color: var(--color-error-bg);
+}
+
+.severity-badge--warning {
+  color: var(--color-warning);
+  background-color: var(--color-warning-bg);
+}
+
+.severity-badge--info {
+  color: var(--color-accent);
+  background-color: var(--color-info-bg);
+}
+
+.tag-badge {
+  display: inline-block;
+  margin: 0 0.3em 0.3em 0;
+  padding: 0.1em 0.55em;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  font-size: 0.8em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.rules-content .lint-rules-table details {
+  margin-top: 0.5em;
+}
+
+.rules-content .lint-rules-table details summary {
+  cursor: pointer;
+  color: var(--color-accent-toggle);
+  font-size: 0.9em;
+}
+
+.rules-content .lint-rules-table code {
+  font-size: 0.85em;
+  color: var(--color-text-muted);
+}
+
 .coverage-module .lint-table td:last-child,
 .coverage-module .lint-table th:last-child {
   width: auto;

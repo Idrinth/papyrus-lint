@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("papyrus-lint:theme");
+          if (theme === "light" || theme === "dark") {
+            document.documentElement.setAttribute("data-theme", theme);
+          }
+        } catch (error) {
+          /* localStorage unavailable (e.g. disabled); fall back to the
+             system theme via the CSS media query. */
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lint rules · Papyrus Lint</title>
+    <meta
+      name="description"
+      content="Every lint rule Papyrus Lint implements, with its severity, tags, and auto-fix support - searchable and filterable."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Papyrus Lint" />
+    <meta property="og:url" content="<!--SITE_URL-->rules.html" />
+    <link rel="canonical" href="<!--SITE_URL-->rules.html" />
+    <meta property="og:title" content="Lint rules · Papyrus Lint" />
+    <meta
+      property="og:description"
+      content="Every lint rule Papyrus Lint implements, with its severity, tags, and auto-fix support - searchable and filterable."
+    />
+    <meta property="og:image" content="<!--SITE_URL-->assets/logo.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Lint rules · Papyrus Lint" />
+    <meta
+      name="twitter:description"
+      content="Every lint rule Papyrus Lint implements, with its severity, tags, and auto-fix support - searchable and filterable."
+    />
+    <meta name="twitter:image" content="<!--SITE_URL-->assets/logo.jpg" />
+    <link rel="icon" type="image/png" href="assets/favicon.png" />
+    <link rel="preload" href="fonts/cinzel-v26-latin-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/inter-v20-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <!--SITE_HEADER-->
+
+    <main id="top">
+      <section class="hero doc-hero" style="border-top: none">
+        <p class="doc-breadcrumb"><a href="index.html#lints">&larr; Back to home</a></p>
+        <h1>Lint rules</h1>
+        <p class="hero__tagline">
+          All <!--RULES_COUNT--> lint rules Papyrus Lint implements, generated directly from the linter's own rule
+          metadata so this list can never drift out of sync with what actually ships. Search by name, id, or
+          description, or filter by severity, tag, and auto-fix support; each rule's full documented behavior is one
+          click away.
+        </p>
+      </section>
+
+      <section class="doc-content rules-content" style="border-top: none">
+        <!--RULES_CONTENT-->
+        <p id="disable" class="disable-note">
+          Add a trailing <code>; @disable &lt;rule-id&gt;[, &lt;rule-id&gt;...]</code> comment to a line to suppress
+          diagnostics from those rules on that line only (e.g. <code>action = 1 ; @disable float-to-int</code>); a
+          bare <code>; @disable</code> suppresses every rule on the line. A
+          <code>; @disable-file &lt;rule-id&gt;[, &lt;rule-id&gt;...]</code> comment does the same across the whole
+          file instead, no matter which line it's written on. See the
+          <a href="https://github.com/idrinth/papyrus-lint#disabling-a-lint-on-a-specific-line">README</a> for more
+          details.
+        </p>
+      </section>
+    </main>
+
+    <!--SITE_FOOTER-->
+    <script src="rules.js" defer></script>
+  </body>
+</html>
