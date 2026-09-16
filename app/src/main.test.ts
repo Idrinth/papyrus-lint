@@ -5801,6 +5801,40 @@ describe("toggleCodeViewerFullscreen", () => {
 });
 
 describe("wired DOM interactions", () => {
+  it("loads startup metadata and applies theme changes through the registered listeners", async () => {
+    const version = document.createElement("span");
+    version.id = "app-version";
+    document.body.append(version);
+    invokeImplFor({
+      get_app_version: () => "1.2.3",
+      list_rule_tags: () => [],
+      list_config_presets: () => [],
+    });
+
+    // Re-dispatch startup after installing deterministic backend handlers;
+    // mountFixture's initial dispatch intentionally happens before each test
+    // has configured the command mock.
+    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
+    await vi.waitFor(() => expect(version.textContent).toBe("v1.2.3"));
+
+    const theme = document.querySelector<HTMLSelectElement>("#theme-select")!;
+    theme.value = "dark";
+    theme.dispatchEvent(new Event("change"));
+    expect(localStorage.getItem("papyrus-lint:theme")).toBe("dark");
+    expect(document.documentElement.dataset.theme).toBe("dark");
+  });
+
+  it("closes the configuration picker only when its backdrop is clicked", () => {
+    const picker = document.querySelector<HTMLDialogElement>("#config-picker")!;
+    picker.showModal();
+
+    picker.querySelector(".config-picker__title")!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(picker.open).toBe(true);
+
+    picker.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(picker.open).toBe(false);
+  });
+
   it("drives the tab and settings controls through their registered listeners", async () => {
     invokeMock.mockResolvedValue(undefined);
 
@@ -5884,6 +5918,7 @@ describe("wired DOM interactions", () => {
     const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
     const textarea = document.querySelector<HTMLTextAreaElement>("#code-viewer-editor-textarea")!;
     const highlight = document.querySelector<HTMLElement>("#code-viewer-editor-highlight")!;
+    const gutter = document.querySelector<HTMLElement>("#code-viewer-editor-gutter")!;
 
     document.querySelector<HTMLButtonElement>("#code-viewer-edit")!.click();
     textarea.value = "Int x = 2\n";
@@ -5893,6 +5928,12 @@ describe("wired DOM interactions", () => {
     textarea.dispatchEvent(new Event("scroll"));
     expect(highlight.scrollTop).toBe(12);
     expect(highlight.scrollLeft).toBe(7);
+    expect(gutter.scrollTop).toBe(12);
+
+    textarea.dispatchEvent(new MouseEvent("mousemove", { clientY: 20 }));
+    textarea.dispatchEvent(new Event("scroll"));
+    textarea.dispatchEvent(new MouseEvent("mouseleave"));
+    expect(textarea.title).toBe("");
 
     vi.spyOn(window, "confirm").mockReturnValue(false);
     const cancelEvent = new Event("cancel", { cancelable: true });
