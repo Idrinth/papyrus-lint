@@ -1,13 +1,12 @@
-//! A small, dependency-free worker pool for running the same per-item work
-//! (reading, optionally fixing, and linting one `.psc` script) across many
-//! scripts at once, instead of one at a time.
+//! A thin [`rayon`] wrapper for running the same per-item work (reading,
+//! optionally fixing, and linting one `.psc` script) across many scripts at
+//! once, instead of one at a time.
 //!
-//! This is deliberately minimal rather than pulling in a crate like
-//! `rayon`: the only thing needed is "run this closure for every item,
-//! spread across a bounded number of threads, and get the results back in
-//! the same order the items went in" -- [`map_in_parallel`] is exactly
-//! that, built on [`std::thread::scope`] so it never needs `'static` bounds
-//! or to hand ownership of `items` to the caller ahead of time.
+//! [`map_in_parallel`] builds a scoped `rayon` thread pool sized to the
+//! caller's requested thread count (e.g. the CLI's `--threads` flag) and
+//! runs `work` over `items` with it, returning the results in the same
+//! order the items went in regardless of which order the pool's workers
+//! actually finish them in.
 //!
 //! Used by `papyrus-lint-cli`'s per-script lint loop (see its `--threads`
 //! flag), sharing this module (rather than each having its own copy) with
@@ -17,8 +16,8 @@
 //! [`crate::ast_cache`]'s module docs for the concurrency-safety work this
 //! shares with the app's own already-concurrent command dispatch.
 
-use std::collections::VecDeque;
-use std::sync::Mutex;
+use rayon::prelude::*;
+use rayon::ThreadPoolBuilder;
 
 /// The number of worker threads [`map_in_parallel`] should default to when
 /// a caller has no more specific preference (e.g. a CLI flag) -- the
@@ -44,7 +43,11 @@ pub fn default_thread_count() -> usize {
 /// (e.g. a `Mutex`-guarded [`crate::function_table::FunctionTable`] via
 /// [`crate::function_table::SharedFunctionTable`]) rather than this
 /// function knowing anything about lint-specific state itself.
-pub fn map_in_parallel<T, R>(items: Vec<T>, threads: usize, work: impl Fn(T) -> R + Sync) -> Vec<R>
+pub fn map_in_parallel<T, R>(
+    items: Vec<T>,
+    threads: usize,
+    work: impl Fn(T) -> R + Sync + Send,
+) -> Vec<R>
 where
     T: Send,
     R: Send,
@@ -53,33 +56,12 @@ where
         return items.into_iter().map(work).collect();
     }
 
-    let queue: Mutex<VecDeque<(usize, T)>> = Mutex::new(items.into_iter().enumerate().collect());
-    let results: Mutex<Vec<(usize, R)>> = Mutex::new(Vec::new());
+    let pool = ThreadPoolBuilder::new()
+        .num_threads(threads)
+        .build()
+        .expect("failed to build rayon thread pool");
 
-    std::thread::scope(|scope| {
-        for _ in 0..threads {
-            scope.spawn(|| loop {
-                let next = queue
-                    .lock()
-                    .unwrap_or_else(|poisoned| poisoned.into_inner())
-                    .pop_front();
-                let Some((index, item)) = next else {
-                    break;
-                };
-                let result = work(item);
-                results
-                    .lock()
-                    .unwrap_or_else(|poisoned| poisoned.into_inner())
-                    .push((index, result));
-            });
-        }
-    });
-
-    let mut results = results
-        .into_inner()
-        .unwrap_or_else(|poisoned| poisoned.into_inner());
-    results.sort_by_key(|(index, _)| *index);
-    results.into_iter().map(|(_, result)| result).collect()
+    pool.install(|| items.into_par_iter().map(work).collect())
 }
 
 #[cfg(test)]
@@ -87,7 +69,7 @@ mod tests {
     use super::*;
     use std::collections::HashSet;
     use std::sync::atomic::{AtomicUsize, Ordering};
-    use std::sync::{Barrier, Condvar};
+    use std::sync::{Barrier, Condvar, Mutex};
 
     #[test]
     fn default_thread_count_is_never_zero() {
