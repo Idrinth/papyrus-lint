@@ -1,9 +1,9 @@
-"""HTML and CSS minification used by the Pages builder.
+"""HTML, CSS, and JavaScript minification used by the Pages builder.
 
 The previous implementation was a handful of regular expressions. Those
-are replaced here by htmlmin and rcssmin. <pre> blocks are still stashed
-before HTML minification so example whitespace and comment-like text
-inside them stay verbatim.
+are replaced here by htmlmin, rcssmin, and rjsmin. <pre> blocks are still
+stashed before HTML minification so example whitespace and comment-like
+text inside them stay verbatim.
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ import re
 
 import htmlmin
 import rcssmin
+import rjsmin
 
 PRE_BLOCK_RE = re.compile(r"<pre\b[^>]*>.*?</pre>", re.DOTALL | re.IGNORECASE)
 IMG_SOURCE_TAG_RE = re.compile(r"<(?:img|source)\b[^>]*>", re.IGNORECASE)
@@ -57,3 +58,8 @@ def _keep_void_slash(match: re.Match[str]) -> str:
 def minify_css(text: str) -> str:
     """Minifies CSS for deployment via rcssmin."""
     return rcssmin.cssmin(text)
+
+
+def minify_js(text: str) -> str:
+    """Minifies JavaScript for deployment via rjsmin."""
+    return rjsmin.jsmin(text)
