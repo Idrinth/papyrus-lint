@@ -2,9 +2,9 @@ mod ai;
 mod json;
 mod plain;
 
-pub use json::{JsonDiagnostic, JsonFileReport, JsonReport};
 pub(crate) use ai::*;
 pub(crate) use json::*;
+pub use json::{JsonDiagnostic, JsonFileReport, JsonReport};
 pub(crate) use plain::*;
 
 /// Normalizes a raw `--tag <kind>` value to lowercase and checks it against
