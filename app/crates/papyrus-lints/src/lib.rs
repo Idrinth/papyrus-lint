@@ -68,6 +68,7 @@ pub mod strict_boolean;
 pub mod tags;
 pub mod trailing_whitespace;
 pub mod type_casing;
+pub mod unchecked_array_element;
 pub mod unchecked_cast;
 pub mod unchecked_form_parameter;
 pub mod unguarded_self_recursion;
@@ -128,6 +129,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     property_sorting::RULE,
     explicit_return::RULE,
     unchecked_form_parameter::RULE,
+    unchecked_array_element::RULE,
     unchecked_cast::RULE,
     useless_downcast::RULE,
     impossible_cast::RULE,
@@ -421,6 +423,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.unchecked_form_parameter {
         diagnostics.extend(unchecked_form_parameter::check(source));
+    }
+    if rules.unchecked_array_element {
+        diagnostics.extend(unchecked_array_element::check(source));
     }
     if rules.unchecked_cast {
         diagnostics.extend(unchecked_cast::check(source));
@@ -1535,6 +1540,12 @@ mod tests {
                 unchecked_form_parameter::RULE,
                 config_with(|c| c.rules.unchecked_form_parameter = true),
                 config_with(|c| c.rules.unchecked_form_parameter = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Actor[] act = new Actor[3]\n    act[2].Kill()\nEndFunction\n",
+                unchecked_array_element::RULE,
+                config_with(|c| c.rules.unchecked_array_element = true),
+                config_with(|c| c.rules.unchecked_array_element = false),
             ),
             (
                 "ScriptName Example\n\nFunction Test(ObjectReference akRef)\n    (akRef as Actor).GetActorValue(\"Health\")\nEndFunction\n",
