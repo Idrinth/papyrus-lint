@@ -827,6 +827,33 @@ mod tests {
     }
 
     #[test]
+    fn rule_tag_metadata_serializes_with_the_frontend_contract() {
+        let tags = serde_json::to_value(list_rule_tags()).unwrap();
+        let trailing_whitespace = tags
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|info| info["rule"] == papyrus_lints::trailing_whitespace::RULE)
+            .expect("trailing-whitespace should be included");
+
+        assert_eq!(
+            trailing_whitespace,
+            &serde_json::json!({
+                "rule": "trailing-whitespace",
+                "description": papyrus_lints::tags::RULE_TAGS
+                    .iter()
+                    .find(|tags| tags.rule == papyrus_lints::trailing_whitespace::RULE)
+                    .unwrap()
+                    .description,
+                "kinds": ["style"],
+                "importance": "low",
+                "auto_fixable": true,
+                "doc_url": "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace",
+            })
+        );
+    }
+
+    #[test]
     fn source_commands_parse_and_lint_without_touching_disk() {
         let source = "ScriptName Example\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n";
 
@@ -1890,6 +1917,24 @@ mod tests {
                 detected_script_roots: Vec::new(),
                 used_configuration_file: None,
             }
+        );
+    }
+
+    #[test]
+    fn project_info_serializes_paths_and_a_missing_config_for_the_frontend() {
+        let dir = tempdir().unwrap();
+        let scripts = dir.path().join("scripts/source");
+        std::fs::create_dir_all(&scripts).unwrap();
+
+        let info = load_project_info(dir.path().to_string_lossy().into_owned()).unwrap();
+        let json = serde_json::to_value(info).unwrap();
+
+        assert_eq!(
+            json,
+            serde_json::json!({
+                "detected_script_roots": [scripts.to_string_lossy()],
+                "used_configuration_file": null,
+            })
         );
     }
 
