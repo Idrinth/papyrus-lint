@@ -4079,6 +4079,104 @@ mod tests {
     }
 
     #[test]
+    fn blob_reports_a_missing_explicit_config_file() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let missing_config = dir.path().join("missing.yaml");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--blob".to_string(),
+            "ScriptName Example\n".to_string(),
+            "--config".to_string(),
+            missing_config.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.contains("error: failed to load lint config:"));
+        assert!(stderr.contains("No such file or directory"));
+    }
+
+    #[test]
+    fn blob_ai_format_reports_content_and_rule_metadata() {
+        let source = "ScriptName Example   \n";
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--format=ai".to_string(),
+            "--blob".to_string(),
+            source.to_string(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stderr.is_empty());
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("AI report should be valid JSON");
+        assert_eq!(report["findings"]["total_diagnostics"], 1);
+        assert_eq!(report["findings"]["files"][0]["path"], "<blob>");
+        assert_eq!(report["findings"]["files"][0]["source"]["content"], source);
+        assert_eq!(report["findings"]["rule_counts"]["trailing-whitespace"], 1);
+        assert_eq!(report["rule_details"][0]["rule"], "trailing-whitespace");
+        assert!(report["configuration"]["enabled_rules"].is_array());
+    }
+
+    #[test]
+    fn blob_ai_hash_source_omits_the_source_content() {
+        let source = "ScriptName Example   \n";
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--blob".to_string(),
+            source.to_string(),
+            "--format".to_string(),
+            "ai".to_string(),
+            "--hash-source".to_string(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stderr.is_empty());
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("AI report should be valid JSON");
+        let source_report = &report["findings"]["files"][0]["source"];
+        assert_eq!(source_report["type"], "hash");
+        assert_eq!(source_report["algorithm"], "md5");
+        assert_eq!(source_report["hash"], content_hash::md5_hex(source));
+        assert!(source_report.get("content").is_none());
+        assert!(!stdout.contains(source));
+    }
+
+    #[test]
+    fn blob_ai_format_omits_clean_files_from_findings() {
+        let (code, stdout, stderr) = run_captured(&[
+            "--blob".to_string(),
+            "ScriptName Example\n".to_string(),
+            "--format=ai".to_string(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stderr.is_empty());
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("AI report should be valid JSON");
+        assert_eq!(report["findings"]["total_diagnostics"], 0);
+        assert_eq!(report["findings"]["files"], serde_json::json!([]));
+        assert_eq!(report["rule_details"], serde_json::json!([]));
+    }
+
+    #[test]
+    fn blob_reports_an_error_when_output_cannot_be_written() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--blob".to_string(),
+            "ScriptName Example\n".to_string(),
+            "--output".to_string(),
+            dir.path().to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.contains("error: failed to write"));
+        assert!(stderr.contains(&dir.path().display().to_string()));
+    }
+
+    #[test]
     fn blob_rejects_an_unknown_tag() {
         let (code, _stdout, stderr) = run_captured(&[
             "--tag=made-up-tag".to_string(),
