@@ -46,6 +46,7 @@ pub mod parameter_reassignment;
 pub mod property_sorting;
 pub mod readonly_property_write;
 pub mod repeated_getvalue;
+pub mod repeated_setoutfit;
 pub mod return_types;
 pub mod script_name_collision;
 pub mod self_assignment;
@@ -150,6 +151,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     self_assignment::RULE,
     unnecessary_function::RULE,
     actor_value::RULE,
+    repeated_setoutfit::RULE,
 ];
 
 use serde::Serialize;
@@ -468,6 +470,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.unknown_actor_value {
         diagnostics.extend(actor_value::check(source));
+    }
+    if rules.repeated_setoutfit {
+        diagnostics.extend(repeated_setoutfit::check(source));
     }
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
@@ -1636,6 +1641,12 @@ mod tests {
                 actor_value::RULE,
                 config_with(|c| c.rules.unknown_actor_value = true),
                 Config::default(),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test(Actor akActor, Outfit MyOutfit)\n    akActor.SetOutfit(MyOutfit)\n    akActor.SetOutfit(MyOutfit)\nEndFunction\n",
+                repeated_setoutfit::RULE,
+                Config::default(),
+                config_with(|c| c.rules.repeated_setoutfit = false),
             ),
         ];
 
