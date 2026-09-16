@@ -547,6 +547,7 @@ pub const FIXABLE_RULE_IDS: &[&str] = &[
     type_casing::RULE,
     trailing_whitespace::RULE,
     global_variable_increment::RULE,
+    named_arguments::RULE,
     unnecessary_function::RULE,
 ];
 
@@ -658,6 +659,11 @@ fn repair_with(source: &str, config: &Config, applies: impl Fn(&str) -> bool) ->
     };
     let source = if rules.global_variable_increment && applies(global_variable_increment::RULE) {
         global_variable_increment::repair(&source)
+    } else {
+        source
+    };
+    let source = if rules.named_arguments && applies(named_arguments::RULE) {
+        named_arguments::repair(&source, config.named_arguments)
     } else {
         source
     };
