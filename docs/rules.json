@@ -9,6 +9,7 @@
     ],
     "severity": "warning",
     "importance": "low",
+    "kept_in_standard": true,
     "fixable": true,
     "description": "Flags lines that end with trailing spaces or tabs.",
     "definition": "Flags, as a `[warning]`, lines that end with trailing spaces or tabs."
@@ -23,6 +24,7 @@
     ],
     "severity": "warning",
     "importance": "low",
+    "kept_in_standard": true,
     "fixable": true,
     "description": "Requires whitespace after commas in argument lists.",
     "definition": "Requires, as a `[warning]`, whitespace after commas in argument lists."
@@ -110,6 +112,7 @@
     ],
     "severity": "warning",
     "importance": "low",
+    "kept_in_standard": true,
     "fixable": true,
     "description": "Requires a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting.",
     "definition": "Requires, as a `[warning]`, a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting."
@@ -267,6 +270,7 @@
     ],
     "severity": "warning",
     "importance": "low",
+    "kept_in_standard": true,
     "fixable": true,
     "description": "Flags lines whose indentation doesn't match the configured style/width.",
     "definition": "Flags, as a `[warning]`, lines whose indentation doesn't match the configured style/width (`indentation`/`indentation_width`) for their nesting depth. A script whose structure can't be identified (e.g. it doesn't lex cleanly) is left unchecked rather than guessed at."
@@ -426,6 +430,7 @@
     ],
     "severity": "warning",
     "importance": "low",
+    "kept_in_standard": true,
     "fixable": true,
     "description": "Flags a space or tab immediately before or after a member/method access.",
     "definition": "Flags, as a `[warning]`, a space or tab immediately before or after a `.` member/method access (e.g. `SomeProperty . DoThing()`), since it interrupts the chain for no benefit. A `.` inside a `Float` literal (e.g. `1.5`) is never flagged. The fix closes the gap on whichever side(s) have it, without reaching across a newline (a chain continued onto another physical line is left alone)."
@@ -440,6 +445,7 @@
     ],
     "severity": "warning",
     "importance": "low",
+    "kept_in_standard": true,
     "fixable": true,
     "description": "Flags a negation operator not followed by exactly one space. In a chained negation such as !!bReady, only the final ! requires a trailing space.",
     "definition": "Flags, as a `[warning]`, a `!` negation operator not followed by exactly one space (e.g. `!bReady` or `!  bReady`), since a bit of breathing room makes the negation easier to spot. Never flags `!=`, which the lexer tokenizes separately, nor the gap between two directly adjacent `!`s in a chained/double negation (e.g. `!!bReady`) \u2014 only the last `!` in such a run needs its own trailing space. The fix inserts a space where there is none and collapses a longer run of spaces/tabs down to one."
@@ -497,6 +503,7 @@
     ],
     "severity": "warning",
     "importance": "low",
+    "kept_in_standard": true,
     "fixable": true,
     "description": "Requires exactly one space on either side of logical operators.",
     "definition": "Requires, as a `[warning]`, exactly one space on either side of `&&`, `||`, `==`, `!=`, `>`, `<`, `>=`, and `<=`. A side whose whitespace reaches a newline (the operator opens or closes a statement continued across physical lines) is left unchecked on that side. The fix normalizes each flagged side to a single space, without reaching across a newline."
@@ -511,6 +518,7 @@
     ],
     "severity": "warning",
     "importance": "low",
+    "kept_in_standard": true,
     "fixable": true,
     "description": "Requires exactly one space on either side of =, +=, -=, *=, /=, and %=.",
     "definition": "Requires, as a `[warning]`, exactly one space on either side of `=`, `+=`, `-=`, `*=`, `/=`, and `%=`. A side whose whitespace reaches a newline (the operator opens or closes a statement continued across physical lines) is left unchecked on that side. The fix normalizes each flagged side to a single space, without reaching across a newline."

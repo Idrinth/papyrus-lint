@@ -37,7 +37,7 @@ Do not paste those files back into this index. Update the file you read.
 | frontend | `app/src` | Vanilla TypeScript. No framework. |
 | VS Code | `vscode-extension/` | Editor integration. |
 | Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
-| rule data | `rules/*.yaml`, `docs/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`. |
+| rule data | `rules/*.yaml`, `docs/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`; `docs/rules.json`'s `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
 
 The six reusable crates are **path dependencies, not Cargo workspace
 members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each
@@ -116,6 +116,11 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `bbcode` job fails if that's skipped. `build.rs` generates
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and `tags.rs`'s
    `RULE_TAGS` from this file at build time — don't hand-edit those.
+   A new `"low"` importance rule is turned off by default in the
+   generated `standard`/`careful` presets (see
+   `papyrus-lint-config/build.rs`); add `"kept_in_standard": true` to its
+   entry only if it belongs with the handful of cheap, auto-fixable
+   formatting rules `standard` keeps on regardless.
 
 Rules should inspect source/tokens so they still run on scripts that
 don't parse. Configurable behavior goes on `&papyrus_lints::Config`, not
