@@ -21,17 +21,10 @@
 //! literal (optionally combined with arithmetic and unary operators), is
 //! left unflagged rather than guessed at.
 //!
-//! Independent of that tracked-size check, a `new <Type>[<N>]` whose own
-//! literal `N` falls outside `0..=128` is always flagged, regardless of
-//! whether the resulting array's size ends up tracked: per the
-//! CreationKit wiki's [Arrays
-//! (Papyrus)](https://ck.uesp.net/wiki/Arrays_(Papyrus)) page, an array
-//! created by a script via `New` (or grown with `Add()`) is hard-capped at
-//! 128 elements by the engine. That page also notes this cap does *not*
-//! apply to an array returned by a native function or to an
-//! editor-populated array `Property` — such an array can legitimately hold
-//! more than 128 elements — so an index into one of those is never flagged
-//! against this limit, only against a locally tracked `new` size (above).
+//! A `new <Type>[<N>]` whose own literal `N` falls outside the range
+//! Papyrus allows for a script-created array is flagged separately, by
+//! [`crate::array_size_range`], regardless of whether the resulting
+//! array's size ends up tracked here.
 
 use std::collections::HashMap;
 
@@ -42,14 +35,6 @@ use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "array-bounds";
-
-/// The maximum number of elements an array created by a script (via `New`
-/// or grown with `Add()`) can hold, per the CreationKit wiki's [Arrays
-/// (Papyrus)](https://ck.uesp.net/wiki/Arrays_(Papyrus)) page. Does not
-/// apply to an array returned by a native function or to an
-/// editor-populated array `Property`, which this lint has no way to size
-/// from source anyway.
-const MAX_NEW_ARRAY_SIZE: i64 = 128;
 
 /// Checks every function/event in `source` for a literal array index that
 /// falls outside the constant size the array was declared with.
@@ -238,19 +223,6 @@ fn check_expr(
         Expr::Cast { value, .. } => check_expr(value, sizes, diagnostics, line),
         Expr::NewArray { size, .. } => {
             check_expr(size, sizes, diagnostics, line);
-            if let Some(literal_size) = eval_const_int(size) {
-                if !(0..=MAX_NEW_ARRAY_SIZE).contains(&literal_size) {
-                    diagnostics.push(Diagnostic {
-                        line,
-                        column: 1,
-                        message: format!(
-                            "[warning] Array size {literal_size} is outside the range Papyrus \
-                             allows (0 to {MAX_NEW_ARRAY_SIZE}) for an array created with `new`"
-                        ),
-                        rule: RULE,
-                    });
-                }
-            }
         }
         Expr::NamedArg { value, .. } => check_expr(value, sizes, diagnostics, line),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
@@ -425,28 +397,6 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 9);
-    }
-
-    #[test]
-    fn flags_a_new_array_larger_than_the_engine_maximum() {
-        let diagnostics = check(
-            "ScriptName Example\n\nFunction Test()\n    Int[] a = new Int[200]\nEndFunction\n",
-        );
-
-        assert_eq!(diagnostics.len(), 1);
-        assert_eq!(diagnostics[0].line, 4);
-        assert!(diagnostics[0].message.contains("200"));
-        assert!(diagnostics[0].message.contains("128"));
-    }
-
-    #[test]
-    fn flags_a_new_array_with_a_negative_size() {
-        let diagnostics = check(
-            "ScriptName Example\n\nFunction Test()\n    Int[] a = new Int[-1]\nEndFunction\n",
-        );
-
-        assert_eq!(diagnostics.len(), 1);
-        assert_eq!(diagnostics[0].line, 4);
     }
 
     #[test]

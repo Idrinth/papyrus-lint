@@ -81,6 +81,7 @@
 //!   invariant_loop_condition: true
 //!   script_name_collision: true
 //!   array_bounds: true
+//!   array_size_range: true
 //!   readonly_property_write: true
 //!   default_property_value: false
 //!   unguarded_self_recursion: true
@@ -449,6 +450,8 @@ pub struct Rules {
     pub script_name_collision: bool,
     /// The "Array bounds" lint.
     pub array_bounds: bool,
+    /// The "Array size range" lint.
+    pub array_size_range: bool,
     /// The "Read-only (AutoReadOnly) property write" lint.
     pub readonly_property_write: bool,
     /// The "Default property value" lint. Like [`Self::property_sorting`],
@@ -559,6 +562,7 @@ impl Default for Rules {
             invariant_loop_condition: true,
             script_name_collision: true,
             array_bounds: true,
+            array_size_range: true,
             readonly_property_write: true,
             default_property_value: false,
             unguarded_self_recursion: true,
@@ -752,6 +756,7 @@ mod tests {
         assert!(config.rules.invariant_loop_condition);
         assert!(config.rules.script_name_collision);
         assert!(config.rules.array_bounds);
+        assert!(config.rules.array_size_range);
         assert!(config.rules.readonly_property_write);
         // Also disabled by default: many existing scripts already rely on
         // Papyrus's own implicit per-type defaults for some or all of
