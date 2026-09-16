@@ -702,7 +702,10 @@ scripts), and the desktop app's `lint_psc_file`/`repair_psc_file`/
 `repair_psc_finding`/`repair_psc_file_rule` commands and the CLI's own
 per-script lint loop (via `ast_cache::ensure_primed`, see below) cache
 each parsed `.psc` AST on disk
-(`app/crates/papyrus-lint-core/src/ast_cache.rs`), in an `ast-cache`
+(`app/crates/papyrus-ast-cache/src/lib.rs`, a standalone crate
+`papyrus-lint-core` re-exports as its own `ast_cache` module, since the
+cache only depends on `papyrus_parser` and is self-contained enough to be
+reusable on its own), in an `ast-cache`
 directory next to the running executable — the desktop app's own binary,
 or `PapyrusLinterCLI`'s, whichever process is doing the parsing. A cached
 entry is only reused when its stored MD5 of the file's content and the

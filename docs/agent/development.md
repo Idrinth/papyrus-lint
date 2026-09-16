@@ -33,6 +33,7 @@
   during the build, so those platform-specific PNG/ICO/ICNS variants are
   not checked in (except `icons/icon.png`, which the Pages builder copies).
 - Parser crate only: `cargo test` from `app/crates/papyrus-parser/`.
+- AST cache crate only: `cargo test` from `app/crates/papyrus-ast-cache/`.
 - Lints crate only: `cargo test` from `app/crates/papyrus-lints/`.
 - Config crate only: `cargo test` from `app/crates/papyrus-lint-config/`.
 - Shared project-resolution crate only: `cargo test` from

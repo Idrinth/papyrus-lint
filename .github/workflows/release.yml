@@ -101,6 +101,7 @@ jobs:
               'app/crates/papyrus-lints/Cargo.toml',
               'app/crates/papyrus-lint-config/Cargo.toml',
               'app/crates/papyrus-lint-core/Cargo.toml',
+              'app/crates/papyrus-ast-cache/Cargo.toml',
             ];
             for (const cratePath of cratesCargoPaths) {
               const crateCargo = fs.readFileSync(cratePath, 'utf8');

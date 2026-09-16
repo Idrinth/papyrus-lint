@@ -4,7 +4,7 @@
 
 Pushing a tag matching `v*.*.*` triggers a release job that syncs the
 tag's version into `app/src-tauri/tauri.conf.json`, `app/package.json`,
-`app/src-tauri/Cargo.toml`, and all four reusable crates' `Cargo.toml` files, then
+`app/src-tauri/Cargo.toml`, and all six reusable crates' `Cargo.toml` files, then
 builds the Tauri desktop app (binary name `PapyrusLinter`) on Linux,
 macOS, and Windows (via `tauri-apps/tauri-action`) and the
 `PapyrusLinterCLI` CLI binary (via `cargo build --release --manifest-path

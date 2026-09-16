@@ -25,8 +25,8 @@
 //!
 //! Every public accessor below serializes on a single process-wide
 //! [`CACHE_LOCK`], since two scripts linted at once (the CLI's
-//! [`crate::parallel`]-based worker pool, or the desktop app's own already-
-//! concurrent per-file Tauri commands) can both resolve the same
+//! `papyrus_lint_core::parallel`-based worker pool, or the desktop app's
+//! own already-concurrent per-file Tauri commands) can both resolve the same
 //! cross-script dependency at the same moment, and [`std::fs::write`] isn't
 //! atomic: two unsynchronized writers to the very same cache file could
 //! interleave into invalid JSON. A corrupt read already falls back to a

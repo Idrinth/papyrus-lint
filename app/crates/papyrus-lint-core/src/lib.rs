@@ -6,13 +6,17 @@
 //! depends on (see [`presets`], which layers the desktop app's first-run
 //! preset picker metadata over [`papyrus_lint_config::Preset`]).
 //!
-//! This crate depends only on [`papyrus_parser`], [`papyrus_lints`], and
-//! [`papyrus_lint_config`], not on Tauri, so it can be reused by anything
-//! that needs to lint a project's scripts without pulling in the desktop
-//! app.
+//! This crate depends only on [`papyrus_parser`], [`papyrus_lints`],
+//! [`papyrus_lint_config`], and [`papyrus_ast_cache`], not on Tauri, so it
+//! can be reused by anything that needs to lint a project's scripts
+//! without pulling in the desktop app.
 
 pub mod achlist;
-pub mod ast_cache;
+/// Disk-backed AST/token cache. Re-exported from the standalone
+/// [`papyrus_ast_cache`] crate, which owns the implementation -- it's
+/// self-contained enough (only depending on [`papyrus_parser`]) to be
+/// reusable outside this crate too.
+pub use papyrus_ast_cache as ast_cache;
 pub mod compile_diagnostics;
 pub mod compiler;
 pub mod content_hash;

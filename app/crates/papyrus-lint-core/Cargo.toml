@@ -15,6 +15,7 @@ tempfile = "3"
 papyrus-parser = { path = "../papyrus-parser" }
 papyrus-lints = { path = "../papyrus-lints" }
 papyrus-lint-config = { path = "../papyrus-lint-config" }
+papyrus-ast-cache = { path = "../papyrus-ast-cache" }
 
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }

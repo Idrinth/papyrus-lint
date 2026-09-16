@@ -1,0 +1,15 @@
+[package]
+name = "papyrus-ast-cache"
+version = "0.1.0"
+description = "Disk-backed cache of parsed Papyrus ASTs/token streams, keyed by content MD5, mtime, and linter version"
+authors = ["Idrinth"]
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+md5 = "0.7"
+papyrus-parser = { path = "../papyrus-parser" }
+
+[dev-dependencies]
+tempfile = "3"
