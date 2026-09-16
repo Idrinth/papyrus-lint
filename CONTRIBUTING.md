@@ -55,9 +55,14 @@ expected of a pull request.
 │       │                               # for the argument/return type check lints
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           └── src/                # achlist's scripts against its project's
-│               ├── lib.rs           # papyrus-lint.yaml and prints the results.
-│               │                    # run() here is the shared logic; also
-│               │                    # linked into src-tauri for its CLI mode.
+│               ├── lib.rs           # run() + public API; also linked into
+│               │                    # src-tauri for its CLI mode
+│               ├── project.rs       # Project-root discovery from .psc paths
+│               ├── output.rs        # Plain/JSON/AI report types and formatting
+│               ├── init.rs          # `init` / `preset add`
+│               ├── blob.rs          # `--blob` in-memory lint
+│               ├── doctor.rs        # `doctor` subcommand
+│               ├── cli_tests.rs     # Unit tests for run() (via lib.rs)
 │               └── main.rs          # Thin binary entry point around lib::run()
 ├── resources/                # Images used by README.md (logo, screenshots)
 ├── rules/
@@ -80,6 +85,10 @@ pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
 depends on `papyrus-lint-cli` too, purely for its `run()` function (its
 `main.rs` calls straight into it for CLI mode), not for the
 `PapyrusLinterCLI` binary target that crate also defines.
+
+Agent-oriented guidance lives in [`AGENTS.md`](AGENTS.md) (a short index)
+and [`docs/agent/`](docs/agent/) (CI, Pages, releases, implementation
+notes). `CLAUDE.md` is a pointer to `AGENTS.md`, not a second copy.
 
 ## Development setup
 

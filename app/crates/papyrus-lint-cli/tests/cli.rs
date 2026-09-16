@@ -1,6 +1,6 @@
 //! End-to-end tests for the standalone `PapyrusLinterCLI` binary.
 //!
-//! The unit tests in `src/lib.rs` exercise the shared `run` function. These
+//! The unit tests in `src/cli_tests.rs` exercise the shared `run` function. These
 //! tests additionally verify that the binary entry point forwards arguments,
 //! writes to the expected process streams, and returns the documented status.
 
