@@ -966,6 +966,65 @@ is a usage error combined with a path argument, `fix`, `--type`, `--line`,
 mean anything without a real file to resolve scripts around or write fixes
 back to.
 
+Both editor plugins use `--blob` for live, as-you-type feedback on a
+document's current (possibly unsaved) contents, alongside their existing
+open/save linting of the real file. The VS Code extension's
+`PapyrusLinter.lintBlob` (`vscode-extension/src/extension.ts`) runs
+`PapyrusLinterCLI --json --blob <text>` against `document.getText()`,
+triggered from a new `onDidChangeTextDocument` listener and debounced per
+document (`scheduleLiveLint`/`liveLintTimers`, cleared on document close)
+by the `papyrusLint.liveLintDebounceMs` setting (default `400`ms); the
+`papyrusLint.liveLint` setting (default `true`) turns this off entirely. A
+live lint's own failure (CLI launch, usage error, malformed JSON) is only
+logged to the "Papyrus Lint" output channel, never shown as an error
+message box, unlike every other CLI invocation this extension makes — it
+runs unattended on every pause in typing, so popping a message box on a
+transient failure (e.g. a download hiccup) would be disruptive;
+`PapyrusLinter.applyResult`'s new `notify` parameter (default `true`)
+controls this. The SublimeLinter plugin instead switches per-invocation,
+in `PapyrusLint.cmd` (`SublimeLinter-contrib-papyrus-lint/linter.py`):
+`self.view.is_dirty()` selects between the existing `${file}` argument (a
+saved view, unchanged) and `--blob <buffer text>` (read via
+`self.view.substr(sublime.Region(0, self.view.size()))`) for an unsaved
+one, needing no debounce logic of its own since SublimeLinter's own
+background linting (per the user's standard `lint_mode` setting) already
+reruns `cmd()` as the buffer changes. In both cases, and the same way
+`run_blob` itself documents, a live/unsaved lint only honors an explicit
+`config_path`/`papyrusLint.configPath` override — it can't discover the
+project's own `papyrus-lint.yaml`/`.yml` or run cross-script checks, since
+`--blob` skips project-root discovery entirely; the full, project-aware
+lint still runs again once the file is actually saved.
+
+The desktop app's code viewer gets the equivalent of this for its own Edit
+mode: `app/src/main.ts`'s `scheduleLiveEditLint`, wired to the edit
+textarea's `input` listener alongside the existing highlight/autocomplete
+handlers, debounces (`LIVE_EDIT_LINT_DEBOUNCE_MS`, `400`ms) a call to
+`runLiveEditLint`, which lints the textarea's current value via the new
+`lintPapyrusScript` wrapper around the `lint_papyrus_script` Tauri command
+(`app/src-tauri/src/lib.rs`, already existing but previously unused by the
+frontend) — the same in-process `papyrus_lints::lint` call the CLI itself
+ultimately runs, taking the place of shelling out to a CLI subprocess the
+way the two editor plugins above do. Unlike the CLI's `--blob`, this isn't
+combined with an explicit config override at all; it always lints against
+`currentLintConfig`, the same configuration every other lint/fix Tauri
+call in the app already uses. Its result populates
+`codeViewerEditLiveFindings`, a new module-level findings list
+`updateCodeViewerEditHighlight` reads from while in edit mode (seeded from
+`codeViewerState.findings` — the last on-disk lint — by
+`enterCodeViewerEditMode`, so the highlighted severities never go blank
+while a first live lint is still in flight), in place of the
+always-stale-until-save `codeViewerState.findings` it read before. A
+`codeViewerLiveLintRequestId` guard (the same stale-response pattern
+`autocompleteRequestId` already uses for `updateAutocomplete`) discards a
+response that resolves after a newer edit started a fresher one, or after
+edit mode was already left; `cancelLiveEditLint` — called from
+`setCodeViewerMode` whenever leaving edit mode, and exported for tests to
+reset this timer between runs — cancels a still-pending debounce outright
+and bumps that guard so an in-flight request can no longer apply either.
+Like the CLI's `--blob`, this is a purely local, in-editor lint: it never
+writes to disk, and the project's Lint results list is only refreshed once
+the edit is actually saved (`persistCodeViewerEdits`, unchanged).
+
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are
 forgiving of an achlist that doesn't live in the project root itself (e.g.

@@ -920,6 +920,17 @@ remains) but never touches the file, the viewer's findings, or the Lint
 results list; the shown preview is cleared again once you switch to Edit
 or actually apply a fix.
 
+While editing a script in the code viewer, its highlighted severities
+update live as you type: a short pause after each edit re-lints the
+editor's current (unsaved) text directly, in-process, the same lint pass
+the CLI itself runs — so a fixed or newly introduced issue shows up
+immediately instead of only after "Save". Until that first live lint
+completes (or if it's still catching up with the latest keystroke), the
+findings from the last save are shown instead, so the editor never goes
+blank while you type. This is purely visual: nothing is written to disk,
+and the project's Lint results list is only refreshed once you actually
+save.
+
 Every line in the code viewer that has at least one finding also gets its
 own small "Fix"/"Ignore" buttons next to it, in view mode. "Fix" only
 appears when at least one of that line's findings is auto-fixable, and
