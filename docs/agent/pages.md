@@ -127,7 +127,12 @@ each local file or remote `content_url`, a `slug` for its output filename, and a
 (`markdown`, `json-schema`, or plain text) that picks how it's rendered:
 a Markdown document is converted to HTML the same way
 the CLI examples are (headings, paragraphs, fenced code blocks, and
-`render_inline`'s inline formatting), with its own top-level heading and
+`render_inline`'s inline formatting - see `pages/markdown_render.py`,
+extracted out of `build.py` itself since it's a self-contained concern:
+a deliberately small, non-CommonMark subset of Markdown that escapes
+everything by default rather than passing raw HTML through, which is what
+keeps the papyrus-lint-action README fetched over HTTP below from being
+able to inject markup into the built site), with its own top-level heading and
 first paragraph read back out as the subpage's title/description rather
 than duplicated in `DOCS`; a JSON Schema file renders its
 `title`/`description` fields plus the pretty-printed schema itself in a
