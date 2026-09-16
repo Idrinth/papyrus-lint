@@ -2,8 +2,9 @@
 
 use papyrus_lints::{
     argument_types::{ExternalSignatures, ParamInfo},
-    lint, lint_with_external_arguments, repair, repair_filtered, repair_filtered_by_tag,
-    restrict_to_line,
+    lint, lint_with_external_arguments,
+    named_arguments::NamedArguments,
+    repair, repair_filtered, repair_filtered_by_tag, restrict_to_line,
     tags::tags_for,
     Config, Diagnostic, FIXABLE_RULE_IDS, KNOWN_RULE_IDS,
 };
@@ -40,6 +41,11 @@ fn every_known_rule_id_resolves_to_published_tags() {
 fn every_published_fixable_rule_works_through_the_filtered_public_api() {
     let mut property_config = Config::default();
     property_config.rules.property_sorting = true;
+
+    let named_arguments_config = Config {
+        named_arguments: NamedArguments::Always,
+        ..Config::default()
+    };
 
     let default_config = Config::default();
     let cases = [
@@ -120,6 +126,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nFunction Run(GlobalVariable gv, Float x)\n    gv.SetValue(gv.GetValue() + x)\nEndFunction\n",
             "ScriptName Example\n\nFunction Run(GlobalVariable gv, Float x)\n    gv.Mod(x)\nEndFunction\n",
             &default_config,
+        ),
+        (
+            "named-arguments",
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(\"hi\")\nEndFunction\n",
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(name = \"hi\")\nEndFunction\n",
+            &named_arguments_config,
         ),
     ];
 

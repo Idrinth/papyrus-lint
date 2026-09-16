@@ -13,6 +13,7 @@
 use std::collections::HashMap;
 
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
+use papyrus_parser::token::{Keyword, Token, TokenKind};
 use serde::{Deserialize, Serialize};
 
 use crate::Diagnostic;
@@ -285,6 +286,200 @@ fn check_call(
     }
 }
 
+/// Rewrites each positional call argument `setting` prefers to see passed
+/// by name (per [`check`]) into its named form, e.g. `Greet("hi")` becomes
+/// `Greet(name = "hi")`. Works from the same locally declared parameter
+/// names/defaults `check` resolves calls against, so it flags (and fixes)
+/// exactly the arguments `check` reports and nothing else; unparseable
+/// source is returned unchanged, the same way `check` reports nothing for
+/// it.
+pub fn repair(source: &str, setting: NamedArguments) -> String {
+    if setting == NamedArguments::Never {
+        return source.to_string();
+    }
+    let (Ok(script), Ok(tokens)) = (
+        papyrus_parser::parse(source),
+        papyrus_parser::tokenize(source),
+    ) else {
+        return source.to_string();
+    };
+
+    let locals = LocalFunctions::from_script(&script);
+    let insertions = collect_insertions(&tokens, &locals, setting);
+    if insertions.is_empty() {
+        return source.to_string();
+    }
+
+    let line_starts = line_starts(source);
+    let mut repaired = String::with_capacity(source.len() + insertions.len() * 8);
+    let mut previous = 0;
+    for (line, col, text) in insertions {
+        let offset = line_starts[line - 1] + col - 1;
+        repaired.push_str(&source[previous..offset]);
+        repaired.push_str(&text);
+        previous = offset;
+    }
+    repaired.push_str(&source[previous..]);
+    repaired
+}
+
+/// Tracks one call's argument list while [`collect_insertions`] scans
+/// tokens: the paren depth its own arguments live at (so a nested call's
+/// tokens are never mistaken for this call's own), the parameters to check
+/// them against (`None` for a call `resolve_call_at` couldn't resolve to a
+/// local function, tracked purely so its depth doesn't get lost), which
+/// argument position is current, and whether the next token starts a new
+/// argument (right after `(` or a top-level `,`).
+struct CallContext<'a> {
+    depth: usize,
+    params: Option<&'a [ParamInfo]>,
+    arg_index: usize,
+    at_arg_start: bool,
+}
+
+/// Scans `tokens` for call sites [`resolve_call_at`] resolves to a local
+/// function and returns, for each positional argument `setting` prefers
+/// named, the `(line, col, text)` to splice `text` in at ahead of that
+/// argument's first token — mirroring [`check_call`]'s own flagging
+/// decision exactly, just against tokens instead of the parsed `Expr::Call`
+/// nodes `check`/`walk_expr` use, since only tokens carry the per-argument
+/// source position this needs.
+fn collect_insertions(
+    tokens: &[Token],
+    locals: &LocalFunctions,
+    setting: NamedArguments,
+) -> Vec<(usize, usize, String)> {
+    let mut insertions = Vec::new();
+    let mut depth = 0usize;
+    let mut stack: Vec<CallContext> = Vec::new();
+
+    for (index, token) in tokens.iter().enumerate() {
+        match &token.kind {
+            TokenKind::LParen => {
+                depth += 1;
+                let params = resolve_call_at(tokens, index, locals);
+                if params.is_some() {
+                    stack.push(CallContext {
+                        depth,
+                        params,
+                        arg_index: 0,
+                        at_arg_start: true,
+                    });
+                }
+            }
+            TokenKind::RParen => {
+                if stack.last().is_some_and(|top| top.depth == depth) {
+                    stack.pop();
+                }
+                depth = depth.saturating_sub(1);
+            }
+            TokenKind::Comma => {
+                if let Some(top) = stack.last_mut() {
+                    if top.depth == depth {
+                        top.arg_index += 1;
+                        top.at_arg_start = true;
+                    }
+                }
+            }
+            _ => {
+                let Some(top) = stack.last_mut() else {
+                    continue;
+                };
+                if top.depth != depth || !top.at_arg_start {
+                    continue;
+                }
+                top.at_arg_start = false;
+                let already_named = matches!(token.kind, TokenKind::Identifier(_))
+                    && matches!(
+                        tokens.get(index + 1).map(|next| &next.kind),
+                        Some(TokenKind::Assign)
+                    );
+                if already_named {
+                    continue;
+                }
+                let Some(params) = top.params else {
+                    continue;
+                };
+                let Some(param) = params.get(top.arg_index) else {
+                    continue;
+                };
+                let should_flag = match setting {
+                    NamedArguments::Always => true,
+                    NamedArguments::InsteadOfDefaults => param.has_default,
+                    NamedArguments::Never => false,
+                };
+                if should_flag {
+                    insertions.push((token.line, token.col, format!("{} = ", param.name)));
+                }
+            }
+        }
+    }
+    insertions
+}
+
+/// Resolves the call whose argument list opens at `tokens[lparen_index]`
+/// (an `LParen`) to a local function's parameters, the same way
+/// [`resolve_local`] resolves an already-parsed `Expr::Call`'s callee: a
+/// bare `Func(` not itself the target of a member access, or `Self.Func(`.
+/// Anything else (a call through another object, `Parent`, ...) resolves to
+/// `None`.
+fn resolve_call_at<'a>(
+    tokens: &[Token],
+    lparen_index: usize,
+    locals: &'a LocalFunctions,
+) -> Option<&'a [ParamInfo]> {
+    let name_index = lparen_index.checked_sub(1)?;
+    let TokenKind::Identifier(name) = &tokens.get(name_index)?.kind else {
+        return None;
+    };
+
+    let preceding = name_index.checked_sub(1).and_then(|i| tokens.get(i));
+    // A `Function`/`Event` keyword directly before the identifier means
+    // this `(` opens that declaration's own parameter list, not a call —
+    // the only other place a local function's name is directly followed
+    // by `(`.
+    if preceding.is_some_and(|t| {
+        matches!(
+            t.kind,
+            TokenKind::Keyword(Keyword::Function) | TokenKind::Keyword(Keyword::Event)
+        )
+    }) {
+        return None;
+    }
+
+    let dot_index = name_index
+        .checked_sub(1)
+        .filter(|&i| matches!(tokens.get(i).map(|t| &t.kind), Some(TokenKind::Dot)));
+    let Some(dot_index) = dot_index else {
+        return locals.lookup(name);
+    };
+
+    let is_self = dot_index
+        .checked_sub(1)
+        .and_then(|i| tokens.get(i))
+        .is_some_and(|t| matches!(t.kind, TokenKind::Keyword(Keyword::Self_)));
+    if is_self {
+        locals.lookup(name)
+    } else {
+        None
+    }
+}
+
+/// Byte offset of the start of each line in `source` (index 0 is always
+/// `0`), so a token's 1-indexed `(line, col)` position (`col` itself a
+/// byte offset within its line) can be converted into a byte offset into
+/// `source` as a whole.
+fn line_starts(source: &str) -> Vec<usize> {
+    std::iter::once(0)
+        .chain(
+            source
+                .bytes()
+                .enumerate()
+                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
+        )
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -534,5 +729,162 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("Greet"));
+    }
+
+    #[test]
+    fn never_setting_leaves_source_unchanged() {
+        let source =
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(\"hi\")\nEndFunction\n";
+
+        assert_eq!(repair(source, NamedArguments::Never), source);
+    }
+
+    #[test]
+    fn always_names_a_positional_argument_to_a_local_function() {
+        let source =
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(\"hi\")\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::Always);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(name = \"hi\")\nEndFunction\n"
+        );
+        assert!(check(&repaired, NamedArguments::Always).is_empty());
+    }
+
+    #[test]
+    fn always_leaves_an_already_named_argument_untouched() {
+        let source =
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(name = \"hi\")\nEndFunction\n";
+
+        assert_eq!(repair(source, NamedArguments::Always), source);
+    }
+
+    #[test]
+    fn always_names_every_positional_argument_including_required_ones() {
+        let source = "ScriptName Example\n\nFunction MyFunction(Int argA, Int argB = 0)\nEndFunction\n\nFunction Test()\n    MyFunction(1, 2)\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::Always);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction MyFunction(Int argA, Int argB = 0)\nEndFunction\n\nFunction Test()\n    MyFunction(argA = 1, argB = 2)\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn instead_of_defaults_only_names_arguments_with_a_default_value() {
+        let source = "ScriptName Example\n\nFunction MyFunction(Int argA, Int argB = 0)\nEndFunction\n\nFunction Test()\n    MyFunction(1, 2)\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::InsteadOfDefaults);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction MyFunction(Int argA, Int argB = 0)\nEndFunction\n\nFunction Test()\n    MyFunction(1, argB = 2)\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn instead_of_defaults_leaves_a_named_default_argument_untouched() {
+        let source = "ScriptName Example\n\nFunction MyFunction(Int argA, Int argB = 0)\nEndFunction\n\nFunction Test()\n    MyFunction(1, argB = 2)\nEndFunction\n";
+
+        assert_eq!(repair(source, NamedArguments::InsteadOfDefaults), source);
+    }
+
+    #[test]
+    fn names_self_qualified_calls_the_same_way() {
+        let source =
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    self.Greet(\"hi\")\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::Always);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    self.Greet(name = \"hi\")\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn does_not_touch_calls_to_functions_declared_on_other_scripts() {
+        let source =
+            "ScriptName Example\n\nFunction Test(Actor akActor)\n    akActor.MoveTo(1, 2, 3)\nEndFunction\n";
+
+        assert_eq!(repair(source, NamedArguments::Always), source);
+    }
+
+    #[test]
+    fn does_not_touch_arguments_beyond_the_declared_parameter_count() {
+        let source =
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(\"hi\", 1)\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::Always);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Greet(name = \"hi\", 1)\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_skips_ambiguous_overrides_across_states() {
+        let source = "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nState Loud\n    Function Greet(Int volume)\n    EndFunction\nEndState\n\nFunction Test()\n    Greet(\"hi\")\nEndFunction\n";
+
+        assert_eq!(repair(source, NamedArguments::Always), source);
+    }
+
+    #[test]
+    fn names_a_positional_argument_nested_inside_another_call() {
+        let source =
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Debug.Trace(Greet(\"hi\"))\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::Always);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Test()\n    Debug.Trace(Greet(name = \"hi\"))\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn names_a_positional_argument_nested_inside_a_named_argument_value() {
+        let source = "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Foo(String text)\nEndFunction\n\nFunction Test()\n    Foo(text = Greet(\"hi\"))\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::Always);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction Greet(String name)\nEndFunction\n\nFunction Foo(String text)\nEndFunction\n\nFunction Test()\n    Foo(text = Greet(name = \"hi\"))\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_does_not_crash_on_unparseable_source() {
+        let source = "ScriptName Example\n\nFunction Test(\nEndFunction\n";
+
+        assert_eq!(repair(source, NamedArguments::Always), source);
+    }
+
+    #[test]
+    fn repair_is_idempotent() {
+        let source = "ScriptName Example\n\nFunction MyFunction(Int argA, Int argB = 0)\nEndFunction\n\nFunction Test()\n    MyFunction(1, 2)\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::Always);
+
+        assert_eq!(repair(&repaired, NamedArguments::Always), repaired);
+    }
+
+    #[test]
+    fn names_positional_arguments_spread_across_continuation_lines() {
+        // A trailing `\` suppresses the newline token, Papyrus's own way to
+        // let an argument list span multiple physical lines.
+        let source = "ScriptName Example\n\nFunction MyFunction(Int argA, Int argB = 0)\nEndFunction\n\nFunction Test()\n    MyFunction(\\\n        1,\\\n        2\\\n    )\nEndFunction\n";
+
+        let repaired = repair(source, NamedArguments::Always);
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\nFunction MyFunction(Int argA, Int argB = 0)\nEndFunction\n\nFunction Test()\n    MyFunction(\\\n        argA = 1,\\\n        argB = 2\\\n    )\nEndFunction\n"
+        );
     }
 }
