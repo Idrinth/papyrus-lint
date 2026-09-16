@@ -26,6 +26,10 @@ struct RuleTagsInfo {
     kinds: Vec<&'static str>,
     importance: papyrus_lints::tags::Importance,
     auto_fixable: bool,
+    /// This rule's own documentation link (`RuleTags::doc_url`), so the
+    /// frontend can link a finding straight to its explanation on the
+    /// project website instead of just naming the rule.
+    doc_url: String,
 }
 
 /// Returns every built-in lint rule's tag metadata (see
@@ -42,6 +46,7 @@ fn list_rule_tags() -> Vec<RuleTagsInfo> {
             kinds: tags.kinds.to_vec(),
             importance: tags.importance,
             auto_fixable: tags.auto_fixable(),
+            doc_url: tags.doc_url(),
         })
         .collect()
 }
@@ -790,6 +795,10 @@ mod tests {
             papyrus_lints::tags::Importance::Low
         );
         assert!(trailing_whitespace.auto_fixable);
+        assert_eq!(
+            trailing_whitespace.doc_url,
+            "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"
+        );
 
         let argument_types = tags
             .iter()

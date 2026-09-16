@@ -93,10 +93,19 @@ class PapyrusLint(Linter):
         for the regex-based default `find_errors`, which this bypasses).
         """
         level = diagnostic.get('level')
+        message = _LEVEL_TAG.sub('', diagnostic.get('message', ''), count=1)
+        doc_url = diagnostic.get('doc_url')
+        if doc_url:
+            # SublimeLinter's own popup has no first-class documentation-link
+            # mechanism (unlike e.g. the VS Code extension's clickable
+            # diagnostic code), so the link is appended to the plain-text
+            # message instead - Sublime Text's popup still renders a bare
+            # URL as a clickable link.
+            message = f'{message} (see: {doc_url})'
         return LintMatch(
             line=diagnostic['line'] - 1,
             col=diagnostic['column'] - 1,
             code=diagnostic.get('rule'),
             error_type='warning' if level in ('warning', 'info') else 'error',
-            message=_LEVEL_TAG.sub('', diagnostic.get('message', ''), count=1),
+            message=message,
         )

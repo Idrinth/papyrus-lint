@@ -10,7 +10,10 @@ for `.psc` files directly in the editor, by shelling out to
   running `PapyrusLinterCLI --json <file>` and turning its
   [`JsonReport`](../app/crates/papyrus-lint-cli/src/lib.rs) into
   `vscode.Diagnostic`s (severity taken from each diagnostic's `level`;
-  `rule` is shown as the diagnostic's code).
+  `rule` is shown as the diagnostic's code, clickable straight to that
+  rule's own documentation on the
+  [project website](https://papyrus-lint.idrinth.de) when its `doc_url`
+  is known — a compiler-reported diagnostic keeps a plain, unlinked code).
 - **Papyrus Lint: Lint Current File** — re-lints on demand, from the
   command palette, the editor context menu, or a `.psc` file's explorer
   context menu.

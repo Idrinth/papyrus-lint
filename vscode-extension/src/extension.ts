@@ -91,8 +91,28 @@ function toDiagnostic(entry: JsonDiagnostic): vscode.Diagnostic {
   );
   const diagnostic = new vscode.Diagnostic(range, normalized.message, severityOf(normalized.level));
   diagnostic.source = 'papyrus-lint';
-  diagnostic.code = normalized.rule;
+  // A rule with a known documentation link gets a clickable {value, target}
+  // code (VS Code renders it as a link to that rule's own explanation);
+  // a rule with no tag metadata (e.g. a compiler-reported diagnostic) keeps
+  // the plain string form.
+  diagnostic.code = normalized.docUrl
+    ? { value: normalized.rule, target: vscode.Uri.parse(normalized.docUrl) }
+    : normalized.rule;
   return diagnostic;
+}
+
+/** Extracts a diagnostic's rule id from its `code`, whichever of the two
+ * shapes `toDiagnostic` gave it (a plain string, or a `{value, target}`
+ * object for a rule with a documentation link). Returns `undefined` for a
+ * diagnostic with no code at all, or one not raised by papyrus-lint. */
+function ruleOfDiagnosticCode(code: vscode.Diagnostic['code']): string | undefined {
+  if (typeof code === 'string') {
+    return code;
+  }
+  if (typeof code === 'object' && code !== null && typeof code.value === 'string') {
+    return code.value;
+  }
+  return undefined;
 }
 
 function showCliLaunchFailure(result: CliResult): void {
@@ -320,9 +340,9 @@ class PapyrusFixIssueActionProvider implements vscode.CodeActionProvider {
     context: vscode.CodeActionContext,
   ): vscode.CodeAction[] {
     return context.diagnostics
-      .filter((diagnostic) => diagnostic.source === 'papyrus-lint' && typeof diagnostic.code === 'string')
+      .filter((diagnostic) => diagnostic.source === 'papyrus-lint' && ruleOfDiagnosticCode(diagnostic.code) !== undefined)
       .map((diagnostic) => {
-        const rule = diagnostic.code as string;
+        const rule = ruleOfDiagnosticCode(diagnostic.code) as string;
         const line = diagnostic.range.start.line + 1;
         const action = new vscode.CodeAction(`Fix this issue (${rule})`, vscode.CodeActionKind.QuickFix);
         action.diagnostics = [diagnostic];
