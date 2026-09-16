@@ -691,6 +691,16 @@ describe("handleFixClick", () => {
 
     expect(outcome.findings).toEqual(remaining);
   });
+
+  it("reports repair failures without rejecting", async () => {
+    invokeMock.mockRejectedValue(new Error("repair failed"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const button = document.createElement("button");
+    const outcome: PscParseOutcome = { path: "/a.psc", ok: true, detail: "parsed", findings: [] };
+
+    await expect(handleFixClick("/a.psc", outcome, button)).resolves.toBeUndefined();
+    expect(button.disabled).toBe(true);
+  });
 });
 
 describe("massFixRuleDisplayName", () => {
