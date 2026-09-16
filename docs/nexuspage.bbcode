@@ -509,7 +509,8 @@ PapyrusLinter --json --output path/to/report.json path/to/project.achlist
 PapyrusLinter --short-paths path/to/project.achlist
 PapyrusLinter --color never path/to/project.achlist
 PapyrusLinter --progress --output path/to/report.txt path/to/project.achlist
-PapyrusLinter --threads 8 path/to/project.achlist[/code][/spoiler]
+PapyrusLinter --threads 8 path/to/project.achlist
+PapyrusLinter --blob "ScriptName Example extends ObjectReference"[/code][/spoiler]
 --format plain/json/ai selects plain text, normal JSON, or the same self-contained AI export as the desktop app (including affected source and triggered-rule details); --json remains an alias for --format json.
 With --format ai, --hash-source reports each file's source as an md5 hash instead of its full content, so a report can be shared without exposing your script text; requires --format ai.
 The plain-text report is colorized automatically when run in a terminal (rule tags, error/warning/info levels, and the summary line); pass --color always or --color never to override the detection.
@@ -521,6 +522,7 @@ init writes papyrus-lint.yaml from --preset strict, standard, or careful (defaul
 preset add <name> <path> saves an existing papyrus-lint.yaml/.yml as a user preset, so it becomes selectable via init --preset <name>. Refuses a blank name or one matching a built-in preset, and refuses to overwrite an existing preset of the same name unless you also pass --yes.
 doctor <path> checks a project's setup without linting anything: that the given achlist/psc/directory (and, for an achlist, every entry it lists) exists, that its config parses, that scripts/source or source/scripts exists, that any additional_script_roots/--script-root resolve to real directories, and that a configured or auto-detected compiler_path points at an existing file — printing one ok/warning/error line per check, or a single JSON document with --json.
 Given a directory instead of an .achlist/.psc path, the CLI (and dropping a folder onto the desktop app) recursively scans it for .psc files at any subfolder depth and lints them all — useful for a mod (e.g. Requiem) with no .achlist whose scripts aren't laid out in a flat scripts/source folder.
+--blob <source> lints <source> directly as raw Papyrus source text instead of a path, e.g. a script buffer that isn't saved to disk — reported under the path <blob>. No real project backs it, so cross-script resolution and project-wide checks (like compile_check) don't apply. Can't be combined with a path argument, fix, --type, --line, --dry-run, --script-root, --progress, or --threads.
 
 [heading]Usage of AI[/heading]
 This tool is almost entirely coded by AI. I have tested it and reviewed code changes, but have rarely coded parts myself. The reason for that is development speed, I needed something fast to prevent future issues.
