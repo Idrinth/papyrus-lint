@@ -28,6 +28,7 @@ SKIP_DIR_NAMES = {
     ".venv",
     "__pycache__",
     "coverage",
+    "coverage-artifacts",
     "dist",
     "node_modules",
     "playwright-report",

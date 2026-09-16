@@ -97,6 +97,10 @@ class HallOfShameTests(unittest.TestCase):
             (root / "app" / "main.rs").write_text("pub fn a() {}\n", encoding="utf-8")
             (root / "node_modules").mkdir()
             (root / "node_modules" / "lib.js").write_text("export const x = 1;\n", encoding="utf-8")
+            artifacts = root / "coverage-artifacts" / "frontend-coverage"
+            artifacts.mkdir(parents=True)
+            (artifacts / "index.html").write_text("<html>" + ("x" * 5000) + "</html>\n", encoding="utf-8")
+            (artifacts / "lcov.info").write_text("SF:app/src/main.ts\nLF:8\nLH:1\nend_of_record\n", encoding="utf-8")
             (root / ".github").mkdir()
             (root / ".github" / "scripts").mkdir()
             (root / ".github" / "scripts" / "tool.py").write_text("def run():\n    pass\n", encoding="utf-8")
