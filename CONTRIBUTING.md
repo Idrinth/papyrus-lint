@@ -197,9 +197,10 @@ Lint rules live in `app/crates/papyrus-lints/src`; the complete current set and
 each rule's behavior are documented in the [Implemented Lints
 table](README.md#implemented-lints). Rules generally inspect raw source or
 lexer tokens so they keep running on scripts that do not parse cleanly. Follow
-that approach for a new rule where practical, register its check (and optional
-repair) in `app/crates/papyrus-lints/src/lib.rs`, and add its enable switch and
-default in `app/crates/papyrus-lints/src/config.rs`.
+that approach for a new rule where practical, then register it in
+`app/crates/papyrus-lints/src/registry.rs` (known/fixable ids, `collect_diagnostics`,
+`apply_repairs` if it has a fix, and `default_rules`) and add its enable switch
+on `Rules` in `app/crates/papyrus-lints/src/config.rs`.
 
 A lint/fix job receives a `&papyrus_lints::Config`, deserialized from a
 project's optional `papyrus-lint.yaml`/`.yml`, so user-configurable behavior
