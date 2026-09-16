@@ -119,6 +119,45 @@ mod tests {
     }
 
     #[test]
+    fn short_help_flag_is_forwarded_to_the_cli() {
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = dispatch(&["-h".to_string()], &mut stdout, &mut stderr, false, || {
+            panic!("desktop app must not launch in CLI mode")
+        });
+
+        assert_eq!(code, ExitCode::from(2));
+        assert!(stdout.is_empty());
+        assert_eq!(String::from_utf8(stderr).unwrap(), papyrus_lint_cli::USAGE);
+    }
+
+    #[test]
+    fn inline_source_is_forwarded_to_the_cli() {
+        let mut stdout = Vec::new();
+        let mut stderr = Vec::new();
+
+        let code = dispatch(
+            &[
+                "--json".to_string(),
+                "--blob".to_string(),
+                "ScriptName Inline\n".to_string(),
+            ],
+            &mut stdout,
+            &mut stderr,
+            false,
+            || panic!("desktop app must not launch in CLI mode"),
+        );
+
+        assert_eq!(code, ExitCode::SUCCESS);
+        let report: serde_json::Value = serde_json::from_slice(&stdout).unwrap();
+        assert_eq!(report["scripts_checked"], 1);
+        assert_eq!(report["files"][0]["path"], "<blob>");
+        assert_eq!(report["files"][0]["diagnostics"], serde_json::json!([]));
+        assert!(stderr.is_empty());
+    }
+
+    #[test]
     fn json_for_an_existing_script_is_forwarded_to_the_cli() {
         let temp = tempfile::tempdir().unwrap();
         let script = temp.path().join("Existing.psc");
