@@ -303,6 +303,59 @@ mod tests {
     }
 
     #[test]
+    fn flags_calls_in_every_branch_in_source_order() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv, Int a)\n    While a > 0\n        If a > 10\n            gv.SetValue(10.0)\n        ElseIf a > 5\n            gv.SetValueInt(5)\n        Else\n            gv.SetValue(0.0)\n        EndIf\n        a -= 1\n    EndWhile\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 3);
+        assert_eq!(
+            diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.line)
+                .collect::<Vec<_>>(),
+            vec![6, 8, 10]
+        );
+        assert!(diagnostics[1].message.contains("gv.SetValueInt(...)"));
+    }
+
+    #[test]
+    fn a_wait_in_an_if_condition_paces_the_containing_loop() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv, Int a)\n    While a > 0\n        gv.SetValue(a)\n        If Utility.Wait(1.0)\n            a -= 1\n        EndIf\n    EndWhile\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn a_wait_in_a_nested_loop_condition_paces_the_outer_loop() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv, Int a)\n    While a > 0\n        gv.SetValue(a)\n        While Utility.Wait(1.0)\n            a -= 1\n        EndWhile\n    EndWhile\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn recognizes_wait_calls_nested_in_other_expressions() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv, Int a)\n    While a > 0\n        gv.SetValue(a)\n        Bool paced = !Utility.Wait(1.0)\n        a = values[Utility.Wait(1.0) as Int]\n        Return Wrapper(Utility.Wait(1.0))\n    EndWhile\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn only_flags_setvalue_calls_that_are_standalone_statements() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(GlobalVariable gv, Int a)\n    While a > 0\n        Float result = gv.SetValue(a)\n        result = gv.SetValueInt(a)\n        Consume(gv.SetValue(a))\n        a -= 1\n    EndWhile\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn flags_setvalueint_case_insensitively() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test(GlobalVariable gv, Int a)\n    While a > 0\n        gv.setvalueint(a)\n        a -= 1\n    EndWhile\nEndFunction\n",
