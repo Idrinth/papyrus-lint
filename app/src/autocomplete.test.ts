@@ -4,8 +4,14 @@ import {
   completionInsertText,
   completionLabel,
   completionQueryAt,
+  declarationDocumentationOnLine,
   declaredTypes,
+  documentationByName,
+  documentationForIdentifier,
   filterMembers,
+  identifierAt,
+  memberDocumentation,
+  overlayLocalDocumentation,
   stripComments,
 } from "./autocomplete";
 
@@ -298,5 +304,178 @@ describe("completionInsertText", () => {
       is_event: false,
     };
     expect(completionInsertText(member)).toBe("GetName(");
+  });
+});
+
+describe("documentationByName", () => {
+  it("maps ScriptName, Property, Function, and Event declarations to their brace comments", () => {
+    const source = `ScriptName Example Extends Quest
+{A documented script}
+
+Int Property TargetRef Auto
+{Where we go}
+
+Function DoThing()
+{Does the thing}
+EndFunction
+
+Event OnInit()
+{Runs on init}
+EndEvent
+`;
+    const docs = documentationByName(source);
+    expect(docs.get("example")).toBe("A documented script");
+    expect(docs.get("self")).toBe("A documented script");
+    expect(docs.get("targetref")).toBe("Where we go");
+    expect(docs.get("dothing")).toBe("Does the thing");
+    expect(docs.get("oninit")).toBe("Runs on init");
+  });
+
+  it("keeps inner newlines of a multi-line brace comment", () => {
+    const source = "ScriptName Example\n{First line\nSecond line}\n";
+    expect(documentationByName(source).get("example")).toBe("First line\nSecond line");
+  });
+
+  it("follows a backslash-continued function header", () => {
+    const source = "ScriptName Example\n\nFunction DoThing(Int a, \\\n    Int b)\n{Explains what DoThing does}\nEndFunction\n";
+    expect(documentationByName(source).get("dothing")).toBe("Explains what DoThing does");
+  });
+
+  it("ignores commented-out declarations and empty brace comments", () => {
+    const source = "ScriptName Example\n{   }\n; Function Hidden()\n; {secret}\n";
+    const docs = documentationByName(source);
+    expect(docs.has("example")).toBe(false);
+    expect(docs.has("hidden")).toBe(false);
+  });
+});
+
+describe("declarationDocumentationOnLine", () => {
+  it("returns the doc of the declaration whose header is on that line", () => {
+    const source = "ScriptName Example\n{script doc}\n\nFunction DoThing()\n{fn doc}\nEndFunction\n";
+    expect(declarationDocumentationOnLine(source, 1)).toBe("script doc");
+    expect(declarationDocumentationOnLine(source, 4)).toBe("fn doc");
+    expect(declarationDocumentationOnLine(source, 2)).toBeNull();
+    expect(declarationDocumentationOnLine(source, 5)).toBeNull();
+  });
+});
+
+describe("identifierAt", () => {
+  it("returns the identifier under the index, including at its end", () => {
+    const source = "Function DoThing()";
+    const start = source.indexOf("DoThing");
+    expect(identifierAt(source, start)).toMatchObject({ name: "DoThing", receiver: null });
+    expect(identifierAt(source, start + "DoThing".length)).toMatchObject({ name: "DoThing", receiver: null });
+  });
+
+  it("captures the receiver of a member access", () => {
+    const source = "self.DoThing(";
+    const ident = identifierAt(source, source.indexOf("DoThing"));
+    expect(ident).toMatchObject({ name: "DoThing", receiver: "self" });
+  });
+
+  it("does not resolve an identifier inside a brace comment", () => {
+    const source = "Function DoThing()\n{mentions DoThing}\n";
+    expect(identifierAt(source, source.lastIndexOf("DoThing"))).toBeNull();
+  });
+});
+
+describe("documentationForIdentifier / overlayLocalDocumentation", () => {
+  const source = `ScriptName Example
+{A documented script}
+
+Function DoThing()
+{Does the thing}
+EndFunction
+`;
+
+  it("resolves a bare declaration name from the current buffer", () => {
+    const ident = identifierAt(source, source.indexOf("DoThing"));
+    expect(ident).not.toBeNull();
+    expect(documentationForIdentifier(source, ident!, () => undefined)).toBe("Does the thing");
+  });
+
+  it("resolves the script's own name, and self, to the script header's documentation", () => {
+    const ident = identifierAt(source, source.indexOf("Example"));
+    expect(documentationForIdentifier(source, ident!, () => undefined)).toBe("A documented script");
+
+    const withSelf = `${source}\nFunction Run()\n    self.DoThing()\nEndFunction\n`;
+    const selfIdent = identifierAt(withSelf, withSelf.indexOf("self"));
+    expect(documentationForIdentifier(withSelf, selfIdent!, () => undefined)).toBe("A documented script");
+  });
+
+  it("prefers an unsaved local doc over the backend member list for self", () => {
+    const callSite = `${source}\nFunction Run()\n    self.DoThing()\nEndFunction\n`;
+    const ident = identifierAt(callSite, callSite.lastIndexOf("DoThing"));
+    expect(ident?.receiver).toBe("self");
+    expect(
+      documentationForIdentifier(callSite, ident!, () => [
+        {
+          kind: "function",
+          name: "DoThing",
+          params: [],
+          return_type: null,
+          is_global: false,
+          is_native: false,
+          is_event: false,
+          doc: "stale disk copy",
+        },
+      ]),
+    ).toBe("Does the thing");
+  });
+
+  it("falls back to the backend member list for a foreign receiver", () => {
+    const callSite = "ScriptName Example\nObjectReference akRef\nakRef.MoveTo\n";
+    const ident = identifierAt(callSite, callSite.indexOf("MoveTo"));
+    expect(ident?.receiver).toBe("akRef");
+    const members: Member[] = [
+      {
+        kind: "function",
+        name: "MoveTo",
+        params: [],
+        return_type: null,
+        is_global: false,
+        is_native: true,
+        is_event: false,
+        doc: "Moves this reference",
+      },
+    ];
+    expect(documentationForIdentifier(callSite, ident!, (type) => (type === "ObjectReference" ? members : undefined))).toBe(
+      "Moves this reference",
+    );
+  });
+
+  it("overlays local docs onto members of the script currently being edited", () => {
+    const members: Member[] = [
+      {
+        kind: "function",
+        name: "DoThing",
+        params: [],
+        return_type: null,
+        is_global: false,
+        is_native: false,
+        is_event: false,
+        doc: "stale disk copy",
+      },
+    ];
+    const overlaid = overlayLocalDocumentation(members, source, "Example");
+    expect(memberDocumentation(overlaid[0])).toBe("Does the thing");
+    expect(memberDocumentation(members[0])).toBe("stale disk copy");
+  });
+
+  it("does not overlay local docs onto a different receiver type", () => {
+    const members: Member[] = [
+      {
+        kind: "function",
+        name: "DoThing",
+        params: [],
+        return_type: null,
+        is_global: false,
+        is_native: false,
+        is_event: false,
+        doc: "from Quest",
+      },
+    ];
+    const overlaid = overlayLocalDocumentation(members, source, "Quest");
+    expect(memberDocumentation(overlaid[0])).toBe("from Quest");
   });
 });

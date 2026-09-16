@@ -44,10 +44,16 @@ pub struct FunctionSignature {
     /// every ordinary call site resolves against per the language's state
     /// machine).
     pub state: Option<String>,
+    /// Inner text of the `{ ... }` documentation comment on the line
+    /// immediately after this function's header, if any. Placement matches
+    /// `papyrus_lints::missing_doc_comment` (including backslash-continued
+    /// headers). `None` when the declaration has no such comment, or the
+    /// comment is empty. Carried through to editor autocompletion / hover.
+    pub doc: Option<String>,
 }
 
 impl FunctionSignature {
-    fn from_decl(decl: &FunctionDecl) -> Self {
+    fn from_decl(decl: &FunctionDecl, doc: Option<String>) -> Self {
         FunctionSignature {
             name: decl.name.clone(),
             params: decl
@@ -63,6 +69,7 @@ impl FunctionSignature {
             is_native: decl.is_native,
             is_event: decl.is_event,
             state: decl.state.clone(),
+            doc,
         }
     }
 }
@@ -72,13 +79,18 @@ impl FunctionSignature {
 pub struct PropertySignature {
     pub name: String,
     pub type_name: TypeName,
+    /// Inner text of the `{ ... }` documentation comment on the line
+    /// immediately after this property's header, if any. Same placement
+    /// rules as [`FunctionSignature::doc`].
+    pub doc: Option<String>,
 }
 
 impl PropertySignature {
-    fn from_decl(decl: &PropertyDecl) -> Self {
+    fn from_decl(decl: &PropertyDecl, doc: Option<String>) -> Self {
         PropertySignature {
             name: decl.name.clone(),
             type_name: decl.type_name.clone(),
+            doc,
         }
     }
 }
@@ -116,7 +128,13 @@ struct ScriptFunctions {
 }
 
 impl ScriptFunctions {
-    fn from_script(script: &Script) -> Self {
+    fn from_script(script: &Script, source: &str) -> Self {
+        let tokens = papyrus_parser::tokenize(source).ok();
+        let doc_for = |line: usize| {
+            tokens.as_ref().and_then(|tokens| {
+                papyrus_lints::missing_doc_comment::documentation_comment(source, tokens, line)
+            })
+        };
         let mut states: HashMap<String, bool> = HashMap::new();
         for state in &script.states {
             let is_auto = states
@@ -127,7 +145,12 @@ impl ScriptFunctions {
         let mut functions: HashMap<String, FunctionSignature> = script
             .functions
             .iter()
-            .map(|f| (f.name.to_ascii_lowercase(), FunctionSignature::from_decl(f)))
+            .map(|f| {
+                (
+                    f.name.to_ascii_lowercase(),
+                    FunctionSignature::from_decl(f, doc_for(f.line)),
+                )
+            })
             .collect();
         // A function declared only inside a `State` block (with no
         // matching declaration in the empty state) is still a real,
@@ -141,13 +164,18 @@ impl ScriptFunctions {
             for f in &state.functions {
                 functions
                     .entry(f.name.to_ascii_lowercase())
-                    .or_insert_with(|| FunctionSignature::from_decl(f));
+                    .or_insert_with(|| FunctionSignature::from_decl(f, doc_for(f.line)));
             }
         }
         let properties = script
             .properties
             .iter()
-            .map(|p| (p.name.to_ascii_lowercase(), PropertySignature::from_decl(p)))
+            .map(|p| {
+                (
+                    p.name.to_ascii_lowercase(),
+                    PropertySignature::from_decl(p, doc_for(p.line)),
+                )
+            })
             .collect();
 
         ScriptFunctions {
@@ -610,20 +638,20 @@ impl FunctionTable {
         // has to do the same explicitly here.
         let resolved_path = self.resolve_script_path(name_lower);
 
-        let script = resolved_path
-            .and_then(|path| {
-                let source = read_psc_source(&path).ok()?;
-                if let Some(cached) = crate::ast_cache::get(&path, &source) {
-                    return Some(cached);
-                }
+        let script = resolved_path.and_then(|path| {
+            let source = read_psc_source(&path).ok()?;
+            let parsed = if let Some(cached) = crate::ast_cache::get(&path, &source) {
+                cached
+            } else {
                 let parsed = papyrus_parser::parse(&source).ok()?;
                 crate::ast_cache::put(&path, &source, &parsed);
                 if let Ok(tokens) = papyrus_parser::tokenize(&source) {
                     crate::ast_cache::put_tokens(&path, &source, &tokens);
                 }
-                Some(parsed)
-            })
-            .map(|script| ScriptFunctions::from_script(&script));
+                parsed
+            };
+            Some(ScriptFunctions::from_script(&parsed, &source))
+        });
 
         self.scripts.insert(name_lower.to_string(), script);
     }
@@ -1838,6 +1866,69 @@ mod tests {
         let names: HashSet<_> = members.iter().map(Member::name).collect();
 
         assert_eq!(names, HashSet::from(["DoA", "DoB"]));
+    }
+
+    #[test]
+    fn list_members_includes_documentation_comments() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Foo",
+            "ScriptName Foo\n{A documented script}\n\nInt Property MyValue Auto\n{The stored value}\n\nInt Function Bar(Float a)\n{Does the thing}\n    Return 1\nEndFunction\n\nFunction Undocumented()\nEndFunction\n",
+        );
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("Foo");
+
+        let bar = members.iter().find_map(|member| match member {
+            Member::Function(signature) if signature.name == "Bar" => Some(signature),
+            _ => None,
+        });
+        assert_eq!(
+            bar.and_then(|signature| signature.doc.as_deref()),
+            Some("Does the thing")
+        );
+
+        let undocumented = members.iter().find_map(|member| match member {
+            Member::Function(signature) if signature.name == "Undocumented" => Some(signature),
+            _ => None,
+        });
+        assert_eq!(
+            undocumented.and_then(|signature| signature.doc.as_ref()),
+            None
+        );
+
+        let property = members.iter().find_map(|member| match member {
+            Member::Property(signature) if signature.name == "MyValue" => Some(signature),
+            _ => None,
+        });
+        assert_eq!(
+            property.and_then(|signature| signature.doc.as_deref()),
+            Some("The stored value")
+        );
+    }
+
+    #[test]
+    fn list_members_carries_an_inherited_members_documentation_comment() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        write_script(
+            root.path(),
+            "Base",
+            "ScriptName Base\n\nFunction DoThing()\n{Inherited help}\nEndFunction\n",
+        );
+        write_script(root.path(), "Child", "ScriptName Child Extends Base\n");
+
+        let mut table = FunctionTable::new(root.path().to_path_buf());
+        let members = table.list_members("Child");
+        let do_thing = members.iter().find_map(|member| match member {
+            Member::Function(signature) if signature.name == "DoThing" => Some(signature),
+            _ => None,
+        });
+
+        assert_eq!(
+            do_thing.and_then(|signature| signature.doc.as_deref()),
+            Some("Inherited help")
+        );
     }
 
     #[test]
