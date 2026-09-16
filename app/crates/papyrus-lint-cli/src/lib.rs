@@ -5825,4 +5825,67 @@ mod tests {
             "error: --json and --format can't be combined\n"
         );
     }
+
+    #[test]
+    fn value_flags_report_usage_when_their_separate_value_is_missing() {
+        for flag in ["--line", "--tag", "--format", "--threads"] {
+            let (code, stdout, stderr) = run_captured(&[flag.to_string()]);
+
+            assert_eq!(code, 2, "unexpected exit code for {flag}");
+            assert!(stdout.is_empty(), "unexpected stdout for {flag}");
+            assert_eq!(stderr, USAGE, "unexpected stderr for {flag}");
+        }
+    }
+
+    #[test]
+    fn level_colors_cover_info_and_unknown_diagnostic_levels() {
+        assert_eq!(level_color("info"), ANSI_CYAN);
+        assert_eq!(level_color("notice"), ANSI_RESET);
+
+        let info = papyrus_lints::Diagnostic {
+            line: 2,
+            column: 3,
+            rule: "example-rule",
+            message: "[info] informational diagnostic".to_string(),
+        };
+        let formatted = format_diagnostic_line("Example.psc", &info, true);
+
+        assert!(formatted.contains(&format!("{ANSI_CYAN}[info]{ANSI_RESET}")));
+        assert!(formatted.contains(" informational diagnostic"));
+    }
+
+    #[test]
+    fn doctor_reports_positive_directory_and_explicit_path_checks() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let project = dir.path().join("project");
+        let scripts = project.join("scripts/source");
+        let external = dir.path().join("shared-scripts");
+        let compiler = dir.path().join("PapyrusCompiler.exe");
+        let config_path = dir.path().join("doctor-config.yaml");
+        write_file(&scripts.join("Example.psc"), "ScriptName Example\n");
+        fs::create_dir_all(&external).expect("failed to create external script root");
+        write_file(&compiler, "compiler fixture");
+        write_file(
+            &project.join("papyrus-lint.yaml"),
+            &format!("compiler_path: {}\n", compiler.display()),
+        );
+        write_file(&config_path, "trailing_whitespace: true\n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "doctor".to_string(),
+            "--config".to_string(),
+            config_path.to_string_lossy().into_owned(),
+            "--script-root".to_string(),
+            external.to_string_lossy().into_owned(),
+            project.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(stdout.contains("found 1 .psc file(s) under"));
+        assert!(stdout.contains("explicit config"));
+        assert!(stdout.contains("additional script root"));
+        assert!(stdout.contains("configured compiler_path"));
+        assert!(stdout.contains("no problems found"));
+    }
 }
