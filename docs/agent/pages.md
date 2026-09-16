@@ -67,14 +67,15 @@ attribute scheme as the desktop app's theme switch
 (`applyTheme`/`loadStoredTheme` in `app/src/main.ts`).
 `pages/build.py` inlines `shared/theme.css` into the deployed
 `styles.css` so the site still ships a single stylesheet. Rather than
-hand-duplicating the README's lint tables and CLI
-usage examples into that template (and having to keep them in sync by
-hand), it carries `<!--LINT_TABLE:Formatting-->`-style placeholder
-comments — one per lint category listed in the README's [Implemented
-Lints](README.md#implemented-lints) table, plus `<!--CLI_EXAMPLES-->` —
-that `pages/build.py` fills in at build time by extracting and
-converting the corresponding Markdown table/code block straight out of
-`README.md`, so that content can never drift out of sync. It also
+hand-duplicating the README's CLI usage examples into that template (and
+having to keep them in sync by hand), it carries a `<!--CLI_EXAMPLES-->`
+placeholder comment that `pages/build.py` fills in at build time by
+extracting and converting the corresponding Markdown code block straight
+out of `README.md`, so that content can never drift out of sync. The
+homepage's own "Implemented lints" section carries no per-rule content of
+its own at all — it only links to `rules.html` (see `render_rules_table`/
+`build_rules_page` below), which is generated straight from
+`docs/rules.json` instead. It also
 assembles the page's `assets/` directory by copying the screenshots
 from `shared/images/` and the app icon from `app/src-tauri/icons/icon.png`,
 rather than committing duplicate copies of them under `pages/`. For the

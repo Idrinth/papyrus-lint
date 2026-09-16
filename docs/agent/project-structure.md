@@ -160,16 +160,23 @@
 │       │                               # editing it
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           ├── src/                # achlist's scripts against its project's
-│           │   ├── lib.rs           # run() + public API; also linked into
-│           │   │                    # src-tauri for its CLI mode
+│           │   ├── lib.rs           # run() orchestration + public API; also
+│           │   │                    # linked into src-tauri for its CLI mode
 │           │   ├── args.rs          # Parses/validates run()'s own arguments
 │           │   │                    # (a plain lint/fix run, or --blob)
+│           │   ├── run_scan.rs      # Resolves the scripts a run targets and
+│           │   │                    # the project state to lint/fix them against
+│           │   ├── run_lint.rs      # Lints one already-resolved script source
+│           │   ├── run_fix.rs       # Applies automatic fixes to one script,
+│           │   │                    # before run_lint lints the result
 │           │   ├── project.rs       # Project-root discovery from .psc paths
-│           │   ├── output.rs        # Plain/JSON/AI report types and formatting
+│           │   ├── output/          # Plain/JSON/AI report types and formatting
 │           │   ├── init.rs          # `init` / `preset add`
 │           │   ├── blob.rs          # `--blob` in-memory lint
 │           │   ├── doctor.rs        # `doctor` subcommand
 │           │   ├── test_support.rs  # Shared helpers for each file's unit tests
+│           │   ├── run_tests.rs     # Integration-style tests for run()'s
+│           │   │                    # end-to-end pipeline
 │           │   └── main.rs          # Thin binary entry point around lib::run()
 │           └── tests/               # Binary e2e tests, one file per src module
 ├── shared/

@@ -83,41 +83,10 @@ fn tags_for_returns_none_for_an_unknown_rule() {
 }
 
 #[test]
-fn every_rule_has_a_doc_slug_shaped_like_an_html_anchor_fragment() {
-    for tags in RULE_TAGS {
-        assert!(
-            !tags.doc_slug.is_empty()
-                && tags
-                    .doc_slug
-                    .chars()
-                    .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
-                && !tags.doc_slug.starts_with('-')
-                && !tags.doc_slug.ends_with('-'),
-            "{:?} has an invalid doc_slug {:?}",
-            tags.rule,
-            tags.doc_slug
-        );
-    }
-}
-
-#[test]
-fn rule_tags_has_no_duplicate_doc_slugs() {
-    let mut seen = HashSet::new();
-    for tags in RULE_TAGS {
-        assert!(
-            seen.insert(tags.doc_slug),
-            "{:?} shares its doc_slug {:?} with another rule",
-            tags.rule,
-            tags.doc_slug
-        );
-    }
-}
-
-#[test]
-fn doc_url_links_to_the_website_lint_anchor() {
+fn doc_url_links_to_the_website_rules_reference_anchor() {
     let tags = tags_for(crate::trailing_whitespace::RULE).unwrap();
     assert_eq!(
         tags.doc_url(),
-        "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"
+        "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace"
     );
 }

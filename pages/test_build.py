@@ -189,102 +189,6 @@ class MarkdownHelpersTest(unittest.TestCase):
         self.assertEqual(result, "Read [the guide](guide.md")
         rewrite.assert_not_called()
 
-    def test_split_table_row_preserves_escaped_pipes(self) -> None:
-        self.assertEqual(
-            page_builder.split_table_row(r"| Name | a \| b | yes |"),
-            ["Name", "a | b", "yes"],
-        )
-
-    def test_split_table_row_accepts_rows_without_outer_pipes(self) -> None:
-        self.assertEqual(
-            page_builder.split_table_row("Name | Description | Auto-Fix"),
-            ["Name", "Description", "Auto-Fix"],
-        )
-
-    def test_split_table_row_preserves_empty_cells(self) -> None:
-        self.assertEqual(
-            page_builder.split_table_row("| | middle | |"),
-            ["", "middle", ""],
-        )
-
-    def test_split_table_row_only_unescapes_pipes_not_other_backslashes(self) -> None:
-        self.assertEqual(
-            page_builder.split_table_row(r"| path | C:\scripts\source \| generated |"),
-            ["path", r"C:\scripts\source | generated"],
-        )
-
-    def test_render_lint_table_renders_rows_and_fix_indicator(self) -> None:
-        result = page_builder.render_lint_table(
-            [
-                "| Lint | Description | Auto-Fix |",
-                "| --- | --- | --- |",
-                "| `first` | **Useful** | Yes |",
-                "| second | Plain | |",
-            ]
-        )
-
-        self.assertIn("<th>Lint</th>", result)
-        self.assertIn("<code>first</code>", result)
-        self.assertIn("<strong>Useful</strong>", result)
-        self.assertEqual(result.count('<td class="fix-yes">✓</td>'), 1)
-        self.assertIn("<td>second</td>", result)
-        self.assertIn('<tr id="lint-first">', result)
-        self.assertIn('<tr id="lint-second">', result)
-
-    def test_render_lint_table_rejects_missing_table(self) -> None:
-        with self.assertRaisesRegex(SystemExit, "expected a Lint/Description"):
-            page_builder.render_lint_table(["No table here"])
-
-    def test_render_lint_table_accepts_a_row_without_an_auto_fix_column(self) -> None:
-        result = page_builder.render_lint_table(
-            [
-                "| Lint | Description |",
-                "| --- | --- |",
-                "| safety | Still linted |",
-            ]
-        )
-
-        self.assertIn("<td>safety</td><td>Still linted</td><td></td>", result.replace("\n", ""))
-
-    def test_render_lint_table_treats_whitespace_only_auto_fix_as_disabled(self) -> None:
-        result = page_builder.render_lint_table(
-            [
-                "| Lint | Description | Auto-Fix |",
-                "| --- | --- | --- |",
-                "| safety | Still linted |    |",
-            ]
-        )
-
-        self.assertNotIn('class="fix-yes"', result)
-        self.assertIn("<td></td>", result)
-
-    def test_render_lint_table_escapes_headers_and_row_content(self) -> None:
-        result = page_builder.render_lint_table(
-            [
-                "| <Lint> | Description & impact | Auto-Fix |",
-                "| --- | --- | --- |",
-                '| <unsafe> | Never render <script> or "quotes" | Yes |',
-            ]
-        )
-
-        self.assertIn("<th>&lt;Lint&gt;</th>", result)
-        self.assertIn("<th>Description &amp; impact</th>", result)
-        self.assertIn("<td>&lt;unsafe&gt;</td>", result)
-        self.assertIn("Never render &lt;script&gt; or \"quotes\"", result)
-        self.assertNotIn("<script>", result)
-        self.assertIn('<tr id="lint-unsafe">', result)
-
-    def test_slugify_strips_markdown_and_punctuation(self) -> None:
-        self.assertEqual(page_builder.slugify("**Trailing whitespace**"), "trailing-whitespace")
-        self.assertEqual(
-            page_builder.slugify("`Int/Int division` widened to Float"),
-            "int-int-division-widened-to-float",
-        )
-        self.assertEqual(
-            page_builder.slugify("GlobalVariable increment via SetValue(GetValue() + x)"),
-            "globalvariable-increment-via-setvalue-getvalue-x",
-        )
-
     def test_first_code_block_returns_contents(self) -> None:
         self.assertEqual(
             page_builder.first_code_block(
@@ -1451,15 +1355,6 @@ class RepositoryConfigurationTest(unittest.TestCase):
                 for marker in markers:
                     self.assertIn(marker, template)
 
-    def test_index_template_has_exactly_one_marker_for_each_lint_category(self) -> None:
-        template = (page_builder.PAGES_DIR / "index.template.html").read_text(encoding="utf-8")
-
-        for category in page_builder.LINT_CATEGORIES:
-            marker = f"<!--LINT_TABLE:{category}-->"
-            with self.subTest(category=category):
-                self.assertEqual(template.count(marker), 1)
-
-
 class SitemapAndRobotsTest(unittest.TestCase):
     def test_sitemap_urls_lists_the_homepage_videos_page_and_every_doc(self) -> None:
         docs = [{"slug": "guide"}, {"slug": "missing"}]
@@ -1549,9 +1444,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
                     self.assertNotIn("<!--", output)
 
             index = (out_dir / "index.html").read_text(encoding="utf-8")
-            for category in page_builder.LINT_CATEGORIES:
-                with self.subTest(lint_category=category):
-                    self.assertIn(f"<h3>{category}</h3>", index)
+            self.assertIn('href="rules.html"', index)
             for doc in page_builder.DOCS:
                 with self.subTest(homepage_doc=doc["slug"]):
                     self.assertIn(f'href="docs/{doc["slug"]}.html"', index)
@@ -1625,14 +1518,7 @@ class BuildTest(unittest.TestCase):
             pages_dir = root / "pages"
             pages_dir.mkdir()
             (root / "README.md").write_text(
-                """## Implemented Lints
-
-### Formatting
-| Lint | Description | Auto-Fix |
-| --- | --- | --- |
-| `spacing` | Fix spacing | Yes |
-
-## Command-line interface
+                """## Command-line interface
 ```console
 PapyrusLinterCLI example.psc
 ```
@@ -1640,7 +1526,7 @@ PapyrusLinterCLI example.psc
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
-                "<main><!--LINT_TABLE:Formatting--><!--CLI_EXAMPLES--><!--DOCS_LIST--><!--VERSION-->"
+                "<main><!--CLI_EXAMPLES--><!--DOCS_LIST--><!--VERSION-->"
                 '<img src="assets/screenshot.png" alt="Screenshot" /></main>',
                 encoding="utf-8",
             )
@@ -1704,7 +1590,6 @@ PapyrusLinterCLI example.psc
             with (
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
                 patch.object(page_builder, "DOCS", []),
                 patch.object(
                     page_builder,
@@ -1718,10 +1603,8 @@ PapyrusLinterCLI example.psc
                 page_builder.build(out_dir, version="v1.2.3")
 
             output = (out_dir / "index.html").read_text(encoding="utf-8")
-            self.assertIn("<code>spacing</code>", output)
             self.assertIn("PapyrusLinterCLI example.psc", output)
             self.assertIn("v1.2.3", output)
-            self.assertNotIn("<!--LINT_TABLE", output)
             self.assertNotIn("<!--CLI_EXAMPLES-->", output)
             self.assertNotIn("<!--DOCS_LIST-->", output)
             self.assertNotIn("<!--VERSION-->", output)
@@ -1784,48 +1667,13 @@ PapyrusLinterCLI example.psc
             imprint_output = (out_dir / "imprint.html").read_text(encoding="utf-8")
             self.assertIn("Legal Notice", imprint_output)
 
-    def test_build_rejects_a_missing_lint_table_marker(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            pages_dir.mkdir()
-            (root / "README.md").write_text(
-                """## Implemented Lints
-### Formatting
-| Lint | Description | Auto-Fix |
-| --- | --- | --- |
-| lint | description | |
-## Command-line interface
-```
-command
-```
-""",
-                encoding="utf-8",
-            )
-            (pages_dir / "index.template.html").write_text(
-                "<!--CLI_EXAMPLES-->", encoding="utf-8"
-            )
-
-            with (
-                patch.object(page_builder, "ROOT", root),
-                patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
-                self.assertRaisesRegex(SystemExit, "missing marker"),
-            ):
-                page_builder.build(root / "out")
-
     def test_build_rejects_a_missing_cli_examples_marker(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             pages_dir = root / "pages"
             pages_dir.mkdir()
             (root / "README.md").write_text(
-                """## Implemented Lints
-### Formatting
-| Lint | Description | Auto-Fix |
-| --- | --- | --- |
-| lint | description | |
-## Command-line interface
+                """## Command-line interface
 ```
 command
 ```
@@ -1833,13 +1681,12 @@ command
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
-                "<!--LINT_TABLE:Formatting--><!--DOCS_LIST-->", encoding="utf-8"
+                "<!--DOCS_LIST-->", encoding="utf-8"
             )
 
             with (
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
                 patch.object(page_builder, "DOCS", []),
                 self.assertRaisesRegex(SystemExit, "missing marker <!--CLI_EXAMPLES-->"),
             ):
@@ -1853,12 +1700,7 @@ command
             pages_dir = root / "pages"
             pages_dir.mkdir()
             (root / "README.md").write_text(
-                """## Implemented Lints
-### Formatting
-| Lint | Description | Auto-Fix |
-| --- | --- | --- |
-| lint | description | |
-## Command-line interface
+                """## Command-line interface
 ```
 command
 ```
@@ -1866,13 +1708,12 @@ command
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
-                "<!--LINT_TABLE:Formatting--><!--CLI_EXAMPLES-->", encoding="utf-8"
+                "<!--CLI_EXAMPLES-->", encoding="utf-8"
             )
 
             with (
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "LINT_CATEGORIES", ["Formatting"]),
                 patch.object(page_builder, "DOCS", []),
                 self.assertRaisesRegex(SystemExit, "missing marker <!--DOCS_LIST-->"),
             ):
