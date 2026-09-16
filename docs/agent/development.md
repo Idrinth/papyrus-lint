@@ -29,6 +29,9 @@
     https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
 - Rust backend only: `cargo check` / `cargo test` from `app/src-tauri/`.
+  `app/src-tauri/build.rs` generates `icons/` from `resources/logo.png`
+  during the build, so those platform-specific PNG/ICO/ICNS variants are
+  not checked in (except `icons/icon.png`, which the Pages builder copies).
 - Parser crate only: `cargo test` from `app/crates/papyrus-parser/`.
 - Lints crate only: `cargo test` from `app/crates/papyrus-lints/`.
 - Shared project-resolution crate only: `cargo test` from
@@ -46,4 +49,3 @@
   --manifest-path <crate>/Cargo.toml` (requires the
   [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) subcommand
   and the `llvm-tools-preview` rustup component).
-

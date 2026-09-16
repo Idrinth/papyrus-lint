@@ -6,7 +6,10 @@
 # will have schema files for capabilities auto-completion
 /gen/schemas
 
-# Generated from ../../resources/logo.png by build.rs
+# Generated from ../../resources/logo.png by build.rs.
+# icon.png stays checked in so pages/build.py can copy it as the site favicon
+# without requiring a Rust build first.
 /icons/*.png
+!/icons/icon.png
 /icons/*.ico
 /icons/*.icns
