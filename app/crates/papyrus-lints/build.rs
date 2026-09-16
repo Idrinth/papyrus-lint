@@ -8,6 +8,12 @@
 //! `src/forbidden_functions.rs`, `src/slow_functions.rs`,
 //! `src/native_function_usage.rs`, `src/actor_value.rs`,
 //! `src/missing_update_handler.rs`, and `src/event_signature.rs`).
+//!
+//! Also compiles `docs/rules.json` — the machine-readable metadata for
+//! every lint rule — into `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`
+//! (`src/registry.rs`) and `RULE_TAGS` (`src/tags.rs`), so that JSON file
+//! is the single source of truth for those constants instead of three
+//! hand-maintained copies of the same rule list.
 
 use std::env;
 use std::fs;
@@ -64,6 +70,17 @@ struct RawKnownEvent {
     args: Vec<RawEventArg>,
 }
 
+#[derive(serde::Deserialize)]
+struct RawRuleMeta {
+    id: String,
+    tags: Vec<String>,
+    severity: String,
+    fixable: bool,
+    doc_slug: String,
+    importance: String,
+    definition: String,
+}
+
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
@@ -74,6 +91,7 @@ fn main() {
     compile_actor_values(&manifest_dir, &out_dir);
     compile_update_event_pairs(&manifest_dir, &out_dir);
     compile_known_events(&manifest_dir, &out_dir);
+    compile_rule_metadata(&manifest_dir, &out_dir);
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
@@ -317,6 +335,91 @@ fn compile_known_events(manifest_dir: &str, out_dir: &str) {
         panic!(
             "failed to write generated rule data to {}: {err}",
             dest.display()
+        )
+    });
+}
+
+/// Compiles `docs/rules.json` into `known_rule_ids_data.rs` (`KNOWN_RULE_IDS`
+/// / `FIXABLE_RULE_IDS`, `include!`d by `src/registry.rs`) and
+/// `rule_tags_data.rs` (`RULE_TAGS`, `include!`d by `src/tags.rs`), in the
+/// JSON array's own order, so the two stay in the same order (see
+/// `tags.rs`'s `published_rule_tags_have_the_same_order_and_cardinality_as_known_rules`
+/// test).
+fn compile_rule_metadata(manifest_dir: &str, out_dir: &str) {
+    let json_path = Path::new(manifest_dir).join("../../../docs/rules.json");
+    println!("cargo:rerun-if-changed={}", json_path.display());
+
+    let json_src = fs::read_to_string(&json_path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read rule metadata at {}: {err}",
+            json_path.display()
+        )
+    });
+    let rules: Vec<RawRuleMeta> = serde_json::from_str(&json_src).unwrap_or_else(|err| {
+        panic!(
+            "failed to parse rule metadata at {}: {err}",
+            json_path.display()
+        )
+    });
+
+    let mut ids = String::new();
+    ids.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    ids.push_str("pub const KNOWN_RULE_IDS: &[&str] = &[\n");
+    for rule in &rules {
+        ids.push_str(&format!("    {:?},\n", rule.id));
+    }
+    ids.push_str("];\n\n");
+    ids.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    ids.push_str("pub const FIXABLE_RULE_IDS: &[&str] = &[\n");
+    for rule in rules.iter().filter(|rule| rule.fixable) {
+        ids.push_str(&format!("    {:?},\n", rule.id));
+    }
+    ids.push_str("];\n");
+
+    let ids_dest = Path::new(out_dir).join("known_rule_ids_data.rs");
+    fs::write(&ids_dest, ids).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated rule data to {}: {err}",
+            ids_dest.display()
+        )
+    });
+
+    let mut tags = String::new();
+    tags.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    tags.push_str("pub const RULE_TAGS: &[RuleTags] = &[\n");
+    for rule in &rules {
+        let importance = match rule.importance.as_str() {
+            "low" => "Importance::Low",
+            "medium" => "Importance::Medium",
+            "high" => "Importance::High",
+            other => panic!(
+                "docs/rules.json: unknown importance `{other}` for {}",
+                rule.id
+            ),
+        };
+        match rule.severity.as_str() {
+            "error" | "warning" | "info" => {}
+            other => panic!(
+                "docs/rules.json: unknown severity `{other}` for {}",
+                rule.id
+            ),
+        }
+        let mut kinds = String::new();
+        for kind in &rule.tags {
+            kinds.push_str(&format!("{kind:?}, "));
+        }
+        tags.push_str(&format!(
+            "    RuleTags {{ rule: {:?}, doc_slug: {:?}, description: {:?}, kinds: &[{kinds}], importance: {importance} }},\n",
+            rule.id, rule.doc_slug, rule.definition
+        ));
+    }
+    tags.push_str("];\n");
+
+    let tags_dest = Path::new(out_dir).join("rule_tags_data.rs");
+    fs::write(&tags_dest, tags).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated rule data to {}: {err}",
+            tags_dest.display()
         )
     });
 }

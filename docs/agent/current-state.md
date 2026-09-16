@@ -67,12 +67,13 @@ keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
 `"maintainability"`), an `Importance` (`Low`/`Medium`/`High`) rating how
 much fixing that rule matters for keeping a codebase maintainable, a
 `description` copied verbatim from that rule's row in the README's
-[Implemented Lints](README.md#implemented-lints) tables (kept in sync by
-hand the same way `docs/nexuspage.bbcode`'s own lint descriptions are —
-see "Keeping agent instructions synchronized" below), and an
-`auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
-separately, so the two can never drift apart — for every id in
-`KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
+[Implemented Lints](README.md#implemented-lints) tables (via that rule's
+`definition` field in `docs/rules.json`, which `build.rs` compiles into
+`RULE_TAGS`/`KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` at build time — see
+"Keeping agent instructions synchronized" below), and an `auto_fixable()`
+method derived from `FIXABLE_RULE_IDS` rather than stored separately, so
+the two can never drift apart — for every id in `KNOWN_RULE_IDS`, looked
+up case-insensitively via `tags::tags_for`. The
 desktop app's `list_rule_tags` Tauri command (`app/src-tauri/src/meta.rs`)
 exposes the same metadata to the frontend as a JSON-friendly
 `RuleTagsInfo` per rule (its `description` is also what the Lint results
@@ -637,8 +638,8 @@ touching the filesystem by hand. It's only shown once at least one exists:
 `renderPresetManagementTab` (`app/src/main.ts`) filters whatever
 `list_config_presets` returns down to the non-built-in ones
 (`isCustomPreset`, checking a preset's id against the three built-in names
-by hand — the same convention `FIXABLE_RULE_IDS` follows for the lint
-engine's own fixable rule ids), hides the tab entirely when that list is
+by hand — the same membership-list convention `FIXABLE_RULE_IDS` follows
+for the lint engine's own fixable rule ids), hides the tab entirely when that list is
 empty, and switches back to the Settings tab if it was the active one and
 its last preset just disappeared. `refreshPresetManagementTab` re-fetches
 and re-renders it, called once at startup and after every action below
