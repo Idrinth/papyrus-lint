@@ -449,8 +449,8 @@ Each key:
   default. Every key defaults to `true` except `property_sorting`,
   `unchecked_form_parameter`, `unused_disable`, `magic_numbers`,
   `native_function_usage`, `repeated_getvalue`,
-  `global_variable_setvalue`, `default_property_value`, and
-  `unknown_actor_value`, which default to
+  `global_variable_setvalue`, `default_property_value`,
+  `unknown_actor_value`, and `missing_doc_comment`, which default to
   `false`: reordering a script's declared properties is a more invasive
   change than the rest of these lints, many scripts intentionally accept a
   possibly-`None` Form and defer the check to a caller or a later branch,
@@ -463,8 +463,10 @@ Each key:
   `GlobalVariable` no-op write lint's `Else`-branch case is a heuristic
   rather than a proven no-op, many existing scripts already rely on
   Papyrus's implicit per-type defaults for some or all of their properties,
-  and a project's own plugin can define additional, custom Actor Values
-  that have no way to appear in `rules/actor-values.yaml`.
+  a project's own plugin can define additional, custom Actor Values
+  that have no way to appear in `rules/actor-values.yaml`, and most
+  existing scripts have no documentation comments at all, so flagging
+  every declaration missing one would be noisy until a project opts in.
   The key names match the lints listed above:
   `trailing_whitespace`, `comma_spacing`, `forbidden_functions`,
   `formid_hex_notation`, `slow_functions`, `unused_getter`,
@@ -484,7 +486,8 @@ Each key:
   `script_name_collision`, `array_bounds`, `array_size_range`,
   `readonly_property_write`,
   `default_property_value`, `unguarded_self_recursion`,
-  `self_assignment`, `unnecessary_function`, and `unknown_actor_value`.
+  `self_assignment`, `unnecessary_function`, `unknown_actor_value`, and
+  `missing_doc_comment`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

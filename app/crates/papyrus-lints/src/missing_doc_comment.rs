@@ -15,6 +15,7 @@
 //! a project opts in via `rules.missing_doc_comment`.
 
 use papyrus_parser::ast::{FunctionDecl, Script};
+use papyrus_parser::token::{Token, TokenKind};
 
 use crate::Diagnostic;
 
@@ -29,6 +30,9 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
     };
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+        return Vec::new();
+    };
 
     let lines: Vec<&str> = source.split('\n').collect();
     let mut diagnostics = Vec::new();
@@ -36,6 +40,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     check_declaration(
         script.line,
         format!("The `ScriptName {}` declaration", script.name),
+        &tokens,
         &lines,
         &mut diagnostics,
     );
@@ -44,6 +49,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         check_declaration(
             property.line,
             format!("Property `{}`", property.name),
+            &tokens,
             &lines,
             &mut diagnostics,
         );
@@ -58,6 +64,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         check_declaration(
             function.line,
             format!("{kind} `{}`", function.name),
+            &tokens,
             &lines,
             &mut diagnostics,
         );
@@ -77,17 +84,22 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     )
 }
 
-/// Flags `subject` (rooted at `line`, 1-indexed) if `lines[line]` — the raw
-/// source line immediately following it — doesn't start (after leading
-/// whitespace) with a documentation comment's opening `{`.
+/// Flags `subject` (rooted at `line`, 1-indexed) if the raw source line
+/// immediately following its actual last physical line (see
+/// [`last_physical_line`]) doesn't start (after leading whitespace) with a
+/// documentation comment's opening `{`. The diagnostic itself is still
+/// reported at `line`, the declaration's own start, regardless of where its
+/// header actually ends.
 fn check_declaration(
     line: usize,
     subject: String,
+    tokens: &[Token],
     lines: &[&str],
     diagnostics: &mut Vec<Diagnostic>,
 ) {
+    let last_line = last_physical_line(line, tokens);
     let has_doc_comment = lines
-        .get(line)
+        .get(last_line)
         .is_some_and(|next_line| next_line.trim_start().starts_with('{'));
     if has_doc_comment {
         return;
@@ -101,6 +113,24 @@ fn check_declaration(
         ),
         rule: RULE,
     });
+}
+
+/// The last physical source line (1-indexed) of the logical line starting
+/// at `line`: the line the first `Newline` token at or after `line` itself
+/// falls on. A header written entirely on one physical line just returns
+/// `line` back, since that line's own terminating newline is the first
+/// (and only) `Newline` token at or after it. A header continued onto
+/// further physical lines via a trailing `\` — which `papyrus-parser`'s
+/// lexer swallows together with the newline right after it, emitting no
+/// `Newline` token for that line at all — instead resolves to whichever
+/// later physical line the header's real terminating newline falls on, so
+/// its documentation comment is looked for after that line rather than
+/// after the header's first, continued line.
+fn last_physical_line(line: usize, tokens: &[Token]) -> usize {
+    tokens
+        .iter()
+        .find(|token| token.kind == TokenKind::Newline && token.line >= line)
+        .map_or(line, |token| token.line)
 }
 
 #[cfg(test)]
@@ -208,6 +238,30 @@ mod tests {
         assert!(diagnostics
             .iter()
             .all(|d| !d.message.contains("ScriptName Example")));
+    }
+
+    #[test]
+    fn a_backslash_continued_function_header_checks_its_real_next_line() {
+        let diagnostics = check(
+            "ScriptName Example\n{doc}\n\nFunction DoThing(Int a, \\\n    Int b)\n{Explains what DoThing does}\nEndFunction\n",
+        );
+
+        assert!(diagnostics
+            .iter()
+            .all(|d| !d.message.contains("Function `DoThing`")));
+    }
+
+    #[test]
+    fn a_backslash_continued_function_header_without_a_doc_comment_is_still_flagged() {
+        let diagnostics = check(
+            "ScriptName Example\n{doc}\n\nFunction DoThing(Int a, \\\n    Int b)\nEndFunction\n",
+        );
+
+        let function_finding = diagnostics
+            .iter()
+            .find(|d| d.message.contains("Function `DoThing`"))
+            .expect("function should be flagged");
+        assert_eq!(function_finding.line, 4);
     }
 
     #[test]
