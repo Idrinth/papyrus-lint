@@ -59,6 +59,7 @@
 //!   property_sorting: false
 //!   explicit_return: true
 //!   unchecked_form_parameter: false
+//!   unchecked_array_element: false
 //!   unchecked_cast: true
 //!   useless_downcast: true
 //!   impossible_cast: true
@@ -95,6 +96,7 @@
 //!   invalid_random_range: true
 //!   float_equality: false
 //!   missing_update_handler: false
+//!   unused_import: true
 //!   event_signature_mismatch: false
 //! ```
 //!
@@ -102,7 +104,8 @@
 //! disable that lint (and its automatic fix, if it has one) entirely. As
 //! with the top-level keys, `rules` and any key within it may be omitted
 //! and falls back to its default. `property_sorting`,
-//! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`,
+//! `unchecked_form_parameter`, `unchecked_array_element`, `magic_numbers`,
+//! `native_function_usage`,
 //! `repeated_getvalue`, `global_variable_setvalue`,
 //! `default_property_value`, `unknown_actor_value`,
 //! `missing_doc_comment`, `float_equality`, `missing_update_handler`, and
@@ -110,7 +113,9 @@
 //! `property_sorting` reorders a script's declared properties, a more
 //! invasive change than the rest of these rules; `unchecked_form_parameter`
 //! defaults off because many scripts intentionally accept a possibly-`None`
-//! Form and defer the check to a caller or a later branch; `magic_numbers`
+//! Form and defer the check to a caller or a later branch;
+//! `unchecked_array_element` defaults off for the same reason, extended to
+//! array elements instead of parameters; `magic_numbers`
 //! defaults off because many existing scripts contain plenty of
 //! unremarkable literal numbers a project may not want flagged all at
 //! once; `native_function_usage` defaults off because plenty of mods
@@ -140,7 +145,7 @@
 //! only lists a curated subset of the engine's native events, and this
 //! lint matches an `Event`'s name alone, regardless of whether the
 //! enclosing script actually extends the Form that declares it, which
-//! would otherwise misreport a same-named custom event. All twelve need a
+//! would otherwise misreport a same-named custom event. All thirteen need a
 //! project to opt in explicitly.
 //!
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
@@ -411,6 +416,10 @@ pub struct Rules {
     /// [`Self::property_sorting`], this defaults to `false`: see
     /// [`crate::unchecked_form_parameter`].
     pub unchecked_form_parameter: bool,
+    /// The "Array element used without a None check" lint. Like
+    /// [`Self::property_sorting`] and [`Self::unchecked_form_parameter`],
+    /// this defaults to `false`: see [`crate::unchecked_array_element`].
+    pub unchecked_array_element: bool,
     /// The "Unchecked cast" lint.
     pub unchecked_cast: bool,
     /// The "Useless downcast" lint.
@@ -528,6 +537,8 @@ pub struct Rules {
     /// [`Self::float_equality`], this defaults to `false`: see
     /// [`crate::missing_update_handler`].
     pub missing_update_handler: bool,
+    /// The "Unused import" lint.
+    pub unused_import: bool,
     /// The "Event signature mismatch" lint. Like [`Self::property_sorting`],
     /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`],
     /// [`Self::native_function_usage`], [`Self::repeated_getvalue`],
@@ -604,6 +615,7 @@ impl Default for Rules {
             property_sorting: false,
             explicit_return: true,
             unchecked_form_parameter: false,
+            unchecked_array_element: false,
             unchecked_cast: true,
             useless_downcast: true,
             impossible_cast: true,
@@ -641,6 +653,7 @@ impl Default for Rules {
             invalid_random_range: true,
             float_equality: false,
             missing_update_handler: false,
+            unused_import: true,
             event_signature_mismatch: false,
         }
     }
@@ -796,6 +809,8 @@ mod tests {
         // possibly-None Form and defer the check to a caller or a later
         // branch.
         assert!(!config.rules.unchecked_form_parameter);
+        // Same reasoning, extended to array elements.
+        assert!(!config.rules.unchecked_array_element);
         assert!(config.rules.unchecked_cast);
         assert!(config.rules.useless_downcast);
         assert!(config.rules.impossible_cast);
@@ -860,6 +875,7 @@ mod tests {
         // instead declared on a script it Extends would otherwise be
         // misreported as having no handler at all.
         assert!(!config.rules.missing_update_handler);
+        assert!(config.rules.unused_import);
         // Also disabled by default: rules/known-events.yaml only lists a
         // curated subset of the engine's native events, and this lint
         // matches an Event's name alone, regardless of whether the

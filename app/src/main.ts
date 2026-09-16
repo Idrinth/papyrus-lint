@@ -253,6 +253,7 @@ export interface LintRules {
   property_sorting: boolean;
   explicit_return: boolean;
   unchecked_form_parameter: boolean;
+  unchecked_array_element: boolean;
   unchecked_cast: boolean;
   useless_downcast: boolean;
   impossible_cast: boolean;
@@ -345,6 +346,7 @@ export const DEFAULT_RULES: LintRules = {
   property_sorting: false,
   explicit_return: true,
   unchecked_form_parameter: false,
+  unchecked_array_element: false,
   unchecked_cast: true,
   useless_downcast: true,
   impossible_cast: true,

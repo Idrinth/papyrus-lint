@@ -185,6 +185,7 @@ than intentional code.
 | **Local variable shadowing** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose name matches (case-insensitively) a `Property` declared on the same script, since referencing that name inside the function then reads the local rather than the property. When linting a `.psc` file dropped in the app, a local that instead shadows a property declared on a parent script (resolved through `Extends`) is flagged too. | |
 | **Parameter reassignment** | Flags, as a `[warning]`, a function/event parameter assigned a new value anywhere in its own body (`total = 1`, `total += 1`, ...), since reusing the parameter's name for a different value discards what the caller passed in and can confuse a reader expecting it to still reflect the original argument. A member/index assignment built from a parameter (`akRef.Foo = 1`), or a reassignment of an unrelated local variable, is never flagged. | |
 | **Form parameter used without a None check** | Flags, as a `[warning]`, a member/method access (`akForm.GetName()`) on a `Form`-typed function parameter that hasn't yet been confirmed non-`None` in that path, since a caller can always pass in `None` and dereferencing it crashes the script at runtime. Tracks a parameter as unconfirmed from the start of its function until it's narrowed through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) or a `While` loop's condition, the same way "None used as an existing Form" above narrows its own state, or until it's reassigned to anything else. A branch that unconditionally `Return`s doesn't carry its state past the `If`, covering the common `If x == None` / `Return` guard idiom. Passing the parameter on as an argument to another call isn't flagged, only a direct member/method access is. Disabled by default, since many scripts intentionally accept a possibly-`None` Form and defer the check to a caller or a later branch; a project opts in via `rules.unchecked_form_parameter`. | |
+| **Array element used without a None check** | Flags, as a `[warning]`, a member/method access (`act[2].Kill()`) on an element of a local array variable or array-typed parameter whose element type is a `Form`/script type, when that specific, constant-indexed element hasn't yet been confirmed non-`None` in that path, since nothing about declaring or sizing such an array guarantees any of its positions actually hold something. Tracks each element (identified by its array's name plus a constant-folded index, e.g. `act[2]`) as unconfirmed from the moment the array comes into scope until it's narrowed through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check on that exact element (`act[2] == None`, `act[2] != None`, `!act[2]`, a bare `act[2]`, optionally combined with `&&`/`\|\|`) or a `While` loop's condition, the same way "Form parameter used without a None check" narrows its own state, or until that element is assigned a new value, since the value just written could itself be `None`. Only a plain identifier's own element, indexed by a literal (optionally combined with arithmetic and unary operators), is tracked; a member/property array, or an index built from anything else, is left unflagged rather than guessed at. Passing the element on as an argument to another call isn't flagged, only a direct member/method access is. Disabled by default, for the same reason as "Form parameter used without a None check"; a project opts in via `rules.unchecked_array_element`. | |
 | **Unchecked cast** | Flags, as a `[warning]`, a member/method access on the result of an `as` cast (e.g. `(akRef as Actor).GetActorValue("Health")`) before that result has been checked against `None`, since a cast that doesn't match the underlying Form's actual type evaluates to `None` at runtime rather than raising an error, so dereferencing it immediately crashes the script. Tracks a local variable as an unchecked cast result from its declaration/assignment from an `as` expression until it's reassigned something else, clearing it the moment a direct `None` check on it (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`\|\|`) is evaluated, regardless of which branch is ultimately taken — this lint only cares whether the possibility of `None` was ever considered, not which branch handles it. A cast used directly inline (`(value as Type).Member`) is always flagged, since there's no way to check it in between. A cast CreationKit itself generated (the boilerplate line a quest/dialogue fragment gets between its `Function` signature and `;BEGIN CODE`, e.g. `Actor akSpeaker = akSpeakerRef as Actor`) is never tracked as unchecked in the first place, since CreationKit guarantees that cast succeeds and the user can't add a `None` check there without CreationKit rejecting the edit. | |
 | **Impossible cast** | Flags, as a `[warning]`, an explicit `as` cast proven to never succeed: neither the value's known type nor the cast's target type extends the other, directly or transitively (e.g. `Armor a` followed by `Weapon b = a as Weapon`, since `Armor` and `Weapon` are unrelated types that both directly extend `Form`), so the cast always evaluates to `None` no matter what the value actually holds. Only a cast whose value's type can be determined locally (locals, parameters, properties, `Self`/`Parent`, literals, and other resolvable expressions) is checked, the same restriction "Useless downcast" below places on its own value type; primitive types (`Int`, `Float`, `Bool`, `String`) are never flagged. Since Papyrus scripts have single inheritance, two types are unrelated exactly when neither's `Extends` chain reaches the other — but this is only ever flagged once both the value's and the target's chains are confirmed to resolve all the way to a definite root (a script with no `Extends` at all, or a native engine type from `rules/native-types.yaml` with no further parent), rather than merely failing to find a relation for lack of data. Only checked when linting a `.psc` file dropped in the app, the same way "Useless downcast" resolves an ancestor-type cast, including through the native engine type fallback. | |
 
@@ -197,6 +198,7 @@ preferences.
 | Lint | Description | Auto-Fix |
 | --- | --- | --- |
 | **Unused script properties** | Flags `Property` declarations whose name is never referenced anywhere else in the script. | |
+| **Unused import** | Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script (e.g. `Import Utility` with no bare `Wait(...)` call anywhere), since that's the only thing an `Import` actually does for a script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at. | |
 | **Cyclomatic complexity** | Flags functions/events whose cyclomatic complexity (1 plus each `If`/`ElseIf` branch, `While` loop, and short-circuiting `&&`/`\|\|` operator) exceeds a configurable threshold, as a `[warning]` above `cyclomatic_complexity_warning` (default 10) or an `[error]` above `cyclomatic_complexity_error` (default 20); `cyclomatic_complexity_error` configured below `cyclomatic_complexity_warning` is treated as equal to it, since a lower error threshold would otherwise contradict the warning one it's supposed to escalate. | |
 | **Unused or write-only local variables** | Flags a local variable (declared with `Type name = ...` inside a function/event) whose value is never read: either it's never referenced again at all, or it's only ever reassigned (`name = ...`) without that new value ever being read back. Reading a variable via a compound assignment (`name += ...`, etc.) or through a member/index expression built from it (`name.Foo`, `name[0]`) counts as a use. Function parameters and script properties aren't locals and are never flagged by this lint. | |
 | **Prefer named arguments** | Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting. | |
@@ -247,6 +249,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
 `assignment-operator-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
+`unchecked-array-element`,
 `unchecked-cast`, `unresolved-script`, `non-global-function-call`,
 `static-function-call-via-instance`, `short-wait-interval`,
 `state-function-signature`, `goto-state`, `get-state-comparison`, `conflicting-script-versions`,
@@ -255,8 +258,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `array-bounds`, `array-size-range`,
 `default-property-value`, `unguarded-self-recursion`, `self-assignment`,
 `unnecessary-function`, `unknown-actor-value`, `missing-doc-comment`,
-`invalid-random-range`, `float-equality`, `missing-update-handler`, and
-`event-signature-mismatch`.
+`invalid-random-range`, `float-equality`, `missing-update-handler`,
+`unused-import`, and `event-signature-mismatch`.
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where
@@ -456,14 +459,15 @@ Each key:
   that lint (and its automatic fix, if it has one) off entirely; every
   key under `rules` can be omitted individually and falls back to its
   default. Every key defaults to `true` except `property_sorting`,
-  `unchecked_form_parameter`, `unused_disable`, `magic_numbers`,
+  `unchecked_form_parameter`, `unchecked_array_element`, `unused_disable`, `magic_numbers`,
   `native_function_usage`, `repeated_getvalue`,
   `global_variable_setvalue`, `default_property_value`,
   `unknown_actor_value`, `missing_doc_comment`,
   `missing_update_handler`, and `event_signature_mismatch`, which default to
   `false`: reordering a script's declared properties is a more invasive
   change than the rest of these lints, many scripts intentionally accept a
-  possibly-`None` Form and defer the check to a caller or a later branch,
+  possibly-`None` Form and defer the check to a caller or a later branch
+  (the same reasoning extended to array elements),
   reporting stale suppressions is opt-in to avoid surprising existing
   projects, flagging every literal number in an existing script all at once
   is likely to be noisy until a project is ready for it, plenty of mods
@@ -495,6 +499,7 @@ Each key:
   `local_variable_shadowing`, `chain_whitespace`, `exclamation_spacing`,
   `identifier_casing`, `type_casing`, `named_arguments`, `operator_spacing`,
   `property_sorting`, `explicit_return`, `unchecked_form_parameter`,
+  `unchecked_array_element`,
   `unchecked_cast`, `unresolved_script`, `static_function_call_via_instance`,
   `short_wait_interval`,
   `magic_numbers`, `native_function_usage`, `repeated_getvalue`,
@@ -505,7 +510,7 @@ Each key:
   `default_property_value`, `unguarded_self_recursion`,
   `self_assignment`, `unnecessary_function`, `unknown_actor_value`,
   `missing_doc_comment`, `invalid_random_range`,
-  `missing_update_handler`, and `event_signature_mismatch`.
+  `missing_update_handler`, `unused_import`, and `event_signature_mismatch`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the

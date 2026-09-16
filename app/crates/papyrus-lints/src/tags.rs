@@ -359,6 +359,13 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::High,
     },
     RuleTags {
+        rule: crate::unchecked_array_element::RULE,
+        doc_slug: "array-element-used-without-a-none-check",
+        description: "Flags, as a `[warning]`, a member/method access (`act[2].Kill()`) on an element of a local array variable or array-typed parameter whose element type is a `Form`/script type, when that specific, constant-indexed element hasn't yet been confirmed non-`None` in that path, since nothing about declaring or sizing such an array guarantees any of its positions actually hold something. Tracks each element (identified by its array's name plus a constant-folded index, e.g. `act[2]`) as unconfirmed from the moment the array comes into scope until it's narrowed through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check on that exact element (`act[2] == None`, `act[2] != None`, `!act[2]`, a bare `act[2]`, optionally combined with `&&`/`||`) or a `While` loop's condition, the same way \"Form parameter used without a None check\" narrows its own state, or until that element is assigned a new value, since the value just written could itself be `None`. Only a plain identifier's own element, indexed by a literal (optionally combined with arithmetic and unary operators), is tracked; a member/property array, or an index built from anything else, is left unflagged rather than guessed at. Passing the element on as an argument to another call isn't flagged, only a direct member/method access is. Disabled by default, for the same reason as \"Form parameter used without a None check\"; a project opts in via `rules.unchecked_array_element`.",
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
+    RuleTags {
         rule: crate::unchecked_cast::RULE,
         doc_slug: "unchecked-cast",
         description: "Flags, as a `[warning]`, a member/method access on the result of an `as` cast (e.g. `(akRef as Actor).GetActorValue(\"Health\")`) before that result has been checked against `None`, since a cast that doesn't match the underlying Form's actual type evaluates to `None` at runtime rather than raising an error, so dereferencing it immediately crashes the script. Tracks a local variable as an unchecked cast result from its declaration/assignment from an `as` expression until it's reassigned something else, clearing it the moment a direct `None` check on it (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`||`) is evaluated, regardless of which branch is ultimately taken — this lint only cares whether the possibility of `None` was ever considered, not which branch handles it. A cast used directly inline (`(value as Type).Member`) is always flagged, since there's no way to check it in between. A cast CreationKit itself generated (the boilerplate line a quest/dialogue fragment gets between its `Function` signature and `;BEGIN CODE`, e.g. `Actor akSpeaker = akSpeakerRef as Actor`) is never tracked as unchecked in the first place, since CreationKit guarantees that cast succeeds and the user can't add a `None` check there without CreationKit rejecting the edit.",
@@ -616,6 +623,13 @@ pub const RULE_TAGS: &[RuleTags] = &[
         description: "Flags, as a `[warning]`, a call to `RegisterForUpdate`, `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` in a script that declares no matching `Event` (`OnUpdate` or `OnUpdateGameTime`, per `rules/update-event-handlers.yaml`) anywhere in it, since the engine then has nothing to call once the registered timer fires and the registration has no effect. Matches by function name alone (case-insensitively), regardless of receiver, the same way \"Forbidden/discouraged function usage\" does; a matching `Event` is recognized in any `State` block, not just the empty state. Disabled by default, since it only ever sees a single script's own source, and a matching `Event` declared on a script it `Extends` would otherwise be misreported as missing; opt in with `rules.missing_update_handler`.",
         kinds: &["correctness"],
         importance: Importance::Medium,
+    },
+    RuleTags {
+        rule: crate::unused_import::RULE,
+        doc_slug: "unused-import",
+        description: "Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at.",
+        kinds: &["maintainability"],
+        importance: Importance::Low,
     },
     RuleTags {
         rule: crate::event_signature::RULE,

@@ -69,6 +69,7 @@ pub mod strict_boolean;
 pub mod tags;
 pub mod trailing_whitespace;
 pub mod type_casing;
+pub mod unchecked_array_element;
 pub mod unchecked_cast;
 pub mod unchecked_form_parameter;
 pub mod unguarded_self_recursion;
@@ -78,6 +79,7 @@ pub mod unreachable_statement;
 pub mod unresolved_script;
 pub mod unused_disable;
 pub mod unused_getter;
+pub mod unused_import;
 pub mod unused_local_variable;
 pub mod unused_property;
 pub mod useless_downcast;
@@ -128,6 +130,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     property_sorting::RULE,
     explicit_return::RULE,
     unchecked_form_parameter::RULE,
+    unchecked_array_element::RULE,
     unchecked_cast::RULE,
     useless_downcast::RULE,
     impossible_cast::RULE,
@@ -165,6 +168,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     invalid_random_range::RULE,
     float_equality::RULE,
     missing_update_handler::RULE,
+    unused_import::RULE,
     event_signature::RULE,
 ];
 
@@ -422,6 +426,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     if rules.unchecked_form_parameter {
         diagnostics.extend(unchecked_form_parameter::check(source));
     }
+    if rules.unchecked_array_element {
+        diagnostics.extend(unchecked_array_element::check(source));
+    }
     if rules.unchecked_cast {
         diagnostics.extend(unchecked_cast::check(source));
     }
@@ -507,6 +514,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.missing_update_handler {
         diagnostics.extend(missing_update_handler::check(source));
+    }
+    if rules.unused_import {
+        diagnostics.extend(unused_import::check_with(source, external));
     }
     if rules.event_signature_mismatch {
         diagnostics.extend(event_signature::check(source));
@@ -1537,6 +1547,12 @@ mod tests {
                 config_with(|c| c.rules.unchecked_form_parameter = false),
             ),
             (
+                "ScriptName Example\n\nFunction Test()\n    Actor[] act = new Actor[3]\n    act[2].Kill()\nEndFunction\n",
+                unchecked_array_element::RULE,
+                config_with(|c| c.rules.unchecked_array_element = true),
+                config_with(|c| c.rules.unchecked_array_element = false),
+            ),
+            (
                 "ScriptName Example\n\nFunction Test(ObjectReference akRef)\n    (akRef as Actor).GetActorValue(\"Health\")\nEndFunction\n",
                 unchecked_cast::RULE,
                 Config::default(),
@@ -2026,5 +2042,45 @@ mod tests {
             &mut FakeExternalWithUnrelatedAncestry,
         );
         assert!(disabled.iter().all(|d| d.rule != impossible_cast::RULE));
+    }
+
+    struct FakeExternalWithUnusedImport;
+
+    impl argument_types::ExternalSignatures for FakeExternalWithUnusedImport {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<argument_types::ParamInfo>> {
+            None
+        }
+
+        fn can_resolve_script(&mut self, type_name: &str) -> bool {
+            type_name.eq_ignore_ascii_case("Helpers")
+        }
+    }
+
+    /// Like `function_override_flag_gates_only_its_own_lint` above:
+    /// `unused_import` also needs `lint_with_external_arguments`'s
+    /// `external` resolver to ever fire, so its own `rules.unused_import`
+    /// gate is checked here instead of in the main loop.
+    #[test]
+    fn unused_import_flag_gates_only_its_own_lint() {
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+
+        let enabled = lint_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+        );
+        assert!(enabled.iter().any(|d| d.rule == unused_import::RULE));
+
+        let disabled_config = config_with(|c| c.rules.unused_import = false);
+        let disabled = lint_with_external_arguments(
+            source,
+            &disabled_config,
+            &mut FakeExternalWithUnusedImport,
+        );
+        assert!(disabled.iter().all(|d| d.rule != unused_import::RULE));
     }
 }

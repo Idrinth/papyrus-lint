@@ -83,6 +83,7 @@ rules:
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false
+  unchecked_array_element: false
   unchecked_cast: true
   useless_downcast: true
   impossible_cast: true
@@ -120,4 +121,5 @@ rules:
   invalid_random_range: true
   float_equality: false
   missing_update_handler: false
+  unused_import: true
   event_signature_mismatch: false

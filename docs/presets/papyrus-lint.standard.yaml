@@ -9,9 +9,9 @@
 # Turned off relative to "strict": rules that are purely naming-convention,
 # informational, or maintainability-advisory with no correctness/
 # performance stake of their own — identifier/type casing, named-argument
-# style, property sorting, unused-property/-local-variable/-disable-directive
-# advisories, function-override/useless-downcast/stale-compiled-output info
-# notices, parameter reassignment, unnecessary-function, and the "call a
+# style, property sorting, unused-property/-local-variable/-disable-directive/
+# -import advisories, function-override/useless-downcast/stale-compiled-output
+# info notices, parameter reassignment, unnecessary-function, and the "call a
 # Global via an instance" style nit.
 # `unused_getter` stays on: unlike the others in that family, it's tagged
 # "correctness" as well as "maintainability" (medium importance), since an
@@ -110,6 +110,7 @@ rules:
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false
+  unchecked_array_element: false
   unchecked_cast: true
   useless_downcast: false          # was true: [info]-only, not a likely mistake
   impossible_cast: true
@@ -147,4 +148,5 @@ rules:
   invalid_random_range: true
   float_equality: false
   missing_update_handler: false
+  unused_import: false             # was true: maintainability advisory, no correctness stake
   event_signature_mismatch: false

@@ -234,7 +234,12 @@ fn check_expr(
 /// without running the script (an identifier, a call, `Self`/`Parent`, a
 /// member/index access, a cast, a `new` array, a `Float`, division, or
 /// modulo).
-fn eval_const_int(expr: &Expr) -> Option<i64> {
+///
+/// `pub(crate)` rather than private so [`crate::unchecked_array_element`] can
+/// fold an index expression to the same constant this lint would, keeping
+/// the two lints' notion of "the same array element" (e.g. `a[2]` and
+/// `a[1 + 1]`) identical.
+pub(crate) fn eval_const_int(expr: &Expr) -> Option<i64> {
     match expr {
         Expr::Literal(Literal::Int { value, .. }) => Some(*value),
         Expr::Unary {

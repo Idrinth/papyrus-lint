@@ -310,6 +310,10 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td]Flags a member/method access on a Form-typed function parameter that hasn't yet been confirmed non-None in that path.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Array element used without a None check[/b][/td]
+[td]Flags a member/method access on a constant-indexed array element (e.g. act[2].Kill()) that hasn't yet been confirmed non-None in that path. Disabled by default, same as the Form parameter check above.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Unchecked cast[/b][/td]
 [td]Flags a member/method access on the result of an As cast before that result has been checked against None. Never flags CreationKit's own fragment boilerplate cast (e.g. Actor akSpeaker = akSpeakerRef as Actor).[/td]
 [td][/td]
@@ -327,6 +331,10 @@ Everything else, from unused code and excessive complexity to naming and style p
 [/tr]
 [tr][td][b]Unused script properties[/b][/td]
 [td]Flags Property declarations whose name is never referenced anywhere else in the script.[/td]
+[td][/td]
+[/tr]
+[tr][td][b]Unused import[/b][/td]
+[td]Flags an Import statement whose script never has one of its Global functions called unqualified anywhere in this script. Only checked with project context.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Cyclomatic complexity[/b][/td]
@@ -462,6 +470,7 @@ rules:
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false
+  unchecked_array_element: false
   unchecked_cast: true
   useless_downcast: true
   unresolved_script: true
@@ -497,6 +506,7 @@ rules:
   invalid_random_range: true
   float_equality: false
   missing_update_handler: false
+  unused_import: true
   event_signature_mismatch: false[/code][/spoiler]
 
 [heading]CLI[/heading]

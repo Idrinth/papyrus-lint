@@ -11,11 +11,12 @@
 //! This works from the parsed AST rather than raw tokens, since it needs
 //! to reliably tell a property declaration apart from other identifiers;
 //! a script that doesn't parse cleanly is left unchecked rather than
-//! guessed at. `Import` statements aren't tracked with a line number in
-//! the AST and are never treated as blocking the property block from
-//! following immediately after `ScriptName` — only a variable, function,
-//! or state declaration appearing before a property counts as a
-//! violation. The automatic fix moves only each property's own
+//! guessed at. `Import` statements are deliberately never treated as
+//! blocking the property block from following immediately after
+//! `ScriptName`, even though the AST tracks each one's own line (see
+//! `unused-import`) — only a variable, function, or state declaration
+//! appearing before a property counts as a violation. The automatic fix
+//! moves only each property's own
 //! declaration lines (its full `Property`/`EndProperty` block, for a
 //! non-auto property); a documentation comment placed directly above a
 //! property is left where it was rather than moved along with it.
@@ -158,9 +159,8 @@ pub fn repair(source: &str) -> String {
 
 /// The line of every top-level variable, function, or state declaration
 /// (including functions declared inside a state), used to check that no
-/// such declaration precedes a property. `Import` statements have no line
-/// tracked on the AST and are deliberately not included here — see the
-/// module docs.
+/// such declaration precedes a property. `Import` statements are
+/// deliberately not included here — see the module docs.
 fn other_member_lines(script: &Script) -> Vec<usize> {
     let mut lines: Vec<usize> = script.variables.iter().map(|v| v.line).collect();
     lines.extend(script.functions.iter().map(|f| f.line));
