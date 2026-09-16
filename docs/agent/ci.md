@@ -176,13 +176,6 @@
   and the Pages builder) — posting the result as a single markdown table,
   with groups and their entries sorted alphabetically, updated in place on
   subsequent pushes, as a PR comment (and to the job's step summary).
-  The same job then runs `.github/scripts/hall_of_shame.py` against the
-  checkout and those lcov artifacts, appending a "Hall of shame" section
-  that lists the top 3 source files by byte size, public export count,
-  uncovered executable lines, and lines of code. The script also emits
-  GitHub Actions `notice` annotations (Info messages on the pull request)
-  for each of those four lists. Neither the section nor the notices fail
-  the job.
   Comment posting is best-effort (`continue-on-error`) since forked PRs get
   a read-only `GITHUB_TOKEN`. Each row also carries an "Est. CRAP" column:
   none of this project's coverage tools measure real cyclomatic complexity,
@@ -193,6 +186,21 @@
   out as such in the comment's footnote. A leaf report with no `FNF` data
   (or that's missing entirely) renders `n/a` there like the rest of its
   row.
+
+- **Hall of shame job** (`.github/workflows/hall-of-shame.yml`, pull
+  requests only): runs `.github/scripts/hall_of_shame.py` against the PR
+  checkout and, when a prior `ci.yml` run has uploaded them, that run's
+  `*coverage*` artifacts. It lists the top 3 source files by byte size,
+  public export count, uncovered executable lines, and lines of code,
+  emits those four lists as GitHub Actions `notice` annotations (Info
+  messages on the pull request), writes them to the job's step summary,
+  and posts or updates a single PR comment marked
+  `<!-- hall-of-shame-comment -->`. Comment posting is best-effort
+  (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
+  Uncovered-line rankings can lag the current push by one successful CI
+  run, because this workflow cannot wait for the in-progress coverage
+  jobs; size, exports, and LOC always reflect the PR checkout. The job
+  never fails the pull request.
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
