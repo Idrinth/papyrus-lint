@@ -1,5 +1,5 @@
 //! Human-facing metadata for the desktop app's first-run preset picker
-//! (see `app/src-tauri/src/lib.rs`'s `list_config_presets`/
+//! (see `app/src-tauri/src/config_presets.rs`'s `list_config_presets`/
 //! `apply_config_preset` commands), shown when a project directory has no
 //! `papyrus-lint.yaml`/`.yml` of its own yet.
 //!

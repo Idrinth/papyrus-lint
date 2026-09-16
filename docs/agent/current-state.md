@@ -73,7 +73,7 @@ see "Keeping agent instructions synchronized" below), and an
 `auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
 separately, so the two can never drift apart — for every id in
 `KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
-desktop app's `list_rule_tags` Tauri command (`app/src-tauri/src/lib.rs`)
+desktop app's `list_rule_tags` Tauri command (`app/src-tauri/src/meta.rs`)
 exposes the same metadata to the frontend as a JSON-friendly
 `RuleTagsInfo` per rule (its `description` is also what the Lint results
 tab's "Export for AI" button carries in each `rule_details` entry — see
@@ -212,7 +212,7 @@ textarea's `input` listener alongside the existing highlight/autocomplete
 handlers, debounces (`LIVE_EDIT_LINT_DEBOUNCE_MS`, `400`ms) a call to
 `runLiveEditLint`, which lints the textarea's current value via the new
 `lintPapyrusScript` wrapper around the `lint_papyrus_script` Tauri command
-(`app/src-tauri/src/lib.rs`, already existing but previously unused by the
+(`app/src-tauri/src/files.rs`, already existing but previously unused by the
 frontend) — the same in-process `papyrus_lints::lint` call the CLI itself
 ultimately runs, taking the place of shelling out to a CLI subprocess the
 way the two editor plugins above do. Unlike the CLI's `--blob`, this isn't
@@ -376,14 +376,15 @@ finishes.
 
 Every Tauri command that touches the filesystem, parses/lints/repairs a
 script, or spawns PapyrusCompiler.exe is declared `#[tauri::command(async)]`
-in `app/src-tauri/src/lib.rs`, rather than a plain `#[tauri::command]`. A
+in the `app/src-tauri/src/` command modules, rather than a plain
+`#[tauri::command]`. A
 synchronous command with no `async`/`(async)` marking is dispatched inline
 on Tauri's main/UI event-loop thread, so without this attribute a single
 lint/repair/compile call — and the concurrent batch described above —
 blocks window rendering and input until it returns, which is what made the
 app appear to hang while linting a large `.achlist`/directory drop.
 `(async)` keeps each command's own Rust signature an ordinary synchronous
-`fn` (so the `#[cfg(test)]` module further down still calls every one of
+`fn` (so each module's `#[cfg(test)]` tests still call every one of
 them directly, with no `.await`) while making Tauri route its actual
 dispatch through `tauri::async_runtime::spawn_blocking`, onto its blocking
 thread pool — which is what lets the batch concurrency described above
@@ -780,7 +781,7 @@ The desktop app's code viewer has a "Preview fixes" button next to its
 whole-file "Apply fixes" button, the GUI counterpart of the CLI's
 `fix --dry-run`: `app/src/main.ts`'s `handleCodeViewerPreviewFixClick`/
 `previewRepairPscFile` call the `preview_repair_psc_file` Tauri command
-(`app/src-tauri/src/lib.rs`), which computes the same whole-file repair
+(`app/src-tauri/src/repair.rs`), which computes the same whole-file repair
 (`papyrus_lints::repair`) `repair_psc_file` applies but never writes it to
 disk, returning a standard unified diff (empty when nothing would change)
 instead. `renderDiffOutput` shows that diff in a `<pre id="code-viewer-
@@ -819,7 +820,7 @@ skipping a rule whose fix would shift other lines (e.g. `property-sorting`)
 rather than letting it block the rest. "Ignore"
 (`handleCodeViewerIgnoreLineClick`) instead collects every rule id found on
 the line and calls the `add_disable_comment_to_psc_line` Tauri command
-(`app/src-tauri/src/lib.rs`), which wraps the new
+(`app/src-tauri/src/repair.rs`), which wraps the new
 `papyrus_lints::add_disable_comment(source, line, rules)` — a thin public
 wrapper around `disable_comments::add_disable_directive`, the crate-private
 module that already parses `; @disable`/`; @disable-file` comments (see
