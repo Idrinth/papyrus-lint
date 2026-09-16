@@ -117,3 +117,4 @@ rules:
   repeated_setoutfit: true
   missing_doc_comment: false
   invalid_random_range: true
+  float_equality: false
