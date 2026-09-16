@@ -63,6 +63,7 @@ pub mod type_casing;
 pub mod unchecked_cast;
 pub mod unchecked_form_parameter;
 pub mod unguarded_self_recursion;
+pub mod unnecessary_function;
 pub mod unreachable_elseif;
 pub mod unreachable_statement;
 pub mod unresolved_script;
@@ -146,6 +147,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     default_property_value::RULE,
     unguarded_self_recursion::RULE,
     self_assignment::RULE,
+    unnecessary_function::RULE,
 ];
 
 use serde::Serialize;
@@ -458,6 +460,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.self_assignment {
         diagnostics.extend(self_assignment::check(source));
+    }
+    if rules.unnecessary_function {
+        diagnostics.extend(unnecessary_function::check(source));
     }
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
@@ -1614,6 +1619,12 @@ mod tests {
                 self_assignment::RULE,
                 Config::default(),
                 config_with(|c| c.rules.self_assignment = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n",
+                unnecessary_function::RULE,
+                Config::default(),
+                config_with(|c| c.rules.unnecessary_function = false),
             ),
         ];
 

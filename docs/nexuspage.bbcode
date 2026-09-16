@@ -333,6 +333,10 @@ Everything else, from unused code and excessive complexity to naming and style p
 [td]Flags a Bool/Int/Float/String Auto/AutoReadOnly property with no explicit default value, since it then silently falls back to Papyrus's own implicit per-type default instead of a value the author chose. Disabled by default.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Unnecessary function[/b][/td]
+[td]Flags a Function whose body is just a single statement, since that's usually simple enough to inline at its call site instead. Events are never flagged, since they may deliberately forward to shared logic.[/td]
+[td][/td]
+[/tr]
 [/table][/spoiler]
 The formatting lints/fixes (trailing whitespace, space after comma, semicolon, indentation, chain whitespace, exclamation mark spacing, and operator spacing) never flag or change a line inside a CreationKit-generated ;BEGIN FRAGMENT CODE / ;END FRAGMENT CODE block, except the actual script code between a ;BEGIN CODE / ;END CODE pair within it. Reformatting the rest of that block (fragment headers, the generated function signature, EndFunction, or the markers themselves) would make CreationKit fail to recognize the fragment.
 [heading]Configuration file[/heading]
@@ -447,7 +451,8 @@ rules:
   readonly_property_write: true
   default_property_value: false
   unguarded_self_recursion: true
-  self_assignment: true[/code][/spoiler]
+  self_assignment: true
+  unnecessary_function: true[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

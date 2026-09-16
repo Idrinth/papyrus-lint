@@ -11,8 +11,8 @@
 # performance stake of their own — identifier/type casing, named-argument
 # style, property sorting, unused-property/-local-variable/-disable-directive
 # advisories, function-override/useless-downcast/stale-compiled-output info
-# notices, parameter reassignment, and the "call a Global via an instance"
-# style nit.
+# notices, parameter reassignment, unnecessary-function, and the "call a
+# Global via an instance" style nit.
 # `unused_getter` stays on: unlike the others in that family, it's tagged
 # "correctness" as well as "maintainability" (medium importance), since an
 # unused getter can also mean the property it reads was never wired up.
@@ -138,3 +138,4 @@ rules:
   default_property_value: false
   unguarded_self_recursion: true
   self_assignment: true
+  unnecessary_function: false      # was true: maintainability/performance advisory, no correctness stake

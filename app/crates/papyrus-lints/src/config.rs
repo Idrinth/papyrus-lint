@@ -86,6 +86,7 @@
 //!   default_property_value: false
 //!   unguarded_self_recursion: true
 //!   self_assignment: true
+//!   unnecessary_function: true
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -459,6 +460,8 @@ pub struct Rules {
     pub unguarded_self_recursion: bool,
     /// The "Self-assignment" lint.
     pub self_assignment: bool,
+    /// The "Unnecessary function" lint.
+    pub unnecessary_function: bool,
 }
 
 impl Rules {
@@ -555,6 +558,7 @@ impl Default for Rules {
             default_property_value: false,
             unguarded_self_recursion: true,
             self_assignment: true,
+            unnecessary_function: true,
         }
     }
 }
@@ -751,6 +755,7 @@ mod tests {
         assert!(!config.rules.default_property_value);
         assert!(config.rules.unguarded_self_recursion);
         assert!(config.rules.self_assignment);
+        assert!(config.rules.unnecessary_function);
     }
 
     #[test]

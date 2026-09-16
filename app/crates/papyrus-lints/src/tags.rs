@@ -463,6 +463,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::Medium,
     },
+    RuleTags {
+        rule: crate::unnecessary_function::RULE,
+        description: "Flags, as an `[info]`, a `Function` whose body consists of exactly one statement, since it adds an indirection without doing enough on its own to justify a separate declaration — a caller could just as well inline that one statement instead. `Event`s are never flagged: they're declared by the engine rather than the script's own author, so a single-statement handler may well be forwarding to shared logic used by other events too.",
+        kinds: &["maintainability", "performance"],
+        importance: Importance::Low,
+    },
 ];
 
 #[cfg(test)]
