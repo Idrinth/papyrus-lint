@@ -208,15 +208,15 @@ VIDEOS_FILE = PAGES_DIR / "videos.json"
 INCLUDES_DIR = PAGES_DIR / "includes"
 
 ASSETS = {
-    "logo-small.jpg": ROOT / "resources" / "logo-small.jpg",
-    "logo.jpg": ROOT / "resources" / "logo.jpg",
-    "papyrus-lint-import.png": ROOT / "resources" / "papyrus-lint-import.png",
-    "papyrus-lint-results.png": ROOT / "resources" / "papyrus-lint-results.png",
-    "papyrus-lint-viewer.png": ROOT / "resources" / "papyrus-lint-viewer.png",
-    "papyrus-lint-vscode.png": ROOT / "resources" / "papyrus-lint-vscode.png",
-    "papyrus-lint-massfix.png": ROOT / "resources" / "papyrus-lint-massfix.png",
-    "papyrus-lint-cli.png": ROOT / "resources" / "papyrus-lint-cli.png",
-    "favicon.png": ROOT / "app" / "src-tauri" / "icons" / "icon.png",
+    "logo-small.jpg": ROOT / "shared" / "images" / "logo-small.jpg",
+    "logo.jpg": ROOT / "shared" / "images" / "logo.jpg",
+    "papyrus-lint-import.png": ROOT / "shared" / "images" / "papyrus-lint-import.png",
+    "papyrus-lint-results.png": ROOT / "shared" / "images" / "papyrus-lint-results.png",
+    "papyrus-lint-viewer.png": ROOT / "shared" / "images" / "papyrus-lint-viewer.png",
+    "papyrus-lint-vscode.png": ROOT / "shared" / "images" / "papyrus-lint-vscode.png",
+    "papyrus-lint-massfix.png": ROOT / "shared" / "images" / "papyrus-lint-massfix.png",
+    "papyrus-lint-cli.png": ROOT / "shared" / "images" / "papyrus-lint-cli.png",
+    "favicon.png": ROOT/ "shared" / "images" / "logo.png",
 }
 
 # The ASSETS entries actually rendered as <img> elements on the page (as
