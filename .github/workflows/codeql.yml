@@ -57,6 +57,12 @@ jobs:
             crate: app/crates/papyrus-parser
           - language: rust
             build-mode: none
+            name: rust-papyrus-ast-cache
+            category: "/language:rust-papyrus-ast-cache"
+            config-file: .github/codeql/rust-papyrus-ast-cache.yml
+            crate: app/crates/papyrus-ast-cache
+          - language: rust
+            build-mode: none
             name: rust-papyrus-lints
             category: "/language:rust-papyrus-lints"
             config-file: .github/codeql/rust-papyrus-lints.yml
