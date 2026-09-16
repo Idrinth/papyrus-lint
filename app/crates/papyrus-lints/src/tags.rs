@@ -102,7 +102,7 @@ pub const RULE_TAGS: &[RuleTags] = &[
     RuleTags {
         rule: crate::forbidden_functions::RULE,
         doc_slug: "forbidden-discouraged-function-usage",
-        description: "Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. A `Debug.Trace` call nested inside an `If`/`ElseIf` whose condition is a simple identifier (or `Self`/`Parent`/identifier member chain) whose name contains `debug` (case-insensitively, e.g. `If IsDebugMode`) is left unflagged, since that is already the debug-flag guard the rule's own message recommends; an `Else` of that chain, a negated or compound condition, or a name that doesn't look like a debug flag is still flagged.",
+        description: "Flags calls to functions listed in `rules/forbidden-functions.yaml` (e.g. slow or blocking native calls), with a configurable severity and an explanatory message per entry. A `Debug.*` call (`Trace`, `TraceStack`, `Notification`) nested inside an `If`/`ElseIf` whose condition is a simple identifier (or `Self`/`Parent`/identifier member chain) whose name contains `debug` (case-insensitively, e.g. `If IsDebugMode`) is left unflagged, since that is already a debug-flag guard; an `Else` of that chain, a negated or compound condition, or a name that doesn't look like a debug flag is still flagged.",
         kinds: &["performance", "correctness"],
         importance: Importance::Medium,
     },

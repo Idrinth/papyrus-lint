@@ -6,9 +6,9 @@
 //! the other lints in this crate, it works on tokens rather than the
 //! parsed AST, so it still runs on scripts that don't parse cleanly.
 //!
-//! `Debug.Trace` is the one entry whose own message recommends guarding
-//! the call behind a debug flag rather than always removing it. A call
-//! nested inside an `If`/`ElseIf` whose condition is a simple identifier
+//! `Debug.*` calls (`Trace`, `TraceStack`, `Notification`) are the entries
+//! whose own messages describe diagnostic-only usage. A call nested inside
+//! an `If`/`ElseIf` whose condition is a simple identifier
 //! (optionally a `Self`/`Parent`/identifier member chain, optionally
 //! wrapped in parentheses) whose name contains `debug` — e.g.
 //! `If IsDebugMode` — is therefore left unflagged. An `Else` of that
@@ -53,9 +53,9 @@ pub const RULE: &str = "forbidden-functions";
 /// `Utility.Wait()` flagged while `MyScript.Wait()` (a same-named function
 /// on an unrelated script) is not.
 ///
-/// A second exception is `Debug.Trace` already nested inside a simple
+/// A second exception is a `Debug.*` call already nested inside a simple
 /// debug-flag `If`/`ElseIf` (see the module docs): those calls are the
-/// guarded form the rule's own message recommends, so they are not
+/// guarded form the rules themselves recommend, so they are not
 /// reported.
 pub fn check(source: &str) -> Vec<Diagnostic> {
     let tokens = match papyrus_parser::tokenize(source) {
@@ -104,7 +104,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 if rule.global && !qualifier_matches(&tokens, i, rule.script) {
                     continue;
                 }
-                if is_debug_trace(rule) && debug_guard_depth > 0 {
+                if is_debug_script(rule) && debug_guard_depth > 0 {
                     continue;
                 }
                 diagnostics.push(Diagnostic {
@@ -144,8 +144,8 @@ fn find_rule(name: &str) -> Option<&'static ForbiddenFunctionRule> {
         .find(|rule| rule.function.eq_ignore_ascii_case(name))
 }
 
-fn is_debug_trace(rule: &ForbiddenFunctionRule) -> bool {
-    rule.script.eq_ignore_ascii_case("Debug") && rule.function.eq_ignore_ascii_case("Trace")
+fn is_debug_script(rule: &ForbiddenFunctionRule) -> bool {
+    rule.script.eq_ignore_ascii_case("Debug")
 }
 
 fn replace_current_branch(if_stack: &mut [bool], debug_guard_depth: &mut usize, guarded: bool) {
@@ -412,11 +412,29 @@ mod tests {
     #[test]
     fn still_flags_other_forbidden_calls_behind_a_debug_flag() {
         let diagnostics = check(
-            "ScriptName Example\n\nFunction DoThing(Bool IsDebugMode)\n    If IsDebugMode\n        Game.GetPlayer()\n        Debug.TraceStack(\"dump\")\n    EndIf\nEndFunction\n",
+            "ScriptName Example\n\nFunction DoThing(Bool IsDebugMode)\n    If IsDebugMode\n        Game.GetPlayer()\n        Utility.Wait(1.0)\n    EndIf\nEndFunction\n",
         );
         assert_eq!(diagnostics.len(), 2);
         assert!(diagnostics[0].message.contains("Game.GetPlayer"));
-        assert!(diagnostics[1].message.contains("Debug.TraceStack"));
+        assert!(diagnostics[1].message.contains("Utility.Wait"));
+    }
+
+    #[test]
+    fn does_not_flag_debug_tracestack_or_notification_behind_a_debug_flag() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction DoThing(Bool IsDebugMode)\n    If IsDebugMode\n        Debug.Trace(\"log\")\n        Debug.TraceStack(\"dump\")\n        Debug.Notification(\"hi\")\n    EndIf\nEndFunction\n",
+        );
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn flags_unguarded_debug_tracestack_and_notification() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction DoThing()\n    Debug.TraceStack(\"dump\")\n    Debug.Notification(\"hi\")\nEndFunction\n",
+        );
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics[0].message.contains("Debug.TraceStack"));
+        assert!(diagnostics[1].message.contains("Debug.Notification"));
     }
 
     #[test]
