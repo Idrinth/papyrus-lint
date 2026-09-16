@@ -131,6 +131,7 @@ rules:
   invariant_loop_condition: true
   script_name_collision: true
   array_bounds: true
+  array_size_range: true
   readonly_property_write: true
   default_property_value: false
   unguarded_self_recursion: true

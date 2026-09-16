@@ -8,6 +8,7 @@
 pub mod argument_naming;
 pub mod argument_types;
 pub mod array_bounds;
+pub mod array_size_range;
 pub mod chain_whitespace;
 pub mod comma_spacing;
 pub mod config;
@@ -140,6 +141,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     invariant_loop_condition::RULE,
     script_name_collision::RULE,
     array_bounds::RULE,
+    array_size_range::RULE,
     readonly_property_write::RULE,
     default_property_value::RULE,
     unguarded_self_recursion::RULE,
@@ -416,6 +418,9 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     }
     if rules.array_bounds {
         diagnostics.extend(array_bounds::check(source));
+    }
+    if rules.array_size_range {
+        diagnostics.extend(array_size_range::check(source));
     }
     if rules.readonly_property_write {
         diagnostics.extend(readonly_property_write::check(source));
@@ -1490,6 +1495,12 @@ mod tests {
                 array_bounds::RULE,
                 Config::default(),
                 config_with(|c| c.rules.array_bounds = false),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int[] a = new Int[200]\nEndFunction\n",
+                array_size_range::RULE,
+                Config::default(),
+                config_with(|c| c.rules.array_size_range = false),
             ),
             (
                 "ScriptName Example\n\nFloat Property a = 0.1 AutoReadOnly\n\nFunction Test()\n    a = 0.2\nEndFunction\n",
