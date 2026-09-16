@@ -30,7 +30,9 @@ pub(crate) fn doc_url_for(rule: &str) -> Option<String> {
 /// diagnostics into their `--json`/`--format ai` shape. Shared by
 /// [`crate::run`] and [`crate::run_blob`] so the two never disagree on how a
 /// [`papyrus_lints::Diagnostic`] maps onto the reported JSON fields.
-pub(crate) fn to_json_diagnostics(diagnostics: &[papyrus_lints::Diagnostic]) -> Vec<JsonDiagnostic> {
+pub(crate) fn to_json_diagnostics(
+    diagnostics: &[papyrus_lints::Diagnostic],
+) -> Vec<JsonDiagnostic> {
     diagnostics
         .iter()
         .map(|d| JsonDiagnostic {
