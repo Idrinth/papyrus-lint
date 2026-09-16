@@ -2090,6 +2090,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             "/does/not/matter".to_string(),
             false,
         )
@@ -2108,6 +2109,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
             Vec::new(),
             "   ".to_string(),
             true,
@@ -2675,6 +2677,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             compiler_path.to_string_lossy().into_owned(),
             true,
         )
@@ -2706,6 +2709,7 @@ mod tests {
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
             Vec::new(),
+            Vec::new(),
             compiler_path.to_string_lossy().into_owned(),
             true,
         )
@@ -2726,6 +2730,7 @@ mod tests {
             path.to_string_lossy().into_owned(),
             dir.path().to_string_lossy().into_owned(),
             Default::default(),
+            Vec::new(),
             Vec::new(),
             dir.path()
                 .join("missing-compiler")
