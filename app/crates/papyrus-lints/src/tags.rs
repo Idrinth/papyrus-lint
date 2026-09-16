@@ -638,6 +638,13 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["correctness"],
         importance: Importance::High,
     },
+    RuleTags {
+        rule: crate::circular_dependency::RULE,
+        doc_slug: "circular-script-dependency",
+        description: "Flags, as a `[warning]`, a `Property` declaration whose declared type, followed through that other script's own `Property` declarations across the project, eventually leads back to the script being linted (e.g. script `A` declaring a `B Property`, while script `B` declares an `A Property`), since a cycle like that makes the scripts involved hard to reason about or reuse independently — neither can be fully understood without the other. A property whose own declared type is the script it's declared on (e.g. a linked-list node holding a `Property` of its own type) is never flagged, since that's a script depending on itself rather than a cycle between scripts. Disabled by default, since two scripts intentionally holding `Property` references to each other for two-way communication (e.g. a manager and a worker script) is a common, legitimate design, not a mistake; opt in with `rules.circular_dependency`. Only checked when linting with project context, by resolving other scripts' own declared property types (not extended through `Extends`) the same way the argument/return type checks resolve their own.",
+        kinds: &["maintainability"],
+        importance: Importance::Medium,
+    },
 ];
 
 #[cfg(test)]

@@ -171,6 +171,22 @@ pub trait ExternalSignatures {
     fn ancestry_fully_known(&mut self, _type_name: &str) -> bool {
         false
     }
+
+    /// Every property type declared directly on `type_name`'s own script —
+    /// not extended through `Extends`, since a property's declared type is
+    /// a script-local fact and following inherited properties here would
+    /// make the "Circular script dependency" lint (`crate::circular_dependency`)
+    /// see phantom cycles through otherwise unrelated ancestors. Used by
+    /// that lint to follow a chain of `Property` declarations across
+    /// scripts, looking for one that leads back to the script it started
+    /// from.
+    ///
+    /// The default returns nothing, mirroring [`Self::ancestor_states`]: a
+    /// caller that can't resolve other scripts (see [`NoExternalSignatures`])
+    /// has no way to tell an actual cycle from one it just doesn't track.
+    fn property_types(&mut self, _type_name: &str) -> Vec<String> {
+        Vec::new()
+    }
 }
 
 /// An [`ExternalSignatures`] that never resolves anything, for checking a

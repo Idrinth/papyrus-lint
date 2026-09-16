@@ -148,3 +148,4 @@ rules:
   missing_update_handler: false
   unused_import: false
   event_signature_mismatch: false
+  circular_dependency: false

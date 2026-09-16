@@ -150,3 +150,4 @@ rules:
   missing_update_handler: false
   unused_import: false             # was true: maintainability advisory, no correctness stake
   event_signature_mismatch: false
+  circular_dependency: false
