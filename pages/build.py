@@ -81,10 +81,28 @@ from PIL import Image
 try:
     from pages.coverage_report import build_coverage_content, load_coverage_summary
     from pages.highlighting import highlight_code
+    from pages.markdown_render import (
+        HEADING_RE,
+        extract_section,
+        first_code_block,
+        first_paragraph,
+        markdown_to_html,
+        render_inline,
+        strip_markdown_inline,
+    )
     from pages.minify import minify_css, minify_html, minify_js
 except ImportError:  # running as pages/build.py
     from coverage_report import build_coverage_content, load_coverage_summary
     from highlighting import highlight_code
+    from markdown_render import (
+        HEADING_RE,
+        extract_section,
+        first_code_block,
+        first_paragraph,
+        markdown_to_html,
+        render_inline,
+        strip_markdown_inline,
+    )
     from minify import minify_css, minify_html, minify_js
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -252,11 +270,6 @@ MODERN_FORMAT_ASSETS = {
     "papyrus-lint-cli.png",
 }
 
-HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
-INLINE_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
-INLINE_CODE_RE = re.compile(r"`([^`]+)`")
-INLINE_BOLD_RE = re.compile(r"\*\*([^*]+)\*\*")
-
 CSS_IMPORT_RE = re.compile(r"""@import\s+(?:url\(\s*["']?([^"')]+)["']?\s*\)|["']([^"']+)["'])\s*;""")
 
 # Matches a local (not http(s), e.g. a shields.io badge) <img> tag whose src
@@ -289,46 +302,6 @@ def inline_css_imports(text: str, origin: Path, seen: set[Path] | None = None) -
         return inlined
 
     return CSS_IMPORT_RE.sub(replace, text)
-
-
-def extract_section(lines: list[str], heading_text: str, level: int) -> list[str]:
-    """Returns the lines strictly between a heading and the next heading at
-    the same level or shallower."""
-    start = None
-    for i, line in enumerate(lines):
-        m = HEADING_RE.match(line)
-        if m and len(m.group(1)) == level and m.group(2) == heading_text:
-            start = i + 1
-            break
-    if start is None:
-        raise SystemExit(f"README.md: heading not found: {'#' * level} {heading_text}")
-    end = len(lines)
-    for i in range(start, len(lines)):
-        m = HEADING_RE.match(lines[i])
-        if m and len(m.group(1)) <= level:
-            end = i
-            break
-    return lines[start:end]
-
-
-def render_inline(text: str, link_rewrite=None) -> str:
-    """Converts a small subset of inline Markdown (links, code spans, bold)
-    used in README.md's/docs/*.md's tables/prose into HTML, escaping
-    everything else. `link_rewrite`, when given, maps a link's raw href
-    (e.g. a repo-relative path) to the href that should actually be emitted."""
-    escaped = html.escape(text, quote=False)
-
-    def link(m: re.Match[str]) -> str:
-        href = html.unescape(m.group(2))
-        if link_rewrite is not None:
-            href = link_rewrite(href)
-        href = html.escape(href, quote=True)
-        return f'<a href="{href}">{m.group(1)}</a>'
-
-    escaped = INLINE_LINK_RE.sub(link, escaped)
-    escaped = INLINE_CODE_RE.sub(r"<code>\1</code>", escaped)
-    escaped = INLINE_BOLD_RE.sub(r"<strong>\1</strong>", escaped)
-    return escaped
 
 
 def load_rules() -> list[dict]:
@@ -427,23 +400,6 @@ def build_rules_page(out_dir: Path, version: str = "") -> None:
     (out_dir / "rules.html").write_text(finalize_page(page), encoding="utf-8")
 
 
-def first_code_block(section_lines: list[str]) -> str:
-    start = end = None
-    for i, line in enumerate(section_lines):
-        if line.strip().startswith("```"):
-            start = i
-            break
-    if start is None:
-        raise SystemExit("README.md: expected a fenced code block, found none")
-    for i in range(start + 1, len(section_lines)):
-        if section_lines[i].strip().startswith("```"):
-            end = i
-            break
-    if end is None:
-        raise SystemExit("README.md: unterminated fenced code block")
-    return "\n".join(section_lines[start + 1 : end])
-
-
 def convert_to_modern_formats(source: Path, dest_dir: Path) -> None:
     """Writes a WebP and an AVIF sibling of an already-copied asset (a PNG
     screenshot or the header's JPEG logo) into dest_dir, so
@@ -498,83 +454,6 @@ def resolve_doc_href(href: str) -> str:
     if href.startswith("../"):
         return f"{GITHUB_BLOB_BASE}/{href[len('../'):]}"
     return href
-
-
-def strip_markdown_inline(text: str) -> str:
-    """Reduces a small subset of inline Markdown to plain text, for use
-    where HTML markup isn't allowed (an HTML attribute value)."""
-    text = INLINE_LINK_RE.sub(r"\1", text)
-    return text.replace("`", "").replace("**", "")
-
-
-def first_paragraph(lines: list[str]) -> str:
-    """Returns the first non-blank, non-heading paragraph in a Markdown
-    document's lines, its own line breaks collapsed into spaces."""
-    para: list[str] = []
-    in_code_block = False
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            in_code_block = not in_code_block
-            if para:
-                break
-            continue
-        if in_code_block:
-            continue
-        if not stripped or HEADING_RE.match(line):
-            if para:
-                break
-            continue
-        para.append(stripped)
-    return " ".join(para)
-
-
-def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
-    """Converts the small subset of Markdown used by docs/*.md (headings,
-    paragraphs, fenced code blocks, and render_inline's inline formatting)
-    into HTML."""
-    out: list[str] = []
-    para: list[str] = []
-
-    def flush_paragraph() -> None:
-        if para:
-            out.append(f"<p>{render_inline(' '.join(para), link_rewrite)}</p>")
-            para.clear()
-
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            flush_paragraph()
-            language = stripped[3:].strip().split(maxsplit=1)[0] if stripped[3:].strip() else None
-            i += 1
-            code_lines: list[str] = []
-            while i < len(lines) and not lines[i].strip().startswith("```"):
-                code_lines.append(lines[i])
-                i += 1
-            i += 1
-            code_html = highlight_code(chr(10).join(code_lines), language)
-            language_class = f" language-{html.escape(language, quote=True)}" if language else ""
-            out.append(
-                f'<pre class="code-block{language_class}" tabindex="0"><code>{code_html}</code></pre>'
-            )
-            continue
-        heading = HEADING_RE.match(line)
-        if heading:
-            flush_paragraph()
-            level = len(heading.group(1))
-            out.append(f"<h{level}>{render_inline(heading.group(2), link_rewrite)}</h{level}>")
-            i += 1
-            continue
-        if not stripped:
-            flush_paragraph()
-            i += 1
-            continue
-        para.append(stripped)
-        i += 1
-    flush_paragraph()
-    return "\n".join(out)
 
 
 def raw_github_link(doc: dict) -> str:
