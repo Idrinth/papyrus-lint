@@ -1,47 +1,36 @@
 import assert from 'node:assert/strict';
-import { EventEmitter } from 'node:events';
 import { promises as fs } from 'node:fs';
-import Module from 'node:module';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { afterEach, describe, it } from 'node:test';
 
+const require = createRequire(import.meta.url);
 const cliDownloadModule = path.resolve('out-test/src/cliDownload.js');
-const originalLoad = Module._load;
+const originalFetch = globalThis.fetch;
 const temporaryDirectories = [];
 
 function loadCliDownload(responses = []) {
   const requests = [];
 
-  Module._load = function (request, parent, isMain) {
-    if (request === 'https') {
-      return {
-        get(url, callback) {
-          const pending = new EventEmitter();
-          requests.push(String(url));
-          queueMicrotask(() => {
-            const next = responses.shift();
-            if (next instanceof Error) {
-              pending.emit('error', next);
-              return;
-            }
-
-            const response = Readable.from(next?.body ?? 'downloaded CLI');
-            response.statusCode = next && Object.hasOwn(next, 'statusCode') ? next.statusCode : 200;
-            response.headers = next?.headers ?? {};
-            response.resume = response.resume.bind(response);
-            callback(response);
-          });
-          return pending;
-        },
-      };
+  globalThis.fetch = async (url) => {
+    requests.push(String(url));
+    const next = responses.shift();
+    if (next instanceof Error) {
+      throw next;
     }
-    return originalLoad.call(this, request, parent, isMain);
+
+    const status = next && Object.hasOwn(next, 'status') ? next.status : 200;
+    return {
+      ok: status >= 200 && status < 300,
+      status,
+      body: Readable.toWeb(Readable.from(next?.body ?? 'downloaded CLI')),
+    };
   };
 
-  delete Module._cache[cliDownloadModule];
-  return { cliDownload: Module._load(cliDownloadModule, null, false), requests };
+  delete require.cache[cliDownloadModule];
+  return { cliDownload: require(cliDownloadModule), requests };
 }
 
 async function temporaryDirectory() {
@@ -51,8 +40,8 @@ async function temporaryDirectory() {
 }
 
 afterEach(async () => {
-  Module._load = originalLoad;
-  delete Module._cache[cliDownloadModule];
+  globalThis.fetch = originalFetch;
+  delete require.cache[cliDownloadModule];
   await Promise.all(temporaryDirectories.splice(0).map((directory) => fs.rm(directory, { recursive: true, force: true })));
 });
 
@@ -96,22 +85,9 @@ describe('ensureReleaseCli', () => {
     assert.deepEqual(requests, []);
   });
 
-  it('follows relative redirects before installing the download', async () => {
-    const storage = await temporaryDirectory();
-    const { cliDownload, requests } = loadCliDownload([
-      { statusCode: 302, headers: { location: '/release-asset' } },
-      { body: 'redirected executable' },
-    ]);
-
-    const executable = await cliDownload.ensureReleaseCli(storage, '2.0.0', 'linux');
-
-    assert.equal(await fs.readFile(executable, 'utf8'), 'redirected executable');
-    assert.equal(requests[1], 'https://github.com/release-asset');
-  });
-
   it('reports HTTP and request failures and removes partial downloads', async () => {
     const storage = await temporaryDirectory();
-    let loaded = loadCliDownload([{ statusCode: 503 }]);
+    let loaded = loadCliDownload([{ status: 503 }]);
     await assert.rejects(
       loaded.cliDownload.ensureReleaseCli(storage, '3.0.0', 'linux'),
       /download returned HTTP 503/,
@@ -129,36 +105,11 @@ describe('ensureReleaseCli', () => {
 
   it('reports an unknown status when the response has no HTTP status code', async () => {
     const storage = await temporaryDirectory();
-    const { cliDownload } = loadCliDownload([{ statusCode: undefined }]);
+    const { cliDownload } = loadCliDownload([{ status: 0 }]);
 
     await assert.rejects(
       cliDownload.ensureReleaseCli(storage, '3.0.2', 'linux'),
       /download returned HTTP unknown/,
     );
-  });
-
-  it('rejects redirects without a usable destination', async () => {
-    const storage = await temporaryDirectory();
-    const { cliDownload } = loadCliDownload([{ statusCode: 302 }]);
-
-    await assert.rejects(
-      cliDownload.ensureReleaseCli(storage, '4.0.0', 'linux'),
-      /too many or invalid redirects/,
-    );
-  });
-
-  it('stops following redirects after five hops', async () => {
-    const storage = await temporaryDirectory();
-    const redirects = Array.from({ length: 6 }, (_, index) => ({
-      statusCode: 302,
-      headers: { location: `/redirect-${index + 1}` },
-    }));
-    const { cliDownload, requests } = loadCliDownload(redirects);
-
-    await assert.rejects(
-      cliDownload.ensureReleaseCli(storage, '4.0.1', 'linux'),
-      /too many or invalid redirects/,
-    );
-    assert.equal(requests.length, 6);
   });
 });
