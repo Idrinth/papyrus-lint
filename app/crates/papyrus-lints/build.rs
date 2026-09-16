@@ -1,13 +1,15 @@
 //! Compiles `rules/forbidden-functions.yaml`, `rules/slow-functions.yaml`,
 //! `rules/native-methods.yaml`, `rules/actor-values.yaml`,
-//! `rules/update-event-handlers.yaml`, and `rules/known-events.yaml` into
-//! static Rust arrays at build time, so `forbidden_functions::check`,
-//! `slow_functions::check`, `native_function_usage::check`,
-//! `actor_value::check`, `missing_update_handler::check`, and
-//! `event_signature::check` never parse YAML at runtime (see
+//! `rules/update-event-handlers.yaml`, `rules/known-events.yaml`, and
+//! `docs/rules.json` into static Rust arrays at build time, so
+//! `forbidden_functions::check`, `slow_functions::check`,
+//! `native_function_usage::check`, `actor_value::check`,
+//! `missing_update_handler::check`, `event_signature::check`, and
+//! `tags::RULE_TAGS` never parse their rule data at runtime (see
 //! `src/forbidden_functions.rs`, `src/slow_functions.rs`,
 //! `src/native_function_usage.rs`, `src/actor_value.rs`,
-//! `src/missing_update_handler.rs`, and `src/event_signature.rs`).
+//! `src/missing_update_handler.rs`, `src/event_signature.rs`, and
+//! `src/tags.rs`).
 
 use std::env;
 use std::fs;
@@ -64,6 +66,18 @@ struct RawKnownEvent {
     args: Vec<RawEventArg>,
 }
 
+#[derive(serde::Deserialize)]
+struct RawRuleTag {
+    id: String,
+    doc_slug: String,
+    tags: Vec<String>,
+    importance: String,
+    /// The rule's detailed description (see `RuleTags::description`).
+    /// `docs/rules.json` also carries a shorter `description` field (the
+    /// `docs/nexuspage.bbcode` blurb), which this doesn't need.
+    definition: String,
+}
+
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
@@ -74,6 +88,7 @@ fn main() {
     compile_actor_values(&manifest_dir, &out_dir);
     compile_update_event_pairs(&manifest_dir, &out_dir);
     compile_known_events(&manifest_dir, &out_dir);
+    compile_rule_tags(&manifest_dir, &out_dir);
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
@@ -313,6 +328,57 @@ fn compile_known_events(manifest_dir: &str, out_dir: &str) {
     generated.push_str("];\n");
 
     let dest = Path::new(out_dir).join("known_events_data.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated rule data to {}: {err}",
+            dest.display()
+        )
+    });
+}
+
+fn compile_rule_tags(manifest_dir: &str, out_dir: &str) {
+    let json_path = Path::new(manifest_dir).join("../../../docs/rules.json");
+    println!("cargo:rerun-if-changed={}", json_path.display());
+
+    let json_src = fs::read_to_string(&json_path)
+        .unwrap_or_else(|err| panic!("failed to read rule tags at {}: {err}", json_path.display()));
+    let rules: Vec<RawRuleTag> = serde_json::from_str(&json_src).unwrap_or_else(|err| {
+        panic!(
+            "failed to parse rule tags at {}: {err}",
+            json_path.display()
+        )
+    });
+
+    let mut generated = String::new();
+    generated.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    generated.push_str("pub static RULE_TAGS: &[RuleTags] = &[\n");
+    for rule in &rules {
+        let importance = match rule.importance.as_str() {
+            "low" => "Importance::Low",
+            "medium" => "Importance::Medium",
+            "high" => "Importance::High",
+            other => panic!(
+                "docs/rules.json: unknown importance `{other}` for {}",
+                rule.id
+            ),
+        };
+        if rule.tags.is_empty() {
+            panic!("docs/rules.json: {} has no tags", rule.id);
+        }
+        let kinds = rule
+            .tags
+            .iter()
+            .map(|t| format!("{t:?}"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        generated.push_str(&format!(
+            "    RuleTags {{ rule: {:?}, doc_slug: {:?}, description: {:?}, kinds: &[{kinds}], importance: {importance} }},\n",
+            rule.id, rule.doc_slug, rule.definition
+        ));
+    }
+    generated.push_str("];\n");
+
+    let dest = Path::new(out_dir).join("rule_tags_data.rs");
     fs::write(&dest, generated).unwrap_or_else(|err| {
         panic!(
             "failed to write generated rule data to {}: {err}",
