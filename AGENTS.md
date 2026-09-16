@@ -78,9 +78,13 @@ CI treats clippy warnings as errors.
 4. **Lint descriptions have three consumers.** A README Implemented Lints
    row is the source of truth. The same change must update
    `app/crates/papyrus-lints/src/tags.rs` (`description` + `doc_slug`) and
-   a shorter blurb in `docs/nexuspage.bbcode`. `pages/build.py` generates
-   the website tables from the README, so the site does not need a manual
-   lint-table edit.
+   the matching entry in `docs/rules.json` (`name`, `description`,
+   `category`, `fixable`, ...). `pages/build.py` generates the website
+   tables from the README, and `.github/scripts/generate_nexuspage_tables.py`
+   generates `docs/nexuspage.bbcode`'s five lint tables from
+   `docs/rules.json`, so neither needs a manual lint-table edit; CI's
+   `bbcode` job fails if `docs/nexuspage.bbcode` drifts from
+   `docs/rules.json`.
 5. **Match the file you are in.** Don't invent a new module layout, naming
    scheme, or comment style in a file that already has one.
 6. **Don't gold-plate.** A bug fix does not need a surrounding refactor.
@@ -101,8 +105,13 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `doc_slug` (from the README row title, slugified), `description`
    (verbatim README cell), `kinds`, `importance`.
 5. `README.md` Implemented Lints table.
-6. `docs/nexuspage.bbcode` — shorter description, same style as the
-   surrounding rows.
+6. `docs/rules.json` — a new entry with the same `id` as the rule and its
+   README row's title/description, plus `category` (one of `Formatting`,
+   `Performance`, `Reliability`, `Bugprone`, `Other`, matching the README
+   `###` section the row lives under), `tags`, `severity`, and `fixable`.
+   Run `.github/scripts/generate_nexuspage_tables.py docs/rules.json
+   docs/nexuspage.bbcode` afterwards to regenerate its lint tables; CI's
+   `bbcode` job fails if that's skipped.
 
 Rules should inspect source/tokens so they still run on scripts that
 don't parse. Configurable behavior goes on `&papyrus_lints::Config`, not
@@ -115,9 +124,12 @@ If the rule introduces a new *kind* keyword (not `style` /
 
 ## Docs sync (humans and AI)
 
-- README lint tables → `tags.rs` + `docs/nexuspage.bbcode` (rule 4).
+- README lint tables → `tags.rs` + `docs/rules.json` (rule 4).
+  `docs/nexuspage.bbcode`'s own lint tables are generated from
+  `docs/rules.json`, not hand-edited.
 - README CLI usage / default config → `docs/nexuspage.bbcode` CLI or
-  configuration section. Other README edits do not need a Nexus update.
+  configuration section (hand-edited; not covered by the generator
+  above). Other README edits do not need a Nexus update.
 - `pages/index.template.html` lint tables and CLI examples are generated
   from the README on deploy; only its hand-authored hero/cards/blurbs
   need a human pass when those parts of the README change meaningfully.

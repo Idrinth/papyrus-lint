@@ -4,8 +4,9 @@
 //! to keeping a codebase maintainable, whether they're auto-fixable, and a
 //! detailed description of the rule (copied from its row in README.md's
 //! Implemented Lints tables, kept in sync by hand the same way
-//! `docs/nexuspage.bbcode`'s own lint descriptions are — see "Docs sync"
-//! in AGENTS.md). This module only
+//! `docs/rules.json`'s own entries are — see "Docs sync" in AGENTS.md;
+//! `docs/nexuspage.bbcode`'s lint tables are generated from
+//! `docs/rules.json` instead). This module only
 //! exposes that metadata; [`crate::repair_filtered_by_tag`] and the CLI's
 //! `--tag <kind>` flag are what actually filter lints/fixes down to one
 //! kind at a time, built on top of it.
