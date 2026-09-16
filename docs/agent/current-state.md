@@ -236,6 +236,19 @@ Like the CLI's `--blob`, this is a purely local, in-editor lint: it never
 writes to disk, and the project's Lint results list is only refreshed once
 the edit is actually saved (`persistCodeViewerEdits`, unchanged).
 
+Edit-mode hover and `.`-triggered autocompletion also surface the `{ ... }`
+documentation comments that `missing-doc-comment` already checks for.
+`papyrus_lints::missing_doc_comment::documentation_comment` extracts the
+inner text (same last-physical-line / backslash-continued-header placement
+as the lint itself); `FunctionTable` carries it on each
+`FunctionSignature`/`PropertySignature` `doc` field so `list_script_members`
+returns it for members resolved from disk (including inherited ones). The
+frontend (`app/src/autocomplete.ts`) additionally scans the unsaved buffer
+so a comment typed since the last save still shows: hovering a ScriptName /
+Property / Function / Event header (or a use of that name) puts the comment
+in the textarea's `title` above any lint findings for the line, and the
+active autocompletion item renders it under its signature.
+
 Project configuration is read from an optional `papyrus-lint.yaml` or
 `papyrus-lint.yml` in the project root. Both the desktop app and the CLI are
 forgiving of an achlist that doesn't live in the project root itself (e.g.

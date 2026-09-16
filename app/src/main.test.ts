@@ -5865,6 +5865,113 @@ describe("code viewer edit mode", () => {
 
       await expect(listScriptMembers("Example")).resolves.toEqual([]);
     });
+
+    it("shows the active member's documentation comment as help under its label", async () => {
+      await openWithCursorAfterSelfDot();
+      invokeImplFor({
+        list_script_members: () => [
+          {
+            kind: "function",
+            name: "GetName",
+            params: [],
+            return_type: { name: "String", is_array: false },
+            is_global: false,
+            is_native: true,
+            is_event: false,
+            doc: "The display name of this form",
+          },
+          { kind: "property", name: "TargetRef", type_name: { name: "ObjectReference", is_array: false }, doc: "Where we go" },
+        ],
+      });
+
+      await updateAutocomplete();
+
+      const active = autocompleteEl().querySelector(".code-viewer__autocomplete-item--active");
+      expect(active?.querySelector(".code-viewer__autocomplete-item-doc")?.textContent).toBe("The display name of this form");
+      expect(autocompleteEl().querySelectorAll(".code-viewer__autocomplete-item-doc")).toHaveLength(1);
+
+      handleAutocompleteKeydown(new KeyboardEvent("keydown", { key: "ArrowDown", cancelable: true }));
+
+      const nextActive = autocompleteEl().querySelector(".code-viewer__autocomplete-item--active");
+      expect(nextActive?.querySelector(".code-viewer__autocomplete-item-doc")?.textContent).toBe("Where we go");
+    });
+
+    it("overlays unsaved documentation comments from the buffer onto self members", async () => {
+      const source = "ScriptName Example\n{script}\n\nFunction GetName()\n{Fresh local help}\nEndFunction\n\nFunction Run()\n    self.\nEndFunction\n";
+      await openWithSource(source);
+      enterCodeViewerEditMode();
+      const field = textarea();
+      const cursor = field.value.indexOf("self.") + "self.".length;
+      field.setSelectionRange(cursor, cursor);
+      invokeImplFor({
+        list_script_members: () => [
+          {
+            kind: "function",
+            name: "GetName",
+            params: [],
+            return_type: null,
+            is_global: false,
+            is_native: false,
+            is_event: false,
+            doc: "stale disk copy",
+          },
+        ],
+      });
+
+      await updateAutocomplete();
+
+      expect(autocompleteEl().querySelector(".code-viewer__autocomplete-item-doc")?.textContent).toBe("Fresh local help");
+    });
+  });
+
+  describe("documentation hover", () => {
+    function hoverLine(line: number) {
+      const ta = textarea();
+      vi.spyOn(ta, "getBoundingClientRect").mockReturnValue({
+        top: 0,
+        left: 0,
+        bottom: 200,
+        right: 200,
+        width: 200,
+        height: 200,
+        x: 0,
+        y: 0,
+        toJSON() {},
+      } as DOMRect);
+      vi.spyOn(window, "getComputedStyle").mockReturnValue({
+        lineHeight: "20px",
+        paddingTop: "10px",
+        paddingLeft: "0px",
+        fontSize: "",
+        fontFamily: "",
+        fontWeight: "",
+        letterSpacing: "",
+      } as CSSStyleDeclaration);
+      const clientY = 10 + (line - 1) * 20;
+      ta.dispatchEvent(new MouseEvent("mousemove", { clientX: 0, clientY }));
+    }
+
+    it("shows a declaration's documentation comment when hovering its header line", async () => {
+      await openWithSource("ScriptName Example\n{A documented script}\n\nFunction DoThing()\n{Does the thing}\nEndFunction\n");
+      enterCodeViewerEditMode();
+
+      hoverLine(1);
+      expect(textarea().title).toBe("A documented script");
+
+      hoverLine(4);
+      expect(textarea().title).toBe("Does the thing");
+    });
+
+    it("keeps lint findings in the tooltip under the documentation comment", async () => {
+      await openWithSource("ScriptName Example\n{A documented script}\n\nFunction DoThing()\nEndFunction\n", [
+        { line: 1, column: 1, message: "[info] first line" },
+      ]);
+      enterCodeViewerEditMode();
+
+      hoverLine(1);
+      expect(textarea().title).toContain("A documented script");
+      expect(textarea().title).toContain("[info] first line");
+    });
   });
 
   describe("handleEditorTabKeydown", () => {
