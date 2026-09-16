@@ -338,7 +338,7 @@ fn desktop_binary_rejects_combining_inline_source_with_a_path() {
     assert!(output.stdout.is_empty());
     assert_eq!(
         String::from_utf8(output.stderr).unwrap(),
-        papyrus_lint_cli::USAGE
+        "error: --blob can't be combined with a path argument (or `fix`)\n"
     );
 }
 
