@@ -390,6 +390,13 @@ compiler_path: null
 # Extra directories (relative to the project root, or absolute) to search
 # for .psc files, besides scripts/source and source/scripts
 additional_script_roots: []
+# Extra directories searched only as a fallback when resolving other
+# scripts for analysis (argument/return types, Extends, autocompletion).
+# Scripts found only here are never linted, and these directories are
+# ignored by conflicting-script-versions. Creating or updating a config
+# fills Skyrim Special Edition's Data/Scripts/Source and Data/Source/Scripts
+# when the install path can be read from the Windows registry
+lookup_script_roots: []
 # true, false; also runs PapyrusCompiler.exe (into a throwaway temporary
 # directory) as part of linting a dropped .psc, reporting its errors
 # alongside the lint engine's own. Requires compiler_path to be set/
@@ -550,7 +557,7 @@ The plain-text report is colorized automatically when run in a terminal (rule ta
 fix --dry-run computes the same fix(es) without writing them to disk, printing a standard diff of what would change instead.
 init writes papyrus-lint.yaml from --preset strict, standard, or careful (defaults to strict, i.e. the settings shown above); any other name is looked up as <name>.yaml/.yml in a presets directory next to the executable, so you can define your own custom presets too. If a papyrus-lint.yaml/.yml sits next to the executable, its settings are merged in over the selected preset as your own baseline instead, so you only have to define them once.
 preset add <name> <path> saves an existing papyrus-lint.yaml/.yml as a user preset, so it becomes selectable via init --preset <name>. Refuses a blank name or one matching a built-in preset, and refuses to overwrite an existing preset of the same name unless you also pass --yes.
-doctor <path> checks a project's setup without linting anything: that the given achlist/psc/directory (and, for an achlist, every entry it lists) exists, that its config parses, that scripts/source or source/scripts exists, that any additional_script_roots/--script-root resolve to real directories, and that a configured or auto-detected compiler_path points at an existing file — printing one ok/warning/error line per check, or a single JSON document with --json.
+doctor <path> checks a project's setup without linting anything: that the given achlist/psc/directory (and, for an achlist, every entry it lists) exists, that its config parses, that scripts/source or source/scripts exists, that any additional_script_roots/--script-root and lookup_script_roots resolve to real directories, and that a configured or auto-detected compiler_path points at an existing file — printing one ok/warning/error line per check, or a single JSON document with --json.
 Given a directory instead of an .achlist/.psc path, the CLI (and dropping a folder onto the desktop app) recursively scans it for .psc files at any subfolder depth and lints them all — useful for a mod (e.g. Requiem) with no .achlist whose scripts aren't laid out in a flat scripts/source folder.
 --blob <source> lints <source> directly as raw Papyrus source text instead of a path, e.g. a script buffer that isn't saved to disk — reported under the path <blob>. No real project backs it, so cross-script resolution and project-wide checks (like compile_check) don't apply. Can't be combined with a path argument, fix, --type, --line, --dry-run, --script-root, --progress, or --threads.
 

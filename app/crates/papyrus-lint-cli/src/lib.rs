@@ -131,6 +131,8 @@
 //! at least one of `scripts/source`/`source/scripts` exists under the
 //! resolved project root; that each configured `additional_script_roots`
 //! entry (and any `--script-root` given alongside `doctor`) resolves to an
+//! existing directory; that each configured `lookup_script_roots` entry
+//! (analysis-only fallback directories, never linted) resolves to an
 //! existing directory; and that a configured, or auto-detected,
 //! `compiler_path` points at an existing file — warning instead if
 //! `compile_check` is enabled but no compiler path could be resolved at
@@ -187,8 +189,10 @@
 //! plugin with its own configured override) point at a config file with
 //! any name, anywhere on disk. This also skips the project root's own
 //! `additional_script_roots` (see below), since that config file is no
-//! longer being read at all — but `strict_achlist_scope` (see
-//! [`papyrus_lint_core::config::load_strict_achlist_scope_from_path`]) is
+//! longer being read at all — but `lookup_script_roots` and
+//! `strict_achlist_scope` (see
+//! [`papyrus_lint_core::config::load_lookup_script_roots_from_path`] /
+//! [`papyrus_lint_core::config::load_strict_achlist_scope_from_path`]) are
 //! still read from `<path>` itself, the same as every other lint setting.
 //!
 //! With one or more `--script-root <path>` flags (combinable with
@@ -302,7 +306,7 @@ built-in preset. Refuses a blank name or one matching a built-in preset\n\
 of the same name unless --yes is also given.\n\n\
 With the `doctor` subcommand, validates a project's configuration and the\n\
 paths it assumes or names (conventional script directories, configured\n\
-additional_script_roots/compiler_path, and an achlist's own listed entries)\n\
+additional_script_roots/lookup_script_roots/compiler_path, and an achlist's own listed entries)\n\
 without linting any script, accepting the same --config/--script-root\n\
 flags as a normal run and printing one [ok]/[warning]/[error] line per\n\
 check (or a single JSON document with --json).\n\n\
@@ -331,7 +335,8 @@ Options:\n\
   --config <path>         Load lint configuration from this file instead of\n\
                           discovering papyrus-lint.yaml/.yml from the project root\n\
                           (also disables the project root's additional_script_roots;\n\
-                          use --script-root to add any back explicitly)\n\
+                          use --script-root to add any back explicitly.\n\
+                          lookup_script_roots is still read from this file)\n\
   --script-root <path>    An extra directory (relative to the project root,\n\
                           or absolute) to search for .psc files, besides\n\
                           scripts/source, source/scripts, and the project's\n\
@@ -912,8 +917,24 @@ pub fn run(
     };
     let compiler_path = compiler_path.trim().to_string();
 
+    // Analysis-only fallback directories: read from whichever config file
+    // is actually in effect, the same as `strict_achlist_scope`. They are
+    // never mixed into `additional_script_roots`, so they don't get linted
+    // and `conflicting_script_versions` never scans them.
+    let lookup_script_roots = match config_path.as_deref().map_or_else(
+        || config::load_lookup_script_roots(&project_root),
+        config::load_lookup_script_roots_from_path,
+    ) {
+        Ok(roots) => roots,
+        Err(err) => {
+            let _ = writeln!(stderr, "error: failed to load lint config: {err}");
+            return 2;
+        }
+    };
+
     let mut function_table =
-        FunctionTable::new_with_additional_roots(project_root, additional_script_roots);
+        FunctionTable::new_with_additional_roots(project_root, additional_script_roots)
+            .with_lookup_roots(lookup_script_roots);
     if strict_achlist_scope {
         function_table = function_table.with_known_scripts(&script_paths);
     }
@@ -3163,6 +3184,75 @@ mod tests {
 
         assert_eq!(code, 1);
         assert!(stdout.contains("[argument-types]"));
+    }
+
+    #[test]
+    fn resolves_cross_script_argument_types_from_lookup_script_roots_without_linting_them() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let vanilla_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &vanilla_dir.path().join("Greeter.psc"),
+            "ScriptName Greeter\n\nFunction Greet(String name)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            &format!(
+                "lookup_script_roots:\n  - {}\n",
+                vanilla_dir.path().display()
+            ),
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 1);
+        assert!(stdout.contains("[argument-types]"));
+        assert!(
+            !stdout.contains("Greeter.psc"),
+            "lookup-root scripts must not be linted"
+        );
+    }
+
+    #[test]
+    fn lookup_script_roots_do_not_report_conflicting_script_versions() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Actor.psc"),
+            "ScriptName Actor\n",
+        );
+        let vanilla_dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &vanilla_dir.path().join("Actor.psc"),
+            "ScriptName Actor extends Form\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Actor.psc"]"#,
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            &format!(
+                "lookup_script_roots:\n  - {}\n",
+                vanilla_dir.path().display()
+            ),
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(
+            !stdout.contains("conflicting-script-versions"),
+            "lookup roots must not participate in collision checks"
+        );
     }
 
     #[test]

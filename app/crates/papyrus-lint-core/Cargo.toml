@@ -16,6 +16,9 @@ tempfile = "3"
 papyrus-parser = { path = "../papyrus-parser" }
 papyrus-lints = { path = "../papyrus-lints" }
 
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.9"
