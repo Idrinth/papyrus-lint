@@ -3,7 +3,7 @@
 //! automatic fix would produce, for previewing a fix without writing it to
 //! disk: the CLI's `fix --dry-run` flag and the desktop app's code viewer
 //! "Preview fixes" button (`preview_repair_psc_file` in
-//! `app/src-tauri/src/lib.rs`) both call [`unified_diff`] to show what a fix
+//! `app/src-tauri/src/repair.rs`) both call [`unified_diff`] to show what a fix
 //! *would* change.
 //!
 //! This is a small self-contained line-based diff (an LCS alignment,

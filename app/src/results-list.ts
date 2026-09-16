@@ -578,7 +578,7 @@ async function readIssueFileSources(
 // The rule id papyrus_lints::Diagnostics never define themselves:
 // app/src-tauri/src/compile_diagnostics.rs's own `RULE` constant, attached
 // to a diagnostic parsed out of PapyrusCompiler.exe's own error output
-// (see lint_with_compile_check in app/src-tauri/src/lib.rs) rather than
+// (see lint_with_compile_check in app/src-tauri/src/lint.rs) rather than
 // raised by one of Papyrus Lint's own lint rules. formatIssuesForAi below
 // uses it to flag such a diagnostic as external in the AI export, since an
 // assistant reading the export otherwise has no way to tell a

@@ -30,11 +30,16 @@ expected of a pull request.
 │   │   └── src/
 │   │       ├── main.rs           # Binary entry point: no args -> lib::run() (GUI),
 │   │       │                     # args -> papyrus_lint_cli::run() (CLI mode)
-│   │       ├── lib.rs            # Registers Tauri commands (parse_achlist_file,
-│   │       │                     # parse_papyrus_script, lint_papyrus_script,
-│   │       │                     # parse_psc_file, load_lint_config, lint_psc_file,
-│   │       │                     # repair_psc_file), built on papyrus-lint-core
-│   │       └── compiler.rs        # Runs PapyrusCompiler.exe for the "Compile" button
+│   │       ├── lib.rs            # Façade: registers Tauri commands from the
+│   │       │                     # modules below and starts the GUI
+│   │       ├── meta.rs           # get_app_version, list_rule_tags
+│   │       ├── files.rs          # Achlist/directory listing, .psc read/write/
+│   │       │                     # hash/parse, in-memory parse/lint
+│   │       ├── lint_config.rs    # papyrus-lint.yaml, compiler path, compile_check,
+│   │       │                     # script roots, project info
+│   │       ├── config_presets.rs # Built-in and user configuration presets
+│   │       ├── lint.rs           # lint_psc_file, compile_psc_file, list_script_members
+│   │       └── repair.rs         # Apply/preview fixes and per-line @disable
 │   └── crates/
 │       ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
 │       │   └── src/               # for the Papyrus language. No lint rules live

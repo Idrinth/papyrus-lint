@@ -864,7 +864,7 @@ export function handleLintConfigChanged() {
 }
 
 // Lints `source` directly, in-process (the same `lint_papyrus_script`
-// Tauri command `app/src-tauri/src/lib.rs` wraps around
+// Tauri command `app/src-tauri/src/files.rs` wraps around
 // `papyrus_lints::lint`), instead of a `.psc` path on disk. Used by the
 // code viewer's edit mode for live, as-you-type feedback on the textarea's
 // current (possibly unsaved) contents - see `scheduleLiveEditLint` below.
