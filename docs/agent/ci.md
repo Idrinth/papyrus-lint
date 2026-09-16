@@ -176,6 +176,13 @@
   and the Pages builder) — posting the result as a single markdown table,
   with groups and their entries sorted alphabetically, updated in place on
   subsequent pushes, as a PR comment (and to the job's step summary).
+  The same job then runs `.github/scripts/hall_of_shame.py` against the
+  checkout and those lcov artifacts, appending a "Hall of shame" section
+  that lists the top 3 source files by byte size, public export count,
+  uncovered executable lines, and lines of code. The script also emits
+  GitHub Actions `notice` annotations (Info messages on the pull request)
+  for each of those four lists. Neither the section nor the notices fail
+  the job.
   Comment posting is best-effort (`continue-on-error`) since forked PRs get
   a read-only `GITHUB_TOKEN`. Each row also carries an "Est. CRAP" column:
   none of this project's coverage tools measure real cyclomatic complexity,
@@ -189,4 +196,3 @@
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
-
