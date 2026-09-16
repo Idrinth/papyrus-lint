@@ -125,3 +125,4 @@ rules:
   default_property_value: false
   unguarded_self_recursion: true
   self_assignment: true
+  unknown_actor_value: false

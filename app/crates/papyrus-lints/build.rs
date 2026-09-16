@@ -1,9 +1,10 @@
 //! Compiles `rules/forbidden-functions.yaml`, `rules/slow-functions.yaml`,
-//! and `rules/native-methods.yaml` into static Rust arrays at build time, so
-//! `forbidden_functions::check`, `slow_functions::check`, and
-//! `native_function_usage::check` never parse YAML at runtime (see
-//! `src/forbidden_functions.rs`, `src/slow_functions.rs`, and
-//! `src/native_function_usage.rs`).
+//! `rules/native-methods.yaml`, and `rules/actor-values.yaml` into static
+//! Rust arrays at build time, so `forbidden_functions::check`,
+//! `slow_functions::check`, `native_function_usage::check`, and
+//! `actor_value::check` never parse YAML at runtime (see
+//! `src/forbidden_functions.rs`, `src/slow_functions.rs`,
+//! `src/native_function_usage.rs`, and `src/actor_value.rs`).
 
 use std::env;
 use std::fs;
@@ -47,6 +48,7 @@ fn main() {
     compile_forbidden_functions(&manifest_dir, &out_dir);
     compile_slow_functions(&manifest_dir, &out_dir);
     compile_native_methods(&manifest_dir, &out_dir);
+    compile_actor_values(&manifest_dir, &out_dir);
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
@@ -165,6 +167,42 @@ fn compile_native_methods(manifest_dir: &str, out_dir: &str) {
     generated.push_str("];\n");
 
     let dest = Path::new(out_dir).join("native_methods_data.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated rule data to {}: {err}",
+            dest.display()
+        )
+    });
+}
+
+fn compile_actor_values(manifest_dir: &str, out_dir: &str) {
+    let yaml_path = Path::new(manifest_dir).join("../../../rules/actor-values.yaml");
+    println!("cargo:rerun-if-changed={}", yaml_path.display());
+
+    let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read actor-values rules at {}: {err}",
+            yaml_path.display()
+        )
+    });
+    let values: Vec<String> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+        panic!(
+            "failed to parse actor-values rules at {}: {err}",
+            yaml_path.display()
+        )
+    });
+
+    let mut generated = String::new();
+    generated.push_str(
+        "/// Compiled from `rules/actor-values.yaml` by `build.rs`. Do not edit by hand.\n",
+    );
+    generated.push_str("pub static ACTOR_VALUES: &[&str] = &[\n");
+    for value in &values {
+        generated.push_str(&format!("    {value:?},\n"));
+    }
+    generated.push_str("];\n");
+
+    let dest = Path::new(out_dir).join("actor_values_data.rs");
     fs::write(&dest, generated).unwrap_or_else(|err| {
         panic!(
             "failed to write generated rule data to {}: {err}",
