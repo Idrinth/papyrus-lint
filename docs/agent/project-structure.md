@@ -108,16 +108,17 @@
 │       │                               # sign someone forgot to recompile after
 │       │                               # editing it
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
-│           └── src/                # achlist's scripts against its project's
-│               ├── lib.rs           # run() + public API; also linked into
-│               │                    # src-tauri for its CLI mode
-│               ├── project.rs       # Project-root discovery from .psc paths
-│               ├── output.rs        # Plain/JSON/AI report types and formatting
-│               ├── init.rs          # `init` / `preset add`
-│               ├── blob.rs          # `--blob` in-memory lint
-│               ├── doctor.rs        # `doctor` subcommand
-│               ├── cli_tests.rs     # Unit tests for run() (via lib.rs)
-│               └── main.rs          # Thin binary entry point around lib::run()
+│           ├── src/                # achlist's scripts against its project's
+│           │   ├── lib.rs           # run() + public API; also linked into
+│           │   │                    # src-tauri for its CLI mode
+│           │   ├── project.rs       # Project-root discovery from .psc paths
+│           │   ├── output.rs        # Plain/JSON/AI report types and formatting
+│           │   ├── init.rs          # `init` / `preset add`
+│           │   ├── blob.rs          # `--blob` in-memory lint
+│           │   ├── doctor.rs        # `doctor` subcommand
+│           │   ├── test_support.rs  # Shared helpers for each file's unit tests
+│           │   └── main.rs          # Thin binary entry point around lib::run()
+│           └── tests/               # Binary e2e tests, one file per src module
 ├── resources/                # Images used by README.md (logo, screenshots)
 ├── rules/
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy

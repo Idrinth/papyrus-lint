@@ -366,3 +366,803 @@ pub(crate) struct FileOutcome {
     /// would have).
     pub(crate) fixed: bool,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_support::*;
+    use papyrus_lint_core::content_hash;
+    use std::fs;
+
+    #[test]
+    fn unix_timestamps_are_formatted_as_utc_rfc3339() {
+        assert_eq!(format_unix_timestamp(0, 0), "1970-01-01T00:00:00.000Z");
+        assert_eq!(
+            format_unix_timestamp(1_709_251_199, 42),
+            "2024-02-29T23:59:59.042Z"
+        );
+    }
+
+    #[test]
+    fn unix_timestamps_handle_calendar_boundaries_and_millisecond_padding() {
+        assert_eq!(
+            format_unix_timestamp(31_535_999, 7),
+            "1970-12-31T23:59:59.007Z"
+        );
+        assert_eq!(
+            format_unix_timestamp(31_536_000, 70),
+            "1971-01-01T00:00:00.070Z"
+        );
+        assert_eq!(
+            format_unix_timestamp(951_782_400, 999),
+            "2000-02-29T00:00:00.999Z"
+        );
+    }
+
+    #[test]
+    fn severity_counts_tallies_each_known_level_and_ignores_unknown_levels() {
+        let diagnostics = [
+            JsonDiagnostic {
+                line: 1,
+                column: 1,
+                rule: "first-rule",
+                level: "error",
+                message: "first".to_string(),
+                doc_url: None,
+            },
+            JsonDiagnostic {
+                line: 2,
+                column: 1,
+                rule: "second-rule",
+                level: "warning",
+                message: "second".to_string(),
+                doc_url: None,
+            },
+            JsonDiagnostic {
+                line: 3,
+                column: 1,
+                rule: "third-rule",
+                level: "info",
+                message: "third".to_string(),
+                doc_url: None,
+            },
+            JsonDiagnostic {
+                line: 4,
+                column: 1,
+                rule: "future-rule",
+                level: "notice",
+                message: "future".to_string(),
+                doc_url: None,
+            },
+        ];
+
+        let counts = severity_counts(&diagnostics);
+
+        assert_eq!(counts.errors, 1);
+        assert_eq!(counts.warnings, 1);
+        assert_eq!(counts.info, 1);
+    }
+
+    #[test]
+    fn rule_counts_aggregates_duplicates_in_sorted_rule_order() {
+        let diagnostics = [
+            JsonDiagnostic {
+                line: 1,
+                column: 1,
+                rule: "z-rule",
+                level: "warning",
+                message: "first".to_string(),
+                doc_url: None,
+            },
+            JsonDiagnostic {
+                line: 2,
+                column: 1,
+                rule: "a-rule",
+                level: "warning",
+                message: "second".to_string(),
+                doc_url: None,
+            },
+            JsonDiagnostic {
+                line: 3,
+                column: 1,
+                rule: "z-rule",
+                level: "warning",
+                message: "third".to_string(),
+                doc_url: None,
+            },
+        ];
+
+        let counts = rule_counts(&diagnostics);
+
+        assert_eq!(
+            counts.keys().copied().collect::<Vec<_>>(),
+            ["a-rule", "z-rule"]
+        );
+        assert_eq!(counts["a-rule"], 1);
+        assert_eq!(counts["z-rule"], 2);
+    }
+
+    #[test]
+    fn ai_configuration_replaces_rule_flags_with_enabled_rule_ids() {
+        let config = papyrus_lints::Config::default();
+
+        let value = ai_configuration(&config);
+        let object = value
+            .as_object()
+            .expect("configuration should be an object");
+        let enabled = object["enabled_rules"]
+            .as_array()
+            .expect("enabled_rules should be an array");
+
+        assert!(!object.contains_key("rules"));
+        assert!(enabled.contains(&serde_json::json!("trailing-whitespace")));
+        assert!(!enabled.contains(&serde_json::json!("property-sorting")));
+    }
+
+    #[test]
+    fn json_flag_prints_a_single_json_report_instead_of_plain_text() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--json".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert_eq!(stderr, "");
+        assert!(!stdout.contains("PapyrusLinterCLI:"));
+
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("stdout should be a single JSON document");
+        assert_eq!(report["success"], true);
+        assert_eq!(report["scripts_checked"], 1);
+        assert_eq!(report["files_with_diagnostics"], 1);
+        assert_eq!(report["total_diagnostics"], 1);
+        assert!(report["files_fixed"].is_null());
+        let files = report["files"]
+            .as_array()
+            .expect("files should be an array");
+        assert_eq!(files.len(), 1);
+        let diagnostics = files[0]["diagnostics"]
+            .as_array()
+            .expect("diagnostics should be an array");
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0]["rule"], "trailing-whitespace");
+        assert_eq!(diagnostics[0]["level"], "warning");
+        assert_eq!(diagnostics[0]["line"], 1);
+    }
+
+    #[test]
+    fn json_flag_lists_every_resolved_script_including_clean_ones() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--json".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(report["success"], true);
+        let files = report["files"].as_array().unwrap();
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0]["diagnostics"].as_array().unwrap().len(), 0);
+    }
+
+    #[test]
+    fn json_flag_combines_with_the_fix_subcommand() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "fix".to_string(),
+            "--json".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 1);
+        assert_eq!(
+            fs::read_to_string(dir.path().join("scripts/source/Example.psc")).unwrap(),
+            "ScriptName Example\n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n"
+        );
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(report["files_fixed"], 1);
+        let files = report["files"].as_array().unwrap();
+        let diagnostics = files[0]["diagnostics"].as_array().unwrap();
+        assert!(diagnostics
+            .iter()
+            .any(|d| d["message"].as_str().unwrap().contains("Game.GetPlayer")));
+    }
+
+    #[test]
+    fn json_flag_combines_with_fix_dry_run() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "fix".to_string(),
+            "--dry-run".to_string(),
+            "--json".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 1, "stderr: {stderr}");
+        assert_eq!(
+            fs::read_to_string(dir.path().join("scripts/source/Example.psc")).unwrap(),
+            "ScriptName Example   \n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n",
+            "--dry-run must never write to the file, even combined with --json"
+        );
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(report["dry_run"], true);
+        assert_eq!(report["files_fixed"], 1);
+        let files = report["files"].as_array().unwrap();
+        let diff = files[0]["diff"].as_str().expect("diff should be a string");
+        assert!(diff.contains("-ScriptName Example   \n"));
+        assert!(diff.contains("+ScriptName Example\n"));
+    }
+
+    #[test]
+    fn json_flag_can_precede_the_fix_subcommand() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--json".to_string(),
+            "fix".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert_eq!(
+            fs::read_to_string(&script_path).unwrap(),
+            "ScriptName Example\n"
+        );
+        let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+        assert_eq!(report["files_fixed"], 1);
+        assert_eq!(report["total_diagnostics"], 0);
+        assert_eq!(report["success"], true);
+    }
+
+    #[test]
+    fn output_flag_writes_the_plain_text_report_to_a_file_instead_of_stdout() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("report.txt");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(stdout.is_empty());
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        assert!(contents.contains("[trailing-whitespace]"));
+        assert!(contents.contains("1 problem(s) found in 1 of 1 script(s)"));
+    }
+
+    #[test]
+    fn output_flag_writes_the_json_report_to_a_file_instead_of_stdout() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("report.json");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--json".to_string(),
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(stdout.is_empty());
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        let report: serde_json::Value =
+            serde_json::from_str(&contents).expect("output file should contain a JSON document");
+        assert_eq!(report["success"], true);
+        assert_eq!(report["total_diagnostics"], 1);
+    }
+
+    #[test]
+    fn output_flag_combines_with_fix() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example   \n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("report.txt");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "fix".to_string(),
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.is_empty());
+        assert_eq!(
+            fs::read_to_string(dir.path().join("scripts/source/Example.psc")).unwrap(),
+            "ScriptName Example\n"
+        );
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        assert!(contents.contains("no problems found in 1 script"));
+        assert!(contents.contains("(1 script(s) fixed.)"));
+    }
+
+    #[test]
+    fn output_flag_errors_when_the_directory_does_not_exist() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("missing-dir/report.txt");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.starts_with("error: failed to write"));
+    }
+
+    #[test]
+    fn output_flag_without_a_value_prints_usage() {
+        let (code, _stdout, stderr) = run_captured(&["--output".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn progress_flag_requires_output_in_plain_text_mode() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--progress".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.contains("--progress requires --output"));
+    }
+
+    #[test]
+    fn progress_flag_requires_output_in_json_mode() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/Example.psc"),
+            "ScriptName Example\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/Example.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--json".to_string(),
+            "--progress".to_string(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert!(stderr.contains("--progress requires --output"));
+    }
+
+    #[test]
+    fn progress_flag_prints_a_progress_bar_to_stdout_when_output_is_set() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(
+            &dir.path().join("scripts/source/One.psc"),
+            "ScriptName One\n",
+        );
+        write_file(
+            &dir.path().join("scripts/source/Two.psc"),
+            "ScriptName Two\n",
+        );
+        write_file(
+            &dir.path().join("sources.achlist"),
+            r#"["scripts/source/One.psc", "scripts/source/Two.psc"]"#,
+        );
+        let achlist_path = dir.path().join("sources.achlist");
+        let output_path = dir.path().join("report.txt");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--progress".to_string(),
+            "--output".to_string(),
+            output_path.to_string_lossy().into_owned(),
+            achlist_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(stdout.contains("\rLinting: 1/2 files"));
+        assert!(stdout.contains("\rLinting: 2/2 files"));
+        assert!(stdout.ends_with('\n'));
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        assert!(contents.contains("no problems found in 2 script"));
+    }
+
+    #[test]
+    fn plain_text_report_is_uncolored_when_stdout_is_not_a_terminal() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) =
+            run_captured_with_terminal_stdout(&[script_path.to_string_lossy().into_owned()], false);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(!stdout.contains('\x1b'));
+    }
+
+    #[test]
+    fn color_auto_colorizes_when_stdout_is_a_terminal() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) =
+            run_captured_with_terminal_stdout(&[script_path.to_string_lossy().into_owned()], true);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains('\x1b'));
+        // The rule id and level tag both still appear verbatim inside the
+        // colorized escapes, so consumers scraping for them (and the other
+        // tests here) still find them.
+        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("[warning]"));
+    }
+
+    #[test]
+    fn color_never_disables_color_even_on_a_terminal() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) = run_captured_with_terminal_stdout(
+            &[
+                "--color".to_string(),
+                "never".to_string(),
+                script_path.to_string_lossy().into_owned(),
+            ],
+            true,
+        );
+
+        assert_eq!(code, 0);
+        assert!(!stdout.contains('\x1b'));
+    }
+
+    #[test]
+    fn color_always_enables_color_even_without_a_terminal() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, _stderr) = run_captured(&[
+            "--color=always".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains('\x1b'));
+    }
+
+    #[test]
+    fn color_auto_does_not_colorize_a_file_written_via_output() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+        let output_path = dir.path().join("report.txt");
+
+        let (code, _stdout, _stderr) = run_captured_with_terminal_stdout(
+            &[
+                "--output".to_string(),
+                output_path.to_string_lossy().into_owned(),
+                script_path.to_string_lossy().into_owned(),
+            ],
+            true,
+        );
+
+        assert_eq!(code, 0);
+        let contents = fs::read_to_string(&output_path).expect("output file should exist");
+        assert!(!contents.contains('\x1b'));
+    }
+
+    #[test]
+    fn color_flag_rejects_an_unknown_value() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example\n");
+
+        let (code, _stdout, stderr) = run_captured(&[
+            "--color".to_string(),
+            "rainbow".to_string(),
+            script_path.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("--color must be"));
+    }
+
+    #[test]
+    fn color_flag_without_a_value_prints_usage() {
+        let (code, _stdout, stderr) = run_captured(&["--color".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+    }
+
+    #[test]
+    fn json_output_is_never_colorized_even_when_color_is_always() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+
+        let (code, stdout, stderr) = run_captured_with_terminal_stdout(
+            &[
+                "--json".to_string(),
+                "--color=always".to_string(),
+                script_path.to_string_lossy().into_owned(),
+            ],
+            true,
+        );
+
+        assert_eq!(code, 0);
+        assert!(stderr.is_empty());
+        assert!(!stdout.contains('\x1b'));
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("colored JSON would not parse");
+        assert_eq!(report["total_diagnostics"], 1);
+    }
+
+    #[test]
+    fn diagnostic_formatter_colorizes_each_structural_part() {
+        let diagnostic = papyrus_lints::Diagnostic {
+            line: 4,
+            column: 7,
+            rule: "example-rule",
+            message: "[warning] example message".to_string(),
+        };
+
+        let formatted = format_diagnostic_line("Example.psc", &diagnostic, true);
+
+        assert!(formatted.contains("\x1b[1mExample.psc:4:7\x1b[0m"));
+        assert!(formatted.contains("\x1b[2m[example-rule]\x1b[0m"));
+        assert!(formatted.contains("\x1b[33m[warning]\x1b[0m example message"));
+    }
+
+    #[test]
+    fn diagnostic_formatter_preserves_an_untagged_message() {
+        let diagnostic = papyrus_lints::Diagnostic {
+            line: 1,
+            column: 2,
+            rule: "example-rule",
+            message: "example message without a level tag".to_string(),
+        };
+
+        let formatted = format_diagnostic_line("Example.psc", &diagnostic, true);
+
+        assert!(formatted.ends_with("example message without a level tag"));
+        assert!(!formatted.contains("\x1b[31m[error]"));
+    }
+
+    #[test]
+    fn output_replaces_an_existing_report_instead_of_appending() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script = dir.path().join("Example.psc");
+        let report = dir.path().join("report.txt");
+        write_file(&script, "ScriptName Example\n");
+        write_file(&report, "stale report contents that must disappear\n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--output".to_string(),
+            report.to_string_lossy().into_owned(),
+            script.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stdout.is_empty());
+        assert!(stderr.is_empty());
+        assert_eq!(
+            fs::read_to_string(report).expect("failed to read report"),
+            "PapyrusLinterCLI: no problems found in 1 script(s).\n"
+        );
+    }
+
+    #[test]
+    fn ai_format_reports_source_metadata_counts_and_rule_details() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let dirty = dir.path().join("Dirty.psc");
+        let clean = dir.path().join("Clean.psc");
+        let dirty_source = "ScriptName Dirty   \n";
+        write_file(&dirty, dirty_source);
+        write_file(&clean, "ScriptName Clean\n");
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--format=ai".to_string(),
+            dir.path().to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(stderr.is_empty());
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("AI report should be valid JSON");
+        assert_eq!(
+            report["$schema"],
+            "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json"
+        );
+        assert_eq!(report["header"]["tool"], "Papyrus Lint");
+        assert_eq!(report["header"]["target_game"], "Skyrim SE/AE");
+        assert_eq!(report["findings"]["total_diagnostics"], 1);
+        assert_eq!(report["findings"]["severity_counts"]["warnings"], 1);
+        assert_eq!(report["findings"]["rule_counts"]["trailing-whitespace"], 1);
+        assert_eq!(report["findings"]["files"].as_array().unwrap().len(), 1);
+        assert_eq!(report["findings"]["files"][0]["source"]["type"], "content");
+        assert_eq!(
+            report["findings"]["files"][0]["source"]["content"],
+            dirty_source
+        );
+        assert_eq!(report["rule_details"][0]["rule"], "trailing-whitespace");
+        assert_eq!(report["rule_details"][0]["auto_fixable"], true);
+        assert!(report["configuration"]["enabled_rules"].is_array());
+        assert!(report["configuration"].get("rules").is_none());
+    }
+
+    #[test]
+    fn ai_hash_source_replaces_script_contents_with_an_md5_digest() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script = dir.path().join("Example.psc");
+        let source = "ScriptName Example   \n";
+        write_file(&script, source);
+
+        let (code, stdout, stderr) = run_captured(&[
+            "--format".to_string(),
+            "ai".to_string(),
+            "--hash-source".to_string(),
+            script.to_string_lossy().into_owned(),
+        ]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        let report: serde_json::Value =
+            serde_json::from_str(&stdout).expect("AI report should be valid JSON");
+        let source_report = &report["findings"]["files"][0]["source"];
+        assert_eq!(source_report["type"], "hash");
+        assert_eq!(source_report["algorithm"], "md5");
+        assert_eq!(source_report["hash"], content_hash::md5_hex(source));
+        assert!(source_report.get("content").is_none());
+        assert!(!stdout.contains(source));
+    }
+
+    #[test]
+    fn hash_source_without_ai_format_is_a_usage_error() {
+        let (code, stdout, stderr) =
+            run_captured(&["--hash-source".to_string(), "Example.psc".to_string()]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert_eq!(stderr, "error: --hash-source requires --format ai\n");
+    }
+
+    #[test]
+    fn format_flag_rejects_unknown_values_and_conflicts_with_json() {
+        let (unknown_code, unknown_stdout, unknown_stderr) =
+            run_captured(&["--format=yaml".to_string(), "Example.psc".to_string()]);
+        assert_eq!(unknown_code, 2);
+        assert!(unknown_stdout.is_empty());
+        assert_eq!(
+            unknown_stderr,
+            "error: --format must be 'plain', 'json', or 'ai', got 'yaml'\n"
+        );
+
+        let (conflict_code, conflict_stdout, conflict_stderr) = run_captured(&[
+            "--json".to_string(),
+            "--format=json".to_string(),
+            "Example.psc".to_string(),
+        ]);
+        assert_eq!(conflict_code, 2);
+        assert!(conflict_stdout.is_empty());
+        assert_eq!(
+            conflict_stderr,
+            "error: --json and --format can't be combined\n"
+        );
+    }
+
+    #[test]
+    fn level_colors_cover_info_and_unknown_diagnostic_levels() {
+        assert_eq!(level_color("info"), ANSI_CYAN);
+        assert_eq!(level_color("notice"), ANSI_RESET);
+
+        let info = papyrus_lints::Diagnostic {
+            line: 2,
+            column: 3,
+            rule: "example-rule",
+            message: "[info] informational diagnostic".to_string(),
+        };
+        let formatted = format_diagnostic_line("Example.psc", &info, true);
+
+        assert!(formatted.contains(&format!("{ANSI_CYAN}[info]{ANSI_RESET}")));
+        assert!(formatted.contains(" informational diagnostic"));
+    }
+}
