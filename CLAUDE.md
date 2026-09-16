@@ -944,6 +944,41 @@ predicate). `--tag` can't be combined with `--type`, since the two select
 overlapping things (one rule vs. one kind of rule), and an unrecognized
 tag is a usage error.
 
+Each `RuleTags` entry also carries a `doc_slug` — the anchor id
+(`pages/build.py`'s `lint-<slugify(name)>`, built from that rule's own row
+in the README's Implemented Lints tables) its row renders under on the
+project website's homepage — kept in sync by hand the same way
+`description` is, since it's derived from the README row's display name
+rather than the rule's id and the two don't always match (e.g.
+`comma-spacing`'s row is titled "Space after comma", so its slug is
+`space-after-comma`). `RuleTags::doc_url()` builds the full
+`<website>/#lint-<doc_slug>` link from it, giving every surface that
+already carries rule tag metadata a way to jump a user straight to that
+rule's own documentation instead of just naming it: the desktop app's
+`list_rule_tags` command includes `doc_url` in each `RuleTagsInfo`, and
+`buildFindingTagsEl` renders it as a "docs" badge/link alongside a
+finding's kind/importance/auto-fixable badges; the CLI's plain-text report
+appends it after a diagnostic's message (`format_diagnostic_line`) when
+the rule has known tag metadata; and both the CLI's `--json`
+(`JsonDiagnostic::doc_url`, `null` for a rule with none) and `--format ai`
+(`AiRuleDetails::doc_url`, always present since untagged rules are
+filtered out of `rule_details`) output, and the desktop app's matching
+"Export issues"/"Export for AI" JSON, carry the same field — the AI
+export's `$schema` was bumped to
+[v3](docs/papyrus-lint-ai-export.v3.schema.json) for it, with
+[v2](docs/papyrus-lint-ai-export.v2.schema.json) (and
+[v1](docs/papyrus-lint-ai-export.v1.schema.json)) kept frozen alongside it
+the same way v1 was kept when v2 introduced the `repair` field. The VS
+Code extension turns a diagnostic's `doc_url` into a clickable
+`{value, target}` diagnostic code (`toDiagnostic`/`ruleOfDiagnosticCode` in
+`vscode-extension/src/extension.ts`) instead of a plain string rule id
+when one is known, and the SublimeLinter plugin appends it to the
+diagnostic's message text (`_to_lint_match` in
+`SublimeLinter-contrib-papyrus-lint/linter.py`), since neither
+SublimeLinter's own diagnostic model nor Sublime Text's popups have a
+first-class documentation-link mechanism the way VS Code's diagnostic code
+does.
+
 The CLI also accepts `--blob <source>` in place of an achlist/`.psc`/
 directory path: `run_blob` in `papyrus-lint-cli/src/lib.rs` lints `<source>`
 directly, via plain `papyrus_lints::lint` (no
