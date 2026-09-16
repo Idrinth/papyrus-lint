@@ -1508,6 +1508,78 @@ class ModernImageFormatsTest(unittest.TestCase):
 
 
 class BuilderEdgeCaseCoverageTest(unittest.TestCase):
+    def test_markdown_to_html_handles_an_empty_document(self) -> None:
+        self.assertEqual(page_builder.markdown_to_html([]), "")
+
+    def test_render_docs_list_items_handles_an_empty_manifest(self) -> None:
+        with patch.object(page_builder, "DOCS", []):
+            result = page_builder.render_docs_list_items({}, "docs/")
+
+        self.assertEqual(result, "")
+
+    def test_build_doc_pages_writes_an_empty_document_index(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "docs.template.html").write_text(
+                "<title><!--DOC_TITLE--></title>"
+                '<meta name="description" content="<!--DOC_DESCRIPTION-->">'
+                '<link rel="canonical" href="<!--DOC_URL-->">'
+                "<main><!--DOC_CONTENT--></main>",
+                encoding="utf-8",
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "DOCS", []),
+                patch.object(page_builder, "SITE_URL", "https://example.test/"),
+                patch.object(page_builder, "render_funding_links", return_value=""),
+            ):
+                page_builder.build_doc_pages(out_dir, {}, version="v1.2.3")
+
+            index = (out_dir / "docs" / "index.html").read_text(encoding="utf-8")
+
+        self.assertIn("<title>Documentation</title>", index)
+        self.assertIn('<link rel="canonical" href="https://example.test/docs/index.html">', index)
+        self.assertIn('<main><ul class="docs-list"></ul></main>', index)
+
+    def test_build_imprint_page_supports_a_fragment_only_template(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "imprint.template.html").write_text(
+                "<!-- build comment --><main>Legal notice</main>", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "render_funding_links", return_value=""),
+            ):
+                page_builder.build_imprint_page(out_dir)
+
+            output = (out_dir / "imprint.html").read_text(encoding="utf-8")
+
+        self.assertEqual(output, "<main>Legal notice</main>")
+
+    def test_parse_lcov_files_ignores_metadata_and_orphan_record_end(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            report = Path(directory) / "lcov.info"
+            report.write_text(
+                "TN:unit tests\nend_of_record\n"
+                "SF:covered.py\nFN:1,main\nDA:1,1\nLF:1\nLH:1\nend_of_record\n",
+                encoding="utf-8",
+            )
+
+            rows = page_builder.parse_lcov_files(report)
+
+        self.assertEqual(rows, [("covered.py", 1, 1)])
+
     def test_highlight_code_escapes_a_known_language_with_no_tokens(self) -> None:
         self.assertEqual(
             page_builder.highlight_code("plain <value> & text", "json"),
