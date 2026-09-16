@@ -409,9 +409,8 @@ fn compile_known_rule_ids(manifest_dir: &str, out_dir: &str) {
 
     let json_src = fs::read_to_string(&json_path)
         .unwrap_or_else(|err| panic!("failed to read rule ids at {}: {err}", json_path.display()));
-    let rules: Vec<RawRuleId> = serde_json::from_str(&json_src).unwrap_or_else(|err| {
-        panic!("failed to parse rule ids at {}: {err}", json_path.display())
-    });
+    let rules: Vec<RawRuleId> = serde_json::from_str(&json_src)
+        .unwrap_or_else(|err| panic!("failed to parse rule ids at {}: {err}", json_path.display()));
 
     let mut generated = String::new();
     generated.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
@@ -420,8 +419,7 @@ fn compile_known_rule_ids(manifest_dir: &str, out_dir: &str) {
         generated.push_str(&format!("    {:?},\n", rule.id));
     }
     generated.push_str("];\n\n");
-    generated
-        .push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    generated.push_str("/// Compiled from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
     generated.push_str("pub const FIXABLE_RULE_IDS: &[&str] = &[\n");
     for rule in rules.iter().filter(|rule| rule.fixable) {
         generated.push_str(&format!("    {:?},\n", rule.id));
