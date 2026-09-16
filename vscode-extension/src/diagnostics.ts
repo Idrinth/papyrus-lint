@@ -5,6 +5,9 @@ export interface JsonDiagnostic {
   rule: string;
   level: 'error' | 'warning' | 'info' | null;
   message: string;
+  /** This rule's own documentation link, or `null` for a rule with no known
+   * tag metadata (e.g. a compiler-reported diagnostic). */
+  doc_url: string | null;
 }
 
 /** Mirrors `papyrus_lint_cli::JsonFileReport`. */
@@ -31,6 +34,7 @@ export interface NormalizedDiagnostic {
   level: DiagnosticLevel;
   message: string;
   rule: string;
+  docUrl: string | null;
 }
 
 export function normalizeDiagnostic(entry: JsonDiagnostic): NormalizedDiagnostic {
@@ -40,6 +44,7 @@ export function normalizeDiagnostic(entry: JsonDiagnostic): NormalizedDiagnostic
     level: entry.level === 'warning' ? 'warning' : entry.level === 'info' ? 'information' : 'error',
     message: entry.message,
     rule: entry.rule,
+    docUrl: entry.doc_url,
   };
 }
 

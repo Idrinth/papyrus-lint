@@ -565,6 +565,19 @@ h1 {
   color: var(--color-success);
 }
 
+.psc-result__tag-badge--docs-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.psc-result__tag-badge--docs-link:hover,
+.psc-result__tag-badge--docs-link:focus-visible {
+  border-color: var(--color-accent-toggle);
+  color: var(--color-accent-toggle);
+  opacity: 1;
+}
+
 .psc-result__finding:hover {
   text-decoration: underline;
 }
