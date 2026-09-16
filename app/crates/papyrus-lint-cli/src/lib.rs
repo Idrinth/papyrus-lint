@@ -243,6 +243,7 @@
 //! (`src/main.rs`) and by the desktop app (`app/src-tauri`), which runs it in
 //! place of launching its GUI whenever it's given command-line arguments.
 
+mod args;
 mod blob;
 mod doctor;
 mod init;
@@ -251,6 +252,7 @@ mod project;
 
 pub use output::{JsonDiagnostic, JsonFileReport, JsonReport};
 
+use args::{parse_run_args, ArgsError, ParsedCommand};
 use blob::run_blob;
 use doctor::run_doctor;
 use init::{
@@ -463,296 +465,133 @@ pub fn run(
         return run_doctor(&args[1..], stdout, stderr);
     }
 
-    let json_flag = args.iter().any(|arg| arg == "--json");
-    let quiet_warnings = args.iter().any(|arg| arg == "--quiet-warnings");
-    let quiet_info = args.iter().any(|arg| arg == "--quiet-info");
-    let short_paths = args.iter().any(|arg| arg == "--short-paths");
-    let progress = args.iter().any(|arg| arg == "--progress");
-    let dry_run = args.iter().any(|arg| arg == "--dry-run");
-    let hash_source = args.iter().any(|arg| arg == "--hash-source");
-
-    let mut config_path: Option<PathBuf> = None;
-    let mut output_path: Option<PathBuf> = None;
-    let mut cli_script_roots: Vec<String> = Vec::new();
-    let mut type_filter: Option<String> = None;
-    let mut line_filter: Option<String> = None;
-    let mut tag_filter: Option<String> = None;
-    let mut color_flag: Option<String> = None;
-    let mut format_flag: Option<String> = None;
-    let mut threads_flag: Option<String> = None;
-    let mut blob_flag: Option<String> = None;
-    let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
-    let mut input = args
-        .iter()
-        .filter(|arg| {
-            !matches!(
-                arg.as_str(),
-                "--json"
-                    | "--quiet-warnings"
-                    | "--quiet-info"
-                    | "--short-paths"
-                    | "--progress"
-                    | "--dry-run"
-                    | "--hash-source"
-            )
-        })
-        .cloned();
-    while let Some(arg) = input.next() {
-        if arg == "--config" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            config_path = Some(PathBuf::from(value));
-        } else if arg == "--script-root" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            cli_script_roots.push(value);
-        } else if arg == "--output" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            output_path = Some(PathBuf::from(value));
-        } else if arg == "--type" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            type_filter = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--type=") {
-            type_filter = Some(value.to_string());
-        } else if arg == "--line" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            line_filter = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--line=") {
-            line_filter = Some(value.to_string());
-        } else if arg == "--tag" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            tag_filter = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--tag=") {
-            tag_filter = Some(value.to_string());
-        } else if arg == "--format" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            format_flag = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--format=") {
-            format_flag = Some(value.to_string());
-        } else if arg == "--color" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            color_flag = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--color=") {
-            color_flag = Some(value.to_string());
-        } else if arg == "--threads" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            threads_flag = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--threads=") {
-            threads_flag = Some(value.to_string());
-        } else if arg == "--blob" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            blob_flag = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--blob=") {
-            blob_flag = Some(value.to_string());
-        } else {
-            positional_and_flags.push(arg);
+    let parsed = match parse_run_args(args) {
+        Ok(parsed) => parsed,
+        Err(ArgsError::Usage) => {
+            let _ = write!(stderr, "{USAGE}");
+            return 2;
         }
-    }
-    let args = positional_and_flags;
-
-    if json_flag && format_flag.is_some() {
-        let _ = writeln!(stderr, "error: --json and --format can't be combined");
-        return 2;
-    }
-    let output_format = match format_flag.as_deref() {
-        None if json_flag => OutputFormat::Json,
-        None | Some("plain") => OutputFormat::Plain,
-        Some("json") => OutputFormat::Json,
-        Some("ai") => OutputFormat::Ai,
-        Some(value) => {
+        Err(ArgsError::JsonAndFormatConflict) => {
+            let _ = writeln!(stderr, "error: --json and --format can't be combined");
+            return 2;
+        }
+        Err(ArgsError::InvalidFormat(value)) => {
             let _ = writeln!(
                 stderr,
                 "error: --format must be 'plain', 'json', or 'ai', got '{value}'"
             );
             return 2;
         }
-    };
-    let json = output_format != OutputFormat::Plain;
-
-    if hash_source && output_format != OutputFormat::Ai {
-        let _ = writeln!(stderr, "error: --hash-source requires --format ai");
-        return 2;
-    }
-
-    let color_choice = match color_flag.as_deref() {
-        None | Some("auto") => ColorChoice::Auto,
-        Some("always") => ColorChoice::Always,
-        Some("never") => ColorChoice::Never,
-        Some(value) => {
+        Err(ArgsError::HashSourceRequiresAi) => {
+            let _ = writeln!(stderr, "error: --hash-source requires --format ai");
+            return 2;
+        }
+        Err(ArgsError::InvalidColor(value)) => {
             let _ = writeln!(
                 stderr,
                 "error: --color must be 'auto', 'always', or 'never', got '{value}'"
             );
             return 2;
         }
-    };
-
-    if let Some(source) = blob_flag {
-        if !args.is_empty() {
+        Err(ArgsError::BlobWithPathArgument) => {
             let _ = writeln!(
                 stderr,
                 "error: --blob can't be combined with a path argument (or `fix`)"
             );
             return 2;
         }
-        if dry_run || type_filter.is_some() || line_filter.is_some() {
+        Err(ArgsError::BlobWithFixFlags) => {
             let _ = writeln!(
                 stderr,
                 "error: --blob can't be combined with fix/--type/--line/--dry-run"
             );
             return 2;
         }
-        if progress || !cli_script_roots.is_empty() || threads_flag.is_some() {
+        Err(ArgsError::BlobWithScriptRootProgressThreads) => {
             let _ = writeln!(
                 stderr,
                 "error: --blob can't be combined with --script-root/--progress/--threads"
             );
             return 2;
         }
-        let tag_filter = match normalize_tag_filter(tag_filter) {
-            Ok(tag_filter) => tag_filter,
-            Err(value) => {
-                let _ = writeln!(stderr, "error: unknown tag '{value}'");
-                return 2;
-            }
-        };
-        return run_blob(
-            &source,
-            config_path.as_deref(),
-            output_format,
-            hash_source,
-            quiet_warnings,
-            quiet_info,
-            tag_filter.as_deref(),
-            color_choice,
-            output_path.as_deref(),
-            stdout_is_terminal,
-            stdout,
-            stderr,
-        );
-    }
-
-    let (fix, input_path) = match args.as_slice() {
-        [flag] if flag == "--version" || flag == "-V" => {
-            let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
-            return 0;
-        }
-        [sub, path] if sub == "fix" => (true, PathBuf::from(path)),
-        [path] if path != "-h" && path != "--help" && path != "fix" => (false, PathBuf::from(path)),
-        _ => {
-            let _ = write!(stderr, "{USAGE}");
-            return 2;
-        }
-    };
-
-    if !fix && (type_filter.is_some() || line_filter.is_some() || dry_run) {
-        let _ = write!(stderr, "{USAGE}");
-        return 2;
-    }
-
-    if progress && output_path.is_none() {
-        let _ = writeln!(stderr, "error: --progress requires --output <path>");
-        return 2;
-    }
-
-    if type_filter.is_some() && tag_filter.is_some() {
-        let _ = writeln!(stderr, "error: --type and --tag can't be combined");
-        return 2;
-    }
-
-    let tag_filter: Option<String> = match normalize_tag_filter(tag_filter) {
-        Ok(tag_filter) => tag_filter,
-        Err(value) => {
+        Err(ArgsError::UnknownTag(value)) => {
             let _ = writeln!(stderr, "error: unknown tag '{value}'");
             return 2;
         }
-    };
-
-    let rule_filter: Option<&'static str> = match type_filter {
-        Some(value) => {
-            let normalized = value.replace('_', "-").to_ascii_lowercase();
-            match papyrus_lints::FIXABLE_RULE_IDS
-                .iter()
-                .find(|rule| **rule == normalized)
-            {
-                Some(rule) => Some(*rule),
-                None => {
-                    if papyrus_lints::KNOWN_RULE_IDS
-                        .iter()
-                        .any(|rule| *rule == normalized)
-                    {
-                        let _ = writeln!(stderr, "error: rule '{value}' has no automatic fix");
-                    } else {
-                        let _ = writeln!(stderr, "error: unknown rule '{value}'");
-                    }
-                    return 2;
-                }
-            }
+        Err(ArgsError::ProgressRequiresOutput) => {
+            let _ = writeln!(stderr, "error: --progress requires --output <path>");
+            return 2;
         }
-        None => None,
+        Err(ArgsError::TypeAndTagConflict) => {
+            let _ = writeln!(stderr, "error: --type and --tag can't be combined");
+            return 2;
+        }
+        Err(ArgsError::UnknownRule(value)) => {
+            let _ = writeln!(stderr, "error: unknown rule '{value}'");
+            return 2;
+        }
+        Err(ArgsError::RuleHasNoFix(value)) => {
+            let _ = writeln!(stderr, "error: rule '{value}' has no automatic fix");
+            return 2;
+        }
+        Err(ArgsError::InvalidLine(value)) => {
+            let _ = writeln!(
+                stderr,
+                "error: --line must be a positive integer, got '{value}'"
+            );
+            return 2;
+        }
+        Err(ArgsError::InvalidThreads(value)) => {
+            let _ = writeln!(
+                stderr,
+                "error: --threads must be a positive integer, got '{value}'"
+            );
+            return 2;
+        }
     };
 
-    let target_line: Option<usize> = match line_filter {
-        Some(value) => match value.parse::<usize>() {
-            Ok(line) if line >= 1 => Some(line),
-            _ => {
-                let _ = writeln!(
-                    stderr,
-                    "error: --line must be a positive integer, got '{value}'"
-                );
-                return 2;
-            }
-        },
-        None => None,
+    let lint = match parsed {
+        ParsedCommand::Version => {
+            let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
+            return 0;
+        }
+        ParsedCommand::Blob(blob) => {
+            return run_blob(
+                &blob.source,
+                blob.config_path.as_deref(),
+                blob.output_format,
+                blob.hash_source,
+                blob.quiet_warnings,
+                blob.quiet_info,
+                blob.tag_filter.as_deref(),
+                blob.color_choice,
+                blob.output_path.as_deref(),
+                stdout_is_terminal,
+                stdout,
+                stderr,
+            );
+        }
+        ParsedCommand::Lint(lint) => lint,
     };
 
-    // Defaults to the machine's available parallelism, matching the same
-    // default the desktop app's own already-concurrent per-file Tauri
-    // commands get for free from Tauri's blocking thread pool (see
-    // `papyrus_lint_core::parallel`'s module docs). `--threads 1` forces
-    // fully sequential processing, e.g. for easier-to-reproduce diagnostics
-    // or a constrained CI runner.
-    let thread_count: usize = match threads_flag {
-        Some(value) => match value.parse::<usize>() {
-            Ok(threads) if threads >= 1 => threads,
-            _ => {
-                let _ = writeln!(
-                    stderr,
-                    "error: --threads must be a positive integer, got '{value}'"
-                );
-                return 2;
-            }
-        },
-        None => papyrus_lint_core::parallel::default_thread_count(),
-    };
+    let fix = lint.fix;
+    let input_path = lint.input_path;
+    let output_format = lint.output_format;
+    let json = output_format != OutputFormat::Plain;
+    let quiet_warnings = lint.quiet_warnings;
+    let quiet_info = lint.quiet_info;
+    let short_paths = lint.short_paths;
+    let progress = lint.progress;
+    let dry_run = lint.dry_run;
+    let hash_source = lint.hash_source;
+    let config_path = lint.config_path;
+    let output_path = lint.output_path;
+    let cli_script_roots = lint.cli_script_roots;
+    let tag_filter = lint.tag_filter;
+    let rule_filter = lint.rule_filter;
+    let target_line = lint.target_line;
+    let color_choice = lint.color_choice;
+    let thread_count = lint.thread_count;
 
     let is_psc_file = input_path
         .extension()
@@ -1416,47 +1255,6 @@ mod tests {
     use crate::test_support::*;
 
     #[test]
-    fn prints_usage_and_exits_2_with_no_arguments() {
-        let (code, _stdout, stderr) = run_captured(&[]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-    }
-
-    #[test]
-    fn prints_version_for_version_flag() {
-        let (code, stdout, _stderr) = run_captured(&["--version".to_string()]);
-
-        assert_eq!(code, 0);
-        assert_eq!(stdout, format!("PapyrusLinterCLI {VERSION}\n"));
-    }
-
-    #[test]
-    fn prints_version_for_short_version_flag() {
-        let (code, stdout, _stderr) = run_captured(&["-V".to_string()]);
-
-        assert_eq!(code, 0);
-        assert_eq!(stdout, format!("PapyrusLinterCLI {VERSION}\n"));
-    }
-
-    #[test]
-    fn prints_usage_for_help_flag() {
-        let (code, _stdout, stderr) = run_captured(&["--help".to_string()]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-        assert!(stderr.contains("everything an AI needs to assist"));
-    }
-
-    #[test]
-    fn prints_usage_with_too_many_arguments() {
-        let (code, _stdout, stderr) = run_captured(&["a".to_string(), "b".to_string()]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-    }
-
-    #[test]
     fn errors_when_achlist_is_missing() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let achlist_path = dir.path().join("missing.achlist");
@@ -1994,53 +1792,6 @@ mod tests {
     }
 
     #[test]
-    fn type_filter_rejects_an_unknown_rule_id() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "fix".to_string(),
-            "--type=made-up-rule".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("unknown rule 'made-up-rule'"));
-    }
-
-    #[test]
-    fn type_filter_rejects_a_rule_with_no_automatic_fix() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "fix".to_string(),
-            "--type=forbidden-functions".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("rule 'forbidden-functions' has no automatic fix"));
-    }
-
-    #[test]
-    fn type_filter_without_fix_prints_usage() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "--type=trailing-whitespace".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-    }
-
-    #[test]
     fn tag_filter_restricts_reported_diagnostics_to_the_matching_kind() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let script_path = dir.path().join("Example.psc");
@@ -2116,108 +1867,6 @@ mod tests {
         // trailing-whitespace is tagged "style", not "performance", so it's
         // left in place by --tag=performance.
         assert!(fixed.contains("  \n"));
-    }
-
-    #[test]
-    fn tag_and_type_filters_cannot_be_combined() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "fix".to_string(),
-            "--type=trailing-whitespace".to_string(),
-            "--tag=style".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("--type and --tag can't be combined"));
-    }
-
-    #[test]
-    fn tag_filter_rejects_an_unknown_tag() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "--tag=made-up-tag".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("unknown tag 'made-up-tag'"));
-    }
-
-    #[test]
-    fn line_filter_without_fix_prints_usage() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "--line=1".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-    }
-
-    #[test]
-    fn line_filter_rejects_a_non_positive_value() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "fix".to_string(),
-            "--line=0".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("--line must be a positive integer"));
-    }
-
-    #[test]
-    fn threads_flag_rejects_a_non_positive_value() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "--threads=0".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("--threads must be a positive integer"));
-    }
-
-    #[test]
-    fn threads_flag_rejects_a_non_numeric_value() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example\n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "--threads".to_string(),
-            "many".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("--threads must be a positive integer"));
-    }
-
-    #[test]
-    fn threads_flag_without_a_value_prints_usage() {
-        let (code, _stdout, stderr) = run_captured(&["--threads".to_string()]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     }
 
     // Builds an achlist with enough scripts, several of them cross-referencing
@@ -2366,33 +2015,6 @@ mod tests {
         );
         assert!(!stdout.contains("---"));
         assert!(stdout.contains("(0 script(s) would be fixed.)"));
-    }
-
-    #[test]
-    fn dry_run_without_fix_is_a_usage_error() {
-        let dir = tempfile::tempdir().expect("failed to create temp dir");
-        let script_path = dir.path().join("Example.psc");
-        write_file(&script_path, "ScriptName Example   \n");
-
-        let (code, _stdout, stderr) = run_captured(&[
-            "--dry-run".to_string(),
-            script_path.to_string_lossy().into_owned(),
-        ]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-        assert_eq!(
-            fs::read_to_string(&script_path).unwrap(),
-            "ScriptName Example   \n"
-        );
-    }
-
-    #[test]
-    fn prints_usage_when_fix_is_given_without_a_path() {
-        let (code, _stdout, stderr) = run_captured(&["fix".to_string()]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     }
 
     #[test]
@@ -3284,14 +2906,6 @@ mod tests {
     }
 
     #[test]
-    fn script_root_flag_without_a_value_prints_usage() {
-        let (code, _stdout, stderr) = run_captured(&["--script-root".to_string()]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-    }
-
-    #[test]
     fn config_flag_skips_the_project_roots_additional_script_roots() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let shared_dir = tempfile::tempdir().expect("failed to create temp dir");
@@ -3422,14 +3036,6 @@ mod tests {
     }
 
     #[test]
-    fn config_flag_without_a_value_prints_usage() {
-        let (code, _stdout, stderr) = run_captured(&["--config".to_string()]);
-
-        assert_eq!(code, 2);
-        assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-    }
-
-    #[test]
     fn a_psc_path_that_is_a_directory_reports_a_read_error() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let misleading_path = dir.path().join("NotAFile.psc");
@@ -3527,16 +3133,5 @@ mod tests {
         assert!(stderr.is_empty());
         assert!(stdout.contains("[trailing-whitespace]"));
         assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
-    }
-
-    #[test]
-    fn value_flags_report_usage_when_their_separate_value_is_missing() {
-        for flag in ["--line", "--tag", "--format", "--threads"] {
-            let (code, stdout, stderr) = run_captured(&[flag.to_string()]);
-
-            assert_eq!(code, 2, "unexpected exit code for {flag}");
-            assert!(stdout.is_empty(), "unexpected stdout for {flag}");
-            assert_eq!(stderr, USAGE, "unexpected stderr for {flag}");
-        }
     }
 }

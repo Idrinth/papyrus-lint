@@ -129,6 +129,8 @@
 │           ├── src/                # achlist's scripts against its project's
 │           │   ├── lib.rs           # run() + public API; also linked into
 │           │   │                    # src-tauri for its CLI mode
+│           │   ├── args.rs          # Parses/validates run()'s own arguments
+│           │   │                    # (a plain lint/fix run, or --blob)
 │           │   ├── project.rs       # Project-root discovery from .psc paths
 │           │   ├── output.rs        # Plain/JSON/AI report types and formatting
 │           │   ├── init.rs          # `init` / `preset add`
