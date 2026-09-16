@@ -484,6 +484,144 @@ EndProperty
     }
 
     #[test]
+    fn parses_all_literal_kinds_and_unary_operators() {
+        let src = r#"
+ScriptName Example
+
+Function Test()
+    Int negative = -12
+    Float decimal = 1.5
+    String message = "hello"
+    Bool enabled = !false
+    ObjectReference target = None
+EndFunction
+"#;
+        let script = parse(src).unwrap();
+        let body = &script.functions[0].body;
+
+        let values: Vec<_> = body
+            .iter()
+            .map(|statement| match statement {
+                Stmt::VarDecl(decl) => decl.value.as_ref().unwrap(),
+                other => panic!("expected VarDecl, got {other:?}"),
+            })
+            .collect();
+
+        assert_eq!(
+            values,
+            vec![
+                &Expr::Unary {
+                    op: UnaryOp::Neg,
+                    operand: Box::new(Expr::Literal(Literal::int(12))),
+                },
+                &Expr::Literal(Literal::Float(1.5)),
+                &Expr::Literal(Literal::String("hello".to_string())),
+                &Expr::Unary {
+                    op: UnaryOp::Not,
+                    operand: Box::new(Expr::Literal(Literal::Bool(false))),
+                },
+                &Expr::Literal(Literal::None),
+            ]
+        );
+    }
+
+    #[test]
+    fn parses_every_assignment_operator() {
+        let src = r#"
+ScriptName Example
+
+Function Update()
+    Int value = 1
+    value = 2
+    value += 3
+    value -= 4
+    value *= 5
+    value /= 6
+    value %= 7
+EndFunction
+"#;
+        let script = parse(src).unwrap();
+        let operators: Vec<_> = script.functions[0].body[1..]
+            .iter()
+            .map(|statement| match statement {
+                Stmt::Assign { op, .. } => *op,
+                other => panic!("expected assignment, got {other:?}"),
+            })
+            .collect();
+
+        assert_eq!(
+            operators,
+            vec![
+                AssignOp::Assign,
+                AssignOp::AddAssign,
+                AssignOp::SubAssign,
+                AssignOp::MulAssign,
+                AssignOp::DivAssign,
+                AssignOp::ModAssign,
+            ]
+        );
+    }
+
+    #[test]
+    fn preserves_control_flow_and_call_source_locations() {
+        let src = "ScriptName Example\nFunction Test()\n    If true\n    ElseIf false\n    Else\n        Debug.Trace(\"done\")\n    EndIf\n    While false\n    EndWhile\nEndFunction\n";
+        let script = parse(src).unwrap();
+        let body = &script.functions[0].body;
+
+        match &body[0] {
+            Stmt::If {
+                branches,
+                else_body,
+                else_line,
+                else_col,
+                line,
+            } => {
+                assert_eq!((*line, *else_line, *else_col), (3, Some(5), Some(5)));
+                assert_eq!((branches[0].line, branches[0].col), (3, 5));
+                assert_eq!((branches[1].line, branches[1].col), (4, 5));
+                match &else_body[0] {
+                    Stmt::Expr {
+                        value: Expr::Call { line, col, .. },
+                        line: statement_line,
+                    } => assert_eq!((*line, *col, *statement_line), (6, 20, 6)),
+                    other => panic!("expected call expression, got {other:?}"),
+                }
+            }
+            other => panic!("expected If statement, got {other:?}"),
+        }
+
+        assert!(matches!(
+            body[1],
+            Stmt::While {
+                line: 8,
+                col: 5,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn parses_void_and_valued_returns() {
+        let src = "ScriptName Example\nFunction Stop()\n    Return\nEndFunction\nInt Function Value()\n    Return 42\nEndFunction\n";
+        let script = parse(src).unwrap();
+
+        assert!(matches!(
+            script.functions[0].body[0],
+            Stmt::Return {
+                value: None,
+                line: 3
+            }
+        ));
+        assert_eq!(
+            script.functions[1].body[0],
+            Stmt::Return {
+                value: Some(Expr::Literal(Literal::int(42))),
+                line: 6,
+            }
+        );
+    }
+
+    #[test]
     fn reports_error_with_location() {
         let err = parse("ScriptName Example\n\nFunction Bad(\nEndFunction\n").unwrap_err();
         match err {
