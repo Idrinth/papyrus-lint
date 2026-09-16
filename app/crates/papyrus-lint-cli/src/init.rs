@@ -1,7 +1,40 @@
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use clap::Parser;
 use papyrus_lint_config::presets;
+
+/// `init`'s own flags, extracted by `clap` the same way `args.rs`'s
+/// `RawArgs` is for the main lint/fix invocation.
+#[derive(Parser, Debug)]
+#[command(
+    no_binary_name = true,
+    disable_help_flag = true,
+    disable_version_flag = true
+)]
+struct InitRawArgs {
+    #[arg(long)]
+    preset: Option<String>,
+}
+
+/// `preset add`'s own flags/positionals, extracted by `clap` the same way
+/// `args.rs`'s `RawArgs` is for the main lint/fix invocation. Unlike
+/// `RawArgs`'s catch-all positionals, an unrecognized `--flag` here is a
+/// hard `clap` parse error (mapped to [`PresetAddArgsError::Usage`]) rather
+/// than being accepted as a stray positional, matching `preset add`'s
+/// narrower, historically stricter grammar (only `--yes` plus exactly two
+/// positionals are valid).
+#[derive(Parser, Debug)]
+#[command(
+    no_binary_name = true,
+    disable_help_flag = true,
+    disable_version_flag = true
+)]
+struct PresetAddRawArgs {
+    #[arg(long)]
+    yes: bool,
+    positionals: Vec<String>,
+}
 
 pub(crate) fn initialize_config(
     dir: &Path,
@@ -45,22 +78,11 @@ pub(crate) enum InitPresetError {
 /// unlike `init`'s success path (see [`initialize_config`]), which writes
 /// into it.
 pub(crate) fn parse_init_preset(rest: &[String]) -> Result<presets::Preset, InitPresetError> {
-    let mut preset = presets::Preset::default();
-    let mut args = rest.iter();
-    while let Some(arg) = args.next() {
-        let value = if arg == "--preset" {
-            args.next()
-                .map(String::as_str)
-                .ok_or(InitPresetError::Usage)?
-        } else if let Some(value) = arg.strip_prefix("--preset=") {
-            value
-        } else {
-            return Err(InitPresetError::Usage);
-        };
-
-        preset = presets::Preset::parse(value).ok_or(InitPresetError::Usage)?;
+    let raw = InitRawArgs::try_parse_from(rest).map_err(|_| InitPresetError::Usage)?;
+    match raw.preset {
+        Some(value) => presets::Preset::parse(&value).ok_or(InitPresetError::Usage),
+        None => Ok(presets::Preset::default()),
     }
-    Ok(preset)
 }
 
 /// Why [`parse_preset_add_args`] rejected `preset add`'s arguments: missing
@@ -82,19 +104,9 @@ pub(crate) enum PresetAddArgsError {
 pub(crate) fn parse_preset_add_args(
     rest: &[String],
 ) -> Result<(String, PathBuf, bool), PresetAddArgsError> {
-    let mut overwrite = false;
-    let mut positionals: Vec<&String> = Vec::new();
-    for arg in rest {
-        if arg == "--yes" {
-            overwrite = true;
-        } else if arg.starts_with("--") {
-            return Err(PresetAddArgsError::Usage);
-        } else {
-            positionals.push(arg);
-        }
-    }
-    match positionals.as_slice() {
-        [name, path] => Ok(((*name).clone(), PathBuf::from((*path).clone()), overwrite)),
+    let raw = PresetAddRawArgs::try_parse_from(rest).map_err(|_| PresetAddArgsError::Usage)?;
+    match raw.positionals.as_slice() {
+        [name, path] => Ok((name.clone(), PathBuf::from(path.clone()), raw.yes)),
         _ => Err(PresetAddArgsError::Usage),
     }
 }

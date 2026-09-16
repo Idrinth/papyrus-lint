@@ -20,6 +20,7 @@ papyrus-lint-core = { path = "../papyrus-lint-core" }
 papyrus-lint-config = { path = "../papyrus-lint-config" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+clap = { version = "4", features = ["derive"] }
 
 [dev-dependencies]
 tempfile = "3"
