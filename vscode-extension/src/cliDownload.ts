@@ -1,6 +1,7 @@
 import { constants, createWriteStream, promises as fs } from 'fs';
-import { get } from 'https';
 import * as path from 'path';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
 
 const RELEASE_BASE = 'https://github.com/Idrinth/papyrus-lint/releases/download';
 
@@ -17,33 +18,12 @@ function assetName(platform: NodeJS.Platform): string {
   }
 }
 
-function download(url: URL, destination: string, redirects = 0): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const request = get(url, (response) => {
-      if (response.statusCode && response.statusCode >= 300 && response.statusCode < 400) {
-        const location = response.headers.location;
-        response.resume();
-        if (!location || redirects >= 5) {
-          reject(new Error('too many or invalid redirects'));
-          return;
-        }
-        void download(new URL(location, url), destination, redirects + 1).then(resolve, reject);
-        return;
-      }
-      if (response.statusCode !== 200) {
-        response.resume();
-        reject(new Error(`download returned HTTP ${response.statusCode ?? 'unknown'}`));
-        return;
-      }
-
-      const output = createWriteStream(destination, { mode: 0o700 });
-      response.pipe(output);
-      output.on('finish', () => output.close(() => resolve()));
-      output.on('error', reject);
-      response.on('error', reject);
-    });
-    request.on('error', reject);
-  });
+async function download(url: string, destination: string): Promise<void> {
+  const response = await fetch(url);
+  if (!response.ok || !response.body) {
+    throw new Error(`download returned HTTP ${response.status || 'unknown'}`);
+  }
+  await pipeline(Readable.fromWeb(response.body), createWriteStream(destination, { mode: 0o700 }));
 }
 
 /** Returns this extension release's CLI, downloading it once into extension storage. */
@@ -65,7 +45,7 @@ export async function ensureReleaseCli(
   await fs.mkdir(directory, { recursive: true });
   const temporary = `${executable}.${process.pid}.download`;
   try {
-    await download(new URL(`${RELEASE_BASE}/v${version}/${asset}`), temporary);
+    await download(`${RELEASE_BASE}/v${version}/${asset}`, temporary);
     await fs.chmod(temporary, 0o700);
     await fs.rename(temporary, executable);
   } finally {

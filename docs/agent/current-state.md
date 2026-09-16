@@ -335,9 +335,9 @@ own, or `--config`), the same as `strict_achlist_scope`.
 
 The CLI's per-script lint loop (and `fix`) reads, fixes, and lints multiple
 scripts at once instead of one at a time, via
-`papyrus_lint_core::parallel::map_in_parallel` — a small, dependency-free
-worker pool (`std::thread::scope` plus a shared work queue) that hands
-results back in the scripts' original order regardless of which order the
+`papyrus_lint_core::parallel::map_in_parallel` — a thin `rayon` wrapper
+(a scoped `rayon::ThreadPool` sized to the requested thread count) that
+hands results back in the scripts' original order regardless of which order the
 worker threads actually finish them in, so the plain-text/JSON/AI report
 (and a `--progress` bar's own file-count sequence) is identical no matter
 the thread count. The number of workers is controlled by `--threads <n>`
