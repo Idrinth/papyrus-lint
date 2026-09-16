@@ -4,15 +4,15 @@
 //! cross-script function signature table for the "Argument type check"/
 //! "Return type check" lints.
 //!
-//! This crate depends only on [`papyrus_parser`] and [`papyrus_lints`], not
-//! on Tauri, so it can be reused by anything that needs to lint a project's
-//! scripts without pulling in the desktop app.
+//! This crate depends only on [`papyrus_parser`], [`papyrus_lints`], and
+//! [`papyrus_lint_config`], not on Tauri, so it can be reused by anything
+//! that needs to lint a project's scripts without pulling in the desktop
+//! app.
 
 pub mod achlist;
 pub mod ast_cache;
 pub mod compile_diagnostics;
 pub mod compiler;
-pub mod config;
 pub mod content_hash;
 pub mod diff;
 pub mod function_table;
@@ -25,3 +25,9 @@ pub mod script_filename_mismatch;
 pub mod script_locator;
 pub mod source_encoding;
 pub mod stale_pex;
+
+/// Project `papyrus-lint.yaml` loading, saving, presets, and app-level
+/// settings. Implemented in the `papyrus-lint-config` crate so that logic
+/// can stay split across focused modules; existing `papyrus_lint_core::config`
+/// paths keep working.
+pub use papyrus_lint_config as config;

@@ -1,0 +1,17 @@
+[package]
+name = "papyrus-lint-config"
+version = "0.1.0"
+description = "Project papyrus-lint.yaml loading, saving, presets, and app-level settings"
+authors = ["Idrinth"]
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+papyrus-lints = { path = "../papyrus-lints" }
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+
+[dev-dependencies]
+tempfile = "3"
