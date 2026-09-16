@@ -26,6 +26,16 @@
 //! out to the statements that follow it, since neither an `If`'s branch nor
 //! a `While`'s body is guaranteed to have run by the time execution reaches
 //! there.
+//!
+//! A plain assignment (`outfit = OtherOutfit`) clears every tracked call in
+//! the current statement list: it could reassign a local variable an
+//! already-tracked receiver/argument expression reads, which a purely
+//! structural AST comparison can't see through, so treating it the same as
+//! any other "modification" would risk a false positive. A `Return`
+//! statement stops scanning the rest of its own statement list outright,
+//! since nothing after it can ever run. Receiver/argument expressions are
+//! compared the way Papyrus itself would, matching identifiers and
+//! member/property names case-insensitively.
 
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
 
@@ -91,7 +101,18 @@ fn check_body<'a>(
                 check_body(else_body, &mut applied.clone(), diagnostics);
             }
             Stmt::While { body, .. } => check_body(body, &mut applied.clone(), diagnostics),
-            Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Return { .. } => {}
+            // A plain assignment could reassign a local variable read by an
+            // already-tracked receiver/outfit expression (e.g. `outfit =
+            // OtherOutfit` between two `akActor.SetOutfit(outfit)` calls),
+            // which a purely structural AST comparison can't see through;
+            // clear every tracked call rather than risk comparing two calls
+            // that no longer actually pass the same value.
+            Stmt::Assign { .. } => applied.clear(),
+            // Nothing after a Return in the same block can ever run, so
+            // stop scanning this body rather than comparing dead code
+            // against calls that already ran.
+            Stmt::Return { .. } => break,
+            Stmt::VarDecl(_) => {}
         }
     }
 }
@@ -108,8 +129,11 @@ fn check_set_outfit_call<'a>(
     applied: &mut Vec<AppliedOutfit<'a>>,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if let Some(existing) = applied.iter_mut().find(|entry| entry.receiver == receiver) {
-        if existing.args == args {
+    if let Some(existing) = applied
+        .iter_mut()
+        .find(|entry| expr_eq(entry.receiver, receiver))
+    {
+        if args_eq(existing.args, args) {
             diagnostics.push(Diagnostic {
                 line,
                 column: 1,
@@ -126,6 +150,33 @@ fn check_set_outfit_call<'a>(
     } else {
         applied.push(AppliedOutfit { receiver, args });
     }
+}
+
+/// Compares two expressions the way Papyrus itself would: identifiers and
+/// member/property names are matched case-insensitively (Papyrus is a
+/// case-insensitive language), recursing through a member-access chain;
+/// anything else falls back to plain structural equality.
+fn expr_eq(a: &Expr, b: &Expr) -> bool {
+    match (a, b) {
+        (Expr::Identifier(x), Expr::Identifier(y)) => x.eq_ignore_ascii_case(y),
+        (
+            Expr::Member {
+                object: oa,
+                property: pa,
+            },
+            Expr::Member {
+                object: ob,
+                property: pb,
+            },
+        ) => pa.eq_ignore_ascii_case(pb) && expr_eq(oa, ob),
+        _ => a == b,
+    }
+}
+
+/// Compares two `SetOutfit(...)` call argument lists element-wise via
+/// [`expr_eq`].
+fn args_eq(a: &[Expr], b: &[Expr]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).all(|(x, y)| expr_eq(x, y))
 }
 
 /// Matches a `<receiver>.SetOutfit(<args>)` call, returning its receiver and
@@ -302,6 +353,42 @@ mod tests {
         );
 
         assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn matches_receiver_and_argument_identifiers_case_insensitively() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Actor akActor, Outfit MyOutfit)\n    akActor.SetOutfit(MyOutfit)\n    AKACTOR.SetOutfit(MYOUTFIT)\nEndFunction\n",
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+    }
+
+    #[test]
+    fn does_not_flag_after_the_outfit_variable_is_reassigned() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Actor akActor, Outfit OutfitA, Outfit OutfitB)\n    Outfit outfit = OutfitA\n    akActor.SetOutfit(outfit)\n    outfit = OutfitB\n    akActor.SetOutfit(outfit)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn does_not_flag_a_repeat_separated_by_an_unrelated_assignment() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Actor akActor, Outfit MyOutfit, Int a)\n    akActor.SetOutfit(MyOutfit)\n    a = 1\n    akActor.SetOutfit(MyOutfit)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
+    fn stops_scanning_after_a_return() {
+        let diagnostics = check(
+            "ScriptName Example\n\nFunction Test(Actor akActor, Outfit MyOutfit)\n    akActor.SetOutfit(MyOutfit)\n    Return\n    akActor.SetOutfit(MyOutfit)\nEndFunction\n",
+        );
+
+        assert!(diagnostics.is_empty());
     }
 
     #[test]
