@@ -1010,7 +1010,7 @@ describe("loadRuleTags / applyRuleTags", () => {
     kinds: ["style"],
     importance: "low",
     auto_fixable: true,
-    doc_url: "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace",
+    doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace",
   };
 
   afterEach(() => {

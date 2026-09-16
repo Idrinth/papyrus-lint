@@ -28,7 +28,7 @@ fn json_mode_lints_a_script_through_the_binary_entry_point() {
     );
     assert_eq!(
         report["files"][0]["diagnostics"][0]["doc_url"],
-        "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"
+        "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace"
     );
 }
 
@@ -42,7 +42,7 @@ fn plain_text_output_links_a_tagged_rule_to_its_documentation() {
 
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"));
+    assert!(stdout.contains("https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace"));
 }
 
 #[test]
@@ -104,7 +104,7 @@ fn ai_format_includes_source_and_triggered_rule_details() {
     assert_eq!(report["rule_details"][0]["auto_fixable"], true);
     assert_eq!(
         report["rule_details"][0]["doc_url"],
-        "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"
+        "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace"
     );
 }
 

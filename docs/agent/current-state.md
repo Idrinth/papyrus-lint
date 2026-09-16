@@ -29,8 +29,10 @@ of re-lexing the source, on a script that parses cleanly at all;
 when the script doesn't parse, since that's the only way it can still run
 then.
 
-`app/crates/papyrus-lints` currently implements all rules listed in the
-[README's Implemented Lints table](README.md#implemented-lints). Rules inspect
+`app/crates/papyrus-lints` currently implements all rules listed in
+[`docs/rules.json`](docs/rules.json), also browsable as the website's
+[full lint rule reference](https://papyrus-lint.idrinth.de/rules.html).
+Rules inspect
 raw source or lexer tokens rather than requiring a successfully parsed AST.
 Automatic repair is available for trailing whitespace, comma spacing,
 semicolons, indentation, whitespace around member-access dots, spacing
@@ -66,14 +68,15 @@ property already does.
 keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
 `"maintainability"`), an `Importance` (`Low`/`Medium`/`High`) rating how
 much fixing that rule matters for keeping a codebase maintainable, a
-`description` copied verbatim from that rule's row in the README's
-[Implemented Lints](README.md#implemented-lints) tables (via that rule's
-`definition` field in `docs/rules.json`, which `build.rs` compiles into
-`RULE_TAGS`/`KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` at build time — see
-"Keeping agent instructions synchronized" below), and an `auto_fixable()`
-method derived from `FIXABLE_RULE_IDS` rather than stored separately, so
-the two can never drift apart — for every id in `KNOWN_RULE_IDS`, looked
-up case-insensitively via `tags::tags_for`. The
+`description` copied verbatim from that rule's own `definition` field in
+[`docs/rules.json`](docs/rules.json) (kept in sync by hand — see "Docs
+sync" in AGENTS.md; `build.rs` compiles it into
+`RULE_TAGS`/`KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` at build time, and
+`docs/nexuspage.bbcode`'s lint tables are generated straight from
+`docs/rules.json` too, so both stay in sync automatically), and an
+`auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
+separately, so the two can never drift apart — for every id in
+`KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
 desktop app's `list_rule_tags` Tauri command (`app/src-tauri/src/meta.rs`)
 exposes the same metadata to the frontend as a JSON-friendly
 `RuleTagsInfo` per rule (its `description` is also what the Lint results
@@ -121,17 +124,13 @@ predicate). `--tag` can't be combined with `--type`, since the two select
 overlapping things (one rule vs. one kind of rule), and an unrecognized
 tag is a usage error.
 
-Each `RuleTags` entry also carries a `doc_slug` — the anchor id
-(`pages/build.py`'s `lint-<slugify(name)>`, built from that rule's own row
-in the README's Implemented Lints tables) its row renders under on the
-project website's homepage — kept in sync by hand the same way
-`description` is, since it's derived from the README row's display name
-rather than the rule's id and the two don't always match (e.g.
-`comma-spacing`'s row is titled "Space after comma", so its slug is
-`space-after-comma`). `RuleTags::doc_url()` builds the full
-`<website>/#lint-<doc_slug>` link from it, giving every surface that
-already carries rule tag metadata a way to jump a user straight to that
-rule's own documentation instead of just naming it: the desktop app's
+`RuleTags::doc_url()` builds a link straight to that rule's own row on the
+website's searchable rules reference (`<website>/rules.html#rule-<rule>`,
+`rule` being the rule's own id — the same id `render_rules_table` in
+`pages/build.py` renders each `rules.html` row's `id="rule-<id>"` under),
+giving every surface that already carries rule tag metadata a way to jump
+a user straight to that rule's own documentation instead of just naming
+it: the desktop app's
 `list_rule_tags` command includes `doc_url` in each `RuleTagsInfo`, and
 `buildFindingTagsEl` renders it as a "docs" badge/link alongside a
 finding's kind/importance/auto-fixable badges; the CLI's plain-text report

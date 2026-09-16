@@ -4,10 +4,10 @@
 //! to keeping a codebase maintainable, whether they're auto-fixable, and a
 //! detailed description of the rule. [`RULE_TAGS`] itself is generated at
 //! build time by `build.rs` from `docs/rules.json` — edit that file, not
-//! this one, to change a rule's tags, importance, doc slug, or description
-//! (kept in sync with README.md by hand — see "Docs sync" in AGENTS.md;
-//! `docs/nexuspage.bbcode`'s lint tables are generated from
-//! `docs/rules.json` too). This module only
+//! this one, to change a rule's tags, importance, or description.
+//! `docs/rules.json` is the source of truth for this metadata (see "Docs
+//! sync" in AGENTS.md); `docs/nexuspage.bbcode`'s lint tables and the
+//! website's `rules.html` are both generated from it too. This module only
 //! exposes that metadata; [`crate::repair_filtered_by_tag`] and the CLI's
 //! `--tag <kind>` flag are what actually filter lints/fixes down to one
 //! kind at a time, built on top of it.
@@ -34,22 +34,11 @@ pub const WEBSITE_URL: &str = "https://papyrus-lint.idrinth.de";
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RuleTags {
     pub rule: &'static str,
-    /// The anchor id (`pages/build.py`'s `lint-<slugify(name)>`, from that
-    /// rule's row in README.md's Implemented Lints tables) this rule's row
-    /// renders under on the project website's homepage, so
-    /// [`RuleTags::doc_url`] can link straight to it. Sourced from this
-    /// rule's `doc_slug` field in `docs/rules.json`, kept in sync by hand
-    /// with README.md — see "Docs sync" in AGENTS.md — since it's derived
-    /// from the README row's own display name rather than this rule's id,
-    /// and the two don't always match (e.g. `comma-spacing`'s row is
-    /// titled "Space after comma", slugifying to `space-after-comma`).
-    pub doc_slug: &'static str,
-    /// The rule's detailed description, copied verbatim from its row in
-    /// README.md's Implemented Lints tables (this rule's `definition`
-    /// field in `docs/rules.json`), so a consumer (e.g. the desktop app's
-    /// "Export for AI" document) can surface the same explanation the
-    /// README gives a human reader without needing that documentation on
-    /// hand.
+    /// The rule's detailed description, copied verbatim from its
+    /// `definition` field in `docs/rules.json`, so a consumer (e.g. the
+    /// desktop app's "Export for AI" document) can surface the same
+    /// explanation the website gives a human reader without needing that
+    /// documentation on hand.
     pub description: &'static str,
     /// Keyword(s) describing the kind(s) of fix this rule's findings
     /// represent. Never empty.
@@ -65,13 +54,13 @@ impl RuleTags {
         FIXABLE_RULE_IDS.contains(&self.rule)
     }
 
-    /// The URL of this rule's own row on the project website's homepage
-    /// (`<website>/#lint-<doc_slug>`), for a consumer (the desktop app, the
-    /// CLI's plain-text/JSON/AI output, the VS Code extension, the
-    /// SublimeLinter plugin) to link a finding straight to its
-    /// documentation instead of just naming the rule.
+    /// The URL of this rule's own row on the project website's searchable
+    /// rules reference (`<website>/rules.html#rule-<rule>`), for a consumer
+    /// (the desktop app, the CLI's plain-text/JSON/AI output, the VS Code
+    /// extension, the SublimeLinter plugin) to link a finding straight to
+    /// its documentation instead of just naming the rule.
     pub fn doc_url(&self) -> String {
-        format!("{WEBSITE_URL}/#lint-{}", self.doc_slug)
+        format!("{WEBSITE_URL}/rules.html#rule-{}", self.rule)
     }
 }
 
@@ -176,42 +165,11 @@ mod tests {
     }
 
     #[test]
-    fn every_rule_has_a_doc_slug_shaped_like_an_html_anchor_fragment() {
-        for tags in RULE_TAGS {
-            assert!(
-                !tags.doc_slug.is_empty()
-                    && tags
-                        .doc_slug
-                        .chars()
-                        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
-                    && !tags.doc_slug.starts_with('-')
-                    && !tags.doc_slug.ends_with('-'),
-                "{:?} has an invalid doc_slug {:?}",
-                tags.rule,
-                tags.doc_slug
-            );
-        }
-    }
-
-    #[test]
-    fn rule_tags_has_no_duplicate_doc_slugs() {
-        let mut seen = HashSet::new();
-        for tags in RULE_TAGS {
-            assert!(
-                seen.insert(tags.doc_slug),
-                "{:?} shares its doc_slug {:?} with another rule",
-                tags.rule,
-                tags.doc_slug
-            );
-        }
-    }
-
-    #[test]
-    fn doc_url_links_to_the_website_lint_anchor() {
+    fn doc_url_links_to_the_website_rules_reference_anchor() {
         let tags = tags_for(crate::trailing_whitespace::RULE).unwrap();
         assert_eq!(
             tags.doc_url(),
-            "https://papyrus-lint.idrinth.de/#lint-trailing-whitespace"
+            "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace"
         );
     }
 }

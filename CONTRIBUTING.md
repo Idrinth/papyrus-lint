@@ -227,19 +227,21 @@ base.
 ## Adding lint rules
 
 Lint rules live in `app/crates/papyrus-lints/src`; the complete current set and
-each rule's behavior are documented in the [Implemented Lints
-table](README.md#implemented-lints). Rules generally inspect raw source or
-lexer tokens so they keep running on scripts that do not parse cleanly. Follow
-that approach for a new rule where practical, then register it in
-`app/crates/papyrus-lints/src/registry.rs` (known/fixable ids, `collect_diagnostics`,
-`apply_repairs` if it has a fix, and `default_rules`) and add its enable switch
-on `Rules` in `app/crates/papyrus-lints/src/config.rs`.
+each rule's behavior are documented in [`docs/rules.json`](docs/rules.json),
+also browsable as the website's [full lint rule
+reference](https://papyrus-lint.idrinth.de/rules.html). Rules generally
+inspect raw source or lexer tokens so they keep running on scripts that do not
+parse cleanly. Follow that approach for a new rule where practical, then
+register it in `app/crates/papyrus-lints/src/registry.rs` (known/fixable ids,
+`collect_diagnostics`, `apply_repairs` if it has a fix, and `default_rules`)
+and add its enable switch on `Rules` in `app/crates/papyrus-lints/src/config.rs`.
 
 A lint/fix job receives a `&papyrus_lints::Config`, deserialized from a
 project's optional `papyrus-lint.yaml`/`.yml`, so user-configurable behavior
 should be read from there rather than added as a separate parameter. Add tests
 for diagnostics, disable comments, configuration, and repairs as applicable,
-and update the README's lint table, rule-id list, and configuration example.
+and update `docs/rules.json`, `app/crates/papyrus-lints/src/tags.rs`, the
+README's rule-id list, and the configuration example.
 
 ## Reporting bugs and requesting features
 
