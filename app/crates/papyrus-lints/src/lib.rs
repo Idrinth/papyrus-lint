@@ -34,6 +34,7 @@ pub mod identifier_casing;
 pub mod impossible_cast;
 pub mod indentation;
 pub mod int_division_to_float;
+pub mod invalid_random_range;
 pub mod invariant_loop_condition;
 pub mod local_variable_shadowing;
 pub mod magic_numbers;
@@ -156,6 +157,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     actor_value::RULE,
     repeated_setoutfit::RULE,
     missing_doc_comment::RULE,
+    invalid_random_range::RULE,
 ];
 
 use serde::Serialize;
@@ -363,6 +365,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.division_by_zero {
         diagnostics.extend(division_by_zero::check(source));
+    }
+    if rules.invalid_random_range {
+        diagnostics.extend(invalid_random_range::check(source));
     }
     if rules.empty_body {
         diagnostics.extend(empty_body::check(source));
@@ -1665,6 +1670,12 @@ mod tests {
                 missing_doc_comment::RULE,
                 config_with(|c| c.rules.missing_doc_comment = true),
                 Config::default(),
+            ),
+            (
+                "ScriptName Example\n\nFunction Test()\n    Int i = Utility.RandomInt(10, 5)\nEndFunction\n",
+                invalid_random_range::RULE,
+                Config::default(),
+                config_with(|c| c.rules.invalid_random_range = false),
             ),
         ];
 
