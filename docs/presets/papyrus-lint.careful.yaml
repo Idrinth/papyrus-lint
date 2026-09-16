@@ -147,3 +147,4 @@ rules:
   float_equality: false
   missing_update_handler: false
   unused_import: false
+  event_signature_mismatch: false

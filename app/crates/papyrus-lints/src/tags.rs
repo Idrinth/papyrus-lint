@@ -631,6 +631,13 @@ pub const RULE_TAGS: &[RuleTags] = &[
         kinds: &["maintainability"],
         importance: Importance::Low,
     },
+    RuleTags {
+        rule: crate::event_signature::RULE,
+        doc_slug: "event-signature-mismatch",
+        description: "Flags, as a `[warning]`, an `Event` declaration whose name matches one of the engine's own native events, listed in `rules/known-events.yaml` alongside the Form that first declares each one and its exact parameter list, but whose declared parameter count/types don't match that signature, since Papyrus never validates an `Event`'s signature against what the engine actually calls it with — a mismatched declaration still compiles fine, but the engine then never invokes it (or invokes it with arguments the script doesn't expect), so the script silently never receives that event. Matches by event name alone (case-insensitively), regardless of which Form the enclosing script actually `Extends`, the same way \"Non-base-game native function usage\" matches by (script, function) name alone; parameter types are compared exactly (case-insensitively, with no widening/subtype leniency), parameter names are not. Disabled by default, since `rules/known-events.yaml` only lists a curated subset of the engine's native events, and a script that declares an `Event` sharing one of those names without actually extending the listed Form would otherwise be misreported; opt in with `rules.event_signature_mismatch`.",
+        kinds: &["correctness"],
+        importance: Importance::High,
+    },
 ];
 
 #[cfg(test)]

@@ -258,6 +258,10 @@ Flags patterns that compile clean but crash or silently do the wrong thing at ru
 [td]Flags, as a warning, a RegisterForUpdate/RegisterForSingleUpdate/RegisterForUpdateGameTime/RegisterForSingleUpdateGameTime call with no matching OnUpdate/OnUpdateGameTime Event declared anywhere in the script, since the registration then has no effect. Disabled by default, since a matching Event declared on a script it Extends would otherwise be misreported as missing.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Event signature mismatch[/b][/td]
+[td]Flags, as a warning, an Event declaration whose name matches one of the engine's own native events but whose parameter count/types don't match the signature it's actually called with, since a mismatched declaration still compiles but the engine then never invokes it correctly. Disabled by default, since the known-event list is a curated subset and matches by name alone.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]Array bounds[/b][/td]
 [td]Flags a literal index into a local array that falls outside the constant size it was declared with (e.g. new Float[3] followed by a[5]), since Papyrus silently no-ops the access instead of raising an error.[/td]
 [td][/td]
@@ -502,7 +506,8 @@ rules:
   invalid_random_range: true
   float_equality: false
   missing_update_handler: false
-  unused_import: true[/code][/spoiler]
+  unused_import: true
+  event_signature_mismatch: false[/code][/spoiler]
 
 [heading]CLI[/heading]
 A command line interface is included. For automated checks there are also smaller cli only executables available on the github release.

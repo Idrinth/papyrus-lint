@@ -20,6 +20,7 @@ pub mod default_property_value;
 mod disable_comments;
 pub mod division_by_zero;
 pub mod empty_body;
+pub mod event_signature;
 pub mod exclamation_spacing;
 pub mod explicit_return;
 pub mod float_equality;
@@ -168,6 +169,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     float_equality::RULE,
     missing_update_handler::RULE,
     unused_import::RULE,
+    event_signature::RULE,
 ];
 
 use serde::Serialize;
@@ -515,6 +517,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.unused_import {
         diagnostics.extend(unused_import::check_with(source, external));
+    }
+    if rules.event_signature_mismatch {
+        diagnostics.extend(event_signature::check(source));
     }
     diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
@@ -1731,6 +1736,12 @@ mod tests {
                 "ScriptName Example\n\nFunction Start()\n    RegisterForUpdate(7.0)\nEndFunction\n",
                 missing_update_handler::RULE,
                 config_with(|c| c.rules.missing_update_handler = true),
+                Config::default(),
+            ),
+            (
+                "ScriptName Example\n\nEvent OnActivate()\nEndEvent\n",
+                event_signature::RULE,
+                config_with(|c| c.rules.event_signature_mismatch = true),
                 Config::default(),
             ),
         ];

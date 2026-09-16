@@ -172,6 +172,7 @@ than intentional code.
 | **Division by zero** | Flags, as a `[warning]`, a `/` or `%` whose right-hand operand is a compile-time-constant zero (e.g. `x / 0`, `x % 0.0`, `x / (1 - 1)`), since that crashes the script at runtime. Only a divisor built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. | |
 | **Invalid random range** | Flags, as an `[error]`, a call to `Utility.RandomInt` or `Utility.RandomFloat` whose first two arguments both fold to compile-time-constant numbers with the first not smaller than the second, since both native functions require their first argument (the minimum) to be smaller than their second (the maximum) — a call with the bounds equal or reversed never produces any actual randomness. `Utility.RandomInt`/`Utility.RandomFloat` are only matched when qualified by that literal script name, the same way the "Short wait/update interval" lint treats `Utility.Wait`. Only an argument built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at. | |
 | **Missing update event handler** | Flags, as a `[warning]`, a call to `RegisterForUpdate`, `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` in a script that declares no matching `Event` (`OnUpdate` or `OnUpdateGameTime`, per `rules/update-event-handlers.yaml`) anywhere in it, since the engine then has nothing to call once the registered timer fires and the registration has no effect. Matches by function name alone (case-insensitively), regardless of receiver, the same way "Forbidden/discouraged function usage" does; a matching `Event` is recognized in any `State` block, not just the empty state, since a call made from one state can still fall back to the empty state's own handler. Disabled by default, since it only ever sees a single script's own source, and a matching `Event` declared instead on a script it `Extends` would otherwise be misreported as missing; opt in with `rules.missing_update_handler`. | |
+| **Event signature mismatch** | Flags, as a `[warning]`, an `Event` declaration whose name matches one of the engine's own native events, listed in `rules/known-events.yaml` alongside the Form that first declares each one and its exact parameter list, but whose declared parameter count/types don't match that signature (e.g. `Event OnActivate()` with no argument, or `Event OnDeath(ObjectReference akKiller)` instead of `Actor akKiller`), since Papyrus never validates an `Event`'s signature against what the engine actually calls it with — a mismatched declaration still compiles fine, but the engine then never invokes it (or invokes it with arguments the script doesn't expect). Matches by event name alone (case-insensitively), regardless of which Form the enclosing script actually `Extends`, the same way "Non-base-game native function usage" matches by (script, function) name alone; parameter types are compared exactly (case-insensitively, with no widening/subtype leniency), parameter names are not. Disabled by default, since `rules/known-events.yaml` only lists a curated subset of the engine's native events, and a script that declares an `Event` sharing one of those names without actually extending the listed Form would otherwise be misreported; opt in with `rules.event_signature_mismatch`. | |
 | **Array bounds** | Flags, as a `[warning]`, a literal index into a local array variable that falls outside the compile-time-constant size it was declared with (e.g. `Float[] a = new Float[3]` followed by `a[5] = 0.1`), since Papyrus doesn't raise a catchable error for an out-of-range array access — it just logs the mistake and silently no-ops the write or returns the type's default for a read. A variable starts tracking a size the moment it's assigned `new <Type>[<N>]` for a literal (or literal-arithmetic) `N`, and stops being tracked the moment it's assigned anything else; a size is only kept past an `If` when every surviving branch agrees on it, and a size learned only inside a `While` loop's body is never assumed to still hold afterward, since the loop may run zero times. Only a plain identifier's own index is checked; a member/property array, or an index built from anything other than a literal (optionally combined with arithmetic and unary operators), is left unflagged rather than guessed at. A `new <Type>[<N>]` whose own literal `N` falls outside the range Papyrus allows is flagged separately, by "Array size range" below. | |
 | **Array size range** | Flags, as an `[error]`, a `new <Type>[<N>]` array creation whose literal `N` falls outside the range Papyrus allows for a script-created array (`0` to `128`), since a size outside that range is almost never intended: Papyrus hard-caps an array created with `New` (or grown with `Add()`) at 128 elements, and a negative size makes no sense at all. That cap doesn't apply to an array returned by a native function or to an editor-populated array `Property`, since neither is created this way. Unlike "Array bounds" above, this only ever looks at a `new` expression's own literal size, with no tracking of which variable holds it. | |
 | **Empty loop/conditional body** | Flags, as a `[warning]`, since this is almost always a forgotten piece of logic rather than something intentional: a `While` loop whose body is empty, or whose body only nudges a variable by a constant amount (`i += 1`, `i -= 1`, or the equivalent `i = i + 1`/`i = i - 1`) with nothing else giving the loop a purpose (a step built from anything but a literal, such as a call or another variable, is left alone since it has a side effect of its own); and an empty `If`, `ElseIf`, or `Else` body. An `Else` clause is told apart from no `Else` clause at all (both parse to an empty body) by scanning for a literal `Else` immediately followed by `EndIf` in the source. | |
@@ -257,8 +258,8 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `array-bounds`, `array-size-range`,
 `default-property-value`, `unguarded-self-recursion`, `self-assignment`,
 `unnecessary-function`, `unknown-actor-value`, `missing-doc-comment`,
-`invalid-random-range`, `float-equality`, `missing-update-handler`, and
-`unused-import`.
+`invalid-random-range`, `float-equality`, `missing-update-handler`,
+`unused-import`, and `event-signature-mismatch`.
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where
@@ -461,8 +462,8 @@ Each key:
   `unchecked_form_parameter`, `unchecked_array_element`, `unused_disable`, `magic_numbers`,
   `native_function_usage`, `repeated_getvalue`,
   `global_variable_setvalue`, `default_property_value`,
-  `unknown_actor_value`, `missing_doc_comment`, and
-  `missing_update_handler`, which default to
+  `unknown_actor_value`, `missing_doc_comment`,
+  `missing_update_handler`, and `event_signature_mismatch`, which default to
   `false`: reordering a script's declared properties is a more invasive
   change than the rest of these lints, many scripts intentionally accept a
   possibly-`None` Form and defer the check to a caller or a later branch
@@ -480,9 +481,13 @@ Each key:
   that have no way to appear in `rules/actor-values.yaml`, most
   existing scripts have no documentation comments at all, so flagging
   every declaration missing one would be noisy until a project opts in,
-  and the "Missing update event handler" lint only ever sees a single
+  the "Missing update event handler" lint only ever sees a single
   script's own source, so a matching `Event` declared instead on a script
-  it `Extends` would otherwise be misreported as missing.
+  it `Extends` would otherwise be misreported as missing, and the "Event
+  signature mismatch" lint's `rules/known-events.yaml` only lists a curated
+  subset of the engine's native events and matches an `Event`'s name alone,
+  regardless of whether the enclosing script actually extends the Form
+  that declares it.
   The key names match the lints listed above:
   `trailing_whitespace`, `comma_spacing`, `forbidden_functions`,
   `formid_hex_notation`, `slow_functions`, `unused_getter`,
@@ -505,7 +510,7 @@ Each key:
   `default_property_value`, `unguarded_self_recursion`,
   `self_assignment`, `unnecessary_function`, `unknown_actor_value`,
   `missing_doc_comment`, `invalid_random_range`,
-  `missing_update_handler`, and `unused_import`.
+  `missing_update_handler`, `unused_import`, and `event_signature_mismatch`.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
