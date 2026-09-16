@@ -1,5 +1,5 @@
 //! Generates the Tauri icon set under `icons/` from
-//! `resources/logo.png` so those platform-specific variants are not
+//! `shared/images/logo.png` so those platform-specific variants are not
 //! checked in.
 
 use std::collections::HashMap;
@@ -19,7 +19,7 @@ fn main() {
 fn generate_icons() {
     let manifest_dir =
         PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"));
-    let source = manifest_dir.join("../../resources/logo.png");
+    let source = manifest_dir.join("../../shared/images/logo.png");
     println!("cargo:rerun-if-changed={}", source.display());
 
     let icons_dir = manifest_dir.join("icons");
