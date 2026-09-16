@@ -183,26 +183,27 @@ per-module, per-file line coverage breakdown for the version shown in the
 site's footer, so visitors can get an impression of how well tested the
 project is without digging through CI artifacts themselves. Unlike every
 other page above, its content isn't derived from anything checked into the
-repository: `build.py`'s `build_coverage_content` renders it from a
-directory of downloaded lcov reports passed via `--coverage-dir`, grouping
-and formatting them with `.github/scripts/coverage_summary.py`'s own
-`MODULES` list and `pct()` helper (loaded by file path via
-`load_coverage_summary`, since `.github/scripts` isn't an importable
-Python package) so the breakdown can never drift from the module grouping
-already used in the release notes and pull request coverage comments;
-`parse_lcov_files`/`normalize_source_path` add the per-file granularity
-`coverage_summary.py` itself doesn't need, stripping a CI runner's
-absolute checkout prefix off each lcov `SF:` path so files display
-relative to the repository root. Within each report, files are listed
-worst-covered first so weak spots are immediately visible. Omitting
-`--coverage-dir` (a local preview build, or no successful CI run found for
-the displayed version) renders the page with a "data unavailable"
-placeholder instead of failing the build. This doesn't need its own CI
-job: the existing GitHub Pages workflow (see below) resolves the same
-version shown in the footer, finds that commit's most recent successful
-`ci.yml` run the same way `release.yml`'s `release-notes` job does,
-downloads its coverage artifacts if one exists, and passes them straight
-to `--coverage-dir`.
+repository: `build.py`'s `build_coverage_page` renders it from a directory
+of downloaded lcov reports passed via `--coverage-dir`, using
+`pages/coverage_report.py`'s `build_coverage_content` to parse and format
+them. That module groups and formats reports with
+`.github/scripts/coverage_summary.py`'s own `MODULES` list and `pct()`
+helper (loaded by file path via `load_coverage_summary`, since
+`.github/scripts` isn't an importable Python package) so the breakdown can
+never drift from the module grouping already used in the release notes and
+pull request coverage comments; `parse_lcov_files`/`normalize_source_path`
+add the per-file granularity `coverage_summary.py` itself doesn't need,
+stripping a CI runner's absolute checkout prefix off each lcov `SF:` path
+so files display relative to the repository root. Within each report,
+files are listed worst-covered first so weak spots are immediately
+visible. Omitting `--coverage-dir` (a local preview build, or no
+successful CI run found for the displayed version) renders the page with
+a "data unavailable" placeholder instead of failing the build. This
+doesn't need its own CI job: the existing GitHub Pages workflow (see
+below) resolves the same version shown in the footer, finds that commit's
+most recent successful `ci.yml` run the same way `release.yml`'s
+`release-notes` job does, downloads its coverage artifacts if one exists,
+and passes them straight to `--coverage-dir`.
 
 `pages/imprint.template.html` renders into `pages/dist/imprint.html`, the
 legal notice (Impressum) required for a site operated from Germany. Unlike
