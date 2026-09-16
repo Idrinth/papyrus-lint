@@ -376,15 +376,23 @@ fn compile_psc_file(
     )
 }
 
-/// Runs every lint rule against `source` (via `function_table`, for
-/// cross-script lookups), then, if `rules.stale_compiled_output` is
-/// enabled, checks `path`'s conventionally located compiled `.pex` against
-/// it (see [`stale_pex::check`]), then, if `rules.script_filename_mismatch`
-/// is enabled, checks `path`'s file name against `source`'s declared
-/// `ScriptName` (see [`script_filename_mismatch::check`]), then, if `compile_check` is set and
-/// `compiler_path` isn't blank, also runs PapyrusCompiler.exe against the
-/// script at `path` (into a throwaway temporary directory — see
-/// [`compiler::check_psc_file`]) and appends any errors it reports (see
+/// Computes `path`'s project diagnostics — if `rules.conflicting_script_versions`
+/// is enabled, same-named byte-different scripts elsewhere among `function_table`'s
+/// search roots (see [`script_locator::conflicting_script_versions`]); if
+/// `rules.stale_compiled_output` is enabled, `path`'s conventionally located
+/// compiled `.pex` being older than it (see [`stale_pex::check`]); if
+/// `rules.script_filename_mismatch` is enabled, `path`'s file name against
+/// `source`'s declared `ScriptName` (see [`script_filename_mismatch::check`])
+/// — then runs every lint rule against `source` (via `function_table`, for
+/// cross-script lookups) with those project diagnostics merged in via
+/// [`papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`],
+/// rather than appended to that call's own result afterward, so a
+/// `@disable`/`@disable-file` directive naming one of them is honored and
+/// counted as used by the `unused-disable` lint rather than incorrectly
+/// flagged as unused. Then, if `compile_check` is set and `compiler_path`
+/// isn't blank, also runs PapyrusCompiler.exe against the script at `path`
+/// (into a throwaway temporary directory — see [`compiler::check_psc_file`])
+/// and appends any errors it reports (see
 /// [`compile_diagnostics::parse_compile_errors`]) to the result, so a
 /// syntax mistake the compiler itself rejects but the lint engine's own,
 /// more forgiving parser doesn't still shows up as a diagnostic. A
@@ -401,21 +409,34 @@ fn lint_with_compile_check(
     compiler_path: &str,
     compile_check: bool,
 ) -> Vec<papyrus_lints::Diagnostic> {
-    let mut diagnostics =
-        papyrus_lints::lint_with_external_arguments(source, config, function_table);
+    // Computed up front and merged in via
+    // `lint_with_external_arguments_and_extra_diagnostics` below, rather than
+    // appended to that call's own result afterward, so a `@disable`/
+    // `@disable-file` directive naming one of these path-dependent
+    // diagnostics is honored *and* counted as used by the `unused-disable`
+    // lint instead of being incorrectly flagged as unused (see
+    // `papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`'s
+    // own docs).
+    let mut project_diagnostics = Vec::new();
     if config.rules.conflicting_script_versions {
-        diagnostics.extend(script_locator::conflicting_script_versions(
+        project_diagnostics.extend(script_locator::conflicting_script_versions(
             path,
             function_table.root(),
             function_table.additional_roots(),
         ));
     }
     if config.rules.stale_compiled_output {
-        diagnostics.extend(stale_pex::check(path));
+        project_diagnostics.extend(stale_pex::check(path));
     }
     if config.rules.script_filename_mismatch {
-        diagnostics.extend(script_filename_mismatch::check(path, source));
+        project_diagnostics.extend(script_filename_mismatch::check(path, source));
     }
+    let mut diagnostics = papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
+        source,
+        config,
+        function_table,
+        project_diagnostics,
+    );
 
     let compiler_path = compiler_path.trim();
     if compile_check && !compiler_path.is_empty() {
@@ -2095,6 +2116,275 @@ mod tests {
         assert!(diagnostics.iter().all(|diagnostic| {
             diagnostic.rule != script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE
         }));
+    }
+
+    // Regression tests for
+    // https://github.com/Idrinth/papyrus-lint/issues/772: `stale-compiled-output`,
+    // `conflicting-script-versions`, and `script-filename-mismatch` are
+    // computed after `papyrus_lints::lint_with_external_arguments` used to
+    // run its own unused-directive validation, so an `@disable`/
+    // `@disable-file` directive that correctly suppressed one of them was
+    // still reported as an `unused-disable`, even though the diagnostic it
+    // named was in fact suppressed.
+
+    #[test]
+    fn lint_psc_file_stale_compiled_output_disable_comment_is_not_reported_as_unused() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Example.psc");
+        let pex_path = dir.path().join("Scripts/Example.pex");
+        std::fs::write(
+            &path,
+            "ScriptName Example ; @disable stale-compiled-output\n",
+        )
+        .unwrap();
+        std::fs::write(&pex_path, "").unwrap();
+
+        let now = std::time::SystemTime::now();
+        std::fs::File::open(&pex_path)
+            .unwrap()
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .unwrap();
+        std::fs::File::open(&path)
+            .unwrap()
+            .set_modified(now)
+            .unwrap();
+
+        let config = papyrus_lints::Config {
+            rules: papyrus_lints::config::Rules {
+                unused_disable: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            config,
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != stale_pex::RULE));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+    }
+
+    #[test]
+    fn lint_psc_file_stale_compiled_output_disable_file_comment_is_not_reported_as_unused() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Example.psc");
+        let pex_path = dir.path().join("Scripts/Example.pex");
+        std::fs::write(
+            &path,
+            "ScriptName Example\n; @disable-file stale-compiled-output\n",
+        )
+        .unwrap();
+        std::fs::write(&pex_path, "").unwrap();
+
+        let now = std::time::SystemTime::now();
+        std::fs::File::open(&pex_path)
+            .unwrap()
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .unwrap();
+        std::fs::File::open(&path)
+            .unwrap()
+            .set_modified(now)
+            .unwrap();
+
+        let config = papyrus_lints::Config {
+            rules: papyrus_lints::config::Rules {
+                unused_disable: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            config,
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != stale_pex::RULE));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+    }
+
+    #[test]
+    fn lint_psc_file_conflicting_script_versions_disable_comment_is_not_reported_as_unused() {
+        let dir = tempdir().unwrap();
+        let first_root = dir.path().join("scripts/source");
+        let second_root = dir.path().join("source/scripts");
+        std::fs::create_dir_all(&first_root).unwrap();
+        std::fs::create_dir_all(&second_root).unwrap();
+        let path = first_root.join("Example.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example ; @disable conflicting-script-versions\n",
+        )
+        .unwrap();
+        std::fs::write(
+            second_root.join("Example.psc"),
+            "ScriptName Example\n; a different version\n",
+        )
+        .unwrap();
+
+        let config = papyrus_lints::Config {
+            rules: papyrus_lints::config::Rules {
+                unused_disable: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            config,
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics.iter().all(|diagnostic| {
+            diagnostic.rule != script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE
+        }));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+    }
+
+    #[test]
+    fn lint_psc_file_conflicting_script_versions_disable_file_comment_is_not_reported_as_unused() {
+        let dir = tempdir().unwrap();
+        let first_root = dir.path().join("scripts/source");
+        let second_root = dir.path().join("source/scripts");
+        std::fs::create_dir_all(&first_root).unwrap();
+        std::fs::create_dir_all(&second_root).unwrap();
+        let path = first_root.join("Example.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example\n; @disable-file conflicting-script-versions\n",
+        )
+        .unwrap();
+        std::fs::write(
+            second_root.join("Example.psc"),
+            "ScriptName Example\n; a different version\n",
+        )
+        .unwrap();
+
+        let config = papyrus_lints::Config {
+            rules: papyrus_lints::config::Rules {
+                unused_disable: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            config,
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics.iter().all(|diagnostic| {
+            diagnostic.rule != script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE
+        }));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+    }
+
+    #[test]
+    fn lint_psc_file_script_filename_mismatch_disable_comment_is_not_reported_as_unused() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Other.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example ; @disable script-filename-mismatch\n",
+        )
+        .unwrap();
+
+        let config = papyrus_lints::Config {
+            rules: papyrus_lints::config::Rules {
+                unused_disable: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            config,
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != script_filename_mismatch::RULE));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+    }
+
+    #[test]
+    fn lint_psc_file_script_filename_mismatch_disable_file_comment_is_not_reported_as_unused() {
+        let dir = tempdir().unwrap();
+        let source_dir = dir.path().join("Scripts/Source");
+        std::fs::create_dir_all(&source_dir).unwrap();
+        let path = source_dir.join("Other.psc");
+        std::fs::write(
+            &path,
+            "ScriptName Example\n; @disable-file script-filename-mismatch\n",
+        )
+        .unwrap();
+
+        let config = papyrus_lints::Config {
+            rules: papyrus_lints::config::Rules {
+                unused_disable: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let diagnostics = lint_psc_file(
+            path.to_string_lossy().into_owned(),
+            dir.path().to_string_lossy().into_owned(),
+            config,
+            Vec::new(),
+            String::new(),
+            false,
+        )
+        .unwrap();
+
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != script_filename_mismatch::RULE));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
     }
 
     #[test]

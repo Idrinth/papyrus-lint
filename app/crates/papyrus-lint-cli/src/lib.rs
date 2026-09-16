@@ -1333,10 +1333,16 @@ pub fn run(
                 };
 
                 ast_cache::ensure_primed(script_path, &source);
-                let mut diagnostics = {
-                    let mut shared = SharedFunctionTable(&function_table);
-                    papyrus_lints::lint_with_external_arguments(&source, &lint_config, &mut shared)
-                };
+                // Computed up front and merged in via
+                // `lint_with_external_arguments_and_extra_diagnostics` below,
+                // rather than appended to that call's own result afterward,
+                // so a `@disable`/`@disable-file` directive naming one of
+                // these path-dependent diagnostics is honored *and* counted
+                // as used by the `unused-disable` lint instead of being
+                // incorrectly flagged as unused (see
+                // `papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`'s
+                // own docs).
+                let mut project_diagnostics = Vec::new();
                 if lint_config.rules.conflicting_script_versions {
                     if strict_achlist_scope {
                         // No directories were added to `additional_script_roots` in
@@ -1352,7 +1358,7 @@ pub fn run(
                             if let Some(same_named) =
                                 scripts_by_name.get(&name.to_ascii_lowercase())
                             {
-                                diagnostics.extend(
+                                project_diagnostics.extend(
                                 papyrus_lint_core::script_locator::conflicting_script_versions_among(
                                     script_path,
                                     same_named,
@@ -1361,7 +1367,7 @@ pub fn run(
                             }
                         }
                     } else {
-                        diagnostics.extend(
+                        project_diagnostics.extend(
                             papyrus_lint_core::script_locator::conflicting_script_versions_in_index(
                                 script_path,
                                 &script_index,
@@ -1370,14 +1376,23 @@ pub fn run(
                     }
                 }
                 if lint_config.rules.stale_compiled_output {
-                    diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));
+                    project_diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));
                 }
                 if lint_config.rules.script_filename_mismatch {
-                    diagnostics.extend(papyrus_lint_core::script_filename_mismatch::check(
+                    project_diagnostics.extend(papyrus_lint_core::script_filename_mismatch::check(
                         script_path,
                         &source,
                     ));
                 }
+                let mut diagnostics = {
+                    let mut shared = SharedFunctionTable(&function_table);
+                    papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
+                        &source,
+                        &lint_config,
+                        &mut shared,
+                        project_diagnostics,
+                    )
+                };
                 // Mirrors the desktop app's `lint_with_compile_check`: a
                 // `compiler_path` that can't be run at all (missing/misconfigured)
                 // is silently left out rather than failing the whole lint run.
@@ -4323,6 +4338,185 @@ mod tests {
             !stdout.contains("[script-filename-mismatch]"),
             "stdout: {stdout}"
         );
+    }
+
+    // Regression tests for
+    // https://github.com/Idrinth/papyrus-lint/issues/772: `stale-compiled-output`,
+    // `conflicting-script-versions`, and `script-filename-mismatch` are
+    // computed after `papyrus_lints::lint_with_external_arguments` used to
+    // run its own unused-directive validation, so an `@disable`/
+    // `@disable-file` directive that correctly suppressed one of them was
+    // still reported as an `unused-disable`, even though the diagnostic it
+    // named was in fact suppressed.
+
+    #[test]
+    fn stale_compiled_output_disable_comment_is_not_reported_as_unused() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        let pex_path = dir.path().join("scripts/Example.pex");
+        write_file(
+            &script_path,
+            "ScriptName Example ; @disable stale-compiled-output\n",
+        );
+        write_file(&pex_path, "");
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  unused_disable: true\n",
+        );
+
+        let now = std::time::SystemTime::now();
+        let pex_file = fs::File::open(&pex_path).expect("failed to open pex file");
+        pex_file
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .expect("failed to set pex mtime");
+        let script_file = fs::File::open(&script_path).expect("failed to open script file");
+        script_file
+            .set_modified(now)
+            .expect("failed to set script mtime");
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[stale-compiled-output]"),
+            "stdout: {stdout}"
+        );
+        assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn stale_compiled_output_disable_file_comment_is_not_reported_as_unused() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        let pex_path = dir.path().join("scripts/Example.pex");
+        write_file(
+            &script_path,
+            "ScriptName Example\n; @disable-file stale-compiled-output\n",
+        );
+        write_file(&pex_path, "");
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  unused_disable: true\n",
+        );
+
+        let now = std::time::SystemTime::now();
+        let pex_file = fs::File::open(&pex_path).expect("failed to open pex file");
+        pex_file
+            .set_modified(now - std::time::Duration::from_secs(60))
+            .expect("failed to set pex mtime");
+        let script_file = fs::File::open(&script_path).expect("failed to open script file");
+        script_file
+            .set_modified(now)
+            .expect("failed to set script mtime");
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[stale-compiled-output]"),
+            "stdout: {stdout}"
+        );
+        assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn conflicting_script_versions_disable_comment_is_not_reported_as_unused() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example ; @disable conflicting-script-versions\n",
+        );
+        write_file(
+            &dir.path().join("source/scripts/Example.psc"),
+            "ScriptName Example\n; a different version\n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  unused_disable: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[conflicting-script-versions]"),
+            "stdout: {stdout}"
+        );
+        assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn conflicting_script_versions_disable_file_comment_is_not_reported_as_unused() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Example.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n; @disable-file conflicting-script-versions\n",
+        );
+        write_file(
+            &dir.path().join("source/scripts/Example.psc"),
+            "ScriptName Example\n; a different version\n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  unused_disable: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[conflicting-script-versions]"),
+            "stdout: {stdout}"
+        );
+        assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn script_filename_mismatch_disable_comment_is_not_reported_as_unused() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Other.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example ; @disable script-filename-mismatch\n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  unused_disable: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[script-filename-mismatch]"),
+            "stdout: {stdout}"
+        );
+        assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    }
+
+    #[test]
+    fn script_filename_mismatch_disable_file_comment_is_not_reported_as_unused() {
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("scripts/source/Other.psc");
+        write_file(
+            &script_path,
+            "ScriptName Example\n; @disable-file script-filename-mismatch\n",
+        );
+        write_file(
+            &dir.path().join("papyrus-lint.yaml"),
+            "rules:\n  unused_disable: true\n",
+        );
+
+        let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0, "stderr: {stderr}");
+        assert!(
+            !stdout.contains("[script-filename-mismatch]"),
+            "stdout: {stdout}"
+        );
+        assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
     }
 
     #[test]

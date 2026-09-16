@@ -232,6 +232,31 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     config: &Config,
     external: &mut E,
 ) -> Vec<Diagnostic> {
+    lint_with_external_arguments_and_extra_diagnostics(source, config, external, Vec::new())
+}
+
+/// Like [`lint_with_external_arguments`], but merges `extra_diagnostics` in
+/// *before* validating `@disable`/`@disable-file` directives and checking
+/// for unused ones, rather than a caller appending them to this function's
+/// own already-finalized result afterward.
+///
+/// `papyrus-lint-core`'s path-dependent project diagnostics
+/// (`stale-compiled-output`, `conflicting-script-versions`,
+/// `script-filename-mismatch`) need a file path or project root this crate
+/// never sees, so a caller computes them separately and passes them in here
+/// as `extra_diagnostics` instead of extending
+/// [`lint_with_external_arguments`]'s own result with them. Appending them
+/// afterward would mean [`unused_disable`]'s validation — which only ever
+/// sees the diagnostics gathered before that result is returned — never
+/// learns that a directive naming one of them actually suppressed
+/// something, and reports it as an `unused-disable` even though [`is_disabled`]
+/// does honor it.
+pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    extra_diagnostics: Vec<Diagnostic>,
+) -> Vec<Diagnostic> {
     let rules = &config.rules;
     let mut diagnostics = Vec::new();
     if rules.trailing_whitespace {
@@ -434,6 +459,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
     if rules.self_assignment {
         diagnostics.extend(self_assignment::check(source));
     }
+    diagnostics.extend(extra_diagnostics);
     let disables = disable_comments::Disables::scan(source);
     let unused_disables = rules
         .unused_disable
@@ -644,13 +670,18 @@ pub fn add_disable_comment(source: &str, target_line: usize, rules: &[String]) -
 /// Whether `rule` is suppressed on `line` (1-indexed) of `source` by an
 /// `@disable`/`@disable-file` directive (see [`disable_comments`]), matched
 /// the same case-insensitive way [`lint`]/[`lint_with_external_arguments`]
-/// match their own diagnostics. Lets a caller outside this crate honor the
-/// same directives for a diagnostic it computed itself rather than through
-/// [`lint`]/[`lint_with_external_arguments`] — namely `papyrus-lint-core`'s
-/// project-level lints (`stale-compiled-output`, `conflicting-script-versions`,
+/// match their own diagnostics. Exposes the same check
+/// [`lint_with_external_arguments_and_extra_diagnostics`] applies internally
+/// to every diagnostic (including the `extra_diagnostics` a caller merges
+/// in) for a caller that needs to ask about a single diagnostic in
+/// isolation instead — namely `papyrus-lint-core`'s project-level lints
+/// (`stale-compiled-output`, `conflicting-script-versions`,
 /// `script-filename-mismatch`), which need more than just `source` (a file
 /// path, or another script's contents) to run and so can't be dispatched
-/// from inside [`lint_with_external_arguments`] itself.
+/// from inside this crate at all. Prefer merging such a diagnostic in via
+/// [`lint_with_external_arguments_and_extra_diagnostics`] over filtering it
+/// with this function by hand: only the former also validates the
+/// directive as used for the `unused-disable` lint.
 pub fn is_disabled(source: &str, line: usize, rule: &str) -> bool {
     disable_comments::Disables::scan(source).is_disabled(line, rule)
 }
@@ -874,6 +905,64 @@ mod tests {
             .unwrap();
 
         assert_eq!(diagnostic.column, 31);
+    }
+
+    #[test]
+    fn extra_diagnostics_disabled_by_a_directive_are_not_reported_as_unused() {
+        // Simulates `papyrus-lint-core`'s path-dependent project diagnostics
+        // (e.g. `stale-compiled-output`), which are computed outside this
+        // crate and merged in via `extra_diagnostics` rather than appended
+        // to `lint_with_external_arguments`'s own result — see that
+        // function's docs and https://github.com/Idrinth/papyrus-lint/issues/772.
+        let config = Config {
+            rules: config::Rules {
+                unused_disable: true,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+        let source = "; @disable stale-compiled-output\n";
+        let extra = vec![Diagnostic {
+            line: 1,
+            column: 1,
+            message: "[info] stale".into(),
+            rule: "stale-compiled-output",
+        }];
+
+        let diagnostics = lint_with_external_arguments_and_extra_diagnostics(
+            source,
+            &config,
+            &mut argument_types::NoExternalSignatures,
+            extra,
+        );
+
+        assert!(diagnostics
+            .iter()
+            .all(|d| d.rule != "stale-compiled-output"));
+        assert!(diagnostics.iter().all(|d| d.rule != unused_disable::RULE));
+    }
+
+    #[test]
+    fn extra_diagnostics_not_covered_by_a_directive_still_report_it_as_unused() {
+        let config = Config {
+            rules: config::Rules {
+                unused_disable: true,
+                ..config::Rules::default()
+            },
+            ..Config::default()
+        };
+        let source = "; @disable-file stale-compiled-output\n";
+
+        let diagnostics = lint_with_external_arguments_and_extra_diagnostics(
+            source,
+            &config,
+            &mut argument_types::NoExternalSignatures,
+            Vec::new(),
+        );
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].rule, unused_disable::RULE);
+        assert!(diagnostics[0].message.contains("stale-compiled-output"));
     }
 
     #[test]
