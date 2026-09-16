@@ -596,6 +596,69 @@ fn init_rejects_an_unknown_preset() {
 }
 
 #[test]
+fn init_rejects_missing_blank_and_extra_preset_arguments() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+
+    for args in [
+        vec!["init", "--preset"],
+        vec!["init", "--preset="],
+        vec!["init", "--preset=strict", "unexpected"],
+    ] {
+        let output = run_cli_in(&args, dir.path());
+
+        assert_eq!(output.status.code(), Some(2), "arguments: {args:?}");
+        assert!(output.stdout.is_empty(), "arguments: {args:?}");
+        assert!(
+            String::from_utf8(output.stderr)
+                .expect("stderr should be UTF-8")
+                .starts_with("Usage: PapyrusLinterCLI"),
+            "arguments: {args:?}"
+        );
+        assert!(
+            !dir.path().join("papyrus-lint.yaml").exists(),
+            "invalid init arguments must not create a config: {args:?}"
+        );
+    }
+}
+
+#[test]
+fn preset_dispatch_rejects_missing_or_unknown_subcommands() {
+    for args in [vec!["preset"], vec!["preset", "remove"]] {
+        let output = run_cli(&args);
+
+        assert_eq!(output.status.code(), Some(2), "arguments: {args:?}");
+        assert!(output.stdout.is_empty(), "arguments: {args:?}");
+        assert!(
+            String::from_utf8(output.stderr)
+                .expect("stderr should be UTF-8")
+                .starts_with("Usage: PapyrusLinterCLI"),
+            "arguments: {args:?}"
+        );
+    }
+}
+
+#[test]
+fn preset_add_rejects_invalid_argument_shapes() {
+    for args in [
+        vec!["preset", "add"],
+        vec!["preset", "add", "name"],
+        vec!["preset", "add", "name", "config.yaml", "extra"],
+        vec!["preset", "add", "name", "config.yaml", "--force"],
+    ] {
+        let output = run_cli(&args);
+
+        assert_eq!(output.status.code(), Some(2), "arguments: {args:?}");
+        assert!(output.stdout.is_empty(), "arguments: {args:?}");
+        assert!(
+            String::from_utf8(output.stderr)
+                .expect("stderr should be UTF-8")
+                .starts_with("Usage: PapyrusLinterCLI"),
+            "arguments: {args:?}"
+        );
+    }
+}
+
+#[test]
 fn output_flag_redirects_json_without_writing_to_stdout() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let script = dir.path().join("scripts/source/Example.psc");
