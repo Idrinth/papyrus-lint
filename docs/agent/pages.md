@@ -51,8 +51,9 @@ that job already carries.
 
 `pages/index.template.html` is a plain HTML/CSS page (no frontend
 framework or bundler) styled to match the desktop app's frontend
-(`app/src/styles.css`): the same Cinzel-headed, light/dark-aware
-palette, including the same System/Light/Dark theme switch. The
+(`app/src/styles.css`): both import `shared/theme.css` for the Cinzel-headed,
+light/dark-aware palette (including the System/Light/Dark theme switch)
+so those tokens cannot drift apart. The
 `<select id="theme-select">` control itself lives once in
 `pages/includes/header.html` (see GitHub Pages below), so it renders in
 every page's header; `pages/theme.js` (copied verbatim into the built
@@ -63,10 +64,10 @@ avoid a flash of the wrong theme — the same approach as
 `app/index.html`'s own inline script. Both read/write the same
 `papyrus-lint:theme` `localStorage` key and `data-theme` root-element
 attribute scheme as the desktop app's theme switch
-(`applyTheme`/`loadStoredTheme` in `app/src/main.ts`), so
-`pages/styles.css`'s dark-mode rules mirror `app/src/styles.css`'s own
-`:root:not([data-theme="light"])`/`:root[data-theme="light"]`/
-`:root[data-theme="dark"]` structure. Rather than hand-duplicating the README's lint tables and CLI
+(`applyTheme`/`loadStoredTheme` in `app/src/main.ts`).
+`pages/build.py` inlines `shared/theme.css` into the deployed
+`styles.css` so the site still ships a single stylesheet. Rather than
+hand-duplicating the README's lint tables and CLI
 usage examples into that template (and having to keep them in sync by
 hand), it carries `<!--LINT_TABLE:Formatting-->`-style placeholder
 comments — one per lint category listed in the README's [Implemented
