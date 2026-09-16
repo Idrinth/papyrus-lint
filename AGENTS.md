@@ -75,16 +75,18 @@ CI treats clippy warnings as errors.
 3. **Do not duplicate agent docs.** Edit `AGENTS.md` (this index) or a
    file under `docs/agent/`. `CLAUDE.md` must remain a pointer to this
    file, not a copy of it.
-4. **Lint descriptions have three consumers.** A README Implemented Lints
-   row is the source of truth. The same change must update
-   `app/crates/papyrus-lints/src/tags.rs` (`description` + `doc_slug`) and
-   the matching entry in `docs/rules.json` (`name`, `description`,
-   `category`, `fixable`, ...). `pages/build.py` generates the website
-   tables from the README, and `.github/scripts/generate_nexuspage_tables.py`
-   generates `docs/nexuspage.bbcode`'s five lint tables from
-   `docs/rules.json`, so neither needs a manual lint-table edit; CI's
-   `bbcode` job fails if `docs/nexuspage.bbcode` drifts from
-   `docs/rules.json`.
+4. **Lint descriptions have two consumers.** A `docs/rules.json` entry
+   (`name`, `description`, `category`, `tags`, `severity`, `fixable`) is
+   the source of truth. The same change must update
+   `app/crates/papyrus-lints/src/tags.rs` (`description`, kept verbatim
+   with the `docs/rules.json` entry). `pages/build.py` generates the
+   website's searchable `rules.html` straight from `docs/rules.json`, and
+   `.github/scripts/generate_nexuspage_tables.py` generates
+   `docs/nexuspage.bbcode`'s five lint tables from it too, so neither needs
+   a manual lint-table edit; CI's `bbcode` job fails if
+   `docs/nexuspage.bbcode` drifts from `docs/rules.json`. `README.md`'s own
+   "Implemented Lints" section only keeps a short per-category blurb and a
+   link to `rules.html` — it carries no per-rule text to keep in sync.
 5. **Match the file you are in.** Don't invent a new module layout, naming
    scheme, or comment style in a file that already has one.
 6. **Don't gold-plate.** A bug fix does not need a surrounding refactor.
@@ -101,17 +103,20 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    `FIXABLE_RULE_IDS` / repair dispatch if it auto-fixes.
 3. `app/crates/papyrus-lints/src/config.rs` — field on `Rules` and its
    `Default` (and the rustdoc yaml example at the top of the file).
-4. `app/crates/papyrus-lints/src/tags.rs` — `RULE_TAGS` entry: `rule`,
-   `doc_slug` (from the README row title, slugified), `description`
-   (verbatim README cell), `kinds`, `importance`.
-5. `README.md` Implemented Lints table.
-6. `docs/rules.json` — a new entry with the same `id` as the rule and its
-   README row's title/description, plus `category` (one of `Formatting`,
-   `Performance`, `Reliability`, `Bugprone`, `Other`, matching the README
-   `###` section the row lives under), `tags`, `severity`, and `fixable`.
+4. `docs/rules.json` — a new entry with the same `id` as the rule, its
+   `name`/`description`, `category` (one of `Formatting`, `Performance`,
+   `Reliability`, `Bugprone`, `Other`), `tags`, `severity`, and `fixable`.
    Run `.github/scripts/generate_nexuspage_tables.py docs/rules.json
    docs/nexuspage.bbcode` afterwards to regenerate its lint tables; CI's
    `bbcode` job fails if that's skipped.
+5. `app/crates/papyrus-lints/src/tags.rs` — `RULE_TAGS` entry: `rule`,
+   `description` (verbatim the `docs/rules.json` entry's own), `kinds`,
+   `importance`. `doc_url()` links straight to `rules.html#rule-<rule>`,
+   derived from the rule id alone, so it needs no entry of its own here.
+6. `README.md`'s "Implemented Lints" section — add a one-line mention
+   under the matching category blurb only if the category's own summary
+   no longer describes what the new rule does; the per-rule reference
+   lives on `rules.html`, not in the README.
 
 Rules should inspect source/tokens so they still run on scripts that
 don't parse. Configurable behavior goes on `&papyrus_lints::Config`, not
