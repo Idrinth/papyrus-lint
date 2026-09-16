@@ -868,6 +868,20 @@ mod tests {
     }
 
     #[test]
+    fn write_psc_file_creates_a_new_file() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("New.psc");
+
+        write_psc_file(
+            path.to_string_lossy().into_owned(),
+            "ScriptName New\n".to_string(),
+        )
+        .unwrap();
+
+        assert_eq!(std::fs::read_to_string(path).unwrap(), "ScriptName New\n");
+    }
+
+    #[test]
     fn hash_psc_file_md5_reports_the_md5_digest_of_the_files_current_contents() {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Example.psc");
@@ -930,6 +944,20 @@ mod tests {
         std::fs::write(&path, "ScriptName Changed\n").unwrap();
         let second = parse_psc_file(path_string).unwrap();
         assert_eq!(second.name, "Changed");
+    }
+
+    #[test]
+    fn parse_psc_file_does_not_return_a_cached_script_after_an_invalid_edit() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        let path_string = path.to_string_lossy().into_owned();
+
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        assert_eq!(parse_psc_file(path_string.clone()).unwrap().name, "Example");
+
+        std::fs::write(&path, "Function MissingScriptName()\nEndFunction\n").unwrap();
+
+        assert!(parse_psc_file(path_string).is_err());
     }
 
     #[test]
@@ -1459,6 +1487,17 @@ mod tests {
         std::fs::write(&script, "ScriptName Actual\n").unwrap();
         std::fs::write(dir.path().join("Backup.psc.bak"), "ScriptName Backup\n").unwrap();
         std::fs::write(dir.path().join("Notes.txt"), "ScriptName Notes\n").unwrap();
+
+        let files = list_psc_files_recursively(dir.path().to_string_lossy().into_owned()).unwrap();
+
+        assert_eq!(files, vec![script.to_string_lossy().into_owned()]);
+    }
+
+    #[test]
+    fn list_psc_files_recursively_matches_uppercase_extensions() {
+        let dir = tempdir().unwrap();
+        let script = dir.path().join("Uppercase.PSC");
+        std::fs::write(&script, "ScriptName Uppercase\n").unwrap();
 
         let files = list_psc_files_recursively(dir.path().to_string_lossy().into_owned()).unwrap();
 
