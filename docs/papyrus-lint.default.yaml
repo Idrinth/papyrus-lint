@@ -59,6 +59,7 @@ rules:
   return_types: true
   function_override: true
   argument_naming: true
+  argument_override_types: true
   numeric_comparison: true
   indentation: true
   cyclomatic_complexity: true

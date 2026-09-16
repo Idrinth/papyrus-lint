@@ -139,6 +139,10 @@ Catches mistakes that still compile fine but can misbehave once the game is actu
 [td]Flag a function declared on this script whose parameter name doesn't match (case-insensitively) the corresponding parameter of the same-named function declared on the script it Extends.[/td]
 [td][/td]
 [/tr]
+[tr][td][b]Argument override type check[/b][/td]
+[td]Flags a function or event whose parameter count or types don't match the same-named function declared on the script it Extends.[/td]
+[td][/td]
+[/tr]
 [tr][td][b]State function signature mismatch[/b][/td]
 [td]Flags a function or event in a State whose parameters or return type don't match its empty-state declaration.[/td]
 [td][/td]
@@ -410,6 +414,7 @@ rules:
   return_types: true
   function_override: true
   argument_naming: true
+  argument_override_types: true
   numeric_comparison: true
   indentation: true
   cyclomatic_complexity: true

@@ -228,6 +228,7 @@ export interface LintRules {
   return_types: boolean;
   function_override: boolean;
   argument_naming: boolean;
+  argument_override_types: boolean;
   numeric_comparison: boolean;
   indentation: boolean;
   cyclomatic_complexity: boolean;
@@ -319,6 +320,7 @@ export const DEFAULT_RULES: LintRules = {
   return_types: true,
   function_override: true,
   argument_naming: true,
+  argument_override_types: true,
   numeric_comparison: true,
   indentation: true,
   cyclomatic_complexity: true,

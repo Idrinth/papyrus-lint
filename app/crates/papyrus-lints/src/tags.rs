@@ -152,6 +152,12 @@ pub const RULE_TAGS: &[RuleTags] = &[
         importance: Importance::Medium,
     },
     RuleTags {
+        rule: crate::argument_override_types::RULE,
+        description: "Flags, as a `[warning]`, a function or event declared on this script whose parameter count or parameter types don't match the corresponding parameters of the same-named function declared on the script it `Extends` (directly or transitively) — a call resolved against a parent-typed reference still binds against the parent's exact declared parameter list, so a mismatched override either fails to compile against such a reference or silently receives arguments meant for a differently-shaped signature. A parameter count mismatch is reported once for the whole declaration; a matching count is then compared type by type (exact match, case-insensitively, with no widening/subtype leniency). Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked.",
+        kinds: &["correctness", "maintainability"],
+        importance: Importance::High,
+    },
+    RuleTags {
         rule: crate::state_function_signature::RULE,
         description: "Flags, as an `[error]`, a function or event declared inside a `State` block whose parameter count/types or return type doesn't match the same-named declaration in the script's \"empty state\" (the one declared directly on the script, outside any `State` block) — Papyrus requires these to match identically for the state version to be recognized as an override of the empty-state one at all, rather than becoming a distinct, effectively unreachable function. Only compared against an empty-state declaration already present on the script being linted; a state function may instead validly match one declared on a parent script (per the language spec), which this lint has no way to resolve, so that case is left unflagged.",
         kinds: &["correctness"],
