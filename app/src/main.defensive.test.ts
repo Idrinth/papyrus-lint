@@ -36,8 +36,8 @@ import {
   updateLintProgress,
 } from "./main";
 
-// main.test.ts exercises the application with the complete index.html-shaped
-// fixture. This suite deliberately boots it without that fixture: the same
+// The per-module UI tests exercise the application with the complete
+// index.html-shaped fixture. This suite deliberately boots it without that fixture: the same
 // situation occurs briefly while the module loads, and can also occur in a
 // browser preview whose markup is incomplete. Public UI helpers promise to
 // tolerate unavailable optional elements rather than throwing.

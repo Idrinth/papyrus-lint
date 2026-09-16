@@ -20,9 +20,15 @@ expected of a pull request.
 │   │   ├── live-edit.ts         # Code viewer edit mode: live lint, autocomplete, save
 │   │   ├── highlight.ts         # Standalone Papyrus syntax highlighter for the
 │   │   │                        # code viewer dialog
-│   │   ├── main.test.ts         # Vitest unit tests for main.ts and its modules
+│   │   ├── main.test.ts         # Vitest unit tests for main.ts
+│   │   ├── presets.test.ts      # Vitest unit tests for presets.ts
+│   │   ├── code-viewer.test.ts  # Vitest unit tests for code-viewer.ts
+│   │   ├── results-list.test.ts # Vitest unit tests for results-list.ts
+│   │   ├── live-edit.test.ts    # Vitest unit tests for live-edit.ts
 │   │   ├── highlight.test.ts    # Vitest unit tests for highlight.ts
-│   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for main.test.ts
+│   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for the UI tests
+│   │   ├── test/mocks.ts        # Shared Tauri spies for the UI tests
+│   │   ├── test/harness.ts      # Shared helpers/hooks for the UI tests
 │   │   └── styles.css
 │   ├── index.html            # Frontend entry point (Vite)
 │   ├── package.json          # npm scripts/deps for the frontend and Tauri CLI
