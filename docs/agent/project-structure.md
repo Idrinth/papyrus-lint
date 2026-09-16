@@ -104,9 +104,10 @@
 │       │       │                       # literal name, with no .psc in the
 │       │       │                       # project; reads rules/native-globals.yaml
 │       │       │                       # via a build-time-generated array (build.rs)
-│       │       ├── presets.rs          # Label/description metadata for the desktop
-│       │       │                       # app's first-run preset picker, layered over
-│       │       │                       # config::Preset (see Configuration below)
+│       │       ├── presets.rs          # Preset (built-in + user), init/apply/save/
+│       │       │                       # rename/delete, and the label/description
+│       │       │                       # metadata for the desktop app's first-run
+│       │       │                       # preset picker (see Configuration below)
 │       │       ├── compiler.rs         # Runs PapyrusCompiler.exe for the desktop
 │       │       │                       # app's "Compile" button, then strips personal
 │       │       │                       # data from the compiled .pex; also compiles
