@@ -1368,6 +1368,7 @@ const FIXABLE_RULE_IDS = new Set([
   "trailing-whitespace",
   "global-variable-increment",
   "unnecessary-function",
+  "unused-import",
 ]);
 
 // A rule in FIXABLE_RULE_IDS can still report a violation it can't actually
@@ -1457,6 +1458,7 @@ const FIXABLE_RULE_DISPLAY_NAMES: Record<string, string> = {
   "type-casing": "Type name casing",
   "trailing-whitespace": "Trailing whitespace",
   "global-variable-increment": "GlobalVariable increment via SetValue(GetValue() + x)",
+  "unused-import": "Unused import",
 };
 
 export function massFixRuleDisplayName(rule: string): string {

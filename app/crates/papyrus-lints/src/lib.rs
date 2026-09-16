@@ -533,6 +533,14 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
 
 /// Rule ids with an automatic fix, in the order [`repair`] applies them.
 /// Every other id in [`KNOWN_RULE_IDS`] can only be reported, never fixed.
+///
+/// [`unused_import::RULE`]'s fix is the one exception to "in the order
+/// `repair` applies them": like its own [`unused_import::check`], plain
+/// [`repair`]/[`repair_filtered`]/[`repair_filtered_by_tag`] can never
+/// actually resolve which imports are unused (they have no project-wide
+/// resolver to ask), so it's a no-op there; see
+/// [`repair_with_external_arguments`] to actually apply it, the same way
+/// [`lint_with_external_arguments`] resolves that rule's diagnostics.
 pub const FIXABLE_RULE_IDS: &[&str] = &[
     identifier_casing::RULE,
     slow_functions::RULE,
@@ -549,6 +557,7 @@ pub const FIXABLE_RULE_IDS: &[&str] = &[
     global_variable_increment::RULE,
     named_arguments::RULE,
     unnecessary_function::RULE,
+    unused_import::RULE,
 ];
 
 /// Applies every automatic fix to `source`, including the semicolon and
@@ -588,6 +597,75 @@ pub fn repair_filtered_by_tag(source: &str, config: &Config, tag: Option<&str>) 
             })
         })
     })
+}
+
+/// Like [`repair`], but also applies the "unused-import" fix (see
+/// [`unused_import::repair_with`]), resolving each `Import`'s usage through
+/// `external` — the same [`argument_types::ExternalSignatures`] resolver
+/// [`lint_with_external_arguments`] uses for that rule's own diagnostics.
+/// Every other fix in [`FIXABLE_RULE_IDS`] behaves exactly as it does under
+/// [`repair`], since only "unused-import" needs project-wide context to
+/// resolve anything at all.
+pub fn repair_with_external_arguments<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+) -> String {
+    repair_filtered_with_external_arguments(source, config, external, None)
+}
+
+/// Like [`repair_filtered`], but also resolves "unused-import" through
+/// `external`, the same way [`repair_with_external_arguments`] does.
+pub fn repair_filtered_with_external_arguments<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    rule_filter: Option<&str>,
+) -> String {
+    repair_with_external(source, config, external, |rule| {
+        rule_filter.is_none_or(|filter| filter == rule)
+    })
+}
+
+/// Like [`repair_filtered_by_tag`], but also resolves "unused-import"
+/// through `external`, the same way [`repair_with_external_arguments`]
+/// does.
+pub fn repair_filtered_by_tag_with_external_arguments<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    tag: Option<&str>,
+) -> String {
+    repair_with_external(source, config, external, |rule| {
+        tag.is_none_or(|tag| {
+            tags::tags_for(rule).is_some_and(|rule_tags| {
+                rule_tags
+                    .kinds
+                    .iter()
+                    .any(|kind| kind.eq_ignore_ascii_case(tag))
+            })
+        })
+    })
+}
+
+/// Shared implementation behind the three `_with_external_arguments`
+/// functions above: applies every self-contained fix via [`repair_with`]
+/// (unaffected by `external`), then — if `config.rules.unused_import` is
+/// enabled and `applies` accepts [`unused_import::RULE`] — removes every
+/// `Import` line [`unused_import::check_with`] resolves as unused through
+/// `external`.
+fn repair_with_external<E: argument_types::ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    external: &mut E,
+    applies: impl Fn(&str) -> bool,
+) -> String {
+    let source = repair_with(source, config, &applies);
+    if config.rules.unused_import && applies(unused_import::RULE) {
+        unused_import::repair_with(&source, external)
+    } else {
+        source
+    }
 }
 
 /// Shared implementation behind [`repair_filtered`] and
@@ -2094,5 +2172,93 @@ mod tests {
             &mut FakeExternalWithUnusedImport,
         );
         assert!(disabled.iter().all(|d| d.rule != unused_import::RULE));
+    }
+
+    #[test]
+    fn repair_with_external_arguments_removes_an_unused_import_resolved_through_external() {
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+
+        let repaired = repair_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+        );
+
+        assert_eq!(
+            repaired,
+            "ScriptName Example\n\n\nFunction Test()\nEndFunction\n"
+        );
+        assert_eq!(
+            repair(source, &Config::default()),
+            source,
+            "the plain, resolver-less repair must remain a no-op for unused-import"
+        );
+    }
+
+    #[test]
+    fn repair_filtered_with_external_arguments_only_removes_the_named_rule() {
+        let source =
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\n    Call(1,2)\nEndFunction\n";
+
+        let unused_import_only = repair_filtered_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            Some(unused_import::RULE),
+        );
+        assert_eq!(
+            unused_import_only,
+            "ScriptName Example\n\n\nFunction Test()\n    Call(1,2)\nEndFunction\n"
+        );
+
+        let comma_only = repair_filtered_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            Some(comma_spacing::RULE),
+        );
+        assert_eq!(
+            comma_only,
+            "ScriptName Example\n\nImport Helpers\n\nFunction Test()\n    Call(1, 2)\nEndFunction\n"
+        );
+    }
+
+    #[test]
+    fn repair_filtered_by_tag_with_external_arguments_matches_unused_imports_own_tag() {
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+
+        let maintainability = repair_filtered_by_tag_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            Some("maintainability"),
+        );
+        assert_eq!(
+            maintainability,
+            "ScriptName Example\n\n\nFunction Test()\nEndFunction\n"
+        );
+
+        let style_only = repair_filtered_by_tag_with_external_arguments(
+            source,
+            &Config::default(),
+            &mut FakeExternalWithUnusedImport,
+            Some("style"),
+        );
+        assert_eq!(style_only, source);
+    }
+
+    #[test]
+    fn repair_with_external_arguments_skips_unused_import_when_its_rule_is_disabled() {
+        let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+        let disabled_config = config_with(|c| c.rules.unused_import = false);
+
+        assert_eq!(
+            repair_with_external_arguments(
+                source,
+                &disabled_config,
+                &mut FakeExternalWithUnusedImport
+            ),
+            source
+        );
     }
 }
