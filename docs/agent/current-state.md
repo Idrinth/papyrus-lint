@@ -68,11 +68,12 @@ property already does.
 keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
 `"maintainability"`), an `Importance` (`Low`/`Medium`/`High`) rating how
 much fixing that rule matters for keeping a codebase maintainable, a
-`description` copied verbatim from that rule's own entry in
+`description` copied verbatim from that rule's own `definition` field in
 [`docs/rules.json`](docs/rules.json) (kept in sync by hand — see "Docs
-sync" in AGENTS.md; `docs/nexuspage.bbcode`'s lint tables are instead
-generated straight from `docs/rules.json`, so those stay in sync
-automatically), and an
+sync" in AGENTS.md; `build.rs` compiles it into
+`RULE_TAGS`/`KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` at build time, and
+`docs/nexuspage.bbcode`'s lint tables are generated straight from
+`docs/rules.json` too, so both stay in sync automatically), and an
 `auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
 separately, so the two can never drift apart — for every id in
 `KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
@@ -636,8 +637,8 @@ touching the filesystem by hand. It's only shown once at least one exists:
 `renderPresetManagementTab` (`app/src/main.ts`) filters whatever
 `list_config_presets` returns down to the non-built-in ones
 (`isCustomPreset`, checking a preset's id against the three built-in names
-by hand — the same convention `FIXABLE_RULE_IDS` follows for the lint
-engine's own fixable rule ids), hides the tab entirely when that list is
+by hand — the same membership-list convention `FIXABLE_RULE_IDS` follows
+for the lint engine's own fixable rule ids), hides the tab entirely when that list is
 empty, and switches back to the Settings tab if it was the active one and
 its last preset just disappeared. `refreshPresetManagementTab` re-fetches
 and re-renders it, called once at startup and after every action below
