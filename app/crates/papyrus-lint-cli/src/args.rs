@@ -8,7 +8,69 @@
 
 use std::path::PathBuf;
 
+use clap::Parser;
+
 use crate::output::{normalize_tag_filter, ColorChoice, OutputFormat};
+
+/// The main lint/fix/`--blob` invocation's flags and options, extracted by
+/// `clap` before [`parse_run_args`]'s own semantic validation (mutually
+/// exclusive flags, enum coercion, numeric ranges) runs on the raw values —
+/// `clap` only owns recognizing `--flag`/`--flag=value`/`--flag value`,
+/// repeatable options, and reporting a missing value, not the business
+/// rules layered on top. `-h`/`--help` and `-V`/`--version` are declared
+/// here too (rather than left to clap's own built-in handling) so
+/// `parse_run_args` can keep reporting them the same way it always has.
+/// `fix`'s target path, `fix` itself, and `--blob`'s own exclusivity with a
+/// path/`fix` are all resolved from the loose `positionals` left over
+/// afterward, since every flag above can appear before, after, or mixed in
+/// with them in any order.
+#[derive(Parser, Debug)]
+#[command(
+    no_binary_name = true,
+    disable_help_flag = true,
+    disable_version_flag = true
+)]
+struct RawArgs {
+    #[arg(long, short = 'h')]
+    help: bool,
+    #[arg(long, short = 'V')]
+    version: bool,
+    #[arg(long)]
+    json: bool,
+    #[arg(long)]
+    quiet_warnings: bool,
+    #[arg(long)]
+    quiet_info: bool,
+    #[arg(long)]
+    short_paths: bool,
+    #[arg(long)]
+    progress: bool,
+    #[arg(long)]
+    dry_run: bool,
+    #[arg(long)]
+    hash_source: bool,
+    #[arg(long)]
+    config: Option<String>,
+    #[arg(long = "script-root")]
+    script_root: Vec<String>,
+    #[arg(long)]
+    output: Option<String>,
+    #[arg(long = "type")]
+    type_filter: Option<String>,
+    #[arg(long)]
+    line: Option<String>,
+    #[arg(long)]
+    tag: Option<String>,
+    #[arg(long)]
+    format: Option<String>,
+    #[arg(long)]
+    color: Option<String>,
+    #[arg(long)]
+    threads: Option<String>,
+    #[arg(long)]
+    blob: Option<String>,
+    positionals: Vec<String>,
+}
 
 /// Why [`parse_run_args`] rejected `args`. `Usage` covers every case
 /// [`crate::run`] reports with the generic [`crate::USAGE`] text (a missing
@@ -90,110 +152,33 @@ pub(crate) enum ParsedCommand {
 /// [`crate::run`]'s previous inline parsing exactly so behavior (including
 /// every error message) is unchanged.
 pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError> {
-    let json_flag = args.iter().any(|arg| arg == "--json");
-    let quiet_warnings = args.iter().any(|arg| arg == "--quiet-warnings");
-    let quiet_info = args.iter().any(|arg| arg == "--quiet-info");
-    let short_paths = args.iter().any(|arg| arg == "--short-paths");
-    let progress = args.iter().any(|arg| arg == "--progress");
-    let dry_run = args.iter().any(|arg| arg == "--dry-run");
-    let hash_source = args.iter().any(|arg| arg == "--hash-source");
+    let raw = RawArgs::try_parse_from(args).map_err(|_| ArgsError::Usage)?;
 
-    let mut config_path: Option<PathBuf> = None;
-    let mut output_path: Option<PathBuf> = None;
-    let mut cli_script_roots: Vec<String> = Vec::new();
-    let mut type_filter: Option<String> = None;
-    let mut line_filter: Option<String> = None;
-    let mut tag_filter: Option<String> = None;
-    let mut color_flag: Option<String> = None;
-    let mut format_flag: Option<String> = None;
-    let mut threads_flag: Option<String> = None;
-    let mut blob_flag: Option<String> = None;
-    let mut positional_and_flags: Vec<String> = Vec::with_capacity(args.len());
-    let mut input = args
-        .iter()
-        .filter(|arg| {
-            !matches!(
-                arg.as_str(),
-                "--json"
-                    | "--quiet-warnings"
-                    | "--quiet-info"
-                    | "--short-paths"
-                    | "--progress"
-                    | "--dry-run"
-                    | "--hash-source"
-            )
-        })
-        .cloned();
-    while let Some(arg) = input.next() {
-        if arg == "--config" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            config_path = Some(PathBuf::from(value));
-        } else if arg == "--script-root" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            cli_script_roots.push(value);
-        } else if arg == "--output" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            output_path = Some(PathBuf::from(value));
-        } else if arg == "--type" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            type_filter = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--type=") {
-            type_filter = Some(value.to_string());
-        } else if arg == "--line" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            line_filter = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--line=") {
-            line_filter = Some(value.to_string());
-        } else if arg == "--tag" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            tag_filter = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--tag=") {
-            tag_filter = Some(value.to_string());
-        } else if arg == "--format" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            format_flag = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--format=") {
-            format_flag = Some(value.to_string());
-        } else if arg == "--color" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            color_flag = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--color=") {
-            color_flag = Some(value.to_string());
-        } else if arg == "--threads" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            threads_flag = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--threads=") {
-            threads_flag = Some(value.to_string());
-        } else if arg == "--blob" {
-            let Some(value) = input.next() else {
-                return Err(ArgsError::Usage);
-            };
-            blob_flag = Some(value);
-        } else if let Some(value) = arg.strip_prefix("--blob=") {
-            blob_flag = Some(value.to_string());
-        } else {
-            positional_and_flags.push(arg);
-        }
+    if raw.help {
+        return Err(ArgsError::Usage);
     }
-    let args = positional_and_flags;
+    if raw.version {
+        return Ok(ParsedCommand::Version);
+    }
+
+    let json_flag = raw.json;
+    let quiet_warnings = raw.quiet_warnings;
+    let quiet_info = raw.quiet_info;
+    let short_paths = raw.short_paths;
+    let progress = raw.progress;
+    let dry_run = raw.dry_run;
+    let hash_source = raw.hash_source;
+    let config_path: Option<PathBuf> = raw.config.map(PathBuf::from);
+    let output_path: Option<PathBuf> = raw.output.map(PathBuf::from);
+    let cli_script_roots: Vec<String> = raw.script_root;
+    let type_filter = raw.type_filter;
+    let line_filter = raw.line;
+    let tag_filter = raw.tag;
+    let format_flag = raw.format;
+    let color_flag = raw.color;
+    let threads_flag = raw.threads;
+    let blob_flag = raw.blob;
+    let args = raw.positionals;
 
     if json_flag && format_flag.is_some() {
         return Err(ArgsError::JsonAndFormatConflict);
@@ -242,9 +227,8 @@ pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError
     }
 
     let (fix, input_path) = match args.as_slice() {
-        [flag] if flag == "--version" || flag == "-V" => return Ok(ParsedCommand::Version),
         [sub, path] if sub == "fix" => (true, PathBuf::from(path)),
-        [path] if path != "-h" && path != "--help" && path != "fix" => (false, PathBuf::from(path)),
+        [path] if path != "fix" => (false, PathBuf::from(path)),
         _ => return Err(ArgsError::Usage),
     };
 

@@ -1,6 +1,7 @@
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use clap::Parser;
 use papyrus_lint_config as config;
 use papyrus_lint_core::achlist;
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
@@ -8,6 +9,24 @@ use serde::Serialize;
 
 use crate::project::{find_candidate_pair_root, find_psc_project_root};
 use crate::USAGE;
+
+/// `doctor`'s own flags/positional, extracted by `clap` the same way
+/// `args.rs`'s `RawArgs` is for the main lint/fix invocation.
+#[derive(Parser, Debug)]
+#[command(
+    no_binary_name = true,
+    disable_help_flag = true,
+    disable_version_flag = true
+)]
+struct DoctorRawArgs {
+    #[arg(long)]
+    json: bool,
+    #[arg(long)]
+    config: Option<String>,
+    #[arg(long = "script-root")]
+    script_root: Vec<String>,
+    positionals: Vec<String>,
+}
 
 /// One health-check result reported by [`run_doctor`]: whether a path
 /// assumed by convention or named in the project's configuration actually
@@ -93,33 +112,18 @@ pub(crate) struct DoctorReport {
 /// `error`, or `2` on a usage error (a missing flag value, or a
 /// missing/extra positional argument).
 pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
-    let mut json = false;
-    let mut config_path: Option<PathBuf> = None;
-    let mut cli_script_roots: Vec<String> = Vec::new();
-    let mut positionals: Vec<String> = Vec::new();
-
-    let mut input = args.iter().cloned();
-    while let Some(arg) = input.next() {
-        if arg == "--json" {
-            json = true;
-        } else if arg == "--config" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            config_path = Some(PathBuf::from(value));
-        } else if arg == "--script-root" {
-            let Some(value) = input.next() else {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            };
-            cli_script_roots.push(value);
-        } else {
-            positionals.push(arg);
+    let raw = match DoctorRawArgs::try_parse_from(args) {
+        Ok(raw) => raw,
+        Err(_) => {
+            let _ = write!(stderr, "{USAGE}");
+            return 2;
         }
-    }
+    };
+    let json = raw.json;
+    let config_path: Option<PathBuf> = raw.config.map(PathBuf::from);
+    let cli_script_roots: Vec<String> = raw.script_root;
 
-    let input_path = match positionals.as_slice() {
+    let input_path = match raw.positionals.as_slice() {
         [path] => PathBuf::from(path),
         _ => {
             let _ = write!(stderr, "{USAGE}");
