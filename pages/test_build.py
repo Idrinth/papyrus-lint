@@ -1252,8 +1252,103 @@ class ActionPageTest(unittest.TestCase):
             self.assertFalse((out_dir / "action.html").exists())
 
 
+class RulesPageTest(unittest.TestCase):
+    def test_build_rules_page_renders_table_and_filters(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            rules_file = root / "rules.json"
+            rules_file.write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": "example-rule",
+                            "name": "Example rule",
+                            "tags": ["correctness", "style"],
+                            "severity": "warning",
+                            "fixable": True,
+                            "description": "Flags an `example`.",
+                            "definition": "The full behavior of this rule.",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            (pages_dir / "rules.template.html").write_text(
+                "<title>Lint rules</title><main><!--RULES_CONTENT--></main>", encoding="utf-8"
+            )
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "RULES_FILE", rules_file),
+            ):
+                page_builder.build_rules_page(out_dir, version="v1.0.0")
+
+            output = (out_dir / "rules.html").read_text(encoding="utf-8")
+
+        self.assertNotIn("<!--RULES_CONTENT-->", output)
+        self.assertIn('id="rule-example-rule"', output)
+        self.assertIn("Example rule", output)
+        self.assertIn('<code>example-rule</code>', output)
+        self.assertIn('data-severity="warning"', output)
+        self.assertIn('data-tags="correctness style"', output)
+        self.assertIn('data-fixable="true"', output)
+        self.assertIn('<td class="fix-yes">✓</td>', output)
+        self.assertIn("<code>example</code>", output)
+        self.assertIn("The full behavior of this rule.", output)
+        self.assertIn('value="warning"', output)
+        self.assertIn('value="correctness"', output)
+        self.assertIn('value="style"', output)
+        self.assertNotIn('value="performance"', output)
+        self.assertNotIn('value="maintainability"', output)
+        self.assertNotIn('value="error"', output)
+        self.assertNotIn('value="info"', output)
+        self.assertIn('id="rules-fixable-filter"', output)
+        self.assertIn('id="rules-count"', output)
+
+    def test_build_rules_page_rejects_a_template_missing_a_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            rules_file = root / "rules.json"
+            rules_file.write_text("[]", encoding="utf-8")
+            (pages_dir / "rules.template.html").write_text("<main>No marker</main>", encoding="utf-8")
+
+            with (
+                patch.object(page_builder, "PAGES_DIR", pages_dir),
+                patch.object(page_builder, "RULES_FILE", rules_file),
+                self.assertRaisesRegex(SystemExit, "missing marker"),
+            ):
+                page_builder.build_rules_page(out_dir)
+
+            self.assertFalse((out_dir / "rules.html").exists())
+
+
 class RepositoryConfigurationTest(unittest.TestCase):
     """Keep build.py's checked-in inputs synchronized with its manifest data."""
+
+    def test_rules_json_has_unique_ids_and_known_severities_and_tags(self) -> None:
+        rules = page_builder.load_rules()
+
+        self.assertTrue(rules)
+        ids = [rule["id"] for rule in rules]
+        self.assertEqual(len(ids), len(set(ids)), "rule ids must be unique")
+        for rule in rules:
+            with self.subTest(rule=rule["id"]):
+                self.assertIn(rule["severity"], page_builder.RULE_SEVERITIES)
+                self.assertTrue(rule["tags"])
+                for tag in rule["tags"]:
+                    self.assertIn(tag, page_builder.RULE_TAGS)
+                self.assertIsInstance(rule["fixable"], bool)
+                self.assertTrue(rule["name"].strip())
+                self.assertTrue(rule["description"].strip())
+                self.assertTrue(rule["definition"].strip())
 
     def test_document_manifest_has_unique_slugs_and_readable_local_sources(self) -> None:
         slugs = [doc["slug"] for doc in page_builder.DOCS]
@@ -1381,6 +1476,7 @@ class SitemapAndRobotsTest(unittest.TestCase):
             [
                 "https://example.test/",
                 "https://example.test/action.html",
+                "https://example.test/rules.html",
                 "https://example.test/videos.html",
                 "https://example.test/coverage.html",
                 "https://example.test/imprint.html",
@@ -1433,6 +1529,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
             expected_html = {
                 "index.html",
                 "action.html",
+                "rules.html",
                 "videos.html",
                 "coverage.html",
                 "imprint.html",
@@ -1498,6 +1595,14 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
                     self.assertTrue((out_dir / "assets" / f"{stem}.webp").is_file())
                     self.assertTrue((out_dir / "assets" / f"{stem}.avif").is_file())
 
+            self.assertTrue((out_dir / "rules.js").is_file())
+            rules = page_builder.load_rules()
+            rules_output = (out_dir / "rules.html").read_text(encoding="utf-8")
+            self.assertIn(str(len(rules)), rules_output)
+            for rule in rules:
+                with self.subTest(rule=rule["id"]):
+                    self.assertIn(f'id="rule-{rule["id"]}"', rules_output)
+
 
 class BuildTest(unittest.TestCase):
     def test_script_entry_point_displays_command_line_help(self) -> None:
@@ -1556,9 +1661,30 @@ PapyrusLinterCLI example.psc
             (pages_dir / "imprint.template.html").write_text(
                 "<main>Legal Notice</main>", encoding="utf-8"
             )
+            (pages_dir / "rules.template.html").write_text(
+                "<main><!--RULES_CONTENT--></main>", encoding="utf-8"
+            )
             (pages_dir / "styles.css").write_text("main { color: red; }", encoding="utf-8")
             (pages_dir / "theme.js").write_text("window.themeReady = true;", encoding="utf-8")
             (pages_dir / "downloads.js").write_text("window.downloadsReady = true;", encoding="utf-8")
+            (pages_dir / "rules.js").write_text("window.rulesReady = true;", encoding="utf-8")
+            rules_file = root / "rules.json"
+            rules_file.write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": "example-rule",
+                            "name": "Example rule",
+                            "tags": ["style"],
+                            "severity": "info",
+                            "fixable": False,
+                            "description": "An example rule.",
+                            "definition": "The full behavior of this rule.",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
             fonts_dir = pages_dir / "fonts"
             fonts_dir.mkdir()
             (fonts_dir / "font.woff2").write_bytes(b"font bytes")
@@ -1587,6 +1713,7 @@ PapyrusLinterCLI example.psc
                 ),
                 patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"screenshot.png"}),
                 patch.object(page_builder, "urlopen", return_value=action_response),
+                patch.object(page_builder, "RULES_FILE", rules_file),
             ):
                 page_builder.build(out_dir, version="v1.2.3")
 
@@ -1615,6 +1742,7 @@ PapyrusLinterCLI example.psc
             self.assertEqual((out_dir / "fonts" / "font.woff2").read_bytes(), b"font bytes")
             self.assertIn("themeReady", (out_dir / "theme.js").read_text(encoding="utf-8"))
             self.assertIn("downloadsReady", (out_dir / "downloads.js").read_text(encoding="utf-8"))
+            self.assertIn("rulesReady", (out_dir / "rules.js").read_text(encoding="utf-8"))
             self.assertFalse((out_dir / "stale.txt").exists())
             self.assertTrue((out_dir / "docs" / "index.html").exists())
 
@@ -1626,6 +1754,10 @@ PapyrusLinterCLI example.psc
             self.assertIn("Papyrus Lint Action", action_output)
             self.assertIn("Lints pull requests automatically.", action_output)
             self.assertNotIn("<!--ACTION_TITLE-->", action_output)
+
+            rules_output = (out_dir / "rules.html").read_text(encoding="utf-8")
+            self.assertIn("Example rule", rules_output)
+            self.assertNotIn("<!--RULES_CONTENT-->", rules_output)
 
             self.assertEqual(
                 (out_dir / "CNAME").read_text(encoding="utf-8"),
@@ -1639,6 +1771,7 @@ PapyrusLinterCLI example.psc
             sitemap_output = (out_dir / "sitemap.xml").read_text(encoding="utf-8")
             self.assertIn(f"<loc>{page_builder.SITE_URL}</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}action.html</loc>", sitemap_output)
+            self.assertIn(f"<loc>{page_builder.SITE_URL}rules.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}videos.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}coverage.html</loc>", sitemap_output)
             self.assertIn(f"<loc>{page_builder.SITE_URL}imprint.html</loc>", sitemap_output)

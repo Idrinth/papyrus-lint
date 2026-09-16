@@ -112,8 +112,8 @@ on every build so GitHub Pages keeps serving it there across each
 Actions-based deploy, rather than relying solely on the custom-domain
 setting under Settings → Pages. `build.py` also writes a `sitemap.xml`
 (`sitemap_urls`/`build_sitemap`, rooted at `SITE_URL`) listing the
-homepage, `action.html`, `videos.html`, `coverage.html`, `imprint.html`,
-`docs/index.html`,
+homepage, `action.html`, `rules.html`, `videos.html`, `coverage.html`,
+`imprint.html`, `docs/index.html`,
 and every `DOCS` entry's own subpage — built from the same lists that
 generate those pages, so it can't drift out of sync with what's actually
 published — and a `robots.txt` (`build_robots_txt`) allowing all crawling
@@ -150,6 +150,24 @@ from the same build argument everywhere. `index.template.html`'s own
 hand-written blurb per doc from `DOCS`, linking into `pages/dist/docs/`.
 Adding a new file under `docs/` that should be published this way means
 adding an entry to `DOCS`, not touching either template.
+
+`rules.html` (`pages/rules.template.html`, `render_rules_table`/
+`render_rules_filter_bar`/`build_rules_page`) is a searchable, filterable
+reference of every lint rule, generated straight from `docs/rules.json`'s own
+metadata (`id`, `severity`, `tags`, `fixable`, a short `description`, and the
+full `definition` prose) rather than from `README.md`'s shorter per-category
+tables — so a rule's severity, tags, and full documented behavior are always
+one page away without duplicating any of that by hand. It's reachable from
+the main nav's "All Rules" entry and from a link in the homepage's own
+"Implemented Lints" section. Each row carries `data-severity`/`data-tags`/
+`data-fixable`/`data-search` attributes; `pages/rules.js` (copied and
+minified into the output directory the same way `pages/downloads.js` is)
+reads a search box plus severity/tag/auto-fix checkboxes to show/hide rows
+client-side, with every control starting in the "show everything" state so
+the page is still a complete, browsable table with JavaScript disabled. A
+rule's short description is always shown; its full `definition` sits behind
+a native `<details>`/`<summary>` disclosure per row rather than another
+control `rules.js` has to wire up itself.
 
 The [`papyrus-lint-action`](https://github.com/idrinth/papyrus-lint-action)
 repository's own `README.md` is fetched from its `the-one` branch during
