@@ -76,7 +76,7 @@ that `pages/build.py` fills in at build time by extracting and
 converting the corresponding Markdown table/code block straight out of
 `README.md`, so that content can never drift out of sync. It also
 assembles the page's `assets/` directory by copying the screenshots
-from `resources/` and the app icon from `app/src-tauri/icons/icon.png`,
+from `shared/images/` and the app icon from `app/src-tauri/icons/icon.png`,
 rather than committing duplicate copies of them under `pages/`. For the
 assets actually rendered as `<img>` elements (the header logo and the
 five screenshots — not `logo.jpg`, only ever referenced as a raw
@@ -213,4 +213,3 @@ since the legal text itself never changes at build time. It's linked from
 `pages/includes/footer.html` (as "Legal Notice") rather than the main nav,
 so every page across the site — not just the homepage — carries a direct
 link to it, as German law (§5 TMG) requires.
-
