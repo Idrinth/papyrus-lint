@@ -82,7 +82,8 @@ expected of a pull request.
 │           │   ├── test_support.rs  # Shared helpers for each file's unit tests
 │           │   └── main.rs          # Thin binary entry point around lib::run()
 │           └── tests/               # Binary e2e tests, one file per src module
-├── resources/                # Images used by README.md (logo, screenshots)
+├── shared/
+│   └── images/               # Images used by README.md (logo, screenshots)
 ├── rules/
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
 │   └── slow-functions.yaml       # Slow calls and faster alternatives; both are
