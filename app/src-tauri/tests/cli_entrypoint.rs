@@ -169,6 +169,44 @@ fn desktop_binary_lints_every_script_listed_in_an_achlist() {
 }
 
 #[test]
+fn desktop_binary_reports_a_malformed_achlist() {
+    let temp = tempfile::tempdir().unwrap();
+    let achlist = temp.path().join("broken.achlist");
+    std::fs::write(&achlist, r#"["Unclosed.psc""#).unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .arg(&achlist)
+        .output()
+        .expect("desktop binary should launch");
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).unwrap();
+    assert!(
+        stderr.contains("failed to parse"),
+        "unexpected stderr: {stderr}"
+    );
+    assert!(stderr.contains("EOF"), "unexpected stderr: {stderr}");
+}
+
+#[test]
+fn desktop_binary_reports_an_empty_directory_as_a_successful_lint_run() {
+    let temp = tempfile::tempdir().unwrap();
+
+    let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .args(["--json", temp.path().to_str().unwrap()])
+        .output()
+        .expect("desktop binary should launch");
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["success"], true);
+    assert_eq!(report["scripts_checked"], 0);
+    assert_eq!(report["files"], serde_json::json!([]));
+}
+
+#[test]
 fn desktop_binary_rejects_extra_positional_arguments() {
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
         .args(["First.psc", "Second.psc"])
