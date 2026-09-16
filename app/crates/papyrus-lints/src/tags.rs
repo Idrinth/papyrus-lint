@@ -5,8 +5,9 @@
 //! detailed description of the rule. [`RULE_TAGS`] itself is generated at
 //! build time by `build.rs` from `docs/rules.json` — edit that file, not
 //! this one, to change a rule's tags, importance, doc slug, or description
-//! (kept in sync with README.md and `docs/nexuspage.bbcode` by hand — see
-//! "Docs sync" in AGENTS.md). This module only
+//! (kept in sync with README.md by hand — see "Docs sync" in AGENTS.md;
+//! `docs/nexuspage.bbcode`'s lint tables are generated from
+//! `docs/rules.json` too). This module only
 //! exposes that metadata; [`crate::repair_filtered_by_tag`] and the CLI's
 //! `--tag <kind>` flag are what actually filter lints/fixes down to one
 //! kind at a time, built on top of it.
