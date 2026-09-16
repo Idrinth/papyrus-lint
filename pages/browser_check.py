@@ -16,7 +16,8 @@ page in headless Chromium via Playwright to catch:
   at a page or an in-page id that doesn't actually exist,
 - duplicate element ids, which make fragment links ambiguous, and
 - basic document accessibility metadata: a non-empty page title, a declared
-  document language, and alternative text on images.
+  document language, alternative text on images, and accessible names for
+  links and form controls.
 
 External links (https://github.com/..., Discord, Nexus Mods, ...) are never
 actually fetched: doing so would make this "quick" check slow and flaky
@@ -131,13 +132,59 @@ def check_site(dist: Path) -> list[str]:
 
                 document_checks = page.evaluate(
                     """() => {
+                        const normalizedText = value => (value || '').trim();
+                        const referencedText = element => normalizedText(
+                            (element.getAttribute('aria-labelledby') || '')
+                                .split(/\\s+/)
+                                .filter(Boolean)
+                                .map(id => document.getElementById(id)?.textContent || '')
+                                .join(' ')
+                        );
+                        const labelsText = element => normalizedText(
+                            [...(element.labels || [])]
+                                .map(label => label.textContent || '')
+                                .join(' ')
+                        );
+                        const accessibleName = element => {
+                            const explicitName =
+                                normalizedText(element.getAttribute('aria-label')) ||
+                                referencedText(element) || labelsText(element);
+                            if (explicitName) return explicitName;
+                            if (element.matches('a, button')) {
+                                return normalizedText(element.textContent) ||
+                                    normalizedText(element.querySelector('img[alt]')?.getAttribute('alt')) ||
+                                    normalizedText(element.getAttribute('title'));
+                            }
+                            if (element.matches('input[type="image"]')) {
+                                return normalizedText(element.getAttribute('alt')) ||
+                                    normalizedText(element.getAttribute('title'));
+                            }
+                            if (element.matches('input[type="button"], input[type="submit"], input[type="reset"]')) {
+                                return normalizedText(element.getAttribute('value')) ||
+                                    normalizedText(element.getAttribute('title'));
+                            }
+                            return normalizedText(element.getAttribute('title'));
+                        };
+                        const describe = element => {
+                            const id = element.id ? `#${element.id}` : '';
+                            const target = element.getAttribute('href') ||
+                                element.getAttribute('name') ||
+                                element.getAttribute('type');
+                            return `<${element.localName}${id}>${target ? ` (${target})` : ''}`;
+                        };
                         const ids = [...document.querySelectorAll('[id]')].map(el => el.id);
                         const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
                         const imagesWithoutAlt = [...document.querySelectorAll('img:not([alt])')]
                             .map(img => img.getAttribute('src') || '<no src>');
+                        const unnamedInteractiveElements = [
+                            ...document.querySelectorAll(
+                                'a[href], button, input:not([type="hidden"]), select, textarea'
+                            ),
+                        ].filter(element => !accessibleName(element)).map(describe);
                         return {
                             duplicateIds,
                             imagesWithoutAlt,
+                            unnamedInteractiveElements,
                             hasDocumentLanguage: Boolean(document.documentElement.lang.trim()),
                             hasDocumentTitle: Boolean(document.title.trim()),
                         };
@@ -147,6 +194,8 @@ def check_site(dist: Path) -> list[str]:
                     issues.document_errors.append(f"duplicate element id '{duplicate_id}'")
                 for image_src in document_checks["imagesWithoutAlt"]:
                     issues.document_errors.append(f"image '{image_src}' has no alt attribute")
+                for element in document_checks["unnamedInteractiveElements"]:
+                    issues.document_errors.append(f"interactive element '{element}' has no accessible name")
                 if not document_checks["hasDocumentLanguage"]:
                     issues.document_errors.append("document has no language")
                 if not document_checks["hasDocumentTitle"]:
