@@ -104,6 +104,7 @@ and feel. They are especially useful in group projects.
 | **Type name casing** | Flags, as a `[warning]`, a script's declared type name (the identifier following `ScriptName`) if it doesn't follow the configured `type_casing` convention (`PascalCase`, `camelCase`, `lowercase`, or `UPPERCASE`). Only the script's own declared name is checked and fixed, never its `Extends` target, since that type is declared (and presumably already checked) in another script. Up to two leading acronym-prefix segments (one or more uppercase letters followed by one or more underscores, e.g. CreationKit's own `IDR__TIF__050000F5` dialogue fragment names or a modder's own `USSEP_` acronym prefix) are ignored, since that part of the name can't be renamed; only the rest of the name is checked and fixed. The fix only changes letter casing, preserving the name's characters so it remains compatible with its `.psc` filename; a violation that would require a substantive rename (such as removing an underscore for `PascalCase`) is left for the user to rename together with the file. | ✓ |
 | **Identifier casing** | Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured `identifier_casing` style: `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. `ScriptName` itself is never checked by this lint (see "Type name casing" below). A parameter has no location of its own, so it's reported on its enclosing function's line. The automatic fix renames each flagged declaration and its references only when the conversion preserves every underscore in its original position; fixes that would add, remove, or move underscores are left for the user because they constitute a substantive rename. | ✓ |
 | **Spacing around logical/comparison operators** | Requires, as a `[warning]`, exactly one space on either side of `&&`, `\|\|`, `==`, `!=`, `>`, `<`, `>=`, and `<=`. A side whose whitespace reaches a newline (the operator opens or closes a statement continued across physical lines) is left unchecked on that side. The fix normalizes each flagged side to a single space, without reaching across a newline. | ✓ |
+| **Spacing around assignment operators** | Requires, as a `[warning]`, exactly one space on either side of `=`, `+=`, `-=`, `*=`, `/=`, and `%=`. A side whose whitespace reaches a newline (the operator opens or closes a statement continued across physical lines) is left unchecked on that side. `==`, `!=`, `>=`, and `<=` are never matched here, since the lexer tokenizes those as their own, separate operators (see "Spacing around logical/comparison operators" above). The fix normalizes each flagged side to a single space, without reaching across a newline. | ✓ |
 | **Property sorting** | Flags, as a `[warning]`, a `Property` declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the `ScriptName` line, before any variable, function, or state declaration (an `Import` isn't tracked closely enough to count against this). Disabled by default, since reordering a script's declared properties is a more invasive change than the rest of these lints; a project opts in via `rules.property_sorting`. The fix relocates each property's own declaration lines (its full `Property`/`EndProperty` block, for a non-auto property) as a group right after `ScriptName`, in sorted order; a documentation comment placed directly above a property is left behind rather than moved with it. | ✓ |
 
 ### Performance
@@ -209,8 +210,9 @@ preferences.
 | **Missing documentation comment** | Flags, as a `[warning]`, a script header (`ScriptName`), `Property` declaration, or `Function`/`Event` declaration with no documentation comment — CreationKit's own `{ ... }` syntax, rendered as a tooltip when hovering the script in the script picker or a property in the property editor — on the line immediately following it. Disabled by default, since most existing scripts have none of these comments at all and enabling it would otherwise flag literally every declaration in such a project at once; opt in with `rules.missing_doc_comment`. | |
 
 The formatting lints/fixes (trailing whitespace, space after comma,
-semicolon, indentation, chain whitespace, exclamation mark spacing, and
-operator spacing) never flag or change a line inside a
+semicolon, indentation, chain whitespace, exclamation mark spacing,
+operator spacing, and assignment operator spacing) never flag or change a
+line inside a
 CreationKit-generated `;BEGIN FRAGMENT CODE`/`;END FRAGMENT CODE` block,
 except the actual script code between a `;BEGIN CODE`/`;END CODE` pair
 within it. Reformatting the rest of that block (fragment headers, the
@@ -243,6 +245,7 @@ lint listed above, are: `trailing-whitespace`, `comma-spacing`,
 `static-condition`, `unreachable-elseif`, `division-by-zero`, `unused-local-variable`, `none-form-usage`,
 `local-variable-shadowing`, `parameter-reassignment`, `chain-whitespace`, `exclamation-spacing`,
 `identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
+`assignment-operator-spacing`,
 `property-sorting`, `explicit-return`, `unchecked-form-parameter`,
 `unchecked-cast`, `unresolved-script`, `non-global-function-call`,
 `static-function-call-via-instance`, `short-wait-interval`,

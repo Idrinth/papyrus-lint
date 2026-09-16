@@ -106,6 +106,7 @@ rules:
   type_casing: false               # was true: naming-convention style nit
   named_arguments: false           # was true: style nit, and named_arguments setting is "never" anyway
   operator_spacing: true
+  assignment_operator_spacing: true
   property_sorting: false
   explicit_return: true
   unchecked_form_parameter: false
