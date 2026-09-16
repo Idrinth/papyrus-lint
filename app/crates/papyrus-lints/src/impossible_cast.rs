@@ -347,6 +347,16 @@ mod tests {
     }
 
     #[test]
+    fn does_not_flag_a_cast_to_a_primitive_type() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    Int value = akArmor as Int\nEndFunction\n",
+            &mut FakeExternalWithUnrelatedTypes,
+        );
+
+        assert!(diagnostics.is_empty());
+    }
+
+    #[test]
     fn does_not_flag_cast_whose_value_type_is_unresolvable() {
         let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Weapon b = GetTarget() as Weapon\nEndFunction\n",
@@ -413,5 +423,53 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert!(diagnostics[0].message.contains("'Armor'"));
+    }
+
+    #[test]
+    fn finds_casts_in_control_flow_conditions_and_bodies() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    If akArmor as Weapon\n        Foo(akArmor as Weapon)\n    ElseIf akArmor as Weapon\n        Return akArmor as Weapon\n    Else\n        Weapon local = akArmor as Weapon\n    EndIf\n    While akArmor as Weapon\n        Foo(akArmor as Weapon)\n    EndWhile\nEndFunction\n",
+            &mut FakeExternalWithUnrelatedTypes,
+        );
+
+        let lines: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect();
+        assert_eq!(lines, vec![4, 5, 6, 7, 9, 11, 12]);
+    }
+
+    #[test]
+    fn finds_casts_nested_in_composite_expressions() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    Bool compared = (akArmor as Weapon) == None\n    Bool negated = !(akArmor as Weapon)\n    Foo((akArmor as Weapon).GetName())\nEndFunction\n",
+            &mut FakeExternalWithUnrelatedTypes,
+        );
+
+        let lines: Vec<_> = diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect();
+        assert_eq!(lines, vec![4, 5, 6]);
+    }
+
+    #[test]
+    fn flags_each_cast_when_casts_are_nested() {
+        let diagnostics = check_with(
+            "ScriptName Example\n\nFunction Test(Armor akArmor)\n    Foo((akArmor as Weapon) as Armor)\nEndFunction\n",
+            &mut FakeExternalWithUnrelatedTypes,
+        );
+
+        assert_eq!(diagnostics.len(), 2);
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.line == 4 && diagnostic.rule == RULE));
+    }
+
+    #[test]
+    fn external_lookup_is_not_needed_to_classify_casts() {
+        assert!(FakeExternalWithUnrelatedTypes
+            .lookup("Armor", "SomeFunction")
+            .is_none());
     }
 }
