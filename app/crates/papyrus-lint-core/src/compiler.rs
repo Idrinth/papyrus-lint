@@ -582,6 +582,29 @@ mod tests {
     }
 
     #[test]
+    fn import_dirs_without_a_root_cannot_resolve_additional_roots() {
+        let source_dir = Path::new("source");
+
+        let dirs = import_dirs(
+            source_dir,
+            None,
+            &["../shared".to_string(), "/absolute/shared".to_string()],
+        );
+
+        assert_eq!(dirs, source_dir.display().to_string());
+    }
+
+    #[test]
+    fn resolve_locations_supports_relative_project_paths() {
+        let (source_dir, output_dir) =
+            resolve_locations(Path::new("Data/Scripts/Source/Example.psc"))
+                .expect("nested script path should resolve");
+
+        assert_eq!(source_dir, Path::new("Data/Scripts/Source"));
+        assert_eq!(output_dir, Path::new("Data/Scripts"));
+    }
+
+    #[test]
     fn errors_when_compiler_cannot_be_run() {
         let root = tempfile::tempdir().expect("failed to create temp dir");
         let source_dir = root.path().join("Scripts").join("Source");
@@ -736,6 +759,33 @@ mod tests {
             result.unwrap_err(),
             "could not determine the source directory of Foo.psc"
         );
+    }
+
+    #[test]
+    fn check_psc_file_errors_when_source_directory_has_no_parent_output_directory() {
+        let result = check_psc_file(Path::new("compiler"), Path::new("/Foo.psc"), &[]);
+
+        assert_eq!(
+            result.unwrap_err(),
+            "could not determine an output directory above /"
+        );
+    }
+
+    #[test]
+    fn check_psc_file_reports_when_the_compiler_cannot_be_started() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let source_dir = root.path().join("Scripts/Source");
+        fs::create_dir_all(&source_dir).expect("failed to create source dir");
+        let script_path = source_dir.join("Example.psc");
+        fs::write(&script_path, "ScriptName Example\n").expect("failed to write script");
+        let missing_compiler = root.path().join("missing-compiler");
+
+        let result = check_psc_file(&missing_compiler, &script_path, &[]);
+
+        assert!(result
+            .unwrap_err()
+            .contains(&format!("failed to run {}", missing_compiler.display())));
+        assert!(!root.path().join("Scripts/Example.pex").exists());
     }
 
     #[test]
