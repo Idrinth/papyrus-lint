@@ -92,16 +92,16 @@
 //!
 //! `init` accepts its own `--preset <name>` flag (`strict`, `standard`, or
 //! `careful`, matched case-insensitively; see
-//! [`papyrus_lint_config::Preset`] and `docs/presets/`), selecting
+//! [`papyrus_lint_config::presets::Preset`] and `docs/presets/`), selecting
 //! which baseline `papyrus-lint.yaml` it generates. Defaults to `strict`,
 //! identical to the engine's built-in default, so plain `init` is
 //! unaffected by this flag existing at all. Any other name is looked up as
 //! a user preset: a `<name>.yaml`/`.yml` file (matched case-insensitively)
 //! under a `presets` directory next to the running executable (the CLI
 //! binary itself, or the desktop app's binary when it delegates to CLI
-//! mode) — see [`papyrus_lint_config::USER_PRESETS_DIR_NAME`]. An
+//! mode) — see [`papyrus_lint_config::presets::USER_PRESETS_DIR_NAME`]. An
 //! executable-adjacent base config file (see
-//! [`papyrus_lint_config::initialize_default_config`]) still layers
+//! [`papyrus_lint_config::presets::initialize_default_config`]) still layers
 //! on top of whichever preset is selected the same way it layers over the
 //! built-in default. A `--preset` value that matches neither a built-in nor
 //! a file in the `presets` directory is reported as an error once `init`
@@ -111,10 +111,10 @@
 //!
 //! `preset add <name> <path-to-papyrus-lint.yaml>` adds a user preset,
 //! selectable afterward the same way as a built-in one via `--preset
-//! <name>` (see [`papyrus_lint_config::add_user_preset`]): it copies
+//! <name>` (see [`papyrus_lint_config::presets::add_user_preset`]): it copies
 //! the file at `<path-to-papyrus-lint.yaml>` into the executable-adjacent
 //! `presets` directory (see
-//! [`papyrus_lint_config::USER_PRESETS_DIR_NAME`]) as `<name>.yaml`,
+//! [`papyrus_lint_config::presets::USER_PRESETS_DIR_NAME`]) as `<name>.yaml`,
 //! creating that directory first if it doesn't exist yet. `<name>` can't be
 //! blank or match a built-in preset name (`strict`, `standard`, `careful`)
 //! case-insensitively, since such a name could never actually be selected
@@ -269,7 +269,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
-use papyrus_lint_config as config;
+use papyrus_lint_config::{self as config, presets};
 use papyrus_lint_core::content_hash;
 use papyrus_lint_core::diff::unified_diff;
 use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
@@ -458,7 +458,7 @@ pub fn run(
                 return 2;
             }
         };
-        let result = config::add_user_preset(&name, &source_path, overwrite);
+        let result = presets::add_user_preset(&name, &source_path, overwrite);
         return report_add_user_preset(&name, result, stdout, stderr);
     }
 

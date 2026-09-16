@@ -491,7 +491,7 @@ field comment changes.
 
 `PapyrusLinterCLI init` also accepts `--preset <strict|standard|careful|name>`
 (matched case-insensitively, defaulting to `strict`), which selects the
-baseline `config::Preset` (`papyrus-lint-config/src/lib.rs`) it generates
+baseline `presets::Preset` (`papyrus-lint-config/src/presets.rs`) it generates
 `papyrus-lint.yaml` from, in place of the hardcoded default. `strict` is
 identical to `papyrus_lints::Config::default()` (and to
 `docs/papyrus-lint.default.yaml`), so plain `init` — no `--preset` — is
@@ -502,25 +502,25 @@ noisy. Each built-in preset's own annotated YAML lives under
 `include_str!`, rather than read from disk at runtime.
 
 Any other name is resolved as a user preset instead:
-`config::Preset::parse` accepts any non-blank name that isn't one of the
+`presets::Preset::parse` accepts any non-blank name that isn't one of the
 three built-ins as `Preset::Custom(name)` without touching the filesystem
 yet, and `Preset::yaml(base_dir)` — called once `init` actually needs the
 preset's YAML — looks for a `<name>.yaml`/`.yml` file (matched
-case-insensitively via `config::find_user_preset_file`) inside a `presets`
-directory (`config::USER_PRESETS_DIR_NAME`) next to `base_dir`
-(`config::user_presets_dir`/`user_presets_dir_under`), erroring out if
+case-insensitively via `presets::find_user_preset_file`) inside a `presets`
+directory (`presets::USER_PRESETS_DIR_NAME`) next to `base_dir`
+(`presets::user_presets_dir`/`user_presets_dir_under`), erroring out if
 `base_dir` is unavailable or no such file exists there. This mirrors the
 executable-adjacent base config below: both live next to the same
 executable, resolved through the same `base_dir`/`executable_dir()` split so
 tests can supply a controlled directory instead of depending on the test
-binary's own `current_exe()`. `config::list_user_preset_names(dir)` lists
+binary's own `current_exe()`. `presets::list_user_preset_names(dir)` lists
 every such file's stem (sorted case-insensitively), for the desktop app's
 preset picker below.
 
 The CLI's `preset add <name> <path-to-papyrus-lint.yaml> [--yes]` subcommand
 creates a user preset from an existing config file, rather than requiring
 one to be placed under the executable-adjacent `presets` directory by hand:
-`config::add_user_preset(name, source_path, overwrite)` copies
+`presets::add_user_preset(name, source_path, overwrite)` copies
 `source_path`'s contents into that directory as `<name>.yaml` (creating the
 directory first if needed), refusing `name` if it's blank or matches a
 built-in preset name case-insensitively (`AddPresetError::InvalidName`),
@@ -599,17 +599,17 @@ second, nested dialog for it: the preset list is only ever meaningful as
 part of this one choice, so there's nothing else it needs to be its own
 dialog for. `list_config_presets` is backed by `papyrus-lint-core`'s
 `presets` module (`presets::all()`) — a thin label/description layer over
-`config::Preset`/`config::PRESET_NAMES`, the same enum the CLI flag parses,
+`presets::Preset`/`presets::PRESET_NAMES`, the same enum the CLI flag parses,
 which appends a `PresetInfo` (id/label both the file's stem, a generic
-description) for every name `config::list_user_preset_names` finds under
-the executable-adjacent `presets` directory (`config::user_presets_dir`),
+description) for every name `presets::list_user_preset_names` finds under
+the executable-adjacent `presets` directory (`presets::user_presets_dir`),
 after the three built-ins; `presets::all()`/`PresetInfo`'s fields are owned
 `String`s rather than `&'static str`, since a user preset's identity is
 discovered from a file name at runtime instead of being a compile-time
 constant. Clicking one resolves `promptForConfigSelection` with
 `{ kind: "preset", preset: id }`, which `loadProjectConfig` then hands to
-`apply_config_preset(dir, id)` — resolving the id via `config::Preset::parse`
-and handing it to `config::initialize_default_config`, the very function
+`apply_config_preset(dir, id)` — resolving the id via `presets::Preset::parse`
+and handing it to `presets::initialize_default_config`, the very function
 `init --preset` itself calls — so the desktop app gets the same "refuse to
 replace an existing config" guard, executable-adjacent base-config
 layering, and user-preset resolution for free.
@@ -618,7 +618,7 @@ The Settings tab's own "Save current settings as preset…" button goes the
 other direction: `handleSaveConfigAsPresetClick` (`app/src/main.ts`) prompts
 for a name, then — if `list_config_presets` already lists a preset under it
 (matched case-insensitively; a built-in name is rejected by the backend
-outright, since `config::Preset::parse` always resolves those first) —
+outright, since `presets::Preset::parse` always resolves those first) —
 confirms overwriting it before calling the `save_config_as_preset` Tauri
 command with the currently edited `LintConfig`, the name, and whether to
 overwrite. That command wraps `papyrus-lint-config`'s
@@ -650,16 +650,16 @@ three buttons:
   the same "cancel on a blank prompt" and "confirm before overwriting an
   already-used name" rules `handleSaveConfigAsPresetClick` does, then
   calls the `rename_user_preset` Tauri command
-  (`papyrus_lint_config::rename_user_preset`), which finds the
+  (`papyrus_lint_config::presets::rename_user_preset`), which finds the
   preset's existing `<name>.yaml`/`.yml` file in the executable-adjacent
   `presets` directory and renames it in place — refusing a blank or
   built-in new name the same way `save_user_preset` does, and preserving
   the file's own extension.
 - **Delete** (`handleDeletePresetClick`) confirms, then calls
-  `delete_user_preset` (`config::delete_user_preset`), which removes the
+  `delete_user_preset` (`presets::delete_user_preset`), which removes the
   matching file from the `presets` directory.
 - **Export** (`handleExportPresetClick`) calls `export_user_preset`
-  (`config::read_user_preset_yaml`), which returns the preset's file
+  (`presets::read_user_preset_yaml`), which returns the preset's file
   contents verbatim (unlike `initialize_default_config`, it isn't merged
   against an executable-adjacent base config or a project's own settings),
   and downloads it as `<id>.yaml` via the same Blob-and-anchor technique
@@ -667,7 +667,7 @@ three buttons:
   button, so it needs no Tauri fs/dialog plugin either. Built-in presets
   can't be renamed, deleted, or exported this way, since none of the three
   backend functions above ever resolve a name matching
-  `config::PRESET_NAMES`.
+  `presets::PRESET_NAMES`.
 
 The Settings tab also has a "Reset to preset…" control (a
 `#reset-to-preset-select` dropdown, listing every preset the same way the

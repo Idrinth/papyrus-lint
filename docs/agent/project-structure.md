@@ -83,8 +83,12 @@
 │       │                                      # generated array; disabled by default
 │       ├── papyrus-lint-config/  # Locates/loads/saves a project's
 │       │   └── src/               # papyrus-lint.yaml (lint settings, compiler
-│       │       └── lib.rs          # path, script roots) and built-in/user presets;
-│       │                          # depends only on papyrus-lints
+│       │       ├── lib.rs          # path, script roots); depends only on
+│       │       │                  # papyrus-lints
+│       │       └── presets.rs      # Preset (built-in + user), user-preset
+│       │                          # add/save/rename/delete/export, and the
+│       │                          # executable-adjacent base-config layering
+│       │                          # init/apply use (see Configuration below)
 │       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
 │       │   └── src/               # and the CLI, independent of Tauri:
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
@@ -115,7 +119,8 @@
 │       │       │                       # via a build-time-generated array (build.rs)
 │       │       ├── presets.rs          # Label/description metadata for the desktop
 │       │       │                       # app's first-run preset picker, layered over
-│       │       │                       # config::Preset (see Configuration below)
+│       │       │                       # papyrus_lint_config::presets::Preset (see
+│       │       │                       # Configuration below)
 │       │       ├── compiler.rs         # Runs PapyrusCompiler.exe for the desktop
 │       │       │                       # app's "Compile" button, then strips personal
 │       │       │                       # data from the compiled .pex; also compiles

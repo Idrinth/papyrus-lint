@@ -1,15 +1,15 @@
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-use papyrus_lint_config as config;
+use papyrus_lint_config::presets;
 
 pub(crate) fn initialize_config(
     dir: &Path,
-    preset: config::Preset,
+    preset: presets::Preset,
     stdout: &mut impl Write,
     stderr: &mut impl Write,
 ) -> u8 {
-    match config::initialize_default_config(dir, preset) {
+    match presets::initialize_default_config(dir, preset) {
         Ok(path) => {
             let _ = writeln!(stdout, "Created {}", path.display());
             0
@@ -26,7 +26,7 @@ pub(crate) fn initialize_config(
 /// all, or a blank `--preset=` value all get the generic [`crate::USAGE`] text,
 /// matching every other usage error this CLI reports. A non-blank preset
 /// name is never rejected at this stage even if it isn't one of the three
-/// built-ins (see [`config::Preset::parse`]): it's accepted as a possible
+/// built-ins (see [`presets::Preset::parse`]): it's accepted as a possible
 /// user preset name and only found to be unresolvable once `init` actually
 /// looks for a matching file, reported the same way as any other
 /// `initialize_config` failure.
@@ -38,14 +38,14 @@ pub(crate) enum InitPresetError {
 }
 
 /// Parses the arguments following `init` (i.e. `args[1..]` in [`run`]) into
-/// the [`config::Preset`] its `--preset <name>`/`--preset=<name>` flag
-/// selects, defaulting to [`config::Preset::default`] (`strict`) when
+/// the [`presets::Preset`] its `--preset <name>`/`--preset=<name>` flag
+/// selects, defaulting to [`presets::Preset::default`] (`strict`) when
 /// `rest` is empty. Split out from [`run`] so the parsing itself is
 /// testable without touching the process's actual current directory,
 /// unlike `init`'s success path (see [`initialize_config`]), which writes
 /// into it.
-pub(crate) fn parse_init_preset(rest: &[String]) -> Result<config::Preset, InitPresetError> {
-    let mut preset = config::Preset::default();
+pub(crate) fn parse_init_preset(rest: &[String]) -> Result<presets::Preset, InitPresetError> {
+    let mut preset = presets::Preset::default();
     let mut args = rest.iter();
     while let Some(arg) = args.next() {
         let value = if arg == "--preset" {
@@ -58,7 +58,7 @@ pub(crate) fn parse_init_preset(rest: &[String]) -> Result<config::Preset, InitP
             return Err(InitPresetError::Usage);
         };
 
-        preset = config::Preset::parse(value).ok_or(InitPresetError::Usage)?;
+        preset = presets::Preset::parse(value).ok_or(InitPresetError::Usage)?;
     }
     Ok(preset)
 }
@@ -99,16 +99,16 @@ pub(crate) fn parse_preset_add_args(
     }
 }
 
-/// Reports the outcome of `preset add` (see [`config::add_user_preset`]) to
+/// Reports the outcome of `preset add` (see [`presets::add_user_preset`]) to
 /// `stdout`/`stderr` and returns the process exit code. Split out from the
-/// actual [`config::add_user_preset`] call in [`run`] so it's testable
+/// actual [`presets::add_user_preset`] call in [`run`] so it's testable
 /// without touching the executable-adjacent `presets` directory (which
-/// [`config::add_user_preset`] always writes into) from a parallel test
+/// [`presets::add_user_preset`] always writes into) from a parallel test
 /// suite — the same reason [`parse_init_preset`] is split from `init`'s own
 /// filesystem effects.
 pub(crate) fn report_add_user_preset(
     name: &str,
-    result: Result<PathBuf, config::AddPresetError>,
+    result: Result<PathBuf, presets::AddPresetError>,
     stdout: &mut impl Write,
     stderr: &mut impl Write,
 ) -> u8 {
@@ -117,7 +117,7 @@ pub(crate) fn report_add_user_preset(
             let _ = writeln!(stdout, "Added preset '{name}' at {}", path.display());
             0
         }
-        Err(config::AddPresetError::AlreadyExists(path)) => {
+        Err(presets::AddPresetError::AlreadyExists(path)) => {
             let _ = writeln!(
                 stderr,
                 "error: a preset named '{name}' already exists at {} (pass --yes to overwrite it)",
@@ -136,7 +136,7 @@ pub(crate) fn report_add_user_preset(
 mod tests {
     use super::*;
     use crate::test_support::*;
-    use papyrus_lint_config as config;
+    use papyrus_lint_config::{self as config, presets};
     use std::fs;
     use std::path::PathBuf;
 
@@ -267,7 +267,7 @@ mod tests {
 
         let code = report_add_user_preset(
             "my-team",
-            Err(config::AddPresetError::AlreadyExists(PathBuf::from(
+            Err(presets::AddPresetError::AlreadyExists(PathBuf::from(
                 "/presets/my-team.yaml",
             ))),
             &mut stdout,
@@ -288,7 +288,7 @@ mod tests {
 
         let code = report_add_user_preset(
             "strict",
-            Err(config::AddPresetError::InvalidName("strict".to_string())),
+            Err(presets::AddPresetError::InvalidName("strict".to_string())),
             &mut stdout,
             &mut stderr,
         );
@@ -308,7 +308,7 @@ mod tests {
 
         let code = initialize_config(
             dir.path(),
-            config::Preset::default(),
+            presets::Preset::default(),
             &mut stdout,
             &mut stderr,
         );
@@ -332,7 +332,7 @@ mod tests {
 
         let code = initialize_config(
             dir.path(),
-            config::Preset::default(),
+            presets::Preset::default(),
             &mut stdout,
             &mut stderr,
         );
@@ -347,18 +347,18 @@ mod tests {
 
     #[test]
     fn parse_init_preset_defaults_to_strict_when_no_flag_is_given() {
-        assert_eq!(parse_init_preset(&[]), Ok(config::Preset::Strict));
+        assert_eq!(parse_init_preset(&[]), Ok(presets::Preset::Strict));
     }
 
     #[test]
     fn parse_init_preset_accepts_the_flag_and_its_equals_form() {
         assert_eq!(
             parse_init_preset(&["--preset".to_string(), "careful".to_string()]),
-            Ok(config::Preset::Careful)
+            Ok(presets::Preset::Careful)
         );
         assert_eq!(
             parse_init_preset(&["--preset=standard".to_string()]),
-            Ok(config::Preset::Standard)
+            Ok(presets::Preset::Standard)
         );
     }
 
@@ -366,18 +366,18 @@ mod tests {
     fn parse_init_preset_matches_names_case_insensitively() {
         assert_eq!(
             parse_init_preset(&["--preset".to_string(), "STANDARD".to_string()]),
-            Ok(config::Preset::Standard)
+            Ok(presets::Preset::Standard)
         );
     }
 
     #[test]
     fn parse_init_preset_accepts_a_name_that_is_not_a_built_in_as_a_custom_preset() {
         // Whether a name actually matches a user preset file is only
-        // checked once `init` runs (see `config::Preset::yaml`), not during
+        // checked once `init` runs (see `presets::Preset::yaml`), not during
         // argument parsing, so an arbitrary non-blank name parses fine here.
         assert_eq!(
             parse_init_preset(&["--preset".to_string(), "lenient".to_string()]),
-            Ok(config::Preset::Custom("lenient".to_string()))
+            Ok(presets::Preset::Custom("lenient".to_string()))
         );
     }
 

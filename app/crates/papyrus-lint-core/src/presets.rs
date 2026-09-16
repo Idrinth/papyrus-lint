@@ -5,17 +5,18 @@
 //!
 //! The presets themselves — their embedded YAML, name parsing, and the
 //! executable-adjacent base-config layering — are
-//! [`papyrus_lint_config::Preset`], shared with the CLI's own
+//! [`papyrus_lint_config::presets::Preset`], shared with the CLI's own
 //! `init --preset <name>` flag. This module adds the label/description text
 //! a user picks between, for both the three built-in presets and any user
 //! preset found under the executable-adjacent `presets` directory (see
-//! [`papyrus_lint_config::user_presets_dir`]); resolving a chosen id back to
-//! a config goes straight through [`papyrus_lint_config::Preset::parse`] and
-//! [`papyrus_lint_config::initialize_default_config`].
+//! [`papyrus_lint_config::presets::user_presets_dir`]); resolving a chosen id
+//! back to a config goes straight through
+//! [`papyrus_lint_config::presets::Preset::parse`] and
+//! [`papyrus_lint_config::presets::initialize_default_config`].
 
 use std::path::Path;
 
-use papyrus_lint_config::{self as config, PRESET_NAMES};
+use papyrus_lint_config::presets::{self as config, PRESET_NAMES};
 
 /// A preset's identity and description, for the frontend to render as a
 /// picker. Owned (rather than `&'static str`) since a user preset's id/
@@ -58,7 +59,7 @@ const DESCRIPTIONS: [(&str, &str, &str); 3] = [
 /// Every built-in preset's identity/description (in [`PRESET_NAMES`]'s
 /// order), followed by every user preset found under the
 /// executable-adjacent `presets` directory (see
-/// [`papyrus_lint_config::user_presets_dir`]), in alphabetical order.
+/// [`papyrus_lint_config::presets::user_presets_dir`]), in alphabetical order.
 pub fn all() -> Vec<PresetInfo> {
     all_with_user_presets_dir(config::user_presets_dir().as_deref())
 }
@@ -103,7 +104,7 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use papyrus_lint_config::Preset;
+    use papyrus_lint_config::presets::Preset;
 
     #[test]
     fn all_lists_every_built_in_preset_with_a_non_empty_label_and_description() {
