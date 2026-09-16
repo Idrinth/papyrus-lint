@@ -484,6 +484,19 @@ pub struct JsonDiagnostic {
     pub rule: &'static str,
     pub level: &'static str,
     pub message: String,
+    /// This rule's own documentation link (`RuleTags::doc_url`), so a
+    /// consumer (an editor extension, the SublimeLinter plugin) can jump a
+    /// user straight to it instead of just showing the rule id. `None` for
+    /// a rule with no [`papyrus_lints::tags`] metadata (e.g. a
+    /// compiler-reported diagnostic — see
+    /// `papyrus_lint_core::compile_diagnostics`).
+    pub doc_url: Option<String>,
+}
+
+/// Looks up `rule`'s [`papyrus_lints::tags::RuleTags::doc_url`], for
+/// building a [`JsonDiagnostic`]/`AiRuleDetails`.
+fn doc_url_for(rule: &str) -> Option<String> {
+    papyrus_lints::tags::tags_for(rule).map(|tags| tags.doc_url())
 }
 
 /// One resolved script's diagnostics, as printed by `--json`. Every
@@ -608,6 +621,10 @@ struct AiRuleDetails {
     kinds: &'static [&'static str],
     importance: papyrus_lints::tags::Importance,
     auto_fixable: bool,
+    /// This rule's own documentation link (`RuleTags::doc_url`), so the
+    /// assistant reading the export can look up its full explanation on the
+    /// project website.
+    doc_url: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -722,16 +739,29 @@ fn level_color(level: &str) -> &'static str {
 /// [<rule>] <message>`), colorizing the location, the rule tag, and the
 /// `[error]`/`[warning]`/`[info]` level tag already embedded at the front of
 /// `diagnostic.message` (see [`papyrus_lints::Diagnostic::level`]) when
-/// `use_color` is true.
+/// `use_color` is true. A rule with known [`papyrus_lints::tags`] metadata
+/// (i.e. a real lint rather than e.g. a compiler-reported diagnostic) gets
+/// its documentation link (`RuleTags::doc_url`) appended, so a reader can
+/// jump straight to that rule's own explanation instead of just seeing its
+/// id.
 fn format_diagnostic_line(
     path_display: &str,
     diagnostic: &papyrus_lints::Diagnostic,
     use_color: bool,
 ) -> String {
+    let doc_url_suffix = papyrus_lints::tags::tags_for(diagnostic.rule)
+        .map(|tags| format!(" ({})", tags.doc_url()))
+        .unwrap_or_default();
+
     if !use_color {
         return format!(
-            "{}:{}:{}: [{}] {}",
-            path_display, diagnostic.line, diagnostic.column, diagnostic.rule, diagnostic.message
+            "{}:{}:{}: [{}] {}{}",
+            path_display,
+            diagnostic.line,
+            diagnostic.column,
+            diagnostic.rule,
+            diagnostic.message,
+            doc_url_suffix
         );
     }
 
@@ -743,14 +773,19 @@ fn format_diagnostic_line(
     };
 
     format!(
-        "{}: {} {}",
+        "{}: {} {}{}",
         colorize(
             &format!("{path_display}:{}:{}", diagnostic.line, diagnostic.column),
             ANSI_BOLD,
             true
         ),
         colorize(&format!("[{}]", diagnostic.rule), ANSI_DIM, true),
-        message
+        message,
+        if doc_url_suffix.is_empty() {
+            String::new()
+        } else {
+            colorize(&doc_url_suffix, ANSI_DIM, true)
+        }
     )
 }
 
@@ -1550,6 +1585,7 @@ pub fn run(
                             rule: d.rule,
                             level: d.level(),
                             message: d.message.clone(),
+                            doc_url: doc_url_for(d.rule),
                         })
                         .collect();
                     if output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
@@ -1672,10 +1708,11 @@ pub fn run(
                 kinds: tags.kinds,
                 importance: tags.importance,
                 auto_fixable: tags.auto_fixable(),
+                doc_url: tags.doc_url(),
             })
             .collect();
         let report = AiReport {
-            schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json",
+            schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
             header: AiHeader {
                 tool: "Papyrus Lint",
                 version: VERSION,
@@ -2055,6 +2092,7 @@ fn run_blob(
             rule: d.rule,
             level: d.level(),
             message: d.message.clone(),
+            doc_url: doc_url_for(d.rule),
         })
         .collect();
 
@@ -2124,11 +2162,12 @@ fn run_blob(
                     kinds: tags.kinds,
                     importance: tags.importance,
                     auto_fixable: tags.auto_fixable(),
+                    doc_url: tags.doc_url(),
                 })
                 .collect();
             let report = AiReport {
                 schema:
-                    "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json",
+                    "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
                 header: AiHeader {
                     tool: "Papyrus Lint",
                     version: VERSION,
@@ -2554,6 +2593,7 @@ mod tests {
                 rule: "first-rule",
                 level: "error",
                 message: "first".to_string(),
+                doc_url: None,
             },
             JsonDiagnostic {
                 line: 2,
@@ -2561,6 +2601,7 @@ mod tests {
                 rule: "second-rule",
                 level: "warning",
                 message: "second".to_string(),
+                doc_url: None,
             },
             JsonDiagnostic {
                 line: 3,
@@ -2568,6 +2609,7 @@ mod tests {
                 rule: "third-rule",
                 level: "info",
                 message: "third".to_string(),
+                doc_url: None,
             },
             JsonDiagnostic {
                 line: 4,
@@ -2575,6 +2617,7 @@ mod tests {
                 rule: "future-rule",
                 level: "notice",
                 message: "future".to_string(),
+                doc_url: None,
             },
         ];
 
@@ -2594,6 +2637,7 @@ mod tests {
                 rule: "z-rule",
                 level: "warning",
                 message: "first".to_string(),
+                doc_url: None,
             },
             JsonDiagnostic {
                 line: 2,
@@ -2601,6 +2645,7 @@ mod tests {
                 rule: "a-rule",
                 level: "warning",
                 message: "second".to_string(),
+                doc_url: None,
             },
             JsonDiagnostic {
                 line: 3,
@@ -2608,6 +2653,7 @@ mod tests {
                 rule: "z-rule",
                 level: "warning",
                 message: "third".to_string(),
+                doc_url: None,
             },
         ];
 
@@ -6265,7 +6311,7 @@ mod tests {
             serde_json::from_str(&stdout).expect("AI report should be valid JSON");
         assert_eq!(
             report["$schema"],
-            "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v2.schema.json"
+            "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json"
         );
         assert_eq!(report["header"]["tool"], "Papyrus Lint");
         assert_eq!(report["header"]["target_game"], "Skyrim SE/AE");

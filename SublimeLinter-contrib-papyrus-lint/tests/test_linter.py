@@ -255,6 +255,35 @@ class PapyrusLintTests(unittest.TestCase):
         self.assertEqual(match.message, 'Plain diagnostic')
         self.assertIsNone(match.code)
 
+    def test_doc_url_is_appended_to_the_message_when_present(self):
+        match = self.linter._to_lint_match(
+            {
+                'line': 1,
+                'column': 1,
+                'rule': 'trailing-whitespace',
+                'message': '[warning] Trailing whitespace.',
+                'doc_url': 'https://papyrus-lint.idrinth.de/#lint-trailing-whitespace',
+            }
+        )
+
+        self.assertEqual(
+            match.message,
+            'Trailing whitespace. (see: https://papyrus-lint.idrinth.de/#lint-trailing-whitespace)',
+        )
+
+    def test_a_null_doc_url_leaves_the_message_untouched(self):
+        match = self.linter._to_lint_match(
+            {
+                'line': 1,
+                'column': 1,
+                'rule': 'compiler-error',
+                'message': '[error] syntax error',
+                'doc_url': None,
+            }
+        )
+
+        self.assertEqual(match.message, 'syntax error')
+
 
 if __name__ == '__main__':
     unittest.main()

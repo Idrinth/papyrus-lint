@@ -10,7 +10,10 @@ for `.psc` files directly in the editor, by shelling out to
   running `PapyrusLinterCLI --json <file>` and turning its
   [`JsonReport`](../app/crates/papyrus-lint-cli/src/lib.rs) into
   `vscode.Diagnostic`s (severity taken from each diagnostic's `level`;
-  `rule` is shown as the diagnostic's code).
+  `rule` is shown as the diagnostic's code, clickable straight to that
+  rule's own documentation on the
+  [project website](https://papyrus-lint.idrinth.de) when its `doc_url`
+  is known — a compiler-reported diagnostic keeps a plain, unlinked code).
 - **Live linting**: as you type, the document's current (possibly unsaved)
   contents are also linted directly via `PapyrusLinterCLI --json --blob
   <text>`, debounced so a burst of keystrokes triggers one lint pass

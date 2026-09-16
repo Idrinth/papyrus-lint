@@ -48,6 +48,9 @@ function createHarness({
         Object.assign(this, { startLine, startColumn, endLine, endColumn });
       }
     },
+    Uri: {
+      parse: (value) => ({ scheme: value.split(':')[0], toString: () => value }),
+    },
     commands: {
       registerCommand(name, callback) {
         commands.set(name, callback);
@@ -194,6 +197,30 @@ describe('extension activation and commands', () => {
     assert.equal(published.code, 'slow-function');
   });
 
+  it('publishes a clickable {value, target} code for a diagnostic with a known documentation link', async () => {
+    const report = validReport({
+      files: [{
+        path: '/project/Test.psc',
+        diagnostics: [{
+          line: 1,
+          column: 1,
+          rule: 'trailing-whitespace',
+          level: 'warning',
+          message: 'Trailing whitespace.',
+          doc_url: 'https://papyrus-lint.idrinth.de/#lint-trailing-whitespace',
+        }],
+      }],
+    });
+    const harness = createHarness({ result: { error: null, stdout: report, stderr: '' } });
+    const target = uri('/project/Test.PSC');
+
+    await harness.commands.get('papyrusLint.lintFile')(target);
+
+    const published = harness.diagnostics.published[0][1][0];
+    assert.equal(published.code.value, 'trailing-whitespace');
+    assert.equal(published.code.target.toString(), 'https://papyrus-lint.idrinth.de/#lint-trailing-whitespace');
+  });
+
   it('uses the active editor and maps information and error severities', async () => {
     const harness = createHarness({
       result: {
@@ -323,11 +350,18 @@ describe('extension activation and commands', () => {
     };
     const otherSourceDiagnostic = { source: 'other-linter', code: 'rule', range: { start: { line: 0 } } };
     const numericCodeDiagnostic = { source: 'papyrus-lint', code: 123, range: { start: { line: 1 } } };
-    const context = { diagnostics: [papyrusLintDiagnostic, otherSourceDiagnostic, numericCodeDiagnostic] };
+    const linkedDiagnostic = {
+      source: 'papyrus-lint',
+      code: { value: 'comma-spacing', target: harness.vscode.Uri.parse('https://papyrus-lint.idrinth.de/#lint-space-after-comma') },
+      range: { start: { line: 4 } },
+    };
+    const context = {
+      diagnostics: [papyrusLintDiagnostic, otherSourceDiagnostic, numericCodeDiagnostic, linkedDiagnostic],
+    };
 
     const actions = provider.provideCodeActions({ uri: target }, {}, context);
 
-    assert.equal(actions.length, 1);
+    assert.equal(actions.length, 2);
     assert.equal(actions[0].title, 'Fix this issue (trailing-whitespace)');
     assert.equal(actions[0].kind, harness.vscode.CodeActionKind.QuickFix);
     assert.deepEqual(actions[0].diagnostics, [papyrusLintDiagnostic]);
@@ -336,6 +370,10 @@ describe('extension activation and commands', () => {
       title: 'Fix this issue (trailing-whitespace)',
       arguments: [target, 'trailing-whitespace', 3],
     });
+    // A diagnostic whose code carries a documentation link (an object rather
+    // than a plain string) still resolves to its own rule id.
+    assert.equal(actions[1].title, 'Fix this issue (comma-spacing)');
+    assert.deepEqual(actions[1].command.arguments, [target, 'comma-spacing', 5]);
   });
 
   it('downloads the matching CLI when no override is configured', async () => {

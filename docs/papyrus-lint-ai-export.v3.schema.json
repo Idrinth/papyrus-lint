@@ -1,0 +1,562 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
+  "title": "Papyrus Lint Export for AI document",
+  "description": "The JSON document produced by the desktop app's Export for AI feature or the CLI's --format ai option. It contains the GUI's currently filtered lint findings, or the CLI's unfiltered findings, and metadata for each recognized rule represented in those findings.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "header",
+    "configuration",
+    "findings",
+    "rule_details"
+  ],
+  "properties": {
+    "$schema": {
+      "description": "The canonical JSON Schema for validating and interpreting this AI export document.",
+      "const": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json"
+    },
+    "header": {
+      "$ref": "#/$defs/header"
+    },
+    "configuration": {
+      "description": "The fully resolved lint configuration used to produce the findings, including defaults for settings omitted from the project's YAML file.",
+      "$ref": "#/$defs/configuration"
+    },
+    "filters": {
+      "description": "The desktop GUI result filters active when the export was generated. This is optional because these filters do not exist in non-GUI integrations.",
+      "$ref": "#/$defs/filters"
+    },
+    "findings": {
+      "$ref": "#/$defs/findingsReport"
+    },
+    "rule_details": {
+      "description": "Tag metadata for each recognized rule represented in findings. Triggered rule ids for which Papyrus Lint has no metadata are omitted.",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ruleDetail"
+      }
+    }
+  },
+  "$defs": {
+    "severity": {
+      "description": "A diagnostic severity bucket.",
+      "type": "string",
+      "enum": [
+        "error",
+        "warning",
+        "info"
+      ]
+    },
+    "importance": {
+      "description": "A rule's relative importance.",
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "ruleId": {
+      "description": "A stable, hyphenated lint rule identifier.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filename_pattern",
+        "severities",
+        "importances",
+        "rules",
+        "auto_fixable_only"
+      ],
+      "properties": {
+        "filename_pattern": {
+          "description": "The filename search pattern, including any glob-like *, %, or ? characters; an empty string matches every file.",
+          "type": "string"
+        },
+        "severities": {
+          "description": "The diagnostic severity buckets selected in the GUI. The GUI never lets every bucket in a filter group (severities, importances, or rules) be deselected at once, so this is never empty; a bucket left out here was deliberately excluded, not \"no restriction\".",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/severity"
+          }
+        },
+        "importances": {
+          "description": "The rule importance levels selected in the GUI. Never empty; see severities above for why.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/importance"
+          }
+        },
+        "rules": {
+          "description": "The rule ids selected across the GUI's kind-grouped rule filters. Never empty; see severities above for why. A finding whose rule carries no known tag metadata (e.g. a compiler-reported diagnostic) is exempt from this filter and importances, so it can still appear in findings even though its own rule id isn't listed here.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ruleId"
+          }
+        },
+        "auto_fixable_only": {
+          "description": "Whether the GUI was restricted to findings from auto-fixable rules.",
+          "type": "boolean"
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "semicolon",
+        "indentation",
+        "indentation_width",
+        "identifier_casing",
+        "cyclomatic_complexity_warning",
+        "cyclomatic_complexity_error",
+        "type_casing",
+        "named_arguments",
+        "min_wait_interval",
+        "magic_numbers",
+        "fail_on_warning",
+        "fail_on_info",
+        "bool_like_int",
+        "assume_auto_properties_filled",
+        "enabled_rules"
+      ],
+      "properties": {
+        "semicolon": {
+          "type": "boolean"
+        },
+        "indentation": {
+          "type": "string",
+          "enum": [
+            "tab",
+            "space"
+          ]
+        },
+        "indentation_width": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "A value of 0 is only valid for tabs. For spaces the value will be equal or greater 1"
+        },
+        "identifier_casing": {
+          "type": "string",
+          "enum": [
+            "camelCase",
+            "PascalCase",
+            "snake_case",
+            "CONSTANT_CASE"
+          ]
+        },
+        "cyclomatic_complexity_warning": {
+          "description": "The cyclomatic complexity a function/event can reach before the cyclomatic-complexity finding's severity is [warning].",
+          "type": "integer",
+          "minimum": 0
+        },
+        "cyclomatic_complexity_error": {
+          "description": "The cyclomatic complexity a function/event can reach before the cyclomatic-complexity finding's severity is [error]. This value as configured can be lower than cyclomatic_complexity_warning, but Papyrus Lint then treats it as equal to cyclomatic_complexity_warning when actually deciding a finding's severity, since a lower error threshold would otherwise contradict the warning one it's supposed to escalate.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "type_casing": {
+          "type": "string",
+          "enum": [
+            "PascalCase",
+            "camelCase",
+            "lowercase",
+            "UPPERCASE"
+          ]
+        },
+        "named_arguments": {
+          "type": "string",
+          "enum": [
+            "always",
+            "instead_of_defaults",
+            "never"
+          ]
+        },
+        "min_wait_interval": {
+          "type": "number",
+          "minimum": 0
+        },
+        "magic_numbers": {
+          "type": "string",
+          "enum": [
+            "loose",
+            "strict"
+          ]
+        },
+        "fail_on_warning": {
+          "type": "boolean"
+        },
+        "fail_on_info": {
+          "type": "boolean"
+        },
+        "bool_like_int": {
+          "type": "boolean"
+        },
+        "assume_auto_properties_filled": {
+          "type": "boolean"
+        },
+        "enabled_rules": {
+          "description": "The hyphenated ids of every currently enabled lint rule, alphabetically sorted. A rule not listed here is disabled. Disabled rules will not be listed in the findings.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ruleId"
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "indentation": {
+            "const": "space"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "indentation_width": {
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "header": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool",
+        "version",
+        "website",
+        "target_game",
+        "generated_at"
+      ],
+      "properties": {
+        "tool": {
+          "description": "The application that produced this document.",
+          "const": "Papyrus Lint"
+        },
+        "version": {
+          "description": "The running desktop app's version, or `unknown` when it could not be read.",
+          "type": "string",
+          "minLength": 1
+        },
+        "website": {
+          "description": "The Papyrus Lint website, where additional rule and configuration documentation is available.",
+          "type": "string",
+          "format": "uri"
+        },
+        "target_game": {
+          "description": "The Papyrus dialect/engine these findings and rule details were produced for. Papyrus Lint has no per-project game/edition setting, so this is fixed.",
+          "enum": ["Skyrim SE/AE"]
+        },
+        "generated_at": {
+          "description": "The UTC date and time at which this export was generated, in RFC 3339 format.",
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+        }
+      }
+    },
+    "findingsReport": {
+      "description": "The filtered findings. Every exported file has at least one diagnostic (see `fileReport`).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "files",
+        "total_diagnostics",
+        "severity_counts",
+        "rule_counts"
+      ],
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fileReport"
+          }
+        },
+        "total_diagnostics": {
+          "description": "The total number of exported diagnostics across all files.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "severity_counts": {
+          "description": "The sum of all file severity counts.",
+          "$ref": "#/$defs/severityCounts"
+        },
+        "rule_counts": {
+          "$ref": "#/$defs/ruleCounts"
+        }
+      }
+    },
+    "fileReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "severity_counts",
+        "rule_counts",
+        "diagnostics",
+        "source"
+      ],
+      "properties": {
+        "path": {
+          "description": "The script path relative to the currently loaded project when possible.",
+          "type": "string",
+          "minLength": 1
+        },
+        "diagnostics": {
+          "description": "The diagnostics for this script that passed every active results filter.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        },
+        "rule_counts": {
+          "$ref": "#/$defs/ruleCounts"
+        },
+        "severity_counts": {
+          "$ref": "#/$defs/severityCounts"
+        },
+        "source": {
+          "description": "How this script's source is represented: null when none was attached at all; otherwise an object whose \"type\" names which of the other three forms it takes.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sourceContent"
+            },
+            {
+              "$ref": "#/$defs/sourceHash"
+            },
+            {
+              "$ref": "#/$defs/sourceError"
+            }
+          ]
+        }
+      }
+    },
+    "ruleCounts": {
+      "description": "Counts of exported diagnostics grouped by rule id. Rules with no diagnostics are omitted.",
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9]+(?:-[a-z0-9]+)*$": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "severityCounts": {
+      "description": "Counts of exported diagnostics grouped by severity.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "errors",
+        "warnings",
+        "info"
+      ],
+      "properties": {
+        "errors": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "sourceContent": {
+      "description": "This script's current on-disk contents, letting the assistant see the code each diagnostic refers to without the project open.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "content"
+      ],
+      "properties": {
+        "type": {
+          "const": "content"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "sourceHash": {
+      "description": "This script's content hash instead of its full text, attached via the desktop app's \"Redact source\" export option or the CLI's --hash-source flag so a report can be shared without exposing proprietary script text; a viewer can still tell files apart, or notice a file changed between exports, from the hash alone.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "algorithm",
+        "hash"
+      ],
+      "properties": {
+        "type": {
+          "const": "hash"
+        },
+        "algorithm": {
+          "enum": ["md5"]
+        },
+        "hash": {
+          "description": "The lowercase hex digest of this script's current on-disk contents.",
+          "type": "string",
+          "pattern": "^[0-9a-f]+$"
+        }
+      }
+    },
+    "sourceError": {
+      "description": "Why this script's source couldn't be attached, e.g. it was moved or deleted since linting.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "message"
+      ],
+      "properties": {
+        "type": {
+          "const": "error"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line",
+        "column",
+        "rule",
+        "level",
+        "message",
+        "doc_url"
+      ],
+      "dependentRequired": {
+        "external": [
+          "source"
+        ],
+        "source": [
+          "external"
+        ]
+      },
+      "properties": {
+        "line": {
+          "description": "The 1-indexed source line where the diagnostic starts.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "description": "The 1-indexed source column where the diagnostic starts.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "rule": {
+          "description": "The stable, hyphenated lint rule id.",
+          "$ref": "#/$defs/ruleId"
+        },
+        "level": {
+          "description": "The diagnostic severity. Untagged external diagnostics are classified as errors.",
+          "$ref": "#/$defs/severity"
+        },
+        "message": {
+          "description": "The human-readable diagnostic message.",
+          "type": "string",
+          "minLength": 1
+        },
+        "external": {
+          "description": "Present and `true` only for a diagnostic raised by a tool outside Papyrus Lint's own lint rules rather than one of Papyrus Lint's own rules; see `source` for which tool. Omitted for an ordinary lint finding.",
+          "const": true
+        },
+        "source": {
+          "description": "Which external tool raised this diagnostic. Present only alongside `external`. Currently always `compiler`, for a diagnostic parsed out of PapyrusCompiler.exe's own reported errors (rule `compiler-error`).",
+          "const": "compiler"
+        },
+        "repair": {
+          "description": "What this diagnostic's line would look like after applying its rule's automatic fix, present only when Papyrus Lint could compute one. Omitted for a rule with no automatic fix, for a finding that fix wouldn't actually change (e.g. type-casing's own \"no automatic fix\" case), or when the fix would shift the file's line count elsewhere (e.g. property-sorting relocating a property's declaration).",
+          "type": "string",
+          "minLength": 1
+        },
+        "doc_url": {
+          "description": "This rule's own documentation link on the project website, so the assistant can look up its full explanation, or null for a rule with no known tag metadata (e.g. a compiler-reported diagnostic).",
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri"
+        }
+      }
+    },
+    "ruleDetail": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule",
+        "description",
+        "kinds",
+        "importance",
+        "auto_fixable",
+        "doc_url"
+      ],
+      "properties": {
+        "rule": {
+          "description": "The stable, hyphenated identifier of the lint rule.",
+          "$ref": "#/$defs/ruleId"
+        },
+        "description": {
+          "description": "The rule's detailed description, copied from its row in the project README's Implemented Lints tables.",
+          "type": "string",
+          "minLength": 1
+        },
+        "kinds": {
+          "description": "The classes of issue this rule detects.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "style",
+              "performance",
+              "correctness",
+              "maintainability"
+            ]
+          }
+        },
+        "importance": {
+          "description": "The rule's relative importance.",
+          "$ref": "#/$defs/importance"
+        },
+        "auto_fixable": {
+          "description": "Whether Papyrus Lint can automatically fix this rule's findings.",
+          "type": "boolean"
+        },
+        "doc_url": {
+          "description": "This rule's own documentation link on the project website (its row on the Implemented Lints table), so an assistant or a human reader can jump straight to it.",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

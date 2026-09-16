@@ -73,7 +73,7 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
                 line: function.line,
                 column: 1,
                 message: format!(
-                    "[warning] {kind} '{}' declares {} but the inherited declaration on '{}' declares {}",
+                    "[error] {kind} '{}' declares {} but the inherited declaration on '{}' declares {}",
                     function.name,
                     param_count(function.params.len()),
                     extends,
@@ -90,7 +90,7 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
                     line: function.line,
                     column: 1,
                     message: format!(
-                        "[warning] Parameter {} of {kind} '{}' is declared {} but the inherited declaration on '{}' declares {}",
+                        "[error] Parameter {} of {kind} '{}' is declared {} but the inherited declaration on '{}' declares {}",
                         index + 1,
                         function.name,
                         format_type(&local.type_name),
@@ -193,7 +193,7 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 3);
-        assert!(diagnostics[0].message.starts_with("[warning]"));
+        assert!(diagnostics[0].message.starts_with("[error]"));
         assert!(diagnostics[0]
             .message
             .contains("Function 'DoThing' declares 1 parameter"));
@@ -211,7 +211,7 @@ mod tests {
 
         assert_eq!(diagnostics.len(), 1);
         assert_eq!(diagnostics[0].line, 3);
-        assert!(diagnostics[0].message.starts_with("[warning]"));
+        assert!(diagnostics[0].message.starts_with("[error]"));
         assert!(diagnostics[0]
             .message
             .contains("Parameter 2 of Function 'DoThing'"));
