@@ -51,24 +51,50 @@ MODULES = [
 ]
 
 
-def parse_lcov(path: Path) -> tuple[int, int] | None:
-    """Returns (lines_found, lines_hit) summed across every record in an
-    lcov.info file, or None if the file doesn't exist."""
+def parse_lcov(path: Path) -> tuple[int, int, int] | None:
+    """Returns (lines_found, lines_hit, functions_found) summed across every
+    record in an lcov.info file, or None if the file doesn't exist."""
     if not path.is_file():
         return None
-    found = hit = 0
+    found = hit = functions_found = 0
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         if line.startswith("LF:"):
             found += int(line[3:])
         elif line.startswith("LH:"):
             hit += int(line[3:])
-    return found, hit
+        elif line.startswith("FNF:"):
+            functions_found += int(line[4:])
+    return found, hit, functions_found
 
 
 def pct(hit: int, found: int) -> str:
     if found == 0:
         return "n/a"
     return f"{hit / found * 100:.1f}%"
+
+
+def crap_estimate(found: int, hit: int, functions_found: int) -> float | None:
+    """Estimates a CRAP (Change Risk Anti-Patterns) score from line coverage
+    and average function size, or None if there's not enough data.
+
+    The real CRAP formula is comp(m)^2 * (1 - cov(m))^3 + comp(m), where
+    comp(m) is a method's cyclomatic complexity. None of this project's
+    coverage tools measure cyclomatic complexity, so this substitutes the
+    module's average executable lines per function (lines_found /
+    functions_found) as a rough complexity proxy: bigger functions tend to
+    be more complex ones. This is an estimate, not a textbook CRAP score.
+    """
+    if found == 0 or functions_found == 0:
+        return None
+    avg_lines_per_function = found / functions_found
+    coverage_fraction = hit / found
+    return avg_lines_per_function**2 * (1 - coverage_fraction) ** 3 + avg_lines_per_function
+
+
+def format_crap(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:.1f}"
 
 
 def iter_leaf_paths(entry):
@@ -82,50 +108,70 @@ def iter_leaf_paths(entry):
         yield from iter_leaf_paths(value)
 
 
-def render_entry(root: Path, label: str, value, depth: int) -> tuple[int, int, list[str]]:
+def render_entry(root: Path, label: str, value, depth: int) -> tuple[int, int, int, list[str]]:
     """Renders one (label, value) MODULES entry, recursing into nested
-    groups. Returns (lines_found, lines_hit, rendered_rows)."""
+    groups. Returns (lines_found, lines_hit, functions_found, rendered_rows)."""
     prefix = "↳ " * depth
     if isinstance(value, str):
         result = parse_lcov(root / value)
         if result is None:
-            return 0, 0, [f"| {prefix}{label} | _no report_ | |"]
-        found, hit = result
-        return found, hit, [f"| {prefix}{label} | {pct(hit, found)} | {hit}/{found} |"]
+            return 0, 0, 0, [f"| {prefix}{label} | _no report_ | | |"]
+        found, hit, functions_found = result
+        crap = format_crap(crap_estimate(found, hit, functions_found))
+        return (
+            found,
+            hit,
+            functions_found,
+            [f"| {prefix}{label} | {pct(hit, found)} | {hit}/{found} | {crap} |"],
+        )
 
-    found = hit = 0
+    found = hit = functions_found = 0
     child_rows: list[str] = []
     for name, child in value:
-        child_found, child_hit, rows = render_entry(root, name, child, depth + 1)
+        child_found, child_hit, child_functions_found, rows = render_entry(root, name, child, depth + 1)
         found += child_found
         hit += child_hit
+        functions_found += child_functions_found
         child_rows.extend(rows)
 
-    rows = [f"| {prefix}{label} | {pct(hit, found)} | {hit}/{found} |"]
+    crap = format_crap(crap_estimate(found, hit, functions_found))
+    rows = [f"| {prefix}{label} | {pct(hit, found)} | {hit}/{found} | {crap} |"]
     if len(value) > 1:
         rows.extend(child_rows)
-    return found, hit, rows
+    return found, hit, functions_found, rows
 
 
 def main() -> None:
     root = Path(sys.argv[1])
 
-    lines = [MARKER, "### Coverage by module", "", "| Module | Coverage | Lines covered |", "| --- | --- | --- |"]
-    total_found = total_hit = 0
+    lines = [
+        MARKER,
+        "### Coverage by module",
+        "",
+        "| Module | Coverage | Lines covered | Est. CRAP |",
+        "| --- | --- | --- | --- |",
+    ]
+    total_found = total_hit = total_functions_found = 0
 
     for label, parts in MODULES:
-        module_found, module_hit, rows = render_entry(root, label, parts, 0)
+        module_found, module_hit, module_functions_found, rows = render_entry(root, label, parts, 0)
         total_found += module_found
         total_hit += module_hit
+        total_functions_found += module_functions_found
         lines.extend(rows)
 
     total_summary = pct(total_hit, total_found)
-    lines.append(f"| **Total** | **{total_summary}** | **{total_hit}/{total_found}** |")
+    total_crap = format_crap(crap_estimate(total_found, total_hit, total_functions_found))
+    lines.append(f"| **Total** | **{total_summary}** | **{total_hit}/{total_found}** | **{total_crap}** |")
 
     lines.append("")
     lines.append(
         "_Line coverage, aggregated from each job's lcov report. "
-        "Missing reports mean that job didn't run or didn't upload one._"
+        "Missing reports mean that job didn't run or didn't upload one. "
+        "Est. CRAP is a rough estimate — (avg. lines per function)² × (1 − line coverage)³ + "
+        "avg. lines per function — standing in for a true cyclomatic-complexity CRAP score, "
+        "which none of this project's coverage tools measure. Lower is better; treat it as a "
+        "trend to watch, not a hard threshold._"
     )
 
     print("\n".join(lines))

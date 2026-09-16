@@ -24,7 +24,7 @@ def coverage_totals(artifacts: Path) -> tuple[int, int]:
             if result is None:
                 missing.append(relative_path)
                 continue
-            report_found, report_hit = result
+            report_found, report_hit, _report_functions_found = result
             found += report_found
             hit += report_hit
 
