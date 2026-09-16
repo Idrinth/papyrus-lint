@@ -1,6 +1,6 @@
 # Papyrus Lint [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint) [![Discord Server](https://img.shields.io/badge/discord-server-5865F2?logo=discord)](link=https://discord.gg/idrinth) [![NexusMods](https://img.shields.io/badge/nexusmods-page-yellow)](https://www.nexusmods.com/skyrimspecialedition/mods/189862) [![GitHub](https://img.shields.io/badge/github-repo-white?logo=github)](https://github.com/idrinth/papyrus-lint) [![Action](https://img.shields.io/badge/GitHubAction-Ready-Purple?logo=GitHub&label=Action&color=purple)](https://github.com/marketplace/actions/papyrus-lint) [![Feedback](https://img.shields.io/badge/feedback-tally-orange)](https://tally.so/r/aQL1dB)
 
-![Papyrus Lint logo](resources/logo-small.jpg)
+![Papyrus Lint logo](shared/images/logo-small.jpg)
 
 **Papyrus Lint goes far beyond style: it catches bugs that CreationKit's
 compiler lets through.**
@@ -45,7 +45,7 @@ The strict boolean check identifies this issue because the first call passes
 the `Actor` value `b` to a `Bool` parameter. This specific mistake cost me a
 good two hours finding manually in one of my mods.
 
-![Papyrus Lint Import](resources/papyrus-lint-import.png)
+![Papyrus Lint Import](shared/images/papyrus-lint-import.png)
 
 Just drop your file or archlist here and see the results.
 
@@ -60,7 +60,7 @@ See [more examples](docs/examples.md) of bugs Papyrus Lint catches that
 - A replacement for proper testing
 - An AI or AI-powered
 
-![Papyrus Lint VSCode Extension](resources/papyrus-lint-vscode.png)
+![Papyrus Lint VSCode Extension](shared/images/papyrus-lint-vscode.png)
 
 ## What is a linter?
 
@@ -82,11 +82,11 @@ judgment for whether a flagged line needs changing, and use the
 silence a specific rule on a specific line (or [`; @disable-file`](#disabling-a-lint-on-a-specific-line)
 to silence it across the whole file) when you've decided it doesn't apply.
 
-![Papyrus Lint Results](resources/papyrus-lint-results.png)
+![Papyrus Lint Results](shared/images/papyrus-lint-results.png)
 
 ## Implemented Lints
 
-![Papyrus Lint Viewer](resources/papyrus-lint-viewer.png)
+![Papyrus Lint Viewer](shared/images/papyrus-lint-viewer.png)
 
 ### Formatting
 
@@ -221,7 +221,7 @@ within it. Reformatting the rest of that block (fragment headers, the
 generated function signature, `EndFunction`, or the markers themselves)
 would make CreationKit fail to recognize the fragment.
 
-![Papyrus Lint Mass Fix](resources/papyrus-lint-massfix.png)
+![Papyrus Lint Mass Fix](shared/images/papyrus-lint-massfix.png)
 
 ## Disabling a lint on a specific line
 
@@ -546,7 +546,7 @@ per line.
 
 ## Command-line interface
 
-![Papyrus Lint CLI example](resources/papyrus-lint-cli.png)
+![Papyrus Lint CLI example](shared/images/papyrus-lint-cli.png)
 
 Besides its GUI, Papyrus Lint can lint non-interactively from the
 command line two ways: by passing an `.achlist` (or a single `.psc`, or a
