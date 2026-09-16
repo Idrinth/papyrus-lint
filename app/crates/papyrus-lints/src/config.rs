@@ -94,6 +94,7 @@
 //!   invalid_random_range: true
 //!   float_equality: false
 //!   missing_update_handler: false
+//!   event_signature_mismatch: false
 //! ```
 //!
 //! Every entry under `rules` is enabled by default; set one to `false` to
@@ -103,8 +104,8 @@
 //! `unchecked_form_parameter`, `magic_numbers`, `native_function_usage`,
 //! `repeated_getvalue`, `global_variable_setvalue`,
 //! `default_property_value`, `unknown_actor_value`,
-//! `missing_doc_comment`, `float_equality`, and `missing_update_handler`
-//! are the exceptions: they default to `false`.
+//! `missing_doc_comment`, `float_equality`, `missing_update_handler`, and
+//! `event_signature_mismatch` are the exceptions: they default to `false`.
 //! `property_sorting` reorders a script's declared properties, a more
 //! invasive change than the rest of these rules; `unchecked_form_parameter`
 //! defaults off because many scripts intentionally accept a possibly-`None`
@@ -133,8 +134,13 @@
 //! as a false positive; `missing_update_handler` defaults off because it
 //! only ever sees a single script's own source, so a `RegisterFor*` call
 //! whose matching `Event` is instead declared on a script it `Extends`
-//! would otherwise be misreported as having no handler at all. All eleven
-//! need a project to opt in explicitly.
+//! would otherwise be misreported as having no handler at all;
+//! `event_signature_mismatch` defaults off because `rules/known-events.yaml`
+//! only lists a curated subset of the engine's native events, and this
+//! lint matches an `Event`'s name alone, regardless of whether the
+//! enclosing script actually extends the Form that declares it, which
+//! would otherwise misreport a same-named custom event. All twelve need a
+//! project to opt in explicitly.
 //!
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
 //! is `false` by default: see [`Config::assume_auto_properties_filled`].
@@ -519,6 +525,14 @@ pub struct Rules {
     /// [`Self::float_equality`], this defaults to `false`: see
     /// [`crate::missing_update_handler`].
     pub missing_update_handler: bool,
+    /// The "Event signature mismatch" lint. Like [`Self::property_sorting`],
+    /// [`Self::unchecked_form_parameter`], [`Self::magic_numbers`],
+    /// [`Self::native_function_usage`], [`Self::repeated_getvalue`],
+    /// [`Self::global_variable_setvalue`], [`Self::default_property_value`],
+    /// [`Self::unknown_actor_value`], [`Self::missing_doc_comment`],
+    /// [`Self::float_equality`], and [`Self::missing_update_handler`], this
+    /// defaults to `false`: see [`crate::event_signature`].
+    pub event_signature_mismatch: bool,
 }
 
 impl Rules {
@@ -623,6 +637,7 @@ impl Default for Rules {
             invalid_random_range: true,
             float_equality: false,
             missing_update_handler: false,
+            event_signature_mismatch: false,
         }
     }
 }
@@ -840,6 +855,11 @@ mod tests {
         // instead declared on a script it Extends would otherwise be
         // misreported as having no handler at all.
         assert!(!config.rules.missing_update_handler);
+        // Also disabled by default: rules/known-events.yaml only lists a
+        // curated subset of the engine's native events, and this lint
+        // matches an Event's name alone, regardless of whether the
+        // enclosing script actually extends the Form that declares it.
+        assert!(!config.rules.event_signature_mismatch);
     }
 
     #[test]

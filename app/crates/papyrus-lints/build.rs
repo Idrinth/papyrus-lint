@@ -1,12 +1,13 @@
 //! Compiles `rules/forbidden-functions.yaml`, `rules/slow-functions.yaml`,
-//! `rules/native-methods.yaml`, `rules/actor-values.yaml`, and
-//! `rules/update-event-handlers.yaml` into static Rust arrays at build
-//! time, so `forbidden_functions::check`, `slow_functions::check`,
-//! `native_function_usage::check`, `actor_value::check`, and
-//! `missing_update_handler::check` never parse YAML at runtime (see
+//! `rules/native-methods.yaml`, `rules/actor-values.yaml`,
+//! `rules/update-event-handlers.yaml`, and `rules/known-events.yaml` into
+//! static Rust arrays at build time, so `forbidden_functions::check`,
+//! `slow_functions::check`, `native_function_usage::check`,
+//! `actor_value::check`, `missing_update_handler::check`, and
+//! `event_signature::check` never parse YAML at runtime (see
 //! `src/forbidden_functions.rs`, `src/slow_functions.rs`,
-//! `src/native_function_usage.rs`, `src/actor_value.rs`, and
-//! `src/missing_update_handler.rs`).
+//! `src/native_function_usage.rs`, `src/actor_value.rs`,
+//! `src/missing_update_handler.rs`, and `src/event_signature.rs`).
 
 use std::env;
 use std::fs;
@@ -49,6 +50,20 @@ struct RawUpdateEventPair {
     event: String,
 }
 
+#[derive(serde::Deserialize)]
+struct RawEventArg {
+    #[serde(rename = "type")]
+    type_name: String,
+    name: String,
+}
+
+#[derive(serde::Deserialize)]
+struct RawKnownEvent {
+    event: String,
+    form: String,
+    args: Vec<RawEventArg>,
+}
+
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
@@ -58,6 +73,7 @@ fn main() {
     compile_native_methods(&manifest_dir, &out_dir);
     compile_actor_values(&manifest_dir, &out_dir);
     compile_update_event_pairs(&manifest_dir, &out_dir);
+    compile_known_events(&manifest_dir, &out_dir);
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
@@ -251,6 +267,52 @@ fn compile_update_event_pairs(manifest_dir: &str, out_dir: &str) {
     generated.push_str("];\n");
 
     let dest = Path::new(out_dir).join("update_event_pairs_data.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated rule data to {}: {err}",
+            dest.display()
+        )
+    });
+}
+
+fn compile_known_events(manifest_dir: &str, out_dir: &str) {
+    let yaml_path = Path::new(manifest_dir).join("../../../rules/known-events.yaml");
+    println!("cargo:rerun-if-changed={}", yaml_path.display());
+
+    let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read known-events rules at {}: {err}",
+            yaml_path.display()
+        )
+    });
+    let events: Vec<RawKnownEvent> = serde_yaml::from_str(&yaml_src).unwrap_or_else(|err| {
+        panic!(
+            "failed to parse known-events rules at {}: {err}",
+            yaml_path.display()
+        )
+    });
+
+    let mut generated = String::new();
+    generated.push_str(
+        "/// Compiled from `rules/known-events.yaml` by `build.rs`. Do not edit by hand.\n",
+    );
+    generated.push_str("pub static KNOWN_EVENTS: &[KnownEventRule] = &[\n");
+    for event in &events {
+        let mut args = String::new();
+        for arg in &event.args {
+            args.push_str(&format!(
+                "EventArg {{ type_name: {:?}, name: {:?} }}, ",
+                arg.type_name, arg.name
+            ));
+        }
+        generated.push_str(&format!(
+            "    KnownEventRule {{ event: {:?}, form: {:?}, args: &[{args}] }},\n",
+            event.event, event.form
+        ));
+    }
+    generated.push_str("];\n");
+
+    let dest = Path::new(out_dir).join("known_events_data.rs");
     fs::write(&dest, generated).unwrap_or_else(|err| {
         panic!(
             "failed to write generated rule data to {}: {err}",

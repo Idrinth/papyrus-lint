@@ -119,3 +119,4 @@ rules:
   invalid_random_range: true
   float_equality: false
   missing_update_handler: false
+  event_signature_mismatch: false
