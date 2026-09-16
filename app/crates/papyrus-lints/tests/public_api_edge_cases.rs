@@ -416,6 +416,47 @@ fn default_enabled_rules_can_be_disabled_through_deserialized_config() {
 }
 
 #[test]
+fn repeated_setoutfit_is_dispatched_and_honors_line_disable_comments() {
+    let source = concat!(
+        "ScriptName Example\n\n",
+        "Function Dress(Actor Target, Outfit Clothes)\n",
+        "    Target.SetOutfit(Clothes)\n",
+        "    Target.SetOutfit(Clothes) ; @disable REPEATED-SETOUTFIT\n",
+        "    Debug.Trace(\"still dressed\")\n",
+        "    Target.SetOutfit(Clothes)\n",
+        "EndFunction\n",
+    );
+
+    let diagnostics: Vec<_> = lint(source, &Config::default())
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "repeated-setoutfit")
+        .collect();
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (7, 1));
+    assert_eq!(diagnostics[0].level(), "warning");
+    assert!(diagnostics[0]
+        .message
+        .contains("repeats the exact same outfit"));
+}
+
+#[test]
+fn repeated_setoutfit_can_be_disabled_through_deserialized_config() {
+    let config: Config = serde_yaml::from_str("rules:\n  repeated_setoutfit: false\n").unwrap();
+    let source = concat!(
+        "ScriptName Example\n\n",
+        "Function Dress(Actor Target, Outfit Clothes)\n",
+        "    Target.SetOutfit(Clothes)\n",
+        "    Target.SetOutfit(Clothes)\n",
+        "EndFunction\n",
+    );
+
+    assert!(lint(source, &config)
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "repeated-setoutfit"));
+}
+
+#[test]
 fn every_filtered_fixer_respects_its_deserialized_rule_switch() {
     let cases = [
         (
