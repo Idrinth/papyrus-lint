@@ -89,7 +89,7 @@ To keep scripts running smoothly, this flags calls and patterns known to run slo
 [th]Auto-Fix[/th]
 [/tr]
 [tr][td][b]Forbidden/discouraged function usage[/b][/td]
-[td]Flags calls to functions that are usually unintentional performance bottlenecks.[/td]
+[td]Flags calls to functions that are usually unintentional performance bottlenecks. `Debug.Trace` already behind a simple debug-flag If (e.g. `If IsDebugMode`) is left unflagged.[/td]
 [td][/td]
 [/tr]
 [tr][td][b]Slow function usage[/b][/td]
