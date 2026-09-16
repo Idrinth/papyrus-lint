@@ -247,8 +247,19 @@ mod tests {
         compiler_path: &Path,
         script_path: &Path,
     ) -> Result<CompileOutcome, String> {
+        compile_stub_with_retry_and_roots(compiler_path, script_path, &[])
+    }
+
+    /// Like [`compile_stub_with_retry`], but for a test that also needs to
+    /// pass `additional_roots` through to [`compile_psc_file`].
+    #[cfg(unix)]
+    fn compile_stub_with_retry_and_roots(
+        compiler_path: &Path,
+        script_path: &Path,
+        roots: &[String],
+    ) -> Result<CompileOutcome, String> {
         for attempt in 0.. {
-            match compile_psc_file(compiler_path, script_path, &[]) {
+            match compile_psc_file(compiler_path, script_path, roots) {
                 Err(err) if attempt < 5 && err.contains("Text file busy") => {
                     std::thread::sleep(std::time::Duration::from_millis(20));
                 }
@@ -480,7 +491,7 @@ mod tests {
             .expect("failed to create relative additional root");
         let absolute = tempfile::tempdir().expect("failed to create additional root");
 
-        let outcome = compile_psc_file(
+        let outcome = compile_stub_with_retry_and_roots(
             &compiler_path,
             &script_path,
             &[

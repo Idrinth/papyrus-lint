@@ -93,6 +93,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-return_types" checked />
           <input type="checkbox" id="rule-function_override" checked />
           <input type="checkbox" id="rule-argument_naming" checked />
+          <input type="checkbox" id="rule-argument_override_types" checked />
           <input type="checkbox" id="rule-state_function_signature" checked />
           <input type="checkbox" id="rule-numeric_comparison" checked />
           <input type="checkbox" id="rule-indentation" checked />

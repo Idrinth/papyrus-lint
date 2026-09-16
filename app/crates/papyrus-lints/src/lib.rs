@@ -7,6 +7,7 @@
 
 pub mod actor_value;
 pub mod argument_naming;
+pub mod argument_override_types;
 pub mod argument_types;
 pub mod array_bounds;
 pub mod array_size_range;
@@ -97,6 +98,7 @@ pub const KNOWN_RULE_IDS: &[&str] = &[
     return_types::RULE,
     function_override::RULE,
     argument_naming::RULE,
+    argument_override_types::RULE,
     state_function_signature::RULE,
     numeric_comparison::RULE,
     indentation::RULE,
@@ -227,7 +229,9 @@ pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
 /// "Inherited function override" lint can resolve `source`'s own `Extends`
 /// chain to flag a function that overrides an inherited one, so the
 /// "Argument naming consistency" lint can compare an overriding function's
-/// parameter names against the inherited declaration's, so the "Total
+/// parameter names against the inherited declaration's, so the "Argument
+/// override type check" lint can compare an overriding function's
+/// parameter count/types against the inherited declaration's, so the "Total
 /// named state count"/"Multiple Auto states" lint pair can tally `State`s
 /// declared anywhere in `source`'s ancestry alongside its own, and so the
 /// "Useless downcast" lint recognizes a cast to an ancestor of the value's
@@ -332,6 +336,9 @@ pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::Ext
     }
     if rules.argument_naming {
         diagnostics.extend(argument_naming::check_with(source, external));
+    }
+    if rules.argument_override_types {
+        diagnostics.extend(argument_override_types::check_with(source, external));
     }
     if rules.state_function_signature {
         diagnostics.extend(state_function_signature::check(source));
