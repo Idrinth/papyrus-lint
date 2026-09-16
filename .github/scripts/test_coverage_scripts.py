@@ -228,6 +228,47 @@ class RenderNexusPageTests(unittest.TestCase):
         ):
             render_nexuspage.coverage_totals(Path(directory))
 
+    def test_coverage_totals_reports_missing_files_before_empty_coverage(self) -> None:
+        modules = [
+            (
+                "Module",
+                [("empty", "empty.info"), ("missing", "missing.info")],
+            )
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            Path(root, "empty.info").write_text("LF:0\nLH:0\n", encoding="utf-8")
+
+            with (
+                mock.patch.object(render_nexuspage, "MODULES", modules),
+                self.assertRaisesRegex(
+                    ValueError, "missing coverage reports: missing.info"
+                ),
+            ):
+                render_nexuspage.coverage_totals(root)
+
+    def test_coverage_totals_supports_deeply_nested_module_groups(self) -> None:
+        modules = [
+            (
+                "Module",
+                [
+                    (
+                        "group",
+                        [("subgroup", [("report", "nested/report.info")])],
+                    )
+                ],
+            )
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            Path(root, "nested").mkdir()
+            Path(root, "nested/report.info").write_text(
+                "LF:12\nLH:9\n", encoding="utf-8"
+            )
+
+            with mock.patch.object(render_nexuspage, "MODULES", modules):
+                self.assertEqual((9, 12), render_nexuspage.coverage_totals(root))
+
     def test_render_replaces_counts_percentage_and_version(self) -> None:
         template = "<COVERED_LINES> / <TOTAL_LINES> (~<COVERAGE_PERCENTAGE>%) <VERSION>"
         self.assertEqual(
@@ -239,6 +280,26 @@ class RenderNexusPageTests(unittest.TestCase):
         self.assertEqual(
             "27,484 / 27,965 (~98.3%) v1.2.3",
             render_nexuspage.render(template, 27_484, 27_965, "v1.2.3"),
+        )
+
+    def test_render_handles_zero_covered_lines(self) -> None:
+        template = "<COVERED_LINES>/<TOTAL_LINES> (<COVERAGE_PERCENTAGE>%) <VERSION>"
+
+        self.assertEqual(
+            "0/25 (0.0%) v2.0.0",
+            render_nexuspage.render(template, 0, 25, "v2.0.0"),
+        )
+
+    def test_render_preserves_unicode_and_newlines_around_markers(self) -> None:
+        template = (
+            "[heading]Übersicht[/heading]\n"
+            "<COVERED_LINES> von <TOTAL_LINES> · <COVERAGE_PERCENTAGE>%\n"
+            "Version <VERSION> — fertig\n"
+        )
+
+        self.assertEqual(
+            "[heading]Übersicht[/heading]\n3 von 4 · 75.0%\nVersion v1.0.0 — fertig\n",
+            render_nexuspage.render(template, 3, 4, "v1.0.0"),
         )
 
     def test_render_requires_every_marker_exactly_once(self) -> None:
@@ -292,12 +353,57 @@ class RenderNexusPageTests(unittest.TestCase):
 
             self.assertEqual("9/10 (90.0) v1.2.3", output.read_text(encoding="utf-8"))
 
+    def test_main_aggregates_reports_and_renders_without_mocking_helpers(self) -> None:
+        modules = [
+            ("First", [("one", "one/lcov.info")]),
+            ("Second", [("two", "two/lcov.info")]),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for report, contents in (
+                ("one/lcov.info", "LF:4\nLH:3\n"),
+                ("two/lcov.info", "LF:6\nLH:2\n"),
+            ):
+                Path(root, report).parent.mkdir()
+                Path(root, report).write_text(contents, encoding="utf-8")
+            template = root / "template.bbcode"
+            output = root / "output.bbcode"
+            template.write_text(
+                "<COVERED_LINES>/<TOTAL_LINES> (<COVERAGE_PERCENTAGE>%) <VERSION>",
+                encoding="utf-8",
+            )
+
+            with (
+                mock.patch.object(render_nexuspage, "MODULES", modules),
+                mock.patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "render_nexuspage.py",
+                        str(template),
+                        str(root),
+                        str(output),
+                        "v3.4.5",
+                    ],
+                ),
+            ):
+                render_nexuspage.main()
+
+            self.assertEqual(
+                "5/10 (50.0%) v3.4.5", output.read_text(encoding="utf-8")
+            )
+
     def test_main_rejects_invalid_argument_count(self) -> None:
-        with (
-            mock.patch.object(sys, "argv", ["render_nexuspage.py"]),
-            self.assertRaisesRegex(SystemExit, "usage: render_nexuspage.py"),
+        for arguments in (
+            ["render_nexuspage.py"],
+            ["render_nexuspage.py", "template", "artifacts", "output", "version", "extra"],
         ):
-            render_nexuspage.main()
+            with (
+                self.subTest(arguments=arguments),
+                mock.patch.object(sys, "argv", arguments),
+                self.assertRaisesRegex(SystemExit, "usage: render_nexuspage.py"),
+            ):
+                render_nexuspage.main()
 
 
 if __name__ == "__main__":
