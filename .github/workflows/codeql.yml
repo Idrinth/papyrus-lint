@@ -63,6 +63,12 @@ jobs:
             crate: app/crates/papyrus-lints
           - language: rust
             build-mode: none
+            name: rust-papyrus-lint-config
+            category: "/language:rust-papyrus-lint-config"
+            config-file: .github/codeql/rust-papyrus-lint-config.yml
+            crate: app/crates/papyrus-lint-config
+          - language: rust
+            build-mode: none
             name: rust-papyrus-lint-core
             category: "/language:rust-papyrus-lint-core"
             config-file: .github/codeql/rust-papyrus-lint-core.yml

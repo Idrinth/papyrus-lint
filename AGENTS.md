@@ -29,6 +29,7 @@ Do not paste those files back into this index. Update the file you read.
 | --- | --- | --- |
 | `papyrus-parser` | `app/crates/papyrus-parser` | Lexer, AST, parser. No lint rules. |
 | `papyrus-lints` | `app/crates/papyrus-lints` | Rules, `lint()` / `repair()`, config, tags. |
+| `papyrus-lint-config` | `app/crates/papyrus-lint-config` | Locates/loads/saves a project's `papyrus-lint.yaml`, presets. |
 | `papyrus-lint-core` | `app/crates/papyrus-lint-core` | Project root, achlist, function table, compiler. |
 | `papyrus-lint-cli` | `app/crates/papyrus-lint-cli` | `PapyrusLinterCLI`. Shared `run()` used by the desktop binary too. |
 | desktop shell | `app/src-tauri` | Tauri commands + GUI/CLI dispatch. |
@@ -37,7 +38,7 @@ Do not paste those files back into this index. Update the file you read.
 | Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
 | rule data | `rules/*.yaml` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`. |
 
-The four reusable crates are **path dependencies, not Cargo workspace
+The five reusable crates are **path dependencies, not Cargo workspace
 members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each
 crate's own `Cargo.toml`. Only `app/src-tauri` needs Tauri system deps.
 
@@ -47,6 +48,7 @@ From the repo root, typical loops:
 
 - Parser: `cargo test --manifest-path app/crates/papyrus-parser/Cargo.toml`
 - Lints: `cargo test --manifest-path app/crates/papyrus-lints/Cargo.toml`
+- Config: `cargo test --manifest-path app/crates/papyrus-lint-config/Cargo.toml`
 - Core: `cargo test --manifest-path app/crates/papyrus-lint-core/Cargo.toml`
 - CLI: `cargo test --manifest-path app/crates/papyrus-lint-cli/Cargo.toml`
 - Frontend (`app/`): `npm test`, `npm run lint`, `npm run build`

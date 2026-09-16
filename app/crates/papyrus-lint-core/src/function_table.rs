@@ -94,7 +94,7 @@ impl FunctionTable {
     }
 
     /// Creates an empty table that also searches `additional_roots` (see
-    /// [`crate::config::load_script_roots`]/[`crate::script_locator::find_psc_file`])
+    /// [`papyrus_lint_config::load_script_roots`]/[`crate::script_locator::find_psc_file`])
     /// alongside `scripts/source` / `source/scripts` under `root`.
     pub fn new_with_additional_roots(root: PathBuf, additional_roots: Vec<String>) -> Self {
         FunctionTable {

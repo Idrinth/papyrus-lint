@@ -2,7 +2,8 @@
 
 use std::path::PathBuf;
 
-use papyrus_lint_core::{config, script_locator};
+use papyrus_lint_config as config;
+use papyrus_lint_core::script_locator;
 
 #[derive(Debug, PartialEq, serde::Serialize)]
 pub(crate) struct ProjectInfo {

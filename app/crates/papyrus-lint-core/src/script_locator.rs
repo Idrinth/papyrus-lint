@@ -82,7 +82,7 @@ fn find_named_psc(dirs: impl IntoIterator<Item = PathBuf>, name: &str) -> Option
 /// one of them. Paths that are not existing directories are omitted. Used to
 /// turn a project's
 /// user-configured `additional_script_roots` (see
-/// [`crate::config::load_script_roots`]) into directories to search
+/// [`papyrus_lint_config::load_script_roots`]) into directories to search
 /// alongside [`CANDIDATE_DIRS`].
 pub fn resolve_additional_roots(root: &Path, roots: &[String]) -> Vec<PathBuf> {
     let mut resolved = Vec::new();

@@ -74,13 +74,16 @@
 │       │                                      # argument isn't a known Actor Value; reads
 │       │                                      # rules/actor-values.yaml via a build-time-
 │       │                                      # generated array; disabled by default
+│       ├── papyrus-lint-config/  # Locates/loads/saves a project's
+│       │   └── src/               # papyrus-lint.yaml (lint settings, compiler
+│       │       └── lib.rs          # path, script roots) and built-in/user presets;
+│       │                          # depends only on papyrus-lints
 │       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
 │       │   └── src/               # and the CLI, independent of Tauri:
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
 │       │       ├── ast_cache.rs    # Disk-backed cache of parsed .psc ASTs, keyed by
 │       │       │                   # content MD5 + mtime + linter version, shared by
 │       │       │                   # the desktop app and the CLI (via function_table.rs)
-│       │       ├── config.rs       # Locates/loads a project's papyrus-lint.yaml
 │       │       ├── script_locator.rs   # Finds .psc files by name under
 │       │       │                       # scripts/source or source/scripts
 │       │       ├── function_table.rs   # Cross-script function signature lookup,
@@ -235,8 +238,8 @@
     └── requirements-browser-check.txt  # Pinned Playwright version for the above
 ```
 
-`papyrus-parser`, `papyrus-lints`, `papyrus-lint-core`, and
-`papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
+`papyrus-parser`, `papyrus-lints`, `papyrus-lint-config`, `papyrus-lint-core`,
+and `papyrus-lint-cli` are separate crates (not yet Cargo workspace members,
 just path dependencies of each other and of `app/src-tauri`) so the lint
 engine and project-resolution logic stay reusable independent of the Tauri
 app — which is what lets `papyrus-lint-cli` link against them without

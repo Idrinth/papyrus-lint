@@ -2,7 +2,7 @@ use std::fs;
 use std::io::Write;
 use std::path::Path;
 
-use papyrus_lint_core::config;
+use papyrus_lint_config as config;
 use papyrus_lint_core::content_hash;
 
 use crate::output::*;
