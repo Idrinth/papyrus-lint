@@ -1382,6 +1382,20 @@ mod tests {
     }
 
     #[test]
+    fn achlist_command_reports_a_missing_file() {
+        let dir = tempdir().unwrap();
+        let missing = dir.path().join("missing.achlist");
+
+        let error = parse_achlist_file(missing.to_string_lossy().into_owned())
+            .expect_err("a missing achlist should be reported");
+
+        assert!(
+            error.contains("failed to read achlist file"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
     fn list_psc_files_recursively_finds_scripts_at_every_nesting_depth() {
         let dir = tempdir().unwrap();
         std::fs::create_dir_all(dir.path().join("Requiem/Sub")).unwrap();
