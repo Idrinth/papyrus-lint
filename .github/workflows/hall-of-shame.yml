@@ -1,0 +1,86 @@
+name: Hall of shame
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  hall-of-shame:
+    name: Hall of shame
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download latest coverage artifacts
+        # Best-effort: uncovered-line rankings use the most recent completed
+        # ci.yml coverage artifacts (this in-progress run has not uploaded
+        # any yet). Size / exports / LOC always come from the PR checkout.
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?event=pull_request&status=completed&per_page=20" \
+            --jq '.workflow_runs | map(select(.head_sha != "${{ github.sha }}")) | .[0].id // empty')
+          if [ -z "$RUN_ID" ]; then
+            RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?branch=the-one&event=push&status=completed" \
+              --jq '.workflow_runs | map(select(.conclusion == "success")) | .[0].id // empty')
+          fi
+          if [ -n "$RUN_ID" ]; then
+            gh run download "$RUN_ID" \
+              --repo "${{ github.repository }}" \
+              -D coverage-artifacts \
+              -p '*coverage*'
+          else
+            echo "No prior coverage artifacts found."
+          fi
+
+      - name: Rank files and emit Info notices
+        run: |
+          if [ -d coverage-artifacts ]; then
+            python3 .github/scripts/hall_of_shame.py --lcov-dir coverage-artifacts > hall-of-shame.md
+          else
+            python3 .github/scripts/hall_of_shame.py > hall-of-shame.md
+          fi
+
+      - name: Publish hall of shame
+        run: cat hall-of-shame.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post hall of shame comment
+        # Forked PRs get a read-only GITHUB_TOKEN, so posting the comment
+        # can fail there; the step summary and notice annotations above
+        # still carry the report.
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- hall-of-shame-comment -->';
+            const body = fs.readFileSync('hall-of-shame.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

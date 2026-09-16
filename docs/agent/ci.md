@@ -191,6 +191,20 @@
   (or that's missing entirely) renders `n/a` there like the rest of its
   row.
 
+- **Hall of shame job** (`.github/workflows/hall-of-shame.yml`, pull
+  requests only): runs `.github/scripts/hall_of_shame.py` against the PR
+  checkout and, when a prior `ci.yml` run has uploaded them, that run's
+  `*coverage*` artifacts. It lists the top 3 source files by byte size,
+  public export count, uncovered executable lines, and lines of code,
+  emits those four lists as GitHub Actions `notice` annotations (Info
+  messages on the pull request), writes them to the job's step summary,
+  and posts or updates a single PR comment marked
+  `<!-- hall-of-shame-comment -->`. Comment posting is best-effort
+  (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
+  Uncovered-line rankings can lag the current push by one successful CI
+  run, because this workflow cannot wait for the in-progress coverage
+  jobs; size, exports, and LOC always reflect the PR checkout. The job
+  never fails the pull request.
+
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
-
