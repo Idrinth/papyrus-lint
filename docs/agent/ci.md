@@ -146,29 +146,33 @@
   `--experimental-test-coverage`), ESLint, and TypeScript compilation. The
   text coverage summary is posted to the job's step summary and an lcov
   report is uploaded as the `vscode-extension-coverage` artifact.
+- **Rust crate matrix job** (`rust-crates`): the single source of truth for
+  the seven Rust crates (`app/src-tauri` and the six reusable crates under
+  `app/crates`) that `rust-fmt`, `rust-clippy`, and `rust-test` below all
+  matrix over. It builds the `{crate, name}` list once (`name` is each
+  crate directory's basename) with `jq` and exposes it as a JSON `crates`
+  output, so the list is declared in one place instead of being repeated
+  identically in all three downstream jobs.
 - **Rust fmt job** (`rust-fmt`): runs `cargo fmt --check` against every
-  crate's own `Cargo.toml` (`app/src-tauri` and all six reusable crates
-  under `app/crates`) — not just `app/src-tauri` — since they're separate
-  crates rather than workspace members and so aren't formatted together
-  by a single invocation. It needs none of `rust-clippy`'s Tauri system
+  crate's own `Cargo.toml`, matrixing over `needs.rust-crates.outputs.crates`
+  (`fromJSON`) — not just `app/src-tauri` — since they're separate crates
+  rather than workspace members and so aren't formatted together by a
+  single invocation. It needs none of `rust-clippy`'s Tauri system
   dependencies or build cache, since checking formatting never compiles
   anything, so it runs in parallel with `rust-clippy` instead of after it.
-- **Rust clippy job** (`rust-clippy`): a matrix over `app/src-tauri` and all
-  six reusable crates under `app/crates` (the same seven crates `rust-test`
-  below covers) runs `cargo clippy --all-targets -- -D warnings` against
+- **Rust clippy job** (`rust-clippy`): matrixing over the same
+  `rust-crates` output as `rust-fmt` (the same seven crates `rust-test`
+  below covers), runs `cargo clippy --all-targets -- -D warnings` against
   each crate's own `Cargo.toml` — not just `app/src-tauri` — since they're
   separate crates rather than workspace members and so aren't checked
   together by a single invocation. Only the `app/src-tauri` leg installs
   Tauri's Linux system dependencies, since the other six crates don't need
   them. Runs in parallel with `rust-fmt` (both only `need` the `labels`
-  job); `rust-test` (below) `needs` both.
-- **Rust test job**: a matrix over `app/src-tauri`, `app/crates/papyrus-parser`,
-  `app/crates/papyrus-ast-cache`, `app/crates/papyrus-lints`,
-  `app/crates/papyrus-lint-config`, `app/crates/papyrus-lint-core`, and
-  `app/crates/papyrus-lint-cli` runs each crate's tests via
-  `cargo llvm-cov`. Each matrix leg posts its text coverage summary to the
-  job's step summary and uploads its lcov report as a `rust-coverage-<crate>`
-  artifact.
+  and `rust-crates` jobs); `rust-test` (below) `needs` both.
+- **Rust test job**: matrixing over the same `rust-crates` output, runs
+  each crate's tests via `cargo llvm-cov`. Each matrix leg posts its text
+  coverage summary to the job's step summary and uploads its lcov report
+  as a `rust-coverage-<crate>` artifact.
 - **Coverage summary comment job** (`coverage-comment`, pull requests
   only): downloads every job's lcov artifact and runs
   `.github/scripts/coverage_summary.py` to aggregate line coverage by
@@ -189,20 +193,23 @@
   (or that's missing entirely) renders `n/a` there like the rest of its
   row.
 
-- **Hall of shame job** (`.github/workflows/hall-of-shame.yml`, pull
-  requests only): runs `.github/scripts/hall_of_shame.py` against the PR
-  checkout and, when a prior `ci.yml` run has uploaded them, that run's
-  `*coverage*` artifacts. It lists the top 3 source files by byte size,
-  public export count, uncovered executable lines, and lines of code,
-  emits those four lists as GitHub Actions `notice` annotations (Info
-  messages on the pull request), writes them to the job's step summary,
-  and posts or updates a single PR comment marked
+- **Hall of shame job** (`hall-of-shame`, pull requests only): runs
+  `.github/scripts/hall_of_shame.py` against the PR checkout and this
+  same workflow run's `*coverage*` artifacts, downloaded the same way the
+  coverage summary comment job does (`needs: [bbcode, pages,
+  sublime-extension, frontend, vscode-extension, rust-test]`, `if:
+  always()`, so it still runs — and still has whatever artifacts did
+  upload — even if one of those jobs fails). Being part of `ci.yml`
+  itself rather than a separate workflow, its uncovered-line ranking
+  always reflects the current push rather than lagging behind the most
+  recent prior successful run. It lists the top 3 source files by byte
+  size, public export count, uncovered executable lines, and lines of
+  code, emits those four lists as GitHub Actions `notice` annotations
+  (Info messages on the pull request), writes them to the job's step
+  summary, and posts or updates a single PR comment marked
   `<!-- hall-of-shame-comment -->`. Comment posting is best-effort
   (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
-  Uncovered-line rankings can lag the current push by one successful CI
-  run, because this workflow cannot wait for the in-progress coverage
-  jobs; size, exports, and LOC always reflect the PR checkout. The job
-  never fails the pull request.
+  The job never fails the pull request.
 
 Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
 on all pull requests.
