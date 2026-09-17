@@ -822,7 +822,17 @@ docker run --rm \
 Additional CLI flags go after the image name. For example, append `--json`
 for JSON output. Omit `:ro` from the project mount and pass `fix` if the
 container should apply automatic fixes. A release-specific image tag such as
-`v1.2.3` can be used instead of `latest`.
+`v1.2.3` can be used instead of `latest`. Container images are signed keylessly
+by the release workflow. Verify a release tag with `cosign` (replace the tag as
+needed):
+
+```bash
+cosign verify \
+  --certificate-identity \
+    https://github.com/Idrinth/papyrus-lint/.github/workflows/release.yml@refs/tags/v1.2.3 \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  ghcr.io/idrinth/papyrus-lint:v1.2.3
+```
 
 Every file attached to a release has a matching `.sigstore.json` bundle.
 The release workflow signs these bundles keylessly with [Sigstore](https://www.sigstore.dev/),
