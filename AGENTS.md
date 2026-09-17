@@ -93,6 +93,10 @@ CI treats clippy warnings as errors.
    scheme, or comment style in a file that already has one.
 6. **Don't gold-plate.** A bug fix does not need a surrounding refactor.
    A new rule does not need a new abstraction for "all future rules".
+7. **AI-authored PRs get a model label.** In addition to the
+   `component:`/`type:` labels, tag the PR with a label naming the model
+   that wrote it — whatever it is actually called, e.g. `codex`, `grok`,
+   `Claude Sonnet 5`. Create the label if it doesn't exist yet.
 
 ## Adding a lint
 
