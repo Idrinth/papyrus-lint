@@ -6,16 +6,18 @@
 //!
 //! This module owns [`Preset`] itself (its baseline YAML, name parsing, and
 //! the executable-adjacent base-config layering [`initialize_default_config`]/
-//! [`preset_lint_config`] apply on top of it) and the user-preset management
-//! functions the CLI's `preset add` and the desktop app's Presets tab call
+//! [`preset_lint_config`] apply on top of it), the executable-adjacent
+//! directory lookup ([`executable_dir`]) that base config and user presets
+//! are found relative to, and the user-preset management functions the
+//! CLI's `preset add` and the desktop app's Presets tab call
 //! ([`add_user_preset`], [`save_user_preset`], [`rename_user_preset`],
 //! [`delete_user_preset`], [`read_user_preset_yaml`],
 //! [`list_user_preset_names`]). `papyrus-lint-core`'s own `presets` module
 //! layers the desktop app's first-run picker label/description metadata
 //! (`PresetInfo`/`all`) on top of this one. Loading/saving a project's own
-//! `papyrus-lint.yaml` (not a preset) is [`crate`]'s job; this module
-//! borrows a few of its private helpers (project-file (de)serialization,
-//! the executable-adjacent directory lookup) rather than duplicating them.
+//! `papyrus-lint.yaml` (not a preset) is [`crate::project_file`]'s job; this
+//! module borrows a few of its private helpers (project-file
+//! (de)serialization) rather than duplicating them.
 
 use std::borrow::Cow;
 use std::fs;
@@ -25,9 +27,9 @@ use std::path::{Path, PathBuf};
 
 use walkdir::WalkDir;
 
-use crate::{
-    executable_dir, existing_config_path, non_lint_yaml, seed_lookup_script_roots,
-    with_field_comments, ProjectFile, CONFIG_FILE_NAMES,
+use crate::comments::with_field_comments;
+use crate::project_file::{
+    existing_config_path, non_lint_yaml, seed_lookup_script_roots, ProjectFile, CONFIG_FILE_NAMES,
 };
 
 /// A named baseline `init` can generate `papyrus-lint.yaml` from, selected
@@ -137,6 +139,16 @@ impl Preset {
             }
         }
     }
+}
+
+/// Directory next to the CLI's own running executable, if it can be
+/// determined. [`initialize_default_config`] looks here for an optional
+/// shared base config, and [`user_presets_dir`] for an optional user
+/// presets directory.
+fn executable_dir() -> Option<PathBuf> {
+    std::env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(Path::to_path_buf))
 }
 
 /// The user presets directory next to the running executable (see
