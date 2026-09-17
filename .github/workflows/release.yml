@@ -7,9 +7,13 @@ on:
 
 jobs:
   container:
-    name: Publish CLI container
-    needs: release
+    name: Publish CLI container (${{ matrix.preset }})
     runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [strict, standard, careful]
     permissions:
       contents: read
       id-token: write
@@ -21,16 +25,44 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release download "$GITHUB_REF_NAME" \
+          # The tag's release assets are attached by release.yml's platform
+          # matrix; retry a few times so a fast tag push does not race it.
+          i=0
+          until gh release download "$GITHUB_REF_NAME" \
             --repo "$GITHUB_REPOSITORY" \
             --pattern PapyrusLinterCLI-linux \
-            --dir docker
+            --dir docker; do
+            i=$((i + 1))
+            if [ "$i" -ge 12 ]; then
+              echo "PapyrusLinterCLI-linux was not attached to $GITHUB_REF_NAME" >&2
+              exit 1
+            fi
+            sleep 10
+          done
           mv docker/PapyrusLinterCLI-linux docker/PapyrusLinterCLI
 
       - name: Resolve lowercase container image name
         id: image
         shell: bash
         run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve container tags
+        id: tags
+        shell: bash
+        run: |
+          name="${{ steps.image.outputs.name }}"
+          preset="${{ matrix.preset }}"
+          tag="${{ github.ref_name }}"
+          {
+            echo "list<<EOF"
+            echo "$name:$tag-$preset"
+            echo "$name:$preset"
+            if [ "$preset" = strict ]; then
+              echo "$name:$tag"
+              echo "$name:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -45,9 +77,9 @@ jobs:
         with:
           context: docker
           push: true
-          tags: |
-            ${{ steps.image.outputs.name }}:${{ github.ref_name }}
-            ${{ steps.image.outputs.name }}:latest
+          build-args: |
+            PRESET=${{ matrix.preset }}
+          tags: ${{ steps.tags.outputs.list }}
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v4.1.2
