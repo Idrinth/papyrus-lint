@@ -152,7 +152,7 @@ export's `$schema` was bumped to
 the same way v1 was kept when v2 introduced the `repair` field. The VS
 Code extension turns a diagnostic's `doc_url` into a clickable
 `{value, target}` diagnostic code (`toDiagnostic`/`ruleOfDiagnosticCode` in
-`vscode-extension/src/extension.ts`) instead of a plain string rule id
+`vscode-extension/src/vscodeDiagnostics.ts`) instead of a plain string rule id
 when one is known, and the SublimeLinter plugin appends it to the
 diagnostic's message text (`_to_lint_match` in
 `SublimeLinter-contrib-papyrus-lint/linter.py`), since neither
@@ -185,10 +185,11 @@ back to.
 Both editor plugins use `--blob` for live, as-you-type feedback on a
 document's current (possibly unsaved) contents, alongside their existing
 open/save linting of the real file. The VS Code extension's
-`PapyrusLinter.lintBlob` (`vscode-extension/src/extension.ts`) runs
+`PapyrusLinter.lintBlob` (`vscode-extension/src/linter.ts`) runs
 `PapyrusLinterCLI --json --blob <text>` against `document.getText()`,
 triggered from a new `onDidChangeTextDocument` listener and debounced per
-document (`scheduleLiveLint`/`liveLintTimers`, cleared on document close)
+document (`scheduleLiveLint`/`liveLintTimers` in
+`vscode-extension/src/liveLint.ts`, cleared on document close)
 by the `papyrusLint.liveLintDebounceMs` setting (default `400`ms); the
 `papyrusLint.liveLint` setting (default `true`) turns this off entirely. A
 live lint's own failure (CLI launch, usage error, malformed JSON) is only
