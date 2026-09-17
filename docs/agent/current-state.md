@@ -255,13 +255,17 @@ forgiving of an achlist that doesn't live in the project root itself (e.g.
 dropped next to a game's `Data` directory while the project lives in a
 subfolder): each first tries to find the root from where the achlist's own
 resolved scripts sit under a `Scripts/Source` or `Source/Scripts` pair
-(`projectDirForAchlist` in `app/src/main.ts`; `find_candidate_pair_root` in
-`papyrus-lint-cli`), falling back to the achlist's own parent directory (the
-conventional layout) only if none of them do. The CLI resolves a bare `.psc`
-given directly the same way, walking up from the file itself and falling
-back to two directories above it if no such pair is found at all; the
-desktop app's frontend still uses that simpler fixed "two directories up"
-rule for a bare `.psc` dropped directly (`projectDirForPscPath`).
+(`papyrus_lint_core::project_root::find_candidate_pair_root`), falling back
+to the achlist's own parent directory (the conventional layout) only if
+none of them do. The desktop app doesn't duplicate this algorithm in
+TypeScript: `projectDirForAchlist` in `app/src/project.ts` calls the
+`find_project_root` Tauri command (`app/src-tauri/src/project_root.rs`),
+which just delegates straight to `find_candidate_pair_root`, so both land
+on the same root for the same files. The CLI resolves a bare `.psc` given
+directly the same way, walking up from the file itself and falling back to
+two directories above it if no such pair is found at all
+(`find_psc_project_root`); the desktop app's `projectDirForPscPath` calls
+the matching `find_psc_project_root_for_path` Tauri command.
 
 Given a directory instead of an `.achlist`/`.psc` path, the CLI
 recursively scans it (and every subdirectory beneath it, at any depth)
@@ -279,11 +283,12 @@ as a `list_psc_files_recursively` Tauri command, used by
 neither an `.achlist` nor a `.psc` file (it errors out for a path that
 isn't an existing directory either, which the frontend treats the same as
 today's "drop a single .achlist or .psc file" case); `projectDirForDirectory`
-mirrors `find_candidate_pair_root`'s fallback using the same
-`findCandidatePairRoot` helper `projectDirForAchlist` already uses.
-Cross-script resolution across the discovered subfolders works the same
-way it does for achlist entries, since both share the code path that adds
-each resolved script's parent directory as an additional search root.
+calls the same `find_project_root` command `projectDirForAchlist` does,
+just with every scanned entry (not only achlist entries) and the scanned
+directory itself as the fallback. Cross-script resolution across the
+discovered subfolders works the same way it does for achlist entries,
+since both share the code path that adds each resolved script's parent
+directory as an additional search root.
 
 By default, the CLI (and the desktop app) resolves cross-script lookups
 among an achlist's own entries by treating every listed entry's parent

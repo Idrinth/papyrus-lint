@@ -680,6 +680,7 @@ describe("handleDroppedPaths", () => {
         "/proj/somefolder/otherfolder/scripts/source/AType.psc",
         "/proj/somefolder/otherfolder/source/scripts/BType.psc",
       ],
+      find_project_root: () => "/proj/somefolder/otherfolder",
       load_lint_config: () => DEFAULT_LINT_CONFIG,
       load_compiler_path: () => null,
       load_compile_check: () => false,
