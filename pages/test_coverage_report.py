@@ -5,6 +5,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from pages import coverage_report
 
@@ -337,6 +338,106 @@ class CoverageReportTest(unittest.TestCase):
         self.assertIn("<h3>&lt;available&gt; — n/a (0/0)</h3>", result)
         self.assertIn("<h3>safe &amp; sound — n/a (0/0)</h3>", result)
         self.assertNotIn("<available>", result)
+
+
+class CoveragePageTest(unittest.TestCase):
+    def test_build_coverage_page_renders_a_placeholder_without_a_coverage_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text(
+                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
+                encoding="utf-8",
+            )
+
+            with patch.object(coverage_report, "PAGES_DIR", pages_dir):
+                coverage_report.build_coverage_page(out_dir, None, "")
+
+            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+
+        self.assertIn("unreleased", output)
+        self.assertIn("Coverage data isn't available for this build.", output)
+
+    def test_build_coverage_page_uses_placeholder_for_a_missing_coverage_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text(
+                "<main><!--COVERAGE_CONTENT--></main>", encoding="utf-8"
+            )
+
+            with patch.object(coverage_report, "PAGES_DIR", pages_dir):
+                coverage_report.build_coverage_page(out_dir, root / "missing", "v2.0.0")
+
+            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+
+        self.assertIn("Coverage data isn't available for this build.", output)
+
+    def test_build_coverage_page_renders_report_content_from_a_coverage_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            coverage_dir = root / "coverage-artifacts"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            coverage_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text(
+                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
+                encoding="utf-8",
+            )
+            report_dir = coverage_dir / "rust-coverage-papyrus-parser"
+            report_dir.mkdir()
+            (report_dir / "lcov.info").write_text("SF:src/lib.rs\nLF:2\nLH:1\nend_of_record\n", encoding="utf-8")
+
+            with patch.object(coverage_report, "PAGES_DIR", pages_dir):
+                coverage_report.build_coverage_page(out_dir, coverage_dir, "v1.4.0")
+
+            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+
+        self.assertIn("v1.4.0", output)
+        self.assertIn("papyrus-parser", output)
+        self.assertIn("src/lib.rs", output)
+        self.assertNotIn("Coverage data isn't available", output)
+
+    def test_build_coverage_page_escapes_the_version_label(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            out_dir = root / "out"
+            pages_dir.mkdir()
+            out_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text(
+                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
+                encoding="utf-8",
+            )
+
+            with patch.object(coverage_report, "PAGES_DIR", pages_dir):
+                coverage_report.build_coverage_page(out_dir, None, 'v1<&"')
+
+            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
+
+        self.assertIn("<title>v1&lt;&amp;&quot;</title>", output)
+        self.assertNotIn('v1<&"', output)
+
+    def test_build_coverage_page_rejects_a_template_without_the_content_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            pages_dir = root / "pages"
+            pages_dir.mkdir()
+            (pages_dir / "coverage.template.html").write_text("<main>No marker</main>", encoding="utf-8")
+
+            with (
+                patch.object(coverage_report, "PAGES_DIR", pages_dir),
+                self.assertRaisesRegex(SystemExit, "missing marker"),
+            ):
+                coverage_report.build_coverage_page(root / "out", None, "")
 
 
 if __name__ == "__main__":
