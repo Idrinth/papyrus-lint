@@ -260,8 +260,19 @@
 │   └── LICENSE                            # distributed as its own package.
 ├── vscode-extension/        # VS Code extension (TypeScript): lints and fixes
 │   ├── package.json          # .psc files by invoking PapyrusLinterCLI --json
-│   ├── src/extension.ts      # Commands, process execution, and diagnostics
-│   └── test/                 # Node-based extension unit tests
+│   └── src/
+│       ├── extension.ts      # activate/deactivate: wires listeners and commands
+│       ├── config.ts         # papyrusLint.* settings
+│       ├── cli.ts            # spawn PapyrusLinterCLI / auto-download cache
+│       ├── cliDownload.ts    # GitHub release CLI download
+│       ├── diagnostics.ts    # JSON report parse/normalize (no vscode import)
+│       ├── vscodeDiagnostics.ts # JSON → vscode.Diagnostic
+│       ├── documents.ts      # .psc/Papyrus document predicates + target URI
+│       ├── linter.ts         # PapyrusLinter: lint / blob / fix / applyResult
+│       ├── liveLint.ts       # debounced as-you-type --blob lint
+│       ├── init.ts           # papyrusLint.initializeConfig wizard
+│       └── codeActions.ts    # "Fix this issue" CodeActionProvider
+│   └── test/                 # Node-based extension unit tests (per-module)
 ├── pages/                   # Source for the GitHub Pages discoverability site
 │   ├── index.template.html    # (see GitHub Pages below): index.template.html is
 │   ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel
