@@ -2,14 +2,12 @@
 # Releases
  (`.github/workflows/release.yml`)
 
-Pushing a tag matching `v*.*.*` triggers a `nexus-page` job that
-regenerates `docs/nexuspage.bbcode`'s five lint tables from that tagged
-commit's own `docs/rules.json` (`.github/scripts/generate_nexuspage_tables.py
-docs/rules.json docs/nexuspage.bbcode`, run without `--check`, so it
-rewrites the file in this job's own checkout rather than verifying it) —
-this runs even though CI's `bbcode` job already blocks a drifted
-`docs/nexuspage.bbcode` from merging, so the packaged page can never ship
-stale tables regardless of whether that check was ever bypassed. It then
+Pushing a tag matching `v*.*.*` triggers a `nexus-page` job that fills in
+`docs/nexuspage.bbcode`'s five lint tables from that tagged commit's own
+`docs/rules.json` (`.github/scripts/generate_nexuspage_tables.py
+docs/rules.json docs/nexuspage.bbcode`, rewriting the file in this job's
+own checkout) — the checked-in file carries no rows in those tables at
+all, so this is the only place they're ever generated. It then
 downloads the coverage artifacts from the tagged commit's most recent
 successful `ci.yml` run and calls `.github/scripts/render_nexuspage.py` to
 fill in that freshly-regenerated file's `<COVERED_LINES>`/`<TOTAL_LINES>`/

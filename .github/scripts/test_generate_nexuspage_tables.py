@@ -116,25 +116,7 @@ class MainTests(unittest.TestCase):
         bbcode_path.write_text(wrap(*placeholder_blocks), encoding="utf-8")
         return rules_path, bbcode_path
 
-    def test_check_fails_and_leaves_a_stale_file_untouched(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            rules_path, bbcode_path = self.write_fixture(directory)
-            stale = bbcode_path.read_text(encoding="utf-8")
-            output = io.StringIO()
-
-            with (
-                mock.patch.object(
-                    sys, "argv", ["generate_nexuspage_tables.py", "--check", str(rules_path), str(bbcode_path)]
-                ),
-                redirect_stdout(output),
-            ):
-                result = generate_nexuspage_tables.main()
-
-            self.assertEqual(1, result)
-            self.assertIn("out of date", output.getvalue())
-            self.assertEqual(stale, bbcode_path.read_text(encoding="utf-8"))
-
-    def test_writes_the_regenerated_file_without_check(self) -> None:
+    def test_writes_the_regenerated_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             rules_path, bbcode_path = self.write_fixture(directory)
             output = io.StringIO()
@@ -148,24 +130,6 @@ class MainTests(unittest.TestCase):
             self.assertEqual(0, result)
             self.assertIn("Regenerated lint tables", output.getvalue())
             self.assertIn("[b]A[/b]", bbcode_path.read_text(encoding="utf-8"))
-
-    def test_check_passes_for_an_up_to_date_file(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            rules_path, bbcode_path = self.write_fixture(directory)
-            with mock.patch.object(sys, "argv", ["generate_nexuspage_tables.py", str(rules_path), str(bbcode_path)]):
-                generate_nexuspage_tables.main()
-            output = io.StringIO()
-
-            with (
-                mock.patch.object(
-                    sys, "argv", ["generate_nexuspage_tables.py", "--check", str(rules_path), str(bbcode_path)]
-                ),
-                redirect_stdout(output),
-            ):
-                result = generate_nexuspage_tables.main()
-
-            self.assertEqual(0, result)
-            self.assertIn("up to date", output.getvalue())
 
 
 if __name__ == "__main__":

@@ -7,9 +7,6 @@ replaced, in order, with a table row per rule sharing that block's category
 docs/rules.json's own `category` values) - sourced from that rule's `name`,
 `description`, and `fixable` fields. Everything else in the file (headings,
 intros, the configuration/CLI sections) is left untouched.
-
-Run with --check to verify the checked-in file is already up to date with
-its rules.json (used by CI) instead of rewriting it.
 """
 
 from __future__ import annotations
@@ -72,23 +69,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("rules_json", type=Path, help="path to rules.json")
     parser.add_argument("bbcode_file", type=Path, help="path to the Nexus page BBCode source")
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        help="verify the checked-in file is up to date instead of rewriting it",
-    )
     args = parser.parse_args()
 
     rules = json.loads(args.rules_json.read_text(encoding="utf-8"))
     original = args.bbcode_file.read_text(encoding="utf-8")
     updated = apply(original, render_tables(rules))
-
-    if args.check:
-        if updated != original:
-            print(f"{args.bbcode_file} is out of date with {args.rules_json}; run this script to regenerate it.")
-            return 1
-        print(f"{args.bbcode_file} is up to date with {args.rules_json}.")
-        return 0
 
     args.bbcode_file.write_text(updated, encoding="utf-8")
     print(f"Regenerated lint tables in {args.bbcode_file} from {args.rules_json}.")

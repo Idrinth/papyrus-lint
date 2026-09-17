@@ -108,9 +108,6 @@ jobs:
       - name: Lint Nexus Mods page
         run: python3 .github/scripts/bbcode_lint.py docs/nexuspage.bbcode
 
-      - name: Check Nexus Mods page lint tables are up to date
-        run: python3 .github/scripts/generate_nexuspage_tables.py --check docs/rules.json docs/nexuspage.bbcode
-
   semver-advisory:
     name: Semantic version advisory
     if: github.event_name == 'push'
