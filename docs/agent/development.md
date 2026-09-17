@@ -6,9 +6,32 @@
   `npm run build` (typecheck + build). `npm run test` runs the frontend's
   Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
   same suite instrumented with `@vitest/coverage-v8`, printing a text
-  report and writing HTML/lcov reports to `coverage/`.
+  report and writing HTML/lcov reports to `coverage/`. `npm run lint` runs
+  ESLint (flat config in `eslint.config.js`) over `src/`, using
+  `typescript-eslint`'s recommended rules plus `@vitest/eslint-plugin`'s
+  recommended rules on test files. `npm run lint:css` runs stylelint (config
+  in `.stylelintrc.json`, extending `stylelint-config-recommended`) over
+  `src/**/*.css`. `npm run test:browser` runs `app/e2e/*.spec.ts` (config in
+  `playwright.config.ts`) against a real Chromium instance (via
+  `@playwright/test`, browsers installed separately with `npx playwright
+  install --with-deps chromium`) rather than jsdom, starting the Vite dev
+  server itself: jsdom (used by `npm run test` above) never computes an
+  actual box model, so it can't catch element-size/layout regressions
+  (a collapsed drop zone, a mis-hidden tab panel, an overlay no longer
+  matching its underlying element's dimensions, horizontal overflow) the
+  way these tests do.
+  - `typescript-eslint` doesn't yet support TypeScript 7 (this repo's
+    `typescript` devDependency), so `app/package.json` installs it under an
+    npm alias: `typescript` resolves to the `@typescript/typescript6` shim
+    (TS 6, satisfying typescript-eslint) and the real TS 7 compiler is
+    installed separately as `@typescript/native`, which is what `tsc`
+    (used by `npm run build`) actually runs. See
+    https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
 - Rust backend only: `cargo check` / `cargo test` from `app/src-tauri/`.
+  `app/src-tauri/build.rs` generates `icons/` from `shared/images/logo.png`
+  during the build, so those platform-specific PNG/ICO/ICNS variants are
+  not checked in (except `icons/icon.png`, which the Pages builder copies).
 - Parser crate only: `cargo test` from `app/crates/papyrus-parser/`.
 - AST cache crate only: `cargo test` from `app/crates/papyrus-ast-cache/`.
 - Lints crate only: `cargo test` from `app/crates/papyrus-lints/`.
@@ -18,10 +41,12 @@
 - CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --
   <path-to-achlist>`, or `cargo build --release --manifest-path
   app/crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
-  binary. `cargo test` from `app/crates/papyrus-lint-cli/` runs its tests.
+  binary (at `app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI`).
+  `cargo test` from `app/crates/papyrus-lint-cli/` runs its tests.
 - VS Code extension (`vscode-extension/`): `npm install`, then `npm run
   watch` (or `npm run compile` for a one-off build) and F5 in VS Code to
-  launch an Extension Development Host.
+  launch an Extension Development Host. Not part of the app's npm
+  project — it has its own `package.json`/`tsconfig.json`/`eslint.config.js`.
 - Rust coverage for any of the six reusable crates above: `cargo llvm-cov
   --manifest-path <crate>/Cargo.toml` (requires the
   [`cargo-llvm-cov`](https://github.com/taiki-e/cargo-llvm-cov) subcommand
