@@ -9,7 +9,7 @@ standard precedence. Each parsed `FunctionDecl` records the name of the
 `State` block it was declared in (`None` for a function/event declared
 directly on the script, i.e. the "empty state"), so downstream tooling can
 tell a state override apart from its base declaration; `papyrus-lint-core`'s
-`function_table.rs` carries that same `state` field through into its
+`function_table` carries that same `state` field through into its
 cross-script function signatures, and includes a function declared only
 inside a state (with no matching empty-state declaration) rather than
 silently dropping it. Each parsed integer literal (`Literal::Int`) also
@@ -710,7 +710,7 @@ something resetting a project's *lint* settings back to a preset should
 touch.
 
 The desktop app's `parse_psc_file` command, both the app's and the CLI's
-cross-script lookups (`papyrus-lint-core`'s `function_table.rs`, used to
+cross-script lookups (`papyrus-lint-core`'s `function_table`, used to
 resolve the "Argument type check"/"Return type check" lints across
 scripts), and the desktop app's `lint_psc_file`/`repair_psc_file`/
 `repair_psc_finding`/`repair_psc_file_rule` commands and the CLI's own
@@ -741,7 +741,7 @@ cached value via a read-modify-write against the existing entry), for the
 lexer's own token stream (`papyrus_parser::tokenize()`'s output), cached
 via `get_tokens`/`put_tokens` the same way `get`/`put` cache the AST;
 `put_tokens` is also called directly (alongside `put`) wherever
-`parse_psc_file` and `function_table.rs`'s cross-script lookups freshly
+`parse_psc_file` and `function_table`'s cross-script lookups freshly
 parse a script, independent of `ast_cache::ensure_primed` below. The
 on-disk entry format (the `modified_unix_secs`/`content_md5`/
 `linter_version`/`ast`/`tokens` envelope, and the `ast`/`tokens` fields'

@@ -1,0 +1,61 @@
+//! [`papyrus_lints::ExternalSignatures`] for [`super::FunctionTable`].
+
+use papyrus_lints::ParamInfo;
+
+use super::FunctionTable;
+
+/// Lets the "Argument type check" lint (`papyrus_lints::argument_types`)
+/// resolve calls to functions declared on other scripts through this
+/// table.
+impl papyrus_lints::ExternalSignatures for FunctionTable {
+    fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
+        self.lookup_function(type_name, function_name)
+            .map(|signature| signature.params)
+    }
+
+    fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
+        self.is_subtype(sub_type, super_type)
+    }
+
+    fn has_property(&mut self, type_name: &str, property_name: &str) -> bool {
+        self.has_property(type_name, property_name)
+    }
+
+    fn script_exists(&mut self, type_name: &str) -> bool {
+        self.script_exists(type_name)
+    }
+
+    fn can_resolve_script(&mut self, type_name: &str) -> bool {
+        self.script_exists(type_name)
+    }
+
+    fn type_exists(&mut self, type_name: &str) -> bool {
+        let name_lower = type_name.to_ascii_lowercase();
+        matches!(
+            name_lower.as_str(),
+            "int" | "float" | "bool" | "string" | "var"
+        ) || crate::native_types::is_known(&name_lower)
+            || self.script_exists(type_name)
+    }
+
+    fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
+        self.has_state(type_name, state_name)
+    }
+
+    fn ancestor_states(&mut self, type_name: &str) -> Vec<(String, bool)> {
+        self.ancestor_states(type_name)
+    }
+
+    fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        self.lookup_function(type_name, function_name)
+            .map(|signature| signature.is_global)
+    }
+
+    fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
+        self.ancestry_fully_known(type_name)
+    }
+
+    fn property_types(&mut self, type_name: &str) -> Vec<String> {
+        self.property_types(type_name)
+    }
+}

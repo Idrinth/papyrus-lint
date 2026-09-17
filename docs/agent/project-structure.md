@@ -119,16 +119,23 @@
 │       │       │                   # this crate's own ast_cache module
 │       │       ├── script_locator.rs   # Finds .psc files by name under
 │       │       │                       # scripts/source or source/scripts
-│       │       ├── function_table.rs   # Cross-script function signature lookup,
+│       │       ├── function_table/     # Cross-script function signature lookup,
 │       │       │                       # for the argument/return type check lints
 │       │       │                       # and script_exists() for the unresolved
 │       │       │                       # script reference lint; each signature
 │       │       │                       # tracks the State block it came from (if
 │       │       │                       # any), preferring the empty state's own
 │       │       │                       # declaration over a same-named override
+│       │       │   ├── mod.rs          # FunctionTable struct and constructors
+│       │       │   ├── ancestry.rs     # Extends-chain lookups (functions,
+│       │       │   │                   # properties, states, members)
+│       │       │   ├── load.rs         # Locate/parse/cache scripts on demand
+│       │       │   ├── external.rs     # ExternalSignatures impl for FunctionTable
+│       │       │   ├── shared.rs       # Mutex-guarded SharedFunctionTable adapter
+│       │       │   └── tests.rs        # Unit tests
 │       │       ├── script_functions.rs # Converts a parsed .psc AST into the
 │       │       │                       # FunctionSignature/PropertySignature/Member
-│       │       │                       # types function_table.rs looks up and
+│       │       │                       # types function_table looks up and
 │       │       │                       # caches (and re-exports from there)
 │       │       ├── native_types.rs     # Fallback Extends hierarchy for native
 │       │       │                       # engine types (Actor, ObjectReference,
