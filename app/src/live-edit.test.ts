@@ -11,24 +11,21 @@ vi.mock("@tauri-apps/api/webview", () => ({
 }));
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
+import { handleDroppedPaths, lintPapyrusScript, listScriptMembers, type Diagnostic } from "./main";
+import { DEFAULT_LINT_CONFIG } from "./config";
+import { openCodeViewer } from "./code-viewer";
 import {
-  DEFAULT_LINT_CONFIG,
   applyAutocompleteSelection,
   cancelCodeViewerEditMode,
   enterCodeViewerEditMode,
   handleAutocompleteKeydown,
-  handleDroppedPaths,
   handleEditorTabKeydown,
   hideAutocomplete,
   isCodeViewerEditDirty,
-  lintPapyrusScript,
-  listScriptMembers,
-  openCodeViewer,
   saveAndCompileCodeViewerEdits,
   saveCodeViewerEdits,
   updateAutocomplete,
-  type Diagnostic,
-} from "./main";
+} from "./live-edit";
 
 describe("code viewer edit mode", () => {
   async function openWithSource(source: string, findings: Diagnostic[] = []) {

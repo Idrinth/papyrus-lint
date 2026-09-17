@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import {
   type Diagnostic,
-  type LintConfig,
   type PscParseOutcome,
   type RuleTagsInfo,
   type Severity,
@@ -11,8 +10,6 @@ import {
   SEVERITIES,
   TAG_IMPORTANCES,
   TAG_KINDS,
-  currentLintConfig,
-  currentProjectDir,
   currentPscOutcomes,
   hasNoAutomaticFix,
   hasFixableFindings,
@@ -20,13 +17,15 @@ import {
   levelOf,
   loadAppVersion,
   previewRepairPscLine,
-  relativePath,
   repairPscFile,
   repairPscFileRule,
   repairPscFinding,
   ruleTagsByRule,
   severityOf,
 } from "./main";
+import { type LintConfig, currentLintConfig } from "./config";
+import { currentProjectDir } from "./project";
+import { relativePath } from "./path";
 import { compileAndShowOutput, openCodeViewer } from "./code-viewer";
 
 export let pscResultEl: HTMLElement | null;

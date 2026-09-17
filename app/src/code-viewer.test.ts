@@ -11,8 +11,8 @@ vi.mock("@tauri-apps/api/webview", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
+import { enterCodeViewerEditMode } from "./live-edit";
 import {
-  enterCodeViewerEditMode,
   handleCodeViewerFixClick,
   handleCodeViewerFixLineClick,
   handleCodeViewerIgnoreLineClick,
@@ -20,7 +20,7 @@ import {
   openCodeViewer,
   requestCloseCodeViewer,
   toggleCodeViewerFullscreen,
-} from "./main";
+} from "./code-viewer";
 
 describe("openCodeViewer", () => {
   it("loads and highlights the source, opening the dialog", async () => {
