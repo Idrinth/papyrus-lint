@@ -706,28 +706,41 @@ jobs:
       - name: Compile
         run: npm run compile
 
+  rust-crates:
+    name: Rust crate matrix
+    needs: labels
+    runs-on: ubuntu-latest
+    outputs:
+      crates: ${{ steps.crates.outputs.crates }}
+    steps:
+      - id: crates
+        name: Build shared crate matrix
+        # Single source of truth for the crate list `rust-fmt`, `rust-clippy`,
+        # and `rust-test` all matrix over below, so it's declared once instead
+        # of repeated identically in all three jobs. `name` is each crate's
+        # own directory basename.
+        run: |
+          crates=(
+            app/src-tauri
+            app/crates/papyrus-parser
+            app/crates/papyrus-ast-cache
+            app/crates/papyrus-lints
+            app/crates/papyrus-lint-config
+            app/crates/papyrus-lint-core
+            app/crates/papyrus-lint-cli
+          )
+          json=$(printf '%s\n' "${crates[@]}" \
+            | jq -R '{crate: ., name: (split("/") | last)}' \
+            | jq -sc '{include: .}')
+          echo "crates=$json" >> "$GITHUB_OUTPUT"
+
   rust-fmt:
     name: Rust (fmt) (${{ matrix.name }})
-    needs: labels
+    needs: [labels, rust-crates]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - crate: app/src-tauri
-            name: src-tauri
-          - crate: app/crates/papyrus-parser
-            name: papyrus-parser
-          - crate: app/crates/papyrus-ast-cache
-            name: papyrus-ast-cache
-          - crate: app/crates/papyrus-lints
-            name: papyrus-lints
-          - crate: app/crates/papyrus-lint-config
-            name: papyrus-lint-config
-          - crate: app/crates/papyrus-lint-core
-            name: papyrus-lint-core
-          - crate: app/crates/papyrus-lint-cli
-            name: papyrus-lint-cli
+      matrix: ${{ fromJSON(needs.rust-crates.outputs.crates) }}
     steps:
       - uses: actions/checkout@v7
 
@@ -740,26 +753,11 @@ jobs:
 
   rust-clippy:
     name: Rust (clippy) (${{ matrix.name }})
-    needs: labels
+    needs: [labels, rust-crates]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - crate: app/src-tauri
-            name: src-tauri
-          - crate: app/crates/papyrus-parser
-            name: papyrus-parser
-          - crate: app/crates/papyrus-ast-cache
-            name: papyrus-ast-cache
-          - crate: app/crates/papyrus-lints
-            name: papyrus-lints
-          - crate: app/crates/papyrus-lint-config
-            name: papyrus-lint-config
-          - crate: app/crates/papyrus-lint-core
-            name: papyrus-lint-core
-          - crate: app/crates/papyrus-lint-cli
-            name: papyrus-lint-cli
+      matrix: ${{ fromJSON(needs.rust-crates.outputs.crates) }}
     steps:
       - uses: actions/checkout@v7
 
@@ -782,26 +780,11 @@ jobs:
 
   rust-test:
     name: Rust test (${{ matrix.name }})
-    needs: rust-clippy
+    needs: [rust-clippy, rust-crates]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - crate: app/src-tauri
-            name: src-tauri
-          - crate: app/crates/papyrus-parser
-            name: papyrus-parser
-          - crate: app/crates/papyrus-ast-cache
-            name: papyrus-ast-cache
-          - crate: app/crates/papyrus-lints
-            name: papyrus-lints
-          - crate: app/crates/papyrus-lint-config
-            name: papyrus-lint-config
-          - crate: app/crates/papyrus-lint-core
-            name: papyrus-lint-core
-          - crate: app/crates/papyrus-lint-cli
-            name: papyrus-lint-cli
+      matrix: ${{ fromJSON(needs.rust-crates.outputs.crates) }}
     steps:
       - uses: actions/checkout@v7
 
@@ -879,6 +862,67 @@ jobs:
             const fs = require('fs');
             const marker = '<!-- coverage-summary-comment -->';
             const body = fs.readFileSync('coverage-summary.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+
+  hall-of-shame:
+    name: Hall of shame
+    # Runs in the same workflow run as the coverage-producing jobs so its
+    # uncovered-line ranking always reflects this push, never a lagging
+    # prior run's artifacts.
+    if: always() && github.event_name == 'pull_request'
+    needs: [bbcode, pages, sublime-extension, frontend, vscode-extension, rust-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: coverage-artifacts
+
+      - name: Rank files and emit Info notices
+        run: python3 .github/scripts/hall_of_shame.py --lcov-dir coverage-artifacts > hall-of-shame.md
+
+      - name: Publish hall of shame
+        run: cat hall-of-shame.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post hall of shame comment
+        # Forked PRs get a read-only GITHUB_TOKEN, so posting the comment
+        # can fail there; the step summary and notice annotations above
+        # still carry the report.
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- hall-of-shame-comment -->';
+            const body = fs.readFileSync('hall-of-shame.md', 'utf8');
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
