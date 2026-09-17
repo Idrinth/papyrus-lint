@@ -774,7 +774,7 @@ mod tests {
         .expect("override YAML should parse");
 
         let merged = deep_merge(base, over);
-        let expected = serde_norway::from_str(
+        let expected: serde_norway::Value = serde_norway::from_str(
             "semicolon: true\nrules:\n  property_sorting: true\n  trailing_whitespace: true\nnew_setting: value\n",
         )
         .expect("expected YAML should parse");
