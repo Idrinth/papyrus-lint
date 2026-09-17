@@ -151,9 +151,10 @@ typing it by hand — see its per-line "Ignore" button
 `; @disable` with no rule ids suppresses every lint on that line. Matching
 against the directive's rule id(s) is case-insensitive. This only affects
 linting — it does not change what automatic fixes do to that line. A
-rule's id is its own row's anchor on the
-[lint rule reference](https://papyrus-lint.idrinth.de/rules.html) (e.g.
-`float-to-int` for "Implicit Float-to-Int conversion").
+rule's id is named on its own row on the [lint rule
+reference](https://papyrus-lint.idrinth.de/rules.html) (e.g. `float-to-int`
+for "Implicit Float-to-Int conversion", linked directly at
+[`#rule-float-to-int`](https://papyrus-lint.idrinth.de/rules.html#rule-float-to-int)).
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where

@@ -290,10 +290,7 @@
 │   │                            # shared/theme.css for the palette/canvas.
 │   │                            # build.py inlines that import (and minifies)
 │   │                            # so the deployed site is still one file.
-│   │                            # Also renders coverage.html, a per-module/per-file
-│   ├── CNAME                   # line coverage breakdown for the latest release
-│   │                            # (see coverage.template.html below). The site's
-│   │                            # custom domain (papyrus-lint.idrinth.de);
+│   ├── CNAME                   # The site's custom domain (papyrus-lint.idrinth.de);
 │   │                            # build.py copies CNAME into pages/dist/ so
 │   │                            # GitHub Pages keeps serving it across every
 │   │                            # Actions-based deploy.
