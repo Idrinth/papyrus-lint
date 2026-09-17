@@ -873,6 +873,12 @@ jobs:
 
       - name: Build container image
         uses: docker/build-push-action@v6
+        env:
+          # Buildx otherwise uploads a "*.dockerbuild" build-summary artifact
+          # per matrix leg, which the coverage-comment/hall-of-shame jobs'
+          # unfiltered `download-artifact` (elsewhere in this workflow) then
+          # trips over.
+          DOCKER_BUILD_SUMMARY: false
         with:
           context: docker
           push: false
