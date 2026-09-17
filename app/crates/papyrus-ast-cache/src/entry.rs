@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::version::is_compatible_version;
 
 const CACHE_DIR_NAME: &str = "ast-cache";
+const CACHE_DIR_ENV: &str = "PAPYRUS_LINT_AST_CACHE_DIR";
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct CacheEntry {
@@ -21,12 +22,24 @@ pub(crate) struct CacheEntry {
     pub(crate) tokens: Option<Vec<papyrus_parser::token::Token>>,
 }
 
-/// The `ast-cache` directory alongside the running executable (the app's
-/// install directory), or `None` if the executable's own path can't be
-/// determined.
+/// The directory selected by `PAPYRUS_LINT_AST_CACHE_DIR`, when set, or the
+/// `ast-cache` directory alongside the running executable (the app's install
+/// directory). Returns `None` only when neither location can be determined.
 pub(crate) fn cache_dir() -> Option<PathBuf> {
-    let exe = std::env::current_exe().ok()?;
-    Some(exe.parent()?.join(CACHE_DIR_NAME))
+    cache_dir_from(
+        std::env::var_os(CACHE_DIR_ENV),
+        std::env::current_exe().ok(),
+    )
+}
+
+fn cache_dir_from(
+    override_dir: Option<std::ffi::OsString>,
+    exe: Option<PathBuf>,
+) -> Option<PathBuf> {
+    if let Some(dir) = override_dir.filter(|dir| !dir.is_empty()) {
+        return Some(PathBuf::from(dir));
+    }
+    Some(exe?.parent()?.join(CACHE_DIR_NAME))
 }
 
 /// The cache file `source_path` is stored under within `dir`: an MD5 of its
@@ -99,13 +112,19 @@ mod tests {
 
     #[test]
     fn cache_dir_is_ast_cache_next_to_the_running_executable() {
-        let dir = cache_dir().expect("current_exe should resolve in tests");
+        let exe = PathBuf::from("/opt/papyrus/PapyrusLinterCLI");
         assert_eq!(
-            dir.file_name().and_then(|n| n.to_str()),
-            Some(CACHE_DIR_NAME)
+            cache_dir_from(None, Some(exe)),
+            Some(PathBuf::from("/opt/papyrus/ast-cache"))
         );
-        let exe = std::env::current_exe().unwrap();
-        assert_eq!(dir.parent(), exe.parent());
+    }
+
+    #[test]
+    fn cache_dir_honors_environment_override() {
+        assert_eq!(
+            cache_dir_from(Some("/cache".into()), None),
+            Some(PathBuf::from("/cache"))
+        );
     }
 
     #[test]
