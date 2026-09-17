@@ -119,6 +119,35 @@ mod tests {
         papyrus_parser::tokenize("ScriptName Example\n").unwrap()
     }
 
+    struct Harness {
+        cache_dir: tempfile::TempDir,
+        _project_dir: tempfile::TempDir,
+        source_path: std::path::PathBuf,
+        source: &'static str,
+    }
+
+    fn harness(filename: &str, source: &'static str) -> Harness {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join(filename);
+        std::fs::write(&source_path, source).unwrap();
+        Harness {
+            cache_dir,
+            _project_dir: project_dir,
+            source_path,
+            source,
+        }
+    }
+
+    fn write_raw(h: &Harness, entry: CacheEntry) {
+        std::fs::create_dir_all(h.cache_dir.path()).unwrap();
+        std::fs::write(
+            cache_file_path(h.cache_dir.path(), &h.source_path),
+            serde_json::to_vec(&entry).unwrap(),
+        )
+        .unwrap();
+    }
+
     #[test]
     fn put_then_get_returns_the_cached_ast_when_nothing_changed() {
         let cache_dir = tempdir().unwrap();
@@ -939,5 +968,542 @@ mod tests {
         let tokens = sample_tokens();
         crate::put_tokens(&source_path, source, &tokens);
         let _ = crate::get_tokens(&source_path, source);
+    }
+
+    #[test]
+    fn get_tokens_is_a_miss_when_the_cached_version_is_older_than_the_minimum_compatible_version() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        write_raw(
+            &h,
+            CacheEntry {
+                modified_unix_secs: file_modified_unix_secs(&h.source_path).unwrap(),
+                content_md5: format!("{:x}", md5::compute(h.source.as_bytes())),
+                linter_version: "1.10.1".to_string(),
+                ast: None,
+                tokens: Some(sample_tokens()),
+            },
+        );
+
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            None
+        );
+    }
+
+    #[test]
+    fn get_tokens_is_a_miss_when_the_cached_version_does_not_parse() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        write_raw(
+            &h,
+            CacheEntry {
+                modified_unix_secs: file_modified_unix_secs(&h.source_path).unwrap(),
+                content_md5: format!("{:x}", md5::compute(h.source.as_bytes())),
+                linter_version: "not-a-version".to_string(),
+                ast: None,
+                tokens: Some(sample_tokens()),
+            },
+        );
+
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            None
+        );
+    }
+
+    #[test]
+    fn get_tokens_is_a_miss_on_malformed_cache_contents() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        std::fs::create_dir_all(h.cache_dir.path()).unwrap();
+        std::fs::write(
+            cache_file_path(h.cache_dir.path(), &h.source_path),
+            b"not json",
+        )
+        .unwrap();
+
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            None
+        );
+    }
+
+    #[test]
+    fn get_tokens_is_a_hit_when_the_cached_version_is_newer_than_the_minimum() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        let tokens = sample_tokens();
+        put_tokens_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &tokens,
+            "9.9.9",
+        );
+
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(tokens)
+        );
+    }
+
+    #[test]
+    fn get_is_a_miss_when_ast_is_explicitly_null() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        let tokens = sample_tokens();
+        write_raw(
+            &h,
+            CacheEntry {
+                modified_unix_secs: file_modified_unix_secs(&h.source_path).unwrap(),
+                content_md5: format!("{:x}", md5::compute(h.source.as_bytes())),
+                linter_version: COMPATIBLE_VERSION.to_string(),
+                ast: None,
+                tokens: Some(tokens.clone()),
+            },
+        );
+
+        assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(tokens)
+        );
+    }
+
+    #[test]
+    fn get_tokens_is_a_miss_when_tokens_is_explicitly_null() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        let ast = sample_ast();
+        write_raw(
+            &h,
+            CacheEntry {
+                modified_unix_secs: file_modified_unix_secs(&h.source_path).unwrap(),
+                content_md5: format!("{:x}", md5::compute(h.source.as_bytes())),
+                linter_version: COMPATIBLE_VERSION.to_string(),
+                ast: Some(ast.clone()),
+                tokens: None,
+            },
+        );
+
+        assert_eq!(
+            get_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(ast)
+        );
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            None
+        );
+    }
+
+    #[test]
+    fn putting_ast_overwrites_a_previously_cached_ast() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        put_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
+
+        let replacement =
+            papyrus_parser::parse("ScriptName Example\n\nInt Property Marker = 1 Auto\n").unwrap();
+        put_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &replacement,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(
+            get_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(replacement)
+        );
+    }
+
+    #[test]
+    fn putting_tokens_overwrites_previously_cached_tokens() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        put_tokens_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &sample_tokens(),
+            COMPATIBLE_VERSION,
+        );
+
+        let replacement =
+            papyrus_parser::tokenize("ScriptName Example\n\nInt Property Marker = 1 Auto\n")
+                .unwrap();
+        put_tokens_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &replacement,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(replacement)
+        );
+    }
+
+    #[test]
+    fn putting_tokens_does_not_preserve_an_ast_from_an_incompatible_entry() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        write_raw(
+            &h,
+            CacheEntry {
+                modified_unix_secs: file_modified_unix_secs(&h.source_path).unwrap(),
+                content_md5: format!("{:x}", md5::compute(h.source.as_bytes())),
+                linter_version: "1.10.1".to_string(),
+                ast: Some(sample_ast()),
+                tokens: None,
+            },
+        );
+
+        put_tokens_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &sample_tokens(),
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(sample_tokens())
+        );
+    }
+
+    #[test]
+    fn putting_ast_does_not_preserve_tokens_from_an_incompatible_entry() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        write_raw(
+            &h,
+            CacheEntry {
+                modified_unix_secs: file_modified_unix_secs(&h.source_path).unwrap(),
+                content_md5: format!("{:x}", md5::compute(h.source.as_bytes())),
+                linter_version: "1.10.1".to_string(),
+                ast: None,
+                tokens: Some(sample_tokens()),
+            },
+        );
+
+        put_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(
+            get_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(sample_ast())
+        );
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            None
+        );
+    }
+
+    #[test]
+    fn putting_updates_the_stamped_linter_version() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        put_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &sample_ast(),
+            COMPATIBLE_VERSION,
+        );
+        put_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &sample_ast(),
+            "9.9.9",
+        );
+
+        let raw =
+            std::fs::read_to_string(cache_file_path(h.cache_dir.path(), &h.source_path)).unwrap();
+        assert!(raw.contains("\"linter_version\":\"9.9.9\""));
+        assert!(!raw.contains(&format!("\"linter_version\":\"{COMPATIBLE_VERSION}\"")));
+    }
+
+    #[test]
+    fn get_is_a_miss_when_the_cache_file_is_a_directory() {
+        let h = harness("Example.psc", "ScriptName Example\n");
+        std::fs::create_dir_all(cache_file_path(h.cache_dir.path(), &h.source_path)).unwrap();
+
+        assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            None
+        );
+    }
+
+    #[test]
+    fn unicode_source_paths_round_trip() {
+        let h = harness("Привет.psc", "ScriptName Example\n");
+        let ast = sample_ast();
+        let tokens = sample_tokens();
+        put_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &ast,
+            COMPATIBLE_VERSION,
+        );
+        put_tokens_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &tokens,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(
+            get_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(ast)
+        );
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(tokens)
+        );
+    }
+
+    #[test]
+    fn ensure_primed_rewrites_after_the_source_content_changes() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Rewritten.psc");
+        let original = "ScriptName Original\n";
+        let changed = "ScriptName Changed\n";
+        std::fs::write(&source_path, original).unwrap();
+
+        ensure_primed_in(cache_dir.path(), &source_path, original, COMPATIBLE_VERSION);
+        assert_eq!(
+            get_in(cache_dir.path(), &source_path, original),
+            Some(papyrus_parser::parse(original).unwrap())
+        );
+
+        std::fs::write(&source_path, changed).unwrap();
+        ensure_primed_in(cache_dir.path(), &source_path, changed, COMPATIBLE_VERSION);
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, original), None);
+        assert_eq!(
+            get_in(cache_dir.path(), &source_path, changed),
+            Some(papyrus_parser::parse(changed).unwrap())
+        );
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, changed),
+            Some(papyrus_parser::tokenize(changed).unwrap())
+        );
+    }
+
+    #[test]
+    fn ensure_primed_rewrites_after_the_file_mtime_changes() {
+        let h = harness("MtimeRewrite.psc", "ScriptName MtimeRewrite\n");
+        ensure_primed_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            COMPATIBLE_VERSION,
+        );
+        assert!(get_in(h.cache_dir.path(), &h.source_path, h.source).is_some());
+
+        let later = std::time::SystemTime::now() + std::time::Duration::from_secs(120);
+        let file = std::fs::File::open(&h.source_path).unwrap();
+        file.set_modified(later).unwrap();
+
+        assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
+        ensure_primed_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            COMPATIBLE_VERSION,
+        );
+        assert_eq!(
+            get_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(papyrus_parser::parse(h.source).unwrap())
+        );
+    }
+
+    #[test]
+    fn ensure_primed_recovers_from_a_corrupt_entry() {
+        let h = harness("Corrupt.psc", "ScriptName Corrupt\n");
+        std::fs::create_dir_all(h.cache_dir.path()).unwrap();
+        std::fs::write(
+            cache_file_path(h.cache_dir.path(), &h.source_path),
+            b"truncated",
+        )
+        .unwrap();
+
+        ensure_primed_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(
+            get_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(papyrus_parser::parse(h.source).unwrap())
+        );
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(papyrus_parser::tokenize(h.source).unwrap())
+        );
+    }
+
+    #[test]
+    fn ensure_primed_recovers_from_an_incompatible_version() {
+        let h = harness("OldVersion.psc", "ScriptName OldVersion\n");
+        write_raw(
+            &h,
+            CacheEntry {
+                modified_unix_secs: file_modified_unix_secs(&h.source_path).unwrap(),
+                content_md5: format!("{:x}", md5::compute(h.source.as_bytes())),
+                linter_version: "1.10.1".to_string(),
+                ast: Some(sample_ast()),
+                tokens: Some(sample_tokens()),
+            },
+        );
+        assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
+
+        ensure_primed_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(
+            get_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(papyrus_parser::parse(h.source).unwrap())
+        );
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(papyrus_parser::tokenize(h.source).unwrap())
+        );
+    }
+
+    #[test]
+    fn ensure_primed_writes_nothing_when_the_source_does_not_tokenize() {
+        let h = harness("Unlexable.psc", "ScriptName Broken\nString s = \"oops\n");
+        assert!(papyrus_parser::tokenize(h.source).is_err());
+        assert!(papyrus_parser::parse(h.source).is_err());
+
+        ensure_primed_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
+        assert_eq!(
+            get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+            None
+        );
+        assert!(!cache_file_path(h.cache_dir.path(), &h.source_path).exists());
+    }
+
+    #[test]
+    fn extra_json_fields_do_not_invalidate_a_fresh_entry() {
+        let h = harness("ExtraFields.psc", "ScriptName ExtraFields\n");
+        let ast = papyrus_parser::parse(h.source).unwrap();
+        put_in(
+            h.cache_dir.path(),
+            &h.source_path,
+            h.source,
+            &ast,
+            COMPATIBLE_VERSION,
+        );
+
+        let file = cache_file_path(h.cache_dir.path(), &h.source_path);
+        let mut value: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
+        value
+            .as_object_mut()
+            .unwrap()
+            .insert("future_field".to_string(), serde_json::json!("ok"));
+        std::fs::write(&file, serde_json::to_vec(&value).unwrap()).unwrap();
+
+        assert_eq!(
+            get_in(h.cache_dir.path(), &h.source_path, h.source),
+            Some(ast)
+        );
+    }
+
+    #[test]
+    fn public_ensure_primed_does_not_panic() {
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("PublicEnsurePrimed.psc");
+        let source = "ScriptName PublicEnsurePrimed\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        crate::ensure_primed(&source_path, source);
+        assert_eq!(
+            crate::get(&source_path, source),
+            Some(papyrus_parser::parse(source).unwrap())
+        );
+        assert_eq!(
+            crate::get_tokens(&source_path, source),
+            Some(papyrus_parser::tokenize(source).unwrap())
+        );
+    }
+
+    #[test]
+    fn public_put_then_get_returns_the_cached_ast() {
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("PublicRoundtripAst.psc");
+        let source = "ScriptName PublicRoundtripAst\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let ast = papyrus_parser::parse(source).unwrap();
+        crate::put(&source_path, source, &ast);
+        assert_eq!(crate::get(&source_path, source), Some(ast));
+    }
+
+    #[test]
+    fn public_put_tokens_then_get_tokens_returns_the_cached_tokens() {
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("PublicRoundtripTokens.psc");
+        let source = "ScriptName PublicRoundtripTokens\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let tokens = papyrus_parser::tokenize(source).unwrap();
+        crate::put_tokens(&source_path, source, &tokens);
+        assert_eq!(crate::get_tokens(&source_path, source), Some(tokens));
+    }
+
+    #[test]
+    fn public_accessors_are_safe_under_concurrent_use() {
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Concurrent.psc");
+        let source = "ScriptName Concurrent\n";
+        std::fs::write(&source_path, source).unwrap();
+        let ast = papyrus_parser::parse(source).unwrap();
+        let tokens = papyrus_parser::tokenize(source).unwrap();
+
+        std::thread::scope(|scope| {
+            for _ in 0..8 {
+                let source_path = &source_path;
+                let ast = &ast;
+                let tokens = &tokens;
+                scope.spawn(move || {
+                    crate::put(source_path, source, ast);
+                    crate::put_tokens(source_path, source, tokens);
+                    let _ = crate::get(source_path, source);
+                    let _ = crate::get_tokens(source_path, source);
+                    crate::ensure_primed(source_path, source);
+                });
+            }
+        });
+
+        assert_eq!(crate::get(&source_path, source), Some(ast));
+        assert_eq!(crate::get_tokens(&source_path, source), Some(tokens));
     }
 }
