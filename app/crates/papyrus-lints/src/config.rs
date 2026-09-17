@@ -77,6 +77,7 @@
 //!   conflicting_script_versions: true
 //!   stale_compiled_output: true
 //!   script_filename_mismatch: true
+//!   unused_disable: false
 //!   magic_numbers: false
 //!   native_function_usage: false
 //!   repeated_getvalue: false
@@ -107,7 +108,8 @@
 //! disable that lint (and its automatic fix, if it has one) entirely. As
 //! with the top-level keys, `rules` and any key within it may be omitted
 //! and falls back to its default. `property_sorting`,
-//! `unchecked_form_parameter`, `unchecked_array_element`, `magic_numbers`,
+//! `unchecked_form_parameter`, `unchecked_array_element`, `unused_disable`,
+//! `magic_numbers`,
 //! `native_function_usage`,
 //! `repeated_getvalue`, `global_variable_setvalue`,
 //! `default_property_value`, `unknown_actor_value`,
@@ -119,7 +121,9 @@
 //! defaults off because many scripts intentionally accept a possibly-`None`
 //! Form and defer the check to a caller or a later branch;
 //! `unchecked_array_element` defaults off for the same reason, extended to
-//! array elements instead of parameters; `magic_numbers`
+//! array elements instead of parameters; `unused_disable` defaults off
+//! because reporting stale suppressions is opt-in, to avoid surprising
+//! existing projects; `magic_numbers`
 //! defaults off because many existing scripts contain plenty of
 //! unremarkable literal numbers a project may not want flagged all at
 //! once; `native_function_usage` defaults off because plenty of mods
@@ -153,7 +157,7 @@
 //! defaults off because two scripts intentionally holding `Property`
 //! references to each other for two-way communication (e.g. a manager and a
 //! worker script) is a common, legitimate design, not a mistake, and
-//! enabling this by default would flag it as one. All fourteen need a
+//! enabling this by default would flag it as one. All fifteen need a
 //! project to opt in explicitly.
 //!
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)

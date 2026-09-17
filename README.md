@@ -150,28 +150,10 @@ typing it by hand — see its per-line "Ignore" button
 
 `; @disable` with no rule ids suppresses every lint on that line. Matching
 against the directive's rule id(s) is case-insensitive. This only affects
-linting — it does not change what automatic fixes do to that line. The rule ids, one per
-lint listed above, are: `trailing-whitespace`, `comma-spacing`,
-`forbidden-functions`, `slow-functions`, `unused-getter`, `unused-property`,
-`semicolon`, `float-to-int`, `int-division-to-float`, `strict-boolean`, `argument-types`,
-`return-types`, `function-override`, `argument-naming`, `argument-override-types`, `numeric-comparison`,
-`indentation`, `cyclomatic-complexity`, `unreachable-statement`,
-`static-condition`, `unreachable-elseif`, `division-by-zero`, `unused-local-variable`, `none-form-usage`,
-`local-variable-shadowing`, `parameter-reassignment`, `chain-whitespace`, `exclamation-spacing`,
-`identifier-casing`, `type-casing`, `named-arguments`, `operator-spacing`,
-`assignment-operator-spacing`,
-`property-sorting`, `explicit-return`, `unchecked-form-parameter`,
-`unchecked-array-element`,
-`unchecked-cast`, `unresolved-script`, `non-global-function-call`,
-`static-function-call-via-instance`, `short-wait-interval`,
-`state-function-signature`, `goto-state`, `get-state-comparison`, `conflicting-script-versions`,
-`stale-compiled-output`, `script-filename-mismatch`, `unused-disable`, `magic-numbers`, `native-function-usage`,
-`global-variable-setvalue`, `setvalue-in-loop`, `script-name-collision`,
-`array-bounds`, `array-size-range`,
-`default-property-value`, `unguarded-self-recursion`, `self-assignment`,
-`unnecessary-function`, `unknown-actor-value`, `missing-doc-comment`,
-`invalid-random-range`, `float-equality`, `missing-update-handler`,
-`unused-import`, `event-signature-mismatch`, and `circular-dependency`.
+linting — it does not change what automatic fixes do to that line. A
+rule's id is its own row's anchor on the
+[lint rule reference](https://papyrus-lint.idrinth.de/rules.html) (e.g.
+`float-to-int` for "Implicit Float-to-Int conversion").
 
 A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
 the entire file instead of just the line it's written on, no matter where
@@ -385,15 +367,18 @@ Each key:
   consider that noise once they trust their Property Manager setup, and
   can set this to `true` to drop the assumption for properties (a local
   variable is still tracked either way).
-- `rules`: per-lint enable/disable switches. Setting one to `false` turns
-  that lint (and its automatic fix, if it has one) off entirely; every
-  key under `rules` can be omitted individually and falls back to its
-  default. Every key defaults to `true` except `property_sorting`,
+- `rules`: per-lint enable/disable switches, one key per rule (the key name
+  is a rule's id with hyphens replaced by underscores, e.g. `float-equality`
+  is `float_equality`). Setting one to `false` turns that lint (and its
+  automatic fix, if it has one) off entirely; every key under `rules` can be
+  omitted individually and falls back to its default. Every key defaults to
+  `true` except `property_sorting`,
   `unchecked_form_parameter`, `unchecked_array_element`, `unused_disable`, `magic_numbers`,
   `native_function_usage`, `repeated_getvalue`,
   `global_variable_setvalue`, `default_property_value`,
-  `unknown_actor_value`, `missing_doc_comment`,
-  `missing_update_handler`, and `event_signature_mismatch`, which default to
+  `unknown_actor_value`, `missing_doc_comment`, `float_equality`,
+  `missing_update_handler`, `event_signature_mismatch`, and
+  `circular_dependency`, which default to
   `false`: reordering a script's declared properties is a more invasive
   change than the rest of these lints, many scripts intentionally accept a
   possibly-`None` Form and defer the check to a caller or a later branch
@@ -411,36 +396,21 @@ Each key:
   that have no way to appear in `rules/actor-values.yaml`, most
   existing scripts have no documentation comments at all, so flagging
   every declaration missing one would be noisy until a project opts in,
-  the "Missing update event handler" lint only ever sees a single
-  script's own source, so a matching `Event` declared instead on a script
-  it `Extends` would otherwise be misreported as missing, and the "Event
-  signature mismatch" lint's `rules/known-events.yaml` only lists a curated
+  a project may deliberately compare two `Float` values it knows are
+  computed the exact same way, so flagging every such comparison by default
+  would be a false positive, the "Missing update event handler" lint only
+  ever sees a single script's own source, so a matching `Event` declared
+  instead on a script it `Extends` would otherwise be misreported as
+  missing, the "Event signature
+  mismatch" lint's `rules/known-events.yaml` only lists a curated
   subset of the engine's native events and matches an `Event`'s name alone,
   regardless of whether the enclosing script actually extends the Form
-  that declares it.
-  The key names match the lints listed above:
-  `trailing_whitespace`, `comma_spacing`, `forbidden_functions`,
-  `formid_hex_notation`, `slow_functions`, `unused_getter`,
-  `unused_property`, `semicolon`, `float_int_conversion`, `int_division_to_float`, `strict_boolean`,
-  `argument_types`, `return_types`, `function_override`, `numeric_comparison`,
-  `indentation`, `cyclomatic_complexity`, `unreachable_statement`,
-  `static_condition`, `unreachable_elseif`, `division_by_zero`, `unused_local_variable`,
-  `variable_used_before_assignment`, `none_form_usage`,
-  `local_variable_shadowing`, `chain_whitespace`, `exclamation_spacing`,
-  `identifier_casing`, `type_casing`, `named_arguments`, `operator_spacing`,
-  `property_sorting`, `explicit_return`, `unchecked_form_parameter`,
-  `unchecked_array_element`,
-  `unchecked_cast`, `unresolved_script`, `static_function_call_via_instance`,
-  `short_wait_interval`,
-  `magic_numbers`, `native_function_usage`, `repeated_getvalue`,
-  `global_variable_setvalue`, `global_variable_increment`, `setvalue_in_loop`,
-  `invariant_loop_condition`,
-  `script_name_collision`, `array_bounds`, `array_size_range`,
-  `readonly_property_write`,
-  `default_property_value`, `unguarded_self_recursion`,
-  `self_assignment`, `unnecessary_function`, `unknown_actor_value`,
-  `missing_doc_comment`, `invalid_random_range`,
-  `missing_update_handler`, `unused_import`, and `event_signature_mismatch`.
+  that declares it, and two scripts intentionally holding `Property`
+  references to each other for two-way communication (e.g. a manager and a
+  worker script) is a common, legitimate design that enabling the "Circular
+  script dependency" lint by default would flag as a mistake.
+  See [`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) for
+  every rule's key name and default value together in one place.
 
 The app's formatting controls (trailing semicolons, indentation style,
 indentation width) are backed by this file: on startup it reads the
@@ -662,7 +632,9 @@ encoding for the language — otherwise, so a script saved in either
 encoding lints correctly instead of aborting the whole run.
 
 Prefixed with the `fix` subcommand, it applies every automatic fix (the
-"Auto-Fix" lints in the table above, using the same config's semicolon and
+rules marked auto-fixable on the [lint rule
+reference](https://papyrus-lint.idrinth.de/rules.html), using the same
+config's semicolon and
 indentation settings) to each resolved script first, rewriting a script on
 disk only if it changed, before reporting whatever diagnostics remain the
 same way — the same repair the desktop app's "Fix" button applies to a
@@ -762,8 +734,8 @@ clean. `level` is always `"error"`, `"warning"`, or `"info"`. Every built-in lin
 sets a level; an untagged external diagnostic is conservatively reported as
 `"error"` — see `Diagnostic::level`. Each diagnostic's `doc_url` is that
 rule's own documentation link on the
-[project website](https://papyrus-lint.idrinth.de) (its row on the
-[Implemented Lints](#implemented-lints) table), or `null` for a rule with
+[lint rule reference](https://papyrus-lint.idrinth.de/rules.html), or `null`
+for a rule with
 no known tag metadata (e.g. a compiler-reported diagnostic). `files_fixed` is
 only present (non-`null`) when run with the `fix` subcommand, and under
 `fix --dry-run` counts scripts that *would* have been fixed rather than
@@ -881,7 +853,8 @@ releases contain backward-compatible fixes.
 ## Fixing lint findings
 
 Each `.psc` file listed on the Lint results tab that has at least one
-finding for an "Auto-Fix" lint (see the tables above) shows an "Apply
+finding for an auto-fixable lint (marked as such on the [lint rule
+reference](https://papyrus-lint.idrinth.de/rules.html)) shows an "Apply
 fixes" button, applying every automatic fix to that file at once — the
 same repair the CLI's `fix` subcommand applies to a single script (see
 Command-line interface below). Each individual finding for an
@@ -956,8 +929,8 @@ uses; the JSON format mirrors the shape of the CLI's own `--json` report
 and `total_diagnostics` counts), restricted to the currently filtered
 files/findings, so both can be consumed by the same tooling. Each
 diagnostic also carries a `doc_url` field — that rule's own documentation
-link on the [project website](https://papyrus-lint.idrinth.de) (its row
-on the [Implemented Lints](#implemented-lints) table), or `null` for a
+link on the [lint rule reference](https://papyrus-lint.idrinth.de/rules.html),
+or `null` for a
 rule with no known tag metadata (e.g. a compiler-reported diagnostic) —
 so a finding can be linked straight to its explanation. The button
 is disabled whenever no finding currently passes the active filters.
@@ -1026,7 +999,8 @@ the same rule-documentation link "Export issues" carries above; and a
 `rule_details` array carrying the rule metadata (kind(s), importance,
 whether it is auto-fixable, its own `doc_url`, and the rule's own detailed
 `description`, copied verbatim from its row in the
-[Implemented Lints](#implemented-lints) table above) for every rule id
+[lint rule reference](https://papyrus-lint.idrinth.de/rules.html)) for
+every rule id
 that actually appears among the exported findings and has known tag
 metadata (an unrecognized rule id is simply left out) — giving the
 assistant enough context about each triggered rule, in the same detail

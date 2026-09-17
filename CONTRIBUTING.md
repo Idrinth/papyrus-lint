@@ -92,7 +92,7 @@ expected of a pull request.
 │           │   ├── lib.rs           # run() + public API; also linked into
 │           │   │                    # src-tauri for its CLI mode
 │           │   ├── project.rs       # Project-root discovery from .psc paths
-│           │   ├── output.rs        # Plain/JSON/AI report types and formatting
+│           │   ├── output/          # Plain/JSON/AI report types and formatting
 │           │   ├── init.rs          # `init` / `preset add`
 │           │   ├── blob.rs          # `--blob` in-memory lint
 │           │   ├── doctor.rs        # `doctor` subcommand
@@ -102,14 +102,33 @@ expected of a pull request.
 ├── shared/
 │   └── images/               # Images used by README.md (logo, screenshots)
 ├── rules/
-│   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
-│   └── slow-functions.yaml       # Slow calls and faster alternatives; both are
-│                                  # compiled in by papyrus-lints/build.rs
+│   ├── forbidden-functions.yaml    # Calls discouraged or forbidden by policy
+│   ├── slow-functions.yaml         # Slow calls and faster alternatives
+│   ├── native-methods.yaml         # Base-game native functions
+│   ├── native-types.yaml           # Native engine class hierarchy fallback
+│   ├── native-globals.yaml         # Native singleton scripts always called
+│   │                                # by literal name
+│   ├── actor-values.yaml           # Skyrim's built-in Actor Values
+│   ├── known-events.yaml           # Curated native event signatures
+│   └── update-event-handlers.yaml  # RegisterFor*/Event pairs; all of these
+│                                    # are compiled in by papyrus-lints/build.rs
+│                                    # or papyrus-lint-core/build.rs
 ├── SublimeLinter-contrib-papyrus-lint/  # SublimeLinter integration, commands,
 │                                           # and Python unit tests
-└── vscode-extension/        # VS Code integration for linting/fixing .psc files
-    ├── src/                 # Extension and diagnostic conversion logic
-    └── test/                # Node-based unit tests
+├── vscode-extension/        # VS Code integration for linting/fixing .psc files
+│   ├── src/                 # Extension and diagnostic conversion logic
+│   └── test/                # Node-based unit tests
+├── pages/                   # Source for the GitHub Pages discoverability
+│                              # site (papyrus-lint.idrinth.de), built by
+│                              # pages/build.py from README.md and docs/*
+├── docs/                    # rules.json (rule metadata), the default config
+│   │                          # (papyrus-lint.default.yaml), presets/, JSON
+│   │                          # schemas, examples.md, nexuspage.bbcode
+│   └── agent/                 # Depth (CI, Pages, releases, implementation
+│                                # notes) for AI agents; loaded only when the
+│                                # task needs it — see AGENTS.md's routing table
+└── docker/                  # Dockerfile/entrypoint for the release CLI image
+                               # published to GitHub Container Registry
 ```
 
 `papyrus-parser`, `papyrus-ast-cache`, `papyrus-lints`, `papyrus-lint-config`,
@@ -247,8 +266,12 @@ A lint/fix job receives a `&papyrus_lints::Config`, deserialized from a
 project's optional `papyrus-lint.yaml`/`.yml`, so user-configurable behavior
 should be read from there rather than added as a separate parameter. Add tests
 for diagnostics, disable comments, configuration, and repairs as applicable,
-and update `docs/rules.json`, `app/crates/papyrus-lints/src/tags.rs`, the
-README's rule-id list, and the configuration example.
+and update `docs/rules.json` and the configuration examples
+(`docs/papyrus-lint.default.yaml`, `docs/nexuspage.bbcode`, and the
+`Config`/`Rules` rustdoc in `app/crates/papyrus-lints/src/config.rs`).
+`registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and `tags.rs`'s
+`RULE_TAGS` are all compiled from `docs/rules.json` by `build.rs`, so they
+never need hand-editing.
 
 ## Reporting bugs and requesting features
 

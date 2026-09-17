@@ -4,8 +4,8 @@ The [Simple Example](../README.md#simple-example) in the README shows one
 way Papyrus Lint catches a bug `PapyrusCompiler.exe` compiles without
 complaint. The examples below show more of the same kind — real bugs,
 not style nitpicks — pulled from the Reliability, Bugprone, and
-Performance categories of the [Implemented Lints
-table](../README.md#implemented-lints). Every snippet compiles cleanly;
+Performance categories of the [lint rule
+reference](https://papyrus-lint.idrinth.de/rules.html). Every snippet compiles cleanly;
 the linter is what actually catches the problem.
 
 ## Dereferencing a `None` Form
@@ -261,7 +261,7 @@ EndFunction
 
 ---
 
-See the README's [Implemented Lints table](../README.md#implemented-lints)
+See the [lint rule reference](https://papyrus-lint.idrinth.de/rules.html)
 for the full list, including the purely style/formatting lints not shown
 here, and [Disabling a lint on a specific
 line](../README.md#disabling-a-lint-on-a-specific-line) for the full
