@@ -970,11 +970,15 @@ export function bindResultsList() {
     renderPscResults(currentPscOutcomes);
   }
 
+  const tagKindFilters = TAG_KINDS.map((kind) => ({
+    kind,
+    checkbox: document.querySelector<HTMLInputElement>(`#filter-kind-${kind}`),
+    select: ruleFilterSelectEls[kind],
+  }));
   tagKindFilterEls = Object.fromEntries(
-    TAG_KINDS.map((kind) => [kind, document.querySelector<HTMLInputElement>(`#filter-kind-${kind}`)]),
+    tagKindFilters.map(({ kind, checkbox }) => [kind, checkbox]),
   ) as Partial<Record<TagKind, HTMLInputElement>>;
-  for (const kind of TAG_KINDS) {
-    const select = ruleFilterSelectEls[kind];
+  for (const { checkbox, select } of tagKindFilters) {
 
     select?.addEventListener("change", () => {
       applyRuleSelectionChange(() => {
@@ -988,8 +992,8 @@ export function bindResultsList() {
       });
     });
 
-    tagKindFilterEls[kind]?.addEventListener("change", () => {
-      const checked = tagKindFilterEls[kind]?.checked ?? true;
+    checkbox?.addEventListener("change", () => {
+      const checked = checkbox.checked;
       applyRuleSelectionChange(() => {
         for (const option of select?.options ?? []) {
           if (checked) {
