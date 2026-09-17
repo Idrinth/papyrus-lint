@@ -30,6 +30,7 @@ SKIP_DIR_NAMES = {
     "coverage",
     "coverage-artifacts",
     "dist",
+    "docs",
     "node_modules",
     "playwright-report",
     "target",
@@ -52,7 +53,6 @@ SOURCE_SUFFIXES = {
     ".html",
     ".js",
     ".json",
-    ".md",
     ".mjs",
     ".mts",
     ".py",
@@ -104,6 +104,11 @@ def is_skipped_dir(name: str) -> bool:
     return name.startswith(".") and name != ".github"
 
 
+def is_reportable_path(path: str) -> bool:
+    parts = Path(path).parts
+    return "docs" not in parts and Path(path).suffix.lower() not in {".md", ".markdown"}
+
+
 def iter_source_files(root: Path) -> list[Path]:
     files: list[Path] = []
     for dirpath, dirnames, filenames in os.walk(root):
@@ -112,7 +117,7 @@ def iter_source_files(root: Path) -> list[Path]:
             if name in SKIP_FILE_NAMES:
                 continue
             path = Path(dirpath, name)
-            if path.suffix not in SOURCE_SUFFIXES:
+            if path.suffix not in SOURCE_SUFFIXES or not is_reportable_path(relative_path(path, root)):
                 continue
             files.append(path)
     files.sort()
@@ -216,6 +221,8 @@ def parse_uncovered_lines(lcov_dir: Path, root: Path) -> dict[str, int]:
         for line in lines:
             if line.startswith("SF:"):
                 current = normalize_lcov_path(line[3:], root)
+                if not is_reportable_path(current):
+                    current = None
                 found = hit = 0
             elif line.startswith("LF:"):
                 found = int(line[3:] or "0")
@@ -279,8 +286,9 @@ def render_report(
             *render_list(loc_rows, str),
             "",
             "_Size and LOC cover `.rs` / `.ts` / `.js` / `.py` / `.css` / "
-            "`.html` / `.json` / `.yaml` / `.toml` / `.md` outside build "
-            "and vendor directories. Exports count unrestricted-looking "
+            "`.html` / `.json` / `.yaml` / `.toml` outside documentation, "
+            "build, and vendor directories. Markdown files are excluded. "
+            "Exports count unrestricted-looking "
             "`pub` items in Rust, `export` / `module.exports` in JS/TS, "
             "and public top-level `def`/`class` names in Python. Uncovered "
             "lines come from the job's downloaded `lcov.info` artifacts._",
