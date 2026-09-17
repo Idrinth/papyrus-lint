@@ -500,9 +500,9 @@ same file `PapyrusLinterCLI init` writes and the one the README links to
 instead of dumping inline — for the complete default file. That file must
 stay byte-for-byte identical to `PapyrusLinterCLI init`'s output (built
 from `papyrus_lints::Config::default()` and the `FIELD_COMMENTS` table in
-`papyrus-lint-config/src/lib.rs`, which is what actually generates the
+`papyrus-lint-config/src/comments.rs`, which is what actually generates the
 per-key comments): `papyrus-lint-config`'s
-`tests::default_config_matches_the_checked_in_docs_copy` test
+`project_file::tests::default_config_matches_the_checked_in_docs_copy` test
 fails CI if they drift, so regenerate it with `PapyrusLinterCLI init`
 (and update `FIELD_COMMENTS`/README together) whenever a default or a
 field comment changes.

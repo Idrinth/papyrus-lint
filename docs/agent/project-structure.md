@@ -120,7 +120,21 @@
 │       ├── papyrus-lint-config/  # Locates/loads/saves a project's
 │       │   └── src/               # papyrus-lint.yaml (lint settings, compiler
 │       │       ├── lib.rs          # path, script roots); depends only on
-│       │       │                  # papyrus-lints
+│       │       │                  # papyrus-lints. lib.rs is a thin facade:
+│       │       │                  # module split below, re-exported at the
+│       │       │                  # crate root
+│       │       ├── project_file.rs # ProjectFile model, YAML load/save/
+│       │       │                  # discovery, and the per-field loaders/
+│       │       │                  # savers (compiler_path, compile_check,
+│       │       │                  # script_roots, lookup_script_roots,
+│       │       │                  # strict_achlist_scope) built on it
+│       │       ├── comments.rs     # README-synced explanatory comments
+│       │       │                  # injected above each saved top-level key
+│       │       ├── skyrim.rs       # Windows registry detection of a Skyrim
+│       │       │                  # Special Edition install and its vanilla
+│       │       │                  # script directories
+│       │       ├── compiler.rs     # PapyrusCompiler.exe auto-detection/
+│       │       │                  # resolution
 │       │       └── presets.rs      # Preset (built-in + user), user-preset
 │       │                          # add/save/rename/delete/export, and the
 │       │                          # executable-adjacent base-config layering
