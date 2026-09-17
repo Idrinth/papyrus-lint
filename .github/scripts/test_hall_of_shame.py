@@ -110,6 +110,37 @@ class HallOfShameTests(unittest.TestCase):
             found = {hall_of_shame.relative_path(path, root) for path in hall_of_shame.iter_source_files(root)}
             self.assertEqual({"app/main.rs", ".github/scripts/tool.py", "README.md"}, found)
 
+    def test_iter_source_files_skips_hidden_directories_except_github(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / ".hidden").mkdir()
+            (root / ".hidden" / "secret.py").write_text("def secret():\n    pass\n", encoding="utf-8")
+            (root / ".github").mkdir()
+            (root / ".github" / "tool.py").write_text("def tool():\n    pass\n", encoding="utf-8")
+
+            found = [hall_of_shame.relative_path(path, root) for path in hall_of_shame.iter_source_files(root)]
+            self.assertEqual([".github/tool.py"], found)
+
+    def test_count_exports_ignores_unsupported_files_and_private_python_names(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory, "README.md")
+            markdown.write_text("def looks_like_python():\n", encoding="utf-8")
+            python = Path(directory, "module.py")
+            python.write_text("def _private():\n    pass\nclass _Private:\n    pass\n", encoding="utf-8")
+
+            self.assertEqual(0, hall_of_shame.count_exports(markdown))
+            self.assertEqual(0, hall_of_shame.count_exports(python))
+
+    def test_normalize_lcov_path_handles_windows_separators_and_repo_prefixes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+
+            self.assertEqual(
+                "app/src/main.ts",
+                hall_of_shame.normalize_lcov_path(r"C:\runner\work\repo\app\src\main.ts", root),
+            )
+            self.assertEqual("unrelated/file.py", hall_of_shame.normalize_lcov_path("./unrelated/file.py", root))
+
     def test_parse_uncovered_lines_normalizes_and_deduplicates(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -151,6 +182,24 @@ class HallOfShameTests(unittest.TestCase):
     def test_top_n_orders_by_value_then_path_and_drops_zeros(self) -> None:
         rows = [("b.rs", 4), ("a.rs", 4), ("c.rs", 0), ("d.rs", 9)]
         self.assertEqual([("d.rs", 9), ("a.rs", 4), ("b.rs", 4)], hall_of_shame.top_n(rows, 3))
+
+    def test_render_report_uses_empty_placeholders_for_empty_rankings(self) -> None:
+        report = hall_of_shame.render_report([], [], [], [], 5)
+
+        self.assertIn("Top 5 source files", report)
+        self.assertEqual(4, report.count("_none_"))
+        self.assertNotIn("_no coverage reports_", report)
+
+    def test_emit_notices_distinguishes_empty_coverage_from_missing_reports(self) -> None:
+        empty_coverage = io.StringIO()
+        with contextlib.redirect_stderr(empty_coverage):
+            hall_of_shame.emit_notices([], [], [], [])
+        self.assertIn("Hall of shame — uncovered lines::none", empty_coverage.getvalue())
+
+        missing_coverage = io.StringIO()
+        with contextlib.redirect_stderr(missing_coverage):
+            hall_of_shame.emit_notices([], [], None, [])
+        self.assertIn("Hall of shame — uncovered lines::no coverage reports", missing_coverage.getvalue())
 
     def test_main_writes_markdown_and_notice_annotations(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
