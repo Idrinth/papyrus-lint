@@ -38,7 +38,9 @@ Automatic repair is available for trailing whitespace, comma spacing,
 semicolons, indentation, whitespace around member-access dots, spacing
 around `!` negation, spacing around logical/comparison operators, spacing
 around assignment operators, property sorting (disabled by default;
-see the README), and the unused-import lint. The desktop app,
+see the README), the unused-import lint, slow function usage, identifier
+casing, type name casing, preferred named arguments, GlobalVariable
+increment, and unnecessary functions. The desktop app,
 standalone CLI, and editor extensions all use the same lint and repair
 engine.
 

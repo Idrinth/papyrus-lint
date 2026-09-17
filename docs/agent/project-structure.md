@@ -67,18 +67,31 @@
 │       │       ├── token.rs
 │       │       ├── ast.rs
 │       │       ├── parser.rs
+│       │       ├── types.rs        # TypeEnv: variable type tracking for a
+│       │       │                   # parsed script, used by lints that need a
+│       │       │                   # value's declared type (implicit
+│       │       │                   # conversions, non-Bool conditions, ...)
 │       │       └── cache.rs        # In-memory memoization of parse()/tokenize()
 │       │                           # against the most recently seen source, so
 │       │                           # one lint pass over a script only lexes/
 │       │                           # parses it once no matter how many lint
 │       │                           # rules each ask for their own tokens/AST
 │       ├── papyrus-ast-cache/    # Standalone crate: disk-backed cache of
-│       │   └── src/lib.rs         # parsed .psc ASTs/token streams, keyed by
-│       │                          # content MD5 + mtime + linter version;
-│       │                          # depends only on papyrus-parser, so it's
-│       │                          # reusable on its own. papyrus-lint-core
-│       │                          # re-exports it as its own ast_cache
-│       │                          # module (see below)
+│       │   └── src/               # parsed .psc ASTs/token streams, keyed by
+│       │       ├── lib.rs           # content MD5 + mtime + linter version;
+│       │       │                    # depends only on papyrus-parser, so it's
+│       │       │                    # reusable on its own. papyrus-lint-core
+│       │       │                    # re-exports it as its own ast_cache
+│       │       │                    # module (see below); this crate's own
+│       │       │                    # public get/put/ensure_primed API
+│       │       ├── entry.rs         # On-disk entry representation: where a
+│       │       │                    # cache entry lives, how it's addressed,
+│       │       │                    # and its raw read/write
+│       │       ├── ops.rs           # get/put/ensure_primed semantics built on
+│       │       │                    # entry.rs's on-disk primitives
+│       │       └── version.rs       # MIN_COMPATIBLE_VERSION and the
+│       │                            # entry-vs-running-binary compatibility
+│       │                            # check
 │       ├── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
 │       │   ├── build.rs           # (not the AST) so they still run on scripts
 │       │   └── src/                # that don't parse cleanly. Every file with
@@ -117,6 +130,20 @@
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
 │       │       ├── lib.rs          # Re-exports papyrus-ast-cache (see above) as
 │       │       │                   # this crate's own ast_cache module
+│       │       ├── content_hash.rs # MD5 hashing helper for the "Export for AI"
+│       │       │                   # redacted-source option / --hash-source
+│       │       ├── diff.rs         # unified_diff: renders fix --dry-run's/
+│       │       │                   # "Preview fixes"'s standard unified diff
+│       │       ├── project_root.rs # Discovers a project's root from a .psc
+│       │       │                   # file's position on disk, for the CLI and
+│       │       │                   # the find_project_root Tauri command
+│       │       ├── script_filename_mismatch.rs # The "ScriptName/filename
+│       │       │                   # mismatch" project lint (needs the .psc's
+│       │       │                   # own path, so it can't live in
+│       │       │                   # papyrus-lints with the source-only lints)
+│       │       ├── source_encoding.rs # Reads a .psc as UTF-8 or, when that's
+│       │       │                   # invalid, Windows-1252 (CP1252) — the
+│       │       │                   # Creation Kit/compiler's own encoding
 │       │       ├── script_locator.rs   # Finds .psc files by name under
 │       │       │                       # scripts/source or source/scripts
 │       │       ├── function_table/     # Cross-script function signature lookup,
@@ -209,8 +236,12 @@
 │   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
 │   ├── slow-functions.yaml       # Slow calls and their faster alternatives
 │   ├── native-methods.yaml       # Base-game native functions (see
-│   │                             # native_function_usage.rs above); all three
-│   │                             # files above are compiled in by
+│   │                             # native_function_usage.rs above)
+│   ├── update-event-handlers.yaml # RegisterFor*/Event pairs read by
+│   │                              # papyrus-lints/src/missing_update_handler.rs
+│   ├── known-events.yaml         # Curated native Event signatures read by
+│   │                             # papyrus-lints/src/event_signature.rs;
+│   │                             # all five files above are compiled in by
 │   │                             # papyrus-lints/build.rs
 │   ├── native-types.yaml         # Native engine class hierarchy fallback (see
 │   │                              # papyrus-lint-core/src/native_types.rs above);
@@ -231,71 +262,77 @@
 │   ├── package.json          # .psc files by invoking PapyrusLinterCLI --json
 │   ├── src/extension.ts      # Commands, process execution, and diagnostics
 │   └── test/                 # Node-based extension unit tests
-└── pages/                   # Source for the GitHub Pages discoverability site
-    ├── index.template.html    # (see GitHub Pages below): index.template.html is
-    ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel
-    ├── videos.template.html    # headings, the same light/dark palette); build.py
-    ├── videos.json             # substitutes its lint-table/CLI-example placeholders
-    ├── action.template.html    # and renders action.html, the papyrus-lint-action
-    │                            # GitHub Action's own README fetched at build
-    │                            # time (see action.template.html below).
-    ├── coverage.template.html  # with content converted straight from README.md,
-    ├── imprint.template.html   # renders imprint.html, a fully static legal
-    │                            # notice (Impressum) with no build-time
-    │                            # content of its own beyond the shared header/
-    │                            # footer, linked from the footer on every page
-    ├── rules.template.html     # renders rules.html, a searchable/filterable
-    ├── rules.js                 # reference of every lint rule generated from
-    │                            # docs/rules.json's own metadata (id, severity,
-    │                            # tags, fixable, full definition); rules.js
-    │                            # (minified into the output directory like
-    │                            # downloads.js) wires up its search box and
-    │                            # severity/tag/auto-fix checkboxes
-    ├── includes/               # shared page chrome inserted during the build
-    │   ├── header.html         # with depth-aware links for root/docs pages
-    │   └── footer.html         # and one source for release/contact/legal
-    │                            # notice details
-    ├── styles.css              # Site layout/components; imports
-    │                            # shared/theme.css for the palette/canvas.
-    │                            # build.py inlines that import (and minifies)
-    │                            # so the deployed site is still one file.
-    │                            # Also renders coverage.html, a per-module/per-file
-    ├── CNAME                   # line coverage breakdown for the latest release
-    │                            # (see coverage.template.html below). The site's
-    │                            # custom domain (papyrus-lint.idrinth.de);
-    │                            # build.py copies CNAME into pages/dist/ so
-    │                            # GitHub Pages keeps serving it across every
-    │                            # Actions-based deploy.
-    ├── fonts/                  # renders every docs/* file into a browsable subpage
-    │   ├── cinzel-v26-latin-700.woff2  # (via docs.template.html) linked from a
-    │   └── inter-v20-latin-variable.woff2  # Documentation section, renders
-    ├── build.py                # videos.json's list of YouTube videos into
-    │                            # videos.html (via videos.template.html), a
-    │                            # --coverage-dir of downloaded lcov reports into
-    │                            # coverage.html (via coverage.template.html, see
-    │                            # GitHub Pages below), and assembles pages/dist/
-    │                            # (git-ignored), copying
-    │                            # its assets/ images from shared/images/ and the
-    │                            # app icon rather than committing duplicates of
-    │                            # either under pages/, generating a WebP/AVIF
-    │                            # sibling of each one rendered as an <img> and
-    │                            # rewriting that <img> into a <picture> offering
-    │                            # them (see GitHub Pages below), its fonts/
-    │                            # woff2 files as-is so styles.css's @font-face
-    │                            # rules self-host Cinzel/Inter instead of
-    │                            # pulling them from
-    │                            # fonts.googleapis.com/fonts.gstatic.com
-    │                            # (avoiding a third-party request on every page
-    │                            # load), and a sitemap.xml/robots.txt pair (see
-    │                            # GitHub Pages below) rooted at SITE_URL.
-    ├── requirements-build.txt  # Pinned Pillow version build.py's image
-    │                            # conversion above depends on.
-    ├── browser_check.py        # Opens every page under a built pages/dist in
-    │                            # headless Chromium (see CI below) to catch
-    │                            # console/page errors and broken internal
-    │                            # links/anchors that build.py's own unit
-    │                            # tests, working against small fixtures, can't
-    └── requirements-browser-check.txt  # Pinned Playwright version for the above
+├── pages/                   # Source for the GitHub Pages discoverability site
+│   ├── index.template.html    # (see GitHub Pages below): index.template.html is
+│   ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel
+│   ├── videos.template.html    # headings, the same light/dark palette); build.py
+│   ├── videos.json             # substitutes its lint-table/CLI-example placeholders
+│   ├── action.template.html    # and renders action.html, the papyrus-lint-action
+│   │                            # GitHub Action's own README fetched at build
+│   │                            # time (see action.template.html below).
+│   ├── coverage.template.html  # with content converted straight from README.md,
+│   ├── imprint.template.html   # renders imprint.html, a fully static legal
+│   │                            # notice (Impressum) with no build-time
+│   │                            # content of its own beyond the shared header/
+│   │                            # footer, linked from the footer on every page
+│   ├── rules.template.html     # renders rules.html, a searchable/filterable
+│   ├── rules.js                 # reference of every lint rule generated from
+│   │                            # docs/rules.json's own metadata (id, severity,
+│   │                            # tags, fixable, full definition); rules.js
+│   │                            # (minified into the output directory like
+│   │                            # downloads.js) wires up its search box and
+│   │                            # severity/tag/auto-fix checkboxes
+│   ├── includes/               # shared page chrome inserted during the build
+│   │   ├── header.html         # with depth-aware links for root/docs pages
+│   │   └── footer.html         # and one source for release/contact/legal
+│   │                            # notice details
+│   ├── styles.css              # Site layout/components; imports
+│   │                            # shared/theme.css for the palette/canvas.
+│   │                            # build.py inlines that import (and minifies)
+│   │                            # so the deployed site is still one file.
+│   ├── CNAME                   # The site's custom domain (papyrus-lint.idrinth.de);
+│   │                            # build.py copies CNAME into pages/dist/ so
+│   │                            # GitHub Pages keeps serving it across every
+│   │                            # Actions-based deploy.
+│   ├── fonts/                  # renders every docs/* file into a browsable subpage
+│   │   ├── cinzel-v26-latin-700.woff2  # (via docs.template.html) linked from a
+│   │   └── inter-v20-latin-variable.woff2  # Documentation section, renders
+│   ├── build.py                # videos.json's list of YouTube videos into
+│   │                            # videos.html (via videos.template.html), a
+│   │                            # --coverage-dir of downloaded lcov reports into
+│   │                            # coverage.html (via coverage.template.html, see
+│   │                            # GitHub Pages below), and assembles pages/dist/
+│   │                            # (git-ignored), copying
+│   │                            # its assets/ images from shared/images/ and the
+│   │                            # app icon rather than committing duplicates of
+│   │                            # either under pages/, generating a WebP/AVIF
+│   │                            # sibling of each one rendered as an <img> and
+│   │                            # rewriting that <img> into a <picture> offering
+│   │                            # them (see GitHub Pages below), its fonts/
+│   │                            # woff2 files as-is so styles.css's @font-face
+│   │                            # rules self-host Cinzel/Inter instead of
+│   │                            # pulling them from
+│   │                            # fonts.googleapis.com/fonts.gstatic.com
+│   │                            # (avoiding a third-party request on every page
+│   │                            # load), and a sitemap.xml/robots.txt pair (see
+│   │                            # GitHub Pages below) rooted at SITE_URL.
+│   ├── requirements-build.txt  # Pinned Pillow version build.py's image
+│   │                            # conversion above depends on.
+│   ├── browser_check.py        # Opens every page under a built pages/dist in
+│   │                            # headless Chromium (see CI below) to catch
+│   │                            # console/page errors and broken internal
+│   │                            # links/anchors that build.py's own unit
+│   │                            # tests, working against small fixtures, can't
+│   └── requirements-browser-check.txt  # Pinned Playwright version for the above
+└── docker/                  # Release Alpine CLI image (ghcr.io/idrinth/papyrus-lint)
+    ├── Dockerfile              # Installs PapyrusLinterCLI, generates the
+    │                            # image's --preset (build ARG) config, and
+    │                            # unpacks the bundled base-scripts archive
+    ├── entrypoint.sh            # Resolves /project, /cache, /base-scripts (or
+    │                            # PAPYRUS_LINT_BASE_SCRIPTS_ARCHIVE) and runs
+    │                            # PapyrusLinterCLI against them
+    └── Scripts.zip              # Bundled Skyrim SE base scripts for cross-script
+                                   # lookups when no base-scripts volume is mounted
 ```
 
 `papyrus-parser`, `papyrus-ast-cache`, `papyrus-lints`, `papyrus-lint-config`,
