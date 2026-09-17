@@ -1,0 +1,79 @@
+name: Publish CLI containers
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  container:
+    name: Publish CLI container (${{ matrix.preset }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [strict, standard, careful]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download released Linux CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # The tag's release assets are attached by release.yml's platform
+          # matrix; retry a few times so a fast tag push does not race it.
+          i=0
+          until gh release download "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern PapyrusLinterCLI-linux \
+            --dir docker; do
+            i=$((i + 1))
+            if [ "$i" -ge 12 ]; then
+              echo "PapyrusLinterCLI-linux was not attached to $GITHUB_REF_NAME" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          mv docker/PapyrusLinterCLI-linux docker/PapyrusLinterCLI
+
+      - name: Resolve lowercase container image name
+        id: image
+        shell: bash
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve container tags
+        id: tags
+        shell: bash
+        run: |
+          name="${{ steps.image.outputs.name }}"
+          preset="${{ matrix.preset }}"
+          tag="${{ github.ref_name }}"
+          {
+            echo "list<<EOF"
+            echo "$name:$tag-$preset"
+            echo "$name:$preset"
+            if [ "$preset" = strict ]; then
+              echo "$name:$tag"
+              echo "$name:latest"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish container
+        uses: docker/build-push-action@v6
+        with:
+          context: docker
+          push: true
+          build-args: |
+            PRESET=${{ matrix.preset }}
+          tags: ${{ steps.tags.outputs.list }}
