@@ -7,3 +7,4 @@ import { vi } from "vitest";
 // factory runs).
 export const invokeMock = vi.fn();
 export const onDragDropEventMock = vi.fn();
+export const showWindowMock = vi.fn();

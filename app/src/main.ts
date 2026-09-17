@@ -1,5 +1,6 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type Member } from "./autocomplete";
 import { bindPresets, refreshPresetManagementTab } from "./presets";
 import { bindCodeViewer, openCodeViewer } from "./code-viewer";
@@ -783,6 +784,12 @@ window.addEventListener("DOMContentLoaded", () => {
   // or the CI Lighthouse check against the built frontend), none of these
   // calls have a backend to talk to and would otherwise throw/log errors.
   if (isTauri()) {
+    // The window starts hidden (tauri.conf.json's "visible": false) so the
+    // OS never paints its default white background before this styled UI
+    // is ready; show it now that theme/tabs are applied, instead of
+    // leaving a blank/white window up while Tauri boots on slow machines.
+    void getCurrentWindow().show();
+
     void loadAppVersion().then((version) => {
       if (appVersionEl && version) {
         appVersionEl.textContent = `v${version}`;

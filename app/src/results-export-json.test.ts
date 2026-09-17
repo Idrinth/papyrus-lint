@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { invokeMock, onDragDropEventMock } from "./test/mocks";
+import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
 
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
@@ -8,6 +8,10 @@ vi.mock("@tauri-apps/api/core", () => ({
 
 vi.mock("@tauri-apps/api/webview", () => ({
   getCurrentWebview: () => ({ onDragDropEvent: onDragDropEventMock }),
+}));
+
+vi.mock("@tauri-apps/api/window", () => ({
+  getCurrentWindow: () => ({ show: showWindowMock }),
 }));
 
 import { formatIssuesAsJson } from "./results-export-json";
