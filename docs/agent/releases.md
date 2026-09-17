@@ -31,7 +31,8 @@ already exist. The `ubuntu-latest` leg also copies the checked-in
 binary, rather than generating it by running the freshly built CLI's
 `init` subcommand. A separate `editor-plugins` job runs independently,
 packages the VS Code extension into a `.vsix` (via `@vscode/vsce`)
-and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip`, and
+and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip` while
+excluding its development-only `tests/` directory, and
 attaches both to the same release. A final `release-notes` job (after
 both `release` and `editor-plugins` succeed) overwrites the release's
 title and body — replacing the generic body `tauri-apps/tauri-action`
