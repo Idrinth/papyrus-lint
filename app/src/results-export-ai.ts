@@ -1,13 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import {
-  type PscParseOutcome,
-  type RuleTagsInfo,
-  type Severity,
-  FIXABLE_RULE_IDS,
-  hasNoAutomaticFix,
-  previewRepairPscLine,
-  ruleTagsByRule,
-} from "./main";
+import { type PscParseOutcome, type RuleTagsInfo, FIXABLE_RULE_IDS, hasNoAutomaticFix, previewRepairPscLine } from "./backend";
+import { type Severity, ruleTagsByRule } from "./main";
 import { type LintConfig } from "./config";
 import { currentProjectDir } from "./project";
 import { relativePath } from "./path";

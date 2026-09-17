@@ -1,16 +1,16 @@
 import {
   type Diagnostic,
   type PscParseOutcome,
-  currentPscOutcomes,
   hasNoAutomaticFix,
   hasFixableFindings,
   isFixableFinding,
-  levelOf,
   loadAppVersion,
   repairPscFile,
   repairPscFileRule,
   repairPscFinding,
-} from "./main";
+} from "./backend";
+import { currentPscOutcomes } from "./drop";
+import { levelOf } from "./main";
 import { type LintConfig, currentLintConfig } from "./config";
 import { currentProjectDir } from "./project";
 import { relativePath } from "./path";

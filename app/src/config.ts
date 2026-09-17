@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { markLintResultsStale } from "./main";
+import { markLintResultsStale } from "./drop";
 import { configPathOverride, currentProjectDir } from "./project";
 
 export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";

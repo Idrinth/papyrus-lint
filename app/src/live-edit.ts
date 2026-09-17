@@ -37,14 +37,8 @@ import {
   setCodeViewerState,
 } from "./code-viewer";
 import { renderPscResults } from "./results-list";
-import {
-  type Diagnostic,
-  currentPscOutcomes,
-  lintPapyrusScript,
-  lintPscFile,
-  listScriptMembers,
-  writePscFile,
-} from "./main";
+import { type Diagnostic, lintPapyrusScript, lintPscFile, listScriptMembers, writePscFile } from "./backend";
+import { currentPscOutcomes } from "./drop";
 
 let autocompleteQuery: CompletionQuery | null = null;
 let autocompleteMembers: Member[] = [];

@@ -4,15 +4,14 @@ import {
   type Diagnostic,
   addDisableCommentToPscLine,
   compilePscFile,
-  currentPscOutcomes,
-  escapeAttr,
   hasFixableFindings,
   isFixableFinding,
-  levelOf,
   previewRepairPscFile,
   repairPscFile,
   repairPscFinding,
-} from "./main";
+} from "./backend";
+import { currentPscOutcomes } from "./drop";
+import { escapeAttr, levelOf } from "./main";
 import { cancelLiveEditLint, hideAutocomplete, isCodeViewerEditDirty } from "./live-edit";
 import { renderPscResults } from "./results-list";
 

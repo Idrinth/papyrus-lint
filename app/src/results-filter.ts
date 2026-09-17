@@ -2,15 +2,12 @@ import {
   type Diagnostic,
   type PscParseOutcome,
   type RuleTagsInfo,
-  type Severity,
   type TagImportance,
   type TagKind,
-  SEVERITIES,
   TAG_IMPORTANCES,
   TAG_KINDS,
-  ruleTagsByRule,
-  severityOf,
-} from "./main";
+} from "./backend";
+import { type Severity, SEVERITIES, ruleTagsByRule, severityOf } from "./main";
 import { currentProjectDir } from "./project";
 import { relativePath } from "./path";
 import { type ActiveFilters, type FilteredIssuesFile } from "./results-export-types";
