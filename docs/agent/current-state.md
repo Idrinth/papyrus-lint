@@ -331,7 +331,15 @@ vanilla game sources without treating those files as part of the project.
 Scripts found only there are never linted, `conflicting_script_versions`
 never scans them (`build_script_index`/`detected_script_roots` stay on
 conventional + additional roots), and they are not appended to the
-compiler's `-i` argument. Creating a config (`init`, the desktop first-run
+compiler's `-i` argument. Their contents are walked the same way as other
+source directories (`build_lookup_index` / `cached_lookup_index`) and
+existing `.psc` files are cached twice: the directory listing is reused
+for later `FunctionTable`s in the same process while those directories'
+mtimes are unchanged (so the desktop app's per-file `lint_psc_file`
+commands do not re-scan a multi-thousand-file vanilla `Scripts/Source`
+tree every time), and each resolved script is stored in `ast_cache` plus
+a process-wide path+mtime table so a later table does not re-read or
+re-parse it either. Creating a config (`init`, the desktop first-run
 preset picker) or updating one that does not yet set the key fills Skyrim
 Special Edition's `Data/Scripts/Source` and `Data/Source/Scripts` when
 those exist and the install path can be read from the Windows registry

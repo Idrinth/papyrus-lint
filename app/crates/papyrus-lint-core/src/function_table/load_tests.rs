@@ -302,3 +302,107 @@ fn script_exists_false_for_a_script_that_cannot_be_found() {
 
     assert!(!table.script_exists("MyMissingScript"));
 }
+
+#[test]
+fn lookup_roots_write_through_the_ast_cache() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    let path = vanilla.path().join("Actor.psc");
+    let source =
+        "ScriptName Actor\n\nFunction DamageActorValue(String av, Float value)\nEndFunction\n";
+    fs::write(&path, source).expect("failed to write vanilla script");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+
+    assert!(table.lookup_function("Actor", "DamageActorValue").is_some());
+    assert!(
+        crate::ast_cache::get(&path, source).is_some(),
+        "a lookup-root script should be stored in ast_cache like a project source file"
+    );
+}
+
+#[test]
+fn lookup_roots_reuse_a_process_cache_when_mtime_is_unchanged() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    let path = vanilla.path().join("Actor.psc");
+    fs::write(
+        &path,
+        "ScriptName Actor\n\nFunction FromFirst()\nEndFunction\n",
+    )
+    .expect("failed to write vanilla script");
+    let mtime = fs::metadata(&path)
+        .expect("failed to read metadata")
+        .modified()
+        .expect("failed to read mtime");
+
+    let mut first = FunctionTable::new(root.path().to_path_buf())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+    assert!(first.lookup_function("Actor", "FromFirst").is_some());
+
+    fs::write(
+        &path,
+        "ScriptName Actor\n\nFunction FromSecond()\nEndFunction\n",
+    )
+    .expect("failed to overwrite vanilla script");
+    let file = fs::File::open(&path).expect("failed to reopen vanilla script");
+    if file.set_modified(mtime).is_err() {
+        return;
+    }
+    drop(file);
+
+    let mut second = FunctionTable::new(root.path().to_path_buf())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+    assert!(
+        second.lookup_function("Actor", "FromFirst").is_some(),
+        "unchanged mtime should reuse the process-wide lookup-script cache"
+    );
+    assert!(second.lookup_function("Actor", "FromSecond").is_none());
+}
+
+#[test]
+fn lookup_roots_reload_when_mtime_changes() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    let path = vanilla.path().join("Actor.psc");
+    fs::write(
+        &path,
+        "ScriptName Actor\n\nFunction FromFirst()\nEndFunction\n",
+    )
+    .expect("failed to write vanilla script");
+
+    let mut first = FunctionTable::new(root.path().to_path_buf())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+    assert!(first.lookup_function("Actor", "FromFirst").is_some());
+
+    fs::write(
+        &path,
+        "ScriptName Actor\n\nFunction FromSecond()\nEndFunction\n",
+    )
+    .expect("failed to overwrite vanilla script");
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(2);
+    let file = fs::File::open(&path).expect("failed to reopen vanilla script");
+    let _ = file.set_modified(later);
+    drop(file);
+
+    let mut second = FunctionTable::new(root.path().to_path_buf())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+    assert!(second.lookup_function("Actor", "FromSecond").is_some());
+    assert!(second.lookup_function("Actor", "FromFirst").is_none());
+}
+
+#[test]
+fn cached_lookup_index_is_reused_for_the_same_directories() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    fs::write(vanilla.path().join("Actor.psc"), "ScriptName Actor\n")
+        .expect("failed to write vanilla script");
+    let lookup = vec![vanilla.path().to_string_lossy().into_owned()];
+
+    let first = crate::script_locator::cached_lookup_index(root.path(), &lookup);
+    let second = crate::script_locator::cached_lookup_index(root.path(), &lookup);
+
+    assert!(std::sync::Arc::ptr_eq(&first, &second));
+    assert!(first.contains_key("actor.psc"));
+}

@@ -3,6 +3,8 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::UNIX_EPOCH;
 
 use papyrus_lints::Diagnostic;
 use walkdir::WalkDir;
@@ -272,6 +274,52 @@ pub fn build_script_index(root: &Path, additional_roots: &[String]) -> ScriptInd
 /// for name resolution, never for [`conflicting_script_versions_in_index`].
 pub fn build_lookup_index(root: &Path, lookup_roots: &[String]) -> ScriptIndex {
     index_psc_files(resolve_additional_roots(root, lookup_roots))
+}
+
+/// Process-wide cache of [`build_lookup_index`] results, keyed by the
+/// resolved lookup directories and each directory's modification time so a
+/// later `FunctionTable` in the same process (the desktop app's per-file
+/// lint commands) can skip re-walking a large vanilla `Scripts/Source`
+/// tree. Rebuilt when a directory's mtime changes, so a newly added file
+/// is still picked up.
+type LookupIndexCacheKey = Vec<(PathBuf, u128)>;
+type LookupIndexCache = Mutex<HashMap<LookupIndexCacheKey, Arc<ScriptIndex>>>;
+
+static LOOKUP_INDEX_CACHE: OnceLock<LookupIndexCache> = OnceLock::new();
+
+fn lookup_index_cache() -> &'static LookupIndexCache {
+    LOOKUP_INDEX_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn dir_mtime_nanos(path: &Path) -> Option<u128> {
+    let modified = fs::metadata(path).ok()?.modified().ok()?;
+    Some(modified.duration_since(UNIX_EPOCH).ok()?.as_nanos())
+}
+
+fn lookup_index_cache_key(root: &Path, lookup_roots: &[String]) -> LookupIndexCacheKey {
+    resolve_additional_roots(root, lookup_roots)
+        .into_iter()
+        .map(|path| {
+            let mtime = dir_mtime_nanos(&path).unwrap_or(0);
+            (path, mtime)
+        })
+        .collect()
+}
+
+/// Returns [`build_lookup_index`] for `root`/`lookup_roots`, reusing a
+/// previous scan of the same directories in this process while their
+/// modification times are unchanged.
+pub fn cached_lookup_index(root: &Path, lookup_roots: &[String]) -> Arc<ScriptIndex> {
+    let key = lookup_index_cache_key(root, lookup_roots);
+    let mut cache = lookup_index_cache()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    if let Some(index) = cache.get(&key) {
+        return Arc::clone(index);
+    }
+    let index = Arc::new(build_lookup_index(root, lookup_roots));
+    cache.insert(key, Arc::clone(&index));
+    index
 }
 
 fn index_psc_files(dirs: impl IntoIterator<Item = PathBuf>) -> ScriptIndex {
@@ -755,6 +803,31 @@ mod tests {
             1,
             "additional_script_roots still report collisions, unlike lookup roots"
         );
+    }
+
+    #[test]
+    fn cached_lookup_index_rebuilds_after_a_new_file_is_added() {
+        let root = tempfile::tempdir().expect("failed to create temp dir");
+        let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+        write_file(vanilla.path(), "Actor.psc");
+        let lookup = vec![vanilla.path().to_string_lossy().into_owned()];
+
+        let first = cached_lookup_index(root.path(), &lookup);
+        assert!(first.contains_key("actor.psc"));
+        assert!(!first.contains_key("form.psc"));
+
+        write_file(vanilla.path(), "Form.psc");
+        let later = std::time::SystemTime::now() + std::time::Duration::from_secs(2);
+        if let Ok(dir) = fs::File::open(vanilla.path()) {
+            let _ = dir.set_modified(later);
+        }
+
+        let second = cached_lookup_index(root.path(), &lookup);
+        assert!(
+            second.contains_key("form.psc"),
+            "a newer directory mtime must invalidate the cached lookup index"
+        );
+        assert!(!std::sync::Arc::ptr_eq(&first, &second));
     }
 
     #[test]

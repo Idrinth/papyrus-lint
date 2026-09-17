@@ -1,11 +1,77 @@
 //! Locate, parse, and cache a script on demand for a [`super::FunctionTable`].
 
-use std::path::PathBuf;
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
+use std::time::UNIX_EPOCH;
 
 use super::FunctionTable;
 use crate::script_functions::ScriptFunctions;
 use crate::script_locator::{find_psc_file, find_psc_file_in_index, find_psc_file_in_lookup_roots};
 use crate::source_encoding::read_psc_source;
+
+/// Whether a resolved path came from the project's own search roots (or
+/// known-scripts map) or from analysis-only [`FunctionTable::with_lookup_roots`]
+/// directories.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ScriptOrigin {
+    Project,
+    Lookup,
+}
+
+/// Process-wide cache of scripts loaded from lookup roots, keyed by path
+/// and valid only while that file's mtime is unchanged. Lets a later
+/// `FunctionTable` in the same process (desktop per-file lint commands)
+/// skip re-reading and re-parsing vanilla game sources already resolved
+/// earlier in the session, matching how the on-disk [`crate::ast_cache`]
+/// already reuses a previous CLI invocation.
+struct LookupScriptEntry {
+    mtime_secs: u64,
+    script: Option<ScriptFunctions>,
+}
+
+fn lookup_script_cache() -> &'static Mutex<HashMap<PathBuf, LookupScriptEntry>> {
+    static CACHE: OnceLock<Mutex<HashMap<PathBuf, LookupScriptEntry>>> = OnceLock::new();
+    CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn file_mtime_secs(path: &Path) -> Option<u64> {
+    let modified = std::fs::metadata(path).ok()?.modified().ok()?;
+    Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
+}
+
+fn cached_lookup_script(path: &Path, mtime_secs: u64) -> Option<Option<ScriptFunctions>> {
+    let cache = lookup_script_cache()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    cache
+        .get(path)
+        .and_then(|entry| (entry.mtime_secs == mtime_secs).then(|| entry.script.clone()))
+}
+
+fn store_lookup_script(path: PathBuf, mtime_secs: u64, script: Option<ScriptFunctions>) {
+    let mut cache = lookup_script_cache()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    cache.insert(path, LookupScriptEntry { mtime_secs, script });
+}
+
+/// Parse `path` through the on-disk [`crate::ast_cache`], the same path
+/// linted source files take via `ast_cache::ensure_primed`.
+fn load_script_functions(path: &Path) -> Option<ScriptFunctions> {
+    let source = read_psc_source(path).ok()?;
+    let parsed = if let Some(cached) = crate::ast_cache::get(path, &source) {
+        cached
+    } else {
+        let parsed = papyrus_parser::parse(&source).ok()?;
+        crate::ast_cache::put(path, &source, &parsed);
+        if let Ok(tokens) = papyrus_parser::tokenize(&source) {
+            crate::ast_cache::put_tokens(path, &source, &tokens);
+        }
+        parsed
+    };
+    Some(ScriptFunctions::from_script(&parsed, &source))
+}
 
 impl FunctionTable {
     /// Whether a script named `type_name` can be located at all: either
@@ -25,6 +91,11 @@ impl FunctionTable {
     }
 
     fn resolve_script_path(&self, name_lower: &str) -> Option<PathBuf> {
+        self.resolve_script_path_kind(name_lower)
+            .map(|(path, _)| path)
+    }
+
+    fn resolve_script_path_kind(&self, name_lower: &str) -> Option<(PathBuf, ScriptOrigin)> {
         let primary = match &self.known_scripts {
             Some(known) => known.get(&name_lower.to_ascii_lowercase()).cloned(),
             None => match &self.script_index {
@@ -32,7 +103,11 @@ impl FunctionTable {
                 None => find_psc_file(&self.root, name_lower, &self.additional_roots),
             },
         };
-        primary.or_else(|| self.resolve_lookup_script_path(name_lower))
+        if let Some(path) = primary {
+            return Some((path, ScriptOrigin::Project));
+        }
+        self.resolve_lookup_script_path(name_lower)
+            .map(|path| (path, ScriptOrigin::Lookup))
     }
 
     fn resolve_lookup_script_path(&self, name_lower: &str) -> Option<PathBuf> {
@@ -56,7 +131,9 @@ impl FunctionTable {
     /// script's content and modification time haven't changed since it was
     /// last parsed, so repeatedly resolving the same cross-script lookup
     /// (across separate CLI invocations, or separate desktop app commands)
-    /// skips re-parsing it.
+    /// skips re-parsing it. Scripts found only under lookup roots are also
+    /// kept in a process-wide table keyed by path+mtime, so a later
+    /// `FunctionTable` in this process does not re-read them either.
     pub(super) fn ensure_loaded(&mut self, name_lower: &str) {
         if self.scripts.contains_key(name_lower) {
             return;
@@ -69,21 +146,20 @@ impl FunctionTable {
         // that by lowercasing internally before matching a directory entry,
         // so the known-scripts map (keyed by an already-lowercased stem)
         // has to do the same explicitly here.
-        let resolved_path = self.resolve_script_path(name_lower);
+        let resolved = self.resolve_script_path_kind(name_lower);
 
-        let script = resolved_path.and_then(|path| {
-            let source = read_psc_source(&path).ok()?;
-            let parsed = if let Some(cached) = crate::ast_cache::get(&path, &source) {
-                cached
-            } else {
-                let parsed = papyrus_parser::parse(&source).ok()?;
-                crate::ast_cache::put(&path, &source, &parsed);
-                if let Ok(tokens) = papyrus_parser::tokenize(&source) {
-                    crate::ast_cache::put_tokens(&path, &source, &tokens);
+        let script = resolved.and_then(|(path, origin)| {
+            if origin == ScriptOrigin::Lookup {
+                if let Some(mtime_secs) = file_mtime_secs(&path) {
+                    if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
+                        return cached;
+                    }
+                    let loaded = load_script_functions(&path);
+                    store_lookup_script(path, mtime_secs, loaded.clone());
+                    return loaded;
                 }
-                parsed
-            };
-            Some(ScriptFunctions::from_script(&parsed, &source))
+            }
+            load_script_functions(&path)
         });
 
         self.scripts.insert(name_lower.to_string(), script);

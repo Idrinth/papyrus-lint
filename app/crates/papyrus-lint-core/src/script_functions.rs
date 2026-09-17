@@ -102,6 +102,7 @@ impl Member {
 /// The functions and properties declared directly on one script, plus the
 /// name of the script it extends (if any), so a lookup can walk the
 /// inheritance chain.
+#[derive(Clone)]
 pub(crate) struct ScriptFunctions {
     pub(crate) extends: Option<String>,
     pub(crate) functions: HashMap<String, FunctionSignature>,

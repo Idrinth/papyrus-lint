@@ -21,7 +21,7 @@ use std::sync::Arc;
 use crate::script_functions::ScriptFunctions;
 pub use crate::script_functions::{FunctionSignature, Member, PropertySignature};
 
-use crate::script_locator::{build_lookup_index, ScriptIndex};
+use crate::script_locator::{cached_lookup_index, ScriptIndex};
 
 mod ancestry;
 mod external;
@@ -114,7 +114,11 @@ impl FunctionTable {
     /// `conflicting_script_versions`.
     pub fn with_lookup_roots(mut self, lookup_roots: Vec<String>) -> Self {
         if !lookup_roots.is_empty() {
-            self.lookup_index = Some(Arc::new(build_lookup_index(&self.root, &lookup_roots)));
+            // Walked once per unique directory fingerprint and reused for
+            // later tables (desktop per-file commands, subsequent lookups
+            // in the same process), the same way `with_script_index` reuses
+            // a scan of the project's own source directories.
+            self.lookup_index = Some(cached_lookup_index(&self.root, &lookup_roots));
         }
         self.lookup_roots = lookup_roots;
         self
