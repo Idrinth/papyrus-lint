@@ -1,4 +1,5 @@
-"""Coverage report parsing and formatting for the coverage.html subpage.
+"""Coverage report parsing, formatting, and the coverage.html subpage
+itself for the Pages builder.
 
 Loads .github/scripts/coverage_summary.py by file path (see
 load_coverage_summary) so the breakdown reuses its MODULES grouping and
@@ -8,7 +9,11 @@ parse_lcov_files/normalize_source_path add the per-file granularity
 coverage_summary.py itself doesn't need, by parsing a directory of
 downloaded lcov.info reports directly and stripping a CI runner's
 absolute checkout prefix off each lcov SF: path so files display
-relative to the repository root.
+relative to the repository root. build_coverage_page (extracted out of
+pages/build.py, which was getting long and crowded with unrelated
+site-assembly concerns, with no behavior change) then assembles that
+breakdown into coverage.html, falling back to a "data unavailable"
+placeholder when no --coverage-dir was passed to the build.
 """
 
 from __future__ import annotations
@@ -17,7 +22,13 @@ import html
 import importlib.util
 from pathlib import Path
 
+try:
+    from pages.site_chrome import finalize_page, render_shared_components
+except ImportError:  # running as pages/build.py
+    from site_chrome import finalize_page, render_shared_components
+
 ROOT = Path(__file__).resolve().parent.parent
+PAGES_DIR = Path(__file__).resolve().parent
 
 # .github/scripts isn't an importable package (its directory name starts
 # with a dot), so this module loads it by file path instead. This reuses
@@ -171,3 +182,17 @@ def build_coverage_content(coverage_dir: Path, coverage_summary) -> str:
         f"({total_hit}/{total_found}).</p>",
     )
     return "\n".join(out)
+
+
+def build_coverage_page(out_dir: Path, coverage_dir: Path | None, version: str) -> None:
+    template = (PAGES_DIR / "coverage.template.html").read_text(encoding="utf-8")
+    if "<!--COVERAGE_CONTENT-->" not in template:
+        raise SystemExit("coverage.template.html: missing marker <!--COVERAGE_CONTENT-->")
+    if coverage_dir is not None and coverage_dir.is_dir():
+        content = build_coverage_content(coverage_dir, load_coverage_summary())
+    else:
+        content = '<p class="section-intro">Coverage data isn\'t available for this build.</p>'
+    page = template.replace("<!--COVERAGE_CONTENT-->", content)
+    page = page.replace("<!--COVERAGE_VERSION-->", html.escape(version) if version else "unreleased")
+    page = render_shared_components(page, "", version)
+    (out_dir / "coverage.html").write_text(finalize_page(page), encoding="utf-8")

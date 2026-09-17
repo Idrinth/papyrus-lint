@@ -1,4 +1,11 @@
-"""Tests for the dependency-free GitHub Pages site builder."""
+"""Tests for the GitHub Pages site builder's own orchestration: the
+homepage, videos/imprint pages, the sitemap/robots.txt, and the full
+build() pipeline that assembles every subpage. Concern-specific pieces
+extracted out of pages/build.py have their own dedicated test modules:
+pages/test_css.py, pages/test_site_assets.py, pages/test_site_chrome.py,
+pages/test_docs_pages.py, pages/test_rules_page.py, and (for the coverage
+subpage) pages/test_coverage_report.py.
+"""
 
 from __future__ import annotations
 
@@ -9,50 +16,14 @@ import unittest
 from io import StringIO
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from urllib.error import HTTPError, URLError
 
 from PIL import Image
 
 from pages import build as page_builder
+from pages import docs_pages, rules_page, site_assets, site_chrome
 
 
-class PublishedSchemaTest(unittest.TestCase):
-    def test_ai_export_rule_details_expose_auto_fixability(self) -> None:
-        schema = json.loads(
-            (page_builder.DOCS_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
-        )
-
-        rule_detail = schema["$defs"]["ruleDetail"]
-        self.assertIn("auto_fixable", rule_detail["required"])
-        self.assertEqual(rule_detail["properties"]["auto_fixable"]["type"], "boolean")
-
-    def test_ai_export_external_diagnostic_fields_require_each_other(self) -> None:
-        schema = json.loads(
-            (page_builder.DOCS_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
-        )
-
-        self.assertEqual(
-            schema["$defs"]["diagnostic"]["dependentRequired"],
-            {"external": ["source"], "source": ["external"]},
-        )
-
-    def test_ai_export_space_indentation_requires_positive_width(self) -> None:
-        schema = json.loads(
-            (page_builder.DOCS_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
-        )
-
-        configuration = schema["$defs"]["configuration"]
-        self.assertEqual(
-            configuration["if"],
-            {"properties": {"indentation": {"const": "space"}}},
-        )
-        self.assertEqual(
-            configuration["then"],
-            {"properties": {"indentation_width": {"minimum": 1}}},
-        )
-
-
-class PageHelpersTest(unittest.TestCase):
+class RenderVideosListTest(unittest.TestCase):
     def test_render_videos_list_embeds_each_video_and_escapes_title(self) -> None:
         result = page_builder.render_videos_list(
             [{"id": 'abc123?feature="test"&safe=yes', "title": '1.0.0 <overview> & "tour"'}]
@@ -82,541 +53,6 @@ class PageHelpersTest(unittest.TestCase):
 
     def test_render_videos_list_handles_an_empty_catalog(self) -> None:
         self.assertEqual(page_builder.render_videos_list([]), "")
-
-    def test_render_shared_components_uses_one_source_with_page_relative_links(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            includes_dir = Path(directory)
-            (includes_dir / "header.html").write_text(
-                '<header><a href="<!--ROOT_PATH-->index.html">Home</a></header>', encoding="utf-8"
-            )
-            (includes_dir / "footer.html").write_text(
-                "<footer><!--VERSION--></footer>", encoding="utf-8"
-            )
-            with patch.object(page_builder, "INCLUDES_DIR", includes_dir):
-                result = page_builder.render_shared_components(
-                    "<!--SITE_HEADER--><main>Docs</main><!--SITE_FOOTER-->", "../", "v1.2&3"
-                )
-
-        self.assertEqual(
-            result,
-            '<header><a href="../index.html">Home</a></header>'
-            "<main>Docs</main><footer>v1.2&amp;3</footer>",
-        )
-
-    def test_render_shared_components_rejects_a_partially_shared_shell(self) -> None:
-        with self.assertRaisesRegex(SystemExit, "missing shared component marker <!--SITE_FOOTER-->"):
-            page_builder.render_shared_components("<!--SITE_HEADER--><main></main>", "", "")
-
-    def test_render_shared_components_rejects_a_footer_without_a_header(self) -> None:
-        with self.assertRaisesRegex(SystemExit, "missing shared component marker <!--SITE_HEADER-->"):
-            page_builder.render_shared_components("<main></main><!--SITE_FOOTER-->", "", "")
-
-    def test_render_shared_components_supports_fragment_only_templates(self) -> None:
-        result = page_builder.render_shared_components(
-            "<title><!--VERSION--></title><a href=\"<!--SITE_URL-->\">Site</a>",
-            "../",
-            "",
-        )
-
-        self.assertEqual(
-            result,
-            f'<title>unreleased</title><a href="{page_builder.SITE_URL}">Site</a>',
-        )
-
-    def test_render_shared_components_replaces_placeholders_inside_includes(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            includes_dir = Path(directory)
-            (includes_dir / "header.html").write_text(
-                '<a href="<!--SITE_URL-->"><!--ROOT_PATH--></a>', encoding="utf-8"
-            )
-            (includes_dir / "footer.html").write_text(
-                "<footer><!--FUNDING_LINKS--><!--VERSION--></footer>", encoding="utf-8"
-            )
-            with (
-                patch.object(page_builder, "INCLUDES_DIR", includes_dir),
-                patch.object(page_builder, "SITE_URL", "https://example.test/"),
-                patch.object(page_builder, "render_funding_links", return_value="<li>Support</li>"),
-            ):
-                result = page_builder.render_shared_components(
-                    "<!--SITE_HEADER--><!--SITE_FOOTER-->", "../", 'v1<&"'
-                )
-
-        self.assertEqual(
-            result,
-            '<a href="https://example.test/">../</a>'
-            "<footer><li>Support</li>v1&lt;&amp;&quot;</footer>",
-        )
-
-    def test_parse_funding_values_accepts_scalars_lists_quotes_and_empty_values(self) -> None:
-        self.assertEqual(page_builder.parse_funding_values(" sponsor "), ["sponsor"])
-        self.assertEqual(
-            page_builder.parse_funding_values("['first sponsor', \"second\", '']"),
-            ["first sponsor", "second"],
-        )
-        self.assertEqual(page_builder.parse_funding_values("   "), [])
-
-    def test_parse_funding_values_ignores_empty_inline_list_entries(self) -> None:
-        self.assertEqual(
-            page_builder.parse_funding_values("[first, , '', \"second account\"]"),
-            ["first", "second account"],
-        )
-
-    def test_render_funding_links_reads_provider_and_custom_links(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            funding_file = Path(directory) / "FUNDING.yml"
-            funding_file.write_text(
-                "github: [first sponsor, second]\ncustom: https://www.paypal.com/donate?id=1&campaign=two\n",
-                encoding="utf-8",
-            )
-
-            result = page_builder.render_funding_links(funding_file)
-
-        self.assertIn('href="https://github.com/sponsors/first%20sponsor"', result)
-        self.assertIn('href="https://github.com/sponsors/second"', result)
-        self.assertIn(">GitHub Sponsors</a>", result)
-        self.assertIn('href="https://www.paypal.com/donate?id=1&amp;campaign=two"', result)
-        self.assertIn(">PayPal</a>", result)
-
-    def test_render_funding_links_rejects_an_invalid_custom_url(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            funding_file = Path(directory) / "FUNDING.yml"
-            funding_file.write_text("custom: javascript:alert(1)\n", encoding="utf-8")
-
-            with self.assertRaisesRegex(SystemExit, "must be an HTTP\\(S\\) URL"):
-                page_builder.render_funding_links(funding_file)
-
-    def test_render_funding_links_rejects_custom_urls_without_a_web_host(self) -> None:
-        invalid_urls = ("https:///missing-host", "mailto:maintainer@example.test")
-
-        for invalid_url in invalid_urls:
-            with self.subTest(url=invalid_url), tempfile.TemporaryDirectory() as directory:
-                funding_file = Path(directory) / "FUNDING.yml"
-                funding_file.write_text(f"custom: {invalid_url}\n", encoding="utf-8")
-
-                with self.assertRaisesRegex(
-                    SystemExit,
-                    f"custom funding link must be an HTTP\\(S\\) URL: {invalid_url}",
-                ):
-                    page_builder.render_funding_links(funding_file)
-
-    def test_render_funding_links_skips_comments_malformed_lines_and_unknown_providers(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            funding_file = Path(directory) / "FUNDING.yml"
-            funding_file.write_text(
-                "# Maintainer funding\nmalformed line\nunknown: account\ngithub: valid-user\n",
-                encoding="utf-8",
-            )
-
-            result = page_builder.render_funding_links(funding_file)
-
-        self.assertEqual(result.count("<li>"), 1)
-        self.assertIn("https://github.com/sponsors/valid-user", result)
-        self.assertNotIn("unknown", result)
-
-    def test_render_funding_links_supports_each_named_provider(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            funding_file = Path(directory) / "FUNDING.yml"
-            funding_file.write_text(
-                "\n".join(f"{provider}: account/name" for provider in page_builder.FUNDING_PROVIDERS),
-                encoding="utf-8",
-            )
-
-            result = page_builder.render_funding_links(funding_file)
-
-        self.assertEqual(result.count("<li>"), len(page_builder.FUNDING_PROVIDERS))
-        for label, url_template in page_builder.FUNDING_PROVIDERS.values():
-            self.assertIn(f">{label}</a>", result)
-            self.assertIn(url_template.format("account%2Fname"), result)
-
-    def test_render_funding_links_labels_non_paypal_custom_urls_generically(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            funding_file = Path(directory) / "FUNDING.yml"
-            funding_file.write_text("custom: https://example.test/support\n", encoding="utf-8")
-
-            result = page_builder.render_funding_links(funding_file)
-
-        self.assertIn(">Support this project</a>", result)
-        self.assertIn('href="https://example.test/support"', result)
-
-    def test_render_funding_links_encodes_provider_handles_as_path_segments(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            funding_file = Path(directory) / "FUNDING.yml"
-            funding_file.write_text("github: user/name\n", encoding="utf-8")
-
-            result = page_builder.render_funding_links(funding_file)
-
-        self.assertIn("https://github.com/sponsors/user%2Fname", result)
-        self.assertNotIn("sponsors/user/name", result)
-
-    def test_resolve_doc_href_handles_docs_repository_and_external_links(self) -> None:
-        with (
-            patch.object(page_builder, "DOC_FILENAME_TO_SLUG", {"guide.md": "guide"}),
-            patch.object(page_builder, "GITHUB_BLOB_BASE", "https://example.test/repository"),
-        ):
-            self.assertEqual(page_builder.resolve_doc_href("guide.md"), "guide.html")
-            self.assertEqual(
-                page_builder.resolve_doc_href("../rules/example.yaml"),
-                "https://example.test/repository/rules/example.yaml",
-            )
-            self.assertEqual(page_builder.resolve_doc_href("https://example.com"), "https://example.com")
-
-    def test_resolve_doc_href_only_rewrites_a_leading_parent_segment(self) -> None:
-        with patch.object(page_builder, "GITHUB_BLOB_BASE", "https://example.test/repository"):
-            self.assertEqual(
-                page_builder.resolve_doc_href("../docs/guide.md#setup"),
-                "https://example.test/repository/docs/guide.md#setup",
-            )
-            self.assertEqual(page_builder.resolve_doc_href("guide/../notes.md"), "guide/../notes.md")
-
-class DocsRenderingTest(unittest.TestCase):
-    def test_load_doc_source_downloads_remote_documentation(self) -> None:
-        response = MagicMock()
-        response.__enter__.return_value.read.return_value = b"# Current remote README\n"
-
-        with patch.object(page_builder, "urlopen", return_value=response) as urlopen:
-            source = page_builder.load_doc_source(
-                {"content_url": "https://example.test/README.md"}
-            )
-
-        self.assertEqual(source, "# Current remote README\n")
-        request = urlopen.call_args.args[0]
-        self.assertEqual(request.full_url, "https://example.test/README.md")
-        self.assertEqual(request.get_header("User-agent"), "papyrus-lint-pages-builder")
-        self.assertEqual(urlopen.call_args.kwargs, {"timeout": 30})
-
-    def test_load_doc_source_reports_remote_download_failure(self) -> None:
-        with (
-            patch.object(page_builder, "urlopen", side_effect=URLError("offline")),
-            self.assertRaisesRegex(
-                SystemExit,
-                "Could not download documentation from https://example.test/README.md",
-            ),
-        ):
-            page_builder.load_doc_source(
-                {"content_url": "https://example.test/README.md"}
-            )
-
-    def test_load_doc_source_reports_an_http_error_with_the_source_url(self) -> None:
-        error = HTTPError(
-            "https://example.test/missing.md",
-            404,
-            "Not Found",
-            hdrs=None,
-            fp=None,
-        )
-
-        with (
-            patch.object(page_builder, "urlopen", side_effect=error),
-            self.assertRaisesRegex(
-                SystemExit,
-                "Could not download documentation from https://example.test/missing.md: HTTP Error 404",
-            ),
-        ):
-            page_builder.load_doc_source(
-                {"content_url": "https://example.test/missing.md"}
-            )
-
-    def test_load_doc_source_reports_remote_timeout(self) -> None:
-        with (
-            patch.object(page_builder, "urlopen", side_effect=TimeoutError("timed out")),
-            self.assertRaisesRegex(
-                SystemExit,
-                "Could not download documentation from https://example.test/README.md: timed out",
-            ),
-        ):
-            page_builder.load_doc_source(
-                {"content_url": "https://example.test/README.md"}
-            )
-
-    def test_load_doc_source_reports_invalid_remote_utf8(self) -> None:
-        response = MagicMock()
-        response.__enter__.return_value.read.return_value = b"\xff"
-
-        with (
-            patch.object(page_builder, "urlopen", return_value=response),
-            self.assertRaisesRegex(SystemExit, "Could not download documentation"),
-        ):
-            page_builder.load_doc_source({"content_url": "https://example.test/README.md"})
-
-    def test_load_doc_source_reads_local_documentation(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "guide.md").write_text("# Local guide\n", encoding="utf-8")
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                source = page_builder.load_doc_source({"filename": "guide.md"})
-
-        self.assertEqual(source, "# Local guide\n")
-
-    def test_load_doc_source_propagates_a_missing_local_document(self) -> None:
-        with (
-            tempfile.TemporaryDirectory() as directory,
-            patch.object(page_builder, "DOCS_DIR", Path(directory)),
-            self.assertRaises(FileNotFoundError),
-        ):
-            page_builder.load_doc_source({"filename": "missing.md"})
-
-    def test_raw_github_link_escapes_a_custom_source_url(self) -> None:
-        result = page_builder.raw_github_link(
-            {
-                "source_url": 'https://example.test/source?label="docs"&mode=raw',
-            }
-        )
-
-        self.assertIn(
-            'href="https://example.test/source?label=&quot;docs&quot;&amp;mode=raw"', result
-        )
-        self.assertNotIn('label="docs"', result)
-
-    def test_render_doc_renders_markdown_metadata_links_and_source(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "guide.md").write_text(
-                "# Guide\n\nRead [`other`](other.md) before starting.\n",
-                encoding="utf-8",
-            )
-            doc = {
-                "filename": "guide.md",
-                "slug": "guide",
-                "kind": "markdown",
-                "source_url": "https://example.test/source",
-            }
-
-            with (
-                patch.object(page_builder, "DOCS_DIR", docs_dir),
-                patch.object(page_builder, "DOC_FILENAME_TO_SLUG", {"other.md": "other"}),
-            ):
-                title, description, content = page_builder.render_doc(doc)
-
-        self.assertEqual(title, "Guide")
-        self.assertEqual(description, "Read other before starting.")
-        self.assertIn('<a href="other.html"><code>other</code></a>', content)
-        self.assertIn('href="https://example.test/source"', content)
-
-    def test_render_doc_uses_filename_when_markdown_has_no_title(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "notes.md").write_text("Opening paragraph.\n", encoding="utf-8")
-            doc = {"filename": "notes.md", "slug": "notes", "kind": "markdown"}
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                title, description, _ = page_builder.render_doc(doc)
-
-        self.assertEqual(title, "notes.md")
-        self.assertEqual(description, "Opening paragraph.")
-
-    def test_render_doc_keeps_a_non_title_heading_in_the_markdown_body(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "notes.md").write_text(
-                "## Overview\n\nOpening paragraph.\n", encoding="utf-8"
-            )
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                title, description, content = page_builder.render_doc(
-                    {"filename": "notes.md", "slug": "notes", "kind": "markdown"}
-                )
-
-        self.assertEqual(title, "notes.md")
-        self.assertEqual(description, "Opening paragraph.")
-        self.assertIn("<h2>Overview</h2>", content)
-
-    def test_render_doc_handles_an_empty_markdown_file(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "empty.md").write_text("", encoding="utf-8")
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                title, description, content = page_builder.render_doc(
-                    {"filename": "empty.md", "slug": "empty", "kind": "markdown"}
-                )
-
-        self.assertEqual(title, "empty.md")
-        self.assertEqual(description, "")
-        self.assertIn("View raw source on GitHub", content)
-
-    def test_render_doc_uses_default_repository_source_link(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "notes.md").write_text("# Notes\n", encoding="utf-8")
-
-            with (
-                patch.object(page_builder, "DOCS_DIR", docs_dir),
-                patch.object(page_builder, "GITHUB_BLOB_BASE", "https://example.test/repo"),
-            ):
-                _, description, content = page_builder.render_doc(
-                    {"filename": "notes.md", "slug": "notes", "kind": "markdown"}
-                )
-
-        self.assertEqual(description, "")
-        self.assertIn('href="https://example.test/repo/docs/notes.md"', content)
-
-    def test_render_doc_renders_json_schema_and_plain_text(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "schema.json").write_text(
-                '{"title":"Report <schema>","description":"A & B","type":"object"}',
-                encoding="utf-8",
-            )
-            (docs_dir / "config.yaml").write_text("setting: <value>\n", encoding="utf-8")
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                schema = page_builder.render_doc(
-                    {"filename": "schema.json", "slug": "schema", "kind": "json-schema"}
-                )
-                plain = page_builder.render_doc(
-                    {
-                        "filename": "config.yaml",
-                        "slug": "config",
-                        "kind": "yaml",
-                        "title": "Configuration",
-                        "description": "All settings",
-                    }
-                )
-
-        self.assertEqual(schema[:2], ("Report <schema>", "A & B"))
-        self.assertIn("Report &lt;schema&gt;", schema[2])
-        self.assertEqual(plain[:2], ("Configuration", "All settings"))
-        self.assertIn("setting: &lt;value&gt;", plain[2])
-
-    def test_render_doc_escapes_plain_text_and_appends_the_raw_source_link(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "example.bbcode").write_text(
-                '[url="javascript:alert(1)"]<unsafe> & text[/url]', encoding="utf-8"
-            )
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                title, description, content = page_builder.render_doc(
-                    {
-                        "filename": "example.bbcode",
-                        "slug": "example",
-                        "kind": "bbcode",
-                        "title": "Example source",
-                        "description": "A safe preview",
-                    }
-                )
-
-        self.assertEqual((title, description), ("Example source", "A safe preview"))
-        self.assertIn("&lt;unsafe&gt; &amp; text", content)
-        self.assertNotIn("<unsafe>", content)
-        self.assertIn("View raw source on GitHub", content)
-
-    def test_render_doc_uses_filename_defaults_for_schema_metadata(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "schema.json").write_text('{"type":"string"}', encoding="utf-8")
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                title, description, content = page_builder.render_doc(
-                    {"filename": "schema.json", "slug": "schema", "kind": "json-schema"}
-                )
-
-        self.assertEqual(title, "schema.json")
-        self.assertEqual(description, "")
-        self.assertIn('<pre class="code-block language-json" tabindex="0">', content)
-        self.assertIn("type", content)
-        self.assertIn("string", content)
-
-    def test_render_doc_prefers_a_short_configured_schema_description(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "schema.json").write_text(
-                '{"title":"Schema","description":"A very long schema description."}',
-                encoding="utf-8",
-            )
-            doc = {
-                "filename": "schema.json",
-                "slug": "schema",
-                "kind": "json-schema",
-                "description": "Short page summary.",
-            }
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                title, description, content = page_builder.render_doc(doc)
-
-        self.assertEqual((title, description), ("Schema", "Short page summary."))
-        self.assertIn("A very long schema description.", content)
-
-    def test_render_doc_propagates_invalid_json_schema_input(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "schema.json").write_text("{not valid json", encoding="utf-8")
-
-            with (
-                patch.object(page_builder, "DOCS_DIR", docs_dir),
-                self.assertRaisesRegex(ValueError, "Expecting property name"),
-            ):
-                page_builder.render_doc(
-                    {"filename": "schema.json", "slug": "schema", "kind": "json-schema"}
-                )
-
-    def test_render_docs_list_items_escapes_content_and_applies_prefix(self) -> None:
-        docs = [{"slug": "guide", "blurb": "Use <carefully> & safely"}]
-        results = {"guide": {"title": "Guide & reference"}}
-
-        with patch.object(page_builder, "DOCS", docs):
-            output = page_builder.render_docs_list_items(results, "docs/")
-
-        self.assertIn('href="docs/guide.html"', output)
-        self.assertIn("Guide &amp; reference", output)
-        self.assertIn("Use &lt;carefully&gt; &amp; safely", output)
-
-    def test_render_docs_list_items_preserves_configured_document_order(self) -> None:
-        docs = [
-            {"slug": "second", "blurb": "Second blurb"},
-            {"slug": "first", "blurb": "First blurb"},
-        ]
-        results = {
-            "first": {"title": "First"},
-            "second": {"title": "Second"},
-        }
-
-        with patch.object(page_builder, "DOCS", docs):
-            output = page_builder.render_docs_list_items(results, "")
-
-        self.assertLess(output.index("second.html"), output.index("first.html"))
-        self.assertEqual(output.count("<li>"), 2)
-
-    def test_build_doc_pages_writes_detail_and_index_pages(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            (pages_dir / "docs.template.html").write_text(
-                "<title><!--DOC_TITLE--></title>"
-                '<meta content="<!--DOC_DESCRIPTION-->">'
-                '<link href="<!--DOC_URL-->">'
-                "<main><!--DOC_CONTENT--></main>",
-                encoding="utf-8",
-            )
-            docs = [{"slug": "guide", "blurb": "A useful guide"}]
-            results = {
-                "guide": {
-                    "title": "Guide & help",
-                    "description": 'Use "care" & attention',
-                    "content_html": "<p>Contents</p>",
-                }
-            }
-
-            with (
-                patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "DOCS", docs),
-                patch.object(page_builder, "SITE_URL", "https://example.test/"),
-            ):
-                page_builder.build_doc_pages(out_dir, results)
-
-            detail = (out_dir / "docs" / "guide.html").read_text(encoding="utf-8")
-            index = (out_dir / "docs" / "index.html").read_text(encoding="utf-8")
-
-        self.assertIn("<title>Guide &amp; help</title>", detail)
-        self.assertIn('content="Use &quot;care&quot; &amp; attention"', detail)
-        self.assertIn('href="https://example.test/docs/guide.html"', detail)
-        self.assertIn("<p>Contents</p>", detail)
-        self.assertIn('href="guide.html"', index)
-        self.assertIn("A useful guide", index)
 
 
 class VideosPageTest(unittest.TestCase):
@@ -694,8 +130,8 @@ class VideosPageTest(unittest.TestCase):
             with (
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "VIDEOS_FILE", videos_file),
-                patch.object(page_builder, "INCLUDES_DIR", includes_dir),
-                patch.object(page_builder, "render_funding_links", return_value=""),
+                patch.object(site_chrome, "INCLUDES_DIR", includes_dir),
+                patch.object(site_chrome, "render_funding_links", return_value=""),
             ):
                 page_builder.build_videos_page(out_dir, 'v2<&"')
 
@@ -725,8 +161,8 @@ class ImprintPageTest(unittest.TestCase):
 
             with (
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "INCLUDES_DIR", includes_dir),
-                patch.object(page_builder, "render_funding_links", return_value=""),
+                patch.object(site_chrome, "INCLUDES_DIR", includes_dir),
+                patch.object(site_chrome, "render_funding_links", return_value=""),
             ):
                 page_builder.build_imprint_page(out_dir, 'v2<&"')
 
@@ -737,223 +173,8 @@ class ImprintPageTest(unittest.TestCase):
         self.assertIn("<footer>v2&lt;&amp;&quot;</footer>", output)
 
 
-class ActionPageTest(unittest.TestCase):
-    def test_build_action_page_renders_the_downloaded_readme_and_replaces_markers(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            (pages_dir / "action.template.html").write_text(
-                "<title><!--ACTION_TITLE--></title>"
-                '<meta content="<!--ACTION_DESCRIPTION-->">'
-                "<main><!--ACTION_CONTENT--></main>",
-                encoding="utf-8",
-            )
-            response = MagicMock()
-            response.__enter__.return_value.read.return_value = (
-                b"# Papyrus Lint Action\n\nLints pull requests automatically.\n"
-            )
-
-            with (
-                patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "urlopen", return_value=response),
-            ):
-                page_builder.build_action_page(out_dir, version="v1.0.0")
-
-            output = (out_dir / "action.html").read_text(encoding="utf-8")
-
-        self.assertIn("<title>Papyrus Lint Action</title>", output)
-        self.assertIn('content="Lints pull requests automatically."', output)
-        self.assertIn("<p>Lints pull requests automatically.</p>", output)
-        self.assertIn("View raw source on GitHub", output)
-        self.assertNotIn("<!--ACTION_TITLE-->", output)
-        self.assertNotIn("<!--ACTION_DESCRIPTION-->", output)
-        self.assertNotIn("<!--ACTION_CONTENT-->", output)
-
-    def test_build_action_page_rejects_a_template_missing_a_marker(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            (pages_dir / "action.template.html").write_text(
-                "<title><!--ACTION_TITLE--></title><main><!--ACTION_CONTENT--></main>",
-                encoding="utf-8",
-            )
-            response = MagicMock()
-            response.__enter__.return_value.read.return_value = b"# Title\n\nBody.\n"
-
-            with (
-                patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "urlopen", return_value=response),
-                self.assertRaisesRegex(SystemExit, "missing marker <!--ACTION_DESCRIPTION-->"),
-            ):
-                page_builder.build_action_page(out_dir)
-
-            self.assertFalse((out_dir / "action.html").exists())
-
-
-class RulesPageTest(unittest.TestCase):
-    def test_build_rules_page_renders_table_and_filters(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            rules_file = root / "rules.json"
-            rules_file.write_text(
-                json.dumps(
-                    [
-                        {
-                            "id": "example-rule",
-                            "name": "Example rule",
-                            "tags": ["correctness", "style"],
-                            "severity": "warning",
-                            "fixable": True,
-                            "description": "Flags an `example`.",
-                            "definition": "The full behavior of this rule.",
-                        }
-                    ]
-                ),
-                encoding="utf-8",
-            )
-            (pages_dir / "rules.template.html").write_text(
-                "<title>Lint rules</title><main><!--RULES_CONTENT--></main>", encoding="utf-8"
-            )
-
-            with (
-                patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "RULES_FILE", rules_file),
-            ):
-                page_builder.build_rules_page(out_dir, version="v1.0.0")
-
-            output = (out_dir / "rules.html").read_text(encoding="utf-8")
-
-        self.assertNotIn("<!--RULES_CONTENT-->", output)
-        self.assertIn('id="rule-example-rule"', output)
-        self.assertIn("Example rule", output)
-        self.assertIn('<code>example-rule</code>', output)
-        self.assertIn('data-severity="warning"', output)
-        self.assertIn('data-tags="correctness style"', output)
-        self.assertIn('data-fixable="true"', output)
-        self.assertIn('<td class="fix-yes">✓</td>', output)
-        self.assertIn("<code>example</code>", output)
-        self.assertIn("The full behavior of this rule.", output)
-        self.assertIn('value="warning"', output)
-        self.assertIn('value="correctness"', output)
-        self.assertIn('value="style"', output)
-        self.assertNotIn('value="performance"', output)
-        self.assertNotIn('value="maintainability"', output)
-        self.assertNotIn('value="error"', output)
-        self.assertNotIn('value="info"', output)
-        self.assertIn('id="rules-fixable-filter"', output)
-        self.assertIn('id="rules-count"', output)
-
-    def test_build_rules_page_rejects_a_template_missing_a_marker(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            rules_file = root / "rules.json"
-            rules_file.write_text("[]", encoding="utf-8")
-            (pages_dir / "rules.template.html").write_text("<main>No marker</main>", encoding="utf-8")
-
-            with (
-                patch.object(page_builder, "PAGES_DIR", pages_dir),
-                patch.object(page_builder, "RULES_FILE", rules_file),
-                self.assertRaisesRegex(SystemExit, "missing marker"),
-            ):
-                page_builder.build_rules_page(out_dir)
-
-            self.assertFalse((out_dir / "rules.html").exists())
-
-
 class RepositoryConfigurationTest(unittest.TestCase):
     """Keep build.py's checked-in inputs synchronized with its manifest data."""
-
-    def test_rules_json_has_unique_ids_and_known_severities_and_tags(self) -> None:
-        rules = page_builder.load_rules()
-
-        self.assertTrue(rules)
-        ids = [rule["id"] for rule in rules]
-        self.assertEqual(len(ids), len(set(ids)), "rule ids must be unique")
-        for rule in rules:
-            with self.subTest(rule=rule["id"]):
-                self.assertIn(rule["severity"], page_builder.RULE_SEVERITIES)
-                self.assertTrue(rule["tags"])
-                for tag in rule["tags"]:
-                    self.assertIn(tag, page_builder.RULE_TAGS)
-                self.assertIsInstance(rule["fixable"], bool)
-                self.assertTrue(rule["name"].strip())
-                self.assertTrue(rule["description"].strip())
-                self.assertTrue(rule["definition"].strip())
-
-    def test_document_manifest_has_unique_slugs_and_readable_local_sources(self) -> None:
-        slugs = [doc["slug"] for doc in page_builder.DOCS]
-        filenames = [doc["filename"] for doc in page_builder.DOCS if "filename" in doc]
-
-        self.assertEqual(len(slugs), len(set(slugs)), "documentation slugs must be unique")
-        self.assertEqual(len(filenames), len(set(filenames)), "documentation sources must be unique")
-        for filename in filenames:
-            source = page_builder.DOCS_DIR / filename
-            with self.subTest(filename=filename):
-                self.assertTrue(source.is_file(), f"missing documentation source: {source}")
-                self.assertTrue(source.read_text(encoding="utf-8").strip())
-
-    def test_every_local_document_renders_with_metadata_and_a_source_link(self) -> None:
-        for doc in page_builder.DOCS:
-            if "content_url" in doc:
-                continue
-            with self.subTest(slug=doc["slug"]):
-                title, description, content = page_builder.render_doc(doc)
-
-                self.assertTrue(title.strip())
-                self.assertTrue(description.strip())
-                self.assertTrue(content.strip())
-                self.assertIn("View raw source on GitHub", content)
-                self.assertIn(f"/docs/{doc['filename']}", content)
-
-    def test_copy_json_schemas_publishes_only_schemata_unchanged(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            docs_dir = root / "docs"
-            docs_dir.mkdir()
-            (docs_dir / "first.schema.json").write_bytes(b'{"title": "First"}\n')
-            (docs_dir / "second.schema.json").write_bytes(b'{\n  "type": "object"\n}\n')
-            (docs_dir / page_builder.AI_EXPORT_V1_SCHEMA).write_bytes(b'{"title": "AI export v1"}\n')
-            (docs_dir / "ordinary.json").write_bytes(b"{}\n")
-            out_dir = root / "site"
-            out_dir.mkdir()
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                page_builder.copy_json_schemas(out_dir)
-
-            self.assertEqual(
-                (out_dir / "schema" / "first.schema.json").read_bytes(),
-                b'{"title": "First"}\n',
-            )
-            self.assertEqual(
-                (out_dir / "schema" / "second.schema.json").read_bytes(),
-                b'{\n  "type": "object"\n}\n',
-            )
-            self.assertEqual(
-                (out_dir / "schema" / page_builder.AI_EXPORT_LEGACY_SCHEMA).read_bytes(),
-                b'{"title": "AI export v1"}\n',
-            )
-            self.assertFalse((out_dir / "schema" / "ordinary.json").exists())
-
-    def test_asset_manifest_points_to_files_and_modern_assets_are_a_subset(self) -> None:
-        self.assertLessEqual(page_builder.MODERN_FORMAT_ASSETS, page_builder.ASSETS.keys())
-        for output_name, source in page_builder.ASSETS.items():
-            with self.subTest(asset=output_name):
-                self.assertTrue(source.is_file(), f"missing site asset: {source}")
-                self.assertEqual(Path(output_name).suffix.lower(), source.suffix.lower())
 
     def test_video_catalog_has_unique_nonempty_ids_and_titles(self) -> None:
         videos = page_builder.json.loads(page_builder.VIDEOS_FILE.read_text(encoding="utf-8"))
@@ -994,6 +215,7 @@ class RepositoryConfigurationTest(unittest.TestCase):
                 self.assertIn("<!--SITE_FOOTER-->", template)
                 for marker in markers:
                     self.assertIn(marker, template)
+
 
 class SitemapAndRobotsTest(unittest.TestCase):
     def test_sitemap_urls_lists_the_homepage_videos_page_and_every_doc(self) -> None:
@@ -1058,7 +280,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             out_dir = Path(directory) / "site"
-            with patch.object(page_builder, "urlopen", return_value=action_response):
+            with patch.object(docs_pages, "urlopen", return_value=action_response):
                 page_builder.build(out_dir, version="v9.8.7")
 
             expected_html = {
@@ -1099,10 +321,10 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
 
             expected_schemas = {
                 path.name: path.read_bytes()
-                for path in page_builder.DOCS_DIR.glob(page_builder.SCHEMA_GLOB)
+                for path in site_assets.DOCS_DIR.glob(site_assets.SCHEMA_GLOB)
             }
-            expected_schemas[page_builder.AI_EXPORT_LEGACY_SCHEMA] = (
-                page_builder.DOCS_DIR / page_builder.AI_EXPORT_V1_SCHEMA
+            expected_schemas[site_assets.AI_EXPORT_LEGACY_SCHEMA] = (
+                site_assets.DOCS_DIR / site_assets.AI_EXPORT_V1_SCHEMA
             ).read_bytes()
             published_schemas = {
                 path.name: path.read_bytes() for path in (out_dir / "schema").glob("*.json")
@@ -1111,7 +333,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
 
             self.assertEqual(
                 (out_dir / "CNAME").read_text(encoding="utf-8"),
-                page_builder.CNAME_FILE.read_text(encoding="utf-8"),
+                site_chrome.CNAME_FILE.read_text(encoding="utf-8"),
             )
             css = (out_dir / "styles.css").read_text(encoding="utf-8")
             self.assertNotIn("@import", css)
@@ -1119,17 +341,17 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
             self.assertIn("--font-display:", css)
             self.assertIn(".button--primary", css)
             self.assertIn("@font-face", css)
-            for output_name in page_builder.ASSETS:
+            for output_name in site_assets.ASSETS:
                 with self.subTest(asset=output_name):
                     self.assertTrue((out_dir / "assets" / output_name).is_file())
-            for output_name in page_builder.MODERN_FORMAT_ASSETS:
+            for output_name in site_assets.MODERN_FORMAT_ASSETS:
                 stem = Path(output_name).stem
                 with self.subTest(modern_asset=output_name):
                     self.assertTrue((out_dir / "assets" / f"{stem}.webp").is_file())
                     self.assertTrue((out_dir / "assets" / f"{stem}.avif").is_file())
 
             self.assertTrue((out_dir / "rules.js").is_file())
-            rules = page_builder.load_rules()
+            rules = rules_page.load_rules()
             rules_output = (out_dir / "rules.html").read_text(encoding="utf-8")
             self.assertIn(str(len(rules)), rules_output)
             for rule in rules:
@@ -1231,14 +453,19 @@ PapyrusLinterCLI example.psc
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "DOCS", []),
+                patch.object(docs_pages, "DOCS", []),
+                patch.object(docs_pages, "PAGES_DIR", pages_dir),
+                patch.object(docs_pages, "urlopen", return_value=action_response),
+                patch.object(rules_page, "PAGES_DIR", pages_dir),
+                patch.object(rules_page, "RULES_FILE", rules_file),
                 patch.object(
-                    page_builder,
+                    site_assets,
                     "ASSETS",
                     {"copied.png": copied_asset, "screenshot.png": screenshot_asset},
                 ),
+                patch.object(page_builder, "ASSETS", {"copied.png": copied_asset, "screenshot.png": screenshot_asset}),
+                patch.object(site_assets, "MODERN_FORMAT_ASSETS", {"screenshot.png"}),
                 patch.object(page_builder, "MODERN_FORMAT_ASSETS", {"screenshot.png"}),
-                patch.object(page_builder, "urlopen", return_value=action_response),
-                patch.object(page_builder, "RULES_FILE", rules_file),
             ):
                 page_builder.build(out_dir, version="v1.2.3")
 
@@ -1284,7 +511,7 @@ PapyrusLinterCLI example.psc
 
             self.assertEqual(
                 (out_dir / "CNAME").read_text(encoding="utf-8"),
-                page_builder.CNAME_FILE.read_text(encoding="utf-8"),
+                site_chrome.CNAME_FILE.read_text(encoding="utf-8"),
             )
 
             robots_output = (out_dir / "robots.txt").read_text(encoding="utf-8")
@@ -1328,6 +555,7 @@ command
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "DOCS", []),
+                patch.object(docs_pages, "DOCS", []),
                 self.assertRaisesRegex(SystemExit, "missing marker <!--CLI_EXAMPLES-->"),
             ):
                 page_builder.build(root / "out")
@@ -1355,6 +583,7 @@ command
                 patch.object(page_builder, "ROOT", root),
                 patch.object(page_builder, "PAGES_DIR", pages_dir),
                 patch.object(page_builder, "DOCS", []),
+                patch.object(docs_pages, "DOCS", []),
                 self.assertRaisesRegex(SystemExit, "missing marker <!--DOCS_LIST-->"),
             ):
                 page_builder.build(root / "out")
@@ -1438,106 +667,6 @@ command
 
         build.assert_called_once_with(output_dir, "v4.5.6", coverage_dir)
         self.assertEqual(stdout.getvalue(), f"Built site into {output_dir}\n")
-
-
-class CoveragePageTest(unittest.TestCase):
-    def test_build_coverage_page_renders_a_placeholder_without_a_coverage_dir(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            (pages_dir / "coverage.template.html").write_text(
-                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
-                encoding="utf-8",
-            )
-
-            with patch.object(page_builder, "PAGES_DIR", pages_dir):
-                page_builder.build_coverage_page(out_dir, None, "")
-
-            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
-
-        self.assertIn("unreleased", output)
-        self.assertIn("Coverage data isn't available for this build.", output)
-
-    def test_build_coverage_page_uses_placeholder_for_a_missing_coverage_directory(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            (pages_dir / "coverage.template.html").write_text(
-                "<main><!--COVERAGE_CONTENT--></main>", encoding="utf-8"
-            )
-
-            with patch.object(page_builder, "PAGES_DIR", pages_dir):
-                page_builder.build_coverage_page(out_dir, root / "missing", "v2.0.0")
-
-            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
-
-        self.assertIn("Coverage data isn't available for this build.", output)
-
-    def test_build_coverage_page_renders_report_content_from_a_coverage_dir(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            coverage_dir = root / "coverage-artifacts"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            coverage_dir.mkdir()
-            (pages_dir / "coverage.template.html").write_text(
-                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
-                encoding="utf-8",
-            )
-            report_dir = coverage_dir / "rust-coverage-papyrus-parser"
-            report_dir.mkdir()
-            (report_dir / "lcov.info").write_text("SF:src/lib.rs\nLF:2\nLH:1\nend_of_record\n", encoding="utf-8")
-
-            with patch.object(page_builder, "PAGES_DIR", pages_dir):
-                page_builder.build_coverage_page(out_dir, coverage_dir, "v1.4.0")
-
-            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
-
-        self.assertIn("v1.4.0", output)
-        self.assertIn("papyrus-parser", output)
-        self.assertIn("src/lib.rs", output)
-        self.assertNotIn("Coverage data isn&#x27;t available", output)
-
-    def test_build_coverage_page_escapes_the_version_label(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            out_dir = root / "out"
-            pages_dir.mkdir()
-            out_dir.mkdir()
-            (pages_dir / "coverage.template.html").write_text(
-                "<title><!--COVERAGE_VERSION--></title><main><!--COVERAGE_CONTENT--></main>",
-                encoding="utf-8",
-            )
-
-            with patch.object(page_builder, "PAGES_DIR", pages_dir):
-                page_builder.build_coverage_page(out_dir, None, 'v1<&"')
-
-            output = (out_dir / "coverage.html").read_text(encoding="utf-8")
-
-        self.assertIn("<title>v1&lt;&amp;&quot;</title>", output)
-        self.assertNotIn('v1<&"', output)
-
-    def test_build_coverage_page_rejects_a_template_without_the_content_marker(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            pages_dir = root / "pages"
-            pages_dir.mkdir()
-            (pages_dir / "coverage.template.html").write_text("<main>No marker</main>", encoding="utf-8")
-
-            with (
-                patch.object(page_builder, "PAGES_DIR", pages_dir),
-                self.assertRaisesRegex(SystemExit, "missing marker"),
-            ):
-                page_builder.build_coverage_page(root / "out", None, "")
 
 
 if __name__ == "__main__":
