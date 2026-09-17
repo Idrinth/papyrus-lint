@@ -7,7 +7,10 @@
 //! declared by the engine rather than the script's own author, so a
 //! single-statement handler may well be forwarding to shared logic used by
 //! other events too, which is a reasonable reason for it to exist on its
-//! own. This works from the parsed AST, so a script that doesn't parse
+//! own. A `Function` named `Fragment_<digits>` (e.g. `Fragment_0`) is left
+//! alone for the same reason: CreationKit generates that name and calls it
+//! directly, so it isn't a wrapper the script's own author could inline
+//! away. This works from the parsed AST, so a script that doesn't parse
 //! cleanly is left unchecked rather than guessed at.
 //!
 //! [`repair`] handles the specific, common shape of a single-statement
@@ -36,7 +39,9 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     };
 
     all_functions(&script)
-        .filter(|function| !function.is_event && function.body.len() == 1)
+        .filter(|function| {
+            !function.is_event && function.body.len() == 1 && !is_fragment_function(&function.name)
+        })
         .map(|function| Diagnostic {
             line: function.line,
             column: 1,
@@ -59,6 +64,16 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
             .iter()
             .flat_map(|state| state.functions.iter()),
     )
+}
+
+/// Whether `name` is a CreationKit-generated fragment function name
+/// (`Fragment_` followed by one or more ASCII digits, case-insensitively),
+/// which the engine calls directly rather than the script's own author.
+fn is_fragment_function(name: &str) -> bool {
+    name.get(..9)
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case("Fragment_"))
+        && !name[9..].is_empty()
+        && name[9..].bytes().all(|byte| byte.is_ascii_digit())
 }
 
 /// Rewrites every call site of a "pure forwarding" wrapper function into a
@@ -110,7 +125,7 @@ pub fn repair(source: &str) -> String {
 
     let mut wrapped_callees: HashMap<String, String> = HashMap::new();
     for function in all_functions(&script) {
-        if function.is_event || function.body.len() != 1 {
+        if function.is_event || function.body.len() != 1 || is_fragment_function(&function.name) {
             continue;
         }
         let key = function.name.to_lowercase();
