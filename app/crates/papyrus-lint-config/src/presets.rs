@@ -371,7 +371,7 @@ fn save_user_preset_under(
         return Err(format!("a preset named '{trimmed}' already exists"));
     }
 
-    let yaml = papyrus_lints::config::to_yaml(config).map_err(|err| err.to_string())?;
+    let yaml = crate::lint_config_to_yaml(config)?;
     fs::write(&path, with_field_comments(&yaml)).map_err(|err| err.to_string())?;
     Ok(path)
 }
@@ -550,7 +550,7 @@ fn initialize_config_with_base(
     seed_lookup_script_roots(&mut base);
 
     let path = dir.join(CONFIG_FILE_NAMES[0]);
-    let lint_yaml = papyrus_lints::config::to_yaml(&base.lint).map_err(|err| err.to_string())?;
+    let lint_yaml = crate::lint_config_to_yaml(&base.lint)?;
     let yaml = format!("{}{lint_yaml}", non_lint_yaml(&base)?);
     let mut file = OpenOptions::new()
         .write(true)

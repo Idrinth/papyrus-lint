@@ -89,7 +89,8 @@
 │       │       ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
 │       │       ├── lib_tests.rs               # lib.rs's unit tests
 │       │       ├── config.rs                  # Config type (YAML-deserializable) passed
-│       │       │                              # to every check/fix job
+│       │       │                              # to every check/fix job; YAML file I/O
+│       │       │                              # lives in papyrus-lint-config
 │       │       ├── config_tests.rs            # config.rs's unit tests
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
 │       │       ├── trailing_whitespace_tests.rs # trailing_whitespace.rs's unit tests
