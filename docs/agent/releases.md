@@ -15,6 +15,15 @@ fill in that freshly-regenerated file's `<COVERED_LINES>`/`<TOTAL_LINES>`/
 `nexuspage-<tag>.bbcode` to the GitHub release (creating it if it doesn't
 already exist).
 
+After the platform `release` matrix finishes, a separate `container` job
+downloads the attached `PapyrusLinterCLI-linux` binary, builds
+`docker/Dockerfile`, and publishes the Alpine-based CLI image to GitHub
+Container Registry as both
+`ghcr.io/idrinth/papyrus-lint:<tag>` and `ghcr.io/idrinth/papyrus-lint:latest`.
+It authenticates with the workflow's `GITHUB_TOKEN` and therefore needs
+`packages: write` permission; the image itself is not attached to the GitHub
+release or included in release-asset signing and VirusTotal jobs.
+
 A separate release job syncs the
 tag's version into `app/src-tauri/tauri.conf.json`, `app/package.json`,
 `app/src-tauri/Cargo.toml`, and all six reusable crates' `Cargo.toml` files, then
@@ -140,4 +149,3 @@ on `the-one` keeps the ref a branch the environment allows, at the cost
 of the dispatched run no longer being nested under this workflow run (it
 shows up as its own `GitHub Pages` run) and needing its own `actions:
 write` permission to fire the dispatch.
-

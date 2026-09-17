@@ -2,13 +2,13 @@
 //! the CLI, so reopening an unchanged script (e.g. switching between files
 //! in the code viewer, relinting an achlist, or resolving the same
 //! cross-script lookup across separate CLI invocations) skips re-parsing
-//! it. Entries live as one JSON file per source path in an `ast-cache`
-//! directory next to the running executable -- the desktop app's own
-//! binary, or `PapyrusLinterCLI`'s, whichever process is doing the parsing
-//! -- and are invalidated by the source file's last-modified timestamp, an
-//! MD5 of its content, and the linter version that wrote the entry -- if
-//! any of the three is no longer valid, it's treated as a miss and the
-//! caller re-parses.
+//! it. Entries live as one JSON file per source path in the directory named
+//! by `PAPYRUS_LINT_AST_CACHE_DIR`, or, when that isn't set, an `ast-cache`
+//! directory next to the running executable -- the desktop app's own binary,
+//! or `PapyrusLinterCLI`'s, whichever process is doing the parsing -- and are
+//! invalidated by the source file's last-modified timestamp, an MD5 of its
+//! content, and the linter version that wrote the entry -- if any of the
+//! three is no longer valid, it's treated as a miss and the caller re-parses.
 //!
 //! The version check is a minimum-compatible-version check against
 //! [`version::MIN_COMPATIBLE_VERSION`], not an exact match against the

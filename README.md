@@ -802,6 +802,28 @@ run `cargo build --release --manifest-path
 app/crates/papyrus-lint-cli/Cargo.toml`; the resulting binary is named
 `PapyrusLinterCLI`.
 
+### Docker
+
+Each release also publishes an Alpine Linux CLI image to GitHub Container
+Registry. It always scans `/project` recursively, stores the reusable AST
+cache in `/cache`, and uses Papyrus base scripts mounted under
+`/base-scripts` for cross-script lookups. The base scripts can be an extracted
+directory or a zip named `skyrim-scripts.zip`; set
+`PAPYRUS_LINT_BASE_SCRIPTS_ARCHIVE` when the mounted archive has another name.
+
+```bash
+docker run --rm \
+  -v "$PWD:/project:ro" \
+  -v papyrus-lint-cache:/cache \
+  -v "$HOME/skyrim-scripts.zip:/base-scripts/skyrim-scripts.zip:ro" \
+  ghcr.io/idrinth/papyrus-lint:latest
+```
+
+Additional CLI flags go after the image name. For example, append `--json`
+for JSON output. Omit `:ro` from the project mount and pass `fix` if the
+container should apply automatic fixes. A release-specific image tag such as
+`v1.2.3` can be used instead of `latest`.
+
 Every file attached to a release has a matching `.sigstore.json` bundle.
 The release workflow signs these bundles keylessly with [Sigstore](https://www.sigstore.dev/),
 using GitHub Actions' short-lived OpenID Connect identity, and records the
