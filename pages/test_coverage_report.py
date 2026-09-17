@@ -404,7 +404,7 @@ class CoveragePageTest(unittest.TestCase):
         self.assertIn("v1.4.0", output)
         self.assertIn("papyrus-parser", output)
         self.assertIn("src/lib.rs", output)
-        self.assertNotIn("Coverage data isn&#x27;t available", output)
+        self.assertNotIn("Coverage data isn't available", output)
 
     def test_build_coverage_page_escapes_the_version_label(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

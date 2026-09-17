@@ -69,6 +69,11 @@ class ResolveDocHrefTest(unittest.TestCase):
             )
             self.assertEqual(docs_pages.resolve_doc_href("guide/../notes.md"), "guide/../notes.md")
 
+    def test_preserves_a_fragment_or_query_on_a_rewritten_doc_link(self) -> None:
+        with patch.object(docs_pages, "DOC_FILENAME_TO_SLUG", {"guide.md": "guide"}):
+            self.assertEqual(docs_pages.resolve_doc_href("guide.md#setup"), "guide.html#setup")
+            self.assertEqual(docs_pages.resolve_doc_href("guide.md?view=full"), "guide.html?view=full")
+
 
 class DocsRenderingTest(unittest.TestCase):
     def test_load_doc_source_downloads_remote_documentation(self) -> None:

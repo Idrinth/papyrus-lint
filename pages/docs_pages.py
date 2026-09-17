@@ -17,6 +17,7 @@ import html
 import json
 from pathlib import Path
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 try:
@@ -126,9 +127,13 @@ ACTION_DOC = {
 def resolve_doc_href(href: str) -> str:
     """Rewrites a link target found inside a docs/*.md file so it works from
     a published subpage: a link to another published doc resolves to that
-    doc's own subpage, a link into the repository resolves on GitHub."""
-    if href in DOC_FILENAME_TO_SLUG:
-        return f"{DOC_FILENAME_TO_SLUG[href]}.html"
+    doc's own subpage, a link into the repository resolves on GitHub. A
+    query string or fragment on the original link (e.g. `guide.md#setup`)
+    is preserved rather than dropped."""
+    parts = urlsplit(href)
+    if not parts.scheme and not parts.netloc and parts.path in DOC_FILENAME_TO_SLUG:
+        path = f"{DOC_FILENAME_TO_SLUG[parts.path]}.html"
+        return urlunsplit(("", "", path, parts.query, parts.fragment))
     if href.startswith("../"):
         return f"{GITHUB_BLOB_BASE}/{href[len('../'):]}"
     return href
