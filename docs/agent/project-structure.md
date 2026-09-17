@@ -12,7 +12,8 @@
 │   │   │                        # feature modules below
 │   │   ├── presets.ts           # Config presets: picker, save/reset, Presets tab
 │   │   ├── code-viewer.ts       # Code viewer dialog: open/close, view, line fix/ignore
-│   │   ├── results-list.ts      # Lint results list, filters, mass-fix; calls export helpers
+│   │   ├── results-list.ts      # Lint results list, mass-fix; calls filter + export helpers
+│   │   ├── results-filter.ts    # Lint results filters: state, matching, filterOutcomes
 │   │   ├── results-export-types.ts # Shared types for issue exports (filters, files, AI source)
 │   │   ├── results-export-text.ts  # Plain-text issue export formatter
 │   │   ├── results-export-json.ts  # JSON issue export formatter
@@ -30,6 +31,7 @@
 │   │   ├── presets.test.ts      # Vitest unit tests for presets.ts
 │   │   ├── code-viewer.test.ts  # Vitest unit tests for code-viewer.ts
 │   │   ├── results-list.test.ts # Vitest unit tests for results-list.ts
+│   │   ├── results-filter.test.ts # Vitest unit tests for results-filter.ts
 │   │   ├── live-edit.test.ts    # Vitest unit tests for live-edit.ts
 │   │   ├── highlight.test.ts    # Vitest unit tests for highlight.ts
 │   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for the UI tests

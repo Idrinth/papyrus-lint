@@ -559,10 +559,11 @@ export async function loadRuleTags(): Promise<RuleTagsInfo[]> {
   }
 }
 
-// Indexes `tags` by rule id (for tagsForFinding/matchesTagFilters below),
-// rebuilds each tag kind's "Filter by rule" multiselect from the same list,
-// and re-renders the current lint results, so any already-listed findings
-// pick up their tag badges/filtering once the lookup resolves.
+// Indexes `tags` by rule id (for tagsForFinding/matchesTagFilters in
+// results-filter.ts), rebuilds each tag kind's "Filter by rule" multiselect
+// from the same list, and re-renders the current lint results, so any
+// already-listed findings pick up their tag badges/filtering once the
+// lookup resolves.
 export function applyRuleTags(tags: RuleTagsInfo[]) {
   ruleTagsByRule = new Map(tags.map((info) => [info.rule, info]));
   populateRuleFilterGroups(tags);
