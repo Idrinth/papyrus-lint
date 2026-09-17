@@ -10,7 +10,7 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Stmt, TypeName};
+use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt, TypeName};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::Diagnostic;
@@ -25,6 +25,15 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         return Vec::new();
     };
 
+    let functions = index_functions(&script);
+    let mut env = TypeEnv::for_script(&script);
+    let mut diagnostics = Vec::new();
+    check_script_declarations(&script, &env, &functions, &mut diagnostics);
+    check_function_bodies(&script, &mut env, &functions, &mut diagnostics);
+    diagnostics
+}
+
+fn index_functions(script: &Script) -> HashMap<String, &FunctionDecl> {
     let mut functions: HashMap<String, &FunctionDecl> = script
         .functions
         .iter()
@@ -37,10 +46,15 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 .or_insert(function);
         }
     }
+    functions
+}
 
-    let mut env = TypeEnv::for_script(&script);
-    let mut diagnostics = Vec::new();
-
+fn check_script_declarations(
+    script: &Script,
+    env: &TypeEnv,
+    functions: &HashMap<String, &FunctionDecl>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     for variable in &script.variables {
         if let Some(value) = &variable.value {
             check_declaration(
@@ -48,10 +62,10 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 &variable.name,
                 value,
                 variable.line,
-                &env,
-                &mut diagnostics,
+                env,
+                diagnostics,
             );
-            walk_expr(value, &env, &functions, variable.line, &mut diagnostics);
+            walk_expr(value, env, functions, variable.line, diagnostics);
         }
     }
     for property in &script.properties {
@@ -61,22 +75,29 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 &property.name,
                 value,
                 property.line,
-                &env,
-                &mut diagnostics,
+                env,
+                diagnostics,
             );
-            walk_expr(value, &env, &functions, property.line, &mut diagnostics);
+            walk_expr(value, env, functions, property.line, diagnostics);
         }
     }
+}
 
+fn check_function_bodies(
+    script: &Script,
+    env: &mut TypeEnv,
+    functions: &HashMap<String, &FunctionDecl>,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     for function in &script.functions {
         env.with_function_scope(function, |scoped| {
             check_body(
                 &function.body,
                 scoped,
-                &functions,
+                functions,
                 function.return_type.as_ref(),
                 &function.name,
-                &mut diagnostics,
+                diagnostics,
             );
         });
     }
@@ -86,16 +107,14 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 check_body(
                     &function.body,
                     scoped,
-                    &functions,
+                    functions,
                     function.return_type.as_ref(),
                     &function.name,
-                    &mut diagnostics,
+                    diagnostics,
                 );
             });
         }
     }
-
-    diagnostics
 }
 
 fn check_body(
@@ -107,99 +126,93 @@ fn check_body(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                if let Some(value) = &decl.value {
-                    check_declaration(
-                        &decl.type_name,
-                        &decl.name,
-                        value,
-                        decl.line,
-                        env,
-                        diagnostics,
-                    );
-                    walk_expr(value, env, functions, decl.line, diagnostics);
-                }
-            }
-            Stmt::Assign {
-                target,
-                value,
-                line,
-                ..
-            } => {
-                if let Some(target_type) = infer_type(target, env) {
-                    if narrows_to_int(&target_type, value, env) {
-                        diagnostics.push(Diagnostic {
-                            line: *line,
-                            column: 1,
-                            message: format!(
-                                "[warning] Float value assigned to Int {} without an explicit 'as Int' cast",
-                                describe_target(target)
-                            ),
-                            rule: RULE,
-                        });
-                    }
-                }
-                walk_expr(target, env, functions, *line, diagnostics);
-                walk_expr(value, env, functions, *line, diagnostics);
-            }
-            Stmt::Expr { value, line } => {
-                walk_expr(value, env, functions, *line, diagnostics);
-            }
-            Stmt::Return {
-                value: Some(value),
-                line,
-            } => {
-                if let Some(return_type) = return_type {
-                    if narrows_to_int(return_type, value, env) {
-                        diagnostics.push(Diagnostic {
-                            line: *line,
-                            column: 1,
-                            message: format!(
-                                "[warning] Float value returned from Int function '{function_name}' without an explicit 'as Int' cast"
-                            ),
-                            rule: RULE,
-                        });
-                    }
-                }
-                walk_expr(value, env, functions, *line, diagnostics);
-            }
-            Stmt::Return { value: None, .. } => {}
-            Stmt::If {
-                branches,
-                else_body,
-                line,
-                ..
-            } => {
-                for IfBranch {
-                    condition, body, ..
-                } in branches
-                {
-                    walk_expr(condition, env, functions, *line, diagnostics);
-                    check_body(
-                        body,
-                        env,
-                        functions,
-                        return_type,
-                        function_name,
-                        diagnostics,
-                    );
-                }
-                check_body(
-                    else_body,
+        check_stmt(
+            stmt,
+            env,
+            functions,
+            return_type,
+            function_name,
+            diagnostics,
+        );
+    }
+}
+
+fn check_stmt(
+    stmt: &Stmt,
+    env: &TypeEnv,
+    functions: &HashMap<String, &FunctionDecl>,
+    return_type: Option<&TypeName>,
+    function_name: &str,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    match stmt {
+        Stmt::VarDecl(decl) => {
+            if let Some(value) = &decl.value {
+                check_declaration(
+                    &decl.type_name,
+                    &decl.name,
+                    value,
+                    decl.line,
                     env,
-                    functions,
-                    return_type,
-                    function_name,
                     diagnostics,
                 );
+                walk_expr(value, env, functions, decl.line, diagnostics);
             }
-            Stmt::While {
-                condition,
-                body,
-                line,
-                ..
-            } => {
+        }
+        Stmt::Assign {
+            target,
+            value,
+            line,
+            ..
+        } => {
+            if let Some(target_type) = infer_type(target, env) {
+                flag_narrowing(
+                    &target_type,
+                    value,
+                    env,
+                    *line,
+                    diagnostics,
+                    format!(
+                        "[warning] Float value assigned to Int {} without an explicit 'as Int' cast",
+                        describe_target(target)
+                    ),
+                );
+            }
+            walk_expr(target, env, functions, *line, diagnostics);
+            walk_expr(value, env, functions, *line, diagnostics);
+        }
+        Stmt::Expr { value, line } => {
+            walk_expr(value, env, functions, *line, diagnostics);
+        }
+        Stmt::Return {
+            value: Some(value),
+            line,
+        } => {
+            if let Some(return_type) = return_type {
+                flag_narrowing(
+                    return_type,
+                    value,
+                    env,
+                    *line,
+                    diagnostics,
+                    format!(
+                        "[warning] Float value returned from Int function '{function_name}' without an explicit 'as Int' cast"
+                    ),
+                );
+            }
+            walk_expr(value, env, functions, *line, diagnostics);
+        }
+        Stmt::Return { value: None, .. } => {}
+        Stmt::If {
+            branches,
+            else_body,
+            line,
+            ..
+        } => {
+            for IfBranch {
+                condition, body, ..
+            } in branches
+            {
                 walk_expr(condition, env, functions, *line, diagnostics);
                 check_body(
                     body,
@@ -210,7 +223,49 @@ fn check_body(
                     diagnostics,
                 );
             }
+            check_body(
+                else_body,
+                env,
+                functions,
+                return_type,
+                function_name,
+                diagnostics,
+            );
         }
+        Stmt::While {
+            condition,
+            body,
+            line,
+            ..
+        } => {
+            walk_expr(condition, env, functions, *line, diagnostics);
+            check_body(
+                body,
+                env,
+                functions,
+                return_type,
+                function_name,
+                diagnostics,
+            );
+        }
+    }
+}
+
+fn flag_narrowing(
+    target_type: &TypeName,
+    value: &Expr,
+    env: &TypeEnv,
+    line: usize,
+    diagnostics: &mut Vec<Diagnostic>,
+    message: String,
+) {
+    if narrows_to_int(target_type, value, env) {
+        diagnostics.push(Diagnostic {
+            line,
+            column: 1,
+            message,
+            rule: RULE,
+        });
     }
 }
 
@@ -228,48 +283,7 @@ fn walk_expr(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if let Expr::Call { callee, args, .. } = expr {
-        let resolved_name = match &**callee {
-            Expr::Identifier(name) => Some(name.as_str()),
-            Expr::Member { object, property } if matches!(**object, Expr::Self_) => {
-                Some(property.as_str())
-            }
-            _ => None,
-        };
-        if let Some(name) = resolved_name {
-            if let Some(function) = functions.get(&name.to_lowercase()) {
-                for (index, arg) in args.iter().enumerate() {
-                    let (arg, param) = match arg {
-                        Expr::NamedArg { name, value } => {
-                            let Some(param) = function
-                                .params
-                                .iter()
-                                .find(|p| p.name.eq_ignore_ascii_case(name))
-                            else {
-                                continue;
-                            };
-                            (value.as_ref(), param)
-                        }
-                        _ => {
-                            let Some(param) = function.params.get(index) else {
-                                break;
-                            };
-                            (arg, param)
-                        }
-                    };
-                    if narrows_to_int(&param.type_name, arg, env) {
-                        diagnostics.push(Diagnostic {
-                            line,
-                            column: 1,
-                            message: format!(
-                                "[warning] Float value passed as Int parameter '{}' of function '{}' without an explicit 'as Int' cast",
-                                param.name, function.name
-                            ),
-                            rule: RULE,
-                        });
-                    }
-                }
-            }
-        }
+        check_call_args(callee, args, env, functions, line, diagnostics);
         for arg in args {
             walk_expr(arg, env, functions, line, diagnostics);
         }
@@ -296,6 +310,60 @@ fn walk_expr(
     }
 }
 
+fn check_call_args(
+    callee: &Expr,
+    args: &[Expr],
+    env: &TypeEnv,
+    functions: &HashMap<String, &FunctionDecl>,
+    line: usize,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    let resolved_name = match callee {
+        Expr::Identifier(name) => Some(name.as_str()),
+        Expr::Member { object, property } if matches!(**object, Expr::Self_) => {
+            Some(property.as_str())
+        }
+        _ => None,
+    };
+    let Some(name) = resolved_name else {
+        return;
+    };
+    let Some(function) = functions.get(&name.to_lowercase()) else {
+        return;
+    };
+    for (index, arg) in args.iter().enumerate() {
+        let (arg, param) = match arg {
+            Expr::NamedArg { name, value } => {
+                let Some(param) = function
+                    .params
+                    .iter()
+                    .find(|p| p.name.eq_ignore_ascii_case(name))
+                else {
+                    continue;
+                };
+                (value.as_ref(), param)
+            }
+            _ => {
+                let Some(param) = function.params.get(index) else {
+                    break;
+                };
+                (arg, param)
+            }
+        };
+        flag_narrowing(
+            &param.type_name,
+            arg,
+            env,
+            line,
+            diagnostics,
+            format!(
+                "[warning] Float value passed as Int parameter '{}' of function '{}' without an explicit 'as Int' cast",
+                param.name, function.name
+            ),
+        );
+    }
+}
+
 /// Flags `value` when it narrows a Float into an Int-typed declaration
 /// (a variable, script-level variable, or property) named `name`.
 fn check_declaration(
@@ -306,16 +374,16 @@ fn check_declaration(
     env: &TypeEnv,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
-    if narrows_to_int(type_name, value, env) {
-        diagnostics.push(Diagnostic {
-            line,
-            column: 1,
-            message: format!(
-                "[warning] Float value assigned to Int variable '{name}' without an explicit 'as Int' cast"
-            ),
-            rule: RULE,
-        });
-    }
+    flag_narrowing(
+        type_name,
+        value,
+        env,
+        line,
+        diagnostics,
+        format!(
+            "[warning] Float value assigned to Int variable '{name}' without an explicit 'as Int' cast"
+        ),
+    );
 }
 
 fn is_int(type_name: &TypeName) -> bool {

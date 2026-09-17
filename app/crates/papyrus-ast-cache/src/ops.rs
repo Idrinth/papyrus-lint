@@ -42,18 +42,15 @@ pub(crate) fn put_in(
     ast: &papyrus_parser::ast::Script,
     linter_version: &str,
 ) {
-    let Some(modified_unix_secs) = file_modified_unix_secs(source_path) else {
-        return;
-    };
     let tokens = valid_entry_in(dir, source_path, source).and_then(|entry| entry.tokens);
-    let entry = CacheEntry {
-        modified_unix_secs,
-        content_md5: format!("{:x}", md5::compute(source.as_bytes())),
-        linter_version: linter_version.to_string(),
-        ast: Some(ast.clone()),
+    write_stamped_entry(
+        dir,
+        source_path,
+        source,
+        linter_version,
+        Some(ast.clone()),
         tokens,
-    };
-    write_entry_in(dir, source_path, &entry);
+    );
 }
 
 pub(crate) fn put_tokens_in(
@@ -63,16 +60,34 @@ pub(crate) fn put_tokens_in(
     tokens: &[papyrus_parser::token::Token],
     linter_version: &str,
 ) {
+    let ast = valid_entry_in(dir, source_path, source).and_then(|entry| entry.ast);
+    write_stamped_entry(
+        dir,
+        source_path,
+        source,
+        linter_version,
+        ast,
+        Some(tokens.to_vec()),
+    );
+}
+
+fn write_stamped_entry(
+    dir: &Path,
+    source_path: &Path,
+    source: &str,
+    linter_version: &str,
+    ast: Option<papyrus_parser::ast::Script>,
+    tokens: Option<Vec<papyrus_parser::token::Token>>,
+) {
     let Some(modified_unix_secs) = file_modified_unix_secs(source_path) else {
         return;
     };
-    let ast = valid_entry_in(dir, source_path, source).and_then(|entry| entry.ast);
     let entry = CacheEntry {
         modified_unix_secs,
         content_md5: format!("{:x}", md5::compute(source.as_bytes())),
         linter_version: linter_version.to_string(),
         ast,
-        tokens: Some(tokens.to_vec()),
+        tokens,
     };
     write_entry_in(dir, source_path, &entry);
 }

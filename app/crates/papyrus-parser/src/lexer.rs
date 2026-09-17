@@ -70,9 +70,28 @@ impl<'a> Lexer<'a> {
     }
 
     fn next_token(&mut self) -> Result<Token, LexError> {
+        if let Some(token) = self.skip_ignorable()? {
+            return Ok(token);
+        }
+
+        let line = self.line;
+        let col = self.col;
+        let c = self.advance().unwrap();
+        match c {
+            b'"' => self.read_string(line, col),
+            b'0'..=b'9' => self.read_number(c, line, col),
+            b'_' | b'a'..=b'z' | b'A'..=b'Z' => self.read_word(c, line, col),
+            c => Ok(Token::new(self.lex_kind(c, line, col)?, line, col)),
+        }
+    }
+
+    /// Skips spaces, line continuations, and comments. Returns a token when
+    /// the next significant input is EOF or a newline (both are real tokens,
+    /// not ignorable).
+    fn skip_ignorable(&mut self) -> Result<Option<Token>, LexError> {
         loop {
             match self.peek() {
-                None => return Ok(Token::new(TokenKind::Eof, self.line, self.col)),
+                None => return Ok(Some(Token::new(TokenKind::Eof, self.line, self.col))),
                 Some(b' ') | Some(b'\t') | Some(b'\r') => {
                     self.advance();
                 }
@@ -90,7 +109,7 @@ impl<'a> Lexer<'a> {
                     let line = self.line;
                     let col = self.col;
                     self.advance();
-                    return Ok(Token::new(TokenKind::Newline, line, col));
+                    return Ok(Some(Token::new(TokenKind::Newline, line, col)));
                 }
                 Some(b';') => {
                     if self.peek_at(1) == Some(b'/') {
@@ -103,115 +122,52 @@ impl<'a> Lexer<'a> {
                     // Documentation comment blocks: `{ ... }`.
                     self.skip_brace_comment()?;
                 }
-                _ => break,
+                _ => return Ok(None),
             }
         }
+    }
 
-        let line = self.line;
-        let col = self.col;
-        let c = self.advance().unwrap();
-
-        let kind = match c {
-            b'(' => TokenKind::LParen,
-            b')' => TokenKind::RParen,
-            b'[' => TokenKind::LBracket,
-            b']' => TokenKind::RBracket,
-            b',' => TokenKind::Comma,
-            b'.' => TokenKind::Dot,
-            b':' => TokenKind::Colon,
-            b'+' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::PlusAssign
-                } else {
-                    TokenKind::Plus
-                }
-            }
-            b'-' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::MinusAssign
-                } else {
-                    TokenKind::Minus
-                }
-            }
-            b'*' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::StarAssign
-                } else {
-                    TokenKind::Star
-                }
-            }
-            b'/' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::SlashAssign
-                } else {
-                    TokenKind::Slash
-                }
-            }
-            b'%' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::PercentAssign
-                } else {
-                    TokenKind::Percent
-                }
-            }
-            b'=' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::Eq
-                } else {
-                    TokenKind::Assign
-                }
-            }
-            b'!' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::NotEq
-                } else {
-                    TokenKind::Not
-                }
-            }
-            b'>' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::GtEq
-                } else {
-                    TokenKind::Gt
-                }
-            }
-            b'<' => {
-                if self.peek() == Some(b'=') {
-                    self.advance();
-                    TokenKind::LtEq
-                } else {
-                    TokenKind::Lt
-                }
-            }
+    fn lex_kind(&mut self, c: u8, line: usize, col: usize) -> Result<TokenKind, LexError> {
+        match c {
+            b'(' => Ok(TokenKind::LParen),
+            b')' => Ok(TokenKind::RParen),
+            b'[' => Ok(TokenKind::LBracket),
+            b']' => Ok(TokenKind::RBracket),
+            b',' => Ok(TokenKind::Comma),
+            b'.' => Ok(TokenKind::Dot),
+            b':' => Ok(TokenKind::Colon),
+            b'+' => Ok(self.with_eq(TokenKind::PlusAssign, TokenKind::Plus)),
+            b'-' => Ok(self.with_eq(TokenKind::MinusAssign, TokenKind::Minus)),
+            b'*' => Ok(self.with_eq(TokenKind::StarAssign, TokenKind::Star)),
+            b'/' => Ok(self.with_eq(TokenKind::SlashAssign, TokenKind::Slash)),
+            b'%' => Ok(self.with_eq(TokenKind::PercentAssign, TokenKind::Percent)),
+            b'=' => Ok(self.with_eq(TokenKind::Eq, TokenKind::Assign)),
+            b'!' => Ok(self.with_eq(TokenKind::NotEq, TokenKind::Not)),
+            b'>' => Ok(self.with_eq(TokenKind::GtEq, TokenKind::Gt)),
+            b'<' => Ok(self.with_eq(TokenKind::LtEq, TokenKind::Lt)),
             b'&' if self.peek() == Some(b'&') => {
                 self.advance();
-                TokenKind::AndAnd
+                Ok(TokenKind::AndAnd)
             }
             b'|' if self.peek() == Some(b'|') => {
                 self.advance();
-                TokenKind::OrOr
+                Ok(TokenKind::OrOr)
             }
-            b'"' => return self.read_string(line, col),
-            b'0'..=b'9' => return self.read_number(c, line, col),
-            b'_' | b'a'..=b'z' | b'A'..=b'Z' => return self.read_word(c, line, col),
-            other => {
-                return Err(LexError {
-                    message: format!("unexpected character '{}'", other as char),
-                    line,
-                    col,
-                })
-            }
-        };
+            other => Err(LexError {
+                message: format!("unexpected character '{}'", other as char),
+                line,
+                col,
+            }),
+        }
+    }
 
-        Ok(Token::new(kind, line, col))
+    fn with_eq(&mut self, with_eq: TokenKind, without: TokenKind) -> TokenKind {
+        if self.peek() == Some(b'=') {
+            self.advance();
+            with_eq
+        } else {
+            without
+        }
     }
 
     fn skip_line_comment(&mut self) {

@@ -69,6 +69,59 @@ pub(crate) fn lint_file(
     // `unused-disable` lint instead of being incorrectly flagged as unused
     // (see `papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`'s
     // own docs).
+    let project_diagnostics = collect_project_diagnostics(ctx, script_path, source);
+    let mut diagnostics = {
+        let mut shared = SharedFunctionTable(ctx.function_table);
+        papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
+            source,
+            ctx.lint_config,
+            &mut shared,
+            project_diagnostics,
+        )
+    };
+    // Mirrors the desktop app's `lint_with_compile_check`: a
+    // `compiler_path` that can't be run at all (missing/misconfigured) is
+    // silently left out rather than failing the whole lint run.
+    if ctx.compile_check && !ctx.compiler_path.is_empty() {
+        if let Ok(outcome) = compiler::check_psc_file(
+            Path::new(ctx.compiler_path),
+            script_path,
+            ctx.function_table_additional_roots,
+        ) {
+            if !outcome.success {
+                diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
+            }
+        }
+    }
+    let should_fail = finalize_diagnostics(
+        &mut diagnostics,
+        ctx.lint_config,
+        ctx.tag_filter,
+        ctx.quiet_warnings,
+        ctx.quiet_info,
+    );
+
+    let (plain_text, json_file, ai_file) =
+        build_file_reports(ctx, &reported_path, source, file_diff, &diagnostics);
+
+    let has_diagnostics = !diagnostics.is_empty();
+    let diagnostic_count = diagnostics.len();
+
+    LintFileOutcome {
+        plain_text,
+        json_file,
+        ai_file,
+        should_fail,
+        has_diagnostics,
+        diagnostic_count,
+    }
+}
+
+fn collect_project_diagnostics(
+    ctx: &LintContext,
+    script_path: &Path,
+    source: &str,
+) -> Vec<papyrus_lints::Diagnostic> {
     let mut project_diagnostics = Vec::new();
     if ctx.lint_config.rules.conflicting_script_versions {
         if ctx.strict_achlist_scope {
@@ -109,44 +162,23 @@ pub(crate) fn lint_file(
             source,
         ));
     }
-    let mut diagnostics = {
-        let mut shared = SharedFunctionTable(ctx.function_table);
-        papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
-            source,
-            ctx.lint_config,
-            &mut shared,
-            project_diagnostics,
-        )
-    };
-    // Mirrors the desktop app's `lint_with_compile_check`: a
-    // `compiler_path` that can't be run at all (missing/misconfigured) is
-    // silently left out rather than failing the whole lint run.
-    if ctx.compile_check && !ctx.compiler_path.is_empty() {
-        if let Ok(outcome) = compiler::check_psc_file(
-            Path::new(ctx.compiler_path),
-            script_path,
-            ctx.function_table_additional_roots,
-        ) {
-            if !outcome.success {
-                diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
-            }
-        }
-    }
-    let should_fail = finalize_diagnostics(
-        &mut diagnostics,
-        ctx.lint_config,
-        ctx.tag_filter,
-        ctx.quiet_warnings,
-        ctx.quiet_info,
-    );
+    project_diagnostics
+}
 
+fn build_file_reports(
+    ctx: &LintContext,
+    reported_path: &str,
+    source: &str,
+    file_diff: Option<String>,
+    diagnostics: &[papyrus_lints::Diagnostic],
+) -> (Vec<u8>, Option<JsonFileReport>, Option<AiFileReport>) {
     let mut plain_text: Vec<u8> = Vec::new();
-    for diagnostic in &diagnostics {
+    for diagnostic in diagnostics {
         if !ctx.json {
             let _ = writeln!(
                 plain_text,
                 "{}",
-                format_diagnostic_line(&reported_path, diagnostic, ctx.use_color)
+                format_diagnostic_line(reported_path, diagnostic, ctx.use_color)
             );
         }
     }
@@ -154,7 +186,7 @@ pub(crate) fn lint_file(
     let mut json_file = None;
     let mut ai_file = None;
     if ctx.json {
-        let json_diagnostics = to_json_diagnostics(&diagnostics);
+        let json_diagnostics = to_json_diagnostics(diagnostics);
         if ctx.output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
             let rule_counts = rule_counts(&json_diagnostics);
             let severity_counts = severity_counts(&json_diagnostics);
@@ -169,7 +201,7 @@ pub(crate) fn lint_file(
                 }
             };
             ai_file = Some(AiFileReport {
-                path: reported_path.clone(),
+                path: reported_path.to_string(),
                 severity_counts,
                 rule_counts,
                 diagnostics: json_diagnostics,
@@ -177,22 +209,11 @@ pub(crate) fn lint_file(
             });
         } else if ctx.output_format == OutputFormat::Json {
             json_file = Some(JsonFileReport {
-                path: reported_path,
+                path: reported_path.to_string(),
                 diagnostics: json_diagnostics,
                 diff: file_diff,
             });
         }
     }
-
-    let has_diagnostics = !diagnostics.is_empty();
-    let diagnostic_count = diagnostics.len();
-
-    LintFileOutcome {
-        plain_text,
-        json_file,
-        ai_file,
-        should_fail,
-        has_diagnostics,
-        diagnostic_count,
-    }
+    (plain_text, json_file, ai_file)
 }

@@ -46,6 +46,65 @@ PAGES_DIR = Path(__file__).resolve().parent
 
 HREF_RE = re.compile(r'href="([^"]*)"')
 
+DOCUMENT_CHECKS_SCRIPT = """() => {
+    const normalizedText = value => (value || '').trim();
+    const referencedText = element => normalizedText(
+        (element.getAttribute('aria-labelledby') || '')
+            .split(/\\s+/)
+            .filter(Boolean)
+            .map(id => document.getElementById(id)?.textContent || '')
+            .join(' ')
+    );
+    const labelsText = element => normalizedText(
+        [...(element.labels || [])]
+            .map(label => label.textContent || '')
+            .join(' ')
+    );
+    const accessibleName = element => {
+        const explicitName =
+            normalizedText(element.getAttribute('aria-label')) ||
+            referencedText(element) || labelsText(element);
+        if (explicitName) return explicitName;
+        if (element.matches('a, button')) {
+            return normalizedText(element.textContent) ||
+                normalizedText(element.querySelector('img[alt]')?.getAttribute('alt')) ||
+                normalizedText(element.getAttribute('title'));
+        }
+        if (element.matches('input[type="image"]')) {
+            return normalizedText(element.getAttribute('alt')) ||
+                normalizedText(element.getAttribute('title'));
+        }
+        if (element.matches('input[type="button"], input[type="submit"], input[type="reset"]')) {
+            return normalizedText(element.getAttribute('value')) ||
+                normalizedText(element.getAttribute('title'));
+        }
+        return normalizedText(element.getAttribute('title'));
+    };
+    const describe = element => {
+        const id = element.id ? `#${element.id}` : '';
+        const target = element.getAttribute('href') ||
+            element.getAttribute('name') ||
+            element.getAttribute('type');
+        return `<${element.localName}${id}>${target ? ` (${target})` : ''}`;
+    };
+    const ids = [...document.querySelectorAll('[id]')].map(el => el.id);
+    const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
+    const imagesWithoutAlt = [...document.querySelectorAll('img:not([alt])')]
+        .map(img => img.getAttribute('src') || '<no src>');
+    const unnamedInteractiveElements = [
+        ...document.querySelectorAll(
+            'a[href], button, input:not([type="hidden"]), select, textarea'
+        ),
+    ].filter(element => !accessibleName(element)).map(describe);
+    return {
+        duplicateIds,
+        imagesWithoutAlt,
+        unnamedInteractiveElements,
+        hasDocumentLanguage: Boolean(document.documentElement.lang.trim()),
+        hasDocumentTitle: Boolean(document.title.trim()),
+    };
+}"""
+
 
 @dataclass
 class PageIssues:
@@ -82,160 +141,109 @@ def check_site(dist: Path) -> list[str]:
         return [f"no .html files found under {dist}"]
 
     server, base_url = start_server(dist)
-    problems: list[str] = []
-    ids_by_page: dict[str, set[str]] = {}
-    links_by_page: dict[str, list[str]] = {}
-
     try:
-        with sync_playwright() as playwright, contextlib.closing(
-            playwright.chromium.launch()
-        ) as browser:
-            page = browser.new_page()
-            # Waiting on external hosts (badges, Google Fonts, ...) would
-            # make this "quick" check slow and flaky against services this
-            # repository doesn't control, and they may not even be reachable
-            # in a sandboxed CI runner. Fake a harmless empty response for
-            # them instead of aborting the request outright: aborting logs
-            # its own "failed to load resource" console error, which would
-            # otherwise be indistinguishable from a real one. Local resource
-            # errors are still caught via the response listener below.
-            page.route(
-                re.compile(r"^https?://(?!127\.0\.0\.1)"),
-                lambda route: route.fulfill(status=200, body=""),
-            )
-
-            for rel_path in html_files:
-                issues = PageIssues()
-
-                def on_console(msg, i=issues):
-                    if msg.type == "error":
-                        i.console_errors.append(msg.text)
-
-                def on_pageerror(exc, i=issues):
-                    i.page_errors.append(str(exc))
-
-                def on_response(response, i=issues):
-                    if response.url.startswith(base_url) and response.status >= 400:
-                        i.failed_requests.append(f"{response.url} -> {response.status}")
-
-                page.on("console", on_console)
-                page.on("pageerror", on_pageerror)
-                page.on("response", on_response)
-
-                url = f"{base_url}/{rel_path}"
-                page.goto(url, wait_until="load", timeout=15000)
-
-                ids_by_page[rel_path] = set(
-                    page.eval_on_selector_all("[id]", "els => els.map(e => e.id)")
-                )
-                links_by_page[rel_path] = HREF_RE.findall(page.content())
-
-                document_checks = page.evaluate(
-                    """() => {
-                        const normalizedText = value => (value || '').trim();
-                        const referencedText = element => normalizedText(
-                            (element.getAttribute('aria-labelledby') || '')
-                                .split(/\\s+/)
-                                .filter(Boolean)
-                                .map(id => document.getElementById(id)?.textContent || '')
-                                .join(' ')
-                        );
-                        const labelsText = element => normalizedText(
-                            [...(element.labels || [])]
-                                .map(label => label.textContent || '')
-                                .join(' ')
-                        );
-                        const accessibleName = element => {
-                            const explicitName =
-                                normalizedText(element.getAttribute('aria-label')) ||
-                                referencedText(element) || labelsText(element);
-                            if (explicitName) return explicitName;
-                            if (element.matches('a, button')) {
-                                return normalizedText(element.textContent) ||
-                                    normalizedText(element.querySelector('img[alt]')?.getAttribute('alt')) ||
-                                    normalizedText(element.getAttribute('title'));
-                            }
-                            if (element.matches('input[type="image"]')) {
-                                return normalizedText(element.getAttribute('alt')) ||
-                                    normalizedText(element.getAttribute('title'));
-                            }
-                            if (element.matches('input[type="button"], input[type="submit"], input[type="reset"]')) {
-                                return normalizedText(element.getAttribute('value')) ||
-                                    normalizedText(element.getAttribute('title'));
-                            }
-                            return normalizedText(element.getAttribute('title'));
-                        };
-                        const describe = element => {
-                            const id = element.id ? `#${element.id}` : '';
-                            const target = element.getAttribute('href') ||
-                                element.getAttribute('name') ||
-                                element.getAttribute('type');
-                            return `<${element.localName}${id}>${target ? ` (${target})` : ''}`;
-                        };
-                        const ids = [...document.querySelectorAll('[id]')].map(el => el.id);
-                        const duplicateIds = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))];
-                        const imagesWithoutAlt = [...document.querySelectorAll('img:not([alt])')]
-                            .map(img => img.getAttribute('src') || '<no src>');
-                        const unnamedInteractiveElements = [
-                            ...document.querySelectorAll(
-                                'a[href], button, input:not([type="hidden"]), select, textarea'
-                            ),
-                        ].filter(element => !accessibleName(element)).map(describe);
-                        return {
-                            duplicateIds,
-                            imagesWithoutAlt,
-                            unnamedInteractiveElements,
-                            hasDocumentLanguage: Boolean(document.documentElement.lang.trim()),
-                            hasDocumentTitle: Boolean(document.title.trim()),
-                        };
-                    }"""
-                )
-                for duplicate_id in document_checks["duplicateIds"]:
-                    issues.document_errors.append(f"duplicate element id '{duplicate_id}'")
-                for image_src in document_checks["imagesWithoutAlt"]:
-                    issues.document_errors.append(f"image '{image_src}' has no alt attribute")
-                for element in document_checks["unnamedInteractiveElements"]:
-                    issues.document_errors.append(f"interactive element '{element}' has no accessible name")
-                if not document_checks["hasDocumentLanguage"]:
-                    issues.document_errors.append("document has no language")
-                if not document_checks["hasDocumentTitle"]:
-                    issues.document_errors.append("document has no title")
-
-                page.remove_listener("console", on_console)
-                page.remove_listener("pageerror", on_pageerror)
-                page.remove_listener("response", on_response)
-
-                for kind, entries in (
-                    ("console error", issues.console_errors),
-                    ("page error", issues.page_errors),
-                    ("failed resource", issues.failed_requests),
-                    ("document error", issues.document_errors),
-                ):
-                    for entry in entries:
-                        problems.append(f"{rel_path}: {kind}: {entry}")
-
+        ids_by_page, links_by_page, problems = inspect_pages(html_files, base_url)
     finally:
         server.shutdown()
         server.server_close()
 
+    problems.extend(check_local_links(dist, ids_by_page, links_by_page))
+    return problems
+
+
+def inspect_pages(html_files: list[str], base_url: str) -> tuple[dict[str, set[str]], dict[str, list[str]], list[str]]:
+    ids_by_page: dict[str, set[str]] = {}
+    links_by_page: dict[str, list[str]] = {}
+    problems: list[str] = []
+
+    with sync_playwright() as playwright, contextlib.closing(playwright.chromium.launch()) as browser:
+        page = browser.new_page()
+        # Waiting on external hosts (badges, Google Fonts, ...) would
+        # make this "quick" check slow and flaky against services this
+        # repository doesn't control, and they may not even be reachable
+        # in a sandboxed CI runner. Fake a harmless empty response for
+        # them instead of aborting the request outright: aborting logs
+        # its own "failed to load resource" console error, which would
+        # otherwise be indistinguishable from a real one. Local resource
+        # errors are still caught via the response listener below.
+        page.route(
+            re.compile(r"^https?://(?!127\.0\.0\.1)"),
+            lambda route: route.fulfill(status=200, body=""),
+        )
+
+        for rel_path in html_files:
+            issues = collect_page_issues(page, base_url, rel_path)
+            ids_by_page[rel_path] = set(page.eval_on_selector_all("[id]", "els => els.map(e => e.id)"))
+            links_by_page[rel_path] = HREF_RE.findall(page.content())
+            append_page_problems(problems, rel_path, issues)
+
+    return ids_by_page, links_by_page, problems
+
+
+def collect_page_issues(page: object, base_url: str, rel_path: str) -> PageIssues:
+    issues = PageIssues()
+
+    def on_console(msg, i=issues):
+        if msg.type == "error":
+            i.console_errors.append(msg.text)
+
+    def on_pageerror(exc, i=issues):
+        i.page_errors.append(str(exc))
+
+    def on_response(response, i=issues):
+        if response.url.startswith(base_url) and response.status >= 400:
+            i.failed_requests.append(f"{response.url} -> {response.status}")
+
+    page.on("console", on_console)
+    page.on("pageerror", on_pageerror)
+    page.on("response", on_response)
+
+    url = f"{base_url}/{rel_path}"
+    page.goto(url, wait_until="load", timeout=15000)
+    record_document_errors(issues, page.evaluate(DOCUMENT_CHECKS_SCRIPT))
+
+    page.remove_listener("console", on_console)
+    page.remove_listener("pageerror", on_pageerror)
+    page.remove_listener("response", on_response)
+    return issues
+
+
+def record_document_errors(issues: PageIssues, document_checks: dict) -> None:
+    for duplicate_id in document_checks["duplicateIds"]:
+        issues.document_errors.append(f"duplicate element id '{duplicate_id}'")
+    for image_src in document_checks["imagesWithoutAlt"]:
+        issues.document_errors.append(f"image '{image_src}' has no alt attribute")
+    for element in document_checks["unnamedInteractiveElements"]:
+        issues.document_errors.append(f"interactive element '{element}' has no accessible name")
+    if not document_checks["hasDocumentLanguage"]:
+        issues.document_errors.append("document has no language")
+    if not document_checks["hasDocumentTitle"]:
+        issues.document_errors.append("document has no title")
+
+
+def append_page_problems(problems: list[str], rel_path: str, issues: PageIssues) -> None:
+    for kind, entries in (
+        ("console error", issues.console_errors),
+        ("page error", issues.page_errors),
+        ("failed resource", issues.failed_requests),
+        ("document error", issues.document_errors),
+    ):
+        for entry in entries:
+            problems.append(f"{rel_path}: {kind}: {entry}")
+
+
+def check_local_links(
+    dist: Path,
+    ids_by_page: dict[str, set[str]],
+    links_by_page: dict[str, list[str]],
+) -> list[str]:
+    problems: list[str] = []
     known_files = {p.relative_to(dist).as_posix() for p in dist.rglob("*") if p.is_file()}
     for rel_path, hrefs in links_by_page.items():
         for href in hrefs:
             if not is_local_href(href):
                 continue
-
-            path_part, _, fragment = href.partition("#")
-            if path_part:
-                target_url = urljoin(f"http://x/{rel_path}", path_part)
-                target_url_path = unquote(urlsplit(target_url).path)
-                target_path = target_url_path.lstrip("/")
-                # SimpleHTTPRequestHandler serves an index.html for directory
-                # URLs. Mirror that behaviour when checking the built files so
-                # links such as ``docs/`` and ``/`` are not false positives.
-                target_file = f"{target_path}index.html" if target_url_path.endswith("/") else target_path
-            else:
-                target_file = rel_path
-
+            target_file, decoded_fragment = resolve_href_target(rel_path, href)
             if target_file not in known_files:
                 problems.append(f"{rel_path}: broken link: '{href}' (no such file '{target_file}')")
                 continue
@@ -243,14 +251,26 @@ def check_site(dist: Path) -> list[str]:
             # URL fragments are percent encoded in href attributes but DOM ids
             # contain their decoded text (for example, #command%20line targets
             # id="command line"). Compare the browser-visible value.
-            decoded_fragment = unquote(fragment)
             if decoded_fragment and decoded_fragment not in ids_by_page.get(target_file, set()):
                 problems.append(
-                    f"{rel_path}: broken link: '{href}' "
-                    f"(no element with id '{decoded_fragment}' on '{target_file}')"
+                    f"{rel_path}: broken link: '{href}' (no element with id '{decoded_fragment}' on '{target_file}')"
                 )
-
     return problems
+
+
+def resolve_href_target(rel_path: str, href: str) -> tuple[str, str]:
+    path_part, _, fragment = href.partition("#")
+    if path_part:
+        target_url = urljoin(f"http://x/{rel_path}", path_part)
+        target_url_path = unquote(urlsplit(target_url).path)
+        target_path = target_url_path.lstrip("/")
+        # SimpleHTTPRequestHandler serves an index.html for directory
+        # URLs. Mirror that behaviour when checking the built files so
+        # links such as ``docs/`` and ``/`` are not false positives.
+        target_file = f"{target_path}index.html" if target_url_path.endswith("/") else target_path
+    else:
+        target_file = rel_path
+    return target_file, unquote(fragment)
 
 
 def main() -> int:

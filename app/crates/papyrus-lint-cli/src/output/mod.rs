@@ -92,6 +92,31 @@ pub(crate) fn write_json_report(buf: &mut Vec<u8>, report: &impl serde::Serializ
     );
 }
 
+/// Writes `report_buf` to `--output <path>` when one was given, or to
+/// `stdout` otherwise. Shared by [`crate::run`]'s lint/fix path and
+/// [`crate::run_blob`] so a failure to create the report file is reported
+/// with the same `error: failed to write ...` message in both.
+pub(crate) fn flush_report(
+    report_buf: &[u8],
+    output_path: Option<&std::path::Path>,
+    stdout: &mut dyn std::io::Write,
+    stderr: &mut dyn std::io::Write,
+) -> u8 {
+    if let Some(output_path) = output_path {
+        if let Err(err) = std::fs::write(output_path, report_buf) {
+            let _ = writeln!(
+                stderr,
+                "error: failed to write {}: {err}",
+                output_path.display()
+            );
+            return 2;
+        }
+    } else {
+        let _ = stdout.write_all(report_buf);
+    }
+    0
+}
+
 /// One script's worth of work from the parallel lint loop in [`run`],
 /// collected by its worker so the main thread can fold it into the overall
 /// report afterward in the script's original (not completion) order --

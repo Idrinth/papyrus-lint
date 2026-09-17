@@ -142,6 +142,22 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
 ) -> Vec<Diagnostic> {
     let rules = &config.rules;
     let mut diagnostics = Vec::new();
+    collect_token_diagnostics(source, config, rules, &mut diagnostics);
+    collect_signature_diagnostics(source, rules, external, &mut diagnostics);
+    collect_control_flow_diagnostics(source, config, rules, &mut diagnostics);
+    collect_spacing_diagnostics(source, config, rules, &mut diagnostics);
+    collect_cast_and_state_diagnostics(source, config, rules, external, &mut diagnostics);
+    collect_script_shape_diagnostics(source, rules, &mut diagnostics);
+    collect_remaining_diagnostics(source, rules, external, &mut diagnostics);
+    diagnostics
+}
+
+fn collect_token_diagnostics(
+    source: &str,
+    config: &Config,
+    rules: &Rules,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     if rules.trailing_whitespace {
         diagnostics.extend(trailing_whitespace::check(source));
     }
@@ -181,6 +197,14 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
     if rules.indentation {
         diagnostics.extend(indentation::check(source, config.indentation_unit()));
     }
+}
+
+fn collect_signature_diagnostics<E: ExternalSignatures>(
+    source: &str,
+    rules: &Rules,
+    external: &mut E,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     if rules.argument_types {
         diagnostics.extend(argument_types::check_with(source, external));
     }
@@ -216,6 +240,14 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
     if rules.state_function_signature {
         diagnostics.extend(state_function_signature::check(source));
     }
+}
+
+fn collect_control_flow_diagnostics(
+    source: &str,
+    config: &Config,
+    rules: &Rules,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     if rules.cyclomatic_complexity {
         diagnostics.extend(cyclomatic_complexity::check(
             source,
@@ -253,6 +285,14 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
             config.assume_auto_properties_filled,
         ));
     }
+}
+
+fn collect_spacing_diagnostics(
+    source: &str,
+    config: &Config,
+    rules: &Rules,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     if rules.chain_whitespace {
         diagnostics.extend(chain_whitespace::check(source));
     }
@@ -280,6 +320,15 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
     if rules.explicit_return {
         diagnostics.extend(explicit_return::check(source));
     }
+}
+
+fn collect_cast_and_state_diagnostics<E: ExternalSignatures>(
+    source: &str,
+    config: &Config,
+    rules: &Rules,
+    external: &mut E,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     if rules.unchecked_form_parameter {
         diagnostics.extend(unchecked_form_parameter::check(source));
     }
@@ -321,6 +370,13 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
     if rules.repeated_getvalue {
         diagnostics.extend(repeated_getvalue::check(source));
     }
+}
+
+fn collect_script_shape_diagnostics(
+    source: &str,
+    rules: &Rules,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     if rules.global_variable_setvalue {
         diagnostics.extend(global_variable_setvalue::check(source));
     }
@@ -351,6 +407,14 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
     if rules.unguarded_self_recursion {
         diagnostics.extend(unguarded_self_recursion::check(source));
     }
+}
+
+fn collect_remaining_diagnostics<E: ExternalSignatures>(
+    source: &str,
+    rules: &Rules,
+    external: &mut E,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
     if rules.self_assignment {
         diagnostics.extend(self_assignment::check(source));
     }
@@ -381,84 +445,110 @@ pub fn collect_diagnostics<E: ExternalSignatures>(
     if rules.circular_dependency {
         diagnostics.extend(circular_dependency::check_with(source, external));
     }
-    diagnostics
 }
 
 pub fn apply_repairs(source: &str, config: &Config, applies: impl Fn(&str) -> bool) -> String {
     let rules = &config.rules;
-    let source = if rules.identifier_casing && applies(identifier_casing::RULE) {
-        identifier_casing::repair(source, config.identifier_casing)
-    } else {
-        source.to_string()
-    };
-    let source = if rules.slow_functions && applies(slow_functions::RULE) {
-        slow_functions::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.semicolon && applies(semicolon::RULE) {
-        semicolon::repair(&source, config.semicolon_style())
-    } else {
-        source
-    };
-    let source = if rules.indentation && applies(indentation::RULE) {
-        indentation::repair(&source, config.indentation_unit())
-    } else {
-        source
-    };
-    let source = if rules.property_sorting && applies(property_sorting::RULE) {
-        property_sorting::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.comma_spacing && applies(comma_spacing::RULE) {
-        comma_spacing::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.chain_whitespace && applies(chain_whitespace::RULE) {
-        chain_whitespace::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.exclamation_spacing && applies(exclamation_spacing::RULE) {
-        exclamation_spacing::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.operator_spacing && applies(operator_spacing::RULE) {
-        operator_spacing::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.assignment_operator_spacing && applies(assignment_operator_spacing::RULE)
-    {
-        assignment_operator_spacing::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.type_casing && applies(type_casing::RULE) {
-        type_casing::repair(&source, config.type_casing)
-    } else {
-        source
-    };
-    let source = if rules.trailing_whitespace && applies(trailing_whitespace::RULE) {
-        trailing_whitespace::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.global_variable_increment && applies(global_variable_increment::RULE) {
-        global_variable_increment::repair(&source)
-    } else {
-        source
-    };
-    let source = if rules.named_arguments && applies(named_arguments::RULE) {
-        named_arguments::repair(&source, config.named_arguments)
-    } else {
-        source
-    };
-    if rules.unnecessary_function && applies(unnecessary_function::RULE) {
-        unnecessary_function::repair(&source)
+    let source = apply_style_repairs(source.to_string(), rules, config, &applies);
+    let source = apply_spacing_repairs(source, rules, &applies);
+    apply_remaining_repairs(source, rules, config, &applies)
+}
+
+fn apply_style_repairs(
+    source: String,
+    rules: &Rules,
+    config: &Config,
+    applies: &impl Fn(&str) -> bool,
+) -> String {
+    let source = apply_rule(
+        source,
+        rules.identifier_casing && applies(identifier_casing::RULE),
+        |s| identifier_casing::repair(s, config.identifier_casing),
+    );
+    let source = apply_rule(
+        source,
+        rules.slow_functions && applies(slow_functions::RULE),
+        slow_functions::repair,
+    );
+    let source = apply_rule(source, rules.semicolon && applies(semicolon::RULE), |s| {
+        semicolon::repair(s, config.semicolon_style())
+    });
+    let source = apply_rule(
+        source,
+        rules.indentation && applies(indentation::RULE),
+        |s| indentation::repair(s, config.indentation_unit()),
+    );
+    apply_rule(
+        source,
+        rules.property_sorting && applies(property_sorting::RULE),
+        property_sorting::repair,
+    )
+}
+
+fn apply_spacing_repairs(source: String, rules: &Rules, applies: &impl Fn(&str) -> bool) -> String {
+    let source = apply_rule(
+        source,
+        rules.comma_spacing && applies(comma_spacing::RULE),
+        comma_spacing::repair,
+    );
+    let source = apply_rule(
+        source,
+        rules.chain_whitespace && applies(chain_whitespace::RULE),
+        chain_whitespace::repair,
+    );
+    let source = apply_rule(
+        source,
+        rules.exclamation_spacing && applies(exclamation_spacing::RULE),
+        exclamation_spacing::repair,
+    );
+    let source = apply_rule(
+        source,
+        rules.operator_spacing && applies(operator_spacing::RULE),
+        operator_spacing::repair,
+    );
+    apply_rule(
+        source,
+        rules.assignment_operator_spacing && applies(assignment_operator_spacing::RULE),
+        assignment_operator_spacing::repair,
+    )
+}
+
+fn apply_remaining_repairs(
+    source: String,
+    rules: &Rules,
+    config: &Config,
+    applies: &impl Fn(&str) -> bool,
+) -> String {
+    let source = apply_rule(
+        source,
+        rules.type_casing && applies(type_casing::RULE),
+        |s| type_casing::repair(s, config.type_casing),
+    );
+    let source = apply_rule(
+        source,
+        rules.trailing_whitespace && applies(trailing_whitespace::RULE),
+        trailing_whitespace::repair,
+    );
+    let source = apply_rule(
+        source,
+        rules.global_variable_increment && applies(global_variable_increment::RULE),
+        global_variable_increment::repair,
+    );
+    let source = apply_rule(
+        source,
+        rules.named_arguments && applies(named_arguments::RULE),
+        |s| named_arguments::repair(s, config.named_arguments),
+    );
+    apply_rule(
+        source,
+        rules.unnecessary_function && applies(unnecessary_function::RULE),
+        unnecessary_function::repair,
+    )
+}
+
+fn apply_rule(source: String, enabled: bool, repair: impl FnOnce(&str) -> String) -> String {
+    if enabled {
+        repair(&source)
     } else {
         source
     }

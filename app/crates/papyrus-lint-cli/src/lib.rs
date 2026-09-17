@@ -255,7 +255,7 @@ mod run_scan;
 
 pub use output::{JsonDiagnostic, JsonFileReport, JsonReport};
 
-use args::{parse_run_args, ArgsError, ParsedCommand};
+use args::{parse_run_args, ArgsError, LintArgs, ParsedCommand};
 use blob::run_blob;
 use doctor::run_doctor;
 use init::{
@@ -268,8 +268,8 @@ use run_fix::fix_file;
 use run_lint::{lint_file, LintContext};
 use run_scan::scan_project;
 
-use std::fs;
 use std::io::Write;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
 
@@ -423,140 +423,20 @@ pub fn run(
     stderr: &mut impl Write,
     stdout_is_terminal: bool,
 ) -> u8 {
-    if args.first().map(String::as_str) == Some("init") {
-        let preset = match parse_init_preset(&args[1..]) {
-            Ok(preset) => preset,
-            Err(InitPresetError::Usage) => {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
-            }
-        };
-
-        let current_dir = match std::env::current_dir() {
-            Ok(dir) => dir,
+    match args.first().map(String::as_str) {
+        Some("init") => run_init(&args[1..], stdout, stderr),
+        Some("preset") => run_preset_add(&args[1..], stdout, stderr),
+        Some("doctor") => run_doctor(&args[1..], stdout, stderr),
+        _ => match parse_run_args(args) {
             Err(err) => {
-                let _ = writeln!(
-                    stderr,
-                    "error: failed to determine current directory: {err}"
-                );
-                return 2;
+                write_args_error(err, stderr);
+                2
             }
-        };
-        return initialize_config(&current_dir, preset, stdout, stderr);
-    }
-
-    if args.first().map(String::as_str) == Some("preset") {
-        if args.get(1).map(String::as_str) != Some("add") {
-            let _ = write!(stderr, "{USAGE}");
-            return 2;
-        }
-        let (name, source_path, overwrite) = match parse_preset_add_args(&args[2..]) {
-            Ok(parsed) => parsed,
-            Err(PresetAddArgsError::Usage) => {
-                let _ = write!(stderr, "{USAGE}");
-                return 2;
+            Ok(ParsedCommand::Version) => {
+                let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
+                0
             }
-        };
-        let result = presets::add_user_preset(&name, &source_path, overwrite);
-        return report_add_user_preset(&name, result, stdout, stderr);
-    }
-
-    if args.first().map(String::as_str) == Some("doctor") {
-        return run_doctor(&args[1..], stdout, stderr);
-    }
-
-    let parsed = match parse_run_args(args) {
-        Ok(parsed) => parsed,
-        Err(ArgsError::Usage) => {
-            let _ = write!(stderr, "{USAGE}");
-            return 2;
-        }
-        Err(ArgsError::JsonAndFormatConflict) => {
-            let _ = writeln!(stderr, "error: --json and --format can't be combined");
-            return 2;
-        }
-        Err(ArgsError::InvalidFormat(value)) => {
-            let _ = writeln!(
-                stderr,
-                "error: --format must be 'plain', 'json', or 'ai', got '{value}'"
-            );
-            return 2;
-        }
-        Err(ArgsError::HashSourceRequiresAi) => {
-            let _ = writeln!(stderr, "error: --hash-source requires --format ai");
-            return 2;
-        }
-        Err(ArgsError::InvalidColor(value)) => {
-            let _ = writeln!(
-                stderr,
-                "error: --color must be 'auto', 'always', or 'never', got '{value}'"
-            );
-            return 2;
-        }
-        Err(ArgsError::BlobWithPathArgument) => {
-            let _ = writeln!(
-                stderr,
-                "error: --blob can't be combined with a path argument (or `fix`)"
-            );
-            return 2;
-        }
-        Err(ArgsError::BlobWithFixFlags) => {
-            let _ = writeln!(
-                stderr,
-                "error: --blob can't be combined with fix/--type/--line/--dry-run"
-            );
-            return 2;
-        }
-        Err(ArgsError::BlobWithScriptRootProgressThreads) => {
-            let _ = writeln!(
-                stderr,
-                "error: --blob can't be combined with --script-root/--progress/--threads"
-            );
-            return 2;
-        }
-        Err(ArgsError::UnknownTag(value)) => {
-            let _ = writeln!(stderr, "error: unknown tag '{value}'");
-            return 2;
-        }
-        Err(ArgsError::ProgressRequiresOutput) => {
-            let _ = writeln!(stderr, "error: --progress requires --output <path>");
-            return 2;
-        }
-        Err(ArgsError::TypeAndTagConflict) => {
-            let _ = writeln!(stderr, "error: --type and --tag can't be combined");
-            return 2;
-        }
-        Err(ArgsError::UnknownRule(value)) => {
-            let _ = writeln!(stderr, "error: unknown rule '{value}'");
-            return 2;
-        }
-        Err(ArgsError::RuleHasNoFix(value)) => {
-            let _ = writeln!(stderr, "error: rule '{value}' has no automatic fix");
-            return 2;
-        }
-        Err(ArgsError::InvalidLine(value)) => {
-            let _ = writeln!(
-                stderr,
-                "error: --line must be a positive integer, got '{value}'"
-            );
-            return 2;
-        }
-        Err(ArgsError::InvalidThreads(value)) => {
-            let _ = writeln!(
-                stderr,
-                "error: --threads must be a positive integer, got '{value}'"
-            );
-            return 2;
-        }
-    };
-
-    let lint = match parsed {
-        ParsedCommand::Version => {
-            let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
-            return 0;
-        }
-        ParsedCommand::Blob(blob) => {
-            return run_blob(
+            Ok(ParsedCommand::Blob(blob)) => run_blob(
                 &blob.source,
                 blob.config_path.as_deref(),
                 blob.output_format,
@@ -569,58 +449,164 @@ pub fn run(
                 stdout_is_terminal,
                 stdout,
                 stderr,
-            );
+            ),
+            Ok(ParsedCommand::Lint(lint)) => {
+                run_lint_command(lint, stdout, stderr, stdout_is_terminal)
+            }
+        },
+    }
+}
+
+fn run_init(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
+    let preset = match parse_init_preset(args) {
+        Ok(preset) => preset,
+        Err(InitPresetError::Usage) => {
+            let _ = write!(stderr, "{USAGE}");
+            return 2;
         }
-        ParsedCommand::Lint(lint) => lint,
     };
 
-    let fix = lint.fix;
-    let input_path = lint.input_path;
-    let output_format = lint.output_format;
-    let json = output_format != OutputFormat::Plain;
-    let quiet_warnings = lint.quiet_warnings;
-    let quiet_info = lint.quiet_info;
-    let short_paths = lint.short_paths;
-    let progress = lint.progress;
-    let dry_run = lint.dry_run;
-    let hash_source = lint.hash_source;
-    let config_path = lint.config_path;
-    let output_path = lint.output_path;
-    let cli_script_roots = lint.cli_script_roots;
-    let tag_filter = lint.tag_filter;
-    let rule_filter = lint.rule_filter;
-    let target_line = lint.target_line;
-    let color_choice = lint.color_choice;
-    let thread_count = lint.thread_count;
+    let current_dir = match std::env::current_dir() {
+        Ok(dir) => dir,
+        Err(err) => {
+            let _ = writeln!(
+                stderr,
+                "error: failed to determine current directory: {err}"
+            );
+            return 2;
+        }
+    };
+    initialize_config(&current_dir, preset, stdout, stderr)
+}
 
-    let scan = match scan_project(&input_path, config_path.as_deref(), cli_script_roots) {
+fn run_preset_add(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
+    if args.first().map(String::as_str) != Some("add") {
+        let _ = write!(stderr, "{USAGE}");
+        return 2;
+    }
+    let (name, source_path, overwrite) = match parse_preset_add_args(&args[1..]) {
+        Ok(parsed) => parsed,
+        Err(PresetAddArgsError::Usage) => {
+            let _ = write!(stderr, "{USAGE}");
+            return 2;
+        }
+    };
+    let result = presets::add_user_preset(&name, &source_path, overwrite);
+    report_add_user_preset(&name, result, stdout, stderr)
+}
+
+fn write_args_error(err: ArgsError, stderr: &mut impl Write) {
+    match err {
+        ArgsError::Usage => {
+            let _ = write!(stderr, "{USAGE}");
+        }
+        err => {
+            let _ = writeln!(stderr, "{}", args_error_message(&err));
+        }
+    }
+}
+
+fn args_error_message(err: &ArgsError) -> String {
+    match err {
+        ArgsError::Usage => unreachable!("Usage is reported via USAGE, not a one-line error"),
+        ArgsError::JsonAndFormatConflict
+        | ArgsError::InvalidFormat(_)
+        | ArgsError::HashSourceRequiresAi
+        | ArgsError::InvalidColor(_) => format_flag_error(err),
+        ArgsError::BlobWithPathArgument
+        | ArgsError::BlobWithFixFlags
+        | ArgsError::BlobWithScriptRootProgressThreads => blob_flag_error(err),
+        ArgsError::UnknownTag(_)
+        | ArgsError::ProgressRequiresOutput
+        | ArgsError::TypeAndTagConflict
+        | ArgsError::UnknownRule(_)
+        | ArgsError::RuleHasNoFix(_)
+        | ArgsError::InvalidLine(_)
+        | ArgsError::InvalidThreads(_) => lint_flag_error(err),
+    }
+}
+
+fn format_flag_error(err: &ArgsError) -> String {
+    match err {
+        ArgsError::JsonAndFormatConflict => {
+            "error: --json and --format can't be combined".to_string()
+        }
+        ArgsError::InvalidFormat(value) => {
+            format!("error: --format must be 'plain', 'json', or 'ai', got '{value}'")
+        }
+        ArgsError::HashSourceRequiresAi => "error: --hash-source requires --format ai".to_string(),
+        ArgsError::InvalidColor(value) => {
+            format!("error: --color must be 'auto', 'always', or 'never', got '{value}'")
+        }
+        _ => unreachable!("format_flag_error called with a non-format error"),
+    }
+}
+
+fn blob_flag_error(err: &ArgsError) -> String {
+    match err {
+        ArgsError::BlobWithPathArgument => {
+            "error: --blob can't be combined with a path argument (or `fix`)".to_string()
+        }
+        ArgsError::BlobWithFixFlags => {
+            "error: --blob can't be combined with fix/--type/--line/--dry-run".to_string()
+        }
+        ArgsError::BlobWithScriptRootProgressThreads => {
+            "error: --blob can't be combined with --script-root/--progress/--threads".to_string()
+        }
+        _ => unreachable!("blob_flag_error called with a non-blob error"),
+    }
+}
+
+fn lint_flag_error(err: &ArgsError) -> String {
+    match err {
+        ArgsError::UnknownTag(value) => format!("error: unknown tag '{value}'"),
+        ArgsError::ProgressRequiresOutput => {
+            "error: --progress requires --output <path>".to_string()
+        }
+        ArgsError::TypeAndTagConflict => "error: --type and --tag can't be combined".to_string(),
+        ArgsError::UnknownRule(value) => format!("error: unknown rule '{value}'"),
+        ArgsError::RuleHasNoFix(value) => format!("error: rule '{value}' has no automatic fix"),
+        ArgsError::InvalidLine(value) => {
+            format!("error: --line must be a positive integer, got '{value}'")
+        }
+        ArgsError::InvalidThreads(value) => {
+            format!("error: --threads must be a positive integer, got '{value}'")
+        }
+        _ => unreachable!("lint_flag_error called with a non-lint-flag error"),
+    }
+}
+
+fn run_lint_command(
+    lint: LintArgs,
+    stdout: &mut (impl Write + Send),
+    stderr: &mut impl Write,
+    stdout_is_terminal: bool,
+) -> u8 {
+    let scan = match scan_project(
+        &lint.input_path,
+        lint.config_path.as_deref(),
+        lint.cli_script_roots,
+    ) {
         Ok(scan) => scan,
         Err(message) => {
             let _ = writeln!(stderr, "{message}");
             return 2;
         }
     };
-    let script_paths = scan.script_paths;
-    let lint_config = scan.lint_config;
 
     // `--output <path>` redirects the report to a file, which is never a
     // terminal, so `auto` never colorizes in that case regardless of
     // whether `stdout` itself is one. `NO_COLOR` (https://no-color.org/)
     // is honored the same way most CLIs do: any non-empty or empty value
     // disables auto-coloring.
-    let use_color = resolve_color(color_choice, output_path.as_deref(), stdout_is_terminal);
+    let use_color = resolve_color(
+        lint.color_choice,
+        lint.output_path.as_deref(),
+        stdout_is_terminal,
+    );
 
-    let mut total_diagnostics = 0usize;
-    let mut files_with_diagnostics = 0usize;
-    let mut files_fixed = 0usize;
-    let mut should_fail = false;
-    let mut json_files: Vec<JsonFileReport> = Vec::new();
-    let mut ai_files: Vec<AiFileReport> = Vec::new();
-    // Buffered so `--output <path>` can redirect the whole report to a file
-    // instead of stdout, without duplicating the printing logic below.
-    let mut report_buf: Vec<u8> = Vec::new();
-
-    let total_scripts = script_paths.len();
+    let json = lint.output_format != OutputFormat::Plain;
+    let total_scripts = scan.script_paths.len();
     let function_table_root = scan.function_table.root().to_path_buf();
     let function_table_additional_roots = scan.function_table.additional_roots().to_vec();
     // Every script is otherwise independent, so this table's own cache
@@ -641,7 +627,7 @@ pub fn run(
     // Shared read-only across every script (and, with `--threads`, across
     // every worker thread linting one) -- see `run_lint::LintContext`.
     let lint_context = LintContext {
-        lint_config: &lint_config,
+        lint_config: &scan.lint_config,
         function_table: &function_table,
         function_table_additional_roots: &function_table_additional_roots,
         scripts_by_name: &scan.scripts_by_name,
@@ -649,83 +635,35 @@ pub fn run(
         strict_achlist_scope: scan.strict_achlist_scope,
         compile_check: scan.compile_check,
         compiler_path: &scan.compiler_path,
-        tag_filter: tag_filter.as_deref(),
-        quiet_warnings,
-        quiet_info,
+        tag_filter: lint.tag_filter.as_deref(),
+        quiet_warnings: lint.quiet_warnings,
+        quiet_info: lint.quiet_info,
         json,
-        output_format,
-        hash_source,
+        output_format: lint.output_format,
+        hash_source: lint.hash_source,
         use_color,
     };
 
     let file_results: Vec<Result<FileOutcome, String>> =
         papyrus_lint_core::parallel::map_in_parallel(
             (0..total_scripts).collect(),
-            thread_count,
-            |file_index| -> Result<FileOutcome, String> {
-                let script_path = &script_paths[file_index];
-                let (source, encoding) =
-                    read_psc_source_with_encoding(script_path).map_err(|err| {
-                        format!("error: failed to read {}: {err}", script_path.display())
-                    })?;
-
-                let reported_path = display_path(script_path, &function_table_root, short_paths);
-
-                // `fix` mutates (or, under `--dry-run`, previews) the
-                // source first; `run_lint::lint_file` then lints whatever
-                // source comes out of that (the original source, if `fix`
-                // didn't run or changed nothing).
-                let (source, fixed_this_file, file_diff, mut plain_text) = if fix {
-                    let outcome = fix_file(
-                        script_path,
-                        &reported_path,
-                        source,
-                        encoding,
-                        &lint_config,
-                        &function_table,
-                        tag_filter.as_deref(),
-                        rule_filter,
-                        target_line,
-                        dry_run,
-                        json,
-                    )?;
-                    (
-                        outcome.source,
-                        outcome.fixed,
-                        outcome.diff,
-                        outcome.plain_text,
-                    )
-                } else {
-                    (source, false, None, Vec::new())
-                };
-
-                let lint_outcome = lint_file(
+            lint.thread_count,
+            |file_index| {
+                process_script(
                     &lint_context,
-                    script_path,
-                    reported_path,
-                    &source,
-                    file_diff,
-                );
-                plain_text.extend_from_slice(&lint_outcome.plain_text);
-
-                if progress {
-                    let completed = progress_completed.fetch_add(1, Ordering::SeqCst) + 1;
-                    let mut stdout = progress_stdout
-                        .lock()
-                        .unwrap_or_else(|poisoned| poisoned.into_inner());
-                    let _ = write!(stdout, "\rLinting: {completed}/{total_scripts} files");
-                    let _ = stdout.flush();
-                }
-
-                Ok(FileOutcome {
-                    plain_text,
-                    json_file: lint_outcome.json_file,
-                    ai_file: lint_outcome.ai_file,
-                    should_fail: lint_outcome.should_fail,
-                    has_diagnostics: lint_outcome.has_diagnostics,
-                    diagnostic_count: lint_outcome.diagnostic_count,
-                    fixed: fixed_this_file,
-                })
+                    &scan.script_paths,
+                    file_index,
+                    &function_table_root,
+                    lint.short_paths,
+                    lint.fix,
+                    lint.rule_filter,
+                    lint.target_line,
+                    lint.dry_run,
+                    lint.progress,
+                    &progress_completed,
+                    total_scripts,
+                    &progress_stdout,
+                )
             },
         );
 
@@ -737,99 +675,259 @@ pub fn run(
     let stdout = progress_stdout
         .into_inner()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
+    fold_and_flush_report(
+        file_results,
+        lint.output_format,
+        &scan.lint_config,
+        scan.script_paths.len(),
+        lint.fix,
+        lint.dry_run,
+        use_color,
+        lint.progress,
+        lint.output_path.as_deref(),
+        stdout,
+        stderr,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn fold_and_flush_report(
+    file_results: Vec<Result<FileOutcome, String>>,
+    output_format: OutputFormat,
+    lint_config: &papyrus_lints::Config,
+    scripts_checked: usize,
+    fix: bool,
+    dry_run: bool,
+    use_color: bool,
+    progress: bool,
+    output_path: Option<&Path>,
+    stdout: &mut dyn Write,
+    stderr: &mut impl Write,
+) -> u8 {
+    let mut report = AggregatedReport::default();
     for result in file_results {
-        let outcome = result.expect("checked for errors above");
-        report_buf.extend_from_slice(&outcome.plain_text);
-        if let Some(json_file) = outcome.json_file {
-            json_files.push(json_file);
-        }
-        if let Some(ai_file) = outcome.ai_file {
-            ai_files.push(ai_file);
-        }
-        should_fail = should_fail || outcome.should_fail;
-        if outcome.has_diagnostics {
-            files_with_diagnostics += 1;
-            total_diagnostics += outcome.diagnostic_count;
-        }
-        if outcome.fixed {
-            files_fixed += 1;
-        }
+        report.fold(result.expect("checked for errors above"));
     }
     if progress {
         let _ = writeln!(stdout);
     }
 
-    let success = !should_fail;
+    append_lint_summary(
+        &mut report,
+        output_format,
+        lint_config,
+        scripts_checked,
+        fix,
+        dry_run,
+        use_color,
+    );
 
-    if output_format == OutputFormat::Json {
-        let report = JsonReport {
-            files: json_files,
-            scripts_checked: script_paths.len(),
-            files_with_diagnostics,
-            total_diagnostics,
-            files_fixed: fix.then_some(files_fixed),
-            dry_run,
-            success,
-        };
-        write_json_report(&mut report_buf, &report);
-    } else if output_format == OutputFormat::Ai {
-        let report = build_ai_report(&lint_config, ai_files, total_diagnostics);
-        write_json_report(&mut report_buf, &report);
-    } else {
-        let fixed_suffix = if fix && dry_run {
-            format!(" ({files_fixed} script(s) would be fixed.)")
-        } else if fix {
-            format!(" ({files_fixed} script(s) fixed.)")
-        } else {
-            String::new()
-        };
-
-        // Green when clean, yellow when problems were found but none crossed
-        // the configured failure threshold, red when the run will exit 1.
-        let summary_color = if total_diagnostics == 0 {
-            ANSI_GREEN
-        } else if success {
-            ANSI_YELLOW
-        } else {
-            ANSI_RED
-        };
-
-        let summary = if total_diagnostics == 0 {
-            format!(
-                "PapyrusLinterCLI: no problems found in {} script(s).{fixed_suffix}",
-                script_paths.len()
-            )
-        } else {
-            format!(
-                "PapyrusLinterCLI: {total_diagnostics} problem(s) found in {files_with_diagnostics} of {} script(s).{fixed_suffix}",
-                script_paths.len()
-            )
-        };
-        let _ = writeln!(
-            report_buf,
-            "{}",
-            colorize(&summary, summary_color, use_color)
-        );
+    let write_status = flush_report(&report.buf, output_path, stdout, stderr);
+    if write_status != 0 {
+        return write_status;
     }
 
-    if let Some(output_path) = output_path {
-        if let Err(err) = fs::write(&output_path, &report_buf) {
-            let _ = writeln!(
-                stderr,
-                "error: failed to write {}: {err}",
-                output_path.display()
-            );
-            return 2;
-        }
-    } else {
-        let _ = stdout.write_all(&report_buf);
-    }
-
-    if success {
-        0
-    } else {
+    if report.should_fail {
         1
+    } else {
+        0
     }
+}
+
+#[derive(Default)]
+struct AggregatedReport {
+    buf: Vec<u8>,
+    json_files: Vec<JsonFileReport>,
+    ai_files: Vec<AiFileReport>,
+    should_fail: bool,
+    files_with_diagnostics: usize,
+    total_diagnostics: usize,
+    files_fixed: usize,
+}
+
+impl AggregatedReport {
+    fn fold(&mut self, outcome: FileOutcome) {
+        self.buf.extend_from_slice(&outcome.plain_text);
+        if let Some(json_file) = outcome.json_file {
+            self.json_files.push(json_file);
+        }
+        if let Some(ai_file) = outcome.ai_file {
+            self.ai_files.push(ai_file);
+        }
+        self.should_fail = self.should_fail || outcome.should_fail;
+        if outcome.has_diagnostics {
+            self.files_with_diagnostics += 1;
+            self.total_diagnostics += outcome.diagnostic_count;
+        }
+        if outcome.fixed {
+            self.files_fixed += 1;
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn process_script(
+    lint_context: &LintContext,
+    script_paths: &[PathBuf],
+    file_index: usize,
+    function_table_root: &Path,
+    short_paths: bool,
+    fix: bool,
+    rule_filter: Option<&'static str>,
+    target_line: Option<usize>,
+    dry_run: bool,
+    progress: bool,
+    progress_completed: &AtomicUsize,
+    total_scripts: usize,
+    progress_stdout: &Mutex<&mut (dyn Write + Send)>,
+) -> Result<FileOutcome, String> {
+    let script_path = &script_paths[file_index];
+    let (source, encoding) = read_psc_source_with_encoding(script_path)
+        .map_err(|err| format!("error: failed to read {}: {err}", script_path.display()))?;
+
+    let reported_path = display_path(script_path, function_table_root, short_paths);
+
+    // `fix` mutates (or, under `--dry-run`, previews) the source first;
+    // `run_lint::lint_file` then lints whatever source comes out of that
+    // (the original source, if `fix` didn't run or changed nothing).
+    let (source, fixed_this_file, file_diff, mut plain_text) = if fix {
+        let outcome = fix_file(
+            script_path,
+            &reported_path,
+            source,
+            encoding,
+            lint_context.lint_config,
+            lint_context.function_table,
+            lint_context.tag_filter,
+            rule_filter,
+            target_line,
+            dry_run,
+            lint_context.json,
+        )?;
+        (
+            outcome.source,
+            outcome.fixed,
+            outcome.diff,
+            outcome.plain_text,
+        )
+    } else {
+        (source, false, None, Vec::new())
+    };
+
+    let lint_outcome = lint_file(lint_context, script_path, reported_path, &source, file_diff);
+    plain_text.extend_from_slice(&lint_outcome.plain_text);
+
+    if progress {
+        report_file_progress(progress_completed, total_scripts, progress_stdout);
+    }
+
+    Ok(FileOutcome {
+        plain_text,
+        json_file: lint_outcome.json_file,
+        ai_file: lint_outcome.ai_file,
+        should_fail: lint_outcome.should_fail,
+        has_diagnostics: lint_outcome.has_diagnostics,
+        diagnostic_count: lint_outcome.diagnostic_count,
+        fixed: fixed_this_file,
+    })
+}
+
+fn report_file_progress(
+    progress_completed: &AtomicUsize,
+    total_scripts: usize,
+    progress_stdout: &Mutex<&mut (dyn Write + Send)>,
+) {
+    let completed = progress_completed.fetch_add(1, Ordering::SeqCst) + 1;
+    let mut stdout = progress_stdout
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let _ = write!(stdout, "\rLinting: {completed}/{total_scripts} files");
+    let _ = stdout.flush();
+}
+
+fn append_lint_summary(
+    report: &mut AggregatedReport,
+    output_format: OutputFormat,
+    lint_config: &papyrus_lints::Config,
+    scripts_checked: usize,
+    fix: bool,
+    dry_run: bool,
+    use_color: bool,
+) {
+    match output_format {
+        OutputFormat::Json => append_json_summary(report, scripts_checked, fix, dry_run),
+        OutputFormat::Ai => append_ai_summary(report, lint_config),
+        OutputFormat::Plain => {
+            append_plain_summary(report, scripts_checked, fix, dry_run, use_color)
+        }
+    }
+}
+
+fn append_json_summary(
+    report: &mut AggregatedReport,
+    scripts_checked: usize,
+    fix: bool,
+    dry_run: bool,
+) {
+    let json_report = JsonReport {
+        files: std::mem::take(&mut report.json_files),
+        scripts_checked,
+        files_with_diagnostics: report.files_with_diagnostics,
+        total_diagnostics: report.total_diagnostics,
+        files_fixed: fix.then_some(report.files_fixed),
+        dry_run,
+        success: !report.should_fail,
+    };
+    write_json_report(&mut report.buf, &json_report);
+}
+
+fn append_ai_summary(report: &mut AggregatedReport, lint_config: &papyrus_lints::Config) {
+    let ai_report = build_ai_report(
+        lint_config,
+        std::mem::take(&mut report.ai_files),
+        report.total_diagnostics,
+    );
+    write_json_report(&mut report.buf, &ai_report);
+}
+
+fn append_plain_summary(
+    report: &mut AggregatedReport,
+    scripts_checked: usize,
+    fix: bool,
+    dry_run: bool,
+    use_color: bool,
+) {
+    let fixed_suffix = if fix && dry_run {
+        format!(" ({} script(s) would be fixed.)", report.files_fixed)
+    } else if fix {
+        format!(" ({} script(s) fixed.)", report.files_fixed)
+    } else {
+        String::new()
+    };
+
+    // Green when clean, yellow when problems were found but none crossed
+    // the configured failure threshold, red when the run will exit 1.
+    let summary_color = if report.total_diagnostics == 0 {
+        ANSI_GREEN
+    } else if !report.should_fail {
+        ANSI_YELLOW
+    } else {
+        ANSI_RED
+    };
+
+    let summary = if report.total_diagnostics == 0 {
+        format!("PapyrusLinterCLI: no problems found in {scripts_checked} script(s).{fixed_suffix}")
+    } else {
+        format!(
+            "PapyrusLinterCLI: {} problem(s) found in {} of {scripts_checked} script(s).{fixed_suffix}",
+            report.total_diagnostics, report.files_with_diagnostics
+        )
+    };
+    let _ = writeln!(
+        report.buf,
+        "{}",
+        colorize(&summary, summary_color, use_color)
+    );
 }
 
 #[cfg(test)]

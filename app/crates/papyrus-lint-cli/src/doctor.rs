@@ -7,7 +7,7 @@ use papyrus_lint_core::achlist;
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
 use serde::Serialize;
 
-use crate::project::{find_candidate_pair_root, find_psc_project_root};
+use crate::project::{is_psc_path, resolve_input_project_root};
 use crate::USAGE;
 
 /// `doctor`'s own flags/positional, extracted by `clap` the same way
@@ -133,117 +133,163 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
 
     let mut checks: Vec<DoctorCheck> = Vec::new();
 
-    let is_psc_file = input_path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"));
+    let is_psc_file = is_psc_path(&input_path);
     let is_directory = !is_psc_file && input_path.is_dir();
-
-    let mut script_paths: Vec<PathBuf> = Vec::new();
-    if is_psc_file {
-        if input_path.is_file() {
-            checks.push(DoctorCheck::ok(format!(
-                "script {} exists",
-                input_path.display()
-            )));
-            script_paths.push(input_path.clone());
-        } else {
-            checks.push(DoctorCheck::error(format!(
-                "script {} does not exist",
-                input_path.display()
-            )));
-        }
-    } else if is_directory {
-        script_paths = find_psc_files_recursively(&input_path);
-        checks.push(if script_paths.is_empty() {
-            DoctorCheck::warning(format!(
-                "no .psc files found under {}",
-                input_path.display()
-            ))
-        } else {
-            DoctorCheck::ok(format!(
-                "found {} .psc file(s) under {}",
-                script_paths.len(),
-                input_path.display()
-            ))
-        });
-    } else if !input_path.is_file() {
-        checks.push(DoctorCheck::error(format!(
-            "achlist {} does not exist",
-            input_path.display()
-        )));
-    } else {
-        match achlist::parse_achlist(&input_path) {
-            Ok(entries) => {
-                let missing: Vec<&PathBuf> =
-                    entries.iter().filter(|path| !path.is_file()).collect();
-                if missing.is_empty() {
-                    checks.push(DoctorCheck::ok(format!(
-                        "every entry in {} exists on disk ({} total)",
-                        input_path.display(),
-                        entries.len()
-                    )));
-                } else {
-                    for path in &missing {
-                        checks.push(DoctorCheck::error(format!(
-                            "achlist entry {} does not exist",
-                            path.display()
-                        )));
-                    }
-                }
-                script_paths = entries
-                    .into_iter()
-                    .filter(|path| {
-                        path.extension()
-                            .and_then(|ext| ext.to_str())
-                            .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
-                    })
-                    .collect();
-            }
-            Err(err) => {
-                checks.push(DoctorCheck::error(format!(
-                    "failed to parse achlist {}: {err}",
-                    input_path.display()
-                )));
-            }
-        }
-    }
+    let script_paths =
+        collect_doctor_input_checks(&input_path, is_psc_file, is_directory, &mut checks);
 
     // Mirrors `run`'s own project-root resolution (see
     // `find_psc_project_root`/`find_candidate_pair_root`) so `doctor`
     // reports on the same project a matching lint/fix run would use.
-    let project_root = if is_psc_file {
-        find_psc_project_root(&input_path)
-    } else {
-        script_paths
-            .iter()
-            .find_map(|path| find_candidate_pair_root(path))
-            .unwrap_or_else(|| {
-                if is_directory {
-                    input_path.clone()
-                } else {
-                    input_path
-                        .ancestors()
-                        .nth(1)
-                        .filter(|dir| !dir.as_os_str().is_empty())
-                        .map(Path::to_path_buf)
-                        .unwrap_or_else(|| PathBuf::from("."))
-                }
-            })
-    };
+    let project_root =
+        resolve_input_project_root(&input_path, &script_paths, is_psc_file, is_directory);
     checks.push(DoctorCheck::ok(format!(
         "project root resolved to {}",
         project_root.display()
     )));
 
-    match config_path.as_deref().map_or_else(
-        || config::load_config(&project_root),
+    check_lint_config(&project_root, config_path.as_deref(), &mut checks);
+    let additional_script_roots = load_additional_script_roots(
+        &project_root,
+        config_path.is_some(),
+        cli_script_roots,
+        &mut checks,
+    );
+    check_configured_roots(
+        &project_root,
+        &additional_script_roots,
+        "additional script root",
+        "configured additional script root",
+        &mut checks,
+    );
+
+    let lookup_script_roots =
+        load_lookup_script_roots(&project_root, config_path.as_deref(), &mut checks);
+    check_configured_roots(
+        &project_root,
+        &lookup_script_roots,
+        "lookup script root (analysis only)",
+        "configured lookup script root",
+        &mut checks,
+    );
+
+    check_conventional_roots(&project_root, &mut checks);
+    check_compiler(&project_root, &mut checks);
+
+    let success = !checks.iter().any(|check| check.status != DoctorStatus::Ok);
+    write_doctor_report(json, &project_root, checks, success, stdout);
+
+    if success {
+        0
+    } else {
+        1
+    }
+}
+
+fn collect_doctor_input_checks(
+    input_path: &Path,
+    is_psc_file: bool,
+    is_directory: bool,
+    checks: &mut Vec<DoctorCheck>,
+) -> Vec<PathBuf> {
+    if is_psc_file {
+        return collect_doctor_psc_checks(input_path, checks);
+    }
+    if is_directory {
+        return collect_doctor_directory_checks(input_path, checks);
+    }
+    collect_doctor_achlist_checks(input_path, checks)
+}
+
+fn collect_doctor_psc_checks(input_path: &Path, checks: &mut Vec<DoctorCheck>) -> Vec<PathBuf> {
+    if input_path.is_file() {
+        checks.push(DoctorCheck::ok(format!(
+            "script {} exists",
+            input_path.display()
+        )));
+        vec![input_path.to_path_buf()]
+    } else {
+        checks.push(DoctorCheck::error(format!(
+            "script {} does not exist",
+            input_path.display()
+        )));
+        Vec::new()
+    }
+}
+
+fn collect_doctor_directory_checks(
+    input_path: &Path,
+    checks: &mut Vec<DoctorCheck>,
+) -> Vec<PathBuf> {
+    let script_paths = find_psc_files_recursively(input_path);
+    checks.push(if script_paths.is_empty() {
+        DoctorCheck::warning(format!(
+            "no .psc files found under {}",
+            input_path.display()
+        ))
+    } else {
+        DoctorCheck::ok(format!(
+            "found {} .psc file(s) under {}",
+            script_paths.len(),
+            input_path.display()
+        ))
+    });
+    script_paths
+}
+
+fn collect_doctor_achlist_checks(input_path: &Path, checks: &mut Vec<DoctorCheck>) -> Vec<PathBuf> {
+    if !input_path.is_file() {
+        checks.push(DoctorCheck::error(format!(
+            "achlist {} does not exist",
+            input_path.display()
+        )));
+        return Vec::new();
+    }
+    match achlist::parse_achlist(input_path) {
+        Ok(entries) => {
+            let missing: Vec<&PathBuf> = entries.iter().filter(|path| !path.is_file()).collect();
+            if missing.is_empty() {
+                checks.push(DoctorCheck::ok(format!(
+                    "every entry in {} exists on disk ({} total)",
+                    input_path.display(),
+                    entries.len()
+                )));
+            } else {
+                for path in &missing {
+                    checks.push(DoctorCheck::error(format!(
+                        "achlist entry {} does not exist",
+                        path.display()
+                    )));
+                }
+            }
+            entries
+                .into_iter()
+                .filter(|path| is_psc_path(path))
+                .collect()
+        }
+        Err(err) => {
+            checks.push(DoctorCheck::error(format!(
+                "failed to parse achlist {}: {err}",
+                input_path.display()
+            )));
+            Vec::new()
+        }
+    }
+}
+
+fn check_lint_config(
+    project_root: &Path,
+    config_path: Option<&Path>,
+    checks: &mut Vec<DoctorCheck>,
+) {
+    match config_path.map_or_else(
+        || config::load_config(project_root),
         config::load_config_from_path,
     ) {
         Ok(_) => {
-            let description = match config_path.as_deref() {
+            let description = match config_path {
                 Some(path) => format!("explicit config {}", path.display()),
-                None => match config::config_file_path(&project_root) {
+                None => match config::config_file_path(project_root) {
                     Some(path) => format!("config {}", path.display()),
                     None => "no papyrus-lint.yaml/.yml found; using default settings".to_string(),
                 },
@@ -254,7 +300,6 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
         }
         Err(err) => {
             let source = config_path
-                .as_deref()
                 .map(|path| path.display().to_string())
                 .unwrap_or_else(|| project_root.display().to_string());
             checks.push(DoctorCheck::error(format!(
@@ -262,13 +307,20 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
             )));
         }
     }
+}
 
+fn load_additional_script_roots(
+    project_root: &Path,
+    has_explicit_config: bool,
+    cli_script_roots: Vec<String>,
+    checks: &mut Vec<DoctorCheck>,
+) -> Vec<String> {
     // `--config` bypasses the project root's own additional_script_roots
     // entirely, the same as it does for a normal lint/fix run (see `run`).
-    let mut additional_script_roots = if config_path.is_some() {
+    let mut additional_script_roots = if has_explicit_config {
         Vec::new()
     } else {
-        match config::load_script_roots(&project_root) {
+        match config::load_script_roots(project_root) {
             Ok(roots) => roots,
             Err(err) => {
                 checks.push(DoctorCheck::error(format!(
@@ -279,29 +331,16 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
         }
     };
     additional_script_roots.extend(cli_script_roots);
+    additional_script_roots
+}
 
-    for root in &additional_script_roots {
-        let path = Path::new(root);
-        let resolved = if path.is_absolute() {
-            path.to_path_buf()
-        } else {
-            project_root.join(path)
-        };
-        if resolved.is_dir() {
-            checks.push(DoctorCheck::ok(format!(
-                "additional script root {} exists",
-                resolved.display()
-            )));
-        } else {
-            checks.push(DoctorCheck::warning(format!(
-                "configured additional script root {} does not exist",
-                resolved.display()
-            )));
-        }
-    }
-
-    let lookup_script_roots = match config_path.as_deref().map_or_else(
-        || config::load_lookup_script_roots(&project_root),
+fn load_lookup_script_roots(
+    project_root: &Path,
+    config_path: Option<&Path>,
+    checks: &mut Vec<DoctorCheck>,
+) -> Vec<String> {
+    match config_path.map_or_else(
+        || config::load_lookup_script_roots(project_root),
         config::load_lookup_script_roots_from_path,
     ) {
         Ok(roots) => roots,
@@ -311,8 +350,17 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
             )));
             Vec::new()
         }
-    };
-    for root in &lookup_script_roots {
+    }
+}
+
+fn check_configured_roots(
+    project_root: &Path,
+    roots: &[String],
+    ok_label: &str,
+    missing_label: &str,
+    checks: &mut Vec<DoctorCheck>,
+) {
+    for root in roots {
         let path = Path::new(root);
         let resolved = if path.is_absolute() {
             path.to_path_buf()
@@ -321,17 +369,19 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
         };
         if resolved.is_dir() {
             checks.push(DoctorCheck::ok(format!(
-                "lookup script root (analysis only) {} exists",
+                "{ok_label} {} exists",
                 resolved.display()
             )));
         } else {
             checks.push(DoctorCheck::warning(format!(
-                "configured lookup script root {} does not exist",
+                "{missing_label} {} does not exist",
                 resolved.display()
             )));
         }
     }
+}
 
+fn check_conventional_roots(project_root: &Path, checks: &mut Vec<DoctorCheck>) {
     let conventional_roots: Vec<PathBuf> = CANDIDATE_DIRS
         .iter()
         .map(|dir| project_root.join(dir))
@@ -342,13 +392,15 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
             "neither scripts/source nor source/scripts exists under {}",
             project_root.display()
         )));
-    } else {
-        for root in &conventional_roots {
-            checks.push(DoctorCheck::ok(format!("{} exists", root.display())));
-        }
+        return;
     }
+    for root in &conventional_roots {
+        checks.push(DoctorCheck::ok(format!("{} exists", root.display())));
+    }
+}
 
-    match config::load_compiler_path(&project_root) {
+fn check_compiler(project_root: &Path, checks: &mut Vec<DoctorCheck>) {
+    match config::load_compiler_path(project_root) {
         Ok(Some(path)) => {
             if Path::new(&path).is_file() {
                 checks.push(DoctorCheck::ok(format!(
@@ -363,7 +415,7 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
         // Unset and unauto-detectable is only a problem once `compile_check`
         // actually needs it (checked separately below); most projects never
         // enable that, so it's not a warning on its own.
-        Ok(None) => match config::auto_detect_compiler_path(&project_root) {
+        Ok(None) => match config::auto_detect_compiler_path(project_root) {
             Some(path) => checks.push(DoctorCheck::ok(format!(
                 "compiler_path not set; auto-detected {}",
                 path.display()
@@ -377,9 +429,9 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
         ))),
     }
 
-    match config::load_compile_check(&project_root) {
+    match config::load_compile_check(project_root) {
         Ok(true) => {
-            if matches!(config::resolve_compiler_path(&project_root), Ok(None)) {
+            if matches!(config::resolve_compiler_path(project_root), Ok(None)) {
                 checks.push(DoctorCheck::warning(
                     "compile_check is enabled but no PapyrusCompiler.exe could be resolved"
                         .to_string(),
@@ -391,9 +443,15 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
             "failed to load compile_check: {err}"
         ))),
     }
+}
 
-    let success = !checks.iter().any(|check| check.status != DoctorStatus::Ok);
-
+fn write_doctor_report(
+    json: bool,
+    project_root: &Path,
+    checks: Vec<DoctorCheck>,
+    success: bool,
+    stdout: &mut impl Write,
+) {
     if json {
         let report = DoctorReport {
             project_root: project_root.display().to_string(),
@@ -405,27 +463,21 @@ pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut 
             "{}",
             serde_json::to_string_pretty(&report).unwrap_or_else(|_| "{}".to_string())
         );
-    } else {
-        for check in &checks {
-            let _ = writeln!(stdout, "[{}] {}", check.status.label(), check.message);
-        }
-        let summary = if success {
-            "PapyrusLinterCLI doctor: no problems found.".to_string()
-        } else {
-            let problems = checks
-                .iter()
-                .filter(|check| check.status != DoctorStatus::Ok)
-                .count();
-            format!("PapyrusLinterCLI doctor: {problems} problem(s) found.")
-        };
-        let _ = writeln!(stdout, "{summary}");
+        return;
     }
-
-    if success {
-        0
-    } else {
-        1
+    for check in &checks {
+        let _ = writeln!(stdout, "[{}] {}", check.status.label(), check.message);
     }
+    let summary = if success {
+        "PapyrusLinterCLI doctor: no problems found.".to_string()
+    } else {
+        let problems = checks
+            .iter()
+            .filter(|check| check.status != DoctorStatus::Ok)
+            .count();
+        format!("PapyrusLinterCLI doctor: {problems} problem(s) found.")
+    };
+    let _ = writeln!(stdout, "{summary}");
 }
 
 #[cfg(test)]
