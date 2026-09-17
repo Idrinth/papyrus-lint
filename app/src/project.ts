@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { loadAndApplyLintConfig } from "./config";
 import { markLintResultsStale } from "./main";
+import { dirnameOf, isPscPath } from "./path";
 import { applyConfigPreset, promptForConfigSelection } from "./presets";
 
 export interface ProjectInfo {
@@ -62,6 +63,61 @@ export async function loadProjectInfo(dir: string): Promise<ProjectInfo> {
   } catch (error) {
     console.error(error);
     return { detected_script_roots: [], used_configuration_file: null };
+  }
+}
+
+// Finds the project root implied by `entries`, delegating to the same
+// `scripts/source`/`source/scripts`-pair algorithm the CLI uses (see
+// papyrus_lint_core::project_root::find_candidate_pair_root), so the
+// desktop app resolves the same root as the CLI would for the same files.
+// Falls back to `fallback` if none of `entries` match that layout, or if
+// the lookup itself fails.
+async function findProjectRoot(entries: string[], fallback: string): Promise<string> {
+  try {
+    return await invoke<string>("find_project_root", { entries, fallback });
+  } catch (error) {
+    console.error(error);
+    return fallback;
+  }
+}
+
+// Finds the project root for a dropped `.achlist`: tries each of its
+// resolved `.psc` entries' own position under a `scripts/source`/
+// `source/scripts` directory pair first (see findProjectRoot), so a
+// project whose `.achlist` doesn't live in the project root itself (e.g. it
+// was dropped next to a game's `Data` directory while the project itself
+// lives in a subfolder) still resolves correctly. Falls back to the
+// achlist's own parent directory (the conventional layout) if none of its
+// entries match.
+export async function projectDirForAchlist(achlistPath: string, entries: string[]): Promise<string> {
+  return findProjectRoot(entries.filter(isPscPath), dirnameOf(achlistPath));
+}
+
+// Finds the project root for a dropped directory (see handleDroppedPaths'
+// directory-scan mode, for a project with no .achlist at all whose scripts
+// are spread across arbitrarily nested subfolders, e.g. Requiem's own
+// layout): tries each recursively-found .psc entry's own position under a
+// `scripts/source`/`source/scripts` directory pair first (see
+// findProjectRoot), the same way projectDirForAchlist does for an
+// achlist's entries. Falls back to the dropped directory itself if none of
+// the entries match that layout, since there's no achlist file whose parent
+// directory would otherwise apply.
+export async function projectDirForDirectory(dirPath: string, entries: string[]): Promise<string> {
+  return findProjectRoot(entries, dirPath);
+}
+
+// Finds the project root for a bare `.psc` file dropped directly, mirroring
+// the CLI's own handling of a `.psc` path given directly on the command
+// line (see papyrus_lint_core::project_root::find_psc_project_root): tries
+// the file's own position under a `scripts/source`/`source/scripts` pair
+// first, falling back to two directories above its own directory (e.g.
+// `Data/Scripts/Source/abc.psc` under `Data`) if it isn't under one.
+export async function projectDirForPscPath(pscPath: string): Promise<string> {
+  try {
+    return await invoke<string>("find_psc_project_root_for_path", { path: pscPath });
+  } catch (error) {
+    console.error(error);
+    return dirnameOf(dirnameOf(dirnameOf(pscPath)));
   }
 }
 

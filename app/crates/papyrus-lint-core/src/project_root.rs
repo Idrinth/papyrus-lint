@@ -2,13 +2,13 @@
 //! `.psc` file on disk, and formats paths relative to it for display.
 //!
 //! Shared by the CLI (a bare `.psc` file, or each entry resolved from an
-//! `.achlist`/scanned directory — see `papyrus-lint-cli`'s `run`) so both
-//! land on the same project root, and therefore the same
-//! `papyrus-lint.yaml` and cross-script `FunctionTable` resolution, as the
-//! desktop app's own (TypeScript) port of this same algorithm in
-//! `app/src/main.ts` (`findCandidatePairRoot`/`projectDirForAchlist`/
-//! `projectDirForDirectory`) — kept in sync with this module by hand, since
-//! the desktop frontend doesn't currently call into Rust for this.
+//! `.achlist`/scanned directory — see `papyrus-lint-cli`'s `run`) and, via
+//! the `find_project_root`/`find_psc_project_root_for_path` Tauri commands
+//! (`app/src-tauri/src/project_root.rs`), the desktop app's own drop
+//! handling (`app/src/project.ts`'s `projectDirForAchlist`/
+//! `projectDirForDirectory`/`projectDirForPscPath`) — so both land on the
+//! same project root, and therefore the same `papyrus-lint.yaml` and
+//! cross-script `FunctionTable` resolution, for the same files.
 
 use std::path::{Path, PathBuf};
 

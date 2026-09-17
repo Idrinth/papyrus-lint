@@ -3,6 +3,7 @@ mod files;
 mod lint;
 mod lint_config;
 mod meta;
+mod project_root;
 mod repair;
 
 use config_presets::*;
@@ -10,6 +11,7 @@ use files::*;
 use lint::*;
 use lint_config::*;
 use meta::*;
+use project_root::*;
 use repair::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -55,7 +57,9 @@ pub fn run() {
             repair_psc_file_rule,
             add_disable_comment_to_psc_line,
             compile_psc_file,
-            list_script_members
+            list_script_members,
+            find_project_root,
+            find_psc_project_root_for_path
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

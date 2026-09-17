@@ -2,12 +2,33 @@ import { afterEach, beforeEach, expect, vi } from "vitest";
 import { invokeMock } from "./mocks";
 import { mountFixture } from "./fixture";
 import { cancelLiveEditLint, loadProjectConfig, resetConfirmedProjectDirs } from "../main";
+import { dirnameOf } from "../path";
+
+// Default backend behavior for the project-root discovery commands (see
+// project.ts's projectDirForAchlist/projectDirForDirectory/
+// projectDirForPscPath), for tests that drive handleDroppedPaths without
+// caring about the exact root a particular drop resolves to: just the
+// naive fallback each of those functions itself would use if the real
+// (Rust) `scripts/source`/`source/scripts`-pair lookup found nothing. A
+// test asserting a specific resolved root (e.g. one where the achlist
+// doesn't live in the project root itself) still needs its own explicit
+// `find_project_root`/`find_psc_project_root_for_path` handler.
+function defaultProjectRootHandler(command: string): ((args: unknown) => unknown) | undefined {
+  switch (command) {
+    case "load_lookup_script_roots":
+      return () => [];
+    case "find_project_root":
+      return (args) => (args as { fallback: string }).fallback;
+    case "find_psc_project_root_for_path":
+      return (args) => dirnameOf(dirnameOf(dirnameOf((args as { path: string }).path)));
+    default:
+      return undefined;
+  }
+}
 
 export function invokeImplFor(handlers: Record<string, (args: unknown) => unknown>) {
   invokeMock.mockImplementation((command: string, args: unknown) => {
-    const handler =
-      handlers[command] ??
-      (command === "load_lookup_script_roots" ? () => [] : undefined);
+    const handler = handlers[command] ?? defaultProjectRootHandler(command);
     if (!handler) {
       return Promise.reject(new Error(`unexpected command: ${command}`));
     }

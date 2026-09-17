@@ -5,15 +5,7 @@ import { bindPresets, refreshPresetManagementTab } from "./presets";
 import { bindCodeViewer, openCodeViewer } from "./code-viewer";
 import { bindLiveEdit } from "./live-edit";
 import { bindResultsList, populateRuleFilterGroups, renderPscResults } from "./results-list";
-import {
-  isAchlistPath,
-  isPscPath,
-  projectDirForAchlist,
-  projectDirForDirectory,
-  projectDirForPscPath,
-  relativePath,
-  scriptRootsForAchlist,
-} from "./path";
+import { isAchlistPath, isPscPath, relativePath, scriptRootsForAchlist } from "./path";
 import { bindLintProgress, scheduleHideLintProgress, showLintProgress, updateLintProgress } from "./progress";
 import { bindConfigSettings, currentLintConfig } from "./config";
 import {
@@ -24,6 +16,9 @@ import {
   currentProjectDir,
   effectiveScriptRoots,
   loadProjectConfig,
+  projectDirForAchlist,
+  projectDirForDirectory,
+  projectDirForPscPath,
   setAchlistScriptRoots,
 } from "./project";
 
@@ -93,17 +88,7 @@ export {
   tagsForFinding,
   updateExportIssuesButtonState,
 } from "./results-list";
-export {
-  dirnameOf,
-  findCandidatePairRoot,
-  isAchlistPath,
-  isPscPath,
-  projectDirForAchlist,
-  projectDirForDirectory,
-  projectDirForPscPath,
-  relativePath,
-  scriptRootsForAchlist,
-} from "./path";
+export { dirnameOf, isAchlistPath, isPscPath, relativePath, scriptRootsForAchlist } from "./path";
 export {
   hideLintProgress,
   scheduleHideLintProgress,
@@ -147,6 +132,9 @@ export {
   loadProjectInfo,
   loadScriptRoots,
   lookupScriptRootsFromUI,
+  projectDirForAchlist,
+  projectDirForDirectory,
+  projectDirForPscPath,
   resetConfirmedProjectDirs,
   saveCompileCheck,
   saveCompilerPath,
@@ -731,7 +719,7 @@ export async function handleDroppedPaths(paths: string[]) {
       currentPscOutcomes = [];
       lintResultsStale = false;
       const generation = ++currentParseGeneration;
-      const projectDir = projectDirForAchlist(achlistPath, entries);
+      const projectDir = await projectDirForAchlist(achlistPath, entries);
       showResult(achlistPath, entries, projectDir);
       switchTab("lint");
       renderPscResults(currentPscOutcomes);
@@ -767,11 +755,12 @@ export async function handleDroppedPaths(paths: string[]) {
     currentPscOutcomes = [];
     lintResultsStale = false;
     const generation = ++currentParseGeneration;
-    showResult(pscPath, [pscPath], projectDirForPscPath(pscPath));
+    const projectDir = await projectDirForPscPath(pscPath);
+    showResult(pscPath, [pscPath], projectDir);
     switchTab("lint");
     renderPscResults(currentPscOutcomes);
 
-    await loadProjectConfig(projectDirForPscPath(pscPath));
+    await loadProjectConfig(projectDir);
     setAchlistScriptRoots([]);
     showLintProgress(1);
     await parsePscFiles([pscPath], (outcome) => {
@@ -804,7 +793,7 @@ export async function handleDroppedPaths(paths: string[]) {
       currentPscOutcomes = [];
       lintResultsStale = false;
       const generation = ++currentParseGeneration;
-      const projectDir = projectDirForDirectory(dirPath, entries);
+      const projectDir = await projectDirForDirectory(dirPath, entries);
       showResult(dirPath, entries, projectDir);
       switchTab("lint");
       renderPscResults(currentPscOutcomes);

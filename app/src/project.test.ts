@@ -29,6 +29,9 @@ import {
   loadProjectInfo,
   loadScriptRoots,
   lookupScriptRootsFromUI,
+  projectDirForAchlist,
+  projectDirForDirectory,
+  projectDirForPscPath,
   saveCompileCheck,
   saveCompilerPath,
   saveLookupScriptRoots,
@@ -37,6 +40,65 @@ import {
   setSettingsLocked,
   useProjectDir,
 } from "./project";
+
+describe("projectDirForAchlist / projectDirForDirectory / projectDirForPscPath", () => {
+  it("projectDirForAchlist asks the backend with only the .psc entries and the achlist's own directory as fallback", async () => {
+    invokeImplFor({ find_project_root: () => "/proj/somefolder/otherfolder" });
+
+    await expect(
+      projectDirForAchlist("/proj/list.achlist", [
+        "/proj/readme.txt",
+        "/proj/somefolder/otherfolder/scripts/source/AType.psc",
+      ]),
+    ).resolves.toBe("/proj/somefolder/otherfolder");
+    expect(invokeMock).toHaveBeenCalledWith("find_project_root", {
+      entries: ["/proj/somefolder/otherfolder/scripts/source/AType.psc"],
+      fallback: "/proj",
+    });
+  });
+
+  it("projectDirForAchlist falls back to the achlist's own directory when the backend call fails", async () => {
+    invokeMock.mockRejectedValue(new Error("boom"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(projectDirForAchlist("/proj/list.achlist", ["/proj/other/A.psc"])).resolves.toBe("/proj");
+  });
+
+  it("projectDirForDirectory asks the backend with every entry and the dropped directory as fallback", async () => {
+    invokeImplFor({ find_project_root: () => "/proj" });
+
+    await expect(
+      projectDirForDirectory("/proj/scripts/source", ["/proj/scripts/source/Requiem/A.psc"]),
+    ).resolves.toBe("/proj");
+    expect(invokeMock).toHaveBeenCalledWith("find_project_root", {
+      entries: ["/proj/scripts/source/Requiem/A.psc"],
+      fallback: "/proj/scripts/source",
+    });
+  });
+
+  it("projectDirForDirectory falls back to the dropped directory when the backend call fails", async () => {
+    invokeMock.mockRejectedValue(new Error("boom"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(projectDirForDirectory("/proj", ["/proj/Nested/A.psc"])).resolves.toBe("/proj");
+  });
+
+  it("projectDirForPscPath asks the backend for the bare .psc file's project root", async () => {
+    invokeImplFor({ find_psc_project_root_for_path: () => "/proj" });
+
+    await expect(projectDirForPscPath("/proj/scripts/source/User/A.psc")).resolves.toBe("/proj");
+    expect(invokeMock).toHaveBeenCalledWith("find_psc_project_root_for_path", {
+      path: "/proj/scripts/source/User/A.psc",
+    });
+  });
+
+  it("projectDirForPscPath falls back to two directories above the script's own directory when the backend call fails", async () => {
+    invokeMock.mockRejectedValue(new Error("boom"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(projectDirForPscPath("/proj/scripts/source/A.psc")).resolves.toBe("/proj");
+  });
+});
 
 describe("project settings handlers", () => {
   it("handleCompilerPathChanged persists the path once a project dir is known", async () => {
