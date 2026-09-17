@@ -178,8 +178,22 @@ mod tests {
         );
         save_script_roots(dir_string.clone(), vec!["../SharedScripts".to_string()]).unwrap();
         assert_eq!(
-            load_script_roots(dir_string).unwrap(),
+            load_script_roots(dir_string.clone()).unwrap(),
             vec!["../SharedScripts".to_string()]
+        );
+
+        assert_eq!(
+            load_lookup_script_roots(dir_string.clone()).unwrap(),
+            Vec::<String>::new()
+        );
+        save_lookup_script_roots(
+            dir_string.clone(),
+            vec!["  ../BaseScripts  ".to_string(), "   ".to_string()],
+        )
+        .unwrap();
+        assert_eq!(
+            load_lookup_script_roots(dir_string).unwrap(),
+            vec!["../BaseScripts".to_string()]
         );
     }
 
@@ -287,6 +301,11 @@ mod tests {
         assert!(load_script_roots(dir_string.clone()).is_err());
         assert!(
             save_script_roots(dir_string.clone(), vec!["../SharedScripts".to_string()]).is_err()
+        );
+        assert!(load_lookup_script_roots(dir_string.clone()).is_err());
+        assert!(
+            save_lookup_script_roots(dir_string.clone(), vec!["../BaseScripts".to_string()])
+                .is_err()
         );
         assert!(save_lint_config(dir_string, Default::default()).is_err());
 
