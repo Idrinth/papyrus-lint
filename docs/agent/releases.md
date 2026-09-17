@@ -21,8 +21,11 @@ downloads the attached `PapyrusLinterCLI-linux` binary, builds
 Container Registry as both
 `ghcr.io/idrinth/papyrus-lint:<tag>` and `ghcr.io/idrinth/papyrus-lint:latest`.
 It authenticates with the workflow's `GITHUB_TOKEN` and therefore needs
-`packages: write` permission; the image itself is not attached to the GitHub
-release or included in release-asset signing and VirusTotal jobs.
+`packages: write` permission. After pushing both tags, the job signs their
+shared immutable digest keylessly with Sigstore using GitHub Actions' OIDC
+identity, then verifies that signature against the release workflow identity;
+this also requires `id-token: write`. The image itself is not attached to the
+GitHub release or included in release-asset signing and VirusTotal jobs.
 
 A separate release job syncs the
 tag's version into `app/src-tauri/tauri.conf.json`, `app/package.json`,
