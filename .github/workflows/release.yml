@@ -188,7 +188,6 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           node -e "const fs=require('fs'); const p=require('./vscode-extension/package.json'); p.version=process.argv[1]; fs.writeFileSync('./vscode-extension/package.json', JSON.stringify(p, null, 2) + '\\n')" "$VERSION"
-          printf '%s\n' "$VERSION" > SublimeLinter-contrib-papyrus-lint/VERSION
 
       - uses: actions/setup-node@v7
         with:
@@ -221,7 +220,6 @@ jobs:
         shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          node -e "const fs=require('fs'); const p=require('./vscode-extension/package.json'); p.version=process.argv[1]; fs.writeFileSync('./vscode-extension/package.json', JSON.stringify(p, null, 2) + '\\n')" "$VERSION"
           printf '%s\n' "$VERSION" > SublimeLinter-contrib-papyrus-lint/VERSION
 
       - name: Package SublimeLinter plugin
