@@ -21,6 +21,11 @@ use crate::run_fix::fix_file;
 use crate::run_lint::{lint_file, LintContext};
 use crate::run_scan::scan_project;
 
+/// Runs a plain lint/fix invocation end to end: scans `lint`'s target
+/// project (see [`scan_project`]), fixes and lints every resolved script --
+/// optionally in parallel via `--threads` -- then folds the results into
+/// the final report (see [`fold_and_flush_report`]). Returns the process
+/// exit code (see [`crate::run`]'s own docs for what each code means).
 pub(crate) fn run_lint_command(
     lint: LintArgs,
     stdout: &mut (impl Write + Send),
