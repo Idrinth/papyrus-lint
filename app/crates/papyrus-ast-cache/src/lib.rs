@@ -100,7 +100,7 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(dir) = entry::cache_dir() {
-        ops::put_in(&dir, source_path, source, ast, env!("CARGO_PKG_VERSION"));
+        ops::put_in(&dir, source_path, source, ast, version::stamped_version());
     }
 }
 
@@ -126,7 +126,13 @@ pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::to
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(dir) = entry::cache_dir() {
-        ops::put_tokens_in(&dir, source_path, source, tokens, env!("CARGO_PKG_VERSION"));
+        ops::put_tokens_in(
+            &dir,
+            source_path,
+            source,
+            tokens,
+            version::stamped_version(),
+        );
     }
 }
 
@@ -150,5 +156,5 @@ pub fn ensure_primed(source_path: &Path, source: &str) {
     let Some(dir) = entry::cache_dir() else {
         return;
     };
-    ops::ensure_primed_in(&dir, source_path, source, env!("CARGO_PKG_VERSION"));
+    ops::ensure_primed_in(&dir, source_path, source, version::stamped_version());
 }
