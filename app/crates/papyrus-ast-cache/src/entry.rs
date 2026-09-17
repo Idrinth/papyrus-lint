@@ -128,6 +128,20 @@ mod tests {
     }
 
     #[test]
+    fn cache_dir_ignores_an_empty_environment_override() {
+        let exe = PathBuf::from("/opt/papyrus/PapyrusLinterCLI");
+        assert_eq!(
+            cache_dir_from(Some("".into()), Some(exe)),
+            Some(PathBuf::from("/opt/papyrus/ast-cache"))
+        );
+    }
+
+    #[test]
+    fn cache_dir_is_none_when_no_override_or_executable_is_available() {
+        assert_eq!(cache_dir_from(None, None), None);
+    }
+
+    #[test]
     fn cache_file_path_is_a_32_hex_digit_json_file() {
         let dir = Path::new("/tmp/ast-cache");
         let path = cache_file_path(dir, Path::new("/mods/Scripts/Example.psc"));
@@ -266,6 +280,41 @@ mod tests {
         let loaded = valid_entry_in(cache_dir.path(), &source_path, source).unwrap();
         assert!(loaded.ast.is_none());
         assert!(loaded.tokens.is_none());
+    }
+
+    #[test]
+    fn valid_entry_in_rejects_each_stale_metadata_field() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let mut entry = fresh_entry(&source_path, source);
+        entry.linter_version = "1.0.0".to_string();
+        write_entry_in(cache_dir.path(), &source_path, &entry);
+        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+
+        let mut entry = fresh_entry(&source_path, source);
+        entry.content_md5 = format!("{:x}", md5::compute(b"different source"));
+        write_entry_in(cache_dir.path(), &source_path, &entry);
+        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+
+        let mut entry = fresh_entry(&source_path, source);
+        entry.modified_unix_secs = entry.modified_unix_secs.saturating_add(1);
+        write_entry_in(cache_dir.path(), &source_path, &entry);
+        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+    }
+
+    #[test]
+    fn valid_entry_in_is_a_miss_when_the_cache_file_is_missing() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
     }
 
     #[test]
