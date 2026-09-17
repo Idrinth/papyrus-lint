@@ -922,6 +922,32 @@ describe("code viewer edit mode", () => {
       ta.dispatchEvent(new MouseEvent("mousemove", { clientX: 0, clientY }));
     }
 
+    function enableCharacterHitTesting() {
+      vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+        const width = this instanceof HTMLSpanElement ? 100 : 200;
+        return {
+          top: 0,
+          left: 0,
+          bottom: 200,
+          right: width,
+          width,
+          height: 200,
+          x: 0,
+          y: 0,
+          toJSON() {},
+        } as DOMRect;
+      });
+      vi.spyOn(window, "getComputedStyle").mockReturnValue({
+        lineHeight: "20px",
+        paddingTop: "0px",
+        paddingLeft: "0px",
+        fontSize: "16px",
+        fontFamily: "monospace",
+        fontWeight: "400",
+        letterSpacing: "0px",
+      } as CSSStyleDeclaration);
+    }
+
     it("shows a declaration's documentation comment when hovering its header line", async () => {
       await openWithSource("ScriptName Example\n{A documented script}\n\nFunction DoThing()\n{Does the thing}\nEndFunction\n");
       enterCodeViewerEditMode();
@@ -942,6 +968,87 @@ describe("code viewer edit mode", () => {
       hoverLine(1);
       expect(textarea().title).toContain("A documented script");
       expect(textarea().title).toContain("[info] first line");
+    });
+
+    it("loads documentation for a member under the pointer and reuses the cached type members", async () => {
+      const source =
+        "ScriptName Example\nObjectReference Property Target Auto\nFunction Run()\nTarget.GetName()\nEndFunction\n";
+      await openWithSource(source, [{ line: 4, column: 1, message: "[warning] check this call" }]);
+      enterCodeViewerEditMode();
+      enableCharacterHitTesting();
+      invokeImplFor({
+        list_script_members: () => [
+          {
+            kind: "function",
+            name: "GetName",
+            params: [],
+            return_type: { name: "String", is_array: false },
+            is_global: false,
+            is_native: true,
+            is_event: false,
+            doc: "Returns this object's display name",
+          },
+        ],
+      });
+
+      const ta = textarea();
+      const hoverMember = () => ta.dispatchEvent(new MouseEvent("mousemove", { clientX: 80, clientY: 65 }));
+      hoverMember();
+      await vi.waitFor(() => expect(ta.title).toContain("Returns this object's display name"));
+      expect(ta.title).toContain("[warning] check this call");
+
+      hoverMember();
+      await vi.waitFor(() => {
+        const lookups = invokeMock.mock.calls.filter(([command]) => command === "list_script_members");
+        expect(lookups).toHaveLength(1);
+      });
+    });
+
+    it("does not request member documentation when the receiver's type is unknown", async () => {
+      await openWithSource("ScriptName Example\nFunction Run()\nmissing.GetName()\nEndFunction\n");
+      enterCodeViewerEditMode();
+      enableCharacterHitTesting();
+
+      textarea().dispatchEvent(new MouseEvent("mousemove", { clientX: 90, clientY: 45 }));
+      await Promise.resolve();
+
+      expect(invokeMock.mock.calls.some(([command]) => command === "list_script_members")).toBe(false);
+      expect(textarea().title).toBe("");
+    });
+
+    it("ignores member documentation that resolves after the pointer leaves the editor", async () => {
+      await openWithSource(
+        "ScriptName Example\nObjectReference Property Target Auto\nFunction Run()\nTarget.GetName()\nEndFunction\n",
+      );
+      enterCodeViewerEditMode();
+      enableCharacterHitTesting();
+      let finishLookup!: (members: unknown[]) => void;
+      invokeImplFor({
+        list_script_members: () =>
+          new Promise<unknown[]>((resolve) => {
+            finishLookup = resolve;
+          }),
+      });
+
+      const ta = textarea();
+      ta.dispatchEvent(new MouseEvent("mousemove", { clientX: 80, clientY: 65 }));
+      ta.dispatchEvent(new MouseEvent("mouseleave"));
+      finishLookup([
+        {
+          kind: "function",
+          name: "GetName",
+          params: [],
+          return_type: null,
+          is_global: false,
+          is_native: false,
+          is_event: false,
+          doc: "Too late",
+        },
+      ]);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(ta.title).toBe("");
     });
   });
 
