@@ -1,4 +1,3 @@
-use std::fs;
 use std::io::Write;
 use std::path::Path;
 
@@ -6,6 +5,8 @@ use papyrus_lint_config as config;
 use papyrus_lint_core::content_hash;
 
 use crate::output::*;
+
+pub(crate) const BLOB_PATH: &str = "<blob>";
 
 /// Lints `source` directly as an in-memory "blob" of Papyrus source text —
 /// e.g. a script buffer piped in from an editor or another tool — instead of
@@ -47,8 +48,6 @@ pub(crate) fn run_blob(
     stdout: &mut impl Write,
     stderr: &mut impl Write,
 ) -> u8 {
-    pub(crate) const BLOB_PATH: &str = "<blob>";
-
     let lint_config = match config_path {
         Some(path) => match config::load_config_from_path(path) {
             Ok(config) => config,
@@ -77,88 +76,32 @@ pub(crate) fn run_blob(
     let mut report_buf: Vec<u8> = Vec::new();
 
     match output_format {
-        OutputFormat::Json => {
-            let report = JsonReport {
-                files: vec![JsonFileReport {
-                    path: BLOB_PATH.to_string(),
-                    diagnostics: json_diagnostics,
-                    diff: None,
-                }],
-                scripts_checked: 1,
-                files_with_diagnostics: if total_diagnostics > 0 { 1 } else { 0 },
-                total_diagnostics,
-                files_fixed: None,
-                dry_run: false,
-                success: !should_fail,
-            };
-            write_json_report(&mut report_buf, &report);
-        }
-        OutputFormat::Ai => {
-            let ai_files = if json_diagnostics.is_empty() {
-                Vec::new()
-            } else {
-                let rule_counts = rule_counts(&json_diagnostics);
-                let severity_counts = severity_counts(&json_diagnostics);
-                let ai_source = if hash_source {
-                    AiSource::Hash {
-                        algorithm: "md5",
-                        hash: content_hash::md5_hex(source),
-                    }
-                } else {
-                    AiSource::Content {
-                        content: source.to_string(),
-                    }
-                };
-                vec![AiFileReport {
-                    path: BLOB_PATH.to_string(),
-                    severity_counts,
-                    rule_counts,
-                    diagnostics: json_diagnostics,
-                    source: ai_source,
-                }]
-            };
-            let report = build_ai_report(&lint_config, ai_files, total_diagnostics);
-            write_json_report(&mut report_buf, &report);
-        }
-        OutputFormat::Plain => {
-            for diagnostic in &diagnostics {
-                let _ = writeln!(
-                    report_buf,
-                    "{}",
-                    format_diagnostic_line(BLOB_PATH, diagnostic, use_color)
-                );
-            }
-            let summary_color = if total_diagnostics == 0 {
-                ANSI_GREEN
-            } else if should_fail {
-                ANSI_RED
-            } else {
-                ANSI_YELLOW
-            };
-            let summary = if total_diagnostics == 0 {
-                "PapyrusLinterCLI: no problems found in the given blob.".to_string()
-            } else {
-                format!("PapyrusLinterCLI: {total_diagnostics} problem(s) found in the given blob.")
-            };
-            let _ = writeln!(
-                report_buf,
-                "{}",
-                colorize(&summary, summary_color, use_color)
-            );
-        }
+        OutputFormat::Json => write_blob_json(
+            &mut report_buf,
+            json_diagnostics,
+            total_diagnostics,
+            should_fail,
+        ),
+        OutputFormat::Ai => write_blob_ai(
+            &mut report_buf,
+            &lint_config,
+            json_diagnostics,
+            source,
+            hash_source,
+            total_diagnostics,
+        ),
+        OutputFormat::Plain => write_blob_plain(
+            &mut report_buf,
+            &diagnostics,
+            total_diagnostics,
+            should_fail,
+            use_color,
+        ),
     }
 
-    if let Some(output_path) = output_path {
-        if let Err(err) = fs::write(output_path, &report_buf) {
-            let _ = writeln!(
-                stderr,
-                "error: failed to write {}: {err}",
-                output_path.display()
-            );
-            return 2;
-        }
-    } else {
-        let _ = stdout.write_all(&report_buf);
+    let write_status = flush_report(&report_buf, output_path, stdout, stderr);
+    if write_status != 0 {
+        return write_status;
     }
 
     if should_fail {
@@ -166,6 +109,96 @@ pub(crate) fn run_blob(
     } else {
         0
     }
+}
+
+fn write_blob_json(
+    report_buf: &mut Vec<u8>,
+    json_diagnostics: Vec<JsonDiagnostic>,
+    total_diagnostics: usize,
+    should_fail: bool,
+) {
+    let report = JsonReport {
+        files: vec![JsonFileReport {
+            path: BLOB_PATH.to_string(),
+            diagnostics: json_diagnostics,
+            diff: None,
+        }],
+        scripts_checked: 1,
+        files_with_diagnostics: if total_diagnostics > 0 { 1 } else { 0 },
+        total_diagnostics,
+        files_fixed: None,
+        dry_run: false,
+        success: !should_fail,
+    };
+    write_json_report(report_buf, &report);
+}
+
+fn write_blob_ai(
+    report_buf: &mut Vec<u8>,
+    lint_config: &papyrus_lints::Config,
+    json_diagnostics: Vec<JsonDiagnostic>,
+    source: &str,
+    hash_source: bool,
+    total_diagnostics: usize,
+) {
+    let ai_files = if json_diagnostics.is_empty() {
+        Vec::new()
+    } else {
+        let rule_counts = rule_counts(&json_diagnostics);
+        let severity_counts = severity_counts(&json_diagnostics);
+        let ai_source = if hash_source {
+            AiSource::Hash {
+                algorithm: "md5",
+                hash: content_hash::md5_hex(source),
+            }
+        } else {
+            AiSource::Content {
+                content: source.to_string(),
+            }
+        };
+        vec![AiFileReport {
+            path: BLOB_PATH.to_string(),
+            severity_counts,
+            rule_counts,
+            diagnostics: json_diagnostics,
+            source: ai_source,
+        }]
+    };
+    let report = build_ai_report(lint_config, ai_files, total_diagnostics);
+    write_json_report(report_buf, &report);
+}
+
+fn write_blob_plain(
+    report_buf: &mut Vec<u8>,
+    diagnostics: &[papyrus_lints::Diagnostic],
+    total_diagnostics: usize,
+    should_fail: bool,
+    use_color: bool,
+) {
+    for diagnostic in diagnostics {
+        let _ = writeln!(
+            report_buf,
+            "{}",
+            format_diagnostic_line(BLOB_PATH, diagnostic, use_color)
+        );
+    }
+    let summary_color = if total_diagnostics == 0 {
+        ANSI_GREEN
+    } else if should_fail {
+        ANSI_RED
+    } else {
+        ANSI_YELLOW
+    };
+    let summary = if total_diagnostics == 0 {
+        "PapyrusLinterCLI: no problems found in the given blob.".to_string()
+    } else {
+        format!("PapyrusLinterCLI: {total_diagnostics} problem(s) found in the given blob.")
+    };
+    let _ = writeln!(
+        report_buf,
+        "{}",
+        colorize(&summary, summary_color, use_color)
+    );
 }
 
 #[cfg(test)]

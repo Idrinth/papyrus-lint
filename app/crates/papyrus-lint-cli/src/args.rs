@@ -183,58 +183,41 @@ pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError
     if json_flag && format_flag.is_some() {
         return Err(ArgsError::JsonAndFormatConflict);
     }
-    let output_format = match format_flag.as_deref() {
-        None if json_flag => OutputFormat::Json,
-        None | Some("plain") => OutputFormat::Plain,
-        Some("json") => OutputFormat::Json,
-        Some("ai") => OutputFormat::Ai,
-        Some(value) => return Err(ArgsError::InvalidFormat(value.to_string())),
-    };
+    let output_format = parse_output_format(json_flag, format_flag.as_deref())?;
 
     if hash_source && output_format != OutputFormat::Ai {
         return Err(ArgsError::HashSourceRequiresAi);
     }
 
-    let color_choice = match color_flag.as_deref() {
-        None | Some("auto") => ColorChoice::Auto,
-        Some("always") => ColorChoice::Always,
-        Some("never") => ColorChoice::Never,
-        Some(value) => return Err(ArgsError::InvalidColor(value.to_string())),
-    };
+    let color_choice = parse_color_choice(color_flag.as_deref())?;
 
     if let Some(source) = blob_flag {
-        if !args.is_empty() {
-            return Err(ArgsError::BlobWithPathArgument);
-        }
-        if dry_run || type_filter.is_some() || line_filter.is_some() {
-            return Err(ArgsError::BlobWithFixFlags);
-        }
-        if progress || !cli_script_roots.is_empty() || threads_flag.is_some() {
-            return Err(ArgsError::BlobWithScriptRootProgressThreads);
-        }
-        let tag_filter = normalize_tag_filter(tag_filter).map_err(ArgsError::UnknownTag)?;
-        return Ok(ParsedCommand::Blob(BlobArgs {
+        return parse_blob_command(
             source,
+            &args,
+            dry_run,
+            type_filter.as_deref(),
+            line_filter.as_deref(),
+            progress,
+            &cli_script_roots,
+            threads_flag.as_deref(),
+            tag_filter,
             config_path,
             output_format,
             hash_source,
             quiet_warnings,
             quiet_info,
-            tag_filter,
             color_choice,
             output_path,
-        }));
+        );
     }
 
-    let (fix, input_path) = match args.as_slice() {
-        [sub, path] if sub == "fix" => (true, PathBuf::from(path)),
-        [path] if path != "fix" => (false, PathBuf::from(path)),
-        _ => return Err(ArgsError::Usage),
-    };
-
-    if !fix && (type_filter.is_some() || line_filter.is_some() || dry_run) {
-        return Err(ArgsError::Usage);
-    }
+    let (fix, input_path) = parse_lint_positionals(
+        &args,
+        type_filter.as_deref(),
+        line_filter.as_deref(),
+        dry_run,
+    )?;
 
     if progress && output_path.is_none() {
         return Err(ArgsError::ProgressRequiresOutput);
@@ -246,44 +229,9 @@ pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError
 
     let tag_filter = normalize_tag_filter(tag_filter).map_err(ArgsError::UnknownTag)?;
 
-    let rule_filter: Option<&'static str> = match type_filter {
-        Some(value) => {
-            let normalized = value.replace('_', "-").to_ascii_lowercase();
-            match papyrus_lints::FIXABLE_RULE_IDS
-                .iter()
-                .find(|rule| **rule == normalized)
-            {
-                Some(rule) => Some(*rule),
-                None => {
-                    if papyrus_lints::KNOWN_RULE_IDS
-                        .iter()
-                        .any(|rule| *rule == normalized)
-                    {
-                        return Err(ArgsError::RuleHasNoFix(value));
-                    } else {
-                        return Err(ArgsError::UnknownRule(value));
-                    }
-                }
-            }
-        }
-        None => None,
-    };
-
-    let target_line: Option<usize> = match line_filter {
-        Some(value) => match value.parse::<usize>() {
-            Ok(line) if line >= 1 => Some(line),
-            _ => return Err(ArgsError::InvalidLine(value)),
-        },
-        None => None,
-    };
-
-    let thread_count: usize = match threads_flag {
-        Some(value) => match value.parse::<usize>() {
-            Ok(threads) if threads >= 1 => threads,
-            _ => return Err(ArgsError::InvalidThreads(value)),
-        },
-        None => papyrus_lint_core::parallel::default_thread_count(),
-    };
+    let rule_filter = parse_rule_filter(type_filter)?;
+    let target_line = parse_line_filter(line_filter)?;
+    let thread_count = parse_thread_count(threads_flag)?;
 
     Ok(ParsedCommand::Lint(LintArgs {
         fix,
@@ -304,6 +252,130 @@ pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError
         color_choice,
         thread_count,
     }))
+}
+
+fn parse_lint_positionals(
+    args: &[String],
+    type_filter: Option<&str>,
+    line_filter: Option<&str>,
+    dry_run: bool,
+) -> Result<(bool, PathBuf), ArgsError> {
+    let (fix, input_path) = match args {
+        [sub, path] if sub == "fix" => (true, PathBuf::from(path)),
+        [path] if path != "fix" => (false, PathBuf::from(path)),
+        _ => return Err(ArgsError::Usage),
+    };
+    if !fix && (type_filter.is_some() || line_filter.is_some() || dry_run) {
+        return Err(ArgsError::Usage);
+    }
+    Ok((fix, input_path))
+}
+
+fn parse_output_format(
+    json_flag: bool,
+    format_flag: Option<&str>,
+) -> Result<OutputFormat, ArgsError> {
+    match format_flag {
+        None if json_flag => Ok(OutputFormat::Json),
+        None | Some("plain") => Ok(OutputFormat::Plain),
+        Some("json") => Ok(OutputFormat::Json),
+        Some("ai") => Ok(OutputFormat::Ai),
+        Some(value) => Err(ArgsError::InvalidFormat(value.to_string())),
+    }
+}
+
+fn parse_color_choice(color_flag: Option<&str>) -> Result<ColorChoice, ArgsError> {
+    match color_flag {
+        None | Some("auto") => Ok(ColorChoice::Auto),
+        Some("always") => Ok(ColorChoice::Always),
+        Some("never") => Ok(ColorChoice::Never),
+        Some(value) => Err(ArgsError::InvalidColor(value.to_string())),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn parse_blob_command(
+    source: String,
+    args: &[String],
+    dry_run: bool,
+    type_filter: Option<&str>,
+    line_filter: Option<&str>,
+    progress: bool,
+    cli_script_roots: &[String],
+    threads_flag: Option<&str>,
+    tag_filter: Option<String>,
+    config_path: Option<PathBuf>,
+    output_format: OutputFormat,
+    hash_source: bool,
+    quiet_warnings: bool,
+    quiet_info: bool,
+    color_choice: ColorChoice,
+    output_path: Option<PathBuf>,
+) -> Result<ParsedCommand, ArgsError> {
+    if !args.is_empty() {
+        return Err(ArgsError::BlobWithPathArgument);
+    }
+    if dry_run || type_filter.is_some() || line_filter.is_some() {
+        return Err(ArgsError::BlobWithFixFlags);
+    }
+    if progress || !cli_script_roots.is_empty() || threads_flag.is_some() {
+        return Err(ArgsError::BlobWithScriptRootProgressThreads);
+    }
+    let tag_filter = normalize_tag_filter(tag_filter).map_err(ArgsError::UnknownTag)?;
+    Ok(ParsedCommand::Blob(BlobArgs {
+        source,
+        config_path,
+        output_format,
+        hash_source,
+        quiet_warnings,
+        quiet_info,
+        tag_filter,
+        color_choice,
+        output_path,
+    }))
+}
+
+fn parse_rule_filter(type_filter: Option<String>) -> Result<Option<&'static str>, ArgsError> {
+    let Some(value) = type_filter else {
+        return Ok(None);
+    };
+    let normalized = value.replace('_', "-").to_ascii_lowercase();
+    match papyrus_lints::FIXABLE_RULE_IDS
+        .iter()
+        .find(|rule| **rule == normalized)
+    {
+        Some(rule) => Ok(Some(*rule)),
+        None => {
+            if papyrus_lints::KNOWN_RULE_IDS
+                .iter()
+                .any(|rule| *rule == normalized)
+            {
+                Err(ArgsError::RuleHasNoFix(value))
+            } else {
+                Err(ArgsError::UnknownRule(value))
+            }
+        }
+    }
+}
+
+fn parse_line_filter(line_filter: Option<String>) -> Result<Option<usize>, ArgsError> {
+    match line_filter {
+        Some(value) => match value.parse::<usize>() {
+            Ok(line) if line >= 1 => Ok(Some(line)),
+            _ => Err(ArgsError::InvalidLine(value)),
+        },
+        None => Ok(None),
+    }
+}
+
+fn parse_thread_count(threads_flag: Option<String>) -> Result<usize, ArgsError> {
+    match threads_flag {
+        Some(value) => match value.parse::<usize>() {
+            Ok(threads) if threads >= 1 => Ok(threads),
+            _ => Err(ArgsError::InvalidThreads(value)),
+        },
+        None => Ok(papyrus_lint_core::parallel::default_thread_count()),
+    }
 }
 
 #[cfg(test)]

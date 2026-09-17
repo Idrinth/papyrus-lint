@@ -13,7 +13,7 @@ use papyrus_lint_core::achlist;
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::script_locator::find_psc_files_recursively;
 
-use crate::project::{find_candidate_pair_root, find_psc_project_root};
+use crate::project::{is_psc_path, resolve_input_project_root};
 
 /// Project state resolved by [`scan_project`]: the scripts a run should
 /// process, alongside everything [`crate::run_lint`]/[`crate::run_fix`] need
@@ -47,28 +47,10 @@ pub(crate) fn scan_project(
     config_path: Option<&Path>,
     cli_script_roots: Vec<String>,
 ) -> Result<ScanOutcome, String> {
-    let is_psc_file = input_path
-        .extension()
-        .and_then(|ext| ext.to_str())
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"));
+    let is_psc_file = is_psc_path(input_path);
     let is_directory = !is_psc_file && input_path.is_dir();
 
-    let script_paths: Vec<PathBuf> = if is_psc_file {
-        vec![input_path.to_path_buf()]
-    } else if is_directory {
-        find_psc_files_recursively(input_path)
-    } else {
-        let entries = achlist::parse_achlist(input_path).map_err(|err| format!("error: {err}"))?;
-
-        entries
-            .into_iter()
-            .filter(|path| {
-                path.extension()
-                    .and_then(|ext| ext.to_str())
-                    .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
-            })
-            .collect()
-    };
+    let script_paths = collect_script_paths(input_path, is_psc_file, is_directory)?;
 
     // A bare .psc file's project root is found by walking up for a
     // `scripts/source`/`source/scripts` directory pair (see
@@ -80,29 +62,38 @@ pub(crate) fn scan_project(
     // only if none of the resolved scripts sit under such a pair do we fall
     // back to the achlist's own parent directory (the conventional layout)
     // or, for a scanned directory, the directory itself.
-    let project_root = if is_psc_file {
-        find_psc_project_root(input_path)
-    } else {
-        script_paths
-            .iter()
-            .find_map(|path| find_candidate_pair_root(path))
-            .unwrap_or_else(|| {
-                if is_directory {
-                    input_path.to_path_buf()
-                } else {
-                    input_path
-                        .ancestors()
-                        .nth(1)
-                        .filter(|dir| !dir.as_os_str().is_empty())
-                        .map(Path::to_path_buf)
-                        .unwrap_or_else(|| PathBuf::from("."))
-                }
-            })
-    };
+    let project_root =
+        resolve_input_project_root(input_path, &script_paths, is_psc_file, is_directory);
 
+    let settings = load_scan_settings(
+        &project_root,
+        config_path,
+        cli_script_roots,
+        is_psc_file,
+        &script_paths,
+    )?;
+    Ok(assemble_scan_outcome(script_paths, project_root, settings))
+}
+
+struct ScanSettings {
+    lint_config: papyrus_lints::Config,
+    additional_script_roots: Vec<String>,
+    strict_achlist_scope: bool,
+    compile_check: bool,
+    compiler_path: String,
+    lookup_script_roots: Vec<String>,
+}
+
+fn load_scan_settings(
+    project_root: &Path,
+    config_path: Option<&Path>,
+    cli_script_roots: Vec<String>,
+    is_psc_file: bool,
+    script_paths: &[PathBuf],
+) -> Result<ScanSettings, String> {
     let lint_config = config_path
         .map_or_else(
-            || config::load_config(&project_root),
+            || config::load_config(project_root),
             config::load_config_from_path,
         )
         .map_err(|err| format!("error: failed to load lint config: {err}"))?;
@@ -114,7 +105,7 @@ pub(crate) fn scan_project(
     let mut additional_script_roots = if config_path.is_some() {
         Vec::new()
     } else {
-        config::load_script_roots(&project_root)
+        config::load_script_roots(project_root)
             .map_err(|err| format!("error: failed to load lint config: {err}"))?
     };
     additional_script_roots.extend(cli_script_roots);
@@ -145,42 +136,16 @@ pub(crate) fn scan_project(
     // other key in that file (see #362).
     let strict_achlist_scope = config_path
         .map_or_else(
-            || config::load_strict_achlist_scope(&project_root),
+            || config::load_strict_achlist_scope(project_root),
             config::load_strict_achlist_scope_from_path,
         )
         .map_err(|err| format!("error: failed to load lint config: {err}"))?;
 
     if !is_psc_file && !strict_achlist_scope {
-        for script_path in &script_paths {
-            let Some(parent) = script_path.parent() else {
-                continue;
-            };
-            let root = parent
-                .strip_prefix(&project_root)
-                .unwrap_or(parent)
-                .to_string_lossy()
-                .into_owned();
-            if !additional_script_roots.contains(&root) {
-                additional_script_roots.push(root);
-            }
-        }
+        add_script_parent_roots(script_paths, project_root, &mut additional_script_roots);
     }
 
-    // Read from the project root's own config the same way `doctor` reports
-    // on them (see `run_doctor`), regardless of `--config` — `compile_check`
-    // and `compiler_path` aren't part of the lint settings a `--config`
-    // override replaces. `compiler_path` is only resolved when `compile_check`
-    // is actually enabled, since it's otherwise unused.
-    let compile_check = config::load_compile_check(&project_root)
-        .map_err(|err| format!("error: failed to load lint config: {err}"))?;
-    let compiler_path = if compile_check {
-        config::resolve_compiler_path(&project_root)
-            .map_err(|err| format!("error: failed to load lint config: {err}"))?
-            .unwrap_or_default()
-    } else {
-        String::new()
-    };
-    let compiler_path = compiler_path.trim().to_string();
+    let (compile_check, compiler_path) = load_compile_settings(project_root)?;
 
     // Analysis-only fallback directories: read from whichever config file
     // is actually in effect, the same as `strict_achlist_scope`. They are
@@ -188,15 +153,48 @@ pub(crate) fn scan_project(
     // and `conflicting_script_versions` never scans them.
     let lookup_script_roots = config_path
         .map_or_else(
-            || config::load_lookup_script_roots(&project_root),
+            || config::load_lookup_script_roots(project_root),
             config::load_lookup_script_roots_from_path,
         )
         .map_err(|err| format!("error: failed to load lint config: {err}"))?;
 
+    Ok(ScanSettings {
+        lint_config,
+        additional_script_roots,
+        strict_achlist_scope,
+        compile_check,
+        compiler_path,
+        lookup_script_roots,
+    })
+}
+
+fn load_compile_settings(project_root: &Path) -> Result<(bool, String), String> {
+    // Read from the project root's own config the same way `doctor` reports
+    // on them (see `run_doctor`), regardless of `--config` — `compile_check`
+    // and `compiler_path` aren't part of the lint settings a `--config`
+    // override replaces. `compiler_path` is only resolved when `compile_check`
+    // is actually enabled, since it's otherwise unused.
+    let compile_check = config::load_compile_check(project_root)
+        .map_err(|err| format!("error: failed to load lint config: {err}"))?;
+    let compiler_path = if compile_check {
+        config::resolve_compiler_path(project_root)
+            .map_err(|err| format!("error: failed to load lint config: {err}"))?
+            .unwrap_or_default()
+    } else {
+        String::new()
+    };
+    Ok((compile_check, compiler_path.trim().to_string()))
+}
+
+fn assemble_scan_outcome(
+    script_paths: Vec<PathBuf>,
+    project_root: PathBuf,
+    settings: ScanSettings,
+) -> ScanOutcome {
     let mut function_table =
-        FunctionTable::new_with_additional_roots(project_root, additional_script_roots)
-            .with_lookup_roots(lookup_script_roots);
-    if strict_achlist_scope {
+        FunctionTable::new_with_additional_roots(project_root, settings.additional_script_roots)
+            .with_lookup_roots(settings.lookup_script_roots);
+    if settings.strict_achlist_scope {
         function_table = function_table.with_known_scripts(&script_paths);
     }
 
@@ -206,24 +204,18 @@ pub(crate) fn scan_project(
     // the achlist's full size. Only needed in strict-scope mode: the
     // off-by-default `script_index` built below already covers this (and
     // more) via the directories just added to `additional_script_roots`.
-    let mut scripts_by_name: HashMap<String, Vec<PathBuf>> = HashMap::new();
-    if strict_achlist_scope {
-        for script_path in &script_paths {
-            if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
-                scripts_by_name
-                    .entry(name.to_ascii_lowercase())
-                    .or_default()
-                    .push(script_path.clone());
-            }
-        }
-    }
+    let scripts_by_name = if settings.strict_achlist_scope {
+        group_scripts_by_name(&script_paths)
+    } else {
+        HashMap::new()
+    };
 
     // Built once up front, rather than re-scanning `function_table`'s search
     // directories for every conflict check or newly resolved script, since a
     // modlist-sized achlist can list hundreds of scripts across as many
     // directories (see #311). Empty (and unused) in strict-scope mode, where
     // `scripts_by_name` above covers this instead.
-    let script_index = Arc::new(if !strict_achlist_scope {
+    let script_index = Arc::new(if !settings.strict_achlist_scope {
         papyrus_lint_core::script_locator::build_script_index(
             function_table.root(),
             function_table.additional_roots(),
@@ -231,18 +223,69 @@ pub(crate) fn scan_project(
     } else {
         HashMap::new()
     });
-    if !strict_achlist_scope {
+    if !settings.strict_achlist_scope {
         function_table = function_table.with_script_index(Arc::clone(&script_index));
     }
 
-    Ok(ScanOutcome {
+    ScanOutcome {
         script_paths,
-        lint_config,
+        lint_config: settings.lint_config,
         function_table,
         scripts_by_name,
         script_index,
-        strict_achlist_scope,
-        compile_check,
-        compiler_path,
-    })
+        strict_achlist_scope: settings.strict_achlist_scope,
+        compile_check: settings.compile_check,
+        compiler_path: settings.compiler_path,
+    }
+}
+
+fn collect_script_paths(
+    input_path: &Path,
+    is_psc_file: bool,
+    is_directory: bool,
+) -> Result<Vec<PathBuf>, String> {
+    if is_psc_file {
+        return Ok(vec![input_path.to_path_buf()]);
+    }
+    if is_directory {
+        return Ok(find_psc_files_recursively(input_path));
+    }
+    let entries = achlist::parse_achlist(input_path).map_err(|err| format!("error: {err}"))?;
+    Ok(entries
+        .into_iter()
+        .filter(|path| is_psc_path(path))
+        .collect())
+}
+
+fn group_scripts_by_name(script_paths: &[PathBuf]) -> HashMap<String, Vec<PathBuf>> {
+    let mut scripts_by_name: HashMap<String, Vec<PathBuf>> = HashMap::new();
+    for script_path in script_paths {
+        if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
+            scripts_by_name
+                .entry(name.to_ascii_lowercase())
+                .or_default()
+                .push(script_path.clone());
+        }
+    }
+    scripts_by_name
+}
+
+fn add_script_parent_roots(
+    script_paths: &[PathBuf],
+    project_root: &Path,
+    additional_script_roots: &mut Vec<String>,
+) {
+    for script_path in script_paths {
+        let Some(parent) = script_path.parent() else {
+            continue;
+        };
+        let root = parent
+            .strip_prefix(project_root)
+            .unwrap_or(parent)
+            .to_string_lossy()
+            .into_owned();
+        if !additional_script_roots.contains(&root) {
+            additional_script_roots.push(root);
+        }
+    }
 }
