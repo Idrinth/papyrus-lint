@@ -830,6 +830,70 @@ jobs:
           name: rust-coverage-${{ matrix.name }}
           path: lcov.info
 
+  docker-lint:
+    name: Dockerfile lint
+    needs: labels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.5.0
+        with:
+          dockerfile: docker/Dockerfile
+
+  docker-build:
+    name: Docker image build (${{ matrix.preset }})
+    needs: labels
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [strict, standard, careful]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/crates/papyrus-lint-cli
+
+      - name: Build release CLI binary
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
+
+      - name: Stage CLI binary for the image
+        run: cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI docker/PapyrusLinterCLI
+
+      - name: Build container image
+        uses: docker/build-push-action@v6
+        with:
+          context: docker
+          push: false
+          load: true
+          build-args: |
+            PRESET=${{ matrix.preset }}
+          tags: papyrus-lint:${{ matrix.preset }}
+
+      - name: Smoke test container image
+        run: |
+          docker run --rm papyrus-lint:${{ matrix.preset }} --version
+
+          mkdir -p smoke-project
+          cp app/crates/papyrus-lint-core/tests/fixtures/typea.psc smoke-project/
+
+          set +e
+          docker run --rm -v "$PWD/smoke-project:/project:ro" papyrus-lint:${{ matrix.preset }}
+          status=$?
+          set -e
+          # 0 = no issues, 1 = lint issues found; either means the container
+          # itself ran correctly. Anything else (usage/IO error, crash) fails
+          # the job.
+          if [ "$status" -ge 2 ]; then
+            echo "papyrus-lint container exited with unexpected status $status" >&2
+            exit 1
+          fi
+
   coverage-comment:
     name: Coverage summary comment
     if: always() && github.event_name == 'pull_request'

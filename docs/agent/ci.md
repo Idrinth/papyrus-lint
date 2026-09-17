@@ -173,6 +173,22 @@
   each crate's tests via `cargo llvm-cov`. Each matrix leg posts its text
   coverage summary to the job's step summary and uploads its lcov report
   as a `rust-coverage-<crate>` artifact.
+- **Dockerfile lint job** (`docker-lint`): runs `hadolint`
+  (`hadolint/hadolint-action`) against
+  `docker/Dockerfile` to catch Dockerfile best-practice issues.
+- **Docker image build job** (`docker-build`): matrixing over the same
+  three presets `release.yml`'s `container` job publishes
+  (strict/standard/careful), builds the release `PapyrusLinterCLI` binary
+  from source (`cargo build --release --manifest-path
+  app/crates/papyrus-lint-cli/Cargo.toml`), stages it as `docker/PapyrusLinterCLI`
+  the same way that job does with the downloaded release asset, then builds
+  (but never pushes) `docker/Dockerfile` for that preset via
+  `docker/build-push-action` with `load: true` so the image lands in the
+  runner's local Docker daemon. It then smoke-tests the built image: `--version`
+  must succeed, and running the image with a small fixture script bind-mounted
+  at `/project` must exit `0` (clean) or `1` (lint issues found) — either means
+  the entrypoint, base scripts, and config all wired up correctly — while
+  anything `2` or higher (a usage/IO error or crash) fails the job.
 - **Coverage summary comment job** (`coverage-comment`, pull requests
   only): downloads every job's lcov artifact and runs
   `.github/scripts/coverage_summary.py` to aggregate line coverage by
