@@ -127,12 +127,17 @@
 │       │       │                       # any), preferring the empty state's own
 │       │       │                       # declaration over a same-named override
 │       │       │   ├── mod.rs          # FunctionTable struct and constructors
+│       │       │   ├── tests.rs        # mod.rs's unit tests
 │       │       │   ├── ancestry.rs     # Extends-chain lookups (functions,
 │       │       │   │                   # properties, states, members)
+│       │       │   ├── ancestry_tests.rs # ancestry.rs's unit tests
 │       │       │   ├── load.rs         # Locate/parse/cache scripts on demand
+│       │       │   ├── load_tests.rs   # load.rs's unit tests
 │       │       │   ├── external.rs     # ExternalSignatures impl for FunctionTable
+│       │       │   ├── external_tests.rs # external.rs's unit tests
 │       │       │   ├── shared.rs       # Mutex-guarded SharedFunctionTable adapter
-│       │       │   └── tests.rs        # Unit tests
+│       │       │   ├── shared_tests.rs # shared.rs's unit tests
+│       │       │   └── test_support.rs # Shared helpers for this module's tests
 │       │       ├── script_functions.rs # Converts a parsed .psc AST into the
 │       │       │                       # FunctionSignature/PropertySignature/Member
 │       │       │                       # types function_table looks up and

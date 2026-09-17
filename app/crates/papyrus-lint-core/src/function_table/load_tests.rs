@@ -1,0 +1,304 @@
+use super::super::test_support::write_script;
+use super::*;
+use std::collections::HashMap;
+use std::fs;
+use std::sync::Arc;
+
+#[test]
+fn new_with_additional_roots_resolves_a_script_outside_the_conventional_dirs() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let shared = tempfile::tempdir().expect("failed to create temp dir");
+    fs::write(
+        shared.path().join("Shared.psc"),
+        "ScriptName Shared\n\nInt Function DoThing()\nEndFunction\n",
+    )
+    .expect("failed to write shared script");
+
+    let mut table = FunctionTable::new_with_additional_roots(
+        root.path().to_path_buf(),
+        vec![shared.path().to_string_lossy().into_owned()],
+    );
+
+    let signature = table
+        .lookup_function("Shared", "DoThing")
+        .expect("function should be found via the additional root");
+    assert_eq!(signature.name, "DoThing");
+}
+
+#[test]
+fn with_lookup_roots_resolves_a_script_as_a_fallback() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    fs::write(
+        vanilla.path().join("Actor.psc"),
+        "ScriptName Actor\n\nFunction DamageActorValue(String av, Float value)\nEndFunction\n",
+    )
+    .expect("failed to write vanilla script");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+
+    let signature = table
+        .lookup_function("Actor", "DamageActorValue")
+        .expect("function should be found via the lookup root");
+    assert_eq!(signature.name, "DamageActorValue");
+    assert!(table.script_exists("Actor"));
+}
+
+#[test]
+fn lookup_roots_do_not_override_a_project_script_of_the_same_name() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let source = root.path().join("scripts/source");
+    fs::create_dir_all(&source).expect("failed to create source dir");
+    fs::write(
+        source.join("Actor.psc"),
+        "ScriptName Actor\n\nFunction FromProject()\nEndFunction\n",
+    )
+    .expect("failed to write project script");
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    fs::write(
+        vanilla.path().join("Actor.psc"),
+        "ScriptName Actor\n\nFunction FromVanilla()\nEndFunction\n",
+    )
+    .expect("failed to write vanilla script");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()]);
+
+    assert!(table.lookup_function("Actor", "FromProject").is_some());
+    assert!(table.lookup_function("Actor", "FromVanilla").is_none());
+}
+
+#[test]
+fn with_known_scripts_still_falls_back_to_lookup_roots() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let listed_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let listed_path = listed_dir.path().join("Listed.psc");
+    fs::write(&listed_path, "ScriptName Listed\n").expect("failed to write listed script");
+    let vanilla = tempfile::tempdir().expect("failed to create temp dir");
+    fs::write(
+        vanilla.path().join("Actor.psc"),
+        "ScriptName Actor\n\nFunction DamageActorValue(String av, Float value)\nEndFunction\n",
+    )
+    .expect("failed to write vanilla script");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf())
+        .with_lookup_roots(vec![vanilla.path().to_string_lossy().into_owned()])
+        .with_known_scripts(&[listed_path]);
+
+    assert!(table.script_exists("Listed"));
+    assert!(table.script_exists("Actor"));
+    assert!(!table.script_exists("Unlisted"));
+    assert!(table.lookup_function("Actor", "DamageActorValue").is_some());
+}
+
+#[test]
+fn with_script_index_resolves_without_searching_the_configured_roots() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let indexed_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let indexed_path = indexed_dir.path().join("Shared.psc");
+    fs::write(
+        &indexed_path,
+        "ScriptName Shared\n\nInt Function DoThing()\nEndFunction\n",
+    )
+    .expect("failed to write indexed script");
+    let index = Arc::new(HashMap::from([(
+        "shared.psc".to_string(),
+        vec![indexed_path],
+    )]));
+
+    let mut table = FunctionTable::new(root.path().join("nonexistent")).with_script_index(index);
+
+    assert!(table.script_exists("SHARED"));
+    assert!(table.lookup_function("Shared", "DoThing").is_some());
+    assert!(!table.script_exists("Missing"));
+}
+
+#[test]
+fn with_known_scripts_resolves_a_script_named_explicitly_without_a_directory_scan() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let mod_a = tempfile::tempdir().expect("failed to create temp dir");
+    let mod_b = tempfile::tempdir().expect("failed to create temp dir");
+    let base_path = mod_a.path().join("Base.psc");
+    let child_path = mod_b.path().join("Child.psc");
+    fs::write(
+        &base_path,
+        "ScriptName Base\n\nInt Function DoThing()\nEndFunction\n",
+    )
+    .expect("failed to write base script");
+    fs::write(&child_path, "ScriptName Child Extends Base\n")
+        .expect("failed to write child script");
+
+    let mut table =
+        FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[base_path, child_path]);
+
+    let signature = table
+        .lookup_function("Child", "DoThing")
+        .expect("function inherited via a known script should be found");
+    assert_eq!(signature.name, "DoThing");
+}
+
+#[test]
+fn with_known_scripts_does_not_expose_other_files_in_the_same_directory() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let shared_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let listed_path = shared_dir.path().join("Listed.psc");
+    fs::write(&listed_path, "ScriptName Listed\n").expect("failed to write listed script");
+    fs::write(
+        shared_dir.path().join("Unlisted.psc"),
+        "ScriptName Unlisted\n",
+    )
+    .expect("failed to write unlisted sibling script");
+
+    let mut table =
+        FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[listed_path]);
+
+    assert!(table.script_exists("Listed"));
+    assert!(!table.script_exists("Unlisted"));
+}
+
+#[test]
+fn with_known_scripts_lets_the_first_listed_path_win_for_a_duplicate_stem() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let first_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let second_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let first = first_dir.path().join("Example.psc");
+    let second = second_dir.path().join("Example.psc");
+    fs::write(
+        &first,
+        "ScriptName Example\n\nFunction FromFirst()\nEndFunction\n",
+    )
+    .expect("failed to write first script");
+    fs::write(
+        &second,
+        "ScriptName Example\n\nFunction FromSecond()\nEndFunction\n",
+    )
+    .expect("failed to write second script");
+
+    let mut table =
+        FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[first.clone(), second]);
+
+    assert!(table.lookup_function("Example", "FromFirst").is_some());
+    assert!(table.lookup_function("Example", "FromSecond").is_none());
+}
+
+#[test]
+fn known_scripts_take_precedence_over_a_same_named_script_under_the_conventional_directories() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Foo",
+        "ScriptName Foo\n\nFunction FromConventionalDir()\nEndFunction\n",
+    );
+    let shared = tempfile::tempdir().expect("failed to create temp dir");
+    let known_path = shared.path().join("Foo.psc");
+    fs::write(
+        &known_path,
+        "ScriptName Foo\n\nFunction FromKnownScript()\nEndFunction\n",
+    )
+    .expect("failed to write known script");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[known_path]);
+
+    assert!(table.lookup_function("Foo", "FromKnownScript").is_some());
+    assert!(table
+        .lookup_function("Foo", "FromConventionalDir")
+        .is_none());
+}
+
+#[test]
+fn with_known_scripts_does_not_resolve_an_unlisted_script_under_the_conventional_directory() {
+    // Regression test: known-scripts mode must not fall back to
+    // `find_psc_file` at all, not even for the project's own
+    // conventional `scripts/source` directory — otherwise a listed
+    // script and an unlisted sibling sitting in that same conventional
+    // directory would let the unlisted one resolve anyway, defeating
+    // the whole point of known-scripts mode.
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(root.path(), "Listed", "ScriptName Listed\n");
+    write_script(root.path(), "Unlisted", "ScriptName Unlisted\n");
+    let listed_path = root.path().join("scripts/source/Listed.psc");
+
+    let mut table =
+        FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[listed_path]);
+
+    assert!(table.script_exists("Listed"));
+    assert!(!table.script_exists("Unlisted"));
+}
+
+#[test]
+fn returns_none_when_script_file_cannot_be_found() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.lookup_function("Missing", "Anything").is_none());
+}
+
+#[test]
+fn caches_parsed_scripts_across_lookups() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Foo",
+        "ScriptName Foo\n\nFunction Bar()\nEndFunction\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    assert!(table.lookup_function("Foo", "Bar").is_some());
+
+    // Remove the backing file: a cached lookup must not touch disk again.
+    fs::remove_file(root.path().join("scripts/source/Foo.psc"))
+        .expect("failed to remove script file");
+
+    assert!(table.lookup_function("Foo", "Bar").is_some());
+}
+
+#[test]
+fn caches_an_unparseable_script_as_unresolved() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(root.path(), "Foo", "this is not a Papyrus script\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    assert!(table.lookup_function("Foo", "Bar").is_none());
+    assert!(table.script_exists("Foo"));
+
+    write_script(
+        root.path(),
+        "Foo",
+        "ScriptName Foo\n\nFunction Bar()\nEndFunction\n",
+    );
+
+    assert!(table.lookup_function("Foo", "Bar").is_none());
+}
+
+#[test]
+fn script_exists_true_for_a_script_found_under_the_project_root() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(root.path(), "Foo", "ScriptName Foo\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.script_exists("Foo"));
+    assert!(table.script_exists("foo"));
+}
+
+#[test]
+fn script_exists_true_for_a_known_native_singleton_script() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.script_exists("Game"));
+    assert!(table.script_exists("utility"));
+    assert!(table.script_exists("Debug"));
+}
+
+#[test]
+fn script_exists_false_for_a_script_that_cannot_be_found() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(!table.script_exists("MyMissingScript"));
+}

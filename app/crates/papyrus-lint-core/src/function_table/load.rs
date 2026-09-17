@@ -89,3 +89,7 @@ impl FunctionTable {
         self.scripts.insert(name_lower.to_string(), script);
     }
 }
+
+#[cfg(test)]
+#[path = "load_tests.rs"]
+mod tests;

@@ -113,3 +113,7 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         papyrus_lints::ExternalSignatures::property_types(&mut *table, type_name)
     }
 }
+
+#[cfg(test)]
+#[path = "shared_tests.rs"]
+mod tests;
