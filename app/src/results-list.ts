@@ -586,6 +586,27 @@ async function readIssueFileSources(
 // FIXABLE_RULE_IDS follows for papyrus_lints::FIXABLE_RULE_IDS.
 const COMPILER_ERROR_RULE = "compiler-error";
 
+// Tallies `diagnostics` by rule id, alphabetically sorted, for the
+// per-file and report-wide `rule_counts` fields in formatIssuesForAi's
+// output.
+function ruleCounts(diagnostics: { rule: string }[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const diagnostic of diagnostics) {
+    counts[diagnostic.rule] = (counts[diagnostic.rule] ?? 0) + 1;
+  }
+  return Object.fromEntries(Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)));
+}
+
+// Tallies `diagnostics` by severity level, for the per-file and
+// report-wide `severity_counts` fields in formatIssuesForAi's output.
+function severityCounts(diagnostics: { level: Severity }[]): { errors: number; warnings: number; info: number } {
+  return {
+    errors: diagnostics.filter((diagnostic) => diagnostic.level === "error").length,
+    warnings: diagnostics.filter((diagnostic) => diagnostic.level === "warning").length,
+    info: diagnostics.filter((diagnostic) => diagnostic.level === "info").length,
+  };
+}
+
 // Renders `files` as a single JSON document meant to be handed to an AI
 // assistant alongside a question about the results: a header identifying
 // the tool/version/website/target game and generation time (so the AI knows what produced
@@ -642,18 +663,6 @@ export async function formatIssuesForAi(
   // `level` carries the severity separately, so avoid repeating its internal
   // message prefix in the AI-focused representation.
   const baseReport = buildIssuesReport(sortedFiles, true);
-  const ruleCounts = (diagnostics: { rule: string }[]): Record<string, number> => {
-    const counts: Record<string, number> = {};
-    for (const diagnostic of diagnostics) {
-      counts[diagnostic.rule] = (counts[diagnostic.rule] ?? 0) + 1;
-    }
-    return Object.fromEntries(Object.entries(counts).sort(([left], [right]) => left.localeCompare(right)));
-  };
-  const severityCounts = (diagnostics: { level: Severity }[]) => ({
-    errors: diagnostics.filter((diagnostic) => diagnostic.level === "error").length,
-    warnings: diagnostics.filter((diagnostic) => diagnostic.level === "warning").length,
-    info: diagnostics.filter((diagnostic) => diagnostic.level === "info").length,
-  });
   const findings = {
     files: await Promise.all(
       baseReport.files.map(async (fileReport, fileIndex) => ({
