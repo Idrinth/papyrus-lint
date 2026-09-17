@@ -10,6 +10,8 @@ build = "build.rs"
 serde = { version = "1", features = ["derive"] }
 serde_norway = "0.9"
 papyrus-lints = { path = "../papyrus-lints" }
+walkdir = "2"
+
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
