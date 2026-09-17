@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { loadAndApplyLintConfig } from "./config";
-import { markLintResultsStale } from "./main";
+import { markLintResultsStale } from "./drop";
 import { dirnameOf, isPscPath } from "./path";
 import { applyConfigPreset, promptForConfigSelection } from "./presets";
 

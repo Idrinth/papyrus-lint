@@ -15,14 +15,9 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
-import {
-  applyRuleTags,
-  handleDroppedPaths,
-  SEVERITIES,
-  switchTab,
-  type Diagnostic,
-  type PscParseOutcome,
-} from "./main";
+import { applyRuleTags, SEVERITIES, switchTab } from "./main";
+import { handleDroppedPaths } from "./drop";
+import { type Diagnostic, type PscParseOutcome } from "./backend";
 import { DEFAULT_LINT_CONFIG } from "./config";
 import { useProjectDir } from "./project";
 import { aiConfiguration } from "./results-export-ai";

@@ -83,9 +83,9 @@ desktop app's `list_rule_tags` Tauri command (`app/src-tauri/src/meta.rs`)
 exposes the same metadata to the frontend as a JSON-friendly
 `RuleTagsInfo` per rule (its `description` is also what the Lint results
 tab's "Export for AI" button carries in each `rule_details` entry — see
-the README's Export for AI documentation); `app/src/main.ts` fetches it
-once at startup
-(`loadRuleTags`/`applyRuleTags`), indexes it by rule id, and uses it both
+the README's Export for AI documentation); the frontend fetches it once at
+startup (`loadRuleTags` in `app/src/backend.ts`) and indexes it by rule id
+(`applyRuleTags` in `app/src/main.ts`), then uses it both
 to render each lint finding's kind/importance/auto-fixable badges (see
 `buildFindingTagsEl`) and to drive the Lint results tab's filters
 (`matchesTagFilters` in `app/src/results-filter.ts`), alongside its
@@ -284,7 +284,7 @@ the same way as an achlist's: each resolved script is tried against
 itself (rather than an achlist's parent directory, which doesn't apply
 here) only if none of them match. The desktop app exposes the same scan
 as a `list_psc_files_recursively` Tauri command, used by
-`handleDroppedPaths` in `app/src/main.ts` when a single dropped path is
+`handleDroppedPaths` in `app/src/drop.ts` when a single dropped path is
 neither an `.achlist` nor a `.psc` file (it errors out for a path that
 isn't an existing directory either, which the frontend treats the same as
 today's "drop a single .achlist or .psc file" case); `projectDirForDirectory`
@@ -381,7 +381,7 @@ than a correctness one, and covers the desktop app's own per-file Tauri
 commands too, which were already running concurrently across a batch drop
 (see below) without this. The desktop app's own frontend caps how many
 scripts it works on at once the same way, in `parsePscFiles`
-(`app/src/main.ts`): `mapWithConcurrency` bounds concurrent `parse_psc_file`/
+(`app/src/drop.ts`): `mapWithConcurrency` bounds concurrent `parse_psc_file`/
 `lint_psc_file` invocations to `parseConcurrencyLimit()` (the browser's
 `navigator.hardwareConcurrency`, or `4` if that's unavailable), rather than
 firing every resolved script's pair of Tauri commands at once — each

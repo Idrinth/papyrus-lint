@@ -15,7 +15,8 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
-import { handleDroppedPaths, lintPapyrusScript, listScriptMembers, type Diagnostic } from "./main";
+import { lintPapyrusScript, listScriptMembers, type Diagnostic } from "./backend";
+import { handleDroppedPaths } from "./drop";
 import { DEFAULT_LINT_CONFIG } from "./config";
 import { openCodeViewer } from "./code-viewer";
 import {
