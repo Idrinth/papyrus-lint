@@ -458,8 +458,9 @@ mod tests {
             std::fs::read_to_string(&path).unwrap(),
             "ScriptName Example  \n\nFunction Run(Int left, Int right)  \nEndFunction\n"
         );
-        assert!(diagnostics.iter().all(|diagnostic| !(diagnostic.line == 3
-            && diagnostic.rule == "comma-spacing")));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| !(diagnostic.line == 3 && diagnostic.rule == "comma-spacing")));
         assert!(diagnostics.iter().any(|diagnostic| {
             diagnostic.line == 1 && diagnostic.rule == "trailing-whitespace"
         }));
@@ -907,8 +908,7 @@ mod tests {
             "Call(1,2)   ; @disable comma-spacing, trailing-whitespace\n"
         );
         assert!(diagnostics.iter().all(|diagnostic| {
-            diagnostic.rule != "comma-spacing"
-                && diagnostic.rule != "trailing-whitespace"
+            diagnostic.rule != "comma-spacing" && diagnostic.rule != "trailing-whitespace"
         }));
     }
 
