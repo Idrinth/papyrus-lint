@@ -486,6 +486,54 @@ mod tests {
     }
 
     #[test]
+    fn ensure_primed_fills_in_a_missing_ast_field_without_disturbing_already_cached_tokens() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("EnsurePrimedTokensOnly.psc");
+        let source = "ScriptName EnsurePrimedTokensOnly\n";
+        std::fs::write(&source_path, source).unwrap();
+
+        let tokens = papyrus_parser::tokenize(source).unwrap();
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            source,
+            &tokens,
+            COMPATIBLE_VERSION,
+        );
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+
+        assert_eq!(
+            get_in(cache_dir.path(), &source_path, source),
+            Some(papyrus_parser::parse(source).unwrap())
+        );
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, source),
+            Some(tokens)
+        );
+    }
+
+    #[test]
+    fn ensure_primed_caches_tokens_when_the_source_does_not_parse() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Invalid.psc");
+        let source = "ScriptName Invalid\nFunction Broken(\n";
+        std::fs::write(&source_path, source).unwrap();
+        assert!(papyrus_parser::parse(source).is_err());
+
+        ensure_primed_in(cache_dir.path(), &source_path, source, COMPATIBLE_VERSION);
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, source),
+            Some(papyrus_parser::tokenize(source).unwrap())
+        );
+    }
+
+    #[test]
     fn get_in_primes_papyrus_parsers_in_memory_cache_with_the_disk_cached_ast() {
         let cache_dir = tempdir().unwrap();
         let project_dir = tempdir().unwrap();
@@ -784,6 +832,72 @@ mod tests {
         assert_eq!(
             get_tokens_in(cache_dir.path(), &source_path, source),
             Some(tokens)
+        );
+    }
+
+    #[test]
+    fn putting_ast_does_not_preserve_tokens_cached_for_different_content() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let original = "ScriptName Original\n";
+        let changed = "ScriptName Changed\n";
+        std::fs::write(&source_path, original).unwrap();
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            original,
+            &papyrus_parser::tokenize(original).unwrap(),
+            COMPATIBLE_VERSION,
+        );
+
+        std::fs::write(&source_path, changed).unwrap();
+        let changed_ast = papyrus_parser::parse(changed).unwrap();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            changed,
+            &changed_ast,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(
+            get_in(cache_dir.path(), &source_path, changed),
+            Some(changed_ast)
+        );
+        assert_eq!(get_tokens_in(cache_dir.path(), &source_path, changed), None);
+    }
+
+    #[test]
+    fn putting_tokens_does_not_preserve_an_ast_cached_for_different_content() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let original = "ScriptName Original\n";
+        let changed = "ScriptName Changed\n";
+        std::fs::write(&source_path, original).unwrap();
+        put_in(
+            cache_dir.path(),
+            &source_path,
+            original,
+            &papyrus_parser::parse(original).unwrap(),
+            COMPATIBLE_VERSION,
+        );
+
+        std::fs::write(&source_path, changed).unwrap();
+        let changed_tokens = papyrus_parser::tokenize(changed).unwrap();
+        put_tokens_in(
+            cache_dir.path(),
+            &source_path,
+            changed,
+            &changed_tokens,
+            COMPATIBLE_VERSION,
+        );
+
+        assert_eq!(get_in(cache_dir.path(), &source_path, changed), None);
+        assert_eq!(
+            get_tokens_in(cache_dir.path(), &source_path, changed),
+            Some(changed_tokens)
         );
     }
 
