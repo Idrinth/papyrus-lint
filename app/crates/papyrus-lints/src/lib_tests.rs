@@ -462,6 +462,20 @@ fn add_disable_comment_suppresses_the_named_rule_on_the_target_line() {
 }
 
 #[test]
+fn is_disabled_exposes_line_and_file_directive_checks() {
+    let source = concat!(
+        "Call(1,2) ; @disable comma-spacing\n",
+        "Call(3,4)\n",
+        "; @disable-file trailing-whitespace\n",
+    );
+
+    assert!(is_disabled(source, 1, comma_spacing::RULE));
+    assert!(!is_disabled(source, 2, comma_spacing::RULE));
+    assert!(is_disabled(source, 2, trailing_whitespace::RULE));
+    assert!(!is_disabled(source, 2, semicolon::RULE));
+}
+
+#[test]
 fn repair_skips_disabled_rules() {
     let source = "Call(1,2)  \r\n";
     let config = Config {
@@ -1447,4 +1461,54 @@ fn repair_with_external_arguments_skips_unused_import_when_its_rule_is_disabled(
         repair_with_external_arguments(source, &disabled_config, &mut FakeExternalWithUnusedImport),
         source
     );
+}
+
+#[test]
+fn repair_selected_prefers_a_tag_filter_over_a_rule_filter() {
+    let source = "Call(1,2)  \n";
+
+    let repaired = repair_selected_with_external_arguments(
+        source,
+        &Config::default(),
+        &mut FakeExternalWithUnusedImport,
+        Some(comma_spacing::RULE),
+        Some("style"),
+        None,
+    )
+    .unwrap();
+
+    assert_eq!(repaired, "Call(1, 2)\n");
+}
+
+#[test]
+fn repair_selected_can_restrict_a_named_fix_to_one_line() {
+    let source = "Call(1,2)\nCall(3,4)\n";
+
+    let repaired = repair_selected_with_external_arguments(
+        source,
+        &Config::default(),
+        &mut FakeExternalWithUnusedImport,
+        Some(comma_spacing::RULE),
+        None,
+        Some(2),
+    )
+    .unwrap();
+
+    assert_eq!(repaired, "Call(1,2)\nCall(3, 4)\n");
+}
+
+#[test]
+fn repair_selected_returns_none_for_a_line_count_shifting_fix() {
+    let source = "ScriptName Example\n\nImport Helpers\n\nFunction Test()\nEndFunction\n";
+
+    let repaired = repair_selected_with_external_arguments(
+        source,
+        &Config::default(),
+        &mut FakeExternalWithUnusedImport,
+        Some(unused_import::RULE),
+        None,
+        Some(3),
+    );
+
+    assert_eq!(repaired, None);
 }

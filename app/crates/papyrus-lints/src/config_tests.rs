@@ -266,6 +266,26 @@ fn identifier_casing_matches_conforming_names() {
 }
 
 #[test]
+fn identifier_casing_labels_match_their_yaml_values() {
+    assert_eq!(IdentifierCasing::CamelCase.label(), "camelCase");
+    assert_eq!(IdentifierCasing::PascalCase.label(), "PascalCase");
+    assert_eq!(IdentifierCasing::SnakeCase.label(), "snake_case");
+    assert_eq!(IdentifierCasing::ConstantCase.label(), "CONSTANT_CASE");
+}
+
+#[test]
+fn identifier_casing_accepts_an_empty_identifier() {
+    for style in [
+        IdentifierCasing::CamelCase,
+        IdentifierCasing::PascalCase,
+        IdentifierCasing::SnakeCase,
+        IdentifierCasing::ConstantCase,
+    ] {
+        assert!(style.matches(""));
+    }
+}
+
+#[test]
 fn identifier_casing_round_trips_through_yaml() {
     for style in [
         IdentifierCasing::CamelCase,
