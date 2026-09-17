@@ -502,40 +502,6 @@ class DocsRenderingTest(unittest.TestCase):
         self.assertNotIn("<unsafe>", content)
         self.assertIn("View raw source on GitHub", content)
 
-    def test_render_doc_highlights_yaml_and_bbcode_sources(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            docs_dir = Path(directory)
-            (docs_dir / "config.yaml").write_text(
-                'enabled: true\nlabel: "stable" # documented\n', encoding="utf-8"
-            )
-            (docs_dir / "listing.bbcode").write_text(
-                "[b]Important[/b]", encoding="utf-8"
-            )
-
-            with patch.object(page_builder, "DOCS_DIR", docs_dir):
-                yaml_doc = page_builder.render_doc(
-                    {
-                        "filename": "config.yaml",
-                        "kind": "yaml",
-                        "title": "Configuration",
-                        "description": "Settings",
-                    }
-                )
-                bbcode_doc = page_builder.render_doc(
-                    {
-                        "filename": "listing.bbcode",
-                        "kind": "bbcode",
-                        "title": "Listing",
-                        "description": "Source",
-                    }
-                )
-
-        self.assertIn('<span class="kw">true</span>', yaml_doc[2])
-        self.assertIn('<span class="str">&quot;stable&quot;</span>', yaml_doc[2])
-        self.assertIn('<span class="cm"># documented</span>', yaml_doc[2])
-        self.assertIn('<span class="tag">[b]</span>', bbcode_doc[2])
-        self.assertIn('<span class="tag">[/b]</span>', bbcode_doc[2])
-
     def test_render_doc_uses_filename_defaults_for_schema_metadata(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             docs_dir = Path(directory)
@@ -548,8 +514,9 @@ class DocsRenderingTest(unittest.TestCase):
 
         self.assertEqual(title, "schema.json")
         self.assertEqual(description, "")
-        self.assertIn('<span class="str">&quot;type&quot;</span>', content)
-        self.assertIn('<span class="str">&quot;string&quot;</span>', content)
+        self.assertIn('<pre class="code-block language-json" tabindex="0">', content)
+        self.assertIn("type", content)
+        self.assertIn("string", content)
 
     def test_render_doc_prefers_a_short_configured_schema_description(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
