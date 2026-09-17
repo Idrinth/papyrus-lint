@@ -257,18 +257,13 @@ mod run_scan;
 
 pub use output::{JsonDiagnostic, JsonFileReport, JsonReport};
 
-use args::{parse_run_args, ArgsError, ParsedCommand};
+use args::{parse_run_args, write_args_error, ParsedCommand};
 use blob::run_blob;
 use doctor::run_doctor;
-use init::{
-    initialize_config, parse_init_preset, parse_preset_add_args, report_add_user_preset,
-    InitPresetError, PresetAddArgsError,
-};
+use init::{run_init, run_preset_add};
 use run_lint_command::run_lint_command;
 
 use std::io::Write;
-
-use papyrus_lint_config::presets;
 
 pub const USAGE: &str =
     "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
@@ -448,125 +443,6 @@ pub fn run(
                 run_lint_command(lint, stdout, stderr, stdout_is_terminal)
             }
         },
-    }
-}
-
-fn run_init(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
-    let preset = match parse_init_preset(args) {
-        Ok(preset) => preset,
-        Err(InitPresetError::Usage) => {
-            let _ = write!(stderr, "{USAGE}");
-            return 2;
-        }
-    };
-
-    let current_dir = match std::env::current_dir() {
-        Ok(dir) => dir,
-        Err(err) => {
-            let _ = writeln!(
-                stderr,
-                "error: failed to determine current directory: {err}"
-            );
-            return 2;
-        }
-    };
-    initialize_config(&current_dir, preset, stdout, stderr)
-}
-
-fn run_preset_add(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
-    if args.first().map(String::as_str) != Some("add") {
-        let _ = write!(stderr, "{USAGE}");
-        return 2;
-    }
-    let (name, source_path, overwrite) = match parse_preset_add_args(&args[1..]) {
-        Ok(parsed) => parsed,
-        Err(PresetAddArgsError::Usage) => {
-            let _ = write!(stderr, "{USAGE}");
-            return 2;
-        }
-    };
-    let result = presets::add_user_preset(&name, &source_path, overwrite);
-    report_add_user_preset(&name, result, stdout, stderr)
-}
-
-fn write_args_error(err: ArgsError, stderr: &mut impl Write) {
-    match err {
-        ArgsError::Usage => {
-            let _ = write!(stderr, "{USAGE}");
-        }
-        err => {
-            let _ = writeln!(stderr, "{}", args_error_message(&err));
-        }
-    }
-}
-
-fn args_error_message(err: &ArgsError) -> String {
-    match err {
-        ArgsError::Usage => unreachable!("Usage is reported via USAGE, not a one-line error"),
-        ArgsError::JsonAndFormatConflict
-        | ArgsError::InvalidFormat(_)
-        | ArgsError::HashSourceRequiresAi
-        | ArgsError::InvalidColor(_) => format_flag_error(err),
-        ArgsError::BlobWithPathArgument
-        | ArgsError::BlobWithFixFlags
-        | ArgsError::BlobWithScriptRootProgressThreads => blob_flag_error(err),
-        ArgsError::UnknownTag(_)
-        | ArgsError::ProgressRequiresOutput
-        | ArgsError::TypeAndTagConflict
-        | ArgsError::UnknownRule(_)
-        | ArgsError::RuleHasNoFix(_)
-        | ArgsError::InvalidLine(_)
-        | ArgsError::InvalidThreads(_) => lint_flag_error(err),
-    }
-}
-
-fn format_flag_error(err: &ArgsError) -> String {
-    match err {
-        ArgsError::JsonAndFormatConflict => {
-            "error: --json and --format can't be combined".to_string()
-        }
-        ArgsError::InvalidFormat(value) => {
-            format!("error: --format must be 'plain', 'json', or 'ai', got '{value}'")
-        }
-        ArgsError::HashSourceRequiresAi => "error: --hash-source requires --format ai".to_string(),
-        ArgsError::InvalidColor(value) => {
-            format!("error: --color must be 'auto', 'always', or 'never', got '{value}'")
-        }
-        _ => unreachable!("format_flag_error called with a non-format error"),
-    }
-}
-
-fn blob_flag_error(err: &ArgsError) -> String {
-    match err {
-        ArgsError::BlobWithPathArgument => {
-            "error: --blob can't be combined with a path argument (or `fix`)".to_string()
-        }
-        ArgsError::BlobWithFixFlags => {
-            "error: --blob can't be combined with fix/--type/--line/--dry-run".to_string()
-        }
-        ArgsError::BlobWithScriptRootProgressThreads => {
-            "error: --blob can't be combined with --script-root/--progress/--threads".to_string()
-        }
-        _ => unreachable!("blob_flag_error called with a non-blob error"),
-    }
-}
-
-fn lint_flag_error(err: &ArgsError) -> String {
-    match err {
-        ArgsError::UnknownTag(value) => format!("error: unknown tag '{value}'"),
-        ArgsError::ProgressRequiresOutput => {
-            "error: --progress requires --output <path>".to_string()
-        }
-        ArgsError::TypeAndTagConflict => "error: --type and --tag can't be combined".to_string(),
-        ArgsError::UnknownRule(value) => format!("error: unknown rule '{value}'"),
-        ArgsError::RuleHasNoFix(value) => format!("error: rule '{value}' has no automatic fix"),
-        ArgsError::InvalidLine(value) => {
-            format!("error: --line must be a positive integer, got '{value}'")
-        }
-        ArgsError::InvalidThreads(value) => {
-            format!("error: --threads must be a positive integer, got '{value}'")
-        }
-        _ => unreachable!("lint_flag_error called with a non-lint-flag error"),
     }
 }
 
