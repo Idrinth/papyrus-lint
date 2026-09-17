@@ -5,86 +5,86 @@
 //! (rather than the parsed AST) so they still run on scripts that don't
 //! parse cleanly.
 
-pub mod actor_value;
-pub mod argument_naming;
-pub mod argument_override_types;
-pub mod argument_types;
-pub mod array_bounds;
-pub mod array_size_range;
-pub mod assignment_operator_spacing;
-pub mod chain_whitespace;
-pub mod circular_dependency;
-pub mod comma_spacing;
+mod actor_value;
+mod argument_naming;
+mod argument_override_types;
+mod argument_types;
+mod array_bounds;
+mod array_size_range;
+mod assignment_operator_spacing;
+mod chain_whitespace;
+mod circular_dependency;
+mod comma_spacing;
 pub mod config;
-pub mod cyclomatic_complexity;
-pub mod default_property_value;
+mod cyclomatic_complexity;
+mod default_property_value;
 mod disable_comments;
-pub mod division_by_zero;
-pub mod empty_body;
-pub mod event_signature;
-pub mod exclamation_spacing;
-pub mod explicit_return;
-pub mod float_equality;
-pub mod float_int_conversion;
-pub mod forbidden_functions;
-pub mod formid_hex_notation;
-pub mod fragment_code;
-pub mod function_override;
-pub mod get_state_comparison;
-pub mod global_variable_increment;
-pub mod global_variable_setvalue;
-pub mod goto_state;
-pub mod identifier_casing;
-pub mod impossible_cast;
-pub mod indentation;
-pub mod int_division_to_float;
-pub mod invalid_random_range;
-pub mod invariant_loop_condition;
-pub mod local_variable_shadowing;
-pub mod magic_numbers;
-pub mod missing_doc_comment;
-pub mod missing_update_handler;
-pub mod named_arguments;
-pub mod native_function_usage;
-pub mod non_global_function_call;
-pub mod none_form_usage;
-pub mod numeric_comparison;
-pub mod operator_spacing;
-pub mod parameter_reassignment;
-pub mod property_sorting;
-pub mod readonly_property_write;
-pub mod repeated_getvalue;
-pub mod repeated_setoutfit;
-pub mod return_types;
-pub mod script_name_collision;
-pub mod self_assignment;
-pub mod semicolon;
-pub mod setvalue_in_loop;
-pub mod short_wait_interval;
-pub mod slow_functions;
-pub mod state_count;
-pub mod state_function_signature;
-pub mod static_condition;
-pub mod static_function_call_via_instance;
-pub mod strict_boolean;
+mod division_by_zero;
+mod empty_body;
+mod event_signature;
+mod exclamation_spacing;
+mod explicit_return;
+mod float_equality;
+mod float_int_conversion;
+mod forbidden_functions;
+mod formid_hex_notation;
+mod fragment_code;
+mod function_override;
+mod get_state_comparison;
+mod global_variable_increment;
+mod global_variable_setvalue;
+mod goto_state;
+mod identifier_casing;
+mod impossible_cast;
+mod indentation;
+mod int_division_to_float;
+mod invalid_random_range;
+mod invariant_loop_condition;
+mod local_variable_shadowing;
+mod magic_numbers;
+mod missing_doc_comment;
+mod missing_update_handler;
+mod named_arguments;
+mod native_function_usage;
+mod non_global_function_call;
+mod none_form_usage;
+mod numeric_comparison;
+mod operator_spacing;
+mod parameter_reassignment;
+mod property_sorting;
+mod readonly_property_write;
+mod repeated_getvalue;
+mod repeated_setoutfit;
+mod return_types;
+mod script_name_collision;
+mod self_assignment;
+mod semicolon;
+mod setvalue_in_loop;
+mod short_wait_interval;
+mod slow_functions;
+mod state_count;
+mod state_function_signature;
+mod static_condition;
+mod static_function_call_via_instance;
+mod strict_boolean;
 pub mod tags;
-pub mod trailing_whitespace;
-pub mod type_casing;
-pub mod unchecked_array_element;
-pub mod unchecked_cast;
-pub mod unchecked_form_parameter;
-pub mod unguarded_self_recursion;
-pub mod unnecessary_function;
-pub mod unreachable_elseif;
-pub mod unreachable_statement;
-pub mod unresolved_script;
-pub mod unused_disable;
-pub mod unused_getter;
-pub mod unused_import;
-pub mod unused_local_variable;
-pub mod unused_property;
-pub mod useless_downcast;
-pub mod variable_used_before_assignment;
+mod trailing_whitespace;
+mod type_casing;
+mod unchecked_array_element;
+mod unchecked_cast;
+mod unchecked_form_parameter;
+mod unguarded_self_recursion;
+mod unnecessary_function;
+mod unreachable_elseif;
+mod unreachable_statement;
+mod unresolved_script;
+mod unused_disable;
+mod unused_getter;
+mod unused_import;
+mod unused_local_variable;
+mod unused_property;
+mod useless_downcast;
+mod variable_used_before_assignment;
 
 mod registry;
 
@@ -97,7 +97,34 @@ pub use registry::{FIXABLE_RULE_IDS, KNOWN_RULE_IDS};
 
 use serde::Serialize;
 
-pub use config::Config;
+pub use argument_types::{ExternalSignatures, NoExternalSignatures, ParamInfo};
+pub use config::{Config, MagicNumbers, NamedArguments, TypeCasing};
+
+/// Runs the "Argument type check" lint against `source`, resolving calls
+/// declared on other scripts through `external`.
+///
+/// This is the public entry for callers that already hold an
+/// [`ExternalSignatures`] resolver (e.g. `papyrus-lint-core`'s
+/// `FunctionTable`) and need that rule in isolation. Prefer
+/// [`lint_with_external_arguments`] when you want every enabled rule.
+pub fn check_argument_types<E: ExternalSignatures>(
+    source: &str,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    argument_types::check_with(source, external)
+}
+
+/// Inner text of the `{ ... }` documentation comment immediately following
+/// the declaration that starts on `line` (1-indexed), if any. Used by
+/// `papyrus-lint-core` to attach that comment to editor autocompletion /
+/// hover without reaching into the (private) missing-doc-comment rule.
+pub fn documentation_comment(
+    source: &str,
+    tokens: &[papyrus_parser::token::Token],
+    line: usize,
+) -> Option<String> {
+    missing_doc_comment::documentation_comment(source, tokens, line)
+}
 
 /// A single lint finding, pointing at the 1-indexed line and column it applies to.
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -175,8 +202,8 @@ pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
 /// declared anywhere in `source`'s ancestry alongside its own, and so the
 /// "Useless downcast" lint recognizes a cast to an ancestor of the value's
 /// script (not just an exact-type match). See
-/// [`argument_types::ExternalSignatures`].
-pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
+/// [`ExternalSignatures`].
+pub fn lint_with_external_arguments<E: ExternalSignatures>(
     source: &str,
     config: &Config,
     external: &mut E,
@@ -200,7 +227,7 @@ pub fn lint_with_external_arguments<E: argument_types::ExternalSignatures>(
 /// learns that a directive naming one of them actually suppressed
 /// something, and reports it as an `unused-disable` even though [`is_disabled`]
 /// does honor it.
-pub fn lint_with_external_arguments_and_extra_diagnostics<E: argument_types::ExternalSignatures>(
+pub fn lint_with_external_arguments_and_extra_diagnostics<E: ExternalSignatures>(
     source: &str,
     config: &Config,
     external: &mut E,
@@ -264,7 +291,7 @@ pub fn repair_filtered_by_tag(source: &str, config: &Config, tag: Option<&str>) 
 /// Every other fix in [`FIXABLE_RULE_IDS`] behaves exactly as it does under
 /// [`repair`], since only "unused-import" needs project-wide context to
 /// resolve anything at all.
-pub fn repair_with_external_arguments<E: argument_types::ExternalSignatures>(
+pub fn repair_with_external_arguments<E: ExternalSignatures>(
     source: &str,
     config: &Config,
     external: &mut E,
@@ -274,7 +301,7 @@ pub fn repair_with_external_arguments<E: argument_types::ExternalSignatures>(
 
 /// Like [`repair_filtered`], but also resolves "unused-import" through
 /// `external`, the same way [`repair_with_external_arguments`] does.
-pub fn repair_filtered_with_external_arguments<E: argument_types::ExternalSignatures>(
+pub fn repair_filtered_with_external_arguments<E: ExternalSignatures>(
     source: &str,
     config: &Config,
     external: &mut E,
@@ -288,7 +315,7 @@ pub fn repair_filtered_with_external_arguments<E: argument_types::ExternalSignat
 /// Like [`repair_filtered_by_tag`], but also resolves "unused-import"
 /// through `external`, the same way [`repair_with_external_arguments`]
 /// does.
-pub fn repair_filtered_by_tag_with_external_arguments<E: argument_types::ExternalSignatures>(
+pub fn repair_filtered_by_tag_with_external_arguments<E: ExternalSignatures>(
     source: &str,
     config: &Config,
     external: &mut E,
@@ -317,7 +344,7 @@ pub fn repair_filtered_by_tag_with_external_arguments<E: argument_types::Externa
 /// `property-sorting` relocating a property's declaration) — the same way
 /// [`restrict_to_line`] itself does, since the two callers report that
 /// failure with different wording of their own.
-pub fn repair_selected_with_external_arguments<E: argument_types::ExternalSignatures>(
+pub fn repair_selected_with_external_arguments<E: ExternalSignatures>(
     source: &str,
     config: &Config,
     external: &mut E,
@@ -343,7 +370,7 @@ pub fn repair_selected_with_external_arguments<E: argument_types::ExternalSignat
 /// enabled and `applies` accepts [`unused_import::RULE`] — removes every
 /// `Import` line [`unused_import::check_with`] resolves as unused through
 /// `external`.
-fn repair_with_external<E: argument_types::ExternalSignatures>(
+fn repair_with_external<E: ExternalSignatures>(
     source: &str,
     config: &Config,
     external: &mut E,

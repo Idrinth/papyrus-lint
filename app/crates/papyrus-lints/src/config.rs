@@ -163,6 +163,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::Diagnostic;
 
+pub use crate::magic_numbers::MagicNumbers;
+pub use crate::named_arguments::NamedArguments;
+pub use crate::type_casing::Style as TypeCasing;
+
 /// The indentation style a project expects, for the "Formatting checks"/
 /// "Indentation" lint and automatic fix described in README.md.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -261,11 +265,11 @@ pub struct Config {
     /// The casing convention required of a script's declared type name
     /// (the identifier following `ScriptName`), checked by the "Type name
     /// casing" lint.
-    pub type_casing: crate::type_casing::Style,
+    pub type_casing: TypeCasing,
     /// How strongly the "Prefer named arguments" lint prefers Papyrus's
     /// named-argument call syntax (`func(argB = 1)`) over positional
-    /// arguments. See [`crate::named_arguments::NamedArguments`].
-    pub named_arguments: crate::named_arguments::NamedArguments,
+    /// arguments. See [`NamedArguments`].
+    pub named_arguments: NamedArguments,
     /// The interval/duration argument a `Utility.Wait`, `RegisterForUpdate`,
     /// `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or
     /// `RegisterForSingleUpdateGameTime` call can go below before the
@@ -276,8 +280,8 @@ pub struct Config {
     /// `RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call
     /// (`strict`), or leaves it unflagged since a hardcoded interval there
     /// is common and usually self-explanatory (`loose`, the default). See
-    /// [`crate::magic_numbers::MagicNumbers`].
-    pub magic_numbers: crate::magic_numbers::MagicNumbers,
+    /// [`MagicNumbers`].
+    pub magic_numbers: MagicNumbers,
     /// Whether the CLI (see `papyrus-lint-cli`) treats a `[warning]`-level
     /// diagnostic as a reason to exit non-zero. `false` by default, so a
     /// project only fails a lint run on `[error]`-level (and untagged)
@@ -321,10 +325,10 @@ impl Default for Config {
             identifier_casing: IdentifierCasing::default(),
             cyclomatic_complexity_warning: 10,
             cyclomatic_complexity_error: 20,
-            type_casing: crate::type_casing::Style::default(),
-            named_arguments: crate::named_arguments::NamedArguments::default(),
+            type_casing: TypeCasing::default(),
+            named_arguments: NamedArguments::default(),
             min_wait_interval: 0.1,
-            magic_numbers: crate::magic_numbers::MagicNumbers::default(),
+            magic_numbers: MagicNumbers::default(),
             fail_on_warning: false,
             fail_on_info: false,
             bool_like_int: true,
@@ -597,7 +601,7 @@ impl Default for Rules {
 impl Config {
     /// The trailing-semicolon policy this configuration selects, for use
     /// with [`crate::semicolon::check`]/[`crate::semicolon::repair`].
-    pub fn semicolon_style(&self) -> crate::semicolon::Style {
+    pub(crate) fn semicolon_style(&self) -> crate::semicolon::Style {
         if self.semicolon {
             crate::semicolon::Style::Require
         } else {
@@ -609,7 +613,7 @@ impl Config {
     /// [`crate::indentation::check`]/[`crate::indentation::repair`].
     /// `indentation_width` is clamped to `1..=16` to match the range
     /// accepted by the UI.
-    pub fn indentation_unit(&self) -> crate::indentation::Indentation {
+    pub(crate) fn indentation_unit(&self) -> crate::indentation::Indentation {
         match self.indentation {
             Indentation::Tab => crate::indentation::Indentation::Tabs,
             Indentation::Space => {

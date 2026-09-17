@@ -34,6 +34,7 @@ pub const RULE: &str = "useless-downcast";
 /// Checks `source` for a redundant `as` cast, only recognizing an
 /// exact-type match (see the module docs for why a same-script check alone
 /// can't recognize an ancestor-type cast as redundant too).
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

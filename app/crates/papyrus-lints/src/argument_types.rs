@@ -202,6 +202,7 @@ impl ExternalSignatures for NoExternalSignatures {
 /// Checks `source` for argument/parameter type mismatches on calls to
 /// functions declared in the same script. Calls on other scripts' types
 /// are not checked; see [`check_with`] for that.
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

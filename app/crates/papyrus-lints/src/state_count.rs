@@ -59,6 +59,7 @@ const MAX_NAMED_STATES: usize = 127;
 /// [`MAX_NAMED_STATES`]. A script that `Extends` another only has its own
 /// states counted here; see [`check_too_many_states_with`] to also resolve
 /// its ancestry.
+#[allow(dead_code)]
 pub fn check_too_many_states(source: &str) -> Vec<Diagnostic> {
     check_too_many_states_with(source, &mut NoExternalSignatures)
 }
@@ -85,6 +86,7 @@ pub fn check_too_many_states_with<E: ExternalSignatures>(
 /// `Auto`. A script that `Extends` another only has its own states
 /// checked here; see [`check_multiple_auto_states_with`] to also resolve
 /// its ancestry.
+#[allow(dead_code)]
 pub fn check_multiple_auto_states(source: &str) -> Vec<Diagnostic> {
     check_multiple_auto_states_with(source, &mut NoExternalSignatures)
 }

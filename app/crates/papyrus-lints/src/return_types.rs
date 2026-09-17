@@ -28,6 +28,7 @@ pub const RULE: &str = "return-types";
 /// subtype of) the enclosing function's declared return type. Subtype
 /// relationships to scripts outside `source` are never resolved this way;
 /// see [`check_with`] for that.
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

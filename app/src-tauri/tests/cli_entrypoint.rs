@@ -110,9 +110,7 @@ fn desktop_binary_preserves_the_cli_failure_code_and_json_diagnostics() {
     let diagnostics = report["files"][0]["diagnostics"].as_array().unwrap();
     let forbidden_function = diagnostics
         .iter()
-        .find(|diagnostic| {
-            diagnostic["rule"].as_str() == Some(papyrus_lints::forbidden_functions::RULE)
-        })
+        .find(|diagnostic| diagnostic["rule"].as_str() == Some("forbidden-functions"))
         .expect("Game.GetPlayer should produce a forbidden-functions diagnostic");
     assert_eq!(forbidden_function["line"], 4);
 }
@@ -322,8 +320,7 @@ fn desktop_binary_lints_inline_source_without_a_file() {
         .unwrap()
         .iter()
         .any(|diagnostic| {
-            diagnostic["rule"].as_str() == Some(papyrus_lints::forbidden_functions::RULE)
-                && diagnostic["line"] == 4
+            diagnostic["rule"].as_str() == Some("forbidden-functions") && diagnostic["line"] == 4
         }));
 }
 
@@ -357,7 +354,7 @@ fn desktop_binary_can_apply_one_fix_type_without_applying_others() {
             "--json",
             "fix",
             "--type",
-            papyrus_lints::trailing_whitespace::RULE,
+            "trailing-whitespace",
             script.to_str().unwrap(),
         ])
         .output()
@@ -375,16 +372,12 @@ fn desktop_binary_can_apply_one_fix_type_without_applying_others() {
         .as_array()
         .unwrap()
         .iter()
-        .any(|diagnostic| {
-            diagnostic["rule"].as_str() == Some(papyrus_lints::comma_spacing::RULE)
-        }));
+        .any(|diagnostic| { diagnostic["rule"].as_str() == Some("comma-spacing") }));
     assert!(report["files"][0]["diagnostics"]
         .as_array()
         .unwrap()
         .iter()
-        .all(|diagnostic| {
-            diagnostic["rule"].as_str() != Some(papyrus_lints::trailing_whitespace::RULE)
-        }));
+        .all(|diagnostic| { diagnostic["rule"].as_str() != Some("trailing-whitespace") }));
 }
 
 #[test]
@@ -425,9 +418,7 @@ fn desktop_binary_forwards_ai_format_reports() {
         .as_array()
         .unwrap()
         .iter()
-        .any(|diagnostic| {
-            diagnostic["rule"].as_str() == Some(papyrus_lints::trailing_whitespace::RULE)
-        }));
+        .any(|diagnostic| { diagnostic["rule"].as_str() == Some("trailing-whitespace") }));
 }
 
 #[test]
@@ -449,12 +440,12 @@ fn desktop_binary_forwards_a_tag_filter() {
     assert!(output.stderr.is_empty());
     let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     let diagnostics = report["files"][0]["diagnostics"].as_array().unwrap();
-    assert!(diagnostics.iter().any(|diagnostic| {
-        diagnostic["rule"].as_str() == Some(papyrus_lints::trailing_whitespace::RULE)
-    }));
-    assert!(diagnostics.iter().all(|diagnostic| {
-        diagnostic["rule"].as_str() != Some(papyrus_lints::forbidden_functions::RULE)
-    }));
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| { diagnostic["rule"].as_str() == Some("trailing-whitespace") }));
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| { diagnostic["rule"].as_str() != Some("forbidden-functions") }));
 }
 
 #[test]

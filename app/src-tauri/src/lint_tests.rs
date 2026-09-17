@@ -50,7 +50,7 @@ fn lint_psc_file_lints_source_from_disk() {
 
     assert!(diagnostics
         .iter()
-        .any(|diagnostic| diagnostic.rule == papyrus_lints::forbidden_functions::RULE));
+        .any(|diagnostic| diagnostic.rule == "forbidden-functions"));
 }
 
 #[test]
@@ -401,7 +401,7 @@ fn lint_psc_file_stale_compiled_output_disable_comment_is_not_reported_as_unused
         .all(|diagnostic| diagnostic.rule != stale_pex::RULE));
     assert!(diagnostics
         .iter()
-        .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+        .all(|diagnostic| diagnostic.rule != "unused-disable"));
 }
 
 #[test]
@@ -451,7 +451,7 @@ fn lint_psc_file_stale_compiled_output_disable_file_comment_is_not_reported_as_u
         .all(|diagnostic| diagnostic.rule != stale_pex::RULE));
     assert!(diagnostics
         .iter()
-        .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+        .all(|diagnostic| diagnostic.rule != "unused-disable"));
 }
 
 #[test]
@@ -496,7 +496,7 @@ fn lint_psc_file_conflicting_script_versions_disable_comment_is_not_reported_as_
         .all(|diagnostic| { diagnostic.rule != script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE }));
     assert!(diagnostics
         .iter()
-        .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+        .all(|diagnostic| diagnostic.rule != "unused-disable"));
 }
 
 #[test]
@@ -541,7 +541,7 @@ fn lint_psc_file_conflicting_script_versions_disable_file_comment_is_not_reporte
         .all(|diagnostic| { diagnostic.rule != script_locator::CONFLICTING_SCRIPT_VERSIONS_RULE }));
     assert!(diagnostics
         .iter()
-        .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+        .all(|diagnostic| diagnostic.rule != "unused-disable"));
 }
 
 #[test]
@@ -579,7 +579,7 @@ fn lint_psc_file_script_filename_mismatch_disable_comment_is_not_reported_as_unu
         .all(|diagnostic| diagnostic.rule != script_filename_mismatch::RULE));
     assert!(diagnostics
         .iter()
-        .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+        .all(|diagnostic| diagnostic.rule != "unused-disable"));
 }
 
 #[test]
@@ -617,7 +617,7 @@ fn lint_psc_file_script_filename_mismatch_disable_file_comment_is_not_reported_a
         .all(|diagnostic| diagnostic.rule != script_filename_mismatch::RULE));
     assert!(diagnostics
         .iter()
-        .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_disable::RULE));
+        .all(|diagnostic| diagnostic.rule != "unused-disable"));
 }
 
 #[test]
@@ -929,7 +929,7 @@ fn lint_psc_file_resolves_argument_types_through_additional_script_roots() {
     .unwrap();
     assert!(without_roots
         .iter()
-        .all(|diagnostic| diagnostic.rule != papyrus_lints::argument_types::RULE));
+        .all(|diagnostic| diagnostic.rule != "argument-types"));
 
     let with_roots = lint_psc_file(
         path.to_string_lossy().into_owned(),
@@ -942,7 +942,7 @@ fn lint_psc_file_resolves_argument_types_through_additional_script_roots() {
     )
     .unwrap();
     assert!(with_roots.iter().any(|diagnostic| {
-        diagnostic.rule == papyrus_lints::argument_types::RULE
+        diagnostic.rule == "argument-types"
             && diagnostic.message.contains("expects Int")
             && diagnostic.message.contains("got String")
     }));

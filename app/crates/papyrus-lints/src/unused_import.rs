@@ -35,6 +35,7 @@ pub const RULE: &str = "unused-import";
 /// this crate has no filesystem access on its own, no import can ever be
 /// resolved this way, so nothing is ever flagged; see [`check_with`] to
 /// actually resolve the imported scripts' `Global` functions.
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }
@@ -85,6 +86,7 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
 /// resolves anything (see [`NoExternalSignatures`]), is none at all. See
 /// [`repair_with`] to actually remove imports resolved unused through a
 /// project's own external signatures.
+#[allow(dead_code)]
 pub fn repair(source: &str) -> String {
     repair_with(source, &mut NoExternalSignatures)
 }

@@ -18,7 +18,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use papyrus_lints::argument_types::ParamInfo;
+use papyrus_lints::ParamInfo;
 
 use crate::source_encoding::read_psc_source;
 
@@ -239,7 +239,7 @@ impl FunctionTable {
     /// fully known. Used by the "Impossible cast" lint
     /// (`papyrus_lints::impossible_cast`) to tell a value/target pair
     /// *proven* unrelated (both sides fully resolved, per
-    /// [`papyrus_lints::argument_types::ExternalSignatures::ancestry_fully_known`])
+    /// [`papyrus_lints::ExternalSignatures::ancestry_fully_known`])
     /// apart from one this table simply doesn't have enough information
     /// about.
     pub fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
@@ -524,7 +524,7 @@ impl FunctionTable {
 /// Lets the "Argument type check" lint (`papyrus_lints::argument_types`)
 /// resolve calls to functions declared on other scripts through this
 /// table.
-impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
+impl papyrus_lints::ExternalSignatures for FunctionTable {
     fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
         self.lookup_function(type_name, function_name)
             .map(|signature| signature.params)
@@ -577,7 +577,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
     }
 }
 
-/// A thread-safe [`ExternalSignatures`](papyrus_lints::argument_types::ExternalSignatures)
+/// A thread-safe [`ExternalSignatures`](papyrus_lints::ExternalSignatures)
 /// adapter over a [`FunctionTable`] shared by multiple lint workers at once
 /// (see [`crate::parallel`]): each trait method locks the underlying table
 /// only for the duration of that one lookup, rather than for a whole lint
@@ -594,17 +594,13 @@ impl papyrus_lints::argument_types::ExternalSignatures for FunctionTable {
 /// can never drift out of sync with `FunctionTable`'s own trait impl above.
 pub struct SharedFunctionTable<'a>(pub &'a Mutex<FunctionTable>);
 
-impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'_> {
+impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
     fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
         let mut table = self
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::lookup(
-            &mut *table,
-            type_name,
-            function_name,
-        )
+        papyrus_lints::ExternalSignatures::lookup(&mut *table, type_name, function_name)
     }
 
     fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
@@ -612,11 +608,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::is_subtype(
-            &mut *table,
-            sub_type,
-            super_type,
-        )
+        papyrus_lints::ExternalSignatures::is_subtype(&mut *table, sub_type, super_type)
     }
 
     fn has_property(&mut self, type_name: &str, property_name: &str) -> bool {
@@ -624,11 +616,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::has_property(
-            &mut *table,
-            type_name,
-            property_name,
-        )
+        papyrus_lints::ExternalSignatures::has_property(&mut *table, type_name, property_name)
     }
 
     fn script_exists(&mut self, type_name: &str) -> bool {
@@ -636,7 +624,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::script_exists(&mut *table, type_name)
+        papyrus_lints::ExternalSignatures::script_exists(&mut *table, type_name)
     }
 
     fn can_resolve_script(&mut self, type_name: &str) -> bool {
@@ -644,10 +632,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::can_resolve_script(
-            &mut *table,
-            type_name,
-        )
+        papyrus_lints::ExternalSignatures::can_resolve_script(&mut *table, type_name)
     }
 
     fn type_exists(&mut self, type_name: &str) -> bool {
@@ -655,7 +640,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::type_exists(&mut *table, type_name)
+        papyrus_lints::ExternalSignatures::type_exists(&mut *table, type_name)
     }
 
     fn has_state(&mut self, type_name: &str, state_name: &str) -> bool {
@@ -663,11 +648,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::has_state(
-            &mut *table,
-            type_name,
-            state_name,
-        )
+        papyrus_lints::ExternalSignatures::has_state(&mut *table, type_name, state_name)
     }
 
     fn ancestor_states(&mut self, type_name: &str) -> Vec<(String, bool)> {
@@ -675,7 +656,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::ancestor_states(&mut *table, type_name)
+        papyrus_lints::ExternalSignatures::ancestor_states(&mut *table, type_name)
     }
 
     fn is_global_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
@@ -683,11 +664,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::is_global_function(
-            &mut *table,
-            type_name,
-            function_name,
-        )
+        papyrus_lints::ExternalSignatures::is_global_function(&mut *table, type_name, function_name)
     }
 
     fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
@@ -695,10 +672,7 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::ancestry_fully_known(
-            &mut *table,
-            type_name,
-        )
+        papyrus_lints::ExternalSignatures::ancestry_fully_known(&mut *table, type_name)
     }
 
     fn property_types(&mut self, type_name: &str) -> Vec<String> {
@@ -706,14 +680,14 @@ impl papyrus_lints::argument_types::ExternalSignatures for SharedFunctionTable<'
             .0
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        papyrus_lints::argument_types::ExternalSignatures::property_types(&mut *table, type_name)
+        papyrus_lints::ExternalSignatures::property_types(&mut *table, type_name)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use papyrus_lints::argument_types::ExternalSignatures;
+    use papyrus_lints::ExternalSignatures;
     use papyrus_parser::ast::TypeName;
     use std::fs;
     use std::path::Path;
@@ -723,6 +697,21 @@ mod tests {
         fs::create_dir_all(&source_dir).expect("failed to create source dir");
         fs::write(source_dir.join(format!("{name}.psc")), contents)
             .expect("failed to write test script file");
+    }
+
+    fn diagnostics_for(
+        rule: &str,
+        source: &str,
+        table: &mut FunctionTable,
+    ) -> Vec<papyrus_lints::Diagnostic> {
+        papyrus_lints::lint_with_external_arguments(
+            source,
+            &papyrus_lints::Config::default(),
+            table,
+        )
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == rule)
+        .collect()
     }
 
     #[test]
@@ -1849,7 +1838,8 @@ mod tests {
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::local_variable_shadowing::check_with(
+        let diagnostics = diagnostics_for(
+            "local-variable-shadowing",
             "ScriptName Example Extends BaseScript\n\nFunction Test()\n    Int MyValue = 1\nEndFunction\n",
             &mut table,
         );
@@ -1875,7 +1865,7 @@ mod tests {
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::argument_types::check_with(
+        let diagnostics = papyrus_lints::check_argument_types(
             r#"
 ScriptName UpcastProbe extends Quest
 
@@ -1912,7 +1902,8 @@ EndFunction
         let root = tempfile::tempdir().expect("failed to create temp dir");
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::useless_downcast::check_with(
+        let diagnostics = diagnostics_for(
+            "useless-downcast",
             "ScriptName Example\n\nFunction Test(Actor dude)\n    Foo(dude as ObjectReference)\nEndFunction\n",
             &mut table,
         );
@@ -1935,7 +1926,7 @@ EndFunction
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::argument_types::check_with(
+        let diagnostics = papyrus_lints::check_argument_types(
             "ScriptName Example\n\nArmor Property MyArmor Auto\n\nFunction Test(ObjectReference akRef)\n    akRef.GetItemCount(MyArmor)\nEndFunction\n",
             &mut table,
         );
@@ -1950,7 +1941,8 @@ EndFunction
         write_script(root.path(), "Armor", "ScriptName Armor Extends Form\n");
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::return_types::check_with(
+        let diagnostics = diagnostics_for(
+            "return-types",
             "ScriptName Example\n\nArmor Property MyArmor Auto\n\nForm Function Test()\n    Return MyArmor\nEndFunction\n",
             &mut table,
         );
@@ -1966,7 +1958,8 @@ EndFunction
         write_script(root.path(), "Armor", "ScriptName Armor Extends Form\n");
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::return_types::check_with(
+        let diagnostics = diagnostics_for(
+            "return-types",
             "ScriptName Example\n\nWeapon Property MyWeapon Auto\n\nArmor Function Test()\n    Return MyWeapon\nEndFunction\n",
             &mut table,
         );
@@ -1988,7 +1981,8 @@ EndFunction
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::function_override::check_with(
+        let diagnostics = diagnostics_for(
+            "function-override",
             "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n",
             &mut table,
         );
@@ -2013,7 +2007,8 @@ EndFunction
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::function_override::check_with(
+        let diagnostics = diagnostics_for(
+            "function-override",
             "ScriptName Example Extends Middle\n\nFunction DoThing()\nEndFunction\n",
             &mut table,
         );
@@ -2032,7 +2027,8 @@ EndFunction
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::argument_naming::check_with(
+        let diagnostics = diagnostics_for(
+            "argument-naming",
             "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef)\nEndFunction\n",
             &mut table,
         );
@@ -2053,7 +2049,7 @@ EndFunction
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::argument_types::check_with(
+        let diagnostics = papyrus_lints::check_argument_types(
             "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(1)\nEndFunction\n",
             &mut table,
         );
@@ -2106,31 +2102,25 @@ EndFunction
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
 
-        assert!(
-            papyrus_lints::argument_types::ExternalSignatures::type_exists(&mut table, "FLOAT")
-        );
-        assert!(
-            papyrus_lints::argument_types::ExternalSignatures::type_exists(&mut table, "Actor")
-        );
-        assert!(
-            papyrus_lints::argument_types::ExternalSignatures::type_exists(&mut table, "helpers")
-        );
-        assert!(
-            !papyrus_lints::argument_types::ExternalSignatures::type_exists(
-                &mut table,
-                "DefinitelyMissing"
-            )
-        );
+        assert!(papyrus_lints::ExternalSignatures::type_exists(
+            &mut table, "FLOAT"
+        ));
+        assert!(papyrus_lints::ExternalSignatures::type_exists(
+            &mut table, "Actor"
+        ));
+        assert!(papyrus_lints::ExternalSignatures::type_exists(
+            &mut table, "helpers"
+        ));
+        assert!(!papyrus_lints::ExternalSignatures::type_exists(
+            &mut table,
+            "DefinitelyMissing"
+        ));
         assert_eq!(
-            papyrus_lints::argument_types::ExternalSignatures::is_global_function(
-                &mut table, "Helpers", "Run"
-            ),
+            papyrus_lints::ExternalSignatures::is_global_function(&mut table, "Helpers", "Run"),
             Some(true)
         );
         assert_eq!(
-            papyrus_lints::argument_types::ExternalSignatures::is_global_function(
-                &mut table, "Helpers", "Missing"
-            ),
+            papyrus_lints::ExternalSignatures::is_global_function(&mut table, "Helpers", "Missing"),
             None
         );
     }
@@ -2145,7 +2135,8 @@ EndFunction
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::unresolved_script::check_with(
+        let diagnostics = diagnostics_for(
+            "unresolved-script",
             "ScriptName Example\n\nFunction Test()\n    Greeter.Greet()\n    Utility.Wait(1.0)\n    MyMissingScript.DoThing()\nEndFunction\n",
             &mut table,
         );
@@ -2166,7 +2157,7 @@ EndFunction
         );
 
         let mut table = FunctionTable::new(root.path().to_path_buf());
-        let diagnostics = papyrus_lints::argument_types::check_with(
+        let diagnostics = papyrus_lints::check_argument_types(
             "ScriptName Example\n\nGreeter Property Target Auto\n\nFunction Test()\n    Target.Greet(name = 1)\nEndFunction\n",
             &mut table,
         );

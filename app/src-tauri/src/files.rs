@@ -115,7 +115,7 @@ mod tests {
 
         let diagnostics = lint_papyrus_script(source, papyrus_lints::Config::default());
         assert!(diagnostics.iter().any(|diagnostic| {
-            diagnostic.rule == papyrus_lints::forbidden_functions::RULE && diagnostic.line == 4
+            diagnostic.rule == "forbidden-functions" && diagnostic.line == 4
         }));
     }
 
@@ -129,7 +129,7 @@ mod tests {
 
         assert!(diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule != papyrus_lints::forbidden_functions::RULE));
+            .all(|diagnostic| diagnostic.rule != "forbidden-functions"));
     }
 
     #[test]

@@ -30,6 +30,7 @@ pub const RULE: &str = "goto-state";
 /// unchecked when the target isn't declared locally, since it may be
 /// declared further up that (unresolved) ancestry; see [`check_with`] to
 /// resolve that too.
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

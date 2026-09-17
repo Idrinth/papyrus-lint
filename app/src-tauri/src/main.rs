@@ -343,9 +343,7 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .any(|diagnostic| {
-                diagnostic["rule"].as_str() == Some(papyrus_lints::trailing_whitespace::RULE)
-            }));
+            .any(|diagnostic| { diagnostic["rule"].as_str() == Some("trailing-whitespace") }));
         assert!(stderr.is_empty());
     }
 

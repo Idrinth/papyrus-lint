@@ -28,6 +28,7 @@ pub const RULE: &str = "function-override";
 /// Checks `source` for functions that override an inherited one. Since
 /// resolving the `Extends` chain always requires looking outside `source`,
 /// this alone never finds anything to flag; see [`check_with`].
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

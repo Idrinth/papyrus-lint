@@ -270,10 +270,10 @@ mod tests {
         );
         assert!(diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule != papyrus_lints::trailing_whitespace::RULE));
+            .all(|diagnostic| diagnostic.rule != "trailing-whitespace"));
         assert!(diagnostics
             .iter()
-            .any(|diagnostic| { diagnostic.rule == papyrus_lints::forbidden_functions::RULE }));
+            .any(|diagnostic| { diagnostic.rule == "forbidden-functions" }));
     }
 
     #[test]
@@ -309,7 +309,7 @@ mod tests {
         );
         assert!(diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_import::RULE));
+            .all(|diagnostic| diagnostic.rule != "unused-import"));
     }
 
     #[test]
@@ -409,7 +409,7 @@ mod tests {
         let repaired = preview_repair_psc_line(
             path.to_string_lossy().into_owned(),
             papyrus_lints::Config::default(),
-            papyrus_lints::comma_spacing::RULE.to_string(),
+            "comma-spacing".to_string(),
             1,
         )
         .unwrap();
@@ -449,7 +449,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::comma_spacing::RULE.to_string(),
+            "comma-spacing".to_string(),
             3,
         )
         .unwrap();
@@ -458,10 +458,11 @@ mod tests {
             std::fs::read_to_string(&path).unwrap(),
             "ScriptName Example  \n\nFunction Run(Int left, Int right)  \nEndFunction\n"
         );
-        assert!(diagnostics.iter().all(|diagnostic| !(diagnostic.line == 3
-            && diagnostic.rule == papyrus_lints::comma_spacing::RULE)));
+        assert!(diagnostics
+            .iter()
+            .all(|diagnostic| !(diagnostic.line == 3 && diagnostic.rule == "comma-spacing")));
         assert!(diagnostics.iter().any(|diagnostic| {
-            diagnostic.line == 1 && diagnostic.rule == papyrus_lints::trailing_whitespace::RULE
+            diagnostic.line == 1 && diagnostic.rule == "trailing-whitespace"
         }));
     }
 
@@ -490,7 +491,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::unused_import::RULE.to_string(),
+            "unused-import".to_string(),
             3,
         )
         .unwrap_err();
@@ -516,7 +517,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::property_sorting::RULE.to_string(),
+            "property-sorting".to_string(),
             4,
         )
         .unwrap_err();
@@ -543,7 +544,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            "trailing-whitespace".to_string(),
         )
         .unwrap();
 
@@ -553,10 +554,10 @@ mod tests {
         );
         assert!(diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule != papyrus_lints::trailing_whitespace::RULE));
+            .all(|diagnostic| diagnostic.rule != "trailing-whitespace"));
         assert!(diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.rule == papyrus_lints::comma_spacing::RULE));
+            .any(|diagnostic| diagnostic.rule == "comma-spacing"));
     }
 
     #[test]
@@ -583,7 +584,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::unused_import::RULE.to_string(),
+            "unused-import".to_string(),
         )
         .unwrap();
 
@@ -593,10 +594,10 @@ mod tests {
         );
         assert!(diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_import::RULE));
+            .all(|diagnostic| diagnostic.rule != "unused-import"));
         assert!(diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.rule == papyrus_lints::comma_spacing::RULE));
+            .any(|diagnostic| diagnostic.rule == "comma-spacing"));
     }
 
     #[test]
@@ -616,7 +617,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            "trailing-whitespace".to_string(),
             1,
         )
         .unwrap();
@@ -628,7 +629,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            "trailing-whitespace".to_string(),
         )
         .unwrap();
 
@@ -651,7 +652,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            vec![papyrus_lints::comma_spacing::RULE.to_string()],
+            vec!["comma-spacing".to_string()],
             1,
         )
         .unwrap();
@@ -662,7 +663,7 @@ mod tests {
         );
         assert!(diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule != papyrus_lints::comma_spacing::RULE));
+            .all(|diagnostic| diagnostic.rule != "comma-spacing"));
     }
 
     #[test]
@@ -702,7 +703,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            "trailing-whitespace".to_string(),
             1,
         )
         .is_err());
@@ -714,7 +715,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            "trailing-whitespace".to_string(),
         )
         .is_err());
         assert!(add_disable_comment_to_psc_line(
@@ -725,7 +726,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            vec![papyrus_lints::trailing_whitespace::RULE.to_string()],
+            vec!["trailing-whitespace".to_string()],
             1,
         )
         .is_err());
@@ -799,7 +800,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            "trailing-whitespace".to_string(),
             1,
         )
         .unwrap();
@@ -817,7 +818,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            papyrus_lints::trailing_whitespace::RULE.to_string(),
+            "trailing-whitespace".to_string(),
         )
         .unwrap();
 
@@ -857,7 +858,7 @@ mod tests {
         );
         assert!(diagnostics
             .iter()
-            .all(|diagnostic| diagnostic.rule != papyrus_lints::unused_import::RULE));
+            .all(|diagnostic| diagnostic.rule != "unused-import"));
     }
 
     #[test]
@@ -878,8 +879,8 @@ mod tests {
             String::new(),
             false,
             vec![
-                papyrus_lints::comma_spacing::RULE.to_string(),
-                papyrus_lints::trailing_whitespace::RULE.to_string(),
+                "comma-spacing".to_string(),
+                "trailing-whitespace".to_string(),
             ],
             1,
         )
@@ -897,7 +898,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            vec![papyrus_lints::trailing_whitespace::RULE.to_string()],
+            vec!["trailing-whitespace".to_string()],
             1,
         )
         .unwrap();
@@ -907,8 +908,7 @@ mod tests {
             "Call(1,2)   ; @disable comma-spacing, trailing-whitespace\n"
         );
         assert!(diagnostics.iter().all(|diagnostic| {
-            diagnostic.rule != papyrus_lints::comma_spacing::RULE
-                && diagnostic.rule != papyrus_lints::trailing_whitespace::RULE
+            diagnostic.rule != "comma-spacing" && diagnostic.rule != "trailing-whitespace"
         }));
     }
 
@@ -928,7 +928,7 @@ mod tests {
             Vec::new(),
             String::new(),
             false,
-            vec![papyrus_lints::comma_spacing::RULE.to_string()],
+            vec!["comma-spacing".to_string()],
             1,
         )
         .unwrap();

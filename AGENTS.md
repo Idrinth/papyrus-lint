@@ -105,7 +105,7 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
 1. `app/crates/papyrus-lints/src/<rule>.rs` — check (and optional repair);
    put its tests in a sibling `<rule>_tests.rs`, included via
    `#[cfg(test)] #[path = "<rule>_tests.rs"] mod tests;`.
-2. `app/crates/papyrus-lints/src/lib.rs` — `pub mod`; `src/registry.rs`'s
+2. `app/crates/papyrus-lints/src/lib.rs` — `mod`; `src/registry.rs`'s
    `collect_diagnostics` dispatch, and `apply_repairs` if it auto-fixes.
 3. `app/crates/papyrus-lints/src/config.rs` — field on `Rules` and its
    `Default` (and the rustdoc yaml example at the top of the file).
