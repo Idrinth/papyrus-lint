@@ -202,7 +202,8 @@
   upload — even if one of those jobs fails). Being part of `ci.yml`
   itself rather than a separate workflow, its uncovered-line ranking
   always reflects the current push rather than lagging behind the most
-  recent prior successful run. It lists the top 3 source files by byte
+  recent prior successful run. It excludes the `docs/` tree and all
+  Markdown files, then lists the top 3 source files by byte
   size, public export count, uncovered executable lines, and lines of
   code, emits those four lists as GitHub Actions `notice` annotations
   (Info messages on the pull request), writes them to the job's step

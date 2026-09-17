@@ -90,7 +90,7 @@ class HallOfShameTests(unittest.TestCase):
             self.assertEqual(4, hall_of_shame.count_exports(typescript))
             self.assertEqual(3, hall_of_shame.count_exports(python))
 
-    def test_iter_source_files_skips_vendor_and_lockfiles(self) -> None:
+    def test_iter_source_files_skips_docs_markdown_vendor_and_lockfiles(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "app").mkdir()
@@ -106,9 +106,12 @@ class HallOfShameTests(unittest.TestCase):
             (root / ".github" / "scripts" / "tool.py").write_text("def run():\n    pass\n", encoding="utf-8")
             (root / "package-lock.json").write_text("{}\n", encoding="utf-8")
             (root / "README.md").write_text("# hi\n", encoding="utf-8")
+            (root / "notes.markdown").write_text("# notes\n", encoding="utf-8")
+            (root / "docs").mkdir()
+            (root / "docs" / "example.py").write_text("def documented():\n    pass\n", encoding="utf-8")
 
             found = {hall_of_shame.relative_path(path, root) for path in hall_of_shame.iter_source_files(root)}
-            self.assertEqual({"app/main.rs", ".github/scripts/tool.py", "README.md"}, found)
+            self.assertEqual({"app/main.rs", ".github/scripts/tool.py"}, found)
 
     def test_iter_source_files_skips_hidden_directories_except_github(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -159,6 +162,14 @@ class HallOfShameTests(unittest.TestCase):
                         "SF:/tmp/somewhere/app/crates/core/src/lib.rs",
                         "LF:10",
                         "LH:2",
+                        "end_of_record",
+                        "SF:/tmp/somewhere/docs/example.py",
+                        "LF:50",
+                        "LH:0",
+                        "end_of_record",
+                        "SF:/tmp/somewhere/README.md",
+                        "LF:100",
+                        "LH:0",
                         "end_of_record",
                     ]
                 )
