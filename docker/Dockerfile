@@ -21,12 +21,11 @@ RUN PapyrusLinterCLI --version \
 # The file next to the binary is the executable-adjacent base config `init`
 # layers on; the copy under /usr/local/share is what the entrypoint passes
 # to --config when /project has no papyrus-lint.yaml/.yml of its own.
+WORKDIR /tmp/papyrus-lint-init
 RUN case "$PRESET" in \
         strict|standard|careful) ;; \
         *) echo "unsupported PRESET '$PRESET' (expected strict, standard, or careful)" >&2; exit 1 ;; \
     esac \
-    && mkdir -p /tmp/papyrus-lint-init \
-    && cd /tmp/papyrus-lint-init \
     && PapyrusLinterCLI init --preset "$PRESET" \
     && awk ' \
         BEGIN { replaced = 0 } \
