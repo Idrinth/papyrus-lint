@@ -20,7 +20,17 @@ papyrus-lint-core = { path = "../papyrus-lint-core" }
 papyrus-lint-config = { path = "../papyrus-lint-config" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-clap = { version = "4", features = ["derive"] }
+# Report color/suggestions are implemented in this crate, not clap's.
+clap = { version = "4", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
 
 [dev-dependencies]
 tempfile = "3"
+
+# Applied because this crate is built as its own cargo root (`cargo build
+# --manifest-path app/crates/papyrus-lint-cli/Cargo.toml`), so a profile on
+# `app/src-tauri` would not reach the standalone CLI binary.
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
