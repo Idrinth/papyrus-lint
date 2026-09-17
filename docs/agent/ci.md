@@ -174,8 +174,13 @@
   coverage summary to the job's step summary and uploads its lcov report
   as a `rust-coverage-<crate>` artifact.
 - **Dockerfile lint job** (`docker-lint`): runs `hadolint`
-  (`hadolint/hadolint-action`) against
-  `docker/Dockerfile` to catch Dockerfile best-practice issues.
+  (`hadolint/hadolint-action`) against `docker/Dockerfile` to catch Dockerfile
+  best-practice issues, failing on `warning` severity and above. `DL3018`
+  (pin `apk add` package versions) is ignored: `gcompat`/`libgcc`/`unzip`
+  track whatever version `alpine:3.24`'s own package repository currently
+  carries, and a hand-pinned version can disappear from that repository on
+  an unrelated Alpine point release, so pinning them is more fragile than
+  leaving them floating.
 - **Docker image build job** (`docker-build`): matrixing over the same
   three presets `release.yml`'s `container` job publishes
   (strict/standard/careful), builds the release `PapyrusLinterCLI` binary
