@@ -227,7 +227,8 @@ jobs:
       - name: Package SublimeLinter plugin
         run: |
           mkdir -p plugin-dist
-          zip -r "plugin-dist/SublimeLinter-contrib-papyrus-lint.zip" SublimeLinter-contrib-papyrus-lint -x '*.gitignore'
+          zip -r "plugin-dist/SublimeLinter-contrib-papyrus-lint.zip" SublimeLinter-contrib-papyrus-lint \
+            -x '*.gitignore' 'SublimeLinter-contrib-papyrus-lint/tests/*'
 
       - name: Upload editor plugin to release
         env:
