@@ -105,15 +105,31 @@ pub(crate) fn export_user_preset(name: String) -> Result<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
     use tempfile::tempdir;
 
     use crate::lint_config::{load_lint_config, save_lint_config};
 
+    // User presets live beside the test executable, so tests which inspect or
+    // mutate that shared directory must not run at the same time.
+    static USER_PRESETS: Mutex<()> = Mutex::new(());
+
+    struct UserPresetCleanup(Vec<String>);
+
+    impl Drop for UserPresetCleanup {
+        fn drop(&mut self) {
+            for name in &self.0 {
+                let _ = delete_user_preset(name.clone());
+            }
+        }
+    }
+
     #[test]
     fn list_config_presets_reports_every_built_in_preset() {
+        let _guard = USER_PRESETS.lock().unwrap();
         let presets = list_config_presets();
 
-        assert_eq!(presets.len(), 3);
+        assert!(presets.len() >= 3);
         assert!(presets.iter().any(|preset| preset.id == "strict"));
         assert!(presets.iter().any(|preset| preset.id == "standard"));
         assert!(presets.iter().any(|preset| preset.id == "careful"));
@@ -257,5 +273,50 @@ mod tests {
         let careful = get_preset_lint_config(" Careful ".to_string()).unwrap();
         assert!(!careful.rules.trailing_whitespace);
         assert_eq!(careful.cyclomatic_complexity_warning, 20);
+    }
+
+    #[test]
+    fn user_preset_commands_cover_the_full_management_lifecycle() {
+        let _guard = USER_PRESETS.lock().unwrap();
+        let suffix = std::process::id();
+        let original_name = format!("desktop-test-{suffix}");
+        let renamed_name = format!("desktop-renamed-{suffix}");
+        let _cleanup = UserPresetCleanup(vec![original_name.clone(), renamed_name.clone()]);
+        let mut config = papyrus_lints::Config {
+            indentation_width: 2,
+            ..Default::default()
+        };
+
+        save_config_as_preset(config.clone(), original_name.clone(), false).unwrap();
+        let exported = export_user_preset(original_name.clone()).unwrap();
+        assert!(exported.contains("indentation_width: 2"));
+        assert_eq!(
+            get_preset_lint_config(original_name.clone()).unwrap(),
+            config
+        );
+        assert!(list_config_presets()
+            .iter()
+            .any(|preset| preset.id == original_name));
+
+        let error = save_config_as_preset(config.clone(), original_name.clone(), false)
+            .expect_err("saving over a preset should require confirmation");
+        assert!(error.contains("already exists"));
+
+        config.indentation_width = 8;
+        save_config_as_preset(config.clone(), original_name.clone(), true).unwrap();
+        assert_eq!(
+            get_preset_lint_config(original_name.clone()).unwrap(),
+            config
+        );
+
+        rename_user_preset(original_name.clone(), renamed_name.clone(), false).unwrap();
+        assert!(export_user_preset(original_name).is_err());
+        assert_eq!(
+            get_preset_lint_config(renamed_name.clone()).unwrap(),
+            config
+        );
+
+        delete_user_preset(renamed_name.clone()).unwrap();
+        assert!(export_user_preset(renamed_name).is_err());
     }
 }
