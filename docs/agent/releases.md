@@ -25,7 +25,11 @@ app/crates/papyrus-lint-cli/Cargo.toml`) on each platform, attaching each
 platform's desktop bundle and CLI binary
 (`PapyrusLinterCLI-linux`/`PapyrusLinterCLI-macos`/`PapyrusLinterCLI-windows.exe`)
 to a GitHub release for that tag, creating the release if it doesn't
-already exist. The `ubuntu-latest` leg also copies the checked-in
+already exist. Both cargo roots (`app/src-tauri` and
+`app/crates/papyrus-lint-cli`) set a size-oriented `[profile.release]`
+(`lto`, `codegen-units = 1`, `strip`, `panic = "abort"`) because the six
+reusable crates are path dependencies rather than workspace members, so a
+profile on only one root would not apply to the other. The `ubuntu-latest` leg also copies the checked-in
 `docs/papyrus-lint.default.yaml` (see Configuration above) to
 `papyrus-lint.yaml` and attaches it to the release alongside the CLI
 binary, rather than generating it by running the freshly built CLI's
