@@ -1,4 +1,4 @@
-FROM alpine:3.22
+FROM alpine:3.24
 
 # One published image per built-in preset (strict/standard/careful).
 ARG PRESET=strict
