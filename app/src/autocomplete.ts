@@ -1,6 +1,6 @@
 // Property/method autocompletion for the code viewer's editor.
 //
-// The Rust side (`app/crates/papyrus-lint-core/src/function_table.rs`, exposed
+// The Rust side (`app/crates/papyrus-lint-core/src/function_table/`, exposed
 // as the `list_script_members` Tauri command) already knows how to list
 // every function/property available on a given script type, walking its
 // `Extends` chain. What's missing is the frontend half: figuring out, from

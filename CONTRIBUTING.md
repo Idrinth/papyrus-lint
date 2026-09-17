@@ -85,7 +85,7 @@ expected of a pull request.
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
 │       │       ├── script_locator.rs   # Finds .psc files by name under
 │       │       │                       # scripts/source or source/scripts
-│       │       └── function_table.rs   # Cross-script function signature lookup,
+│       │       └── function_table/     # Cross-script function signature lookup,
 │       │                               # for the argument/return type check lints
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           ├── src/                # achlist's scripts against its project's
