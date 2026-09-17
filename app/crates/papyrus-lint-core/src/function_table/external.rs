@@ -59,3 +59,7 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
         self.property_types(type_name)
     }
 }
+
+#[cfg(test)]
+#[path = "external_tests.rs"]
+mod tests;

@@ -288,3 +288,7 @@ impl FunctionTable {
             .collect()
     }
 }
+
+#[cfg(test)]
+#[path = "ancestry_tests.rs"]
+mod tests;
