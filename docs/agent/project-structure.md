@@ -12,7 +12,12 @@
 │   │   │                        # feature modules below
 │   │   ├── presets.ts           # Config presets: picker, save/reset, Presets tab
 │   │   ├── code-viewer.ts       # Code viewer dialog: open/close, view, line fix/ignore
-│   │   ├── results-list.ts      # Lint results list, filters, mass-fix, export
+│   │   ├── results-list.ts      # Lint results list, filters, mass-fix; calls export helpers
+│   │   ├── results-export-types.ts # Shared types for issue exports (filters, files, AI source)
+│   │   ├── results-export-text.ts  # Plain-text issue export formatter
+│   │   ├── results-export-json.ts  # JSON issue export formatter
+│   │   ├── results-export-ai.ts    # AI JSON export formatter and source attachment
+│   │   ├── download-text-file.ts   # Browser/WebView "Save As" helper
 │   │   ├── live-edit.ts         # Code viewer edit mode: live lint, autocomplete, save
 │   │   ├── path.ts              # Path/project-root resolution helpers (pure functions)
 │   │   ├── progress.ts          # Lint results progress bar
