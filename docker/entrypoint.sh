@@ -1,18 +1,48 @@
 #!/bin/sh
 set -eu
 
-base_scripts=/base-scripts
-archive=${PAPYRUS_LINT_BASE_SCRIPTS_ARCHIVE:-/base-scripts/skyrim-scripts.zip}
+bundled_archive=/usr/local/share/papyrus-lint/Scripts.zip
+user_archive=${PAPYRUS_LINT_BASE_SCRIPTS_ARCHIVE:-/base-scripts/skyrim-scripts.zip}
 default_config=/usr/local/share/papyrus-lint/papyrus-lint.yaml
 
-if [ -f "$archive" ]; then
-    base_scripts=/tmp/skyrim-base-scripts
-    rm -rf "$base_scripts"
-    mkdir -p "$base_scripts"
-    unzip -q "$archive" -d "$base_scripts"
+# script_locator only reads immediate children of a search root, so point
+# --script-root at the directory that actually contains the .psc files.
+psc_dir_in() {
+    found=$(find "$1" -maxdepth 1 -type f -iname '*.psc' -print -quit 2>/dev/null || true)
+    if [ -n "$found" ]; then
+        printf '%s\n' "$1"
+        return 0
+    fi
+    found=$(find "$1" -type f -iname '*.psc' -print -quit 2>/dev/null || true)
+    if [ -n "$found" ]; then
+        dirname "$found"
+        return 0
+    fi
+    return 1
+}
+
+base_scripts=
+if dir=$(psc_dir_in /base-scripts); then
+    base_scripts=$dir
+else
+    archive=
+    if [ -f "$user_archive" ]; then
+        archive=$user_archive
+    elif [ -f "$bundled_archive" ]; then
+        archive=$bundled_archive
+    fi
+    if [ -n "$archive" ]; then
+        unpacked=/tmp/skyrim-base-scripts
+        rm -rf "$unpacked"
+        mkdir -p "$unpacked"
+        unzip -q "$archive" -d "$unpacked"
+        if dir=$(psc_dir_in "$unpacked"); then
+            base_scripts=$dir
+        fi
+    fi
 fi
 
-if find "$base_scripts" -type f -iname '*.psc' -print -quit | grep -q .; then
+if [ -n "$base_scripts" ]; then
     set -- --script-root "$base_scripts" "$@"
 fi
 
