@@ -86,8 +86,11 @@ once at startup
 (`loadRuleTags`/`applyRuleTags`), indexes it by rule id, and uses it both
 to render each lint finding's kind/importance/auto-fixable badges (see
 `buildFindingTagsEl`) and to drive the Lint results tab's filters
-(`matchesTagFilters`), alongside its existing severity and filename
-filters. "Filter by tag / rule" combines what used to be a separate
+(`matchesTagFilters` in `app/src/results-filter.ts`), alongside its
+existing severity and filename filters. Filtering lives in that module
+(`filterOutcomes`) so the results list (`buildPscResultItem`) only ever
+receives already-filtered findings. "Filter by tag / rule" combines what
+used to be a separate
 flat "Filter by rule" multiselect with the tag kind checkboxes into one
 fieldset (`populateRuleFilterGroups`): each kind (Style, Performance,
 Correctness, Maintainability) gets its own multiselect listing just the

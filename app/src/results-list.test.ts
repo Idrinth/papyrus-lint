@@ -336,6 +336,21 @@ describe("buildPscResultItem / renderPscResults", () => {
     expect(buildPscResultItem(outcome())).toBeNull();
   });
 
+  it("renders the findings it is given, without applying filters itself", () => {
+    document.querySelector<HTMLInputElement>("#filter-error")!.checked = false;
+    document.querySelector<HTMLInputElement>("#filter-error")!.dispatchEvent(new Event("change"));
+
+    try {
+      const item = buildPscResultItem(
+        outcome({ findings: [{ line: 1, column: 1, message: "[error] bad" }] }),
+      );
+      expect(item!.querySelectorAll(".psc-result__finding")).toHaveLength(1);
+    } finally {
+      document.querySelector<HTMLInputElement>("#filter-error")!.checked = true;
+      document.querySelector<HTMLInputElement>("#filter-error")!.dispatchEvent(new Event("change"));
+    }
+  });
+
   it("always shows a file that failed to parse, even with no findings", () => {
     const item = buildPscResultItem(outcome({ ok: false, detail: "boom" }));
     expect(item).not.toBeNull();
@@ -511,15 +526,15 @@ describe("buildPscResultItem / renderPscResults", () => {
       trailingWhitespaceOption.selected = false;
       select.dispatchEvent(new Event("change"));
 
-      const item = buildPscResultItem(
+      renderPscResults([
         outcome({
           findings: [
             { line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" },
             { line: 2, column: 1, message: "[warning] missing space", rule: "comma-spacing" },
           ],
         }),
-      );
-      const findingEls = item!.querySelectorAll(".psc-result__finding");
+      ]);
+      const findingEls = document.querySelectorAll("#psc-result-list .psc-result__finding");
       expect(findingEls).toHaveLength(1);
       expect(findingEls[0].textContent).toContain("missing space");
     } finally {
