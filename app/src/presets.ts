@@ -1,14 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
-import {
-  type ConfigPreset,
-  type ConfigSelectionResult,
-  type LintConfig,
-  type ProjectInfo,
-  applyLintConfigToUI,
-  currentLintConfig,
-  handleLintConfigChanged,
-  switchTab,
-} from "./main";
+import { type ConfigPreset, type ConfigSelectionResult, switchTab } from "./main";
+import { type LintConfig, applyLintConfigToUI, currentLintConfig, handleLintConfigChanged } from "./config";
+import { type ProjectInfo } from "./project";
 import { downloadTextFile } from "./results-list";
 
 export let saveConfigAsPresetButtonEl: HTMLButtonElement | null;

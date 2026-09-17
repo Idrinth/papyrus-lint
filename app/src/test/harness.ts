@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, expect, vi } from "vitest";
 import { invokeMock } from "./mocks";
 import { mountFixture } from "./fixture";
-import { cancelLiveEditLint, loadProjectConfig, resetConfirmedProjectDirs } from "../main";
+import { cancelLiveEditLint } from "../live-edit";
+import { loadProjectConfig, resetConfirmedProjectDirs } from "../project";
 import { dirnameOf } from "../path";
 
 // Default backend behavior for the project-root discovery commands (see

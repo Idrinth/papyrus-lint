@@ -12,17 +12,25 @@ vi.mock("@tauri-apps/api/webview", () => ({
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
 import {
-  DEFAULT_LINT_CONFIG,
-  DEFAULT_RULES,
-  aiConfiguration,
   applyRuleTags,
+  handleDroppedPaths,
+  SEVERITIES,
+  switchTab,
+  TAG_IMPORTANCES,
+  type Diagnostic,
+  type PscParseOutcome,
+  type RuleTagsInfo,
+} from "./main";
+import { DEFAULT_LINT_CONFIG, DEFAULT_RULES } from "./config";
+import { useProjectDir } from "./project";
+import {
+  aiConfiguration,
   buildPscResultItem,
   collectFilteredIssues,
   formatIssuesAsJson,
   formatIssuesAsText,
   formatIssuesForAi,
   handleCompileClick,
-  handleDroppedPaths,
   handleExportAiClick,
   handleExportIssuesClick,
   handleFixClick,
@@ -34,16 +42,9 @@ import {
   matchesTagFilters,
   renderMassFixList,
   renderPscResults,
-  SEVERITIES,
-  switchTab,
-  TAG_IMPORTANCES,
   updateExportIssuesButtonState,
-  useProjectDir,
   type AiSource,
-  type Diagnostic,
-  type PscParseOutcome,
-  type RuleTagsInfo,
-} from "./main";
+} from "./results-list";
 
 describe("matchesFilenameFilter", () => {
   it("matches everything when the pattern is empty or blank", () => {

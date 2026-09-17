@@ -10,31 +10,14 @@ vi.mock("@tauri-apps/api/webview", () => ({
   getCurrentWebview: vi.fn(),
 }));
 
-import {
-  DEFAULT_LINT_CONFIG,
-  applyAutocompleteSelection,
-  applyLintConfigToUI,
-  applyProjectInfoToUI,
-  applyRuleTags,
-  applyScriptRootsToUI,
-  hideLintProgress,
-  handleAutocompleteKeydown,
-  handleEditorTabKeydown,
-  lintConfigFromUI,
-  openCodeViewer,
-  populateResetPresetSelect,
-  renderPresetManagementTab,
-  renderMassFixList,
-  renderPscResults,
-  requestCloseCodeViewer,
-  saveAndCompileCodeViewerEdits,
-  saveCodeViewerEdits,
-  showLintProgress,
-  showResult,
-  toggleCodeViewerFullscreen,
-  updateAutocomplete,
-  updateLintProgress,
-} from "./main";
+import { applyRuleTags, showResult } from "./main";
+import { DEFAULT_LINT_CONFIG, applyLintConfigToUI, lintConfigFromUI } from "./config";
+import { applyProjectInfoToUI, applyScriptRootsToUI } from "./project";
+import { hideLintProgress, showLintProgress, updateLintProgress } from "./progress";
+import { applyAutocompleteSelection, handleAutocompleteKeydown, handleEditorTabKeydown, saveAndCompileCodeViewerEdits, saveCodeViewerEdits, updateAutocomplete } from "./live-edit";
+import { openCodeViewer, requestCloseCodeViewer, toggleCodeViewerFullscreen } from "./code-viewer";
+import { populateResetPresetSelect, renderPresetManagementTab } from "./presets";
+import { renderMassFixList, renderPscResults } from "./results-list";
 
 // The per-module UI tests exercise the application with the complete
 // index.html-shaped fixture. This suite deliberately boots it without that fixture: the same

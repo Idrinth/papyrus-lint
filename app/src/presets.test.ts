@@ -11,15 +11,16 @@ vi.mock("@tauri-apps/api/webview", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
+import { switchTab, type ConfigSelectionResult } from "./main";
+import { DEFAULT_LINT_CONFIG, handleLintConfigChanged } from "./config";
+import { useProjectDir } from "./project";
 import {
-  DEFAULT_LINT_CONFIG,
   applyConfigPreset,
   deleteUserPreset,
   exportUserPreset,
   getPresetLintConfig,
   handleDeletePresetClick,
   handleExportPresetClick,
-  handleLintConfigChanged,
   handleRenamePresetClick,
   handleResetToPresetClick,
   handleSaveConfigAsPresetClick,
@@ -30,10 +31,7 @@ import {
   refreshPresetManagementTab,
   renameUserPreset,
   renderPresetManagementTab,
-  switchTab,
-  useProjectDir,
-  type ConfigSelectionResult,
-} from "./main";
+} from "./presets";
 
 describe("promptForConfigSelection", () => {
   it("shows the detected configuration and no preset list when one was found", async () => {
