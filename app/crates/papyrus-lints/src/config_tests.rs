@@ -1,5 +1,17 @@
 use super::*;
 
+fn parse(yaml: &str) -> Result<Config, serde_norway::Error> {
+    if yaml.trim().is_empty() {
+        Ok(Config::default())
+    } else {
+        serde_norway::from_str(yaml)
+    }
+}
+
+fn to_yaml(config: &Config) -> Result<String, serde_norway::Error> {
+    serde_norway::to_string(config)
+}
+
 #[test]
 fn empty_document_yields_defaults() {
     assert_eq!(parse("").unwrap(), Config::default());

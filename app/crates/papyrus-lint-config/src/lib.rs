@@ -150,6 +150,23 @@ fn project_file_from_yaml(contents: &str) -> Result<ProjectFile, String> {
     Ok(project)
 }
 
+/// Parses a YAML config document into a [`papyrus_lints::Config`]. An empty
+/// document (including a missing/empty config file's contents) yields
+/// [`papyrus_lints::Config::default`]; keys the document omits also fall
+/// back to their default. App-level keys (`compiler_path`,
+/// `additional_script_roots`, ...) are accepted and ignored here — use
+/// [`load_config`] / [`load_config_from_path`] when those matter.
+pub fn parse_lint_yaml(yaml: &str) -> Result<papyrus_lints::Config, String> {
+    Ok(project_file_from_yaml(yaml)?.lint)
+}
+
+/// Serializes a [`papyrus_lints::Config`] back into the YAML document
+/// format read by [`parse_lint_yaml`], so callers that persist lint
+/// settings (user presets, `init`'s lint section) share one serializer.
+pub fn lint_config_to_yaml(config: &papyrus_lints::Config) -> Result<String, String> {
+    serde_norway::to_string(config).map_err(|err| err.to_string())
+}
+
 fn yaml_has_top_level_key(contents: &str, key: &str) -> bool {
     let Ok(serde_norway::Value::Mapping(map)) = serde_norway::from_str(contents) else {
         return false;
@@ -318,10 +335,7 @@ pub fn load_config(dir: &Path) -> Result<papyrus_lints::Config, String> {
 /// to parse.
 pub fn load_config_from_path(path: &Path) -> Result<papyrus_lints::Config, String> {
     let contents = fs::read_to_string(path).map_err(|err| err.to_string())?;
-    if contents.trim().is_empty() {
-        return Ok(papyrus_lints::Config::default());
-    }
-    Ok(project_file_from_yaml(&contents)?.lint)
+    parse_lint_yaml(&contents)
 }
 
 /// Writes `config` to `dir`'s papyrus-lint YAML config file, preserving
@@ -773,6 +787,63 @@ mod tests {
         fs::write(&path, "semicolon: [not a bool\n").expect("failed to write test config file");
 
         assert!(load_config_from_path(&path).is_err());
+    }
+
+    #[test]
+    fn parse_lint_yaml_returns_defaults_for_empty_and_whitespace_only_documents() {
+        assert_eq!(
+            parse_lint_yaml("").expect("empty yaml should parse"),
+            papyrus_lints::Config::default()
+        );
+        assert_eq!(
+            parse_lint_yaml(" \t\n\r\n").expect("whitespace-only yaml should parse"),
+            papyrus_lints::Config::default()
+        );
+    }
+
+    #[test]
+    fn parse_lint_yaml_applies_omitted_keys_as_defaults() {
+        let config = parse_lint_yaml("semicolon: true\nindentation: space\n")
+            .expect("partial yaml should parse");
+
+        assert!(config.semicolon);
+        assert_eq!(config.indentation, Indentation::Space);
+        assert_eq!(config.indentation_width, 4);
+        assert!(!config.fail_on_warning);
+        assert!(config.rules.trailing_whitespace);
+    }
+
+    #[test]
+    fn parse_lint_yaml_ignores_app_level_keys() {
+        let config = parse_lint_yaml(
+            "compiler_path: C:\\Tools\\PapyrusCompiler.exe\ncompile_check: true\nsemicolon: true\n",
+        )
+        .expect("project yaml should parse as lint config");
+
+        assert!(config.semicolon);
+        assert_eq!(config.indentation, Indentation::default());
+    }
+
+    #[test]
+    fn parse_lint_yaml_rejects_invalid_yaml() {
+        assert!(parse_lint_yaml("semicolon: [not a bool\n").is_err());
+        assert!(parse_lint_yaml("indentation: eight-spaces\n").is_err());
+    }
+
+    #[test]
+    fn lint_config_to_yaml_round_trips_through_parse_lint_yaml() {
+        let config = papyrus_lints::Config {
+            semicolon: true,
+            indentation: Indentation::Space,
+            indentation_width: 2,
+            ..papyrus_lints::Config::default()
+        };
+
+        let yaml = lint_config_to_yaml(&config).expect("config should serialize");
+        assert_eq!(
+            parse_lint_yaml(&yaml).expect("serialized config should parse"),
+            config
+        );
     }
 
     #[test]

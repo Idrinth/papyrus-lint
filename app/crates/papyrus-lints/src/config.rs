@@ -1,8 +1,10 @@
-//! Lint configuration, read from a project's YAML config file and passed
-//! to every check/fix job (see [`crate::lint`] and [`crate::repair`]).
+//! Lint configuration, deserialized from a project's YAML config file and
+//! passed to every check/fix job (see [`crate::lint`] and [`crate::repair`]).
 //!
-//! A config file only needs to set the keys it wants to override — any
-//! key it omits falls back to the default shown below:
+//! Locating, loading, and saving that file is `papyrus-lint-config`'s job;
+//! this module owns the settings types themselves. A config file only
+//! needs to set the keys it wants to override — any key it omits falls
+//! back to the default shown below:
 //!
 //! ```yaml
 //! semicolon: false
@@ -157,8 +159,6 @@
 //! `assume_auto_properties_filled` (a top-level key, not a `rules` entry)
 //! is `false` by default: see [`Config::assume_auto_properties_filled`].
 
-use std::fmt;
-
 use serde::{Deserialize, Serialize};
 
 use crate::Diagnostic;
@@ -236,6 +236,7 @@ impl IdentifierCasing {
 /// config file and, in the desktop app, kept in sync with the formatting
 /// controls in the UI (loaded on startup, saved back to the file whenever
 /// they change). Fields absent from the YAML fall back to their default.
+/// File I/O for that YAML lives in `papyrus-lint-config`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -633,46 +634,6 @@ impl Config {
             _ => true,
         }
     }
-}
-
-/// An error parsing a lint config file.
-#[derive(Debug)]
-pub enum ConfigError {
-    Yaml(serde_norway::Error),
-}
-
-impl fmt::Display for ConfigError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ConfigError::Yaml(err) => write!(f, "failed to parse lint config: {err}"),
-        }
-    }
-}
-
-impl std::error::Error for ConfigError {}
-
-impl From<serde_norway::Error> for ConfigError {
-    fn from(err: serde_norway::Error) -> Self {
-        ConfigError::Yaml(err)
-    }
-}
-
-/// Parses a YAML config document into a [`Config`]. An empty document
-/// (including a missing/empty config file's contents) yields
-/// [`Config::default`]; keys the document omits also fall back to their
-/// default.
-pub fn parse(yaml: &str) -> Result<Config, ConfigError> {
-    if yaml.trim().is_empty() {
-        return Ok(Config::default());
-    }
-    Ok(serde_norway::from_str(yaml)?)
-}
-
-/// Serializes a [`Config`] back into the YAML document format read by
-/// [`parse`], so the desktop app can persist the formatting selected in
-/// its UI.
-pub fn to_yaml(config: &Config) -> Result<String, ConfigError> {
-    Ok(serde_norway::to_string(config)?)
 }
 
 #[cfg(test)]
