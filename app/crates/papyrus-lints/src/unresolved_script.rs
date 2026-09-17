@@ -31,6 +31,7 @@ pub const RULE: &str = "unresolved-script";
 /// resolved. Since this crate has no filesystem access on its own, no
 /// script can ever be confirmed missing this way; see [`check_with`] to
 /// actually resolve script names.
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

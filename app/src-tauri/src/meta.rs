@@ -61,7 +61,7 @@ mod tests {
 
         let trailing_whitespace = tags
             .iter()
-            .find(|info| info.rule == papyrus_lints::trailing_whitespace::RULE)
+            .find(|info| info.rule == "trailing-whitespace")
             .expect("trailing-whitespace should be tagged");
         assert!(!trailing_whitespace.description.is_empty());
         assert_eq!(trailing_whitespace.kinds, vec!["style"]);
@@ -77,7 +77,7 @@ mod tests {
 
         let argument_types = tags
             .iter()
-            .find(|info| info.rule == papyrus_lints::argument_types::RULE)
+            .find(|info| info.rule == "argument-types")
             .expect("argument-types should be tagged");
         assert!(!argument_types.auto_fixable);
     }

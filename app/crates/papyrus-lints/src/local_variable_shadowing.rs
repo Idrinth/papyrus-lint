@@ -31,6 +31,7 @@ pub const RULE: &str = "local-variable-shadowing";
 /// A declaration inside a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers, is
 /// never flagged, since it's generated boilerplate the user can't edit.
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

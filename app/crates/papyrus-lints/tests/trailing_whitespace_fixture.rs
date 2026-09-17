@@ -2,11 +2,20 @@
 //! with CRLF line endings and tab indentation, to make sure the trailing
 //! whitespace lint only flags genuine trailing whitespace.
 
+use papyrus_lints::{lint, repair_filtered, Config};
+
 const FIXTURE: &str = include_str!("fixtures/IDR__TIF__050002AB.psc");
+
+fn trailing_whitespace(source: &str) -> Vec<papyrus_lints::Diagnostic> {
+    lint(source, &Config::default())
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule == "trailing-whitespace")
+        .collect()
+}
 
 #[test]
 fn flags_only_the_property_lines_with_trailing_spaces() {
-    let diagnostics = papyrus_lints::trailing_whitespace::check(FIXTURE);
+    let diagnostics = trailing_whitespace(FIXTURE);
 
     let flagged_lines: Vec<usize> = diagnostics.iter().map(|d| d.line).collect();
     assert_eq!(flagged_lines, vec![24, 26, 28]);
@@ -21,7 +30,7 @@ fn flags_only_the_property_lines_with_trailing_spaces() {
 
 #[test]
 fn does_not_flag_crlf_line_endings_or_tab_indentation() {
-    let diagnostics = papyrus_lints::trailing_whitespace::check(FIXTURE);
+    let diagnostics = trailing_whitespace(FIXTURE);
 
     // Tab-indented lines in the fixture (e.g. the `while` loop body) don't
     // have trailing whitespace, only leading tabs, so they must not appear.
@@ -30,13 +39,13 @@ fn does_not_flag_crlf_line_endings_or_tab_indentation() {
 
 #[test]
 fn repair_clears_all_trailing_whitespace_diagnostics() {
-    let repaired = papyrus_lints::trailing_whitespace::repair(FIXTURE);
-    assert!(papyrus_lints::trailing_whitespace::check(&repaired).is_empty());
+    let repaired = repair_filtered(FIXTURE, &Config::default(), Some("trailing-whitespace"));
+    assert!(trailing_whitespace(&repaired).is_empty());
 }
 
 #[test]
 fn repair_only_changes_the_flagged_lines() {
-    let repaired = papyrus_lints::trailing_whitespace::repair(FIXTURE);
+    let repaired = repair_filtered(FIXTURE, &Config::default(), Some("trailing-whitespace"));
 
     let original_lines: Vec<&str> = FIXTURE.lines().collect();
     let repaired_lines: Vec<&str> = repaired.lines().collect();

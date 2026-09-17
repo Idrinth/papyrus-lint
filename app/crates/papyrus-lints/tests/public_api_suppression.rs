@@ -1,8 +1,8 @@
 //! Black-box coverage for the public diagnostic-suppression APIs.
 
 use papyrus_lints::{
-    argument_types::NoExternalSignatures, is_disabled,
-    lint_with_external_arguments_and_extra_diagnostics, Config, Diagnostic,
+    is_disabled, lint_with_external_arguments_and_extra_diagnostics, Config, Diagnostic,
+    NoExternalSignatures,
 };
 
 fn diagnostic(line: usize, rule: &'static str) -> Diagnostic {

@@ -31,7 +31,7 @@ fn resolves_a_self_call_to_a_parent_scripts_function_through_the_extends_chain()
         vec![fixtures_dir().to_string_lossy().into_owned()],
     );
 
-    let diagnostics = papyrus_lints::argument_types::check_with(TYPEB, &mut table);
+    let diagnostics = papyrus_lints::check_argument_types(TYPEB, &mut table);
 
     assert!(
         diagnostics.is_empty(),

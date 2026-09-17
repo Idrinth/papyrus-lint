@@ -40,6 +40,7 @@ pub const RULE: &str = "impossible-cast";
 /// same-script information. Since that alone can never confirm a type's
 /// full ancestry resolves to a definite root (see the module docs), this
 /// never actually flags anything on its own — see [`check_with`].
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

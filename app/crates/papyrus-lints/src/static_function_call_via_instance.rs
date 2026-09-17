@@ -32,6 +32,7 @@ pub const RULE: &str = "static-function-call-via-instance";
 /// object reference. Since this crate has no filesystem access on its own,
 /// no such call can ever be confirmed this way; see [`check_with`] to
 /// actually resolve function signatures.
+#[allow(dead_code)]
 pub fn check(source: &str) -> Vec<Diagnostic> {
     check_with(source, &mut NoExternalSignatures)
 }

@@ -39,7 +39,14 @@ fn table() -> FunctionTable {
 fn accepts_returns_through_a_project_and_native_extends_chain() {
     let mut table = table();
 
-    let diagnostics = papyrus_lints::return_types::check_with(TYPEC, &mut table);
+    let diagnostics: Vec<_> = papyrus_lints::lint_with_external_arguments(
+        TYPEC,
+        &papyrus_lints::Config::default(),
+        &mut table,
+    )
+    .into_iter()
+    .filter(|diagnostic| diagnostic.rule == "return-types")
+    .collect();
 
     assert!(
         diagnostics.is_empty(),
@@ -51,7 +58,14 @@ fn accepts_returns_through_a_project_and_native_extends_chain() {
 fn accepts_returns_through_a_transitive_project_and_native_extends_chain() {
     let mut table = table();
 
-    let diagnostics = papyrus_lints::return_types::check_with(TYPED, &mut table);
+    let diagnostics: Vec<_> = papyrus_lints::lint_with_external_arguments(
+        TYPED,
+        &papyrus_lints::Config::default(),
+        &mut table,
+    )
+    .into_iter()
+    .filter(|diagnostic| diagnostic.rule == "return-types")
+    .collect();
 
     assert!(
         diagnostics.is_empty(),

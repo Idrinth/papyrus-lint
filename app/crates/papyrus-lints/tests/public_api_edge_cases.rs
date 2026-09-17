@@ -1,11 +1,9 @@
 //! Edge-case coverage for the crate's black-box lint and repair API.
 
 use papyrus_lints::{
-    add_disable_comment,
-    argument_types::{ExternalSignatures, ParamInfo},
-    lint, repair, repair_filtered, repaired_line, restrict_to_line,
+    add_disable_comment, lint, repair, repair_filtered, repaired_line, restrict_to_line,
     tags::{tags_for, Importance, RULE_TAGS},
-    Config, KNOWN_RULE_IDS,
+    Config, ExternalSignatures, ParamInfo, KNOWN_RULE_IDS,
 };
 
 fn rules(ids: &[&str]) -> Vec<String> {

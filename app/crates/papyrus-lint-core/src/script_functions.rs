@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use serde::Serialize;
 
-use papyrus_lints::argument_types::ParamInfo;
+use papyrus_lints::ParamInfo;
 use papyrus_parser::ast::{FunctionDecl, PropertyDecl, Script, TypeName};
 
 /// The parameters (name and type) and return type of a single function, as
@@ -117,9 +117,9 @@ impl ScriptFunctions {
     pub(crate) fn from_script(script: &Script, source: &str) -> Self {
         let tokens = papyrus_parser::tokenize(source).ok();
         let doc_for = |line: usize| {
-            tokens.as_ref().and_then(|tokens| {
-                papyrus_lints::missing_doc_comment::documentation_comment(source, tokens, line)
-            })
+            tokens
+                .as_ref()
+                .and_then(|tokens| papyrus_lints::documentation_comment(source, tokens, line))
         };
         let mut states: HashMap<String, bool> = HashMap::new();
         for state in &script.states {
