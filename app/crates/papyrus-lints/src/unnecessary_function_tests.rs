@@ -18,6 +18,22 @@ fn does_not_flag_an_event_with_a_single_statement() {
 }
 
 #[test]
+fn does_not_flag_a_fragment_function_with_a_single_statement() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Fragment_0(ObjectReference akSpeakerRef)\n    B()\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn does_not_flag_a_fragment_function_regardless_of_case() {
+    let diagnostics = check("ScriptName Example\n\nFunction fragment_12()\n    B()\nEndFunction\n");
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn does_not_flag_a_function_with_no_statements() {
     let diagnostics = check("ScriptName Example\n\nFunction A()\nEndFunction\n");
 
@@ -144,6 +160,13 @@ fn repair_leaves_a_function_whose_single_statement_is_not_a_call_untouched() {
 #[test]
 fn repair_leaves_a_call_to_parent_untouched() {
     let source = "ScriptName Example\n\nFunction A()\n    Parent.A()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
+
+    assert_eq!(repair(source), source);
+}
+
+#[test]
+fn repair_leaves_a_fragment_function_wrapper_untouched() {
+    let source = "ScriptName Example\n\nFunction Fragment_0(ObjectReference akSpeakerRef)\n    B()\nEndFunction\n\nFunction Caller()\n    Fragment_0(None)\nEndFunction\n";
 
     assert_eq!(repair(source), source);
 }
