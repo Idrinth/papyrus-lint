@@ -739,6 +739,50 @@ mod tests {
     }
 
     #[test]
+    fn user_presets_dir_under_requires_an_existing_directory() {
+        let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+
+        assert_eq!(user_presets_dir_under(None), None);
+        assert_eq!(user_presets_dir_under(Some(base_dir.path())), None);
+
+        let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+        fs::create_dir(&presets_dir).expect("failed to create presets dir");
+
+        assert_eq!(
+            user_presets_dir_under(Some(base_dir.path())),
+            Some(presets_dir)
+        );
+    }
+
+    #[test]
+    fn yaml_extension_matching_is_case_insensitive_and_rejects_other_paths() {
+        assert!(has_yaml_extension(Path::new("preset.yaml")));
+        assert!(has_yaml_extension(Path::new("preset.YML")));
+        assert!(!has_yaml_extension(Path::new("preset.json")));
+        assert!(!has_yaml_extension(Path::new("preset")));
+    }
+
+    #[test]
+    fn deep_merge_recurses_through_mappings_and_replaces_scalar_values() {
+        let base = serde_norway::from_str(
+            "semicolon: false\nrules:\n  property_sorting: false\n  trailing_whitespace: true\n",
+        )
+        .expect("base YAML should parse");
+        let over = serde_norway::from_str(
+            "semicolon: true\nrules:\n  property_sorting: true\nnew_setting: value\n",
+        )
+        .expect("override YAML should parse");
+
+        let merged = deep_merge(base, over);
+        let expected: serde_norway::Value = serde_norway::from_str(
+            "semicolon: true\nrules:\n  property_sorting: true\n  trailing_whitespace: true\nnew_setting: value\n",
+        )
+        .expect("expected YAML should parse");
+
+        assert_eq!(merged, expected);
+    }
+
+    #[test]
     fn save_user_preset_rejects_a_blank_name() {
         let error = save_user_preset_under(None, "   ", &papyrus_lints::Config::default(), false)
             .expect_err("blank name should be rejected");
@@ -965,6 +1009,14 @@ mod tests {
             .expect_err("renaming a missing preset should fail");
 
         assert!(error.contains("no preset named 'missing' exists"));
+    }
+
+    #[test]
+    fn rename_user_preset_errors_without_a_resolvable_base_dir() {
+        let error = rename_user_preset_under(None, "old-name", "new-name", false)
+            .expect_err("should fail without a base dir");
+
+        assert!(error.contains("executable's directory"));
     }
 
     #[test]
@@ -1356,6 +1408,18 @@ mod tests {
             initialize_config_with_base(dir.path(), Some(base_dir.path()), Preset::default())
                 .is_err()
         );
+    }
+
+    #[test]
+    fn init_errors_when_the_project_directory_does_not_exist() {
+        let parent = tempfile::tempdir().expect("failed to create temp dir");
+        let missing_dir = parent.path().join("missing-project");
+
+        let error = initialize_config_with_base(&missing_dir, None, Preset::default())
+            .expect_err("init should fail when its target directory does not exist");
+
+        assert!(!error.is_empty());
+        assert!(!missing_dir.join(CONFIG_FILE_NAMES[0]).exists());
     }
 
     #[test]
