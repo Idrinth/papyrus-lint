@@ -5,6 +5,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use papyrus_lints::Diagnostic;
+use walkdir::WalkDir;
 
 /// Rule id used when multiple search roots contain different versions of
 /// the same script.
@@ -55,12 +56,7 @@ fn find_named_psc(dirs: impl IntoIterator<Item = PathBuf>, name: &str) -> Option
     };
 
     for dir in dirs {
-        let Ok(entries) = fs::read_dir(&dir) else {
-            continue;
-        };
-
-        for entry in entries.flatten() {
-            let path = entry.path();
+        for path in dir_children(&dir) {
             let matches = path
                 .file_name()
                 .and_then(|n| n.to_str())
@@ -73,6 +69,17 @@ fn find_named_psc(dirs: impl IntoIterator<Item = PathBuf>, name: &str) -> Option
     }
 
     None
+}
+
+/// Immediate children of `dir`. An unreadable directory yields no entries,
+/// matching the previous `fs::read_dir` + `flatten` behavior.
+fn dir_children(dir: &Path) -> impl Iterator<Item = PathBuf> {
+    WalkDir::new(dir)
+        .min_depth(1)
+        .max_depth(1)
+        .into_iter()
+        .filter_map(Result::ok)
+        .map(walkdir::DirEntry::into_path)
 }
 
 /// Resolves each of `roots` against `root`: an absolute entry is used as-is,
@@ -159,29 +166,21 @@ pub fn detected_script_roots(root: &Path, additional_roots: &[String]) -> Vec<Pa
 /// <https://github.com/idrinth/papyrus-lint/issues>) rather than the flat
 /// `scripts/source` an `.achlist` conventionally lists.
 pub fn find_psc_files_recursively(dir: &Path) -> Vec<PathBuf> {
-    let mut results = Vec::new();
-    collect_psc_files_recursively(dir, &mut results);
+    let mut results: Vec<PathBuf> = WalkDir::new(dir)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(Result::ok)
+        .map(walkdir::DirEntry::into_path)
+        .filter(|path| {
+            !path.is_dir()
+                && path
+                    .extension()
+                    .and_then(|ext| ext.to_str())
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
+        })
+        .collect();
     results.sort();
     results
-}
-
-fn collect_psc_files_recursively(dir: &Path, results: &mut Vec<PathBuf>) {
-    let Ok(entries) = fs::read_dir(dir) else {
-        return;
-    };
-
-    for entry in entries.flatten() {
-        let path = entry.path();
-        if path.is_dir() {
-            collect_psc_files_recursively(&path, results);
-        } else if path
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
-        {
-            results.push(path);
-        }
-    }
 }
 
 /// Warns when `script_path` has a same-named, byte-different counterpart in
@@ -205,11 +204,7 @@ pub fn conflicting_script_versions(
 
     let mut conflicts = Vec::new();
     for search_root in detected_script_roots(root, additional_roots) {
-        let Ok(entries) = fs::read_dir(search_root) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let candidate = entry.path();
+        for candidate in dir_children(&search_root) {
             let same_name = candidate
                 .file_name()
                 .and_then(|name| name.to_str())
@@ -283,11 +278,7 @@ fn index_psc_files(dirs: impl IntoIterator<Item = PathBuf>) -> ScriptIndex {
     let mut index: ScriptIndex = HashMap::new();
 
     for search_root in dirs {
-        let Ok(entries) = fs::read_dir(search_root) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let path = entry.path();
+        for path in dir_children(&search_root) {
             if !path.is_file() {
                 continue;
             }

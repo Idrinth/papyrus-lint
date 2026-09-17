@@ -18,6 +18,8 @@ papyrus-lints = { path = "../papyrus-lints" }
 papyrus-lint-config = { path = "../papyrus-lint-config" }
 papyrus-ast-cache = { path = "../papyrus-ast-cache" }
 rayon = "1.12.0"
+walkdir = "2"
+
 
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }

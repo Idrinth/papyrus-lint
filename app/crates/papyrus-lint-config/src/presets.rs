@@ -23,6 +23,8 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use walkdir::WalkDir;
+
 use crate::{
     executable_dir, existing_config_path, non_lint_yaml, seed_lookup_script_roots,
     with_field_comments, ProjectFile, CONFIG_FILE_NAMES,
@@ -270,18 +272,24 @@ fn has_yaml_extension(path: &Path) -> bool {
         .is_some_and(|ext| ext.eq_ignore_ascii_case("yaml") || ext.eq_ignore_ascii_case("yml"))
 }
 
+/// Immediate children of `dir`. An unreadable directory yields no entries,
+/// matching the previous `fs::read_dir` + `flatten` behavior.
+fn dir_children(dir: &Path) -> impl Iterator<Item = PathBuf> {
+    WalkDir::new(dir)
+        .min_depth(1)
+        .max_depth(1)
+        .into_iter()
+        .filter_map(Result::ok)
+        .map(walkdir::DirEntry::into_path)
+}
+
 /// Every user preset name available in `dir` (see [`user_presets_dir`]):
 /// each `.yaml`/`.yml` file's own file stem (the name it's selected by),
 /// sorted case-insensitively so listings (e.g. the desktop app's preset
 /// picker) are stable and predictable. Returns an empty `Vec` if `dir`
 /// can't be read at all.
 pub fn list_user_preset_names(dir: &Path) -> Vec<String> {
-    let Ok(entries) = fs::read_dir(dir) else {
-        return Vec::new();
-    };
-    let mut names: Vec<String> = entries
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
+    let mut names: Vec<String> = dir_children(dir)
         .filter(|path| path.is_file() && has_yaml_extension(path))
         .filter_map(|path| {
             path.file_stem()
@@ -298,19 +306,14 @@ pub fn list_user_preset_names(dir: &Path) -> Vec<String> {
 /// file named `abc.yaml`. Returns `None` if `dir` can't be read or has no
 /// such file.
 fn find_user_preset_file(dir: &Path, name: &str) -> Option<PathBuf> {
-    fs::read_dir(dir)
-        .into_iter()
-        .flatten()
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .find(|path| {
-            path.is_file()
-                && has_yaml_extension(path)
-                && path
-                    .file_stem()
-                    .and_then(|stem| stem.to_str())
-                    .is_some_and(|stem| stem.eq_ignore_ascii_case(name))
-        })
+    dir_children(dir).find(|path| {
+        path.is_file()
+            && has_yaml_extension(path)
+            && path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .is_some_and(|stem| stem.eq_ignore_ascii_case(name))
+    })
 }
 
 /// Saves `config` as a new user preset named `name`, in a `presets`
