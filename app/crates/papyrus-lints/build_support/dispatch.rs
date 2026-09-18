@@ -4,7 +4,7 @@ use super::{default_config_order, BuildContext};
 use std::collections::BTreeSet;
 
 pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
-    let relative = "docs/papyrus-lint.default.yaml";
+    let relative = "configuration/papyrus-lint.default.yaml";
     let source = context.load_text(relative, "default config");
     let order = default_config_order(&source, &context.input(relative))
         .unwrap_or_else(|error| panic!("{error}"));
@@ -17,13 +17,13 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
 fn rules_struct(context: &BuildContext, rules: &[&RuleMetadata]) {
     let mut out = Renderer::new();
     out.line("/// Individual enable/disable switches for each lint ruleset.");
-    out.line("/// Generated from `docs/rules.json` by `build.rs`. Do not edit by hand.");
+    out.line("/// Generated from `shared/rules.json` by `build.rs`. Do not edit by hand.");
     out.line("///");
     out.line("/// A ruleset set to `false` here is skipped by both");
     out.line("/// [`crate::lint`]/[`crate::lint_with_external_arguments`] and, for");
     out.line("/// rulesets with an automatic fix, [`crate::repair`]. Most rulesets");
     out.line("/// default to `true`; those tagged `enabled_by_default: false` in");
-    out.line("/// `docs/rules.json` default to `false`.");
+    out.line("/// `shared/rules.json` default to `false`.");
     out.line("#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]");
     out.line("#[serde(default)]");
     out.block("pub struct Rules", |out| {
@@ -41,7 +41,7 @@ fn rules_struct(context: &BuildContext, rules: &[&RuleMetadata]) {
     });
     out.blank();
     out.line("/// Default enable/disable flags for [`Rules`]. Generated from");
-    out.line("/// `docs/rules.json` (`enabled_by_default`, defaulting to `true`).");
+    out.line("/// `shared/rules.json` (`enabled_by_default`, defaulting to `true`).");
     out.block("pub fn default_rules() -> Rules", |out| {
         out.block("Rules", |out| {
             for rule in rules {
@@ -71,7 +71,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
     out.line("};");
     out.blank();
     out.line("/// Runs every enabled source-level lint against `source`.");
-    out.line("/// Generated from `docs/rules.json` by `build.rs`. Do not edit by hand.");
+    out.line("/// Generated from `shared/rules.json` by `build.rs`. Do not edit by hand.");
     out.line("#[allow(clippy::too_many_lines)]");
     out.line("pub fn collect_diagnostics<E: ExternalSignatures>(");
     out.line("    source: &str,");
@@ -104,7 +104,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
     out.line("}");
     out.blank();
     out.line("/// Applies every self-contained automatic fix whose ruleset is enabled.");
-    out.line("/// Generated from `docs/rules.json` by `build.rs`. Do not edit by hand.");
+    out.line("/// Generated from `shared/rules.json` by `build.rs`. Do not edit by hand.");
     out.line("/// Repair order is `repair_order` in that file (not rule-id order),");
     out.line("/// because later fixes see earlier rewrites.");
     out.line("#[allow(clippy::too_many_lines)]");

@@ -26,7 +26,7 @@
 //! ```
 //!
 //! Every key under `rules` may be omitted and falls back to
-//! [`Rules::default`], which is generated from `docs/rules.json`
+//! [`Rules::default`], which is generated from `shared/rules.json`
 //! (`enabled_by_default`, defaulting to `true`). A ruleset set to `false`
 //! disables that lint (and its automatic fix, if it has one) entirely.
 //!
@@ -187,7 +187,7 @@ pub struct Config {
     /// `unchecked_form_parameter`, which never tracks properties at all.
     pub assume_auto_properties_filled: bool,
     /// Per-ruleset enable/disable switches. Every ruleset is enabled by
-    /// default unless `docs/rules.json` sets `enabled_by_default: false`;
+    /// default unless `shared/rules.json` sets `enabled_by_default: false`;
     /// see [`Rules`].
     pub rules: Rules,
 }

@@ -90,9 +90,9 @@ filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
 contract published as a versioned JSON Schema:
-[v3](papyrus-lint-ai-export.v3.schema.json), the current format
-described below, and [v2](papyrus-lint-ai-export.v2.schema.json) and
-[v1](papyrus-lint-ai-export.v1.schema.json), the frozen contracts
+[v3](../schema/papyrus-lint-ai-export.v3.schema.json), the current format
+described below, and [v2](../schema/papyrus-lint-ai-export.v2.schema.json) and
+[v1](../schema/papyrus-lint-ai-export.v1.schema.json), the frozen contracts
 older releases produced, kept around so a document from an older release
 can still be validated against the schema it was actually produced
 under). The document's top-level `$schema` field points directly to that schema so an

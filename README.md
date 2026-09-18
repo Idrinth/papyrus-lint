@@ -183,7 +183,7 @@ next to the `.achlist` file you drop into the app, or, for a single
 `Data/Scripts/Source/abc.psc`). Any key it omits falls back to its
 default. The full default configuration, with every key documented inline,
 is checked in at
-[`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — it's
+[`configuration/papyrus-lint.default.yaml`](configuration/papyrus-lint.default.yaml) — it's
 also what `PapyrusLinterCLI init` (or `init --preset strict`, the default)
 writes into a project with no config file yet. `PapyrusLinterCLI init
 --preset <name>` picks a different built-in (`standard`, `careful`) or
@@ -192,7 +192,7 @@ presets from its own Settings/Presets tabs.
 
 See the [configuration reference](docs/configuration.md) for what every
 key does, how presets and the desktop app's Settings/Presets tabs work,
-and [`docs/presets/`](docs/presets/) for each built-in preset's own
+and [`configuration/presets/`](configuration/presets/) for each built-in preset's own
 annotated YAML.
 
 ## Command-line interface

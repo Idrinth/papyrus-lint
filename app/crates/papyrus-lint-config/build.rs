@@ -1,14 +1,14 @@
 //! Generates each built-in preset's full, annotated YAML at build time,
 //! rather than checking in three near-complete copies of
-//! `docs/papyrus-lint.default.yaml`. For each preset this layers two things
-//! onto `docs/papyrus-lint.default.yaml`:
+//! `configuration/papyrus-lint.default.yaml`. For each preset this layers two things
+//! onto `configuration/papyrus-lint.default.yaml`:
 //!
-//! - the small `docs/presets/papyrus-lint.<name>.yaml` overwrite file (a
+//! - the small `configuration/presets/papyrus-lint.<name>.yaml` overwrite file (a
 //!   header comment plus any non-rule settings the preset changes, e.g.
 //!   `careful`'s relaxed cyclomatic complexity thresholds);
 //! - for `standard`/`careful`, every `rules:` toggle that's `true` by
-//!   default and tagged `"low"` importance in `docs/rules.json` is turned
-//!   off, except the handful `docs/rules.json` marks `kept_in_standard`
+//!   default and tagged `"low"` importance in `shared/rules.json` is turned
+//!   off, except the handful `shared/rules.json` marks `kept_in_standard`
 //!   (the cheap, auto-fixable formatting rules `standard` keeps on) — see
 //!   [`preset_rule_value`].
 //!
@@ -25,7 +25,7 @@ use std::path::PathBuf;
 /// (duplicated here since a build script can't depend on its own crate).
 const PRESET_NAMES: [&str; 3] = ["strict", "standard", "careful"];
 
-/// The subset of a `docs/rules.json` entry this build script needs to
+/// The subset of a `shared/rules.json` entry this build script needs to
 /// decide a rule's value under `standard`/`careful` (see
 /// [`preset_rule_value`]). Mirrors `papyrus-lints/build.rs`'s own
 /// `RawRuleTag`, but only the fields used here.
@@ -37,7 +37,7 @@ struct RuleEntry {
     kept_in_standard: bool,
 }
 
-/// `docs/rules.json` `id`s (hyphenated) that don't turn into their
+/// `shared/rules.json` `id`s (hyphenated) that don't turn into their
 /// `Config.rules` toggle name (see `papyrus-lints/src/config.rs`) by simply
 /// replacing `-` with `_` — everything else does.
 const RULE_ID_TO_CONFIG_KEY: [(&str, &str); 2] = [
@@ -46,7 +46,7 @@ const RULE_ID_TO_CONFIG_KEY: [(&str, &str); 2] = [
 ];
 
 /// `id`'s `Config.rules` toggle name (as it appears in
-/// `docs/papyrus-lint.default.yaml`'s `rules:` section) — the key
+/// `configuration/papyrus-lint.default.yaml`'s `rules:` section) — the key
 /// [`preset_rule_value`] looks up in `rule_meta`.
 fn config_key_for(id: &str) -> String {
     RULE_ID_TO_CONFIG_KEY
@@ -58,14 +58,16 @@ fn config_key_for(id: &str) -> String {
 
 fn main() {
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"));
-    let docs_dir = manifest_dir.join("../../../docs");
+    let repo_root = manifest_dir.join("../../..");
+    let configuration_dir = repo_root.join("configuration");
+    let shared_dir = repo_root.join("shared");
 
-    let default_path = docs_dir.join("papyrus-lint.default.yaml");
+    let default_path = configuration_dir.join("papyrus-lint.default.yaml");
     println!("cargo:rerun-if-changed={}", default_path.display());
     let default_yaml = fs::read_to_string(&default_path)
         .unwrap_or_else(|err| panic!("failed to read {}: {err}", default_path.display()));
 
-    let rules_path = docs_dir.join("rules.json");
+    let rules_path = shared_dir.join("rules.json");
     println!("cargo:rerun-if-changed={}", rules_path.display());
     let rules_json = fs::read_to_string(&rules_path)
         .unwrap_or_else(|err| panic!("failed to read {}: {err}", rules_path.display()));
@@ -81,7 +83,7 @@ fn main() {
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR"));
     for name in PRESET_NAMES {
-        let overwrite_path = docs_dir.join(format!("presets/papyrus-lint.{name}.yaml"));
+        let overwrite_path = configuration_dir.join(format!("presets/papyrus-lint.{name}.yaml"));
         println!("cargo:rerun-if-changed={}", overwrite_path.display());
         let overwrite_yaml = fs::read_to_string(&overwrite_path)
             .unwrap_or_else(|err| panic!("failed to read {}: {err}", overwrite_path.display()));
@@ -101,7 +103,7 @@ fn main() {
 /// as the header), followed by zero or more top-level `key: value` override
 /// lines (there is currently no rule that needs a hand-written `rules:`
 /// override here, since [`preset_rule_value`] derives every rule's value
-/// from `docs/rules.json`). Each override line replaces the matching key's
+/// from `shared/rules.json`). Each override line replaces the matching key's
 /// line in `default` outright; every other top-level line of `default`
 /// (including its own per-field comments) is kept as-is.
 fn merge_preset(
@@ -164,8 +166,8 @@ fn merge_preset(
 }
 
 /// `rule_id`'s boolean value under `preset`, derived from `default_value`
-/// (its value in `docs/papyrus-lint.default.yaml`, i.e. under `strict`) and
-/// its `importance`/`kept_in_standard` metadata in `docs/rules.json`:
+/// (its value in `configuration/papyrus-lint.default.yaml`, i.e. under `strict`) and
+/// its `importance`/`kept_in_standard` metadata in `shared/rules.json`:
 /// `careful` turns off every `"low"` importance rule; `standard` does the
 /// same except for the handful marked `kept_in_standard` (the cheap,
 /// auto-fixable formatting rules). A rule already `false` by default is
@@ -181,7 +183,7 @@ fn preset_rule_value(
     }
     let (importance, kept_in_standard) = rule_meta
         .get(rule_id)
-        .unwrap_or_else(|| panic!("no docs/rules.json entry for rule {rule_id:?}"));
+        .unwrap_or_else(|| panic!("no shared/rules.json entry for rule {rule_id:?}"));
     if importance != "low" {
         return true;
     }

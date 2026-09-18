@@ -2,7 +2,7 @@
 
 Extracted out of pages/build.py (which was getting long and crowded with
 unrelated site-assembly concerns) with no behavior change. Renders
-docs/rules.json's own metadata (id, severity, tags, auto-fix support, full
+shared/rules.json's own metadata (id, severity, tags, auto-fix support, full
 documented behavior) into a searchable/filterable reference of every lint
 rule the linter implements.
 """
@@ -22,14 +22,14 @@ except ImportError:  # running as pages/build.py
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
-DOCS_DIR = ROOT / "docs"
+SHARED_DIR = ROOT / "shared"
 
-# docs/rules.json's rule metadata, rendered onto rules.html by build_rules_page
+# shared/rules.json's rule metadata, rendered onto rules.html by build_rules_page
 # below - the single source of truth for every rule the linter implements, so
 # a new rule needs no changes here at all.
-RULES_FILE = DOCS_DIR / "rules.json"
+RULES_FILE = SHARED_DIR / "rules.json"
 
-# docs/rules.json's own richer rule metadata (id/severity/tags/fixable/full
+# shared/rules.json's own richer rule metadata (id/severity/tags/fixable/full
 # definition, one entry per lint) has no notion of README.md's five-category
 # grouping, so rules.html instead lists every rule in one searchable/
 # filterable table (see render_rules_table/build_rules_page below). Kept in
@@ -76,7 +76,7 @@ def render_rules_filter_bar(rules: list[dict]) -> str:
 
 
 def render_rules_table(rules: list[dict]) -> str:
-    """Renders every docs/rules.json rule into one table, carrying its full
+    """Renders every shared/rules.json rule into one table, carrying its full
     metadata (severity, tags, id, full definition). Each row's data-*
     attributes are what rules.js filters against."""
     out = [
@@ -119,7 +119,7 @@ def render_rules_table(rules: list[dict]) -> str:
 
 
 def build_rules_page(out_dir: Path, version: str = "") -> None:
-    """Renders docs/rules.json into rules.html (via rules.template.html), a
+    """Renders shared/rules.json into rules.html (via rules.template.html), a
     full, searchable/filterable reference of every lint rule the linter
     implements, generated straight from the linter's own rule metadata so
     it carries each rule's id, severity, tags, and full documented behavior

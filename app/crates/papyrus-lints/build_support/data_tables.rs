@@ -177,7 +177,7 @@ fn known_events(context: &BuildContext) {
 
 fn rule_tags(context: &BuildContext, rules: &[RuleMetadata]) {
     let mut out = Renderer::new();
-    out.line(generated_header("docs/rules.json"));
+    out.line(generated_header("shared/rules.json"));
     out.line("pub static RULE_TAGS: &[RuleTags] = &[");
     for rule in rules {
         let importance = match rule.importance.as_str() {
@@ -185,7 +185,7 @@ fn rule_tags(context: &BuildContext, rules: &[RuleMetadata]) {
             "medium" => "Importance::Medium",
             "high" => "Importance::High",
             other => panic!(
-                "docs/rules.json: unknown importance `{other}` for {}",
+                "shared/rules.json: unknown importance `{other}` for {}",
                 rule.id
             ),
         };
@@ -203,14 +203,14 @@ fn rule_tags(context: &BuildContext, rules: &[RuleMetadata]) {
 
 fn known_rule_ids(context: &BuildContext, rules: &[RuleMetadata]) {
     let mut out = Renderer::new();
-    out.line(generated_header("docs/rules.json"));
+    out.line(generated_header("shared/rules.json"));
     out.line("pub const KNOWN_RULE_IDS: &[&str] = &[");
     for rule in rules {
         out.line(format_args!("    {:?},", rule.id));
     }
     out.line("];");
     out.blank();
-    out.line(generated_header("docs/rules.json"));
+    out.line(generated_header("shared/rules.json"));
     out.line("pub const FIXABLE_RULE_IDS: &[&str] = &[");
     for rule in rules.iter().filter(|rule| rule.fixable) {
         out.line(format_args!("    {:?},", rule.id));
