@@ -106,20 +106,20 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 }
 
 fn is_debug_call(tokens: &[Token], i: usize) -> bool {
-    match (
-        &tokens[i].kind,
-        &tokens[i + 1].kind,
-        &tokens[i + 2].kind,
-        &tokens[i + 3].kind,
-    ) {
+    matches!(
+        (
+            &tokens[i].kind,
+            &tokens[i + 1].kind,
+            &tokens[i + 2].kind,
+            &tokens[i + 3].kind,
+        ),
         (
             TokenKind::Identifier(qualifier),
             TokenKind::Dot,
             TokenKind::Identifier(_),
             TokenKind::LParen,
-        ) if qualifier.eq_ignore_ascii_case("Debug") => true,
-        _ => false,
-    }
+        ) if qualifier.eq_ignore_ascii_case("Debug")
+    )
 }
 
 fn matching_rparen(tokens: &[Token], open: usize) -> Option<usize> {

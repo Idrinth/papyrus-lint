@@ -75,7 +75,9 @@ fn does_not_flag_debug_call_without_nested_call() {
 
 #[test]
 fn does_not_flag_side_effect_outside_debug() {
-    let source = script_with("    Int taken = akActor.RemoveItem(item, 1)\n    Debug.Trace(\"took \" + taken)\n");
+    let source = script_with(
+        "    Int taken = akActor.RemoveItem(item, 1)\n    Debug.Trace(\"took \" + taken)\n",
+    );
     assert!(check(&source).is_empty());
 }
 
