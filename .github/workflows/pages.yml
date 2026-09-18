@@ -75,6 +75,9 @@ jobs:
             --dir coverage-artifacts \
             --pattern '*coverage*'
 
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
       - name: Install dependencies
         run: pip install -r pages/requirements-build.txt
 

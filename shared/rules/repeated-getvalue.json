@@ -1,0 +1,14 @@
+{
+  "id": "repeated-getvalue",
+  "name": "Repeated GlobalVariable.GetValue() calls",
+  "category": "Performance",
+  "tags": [
+    "performance"
+  ],
+  "severity": "info",
+  "importance": "low",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags GetValue() called on the same global more than once across an If/ElseIf chain's conditions, since it can be cached in a local variable instead. Disabled by default.",
+  "definition": "Flags, as an `[info]`, a `GetValue()` call repeated on the same receiver across the conditions of a single `If`/`ElseIf` chain (e.g. `If gv.GetValue() == 1.0` / `ElseIf gv.GetValue() == 2.0`), since none of the chain's earlier branch bodies run before a later condition is evaluated, so the value can't have changed between those reads \u2014 it can be read into a local variable once ahead of the chain instead. Like \"Slow function usage\", a call's receiver can't generally be resolved back to a `GlobalVariable`-typed script, so this matches by the `GetValue` method name alone (case-insensitively, with no arguments); it's the only native method with that name (see `rules/native-methods.yaml`), so this doesn't misfire on unrelated types. Disabled by default, since a chain that reads the same global more than once is often written that way deliberately for readability and the performance cost is usually negligible outside a hot code path; a project opts in via `rules.repeated_getvalue`."
+}

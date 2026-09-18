@@ -1,0 +1,15 @@
+{
+  "id": "chain-whitespace",
+  "name": "Whitespace interrupting property/method chaining",
+  "category": "Formatting",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": true,
+  "repair_order": 7,
+  "description": "Flags a space or tab immediately before or after a member/method access.",
+  "definition": "Flags, as a `[warning]`, a space or tab immediately before or after a `.` member/method access (e.g. `SomeProperty . DoThing()`), since it interrupts the chain for no benefit. A `.` inside a `Float` literal (e.g. `1.5`) is never flagged. The fix closes the gap on whichever side(s) have it, without reaching across a newline (a chain continued onto another physical line is left alone)."
+}

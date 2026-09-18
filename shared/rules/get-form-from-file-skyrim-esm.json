@@ -1,0 +1,15 @@
+{
+  "id": "get-form-from-file-skyrim-esm",
+  "name": "Game.GetFormFromFile(\"Skyrim.esm\") simplification",
+  "category": "Performance",
+  "tags": [
+    "performance",
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": true,
+  "repair_order": 17,
+  "description": "Flags Game.GetFormFromFile(id, \"Skyrim.esm\"), which is exactly what Game.GetForm(id) already does.",
+  "definition": "Flags, as a `[warning]`, a qualified `Game.GetFormFromFile` call whose file name argument is the literal `\"Skyrim.esm\"` (positionally or by name, matched case-insensitively), since `Skyrim.esm` is always loaded as master index `0` and a FormID valid for it never needs the file name argument's extra resolution step at all \u2014 `Game.GetForm(id)` returns exactly the same `Form` for less overhead. Automatically fixable: the fix rewrites the call to `Game.GetForm(id)`, keeping the original FormID argument (including any expression it's part of) and dropping the file name argument and its name if it was passed by name."
+}

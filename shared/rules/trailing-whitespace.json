@@ -1,0 +1,15 @@
+{
+  "id": "trailing-whitespace",
+  "name": "Trailing whitespace",
+  "category": "Formatting",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": true,
+  "repair_order": 12,
+  "description": "Flags lines that end with trailing spaces or tabs.",
+  "definition": "Flags, as a `[warning]`, lines that end with trailing spaces or tabs."
+}

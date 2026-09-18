@@ -1,0 +1,13 @@
+{
+  "id": "parameter-reassignment",
+  "name": "Parameter reassignment",
+  "category": "Bugprone",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags a function/event parameter assigned a new value anywhere in its own body.",
+  "definition": "Flags, as a `[warning]`, a function/event parameter assigned a new value anywhere in its own body (`total = 1`, `total += 1`, ...), since reusing the parameter's name for a different value discards what the caller passed in and can confuse a reader expecting it to still reflect the original argument. A member/index assignment built from a parameter (`akRef.Foo = 1`), or a reassignment of an unrelated local variable, is never flagged."
+}

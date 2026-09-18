@@ -1,0 +1,13 @@
+{
+  "id": "script-name-collision",
+  "name": "Property/variable named as script",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a script-level Property or variable whose name matches the script it's declared in, since Papyrus fails to compile it.",
+  "definition": "Flags, as an `[error]`, a script-level `Property` or variable whose name matches (case-insensitively) the name of the script it's declared in, since Papyrus rejects such a script at compile time. A local variable declared inside a function/event (see \"Local variable shadowing\" above) isn't checked by this lint."
+}

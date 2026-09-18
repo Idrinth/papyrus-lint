@@ -1,0 +1,14 @@
+{
+  "id": "empty-body",
+  "name": "Empty loop/conditional body",
+  "category": "Bugprone",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags seemingly useless loops and conditional bodies, since they are likely a mistake.",
+  "definition": "Flags, as a `[warning]`, since this is almost always a forgotten piece of logic rather than something intentional: a `While` loop whose body is empty, or whose body only nudges a variable by a constant amount (`i += 1`, `i -= 1`, or the equivalent `i = i + 1`/`i = i - 1`) with nothing else giving the loop a purpose (a step built from anything but a literal, such as a call or another variable, is left alone since it has a side effect of its own); and an empty `If`, `ElseIf`, or `Else` body. An `Else` clause is told apart from no `Else` clause at all (both parse to an empty body) by scanning for a literal `Else` immediately followed by `EndIf` in the source."
+}

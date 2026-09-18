@@ -1,0 +1,15 @@
+{
+  "id": "semicolon",
+  "name": "Semicolon at end of line",
+  "category": "Formatting",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": true,
+  "repair_order": 3,
+  "description": "Requires a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting.",
+  "definition": "Requires, as a `[warning]`, a trailing semicolon on each non-empty line or forbids terminal semicolons, according to the selected setting."
+}

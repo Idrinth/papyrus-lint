@@ -1,0 +1,14 @@
+{
+  "id": "unreachable-statement",
+  "name": "Unreachable statement",
+  "category": "Bugprone",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags statements that follow a Return.",
+  "definition": "Flags statements that follow a `Return` within the same block (a function/event body, an `If`/`ElseIf`/`Else` branch, or a `While` body), since they can never execute."
+}

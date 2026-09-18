@@ -1,0 +1,13 @@
+{
+  "id": "explicit-return",
+  "name": "Explicit return on every path",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a typed function/event with a code path that falls off the end of its body without a Return.",
+  "definition": "Flags, as an `[error]`, a typed function/event with a code path that falls off the end of its body without a `Return`, since Papyrus then silently returns that type's default value (`0`, `\"\"`, `False`, or `None`) instead of one the author chose. A `Return` with no value still counts as long as it's reached (`return_types` covers a value's actual type); an `If` only counts when every branch, including an `Else`, returns, and a `While` loop is never assumed to guarantee one since it may run zero times. A native function has no body to inspect and is never flagged."
+}

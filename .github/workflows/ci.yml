@@ -227,6 +227,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
       - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
@@ -269,6 +272,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
       - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
@@ -294,6 +300,9 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
 
       - uses: actions/setup-python@v7
         with:
@@ -762,6 +771,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
       - name: Install Tauri Linux dependencies
         if: matrix.crate == 'app/src-tauri'
         run: |
@@ -788,6 +800,9 @@ jobs:
       matrix: ${{ fromJSON(needs.rust-crates.outputs.crates) }}
     steps:
       - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
 
       - name: Install Tauri Linux dependencies
         if: matrix.crate == 'app/src-tauri'
@@ -859,6 +874,9 @@ jobs:
         preset: [strict, standard, careful]
     steps:
       - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
 
       - uses: dtolnay/rust-toolchain@stable
 

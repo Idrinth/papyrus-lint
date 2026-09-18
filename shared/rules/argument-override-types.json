@@ -1,0 +1,14 @@
+{
+  "id": "argument-override-types",
+  "name": "Argument override type check",
+  "category": "Reliability",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a function or event whose parameter count or types don't match the same-named function declared on the script it Extends.",
+  "definition": "Flags, as an `[error]`, a function or event declared on this script whose parameter count or parameter types don't match the corresponding parameters of the same-named function declared on the script it `Extends` (directly or transitively) \u2014 a call resolved against a parent-typed reference still binds against the parent's exact declared parameter list, so a mismatched override either fails to compile against such a reference or silently receives arguments meant for a differently-shaped signature. A parameter count mismatch is reported once for the whole declaration; a matching count is then compared type by type (exact match, case-insensitively, with no widening/subtype leniency). Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked."
+}

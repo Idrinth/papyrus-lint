@@ -1,0 +1,14 @@
+{
+  "id": "static-condition",
+  "name": "Static condition",
+  "category": "Bugprone",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags conditions that resolve the same every time due to this likely being a mistake.",
+  "definition": "Flags `If`/`ElseIf`/`While` conditions that fold to a constant `true` or `false` (e.g. `If true`, `If 1 == 2`, `If !false && 3 > 4`), regardless of any runtime state, as a `[warning]`. Only conditions built entirely from literals (combined with arithmetic, comparison, logical, and unary operators) are checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at."
+}

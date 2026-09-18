@@ -1,0 +1,13 @@
+{
+  "id": "debug-side-effects",
+  "name": "Side-effecting call inside Debug.*",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a call to a side-effecting function nested inside any Debug.* argument list, since that call only runs when the debug output itself runs.",
+  "definition": "Flags, as a `[warning]`, a function call nested inside any `Debug.*` argument list (`Trace`, `Notification`, `MessageBox`, `TraceStack`, \u2026) when that nested call is side-effecting. A same-script function is side-effecting when it writes a property or field, or transitively calls another same-script function that does. A call that can't be proven that way (a native, or a function on another script) is classified by name: prefixes such as `Set`, `Remove`, `Add`, `Wait`, `Enable`, `Disable`, `Place`, `Kill`, and similar mutating natives are flagged; `Get`/`Is`/`Has` style getters are left alone. The finding points at the nested call, not the `Debug.*` call itself."
+}

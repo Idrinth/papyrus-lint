@@ -2,6 +2,14 @@
 # CI
  (`.github/workflows/ci.yml`)
 
+`shared/rules.json` is generated from `shared/rules/*.json` (see AGENTS.md
+hard rule 4) and git-ignored, so every job below that reads it — directly
+(`pages`, `pages-browser`, `pages-lighthouse`) or by compiling a crate
+whose `build.rs` does (`rust-clippy`, `rust-test`, `docker-build`) — runs
+`python3 .github/scripts/build_rules_json.py` right after checkout to
+rebuild it first. `rust-fmt` is exempt: `cargo fmt --check` never runs a
+build script.
+
 - **Pull request labels job** (`labels`): on a pull request, fails unless
   the pull request carries at least one `component: ...` label and at
   least one `type: ...` label (see Pull request labels below), via

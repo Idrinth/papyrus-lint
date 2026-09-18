@@ -1,0 +1,14 @@
+{
+  "id": "unreachable-elseif",
+  "name": "Unreachable elseif",
+  "category": "Bugprone",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags an ElseIf whose condition can never be true because an earlier branch already covers it.",
+  "definition": "Flags, as a `[warning]`, an `ElseIf` branch whose condition can never be true because an earlier branch of the same `If` (the `If` itself or a prior `ElseIf`) already covers every value that would satisfy it (e.g. `If x > 9` followed by `ElseIf x > 10`). Only a direct relational comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`) between the exact same left-hand expression and a numeric literal is checked; a compound `&&`/`||` condition, a non-numeric operand, or a differently-shaped left-hand expression is left unflagged rather than guessed at."
+}

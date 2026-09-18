@@ -1,0 +1,13 @@
+{
+  "id": "none-form-usage",
+  "name": "None used as an existing Form",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a member/method access on a local variable or script-level property that's still known to be None. Set assume_auto_properties_filled to stop assuming an unset Auto/AutoReadOnly property starts out None; it's still tracked once code assigns it None directly.",
+  "definition": "Flags a member/method access (`a.GetName()`, `a.Name`) on a local variable or script-level `Auto`/`AutoReadOnly` property that's still known to be `None` (e.g. `Armor a = None` followed directly by `a.GetName()`), since that crashes the script at runtime. An object-typed local without an initializer, or an object-typed `Auto`/`AutoReadOnly` property with no explicit default value (or an explicit `= None`), starts out `None` in every function, since it may not be set until something outside the script (the CK's Property Manager, another script, `OnInit`, \u2026) does so \u2014 unless `assume_auto_properties_filled` is set, in which case a property doesn't start out possibly `None` on its own; it's still tracked the same as a local variable once script code assigns it `None` directly. From there, a variable/property is tracked as `None` from its declaration/assignment until it's reassigned something else, narrowing through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`||`) and through a `While` loop's condition (this language has no `break`/`continue`, so the loop can only exit once its condition is false). A branch that unconditionally `Return`s doesn't carry its state past the `If`, covering the common `If x == None` / `Return` guard idiom. Anything less direct is left unflagged rather than guessed at."
+}

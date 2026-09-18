@@ -1,0 +1,14 @@
+{
+  "id": "magic-numbers",
+  "name": "Magic numbers",
+  "category": "Other",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags numeric literals used directly instead of through a named constant, property, or local variable. -1, 0 and 1 are never flagged. Loose mode (default) exempts Wait/RegisterFor(Single)Update(GameTime) intervals, Strict checks them too. Disabled by default.",
+  "definition": "Flags, as a `[warning]`, a numeric literal used directly in an expression rather than through a named constant, property, or local variable. `-1`, `0`, and `1` are never flagged, since they're near-universally used directly without losing any clarity. A literal that's the entire value given to a declaration or assignment (`Int kMaxTargets = 5`, later reassigned as `kMaxTargets = 6`) is left alone too, since naming it there already gives it the meaning this lint is after; a literal nested inside a more complex initializer (`Int kMaxTargets = 5 + 1`) is still checked. Disabled by default; opt in with `rules.magic_numbers`. The configurable `magic_numbers` setting controls how a `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/`RegisterForUpdateGameTime`/`RegisterForSingleUpdateGameTime` call's interval argument is treated: `loose` (the default) leaves it unflagged, since a hardcoded interval there is common and usually self-explanatory; `strict` checks it like any other argument."
+}

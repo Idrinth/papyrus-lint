@@ -1,0 +1,14 @@
+{
+  "id": "unchecked-array-element",
+  "name": "Array element used without a None check",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a member/method access on a constant-indexed array element (e.g. act[2].Kill()) that hasn't yet been confirmed non-None in that path. Disabled by default, same as the Form parameter check above.",
+  "definition": "Flags, as a `[warning]`, a member/method access (`act[2].Kill()`) on an element of a local array variable or array-typed parameter whose element type is a `Form`/script type, when that specific, constant-indexed element hasn't yet been confirmed non-`None` in that path, since nothing about declaring or sizing such an array guarantees any of its positions actually hold something. Tracks each element (identified by its array's name plus a constant-folded index, e.g. `act[2]`) as unconfirmed from the moment the array comes into scope until it's narrowed through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check on that exact element (`act[2] == None`, `act[2] != None`, `!act[2]`, a bare `act[2]`, optionally combined with `&&`/`||`) or a `While` loop's condition, the same way \"Form parameter used without a None check\" narrows its own state, or until that element is assigned a new value, since the value just written could itself be `None`. Only a plain identifier's own element, indexed by a literal (optionally combined with arithmetic and unary operators), is tracked; a member/property array, or an index built from anything else, is left unflagged rather than guessed at. Passing the element on as an argument to another call isn't flagged, only a direct member/method access is. Disabled by default, for the same reason as \"Form parameter used without a None check\"; a project opts in via `rules.unchecked_array_element`."
+}

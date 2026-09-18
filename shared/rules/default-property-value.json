@@ -1,0 +1,15 @@
+{
+  "id": "default-property-value",
+  "name": "Default property value",
+  "category": "Other",
+  "tags": [
+    "style",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a Bool/Int/Float/String Auto/AutoReadOnly property with no explicit default value, since it then silently falls back to Papyrus's own implicit per-type default instead of a value the author chose. Disabled by default.",
+  "definition": "Flags, as a `[warning]`, a `Bool`/`Int`/`Float`/`String` `Auto`/`AutoReadOnly` property declared with no explicit default value (e.g. `Int Property Count Auto` rather than `Int Property Count = 0 Auto`), since it then silently falls back to Papyrus's own implicit per-type default (`False`, `0`, `0.0`, or `\"\"`) instead of a value the author actually chose. Object-typed properties, array-typed properties, and full (non-`Auto`/`AutoReadOnly`) properties are never flagged. Disabled by default, since many existing scripts already rely on Papyrus's implicit defaults for some or all of their properties; opt in with `rules.default_property_value`."
+}

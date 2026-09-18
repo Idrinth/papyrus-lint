@@ -1,0 +1,13 @@
+{
+  "id": "short-wait-interval",
+  "name": "Short wait/update interval",
+  "category": "Performance",
+  "tags": [
+    "performance"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags Waits and RegisterFor(Single)Update(GameTime) if the time is smaller than a configured amount.",
+  "definition": "Flags, as a `[warning]`, a call to `Utility.Wait`, `RegisterForUpdate`, `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime` whose interval argument folds to a compile-time-constant number below the configurable `min_wait_interval` (default `0.1`), since an interval that short runs far more often than is typically useful and can add up to meaningful performance overhead. `Utility.Wait` is only matched when qualified by that literal script name, the same way the \"Forbidden/discouraged function usage\" lint treats native singletons; the `RegisterFor*` family matches unqualified or through any receiver. Only an argument built entirely from literals (combined with arithmetic and unary operators) is checked; one that depends on an identifier, a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array is left unflagged rather than guessed at."
+}

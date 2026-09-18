@@ -1,0 +1,15 @@
+{
+  "id": "global-variable-setvalue",
+  "name": "GlobalVariable no-op write",
+  "category": "Other",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a SetValue/SetValueInt call that doesn't provably change the value: a branch writing back the exact value its own GetValue() == literal condition just confirmed, or an Else branch writing a literal with no check ruling out that value already being current. Disabled by default.",
+  "definition": "Flags, as a `[warning]`, a `SetValue`/`SetValueInt` call on a `GlobalVariable`-like receiver that writes a value an enclosing `If`/`ElseIf`/`Else` chain never proves is different from the value already there \u2014 either a branch writing back the exact literal its own `GetValue()`/`GetValueInt() == literal` condition just confirmed is already current, or the trailing `Else` of a chain that reads the same receiver elsewhere writing a literal with no condition of its own ruling out that value already being current, e.g. an `Else` unconditionally calling `gv.SetValue(0.0)` after an `If gv.GetValue() == 1.0` branch, where it should usually become an explicit `ElseIf gv.GetValue() != 0.0` instead. Only a `SetValue`/`SetValueInt` call standing alone as its own statement, guarded by a plain equality check against a literal, is considered; anything less direct is left unflagged rather than guessed at. Disabled by default, since the `Else` case is a heuristic rather than a proven no-op; opt in with `rules.global_variable_setvalue`."
+}

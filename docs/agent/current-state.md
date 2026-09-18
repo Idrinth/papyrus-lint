@@ -29,8 +29,8 @@ of re-lexing the source, on a script that parses cleanly at all;
 when the script doesn't parse, since that's the only way it can still run
 then.
 
-`app/crates/papyrus-lints` currently implements all rules listed in
-[`shared/rules.json`](shared/rules.json), also browsable as the website's
+`app/crates/papyrus-lints` currently implements all rules listed under
+[`shared/rules/`](shared/rules), also browsable as the website's
 [full lint rule reference](https://papyrus-lint.idrinth.de/rules.html).
 Rules inspect
 raw source or lexer tokens rather than requiring a successfully parsed AST.
@@ -100,7 +100,7 @@ keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
 `"maintainability"`), an `Importance` (`Low`/`Medium`/`High`) rating how
 much fixing that rule matters for keeping a codebase maintainable, a
 `description` copied verbatim from that rule's own `definition` field in
-[`shared/rules.json`](shared/rules.json) (kept in sync by hand — see "Docs
+[`shared/rules/`](shared/rules) (kept in sync by hand — see "Docs
 sync" in AGENTS.md; `build.rs` compiles it into
 `RULE_TAGS`/`KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` at build time, and
 `docs/nexuspage.bbcode`'s lint tables are generated straight from

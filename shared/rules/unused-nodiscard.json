@@ -1,0 +1,14 @@
+{
+  "id": "unused-nodiscard",
+  "name": "Discarded nodiscard result",
+  "category": "Reliability",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags discarded results of functions marked ; @nodiscard.",
+  "definition": "Flags calls to functions marked `; @nodiscard` (on the function header or the comment line immediately above it) whose result is discarded, whether the call stands alone (`RegisterFoo()`) or only feeds a comparison, arithmetic, or logical operator whose own result is then discarded too (e.g. `RegisterFoo() > 0` on its own line, with no assignment, `Return`, or condition around it). Distinct from `unused-getter`, which keys off the `Get*` name prefix; both can fire on the same call if a getter is also marked `@nodiscard`."
+}

@@ -1,0 +1,14 @@
+{
+  "id": "unused-getter",
+  "name": "Getter usage without saving result",
+  "category": "Reliability",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags standalone calls to functions whose names begin with Get if the returned value is unused.",
+  "definition": "Flags calls to functions whose names begin with `Get` (case-insensitively) whose result is discarded, whether the call stands alone (`GetValue()`) or only feeds a comparison, arithmetic, or logical operator whose own result is then discarded too (e.g. `GetDistance(target) > 0` on its own line, with no assignment, `Return`, or condition around it)."
+}

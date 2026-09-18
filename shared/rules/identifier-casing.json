@@ -1,0 +1,14 @@
+{
+  "id": "identifier-casing",
+  "name": "Identifier casing",
+  "category": "Formatting",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": true,
+  "repair_order": 1,
+  "description": "Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured style.",
+  "definition": "Flags a declared function/event, property, state, parameter, or local/script variable whose name doesn't match the configured `identifier_casing` style: `camelCase`, `PascalCase`, `snake_case`, or `CONSTANT_CASE`. `ScriptName` itself is never checked by this lint (see \"Type name casing\" below). A parameter has no location of its own, so it's reported on its enclosing function's line. The automatic fix renames each flagged declaration and its references only when the conversion preserves every underscore in its original position; fixes that would add, remove, or move underscores are left for the user because they constitute a substantive rename."
+}

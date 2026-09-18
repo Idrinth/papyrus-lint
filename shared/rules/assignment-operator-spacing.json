@@ -1,0 +1,15 @@
+{
+  "id": "assignment-operator-spacing",
+  "name": "Spacing around assignment operators",
+  "category": "Formatting",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": true,
+  "repair_order": 10,
+  "description": "Requires exactly one space on either side of =, +=, -=, *=, /=, and %=.",
+  "definition": "Requires, as a `[warning]`, exactly one space on either side of `=`, `+=`, `-=`, `*=`, `/=`, and `%=`. A side whose whitespace reaches a newline (the operator opens or closes a statement continued across physical lines) is left unchecked on that side. The fix normalizes each flagged side to a single space, without reaching across a newline."
+}

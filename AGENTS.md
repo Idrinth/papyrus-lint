@@ -38,7 +38,7 @@ Do not paste those files back into this index. Update the file you read.
 | frontend | `app/src` | Vanilla TypeScript. No framework. |
 | VS Code | `vscode-extension/` | Editor integration. |
 | Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
-| rule data | `rules/*.yaml`, `shared/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`; `shared/rules.json`'s `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
+| rule data | `rules/*.yaml`, `shared/rules/*.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs` (via the generated `shared/rules.json`, see hard rule 4); `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
 
 The seven reusable crates are **path dependencies, not Cargo workspace
 members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each
@@ -77,21 +77,25 @@ CI treats clippy warnings as errors.
 3. **Do not duplicate agent docs.** Edit `AGENTS.md` (this index) or a
    file under `docs/agent/`. `CLAUDE.md` must remain a pointer to this
    file, not a copy of it.
-4. **`shared/rules.json` is the single source of truth for lint metadata.**
-   A rule's entry there (`id`, `name`, `definition` — the long text,
-   `description` — a shorter blurb matching `docs/nexuspage.bbcode`'s own
-   style, `category`, `tags`, `severity`, `importance`, `fixable`,
-   optional `repair_order`) is what
-   every other consumer generates from. Nothing else is hand-edited from
-   it: `build.rs` compiles `app/crates/papyrus-lints`'s
+4. **`shared/rules/<id>.json` is the single source of truth for lint
+   metadata.** Each rule is one file there (one JSON object: `id`, `name`,
+   `definition` — the long text, `description` — a shorter blurb matching
+   `docs/nexuspage.bbcode`'s own style, `category`, `tags`, `severity`,
+   `importance`, `fixable`, optional `repair_order`). `shared/rules.json`
+   — the combined array every other consumer actually reads — is
+   generated from those files by `.github/scripts/build_rules_json.py`
+   and is git-ignored, not checked in; run that script (no arguments)
+   after adding/editing a `shared/rules/*.json` file and before building
+   or testing anything below. Nothing else is hand-edited from it:
+   `build.rs` compiles `app/crates/papyrus-lints`'s
    `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`), `RULE_TAGS`
    (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), the
    `collect_diagnostics`/`apply_repairs` dispatch, and each rule's `mod`
-   in `src/lib.rs` from it at build time; `pages/build.py` generates the
-   website's searchable `rules.html` straight from it; and release tooling
-   fills in `docs/nexuspage.bbcode`'s five lint tables from it (see
-   Releases in `docs/agent/releases.md`) — the checked-in file carries no
-   rows itself. `README.md`'s own
+   in `src/lib.rs` from the generated `shared/rules.json` at build time;
+   `pages/build.py` generates the website's searchable `rules.html`
+   straight from it; and release tooling fills in `docs/nexuspage.bbcode`'s
+   five lint tables from it (see Releases in `docs/agent/releases.md`) —
+   the checked-in `docs/nexuspage.bbcode` carries no rows itself. `README.md`'s own
    "Implemented Lints" section only keeps a short per-category blurb and a
    link to `rules.html` — it carries no per-rule text to keep in sync.
 5. **Match the file you are in.** Don't invent a new module layout, naming
@@ -111,14 +115,19 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    config, external)` (and optional `repair(source, ast, tokens, config)`);
    put its tests in a sibling `<rule>_tests.rs`, included via
    `#[cfg(test)] #[path = "<rule>_tests.rs"] mod tests;`. `build.rs`
-   generates the `mod` in `src/lib.rs` from the `shared/rules.json` entry.
-2. `shared/rules.json` — a new entry: `id`, `name`, `definition` (the long,
+   generates the `mod` in `src/lib.rs` from the `shared/rules/<id>.json`
+   entry below.
+2. `shared/rules/<id>.json` — a new file, named after the rule's `id`,
+   holding a single object: `id`, `name`, `definition` (the long,
    README-style description), a short `description` blurb matching
    `docs/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
    `Performance`, `Reliability`, `Bugprone`, `Other`), `tags`,
    `importance`, `severity`, and `fixable`. For an `apply_repairs` auto-fix,
    set `repair_order` (1..=N, no gaps). Set `"enabled_by_default":
-   false` only for opt-in rules. No Nexus page regeneration step
+   false` only for opt-in rules. Run `python3
+   .github/scripts/build_rules_json.py` afterward (and before building or
+   testing anything below) to regenerate the git-ignored `shared/rules.json`
+   every consumer below actually reads. No Nexus page regeneration step
    is needed here — that happens at release time (see Releases in
    `docs/agent/releases.md`). `build.rs` generates
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
@@ -148,11 +157,12 @@ If the rule introduces a new *kind* keyword (not `style` /
 
 ## Docs sync (humans and AI)
 
-- README lint tables → `shared/rules.json` (rule 4). `shared/rules.json` →
-  `docs/nexuspage.bbcode`'s lint tables (filled in at release time, never
-  checked in — see Releases in `docs/agent/releases.md`) and
-  `papyrus-lints`'s `registry.rs`/`tags.rs`/`lib.rs` rule `mod`s (via
-  `build.rs`) — all generated, never hand-edited.
+- README lint tables → `shared/rules/<id>.json` (rule 4). `shared/rules/*.json` →
+  the generated `shared/rules.json` (`.github/scripts/build_rules_json.py`,
+  also git-ignored) → `docs/nexuspage.bbcode`'s lint tables (filled in at
+  release time, never checked in — see Releases in
+  `docs/agent/releases.md`) and `papyrus-lints`'s `registry.rs`/`tags.rs`/
+  `lib.rs` rule `mod`s (via `build.rs`) — all generated, never hand-edited.
 - `docs/cli.md`/`docs/configuration.md` CLI usage / default config →
   `docs/nexuspage.bbcode` CLI or configuration section (hand-edited; not
   covered by the generator above). Other README/`docs/*.md` edits do not

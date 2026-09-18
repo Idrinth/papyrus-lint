@@ -1,0 +1,13 @@
+{
+  "id": "numeric-comparison",
+  "name": "Strict numeric type check",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags implicit comparisons between ints and floats that rely on Papyrus doing type conversions.",
+  "definition": "Flags implicit comparisons (`==`, `!=`, `<`, `<=`, `>`, `>=`) between an `Int` value and a `Float` value without an explicit cast making the comparison exact. Only comparisons whose operand types can be determined locally are checked."
+}

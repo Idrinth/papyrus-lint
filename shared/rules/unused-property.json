@@ -1,0 +1,13 @@
+{
+  "id": "unused-property",
+  "name": "Unused script properties",
+  "category": "Other",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags Property declarations whose name is never referenced anywhere else in the script.",
+  "definition": "Flags `Property` declarations whose name is never referenced anywhere else in the script."
+}
