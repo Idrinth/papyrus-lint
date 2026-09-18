@@ -88,7 +88,7 @@ DOCS = [
         "title": "Default configuration (papyrus-lint.yaml)",
         "description": (
             "The full papyrus-lint.yaml written into a project with no configuration file yet, with every key's "
-            "default value documented inline. See the README's configuration reference for what each key does."
+            "default value documented inline. See the configuration reference for what each key does."
         ),
         "blurb": "The full default papyrus-lint.yaml, with every key's default value documented inline.",
     },
