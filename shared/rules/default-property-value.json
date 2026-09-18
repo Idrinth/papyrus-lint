@@ -2,6 +2,7 @@
   "id": "default-property-value",
   "name": "Default property value",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "style",
     "maintainability"

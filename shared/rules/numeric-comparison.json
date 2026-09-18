@@ -2,6 +2,7 @@
   "id": "numeric-comparison",
   "name": "Strict numeric type check",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

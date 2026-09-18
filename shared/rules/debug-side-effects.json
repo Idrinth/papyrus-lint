@@ -2,6 +2,7 @@
   "id": "debug-side-effects",
   "name": "Side-effecting call inside Debug.*",
   "category": "Bugprone",
+  "visitor": "tokens",
   "tags": [
     "correctness"
   ],

@@ -11,6 +11,10 @@ pub struct RuleMetadata {
     pub importance: String,
     pub definition: String,
     pub fixable: bool,
+    /// How this rule would walk a script as a visitor: `"ast"` (parsed
+    /// nodes), `"tokens"` (the lexer stream), or `"none"` (project-level,
+    /// post-pass, or a raw source-line scan that is neither).
+    pub visitor: String,
     #[serde(default)]
     pub repair_order: Option<u32>,
     #[serde(default = "enabled_by_default")]
@@ -86,6 +90,12 @@ pub fn validate(rules: &[RuleMetadata]) -> Result<(), ValidationError> {
             return fail(format!(
                 "shared/rules.json: unknown importance `{}` for {}",
                 rule.importance, rule.id
+            ));
+        }
+        if !matches!(rule.visitor.as_str(), "ast" | "tokens" | "none") {
+            return fail(format!(
+                "shared/rules.json: unknown visitor `{}` for {} (expected ast, tokens, or none)",
+                rule.visitor, rule.id
             ));
         }
         let no_source = NO_SOURCE_CHECK_IDS.contains(&rule.id.as_str());

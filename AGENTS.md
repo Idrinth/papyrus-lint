@@ -80,7 +80,9 @@ CI treats clippy warnings as errors.
 4. **`shared/rules/<id>.json` is the single source of truth for lint
    metadata.** Each rule is one file there (one JSON object: `id`, `name`,
    `definition` — the long text, `description` — a shorter blurb matching
-   `docs/nexuspage.bbcode`'s own style, `category`, `tags`, `severity`,
+   `docs/nexuspage.bbcode`'s own style, `category`, `visitor` (`ast`,
+   `tokens`, or `none` — how the rule would walk a script as a visitor),
+   `tags`, `severity`,
    `importance`, `fixable`, optional `repair_order`). `shared/rules.json`
    — the combined array every other consumer actually reads — is
    generated from those files by `.github/scripts/build_rules_json.py`
@@ -121,7 +123,10 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    holding a single object: `id`, `name`, `definition` (the long,
    README-style description), a short `description` blurb matching
    `docs/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
-   `Performance`, `Reliability`, `Bugprone`, `Other`), `tags`,
+   `Performance`, `Reliability`, `Bugprone`, `Other`), `visitor` (`ast`
+   for a walk of parsed nodes, `tokens` for a walk of the lexer stream,
+   `none` for a project-level/post-pass/raw-line rule that is neither),
+   `tags`,
    `importance`, `severity`, and `fixable`. For an `apply_repairs` auto-fix,
    set `repair_order` (1..=N, no gaps). Set `"enabled_by_default":
    false` only for opt-in rules. Run `python3

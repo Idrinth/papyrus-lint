@@ -2,6 +2,7 @@
   "id": "missing-update-handler",
   "name": "Missing update event handler",
   "category": "Bugprone",
+  "visitor": "tokens",
   "tags": [
     "correctness"
   ],

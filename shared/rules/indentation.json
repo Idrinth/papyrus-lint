@@ -2,6 +2,7 @@
   "id": "indentation",
   "name": "Formatting checks",
   "category": "Formatting",
+  "visitor": "tokens",
   "tags": [
     "style"
   ],

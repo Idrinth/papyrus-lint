@@ -2,6 +2,7 @@
   "id": "unused-local-variable",
   "name": "Unused or write-only local variables",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

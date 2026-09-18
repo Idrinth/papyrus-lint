@@ -2,6 +2,7 @@
   "id": "int-division-to-float",
   "name": "Int/Int division widened to Float",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

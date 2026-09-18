@@ -2,6 +2,7 @@
   "id": "repeated-getvalue",
   "name": "Repeated GlobalVariable.GetValue() calls",
   "category": "Performance",
+  "visitor": "ast",
   "tags": [
     "performance"
   ],

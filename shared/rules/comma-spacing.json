@@ -2,6 +2,7 @@
   "id": "comma-spacing",
   "name": "Space after comma",
   "category": "Formatting",
+  "visitor": "tokens",
   "tags": [
     "style"
   ],

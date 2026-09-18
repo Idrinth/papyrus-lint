@@ -2,6 +2,7 @@
   "id": "trailing-whitespace",
   "name": "Trailing whitespace",
   "category": "Formatting",
+  "visitor": "none",
   "tags": [
     "style"
   ],

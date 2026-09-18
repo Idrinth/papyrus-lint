@@ -2,6 +2,7 @@
   "id": "impossible-cast",
   "name": "Impossible cast",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

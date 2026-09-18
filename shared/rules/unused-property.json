@@ -2,6 +2,7 @@
   "id": "unused-property",
   "name": "Unused script properties",
   "category": "Other",
+  "visitor": "tokens",
   "tags": [
     "maintainability"
   ],

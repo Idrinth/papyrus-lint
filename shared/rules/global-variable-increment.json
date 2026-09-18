@@ -2,6 +2,7 @@
   "id": "global-variable-increment",
   "name": "GlobalVariable increment via SetValue(GetValue() + x)",
   "category": "Performance",
+  "visitor": "ast",
   "tags": [
     "performance"
   ],

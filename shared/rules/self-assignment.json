@@ -2,6 +2,7 @@
   "id": "self-assignment",
   "name": "Self-assignment",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

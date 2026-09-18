@@ -2,6 +2,7 @@
   "id": "static-function-call-via-instance",
   "name": "Static function called via instance",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

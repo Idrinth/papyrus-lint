@@ -105,6 +105,7 @@ class RepositoryRulesConfigurationTest(unittest.TestCase):
                 for tag in rule["tags"]:
                     self.assertIn(tag, rules_page.RULE_TAGS)
                 self.assertIsInstance(rule["fixable"], bool)
+                self.assertIn(rule["visitor"], ("ast", "tokens", "none"))
                 self.assertTrue(rule["name"].strip())
                 self.assertTrue(rule["description"].strip())
                 self.assertTrue(rule["definition"].strip())

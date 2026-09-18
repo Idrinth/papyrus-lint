@@ -2,6 +2,7 @@
   "id": "return-types",
   "name": "Return type check",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

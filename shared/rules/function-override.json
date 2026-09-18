@@ -2,6 +2,7 @@
   "id": "function-override",
   "name": "Inherited function override",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

@@ -2,6 +2,7 @@
   "id": "variable-used-before-assignment",
   "name": "Local variable used before assignment",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

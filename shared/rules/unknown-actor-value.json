@@ -2,6 +2,7 @@
   "id": "unknown-actor-value",
   "name": "Unknown Actor Value",
   "category": "Reliability",
+  "visitor": "tokens",
   "tags": [
     "correctness"
   ],

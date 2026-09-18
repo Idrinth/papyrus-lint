@@ -2,6 +2,7 @@
   "id": "state-function-signature",
   "name": "State function signature mismatch",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

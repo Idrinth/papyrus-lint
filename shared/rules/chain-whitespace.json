@@ -2,6 +2,7 @@
   "id": "chain-whitespace",
   "name": "Whitespace interrupting property/method chaining",
   "category": "Formatting",
+  "visitor": "tokens",
   "tags": [
     "style"
   ],

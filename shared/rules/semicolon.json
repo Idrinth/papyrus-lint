@@ -2,6 +2,7 @@
   "id": "semicolon",
   "name": "Semicolon at end of line",
   "category": "Formatting",
+  "visitor": "none",
   "tags": [
     "style"
   ],

@@ -2,6 +2,7 @@
   "id": "unguarded-self-recursion",
   "name": "Unguarded self-recursion",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

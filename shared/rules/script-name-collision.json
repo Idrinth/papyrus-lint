@@ -2,6 +2,7 @@
   "id": "script-name-collision",
   "name": "Property/variable named as script",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

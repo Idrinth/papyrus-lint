@@ -2,6 +2,7 @@
   "id": "explicit-return",
   "name": "Explicit return on every path",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

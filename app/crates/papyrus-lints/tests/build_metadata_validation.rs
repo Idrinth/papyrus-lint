@@ -22,6 +22,7 @@ fn rule(id: &str) -> RuleMetadata {
         importance: "medium".to_string(),
         definition: String::new(),
         fixable: false,
+        visitor: "ast".to_string(),
         repair_order: None,
         enabled_by_default: true,
     }
@@ -54,6 +55,12 @@ fn rejects_invalid_tags_and_importance() {
         .unwrap_err()
         .to_string()
         .contains("unknown importance"));
+    let mut visitor = rule("visitor");
+    visitor.visitor = "cfg".to_string();
+    assert!(validate(&[visitor])
+        .unwrap_err()
+        .to_string()
+        .contains("unknown visitor"));
 }
 
 #[test]

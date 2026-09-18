@@ -2,6 +2,7 @@
   "id": "get-form-from-file-skyrim-esm",
   "name": "Game.GetFormFromFile(\"Skyrim.esm\") simplification",
   "category": "Performance",
+  "visitor": "tokens",
   "tags": [
     "performance",
     "style"

@@ -2,6 +2,7 @@
   "id": "useless-downcast",
   "name": "Useless downcast",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

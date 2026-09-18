@@ -2,6 +2,7 @@
   "id": "magic-numbers",
   "name": "Magic numbers",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

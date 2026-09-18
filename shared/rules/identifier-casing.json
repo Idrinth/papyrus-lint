@@ -2,6 +2,7 @@
   "id": "identifier-casing",
   "name": "Identifier casing",
   "category": "Formatting",
+  "visitor": "ast",
   "tags": [
     "style"
   ],

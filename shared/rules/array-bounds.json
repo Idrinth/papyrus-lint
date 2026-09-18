@@ -2,6 +2,7 @@
   "id": "array-bounds",
   "name": "Array bounds",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

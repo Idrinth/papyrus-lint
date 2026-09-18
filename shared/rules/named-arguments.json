@@ -2,6 +2,7 @@
   "id": "named-arguments",
   "name": "Prefer named arguments",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "style",
     "maintainability"

@@ -2,6 +2,7 @@
   "id": "invalid-random-range",
   "name": "Invalid random range",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

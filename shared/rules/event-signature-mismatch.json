@@ -2,6 +2,7 @@
   "id": "event-signature-mismatch",
   "name": "Event signature mismatch",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

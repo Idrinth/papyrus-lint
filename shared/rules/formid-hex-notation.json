@@ -2,6 +2,7 @@
   "id": "formid-hex-notation",
   "name": "FormID hex notation",
   "category": "Reliability",
+  "visitor": "tokens",
   "tags": [
     "correctness",
     "style"

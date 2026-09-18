@@ -2,6 +2,7 @@
   "id": "get-state-comparison",
   "name": "GetState() comparison",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

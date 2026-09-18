@@ -2,6 +2,7 @@
   "id": "operator-spacing",
   "name": "Spacing around logical/comparison operators",
   "category": "Formatting",
+  "visitor": "tokens",
   "tags": [
     "style"
   ],

@@ -2,6 +2,7 @@
   "id": "too-many-named-states",
   "name": "Total named state count",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

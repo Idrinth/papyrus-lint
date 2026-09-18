@@ -2,6 +2,7 @@
   "id": "unchecked-cast",
   "name": "Unchecked cast",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

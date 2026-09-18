@@ -2,6 +2,7 @@
   "id": "strict-boolean",
   "name": "Strict boolean check",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness",
     "style"
