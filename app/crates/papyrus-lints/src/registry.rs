@@ -539,10 +539,15 @@ fn apply_remaining_repairs(
         rules.named_arguments && applies(named_arguments::RULE),
         |s| named_arguments::repair(s, config.named_arguments),
     );
-    apply_rule(
+    let source = apply_rule(
         source,
         rules.unnecessary_function && applies(unnecessary_function::RULE),
         unnecessary_function::repair,
+    );
+    apply_rule(
+        source,
+        rules.formid_hex_notation && applies(formid_hex_notation::RULE),
+        formid_hex_notation::repair,
     )
 }
 
