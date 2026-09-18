@@ -38,6 +38,11 @@ include!(concat!(env!("OUT_DIR"), "/update_event_pairs_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "missing-update-handler";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Checks `source` for a `RegisterFor*` call with no matching `Event`
 /// declared anywhere in the same script.
 pub fn check(

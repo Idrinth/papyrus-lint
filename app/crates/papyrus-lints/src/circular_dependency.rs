@@ -37,6 +37,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "circular-dependency";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for a `Property` whose declared type, followed through
 /// other scripts' own `Property` declarations, cycles back to this script.
 /// Since this crate has no filesystem access on its own, no such chain can

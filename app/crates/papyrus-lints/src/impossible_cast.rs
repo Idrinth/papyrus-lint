@@ -37,6 +37,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "impossible-cast";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for an `as` cast proven impossible using only
 /// same-script information. Since that alone can never confirm a type's
 /// full ancestry resolves to a definite root (see the module docs), this

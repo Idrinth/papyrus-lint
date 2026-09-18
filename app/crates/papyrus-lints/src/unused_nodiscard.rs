@@ -12,6 +12,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-nodiscard";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Shared lookup state for deciding whether a discarded call is `@nodiscard`.
 struct NodiscardContext<'a> {
     ast: Option<&'a Script>,

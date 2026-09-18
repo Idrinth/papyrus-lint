@@ -20,6 +20,7 @@ mod fragment_code;
 mod registry;
 mod state_count;
 pub mod tags;
+mod visitor;
 
 /// Every rule id [`lint`]/[`lint_with_external_arguments`] can report,
 /// matched against `; @disable <rule-id>` directives (see

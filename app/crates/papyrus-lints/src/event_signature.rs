@@ -47,6 +47,11 @@ include!(concat!(env!("OUT_DIR"), "/known_events_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "event-signature-mismatch";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for `Event` declarations whose name matches a known
 /// native event but whose parameter list doesn't match its signature.
 pub fn check(

@@ -7,6 +7,11 @@ use crate::Diagnostic;
 #[allow(dead_code)]
 pub const RULE: &str = state_count::TOO_MANY_STATES_RULE;
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// See [`state_count::check_too_many_states_with`].
 pub fn check(
     source: &str,

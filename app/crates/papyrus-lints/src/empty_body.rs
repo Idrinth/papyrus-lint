@@ -32,6 +32,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "empty-body";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for `While` loops with no real effect and empty
 /// `If`/`ElseIf`/`Else` bodies. Flagged as a `[warning]`, since this is
 /// almost always an oversight rather than something intentional.

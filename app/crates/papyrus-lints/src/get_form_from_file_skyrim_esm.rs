@@ -16,6 +16,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "get-form-from-file-skyrim-esm";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Checks `source` for a qualified `Game.GetFormFromFile` call whose file
 /// name argument is the literal `"Skyrim.esm"` (case-insensitively).
 pub fn check(

@@ -33,6 +33,11 @@ include!(concat!(env!("OUT_DIR"), "/native_methods_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "native-function-usage";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for `Native` functions/events not supplied by the base
 /// game, per `NATIVE_METHODS`.
 pub fn check(

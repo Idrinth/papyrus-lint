@@ -32,6 +32,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "useless-downcast";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for a redundant `as` cast, only recognizing an
 /// exact-type match (see the module docs for why a same-script check alone
 /// can't recognize an ancestor-type cast as redundant too).

@@ -16,6 +16,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "script-name-collision";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for a script-level `Property` or variable declaration
 /// whose name matches (case-insensitively) the enclosing script's own
 /// declared name. Flagged as an `[error]`, since Papyrus rejects such a

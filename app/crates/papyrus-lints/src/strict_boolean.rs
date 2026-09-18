@@ -9,6 +9,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "strict-boolean";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks every `If`/`ElseIf`/`While` condition in `source` and flags the
 /// ones that don't resolve to `Bool`.
 ///

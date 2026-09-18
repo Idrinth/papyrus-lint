@@ -43,6 +43,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "global-variable-increment";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks every `SetValue` call in `source` for the `SetValue(GetValue() +
 /// x)`/`SetValue(x + GetValue())` pattern described above.
 pub fn check(

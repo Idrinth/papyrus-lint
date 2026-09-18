@@ -7,6 +7,11 @@ use papyrus_parser::token::TokenKind;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "chain-whitespace";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 const WHITESPACE: [u8; 2] = *b" \t";
 
 /// Checks for a `.` member/method access whose adjacent character, on

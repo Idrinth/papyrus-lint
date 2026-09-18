@@ -22,6 +22,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unreachable-elseif";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks every `If` statement in `source` for an `ElseIf` branch whose
 /// condition is already fully covered by an earlier branch's condition.
 pub fn check(

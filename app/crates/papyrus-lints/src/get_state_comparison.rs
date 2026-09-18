@@ -25,6 +25,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "get-state-comparison";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for `GetState()` comparisons against a state that can't
 /// be found on the script itself. A script that `Extends` another is left
 /// unchecked when the target isn't declared locally, since it may be

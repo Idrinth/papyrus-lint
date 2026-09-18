@@ -25,6 +25,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "debug-side-effects";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Native / conventional names that mutate game or script state even
 /// when this script's own function list can't see their bodies.
 const SIDE_EFFECT_PREFIXES: &[&str] = &[

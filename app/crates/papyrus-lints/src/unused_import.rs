@@ -31,6 +31,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-import";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for `Import` statements whose script goes unused. Since
 /// this crate has no filesystem access on its own, no import can ever be
 /// resolved this way, so nothing is ever flagged; see [`check_with`] to

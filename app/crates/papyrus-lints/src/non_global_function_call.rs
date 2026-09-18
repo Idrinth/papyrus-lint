@@ -25,6 +25,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "non-global-function-call";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for calls through a script name whose target function
 /// isn't declared `Global`. Since this crate has no filesystem access on
 /// its own, no such call can ever be confirmed this way; see

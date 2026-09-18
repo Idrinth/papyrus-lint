@@ -55,6 +55,11 @@ standalone, single-rule entry point for a caller that isn't going through
 still parses `source` itself, since there's no shared registry pass around
 it to have already done so.
 
+Rules that can walk a parsed script or the token stream also expose a
+`visitor()` function returning `LintVisitor::Ast` or
+`LintVisitor::Tokens` (see `papyrus_parser::visit`). That path is not
+wired into `collect_diagnostics` yet; `check` remains the live entry.
+
 Cross-script lint rules share the project-semantic resolver contract in
 `app/crates/papyrus-lints/src/external_signatures.rs`. That neutral module owns
 `ExternalSignatures`, `NoExternalSignatures`, and `ParamInfo`; the

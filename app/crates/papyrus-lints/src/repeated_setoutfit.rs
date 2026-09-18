@@ -44,6 +44,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "repeated-setoutfit";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks every function/event body in `source` for a `SetOutfit` call
 /// repeating an earlier call's exact receiver and arguments with nothing in
 /// between guaranteed to have changed the outfit.
