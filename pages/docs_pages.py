@@ -318,10 +318,15 @@ def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None
     docs/index.html cataloguing all of them regardless of where they live."""
     docs_template = (PAGES_DIR / "docs.template.html").read_text(encoding="utf-8")
 
-    def render_page(title: str, description: str, content_html: str, url: str) -> str:
+    def render_page(title: str, description: str, content_html: str, url: str, current_prefix: str) -> str:
+        # The docs index itself only ever lives at docs/index.html, so a page
+        # published under `docs` links to it same-directory, any other
+        # prefix goes up a level first.
+        docs_index_href = "index.html" if current_prefix == "docs" else "../docs/index.html"
         page = docs_template.replace("<!--DOC_TITLE-->", html.escape(title))
         page = page.replace("<!--DOC_DESCRIPTION-->", html.escape(description, quote=True))
         page = page.replace("<!--DOC_URL-->", html.escape(url, quote=True))
+        page = page.replace("<!--DOCS_INDEX_URL-->", html.escape(docs_index_href, quote=True))
         return page.replace("<!--DOC_CONTENT-->", content_html)
 
     for doc in DOCS:
@@ -330,7 +335,11 @@ def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None
         prefix_out_dir = out_dir / prefix
         prefix_out_dir.mkdir(exist_ok=True)
         page = render_page(
-            info["title"], info["description"], info["content_html"], f"{SITE_URL}{prefix}/{doc['slug']}.html"
+            info["title"],
+            info["description"],
+            info["content_html"],
+            f"{SITE_URL}{prefix}/{doc['slug']}.html",
+            prefix,
         )
         page = render_shared_components(page, "../", version)
         (prefix_out_dir / f"{doc['slug']}.html").write_text(finalize_page(page), encoding="utf-8")
@@ -343,6 +352,7 @@ def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None
         "Project reference material and related documentation, published as browsable pages.",
         index_content,
         f"{SITE_URL}docs/index.html",
+        "docs",
     )
     index_page = render_shared_components(index_page, "../", version)
     (docs_out_dir / "index.html").write_text(finalize_page(index_page), encoding="utf-8")
