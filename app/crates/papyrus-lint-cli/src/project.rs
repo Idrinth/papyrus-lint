@@ -206,6 +206,28 @@ mod tests {
     }
 
     #[test]
+    fn finds_the_project_root_for_a_bare_psc_with_no_scripts_source_pair() {
+        // A project laid out without a conventional scripts/source pair at
+        // all (e.g. Requiem's own, arbitrarily nested layout), linted via a
+        // single .psc file directly (e.g. an editor plugin invoking the CLI
+        // on save). The old fixed "two directories up" guess would land
+        // outside the project entirely here and silently ignore its config;
+        // this must instead find the config file at the project's real root.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let script_path = dir.path().join("MyMod/scripts/subsystem/Example.psc");
+        write_file(&script_path, "ScriptName Example   \n");
+        write_file(
+            &dir.path().join("MyMod/papyrus-lint.yaml"),
+            "rules:\n  trailing_whitespace: false\n",
+        );
+
+        let (code, stdout, _stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+        assert_eq!(code, 0);
+        assert!(stdout.contains("no problems found"));
+    }
+
+    #[test]
     fn finds_the_project_root_from_script_position_when_the_achlist_lives_elsewhere() {
         // Users sometimes drop the .achlist somewhere other than the
         // project root (e.g. next to a game's Data directory) while the

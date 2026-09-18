@@ -268,8 +268,14 @@ TypeScript: `projectDirForAchlist` in `app/src/project.ts` calls the
 `find_project_root` Tauri command (`app/src-tauri/src/project_root.rs`),
 which just delegates straight to `find_candidate_pair_root`, so both land
 on the same root for the same files. The CLI resolves a bare `.psc` given
-directly the same way, walking up from the file itself and falling back to
-two directories above it if no such pair is found at all
+directly the same way, walking up from the file itself; if no such pair is
+found at all, it next tries `find_config_file_root`, which walks up the
+same ancestors looking for one that already has a
+`papyrus-lint.yaml`/`.yml`, so a project laid out without a
+`scripts/source` tree at all (e.g. Requiem's own layout) still has its
+config picked up for a single file linted directly instead of silently
+falling back to the built-in defaults; only if that also finds nothing does
+it fall back to two directories above the file, the original fixed guess
 (`find_psc_project_root`); the desktop app's `projectDirForPscPath` calls
 the matching `find_psc_project_root_for_path` Tauri command.
 
