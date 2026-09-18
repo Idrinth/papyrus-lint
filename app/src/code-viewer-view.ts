@@ -1,4 +1,4 @@
-import { type Diagnostic, isFixableFinding } from "./backend";
+import { type Diagnostic, findingMessageWithRule, isFixableFinding } from "./backend";
 import { highlightPapyrusLines } from "./highlight";
 import { escapeAttr, levelOf } from "./main";
 import { codeViewerViewEl } from "./code-viewer-state";
@@ -73,7 +73,7 @@ export function renderCodeViewerView(source: string, findings: Diagnostic[], foc
     const severity = lineSeverityOf(lineFindings);
     const rowClass = severity ? ` class="code-viewer__line--${severity}"` : "";
     const title = lineFindings
-      ? ` title="${escapeAttr(lineFindings.map((f) => f.message).join("\n"))}"`
+      ? ` title="${escapeAttr(lineFindings.map((finding) => findingMessageWithRule(finding)).join("\n"))}"`
       : "";
     return (
       `<tr id="code-viewer-line-${lineNumber}"${rowClass}${title}>` +
