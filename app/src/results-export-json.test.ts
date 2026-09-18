@@ -14,11 +14,12 @@ vi.mock("@tauri-apps/api/window", () => ({
   getCurrentWindow: () => ({ show: showWindowMock }),
 }));
 
+import "./test/harness";
 import { formatIssuesAsJson } from "./results-export-json";
 
 describe("formatIssuesAsJson", () => {
-  it("mirrors the CLI --json report shape, restricted to the given files/findings", () => {
-    const json = formatIssuesAsJson([
+  it("mirrors the CLI --json report shape, restricted to the given files/findings", async () => {
+    const json = await formatIssuesAsJson([
       {
         path: "A.psc",
         findings: [{ line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" }],
@@ -46,6 +47,7 @@ describe("formatIssuesAsJson", () => {
               doc_url: null,
             },
           ],
+          diff: null,
         },
         {
           path: "B.psc",
@@ -60,6 +62,7 @@ describe("formatIssuesAsJson", () => {
             },
             { line: 6, column: 1, rule: "unknown", level: "info", message: "[info] consider renaming", doc_url: null },
           ],
+          diff: null,
         },
       ],
       files_with_diagnostics: 2,
@@ -67,16 +70,16 @@ describe("formatIssuesAsJson", () => {
     });
   });
 
-  it("returns an empty report for no files", () => {
-    expect(JSON.parse(formatIssuesAsJson([]))).toEqual({
+  it("returns an empty report for no files", async () => {
+    expect(JSON.parse(await formatIssuesAsJson([]))).toEqual({
       files: [],
       files_with_diagnostics: 0,
       total_diagnostics: 0,
     });
   });
 
-  it("orders a file's diagnostics by line then column, regardless of the order findings were collected in", () => {
-    const json = formatIssuesAsJson([
+  it("orders a file's diagnostics by line then column, regardless of the order findings were collected in", async () => {
+    const json = await formatIssuesAsJson([
       {
         path: "A.psc",
         findings: [
@@ -87,7 +90,9 @@ describe("formatIssuesAsJson", () => {
       },
     ]);
 
-    expect(JSON.parse(json).files[0].diagnostics.map((d: { line: number; column: number }) => [d.line, d.column])).toEqual([
+    expect(
+      JSON.parse(json).files[0].diagnostics.map((d: { line: number; column: number }) => [d.line, d.column]),
+    ).toEqual([
       [1, 1],
       [1, 5],
       [8, 3],

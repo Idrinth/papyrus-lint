@@ -842,7 +842,7 @@ describe("Export issues button", () => {
 
     vi.useFakeTimers();
     try {
-      handleExportIssuesClick();
+      await handleExportIssuesClick();
 
       expect(createObjectURL).toHaveBeenCalledTimes(1);
       const [blob] = createObjectURL.mock.calls[0] as [Blob];
@@ -867,7 +867,7 @@ describe("Export issues button", () => {
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
 
-    handleExportIssuesClick();
+    await handleExportIssuesClick();
 
     const [blob] = createObjectURL.mock.calls[0] as [Blob];
     expect(blob.type).toBe("application/json");
@@ -878,7 +878,7 @@ describe("Export issues button", () => {
 
     const createObjectURL = vi.spyOn(URL, "createObjectURL");
 
-    handleExportIssuesClick();
+    await handleExportIssuesClick();
 
     expect(createObjectURL).not.toHaveBeenCalled();
   });

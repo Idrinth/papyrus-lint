@@ -87,12 +87,19 @@ expected of a pull request.
 │       │       │                       # scripts/source or source/scripts
 │       │       └── function_table/     # Cross-script function signature lookup,
 │       │                               # for the argument/return type check lints
+│       ├── papyrus-lint-output/  # Plain-text/JSON/AI-export report formatting,
+│       │   └── src/               # shared by papyrus-lint-cli and the desktop
+│       │                          # app's Tauri commands (app/src-tauri/src/
+│       │                          # export.rs), so a diagnostic's exported
+│       │                          # shape can't drift between the CLI and GUI
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           ├── src/                # achlist's scripts against its project's
 │           │   ├── lib.rs           # run() + public API; also linked into
 │           │   │                    # src-tauri for its CLI mode
 │           │   ├── project.rs       # Project-root discovery from .psc paths
-│           │   ├── output/          # Plain/JSON/AI report types and formatting
+│           │   ├── output/          # CLI-only glue (format selection, --tag/
+│           │   │                    # quiet filtering, writing the report) on
+│           │   │                    # top of papyrus-lint-output's formatters
 │           │   ├── init.rs          # `init` / `preset add`
 │           │   ├── blob.rs          # `--blob` in-memory lint
 │           │   ├── doctor.rs        # `doctor` subcommand
@@ -132,7 +139,8 @@ expected of a pull request.
 ```
 
 `papyrus-parser`, `papyrus-ast-cache`, `papyrus-lints`, `papyrus-lint-config`,
-`papyrus-lint-core`, and `papyrus-lint-cli` are separate crates (not yet
+`papyrus-lint-core`, `papyrus-lint-output`, and `papyrus-lint-cli` are separate
+crates (not yet
 Cargo workspace members,
 just path dependencies of each other and of `app/src-tauri`) so the lint
 engine and project-resolution logic stay reusable independent of the Tauri
@@ -169,6 +177,8 @@ notes). `CLAUDE.md` is a pointer to `AGENTS.md`, not a second copy.
 - Config crate only: `cargo test` from `app/crates/papyrus-lint-config/`.
 - Shared project-resolution crate only: `cargo test` from
   `app/crates/papyrus-lint-core/`.
+- Output formatting crate only: `cargo test` from
+  `app/crates/papyrus-lint-output/`.
 - CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --
   <path-to-achlist>`, or `cargo build --release --manifest-path
   app/crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
@@ -198,7 +208,8 @@ the same checks locally first:
   `npm run lint`, and `npm run compile`.
 - **Rust test job**: a matrix over `app/src-tauri`, `app/crates/papyrus-parser`,
   `app/crates/papyrus-ast-cache`, `app/crates/papyrus-lints`,
-  `app/crates/papyrus-lint-config`, `app/crates/papyrus-lint-core`, and
+  `app/crates/papyrus-lint-config`, `app/crates/papyrus-lint-core`,
+  `app/crates/papyrus-lint-output`, and
   `app/crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
   If you touched any of those crates, run `cargo test` (or `cargo
   llvm-cov`, to also see coverage — see the

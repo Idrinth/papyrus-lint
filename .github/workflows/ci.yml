@@ -727,6 +727,7 @@ jobs:
             app/crates/papyrus-lints
             app/crates/papyrus-lint-config
             app/crates/papyrus-lint-core
+            app/crates/papyrus-lint-output
             app/crates/papyrus-lint-cli
           )
           json=$(printf '%s\n' "${crates[@]}" \

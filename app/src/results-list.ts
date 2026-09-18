@@ -258,15 +258,15 @@ export function updateExportIssuesButtonState(outcomes: PscParseOutcome[]) {
 
 // Downloads the currently filtered lint findings (see collectFilteredIssues)
 // as a single text or JSON file, per the "Export format" selector.
-export function handleExportIssuesClick() {
+export async function handleExportIssuesClick(): Promise<void> {
   const files = collectFilteredIssues(currentPscOutcomes);
   if (files.length === 0) {
     return;
   }
   if (exportFormatEl?.value === "json") {
-    downloadTextFile("papyrus-lint-issues.json", formatIssuesAsJson(files), "application/json");
+    downloadTextFile("papyrus-lint-issues.json", await formatIssuesAsJson(files), "application/json");
   } else {
-    downloadTextFile("papyrus-lint-issues.txt", formatIssuesAsText(files), "text/plain");
+    downloadTextFile("papyrus-lint-issues.txt", await formatIssuesAsText(files), "text/plain");
   }
 }
 
@@ -447,6 +447,6 @@ export function bindResultsList() {
 
   bindResultsFilters(() => renderPscResults(currentPscOutcomes));
 
-  exportIssuesButtonEl?.addEventListener("click", () => handleExportIssuesClick());
+  exportIssuesButtonEl?.addEventListener("click", () => void handleExportIssuesClick());
   exportAiButtonEl?.addEventListener("click", () => void handleExportAiClick());
 }

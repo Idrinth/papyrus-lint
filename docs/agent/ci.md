@@ -147,7 +147,7 @@
   text coverage summary is posted to the job's step summary and an lcov
   report is uploaded as the `vscode-extension-coverage` artifact.
 - **Rust crate matrix job** (`rust-crates`): the single source of truth for
-  the seven Rust crates (`app/src-tauri` and the six reusable crates under
+  the eight Rust crates (`app/src-tauri` and the seven reusable crates under
   `app/crates`) that `rust-fmt`, `rust-clippy`, and `rust-test` below all
   matrix over. It builds the `{crate, name}` list once (`name` is each
   crate directory's basename) with `jq` and exposes it as a JSON `crates`
@@ -161,12 +161,12 @@
   dependencies or build cache, since checking formatting never compiles
   anything, so it runs in parallel with `rust-clippy` instead of after it.
 - **Rust clippy job** (`rust-clippy`): matrixing over the same
-  `rust-crates` output as `rust-fmt` (the same seven crates `rust-test`
+  `rust-crates` output as `rust-fmt` (the same eight crates `rust-test`
   below covers), runs `cargo clippy --all-targets -- -D warnings` against
   each crate's own `Cargo.toml` — not just `app/src-tauri` — since they're
   separate crates rather than workspace members and so aren't checked
   together by a single invocation. Only the `app/src-tauri` leg installs
-  Tauri's Linux system dependencies, since the other six crates don't need
+  Tauri's Linux system dependencies, since the other seven crates don't need
   them. Runs in parallel with `rust-fmt` (both only `need` the `labels`
   and `rust-crates` jobs); `rust-test` (below) `needs` both.
 - **Rust test job**: matrixing over the same `rust-crates` output, runs
@@ -197,7 +197,7 @@
 - **Coverage summary comment job** (`coverage-comment`, pull requests
   only): downloads every job's lcov artifact and runs
   `.github/scripts/coverage_summary.py` to aggregate line coverage by
-  module — App (`src-tauri`, the frontend, and Crates — the six reusable
+  module — App (`src-tauri`, the frontend, and Crates — the seven reusable
   crates combined, nested underneath it), editor plugins (the VS Code
   extension and the Sublime Text plugin combined), and Tooling (CI tooling
   and the Pages builder) — posting the result as a single markdown table,

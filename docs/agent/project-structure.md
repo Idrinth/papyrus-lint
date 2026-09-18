@@ -15,9 +15,15 @@
 │   │   ├── results-list.ts      # Lint results list, mass-fix; calls filter + export helpers
 │   │   ├── results-filter.ts    # Lint results filters: state, matching, filterOutcomes
 │   │   ├── results-export-types.ts # Shared types for issue exports (filters, files, AI source)
-│   │   ├── results-export-text.ts  # Plain-text issue export formatter
-│   │   ├── results-export-json.ts  # JSON issue export formatter
-│   │   ├── results-export-ai.ts    # AI JSON export formatter and source attachment
+│   │   ├── results-export-text.ts  # Plain-text issue export: calls the
+│   │   │                           # format_issues_as_text Tauri command
+│   │   │                           # (app/src-tauri/src/export.rs)
+│   │   ├── results-export-json.ts  # JSON issue export: calls format_issues_as_json;
+│   │   │                           # also sortedByPosition, shared with ai.ts
+│   │   ├── results-export-ai.ts    # AI JSON export: calls format_issues_for_ai_base for
+│   │   │                           # the shared header/configuration/findings/rule_details,
+│   │   │                           # then layers on the GUI-only filters/external/repair
+│   │   │                           # fields and source attachment
 │   │   ├── download-text-file.ts   # Browser/WebView "Save As" helper
 │   │   ├── live-edit.ts         # Code viewer edit mode: live lint, autocomplete, save
 │   │   ├── path.ts              # Path/project-root resolution helpers (pure functions)
@@ -59,7 +65,11 @@
 │   │       ├── lint_tests.rs     # lint.rs's unit tests, `#[path]`-included as its
 │   │       │                     # `mod tests` so lint.rs's own size tracks its
 │   │       │                     # actual (small) implementation
-│   │       └── repair.rs         # Apply/preview fixes and per-line @disable
+│   │       ├── repair.rs         # Apply/preview fixes and per-line @disable
+│   │       └── export.rs         # format_issues_as_text/format_issues_as_json/
+│   │                             # format_issues_for_ai_base: the "Export
+│   │                             # issues"/"Export for AI" buttons' own
+│   │                             # formatting, built on papyrus-lint-output
 │   └── crates/
 │       ├── papyrus-parser/       # Standalone Rust crate: lexer, AST, and parser
 │       │   └── src/               # for the Papyrus language. No lint rules live
@@ -223,6 +233,24 @@
 │       │                               # older than the script itself, a common
 │       │                               # sign someone forgot to recompile after
 │       │                               # editing it
+│       ├── papyrus-lint-output/  # Plain-text/JSON/AI-export report
+│       │   └── src/               # formatting, shared by papyrus-lint-cli
+│       │       ├── lib.rs          # and the desktop app's Tauri commands
+│       │       │                  # (app/src-tauri/src/export.rs) so a
+│       │       │                  # diagnostic's exported shape can't drift
+│       │       │                  # between the CLI and the GUI. Depends
+│       │       │                  # only on papyrus-lints.
+│       │       ├── diagnostic.rs   # DiagnosticLike trait (implemented by both
+│       │       │                  # papyrus_lints::Diagnostic and this crate's
+│       │       │                  # own OwnedDiagnostic, for a diagnostic that
+│       │       │                  # arrived as plain JSON over Tauri's IPC
+│       │       │                  # boundary), level_of, strip_severity_prefix
+│       │       ├── json.rs         # JsonDiagnostic/JsonFileReport/JsonReport,
+│       │       │                  # to_json_diagnostics, doc_url_for
+│       │       ├── ai.rs           # AiReport and friends, build_ai_report,
+│       │       │                  # ai_configuration
+│       │       └── plain.rs        # format_diagnostic_line, ColorChoice/
+│       │                          # resolve_color, colorize
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           ├── src/                # achlist's scripts against its project's
 │           │   ├── lib.rs           # run() dispatch + public API only; also
@@ -380,7 +408,8 @@
 ```
 
 `papyrus-parser`, `papyrus-ast-cache`, `papyrus-lints`, `papyrus-lint-config`,
-`papyrus-lint-core`, and `papyrus-lint-cli` are separate crates (not yet
+`papyrus-lint-core`, `papyrus-lint-output`, and `papyrus-lint-cli` are separate
+crates (not yet
 Cargo workspace members,
 just path dependencies of each other and of `app/src-tauri`) so the lint
 engine and project-resolution logic stay reusable independent of the Tauri
@@ -388,4 +417,16 @@ app — which is what lets `papyrus-lint-cli` link against them without
 pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
 depends on `papyrus-lint-cli` too, purely for its `run()` function (its
 `main.rs` calls straight into it for CLI mode), not for the `PapyrusLinterCLI`
-binary target that crate also defines.
+binary target that crate also defines. `app/src-tauri` also depends on
+`papyrus-lint-output` directly, for its own `format_issues_as_text`/
+`format_issues_as_json`/`format_issues_for_ai_base` Tauri commands (see
+`app/src-tauri/src/export.rs`) backing the desktop app's "Export issues"/
+"Export for AI" buttons — built on the same plain-text/JSON/AI-export
+formatting `papyrus-lint-cli`'s `--json`/`--format ai` flags use, so the
+GUI and CLI's exported report shapes can't drift apart. The GUI's own
+extras beyond that shared shape (the currently active result filters, an
+`external: true`/`source: "compiler"` tag on a compiler-reported
+diagnostic, and a per-diagnostic repair preview) are layered on top of
+that command's output by `app/src/results-export-ai.ts`, which needs data
+(live filter state, an async repair-preview lookup per finding) the Tauri
+command itself has no way to obtain.

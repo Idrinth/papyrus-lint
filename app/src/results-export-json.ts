@@ -1,14 +1,16 @@
-import { ruleTagsByRule, severityOf } from "./main";
-import { type FilteredIssuesFile } from "./results-export-types";
+import { invoke } from "@tauri-apps/api/core";
+import { type FilteredIssuesFile, toIssuesFileInput } from "./results-export-types";
 
 // Returns `files` with each file's findings sorted by (line, column), so a
 // file's diagnostics list in reading order (top to bottom, left to right)
 // rather than papyrus_lints::lint()'s own rule-registration order - the same
 // ordering the CLI's `--json`/`--ai` output already gets from its own
 // `diagnostics.sort_by_key(|d| (d.line, d.column))`
-// (papyrus-lint-cli/src/lib.rs). A stable sort, so two findings at the exact
-// same position (e.g. a lint diagnostic and a compiler-reported one) keep
-// their original relative order.
+// (papyrus-lint-cli/src/output/mod.rs's finalize_diagnostics). A stable
+// sort, so two findings at the exact same position (e.g. a lint diagnostic
+// and a compiler-reported one) keep their original relative order. Shared
+// with results-export-ai.ts, since the Tauri commands both call into
+// (app/src-tauri/src/export.rs) don't sort themselves.
 export function sortedByPosition(files: FilteredIssuesFile[]): FilteredIssuesFile[] {
   return files.map((file) => ({
     ...file,
@@ -16,36 +18,10 @@ export function sortedByPosition(files: FilteredIssuesFile[]): FilteredIssuesFil
   }));
 }
 
-// Shared by formatIssuesAsJson and formatIssuesForAi: `files` as a plain
-// object mirroring the CLI's own `--json` report shape
-// (JsonReport/JsonFileReport/JsonDiagnostic in papyrus-lint-cli/src/lib.rs).
-export function buildIssuesReport(files: FilteredIssuesFile[], stripSeverityPrefix = false) {
-  let totalDiagnostics = 0;
-  const jsonFiles = files.map((file) => {
-    totalDiagnostics += file.findings.length;
-    return {
-      path: file.path,
-      diagnostics: file.findings.map((finding) => ({
-        line: finding.line,
-        column: finding.column,
-        rule: finding.rule ?? "unknown",
-        level: severityOf(finding.message),
-        message: stripSeverityPrefix
-          ? finding.message.replace(/^\[(?:error|warning|info)\]\s*/, "")
-          : finding.message,
-        doc_url: (finding.rule ? ruleTagsByRule.get(finding.rule)?.doc_url : undefined) ?? null,
-      })),
-    };
-  });
-  return {
-    files: jsonFiles,
-    files_with_diagnostics: jsonFiles.length,
-    total_diagnostics: totalDiagnostics,
-  };
-}
-
 // Renders `files` as JSON, mirroring the shape of the CLI's own `--json`
-// report so both can be consumed by the same tooling.
-export function formatIssuesAsJson(files: FilteredIssuesFile[]): string {
-  return JSON.stringify(buildIssuesReport(sortedByPosition(files)), null, 2);
+// report, via the format_issues_as_json Tauri command
+// (app/src-tauri/src/export.rs) - built on the same papyrus-lint-output
+// crate the CLI itself uses - so both can be consumed by the same tooling.
+export async function formatIssuesAsJson(files: FilteredIssuesFile[]): Promise<string> {
+  return invoke<string>("format_issues_as_json", { files: toIssuesFileInput(sortedByPosition(files)) });
 }

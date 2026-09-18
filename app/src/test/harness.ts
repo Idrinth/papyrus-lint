@@ -5,6 +5,10 @@ import { cancelLiveEditLint } from "../live-edit";
 import { loadProjectConfig, resetConfirmedProjectDirs } from "../project";
 import { dirnameOf } from "../path";
 import { stopWatchMode } from "../watch";
+import { type RuleTagsInfo } from "../backend";
+import { type LintConfig } from "../config";
+import { ruleTagsByRule } from "../main";
+import { aiConfiguration } from "../results-export-ai";
 
 // Default backend behavior for the project-root discovery commands (see
 // project.ts's projectDirForAchlist/projectDirForDirectory/
@@ -28,9 +32,173 @@ function defaultProjectRootHandler(command: string): ((args: unknown) => unknown
   }
 }
 
+// Test-only stand-ins for the format_issues_as_text/format_issues_as_json/
+// format_issues_for_ai_base Tauri commands (app/src-tauri/src/export.rs),
+// which vitest can't invoke for real since it never runs the Rust
+// papyrus-lint-output crate they're built on. Rather than duplicate that
+// crate's own formatting logic here, these reuse `ruleTagsByRule` (the
+// same rule-tag cache the real commands' doc_url/rule_details would be
+// built from, via papyrus_lints::tags - see list_rule_tags/applyRuleTags)
+// and aiConfiguration (still kept in results-export-ai.ts as a small pure
+// helper, mirroring the Rust crate's own ai_configuration) so a test that
+// populates ruleTagsByRule via applyRuleTags sees the same doc_url/
+// rule_details the real backend would compute for those rules.
+interface FakeDiagnosticInput {
+  line: number;
+  column: number;
+  rule: string;
+  message: string;
+}
+
+interface FakeIssuesFileInput {
+  path: string;
+  findings: FakeDiagnosticInput[];
+}
+
+function fakeLevelOf(message: string): "error" | "warning" | "info" {
+  if (message.startsWith("[warning]")) {
+    return "warning";
+  }
+  if (message.startsWith("[info]")) {
+    return "info";
+  }
+  return "error";
+}
+
+function fakeStripSeverityPrefix(message: string): string {
+  return message.replace(/^\[(?:error|warning|info)\]\s*/, "");
+}
+
+function fakeDocUrlFor(rule: string): string | null {
+  return ruleTagsByRule.get(rule)?.doc_url ?? null;
+}
+
+function fakeJsonDiagnostic(finding: FakeDiagnosticInput, stripSeverityPrefix: boolean) {
+  return {
+    line: finding.line,
+    column: finding.column,
+    rule: finding.rule,
+    level: fakeLevelOf(finding.message),
+    message: stripSeverityPrefix ? fakeStripSeverityPrefix(finding.message) : finding.message,
+    doc_url: fakeDocUrlFor(finding.rule),
+  };
+}
+
+function fakeSeverityCounts(diagnostics: { level: string }[]) {
+  return {
+    errors: diagnostics.filter((d) => d.level === "error").length,
+    warnings: diagnostics.filter((d) => d.level === "warning").length,
+    info: diagnostics.filter((d) => d.level === "info").length,
+  };
+}
+
+function fakeRuleCounts(diagnostics: { rule: string }[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const diagnostic of diagnostics) {
+    counts[diagnostic.rule] = (counts[diagnostic.rule] ?? 0) + 1;
+  }
+  return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)));
+}
+
+function fakeFormatIssuesAsText(args: unknown): string {
+  const { files } = args as { files: FakeIssuesFileInput[] };
+  const lines: string[] = [];
+  for (const file of files) {
+    for (const finding of file.findings) {
+      const docUrl = fakeDocUrlFor(finding.rule);
+      const suffix = docUrl ? ` (${docUrl})` : "";
+      lines.push(`${file.path}:${finding.line}:${finding.column}: [${finding.rule}] ${finding.message}${suffix}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+function fakeFormatIssuesAsJson(args: unknown): string {
+  const { files } = args as { files: FakeIssuesFileInput[] };
+  let totalDiagnostics = 0;
+  const jsonFiles = files.map((file) => {
+    totalDiagnostics += file.findings.length;
+    return {
+      path: file.path,
+      diagnostics: file.findings.map((finding) => fakeJsonDiagnostic(finding, false)),
+      diff: null,
+    };
+  });
+  return JSON.stringify({
+    files: jsonFiles,
+    files_with_diagnostics: jsonFiles.length,
+    total_diagnostics: totalDiagnostics,
+  });
+}
+
+function fakeFormatIssuesForAiBase(args: unknown): string {
+  const { files, configuration, version } = args as {
+    files: (FakeIssuesFileInput & { source: unknown })[];
+    configuration: LintConfig;
+    version: string;
+  };
+  const aiFiles = files.map((file) => {
+    const diagnostics = file.findings.map((finding) => fakeJsonDiagnostic(finding, true));
+    return {
+      path: file.path,
+      severity_counts: fakeSeverityCounts(diagnostics),
+      rule_counts: fakeRuleCounts(diagnostics),
+      diagnostics,
+      source: file.source ?? null,
+    };
+  });
+  const allDiagnostics = aiFiles.flatMap((file) => file.diagnostics);
+  const triggeredRules = [...new Set(allDiagnostics.map((diagnostic) => diagnostic.rule))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+  const ruleDetails = triggeredRules
+    .map((rule) => ruleTagsByRule.get(rule))
+    .filter((info): info is RuleTagsInfo => info !== undefined)
+    .map(({ rule, description, kinds, importance, auto_fixable, doc_url }) => ({
+      rule,
+      description,
+      kinds,
+      importance,
+      auto_fixable,
+      doc_url,
+    }));
+
+  return JSON.stringify({
+    $schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
+    header: {
+      tool: "Papyrus Lint",
+      version,
+      website: "https://papyrus-lint.idrinth.de",
+      target_game: "Skyrim SE/AE",
+      generated_at: new Date().toISOString(),
+    },
+    configuration: aiConfiguration(configuration),
+    findings: {
+      files: aiFiles,
+      total_diagnostics: allDiagnostics.length,
+      severity_counts: fakeSeverityCounts(allDiagnostics),
+      rule_counts: fakeRuleCounts(allDiagnostics),
+    },
+    rule_details: ruleDetails,
+  });
+}
+
+function defaultExportHandler(command: string): ((args: unknown) => unknown) | undefined {
+  switch (command) {
+    case "format_issues_as_text":
+      return fakeFormatIssuesAsText;
+    case "format_issues_as_json":
+      return fakeFormatIssuesAsJson;
+    case "format_issues_for_ai_base":
+      return fakeFormatIssuesForAiBase;
+    default:
+      return undefined;
+  }
+}
+
 export function invokeImplFor(handlers: Record<string, (args: unknown) => unknown>) {
   invokeMock.mockImplementation((command: string, args: unknown) => {
-    const handler = handlers[command] ?? defaultProjectRootHandler(command);
+    const handler = handlers[command] ?? defaultProjectRootHandler(command) ?? defaultExportHandler(command);
     if (!handler) {
       return Promise.reject(new Error(`unexpected command: ${command}`));
     }
@@ -73,6 +241,12 @@ export async function loadProjectConfigConfirmed(dir: string): Promise<void> {
 
 beforeEach(() => {
   invokeMock.mockReset();
+  // Installs the default project-root/export-formatting fallbacks (see
+  // defaultProjectRootHandler/defaultExportHandler above) so a test that
+  // never calls invokeImplFor itself still gets sensible behavior for
+  // those commands; a test that does call invokeImplFor merges its own
+  // handlers back on top of this same default chain.
+  invokeImplFor({});
   localStorage.clear();
   mountFixture();
   resetConfirmedProjectDirs();
