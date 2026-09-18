@@ -47,7 +47,7 @@ good two hours finding manually in one of my mods.
 
 ![Papyrus Lint Import](shared/images/papyrus-lint-import.png)
 
-Just drop your file or archlist here and see the results.
+Just drop your file, folder or achlist here and see the results.
 
 See [more examples](docs/examples.md) of bugs Papyrus Lint catches that
 `PapyrusCompiler.exe` lets through.
