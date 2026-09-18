@@ -2,6 +2,7 @@
   "id": "argument-override-types",
   "name": "Argument override type check",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness",
     "maintainability"

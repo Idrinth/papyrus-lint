@@ -2,6 +2,7 @@
   "id": "non-global-function-call",
   "name": "Non-static function call",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

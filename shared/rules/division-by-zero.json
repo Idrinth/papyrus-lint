@@ -2,6 +2,7 @@
   "id": "division-by-zero",
   "name": "Division by zero",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

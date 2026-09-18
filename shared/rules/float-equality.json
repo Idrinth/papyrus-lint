@@ -2,6 +2,7 @@
   "id": "float-equality",
   "name": "Float equality comparison",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

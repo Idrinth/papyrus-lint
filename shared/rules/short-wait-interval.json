@@ -2,6 +2,7 @@
   "id": "short-wait-interval",
   "name": "Short wait/update interval",
   "category": "Performance",
+  "visitor": "ast",
   "tags": [
     "performance"
   ],

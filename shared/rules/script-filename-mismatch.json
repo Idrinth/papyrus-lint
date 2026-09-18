@@ -2,6 +2,7 @@
   "id": "script-filename-mismatch",
   "name": "ScriptName/filename mismatch",
   "category": "Reliability",
+  "visitor": "none",
   "tags": [
     "correctness"
   ],

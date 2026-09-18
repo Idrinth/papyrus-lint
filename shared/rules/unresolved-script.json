@@ -2,6 +2,7 @@
   "id": "unresolved-script",
   "name": "Unresolved script reference",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

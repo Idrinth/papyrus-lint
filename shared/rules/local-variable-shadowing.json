@@ -2,6 +2,7 @@
   "id": "local-variable-shadowing",
   "name": "Local variable shadowing",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness",
     "maintainability"

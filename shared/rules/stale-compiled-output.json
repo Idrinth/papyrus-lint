@@ -2,6 +2,7 @@
   "id": "stale-compiled-output",
   "name": "Stale compiled output",
   "category": "Reliability",
+  "visitor": "none",
   "tags": [
     "maintainability"
   ],

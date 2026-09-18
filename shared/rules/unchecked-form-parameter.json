@@ -2,6 +2,7 @@
   "id": "unchecked-form-parameter",
   "name": "Form parameter used without a None check",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

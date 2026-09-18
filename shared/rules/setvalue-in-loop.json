@@ -2,6 +2,7 @@
   "id": "setvalue-in-loop",
   "name": "Repeated GlobalVariable.SetValue() calls in a loop",
   "category": "Performance",
+  "visitor": "ast",
   "tags": [
     "performance"
   ],

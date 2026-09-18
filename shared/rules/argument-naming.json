@@ -2,6 +2,7 @@
   "id": "argument-naming",
   "name": "Argument naming consistency",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness",
     "maintainability"

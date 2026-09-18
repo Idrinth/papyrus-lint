@@ -2,6 +2,7 @@
   "id": "native-function-usage",
   "name": "Non-base-game native function usage",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

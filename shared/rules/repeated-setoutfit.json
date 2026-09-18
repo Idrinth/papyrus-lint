@@ -2,6 +2,7 @@
   "id": "repeated-setoutfit",
   "name": "Repeated Actor.SetOutfit() calls",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

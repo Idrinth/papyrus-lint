@@ -2,6 +2,7 @@
   "id": "multiple-auto-states",
   "name": "Multiple Auto states",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

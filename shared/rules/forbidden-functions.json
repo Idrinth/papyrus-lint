@@ -2,6 +2,7 @@
   "id": "forbidden-functions",
   "name": "Forbidden/discouraged function usage",
   "category": "Performance",
+  "visitor": "tokens",
   "tags": [
     "performance",
     "correctness"

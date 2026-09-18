@@ -2,6 +2,7 @@
   "id": "unused-nodiscard",
   "name": "Discarded nodiscard result",
   "category": "Reliability",
+  "visitor": "tokens",
   "tags": [
     "correctness",
     "maintainability"

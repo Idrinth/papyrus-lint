@@ -2,6 +2,7 @@
   "id": "readonly-property-write",
   "name": "Read-only (AutoReadOnly) property write",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

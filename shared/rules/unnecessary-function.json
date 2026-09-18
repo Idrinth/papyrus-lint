@@ -2,6 +2,7 @@
   "id": "unnecessary-function",
   "name": "Unnecessary function",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "maintainability",
     "performance"

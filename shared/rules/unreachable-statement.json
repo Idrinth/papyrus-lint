@@ -2,6 +2,7 @@
   "id": "unreachable-statement",
   "name": "Unreachable statement",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness",
     "maintainability"

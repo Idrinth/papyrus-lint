@@ -2,6 +2,7 @@
   "id": "slow-functions",
   "name": "Slow function usage",
   "category": "Performance",
+  "visitor": "tokens",
   "tags": [
     "performance"
   ],

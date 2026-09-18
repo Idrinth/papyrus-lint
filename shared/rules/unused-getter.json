@@ -2,6 +2,7 @@
   "id": "unused-getter",
   "name": "Getter usage without saving result",
   "category": "Reliability",
+  "visitor": "tokens",
   "tags": [
     "correctness",
     "maintainability"

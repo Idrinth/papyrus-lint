@@ -2,6 +2,7 @@
   "id": "conflicting-script-versions",
   "name": "Conflicting script versions",
   "category": "Reliability",
+  "visitor": "none",
   "tags": [
     "correctness"
   ],

@@ -269,7 +269,8 @@ each rule's behavior are documented one file per rule under
 rule reference](https://papyrus-lint.idrinth.de/rules.html). Rules generally
 inspect raw source or lexer tokens so they keep running on scripts that do not
 parse cleanly. Follow that approach for a new rule where practical, then add
-`shared/rules/<id>.json` (`repair_order` if `registry::apply_repairs` should
+`shared/rules/<id>.json` (`visitor`: `ast` / `tokens` / `none` for how the
+rule would walk a script as a visitor; `repair_order` if `registry::apply_repairs` should
 auto-fix it). `build.rs` generates the `mod` in
 `app/crates/papyrus-lints/src/lib.rs` from that entry. Every
 source-level check is `check(source, ast, tokens, config, external)` and

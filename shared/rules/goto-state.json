@@ -2,6 +2,7 @@
   "id": "goto-state",
   "name": "GoToState state reference",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

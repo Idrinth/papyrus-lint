@@ -2,6 +2,7 @@
   "id": "empty-body",
   "name": "Empty loop/conditional body",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness",
     "maintainability"

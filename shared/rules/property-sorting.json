@@ -2,6 +2,7 @@
   "id": "property-sorting",
   "name": "Property sorting",
   "category": "Formatting",
+  "visitor": "ast",
   "tags": [
     "style"
   ],

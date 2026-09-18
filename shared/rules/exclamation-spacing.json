@@ -2,6 +2,7 @@
   "id": "exclamation-spacing",
   "name": "Exclamation mark spacing",
   "category": "Formatting",
+  "visitor": "tokens",
   "tags": [
     "style"
   ],

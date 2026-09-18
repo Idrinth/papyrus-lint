@@ -2,6 +2,7 @@
   "id": "unchecked-array-element",
   "name": "Array element used without a None check",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

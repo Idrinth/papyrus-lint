@@ -2,6 +2,7 @@
   "id": "none-form-usage",
   "name": "None used as an existing Form",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

@@ -2,6 +2,7 @@
   "id": "parameter-reassignment",
   "name": "Parameter reassignment",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

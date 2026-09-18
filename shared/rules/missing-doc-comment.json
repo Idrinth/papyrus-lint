@@ -2,6 +2,7 @@
   "id": "missing-doc-comment",
   "name": "Missing documentation comment",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "maintainability",
     "style"

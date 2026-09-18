@@ -2,6 +2,7 @@
   "id": "type-casing",
   "name": "Type name casing",
   "category": "Formatting",
+  "visitor": "tokens",
   "tags": [
     "style"
   ],

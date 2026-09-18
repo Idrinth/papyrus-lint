@@ -2,6 +2,7 @@
   "id": "argument-types",
   "name": "Argument type check",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

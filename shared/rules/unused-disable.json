@@ -2,6 +2,7 @@
   "id": "unused-disable",
   "name": "Unused disable directive",
   "category": "Other",
+  "visitor": "none",
   "tags": [
     "maintainability"
   ],

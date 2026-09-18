@@ -2,6 +2,7 @@
   "id": "invariant-loop-condition",
   "name": "Invariant loop condition",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

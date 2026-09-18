@@ -2,6 +2,7 @@
   "id": "global-variable-setvalue",
   "name": "GlobalVariable no-op write",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "correctness",
     "maintainability"

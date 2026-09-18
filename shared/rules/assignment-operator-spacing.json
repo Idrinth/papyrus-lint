@@ -2,6 +2,7 @@
   "id": "assignment-operator-spacing",
   "name": "Spacing around assignment operators",
   "category": "Formatting",
+  "visitor": "tokens",
   "tags": [
     "style"
   ],

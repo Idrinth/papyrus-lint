@@ -2,6 +2,7 @@
   "id": "array-size-range",
   "name": "Array size range",
   "category": "Bugprone",
+  "visitor": "ast",
   "tags": [
     "correctness"
   ],

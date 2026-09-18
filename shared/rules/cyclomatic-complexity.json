@@ -2,6 +2,7 @@
   "id": "cyclomatic-complexity",
   "name": "Cyclomatic complexity",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

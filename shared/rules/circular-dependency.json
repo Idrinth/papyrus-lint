@@ -2,6 +2,7 @@
   "id": "circular-dependency",
   "name": "Circular script dependency",
   "category": "Reliability",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],

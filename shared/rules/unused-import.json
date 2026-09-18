@@ -2,6 +2,7 @@
   "id": "unused-import",
   "name": "Unused import",
   "category": "Other",
+  "visitor": "ast",
   "tags": [
     "maintainability"
   ],
