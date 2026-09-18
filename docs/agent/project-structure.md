@@ -255,8 +255,17 @@
 │           │   │   └── report.rs      # check) and report.rs (its plain-text/
 │           │   │                      # --json rendering)
 │           │   ├── test_support.rs  # Shared helpers for each file's unit tests
-│           │   ├── run_tests.rs     # Integration-style tests for run()'s
-│           │   │                    # end-to-end pipeline
+│           │   ├── run_tests/       # Integration-style tests for run()'s
+│           │   │   ├── mod.rs         # end-to-end pipeline, split by
+│           │   │   ├── basic.rs       # scenario: plain lint/scan, fix,
+│           │   │   ├── fix.rs         # --tag filtering, threaded vs.
+│           │   │   ├── tag_filter.rs  # sequential parity, cross-script
+│           │   │   ├── threading.rs   # resolution/strict achlist scope,
+│           │   │   ├── cross_script_resolution.rs # stale-compiled-output/
+│           │   │   ├── stale_output_and_filename_checks.rs # script-filename-
+│           │   │   ├── script_roots_and_config.rs # mismatch/conflicting-
+│           │   │   └── compile_check.rs # script-versions, script roots +
+│           │   │                    # --config, and compile_check
 │           │   └── main.rs          # Thin binary entry point around lib::run()
 │           └── tests/               # Binary e2e tests, one file per src module
 ├── shared/
