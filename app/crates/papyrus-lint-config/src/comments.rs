@@ -3,8 +3,8 @@
 //! [`crate::project_file::save_config`]/[`crate::project_file::save_config_at_path`]
 //! and [`crate::presets::save_user_preset`]).
 
-/// The explanatory comment shown above each top-level key in the README's
-/// [configuration reference](../../../../README.md#configuration), in the
+/// The explanatory comment shown above each top-level key in the
+/// [configuration reference](../../../../docs/configuration.md), in the
 /// same order `ProjectFile`/`papyrus_lints::Config` declare their fields.
 /// Kept in sync with that table so a saved config file documents itself
 /// the same way.

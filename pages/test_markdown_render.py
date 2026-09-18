@@ -345,6 +345,61 @@ class MarkdownToHtmlTest(unittest.TestCase):
         self.assertIn("<code>echo ``` is data</code>", result)
         self.assertTrue(result.endswith("<p>Afterwards</p>"))
 
+    def test_markdown_to_html_renders_a_flat_unordered_list(self) -> None:
+        result = markdown_render.markdown_to_html(
+            ["Intro.", "", "- First item", "- Second item", "", "After."]
+        )
+
+        self.assertEqual(
+            result,
+            "<p>Intro.</p>\n<ul><li>First item</li><li>Second item</li></ul>\n<p>After.</p>",
+        )
+
+    def test_markdown_to_html_joins_wrapped_continuation_lines_into_one_item(self) -> None:
+        result = markdown_render.markdown_to_html(
+            ["- `key`: a long description", "  that wraps onto a second line.", "- `other`: short"]
+        )
+
+        self.assertEqual(
+            result,
+            "<ul><li><code>key</code>: a long description that wraps onto a second line.</li>"
+            "<li><code>other</code>: short</li></ul>",
+        )
+
+    def test_markdown_to_html_ends_a_list_at_a_blank_line_or_heading(self) -> None:
+        result = markdown_render.markdown_to_html(["- Only item", "", "## Next"])
+
+        self.assertEqual(result, "<ul><li>Only item</li></ul>\n<h2>Next</h2>")
+
+    def test_markdown_to_html_rewrites_links_inside_list_items(self) -> None:
+        result = markdown_render.markdown_to_html(
+            ["- See [the guide](guide.md) for more."], lambda href: f"docs/{href}"
+        )
+
+        self.assertEqual(
+            result,
+            '<ul><li>See <a href="docs/guide.md">the guide</a> for more.</li></ul>',
+        )
+
+    def test_markdown_to_html_does_not_treat_a_bare_hyphen_as_a_list(self) -> None:
+        result = markdown_render.markdown_to_html(["A dash - mid sentence, not a list."])
+
+        self.assertEqual(result, "<p>A dash - mid sentence, not a list.</p>")
+
+    def test_markdown_to_html_ends_a_list_at_a_heading_with_no_blank_separator(self) -> None:
+        result = markdown_render.markdown_to_html(["- Only item", "## Next"])
+
+        self.assertEqual(result, "<ul><li>Only item</li></ul>\n<h2>Next</h2>")
+
+    def test_markdown_to_html_ends_a_list_at_a_code_fence_with_no_blank_separator(self) -> None:
+        result = markdown_render.markdown_to_html(["- Only item", "```text", "code", "```"])
+
+        self.assertEqual(
+            result,
+            '<ul><li>Only item</li></ul>\n<pre class="code-block language-text" tabindex="0">'
+            "<code>code</code></pre>",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

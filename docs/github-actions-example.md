@@ -68,8 +68,8 @@ jobs:
 ```
 
 The job fails whenever the lint run's exit code is non-zero (see the
-[Command-line interface](../README.md#command-line-interface) section of the
-README for what each exit code means), so a project's
+[command-line interface reference](cli.md) for what each exit code means),
+so a project's
 `papyrus-lint.yaml`/`.yml` `fail_on_warning`/`fail_on_info` settings decide
 whether warnings/info-level findings fail the build the same way they do
 locally.

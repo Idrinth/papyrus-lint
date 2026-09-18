@@ -52,13 +52,43 @@ DOCS = [
         "blurb": "A minimal GitHub Actions workflow that lints a project on every push and pull request.",
     },
     {
+        "filename": "configuration.md",
+        "slug": "configuration",
+        "kind": "markdown",
+        "blurb": "The full papyrus-lint.yaml configuration reference: every key, presets, and desktop app settings.",
+    },
+    {
+        "filename": "cli.md",
+        "slug": "cli",
+        "kind": "markdown",
+        "blurb": "The full PapyrusLinterCLI reference: every subcommand and flag, JSON output, and exit codes.",
+    },
+    {
+        "filename": "docker.md",
+        "slug": "docker",
+        "kind": "markdown",
+        "blurb": "Running Papyrus Lint as a container in CI, and verifying release image/binary signatures.",
+    },
+    {
+        "filename": "fixing-findings.md",
+        "slug": "fixing-findings",
+        "kind": "markdown",
+        "blurb": "How the desktop app applies, previews, and exports lint fixes.",
+    },
+    {
+        "filename": "compiling-scripts.md",
+        "slug": "compiling-scripts",
+        "kind": "markdown",
+        "blurb": "How the desktop app compiles a script with PapyrusCompiler.exe and strips build machine info.",
+    },
+    {
         "filename": "papyrus-lint.default.yaml",
         "slug": "papyrus-lint-default-yaml",
         "kind": "yaml",
         "title": "Default configuration (papyrus-lint.yaml)",
         "description": (
             "The full papyrus-lint.yaml written into a project with no configuration file yet, with every key's "
-            "default value documented inline. See the README's configuration reference for what each key does."
+            "default value documented inline. See the configuration reference for what each key does."
         ),
         "blurb": "The full default papyrus-lint.yaml, with every key's default value documented inline.",
     },
