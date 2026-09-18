@@ -3,22 +3,27 @@ import { liveLintDebounceMs, liveLintEnabled } from './config';
 import { isPapyrusDocument } from './documents';
 import type { PapyrusLinter } from './linter';
 
-/** Per-document debounce timers backing `scheduleLiveLint`, keyed by the document
- * uri's string form. Reset on each activation so tests (and a re-activated host)
- * never inherit a previous document's pending run. */
+/** Per-document debounce timers and request generations backing `scheduleLiveLint`,
+ * keyed by the document uri's string form. Reset on each activation so tests (and
+ * a re-activated host) never inherit a previous document's pending or in-flight run. */
 const liveLintTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const liveLintRequests = new Map<string, number>();
+let nextLiveLintRequest = 0;
 
 export function resetLiveLint(): void {
   for (const timer of liveLintTimers.values()) {
     clearTimeout(timer);
   }
   liveLintTimers.clear();
+  liveLintRequests.clear();
 }
 
-/** Cancels a document's pending live lint, if any (e.g. on close, where linting a
- * document that's gone would be pointless and `document.getText()` may throw). */
+/** Cancels a document's pending live lint and invalidates any in-flight result
+ * (e.g. on close, where publishing diagnostics for a document that's gone would
+ * recreate diagnostics that the close handler just cleared). */
 export function cancelLiveLint(document: vscode.TextDocument): void {
   const key = document.uri.toString();
+  liveLintRequests.set(key, ++nextLiveLintRequest);
   const timer = liveLintTimers.get(key);
   if (timer !== undefined) {
     clearTimeout(timer);
@@ -34,11 +39,12 @@ export function scheduleLiveLint(linter: PapyrusLinter, document: vscode.TextDoc
   }
   cancelLiveLint(document);
   const key = document.uri.toString();
+  const request = liveLintRequests.get(key);
   liveLintTimers.set(
     key,
     setTimeout(() => {
       liveLintTimers.delete(key);
-      void linter.lintBlob(document);
+      void linter.lintBlob(document, () => liveLintRequests.get(key) === request);
     }, liveLintDebounceMs()),
   );
 }
