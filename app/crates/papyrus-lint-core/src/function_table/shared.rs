@@ -105,6 +105,18 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         papyrus_lints::ExternalSignatures::is_global_function(&mut *table, type_name, function_name)
     }
 
+    fn is_nodiscard_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::ExternalSignatures::is_nodiscard_function(
+            &mut *table,
+            type_name,
+            function_name,
+        )
+    }
+
     fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
         let mut table = self
             .0

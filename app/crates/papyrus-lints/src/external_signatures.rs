@@ -135,6 +135,21 @@ pub trait ExternalSignatures {
         None
     }
 
+    /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
+    /// or transitively), declares `function_name` with a `; @nodiscard`
+    /// directive on its header. Both names are matched case-insensitively.
+    /// `None` means the function couldn't be resolved at all (unknown
+    /// script or function), so the call site is left unflagged rather than
+    /// guessed at. Used by the "Discarded nodiscard result" lint
+    /// (`crate::unused_nodiscard`) to flag a discarded call to a function
+    /// whose author marked the return value as required.
+    ///
+    /// The default always returns `None`, keeping existing behavior for
+    /// callers that can't resolve scripts (see [`NoExternalSignatures`]).
+    fn is_nodiscard_function(&mut self, _type_name: &str, _function_name: &str) -> Option<bool> {
+        None
+    }
+
     /// Whether `type_name`'s script can be located by this resolver at
     /// all, with enough project data to answer for it. Used by the "Unused
     /// import" lint (`crate::unused_import`) as a gate before flagging an

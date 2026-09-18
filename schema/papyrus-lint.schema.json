@@ -182,6 +182,11 @@
           "type": "boolean",
           "default": true
         },
+        "unused_nodiscard": {
+          "description": "Whether the unused-nodiscard lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
         "unused_property": {
           "description": "Whether the unused-property lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
           "type": "boolean",
@@ -566,6 +571,7 @@
         "get_form_from_file_skyrim_esm": true,
         "slow_functions": true,
         "unused_getter": true,
+        "unused_nodiscard": true,
         "unused_property": true,
         "semicolon": true,
         "float_int_conversion": true,
