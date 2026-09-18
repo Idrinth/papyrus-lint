@@ -853,7 +853,7 @@ jobs:
           category: optional
           display_name: "Papyrus Lint Vscode Extension"
           allow_mod_manager_download: false
-          description: "Requires one of the executables from main."
+          description: "Requires one of the executables from main, if not provided will download one from the github release."
       - name: Upload to NexusMods (sublime)
         uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
@@ -864,4 +864,4 @@ jobs:
           category: optional
           display_name: "Papyrus Lint SublimeLinter Plugin"
           allow_mod_manager_download: false
-          description: "Requires one of the executables from main."
+          description: "Requires one of the executables from main, if not provided will download one from the github release."
