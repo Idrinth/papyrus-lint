@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(tokens.as_deref())
+}
+
 #[test]
 fn compiled_pairs_are_loaded_from_yaml() {
     assert!(!UPDATE_EVENT_PAIRS.is_empty());

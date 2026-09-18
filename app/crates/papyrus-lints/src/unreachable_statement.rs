@@ -15,13 +15,13 @@ pub const RULE: &str = "unreachable-statement";
 /// Checks `source` for statements that follow a `Return` in the same
 /// block (a function/event body, an `If`/`ElseIf`/`Else` branch, or a
 /// `While` body). Flagged as a `[warning]`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         check_body(&function.body, &mut diagnostics);
     }
     diagnostics

@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(source, ast.as_ref())
+}
+
 #[test]
 fn flags_direct_parameter_reassignment() {
     let diagnostics =

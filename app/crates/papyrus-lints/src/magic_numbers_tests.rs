@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, mode: MagicNumbers) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref(), mode)
+}
+
 #[test]
 fn flags_a_literal_used_directly_in_a_call_argument() {
     let diagnostics = check(

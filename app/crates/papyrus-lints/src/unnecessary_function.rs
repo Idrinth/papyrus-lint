@@ -33,12 +33,12 @@ use crate::Diagnostic;
 pub const RULE: &str = "unnecessary-function";
 
 /// Checks `source` for `Function`s whose body is exactly one statement long.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    all_functions(&script)
+    all_functions(script)
         .filter(|function| {
             !function.is_event && function.body.len() == 1 && !is_fragment_function(&function.name)
         })

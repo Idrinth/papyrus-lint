@@ -25,13 +25,13 @@ pub const RULE: &str = "self-assignment";
 
 /// Checks `source` for a plain `=` assignment whose target and value are the
 /// exact same simple reference. Flagged as a `[warning]`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         for assign in collect_assigns(&function.body) {
             let Stmt::Assign {
                 target,

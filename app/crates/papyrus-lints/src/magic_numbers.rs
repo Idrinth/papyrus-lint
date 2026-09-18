@@ -49,8 +49,8 @@ pub enum MagicNumbers {
 
 /// Checks `source` for numeric literals used directly rather than through
 /// a named constant, property, or local variable, per `mode`.
-pub fn check(source: &str, mode: MagicNumbers) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>, mode: MagicNumbers) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
@@ -60,7 +60,7 @@ pub fn check(source: &str, mode: MagicNumbers) -> Vec<Diagnostic> {
             walk_declaration_value(value, mode, variable.line, &mut diagnostics);
         }
     }
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         check_body(&function.body, mode, &mut diagnostics);
     }
     diagnostics

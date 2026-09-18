@@ -29,22 +29,25 @@ pub const RULE: &str = "return-types";
 /// relationships to scripts outside `source` are never resolved this way;
 /// see [`check_with`] for that.
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but resolves object-type return values through
 /// `external` so a value whose script extends (directly or transitively)
 /// the declared return type is accepted.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    let mut env = TypeEnv::for_script(&script);
+    let mut env = TypeEnv::for_script(script);
     let mut diagnostics = Vec::new();
 
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let Some(return_type) = function.return_type.clone() else {
             continue;
         };

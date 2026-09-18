@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, assume_auto_properties_filled: bool) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref(), assume_auto_properties_filled)
+}
+
 #[test]
 fn flags_method_call_on_variable_declared_none() {
     let diagnostics = check(

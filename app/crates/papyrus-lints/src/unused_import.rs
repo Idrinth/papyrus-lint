@@ -36,15 +36,18 @@ pub const RULE: &str = "unused-import";
 /// resolved this way, so nothing is ever flagged; see [`check_with`] to
 /// actually resolve the imported scripts' `Global` functions.
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but resolves each unqualified call in `source` through
 /// `external`, flagging an `Import` whose script never has one of its
 /// `Global` functions called unqualified anywhere in `source`.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     if script.imports.is_empty() {
@@ -52,7 +55,7 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
     }
 
     let mut called_names = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         for stmt in &function.body {
             collect_stmt(stmt, &mut called_names);
         }
@@ -97,7 +100,8 @@ pub fn repair(source: &str) -> String {
 /// that doesn't parse cleanly, or that [`check_with`] finds nothing to
 /// flag in, is returned unchanged.
 pub fn repair_with<E: ExternalSignatures>(source: &str, external: &mut E) -> String {
-    let lines_to_remove: std::collections::HashSet<usize> = check_with(source, external)
+    let ast = papyrus_parser::parse(source).ok();
+    let lines_to_remove: std::collections::HashSet<usize> = check_with(ast.as_ref(), external)
         .into_iter()
         .map(|diagnostic| diagnostic.line)
         .collect();

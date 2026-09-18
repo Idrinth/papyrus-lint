@@ -60,23 +60,23 @@ const MAX_NAMED_STATES: usize = 127;
 /// states counted here; see [`check_too_many_states_with`] to also resolve
 /// its ancestry.
 #[allow(dead_code)]
-pub fn check_too_many_states(source: &str) -> Vec<Diagnostic> {
-    check_too_many_states_with(source, &mut NoExternalSignatures)
+pub fn check_too_many_states(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_too_many_states_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check_too_many_states`], but also resolves every `State`
 /// declared anywhere in `source`'s `Extends` ancestry through `external`
 /// (see the module docs) before comparing against [`MAX_NAMED_STATES`].
 pub fn check_too_many_states_with<E: ExternalSignatures>(
-    source: &str,
+    ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
-    let Some((script, states)) = combined_states(source, external) else {
+    let Some((script, states)) = combined_states(ast, external) else {
         return Vec::new();
     };
 
     if states.len() > MAX_NAMED_STATES {
-        vec![too_many_states(&script, states.len())]
+        vec![too_many_states(script, states.len())]
     } else {
         Vec::new()
     }
@@ -87,42 +87,41 @@ pub fn check_too_many_states_with<E: ExternalSignatures>(
 /// checked here; see [`check_multiple_auto_states_with`] to also resolve
 /// its ancestry.
 #[allow(dead_code)]
-pub fn check_multiple_auto_states(source: &str) -> Vec<Diagnostic> {
-    check_multiple_auto_states_with(source, &mut NoExternalSignatures)
+pub fn check_multiple_auto_states(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_multiple_auto_states_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check_multiple_auto_states`], but also resolves every `State`
 /// declared anywhere in `source`'s `Extends` ancestry through `external`
 /// (see the module docs) before counting how many are marked `Auto`.
 pub fn check_multiple_auto_states_with<E: ExternalSignatures>(
-    source: &str,
+    ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
-    let Some((script, states)) = combined_states(source, external) else {
+    let Some((script, states)) = combined_states(ast, external) else {
         return Vec::new();
     };
 
     let local_auto_count = script.states.iter().filter(|state| state.is_auto).count();
     let inherited_auto_count = states.values().filter(|&&is_auto| is_auto).count();
     if local_auto_count > 1 {
-        vec![multiple_auto_states(&script, local_auto_count, true)]
+        vec![multiple_auto_states(script, local_auto_count, true)]
     } else if inherited_auto_count > 1 {
-        vec![multiple_auto_states(&script, inherited_auto_count, false)]
+        vec![multiple_auto_states(script, inherited_auto_count, false)]
     } else {
         Vec::new()
     }
 }
 
-/// Parses `source` and, if it parses cleanly, returns it alongside the
-/// combined set of named states (lowercased name -> whether any
-/// declaration of it is `Auto`) drawn from the script's own `State`s and,
-/// when it `Extends` another script, everything `external` resolves in
-/// that ancestry.
-fn combined_states<E: ExternalSignatures>(
-    source: &str,
+/// If `ast` is present, returns it alongside the combined set of named
+/// states (lowercased name -> whether any declaration of it is `Auto`)
+/// drawn from the script's own `State`s and, when it `Extends` another
+/// script, everything `external` resolves in that ancestry.
+fn combined_states<'a, E: ExternalSignatures>(
+    ast: Option<&'a Script>,
     external: &mut E,
-) -> Option<(Script, HashMap<String, bool>)> {
-    let script = papyrus_parser::parse(source).ok()?;
+) -> Option<(&'a Script, HashMap<String, bool>)> {
+    let script = ast?;
 
     let mut states: HashMap<String, bool> = HashMap::new();
     for state in &script.states {

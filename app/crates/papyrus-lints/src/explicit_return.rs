@@ -23,12 +23,12 @@ pub const RULE: &str = "explicit-return";
 
 /// Checks `source` for typed functions/events with a code path that falls
 /// off the end of the body without an explicit `Return`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    all_functions(&script)
+    all_functions(script)
         .filter(|function| function.return_type.is_some())
         .filter(|function| !function.is_native)
         .filter(|function| !body_always_returns(&function.body))

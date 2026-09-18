@@ -16,15 +16,14 @@ pub const RULE: &str = "unused-property";
 
 /// Checks `source` for `Property` declarations whose name is never used
 /// anywhere else in the script. Flagged as a `[warning]`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
+pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
     };
 
-    property_declarations(&tokens)
+    property_declarations(tokens)
         .into_iter()
-        .filter(|decl| !is_used_elsewhere(&tokens, decl))
+        .filter(|decl| !is_used_elsewhere(tokens, decl))
         .map(|decl| Diagnostic {
             line: decl.token.line,
             column: decl.token.col,

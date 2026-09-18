@@ -40,8 +40,8 @@ pub const RULE: &str = "slow-functions";
 /// used through a variable: those scripts are never subclassed, so a
 /// qualified call to one of their functions is only a real match when the
 /// qualifier is literally that script's name.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with_rules(source, SLOW_FUNCTIONS)
+pub fn check(tokens: Option<&[papyrus_parser::token::Token]>) -> Vec<Diagnostic> {
+    check_with_rules(tokens, SLOW_FUNCTIONS)
 }
 
 /// Replaces slow calls with the faster expression supplied by their rule.
@@ -146,10 +146,12 @@ fn token_offset(line_starts: &[usize], token: &papyrus_parser::token::Token) -> 
     line_starts[token.line - 1] + token.col - 1
 }
 
-fn check_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> Vec<Diagnostic> {
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
+fn check_with_rules(
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    rules: &'static [SlowFunctionRule],
+) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
@@ -163,7 +165,7 @@ fn check_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> Vec<Dia
         let Some(rule) = find_rule(rules, name) else {
             continue;
         };
-        if rule.global && !qualifier_matches(&tokens, i, rule.object) {
+        if rule.global && !qualifier_matches(tokens, i, rule.object) {
             continue;
         }
         diagnostics.push(Diagnostic {

@@ -47,13 +47,13 @@ pub const RULE: &str = "repeated-setoutfit";
 /// Checks every function/event body in `source` for a `SetOutfit` call
 /// repeating an earlier call's exact receiver and arguments with nothing in
 /// between guaranteed to have changed the outfit.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let mut applied = Vec::new();
         check_body(&function.body, &mut applied, &mut diagnostics);
     }

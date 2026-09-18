@@ -117,7 +117,8 @@ pub fn check_argument_types<E: ExternalSignatures>(
     source: &str,
     external: &mut E,
 ) -> Vec<Diagnostic> {
-    argument_types::check_with(source, external)
+    let ast = papyrus_parser::parse(source).ok();
+    argument_types::check_with(ast.as_ref(), external)
 }
 
 /// Inner text of the `{ ... }` documentation comment immediately following

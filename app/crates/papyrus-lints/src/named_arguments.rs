@@ -114,17 +114,17 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 
 /// Checks `source` for positional call arguments that `setting` prefers to
 /// see passed by name instead.
-pub fn check(source: &str, setting: NamedArguments) -> Vec<Diagnostic> {
+pub fn check(ast: Option<&Script>, setting: NamedArguments) -> Vec<Diagnostic> {
     if setting == NamedArguments::Never {
         return Vec::new();
     }
-    let Ok(script) = papyrus_parser::parse(source) else {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    let locals = LocalFunctions::from_script(&script);
+    let locals = LocalFunctions::from_script(script);
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         for stmt in &function.body {
             walk_stmt(stmt, &locals, setting, &mut diagnostics);
         }

@@ -1,7 +1,7 @@
 //! Requires whitespace after commas in parenthesized argument lists.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::TokenKind;
+use papyrus_parser::token::{Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "comma-spacing";
@@ -9,10 +9,13 @@ pub const RULE: &str = "comma-spacing";
 /// Checks for argument-list commas that are immediately followed by another
 /// non-whitespace character. Commas on a line protected by a CreationKit
 /// fragment-code wrapper (see [`fragment_code`]) are never flagged.
-pub fn check(source: &str) -> Vec<Diagnostic> {
+pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
+    };
     let protected = fragment_code::protected_lines(source);
 
-    comma_offsets(source)
+    comma_offsets_from_tokens(source, tokens)
         .into_iter()
         .filter(|(_, line, _)| !protected[*line])
         .map(|(_, line, column)| Diagnostic {
@@ -51,10 +54,13 @@ pub fn repair(source: &str) -> String {
 }
 
 fn comma_offsets(source: &str) -> Vec<(usize, usize, usize)> {
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
-    };
+    match papyrus_parser::tokenize(source) {
+        Ok(tokens) => comma_offsets_from_tokens(source, &tokens),
+        Err(_) => Vec::new(),
+    }
+}
+
+fn comma_offsets_from_tokens(source: &str, tokens: &[Token]) -> Vec<(usize, usize, usize)> {
     let line_starts = line_starts(source);
     let mut paren_depth = 0usize;
     let mut commas = Vec::new();

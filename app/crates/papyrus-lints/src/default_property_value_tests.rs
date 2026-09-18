@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
 #[test]
 fn flags_auto_scalar_properties_with_no_default_value() {
     let source = "ScriptName Example\n\nBool Property IsActive Auto\nInt Property Count Auto\nFloat Property Scale Auto\nString Property Label Auto\n";

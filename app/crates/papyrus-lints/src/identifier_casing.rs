@@ -29,8 +29,12 @@ pub const RULE: &str = "identifier-casing";
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers, is
 /// never flagged: it's CreationKit-generated boilerplate the user can't
 /// edit or rename.
-pub fn check(source: &str, style: IdentifierCasing) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    style: IdentifierCasing,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     let protected = fragment_code::protected_lines(source);

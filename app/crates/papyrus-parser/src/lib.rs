@@ -4,9 +4,14 @@
 //! turns Papyrus source text into tokens, an AST describing a script's
 //! structure, and a recursive-descent parser that builds the AST from the
 //! token stream. [`parse`] and [`tokenize`] are both memoized against the
-//! most recently seen source text (see [`cache`]), since a single lint
-//! pass over one script calls into them dozens of times with the exact
-//! same source.
+//! most recently seen source text (see [`cache`]): `papyrus-lints`'
+//! `registry::collect_diagnostics` already calls each at most once per
+//! `lint()`/`lint_with_external_arguments()` pass and hands the result to
+//! every rule as a parameter rather than having each rule call back in
+//! itself, but a `repair()` pass still calls into them once per fix applied
+//! (each fix can change the source out from under any earlier result), all
+//! against what's typically the exact same source text in a single repair
+//! call.
 
 pub mod ast;
 mod cache;

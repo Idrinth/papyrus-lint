@@ -1,9 +1,10 @@
 //! In-memory memoization of [`crate::parse`] and [`crate::tokenize`].
 //!
-//! A single lint pass over one script calls into these two dozens of times
-//! -- one raw `Lexer::tokenize()` per token-based lint rule, one
-//! `parse()` per AST-based one -- all against the exact same source text.
-//! This makes that free: a single-slot, thread-local cache remembers only
+//! A single `repair()` pass over one script can call into these once per
+//! fix applied, each against what's typically the exact same source text
+//! (a fix that doesn't touch the source at all leaves it, and so this
+//! cache's key, unchanged). This makes that free: a single-slot,
+//! thread-local cache remembers only
 //! the most recently seen source string (and the result computed for it),
 //! so a repeat call with `source` unchanged is a string comparison and a
 //! clone rather than a re-lex or re-parse.

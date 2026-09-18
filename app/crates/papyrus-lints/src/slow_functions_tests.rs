@@ -1,5 +1,15 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(tokens.as_deref())
+}
+
+fn check_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check_with_rules(tokens.as_deref(), rules)
+}
+
 static GLOBAL_RULES: &[SlowFunctionRule] = &[SlowFunctionRule {
     object: "ExampleGlobal",
     function: "SlowCall",

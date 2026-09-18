@@ -57,10 +57,9 @@ pub const RULE: &str = "forbidden-functions";
 /// debug-flag `If`/`ElseIf` (see the module docs): those calls are the
 /// guarded form the rules themselves recommend, so they are not
 /// reported.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
+pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
@@ -70,7 +69,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     for i in 0..tokens.len() {
         match &tokens[i].kind {
             TokenKind::Keyword(Keyword::If) => {
-                let guarded = is_simple_debug_guard(&tokens, i + 1);
+                let guarded = is_simple_debug_guard(tokens, i + 1);
                 if_stack.push(guarded);
                 if guarded {
                     debug_guard_depth += 1;
@@ -80,7 +79,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 replace_current_branch(
                     &mut if_stack,
                     &mut debug_guard_depth,
-                    is_simple_debug_guard(&tokens, i + 1),
+                    is_simple_debug_guard(tokens, i + 1),
                 );
             }
             TokenKind::Keyword(Keyword::Else) => {
@@ -101,7 +100,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 let Some(rule) = find_rule(name) else {
                     continue;
                 };
-                if rule.global && !qualifier_matches(&tokens, i, rule.script) {
+                if rule.global && !qualifier_matches(tokens, i, rule.script) {
                     continue;
                 }
                 if is_debug_script(rule) && debug_guard_depth > 0 {

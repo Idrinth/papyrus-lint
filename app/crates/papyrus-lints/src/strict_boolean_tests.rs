@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, allow_bool_like_int: bool) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref(), allow_bool_like_int)
+}
+
 #[test]
 fn flags_non_boolean_if_and_while_conditions() {
     let diagnostics = check(

@@ -33,13 +33,13 @@ pub const RULE: &str = "formid-hex-notation";
 
 /// Checks `source` for a non-hexadecimal FormID literal compared against
 /// `GetFormID()` or passed to `Game.GetFormFromFile`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    visit_decimal_formid_literals(&tokens, |literal, context| {
+    visit_decimal_formid_literals(tokens, |literal, context| {
         diagnostics.push(diagnostic_for(literal, context));
     });
     diagnostics

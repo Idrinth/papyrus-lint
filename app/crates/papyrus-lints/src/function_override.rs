@@ -19,6 +19,8 @@
 //! from a named state is Papyrus's separate state-based override
 //! mechanism, not `Extends` inheritance.
 
+use papyrus_parser::ast::Script;
+
 use crate::argument_types::{ExternalSignatures, NoExternalSignatures};
 use crate::Diagnostic;
 
@@ -29,15 +31,18 @@ pub const RULE: &str = "function-override";
 /// resolving the `Extends` chain always requires looking outside `source`,
 /// this alone never finds anything to flag; see [`check_with`].
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but resolves the script's `Extends` chain through
 /// `external`, flagging any function declared on `source` whose name is
 /// also declared somewhere along that chain.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     let Some(extends) = &script.extends else {

@@ -32,15 +32,19 @@ pub const RULE: &str = "local-variable-shadowing";
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers, is
 /// never flagged, since it's generated boilerplate the user can't edit.
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(source: &str, ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(source, ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but also flags a local variable that shadows a property
 /// or field declared on a parent script, resolved (including through
 /// `Extends`) through `external`.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    source: &str,
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     let protected = fragment_code::protected_lines(source);
@@ -57,14 +61,14 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
         .collect();
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         for decl in collect_var_decls(&function.body) {
             if protected.get(decl.line).copied().unwrap_or(false) {
                 continue;
             }
             diagnostics.extend(check_decl(
                 decl,
-                &script,
+                script,
                 &own_properties,
                 &own_variables,
                 external,

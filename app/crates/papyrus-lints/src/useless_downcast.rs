@@ -35,23 +35,26 @@ pub const RULE: &str = "useless-downcast";
 /// exact-type match (see the module docs for why a same-script check alone
 /// can't recognize an ancestor-type cast as redundant too).
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but also resolves a cast target that's an ancestor
 /// (rather than an exact match) of the value's known type through
 /// `external`, the same way [`crate::argument_types::check_with`] resolves
 /// argument subtyping.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    let mut env = TypeEnv::for_script(&script);
+    let mut env = TypeEnv::for_script(script);
     let mut diagnostics = Vec::new();
 
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         env.with_function_scope(function, |env| {
             for stmt in &function.body {
                 walk_stmt(stmt, env, external, &mut diagnostics);
