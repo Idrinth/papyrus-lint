@@ -128,7 +128,7 @@ mod tests {
     use super::*;
     use tempfile::tempdir;
 
-    use crate::lint::lint_psc_file;
+    use crate::lint::{lint_psc_file, ProjectLintContext};
     use crate::repair::repair_psc_file;
 
     #[test]
@@ -306,22 +306,18 @@ mod tests {
         assert!(parse_psc_file(path.clone()).is_err());
         assert!(lint_psc_file(
             path.clone(),
-            missing.parent().unwrap().to_string_lossy().into_owned(),
-            papyrus_lints::Config::default(),
-            Vec::new(),
-            Vec::new(),
-            String::new(),
-            false,
+            ProjectLintContext {
+                root: missing.parent().unwrap().to_string_lossy().into_owned(),
+                ..Default::default()
+            }
         )
         .is_err());
         assert!(repair_psc_file(
             path,
-            missing.parent().unwrap().to_string_lossy().into_owned(),
-            papyrus_lints::Config::default(),
-            Vec::new(),
-            Vec::new(),
-            String::new(),
-            false,
+            ProjectLintContext {
+                root: missing.parent().unwrap().to_string_lossy().into_owned(),
+                ..Default::default()
+            }
         )
         .is_err());
     }

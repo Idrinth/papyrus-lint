@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { type Diagnostic } from "./backend";
-import { currentLintConfig } from "./config";
+import { currentProjectLintContext, type Diagnostic } from "./backend";
 import { isCodeViewerEditDirty } from "./live-edit";
 import { hideCompileOutput } from "./code-viewer-compile";
 import { hideDiffOutput } from "./code-viewer-diff";
@@ -16,13 +15,6 @@ import {
   updateCodeViewerFixButtonsVisibility,
 } from "./code-viewer-state";
 import { renderCodeViewerView } from "./code-viewer-view";
-import {
-  currentCompileCheck,
-  currentCompilerPath,
-  currentLookupScriptRoots,
-  currentProjectDir,
-  effectiveScriptRoots,
-} from "./project";
 
 // Closes the code viewer, confirming first if edit mode has unsaved changes.
 export function requestCloseCodeViewer() {
@@ -41,12 +33,7 @@ async function lintOpenedPscFile(path: string, fallback: Diagnostic[]): Promise<
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", {
       path,
-      root: currentProjectDir ?? "",
-      config: currentLintConfig,
-      additionalRoots: effectiveScriptRoots(),
-      lookupRoots: currentLookupScriptRoots,
-      compilerPath: currentCompilerPath,
-      compileCheck: currentCompileCheck,
+      context: currentProjectLintContext(),
     });
   } catch {
     return fallback;

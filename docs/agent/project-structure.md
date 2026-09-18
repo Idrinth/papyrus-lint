@@ -61,7 +61,7 @@
 │   │       ├── lint_config.rs    # papyrus-lint.yaml, compiler path, compile_check,
 │   │       │                     # script roots, project info
 │   │       ├── config_presets.rs # Built-in and user configuration presets
-│   │       ├── lint.rs           # lint_psc_file, compile_psc_file, list_script_members
+│   │       ├── lint.rs           # ProjectLintContext, lint_psc_file, compile_psc_file, list_script_members
 │   │       ├── lint_tests.rs     # lint.rs's unit tests, `#[path]`-included as its
 │   │       │                     # `mod tests` so lint.rs's own size tracks its
 │   │       │                     # actual (small) implementation

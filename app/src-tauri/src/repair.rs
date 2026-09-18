@@ -1,29 +1,54 @@
 //! Repair, preview-repair, and per-line disable-comment commands.
 
 use std::path::Path;
+use std::sync::Mutex;
 
 use papyrus_lint_core::ast_cache;
+use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
 use papyrus_lint_core::source_encoding::{
-    read_psc_source, read_psc_source_with_encoding, write_psc_source,
+    read_psc_source, read_psc_source_with_encoding, write_psc_source, PscEncoding,
 };
 
-use crate::lint::{lint_with_compile_check, project_function_table};
+use crate::lint::{lint_with_compile_check, ProjectLintContext};
+
+/// Writes `updated` back to `path` when it differs from `original`
+/// (preserving `encoding`), primes the AST cache, and re-lints the file
+/// against `context`. Shared by every mutating command here so the
+/// write/prime/relint sequence stays in one place.
+fn write_prime_and_relint(
+    path: &Path,
+    original: &str,
+    updated: &str,
+    encoding: PscEncoding,
+    context: &ProjectLintContext,
+    function_table: &Mutex<FunctionTable>,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    if updated != original {
+        write_psc_source(path, updated, encoding).map_err(|err| err.to_string())?;
+    }
+    ast_cache::ensure_primed(path, updated);
+    let mut shared = SharedFunctionTable(function_table);
+    Ok(lint_with_compile_check(
+        path,
+        updated,
+        &context.config,
+        &mut shared,
+        Path::new(&context.root),
+        &context.additional_roots,
+        &context.compiler_path,
+        context.compile_check,
+    ))
+}
 
 /// Reads the `.psc` file at `path`, applies every automatic fix (honoring
-/// the semicolon and indentation style `config` selects), writes the
+/// the semicolon and indentation style `context.config` selects), writes the
 /// repaired source back to disk, and returns the diagnostics that remain.
-/// See [`lint_psc_file`] for `root`/`additional_roots`/`compiler_path`/
-/// `compile_check`.
+/// See [`ProjectLintContext`] for `root`/`additional_roots`/`lookup_roots`/
+/// `compiler_path`/`compile_check`.
 #[tauri::command(async)]
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn repair_psc_file(
     path: String,
-    root: String,
-    config: papyrus_lints::Config,
-    additional_roots: Vec<String>,
-    lookup_roots: Vec<String>,
-    compiler_path: String,
-    compile_check: bool,
+    context: ProjectLintContext,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
@@ -31,29 +56,19 @@ pub(crate) fn repair_psc_file(
     // call, since "unused-import" -- unlike every other fixable rule -- can
     // only resolve which imports are unused through this project's own
     // cross-script resolver (see `papyrus_lints::repair_with_external_arguments`).
-    let function_table =
-        project_function_table(root.clone(), additional_roots.clone(), lookup_roots);
+    let function_table = context.function_table();
     let repaired = {
-        let mut shared =
-            papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
-        papyrus_lints::repair_with_external_arguments(&source, &config, &mut shared)
+        let mut shared = SharedFunctionTable(function_table.as_ref());
+        papyrus_lints::repair_with_external_arguments(&source, &context.config, &mut shared)
     };
-    if repaired != source {
-        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
-    }
-    ast_cache::ensure_primed(path, &repaired);
-    let mut shared =
-        papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
-    Ok(lint_with_compile_check(
+    write_prime_and_relint(
         path,
+        &source,
         &repaired,
-        &config,
-        &mut shared,
-        Path::new(&root),
-        &additional_roots,
-        &compiler_path,
-        compile_check,
-    ))
+        encoding,
+        &context,
+        function_table.as_ref(),
+    )
 }
 
 /// Like [`repair_psc_file`], but never writes anything to disk: computes the
@@ -113,15 +128,9 @@ pub(crate) fn preview_repair_psc_line(
 /// frontend surfaces that error and points the user at "Apply fixes"
 /// instead.
 #[tauri::command(async)]
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn repair_psc_finding(
     path: String,
-    root: String,
-    config: papyrus_lints::Config,
-    additional_roots: Vec<String>,
-    lookup_roots: Vec<String>,
-    compiler_path: String,
-    compile_check: bool,
+    context: ProjectLintContext,
     rule: String,
     line: usize,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
@@ -129,14 +138,12 @@ pub(crate) fn repair_psc_finding(
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     // See `repair_psc_file`'s own comment: built before the fix so
     // "unused-import"'s fix (if `rule` names it) can resolve through it too.
-    let function_table =
-        project_function_table(root.clone(), additional_roots.clone(), lookup_roots);
+    let function_table = context.function_table();
     let repaired = {
-        let mut shared =
-            papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
+        let mut shared = SharedFunctionTable(function_table.as_ref());
         papyrus_lints::repair_selected_with_external_arguments(
             &source,
-            &config,
+            &context.config,
             &mut shared,
             Some(rule.as_str()),
             None,
@@ -147,22 +154,14 @@ pub(crate) fn repair_psc_finding(
         "Fixing this issue would change other lines in the file; use \"Apply fixes\" instead."
             .to_string()
     })?;
-    if repaired != source {
-        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
-    }
-    ast_cache::ensure_primed(path, &repaired);
-    let mut shared =
-        papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
-    Ok(lint_with_compile_check(
+    write_prime_and_relint(
         path,
+        &source,
         &repaired,
-        &config,
-        &mut shared,
-        Path::new(&root),
-        &additional_roots,
-        &compiler_path,
-        compile_check,
-    ))
+        encoding,
+        &context,
+        function_table.as_ref(),
+    )
 }
 
 /// Like [`repair_psc_file`], but applies only the automatic fix for `rule`
@@ -173,49 +172,33 @@ pub(crate) fn repair_psc_finding(
 /// across every file in the current results to clear one issue project-wide
 /// (e.g. every trailing-whitespace finding) in one go.
 #[tauri::command(async)]
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn repair_psc_file_rule(
     path: String,
-    root: String,
-    config: papyrus_lints::Config,
-    additional_roots: Vec<String>,
-    lookup_roots: Vec<String>,
-    compiler_path: String,
-    compile_check: bool,
+    context: ProjectLintContext,
     rule: String,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     // See `repair_psc_file`'s own comment: built before the fix so
     // "unused-import"'s fix (if `rule` names it) can resolve through it too.
-    let function_table =
-        project_function_table(root.clone(), additional_roots.clone(), lookup_roots);
+    let function_table = context.function_table();
     let repaired = {
-        let mut shared =
-            papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
+        let mut shared = SharedFunctionTable(function_table.as_ref());
         papyrus_lints::repair_filtered_with_external_arguments(
             &source,
-            &config,
+            &context.config,
             &mut shared,
             Some(rule.as_str()),
         )
     };
-    if repaired != source {
-        write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
-    }
-    ast_cache::ensure_primed(path, &repaired);
-    let mut shared =
-        papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
-    Ok(lint_with_compile_check(
+    write_prime_and_relint(
         path,
+        &source,
         &repaired,
-        &config,
-        &mut shared,
-        Path::new(&root),
-        &additional_roots,
-        &compiler_path,
-        compile_check,
-    ))
+        encoding,
+        &context,
+        function_table.as_ref(),
+    )
 }
 
 /// Adds (or extends) an `; @disable <rules>` comment on `line` (1-indexed)
@@ -227,39 +210,24 @@ pub(crate) fn repair_psc_file_rule(
 /// afterward and returns its updated diagnostics, the same as every other
 /// mutating command here.
 #[tauri::command(async)]
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn add_disable_comment_to_psc_line(
     path: String,
-    root: String,
-    config: papyrus_lints::Config,
-    additional_roots: Vec<String>,
-    lookup_roots: Vec<String>,
-    compiler_path: String,
-    compile_check: bool,
+    context: ProjectLintContext,
     rules: Vec<String>,
     line: usize,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     let updated = papyrus_lints::add_disable_comment(&source, line, &rules);
-    if updated != source {
-        write_psc_source(path, &updated, encoding).map_err(|err| err.to_string())?;
-    }
-    ast_cache::ensure_primed(path, &updated);
-    let function_table =
-        project_function_table(root.clone(), additional_roots.clone(), lookup_roots);
-    let mut shared =
-        papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
-    Ok(lint_with_compile_check(
+    let function_table = context.function_table();
+    write_prime_and_relint(
         path,
+        &source,
         &updated,
-        &config,
-        &mut shared,
-        Path::new(&root),
-        &additional_roots,
-        &compiler_path,
-        compile_check,
-    ))
+        encoding,
+        &context,
+        function_table.as_ref(),
+    )
 }
 
 #[cfg(test)]
