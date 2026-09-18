@@ -33,12 +33,17 @@ export class PapyrusLinter {
    * itself does, and never pops an error message box: it runs on every pause in
    * typing, so a transient failure (e.g. a download hiccup) is logged to the
    * output channel instead of interrupting the user. */
-  async lintBlob(document: vscode.TextDocument): Promise<void> {
+  async lintBlob(
+    document: vscode.TextDocument,
+    shouldApply: () => boolean = () => true,
+  ): Promise<void> {
     const result = await runCli(
       withConfigOverride(['--json', '--blob', document.getText()]),
       path.dirname(document.uri.fsPath),
     );
-    this.applyResult(document.uri, result, false);
+    if (shouldApply()) {
+      this.applyResult(document.uri, result, false);
+    }
   }
 
   async fix(uri: vscode.Uri): Promise<void> {

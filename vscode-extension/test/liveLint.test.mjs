@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, describe, it } from 'node:test';
-import { createHarness, papyrusDocument, restoreModules, uri } from './harness.mjs';
+import { createHarness, papyrusDocument, restoreModules, uri, validReport } from './harness.mjs';
 
 afterEach(restoreModules);
 
@@ -30,6 +30,38 @@ describe('live linting via --blob', () => {
 
     assert.equal(harness.execCalls.length, 1);
     assert.deepEqual(harness.execCalls[0].args, ['--json', '--blob', 'ScriptName Test\n']);
+  });
+
+  it('does not let an older in-flight lint overwrite a newer result', async () => {
+    const callbacks = [];
+    const harness = createHarness({
+      result: ({ callback }) => callbacks.push(callback),
+    });
+    const older = papyrusDocument('/project/Test.psc', 'ScriptName Older\n');
+    const newer = papyrusDocument('/project/Test.psc', 'ScriptName Newer\n');
+
+    harness.listeners.change({ document: older });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    harness.listeners.change({ document: newer });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    callbacks[1](null, validReport({
+      files: [{
+        path: '/project/Test.psc',
+        diagnostics: [{ line: 2, column: 1, rule: 'newer', message: 'Newer result.' }],
+      }],
+    }), '');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    callbacks[0](null, validReport({
+      files: [{
+        path: '/project/Test.psc',
+        diagnostics: [{ line: 1, column: 1, rule: 'older', message: 'Older result.' }],
+      }],
+    }), '');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(harness.diagnostics.published.length, 1);
+    assert.equal(harness.diagnostics.published[0][1][0].code, 'newer');
   });
 
   it('logs a live lint failure instead of showing an error message', async () => {
@@ -75,6 +107,28 @@ describe('live linting via --blob', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     assert.equal(harness.execCalls.length, 0);
+  });
+
+  it('does not republish diagnostics when an in-flight lint finishes after close', async () => {
+    let finishLint;
+    const harness = createHarness({
+      result: ({ callback }) => { finishLint = callback; },
+    });
+    const document = papyrusDocument('/project/Test.psc', 'ScriptName Test\n');
+
+    harness.listeners.change({ document });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    harness.listeners.close(document);
+    finishLint(null, validReport({
+      files: [{
+        path: '/project/Test.psc',
+        diagnostics: [{ line: 1, column: 1, rule: 'late', message: 'Late result.' }],
+      }],
+    }), '');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(harness.diagnostics.deleted.length, 1);
+    assert.equal(harness.diagnostics.published.length, 0);
   });
 
   it('clears pending live lints on deactivate', async () => {
