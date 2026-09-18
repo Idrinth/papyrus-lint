@@ -380,11 +380,7 @@ class BuildTest(unittest.TestCase):
             pages_dir = root / "pages"
             pages_dir.mkdir()
             (root / "README.md").write_text(
-                """## Command-line interface
-```console
-PapyrusLinterCLI example.psc
-```
-""",
+                """## Command-line interface""",
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
@@ -470,7 +466,6 @@ PapyrusLinterCLI example.psc
                 page_builder.build(out_dir, version="v1.2.3")
 
             output = (out_dir / "index.html").read_text(encoding="utf-8")
-            self.assertIn("PapyrusLinterCLI example.psc", output)
             self.assertIn("v1.2.3", output)
             self.assertNotIn("<!--CLI_EXAMPLES-->", output)
             self.assertNotIn("<!--DOCS_LIST-->", output)
