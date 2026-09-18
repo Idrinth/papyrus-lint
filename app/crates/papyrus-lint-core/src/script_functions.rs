@@ -8,7 +8,7 @@ use std::collections::{HashMap, HashSet};
 use serde::Serialize;
 
 use papyrus_lints::ParamInfo;
-use papyrus_parser::ast::{FunctionDecl, PropertyDecl, Script, TypeName};
+use papyrus_parser::ast::{Expr, FunctionDecl, PropertyDecl, Script, Stmt, TypeName};
 
 /// The parameters (name and type) and return type of a single function, as
 /// declared on a script.
@@ -34,10 +34,21 @@ pub struct FunctionSignature {
     /// headers). `None` when the declaration has no such comment, or the
     /// comment is empty. Carried through to editor autocompletion / hover.
     pub doc: Option<String>,
+    /// Whether calling this function can change state outside its own
+    /// locals: it directly assigns a property or field (its own, an
+    /// inherited one, or one on another object), or it calls another
+    /// function declared on the same script that does (directly or
+    /// transitively, through any number of same-script calls). See
+    /// [`side_effects_by_name`] for exactly what can and can't be proven
+    /// this way — in particular, a call to a native engine function or to
+    /// another script's function is never enough on its own to set this,
+    /// since this script's own function list can't see what either one
+    /// does. `false` is therefore "not provably side-effecting", not "pure".
+    pub has_side_effects: bool,
 }
 
 impl FunctionSignature {
-    fn from_decl(decl: &FunctionDecl, doc: Option<String>) -> Self {
+    fn from_decl(decl: &FunctionDecl, doc: Option<String>, has_side_effects: bool) -> Self {
         FunctionSignature {
             name: decl.name.clone(),
             params: decl
@@ -54,6 +65,7 @@ impl FunctionSignature {
             is_event: decl.is_event,
             state: decl.state.clone(),
             doc,
+            has_side_effects,
         }
     }
 }
@@ -135,13 +147,32 @@ impl ScriptFunctions {
                 .or_insert(false);
             *is_auto |= state.is_auto;
         }
+        // The same first-match-wins selection `functions` below uses (empty
+        // state beats a state override), but keeping the raw `FunctionDecl`
+        // (bodies included) so `side_effects_by_name` has something to walk.
+        let mut canonical_decls: HashMap<String, &FunctionDecl> = script
+            .functions
+            .iter()
+            .map(|f| (f.name.to_ascii_lowercase(), f))
+            .collect();
+        for state in &script.states {
+            for f in &state.functions {
+                canonical_decls
+                    .entry(f.name.to_ascii_lowercase())
+                    .or_insert(f);
+            }
+        }
+        let side_effects = side_effects_by_name(&canonical_decls);
+
         let mut functions: HashMap<String, FunctionSignature> = script
             .functions
             .iter()
             .map(|f| {
+                let key = f.name.to_ascii_lowercase();
+                let has_side_effects = side_effects.get(&key).copied().unwrap_or(false);
                 (
-                    f.name.to_ascii_lowercase(),
-                    FunctionSignature::from_decl(f, doc_for(f.line)),
+                    key,
+                    FunctionSignature::from_decl(f, doc_for(f.line), has_side_effects),
                 )
             })
             .collect();
@@ -155,9 +186,11 @@ impl ScriptFunctions {
         // against.
         for state in &script.states {
             for f in &state.functions {
-                functions
-                    .entry(f.name.to_ascii_lowercase())
-                    .or_insert_with(|| FunctionSignature::from_decl(f, doc_for(f.line)));
+                let key = f.name.to_ascii_lowercase();
+                functions.entry(key.clone()).or_insert_with(|| {
+                    let has_side_effects = side_effects.get(&key).copied().unwrap_or(false);
+                    FunctionSignature::from_decl(f, doc_for(f.line), has_side_effects)
+                });
             }
         }
         let properties = script
@@ -185,3 +218,208 @@ impl ScriptFunctions {
         }
     }
 }
+
+/// Computes, for every function keyed (by lowercased name) in `decls`,
+/// whether it has a side effect: it directly writes a property or field, or
+/// it calls — directly, or transitively through any chain of same-script
+/// calls — another function in `decls` that does. Starts from each
+/// function's own body, then propagates through the same-script call graph
+/// to a fixed point, so mutual recursion between two otherwise "pure"
+/// functions is resolved correctly once either one is found to write
+/// something.
+///
+/// A call to a native engine function or to a function on another script
+/// can never turn this `true` from here, since neither one's body is
+/// visible to a single script's own function list; that cross-script
+/// question belongs to whatever caller can see the whole
+/// `FunctionTable`, not to this per-script computation.
+fn side_effects_by_name(decls: &HashMap<String, &FunctionDecl>) -> HashMap<String, bool> {
+    let mut result: HashMap<String, bool> = HashMap::with_capacity(decls.len());
+    let mut calls: HashMap<String, HashSet<String>> = HashMap::with_capacity(decls.len());
+
+    for (name, decl) in decls {
+        let locals = local_names(decl);
+        let mut writes = false;
+        let mut called = HashSet::new();
+        scan_stmts(&decl.body, &locals, &mut writes, &mut called);
+        result.insert(name.clone(), writes);
+        calls.insert(name.clone(), called);
+    }
+
+    let mut changed = true;
+    while changed {
+        changed = false;
+        for (name, callees) in &calls {
+            if result[name] {
+                continue;
+            }
+            if callees
+                .iter()
+                .any(|callee| result.get(callee).copied().unwrap_or(false))
+            {
+                result.insert(name.clone(), true);
+                changed = true;
+            }
+        }
+    }
+
+    result
+}
+
+/// Names visible as locals anywhere in `decl`'s body: its parameters, plus
+/// every `VariableDecl` declared in the body. Papyrus locals aren't
+/// block-scoped, so a declaration nested in an `If`/`While` still shadows a
+/// same-named property/field for the rest of the function. Lowercased for
+/// case-insensitive lookup.
+fn local_names(decl: &FunctionDecl) -> HashSet<String> {
+    let mut locals: HashSet<String> = decl
+        .params
+        .iter()
+        .map(|p| p.name.to_ascii_lowercase())
+        .collect();
+    collect_var_decl_names(&decl.body, &mut locals);
+    locals
+}
+
+fn collect_var_decl_names(body: &[Stmt], locals: &mut HashSet<String>) {
+    for stmt in body {
+        match stmt {
+            Stmt::VarDecl(decl) => {
+                locals.insert(decl.name.to_ascii_lowercase());
+            }
+            Stmt::If {
+                branches,
+                else_body,
+                ..
+            } => {
+                for branch in branches {
+                    collect_var_decl_names(&branch.body, locals);
+                }
+                collect_var_decl_names(else_body, locals);
+            }
+            Stmt::While { body, .. } => collect_var_decl_names(body, locals),
+            _ => {}
+        }
+    }
+}
+
+/// Walks every statement in `body` (recursing into `If`/`While` bodies),
+/// setting `*writes` once any assignment target writes a property or field
+/// (see [`writes_field`]), and collecting into `called` the lowercased name
+/// of every same-script function called anywhere along the way (see
+/// [`scan_expr`]).
+fn scan_stmts(
+    body: &[Stmt],
+    locals: &HashSet<String>,
+    writes: &mut bool,
+    called: &mut HashSet<String>,
+) {
+    for stmt in body {
+        match stmt {
+            Stmt::VarDecl(decl) => {
+                if let Some(value) = &decl.value {
+                    scan_expr(value, called);
+                }
+            }
+            Stmt::Assign { target, value, .. } => {
+                if writes_field(target, locals) {
+                    *writes = true;
+                }
+                scan_expr(target, called);
+                scan_expr(value, called);
+            }
+            Stmt::Expr { value, .. } => scan_expr(value, called),
+            Stmt::Return { value, .. } => {
+                if let Some(value) = value {
+                    scan_expr(value, called);
+                }
+            }
+            Stmt::If {
+                branches,
+                else_body,
+                ..
+            } => {
+                for branch in branches {
+                    scan_expr(&branch.condition, called);
+                    scan_stmts(&branch.body, locals, writes, called);
+                }
+                scan_stmts(else_body, locals, writes, called);
+            }
+            Stmt::While {
+                condition, body, ..
+            } => {
+                scan_expr(condition, called);
+                scan_stmts(body, locals, writes, called);
+            }
+        }
+    }
+}
+
+/// Whether assigning to `target` writes a property or field rather than a
+/// local: a bare name that isn't one of the function's own locals (in
+/// Papyrus, that always resolves to a property or field, whether declared
+/// on this script or inherited), or any `object.Property` member access —
+/// writing through a member is a property write regardless of whether
+/// `object` is `Self` or something else. Any other target shape (indexing
+/// into an array) mutates what the reference points to, not a property or
+/// field itself, so it isn't counted here.
+fn writes_field(target: &Expr, locals: &HashSet<String>) -> bool {
+    match target {
+        Expr::Identifier(name) => !locals.contains(&name.to_ascii_lowercase()),
+        Expr::Member { .. } => true,
+        _ => false,
+    }
+}
+
+/// Collects into `called` the lowercased name of every same-script function
+/// called anywhere in `expr` (through a bare name or `Self.Name`),
+/// recursing into every sub-expression so a call nested in another call's
+/// arguments, a binary operand, and so on is still found. A call through
+/// any other object (`akActor.Foo()`) can't be resolved without
+/// cross-script information, so only its own arguments are still scanned
+/// for nested same-script calls.
+fn scan_expr(expr: &Expr, called: &mut HashSet<String>) {
+    match expr {
+        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::Binary { left, right, .. } => {
+            scan_expr(left, called);
+            scan_expr(right, called);
+        }
+        Expr::Unary { operand, .. } => scan_expr(operand, called),
+        Expr::Call { callee, args, .. } => {
+            if let Some(name) = called_same_script_name(callee) {
+                called.insert(name);
+            }
+            scan_expr(callee, called);
+            for arg in args {
+                scan_expr(arg, called);
+            }
+        }
+        Expr::NamedArg { value, .. } => scan_expr(value, called),
+        Expr::Member { object, .. } => scan_expr(object, called),
+        Expr::Index { object, index } => {
+            scan_expr(object, called);
+            scan_expr(index, called);
+        }
+        Expr::Cast { value, .. } => scan_expr(value, called),
+        Expr::NewArray { size, .. } => scan_expr(size, called),
+    }
+}
+
+/// The lowercased function name `callee` resolves to when it's a bare name
+/// or `Self.Name` — a call this script's own function list might be able to
+/// answer for. `None` for a call through any other object, which can't be
+/// resolved without cross-script information.
+fn called_same_script_name(callee: &Expr) -> Option<String> {
+    match callee {
+        Expr::Identifier(name) => Some(name.to_ascii_lowercase()),
+        Expr::Member { object, property } if matches!(object.as_ref(), Expr::Self_) => {
+            Some(property.to_ascii_lowercase())
+        }
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+#[path = "script_functions_tests.rs"]
+mod tests;
