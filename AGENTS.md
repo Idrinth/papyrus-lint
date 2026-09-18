@@ -83,8 +83,10 @@ CI treats clippy warnings as errors.
    style, `category`, `tags`, `severity`, `importance`, `fixable`) is what
    every other consumer generates from. Nothing else is hand-edited from
    it: `build.rs` compiles `app/crates/papyrus-lints`'s
-   `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`) and `RULE_TAGS`
-   (`src/tags.rs`) from it at build time; `pages/build.py` generates the
+   `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`), `RULE_TAGS`
+   (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), and the
+   `collect_diagnostics`/`apply_repairs` dispatch (from `rule_dispatch.json`)
+   from it at build time; `pages/build.py` generates the
    website's searchable `rules.html` straight from it; and release tooling
    fills in `docs/nexuspage.bbcode`'s five lint tables from it (see
    Releases in `docs/agent/releases.md`) — the checked-in file carries no
@@ -107,19 +109,27 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
 1. `app/crates/papyrus-lints/src/<rule>.rs` — check (and optional repair);
    put its tests in a sibling `<rule>_tests.rs`, included via
    `#[cfg(test)] #[path = "<rule>_tests.rs"] mod tests;`.
-2. `app/crates/papyrus-lints/src/lib.rs` — `mod`; `src/registry.rs`'s
-   `collect_diagnostics` dispatch, and `apply_repairs` if it auto-fixes.
-3. `app/crates/papyrus-lints/src/config.rs` — field on `Rules` and its
-   `Default` (and the rustdoc yaml example at the top of the file).
+2. `app/crates/papyrus-lints/src/lib.rs` — `mod`.
+3. `app/crates/papyrus-lints/rule_dispatch.json` — `check` (a Rust
+   expression, e.g. `trailing_whitespace::check(source)`). If the rule
+   auto-fixes inside `registry::apply_repairs`, also set `repair` and
+   `repair_order`. Project-level rules and `unused-disable` omit `check`
+   (they run outside this crate / after the main pass). `Rules`,
+   `default_rules()`, `collect_diagnostics`, and `apply_repairs` are
+   generated from this file plus `docs/rules.json` — don't hand-edit
+   them.
 4. `docs/rules.json` — a new entry: `id`, `name`, `definition` (the long,
    README-style description), a short `description` blurb matching
    `docs/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
    `Performance`, `Reliability`, `Bugprone`, `Other`), `tags`,
-   `importance`, `severity`, and `fixable`. No Nexus page regeneration step
+   `importance`, `severity`, and `fixable`. Set `"enabled_by_default":
+   false` only for opt-in rules. No Nexus page regeneration step
    is needed here — that happens at release time (see Releases in
    `docs/agent/releases.md`). `build.rs` generates
-   `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` and `tags.rs`'s
-   `RULE_TAGS` from this file at build time — don't hand-edit those;
+   `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
+   `RULE_TAGS`, `config.rs`'s `Rules`/`default_rules()`, and
+   `collect_diagnostics`/`apply_repairs` from this file (and
+   `rule_dispatch.json`) at build time — don't hand-edit those;
    `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
    the rule id alone, so it needs no separate slug field either. A new
    `"low"` importance rule is turned off by default in the generated
