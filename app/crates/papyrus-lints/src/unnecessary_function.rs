@@ -10,8 +10,15 @@
 //! own. A `Function` named `Fragment_<digits>` (e.g. `Fragment_0`) is left
 //! alone for the same reason: CreationKit generates that name and calls it
 //! directly, so it isn't a wrapper the script's own author could inline
-//! away. This works from the parsed AST, so a script that doesn't parse
-//! cleanly is left unchecked rather than guessed at.
+//! away. A parameterless `Function` returning one of Papyrus's primitive
+//! scalar types (`Int`, `Float`, `Bool`, `String`) is left alone too: that
+//! shape is how a script exposes a named constant to the outside world
+//! (e.g. `Int Function GetFooThreshold() Global` `Return 5`
+//! `EndFunction`) without baking the value into every instance as a
+//! `Property`/`Variable`, which is a deliberate design rather than an
+//! indirection worth inlining away. This works from the parsed AST, so a
+//! script that doesn't parse cleanly is left unchecked rather than guessed
+//! at.
 //!
 //! [`repair`] handles the specific, common shape of a single-statement
 //! function that's nothing but a "pure forwarding" wrapper around another
@@ -24,7 +31,7 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Param, Script, Stmt};
+use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Param, Script, Stmt, TypeName};
 use papyrus_parser::token::{Token, TokenKind};
 
 use crate::Diagnostic;
@@ -48,7 +55,11 @@ pub fn check(
 
     all_functions(script)
         .filter(|function| {
-            !function.is_event && function.body.len() == 1 && !is_fragment_function(&function.name)
+            if function.is_event || function.body.len() != 1 || is_fragment_function(&function.name)
+            {
+                return false;
+            }
+            !(function.params.is_empty() && returns_simple_type(&function.return_type))
         })
         .map(|function| Diagnostic {
             line: function.line,
@@ -82,6 +93,20 @@ fn is_fragment_function(name: &str) -> bool {
         .is_some_and(|prefix| prefix.eq_ignore_ascii_case("Fragment_"))
         && !name[9..].is_empty()
         && name[9..].bytes().all(|byte| byte.is_ascii_digit())
+}
+
+/// Whether `return_type` is one of Papyrus's primitive scalar types
+/// (`Int`, `Float`, `Bool`, `String`), rather than an array or an
+/// object/`Form` type — the shape a parameterless function must return to
+/// be read as a named constant instead of an inlinable wrapper.
+fn returns_simple_type(return_type: &Option<TypeName>) -> bool {
+    return_type.as_ref().is_some_and(|type_name| {
+        !type_name.is_array
+            && matches!(
+                type_name.name.to_lowercase().as_str(),
+                "int" | "float" | "bool" | "string"
+            )
+    })
 }
 
 /// Rewrites every call site of a "pure forwarding" wrapper function into a
