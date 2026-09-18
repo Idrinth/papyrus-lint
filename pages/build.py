@@ -173,9 +173,7 @@ def build_robots_txt(out_dir: Path) -> None:
 
 
 def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) -> None:
-    readme_lines = (ROOT / "README.md").read_text(encoding="utf-8").splitlines()
-    cli_section = extract_section(readme_lines, "Command-line interface", level=2)
-    cli_examples = html.escape(first_code_block(cli_section))
+    cli_examples = html.escape(Path("/docs/papyrus-cli-usage.txt").read_text(encoding="utf-8", errors="replace"))
 
     doc_results = {}
     for doc in DOCS:
