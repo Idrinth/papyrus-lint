@@ -386,6 +386,20 @@ class MarkdownToHtmlTest(unittest.TestCase):
 
         self.assertEqual(result, "<p>A dash - mid sentence, not a list.</p>")
 
+    def test_markdown_to_html_ends_a_list_at_a_heading_with_no_blank_separator(self) -> None:
+        result = markdown_render.markdown_to_html(["- Only item", "## Next"])
+
+        self.assertEqual(result, "<ul><li>Only item</li></ul>\n<h2>Next</h2>")
+
+    def test_markdown_to_html_ends_a_list_at_a_code_fence_with_no_blank_separator(self) -> None:
+        result = markdown_render.markdown_to_html(["- Only item", "```text", "code", "```"])
+
+        self.assertEqual(
+            result,
+            '<ul><li>Only item</li></ul>\n<pre class="code-block language-text" tabindex="0">'
+            "<code>code</code></pre>",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

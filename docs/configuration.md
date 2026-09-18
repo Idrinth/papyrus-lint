@@ -3,8 +3,12 @@
 Lint/fix behavior is configured via an optional YAML file named
 `papyrus-lint.yaml` (or `papyrus-lint.yml`), placed at the project root:
 next to the `.achlist` file you drop into the app, or, for a single
-`.psc` file dropped directly, two directories above it (e.g. `Data` for
-`Data/Scripts/Source/abc.psc`). Any key it omits falls back to its
+`.psc` file dropped directly, wherever that file's project root resolves
+to — conventionally the directory above its `Scripts/Source`/
+`Source/Scripts` pair (e.g. `Data` for `Data/Scripts/Source/abc.psc`), or
+the nearest ancestor directory that already has a config file; see
+[Resolving a project](cli.md) in the CLI reference for the exact
+resolution order. Any key it omits falls back to its
 default. The full default configuration, with every key documented inline,
 is checked in at
 [`docs/papyrus-lint.default.yaml`](papyrus-lint.default.yaml) — it's

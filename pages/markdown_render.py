@@ -159,6 +159,8 @@ def markdown_to_html(lines: list[str], link_rewrite=None) -> str:
             items = [[list_item.group(1)]]
             i += 1
             while i < len(lines) and lines[i].strip():
+                if HEADING_RE.match(lines[i]) or lines[i].strip().startswith("```"):
+                    break
                 next_stripped = lines[i].strip()
                 next_item = LIST_ITEM_RE.match(next_stripped)
                 if next_item:

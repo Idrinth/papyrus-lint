@@ -152,16 +152,10 @@ If the rule introduces a new *kind* keyword (not `style` /
   `docs/nexuspage.bbcode` CLI or configuration section (hand-edited; not
   covered by the generator above). Other README/`docs/*.md` edits do not
   need a Nexus update.
-- `pages/index.template.html`'s CLI examples are generated from the
-  README's own copy of that example block on deploy (see
-  `pages/build.py`'s `extract_section`/`first_code_block`, which requires
-  the `## Command-line interface` heading and its first fenced code block
-  to stay in `README.md`); lint tables are generated from
-  `docs/rules.json` instead. Every file in `docs/` is separately published
-  as its own subpage — see `pages/docs_pages.py`'s `DOCS` list — so a new
-  `docs/*.md` file needs an entry there to be reachable from the site.
-  Only `index.template.html`'s hand-authored hero/cards/blurbs need a
-  human pass when those parts of the README change meaningfully.
+- `pages/index.template.html`'s CLI examples and every `docs/` subpage are
+  generated from `README.md`/`docs/*.md` on deploy — see Pages in
+  `docs/agent/pages.md` for the `<!--CLI_EXAMPLES-->` extraction and the
+  `DOCS` list a new `docs/*.md` file needs an entry in.
 
 ## Pull request body
 
