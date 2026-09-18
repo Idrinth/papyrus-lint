@@ -266,9 +266,69 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "$GITHUB_REF_NAME" cli-dist/* --clobber --repo "${{ github.repository }}"
 
+  sign-cli-binaries:
+    name: Sign CLI binaries
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Download CLI binaries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p cli-assets
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir cli-assets \
+            -p "PapyrusLinterCLI-linux" \
+            -p "PapyrusLinterCLI-macos" \
+            -p "PapyrusLinterCLI-windows.exe"
+
+      - name: Sign and verify CLI binaries
+        env:
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+        run: |
+          files2sign=(
+            "PapyrusLinterCLI-linux"
+            "PapyrusLinterCLI-macos"
+            "PapyrusLinterCLI-windows.exe"
+          )
+          mkdir signatures
+          missing=0
+          for name in "${files2sign[@]}"; do
+            bundle="signatures/${name}.sigstore.json"
+            asset="cli-assets/${name}"
+            if [ ! -f "$asset" ]; then
+              echo "::error::Expected release asset '$name' was not downloaded; the release job may not have uploaded it." >&2
+              missing=1
+            else
+              cosign sign-blob --yes --bundle "$bundle" "$asset"
+              cosign verify-blob \
+                --bundle "$bundle" \
+                --certificate-identity "$CERTIFICATE_IDENTITY" \
+                --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+                "$asset"
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Upload CLI signatures to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$GITHUB_REF_NAME" "signatures/*.sigstore.json" --clobber --repo "${{ github.repository }}"
+
   vscode-plugin:
     runs-on: ubuntu-latest
-    needs: release
+    needs:
+      - release
+      - sign-cli-binaries
     permissions:
       contents: write
     steps:
@@ -279,6 +339,26 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           node -e "const fs=require('fs'); const p=require('./vscode-extension/package.json'); p.version=process.argv[1]; fs.writeFileSync('./vscode-extension/package.json', JSON.stringify(p, null, 2) + '\\n')" "$VERSION"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Download, verify, and bake signed CLI hashes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+        run: |
+          mkdir -p cli-assets
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir cli-assets \
+            -p "PapyrusLinterCLI-linux" \
+            -p "PapyrusLinterCLI-macos" \
+            -p "PapyrusLinterCLI-windows.exe" \
+            -p "PapyrusLinterCLI-linux.sigstore.json" \
+            -p "PapyrusLinterCLI-macos.sigstore.json" \
+            -p "PapyrusLinterCLI-windows.exe.sigstore.json"
+          python3 .github/scripts/verify_cli_signatures.py cli-assets
 
       - uses: actions/setup-node@v7
         with:
@@ -304,7 +384,9 @@ jobs:
 
   sublime-plugin:
     runs-on: ubuntu-latest
-    needs: release
+    needs:
+      - release
+      - sign-cli-binaries
     permissions:
       contents: write
     steps:
@@ -315,6 +397,26 @@ jobs:
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           printf '%s\n' "$VERSION" > SublimeLinter-contrib-papyrus-lint/VERSION
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Download, verify, and bake signed CLI hashes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
+        run: |
+          mkdir -p cli-assets
+          gh release download "${{ github.ref_name }}" \
+            --repo "${{ github.repository }}" \
+            --dir cli-assets \
+            -p "PapyrusLinterCLI-linux" \
+            -p "PapyrusLinterCLI-macos" \
+            -p "PapyrusLinterCLI-windows.exe" \
+            -p "PapyrusLinterCLI-linux.sigstore.json" \
+            -p "PapyrusLinterCLI-macos.sigstore.json" \
+            -p "PapyrusLinterCLI-windows.exe.sigstore.json"
+          python3 .github/scripts/verify_cli_signatures.py cli-assets
 
       - name: Package SublimeLinter plugin
         run: |
@@ -354,9 +456,6 @@ jobs:
           CERTIFICATE_IDENTITY: https://github.com/${{ github.workflow_ref }}
         run: |
           files2sign=(
-            "PapyrusLinterCLI-linux"
-            "PapyrusLinterCLI-macos"
-            "PapyrusLinterCLI-windows.exe"
             "PapyrusLinter-windows-x64_setup.exe"
             "PapyrusLinter-windows-x64.msi"
             "PapyrusLinter-linux-x86_64.rpm"

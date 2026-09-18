@@ -5,6 +5,10 @@ The plugins download the CLI that matches their own release tag. The hashes
 of those binaries are only known after the `release` job uploads them, so
 this script is run in the plugin packaging jobs against the just-published
 assets and rewrites the checked-in hash modules before vsce/zip run.
+
+Plugin jobs call it through verify_cli_signatures.py, which refuses to bake
+digests until each binary's Sigstore bundle verifies against the release
+workflow identity.
 """
 
 from __future__ import annotations

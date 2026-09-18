@@ -45,14 +45,22 @@ profile on only one root would not apply to the other. The `ubuntu-latest` leg a
 `docs/papyrus-lint.default.yaml` (see Configuration above) to
 `papyrus-lint.yaml` and attaches it to the release alongside the CLI
 binary, rather than generating it by running the freshly built CLI's
-`init` subcommand. A separate `editor-plugins` job runs independently,
-packages the VS Code extension into a `.vsix` (via `@vscode/vsce`, staging
+`init` subcommand. After that matrix finishes, `sign-cli-binaries`
+keylessly signs the three `PapyrusLinterCLI-*` assets with Sigstore using
+GitHub Actions' OIDC identity (the same identity `sign-release-assets`
+uses later) and uploads their `.sigstore.json` bundles. `vscode-plugin`
+and `sublime-plugin` then download those binaries plus bundles, run
+`.github/scripts/verify_cli_signatures.py` (which calls `cosign
+verify-blob` against the release workflow identity, then
+`.github/scripts/write_cli_hashes.py`) so the SHA-256 digests baked into
+the plugins are taken from binaries the release workflow actually signed,
+package the VS Code extension into a `.vsix` (via `@vscode/vsce`, staging
 `shared/images/logo.png` in the extension directory first so the Marketplace
 package includes its declared icon without duplicating the image in source)
 and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip` while
 excluding its development-only `tests/` directory, and
 attaches both to the same release. A final `release-notes` job (after
-both `release` and `editor-plugins` succeed) overwrites the release's
+both `release` and the editor-plugin jobs succeed) overwrites the release's
 title and body — replacing the generic body `tauri-apps/tauri-action`
 set on the `release` job — with the tag name as the title; a changelist
 of the merged pull requests between the previous and current tag,
@@ -88,8 +96,8 @@ would notice, unlike the
 GitHub release notes above where a `component: ci`/`component: pages`
 pull request still gets its own section.
 
-A final `nexus-upload` job (after `release`, `editor-plugins`, and
-`release-notes` all succeed) publishes the release to the project's
+A final `nexus-upload` job (after `release`, `vscode-plugin`,
+`sublime-plugin`, and `release-notes` all succeed) publishes the release to the project's
 [Nexus Mods page](https://www.nexusmods.com/skyrimspecialedition/mods/189862),
 authenticating with the `NEXUSMODS_API_KEY` repo secret, via the
 [`Nexus-Mods/upload-action`](https://github.com/Nexus-Mods/upload-action).
@@ -120,11 +128,12 @@ platform's desktop installer/package (`*setup.exe`, `.msi`, `.rpm`,
 SublimeLinter plugin `.zip` — to VirusTotal for scanning, via
 [`cssnr/virustotal-action`](https://github.com/cssnr/virustotal-action),
 authenticating with the `VIRUSTOTAL_API_KEY` repo secret. It downloads
-just those named assets off the release (the same set
+just those named assets off the release (CLI binaries signed earlier by
+`sign-cli-binaries`, plus the desktop installers and plugin archives
 `sign-release-assets` signs) rather than scanning every attached file, so
 non-binary assets (the Nexus page, the default config, the
-`sign-release-assets` job's own `.sigstore.json` signatures) are left
-out; it runs independently of `sign-release-assets` itself, since
+`.sigstore.json` signatures) are left
+out; it runs independently of the signing jobs themselves, since
 scanning and signing don't touch the same release data. It resolves the
 tag's release id itself (`gh api repos/.../releases/tags/<tag>`) rather
 than relying on a `release` event's own context, since this workflow
