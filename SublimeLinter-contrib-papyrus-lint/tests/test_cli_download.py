@@ -1,5 +1,6 @@
 """Tests for release-specific CLI download selection and caching."""
 
+import hashlib
 import importlib.util
 import os
 import sys
@@ -19,9 +20,23 @@ with unittest.mock.patch.dict(sys.modules, {'sublime': sublime}):
     SPEC.loader.exec_module(cli_download)
 
 
+def _digest(body):
+    return hashlib.sha256(body).hexdigest()
+
+
+def _trust(asset, body):
+    cli_download.CLI_SHA256[asset] = _digest(body)
+    return body
+
+
 class CliDownloadTests(unittest.TestCase):
     def setUp(self):
         cli_download._verified_executables.clear()
+        self._original_hashes = dict(cli_download.CLI_SHA256)
+
+    def tearDown(self):
+        cli_download.CLI_SHA256.clear()
+        cli_download.CLI_SHA256.update(self._original_hashes)
 
     def test_verifies_and_caches_a_matching_manually_configured_cli(self):
         completed = unittest.mock.Mock(
@@ -111,10 +126,11 @@ class CliDownloadTests(unittest.TestCase):
                     self.assertEqual(cli_download.release_version(), '0.1.0')
 
     def test_reuses_a_cached_executable(self):
+        body = _trust('PapyrusLinterCLI-linux', b'cli')
         with tempfile.TemporaryDirectory() as cache:
             executable = Path(cache) / 'PapyrusLint' / 'v1.2.3' / 'PapyrusLinterCLI-linux'
             executable.parent.mkdir(parents=True)
-            executable.write_bytes(b'cli')
+            executable.write_bytes(body)
             executable.chmod(0o700)
             with patch.object(cli_download, 'urlopen') as download:
                 result = cli_download.ensure_release_cli(cache, '1.2.3', 'Linux')
@@ -123,6 +139,7 @@ class CliDownloadTests(unittest.TestCase):
             download.assert_not_called()
 
     def test_reuses_a_windows_cache_without_unix_execute_permissions(self):
+        body = _trust('PapyrusLinterCLI-windows.exe', b'cli')
         with tempfile.TemporaryDirectory() as cache:
             executable = (
                 Path(cache)
@@ -131,7 +148,7 @@ class CliDownloadTests(unittest.TestCase):
                 / 'PapyrusLinterCLI-windows.exe'
             )
             executable.parent.mkdir(parents=True)
-            executable.write_bytes(b'cli')
+            executable.write_bytes(body)
             executable.chmod(0o600)
 
             with (
@@ -147,11 +164,12 @@ class CliDownloadTests(unittest.TestCase):
             download.assert_not_called()
 
     def test_uses_release_version_and_detected_platform_by_default(self):
+        body = _trust('PapyrusLinterCLI-linux', b'cli')
         with (
             tempfile.TemporaryDirectory() as cache,
             patch.object(cli_download, 'release_version', return_value='4.5.6') as version,
             patch.object(cli_download.platform, 'system', return_value='Linux') as system,
-            patch.object(cli_download, 'urlopen', return_value=BytesIO(b'cli')) as download,
+            patch.object(cli_download, 'urlopen', return_value=BytesIO(body)) as download,
         ):
             result = Path(cli_download.ensure_release_cli(cache))
 
@@ -168,8 +186,9 @@ class CliDownloadTests(unittest.TestCase):
         )
 
     def test_downloads_release_to_versioned_cache_and_makes_it_executable(self):
+        body = _trust('PapyrusLinterCLI-linux', b'first chunk' + b'second chunk')
         with tempfile.TemporaryDirectory() as cache:
-            response = BytesIO(b'first chunk' + b'second chunk')
+            response = BytesIO(body)
             with patch.object(cli_download, 'urlopen', return_value=response) as download:
                 result = Path(
                     cli_download.ensure_release_cli(cache, '2.3.4', 'Linux')
@@ -182,7 +201,7 @@ class CliDownloadTests(unittest.TestCase):
                 / 'v2.3.4'
                 / 'PapyrusLinterCLI-linux',
             )
-            self.assertEqual(result.read_bytes(), b'first chunksecond chunk')
+            self.assertEqual(result.read_bytes(), body)
             self.assertTrue(os.access(result, os.X_OK))
             download.assert_called_once_with(
                 f'{cli_download.RELEASE_BASE}/v2.3.4/PapyrusLinterCLI-linux',
@@ -191,6 +210,7 @@ class CliDownloadTests(unittest.TestCase):
             self.assertEqual(list(result.parent.iterdir()), [result])
 
     def test_downloads_a_new_cli_when_the_plugin_version_changes(self):
+        body = _trust('PapyrusLinterCLI-linux', b'fresh')
         with tempfile.TemporaryDirectory() as cache:
             previous = Path(cache) / 'PapyrusLint' / 'v1.2.3' / 'PapyrusLinterCLI-linux'
             previous.parent.mkdir(parents=True)
@@ -199,14 +219,14 @@ class CliDownloadTests(unittest.TestCase):
             leftover = Path(cache) / 'PapyrusLint' / 'notes.txt'
             leftover.write_text('keep', encoding='utf-8')
 
-            with patch.object(cli_download, 'urlopen', return_value=BytesIO(b'fresh')) as download:
+            with patch.object(cli_download, 'urlopen', return_value=BytesIO(body)) as download:
                 result = Path(cli_download.ensure_release_cli(cache, '1.2.4', 'Linux'))
 
             self.assertEqual(
                 result,
                 Path(cache) / 'PapyrusLint' / 'v1.2.4' / 'PapyrusLinterCLI-linux',
             )
-            self.assertEqual(result.read_bytes(), b'fresh')
+            self.assertEqual(result.read_bytes(), body)
             download.assert_called_once_with(
                 f'{cli_download.RELEASE_BASE}/v1.2.4/PapyrusLinterCLI-linux',
                 timeout=30,
@@ -215,12 +235,13 @@ class CliDownloadTests(unittest.TestCase):
             self.assertEqual(leftover.read_text(encoding='utf-8'), 'keep')
 
     def test_cache_hit_still_removes_previous_version_binaries(self):
+        body = _trust('PapyrusLinterCLI-linux', b'current')
         with tempfile.TemporaryDirectory() as cache:
             current = Path(cache) / 'PapyrusLint' / 'v2.0.0' / 'PapyrusLinterCLI-linux'
             previous = Path(cache) / 'PapyrusLint' / 'v1.9.0' / 'PapyrusLinterCLI-linux'
             current.parent.mkdir(parents=True)
             previous.parent.mkdir(parents=True)
-            current.write_bytes(b'current')
+            current.write_bytes(body)
             current.chmod(0o700)
             previous.write_bytes(b'previous')
             previous.chmod(0o700)
@@ -231,7 +252,7 @@ class CliDownloadTests(unittest.TestCase):
             self.assertEqual(result, str(current))
             download.assert_not_called()
             self.assertFalse(previous.exists())
-            self.assertEqual(current.read_bytes(), b'current')
+            self.assertEqual(current.read_bytes(), body)
 
     def test_plugin_loaded_prefetches_in_a_background_thread(self):
         with patch.object(cli_download.threading, 'Thread') as thread:
@@ -270,9 +291,10 @@ class CliDownloadTests(unittest.TestCase):
             self.assertEqual(list(directory.iterdir()), [])
 
     def test_failed_cache_install_removes_temporary_file(self):
+        body = _trust('PapyrusLinterCLI-linux', b'cli')
         with tempfile.TemporaryDirectory() as cache:
             with (
-                patch.object(cli_download, 'urlopen', return_value=BytesIO(b'cli')),
+                patch.object(cli_download, 'urlopen', return_value=BytesIO(body)),
                 patch.object(cli_download.os, 'replace', side_effect=OSError('disk full')),
                 self.assertRaisesRegex(OSError, 'disk full'),
             ):
@@ -282,6 +304,7 @@ class CliDownloadTests(unittest.TestCase):
             self.assertEqual(list(directory.iterdir()), [])
 
     def test_non_executable_cached_file_is_replaced_on_unix(self):
+        body = _trust('PapyrusLinterCLI-linux', b'fresh')
         with tempfile.TemporaryDirectory() as cache:
             executable = (
                 Path(cache)
@@ -294,13 +317,46 @@ class CliDownloadTests(unittest.TestCase):
             executable.chmod(0o600)
 
             with patch.object(
-                cli_download, 'urlopen', return_value=BytesIO(b'fresh')
+                cli_download, 'urlopen', return_value=BytesIO(body)
             ) as download:
                 result = cli_download.ensure_release_cli(cache, '1.2.3', 'Linux')
 
             self.assertEqual(result, str(executable))
-            self.assertEqual(executable.read_bytes(), b'fresh')
+            self.assertEqual(executable.read_bytes(), body)
             download.assert_called_once()
+
+    def test_rejects_a_download_whose_sha256_does_not_match(self):
+        _trust('PapyrusLinterCLI-linux', b'expected')
+        with tempfile.TemporaryDirectory() as cache:
+            with patch.object(
+                cli_download, 'urlopen', return_value=BytesIO(b'tampered')
+            ), self.assertRaisesRegex(OSError, 'SHA-256 mismatch'):
+                cli_download.ensure_release_cli(cache, '2.3.4', 'Linux')
+
+            directory = Path(cache) / 'PapyrusLint' / 'v2.3.4'
+            self.assertEqual(list(directory.iterdir()), [])
+
+    def test_redownloads_a_cached_file_whose_sha256_does_not_match(self):
+        body = _trust('PapyrusLinterCLI-linux', b'fresh')
+        with tempfile.TemporaryDirectory() as cache:
+            executable = Path(cache) / 'PapyrusLint' / 'v1.2.3' / 'PapyrusLinterCLI-linux'
+            executable.parent.mkdir(parents=True)
+            executable.write_bytes(b'tampered cache')
+            executable.chmod(0o700)
+
+            with patch.object(
+                cli_download, 'urlopen', return_value=BytesIO(body)
+            ) as download:
+                result = cli_download.ensure_release_cli(cache, '1.2.3', 'Linux')
+
+            self.assertEqual(result, str(executable))
+            self.assertEqual(executable.read_bytes(), body)
+            download.assert_called_once()
+
+    def test_missing_baked_hash_is_an_error(self):
+        cli_download.CLI_SHA256.pop('PapyrusLinterCLI-linux', None)
+        with self.assertRaisesRegex(OSError, 'no baked SHA-256'):
+            cli_download.expected_sha256('PapyrusLinterCLI-linux')
 
 
 if __name__ == '__main__':
