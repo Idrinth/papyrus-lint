@@ -87,10 +87,18 @@ def release_version():
     return (_package_dir() / 'VERSION').read_text(encoding='utf-8').strip().removeprefix('v')
 
 
-def verify_configured_cli(executable):
-    """Require a manually selected CLI to match this plugin's release."""
+def verify_configured_cli(executable, system=None):
+    """Require a manually selected CLI or GUI binary to match this plugin's release."""
     if executable in _verified_executables:
         return
+    asset = _asset_name(system)
+    actual = _sha256_file(executable)
+    if not _is_accepted_sha256(asset, actual):
+        raise OSError(
+            f'configured executable SHA-256 mismatch (got {actual}); '
+            "refusing to use a file that is not this release's "
+            'PapyrusLinterCLI or PapyrusLinter'
+        )
     expected = f'PapyrusLinterCLI {release_version()}'
     try:
         completed = subprocess.run(
@@ -98,20 +106,38 @@ def verify_configured_cli(executable):
         )
     except (OSError, subprocess.CalledProcessError) as err:
         raise OSError(f'could not check configured CLI version: {err}') from err
-    actual = completed.stdout.strip()
-    if actual != expected:
-        detail = actual or completed.stderr.strip() or 'no version output'
+    version = completed.stdout.strip()
+    if version != expected:
+        detail = version or completed.stderr.strip() or 'no version output'
         raise OSError(
             f'configured CLI version mismatch: expected "{expected}", got "{detail}"'
         )
     _verified_executables.add(executable)
 
 
-def expected_sha256(asset):
+def _baked_digests(asset):
     expected = CLI_SHA256.get(asset)
     if not expected:
         raise OSError(f'no baked SHA-256 for {asset}')
-    return expected
+    if isinstance(expected, str):
+        return [expected]
+    if not expected:
+        raise OSError(f'no baked SHA-256 for {asset}')
+    return list(expected)
+
+
+def expected_sha256(asset):
+    """SHA-256 of the official standalone CLI asset for this release."""
+    return _baked_digests(asset)[0]
+
+
+def accepted_sha256s(asset):
+    """Every SHA-256 accepted for `asset`: the CLI, then any GUI alternatives."""
+    return _baked_digests(asset)
+
+
+def _is_accepted_sha256(asset, digest):
+    return digest in accepted_sha256s(asset)
 
 
 def _sha256_file(path):
