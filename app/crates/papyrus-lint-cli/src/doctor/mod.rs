@@ -2,16 +2,15 @@
 //! configuration assumes or names — without linting any script. Split into
 //! [`checks`] (each individual health check) and [`report`] (the
 //! plain-text/`--json` rendering of the checks a run collected), leaving
-//! this module with just `doctor`'s own argument parsing and the top-level
-//! orchestration that runs every check in order.
+//! this module with just the top-level orchestration that runs every check
+//! in order. Argument parsing lives in [`crate::args`] with the rest of the
+//! clap tree.
 
 mod checks;
 mod report;
 
 use std::io::Write;
 use std::path::PathBuf;
-
-use clap::Parser;
 
 use checks::{
     check_compiler, check_configured_roots, check_conventional_roots, check_lint_config,
@@ -20,63 +19,30 @@ use checks::{
 };
 use report::write_doctor_report;
 
+use crate::args::DoctorRawArgs;
 use crate::project::{is_psc_path, resolve_input_project_root};
-use crate::USAGE;
 
-/// `doctor`'s own flags/positional, extracted by `clap` the same way
-/// `args.rs`'s `RawArgs` is for the main lint/fix invocation.
-#[derive(Parser, Debug)]
-#[command(
-    no_binary_name = true,
-    disable_help_flag = true,
-    disable_version_flag = true
-)]
-struct DoctorRawArgs {
-    #[arg(long)]
-    json: bool,
-    #[arg(long)]
-    config: Option<String>,
-    #[arg(long = "script-root")]
-    script_root: Vec<String>,
-    positionals: Vec<String>,
-}
-
-/// Runs the `doctor` subcommand against `args` (i.e. `args[1..]` in
-/// [`run`]): validates a project's configuration and the paths it assumes
-/// or names — without linting any script — and reports one line per check.
-/// Unlike a usage error, a failed check never aborts the remaining ones:
-/// `doctor` always runs every check it can and reports the full picture in
-/// one go.
+/// Runs the `doctor` subcommand against already-parsed arguments: validates
+/// a project's configuration and the paths it assumes or names — without
+/// linting any script — and reports one line per check. Unlike a usage
+/// error, a failed check never aborts the remaining ones: `doctor` always
+/// runs every check it can and reports the full picture in one go.
 ///
 /// Accepts the same positional `<path-to-achlist-or-psc-or-directory>` as a
 /// plain lint run, plus `--config <path>` and one or more `--script-root
-/// <path>` (see [`USAGE`]), so it reports on exactly the project
+/// <path>` (see [`crate::USAGE`]), so it reports on exactly the project
 /// configuration a matching lint/fix run would actually use. `--json`
 /// prints a single [`report::DoctorReport`] document instead of the
 /// plain-text `[<status>] <message>` lines.
 ///
 /// Returns `0` if every check passed, `1` if any reported a `warning` or
-/// `error`, or `2` on a usage error (a missing flag value, or a
-/// missing/extra positional argument).
-pub(crate) fn run_doctor(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
-    let raw = match DoctorRawArgs::try_parse_from(args) {
-        Ok(raw) => raw,
-        Err(_) => {
-            let _ = write!(stderr, "{USAGE}");
-            return 2;
-        }
-    };
+/// `error`. Usage errors are reported by [`crate::args::parse_cli`] before
+/// this is called.
+pub(crate) fn run_doctor(raw: DoctorRawArgs, stdout: &mut impl Write) -> u8 {
     let json = raw.json;
     let config_path: Option<PathBuf> = raw.config.map(PathBuf::from);
     let cli_script_roots: Vec<String> = raw.script_root;
-
-    let input_path = match raw.positionals.as_slice() {
-        [path] => PathBuf::from(path),
-        _ => {
-            let _ = write!(stderr, "{USAGE}");
-            return 2;
-        }
-    };
+    let input_path = raw.input_path;
 
     let mut checks: Vec<DoctorCheck> = Vec::new();
 

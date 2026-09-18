@@ -1,4 +1,5 @@
 use super::*;
+use crate::args::{parse_init_preset, parse_preset_add_args, InitPresetError, PresetAddArgsError};
 use crate::test_support::*;
 use papyrus_lint_config::{self as config, presets};
 use std::fs;
