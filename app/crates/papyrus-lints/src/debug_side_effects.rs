@@ -68,17 +68,16 @@ const SIDE_EFFECT_PREFIXES: &[&str] = &[
 
 /// Checks `source` for a side-effecting call nested inside any `Debug.*`
 /// argument list. Flagged as a `[warning]`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
+pub fn check(tokens: Option<&[Token]>, ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
     };
 
-    let same_script = same_script_side_effects(source);
+    let same_script = same_script_side_effects(ast);
     let mut diagnostics = Vec::new();
     let mut i = 0;
     while i + 3 < tokens.len() {
-        if is_debug_call(&tokens, i) {
+        if is_debug_call(tokens, i) {
             let method = match &tokens[i + 2].kind {
                 TokenKind::Identifier(name) => name.clone(),
                 _ => {
@@ -87,9 +86,9 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
                 }
             };
             let open = i + 3;
-            if let Some(close) = matching_rparen(&tokens, open) {
+            if let Some(close) = matching_rparen(tokens, open) {
                 collect_nested_calls(
-                    &tokens,
+                    tokens,
                     open + 1,
                     close,
                     &method,
@@ -179,11 +178,11 @@ fn looks_side_effecting(name: &str, same_script: &HashMap<String, bool>) -> bool
         .any(|prefix| key.starts_with(prefix))
 }
 
-fn same_script_side_effects(source: &str) -> HashMap<String, bool> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+fn same_script_side_effects(ast: Option<&Script>) -> HashMap<String, bool> {
+    let Some(script) = ast else {
         return HashMap::new();
     };
-    side_effects_by_name(&collect_decls(&script))
+    side_effects_by_name(&collect_decls(script))
 }
 
 fn collect_decls(script: &Script) -> HashMap<String, &FunctionDecl> {

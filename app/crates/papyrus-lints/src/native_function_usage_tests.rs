@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
     assert!(!NATIVE_METHODS.is_empty());

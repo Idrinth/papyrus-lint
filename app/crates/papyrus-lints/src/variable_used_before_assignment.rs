@@ -95,13 +95,13 @@ impl DefaultKind {
 
 /// Checks every function/event in `source` for a local variable read before
 /// it's ever been assigned a value.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&papyrus_parser::ast::Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let mut unassigned = HashMap::new();
         walk_body(&function.body, &mut unassigned, &mut diagnostics);
     }

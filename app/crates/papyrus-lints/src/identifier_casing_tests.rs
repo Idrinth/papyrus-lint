@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, style: IdentifierCasing) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(source, ast.as_ref(), style)
+}
+
 #[test]
 fn flags_property_not_matching_pascal_case() {
     let diagnostics = check(

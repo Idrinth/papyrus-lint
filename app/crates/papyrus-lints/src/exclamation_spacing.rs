@@ -3,7 +3,7 @@
 //! negation is easier to spot at a glance.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::TokenKind;
+use papyrus_parser::token::{Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "exclamation-spacing";
@@ -20,12 +20,11 @@ pub const RULE: &str = "exclamation-spacing";
 /// negation like `!!bReady`) is left alone too: only the last `!` in such a
 /// run needs the trailing space, since spreading the run's own `!`s apart
 /// makes the idiom harder to read, not easier.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let protected = fragment_code::protected_lines(source);
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
+pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
     };
+    let protected = fragment_code::protected_lines(source);
     let line_starts = line_starts(source);
     let bytes = source.as_bytes();
 

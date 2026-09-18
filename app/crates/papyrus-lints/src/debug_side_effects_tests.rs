@@ -1,4 +1,10 @@
 use super::*;
+
+fn check(source: &str) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(tokens.as_deref(), ast.as_ref())
+}
 use crate::config::Config;
 use crate::lint;
 

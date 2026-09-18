@@ -2,7 +2,7 @@
 //! e.g. `SomeProperty . DoThing()` instead of `SomeProperty.DoThing()`.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::TokenKind;
+use papyrus_parser::token::{Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "chain-whitespace";
@@ -16,12 +16,11 @@ const WHITESPACE: [u8; 2] = *b" \t";
 /// of the number itself and never reaches this check. Dots on a line
 /// protected by a CreationKit fragment-code wrapper (see [`fragment_code`])
 /// are never flagged.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let protected = fragment_code::protected_lines(source);
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
+pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
     };
+    let protected = fragment_code::protected_lines(source);
     let line_starts = line_starts(source);
     let bytes = source.as_bytes();
 

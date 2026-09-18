@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
 #[test]
 fn flags_int_division_in_float_declaration() {
     let diagnostics =

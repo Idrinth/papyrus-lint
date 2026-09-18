@@ -72,13 +72,13 @@ pub const RULE: &str = "unguarded-self-recursion";
 
 /// Checks every function/event declared in `source` for an unconditional
 /// self-call, per the module documentation above.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         if function.is_native || has_disqualifying_branch(&function.body) {
             continue;
         }
@@ -112,7 +112,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
             if let Stmt::Expr { value, .. } = stmt {
                 if let Some(target_state) = goto_state_target(value) {
                     if !target_state.eq_ignore_ascii_case(&current_state_lower)
-                        && state_has_handler(&script, target_state, &name_lower)
+                        && state_has_handler(script, target_state, &name_lower)
                     {
                         guarded_by_goto_state = true;
                     }

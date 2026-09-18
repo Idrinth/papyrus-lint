@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(source, tokens.as_deref(), indentation)
+}
+
 const SOURCE: &str = "ScriptName Example\nFunction Run()\nIf ready\nDoThing()\nElseIf waiting\nWait()\nElse\nStop()\nEndIf\nEndFunction\n";
 
 #[test]

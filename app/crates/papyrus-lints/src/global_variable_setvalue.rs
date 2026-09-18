@@ -45,13 +45,13 @@ pub const RULE: &str = "global-variable-setvalue";
 
 /// Checks every `If`/`ElseIf`/`Else` chain in `source` for a `SetValue`/
 /// `SetValueInt` write that doesn't provably change the value.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&papyrus_parser::ast::Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         check_body(&function.body, &mut diagnostics);
     }
     diagnostics

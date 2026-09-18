@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(tokens.as_deref())
+}
+
 #[test]
 fn flags_discarded_qualified_and_unqualified_getters_case_insensitively() {
     let diagnostics = check(

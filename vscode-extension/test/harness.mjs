@@ -114,6 +114,10 @@ export function createHarness({
       return {
         execFile(executable, args, options, callback) {
           execCalls.push({ executable, args, options });
+          if (typeof result === 'function') {
+            result({ executable, args, options, callback });
+            return;
+          }
           const response = result ?? { error: null, stdout: validReport(), stderr: '' };
           callback(response.error, response.stdout, response.stderr);
         },

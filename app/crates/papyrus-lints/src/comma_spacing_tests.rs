@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(source, tokens.as_deref())
+}
+
 #[test]
 fn flags_and_repairs_calls_and_declarations() {
     let source = "Function Add(Int left,Int right)\n  Use(Add(1,2),3)\nEndFunction\n";

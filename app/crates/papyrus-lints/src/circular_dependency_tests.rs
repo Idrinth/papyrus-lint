@@ -1,4 +1,14 @@
 use super::*;
+
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
+fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check_with(ast.as_ref(), external)
+}
 use std::collections::HashMap;
 
 #[test]

@@ -22,14 +22,14 @@ pub const RULE: &str = "parameter-reassignment";
 /// A reassignment inside a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers,
 /// is never flagged: it's generated boilerplate the user can't edit.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(source: &str, ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     let protected = fragment_code::protected_lines(source);
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         if function.params.is_empty() {
             continue;
         }

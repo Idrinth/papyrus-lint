@@ -34,6 +34,26 @@ then.
 [full lint rule reference](https://papyrus-lint.idrinth.de/rules.html).
 Rules inspect
 raw source or lexer tokens rather than requiring a successfully parsed AST.
+Unlike `repair()`'s own fixes (each of which still calls
+`papyrus_parser::parse`/`tokenize` on the source it's currently working
+with, since a fix can change the source out from under any tokens/AST
+computed before it), a `check`/`check_with` diagnostic function no longer
+parses/tokenizes its own source at all: `registry::collect_diagnostics`
+calls `papyrus_parser::tokenize`/`parse` on `source` exactly once each, up
+front, and passes the resulting `Option<&[Token]>`/`Option<&Script>` (`None`
+for a lex/parse failure, the same short circuit each rule used to apply to
+its own call) into every enabled rule's `check`/`check_with` function as a
+parameter, alongside `source` itself for a rule that still needs the raw
+text (e.g. `fragment_code`-aware ones). Each rule only takes whichever of
+`tokens`/`ast` it actually needs — a token-based rule (e.g.
+`chain_whitespace`) takes `tokens`, an AST-based one (e.g.
+`argument_types::check_with`) takes `ast`, and the handful that fall back
+from the AST to raw tokens on a script that doesn't parse cleanly (e.g.
+`empty_body`) take both. `papyrus_lints::check_argument_types` — a
+standalone, single-rule entry point for a caller that isn't going through
+`lint`/`lint_with_external_arguments` at all — is the one exception that
+still parses `source` itself, since there's no shared registry pass around
+it to have already done so.
 Automatic repair is available for trailing whitespace, comma spacing,
 semicolons, indentation, whitespace around member-access dots, spacing
 around `!` negation, spacing around logical/comparison operators, spacing
@@ -782,7 +802,9 @@ alongside any change to `CacheEntry` or to `papyrus_parser::ast::Script`
 that bumps `MIN_COMPATIBLE_VERSION`.
 
 Since `papyrus_lints::lint()`/`repair()` parse and tokenize their `source`
-argument internally and never see a file path, they can't consult
+argument internally (once each, up front, for `lint()`'s own
+`registry::collect_diagnostics` pass -- see above -- and once per fix
+applied for `repair()`) and never see a file path, they can't consult
 `ast_cache` directly by themselves. `ast_cache::get`/`get_tokens` close
 that gap as a side effect: a disk cache hit for either also primes
 `papyrus-parser`'s own in-memory memoization (`papyrus_parser::prime_cache`/

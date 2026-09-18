@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
 #[test]
 fn flags_getvalue_plus_other_operand() {
     let diagnostics = check(

@@ -1,5 +1,31 @@
 use super::*;
 
+fn check_too_many_states(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check_too_many_states(ast.as_ref())
+}
+
+fn check_too_many_states_with<E: ExternalSignatures>(
+    source: &str,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check_too_many_states_with(ast.as_ref(), external)
+}
+
+fn check_multiple_auto_states(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check_multiple_auto_states(ast.as_ref())
+}
+
+fn check_multiple_auto_states_with<E: ExternalSignatures>(
+    source: &str,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check_multiple_auto_states_with(ast.as_ref(), external)
+}
+
 fn state_block(name: &str, auto: bool) -> String {
     let prefix = if auto { "Auto State" } else { "State" };
     format!("{prefix} {name}\nEndState\n")

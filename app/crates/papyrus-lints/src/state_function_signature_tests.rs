@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
 #[test]
 fn flags_a_state_function_with_a_mismatched_parameter_type() {
     let diagnostics = check(

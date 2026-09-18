@@ -18,13 +18,13 @@ pub const RULE: &str = "get-form-from-file-skyrim-esm";
 
 /// Checks `source` for a qualified `Game.GetFormFromFile` call whose file
 /// name argument is the literal `"Skyrim.esm"` (case-insensitively).
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    visit_matching_calls(&tokens, |call_index, _close, _value_start, _delimiter| {
+    visit_matching_calls(tokens, |call_index, _close, _value_start, _delimiter| {
         let call_token = &tokens[call_index];
         diagnostics.push(Diagnostic {
             line: call_token.line,

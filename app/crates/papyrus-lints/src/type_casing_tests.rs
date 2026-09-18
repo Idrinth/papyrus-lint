@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, style: Style) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(tokens.as_deref(), style)
+}
+
 #[test]
 fn pascal_case_accepts_a_conforming_name() {
     assert!(check("ScriptName MyQuestScript\n", Style::PascalCase).is_empty());

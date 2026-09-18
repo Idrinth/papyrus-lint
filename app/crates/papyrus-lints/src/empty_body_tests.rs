@@ -1,5 +1,11 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(ast.as_ref(), tokens.as_deref())
+}
+
 #[test]
 fn flags_completely_empty_while_loop() {
     let diagnostics =

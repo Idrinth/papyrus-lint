@@ -37,13 +37,13 @@ pub const RULE: &str = "invariant-loop-condition";
 
 /// Checks every `While` loop in `source` for a condition that can never
 /// change across iterations, per the module documentation above.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let mut known: HashSet<String> = function
             .params
             .iter()

@@ -29,14 +29,14 @@ pub const RULE: &str = "unused-local-variable";
 /// never flagged: it's CreationKit-generated boilerplate the user can't
 /// edit or remove, so whether it's read from their own code isn't
 /// something they can act on.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(source: &str, ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     let protected = fragment_code::protected_lines(source);
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         check_function(function, &protected, &mut diagnostics);
     }
     diagnostics

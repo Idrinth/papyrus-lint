@@ -8,6 +8,9 @@
 //! source of truth for a rule's id/tags/severity/fixability — see "Docs
 //! sync" in AGENTS.md.
 
+use papyrus_parser::ast::Script;
+use papyrus_parser::token::Token;
+
 use crate::argument_types::ExternalSignatures;
 use crate::config::{Config, Rules};
 use crate::{
@@ -138,25 +141,41 @@ pub fn default_rules() -> Rules {
     }
 }
 
+/// Runs every enabled lint rule against `source`, parsing/tokenizing it at
+/// most once regardless of how many rules need the result: every rule that
+/// used to call `papyrus_parser::parse`/`tokenize` on `source` itself now
+/// receives the already-computed AST/token stream instead, the same way
+/// [`crate::documentation_comment`] already took `tokens` as a parameter.
+/// `ast`/`tokens` are `None` exactly when parsing/tokenizing `source` failed
+/// (a script that doesn't parse/lex cleanly), matching what each rule's own
+/// `papyrus_parser::parse(source)`/`tokenize(source)` call used to short
+/// circuit on.
 pub fn collect_diagnostics<E: ExternalSignatures>(
     source: &str,
     config: &Config,
     external: &mut E,
 ) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let tokens = tokens.as_deref();
+    let ast = papyrus_parser::parse(source).ok();
+    let ast = ast.as_ref();
+
     let rules = &config.rules;
     let mut diagnostics = Vec::new();
-    collect_token_diagnostics(source, config, rules, &mut diagnostics);
-    collect_signature_diagnostics(source, rules, external, &mut diagnostics);
-    collect_control_flow_diagnostics(source, config, rules, &mut diagnostics);
-    collect_spacing_diagnostics(source, config, rules, &mut diagnostics);
-    collect_cast_and_state_diagnostics(source, config, rules, external, &mut diagnostics);
-    collect_script_shape_diagnostics(source, rules, &mut diagnostics);
-    collect_remaining_diagnostics(source, rules, external, &mut diagnostics);
+    collect_token_diagnostics(source, tokens, ast, config, rules, &mut diagnostics);
+    collect_signature_diagnostics(source, ast, rules, external, &mut diagnostics);
+    collect_control_flow_diagnostics(source, tokens, ast, config, rules, &mut diagnostics);
+    collect_spacing_diagnostics(source, tokens, ast, config, rules, &mut diagnostics);
+    collect_cast_and_state_diagnostics(source, ast, config, rules, external, &mut diagnostics);
+    collect_script_shape_diagnostics(ast, rules, &mut diagnostics);
+    collect_remaining_diagnostics(source, tokens, ast, rules, external, &mut diagnostics);
     diagnostics
 }
 
 fn collect_token_diagnostics(
     source: &str,
+    tokens: Option<&[Token]>,
+    ast: Option<&Script>,
     config: &Config,
     rules: &Rules,
     diagnostics: &mut Vec<Diagnostic>,
@@ -165,129 +184,134 @@ fn collect_token_diagnostics(
         diagnostics.extend(trailing_whitespace::check(source));
     }
     if rules.comma_spacing {
-        diagnostics.extend(comma_spacing::check(source));
+        diagnostics.extend(comma_spacing::check(source, tokens));
     }
     if rules.forbidden_functions {
-        diagnostics.extend(forbidden_functions::check(source));
+        diagnostics.extend(forbidden_functions::check(tokens));
     }
     if rules.slow_functions {
-        diagnostics.extend(slow_functions::check(source));
+        diagnostics.extend(slow_functions::check(tokens));
     }
     if rules.formid_hex_notation {
-        diagnostics.extend(formid_hex_notation::check(source));
+        diagnostics.extend(formid_hex_notation::check(tokens));
     }
     if rules.get_form_from_file_skyrim_esm {
-        diagnostics.extend(get_form_from_file_skyrim_esm::check(source));
+        diagnostics.extend(get_form_from_file_skyrim_esm::check(tokens));
     }
     if rules.unused_getter {
-        diagnostics.extend(unused_getter::check(source));
+        diagnostics.extend(unused_getter::check(tokens));
     }
     if rules.float_int_conversion {
-        diagnostics.extend(float_int_conversion::check(source));
+        diagnostics.extend(float_int_conversion::check(ast));
     }
     if rules.int_division_to_float {
-        diagnostics.extend(int_division_to_float::check(source));
+        diagnostics.extend(int_division_to_float::check(ast));
     }
     if rules.unused_property {
-        diagnostics.extend(unused_property::check(source));
+        diagnostics.extend(unused_property::check(tokens));
     }
     if rules.strict_boolean {
-        diagnostics.extend(strict_boolean::check(source, config.bool_like_int));
+        diagnostics.extend(strict_boolean::check(ast, config.bool_like_int));
     }
     if rules.numeric_comparison {
-        diagnostics.extend(numeric_comparison::check(source));
+        diagnostics.extend(numeric_comparison::check(ast));
     }
     if rules.semicolon {
         diagnostics.extend(semicolon::check(source, config.semicolon_style()));
     }
     if rules.indentation {
-        diagnostics.extend(indentation::check(source, config.indentation_unit()));
+        diagnostics.extend(indentation::check(
+            source,
+            tokens,
+            config.indentation_unit(),
+        ));
     }
 }
 
 fn collect_signature_diagnostics<E: ExternalSignatures>(
     source: &str,
+    ast: Option<&Script>,
     rules: &Rules,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if rules.argument_types {
-        diagnostics.extend(argument_types::check_with(source, external));
+        diagnostics.extend(argument_types::check_with(ast, external));
     }
     if rules.return_types {
-        diagnostics.extend(return_types::check_with(source, external));
+        diagnostics.extend(return_types::check_with(ast, external));
     }
     if rules.unresolved_script {
-        diagnostics.extend(unresolved_script::check_with(source, external));
+        diagnostics.extend(unresolved_script::check_with(ast, external));
     }
     if rules.non_global_function_call {
-        diagnostics.extend(non_global_function_call::check_with(source, external));
+        diagnostics.extend(non_global_function_call::check_with(ast, external));
     }
     if rules.static_function_call_via_instance {
-        diagnostics.extend(static_function_call_via_instance::check_with(
-            source, external,
-        ));
+        diagnostics.extend(static_function_call_via_instance::check_with(ast, external));
     }
     if rules.local_variable_shadowing {
-        diagnostics.extend(local_variable_shadowing::check_with(source, external));
+        diagnostics.extend(local_variable_shadowing::check_with(source, ast, external));
     }
     if rules.parameter_reassignment {
-        diagnostics.extend(parameter_reassignment::check(source));
+        diagnostics.extend(parameter_reassignment::check(source, ast));
     }
     if rules.function_override {
-        diagnostics.extend(function_override::check_with(source, external));
+        diagnostics.extend(function_override::check_with(ast, external));
     }
     if rules.argument_naming {
-        diagnostics.extend(argument_naming::check_with(source, external));
+        diagnostics.extend(argument_naming::check_with(ast, external));
     }
     if rules.argument_override_types {
-        diagnostics.extend(argument_override_types::check_with(source, external));
+        diagnostics.extend(argument_override_types::check_with(ast, external));
     }
     if rules.state_function_signature {
-        diagnostics.extend(state_function_signature::check(source));
+        diagnostics.extend(state_function_signature::check(ast));
     }
 }
 
 fn collect_control_flow_diagnostics(
     source: &str,
+    tokens: Option<&[Token]>,
+    ast: Option<&Script>,
     config: &Config,
     rules: &Rules,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if rules.cyclomatic_complexity {
         diagnostics.extend(cyclomatic_complexity::check(
-            source,
+            ast,
             config.cyclomatic_complexity_warning,
             config.cyclomatic_complexity_error,
         ));
     }
     if rules.unreachable_statement {
-        diagnostics.extend(unreachable_statement::check(source));
+        diagnostics.extend(unreachable_statement::check(ast));
     }
     if rules.static_condition {
-        diagnostics.extend(static_condition::check(source));
+        diagnostics.extend(static_condition::check(ast));
     }
     if rules.unreachable_elseif {
-        diagnostics.extend(unreachable_elseif::check(source));
+        diagnostics.extend(unreachable_elseif::check(ast));
     }
     if rules.division_by_zero {
-        diagnostics.extend(division_by_zero::check(source));
+        diagnostics.extend(division_by_zero::check(ast));
     }
     if rules.invalid_random_range {
-        diagnostics.extend(invalid_random_range::check(source));
+        diagnostics.extend(invalid_random_range::check(ast));
     }
     if rules.empty_body {
-        diagnostics.extend(empty_body::check(source));
+        diagnostics.extend(empty_body::check(ast, tokens));
     }
     if rules.unused_local_variable {
-        diagnostics.extend(unused_local_variable::check(source));
+        diagnostics.extend(unused_local_variable::check(source, ast));
     }
     if rules.variable_used_before_assignment {
-        diagnostics.extend(variable_used_before_assignment::check(source));
+        diagnostics.extend(variable_used_before_assignment::check(ast));
     }
     if rules.none_form_usage {
         diagnostics.extend(none_form_usage::check(
-            source,
+            ast,
             config.assume_auto_properties_filled,
         ));
     }
@@ -295,164 +319,171 @@ fn collect_control_flow_diagnostics(
 
 fn collect_spacing_diagnostics(
     source: &str,
+    tokens: Option<&[Token]>,
+    ast: Option<&Script>,
     config: &Config,
     rules: &Rules,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if rules.chain_whitespace {
-        diagnostics.extend(chain_whitespace::check(source));
+        diagnostics.extend(chain_whitespace::check(source, tokens));
     }
     if rules.exclamation_spacing {
-        diagnostics.extend(exclamation_spacing::check(source));
+        diagnostics.extend(exclamation_spacing::check(source, tokens));
     }
     if rules.operator_spacing {
-        diagnostics.extend(operator_spacing::check(source));
+        diagnostics.extend(operator_spacing::check(source, tokens));
     }
     if rules.assignment_operator_spacing {
-        diagnostics.extend(assignment_operator_spacing::check(source));
+        diagnostics.extend(assignment_operator_spacing::check(source, tokens));
     }
     if rules.named_arguments {
-        diagnostics.extend(named_arguments::check(source, config.named_arguments));
+        diagnostics.extend(named_arguments::check(ast, config.named_arguments));
     }
     if rules.identifier_casing {
-        diagnostics.extend(identifier_casing::check(source, config.identifier_casing));
+        diagnostics.extend(identifier_casing::check(
+            source,
+            ast,
+            config.identifier_casing,
+        ));
     }
     if rules.type_casing {
-        diagnostics.extend(type_casing::check(source, config.type_casing));
+        diagnostics.extend(type_casing::check(tokens, config.type_casing));
     }
     if rules.property_sorting {
-        diagnostics.extend(property_sorting::check(source));
+        diagnostics.extend(property_sorting::check(ast));
     }
     if rules.explicit_return {
-        diagnostics.extend(explicit_return::check(source));
+        diagnostics.extend(explicit_return::check(ast));
     }
 }
 
 fn collect_cast_and_state_diagnostics<E: ExternalSignatures>(
     source: &str,
+    ast: Option<&Script>,
     config: &Config,
     rules: &Rules,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if rules.unchecked_form_parameter {
-        diagnostics.extend(unchecked_form_parameter::check(source));
+        diagnostics.extend(unchecked_form_parameter::check(ast));
     }
     if rules.unchecked_array_element {
-        diagnostics.extend(unchecked_array_element::check(source));
+        diagnostics.extend(unchecked_array_element::check(ast));
     }
     if rules.unchecked_cast {
-        diagnostics.extend(unchecked_cast::check(source));
+        diagnostics.extend(unchecked_cast::check(source, ast));
     }
     if rules.useless_downcast {
-        diagnostics.extend(useless_downcast::check_with(source, external));
+        diagnostics.extend(useless_downcast::check_with(ast, external));
     }
     if rules.impossible_cast {
-        diagnostics.extend(impossible_cast::check_with(source, external));
+        diagnostics.extend(impossible_cast::check_with(ast, external));
     }
     if rules.short_wait_interval {
-        diagnostics.extend(short_wait_interval::check(source, config.min_wait_interval));
+        diagnostics.extend(short_wait_interval::check(ast, config.min_wait_interval));
     }
     if rules.goto_state {
-        diagnostics.extend(goto_state::check_with(source, external));
+        diagnostics.extend(goto_state::check_with(ast, external));
     }
     if rules.get_state_comparison {
-        diagnostics.extend(get_state_comparison::check_with(source, external));
+        diagnostics.extend(get_state_comparison::check_with(ast, external));
     }
     if rules.too_many_states {
-        diagnostics.extend(state_count::check_too_many_states_with(source, external));
+        diagnostics.extend(state_count::check_too_many_states_with(ast, external));
     }
     if rules.multiple_auto_states {
-        diagnostics.extend(state_count::check_multiple_auto_states_with(
-            source, external,
-        ));
+        diagnostics.extend(state_count::check_multiple_auto_states_with(ast, external));
     }
     if rules.magic_numbers {
-        diagnostics.extend(magic_numbers::check(source, config.magic_numbers));
+        diagnostics.extend(magic_numbers::check(ast, config.magic_numbers));
     }
     if rules.native_function_usage {
-        diagnostics.extend(native_function_usage::check(source));
+        diagnostics.extend(native_function_usage::check(ast));
     }
     if rules.repeated_getvalue {
-        diagnostics.extend(repeated_getvalue::check(source));
+        diagnostics.extend(repeated_getvalue::check(ast));
     }
 }
 
 fn collect_script_shape_diagnostics(
-    source: &str,
+    ast: Option<&Script>,
     rules: &Rules,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if rules.global_variable_setvalue {
-        diagnostics.extend(global_variable_setvalue::check(source));
+        diagnostics.extend(global_variable_setvalue::check(ast));
     }
     if rules.global_variable_increment {
-        diagnostics.extend(global_variable_increment::check(source));
+        diagnostics.extend(global_variable_increment::check(ast));
     }
     if rules.setvalue_in_loop {
-        diagnostics.extend(setvalue_in_loop::check(source));
+        diagnostics.extend(setvalue_in_loop::check(ast));
     }
     if rules.invariant_loop_condition {
-        diagnostics.extend(invariant_loop_condition::check(source));
+        diagnostics.extend(invariant_loop_condition::check(ast));
     }
     if rules.script_name_collision {
-        diagnostics.extend(script_name_collision::check(source));
+        diagnostics.extend(script_name_collision::check(ast));
     }
     if rules.array_bounds {
-        diagnostics.extend(array_bounds::check(source));
+        diagnostics.extend(array_bounds::check(ast));
     }
     if rules.array_size_range {
-        diagnostics.extend(array_size_range::check(source));
+        diagnostics.extend(array_size_range::check(ast));
     }
     if rules.readonly_property_write {
-        diagnostics.extend(readonly_property_write::check(source));
+        diagnostics.extend(readonly_property_write::check(ast));
     }
     if rules.default_property_value {
-        diagnostics.extend(default_property_value::check(source));
+        diagnostics.extend(default_property_value::check(ast));
     }
     if rules.unguarded_self_recursion {
-        diagnostics.extend(unguarded_self_recursion::check(source));
+        diagnostics.extend(unguarded_self_recursion::check(ast));
     }
 }
 
 fn collect_remaining_diagnostics<E: ExternalSignatures>(
     source: &str,
+    tokens: Option<&[Token]>,
+    ast: Option<&Script>,
     rules: &Rules,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if rules.self_assignment {
-        diagnostics.extend(self_assignment::check(source));
+        diagnostics.extend(self_assignment::check(ast));
     }
     if rules.debug_side_effects {
-        diagnostics.extend(debug_side_effects::check(source));
+        diagnostics.extend(debug_side_effects::check(tokens, ast));
     }
     if rules.unnecessary_function {
-        diagnostics.extend(unnecessary_function::check(source));
+        diagnostics.extend(unnecessary_function::check(ast));
     }
     if rules.unknown_actor_value {
-        diagnostics.extend(actor_value::check(source));
+        diagnostics.extend(actor_value::check(tokens));
     }
     if rules.repeated_setoutfit {
-        diagnostics.extend(repeated_setoutfit::check(source));
+        diagnostics.extend(repeated_setoutfit::check(ast));
     }
     if rules.missing_doc_comment {
-        diagnostics.extend(missing_doc_comment::check(source));
+        diagnostics.extend(missing_doc_comment::check(source, ast, tokens));
     }
     if rules.float_equality {
-        diagnostics.extend(float_equality::check(source));
+        diagnostics.extend(float_equality::check(ast));
     }
     if rules.missing_update_handler {
-        diagnostics.extend(missing_update_handler::check(source));
+        diagnostics.extend(missing_update_handler::check(tokens));
     }
     if rules.unused_import {
-        diagnostics.extend(unused_import::check_with(source, external));
+        diagnostics.extend(unused_import::check_with(ast, external));
     }
     if rules.event_signature_mismatch {
-        diagnostics.extend(event_signature::check(source));
+        diagnostics.extend(event_signature::check(ast));
     }
     if rules.circular_dependency {
-        diagnostics.extend(circular_dependency::check_with(source, external));
+        diagnostics.extend(circular_dependency::check_with(ast, external));
     }
 }
 

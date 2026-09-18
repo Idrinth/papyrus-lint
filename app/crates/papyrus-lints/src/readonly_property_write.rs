@@ -23,8 +23,8 @@ pub const RULE: &str = "readonly-property-write";
 /// variable or parameter in the enclosing function refers to that local/
 /// parameter instead, and is never flagged. Flagged as an `[error]`, since
 /// Papyrus rejects the assignment at compile time.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
@@ -39,7 +39,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     }
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let shadowed: HashSet<String> = function
             .params
             .iter()

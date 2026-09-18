@@ -28,7 +28,7 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IfBranch, Literal, Stmt, UnaryOp};
+use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IfBranch, Literal, Script, Stmt, UnaryOp};
 
 use crate::none_form_usage::{all_functions, diverges};
 use crate::Diagnostic;
@@ -38,13 +38,13 @@ pub const RULE: &str = "array-bounds";
 
 /// Checks every function/event in `source` for a literal array index that
 /// falls outside the constant size the array was declared with.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let mut sizes = HashMap::new();
         walk_body(&function.body, &mut sizes, &mut diagnostics);
     }

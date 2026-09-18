@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, setting: NamedArguments) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref(), setting)
+}
+
 #[test]
 fn never_setting_flags_nothing() {
     let diagnostics = check(
