@@ -1,0 +1,13 @@
+{
+  "id": "invariant-loop-condition",
+  "name": "Invariant loop condition",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a While loop whose condition depends on a local variable/parameter that's never assigned anywhere in its own body, since it can then never stop or never run.",
+  "definition": "Flags, as a `[warning]`, a `While` loop whose condition depends on a local variable or parameter that's never assigned (plainly or via a compound `+=`/`-=`/etc.) anywhere in the loop's own body, since a local variable/parameter can only ever change through a direct assignment inside the function that owns it \u2014 nothing else can reach in and modify it \u2014 so the condition can then never change once the loop starts: it either never runs at all, or never stops. Only a condition built entirely from identifiers, literals, and arithmetic/comparison/logical/unary operators is checked, the same restriction \"Static condition\" and \"Division by zero\" place on their own expressions; one reaching a call, a member/index access, `Self`/`Parent`, a cast, or a `new` array is left unflagged rather than guessed at, since its value may depend on state this lint can't see change (e.g. `a.IsDead()`, which can start returning something different purely because of what happens inside that call). An identifier that isn't a known local variable or parameter of the enclosing function \u2014 most notably a script `Property`, which another function or the engine is free to change at any time \u2014 disqualifies the whole condition rather than being assumed safe. This deliberately doesn't catch a loop that reassigns its exit condition to the very same value on every iteration (e.g. re-fetching a reference that just happens to keep coming back dead), since only running the script could prove that."
+}

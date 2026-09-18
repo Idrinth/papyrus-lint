@@ -1,0 +1,14 @@
+{
+  "id": "unchecked-form-parameter",
+  "name": "Form parameter used without a None check",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a member/method access on a Form-typed function parameter that hasn't yet been confirmed non-None in that path.",
+  "definition": "Flags, as a `[warning]`, a member/method access (`akForm.GetName()`) on a `Form`-typed function parameter that hasn't yet been confirmed non-`None` in that path, since a caller can always pass in `None` and dereferencing it crashes the script at runtime. Tracks a parameter as unconfirmed from the start of its function until it's narrowed through `If`/`ElseIf`/`Else` branches guarded by a direct `None` check (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`||`) or a `While` loop's condition, the same way \"None used as an existing Form\" above narrows its own state, or until it's reassigned to anything else. A branch that unconditionally `Return`s doesn't carry its state past the `If`, covering the common `If x == None` / `Return` guard idiom. Passing the parameter on as an argument to another call isn't flagged, only a direct member/method access is. Disabled by default, since many scripts intentionally accept a possibly-`None` Form and defer the check to a caller or a later branch; a project opts in via `rules.unchecked_form_parameter`."
+}

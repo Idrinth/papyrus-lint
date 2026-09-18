@@ -1,0 +1,13 @@
+{
+  "id": "variable-used-before-assignment",
+  "name": "Local variable used before assignment",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags a local variable declared without an initial value that's read before it's ever assigned one, since it then still holds its default value. A comparison against that same default (None, 0, 0.0, False, or \"\") is treated as a deliberate gate, not a flagged read, even when joined by && or || to a further operand that only runs once the gate rules out the default.",
+  "definition": "Flags, as a `[warning]`, a read of a local variable declared without an initial value (`Int i` rather than `Int i = 0`) before anything in the enclosing function ever assigns it one, since the read then actually observes Papyrus's implicit per-type default (`0`, `0.0`, `False`, `\"\"`, or `None`) rather than a value the author chose. A variable is tracked as unassigned from its declaration until a plain `name = value` assignment reaches it; a compound assignment (`name += 1`, ...) is flagged too, since it reads the still-default value before writing the new one, and then counts as assigned from that point on. `If`/`ElseIf`/`Else` branches are each checked from the same incoming state, and a branch that unconditionally `Return`s doesn't carry its state past the `If`; a variable assigned by any surviving branch counts as assigned afterward too, so a variable assigned in only one branch (or with no `Else` at all) and later tested against its default to see whether that branch ran isn't flagged \u2014 only a variable left unassigned by every surviving branch still is. Since a `While` loop may run zero times, an assignment made only inside its body is never assumed to have happened by the time execution reaches the code after the loop. Function parameters and script properties always have a value by the time a function runs and are never flagged by this lint. An `==`/`!=` comparison against that same variable's own declared-type default (`None`, `0`, `0.0`, `False`, or `\"\"`) is treated as a deliberate \"has this been set yet?\" gate rather than a genuine read, so it's never flagged either \u2014 a mismatched comparison like `Int i` against `None`, or `Bool b` against `0`, isn't that type's default and is still flagged (other reads of the same variable still are too). That gate exemption also carries across a short-circuiting `&&`/`||` joining it to a further operand (e.g. `x == None || x.Foo()`, or `x != None && x.Foo()`), since that operand only ever evaluates once the gate has established the variable is no longer at its default."
+}

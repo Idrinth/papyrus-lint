@@ -1,0 +1,13 @@
+{
+  "id": "int-division-to-float",
+  "name": "Int/Int division widened to Float",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags an Int/Int division declared, assigned, returned, or passed as an argument into a Float-typed slot, since Papyrus truncates the division before it ever widens into the Float (e.g. Float f = 1 / 2 yields 0.0, not 0.5). A constant division that divides evenly (e.g. 72 / 8) isn't flagged.",
+  "definition": "Flags an `Int / Int` division declared, assigned, returned, or passed as an argument into a Float-typed slot without either operand already being a Float, since Papyrus performs the division as integer division \u2014 truncating towards zero \u2014 before the result ever widens into the Float slot (e.g. `Float f = 1 / 2` yields `0.0`, not `0.5`). Casting the division's *result* to Float doesn't avoid this, only casting (or writing) an *operand* as a Float does, so only the latter is left unflagged. When both operands are integer literals (optionally combined with `+`/`-`/`*`/unary `-`) and the division happens to divide evenly (e.g. `Float f = 72 / 8`), no truncation actually occurs, so that case is left unflagged too."
+}

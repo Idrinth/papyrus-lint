@@ -1,0 +1,13 @@
+{
+  "id": "unused-import",
+  "name": "Unused import",
+  "category": "Other",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": true,
+  "description": "Flags an Import statement whose script never has one of its Global functions called unqualified anywhere in this script. Only checked (and fixed) with project context.",
+  "definition": "Flags, as a `[warning]`, an `Import` statement whose script never has one of its `Global` functions called unqualified anywhere in this script. Only checked when linting with project context, by resolving the imported script's functions the same way the argument/return type checks do; without that context, nothing is ever flagged rather than guessed at."
+}

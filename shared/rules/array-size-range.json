@@ -1,0 +1,13 @@
+{
+  "id": "array-size-range",
+  "name": "Array size range",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags, as an error, a new array whose own literal size falls outside 0 to 128, since Papyrus hard-caps a script-created array at 128 elements and a negative size makes no sense; doesn't apply to array Properties or natively-returned arrays, so those aren't checked against it.",
+  "definition": "Flags, as an `[error]`, a `new <Type>[<N>]` array creation whose literal `N` falls outside the range Papyrus allows for a script-created array (`0` to `128`), since a size outside that range is almost never intended: Papyrus hard-caps an array created with `New` (or grown with `Add()`) at 128 elements, and a negative size makes no sense at all. That cap doesn't apply to an array returned by a native function or to an editor-populated array `Property`, since neither is created this way. Unlike \"Array bounds\" above, this only ever looks at a `new` expression's own literal size, with no tracking of which variable holds it."
+}

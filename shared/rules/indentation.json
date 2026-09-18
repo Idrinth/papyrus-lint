@@ -1,0 +1,15 @@
+{
+  "id": "indentation",
+  "name": "Formatting checks",
+  "category": "Formatting",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": true,
+  "repair_order": 4,
+  "description": "Flags lines whose indentation doesn't match the configured style/width.",
+  "definition": "Flags, as a `[warning]`, lines whose indentation doesn't match the configured style/width (`indentation`/`indentation_width`) for their nesting depth. A script whose structure can't be identified (e.g. it doesn't lex cleanly) is left unchecked rather than guessed at."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "named-arguments",
+  "name": "Prefer named arguments",
+  "category": "Other",
+  "tags": [
+    "style",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": true,
+  "repair_order": 14,
+  "description": "Flags a positional call argument that the configured setting prefers to see passed by Papyrus's named-argument syntax instead; the fix inserts the matching parameter name ahead of it.",
+  "definition": "Flags, as a `[warning]`, a positional call argument that the configured `named_arguments` setting prefers to see passed by Papyrus's named-argument syntax instead (`func(argB = 1)`): `always` flags every positional argument, `instead_of_defaults` flags only an argument filling a parameter that has a default value, and `never` (the default) flags nothing. Parameter names and default values are only known for functions declared in the script being linted (including via `self.Func(...)`), so a call to a function declared on another script is never flagged. An argument already passed by name is always accepted regardless of setting."
+}

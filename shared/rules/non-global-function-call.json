@@ -1,0 +1,13 @@
+{
+  "id": "non-global-function-call",
+  "name": "Non-static function call",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a ScriptName.Function() call whose target function resolves but isn't declared Global, since Papyrus's static call syntax can only reach Global functions.",
+  "definition": "Flags, as an `[error]`, a call through Papyrus's static/global call syntax (e.g. `MyScript.DoThing()`) whose target function resolves but isn't declared `Global` on that script, since Papyrus only allows that syntax to reach a script's `Global` functions \u2014 calling an ordinary instance function that way fails to compile. Uses the same \"bare identifier not already known as a local variable, parameter, or property\" rule as the \"Unresolved script reference\" lint above to tell a script reference apart from an instance call; a call whose script or function can't be resolved at all is left unflagged (see that lint instead). Only checked when linting with project context, by resolving the target script's functions the same way the argument/return type checks do."
+}

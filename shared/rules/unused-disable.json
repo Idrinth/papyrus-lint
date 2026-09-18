@@ -1,0 +1,14 @@
+{
+  "id": "unused-disable",
+  "name": "Unused disable directive",
+  "category": "Other",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags unknown @disable/@disable-file rule ids and directives that suppress no diagnostic. Disabled by default.",
+  "definition": "Flags, as a `[warning]`, each rule id in an `@disable`/`@disable-file` comment that is unknown or does not suppress a diagnostic from that rule (on its line for `@disable`, anywhere in the file for `@disable-file`). A bare `@disable` is flagged when its line has no diagnostics to suppress; a bare `@disable-file` is flagged when the whole file has none. Disabled by default; opt in with `rules.unused_disable`."
+}

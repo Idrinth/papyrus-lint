@@ -126,6 +126,9 @@ jobs:
             --dir coverage-artifacts \
             --pattern '*coverage*'
 
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
       - name: Regenerate Nexus page lint tables from rules.json
         run: python3 .github/scripts/generate_nexuspage_tables.py shared/rules.json docs/nexuspage.bbcode
 
@@ -152,6 +155,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        shell: bash
+        run: python3 .github/scripts/build_rules_json.py
 
       - uses: actions/setup-node@v7
         with:

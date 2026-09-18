@@ -1,0 +1,13 @@
+{
+  "id": "unresolved-script",
+  "name": "Unresolved script reference",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags script name references that can't be resolved against the configured source directories.",
+  "definition": "Flags, as a `[warning]`, an unresolved parent in `Extends`, an unresolved type annotation, or a call through Papyrus's static/global call syntax (e.g. `MyMissingScript.DoThing()`) whose target script can't be found. Primitive types and native engine types are recognized without project-side source. Only a call whose object is a bare identifier not already known as a local variable, parameter, or property is considered a script reference at all \u2014 one resolved through a variable or property is left to the \"Argument type check\"/\"Return type check\" lints instead. Only checked when linting with project context, by resolving names against `.psc` files under the project root the same way the argument/return type checks do, with native types and singleton scripts supplied by the built-in rule data."
+}

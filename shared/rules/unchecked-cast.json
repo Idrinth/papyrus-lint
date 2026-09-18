@@ -1,0 +1,13 @@
+{
+  "id": "unchecked-cast",
+  "name": "Unchecked cast",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a member/method access on the result of an As cast before that result has been checked against None. Never flags CreationKit's own fragment boilerplate cast (e.g. Actor akSpeaker = akSpeakerRef as Actor).",
+  "definition": "Flags, as a `[warning]`, a member/method access on the result of an `as` cast (e.g. `(akRef as Actor).GetActorValue(\"Health\")`) before that result has been checked against `None`, since a cast that doesn't match the underlying Form's actual type evaluates to `None` at runtime rather than raising an error, so dereferencing it immediately crashes the script. Tracks a local variable as an unchecked cast result from its declaration/assignment from an `as` expression until it's reassigned something else, clearing it the moment a direct `None` check on it (`x == None`, `x != None`, `!x`, a bare `x`, optionally combined with `&&`/`||`) is evaluated, regardless of which branch is ultimately taken \u2014 this lint only cares whether the possibility of `None` was ever considered, not which branch handles it. A cast used directly inline (`(value as Type).Member`) is always flagged, since there's no way to check it in between. A cast CreationKit itself generated (the boilerplate line a quest/dialogue fragment gets between its `Function` signature and `;BEGIN CODE`, e.g. `Actor akSpeaker = akSpeakerRef as Actor`) is never tracked as unchecked in the first place, since CreationKit guarantees that cast succeeds and the user can't add a `None` check there without CreationKit rejecting the edit."
+}

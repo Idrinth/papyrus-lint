@@ -1,0 +1,13 @@
+{
+  "id": "conflicting-script-versions",
+  "name": "Conflicting script versions",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags same-named scripts with different contents in separate source directories.",
+  "definition": "Flags, as a `[warning]`, a `.psc` file when another script search directory contains a case-insensitively same-named file with different contents (determined by MD5), since which version Papyrus resolves can depend on search-directory order. Byte-identical copies are ignored. Only available when linting a file with project context in the desktop app or CLI."
+}

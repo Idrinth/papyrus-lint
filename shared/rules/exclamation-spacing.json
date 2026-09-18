@@ -1,0 +1,15 @@
+{
+  "id": "exclamation-spacing",
+  "name": "Exclamation mark spacing",
+  "category": "Formatting",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": true,
+  "repair_order": 8,
+  "description": "Flags a negation operator not followed by exactly one space. In a chained negation such as !!bReady, only the final ! requires a trailing space.",
+  "definition": "Flags, as a `[warning]`, a `!` negation operator not followed by exactly one space (e.g. `!bReady` or `!  bReady`), since a bit of breathing room makes the negation easier to spot. Never flags `!=`, which the lexer tokenizes separately, nor the gap between two directly adjacent `!`s in a chained/double negation (e.g. `!!bReady`) \u2014 only the last `!` in such a run needs its own trailing space. The fix inserts a space where there is none and collapses a longer run of spaces/tabs down to one."
+}

@@ -1,0 +1,14 @@
+{
+  "id": "float-equality",
+  "name": "Float equality comparison",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "info",
+  "importance": "medium",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a direct == or != between two floats, since rounding error can make them compare unequal even when conceptually the same. Disabled by default.",
+  "definition": "Flags, as an `[info]`, a direct `==`/`!=` comparison between two `Float` values, since floating-point rounding error can make two values that are conceptually the same compare unequal (or vice versa) at runtime. Only comparisons whose operand types can be determined locally are checked, the same restriction \"Strict numeric type check\" places on its own. Disabled by default, since a project may deliberately compare two `Float` values it knows are computed the exact same way; opt in with `rules.float_equality`."
+}

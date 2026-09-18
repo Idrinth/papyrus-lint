@@ -2,6 +2,11 @@
 # Development
 
 
+- Rule metadata: `shared/rules.json` (read by the Rust crates' build
+  scripts below, `pages/build.py`, and its own tests) is generated, not
+  checked in — run `python3 .github/scripts/build_rules_json.py` after
+  cloning and again whenever a `shared/rules/*.json` file changes, before
+  any of the commands below that touch it.
 - Frontend (`app/`): `npm install`, then `npm run dev` (Vite dev server) or
   `npm run build` (typecheck + build). `npm run test` runs the frontend's
   Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the

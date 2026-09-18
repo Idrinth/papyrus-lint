@@ -1,0 +1,13 @@
+{
+  "id": "float-to-int",
+  "name": "Implicit Float-to-Int conversion",
+  "category": "Bugprone",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit as Int cast.",
+  "definition": "Flags a Float value declared, assigned, returned, or passed as an argument into an Int-typed slot without an explicit `as Int` cast."
+}

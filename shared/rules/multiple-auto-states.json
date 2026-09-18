@@ -1,0 +1,13 @@
+{
+  "id": "multiple-auto-states",
+  "name": "Multiple Auto states",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Reports multiple Auto states in one script as an error, or multiple across its ancestry as a warning.",
+  "definition": "Flags more than one `Auto` state declared in a single script as an `[error]`, since a script may only declare one. It also flags, as a `[warning]`, multiple `Auto` states found only after combining a script with every `State` declared anywhere in its `Extends` ancestry (as above). The engine tolerates a parent and child each declaring an `Auto` state (the child's takes precedence at startup), but relying on that precedence is fragile: removing the child's `Auto` state silently switches its startup state back to the parent's. Only the script's own declared states are considered when linting in isolation; when linting a `.psc` file dropped in the app, its `Extends` ancestry is resolved from the project root too."
+}

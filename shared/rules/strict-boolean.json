@@ -1,0 +1,14 @@
+{
+  "id": "strict-boolean",
+  "name": "Strict boolean check",
+  "category": "Reliability",
+  "tags": [
+    "correctness",
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags conditions that rely on Papyrus treated a none-boolean as a boolean. Allows the literal 1/0 as bool-like by default (configurable).",
+  "definition": "Flags `If`/`ElseIf`/`While` conditions that aren't already a `Bool` value or expression, instead of relying on Papyrus's implicit conversion to boolean. Only conditions whose type can be determined locally (locals, parameters, properties, literals, casts, and comparison/logical expressions) are checked; a condition that depends on a function call or a member access is left unflagged rather than risk a false positive. By default (`bool_like_int: true`), the `Int` literal `1` or `0` used directly as a condition is allowed as a common \"bool-like\" idiom; any other `Int` value (including a variable or property that happens to hold `0`/`1`) is still flagged, and setting `bool_like_int: false` flags the literals too."
+}

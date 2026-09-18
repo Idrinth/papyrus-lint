@@ -111,7 +111,10 @@ original as the final fallback (applied to every page by
 `pages/site_chrome.py`'s `finalize_page`). Both the
 workflow and a contributor previewing the page locally run it as
 `python3 pages/build.py --out pages/dist` (the default `--out`), after
-`pip install -r pages/requirements-build.txt`; its
+`pip install -r pages/requirements-build.txt` and `python3
+.github/scripts/build_rules_json.py` (regenerates the git-ignored
+`shared/rules.json` `rules_page.py` reads from `shared/rules/*.json` —
+see AGENTS.md hard rule 4); its
 output directory (`pages/dist` by default) is git-ignored (matched by
 the root `.gitignore`'s generic `dist` entry) and gets uploaded to Pages
 via `actions/upload-pages-artifact`/`actions/deploy-pages`. Everything

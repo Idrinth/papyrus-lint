@@ -1,0 +1,15 @@
+{
+  "id": "property-sorting",
+  "name": "Property sorting",
+  "category": "Formatting",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "enabled_by_default": false,
+  "fixable": true,
+  "repair_order": 5,
+  "description": "Flag declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the ScriptName line, before any variable, function, or state declaration.",
+  "definition": "Flags, as a `[warning]`, a `Property` declaration that isn't sorted by type and then alphabetically by name, or that isn't declared immediately after the `ScriptName` line, before any variable, function, or state declaration (an `Import` isn't tracked closely enough to count against this). Disabled by default, since reordering a script's declared properties is a more invasive change than the rest of these lints; a project opts in via `rules.property_sorting`. The fix relocates each property's own declaration lines (its full `Property`/`EndProperty` block, for a non-auto property) as a group right after `ScriptName`, in sorted order; a documentation comment placed directly above a property is left behind rather than moved with it."
+}

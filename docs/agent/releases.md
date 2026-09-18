@@ -2,11 +2,14 @@
 # Releases
  (`.github/workflows/release.yml`)
 
-Pushing a tag matching `v*.*.*` triggers a `nexus-page` job that fills in
-`docs/nexuspage.bbcode`'s five lint tables from that tagged commit's own
-`shared/rules.json` (`.github/scripts/generate_nexuspage_tables.py
-shared/rules.json docs/nexuspage.bbcode`, rewriting the file in this job's
-own checkout) — the checked-in file carries no rows in those tables at
+Pushing a tag matching `v*.*.*` triggers a `nexus-page` job that first
+regenerates `shared/rules.json` from that tagged commit's own
+`shared/rules/*.json` (`.github/scripts/build_rules_json.py`, since the
+combined file is git-ignored, not checked in — see AGENTS.md hard rule 4)
+and then fills in `docs/nexuspage.bbcode`'s five lint tables from it
+(`.github/scripts/generate_nexuspage_tables.py shared/rules.json
+docs/nexuspage.bbcode`, rewriting the file in this job's own checkout) —
+the checked-in `docs/nexuspage.bbcode` carries no rows in those tables at
 all, so this is the only place they're ever generated. It then
 downloads the coverage artifacts from the tagged commit's most recent
 successful `ci.yml` run and calls `.github/scripts/render_nexuspage.py` to
@@ -27,7 +30,10 @@ identity, then verifies that signature against the release workflow identity;
 this also requires `id-token: write`. The image itself is not attached to the
 GitHub release or included in release-asset signing and VirusTotal jobs.
 
-A separate release job syncs the
+A separate release job first regenerates `shared/rules.json` (same as the
+`nexus-page` job above), since `app/src-tauri`/`papyrus-lint-cli` builds
+below compile `papyrus-lints`/`papyrus-lint-config`, whose `build.rs`
+scripts read it, then syncs the
 tag's version into `app/src-tauri/tauri.conf.json`, `app/package.json`,
 `app/src-tauri/Cargo.toml`, and all seven reusable crates' `Cargo.toml` files, then
 builds the Tauri desktop app (binary name `PapyrusLinter`) on Linux,

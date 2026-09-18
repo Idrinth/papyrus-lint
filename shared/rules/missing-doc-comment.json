@@ -1,0 +1,15 @@
+{
+  "id": "missing-doc-comment",
+  "name": "Missing documentation comment",
+  "category": "Other",
+  "tags": [
+    "maintainability",
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "enabled_by_default": false,
+  "fixable": false,
+  "description": "Flags a ScriptName, Property, or Function/Event declaration with no {...} documentation comment on the line right after it. Disabled by default.",
+  "definition": "Flags, as a `[warning]`, a script header (`ScriptName`), `Property` declaration, or `Function`/`Event` declaration with no documentation comment (CreationKit's own `{ ... }` syntax, rendered as a tooltip in the script picker or property editor) on the line immediately following it. Disabled by default, since most existing scripts have no documentation comments at all and enabling it would otherwise flag literally every declaration in such a project at once; opt in with `rules.missing_doc_comment`."
+}

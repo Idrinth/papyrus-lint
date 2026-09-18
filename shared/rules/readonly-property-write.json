@@ -1,0 +1,13 @@
+{
+  "id": "readonly-property-write",
+  "name": "Read-only (AutoReadOnly) property write",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags an assignment to a property declared AutoReadOnly, since Papyrus rejects that at compile time. Matches the property's bare name or Self.PropertyName; a bare name shadowed by a same-named local/parameter is left alone.",
+  "definition": "Flags, as an `[error]`, an assignment (`=`, `+=`, `-=`, ...) targeting a script-level property declared `AutoReadOnly` (e.g. `Float Property a = 0.1 AutoReadOnly`), since Papyrus rejects that assignment at compile time \u2014 an `AutoReadOnly` property can only ever hold its declared initial value. Matched by the property's bare name or as `Self.PropertyName`; a bare name shadowed by a same-named local variable or parameter in the enclosing function refers to that local/parameter instead and is never flagged, while a `Self.`-qualified write is always flagged regardless of shadowing."
+}

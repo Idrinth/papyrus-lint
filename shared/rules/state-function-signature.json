@@ -1,0 +1,13 @@
+{
+  "id": "state-function-signature",
+  "name": "State function signature mismatch",
+  "category": "Reliability",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags a function or event in a State whose parameters or return type don't match its empty-state declaration.",
+  "definition": "Flags, as an `[error]`, a function or event declared inside a `State` block whose parameter count/types or return type doesn't match the same-named declaration in the script's \"empty state\" (the one declared directly on the script, outside any `State` block) \u2014 Papyrus requires these to match identically for the state version to be recognized as an override of the empty-state one at all, rather than becoming a distinct, effectively unreachable function. Only compared against an empty-state declaration already present on the script being linted; a state function may instead validly match one declared on a parent script (per the language spec), which this lint has no way to resolve, so that case is left unflagged."
+}

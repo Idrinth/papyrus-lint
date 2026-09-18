@@ -1,0 +1,13 @@
+{
+  "id": "static-function-call-via-instance",
+  "name": "Static function called via instance",
+  "category": "Reliability",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags a Global function called through an object reference (e.g. akRef.MyGlobalHelper()) instead of ScriptName.MyGlobalHelper(); Papyrus allows it, but it can read as a mistake. Self/Parent are never flagged.",
+  "definition": "Flags, as a `[warning]`, the mirror case of \"Non-static function call\" above: a call reaching a `Global` function through an actual object reference (a local variable, parameter, property, cast, or array element, e.g. `akOtherActor.MyGlobalHelper()`) instead of Papyrus's static/global call syntax (`MyScript.MyGlobalHelper()`). Papyrus allows this \u2014 a `Global` function ignores whatever reference it's called through \u2014 but it can read as a mistake, since a reader (or the author, if the call was copy-pasted from an instance method) may expect the object to matter. `Self`/`Parent` are never flagged, since calling a script's own `Global` function through `Self` for symmetry with its other `Self.Whatever()` calls is a reasonable, common style rather than a likely mistake. Only checked when linting with project context, by resolving the target script's functions the same way the argument/return type checks do."
+}

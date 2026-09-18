@@ -306,6 +306,13 @@
 │           └── tests/               # Binary e2e tests, one file per src module
 ├── shared/
 │   ├── images/               # Images used by README.md (logo, screenshots)
+│   ├── rules/                 # One <id>.json per lint rule (the single
+│   │                          # source of truth for rule metadata — see
+│   │                          # AGENTS.md hard rule 4); rules.json (the
+│   │                          # combined array every other consumer reads)
+│   │                          # is generated from these by
+│   │                          # .github/scripts/build_rules_json.py and is
+│   │                          # git-ignored, not checked in
 │   └── theme.css             # Palette, canvas, and primitives shared by
 │                              # app/src/styles.css and pages/styles.css so
 │                              # the desktop app and the website cannot drift

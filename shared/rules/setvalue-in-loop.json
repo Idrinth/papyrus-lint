@@ -1,0 +1,13 @@
+{
+  "id": "setvalue-in-loop",
+  "name": "Repeated GlobalVariable.SetValue() calls in a loop",
+  "category": "Performance",
+  "tags": [
+    "performance"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags a SetValue/SetValueInt call inside a While loop's body, since it then runs on every iteration; not flagged if the loop also calls Utility.Wait/RegisterForUpdate.",
+  "definition": "Flags, as a `[warning]`, a `SetValue`/`SetValueInt` call standing alone as its own statement, directly in a `While` loop's body or nested inside an `If`/`ElseIf`/`Else` within it, since a call there runs on every iteration (or every reached iteration) the loop performs \u2014 likely unintended overhead compared to computing the final value locally and writing it once after the loop. Like \"Repeated GlobalVariable.GetValue() calls\", a call's receiver can't generally be resolved back to a `GlobalVariable`-typed script, so this matches by the `SetValue`/`SetValueInt` method name alone (case-insensitively). Never flagged when the loop's own body also calls `Utility.Wait`, `RegisterForUpdate`, `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or `RegisterForSingleUpdateGameTime`, since that's a strong signal the write is deliberately paced rather than happening in a tight, uncontrolled loop. A nested `While` loop is checked as its own separate loop, so a wait call only inside it doesn't pace an outer loop's own write, and vice versa."
+}
