@@ -16,6 +16,13 @@
 //! directly adjacent to the comparison operator or the call's argument
 //! list is checked; one reached indirectly through a variable assigned
 //! earlier is left unflagged rather than guessed at.
+//!
+//! [`check`] and [`repair`] share [`visit_decimal_formid_literals`] so the
+//! set of literals the fix rewrites can never drift from the set the
+//! diagnostic flags. [`repair`] rewrites each flagged literal's own digits
+//! in place (e.g. `76935` becomes `0x12C87`) and leaves everything else,
+//! including a leading unary `-` (a separate token from the literal
+//! itself), untouched.
 
 use papyrus_parser::token::{IntFormat, Keyword, Token, TokenKind};
 
@@ -32,15 +39,87 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     };
 
     let mut diagnostics = Vec::new();
+    visit_decimal_formid_literals(&tokens, |literal, context| {
+        diagnostics.push(diagnostic_for(literal, context));
+    });
+    diagnostics
+}
+
+/// Rewrites every non-hexadecimal FormID literal [`check`] would flag into
+/// its hexadecimal equivalent, leaving every other token (including the
+/// call it appears in) exactly as it was.
+pub fn repair(source: &str) -> String {
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+        return source.to_string();
+    };
+    let line_starts = line_starts(source);
+
+    let mut edits = Vec::new();
+    visit_decimal_formid_literals(&tokens, |literal, _context| {
+        let TokenKind::IntLiteral(value, _) = literal.kind else {
+            return;
+        };
+        let start = token_offset(&line_starts, literal);
+        let end = start + value.to_string().len();
+        edits.push((start, end, format!("{value:#X}")));
+    });
+    // Applied back-to-front so an earlier edit's byte offsets stay valid
+    // regardless of how a later edit on the same line changes its length.
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.0));
+
+    let mut repaired = source.to_string();
+    for (start, end, replacement) in edits {
+        repaired.replace_range(start..end, &replacement);
+    }
+    repaired
+}
+
+/// Walks `tokens` the same way [`check`] does, calling `on_match` with each
+/// non-hexadecimal FormID literal token found and the context it was found
+/// in (`"compared against GetFormID()"` or `"passed to
+/// Game.GetFormFromFile"`). The single place that decides which literals
+/// this lint's diagnostic and its fix agree on.
+fn visit_decimal_formid_literals(tokens: &[Token], mut on_match: impl FnMut(&Token, &'static str)) {
     for i in 0..tokens.len() {
-        if is_get_form_id_call(&tokens, i) {
-            check_get_form_id_comparison(&tokens, i, &mut diagnostics);
+        if is_get_form_id_call(tokens, i) {
+            check_get_form_id_comparison(tokens, i, &mut on_match);
         }
-        if is_game_get_form_from_file_call(&tokens, i) {
-            check_get_form_from_file_argument(&tokens, i, &mut diagnostics);
+        if is_game_get_form_from_file_call(tokens, i) {
+            check_get_form_from_file_argument(tokens, i, &mut on_match);
         }
     }
-    diagnostics
+}
+
+fn diagnostic_for(literal: &Token, context: &str) -> Diagnostic {
+    let TokenKind::IntLiteral(value, _) = literal.kind else {
+        unreachable!("visit_decimal_formid_literals only calls back with IntLiteral tokens")
+    };
+    Diagnostic {
+        line: literal.line,
+        column: literal.col,
+        message: format!(
+            "[warning] FormID {context} is written in decimal ({value}) instead of \
+             hexadecimal ({value:#X}); hexadecimal is the convention used everywhere else \
+             FormIDs appear, and a decimal literal here is easy to mistype or overlook next \
+             to correctly hex-written ones"
+        ),
+        rule: RULE,
+    }
+}
+
+fn line_starts(source: &str) -> Vec<usize> {
+    std::iter::once(0)
+        .chain(
+            source
+                .bytes()
+                .enumerate()
+                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
+        )
+        .collect()
+}
+
+fn token_offset(line_starts: &[usize], token: &Token) -> usize {
+    line_starts[token.line - 1] + token.col - 1
 }
 
 fn is_identifier(token: &Token, name: &str) -> bool {
@@ -99,7 +178,7 @@ fn is_game_get_form_from_file_call(tokens: &[Token], index: usize) -> bool {
 fn check_get_form_id_comparison(
     tokens: &[Token],
     call_index: usize,
-    diagnostics: &mut Vec<Diagnostic>,
+    on_match: &mut dyn FnMut(&Token, &'static str),
 ) {
     let call_end = call_index + 2;
     const CONTEXT: &str = "compared against GetFormID()";
@@ -114,7 +193,7 @@ fn check_get_form_id_comparison(
                 literal_index += 1;
             }
             if let Some(literal) = tokens.get(literal_index) {
-                flag_if_decimal(literal, CONTEXT, diagnostics);
+                flag_if_decimal(literal, CONTEXT, on_match);
             }
         }
     }
@@ -131,7 +210,7 @@ fn check_get_form_id_comparison(
                     literal_index = previous_index;
                 }
                 if let Some(literal) = tokens.get(literal_index) {
-                    flag_if_decimal(literal, CONTEXT, diagnostics);
+                    flag_if_decimal(literal, CONTEXT, on_match);
                 }
             }
         }
@@ -165,7 +244,7 @@ fn skip_receiver_backward(tokens: &[Token], call_index: usize) -> usize {
 fn check_get_form_from_file_argument(
     tokens: &[Token],
     call_index: usize,
-    diagnostics: &mut Vec<Diagnostic>,
+    on_match: &mut dyn FnMut(&Token, &'static str),
 ) {
     let mut index = call_index + 2; // past the identifier and its `(`
     if let (Some(name), Some(assign)) = (tokens.get(index), tokens.get(index + 1)) {
@@ -187,27 +266,21 @@ fn check_get_form_from_file_argument(
     ) {
         return;
     }
-    flag_if_decimal(literal, "passed to Game.GetFormFromFile", diagnostics);
+    flag_if_decimal(literal, "passed to Game.GetFormFromFile", on_match);
 }
 
-fn flag_if_decimal(literal: &Token, context: &str, diagnostics: &mut Vec<Diagnostic>) {
-    let TokenKind::IntLiteral(value, format) = literal.kind else {
+fn flag_if_decimal(
+    literal: &Token,
+    context: &'static str,
+    on_match: &mut dyn FnMut(&Token, &'static str),
+) {
+    let TokenKind::IntLiteral(_, format) = literal.kind else {
         return;
     };
     if format == IntFormat::Hexadecimal {
         return;
     }
-    diagnostics.push(Diagnostic {
-        line: literal.line,
-        column: literal.col,
-        message: format!(
-            "[warning] FormID {context} is written in decimal ({value}) instead of \
-             hexadecimal ({value:#X}); hexadecimal is the convention used everywhere else \
-             FormIDs appear, and a decimal literal here is easy to mistype or overlook next \
-             to correctly hex-written ones"
-        ),
-        rule: RULE,
-    });
+    on_match(literal, context);
 }
 
 #[cfg(test)]

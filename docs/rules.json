@@ -51,9 +51,9 @@
     ],
     "severity": "warning",
     "importance": "medium",
-    "fixable": false,
+    "fixable": true,
     "description": "Flags a FormID literal compared against GetFormID() or passed to Game.GetFormFromFile that isn't written in hexadecimal.",
-    "definition": "Flags, as a `[warning]`, a FormID literal that isn't written in hexadecimal notation when it's directly compared (`==`, `!=`, `<`, `<=`, `>`, `>=`) against a `GetFormID()` call, or passed as the FormID argument to `Game.GetFormFromFile` (positionally or by name), since hexadecimal is the convention used everywhere else a FormID appears (the Creation Kit, xEdit, mod documentation) and a stray decimal literal is easy to mistype or overlook. Only a literal directly adjacent to the comparison operator or the call's argument list is checked; one reached indirectly through a variable assigned earlier is left unflagged rather than guessed at."
+    "definition": "Flags, as a `[warning]`, a FormID literal that isn't written in hexadecimal notation when it's directly compared (`==`, `!=`, `<`, `<=`, `>`, `>=`) against a `GetFormID()` call, or passed as the FormID argument to `Game.GetFormFromFile` (positionally or by name), since hexadecimal is the convention used everywhere else a FormID appears (the Creation Kit, xEdit, mod documentation) and a stray decimal literal is easy to mistype or overlook. Only a literal directly adjacent to the comparison operator or the call's argument list is checked; one reached indirectly through a variable assigned earlier is left unflagged rather than guessed at. Automatically fixable: the fix rewrites the flagged literal's digits into their hexadecimal equivalent (e.g. `76935` becomes `0x12C87`) in place."
   },
   {
     "id": "slow-functions",

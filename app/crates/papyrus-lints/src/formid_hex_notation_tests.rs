@@ -244,3 +244,90 @@ fn does_not_flag_an_incomplete_get_form_from_file_call() {
 fn does_not_crash_on_unparseable_source() {
     assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
 }
+
+#[test]
+fn repairs_decimal_formid_compared_after_get_form_id() {
+    let source =
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    If akActor.GetFormID() == 76935\n    EndIf\nEndFunction\n";
+    let repaired = repair(source);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    If akActor.GetFormID() == 0x12C87\n    EndIf\nEndFunction\n"
+    );
+    assert!(check(&repaired).is_empty());
+}
+
+#[test]
+fn repairs_decimal_formid_compared_before_get_form_id() {
+    let source =
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    If 76935 == akActor.GetFormID()\n    EndIf\nEndFunction\n";
+    let repaired = repair(source);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    If 0x12C87 == akActor.GetFormID()\n    EndIf\nEndFunction\n"
+    );
+}
+
+#[test]
+fn repairs_negative_decimal_formid_leaving_the_minus_sign_alone() {
+    let source =
+        "ScriptName Example Extends Actor\n\nFunction Test()\n    If GetFormID() == -1\n    EndIf\nEndFunction\n";
+    let repaired = repair(source);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example Extends Actor\n\nFunction Test()\n    If GetFormID() == -0x1\n    EndIf\nEndFunction\n"
+    );
+}
+
+#[test]
+fn repairs_decimal_formid_passed_positionally_to_get_form_from_file() {
+    let source =
+        "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(76935, \"Skyrim.esm\")\nEndFunction\n";
+    let repaired = repair(source);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x12C87, \"Skyrim.esm\")\nEndFunction\n"
+    );
+}
+
+#[test]
+fn repairs_decimal_formid_passed_by_name_to_get_form_from_file() {
+    let source =
+        "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(auiFormID = 76935, asPluginName = \"Skyrim.esm\")\nEndFunction\n";
+    let repaired = repair(source);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(auiFormID = 0x12C87, asPluginName = \"Skyrim.esm\")\nEndFunction\n"
+    );
+}
+
+#[test]
+fn repairs_every_flagged_literal_on_the_same_line() {
+    let source =
+        "ScriptName Example\n\nFunction Test(Actor akA, Actor akB)\n    If akA.GetFormID() == 76935 || akB.GetFormID() == 42\n    EndIf\nEndFunction\n";
+    let repaired = repair(source);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example\n\nFunction Test(Actor akA, Actor akB)\n    If akA.GetFormID() == 0x12C87 || akB.GetFormID() == 0x2A\n    EndIf\nEndFunction\n"
+    );
+}
+
+#[test]
+fn does_not_change_source_with_no_decimal_formid() {
+    let source =
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    If akActor.GetFormID() == 0x00012C87\n    EndIf\nEndFunction\n";
+
+    assert_eq!(repair(source), source);
+}
+
+#[test]
+fn repair_does_not_crash_on_unparseable_source() {
+    let source = "ScriptName Example\n\nFunction Test(\nEndFunction\n";
+    assert_eq!(repair(source), source);
+}
