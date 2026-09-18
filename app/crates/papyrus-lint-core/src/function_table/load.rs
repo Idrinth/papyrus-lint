@@ -120,12 +120,15 @@ impl FunctionTable {
         find_psc_file_in_lookup_roots(&self.root, name_lower, &self.lookup_roots)
     }
 
-    /// Parses and caches the script named `name_lower`, if it hasn't been
-    /// already. In known-scripts mode (see [`Self::with_known_scripts`]),
-    /// only an O(1) lookup against the registered map is ever done against
-    /// the project's own scripts; a name not registered there still falls
-    /// back to [`Self::with_lookup_roots`] so vanilla game scripts can
-    /// resolve without being listed. Otherwise, `name_lower` is looked up
+    /// Parses and caches the script named `type_name`, if it hasn't been
+    /// already. Cache keys are always ASCII-lowercased, so a later lookup
+    /// of `Actor` after a walk that saw `Extends Actor` (or `actor`) hits
+    /// the same slot instead of parsing twice. In known-scripts mode (see
+    /// [`Self::with_known_scripts`]), only an O(1) lookup against the
+    /// registered map is ever done against the project's own scripts; a
+    /// name not registered there still falls back to
+    /// [`Self::with_lookup_roots`] so vanilla game scripts can resolve
+    /// without being listed. Otherwise, the lowercased name is looked up
     /// with [`find_psc_file`] as before `with_known_scripts` existed, then
     /// lookup roots. Reuses the on-disk [`crate::ast_cache`] when the
     /// script's content and modification time haven't changed since it was
@@ -134,20 +137,14 @@ impl FunctionTable {
     /// skips re-parsing it. Scripts found only under lookup roots are also
     /// kept in a process-wide table keyed by path+mtime, so a later
     /// `FunctionTable` in this process does not re-read them either.
-    pub(super) fn ensure_loaded(&mut self, name_lower: &str) {
-        // `name_lower` is only actually lowercased on a lookup's initial
-        // call; walking further up an `Extends` chain re-enters this with
-        // the parent's name cased exactly as written in `Extends ParentName`
-        // (see e.g. `lookup_function`'s loop). `find_psc_file` tolerates
-        // that by lowercasing internally before matching a directory entry,
-        // so the known-scripts map (keyed by an already-lowercased stem)
-        // has to do the same explicitly here.
-        let resolved = self.resolve_script_path_kind(name_lower);
+    pub(super) fn ensure_loaded(&mut self, type_name: &str) {
+        let name_lower = type_name.to_ascii_lowercase();
+        let resolved = self.resolve_script_path_kind(&name_lower);
         let mtime = resolved
             .as_ref()
             .and_then(|(path, _)| file_mtime_secs(path));
-        if self.scripts.contains_key(name_lower)
-            && self.script_mtimes.get(name_lower) == Some(&mtime)
+        if self.scripts.contains_key(&name_lower)
+            && self.script_mtimes.get(&name_lower) == Some(&mtime)
         {
             return;
         }
@@ -166,8 +163,8 @@ impl FunctionTable {
             load_script_functions(&path)
         });
 
-        self.scripts.insert(name_lower.to_string(), script);
-        self.script_mtimes.insert(name_lower.to_string(), mtime);
+        self.scripts.insert(name_lower.clone(), script);
+        self.script_mtimes.insert(name_lower, mtime);
     }
 }
 
