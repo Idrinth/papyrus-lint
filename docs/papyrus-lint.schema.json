@@ -59,7 +59,8 @@
     "indentation_width": {
       "description": "Spaces per indentation level. Used only when indentation is space. The engine clamps this to 1..16.",
       "type": "integer",
-      "minimum": 0,
+      "minimum": 1,
+      "maximum": 16,
       "default": 4
     },
     "identifier_casing": {
