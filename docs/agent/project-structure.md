@@ -43,7 +43,15 @@
 │   │   ├── test/fixture.ts      # Shared jsdom DOM fixture for the UI tests
 │   │   ├── test/mocks.ts        # Shared Tauri spies for the UI tests
 │   │   ├── test/harness.ts      # Shared helpers/hooks for the UI tests
-│   │   └── styles.css           # App chrome; imports shared/theme.css
+│   │   ├── styles.css           # Stylesheet entry point; imports shared/theme.css
+│   │   │                        # and the feature stylesheets below
+│   │   └── styles/              # App chrome grouped by frontend feature:
+│   │       ├── base.css             # Shell, tabs, progress, and contact list
+│   │       ├── settings.css         # Compiler, script-root, and lint settings
+│   │       ├── results.css          # Drop zone and lint result presentation
+│   │       ├── code-viewer.css      # Viewer, editor, and diff presentation
+│   │       ├── presets.css          # Config picker and preset management
+│   │       └── syntax-highlighting.css # Papyrus token colors
 │   ├── e2e/                  # Playwright specs (real Chromium, not jsdom):
 │   │   └── layout.spec.ts       # catches element-size/layout regressions
 │   ├── playwright.config.ts  # Config for the e2e/ specs above
