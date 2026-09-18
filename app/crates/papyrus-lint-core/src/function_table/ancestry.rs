@@ -14,6 +14,7 @@ fn cached_script<'a>(
         None => CacheProbe::Miss,
         Some(slot) => CacheProbe::Hit(slot.as_ref()),
     }
+}
 
 /// ASCII-lowercased `Extends` parent, matching [`FunctionTable::ensure_loaded`]'s
 /// cache keys. Walks that used the declared casing as the next `current`
