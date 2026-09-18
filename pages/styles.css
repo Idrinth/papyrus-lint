@@ -421,6 +421,11 @@ pre.code-block {
 
 .lint-table-wrap {
   overflow-x: auto;
+  /* overflow-x: auto computes overflow-y to auto as well; keep Y hidden so
+     this wrap does not become a second vertical scroller that can steal
+     clicks from the native <details> widgets after it is focused. Height
+     is auto, so in-flow row growth is not clipped. */
+  overflow-y: hidden;
 }
 
 table.lint-table {
@@ -431,6 +436,12 @@ table.lint-table {
 
 table.lint-rules-table {
   table-layout: fixed;
+  /* The four fixed columns (name/severity/tags/auto-fix) already sum to
+     ~37em. Without a floor, table-layout:fixed assigns the leftover to
+     Description - which is 0 when the container is narrower than that
+     sum. The <details> summary still paints (td overflow is visible) so
+     "Full behavior" looks clickable, but its hit box is empty. */
+  min-width: 52em;
 }
 
 .lint-table th,
@@ -736,6 +747,16 @@ table.lint-rules-table {
   width: 11em;
 }
 
+.rules-content .lint-rules-table th:nth-child(4),
+.rules-content .lint-rules-table td:nth-child(4) {
+  min-width: 14em;
+  overflow-wrap: anywhere;
+  /* Sit above overflowing nowrap badges in neighboring cells so those
+     paint over the summary's text without also stealing its clicks. */
+  position: relative;
+  z-index: 1;
+}
+
 .severity-badge {
   display: inline-block;
   padding: 0.15em 0.6em;
@@ -781,11 +802,62 @@ table.lint-rules-table {
   cursor: pointer;
   color: var(--color-accent-toggle);
   font-size: 0.9em;
+  display: list-item;
+}
+
+.rules-content .lint-rules-table details p {
+  overflow-wrap: anywhere;
 }
 
 .rules-content .lint-rules-table code {
   font-size: 0.85em;
   color: var(--color-text-muted);
+}
+
+/* Stack each rule into a readable block once the fixed columns would
+   otherwise crush Description (and its disclosure) to a 0-width cell.
+   Author `display` values beat the UA `[hidden] { display: none }`, so
+   filtered rows need an explicit override - same gotcha as .lightbox. */
+@media (max-width: 48em) {
+  .rules-content .lint-table-wrap {
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
+  .rules-content table.lint-rules-table {
+    min-width: 0;
+    table-layout: auto;
+  }
+
+  .rules-content .lint-rules-table thead {
+    display: none;
+  }
+
+  .rules-content .lint-rules-table,
+  .rules-content .lint-rules-table tbody,
+  .rules-content .lint-rules-table tr,
+  .rules-content .lint-rules-table th,
+  .rules-content .lint-rules-table td {
+    display: block;
+  }
+
+  .rules-content .lint-rules-table tr[hidden] {
+    display: none;
+  }
+
+  .rules-content .lint-rules-table th:nth-child(n),
+  .rules-content .lint-rules-table td:nth-child(n) {
+    width: auto;
+    min-width: 0;
+    text-align: left;
+    border-bottom: none;
+    padding: 0.2em 0;
+  }
+
+  .rules-content .lint-rules-table tbody tr {
+    padding: 0.9em 0;
+    border-bottom: 1px solid var(--color-border);
+  }
 }
 
 .coverage-module .lint-table td:last-child,
