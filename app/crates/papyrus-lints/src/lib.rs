@@ -88,3 +88,15 @@ mod useless_downcast;
 mod variable_used_before_assignment;
 
 mod registry;
+
+/// Every rule id [`lint`]/[`lint_with_external_arguments`] can report,
+/// matched against `; @disable <rule-id>` directives (see
+/// [`disable_comments`]) and validated against by callers (e.g. the CLI's
+/// `fix --type <rule-id>`) that need to tell an unknown rule id apart from
+/// a known one with no automatic fix (see [`FIXABLE_RULE_IDS`]).
+pub use registry::{FIXABLE_RULE_IDS, KNOWN_RULE_IDS};
+
+use serde::Serialize;
+
+pub use argument_types::{ExternalSignatures, NoExternalSignatures, ParamInfo};
+pub use config::{Config, MagicNumbers, NamedArguments, TypeCasing};
