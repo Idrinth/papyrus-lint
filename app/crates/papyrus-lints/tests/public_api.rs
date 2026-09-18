@@ -146,6 +146,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nImport Utility\n",
             &default_config,
         ),
+        (
+            "formid-hex-notation",
+            "ScriptName Example\n\nFunction Test(Actor akActor)\n    If akActor.GetFormID() == 76935\n    EndIf\nEndFunction\n",
+            "ScriptName Example\n\nFunction Test(Actor akActor)\n    If akActor.GetFormID() == 0x12C87\n    EndIf\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();
