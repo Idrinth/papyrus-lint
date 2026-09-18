@@ -12,6 +12,14 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-nodiscard";
 
+/// Shared lookup state for deciding whether a discarded call is `@nodiscard`.
+struct NodiscardContext<'a> {
+    ast: Option<&'a Script>,
+    local: &'a HashSet<String>,
+    script_name: Option<&'a str>,
+    type_env: Option<&'a TypeEnv>,
+}
+
 /// Checks for calls to functions marked `; @nodiscard` whose result is
 /// discarded rather than assigned, returned, or used by another expression.
 /// Flagged as a `[warning]`.
@@ -31,19 +39,16 @@ pub fn check(
     let local = local_nodiscard_functions(source, tokens);
     let script_name = script_name(ast, tokens);
     let type_env = ast.map(TypeEnv::for_script);
+    let context = NodiscardContext {
+        ast,
+        local: &local,
+        script_name: script_name.as_deref(),
+        type_env: type_env.as_ref(),
+    };
 
     tokens
         .split(|token| matches!(token.kind, TokenKind::Newline | TokenKind::Eof))
-        .filter_map(|statement| {
-            check_statement(
-                statement,
-                ast,
-                &local,
-                script_name.as_deref(),
-                type_env.as_ref(),
-                external,
-            )
-        })
+        .filter_map(|statement| check_statement(statement, &context, external))
         .collect()
 }
 
@@ -52,10 +57,7 @@ pub fn check(
 /// consume the statement's overall result.
 fn check_statement(
     statement: &[Token],
-    ast: Option<&Script>,
-    local: &HashSet<String>,
-    script_name: Option<&str>,
-    type_env: Option<&TypeEnv>,
+    context: &NodiscardContext<'_>,
     external: &mut impl ExternalSignatures,
 ) -> Option<Diagnostic> {
     if statement.iter().any(|token| {
@@ -75,15 +77,12 @@ fn check_statement(
 
     top_level_operands(statement)
         .into_iter()
-        .find_map(|operand| check_operand(operand, ast, local, script_name, type_env, external))
+        .find_map(|operand| check_operand(operand, context, external))
 }
 
 fn check_operand(
     operand: &[Token],
-    ast: Option<&Script>,
-    local: &HashSet<String>,
-    script_name: Option<&str>,
-    type_env: Option<&TypeEnv>,
+    context: &NodiscardContext<'_>,
     external: &mut impl ExternalSignatures,
 ) -> Option<Diagnostic> {
     let last = operand.last()?;
@@ -99,16 +98,7 @@ fn check_operand(
     };
 
     let qualifier = qualifier_before(operand, name_index);
-    if !is_nodiscard(
-        name,
-        qualifier,
-        local,
-        script_name,
-        type_env,
-        ast,
-        token.line,
-        external,
-    ) {
+    if !is_nodiscard(name, qualifier, token.line, context, external) {
         return None;
     }
 
@@ -139,11 +129,8 @@ fn qualifier_before(operand: &[Token], name_index: usize) -> Option<&str> {
 fn is_nodiscard(
     function_name: &str,
     qualifier: Option<&str>,
-    local: &HashSet<String>,
-    script_name: Option<&str>,
-    type_env: Option<&TypeEnv>,
-    ast: Option<&Script>,
     line: usize,
+    context: &NodiscardContext<'_>,
     external: &mut impl ExternalSignatures,
 ) -> bool {
     let local_key = function_name.to_ascii_lowercase();
@@ -152,12 +139,12 @@ fn is_nodiscard(
             name.eq_ignore_ascii_case("self") || name.eq_ignore_ascii_case("parent")
         });
 
-    if self_like && local.contains(&local_key) {
+    if self_like && context.local.contains(&local_key) {
         return true;
     }
 
     if self_like {
-        if let Some(script) = script_name {
+        if let Some(script) = context.script_name {
             if external.is_nodiscard_function(script, function_name) == Some(true) {
                 return true;
             }
@@ -172,22 +159,21 @@ fn is_nodiscard(
         return true;
     }
 
-    resolved_qualifier_type(qualifier, type_env, ast, line).is_some_and(|type_name| {
+    resolved_qualifier_type(qualifier, context, line).is_some_and(|type_name| {
         external.is_nodiscard_function(&type_name, function_name) == Some(true)
     })
 }
 
 fn resolved_qualifier_type(
     qualifier: &str,
-    type_env: Option<&TypeEnv>,
-    ast: Option<&Script>,
+    context: &NodiscardContext<'_>,
     line: usize,
 ) -> Option<String> {
-    if let Some(type_name) = type_env.and_then(|env| env.lookup(qualifier)) {
+    if let Some(type_name) = context.type_env.and_then(|env| env.lookup(qualifier)) {
         return Some(type_name.name.clone());
     }
 
-    let script = ast?;
+    let script = context.ast?;
     let function = containing_function(script, line)?;
     let mut env = TypeEnv::for_script(script);
     let mut found = None;
