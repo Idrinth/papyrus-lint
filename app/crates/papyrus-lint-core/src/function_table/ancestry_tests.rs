@@ -114,6 +114,23 @@ fn finds_function_inherited_through_extends_chain() {
 }
 
 #[test]
+fn finds_inherited_function_when_extends_uses_different_casing() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Actor",
+        "ScriptName Actor\n\nFunction DoThing()\nEndFunction\n",
+    );
+    write_script(root.path(), "Child", "ScriptName Child Extends ACTOR\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let signature = table
+        .lookup_function("child", "dothing")
+        .expect("inherited function should be found despite Extends casing");
+    assert_eq!(signature.name, "DoThing");
+}
+
+#[test]
 fn type_and_function_names_are_case_insensitive() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(

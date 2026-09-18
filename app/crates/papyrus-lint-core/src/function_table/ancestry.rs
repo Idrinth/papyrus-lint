@@ -4,7 +4,18 @@
 use std::collections::HashSet;
 
 use super::FunctionTable;
-use crate::script_functions::{FunctionSignature, Member};
+use crate::script_functions::{FunctionSignature, Member, ScriptFunctions};
+
+/// ASCII-lowercased `Extends` parent, matching [`FunctionTable::ensure_loaded`]'s
+/// cache keys. Walks that used the declared casing as the next `current`
+/// name would miss a previously loaded lowercase slot (or insert a second
+/// one) whenever `Extends Actor` and a later `actor` lookup mixed.
+fn parent_cache_key(script: &ScriptFunctions) -> Option<String> {
+    script
+        .extends
+        .as_ref()
+        .map(|parent| parent.to_ascii_lowercase())
+}
 
 impl FunctionTable {
     /// Looks up the signature of `function_name` as callable on an object
@@ -34,7 +45,7 @@ impl FunctionTable {
                 return Some(signature.clone());
             }
 
-            current = script.extends.clone();
+            current = parent_cache_key(script);
             visited.push(name);
         }
 
@@ -65,7 +76,7 @@ impl FunctionTable {
             self.ensure_loaded(&name);
 
             current = match self.scripts.get(&name).and_then(Option::as_ref) {
-                Some(script) => script.extends.as_ref().map(|e| e.to_ascii_lowercase()),
+                Some(script) => parent_cache_key(script),
                 None => crate::native_types::parent_of(&name).map(str::to_string),
             };
             visited.push(name);
@@ -102,8 +113,8 @@ impl FunctionTable {
             self.ensure_loaded(&name);
 
             current = match self.scripts.get(&name).and_then(Option::as_ref) {
-                Some(script) => match &script.extends {
-                    Some(parent) => Some(parent.to_ascii_lowercase()),
+                Some(script) => match parent_cache_key(script) {
+                    Some(parent) => Some(parent),
                     None => return true, // an explicit script with no Extends is a definite root
                 },
                 None => match crate::native_types::parent_of(&name) {
@@ -142,7 +153,7 @@ impl FunctionTable {
                 return true;
             }
 
-            current = script.extends.clone();
+            current = parent_cache_key(script);
             visited.push(name);
         }
 
@@ -176,7 +187,7 @@ impl FunctionTable {
                 return true;
             }
 
-            current = script.extends.clone();
+            current = parent_cache_key(script);
             visited.push(name);
         }
 
@@ -209,7 +220,7 @@ impl FunctionTable {
                 return true;
             }
 
-            current = script.extends.clone();
+            current = parent_cache_key(script);
             visited.push(name);
         }
 
@@ -247,14 +258,7 @@ impl FunctionTable {
                     .map(|(name, &is_auto)| (name.clone(), is_auto)),
             );
 
-            // Lowercased, unlike the other walks in this file: those only
-            // ever check for a match or stop at the first one found, so a
-            // casing mismatch against `visited` costs at most a redundant
-            // extra step. This walk instead accumulates every step's
-            // states, where the same mismatch would double-count an
-            // ancestor's states whenever its `Extends` target's declared
-            // casing doesn't match `visited`'s.
-            current = script.extends.as_ref().map(|e| e.to_ascii_lowercase());
+            current = parent_cache_key(script);
             visited.push(name);
         }
 
@@ -294,7 +298,7 @@ impl FunctionTable {
                 }
             }
 
-            current = script.extends.clone();
+            current = parent_cache_key(script);
             visited.push(name);
         }
 

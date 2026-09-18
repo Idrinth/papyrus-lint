@@ -250,6 +250,32 @@ fn caches_parsed_scripts_across_lookups() {
 }
 
 #[test]
+fn caches_scripts_under_a_single_lowercase_key() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Actor",
+        "ScriptName Actor\n\nFunction DoThing()\nEndFunction\n",
+    );
+    write_script(root.path(), "Child", "ScriptName Child Extends Actor\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    assert!(table.lookup_function("Child", "DoThing").is_some());
+    assert!(!table.has_property("CHILD", "NoSuchProperty"));
+    assert!(table.lookup_function("ACTOR", "DoThing").is_some());
+    assert!(table.is_subtype("Child", "actor"));
+    let _ = table.list_members("cHiLd");
+
+    let actor_keys: Vec<_> = table
+        .scripts
+        .keys()
+        .filter(|name| name.eq_ignore_ascii_case("actor"))
+        .cloned()
+        .collect();
+    assert_eq!(actor_keys, ["actor"]);
+}
+
+#[test]
 fn reloads_a_script_when_its_mtime_changes() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(root.path(), "Foo", "this is not a Papyrus script\n");
