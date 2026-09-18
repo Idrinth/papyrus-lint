@@ -1,6 +1,8 @@
 //! File listing, reading, writing, hashing, and in-memory parse/lint commands.
 
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::time::UNIX_EPOCH;
 
 use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{achlist, ast_cache, content_hash, script_locator};
@@ -88,6 +90,29 @@ pub(crate) fn read_psc_file(path: String) -> Result<String, String> {
 pub(crate) fn hash_psc_file_md5(path: String) -> Result<String, String> {
     let source = read_psc_source(Path::new(&path)).map_err(|err| err.to_string())?;
     Ok(content_hash::md5_hex(&source))
+}
+
+/// Returns each existing path in `paths`' own last-modified time, as Unix
+/// milliseconds, keyed by that same path. Used by the frontend's watch mode
+/// (see `watch.ts`) to notice a currently loaded `.psc` file changing on
+/// disk without an OS-level filesystem-watcher dependency: it polls this
+/// command for the files it's watching and compares the returned timestamps
+/// against what it saw last time. A path whose metadata can't be read (e.g.
+/// deleted, or momentarily locked by whatever wrote it) is simply omitted
+/// from the result instead of failing the whole call, so one such file
+/// doesn't stop watch mode from noticing changes to the rest — the frontend
+/// treats that omission as a change in its own right, since a watched file
+/// disappearing is itself worth re-linting (and reporting as an error) for.
+#[tauri::command(async)]
+pub(crate) fn get_psc_file_mtimes(paths: Vec<String>) -> HashMap<String, u64> {
+    paths
+        .into_iter()
+        .filter_map(|path| {
+            let modified = std::fs::metadata(&path).ok()?.modified().ok()?;
+            let millis = modified.duration_since(UNIX_EPOCH).ok()?.as_millis() as u64;
+            Some((path, millis))
+        })
+        .collect()
 }
 
 /// Writes `contents` to the `.psc` file at `path`, replacing it on disk.
@@ -418,6 +443,54 @@ mod tests {
         let path = dir.path().join("Invalid.psc");
         std::fs::write(&path, invalid).unwrap();
         assert!(parse_psc_file(path.to_string_lossy().into_owned()).is_err());
+    }
+
+    #[test]
+    fn get_psc_file_mtimes_reports_each_existing_paths_modified_time() {
+        let dir = tempdir().unwrap();
+        let path = dir.path().join("Example.psc");
+        std::fs::write(&path, "ScriptName Example\n").unwrap();
+        let path_string = path.to_string_lossy().into_owned();
+
+        let mtimes = get_psc_file_mtimes(vec![path_string.clone()]);
+
+        let expected = std::fs::metadata(&path)
+            .unwrap()
+            .modified()
+            .unwrap()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis() as u64;
+        assert_eq!(mtimes.get(&path_string), Some(&expected));
+    }
+
+    #[test]
+    fn get_psc_file_mtimes_omits_paths_that_do_not_exist() {
+        let dir = tempdir().unwrap();
+        let missing = dir
+            .path()
+            .join("missing.psc")
+            .to_string_lossy()
+            .into_owned();
+
+        let mtimes = get_psc_file_mtimes(vec![missing.clone()]);
+
+        assert!(!mtimes.contains_key(&missing));
+    }
+
+    #[test]
+    fn get_psc_file_mtimes_only_reports_the_paths_asked_for() {
+        let dir = tempdir().unwrap();
+        let watched = dir.path().join("Watched.psc");
+        let other = dir.path().join("Other.psc");
+        std::fs::write(&watched, "ScriptName Watched\n").unwrap();
+        std::fs::write(&other, "ScriptName Other\n").unwrap();
+        let watched_string = watched.to_string_lossy().into_owned();
+
+        let mtimes = get_psc_file_mtimes(vec![watched_string.clone()]);
+
+        assert_eq!(mtimes.len(), 1);
+        assert!(mtimes.contains_key(&watched_string));
     }
 
     #[test]

@@ -422,6 +422,73 @@ fn has_property_does_not_infinite_loop_on_circular_extends() {
 }
 
 #[test]
+fn has_field_true_for_a_variable_declared_directly_on_the_type() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(root.path(), "Foo", "ScriptName Foo\n\nInt MyValue = 1\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.has_field("Foo", "MyValue"));
+    assert!(table.has_field("foo", "myvalue"));
+}
+
+#[test]
+fn has_field_true_for_a_variable_inherited_through_extends_chain() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Grandparent",
+        "ScriptName Grandparent\n\nBool IsAwesome = false\n",
+    );
+    write_script(
+        root.path(),
+        "Middle",
+        "ScriptName Middle Extends Grandparent\n",
+    );
+    write_script(root.path(), "Child", "ScriptName Child Extends Middle\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.has_field("Child", "IsAwesome"));
+}
+
+#[test]
+fn has_field_false_for_unrelated_or_unresolvable_types() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(root.path(), "Foo", "ScriptName Foo\n\nInt MyValue = 1\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(!table.has_field("Foo", "DoesNotExist"));
+    assert!(!table.has_field("Missing", "Anything"));
+}
+
+#[test]
+fn has_field_does_not_match_a_same_named_property() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Foo",
+        "ScriptName Foo\n\nInt Property MyValue Auto\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(!table.has_field("Foo", "MyValue"));
+}
+
+#[test]
+fn has_field_does_not_infinite_loop_on_circular_extends() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(root.path(), "A", "ScriptName A Extends B\n");
+    write_script(root.path(), "B", "ScriptName B Extends A\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(!table.has_field("A", "Anything"));
+}
+
+#[test]
 fn has_state_true_for_a_state_declared_directly_on_the_type() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(

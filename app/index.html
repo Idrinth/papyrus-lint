@@ -283,6 +283,14 @@
         <div id="panel-lint" class="tabs__panel" role="tabpanel" aria-labelledby="tab-lint" hidden>
           <div id="psc-result" class="psc-result" hidden>
             <h2>Parsed scripts</h2>
+            <div class="psc-result__watch">
+              <label
+                title="Periodically checks the currently loaded .psc file(s) for changes made outside the app and automatically re-lints them"
+              >
+                <input type="checkbox" id="watch-mode-toggle" /> Watch for changes and re-lint automatically
+              </label>
+              <span id="watch-mode-status" class="psc-result__watch-status" aria-live="polite"></span>
+            </div>
             <div class="psc-result__search">
               <label for="filename-filter">Filter by filename</label>
               <input

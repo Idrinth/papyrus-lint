@@ -15,7 +15,7 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
     write_script(
         root.path(),
         "Properties",
-        "ScriptName Properties\n\nString Property Name Auto\n",
+        "ScriptName Properties\n\nString Property Name Auto\nInt Age = 1\n",
     );
     write_script(
         root.path(),
@@ -31,6 +31,7 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
     assert!(params.is_empty());
     assert!(shared.is_subtype("Child", "Helpers"));
     assert!(shared.has_property("Properties", "Name"));
+    assert!(shared.has_field("Properties", "Age"));
     assert_eq!(shared.property_types("Properties"), vec!["String"]);
     assert!(shared.script_exists("Child"));
     assert!(shared.can_resolve_script("Child"));

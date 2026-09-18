@@ -150,6 +150,40 @@ impl FunctionTable {
     }
 
     /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
+    /// or transitively), declares a script-level variable (a plain field,
+    /// not a `Property`) named `field_name`. Both names are matched
+    /// case-insensitively. Returns `false` if `type_name`'s script (or any
+    /// ancestor along the way) can't be found or parsed before a match is
+    /// found. Used by the "Local variable shadowing" lint
+    /// (`papyrus_lints::local_variable_shadowing`) to check a local
+    /// variable against a parent script's fields, mirroring
+    /// [`Self::has_property`] above.
+    pub fn has_field(&mut self, type_name: &str, field_name: &str) -> bool {
+        let field_key = field_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break; // guard against a circular `Extends` chain
+            }
+            self.ensure_loaded(&name);
+
+            let Some(script) = self.scripts.get(&name).and_then(Option::as_ref) else {
+                break;
+            };
+            if script.variables.contains(&field_key) {
+                return true;
+            }
+
+            current = script.extends.clone();
+            visited.push(name);
+        }
+
+        false
+    }
+
+    /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
     /// or transitively), declares a `State` block named `state_name`. Both
     /// names are matched case-insensitively. Returns `false` if
     /// `type_name`'s script (or any ancestor along the way) can't be found

@@ -1,8 +1,8 @@
-//! Flags local variables that shadow a `Property` declared on the same
-//! script or on a parent script, since reading the name inside the
-//! function then reads the local rather than the property, which is a
-//! common source of confusion (and, once the local goes out of scope
-//! conceptually, bugs).
+//! Flags local variables that shadow a `Property` or a plain script-level
+//! variable (field) declared on the same script or on a parent script,
+//! since reading the name inside the function then reads the local rather
+//! than the property/field, which is a common source of confusion (and,
+//! once the local goes out of scope conceptually, bugs).
 //!
 //! Like [`crate::argument_types`], this works from the parsed AST rather
 //! than raw tokens, and reuses that module's
@@ -22,11 +22,11 @@ use crate::{fragment_code, Diagnostic};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "local-variable-shadowing";
 
-/// Checks `source` for local variables that shadow a property declared on
-/// the same script. Shadowing a property declared on a parent script isn't
-/// checked this way, since resolving parent scripts to files requires
-/// filesystem access this crate deliberately doesn't have; see
-/// [`check_with`] for that. Flagged as a `[warning]`.
+/// Checks `source` for local variables that shadow a property or field
+/// declared on the same script. Shadowing a property or field declared on
+/// a parent script isn't checked this way, since resolving parent scripts
+/// to files requires filesystem access this crate deliberately doesn't
+/// have; see [`check_with`] for that. Flagged as a `[warning]`.
 ///
 /// A declaration inside a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers, is
@@ -37,8 +37,8 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 }
 
 /// Like [`check`], but also flags a local variable that shadows a property
-/// declared on a parent script, resolved (including through `Extends`)
-/// through `external`.
+/// or field declared on a parent script, resolved (including through
+/// `Extends`) through `external`.
 pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
     let Ok(script) = papyrus_parser::parse(source) else {
         return Vec::new();
@@ -50,6 +50,11 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
         .iter()
         .map(|p| p.name.to_ascii_lowercase())
         .collect();
+    let own_variables: HashSet<String> = script
+        .variables
+        .iter()
+        .map(|v| v.name.to_ascii_lowercase())
+        .collect();
 
     let mut diagnostics = Vec::new();
     for function in all_functions(&script) {
@@ -57,7 +62,13 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
             if protected.get(decl.line).copied().unwrap_or(false) {
                 continue;
             }
-            diagnostics.extend(check_decl(decl, &script, &own_properties, external));
+            diagnostics.extend(check_decl(
+                decl,
+                &script,
+                &own_properties,
+                &own_variables,
+                external,
+            ));
         }
     }
     diagnostics
@@ -67,6 +78,7 @@ fn check_decl<E: ExternalSignatures>(
     decl: &VariableDecl,
     script: &Script,
     own_properties: &HashSet<String>,
+    own_variables: &HashSet<String>,
     external: &mut E,
 ) -> Option<Diagnostic> {
     let name_lower = decl.name.to_ascii_lowercase();
@@ -83,6 +95,18 @@ fn check_decl<E: ExternalSignatures>(
         });
     }
 
+    if own_variables.contains(&name_lower) {
+        return Some(Diagnostic {
+            line: decl.line,
+            column: 1,
+            message: format!(
+                "[warning] Local variable '{}' shadows this script's own variable '{}'",
+                decl.name, decl.name
+            ),
+            rule: RULE,
+        });
+    }
+
     let parent = script.extends.as_ref()?;
     if external.has_property(parent, &decl.name) {
         return Some(Diagnostic {
@@ -90,6 +114,18 @@ fn check_decl<E: ExternalSignatures>(
             column: 1,
             message: format!(
                 "[warning] Local variable '{}' shadows a property '{}' inherited from a parent script",
+                decl.name, decl.name
+            ),
+            rule: RULE,
+        });
+    }
+
+    if external.has_field(parent, &decl.name) {
+        return Some(Diagnostic {
+            line: decl.line,
+            column: 1,
+            message: format!(
+                "[warning] Local variable '{}' shadows a variable '{}' inherited from a parent script",
                 decl.name, decl.name
             ),
             rule: RULE,
