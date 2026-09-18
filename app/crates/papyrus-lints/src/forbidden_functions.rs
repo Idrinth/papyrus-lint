@@ -1,4 +1,4 @@
-//! Flags calls to functions listed in `rules/forbidden-functions.yaml`
+//! Flags calls to functions listed in `shared/rules/data/forbidden-functions.yaml`
 //! (e.g. functions with known performance or reliability pitfalls).
 //!
 //! Rules are compiled into the `FORBIDDEN_FUNCTIONS` array below by
