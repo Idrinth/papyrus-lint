@@ -36,6 +36,7 @@ describe('extension activation', () => {
     const cleanPapyrus = { uri: target, languageId: 'papyrus', isDirty: false };
 
     await harness.listeners.open(cleanPapyrus);
+    await new Promise((resolve) => setImmediate(resolve));
     await harness.listeners.save({ ...cleanPapyrus, isDirty: true });
     await harness.listeners.open({ ...cleanPapyrus, languageId: 'plaintext' });
     harness.listeners.close(cleanPapyrus);

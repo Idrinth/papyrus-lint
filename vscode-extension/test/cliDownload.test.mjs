@@ -39,8 +39,8 @@ function loadCliDownload(responses = []) {
   return { cliDownload, requests };
 }
 
-function trust(cliDownload, asset, body) {
-  cliDownload.CLI_SHA256[asset] = sha256(body);
+function trust(cliDownload, asset, body, extra = []) {
+  cliDownload.CLI_SHA256[asset] = [sha256(body), ...extra.map(sha256)];
 }
 
 async function temporaryDirectory() {
@@ -195,5 +195,40 @@ describe('ensureReleaseCli', () => {
     const { cliDownload } = loadCliDownload();
     delete cliDownload.CLI_SHA256['PapyrusLinterCLI-linux'];
     assert.throws(() => cliDownload.expectedSha256('PapyrusLinterCLI-linux'), /no baked SHA-256/);
+  });
+
+  it('treats the first baked digest as the official CLI hash', () => {
+    const { cliDownload } = loadCliDownload();
+    cliDownload.CLI_SHA256['PapyrusLinterCLI-linux'] = ['aaa', 'bbb'];
+    assert.equal(cliDownload.expectedSha256('PapyrusLinterCLI-linux'), 'aaa');
+    assert.deepEqual(cliDownload.acceptedSha256s('PapyrusLinterCLI-linux'), ['aaa', 'bbb']);
+    assert.equal(cliDownload.isAcceptedSha256('PapyrusLinterCLI-linux', 'aaa'), true);
+    assert.equal(cliDownload.isAcceptedSha256('PapyrusLinterCLI-linux', 'bbb'), true);
+    assert.equal(cliDownload.isAcceptedSha256('PapyrusLinterCLI-linux', 'ccc'), false);
+  });
+
+  it('accepts a user-supplied executable whose hash matches the CLI or GUI digest', async () => {
+    const storage = await temporaryDirectory();
+    const cliBody = 'official CLI';
+    const guiBody = 'desktop app';
+    const executable = path.join(storage, 'PapyrusLinter');
+    await fs.writeFile(executable, guiBody, { mode: 0o700 });
+    const { cliDownload } = loadCliDownload();
+    trust(cliDownload, 'PapyrusLinterCLI-linux', cliBody, [guiBody]);
+
+    await cliDownload.verifyConfiguredExecutable(executable, 'linux');
+  });
+
+  it('rejects a user-supplied executable whose hash is not baked in', async () => {
+    const storage = await temporaryDirectory();
+    const executable = path.join(storage, 'stranger');
+    await fs.writeFile(executable, 'not a release binary', { mode: 0o700 });
+    const { cliDownload } = loadCliDownload();
+    trust(cliDownload, 'PapyrusLinterCLI-linux', 'official CLI', ['desktop app']);
+
+    await assert.rejects(
+      cliDownload.verifyConfiguredExecutable(executable, 'linux'),
+      /configured executable SHA-256 mismatch/,
+    );
   });
 });
