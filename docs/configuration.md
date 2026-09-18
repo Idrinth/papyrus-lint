@@ -15,6 +15,12 @@ is checked in at
 also what `PapyrusLinterCLI init` (or `init --preset strict`, the default)
 writes into a project with no config file yet.
 
+A JSON Schema for the same file is checked in at
+[`docs/papyrus-lint.schema.json`](papyrus-lint.schema.json) (JSON Schema
+Draft 2020-12), so editors that support YAML schema association can
+complete keys and flag typos. The published copy is served at
+`https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json`.
+
 ## Presets
 
 `PapyrusLinterCLI init --preset <name>` picks a different built-in starting
