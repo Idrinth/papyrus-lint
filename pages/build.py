@@ -75,7 +75,6 @@ try:
     from pages.coverage_report import build_coverage_page
     from pages.css import inline_css_imports
     from pages.docs_pages import DOCS, build_action_page, build_doc_pages, render_doc, render_docs_list_items
-    from pages.markdown_render import extract_section, first_code_block
     from pages.minify import minify_css, minify_js
     from pages.rules_page import build_rules_page
     from pages.site_assets import ASSETS, MODERN_FORMAT_ASSETS, convert_to_modern_formats, copy_json_schemas
@@ -84,7 +83,6 @@ except ImportError:  # running as pages/build.py
     from coverage_report import build_coverage_page
     from css import inline_css_imports
     from docs_pages import DOCS, build_action_page, build_doc_pages, render_doc, render_docs_list_items
-    from markdown_render import extract_section, first_code_block
     from minify import minify_css, minify_js
     from rules_page import build_rules_page
     from site_assets import ASSETS, MODERN_FORMAT_ASSETS, convert_to_modern_formats, copy_json_schemas
