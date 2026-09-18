@@ -122,6 +122,7 @@ rules:
   default_property_value: false
   unguarded_self_recursion: true
   self_assignment: true
+  debug_side_effects: true
   unnecessary_function: true
   unknown_actor_value: false
   repeated_setoutfit: true
