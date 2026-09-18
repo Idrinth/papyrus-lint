@@ -27,9 +27,9 @@
 //! `source/scripts` directory pair (matching
 //! [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`], case-insensitively)
 //! and taking the directory above that pair, e.g. `Data` for
-//! `Data\Scripts\Source\abc.psc` — which also finds the right root for a
+//! `Data\\Scripts\\Source\\abc.psc` — which also finds the right root for a
 //! script nested further still, e.g. a namespaced
-//! `Data\Scripts\Source\User\abc.psc`. For a bare `.psc` file given directly,
+//! `Data\\Scripts\\Source\\User\\abc.psc`. For a bare `.psc` file given directly,
 //! that walk starts from the file itself; if no such pair is found in the
 //! path at all (e.g. a project laid out some other way, like Requiem's own,
 //! arbitrarily nested layout), it instead looks for the nearest ancestor
@@ -272,125 +272,29 @@ use run_lint_command::run_lint_command;
 
 use std::io::Write;
 
-pub const USAGE: &str =
-    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       \
-PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--output <path>] [--color <when>] [--tag <kind>] --blob <source>\n       \
-PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n\
-PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n\
-PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n\
-PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>\n\n\
-Lints every .psc script listed in the given .achlist file, a single\n\
-.psc file given directly, or every .psc file found recursively under a\n\
-given directory (any depth of subfolders), using the project's\n\
-papyrus-lint.yaml/.yml configuration (looked up next to the .achlist\n\
-file or scanned directory; for a bare .psc file, by walking up from it\n\
-for a Scripts/Source or Source/Scripts pair, e.g. Data for\n\
-Data\\Scripts\\Source\\abc.psc, then for the nearest ancestor directory\n\
-that already has a config file, then two directories up; falling back\n\
-to defaults if none of that finds one).\n\n\
-With the `fix` subcommand, applies every automatic fix (see README.md)\n\
-to those scripts first, rewriting each one on disk if it changed, then\n\
-reports whatever diagnostics remain the same way. With --dry-run, no\n\
-file is written; a standard diff of what would have changed is printed\n\
-instead.\n\n\
-With the `init` subcommand, creates a papyrus-lint.yaml in the current\n\
-working directory without overwriting an existing config, from the\n\
-selected --preset (strict, standard, or careful; defaults to strict,\n\
-identical to today's built-in default; any other name is looked up as\n\
-<name>.yaml/.yml in a presets directory next to the executable).\n\n\
-With the `preset add` subcommand, adds a user preset named <name> by\n\
-copying <path-to-papyrus-lint.yaml> into a presets directory next to the\n\
-executable, so it becomes selectable via --preset <name> just like a\n\
-built-in preset. Refuses a blank name or one matching a built-in preset\n\
-(strict, standard, careful). Refuses to overwrite an existing preset\n\
-of the same name unless --yes is also given.\n\n\
-With the `doctor` subcommand, validates a project's configuration and the\n\
-paths it assumes or names (conventional script directories, configured\n\
-additional_script_roots/lookup_script_roots/compiler_path, and an achlist's own listed entries)\n\
-without linting any script, accepting the same --config/--script-root\n\
-flags as a normal run and printing one [ok]/[warning]/[error] line per\n\
-check (or a single JSON document with --json).\n\n\
-With --blob <source>, lints <source> itself as raw Papyrus source text\n\
-instead of resolving an achlist/.psc/directory path, e.g. for a script\n\
-buffer that isn't (yet) saved to disk. Reported as the literal path\n\
-<blob>. Can't be combined with a path argument, `fix`, --type, --line,\n\
---dry-run, --script-root, --progress, or --threads.\n\n\
-Options:\n\
-  -h, --help              Show this help message\n\
-  -V, --version           Print the PapyrusLinterCLI version\n\
-  --json                  Print the report as JSON (alias for --format json)\n\
-  --format <format>       Print as plain text, JSON, or a self-contained AI export\n\
-                          with source, diagnostics, triggered-rule details, and\n\
-                          tool/version metadata—everything an AI needs to assist\n\
-                          (plain, json, or ai)\n\
-  --hash-source           --format ai only: report each file's source as an\n\
-                          md5 hash instead of its full content, e.g. to avoid\n\
-                          exposing proprietary script text to an external AI.\n\
-                          A usage error without --format ai.\n\
-  --quiet-warnings        Hide warning-level diagnostics from the report\n\
-  --quiet-info            Hide info-level diagnostics from the report\n\
-  --short-paths           Strip the project root from each script's path in\n\
-                          the report, the same way the desktop app shortens\n\
-                          paths in its results list\n\
-  --config <path>         Load lint configuration from this file instead of\n\
-                          discovering papyrus-lint.yaml/.yml from the project root\n\
-                          (also disables the project root's additional_script_roots;\n\
-                          use --script-root to add any back explicitly.\n\
-                          lookup_script_roots is still read from this file)\n\
-  --script-root <path>    An extra directory (relative to the project root,\n\
-                          or absolute) to search for .psc files, besides\n\
-                          scripts/source, source/scripts, and the project's\n\
-                          configured additional_script_roots. Repeatable.\n\
-  --output <path>         Write the report (plain text or JSON, per --json) to\n\
-                          this file instead of stdout.\n\
-  --progress              Print a live files-linted/total-files progress bar\n\
-                          to stdout as each script finishes. Requires --output\n\
-                          (a usage error otherwise, since the report itself\n\
-                          would otherwise also be writing to stdout).\n\
-  --color <when>          Colorize the plain-text report: auto (default),\n\
-                          always, or never. auto colors only when stdout is a\n\
-                          terminal, --output isn't used, and NO_COLOR is unset.\n\
-  --threads <n>           Read/fix/lint up to <n> scripts concurrently instead\n\
-                          of one at a time. Defaults to the machine's available\n\
-                          parallelism; --threads 1 forces sequential processing.\n\
-                          Output is always reassembled in the same order\n\
-                          regardless of thread count.\n\
-  --type <rule-id>        fix only: apply only this rule's automatic fix\n\
-                          (e.g. trailing-whitespace or trailing_whitespace)\n\
-                          instead of every enabled one.\n\
-  --line <n>              fix only: apply the selected fix(es) only to this\n\
-                          1-indexed line, leaving every other line untouched.\n\
-                          Combinable with --type. Errors if the fix would\n\
-                          change the file's line count (e.g. property-sorting\n\
-                          or unused-import).\n\
-  --dry-run               fix only: don't write any changes to disk; print a\n\
-                          standard diff of what would change instead.\n\
-  --tag <kind>            Restrict to rules tagged with this kind (e.g. style,\n\
-                          performance, correctness, maintainability), matched\n\
-                          case-insensitively. Without fix, limits the reported\n\
-                          diagnostics; with fix, also limits which automatic\n\
-                          fixes run. Valid with or without fix. Can't be\n\
-                          combined with --type.\n\
-  --blob <source>         Lint <source> directly as raw Papyrus source text\n\
-                          instead of a path, reported as <blob>. Can't be\n\
-                          combined with a path argument, fix, --type, --line,\n\
-                          --dry-run, --script-root, --progress, or --threads.\n\
-  --preset <name>         init only: the baseline papyrus-lint.yaml to\n\
-                          generate (strict, standard, or careful; see\n\
-                          README.md). Defaults to strict, identical to the\n\
-                          built-in default. Any other name is looked up as\n\
-                          <name>.yaml/.yml in a presets directory next to\n\
-                          the executable.\n\
-  --yes                   preset add only: confirm overwriting an existing\n\
-                          preset of the same name. Without it, an existing\n\
-                          preset is left untouched and an error is reported.\n\n\
-Exit status: 0 if no problems were found (or none met the configured\n\
-fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n\
-I/O error.\n\n\
-Contact:\n\
-  Discord    https://discord.gg/idrinth\n\
-  NexusMods  https://www.nexusmods.com/skyrimspecialedition/mods/189862\n\
-  GitHub     https://github.com/idrinth/papyrus-lint\n";
+/// Command-line help printed on a usage error (`--help`, missing path, etc.).
+/// Synopsis lives here; the example invocations are the checked-in
+/// `docs/papyrus-cli-usage.txt` so that file and this help stay in lockstep.
+pub const USAGE: &str = concat!(
+    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       ",
+    "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--output <path>] [--color <when>] [--tag <kind>] --blob <source>\n       ",
+    "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n",
+    "PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n",
+    "PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n",
+    "PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>\n\n",
+    "Examples:\n",
+    include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../docs/papyrus-cli-usage.txt"
+    )),
+    "\n\nExit status: 0 if no problems were found (or none met the configured\n",
+    "fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n",
+    "I/O error.\n\n",
+    "Contact:\n",
+    "  Discord    https://discord.gg/idrinth\n",
+    "  NexusMods  https://www.nexusmods.com/skyrimspecialedition/mods/189862\n",
+    "  GitHub     https://github.com/idrinth/papyrus-lint\n"
+);
 
 /// The crate's version, as set in `crates/papyrus-lint-cli/Cargo.toml`
 /// (kept in sync with the desktop app's version at release time). Printed
@@ -460,3 +364,15 @@ mod test_support;
 
 #[cfg(test)]
 mod run_tests;
+
+#[cfg(test)]
+mod usage_tests {
+    #[test]
+    fn usage_embeds_checked_in_cli_examples() {
+        assert!(crate::USAGE.starts_with("Usage: PapyrusLinterCLI"));
+        assert!(crate::USAGE.contains("Examples:"));
+        assert!(crate::USAGE.contains("PapyrusLinterCLI path/to/project.achlist"));
+        assert!(crate::USAGE.contains("PapyrusLinterCLI --blob"));
+        assert!(crate::USAGE.contains("PapyrusLinterCLI doctor path/to/project.achlist"));
+    }
+}

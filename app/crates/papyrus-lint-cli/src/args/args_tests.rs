@@ -356,7 +356,8 @@ fn prints_usage_for_help_flag() {
 
     assert_eq!(code, 2);
     assert!(stderr.contains("Usage: PapyrusLinterCLI"));
-    assert!(stderr.contains("everything an AI needs to assist"));
+    assert!(stderr.contains("Examples:"));
+    assert!(stderr.contains("PapyrusLinterCLI --format ai path/to/project.achlist"));
 }
 
 #[test]
