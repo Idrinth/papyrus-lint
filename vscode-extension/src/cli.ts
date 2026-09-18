@@ -1,6 +1,6 @@
 import { execFile } from 'child_process';
 import * as vscode from 'vscode';
-import { ensureReleaseCli } from './cliDownload';
+import { ensureReleaseCli, verifyConfiguredExecutable } from './cliDownload';
 import { resolveCliPath } from './config';
 
 export interface CliResult {
@@ -50,17 +50,24 @@ export async function runCli(args: string[], cwd: string): Promise<CliResult> {
       executable = configured;
       if (checkedConfiguredCli !== configured) {
         checkedConfiguredCli = configured;
-        configuredCliCheck = executeCli(configured, ['--version'], cwd);
+        configuredCliCheck = (async () => {
+          await verifyConfiguredExecutable(configured);
+          return executeCli(configured, ['--version'], cwd);
+        })();
       }
-      const versionResult = await configuredCliCheck!;
-      const expected = `PapyrusLinterCLI ${extensionVersion}`;
-      if (versionResult.code !== 0 || versionResult.stdout.trim() !== expected) {
-        const actual = versionResult.stdout.trim() || versionResult.stderr.trim() || 'no version output';
-        return {
-          code: -1,
-          stdout: '',
-          stderr: `configured CLI version mismatch: expected "${expected}", got "${actual}"`,
-        };
+      try {
+        const versionResult = await configuredCliCheck!;
+        const expected = `PapyrusLinterCLI ${extensionVersion}`;
+        if (versionResult.code !== 0 || versionResult.stdout.trim() !== expected) {
+          const actual = versionResult.stdout.trim() || versionResult.stderr.trim() || 'no version output';
+          return {
+            code: -1,
+            stdout: '',
+            stderr: `configured CLI version mismatch: expected "${expected}", got "${actual}"`,
+          };
+        }
+      } catch (error) {
+        return { code: -1, stdout: '', stderr: error instanceof Error ? error.message : String(error) };
       }
     } else {
       automaticCli ??= ensureReleaseCli(automaticCliStorage, extensionVersion);
