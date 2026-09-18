@@ -86,6 +86,11 @@ impl BuildContext {
             )
         });
     }
+
+    /// `src/<module>.rs` for a lint rule module generated from `shared/rules.json`.
+    pub fn src_module(&self, module: &str) -> PathBuf {
+        self.manifest_dir.join("src").join(format!("{module}.rs"))
+    }
 }
 
 pub fn generated_header(source: &str) -> String {
