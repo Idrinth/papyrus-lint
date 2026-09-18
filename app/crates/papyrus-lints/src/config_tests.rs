@@ -132,7 +132,7 @@ fn all_rules_default_to_enabled() {
     assert!(config.rules.unnecessary_function);
     // Also disabled by default: a project's own plugin can define
     // additional, custom Actor Values that have no way to appear in
-    // rules/actor-values.yaml.
+    // shared/rules/data/actor-values.yaml.
     assert!(!config.rules.unknown_actor_value);
     assert!(config.rules.repeated_setoutfit);
     // Also disabled by default: most existing scripts have no
@@ -150,7 +150,7 @@ fn all_rules_default_to_enabled() {
     // misreported as having no handler at all.
     assert!(!config.rules.missing_update_handler);
     assert!(config.rules.unused_import);
-    // Also disabled by default: rules/known-events.yaml only lists a
+    // Also disabled by default: shared/rules/data/known-events.yaml only lists a
     // curated subset of the engine's native events, and this lint
     // matches an Event's name alone, regardless of whether the
     // enclosing script actually extends the Form that declares it.

@@ -76,7 +76,7 @@ expected of a pull request.
 │       │       ├── config.rs                  # Config type (YAML-deserializable) passed
 │       │       │                              # to every check/fix job
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
-│       │       └── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
+│       │       └── forbidden_functions.rs     # Reads shared/rules/data/forbidden-functions.yaml
 │       │                                        # via a build-time-generated array
 │       ├── papyrus-lint-config/  # Locates/loads/saves a project's
 │       │   └── src/               # papyrus-lint.yaml and presets
@@ -109,21 +109,19 @@ expected of a pull request.
 ├── shared/
 │   ├── images/               # Images used by README.md (logo, screenshots)
 │   └── rules/                 # One <id>.json per lint rule (see "Adding
-│                                # lint rules" below); shared/rules.json,
-│                                # read by build.rs/pages/build.py, is
-│                                # generated from these and git-ignored
-├── rules/
-│   ├── forbidden-functions.yaml    # Calls discouraged or forbidden by policy
-│   ├── slow-functions.yaml         # Slow calls and faster alternatives
-│   ├── native-methods.yaml         # Base-game native functions
-│   ├── native-types.yaml           # Native engine class hierarchy fallback
-│   ├── native-globals.yaml         # Native singleton scripts always called
-│   │                                # by literal name
-│   ├── actor-values.yaml           # Skyrim's built-in Actor Values
-│   ├── known-events.yaml           # Curated native event signatures
-│   └── update-event-handlers.yaml  # RegisterFor*/Event pairs; all of these
-│                                    # are compiled in by papyrus-lints/build.rs
-│                                    # or papyrus-lint-core/build.rs
+│       │                        # lint rules" below); shared/rules.json,
+│       │                        # read by build.rs/pages/build.py, is
+│       │                        # generated from these and git-ignored
+│       └── data/
+│           ├── forbidden-functions.yaml    # Discouraged/forbidden calls
+│           ├── slow-functions.yaml         # Slow calls and faster alternatives
+│           ├── native-methods.yaml         # Base-game native functions
+│           ├── native-types.yaml           # Native engine class hierarchy
+│           ├── native-globals.yaml         # Native singleton scripts
+│           ├── actor-values.yaml           # Skyrim's built-in Actor Values
+│           ├── known-events.yaml           # Curated native event signatures
+│           └── update-event-handlers.yaml  # RegisterFor*/Event pairs; these
+│                                            # are compiled in by build.rs
 ├── SublimeLinter-contrib-papyrus-lint/  # SublimeLinter integration, commands,
 │                                           # and Python unit tests
 ├── vscode-extension/        # VS Code integration for linting/fixing .psc files

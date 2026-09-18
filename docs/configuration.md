@@ -249,7 +249,7 @@ per line.
   rather than a proven no-op, many existing scripts already rely on
   Papyrus's implicit per-type defaults for some or all of their properties,
   a project's own plugin can define additional, custom Actor Values
-  that have no way to appear in `rules/actor-values.yaml`, most
+  that have no way to appear in `shared/rules/data/actor-values.yaml`, most
   existing scripts have no documentation comments at all, so flagging
   every declaration missing one would be noisy until a project opts in,
   a project may deliberately compare two `Float` values it knows are
@@ -258,7 +258,7 @@ per line.
   ever sees a single script's own source, so a matching `Event` declared
   instead on a script it `Extends` would otherwise be misreported as
   missing, the "Event signature
-  mismatch" lint's `rules/known-events.yaml` only lists a curated
+  mismatch" lint's `shared/rules/data/known-events.yaml` only lists a curated
   subset of the engine's native events and matches an `Event`'s name alone,
   regardless of whether the enclosing script actually extends the Form
   that declares it, and two scripts intentionally holding `Property`

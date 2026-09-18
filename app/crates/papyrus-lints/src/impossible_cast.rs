@@ -24,7 +24,7 @@
 //! distinguishes the two: a cast is only ever flagged once both the
 //! value's and the target's `Extends` chains are confirmed to resolve all
 //! the way to a definite root (a script with no `Extends` at all, or a
-//! native engine type from `rules/native-types.yaml` with no further
+//! native engine type from `shared/rules/data/native-types.yaml` with no further
 //! parent) without ever reaching each other.
 
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};

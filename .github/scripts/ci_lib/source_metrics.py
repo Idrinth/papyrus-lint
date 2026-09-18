@@ -68,7 +68,6 @@ REPO_PREFIXES = (
     "vscode-extension/",
     "SublimeLinter-contrib-papyrus-lint/",
     "shared/",
-    "rules/",
     "docs/",
 )
 

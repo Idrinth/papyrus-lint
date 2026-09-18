@@ -38,7 +38,7 @@ Do not paste those files back into this index. Update the file you read.
 | frontend | `app/src` | Vanilla TypeScript. No framework. |
 | VS Code | `vscode-extension/` | Editor integration. |
 | Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
-| rule data | `rules/*.yaml`, `shared/rules/*.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs` (via the generated `shared/rules.json`, see hard rule 4); `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
+| rule data | `shared/rules/data/*.yaml`, `shared/rules/*.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs` (via the generated `shared/rules.json`, see hard rule 4); `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
 
 The seven reusable crates are **path dependencies, not Cargo workspace
 members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each

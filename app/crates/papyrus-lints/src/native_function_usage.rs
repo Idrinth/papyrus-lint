@@ -1,10 +1,10 @@
 //! Flags a `Native` function/event declared on a linted script whose
 //! (script, function) pair isn't one of the base-game native functions
-//! listed in `rules/native-methods.yaml`.
+//! listed in `shared/rules/data/native-methods.yaml`.
 //!
 //! A `Native` declaration has no body of its own — its implementation is
 //! supplied by the engine (or, for a modder-authored header script, by an
-//! SKSE/F4SE plugin DLL). Since `rules/native-methods.yaml` only lists the
+//! SKSE/F4SE plugin DLL). Since `shared/rules/data/native-methods.yaml` only lists the
 //! functions Skyrim's own base-game scripts declare `Native`, a `Native`
 //! declaration that doesn't match an entry there is a strong signal the
 //! project depends on a native extension rather than anything the base game
@@ -75,7 +75,7 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 }
 
 /// Whether `(script_name, function_name)` matches a base-game native
-/// function listed in `rules/native-methods.yaml`, case-insensitively
+/// function listed in `shared/rules/data/native-methods.yaml`, case-insensitively
 /// (Papyrus identifiers are case-insensitive).
 fn is_base_game_native(script_name: &str, function_name: &str) -> bool {
     NATIVE_METHODS.iter().any(|rule| {
