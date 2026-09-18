@@ -87,8 +87,12 @@
 │       │       ├── entry.rs         # On-disk entry representation: where a
 │       │       │                    # cache entry lives, how it's addressed,
 │       │       │                    # and its raw read/write
-│       │       ├── ops.rs           # get/put/ensure_primed semantics built on
-│       │       │                    # entry.rs's on-disk primitives
+│       │       ├── ops/              # get/put/ensure_primed semantics built on
+│       │       │                     # entry.rs's on-disk primitives, split by
+│       │       │                     # responsibility: mod.rs is a facade over
+│       │       │                     # load.rs (get/get_tokens), store.rs
+│       │       │                     # (put/put_tokens) and prime.rs
+│       │       │                     # (ensure_primed, built on both)
 │       │       └── version.rs       # MIN_COMPATIBLE_VERSION and the
 │       │                            # entry-vs-running-binary compatibility
 │       │                            # check

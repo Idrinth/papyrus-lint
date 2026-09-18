@@ -158,3 +158,7 @@ pub fn ensure_primed(source_path: &Path, source: &str) {
     };
     ops::ensure_primed_in(&dir, source_path, source, version::stamped_version());
 }
+
+#[cfg(test)]
+#[path = "lib_tests.rs"]
+mod tests;
