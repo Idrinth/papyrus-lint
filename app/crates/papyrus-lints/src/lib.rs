@@ -100,3 +100,17 @@ use serde::Serialize;
 
 pub use argument_types::{ExternalSignatures, NoExternalSignatures, ParamInfo};
 pub use config::{Config, MagicNumbers, NamedArguments, TypeCasing};
+
+/// Runs the "Argument type check" lint against `source`, resolving calls
+/// declared on other scripts through `external`.
+///
+/// This is the public entry for callers that already hold an
+/// [`ExternalSignatures`] resolver (e.g. `papyrus-lint-core`'s
+/// `FunctionTable`) and need that rule in isolation. Prefer
+/// [`lint_with_external_arguments`] when you want every enabled rule.
+pub fn check_argument_types<E: ExternalSignatures>(
+    source: &str,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    argument_types::check_with(source, external)
+}
