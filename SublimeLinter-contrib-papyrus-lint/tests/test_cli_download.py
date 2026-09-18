@@ -24,8 +24,8 @@ def _digest(body):
     return hashlib.sha256(body).hexdigest()
 
 
-def _trust(asset, body):
-    cli_download.CLI_SHA256[asset] = _digest(body)
+def _trust(asset, body, extra=()):
+    cli_download.CLI_SHA256[asset] = [_digest(body), *(_digest(item) for item in extra)]
     return body
 
 
@@ -39,29 +39,70 @@ class CliDownloadTests(unittest.TestCase):
         cli_download.CLI_SHA256.update(self._original_hashes)
 
     def test_verifies_and_caches_a_matching_manually_configured_cli(self):
+        body = b'official CLI'
         completed = unittest.mock.Mock(
             stdout='PapyrusLinterCLI 0.1.0\n', stderr=''
         )
-        with patch.object(cli_download.subprocess, 'run', return_value=completed) as run:
-            cli_download.verify_configured_cli('/tools/PapyrusLinterCLI')
-            cli_download.verify_configured_cli('/tools/PapyrusLinterCLI')
+        with tempfile.TemporaryDirectory() as raw:
+            executable = Path(raw) / 'PapyrusLinterCLI'
+            executable.write_bytes(body)
+            _trust('PapyrusLinterCLI-linux', body)
+            with (
+                patch.object(cli_download.platform, 'system', return_value='Linux'),
+                patch.object(cli_download.subprocess, 'run', return_value=completed) as run,
+            ):
+                cli_download.verify_configured_cli(str(executable))
+                cli_download.verify_configured_cli(str(executable))
 
         run.assert_called_once_with(
-            ['/tools/PapyrusLinterCLI', '--version'],
+            [str(executable), '--version'],
             check=True,
             capture_output=True,
             text=True,
         )
 
+    def test_accepts_a_manually_configured_gui_binary(self):
+        cli_body = b'official CLI'
+        gui_body = b'desktop app'
+        completed = unittest.mock.Mock(
+            stdout='PapyrusLinterCLI 0.1.0\n', stderr=''
+        )
+        with tempfile.TemporaryDirectory() as raw:
+            executable = Path(raw) / 'PapyrusLinter'
+            executable.write_bytes(gui_body)
+            _trust('PapyrusLinterCLI-linux', cli_body, extra=(gui_body,))
+            with (
+                patch.object(cli_download.platform, 'system', return_value='Linux'),
+                patch.object(cli_download.subprocess, 'run', return_value=completed),
+            ):
+                cli_download.verify_configured_cli(str(executable))
+
+    def test_rejects_a_user_supplied_executable_with_an_unknown_hash(self):
+        with tempfile.TemporaryDirectory() as raw:
+            executable = Path(raw) / 'stranger'
+            executable.write_bytes(b'not a release binary')
+            _trust('PapyrusLinterCLI-linux', b'official CLI', extra=(b'desktop app',))
+            with (
+                patch.object(cli_download.platform, 'system', return_value='Linux'),
+                self.assertRaisesRegex(OSError, 'configured executable SHA-256 mismatch'),
+            ):
+                cli_download.verify_configured_cli(str(executable))
+
     def test_rejects_a_mismatched_manually_configured_cli(self):
+        body = b'official CLI'
         completed = unittest.mock.Mock(
             stdout='PapyrusLinterCLI 0.0.9\n', stderr=''
         )
-        with (
-            patch.object(cli_download.subprocess, 'run', return_value=completed),
-            self.assertRaisesRegex(OSError, 'expected "PapyrusLinterCLI 0.1.0"'),
-        ):
-            cli_download.verify_configured_cli('/tools/PapyrusLinterCLI')
+        with tempfile.TemporaryDirectory() as raw:
+            executable = Path(raw) / 'PapyrusLinterCLI'
+            executable.write_bytes(body)
+            _trust('PapyrusLinterCLI-linux', body)
+            with (
+                patch.object(cli_download.platform, 'system', return_value='Linux'),
+                patch.object(cli_download.subprocess, 'run', return_value=completed),
+                self.assertRaisesRegex(OSError, 'expected "PapyrusLinterCLI 0.1.0"'),
+            ):
+                cli_download.verify_configured_cli(str(executable))
 
     def test_selects_release_asset_for_each_supported_platform(self):
         self.assertEqual(cli_download._asset_name('Windows'), 'PapyrusLinterCLI-windows.exe')
@@ -357,6 +398,11 @@ class CliDownloadTests(unittest.TestCase):
         cli_download.CLI_SHA256.pop('PapyrusLinterCLI-linux', None)
         with self.assertRaisesRegex(OSError, 'no baked SHA-256'):
             cli_download.expected_sha256('PapyrusLinterCLI-linux')
+
+    def test_accepted_hashes_include_cli_and_gui_digests(self):
+        cli_download.CLI_SHA256['PapyrusLinterCLI-linux'] = ['aaa', 'bbb']
+        self.assertEqual(cli_download.expected_sha256('PapyrusLinterCLI-linux'), 'aaa')
+        self.assertEqual(cli_download.accepted_sha256s('PapyrusLinterCLI-linux'), ['aaa', 'bbb'])
 
 
 if __name__ == '__main__':
