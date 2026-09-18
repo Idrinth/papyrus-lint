@@ -152,6 +152,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nFunction Test(Actor akActor)\n    If akActor.GetFormID() == 0x12C87\n    EndIf\nEndFunction\n",
             &default_config,
         ),
+        (
+            "get-form-from-file-skyrim-esm",
+            "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x12345, \"Skyrim.esm\")\nEndFunction\n",
+            "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetForm(0x12345)\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();
