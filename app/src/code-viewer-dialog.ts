@@ -98,5 +98,5 @@ export function toggleCodeViewerFullscreen() {
 export function resetCodeViewerFullscreen() {
   codeViewerEl?.classList.remove("code-viewer--fullscreen");
   codeViewerFullscreenEl?.setAttribute("aria-pressed", "false");
-  codeViewerFullscreenEl.setAttribute("aria-label", "Enter fullscreen");
+  codeViewerFullscreenEl?.setAttribute("aria-label", "Enter fullscreen");
 }

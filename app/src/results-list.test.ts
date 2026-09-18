@@ -116,6 +116,7 @@ describe("buildPscResultItem / renderPscResults", () => {
 
     await vi.waitFor(() => {
       expect(document.querySelector<HTMLDialogElement>("#code-viewer")!.open).toBe(true);
+      expect(document.querySelector("#code-viewer-line-1")).not.toBeNull();
     });
     expect(document.querySelector("#code-viewer-title")!.textContent).toMatch(/a\.psc$/);
     expect(document.querySelector("#code-viewer-line-1")!.classList).toContain("code-viewer__line--error");
