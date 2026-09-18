@@ -93,9 +93,13 @@ def wrap_images_with_modern_sources(page_html: str) -> str:
 
 
 def copy_json_schemas(out_dir: Path) -> None:
-    """Publish the checked-in schemas and the legacy AI-export URL under /schema/."""
+    """Publish the checked-in schemas and the legacy AI-export URL under /schema/.
+
+    build_doc_pages (pages/docs_pages.py) may have already created /schema/
+    for the schema DOCS entries' own rendered subpages by the time this
+    runs, hence exist_ok."""
     schema_out_dir = out_dir / "schema"
-    schema_out_dir.mkdir()
+    schema_out_dir.mkdir(exist_ok=True)
     for source in sorted(SCHEMA_DIR.glob(SCHEMA_GLOB)):
         shutil.copyfile(source, schema_out_dir / source.name)
     shutil.copyfile(

@@ -9,6 +9,7 @@ use serde::Serialize;
 
 use papyrus_lints::ParamInfo;
 use papyrus_parser::ast::{Expr, FunctionDecl, PropertyDecl, Script, Stmt, TypeName};
+use papyrus_parser::token::{Token, TokenKind};
 
 /// The parameters (name and type) and return type of a single function, as
 /// declared on a script.
@@ -45,10 +46,23 @@ pub struct FunctionSignature {
     /// since this script's own function list can't see what either one
     /// does. `false` is therefore "not provably side-effecting", not "pure".
     pub has_side_effects: bool,
+    /// Whether the declaration carries a `; @nodiscard` line-comment
+    /// directive (case-insensitive, word-bounded so `@nodiscardable` is
+    /// not a match). Looked for on the function header's physical line(s)
+    /// and on the immediately preceding source line, so both a trailing
+    /// comment on the header and a dedicated comment line above it work.
+    /// Tracked so later lints (and editors) can treat the function like a
+    /// `Get*`-prefixed getter even when its name does not start with `Get`.
+    pub nodiscard: bool,
 }
 
 impl FunctionSignature {
-    fn from_decl(decl: &FunctionDecl, doc: Option<String>, has_side_effects: bool) -> Self {
+    fn from_decl(
+        decl: &FunctionDecl,
+        doc: Option<String>,
+        has_side_effects: bool,
+        nodiscard: bool,
+    ) -> Self {
         FunctionSignature {
             name: decl.name.clone(),
             params: decl
@@ -66,6 +80,7 @@ impl FunctionSignature {
             state: decl.state.clone(),
             doc,
             has_side_effects,
+            nodiscard,
         }
     }
 }
@@ -140,6 +155,7 @@ impl ScriptFunctions {
                 .as_ref()
                 .and_then(|tokens| papyrus_lints::documentation_comment(source, tokens, line))
         };
+        let nodiscard_for = |line: usize| nodiscard_directive(source, tokens.as_deref(), line);
         let mut states: HashMap<String, bool> = HashMap::new();
         for state in &script.states {
             let is_auto = states
@@ -172,7 +188,12 @@ impl ScriptFunctions {
                 let has_side_effects = side_effects.get(&key).copied().unwrap_or(false);
                 (
                     key,
-                    FunctionSignature::from_decl(f, doc_for(f.line), has_side_effects),
+                    FunctionSignature::from_decl(
+                        f,
+                        doc_for(f.line),
+                        has_side_effects,
+                        nodiscard_for(f.line),
+                    ),
                 )
             })
             .collect();
@@ -189,7 +210,12 @@ impl ScriptFunctions {
                 let key = f.name.to_ascii_lowercase();
                 functions.entry(key.clone()).or_insert_with(|| {
                     let has_side_effects = side_effects.get(&key).copied().unwrap_or(false);
-                    FunctionSignature::from_decl(f, doc_for(f.line), has_side_effects)
+                    FunctionSignature::from_decl(
+                        f,
+                        doc_for(f.line),
+                        has_side_effects,
+                        nodiscard_for(f.line),
+                    )
                 });
             }
         }
@@ -418,6 +444,88 @@ fn called_same_script_name(callee: &Expr) -> Option<String> {
         }
         _ => None,
     }
+}
+
+/// Whether `line` (1-indexed, the function header's starting line) is
+/// marked `; @nodiscard`. Checks the immediately preceding source line and
+/// every physical line of a backslash-continued header.
+fn nodiscard_directive(source: &str, tokens: Option<&[Token]>, line: usize) -> bool {
+    if line == 0 {
+        return false;
+    }
+    let lines: Vec<&str> = source.lines().collect();
+    let last = last_physical_line(line, tokens);
+    let first = line.saturating_sub(1);
+    // `first` is 1-indexed minus one so the line *above* the header is
+    // included; clamp so we never look before the start of the file.
+    let start = first.saturating_sub(1);
+    lines
+        .get(start..last.min(lines.len()))
+        .is_some_and(|slice| slice.iter().any(|row| line_has_nodiscard(row)))
+}
+
+/// Last physical source line (1-indexed) of the logical header starting at
+/// `line`. Mirrors `papyrus_lints::missing_doc_comment`'s own helper: a
+/// header written on one line is just `line`; a header continued with `\`
+/// resolves to the line that actually carries the terminating newline.
+fn last_physical_line(line: usize, tokens: Option<&[Token]>) -> usize {
+    tokens
+        .and_then(|tokens| {
+            tokens
+                .iter()
+                .find(|token| token.kind == TokenKind::Newline && token.line >= line)
+                .map(|token| token.line)
+        })
+        .unwrap_or(line)
+}
+
+/// Whether `line`'s trailing `;` comment contains `@nodiscard` as its own
+/// word (case-insensitive). Semicolons inside strings and `;/` block
+/// comments are ignored, matching `@disable` parsing.
+fn line_has_nodiscard(line: &str) -> bool {
+    let Some(comment) = line_comment_text(line) else {
+        return false;
+    };
+    let lowered = comment.to_ascii_lowercase();
+    let Some(index) = lowered.find("@nodiscard") else {
+        return false;
+    };
+    let before_ok = index == 0
+        || lowered[..index]
+            .chars()
+            .next_back()
+            .is_some_and(|c| c.is_whitespace() || c == ',');
+    let after = &lowered[index + "@nodiscard".len()..];
+    let after_ok = after
+        .chars()
+        .next()
+        .is_none_or(|c| c.is_whitespace() || c == ',');
+    before_ok && after_ok
+}
+
+/// Text following the `;` that starts `line`'s line comment, if any.
+/// Copied in spirit from `papyrus_lints::disable_comments` so function
+/// tables can see the same comments the linter itself would.
+fn line_comment_text(line: &str) -> Option<&str> {
+    let bytes = line.as_bytes();
+    let mut in_string = false;
+    let mut index = 0;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'"' => in_string = !in_string,
+            b'\\' if in_string => index += 1,
+            b';' if !in_string => {
+                return if bytes.get(index + 1) == Some(&b'/') {
+                    None
+                } else {
+                    Some(&line[index + 1..])
+                };
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
 }
 
 #[cfg(test)]

@@ -2,13 +2,16 @@
 builder.
 
 Extracted out of pages/build.py (which was getting long and crowded with
-unrelated site-assembly concerns) with no behavior change. Renders every
-document listed in DOCS (including remotely sourced documentation) into
-its own browsable subpage under docs/ (via pages/docs.template.html), and
-the papyrus-lint-action GitHub Action's own README (ACTION_DOC) into
-action.html (via pages/action.template.html), reachable from the main
-nav's "Action" entry rather than filed under docs/ as if it were
-reference material.
+unrelated site-assembly concerns). Renders every document listed in DOCS
+(including remotely sourced documentation) into its own browsable subpage
+(via pages/docs.template.html), published under its own doc_url_prefix()
+- docs/ for a doc whose source lives in docs/, or schema//configuration/
+for one whose source has moved out of docs/ into its own top-level
+directory, so the site never publishes a page under /docs/ for content
+that isn't actually in docs/ - and the papyrus-lint-action GitHub Action's
+own README (ACTION_DOC) into action.html (via pages/action.template.html),
+reachable from the main nav's "Action" entry rather than filed under any
+of those as if it were reference material.
 """
 
 from __future__ import annotations
@@ -171,7 +174,17 @@ DOCS = [
     },
 ]
 
+def doc_url_prefix(doc: dict) -> str:
+    """The site's own top-level directory a doc's rendered subpage is
+    published under. Mirrors the doc's `repo_dir` (defaulting to "docs")
+    so a schema/configuration doc's page is filed under schema/
+    /configuration/ rather than docs/, now that its source no longer lives
+    there."""
+    return doc.get("repo_dir", "docs")
+
+
 DOC_FILENAME_TO_SLUG = {doc["filename"]: doc["slug"] for doc in DOCS if "filename" in doc}
+DOC_FILENAME_TO_PREFIX = {doc["filename"]: doc_url_prefix(doc) for doc in DOCS if "filename" in doc}
 
 # The papyrus-lint-action GitHub Action's own README, rendered as its own
 # top-level action.html page (linked from the main nav's "Action" entry)
@@ -186,17 +199,23 @@ ACTION_DOC = {
 }
 
 
-def resolve_doc_href(href: str) -> str:
-    """Rewrites a link target found inside a docs/*.md file so it works from
-    a published subpage: a link to another published doc resolves to that
-    doc's own subpage (matched by filename alone, so a correct repository-
-    relative path like `../schema/papyrus-lint.schema.json` still resolves
-    even though that doc's source no longer lives under docs/), a link into
-    the repository resolves on GitHub. A query string or fragment on the
-    original link (e.g. `guide.md#setup`) is preserved rather than dropped."""
+def resolve_doc_href(href: str, from_prefix: str = "docs") -> str:
+    """Rewrites a link target found inside a doc's own source so it works
+    from a published subpage: a link to another published doc resolves to
+    that doc's own subpage (matched by filename alone, so a correct
+    repository-relative path like `../schema/papyrus-lint.schema.json`
+    still resolves even though that doc's source no longer lives under
+    docs/) - same-directory when the two docs share a published prefix
+    (`from_prefix`, the current doc's own), `../<prefix>/` otherwise. A
+    link into the repository resolves on GitHub. A query string or
+    fragment on the original link (e.g. `guide.md#setup`) is preserved
+    rather than dropped."""
     parts = urlsplit(href)
-    if not parts.scheme and not parts.netloc and Path(parts.path).name in DOC_FILENAME_TO_SLUG:
-        path = f"{DOC_FILENAME_TO_SLUG[Path(parts.path).name]}.html"
+    target_filename = Path(parts.path).name
+    if not parts.scheme and not parts.netloc and target_filename in DOC_FILENAME_TO_SLUG:
+        target_slug = DOC_FILENAME_TO_SLUG[target_filename]
+        target_prefix = DOC_FILENAME_TO_PREFIX.get(target_filename, "docs")
+        path = f"{target_slug}.html" if target_prefix == from_prefix else f"../{target_prefix}/{target_slug}.html"
         return urlunsplit(("", "", path, parts.query, parts.fragment))
     if href.startswith("../"):
         return f"{GITHUB_BLOB_BASE}/{href[len('../'):]}"
@@ -205,7 +224,7 @@ def resolve_doc_href(href: str) -> str:
 
 def raw_github_link(doc: dict) -> str:
     """Link to a local doc on GitHub or a configured external source."""
-    repo_dir = doc.get("repo_dir", "docs")
+    repo_dir = doc_url_prefix(doc)
     href = doc["source_url"] if "source_url" in doc else f"{GITHUB_BLOB_BASE}/{repo_dir}/{doc['filename']}"
     return (
         f'<p><a class="doc-raw-link" href="{html.escape(href, quote=True)}">'
@@ -244,7 +263,8 @@ def render_doc(doc: dict) -> tuple[str, str, str]:
             title = doc["filename"]
             body_lines = lines
         description = strip_markdown_inline(first_paragraph(body_lines))
-        content_html = markdown_to_html(body_lines, resolve_doc_href)
+        current_prefix = doc_url_prefix(doc)
+        content_html = markdown_to_html(body_lines, lambda href: resolve_doc_href(href, current_prefix))
     elif kind == "json-schema":
         data = json.loads(source)
         title = data.get("title", doc["filename"])
@@ -267,13 +287,24 @@ def render_doc(doc: dict) -> tuple[str, str, str]:
     return title, description, content_html
 
 
-def render_docs_list_items(doc_results: dict, link_prefix: str) -> str:
+def doc_href(doc: dict, current_prefix: str | None) -> str:
+    """The href to a doc's own rendered subpage, from a page published
+    under current_prefix (None for the site root)."""
+    target_prefix = doc_url_prefix(doc)
+    if current_prefix is None:
+        return f"{target_prefix}/{doc['slug']}.html"
+    if target_prefix == current_prefix:
+        return f"{doc['slug']}.html"
+    return f"../{target_prefix}/{doc['slug']}.html"
+
+
+def render_docs_list_items(doc_results: dict, current_prefix: str | None) -> str:
     items = []
     for doc in DOCS:
         info = doc_results[doc["slug"]]
         items.append(
             "<li>"
-            f'<a href="{link_prefix}{doc["slug"]}.html">{html.escape(info["title"])}</a>'
+            f'<a href="{doc_href(doc, current_prefix)}">{html.escape(info["title"])}</a>'
             f'<p>{html.escape(doc["blurb"])}</p>'
             "</li>"
         )
@@ -281,8 +312,10 @@ def render_docs_list_items(doc_results: dict, link_prefix: str) -> str:
 
 
 def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None:
-    docs_out_dir = out_dir / "docs"
-    docs_out_dir.mkdir()
+    """Renders each DOCS entry's own subpage under its `doc_url_prefix` (schema/
+    configuration entries are published under schema//configuration/, not
+    docs/, mirroring where their source actually lives), plus a unified
+    docs/index.html cataloguing all of them regardless of where they live."""
     docs_template = (PAGES_DIR / "docs.template.html").read_text(encoding="utf-8")
 
     def render_page(title: str, description: str, content_html: str, url: str) -> str:
@@ -293,13 +326,18 @@ def build_doc_pages(out_dir: Path, doc_results: dict, version: str = "") -> None
 
     for doc in DOCS:
         info = doc_results[doc["slug"]]
+        prefix = doc_url_prefix(doc)
+        prefix_out_dir = out_dir / prefix
+        prefix_out_dir.mkdir(exist_ok=True)
         page = render_page(
-            info["title"], info["description"], info["content_html"], f"{SITE_URL}docs/{doc['slug']}.html"
+            info["title"], info["description"], info["content_html"], f"{SITE_URL}{prefix}/{doc['slug']}.html"
         )
         page = render_shared_components(page, "../", version)
-        (docs_out_dir / f"{doc['slug']}.html").write_text(finalize_page(page), encoding="utf-8")
+        (prefix_out_dir / f"{doc['slug']}.html").write_text(finalize_page(page), encoding="utf-8")
 
-    index_content = f'<ul class="docs-list">{render_docs_list_items(doc_results, "")}</ul>'
+    docs_out_dir = out_dir / "docs"
+    docs_out_dir.mkdir(exist_ok=True)
+    index_content = f'<ul class="docs-list">{render_docs_list_items(doc_results, "docs")}</ul>'
     index_page = render_page(
         "Documentation",
         "Project reference material and related documentation, published as browsable pages.",

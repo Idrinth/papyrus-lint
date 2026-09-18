@@ -353,11 +353,26 @@ class DocsRenderingTest(unittest.TestCase):
         results = {"guide": {"title": "Guide & reference"}}
 
         with patch.object(docs_pages, "DOCS", docs):
-            output = docs_pages.render_docs_list_items(results, "docs/")
+            root_output = docs_pages.render_docs_list_items(results, None)
+            docs_output = docs_pages.render_docs_list_items(results, "docs")
 
-        self.assertIn('href="docs/guide.html"', output)
-        self.assertIn("Guide &amp; reference", output)
-        self.assertIn("Use &lt;carefully&gt; &amp; safely", output)
+        self.assertIn('href="docs/guide.html"', root_output)
+        self.assertIn("Guide &amp; reference", root_output)
+        self.assertIn("Use &lt;carefully&gt; &amp; safely", root_output)
+        self.assertIn('href="guide.html"', docs_output)
+
+    def test_render_docs_list_items_links_across_to_a_different_prefix(self) -> None:
+        docs = [{"slug": "papyrus-lint-schema", "blurb": "Schema", "repo_dir": "schema"}]
+        results = {"papyrus-lint-schema": {"title": "Schema"}}
+
+        with patch.object(docs_pages, "DOCS", docs):
+            root_output = docs_pages.render_docs_list_items(results, None)
+            docs_output = docs_pages.render_docs_list_items(results, "docs")
+            schema_output = docs_pages.render_docs_list_items(results, "schema")
+
+        self.assertIn('href="schema/papyrus-lint-schema.html"', root_output)
+        self.assertIn('href="../schema/papyrus-lint-schema.html"', docs_output)
+        self.assertIn('href="papyrus-lint-schema.html"', schema_output)
 
     def test_render_docs_list_items_preserves_configured_document_order(self) -> None:
         docs = [

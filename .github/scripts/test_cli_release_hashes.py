@@ -1,4 +1,4 @@
-"""Tests for baking PapyrusLinterCLI and PapyrusLinter SHA-256 digests."""
+"""Unit tests for the CLI/GUI release hash generation logic."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from write_cli_hashes import (
+from ci_lib.cli_release_hashes import (
     ASSETS,
     GUI_ASSETS,
     collect_hashes,

@@ -841,3 +841,23 @@ fn list_members_carries_an_inherited_members_documentation_comment() {
         Some("Inherited help")
     );
 }
+
+#[test]
+fn list_members_carries_an_inherited_nodiscard_directive() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Base",
+        "ScriptName Base\n\nInt Function RegisterFoo() ; @nodiscard\n    Return 1\nEndFunction\n",
+    );
+    write_script(root.path(), "Child", "ScriptName Child Extends Base\n");
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let members = table.list_members("Child");
+    let register = members.iter().find_map(|member| match member {
+        Member::Function(signature) if signature.name == "RegisterFoo" => Some(signature),
+        _ => None,
+    });
+
+    assert_eq!(register.map(|signature| signature.nodiscard), Some(true));
+}

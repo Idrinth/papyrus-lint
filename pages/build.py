@@ -5,8 +5,9 @@ Substitutes the CLI usage examples in the template with content converted
 directly from README.md's own code blocks, so that documentation never has
 to be kept in sync by hand in two places.
 Also renders every document listed in pages/docs_pages.py's DOCS (including
-remotely sourced documentation) into its own browsable subpage under docs/
-(via pages/docs.template.html), with lightweight build-time syntax
+remotely sourced documentation) into its own browsable subpage under its own
+doc_url_prefix() - docs/, or schema//configuration/ for a doc whose source
+lives there instead (via pages/docs.template.html), with lightweight build-time syntax
 highlighting (pages/highlighting.py) for fenced Markdown (pages/markdown_render.py,
 including Papyrus code fences) and raw JSON, YAML, shell, and BBCode
 sources. The
@@ -41,8 +42,8 @@ Every generated HTML page, the stylesheet, and the site scripts are minified
 `shared/theme.css`; those `@import`s are inlined (see
 pages/css.py's inline_css_imports) so the deployed site still ships a
 single stylesheet.
-Also renders action.html (via pages/action.template.html) and every
-docs/ subpage (via pages/docs.template.html) - see pages/docs_pages.py.
+Also renders action.html (via pages/action.template.html) and every doc's
+own subpage (via pages/docs.template.html) - see pages/docs_pages.py.
 Also renders rules.html (via pages/rules.template.html) - a searchable/
 filterable reference of every lint rule generated straight from
 shared/rules.json's own metadata (id, severity, tags, auto-fix support, full
@@ -74,7 +75,14 @@ from pathlib import Path
 try:
     from pages.coverage_report import build_coverage_page
     from pages.css import inline_css_imports
-    from pages.docs_pages import DOCS, build_action_page, build_doc_pages, render_doc, render_docs_list_items
+    from pages.docs_pages import (
+        DOCS,
+        build_action_page,
+        build_doc_pages,
+        doc_url_prefix,
+        render_doc,
+        render_docs_list_items,
+    )
     from pages.minify import minify_css, minify_js
     from pages.rules_page import build_rules_page
     from pages.site_assets import ASSETS, MODERN_FORMAT_ASSETS, convert_to_modern_formats, copy_json_schemas
@@ -82,7 +90,7 @@ try:
 except ImportError:  # running as pages/build.py
     from coverage_report import build_coverage_page
     from css import inline_css_imports
-    from docs_pages import DOCS, build_action_page, build_doc_pages, render_doc, render_docs_list_items
+    from docs_pages import DOCS, build_action_page, build_doc_pages, doc_url_prefix, render_doc, render_docs_list_items
     from minify import minify_css, minify_js
     from rules_page import build_rules_page
     from site_assets import ASSETS, MODERN_FORMAT_ASSETS, convert_to_modern_formats, copy_json_schemas
@@ -148,7 +156,7 @@ def sitemap_urls(doc_results: dict) -> list[str]:
     ]
     for doc in DOCS:
         if doc["slug"] in doc_results:
-            urls.append(f"{SITE_URL}docs/{doc['slug']}.html")
+            urls.append(f"{SITE_URL}{doc_url_prefix(doc)}/{doc['slug']}.html")
     return urls
 
 
@@ -189,7 +197,7 @@ def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) ->
     )
     if "<!--DOCS_LIST-->" not in template:
         raise SystemExit("index.template.html: missing marker <!--DOCS_LIST-->")
-    template = template.replace("<!--DOCS_LIST-->", render_docs_list_items(doc_results, "docs/"))
+    template = template.replace("<!--DOCS_LIST-->", render_docs_list_items(doc_results, None))
     template = render_shared_components(template, "", version)
 
     if out_dir.exists():
