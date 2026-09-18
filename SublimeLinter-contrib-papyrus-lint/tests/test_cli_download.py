@@ -43,6 +43,21 @@ class CliDownloadTests(unittest.TestCase):
         ):
             self.assertEqual(cli_download.release_version(), '2.3.4')
 
+    def test_on_disk_package_metadata_wins_over_stale_load_resource(self):
+        with tempfile.TemporaryDirectory() as package:
+            Path(package, 'package-metadata.json').write_text(
+                '{"version": "v9.8.7"}', encoding='utf-8'
+            )
+            with (
+                patch.object(cli_download, '_package_dir', return_value=Path(package)),
+                patch.object(
+                    cli_download.sublime,
+                    'load_resource',
+                    return_value='{"version": "v1.0.0"}',
+                ),
+            ):
+                self.assertEqual(cli_download.release_version(), '9.8.7')
+
     def test_version_falls_back_to_bundled_file_for_unusable_metadata(self):
         unusable_metadata = (
             FileNotFoundError(),
@@ -146,6 +161,73 @@ class CliDownloadTests(unittest.TestCase):
                 timeout=30,
             )
             self.assertEqual(list(result.parent.iterdir()), [result])
+
+    def test_downloads_a_new_cli_when_the_plugin_version_changes(self):
+        with tempfile.TemporaryDirectory() as cache:
+            previous = Path(cache) / 'PapyrusLint' / 'v1.2.3' / 'PapyrusLinterCLI-linux'
+            previous.parent.mkdir(parents=True)
+            previous.write_bytes(b'old')
+            previous.chmod(0o700)
+            leftover = Path(cache) / 'PapyrusLint' / 'notes.txt'
+            leftover.write_text('keep', encoding='utf-8')
+
+            with patch.object(cli_download, 'urlopen', return_value=BytesIO(b'fresh')) as download:
+                result = Path(cli_download.ensure_release_cli(cache, '1.2.4', 'Linux'))
+
+            self.assertEqual(
+                result,
+                Path(cache) / 'PapyrusLint' / 'v1.2.4' / 'PapyrusLinterCLI-linux',
+            )
+            self.assertEqual(result.read_bytes(), b'fresh')
+            download.assert_called_once_with(
+                f'{cli_download.RELEASE_BASE}/v1.2.4/PapyrusLinterCLI-linux',
+                timeout=30,
+            )
+            self.assertFalse(previous.exists())
+            self.assertEqual(leftover.read_text(encoding='utf-8'), 'keep')
+
+    def test_cache_hit_still_removes_previous_version_binaries(self):
+        with tempfile.TemporaryDirectory() as cache:
+            current = Path(cache) / 'PapyrusLint' / 'v2.0.0' / 'PapyrusLinterCLI-linux'
+            previous = Path(cache) / 'PapyrusLint' / 'v1.9.0' / 'PapyrusLinterCLI-linux'
+            current.parent.mkdir(parents=True)
+            previous.parent.mkdir(parents=True)
+            current.write_bytes(b'current')
+            current.chmod(0o700)
+            previous.write_bytes(b'previous')
+            previous.chmod(0o700)
+
+            with patch.object(cli_download, 'urlopen') as download:
+                result = cli_download.ensure_release_cli(cache, '2.0.0', 'Linux')
+
+            self.assertEqual(result, str(current))
+            download.assert_not_called()
+            self.assertFalse(previous.exists())
+            self.assertEqual(current.read_bytes(), b'current')
+
+    def test_plugin_loaded_prefetches_in_a_background_thread(self):
+        with patch.object(cli_download.threading, 'Thread') as thread:
+            cli_download.plugin_loaded()
+
+        thread.assert_called_once_with(target=cli_download.prefetch_release_cli, daemon=True)
+        thread.return_value.start.assert_called_once_with()
+
+    def test_prefetch_swallows_download_failures(self):
+        with patch.object(cli_download, 'ensure_release_cli', side_effect=OSError('offline')):
+            self.assertIsNone(cli_download.prefetch_release_cli('/cache'))
+
+    def test_prefetch_uses_sublime_cache_path_by_default(self):
+        with (
+            patch.object(cli_download.sublime, 'cache_path', create=True, return_value='/cache') as cache_path,
+            patch.object(cli_download, 'ensure_release_cli') as ensure,
+        ):
+            cli_download.prefetch_release_cli()
+
+        cache_path.assert_called_once_with()
+        ensure.assert_called_once_with('/cache')
+
+    def test_pruning_a_missing_cache_directory_is_a_no_op(self):
+        cli_download._prune_other_versions('/definitely-not-a-papyrus-lint-cache', '1.0.0')
 
     def test_failed_download_removes_temporary_file(self):
         with tempfile.TemporaryDirectory() as cache:

@@ -3,13 +3,18 @@
 import json
 import os
 import platform
+import shutil
 import tempfile
+import threading
+from contextlib import suppress
 from pathlib import Path
 from urllib.request import urlopen
 
 import sublime
 
 RELEASE_BASE = 'https://github.com/Idrinth/papyrus-lint/releases/download'
+
+_download_lock = threading.Lock()
 
 
 def _asset_name(system=None):
@@ -24,19 +29,60 @@ def _asset_name(system=None):
     return assets[system]
 
 
-def release_version():
+def _package_dir():
+    return Path(__file__).resolve().parent
+
+
+def _version_from_metadata_text(text):
     try:
-        metadata = json.loads(
+        return json.loads(text)['version'].removeprefix('v')
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def release_version():
+    # Prefer files on disk: Package Control extracts an update before
+    # Sublime's resource cache necessarily reflects it, so load_resource
+    # can keep returning the previous package-metadata.json and we'd
+    # reuse that older CLI instead of downloading the new one.
+    try:
+        version = _version_from_metadata_text(
+            (_package_dir() / 'package-metadata.json').read_text(encoding='utf-8')
+        )
+        if version:
+            return version
+    except OSError:
+        pass
+    try:
+        version = _version_from_metadata_text(
             sublime.load_resource(
                 'Packages/SublimeLinter-contrib-papyrus-lint/package-metadata.json'
             )
         )
-        return metadata['version'].removeprefix('v')
-    except (FileNotFoundError, KeyError, OSError, ValueError):
-        # Release archives carry VERSION; Package Control installs additionally
-        # expose their tag-derived version through package-metadata.json.
+        if version:
+            return version
+    except (FileNotFoundError, OSError):
         pass
-    return (Path(__file__).with_name('VERSION')).read_text(encoding='utf-8').strip()
+    # Release archives carry VERSION; Package Control installs additionally
+    # expose their tag-derived version through package-metadata.json.
+    return (_package_dir() / 'VERSION').read_text(encoding='utf-8').strip().removeprefix('v')
+
+
+def _is_usable(executable):
+    return executable.is_file() and (os.name == 'nt' or os.access(str(executable), os.X_OK))
+
+
+def _prune_other_versions(cache_root, version):
+    """Drop CLIs cached for other plugin versions after this one is in place."""
+    parent = Path(cache_root) / 'PapyrusLint'
+    keep = 'v' + version
+    try:
+        entries = list(parent.iterdir())
+    except OSError:
+        return
+    for entry in entries:
+        if entry.is_dir() and entry.name.startswith('v') and entry.name != keep:
+            shutil.rmtree(entry, ignore_errors=True)
 
 
 def ensure_release_cli(cache_root, version=None, system=None):
@@ -45,22 +91,36 @@ def ensure_release_cli(cache_root, version=None, system=None):
     asset = _asset_name(system)
     directory = Path(cache_root) / 'PapyrusLint' / ('v' + version)
     executable = directory / asset
-    if executable.is_file() and (os.name == 'nt' or os.access(str(executable), os.X_OK)):
+    with _download_lock:
+        if _is_usable(executable):
+            _prune_other_versions(cache_root, version)
+            return str(executable)
+
+        directory.mkdir(parents=True, exist_ok=True)
+        url = f'{RELEASE_BASE}/v{version}/{asset}'
+        descriptor, temporary = tempfile.mkstemp(prefix=asset + '.', dir=str(directory))
+        try:
+            with os.fdopen(descriptor, 'wb') as output, urlopen(url, timeout=30) as response:
+                while True:
+                    chunk = response.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    output.write(chunk)
+            os.chmod(temporary, 0o700)
+            os.replace(temporary, str(executable))
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+        _prune_other_versions(cache_root, version)
         return str(executable)
 
-    directory.mkdir(parents=True, exist_ok=True)
-    url = f'{RELEASE_BASE}/v{version}/{asset}'
-    descriptor, temporary = tempfile.mkstemp(prefix=asset + '.', dir=str(directory))
-    try:
-        with os.fdopen(descriptor, 'wb') as output, urlopen(url, timeout=30) as response:
-            while True:
-                chunk = response.read(1024 * 1024)
-                if not chunk:
-                    break
-                output.write(chunk)
-        os.chmod(temporary, 0o700)
-        os.replace(temporary, str(executable))
-    finally:
-        if os.path.exists(temporary):
-            os.unlink(temporary)
-    return str(executable)
+
+def prefetch_release_cli(cache_root=None):
+    """Best-effort download of this release's CLI; first lint/fix retries on failure."""
+    with suppress(Exception):
+        ensure_release_cli(cache_root if cache_root is not None else sublime.cache_path())
+
+
+def plugin_loaded():
+    """Download this release's CLI as soon as the package is loaded (install or update)."""
+    threading.Thread(target=prefetch_release_cli, daemon=True).start()
