@@ -6,6 +6,7 @@
   "publisher": "idrinth",
   "icon": "logo.png",
   "license": "MIT",
+  "homepage": "https://papyrus-lint.idrinth.de/",
   "repository": {
     "type": "git",
     "url": "https://github.com/idrinth/papyrus-lint.git",
