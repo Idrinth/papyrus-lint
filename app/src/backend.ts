@@ -34,3 +34,10 @@ export interface Diagnostic {
 export function findingMessageWithRule(finding: Diagnostic): string {
   return `${finding.message} (${finding.rule ?? "unknown"})`;
 }
+
+export interface PscParseOutcome {
+  path: string;
+  ok: boolean;
+  detail: string;
+  findings: Diagnostic[];
+}
