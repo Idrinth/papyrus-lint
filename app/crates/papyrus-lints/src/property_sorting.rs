@@ -34,8 +34,8 @@ pub const RULE: &str = "property-sorting";
 /// then alphabetically by name, or aren't declared immediately after the
 /// `ScriptName` line (before any variable, function, or state
 /// declaration). Both are flagged as a `[warning]`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     if script.properties.is_empty() {
@@ -44,7 +44,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 
     let mut diagnostics = Vec::new();
 
-    if let Some(min_other_line) = other_member_lines(&script).into_iter().min() {
+    if let Some(min_other_line) = other_member_lines(script).into_iter().min() {
         for property in &script.properties {
             if property.line > min_other_line {
                 diagnostics.push(Diagnostic {
@@ -86,12 +86,12 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 /// doesn't parse cleanly, or that already satisfies [`check`], is
 /// returned unchanged.
 pub fn repair(source: &str) -> String {
-    if check(source).is_empty() {
-        return source.to_string();
-    }
     let Ok(script) = papyrus_parser::parse(source) else {
         return source.to_string();
     };
+    if check(Some(&script)).is_empty() {
+        return source.to_string();
+    }
     let scriptname_line = script.line;
 
     let lines: Vec<&str> = source.lines().collect();

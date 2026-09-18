@@ -56,15 +56,15 @@ pub const RULE: &str = "unchecked-cast";
 
 /// Checks every function/event in `source` for a member/method access on
 /// an unchecked `as` cast result.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(source: &str, ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let protected = fragment_code::protected_lines(source);
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let mut unchecked_vars = HashSet::new();
         walk_body(
             &function.body,

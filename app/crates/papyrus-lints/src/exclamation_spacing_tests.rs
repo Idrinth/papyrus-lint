@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(source, tokens.as_deref())
+}
+
 #[test]
 fn ignores_a_single_space() {
     let source = "ScriptName Example\n\nFunction Test()\n    If ! bReady\n    EndIf\nEndFunction\n";

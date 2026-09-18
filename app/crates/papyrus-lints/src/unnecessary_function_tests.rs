@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
 #[test]
 fn flags_a_function_with_a_single_statement() {
     let diagnostics = check("ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n");

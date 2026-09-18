@@ -20,8 +20,8 @@ pub const RULE: &str = "script-name-collision";
 /// whose name matches (case-insensitively) the enclosing script's own
 /// declared name. Flagged as an `[error]`, since Papyrus rejects such a
 /// script at compile time.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&papyrus_parser::ast::Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 

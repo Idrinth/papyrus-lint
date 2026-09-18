@@ -33,7 +33,7 @@
 use std::collections::HashSet;
 
 use papyrus_parser::ast::{
-    BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Stmt, TypeName, UnaryOp,
+    BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName, UnaryOp,
 };
 
 use crate::array_bounds::eval_const_int;
@@ -45,13 +45,13 @@ pub const RULE: &str = "unchecked-array-element";
 
 /// Checks every function/event in `source` for member/method access on an
 /// array element that hasn't yet been confirmed non-`None`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let mut object_arrays = param_object_arrays(function);
         let mut checked = HashSet::new();
         walk_body(

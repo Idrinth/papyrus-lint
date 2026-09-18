@@ -32,18 +32,21 @@ pub const RULE: &str = "unresolved-script";
 /// script can ever be confirmed missing this way; see [`check_with`] to
 /// actually resolve script names.
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but resolves each call's target script through
 /// `external`, flagging one that can't be located.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    let mut env = TypeEnv::for_script(&script);
+    let mut env = TypeEnv::for_script(script);
     let mut diagnostics = Vec::new();
 
     if let Some(parent) = &script.extends {
@@ -75,7 +78,7 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
         }
     }
 
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         if let Some(return_type) = &function.return_type {
             check_type(return_type, function.line, external, &mut diagnostics);
         }

@@ -25,7 +25,7 @@
 //! script that doesn't parse.
 
 use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, FunctionDecl, Literal, Script, Stmt};
-use papyrus_parser::token::{Keyword, TokenKind};
+use papyrus_parser::token::{Keyword, Token, TokenKind};
 
 use crate::Diagnostic;
 
@@ -35,16 +35,16 @@ pub const RULE: &str = "empty-body";
 /// Checks `source` for `While` loops with no real effect and empty
 /// `If`/`ElseIf`/`Else` bodies. Flagged as a `[warning]`, since this is
 /// almost always an oversight rather than something intentional.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         // The AST can't tell an empty `Else` apart from no `Else` clause at
         // all without parsing, so fall back to scanning tokens directly for
         // this one case on a script that doesn't parse cleanly.
-        return empty_else_diagnostics(source);
+        return empty_else_diagnostics(tokens);
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         check_body(&function.body, &mut diagnostics);
     }
     diagnostics
@@ -184,8 +184,8 @@ fn is_numeric_literal(expr: &Expr) -> bool {
 /// Fallback for a script that doesn't parse cleanly (see [`check`]): scans
 /// `source`'s lexer tokens directly for an `Else` keyword immediately
 /// followed (modulo newlines) by `EndIf`.
-fn empty_else_diagnostics(source: &str) -> Vec<Diagnostic> {
-    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+fn empty_else_diagnostics(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
         return Vec::new();
     };
 

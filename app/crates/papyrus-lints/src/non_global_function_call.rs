@@ -30,21 +30,24 @@ pub const RULE: &str = "non-global-function-call";
 /// its own, no such call can ever be confirmed this way; see
 /// [`check_with`] to actually resolve function signatures.
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but resolves each call's target function through
 /// `external`, flagging one that resolves but isn't declared `Global`.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    let mut env = TypeEnv::for_script(&script);
+    let mut env = TypeEnv::for_script(script);
     let mut diagnostics = Vec::new();
 
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         env.with_function_scope(function, |env| {
             for stmt in &function.body {
                 walk_stmt(stmt, env, external, &mut diagnostics);

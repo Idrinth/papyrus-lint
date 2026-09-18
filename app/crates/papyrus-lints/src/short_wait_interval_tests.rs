@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, minimum: f64) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref(), minimum)
+}
+
 #[test]
 fn flags_wait_below_the_default_minimum() {
     let diagnostics = check(

@@ -1,5 +1,11 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(source, ast.as_ref(), tokens.as_deref())
+}
+
 fn tokens_of(source: &str) -> Vec<Token> {
     papyrus_parser::tokenize(source).expect("test source should tokenize")
 }

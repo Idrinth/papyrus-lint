@@ -49,12 +49,12 @@ pub const RULE: &str = "event-signature-mismatch";
 
 /// Checks `source` for `Event` declarations whose name matches a known
 /// native event but whose parameter list doesn't match its signature.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    all_events(&script)
+    all_events(script)
         .filter_map(|event| {
             let rule = find_rule(&event.name)?;
             if signature_matches(&event.params, rule.args) {

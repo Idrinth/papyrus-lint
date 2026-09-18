@@ -26,11 +26,11 @@ pub const RULE: &str = "missing-doc-comment";
 /// declaration with no `{ ... }` documentation comment on the line right
 /// after it. A script that doesn't parse cleanly is left unchecked rather
 /// than guessed at.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(source: &str, ast: Option<&Script>, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
-    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+    let Some(tokens) = tokens else {
         return Vec::new();
     };
 
@@ -40,7 +40,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
     check_declaration(
         script.line,
         format!("The `ScriptName {}` declaration", script.name),
-        &tokens,
+        tokens,
         &lines,
         &mut diagnostics,
     );
@@ -49,13 +49,13 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         check_declaration(
             property.line,
             format!("Property `{}`", property.name),
-            &tokens,
+            tokens,
             &lines,
             &mut diagnostics,
         );
     }
 
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let kind = if function.is_event {
             "Event"
         } else {
@@ -64,7 +64,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         check_declaration(
             function.line,
             format!("{kind} `{}`", function.name),
-            &tokens,
+            tokens,
             &lines,
             &mut diagnostics,
         );

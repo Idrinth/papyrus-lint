@@ -35,12 +35,12 @@ pub const RULE: &str = "native-function-usage";
 
 /// Checks `source` for `Native` functions/events not supplied by the base
 /// game, per `NATIVE_METHODS`.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    all_functions(&script)
+    all_functions(script)
         .filter(|function| function.is_native)
         .filter(|function| !is_base_game_native(&script.name, &function.name))
         .map(|function| Diagnostic {

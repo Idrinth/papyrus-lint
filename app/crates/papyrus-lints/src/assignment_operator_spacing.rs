@@ -2,7 +2,7 @@
 //! `-=`, `*=`, `/=`, `%=`) operators.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::TokenKind;
+use papyrus_parser::token::{Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "assignment-operator-spacing";
@@ -29,12 +29,11 @@ fn operator_text(kind: &TokenKind) -> Option<&'static str> {
 /// (see [`fragment_code`]) are never flagged. `==`, `!=`, `>=`, and `<=`
 /// are never matched here, since the lexer tokenizes those as their own,
 /// separate token kinds (see [`crate::operator_spacing`] instead).
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let protected = fragment_code::protected_lines(source);
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
+pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
     };
+    let protected = fragment_code::protected_lines(source);
     let line_starts = line_starts(source);
     let bytes = source.as_bytes();
 

@@ -1,5 +1,15 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
+fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check_with(ast.as_ref(), external)
+}
+
 #[test]
 fn does_not_flag_without_external_ancestry_resolution() {
     // `check` (no external resolver) can't confirm either type's

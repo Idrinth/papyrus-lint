@@ -217,22 +217,25 @@ impl ExternalSignatures for NoExternalSignatures {
 /// functions declared in the same script. Calls on other scripts' types
 /// are not checked; see [`check_with`] for that.
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but also checks calls to functions resolved through
 /// `external` (typically functions declared on other scripts).
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    let locals = LocalFunctions::from_script(&script);
-    let mut env = TypeEnv::for_script(&script);
+    let locals = LocalFunctions::from_script(script);
+    let mut env = TypeEnv::for_script(script);
     let mut diagnostics = Vec::new();
 
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         env.with_function_scope(function, |env| {
             for stmt in &function.body {
                 walk_stmt(stmt, env, &locals, external, &mut diagnostics);

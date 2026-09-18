@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(source, ast.as_ref())
+}
+
 #[test]
 fn flags_local_variable_never_used_again() {
     let diagnostics = check("ScriptName Example\n\nFunction Test()\n    Int i = 1\nEndFunction\n");

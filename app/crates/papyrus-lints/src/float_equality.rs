@@ -20,15 +20,15 @@ use crate::Diagnostic;
 pub const RULE: &str = "float-equality";
 
 /// Checks `source` for `Float`/`Float` `==`/`!=` comparisons.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    let mut env = TypeEnv::for_script(&script);
+    let mut env = TypeEnv::for_script(script);
     let mut diagnostics = Vec::new();
 
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         env.with_function_scope(function, |scoped| {
             check_body(&function.body, scoped, &mut diagnostics);
         });

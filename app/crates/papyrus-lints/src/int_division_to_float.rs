@@ -33,16 +33,16 @@ const MESSAGE: &str = "Int/Int division truncates its result before it widens in
 
 /// Checks `source` for an `Int / Int` division whose result is widened
 /// into a Float without either operand already being a Float.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
-    let functions = index_functions(&script);
-    let mut env = TypeEnv::for_script(&script);
+    let functions = index_functions(script);
+    let mut env = TypeEnv::for_script(script);
     let mut diagnostics = Vec::new();
-    check_script_declarations(&script, &env, &functions, &mut diagnostics);
-    check_function_bodies(&script, &mut env, &functions, &mut diagnostics);
+    check_script_declarations(script, &env, &functions, &mut diagnostics);
+    check_function_bodies(script, &mut env, &functions, &mut diagnostics);
     diagnostics
 }
 

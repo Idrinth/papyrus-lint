@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str, warning: usize, error: usize) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref(), warning, error)
+}
+
 #[test]
 fn simple_function_has_baseline_complexity_of_one() {
     let diagnostics = check(

@@ -52,19 +52,19 @@ pub const RULE: &str = "none-form-usage";
 /// `AutoReadOnly` property is never treated as possibly `None` on its own
 /// (see [`crate::config::Config::assume_auto_properties_filled`]); a local
 /// variable's own tracking is unaffected either way.
-pub fn check(source: &str, assume_auto_properties_filled: bool) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>, assume_auto_properties_filled: bool) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
     let default_none_properties = if assume_auto_properties_filled {
         HashSet::new()
     } else {
-        default_none_properties(&script)
+        default_none_properties(script)
     };
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         let mut none_vars = default_none_properties.clone();
         walk_body(&function.body, &mut none_vars, &mut diagnostics);
     }

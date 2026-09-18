@@ -1,5 +1,10 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    super::check(ast.as_ref())
+}
+
 #[test]
 fn flags_a_property_named_identically_to_its_script() {
     let diagnostics = check("ScriptName Example\n\nInt Property Example Auto\n");

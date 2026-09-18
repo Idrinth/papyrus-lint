@@ -12,7 +12,7 @@
 //! [`strip_known_prefix`]), since that part of the name can't be renamed at
 //! all.
 
-use papyrus_parser::token::{Keyword, TokenKind};
+use papyrus_parser::token::{Keyword, Token, TokenKind};
 use serde::{Deserialize, Serialize};
 
 use crate::Diagnostic;
@@ -160,12 +160,12 @@ fn strip_known_prefix(name: &str) -> &str {
 /// [`repair`] can't actually fix (e.g. a name with underscores under
 /// `PascalCase`/`camelCase`) says so in its own message, so callers don't
 /// present it as automatically fixable when it isn't.
-pub fn check(source: &str, style: Style) -> Vec<Diagnostic> {
-    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+pub fn check(tokens: Option<&[Token]>, style: Style) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
         return Vec::new();
     };
 
-    let mut tokens = tokens.into_iter();
+    let mut tokens = tokens.iter().cloned();
     while let Some(token) = tokens.next() {
         if token.kind != TokenKind::Keyword(Keyword::ScriptName) {
             continue;

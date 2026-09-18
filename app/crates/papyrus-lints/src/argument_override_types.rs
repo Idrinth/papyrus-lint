@@ -27,7 +27,7 @@
 //! against the parent's reference still binds against the parent's exact
 //! declared type regardless of what the override itself accepts.
 
-use papyrus_parser::ast::TypeName;
+use papyrus_parser::ast::{Script, TypeName};
 
 use crate::argument_types::{format_type, ExternalSignatures, NoExternalSignatures};
 use crate::Diagnostic;
@@ -40,8 +40,8 @@ pub const RULE: &str = "argument-override-types";
 /// the `Extends` chain always requires looking outside `source`, this alone
 /// never finds anything to flag; see [`check_with`].
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but resolves the script's `Extends` chain through
@@ -50,8 +50,11 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 /// parameter count mismatch is reported as a single diagnostic for the
 /// whole declaration; a matching count is then compared parameter by
 /// parameter for a type mismatch at the same position.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     let Some(extends) = &script.extends else {

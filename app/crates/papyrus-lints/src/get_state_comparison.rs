@@ -31,15 +31,18 @@ pub const RULE: &str = "get-state-comparison";
 /// declared further up that (unresolved) ancestry; see [`check_with`] to
 /// resolve that too.
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but resolves a target not declared on the script itself
 /// through `external`'s knowledge of the script's `Extends` ancestry,
 /// flagging a target that can't be found there either.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
 
@@ -50,9 +53,9 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
         .collect();
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(&script) {
+    for function in all_functions(script) {
         for stmt in &function.body {
-            walk_stmt(stmt, &script, &local_states, external, &mut diagnostics);
+            walk_stmt(stmt, script, &local_states, external, &mut diagnostics);
         }
     }
     diagnostics

@@ -1,7 +1,7 @@
 //! Flags and repairs Papyrus block statements whose indentation doesn't
 //! match a configurable indentation unit.
 
-use papyrus_parser::token::{Keyword, TokenKind};
+use papyrus_parser::token::{Keyword, Token, TokenKind};
 
 use crate::{fragment_code, Diagnostic};
 
@@ -43,11 +43,16 @@ impl Indentation {
 /// if `source`'s structure can't be identified (e.g. it doesn't lex
 /// cleanly).
 fn line_depths(source: &str) -> Option<Vec<usize>> {
+    let tokens = papyrus_parser::tokenize(source).ok()?;
+    Some(line_depths_from_tokens(source, &tokens))
+}
+
+/// Same as [`line_depths`], but from an already-lexed token stream instead
+/// of lexing `source` itself; used by [`check`], which receives `tokens`
+/// already computed by its caller.
+fn line_depths_from_tokens(source: &str, tokens: &[Token]) -> Vec<usize> {
     let mut keywords_by_line = vec![Vec::new(); source.lines().count() + 1];
 
-    let Ok(tokens) = papyrus_parser::tokenize(source) else {
-        return None;
-    };
     for token in tokens {
         if let TokenKind::Keyword(keyword) = token.kind {
             if let Some(keywords) = keywords_by_line.get_mut(token.line) {
@@ -68,7 +73,7 @@ fn line_depths(source: &str) -> Option<Vec<usize>> {
         }
     }
 
-    Some(depths)
+    depths
 }
 
 /// Checks `source` for lines whose leading whitespace doesn't match the
@@ -80,10 +85,11 @@ fn line_depths(source: &str) -> Option<Vec<usize>> {
 /// those markers are expected relative to the marker's own depth (see
 /// [`fragment_code::code_section_starts`]), not the file-wide depth of the
 /// (never-reindented) wrapper function around them.
-pub fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
-    let Some(depths) = line_depths(source) else {
+pub fn check(source: &str, tokens: Option<&[Token]>, indentation: Indentation) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
         return Vec::new();
     };
+    let depths = line_depths_from_tokens(source, tokens);
     let protected = fragment_code::protected_lines(source);
     let code_section_starts = fragment_code::code_section_starts(source);
     let unit = indentation.unit();

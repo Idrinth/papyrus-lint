@@ -25,13 +25,13 @@ pub const RULE: &str = "cyclomatic-complexity";
 /// instead, so the misconfiguration can only ever make more functions read
 /// `[error]` (by collapsing the `[warning]` band down to nothing), never
 /// silently drop or downgrade a finding that a sane pair would have reported.
-pub fn check(source: &str, warning: usize, error: usize) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check(ast: Option<&Script>, warning: usize, error: usize) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     let error = error.max(warning);
 
-    all_functions(&script)
+    all_functions(script)
         .filter_map(|function| {
             let complexity = complexity_of(function);
             let level = if complexity > error {

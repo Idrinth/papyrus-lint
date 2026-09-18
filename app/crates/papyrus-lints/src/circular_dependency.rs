@@ -43,15 +43,18 @@ pub const RULE: &str = "circular-dependency";
 /// ever be confirmed this way; see [`check_with`] to actually follow
 /// property types across scripts.
 #[allow(dead_code)]
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    check_with(source, &mut NoExternalSignatures)
+pub fn check(ast: Option<&papyrus_parser::ast::Script>) -> Vec<Diagnostic> {
+    check_with(ast, &mut NoExternalSignatures)
 }
 
 /// Like [`check`], but follows each property's declared type through
 /// `external`, flagging one whose chain of `Property` declarations across
 /// other scripts leads back to this script.
-pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
-    let Ok(script) = papyrus_parser::parse(source) else {
+pub fn check_with<E: ExternalSignatures>(
+    ast: Option<&papyrus_parser::ast::Script>,
+    external: &mut E,
+) -> Vec<Diagnostic> {
+    let Some(script) = ast else {
         return Vec::new();
     };
     let origin = &script.name;

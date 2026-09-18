@@ -40,10 +40,9 @@ pub const RULE: &str = "missing-update-handler";
 
 /// Checks `source` for a `RegisterFor*` call with no matching `Event`
 /// declared anywhere in the same script.
-pub fn check(source: &str) -> Vec<Diagnostic> {
-    let tokens = match papyrus_parser::tokenize(source) {
-        Ok(tokens) => tokens,
-        Err(_) => return Vec::new(),
+pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+    let Some(tokens) = tokens else {
+        return Vec::new();
     };
 
     let mut diagnostics = Vec::new();
@@ -57,7 +56,7 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
         let Some(rule) = find_rule(name) else {
             continue;
         };
-        if declares_event(&tokens, rule.event) {
+        if declares_event(tokens, rule.event) {
             continue;
         }
         diagnostics.push(Diagnostic {
