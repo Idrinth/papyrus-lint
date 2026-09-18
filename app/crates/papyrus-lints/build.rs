@@ -101,6 +101,7 @@ fn main() {
     compile_known_events(&manifest_dir, &out_dir);
     compile_rule_tags(&manifest_dir, &out_dir);
     compile_known_rule_ids(&manifest_dir, &out_dir);
+    compile_generated_rules(&manifest_dir, &out_dir);
 }
 
 fn compile_forbidden_functions(manifest_dir: &str, out_dir: &str) {
@@ -432,4 +433,394 @@ fn compile_known_rule_ids(manifest_dir: &str, out_dir: &str) {
             dest.display()
         )
     });
+}
+
+#[derive(serde::Deserialize)]
+struct RawRuleMeta {
+    id: String,
+    name: String,
+    fixable: bool,
+    #[serde(default = "enabled_by_default_default")]
+    enabled_by_default: bool,
+}
+
+fn enabled_by_default_default() -> bool {
+    true
+}
+
+#[derive(serde::Deserialize)]
+struct RawDispatch {
+    id: String,
+    #[serde(default)]
+    check: Option<String>,
+    #[serde(default)]
+    repair: Option<String>,
+    #[serde(default)]
+    repair_order: Option<u32>,
+}
+
+/// `docs/rules.json` ids that do not become `Rules` field names by replacing
+/// `-` with `_`. Keep in sync with `papyrus-lint-config/build.rs`.
+const RULE_ID_TO_CONFIG_KEY: &[(&str, &str)] = &[
+    ("float-to-int", "float_int_conversion"),
+    ("too-many-named-states", "too_many_states"),
+];
+
+/// Project-level rules plus `unused-disable` (run from `lib.rs` after the
+/// rest of the pass). These have no `check` in `rule_dispatch.json`.
+const NO_SOURCE_CHECK_IDS: &[&str] = &[
+    "unused-disable",
+    "conflicting-script-versions",
+    "stale-compiled-output",
+    "script-filename-mismatch",
+];
+
+fn config_key_for(id: &str) -> String {
+    RULE_ID_TO_CONFIG_KEY
+        .iter()
+        .find(|(rule_id, _)| *rule_id == id)
+        .map(|(_, key)| (*key).to_string())
+        .unwrap_or_else(|| id.replace('-', "_"))
+}
+
+fn rust_ident_tail(chunk: &str) -> Option<String> {
+    let ident = chunk
+        .rsplit(|c: char| !c.is_ascii_alphanumeric() && c != '_')
+        .next()
+        .unwrap_or("");
+    if ident.is_empty() {
+        None
+    } else {
+        Some(ident.to_string())
+    }
+}
+
+fn modules_from_expr(expr: &str) -> Vec<String> {
+    let chunks: Vec<&str> = expr.split("::").collect();
+    if chunks.len() < 2 {
+        return Vec::new();
+    }
+    chunks[..chunks.len() - 1]
+        .iter()
+        .filter_map(|chunk| rust_ident_tail(chunk))
+        .collect()
+}
+
+fn load_rule_meta(manifest_dir: &str) -> Vec<RawRuleMeta> {
+    let json_path = Path::new(manifest_dir).join("../../../docs/rules.json");
+    println!("cargo:rerun-if-changed={}", json_path.display());
+    let json_src = fs::read_to_string(&json_path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read rule metadata at {}: {err}",
+            json_path.display()
+        )
+    });
+    serde_json::from_str(&json_src).unwrap_or_else(|err| {
+        panic!(
+            "failed to parse rule metadata at {}: {err}",
+            json_path.display()
+        )
+    })
+}
+
+fn rule_mod_for_repair(repair: &str) -> String {
+    let Some(idx) = repair.find("::repair") else {
+        panic!("repair expression must contain `::repair`: {repair}");
+    };
+    rust_ident_tail(&repair[..idx]).unwrap_or_else(|| {
+        panic!("repair expression has no module path before `::repair`: {repair}")
+    })
+}
+
+fn load_dispatch(manifest_dir: &str) -> Vec<RawDispatch> {
+    let json_path = Path::new(manifest_dir).join("rule_dispatch.json");
+    println!("cargo:rerun-if-changed={}", json_path.display());
+    let json_src = fs::read_to_string(&json_path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read rule dispatch at {}: {err}",
+            json_path.display()
+        )
+    });
+    serde_json::from_str(&json_src).unwrap_or_else(|err| {
+        panic!(
+            "failed to parse rule dispatch at {}: {err}",
+            json_path.display()
+        )
+    })
+}
+
+fn validate_dispatch(rules: &[RawRuleMeta], dispatch: &[RawDispatch]) {
+    let rule_ids: Vec<&str> = rules.iter().map(|r| r.id.as_str()).collect();
+    let dispatch_ids: Vec<&str> = dispatch.iter().map(|r| r.id.as_str()).collect();
+    for id in &rule_ids {
+        if !dispatch_ids.contains(id) {
+            panic!("docs/rules.json rule `{id}` is missing from rule_dispatch.json");
+        }
+    }
+    for id in &dispatch_ids {
+        if !rule_ids.contains(id) {
+            panic!("rule_dispatch.json rule `{id}` is missing from docs/rules.json");
+        }
+    }
+
+    let mut seen = std::collections::HashSet::new();
+    for entry in dispatch {
+        if !seen.insert(entry.id.as_str()) {
+            panic!("rule_dispatch.json lists `{}` more than once", entry.id);
+        }
+        let meta = rules
+            .iter()
+            .find(|r| r.id == entry.id)
+            .expect("ids already cross-checked");
+        let no_source = NO_SOURCE_CHECK_IDS.contains(&entry.id.as_str());
+        match (entry.check.is_some(), no_source) {
+            (true, true) => panic!(
+                "rule_dispatch.json: {} is a project/post-pass rule and must not have `check`",
+                entry.id
+            ),
+            (false, false) => panic!(
+                "rule_dispatch.json: {} needs a `check` (or belong to NO_SOURCE_CHECK_IDS)",
+                entry.id
+            ),
+            _ => {}
+        }
+        match (&entry.repair, entry.repair_order) {
+            (Some(_), None) => panic!(
+                "rule_dispatch.json: {} has `repair` but no `repair_order`",
+                entry.id
+            ),
+            (None, Some(_)) => panic!(
+                "rule_dispatch.json: {} has `repair_order` but no `repair`",
+                entry.id
+            ),
+            _ => {}
+        }
+        if entry.repair.is_some() && !meta.fixable {
+            panic!(
+                "rule_dispatch.json: {} has `repair` but docs/rules.json says it is not fixable",
+                entry.id
+            );
+        }
+    }
+
+    let mut orders: Vec<u32> = dispatch.iter().filter_map(|e| e.repair_order).collect();
+    orders.sort();
+    if !orders.is_empty() {
+        let expected: Vec<u32> = (1..=orders.len() as u32).collect();
+        if orders != expected {
+            panic!("rule_dispatch.json `repair_order` values must be 1..=N without gaps, got {orders:?}");
+        }
+    }
+}
+
+fn default_yaml_rule_order(manifest_dir: &str) -> Vec<String> {
+    let yaml_path = Path::new(manifest_dir).join("../../../docs/papyrus-lint.default.yaml");
+    println!("cargo:rerun-if-changed={}", yaml_path.display());
+    let text = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read default config at {}: {err}",
+            yaml_path.display()
+        )
+    });
+    let mut keys = Vec::new();
+    let mut in_rules = false;
+    for line in text.lines() {
+        if line == "rules:" {
+            in_rules = true;
+            continue;
+        }
+        if !in_rules {
+            continue;
+        }
+        if !line.starts_with("  ") || line.starts_with("   ") {
+            break;
+        }
+        let Some((key, _)) = line.trim().split_once(':') else {
+            break;
+        };
+        keys.push(key.to_string());
+    }
+    if keys.is_empty() {
+        panic!("{} has no `rules:` entries", yaml_path.display());
+    }
+    keys
+}
+
+fn ordered_rule_meta<'a>(rules: &'a [RawRuleMeta], field_order: &[String]) -> Vec<&'a RawRuleMeta> {
+    let mut by_key = std::collections::HashMap::new();
+    for rule in rules {
+        let key = config_key_for(&rule.id);
+        if by_key.insert(key.clone(), rule).is_some() {
+            panic!("duplicate Rules field `{key}`");
+        }
+    }
+    let mut ordered = Vec::with_capacity(rules.len());
+    for key in field_order {
+        match by_key.remove(key) {
+            Some(rule) => ordered.push(rule),
+            None => panic!(
+                "docs/papyrus-lint.default.yaml lists rules.{key} but docs/rules.json has no matching id"
+            ),
+        }
+    }
+    if !by_key.is_empty() {
+        let mut missing: Vec<_> = by_key.keys().cloned().collect();
+        missing.sort();
+        panic!(
+            "docs/papyrus-lint.default.yaml is missing rules: {missing:?}; add them next to the other `rules:` keys"
+        );
+    }
+    ordered
+}
+
+fn compile_rules_struct(out_dir: &str, rules: &[&RawRuleMeta]) {
+    let mut generated = String::new();
+    generated.push_str("/// Individual enable/disable switches for each lint ruleset.\n");
+    generated
+        .push_str("/// Generated from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
+    generated.push_str("///\n");
+    generated.push_str("/// A ruleset set to `false` here is skipped by both\n");
+    generated.push_str("/// [`crate::lint`]/[`crate::lint_with_external_arguments`] and, for\n");
+    generated.push_str("/// rulesets with an automatic fix, [`crate::repair`]. Most rulesets\n");
+    generated.push_str("/// default to `true`; those tagged `enabled_by_default: false` in\n");
+    generated.push_str("/// `docs/rules.json` default to `false`.\n");
+    generated.push_str("#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]\n");
+    generated.push_str("#[serde(default)]\n");
+    generated.push_str("pub struct Rules {\n");
+    for rule in rules {
+        let key = config_key_for(&rule.id);
+        let kind = if rule.fixable { "lint/fix" } else { "lint" };
+        generated.push_str(&format!(
+            "    /// The \"{}\" {kind}.\n",
+            rule.name.replace('"', "\\\"")
+        ));
+        if !rule.enabled_by_default {
+            generated.push_str("    /// Defaults to `false`.\n");
+        }
+        generated.push_str(&format!("    pub {key}: bool,\n"));
+    }
+    generated.push_str("}\n\n");
+    generated.push_str("/// Default enable/disable flags for [`Rules`]. Generated from\n");
+    generated.push_str("/// `docs/rules.json` (`enabled_by_default`, defaulting to `true`).\n");
+    generated.push_str("pub fn default_rules() -> Rules {\n");
+    generated.push_str("    Rules {\n");
+    for rule in rules {
+        let key = config_key_for(&rule.id);
+        generated.push_str(&format!("        {key}: {},\n", rule.enabled_by_default));
+    }
+    generated.push_str("    }\n");
+    generated.push_str("}\n");
+
+    let dest = Path::new(out_dir).join("rules_struct.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated Rules struct to {}: {err}",
+            dest.display()
+        )
+    });
+}
+
+/// Generates `collect_diagnostics` / `apply_repairs` from `rule_dispatch.json`.
+fn compile_rules_dispatch(out_dir: &str, dispatch: &[RawDispatch]) {
+    let mut modules = std::collections::BTreeSet::new();
+    for entry in dispatch {
+        if let Some(check) = &entry.check {
+            for m in modules_from_expr(check) {
+                modules.insert(m);
+            }
+        }
+        if let Some(repair) = &entry.repair {
+            for m in modules_from_expr(repair) {
+                modules.insert(m);
+            }
+        }
+    }
+
+    let mut generated = String::new();
+    generated.push_str("use crate::{\n    ");
+    let mut first = true;
+    for m in &modules {
+        if !first {
+            generated.push_str(", ");
+        }
+        first = false;
+        generated.push_str(m);
+    }
+    generated.push_str(", Diagnostic,\n};\n\n");
+
+    generated.push_str("/// Runs every enabled source-level lint against `source`.\n");
+    generated
+        .push_str("/// Generated from `rule_dispatch.json` by `build.rs`. Do not edit by hand.\n");
+    generated.push_str("#[allow(clippy::too_many_lines)]\n");
+    generated.push_str("pub fn collect_diagnostics<E: ExternalSignatures>(\n");
+    generated.push_str("    source: &str,\n");
+    generated.push_str("    config: &Config,\n");
+    generated.push_str("    external: &mut E,\n");
+    generated.push_str(") -> Vec<Diagnostic> {\n");
+    generated.push_str("    let tokens = papyrus_parser::tokenize(source).ok();\n");
+    generated.push_str("    let tokens = tokens.as_deref();\n");
+    generated.push_str("    let ast = papyrus_parser::parse(source).ok();\n");
+    generated.push_str("    let ast = ast.as_ref();\n");
+    generated.push_str("    let rules = &config.rules;\n");
+    generated.push_str("    let mut diagnostics = Vec::new();\n");
+    for entry in dispatch {
+        let Some(check) = &entry.check else {
+            continue;
+        };
+        let key = config_key_for(&entry.id);
+        generated.push_str(&format!("    if rules.{key} {{\n"));
+        generated.push_str(&format!("        diagnostics.extend({check});\n"));
+        generated.push_str("    }\n");
+    }
+    generated.push_str("    diagnostics\n");
+    generated.push_str("}\n\n");
+
+    generated
+        .push_str("/// Applies every self-contained automatic fix whose ruleset is enabled.\n");
+    generated
+        .push_str("/// Generated from `rule_dispatch.json` by `build.rs`. Do not edit by hand.\n");
+    generated.push_str("/// Repair order is `repair_order` in that file (not rule-id order),\n");
+    generated.push_str("/// because later fixes see earlier rewrites.\n");
+    generated.push_str("#[allow(clippy::too_many_lines)]\n");
+    generated.push_str("pub fn apply_repairs(source: &str, config: &Config, applies: impl Fn(&str) -> bool) -> String {\n");
+    generated.push_str("    let rules = &config.rules;\n");
+    generated.push_str("    let mut source = source.to_string();\n");
+    let mut repairs: Vec<&RawDispatch> = dispatch.iter().filter(|e| e.repair.is_some()).collect();
+    repairs.sort_by_key(|e| e.repair_order.unwrap());
+    if repairs.is_empty() {
+        generated.push_str("    let _ = (rules, applies);\n");
+    } else {
+        for entry in &repairs {
+            let key = config_key_for(&entry.id);
+            let repair = entry.repair.as_ref().unwrap();
+            let rule_mod = rule_mod_for_repair(repair);
+            generated.push_str("    source = apply_rule(\n");
+            generated.push_str("        source,\n");
+            generated.push_str(&format!(
+                "        rules.{key} && applies({rule_mod}::RULE),\n"
+            ));
+            generated.push_str(&format!("        {repair},\n"));
+            generated.push_str("    );\n");
+        }
+    }
+    generated.push_str("    source\n");
+    generated.push_str("}\n");
+
+    let dest = Path::new(out_dir).join("rules_dispatch.rs");
+    fs::write(&dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write generated dispatch to {}: {err}",
+            dest.display()
+        )
+    });
+}
+
+fn compile_generated_rules(manifest_dir: &str, out_dir: &str) {
+    let rules = load_rule_meta(manifest_dir);
+    let dispatch = load_dispatch(manifest_dir);
+    validate_dispatch(&rules, &dispatch);
+    let field_order = default_yaml_rule_order(manifest_dir);
+    let ordered = ordered_rule_meta(&rules, &field_order);
+    compile_rules_struct(out_dir, &ordered);
+    compile_rules_dispatch(out_dir, &dispatch);
 }
