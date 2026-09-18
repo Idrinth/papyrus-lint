@@ -250,6 +250,22 @@ export async function writePscFile(path: string, contents: string): Promise<void
   await invoke("write_psc_file", { path, contents });
 }
 
+// Returns each existing path in `paths`' own last-modified time, as Unix
+// milliseconds, keyed by that same path — a path that no longer exists or
+// can't be read is simply absent from the result. Used by watch mode
+// (`watch.ts`) to poll for changes to the currently loaded `.psc` files.
+// Returns an empty map on failure, the same fallback every other
+// best-effort lookup here uses, rather than surfacing an error for what's
+// just a periodic background poll.
+export async function getPscFileMtimes(paths: string[]): Promise<Record<string, number>> {
+  try {
+    return await invoke<Record<string, number>>("get_psc_file_mtimes", { paths });
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+}
+
 // Fetches every function/property available on an object of type
 // `typeName` (including those inherited via Extends), for the code
 // viewer's `.`-triggered autocompletion. `root` is the project root (see

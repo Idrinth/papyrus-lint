@@ -4,6 +4,7 @@ import { mountFixture } from "./fixture";
 import { cancelLiveEditLint } from "../live-edit";
 import { loadProjectConfig, resetConfirmedProjectDirs } from "../project";
 import { dirnameOf } from "../path";
+import { stopWatchMode } from "../watch";
 
 // Default backend behavior for the project-root discovery commands (see
 // project.ts's projectDirForAchlist/projectDirForDirectory/
@@ -80,9 +81,14 @@ beforeEach(() => {
   // its delay elapses, so it's cancelled up front the same way
   // resetConfirmedProjectDirs above resets other module-level state.
   cancelLiveEditLint();
+  // Likewise for a previous test's watch-mode poll interval (see
+  // startWatchMode in watch.ts), which would otherwise keep firing against
+  // this test's fresh DOM/mocks.
+  stopWatchMode();
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
   cancelLiveEditLint();
+  stopWatchMode();
 });
