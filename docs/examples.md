@@ -220,6 +220,24 @@ always a forgotten `If` rather than something intentional. The
 `Get*` call (or an expression built from one) whose result is discarded
 this way.
 
+The **Discarded nodiscard result** lint (`unused-nodiscard`) is the same
+idea for functions the author marked `; @nodiscard` rather than ones
+named `Get*`. A discarded `RegisterFoo()` whose header carries
+`; @nodiscard` is flagged even though the name is not a getter; a used
+result (`Int id = RegisterFoo()`) is not.
+
+```papyrus
+ScriptName Example
+
+Int Function RegisterFoo() ; @nodiscard
+    Return 1
+EndFunction
+
+Function Test()
+    RegisterFoo()
+EndFunction
+```
+
 ## Silencing a lint for code that's already correct
 
 ```papyrus
