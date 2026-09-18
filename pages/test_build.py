@@ -379,8 +379,14 @@ class BuildTest(unittest.TestCase):
             root = Path(directory)
             pages_dir = root / "pages"
             pages_dir.mkdir()
+            docs_dir = root / "docs"
+            docs_dir.mkdir()
             (root / "README.md").write_text(
                 """## Command-line interface""",
+                encoding="utf-8",
+            )
+            (docs_dir / "papyrus-cli-usage.txt").write_text(
+                "PapyrusLinterCLI fix",
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
@@ -534,12 +540,18 @@ class BuildTest(unittest.TestCase):
             root = Path(directory)
             pages_dir = root / "pages"
             pages_dir.mkdir()
+            docs_dir = root / "docs"
+            docs_dir.mkdir()
             (root / "README.md").write_text(
                 """## Command-line interface
 ```
 command
 ```
 """,
+                encoding="utf-8",
+            )
+            (docs_dir / "papyrus-cli-usage.txt").write_text(
+                "PapyrusLinterCLI fix",
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
@@ -562,12 +574,18 @@ command
             root = Path(directory)
             pages_dir = root / "pages"
             pages_dir.mkdir()
+            docs_dir = root / "docs"
+            docs_dir.mkdir()
             (root / "README.md").write_text(
                 """## Command-line interface
 ```
 command
 ```
 """,
+                encoding="utf-8",
+            )
+            (docs_dir / "papyrus-cli-usage.txt").write_text(
+                "PapyrusLinterCLI fix",
                 encoding="utf-8",
             )
             (pages_dir / "index.template.html").write_text(
