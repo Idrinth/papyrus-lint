@@ -375,8 +375,8 @@
     "severity": "warning",
     "importance": "medium",
     "fixable": false,
-    "description": "Flags a local variable whose name matches (case-insensitively) a Propertydeclared on the same script.",
-    "definition": "Flags a local variable (declared with `Type name = ...` inside a function/event) whose name matches (case-insensitively) a `Property` declared on the same script, since referencing that name inside the function then reads the local rather than the property. When linting a `.psc` file dropped in the app, a local that instead shadows a property declared on a parent script (resolved through `Extends`) is flagged too."
+    "description": "Flags a local variable whose name matches (case-insensitively) a Property or a plain script-level variable declared on the same script.",
+    "definition": "Flags a local variable (declared with `Type name = ...` inside a function/event) whose name matches (case-insensitively) a `Property` or a plain script-level variable (a field, declared without the `Property` keyword) declared on the same script, since referencing that name inside the function then reads the local rather than the property/field. When linting a `.psc` file dropped in the app, a local that instead shadows a property or field declared on a parent script (resolved through `Extends`) is flagged too."
   },
   {
     "id": "parameter-reassignment",

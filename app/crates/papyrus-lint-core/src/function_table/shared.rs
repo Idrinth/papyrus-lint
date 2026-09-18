@@ -49,6 +49,14 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         papyrus_lints::ExternalSignatures::has_property(&mut *table, type_name, property_name)
     }
 
+    fn has_field(&mut self, type_name: &str, field_name: &str) -> bool {
+        let mut table = self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        papyrus_lints::ExternalSignatures::has_field(&mut *table, type_name, field_name)
+    }
+
     fn script_exists(&mut self, type_name: &str) -> bool {
         let mut table = self
             .0

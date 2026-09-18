@@ -21,6 +21,10 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
         self.has_property(type_name, property_name)
     }
 
+    fn has_field(&mut self, type_name: &str, field_name: &str) -> bool {
+        self.has_field(type_name, field_name)
+    }
+
     fn script_exists(&mut self, type_name: &str) -> bool {
         self.script_exists(type_name)
     }

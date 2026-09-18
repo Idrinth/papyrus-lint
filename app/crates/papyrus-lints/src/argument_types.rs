@@ -70,6 +70,20 @@ pub trait ExternalSignatures {
         false
     }
 
+    /// Whether `type_name`'s script, or an ancestor it `Extends` (directly
+    /// or transitively), declares a script-level variable (a plain field,
+    /// not a `Property`) named `field_name`. Both names are matched
+    /// case-insensitively. Used by the "Local variable shadowing" lint
+    /// (`crate::local_variable_shadowing`) to check a local variable
+    /// against a parent script's fields, mirroring [`Self::has_property`]
+    /// above.
+    ///
+    /// The default always says no, which keeps existing behavior for
+    /// callers that can't resolve scripts (see [`NoExternalSignatures`]).
+    fn has_field(&mut self, _type_name: &str, _field_name: &str) -> bool {
+        false
+    }
+
     /// Whether a script named `type_name` can be located at all — either
     /// under the project root or as a known native singleton script (e.g.
     /// `Game`, `Utility`, `Debug`). Used by the "Unresolved script
