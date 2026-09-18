@@ -150,8 +150,7 @@ fn with_known_scripts_does_not_expose_other_files_in_the_same_directory() {
     )
     .expect("failed to write unlisted sibling script");
 
-    let mut table =
-        FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[listed_path]);
+    let table = FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[listed_path]);
 
     assert!(table.script_exists("Listed"));
     assert!(!table.script_exists("Unlisted"));
@@ -219,8 +218,7 @@ fn with_known_scripts_does_not_resolve_an_unlisted_script_under_the_conventional
     write_script(root.path(), "Unlisted", "ScriptName Unlisted\n");
     let listed_path = root.path().join("scripts/source/Listed.psc");
 
-    let mut table =
-        FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[listed_path]);
+    let table = FunctionTable::new(root.path().to_path_buf()).with_known_scripts(&[listed_path]);
 
     assert!(table.script_exists("Listed"));
     assert!(!table.script_exists("Unlisted"));
@@ -298,7 +296,7 @@ fn script_exists_true_for_a_script_found_under_the_project_root() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(root.path(), "Foo", "ScriptName Foo\n");
 
-    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let table = FunctionTable::new(root.path().to_path_buf());
 
     assert!(table.script_exists("Foo"));
     assert!(table.script_exists("foo"));
@@ -308,7 +306,7 @@ fn script_exists_true_for_a_script_found_under_the_project_root() {
 fn script_exists_true_for_a_known_native_singleton_script() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
 
-    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let table = FunctionTable::new(root.path().to_path_buf());
 
     assert!(table.script_exists("Game"));
     assert!(table.script_exists("utility"));
@@ -319,7 +317,7 @@ fn script_exists_true_for_a_known_native_singleton_script() {
 fn script_exists_false_for_a_script_that_cannot_be_found() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
 
-    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let table = FunctionTable::new(root.path().to_path_buf());
 
     assert!(!table.script_exists("MyMissingScript"));
 }

@@ -30,6 +30,24 @@ mod shared;
 
 pub use shared::SharedFunctionTable;
 
+/// Result of answering a lookup from already-cached scripts, without
+/// filling the table. [`Self::Miss`] means a caller that can write should
+/// run [`FunctionTable::ensure_loaded`] and retry; [`Self::Hit`] is the
+/// complete answer from current cache contents.
+pub(super) enum CacheProbe<T> {
+    Hit(T),
+    Miss,
+}
+
+impl<T> CacheProbe<T> {
+    fn map<U>(self, f: impl FnOnce(T) -> U) -> CacheProbe<U> {
+        match self {
+            CacheProbe::Hit(value) => CacheProbe::Hit(f(value)),
+            CacheProbe::Miss => CacheProbe::Miss,
+        }
+    }
+}
+
 /// Lazily-populated, cross-file lookup table of function signatures, keyed
 /// by object (script) type name.
 ///

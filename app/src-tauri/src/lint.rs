@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
 use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{
@@ -13,9 +13,10 @@ use serde::{Deserialize, Serialize};
 
 /// Identity of one desktop-app [`function_table::FunctionTable`]: project
 /// root plus the two configured search-root lists. Concurrent Tauri
-/// commands for the same project reuse one `Mutex`-guarded table through
+/// commands for the same project reuse one `RwLock`-guarded table through
 /// [`function_table::SharedFunctionTable`], matching the CLI's `--threads`
-/// workers rather than building an empty table per file.
+/// workers rather than building an empty table per file. The exclusive lock
+/// is taken only when a lookup still has to parse a script.
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct SharedTableKey {
     root: PathBuf,
@@ -24,9 +25,9 @@ struct SharedTableKey {
 }
 
 fn shared_tables(
-) -> &'static Mutex<HashMap<SharedTableKey, Arc<Mutex<function_table::FunctionTable>>>> {
+) -> &'static Mutex<HashMap<SharedTableKey, Arc<RwLock<function_table::FunctionTable>>>> {
     static TABLES: OnceLock<
-        Mutex<HashMap<SharedTableKey, Arc<Mutex<function_table::FunctionTable>>>>,
+        Mutex<HashMap<SharedTableKey, Arc<RwLock<function_table::FunctionTable>>>>,
     > = OnceLock::new();
     TABLES.get_or_init(|| Mutex::new(HashMap::new()))
 }
@@ -35,7 +36,7 @@ pub(crate) fn project_function_table(
     root: String,
     additional_roots: Vec<String>,
     lookup_roots: Vec<String>,
-) -> Arc<Mutex<function_table::FunctionTable>> {
+) -> Arc<RwLock<function_table::FunctionTable>> {
     let key = SharedTableKey {
         root: PathBuf::from(&root),
         additional_roots: additional_roots.clone(),
@@ -47,7 +48,7 @@ pub(crate) fn project_function_table(
     cache
         .entry(key)
         .or_insert_with(|| {
-            Arc::new(Mutex::new(
+            Arc::new(RwLock::new(
                 function_table::FunctionTable::new_with_additional_roots(
                     PathBuf::from(root),
                     additional_roots,
@@ -56,14 +57,6 @@ pub(crate) fn project_function_table(
             ))
         })
         .clone()
-}
-
-fn lock_function_table(
-    table: &Mutex<function_table::FunctionTable>,
-) -> std::sync::MutexGuard<'_, function_table::FunctionTable> {
-    table
-        .lock()
-        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 /// Project-level inputs shared by [`lint_psc_file`] and the mutating repair
@@ -98,7 +91,7 @@ pub(crate) struct ProjectLintContext {
 }
 
 impl ProjectLintContext {
-    pub(crate) fn function_table(&self) -> Arc<Mutex<function_table::FunctionTable>> {
+    pub(crate) fn function_table(&self) -> Arc<RwLock<function_table::FunctionTable>> {
         project_function_table(
             self.root.clone(),
             self.additional_roots.clone(),
@@ -244,8 +237,7 @@ pub(crate) fn list_script_members(
     lookup_roots: Vec<String>,
 ) -> Vec<function_table::Member> {
     let function_table = project_function_table(root, additional_roots, lookup_roots);
-    let members = lock_function_table(function_table.as_ref()).list_members(&type_name);
-    members
+    function_table::SharedFunctionTable(function_table.as_ref()).list_members(&type_name)
 }
 
 #[cfg(test)]

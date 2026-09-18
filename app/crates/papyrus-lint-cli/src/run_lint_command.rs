@@ -10,6 +10,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
+use std::sync::RwLock;
 
 use papyrus_lint_core::function_table::FunctionTable;
 use papyrus_lint_core::source_encoding::read_psc_source_with_encoding;
@@ -174,19 +175,19 @@ fn process_scripts<'a>(
 /// Every script is otherwise independent, so this table's own cache (of
 /// other scripts' cross-referenced signatures) is the only thing
 /// `--threads` workers actually share -- through `SharedFunctionTable`,
-/// which locks it only for the duration of a single lookup rather than a
-/// whole script's lint pass. Progress ("--progress") is likewise reported
+/// which takes a write lock only when a lookup still has to fill the
+/// cache, and a shared read lock for cache hits. Progress ("--progress") is likewise reported
 /// through a shared counter rather than each worker's own position in
 /// `script_paths`, since completion order no longer matches input order
 /// once more than one thread is involved -- the final report still is, via
 /// `map_in_parallel`'s ordering guarantee.
 fn share_function_table(
     function_table: FunctionTable,
-) -> (PathBuf, Vec<String>, Mutex<FunctionTable>) {
+) -> (PathBuf, Vec<String>, RwLock<FunctionTable>) {
     (
         function_table.root().to_path_buf(),
         function_table.additional_roots().to_vec(),
-        Mutex::new(function_table),
+        RwLock::new(function_table),
     )
 }
 

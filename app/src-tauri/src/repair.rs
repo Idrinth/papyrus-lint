@@ -1,7 +1,7 @@
 //! Repair, preview-repair, and per-line disable-comment commands.
 
 use std::path::Path;
-use std::sync::Mutex;
+use std::sync::RwLock;
 
 use papyrus_lint_core::ast_cache;
 use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
@@ -21,7 +21,7 @@ fn write_prime_and_relint(
     updated: &str,
     encoding: PscEncoding,
     context: &ProjectLintContext,
-    function_table: &Mutex<FunctionTable>,
+    function_table: &RwLock<FunctionTable>,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     if updated != original {
         write_psc_source(path, updated, encoding).map_err(|err| err.to_string())?;

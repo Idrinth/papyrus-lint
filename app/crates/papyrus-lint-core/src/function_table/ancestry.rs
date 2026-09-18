@@ -3,8 +3,18 @@
 
 use std::collections::HashSet;
 
-use super::FunctionTable;
-use crate::script_functions::{FunctionSignature, Member};
+use super::{CacheProbe, FunctionTable};
+use crate::script_functions::{FunctionSignature, Member, ScriptFunctions};
+
+fn cached_script<'a>(
+    table: &'a FunctionTable,
+    name: &str,
+) -> CacheProbe<Option<&'a ScriptFunctions>> {
+    match table.get_cached(name) {
+        None => CacheProbe::Miss,
+        Some(slot) => CacheProbe::Hit(slot.as_ref()),
+    }
+}
 
 impl FunctionTable {
     /// Looks up the signature of `function_name` as callable on an object
@@ -320,6 +330,216 @@ impl FunctionTable {
             .values()
             .map(|property| property.type_name.name.clone())
             .collect()
+    }
+
+    pub(super) fn lookup_function_cached(
+        &self,
+        type_name: &str,
+        function_name: &str,
+    ) -> CacheProbe<Option<FunctionSignature>> {
+        let function_key = function_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break;
+            }
+            let script = match cached_script(self, &name) {
+                CacheProbe::Miss => return CacheProbe::Miss,
+                CacheProbe::Hit(None) => return CacheProbe::Hit(None),
+                CacheProbe::Hit(Some(script)) => script,
+            };
+            if let Some(signature) = script.functions.get(&function_key) {
+                return CacheProbe::Hit(Some(signature.clone()));
+            }
+            current = script.extends.clone();
+            visited.push(name);
+        }
+
+        CacheProbe::Hit(None)
+    }
+
+    pub(super) fn is_subtype_cached(&self, sub_type: &str, super_type: &str) -> CacheProbe<bool> {
+        let super_lower = super_type.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(sub_type.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if name == super_lower {
+                return CacheProbe::Hit(true);
+            }
+            if visited.contains(&name) {
+                break;
+            }
+            current = match cached_script(self, &name) {
+                CacheProbe::Miss => return CacheProbe::Miss,
+                CacheProbe::Hit(Some(script)) => script
+                    .extends
+                    .as_ref()
+                    .map(|parent| parent.to_ascii_lowercase()),
+                CacheProbe::Hit(None) => crate::native_types::parent_of(&name).map(str::to_string),
+            };
+            visited.push(name);
+        }
+
+        CacheProbe::Hit(false)
+    }
+
+    pub(super) fn ancestry_fully_known_cached(&self, type_name: &str) -> CacheProbe<bool> {
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                return CacheProbe::Hit(false);
+            }
+            current = match cached_script(self, &name) {
+                CacheProbe::Miss => return CacheProbe::Miss,
+                CacheProbe::Hit(Some(script)) => match &script.extends {
+                    Some(parent) => Some(parent.to_ascii_lowercase()),
+                    None => return CacheProbe::Hit(true),
+                },
+                CacheProbe::Hit(None) => match crate::native_types::parent_of(&name) {
+                    Some(parent) => Some(parent.to_string()),
+                    None => return CacheProbe::Hit(crate::native_types::is_known(&name)),
+                },
+            };
+            visited.push(name);
+        }
+
+        CacheProbe::Hit(false)
+    }
+
+    pub(super) fn has_property_cached(
+        &self,
+        type_name: &str,
+        property_name: &str,
+    ) -> CacheProbe<bool> {
+        self.has_member_cached(type_name, |script| {
+            script
+                .properties
+                .contains_key(&property_name.to_ascii_lowercase())
+        })
+    }
+
+    pub(super) fn has_field_cached(&self, type_name: &str, field_name: &str) -> CacheProbe<bool> {
+        self.has_member_cached(type_name, |script| {
+            script.variables.contains(&field_name.to_ascii_lowercase())
+        })
+    }
+
+    pub(super) fn has_state_cached(&self, type_name: &str, state_name: &str) -> CacheProbe<bool> {
+        self.has_member_cached(type_name, |script| {
+            script.states.contains_key(&state_name.to_ascii_lowercase())
+        })
+    }
+
+    fn has_member_cached(
+        &self,
+        type_name: &str,
+        found: impl Fn(&ScriptFunctions) -> bool,
+    ) -> CacheProbe<bool> {
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break;
+            }
+            let script = match cached_script(self, &name) {
+                CacheProbe::Miss => return CacheProbe::Miss,
+                CacheProbe::Hit(None) => return CacheProbe::Hit(false),
+                CacheProbe::Hit(Some(script)) => script,
+            };
+            if found(script) {
+                return CacheProbe::Hit(true);
+            }
+            current = script.extends.clone();
+            visited.push(name);
+        }
+
+        CacheProbe::Hit(false)
+    }
+
+    pub(super) fn ancestor_states_cached(
+        &self,
+        type_name: &str,
+    ) -> CacheProbe<Vec<(String, bool)>> {
+        let mut result = Vec::new();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break;
+            }
+            let script = match cached_script(self, &name) {
+                CacheProbe::Miss => return CacheProbe::Miss,
+                CacheProbe::Hit(None) => break,
+                CacheProbe::Hit(Some(script)) => script,
+            };
+            result.extend(
+                script
+                    .states
+                    .iter()
+                    .map(|(state, &is_auto)| (state.clone(), is_auto)),
+            );
+            current = script
+                .extends
+                .as_ref()
+                .map(|parent| parent.to_ascii_lowercase());
+            visited.push(name);
+        }
+
+        CacheProbe::Hit(result)
+    }
+
+    pub(super) fn list_members_cached(&self, type_name: &str) -> CacheProbe<Vec<Member>> {
+        let mut seen = HashSet::new();
+        let mut members = Vec::new();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break;
+            }
+            let script = match cached_script(self, &name) {
+                CacheProbe::Miss => return CacheProbe::Miss,
+                CacheProbe::Hit(None) => break,
+                CacheProbe::Hit(Some(script)) => script,
+            };
+            for signature in script.functions.values() {
+                if seen.insert(signature.name.to_ascii_lowercase()) {
+                    members.push(Member::Function(signature.clone()));
+                }
+            }
+            for signature in script.properties.values() {
+                if seen.insert(signature.name.to_ascii_lowercase()) {
+                    members.push(Member::Property(signature.clone()));
+                }
+            }
+            current = script.extends.clone();
+            visited.push(name);
+        }
+
+        CacheProbe::Hit(members)
+    }
+
+    pub(super) fn property_types_cached(&self, type_name: &str) -> CacheProbe<Vec<String>> {
+        let name_lower = type_name.to_ascii_lowercase();
+        match cached_script(self, &name_lower) {
+            CacheProbe::Miss => CacheProbe::Miss,
+            CacheProbe::Hit(None) => CacheProbe::Hit(Vec::new()),
+            CacheProbe::Hit(Some(script)) => CacheProbe::Hit(
+                script
+                    .properties
+                    .values()
+                    .map(|property| property.type_name.name.clone())
+                    .collect(),
+            ),
+        }
     }
 }
 

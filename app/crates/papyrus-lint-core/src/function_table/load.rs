@@ -84,7 +84,7 @@ impl FunctionTable {
     /// scanned. Matched case-insensitively. Used by the "Unresolved script
     /// reference" lint (`papyrus_lints::unresolved_script`) to flag a call
     /// like `MyMissingScript.DoThing()`.
-    pub fn script_exists(&mut self, type_name: &str) -> bool {
+    pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
             || crate::native_globals::is_known(&name_lower)
@@ -168,6 +168,17 @@ impl FunctionTable {
 
         self.scripts.insert(name_lower.to_string(), script);
         self.script_mtimes.insert(name_lower.to_string(), mtime);
+    }
+
+    /// Cached slot for `name` when it is still valid for the file's current
+    /// mtime. `None` means a writer must call [`Self::ensure_loaded`].
+    /// `Some(None)` is a cached unresolved type.
+    pub(super) fn get_cached(&self, name: &str) -> Option<&Option<ScriptFunctions>> {
+        let resolved = self.resolve_script_path_kind(name);
+        let mtime = resolved
+            .as_ref()
+            .and_then(|(path, _)| file_mtime_secs(path));
+        (self.script_mtimes.get(name) == Some(&mtime)).then(|| self.scripts.get(name))?
     }
 }
 

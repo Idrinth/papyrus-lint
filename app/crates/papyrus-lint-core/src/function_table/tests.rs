@@ -26,7 +26,7 @@ fn known_scripts_ignore_paths_whose_file_stem_is_not_utf8() {
     let valid_path = root.path().join("Example.psc");
     fs::write(&valid_path, "ScriptName Example\n").expect("failed to write valid script");
 
-    let mut table = FunctionTable::new(root.path().to_path_buf())
+    let table = FunctionTable::new(root.path().to_path_buf())
         .with_known_scripts(&[invalid_path, valid_path]);
 
     assert!(table.script_exists("Example"));
