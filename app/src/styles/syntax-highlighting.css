@@ -1,0 +1,21 @@
+.cm-comment {
+  color: var(--code-comment);
+  font-style: italic;
+}
+
+.cm-string {
+  color: var(--code-string);
+}
+
+.cm-number {
+  color: var(--code-number);
+}
+
+.cm-keyword {
+  color: var(--code-keyword);
+  font-weight: 600;
+}
+
+.cm-type {
+  color: var(--code-type);
+}

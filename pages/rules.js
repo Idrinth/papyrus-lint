@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  document.addEventListener("DOMContentLoaded", function () {
+  function init() {
     var table = document.getElementById("rules-table");
     if (!table) {
       return;
@@ -68,5 +68,11 @@
     }
 
     applyFilters();
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();
