@@ -85,9 +85,9 @@ CI treats clippy warnings as errors.
    every other consumer generates from. Nothing else is hand-edited from
    it: `build.rs` compiles `app/crates/papyrus-lints`'s
    `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` (`src/registry.rs`), `RULE_TAGS`
-   (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), and the
-   `collect_diagnostics`/`apply_repairs` dispatch
-   from it at build time; `pages/build.py` generates the
+   (`src/tags.rs`), `Rules`/`default_rules()` (`src/config.rs`), the
+   `collect_diagnostics`/`apply_repairs` dispatch, and each rule's `mod`
+   in `src/lib.rs` from it at build time; `pages/build.py` generates the
    website's searchable `rules.html` straight from it; and release tooling
    fills in `docs/nexuspage.bbcode`'s five lint tables from it (see
    Releases in `docs/agent/releases.md`) — the checked-in file carries no
@@ -110,9 +110,9 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
 1. `app/crates/papyrus-lints/src/<rule>.rs` — `check(source, ast, tokens,
    config, external)` (and optional `repair(source, ast, tokens, config)`);
    put its tests in a sibling `<rule>_tests.rs`, included via
-   `#[cfg(test)] #[path = "<rule>_tests.rs"] mod tests;`.
-2. `app/crates/papyrus-lints/src/lib.rs` — `mod`.
-3. `shared/rules.json` — a new entry: `id`, `name`, `definition` (the long,
+   `#[cfg(test)] #[path = "<rule>_tests.rs"] mod tests;`. `build.rs`
+   generates the `mod` in `src/lib.rs` from the `shared/rules.json` entry.
+2. `shared/rules.json` — a new entry: `id`, `name`, `definition` (the long,
    README-style description), a short `description` blurb matching
    `docs/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
    `Performance`, `Reliability`, `Bugprone`, `Other`), `tags`,
@@ -122,9 +122,9 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    is needed here — that happens at release time (see Releases in
    `docs/agent/releases.md`). `build.rs` generates
    `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
-   `RULE_TAGS`, `config.rs`'s `Rules`/`default_rules()`, and
-   `collect_diagnostics`/`apply_repairs` from this file at build time — don't
-   hand-edit those;
+   `RULE_TAGS`, `config.rs`'s `Rules`/`default_rules()`,
+   `collect_diagnostics`/`apply_repairs`, and `lib.rs`'s rule `mod`s from
+   this file at build time — don't hand-edit those;
    `doc_url()` links straight to `rules.html#rule-<rule>`, derived from
    the rule id alone, so it needs no separate slug field either. A new
    `"low"` importance rule is turned off by default in the generated
@@ -132,7 +132,7 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    add `"kept_in_standard": true` to its entry only if it belongs with the
    handful of cheap, auto-fixable formatting rules `standard` keeps on
    regardless.
-4. `README.md`'s "Implemented Lints" section — add a one-line mention
+3. `README.md`'s "Implemented Lints" section — add a one-line mention
    under the matching category blurb only if the category's own summary
    no longer describes what the new rule does; the per-rule reference
    lives on `rules.html`, not in the README.
@@ -151,8 +151,8 @@ If the rule introduces a new *kind* keyword (not `style` /
 - README lint tables → `shared/rules.json` (rule 4). `shared/rules.json` →
   `docs/nexuspage.bbcode`'s lint tables (filled in at release time, never
   checked in — see Releases in `docs/agent/releases.md`) and
-  `papyrus-lints`'s `registry.rs`/`tags.rs` (via `build.rs`) — all
-  generated, never hand-edited.
+  `papyrus-lints`'s `registry.rs`/`tags.rs`/`lib.rs` rule `mod`s (via
+  `build.rs`) — all generated, never hand-edited.
 - `docs/cli.md`/`docs/configuration.md` CLI usage / default config →
   `docs/nexuspage.bbcode` CLI or configuration section (hand-edited; not
   covered by the generator above). Other README/`docs/*.md` edits do not

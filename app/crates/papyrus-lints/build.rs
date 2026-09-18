@@ -1,4 +1,5 @@
-//! Generates the lint crate's static data, configuration, and dispatch code.
+//! Generates the lint crate's static data, configuration, dispatch code,
+//! and rule `mod` declarations.
 
 mod build_support;
 
