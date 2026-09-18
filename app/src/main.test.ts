@@ -165,10 +165,11 @@ describe("showError / clearError / showResult", () => {
     await pending;
 
     document.querySelector<HTMLButtonElement>(".achlist-result__view-button")!.click();
-    await Promise.resolve();
-    await Promise.resolve();
 
     const dialog = document.querySelector<HTMLDialogElement>("#code-viewer")!;
+    await vi.waitFor(() => {
+      expect(document.querySelector("#code-viewer-line-1")).not.toBeNull();
+    });
     expect(dialog.hasAttribute("open")).toBe(true);
     expect(document.querySelector("#code-viewer-title")!.textContent).toBe("one.psc");
     expect(document.querySelector("#code-viewer-line-1")!.classList.contains("code-viewer__line--warning")).toBe(
