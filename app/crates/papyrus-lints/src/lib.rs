@@ -1,9 +1,13 @@
 //! Lint rules for Bethesda's Papyrus scripting language.
 //!
-//! Each rule inspects raw Papyrus source text and reports [`Diagnostic`]s
-//! for lines that violate it. Rules work on the source text directly
-//! (rather than the parsed AST) so they still run on scripts that don't
-//! parse cleanly.
+//! Each rule inspects Papyrus source and reports [`Diagnostic`]s for lines
+//! that violate it. Formatting/spacing rules (e.g. [`trailing_whitespace`],
+//! [`comma_spacing`], [`semicolon`]) work on the raw source text directly so
+//! they still run on scripts that don't parse cleanly. Most rules, though,
+//! need more structure than that to say anything useful (e.g.
+//! [`argument_types`], [`unused_local_variable`]) and parse `source` into
+//! `papyrus_parser`'s AST themselves; those simply report nothing for a
+//! script that fails to parse rather than guessing at its structure.
 
 mod actor_value;
 mod argument_naming;
