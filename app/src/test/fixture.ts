@@ -86,6 +86,7 @@ export const FIXTURE_HTML = `
           <input type="checkbox" id="rule-forbidden_functions" checked />
           <input type="checkbox" id="rule-slow_functions" checked />
           <input type="checkbox" id="rule-unused_getter" checked />
+          <input type="checkbox" id="rule-unused_nodiscard" checked />
           <input type="checkbox" id="rule-unused_property" checked />
           <input type="checkbox" id="rule-semicolon" checked />
           <input type="checkbox" id="rule-float_int_conversion" checked />

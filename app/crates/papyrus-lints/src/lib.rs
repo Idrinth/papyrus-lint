@@ -89,6 +89,7 @@ mod unreachable_statement;
 mod unresolved_script;
 mod unused_disable;
 mod unused_getter;
+mod unused_nodiscard;
 mod unused_import;
 mod unused_local_variable;
 mod unused_property;

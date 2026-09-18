@@ -44,6 +44,7 @@ fn all_rules_default_to_enabled() {
     assert!(config.rules.formid_hex_notation);
     assert!(config.rules.slow_functions);
     assert!(config.rules.unused_getter);
+    assert!(config.rules.unused_nodiscard);
     assert!(config.rules.unused_property);
     assert!(config.rules.semicolon);
     assert!(config.rules.float_int_conversion);

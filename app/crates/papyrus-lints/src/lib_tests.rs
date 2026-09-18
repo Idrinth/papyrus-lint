@@ -642,6 +642,12 @@ fn each_rule_flag_gates_only_its_own_lint() {
                 config_with(|c| c.rules.unused_getter = false),
             ),
             (
+                "ScriptName Example\n\nInt Function RegisterFoo() ; @nodiscard\n    Return 1\nEndFunction\n\nFunction Test()\n    RegisterFoo()\nEndFunction\n",
+                unused_nodiscard::RULE,
+                Config::default(),
+                config_with(|c| c.rules.unused_nodiscard = false),
+            ),
+            (
                 "ScriptName Example\n\nInt Property MyValue = 1 Auto\n\nFunction DoThing()\nEndFunction\n",
                 unused_property::RULE,
                 Config::default(),
