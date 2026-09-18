@@ -1,4 +1,5 @@
 use super::*;
+use crate::lint::ProjectLintContext;
 use tempfile::tempdir;
 
 #[cfg(unix)]
@@ -16,12 +17,10 @@ fn repair_psc_file_persists_fixes_and_returns_only_remaining_findings() {
 
     let diagnostics = repair_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -55,12 +54,10 @@ fn repair_psc_file_removes_an_unused_import_resolved_through_the_project() {
 
     let diagnostics = repair_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -204,12 +201,10 @@ fn repair_psc_finding_fixes_only_the_named_rule_on_the_given_line() {
 
     let diagnostics = repair_psc_finding(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "comma-spacing".to_string(),
         3,
     )
@@ -246,12 +241,10 @@ fn repair_psc_finding_rejects_removing_an_unused_import_since_it_shifts_the_line
 
     let error = repair_psc_finding(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "unused-import".to_string(),
         3,
     )
@@ -272,12 +265,11 @@ fn repair_psc_finding_rejects_a_fix_that_would_change_the_line_count() {
 
     let error = repair_psc_finding(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
         "property-sorting".to_string(),
         4,
     )
@@ -299,12 +291,10 @@ fn repair_psc_file_rule_fixes_every_occurrence_of_the_named_rule_and_leaves_othe
 
     let diagnostics = repair_psc_file_rule(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "trailing-whitespace".to_string(),
     )
     .unwrap();
@@ -339,12 +329,10 @@ fn repair_psc_file_rule_removes_an_unused_import_resolved_through_the_project() 
 
     let diagnostics = repair_psc_file_rule(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "unused-import".to_string(),
     )
     .unwrap();
@@ -372,24 +360,20 @@ fn targeted_repairs_leave_a_clean_file_untouched() {
 
     let finding_diagnostics = repair_psc_finding(
         path_string.clone(),
-        root.clone(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: root.clone(),
+            ..Default::default()
+        },
         "trailing-whitespace".to_string(),
         1,
     )
     .unwrap();
     let file_diagnostics = repair_psc_file_rule(
         path_string,
-        root,
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root,
+            ..Default::default()
+        },
         "trailing-whitespace".to_string(),
     )
     .unwrap();
@@ -407,12 +391,10 @@ fn add_disable_comment_to_psc_line_adds_the_directive_and_relints() {
 
     let diagnostics = add_disable_comment_to_psc_line(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         vec!["comma-spacing".to_string()],
         1,
     )
@@ -435,12 +417,10 @@ fn add_disable_comment_to_psc_line_leaves_the_file_untouched_for_an_empty_rule_l
 
     add_disable_comment_to_psc_line(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         Vec::new(),
         1,
     )
@@ -458,37 +438,31 @@ fn targeted_repair_commands_report_io_errors_without_creating_a_file() {
 
     assert!(repair_psc_finding(
         path.clone(),
-        root.clone(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: root.clone(),
+            ..Default::default()
+        },
         "trailing-whitespace".to_string(),
-        1,
+        1
     )
     .is_err());
     assert!(repair_psc_file_rule(
         path.clone(),
-        root.clone(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
-        "trailing-whitespace".to_string(),
+        ProjectLintContext {
+            root: root.clone(),
+            ..Default::default()
+        },
+        "trailing-whitespace".to_string()
     )
     .is_err());
     assert!(add_disable_comment_to_psc_line(
         path,
-        root,
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root,
+            ..Default::default()
+        },
         vec!["trailing-whitespace".to_string()],
-        1,
+        1
     )
     .is_err());
     assert!(!missing.exists());
@@ -503,12 +477,10 @@ fn repair_does_not_rewrite_an_already_clean_file() {
 
     let diagnostics = repair_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -530,12 +502,10 @@ fn repair_psc_file_preserves_a_cp1252_encoded_files_encoding() {
 
     repair_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -555,12 +525,10 @@ fn targeted_repairs_preserve_a_cp1252_encoded_files_encoding() {
 
     repair_psc_finding(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "trailing-whitespace".to_string(),
         1,
     )
@@ -573,12 +541,10 @@ fn targeted_repairs_preserve_a_cp1252_encoded_files_encoding() {
     std::fs::write(&path, &source).unwrap();
     repair_psc_file_rule(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         "trailing-whitespace".to_string(),
     )
     .unwrap();
@@ -604,12 +570,11 @@ fn repair_psc_file_removes_an_unused_import_from_an_additional_script_root() {
 
     let diagnostics = repair_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        vec![extra.path().to_string_lossy().into_owned()],
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            additional_roots: vec![extra.path().to_string_lossy().into_owned()],
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -632,12 +597,10 @@ fn add_disable_comment_to_psc_line_covers_multiple_rules_and_merges_into_an_exis
 
     add_disable_comment_to_psc_line(
         path_string.clone(),
-        root.clone(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: root.clone(),
+            ..Default::default()
+        },
         vec![
             "comma-spacing".to_string(),
             "trailing-whitespace".to_string(),
@@ -652,12 +615,10 @@ fn add_disable_comment_to_psc_line_covers_multiple_rules_and_merges_into_an_exis
 
     let diagnostics = add_disable_comment_to_psc_line(
         path_string,
-        root,
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root,
+            ..Default::default()
+        },
         vec!["trailing-whitespace".to_string()],
         1,
     )
@@ -682,12 +643,10 @@ fn add_disable_comment_to_psc_line_preserves_a_cp1252_encoded_files_encoding() {
 
     add_disable_comment_to_psc_line(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        papyrus_lints::Config::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
         vec!["comma-spacing".to_string()],
         1,
     )
@@ -718,12 +677,12 @@ fn repair_psc_file_merges_in_compiler_reported_errors_when_enabled() {
 
     let diagnostics = repair_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        compiler_path.to_string_lossy().into_owned(),
-        true,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            compiler_path: compiler_path.to_string_lossy().into_owned(),
+            compile_check: true,
+            ..Default::default()
+        },
     )
     .unwrap();
 
