@@ -20,6 +20,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "invalid-random-range";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// The native `Utility` singleton functions this lint checks, both only
 /// ever called through that literal script name (see
 /// `shared/rules/data/native-globals.yaml`), the same way [`crate::short_wait_interval`]

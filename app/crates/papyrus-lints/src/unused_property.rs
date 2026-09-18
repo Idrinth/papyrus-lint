@@ -14,6 +14,11 @@ use papyrus_parser::token::{Keyword, Token, TokenKind};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-property";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Checks `source` for `Property` declarations whose name is never used
 /// anywhere else in the script. Flagged as a `[warning]`.
 pub fn check(

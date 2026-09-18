@@ -30,6 +30,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "property-sorting";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for properties that either aren't sorted by type and
 /// then alphabetically by name, or aren't declared immediately after the
 /// `ScriptName` line (before any variable, function, or state

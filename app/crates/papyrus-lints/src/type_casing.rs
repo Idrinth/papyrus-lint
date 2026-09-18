@@ -20,6 +20,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "type-casing";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// The supported casing conventions for a script's declared type name.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum Style {

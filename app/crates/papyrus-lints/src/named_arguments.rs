@@ -21,6 +21,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "named-arguments";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// How strongly this lint prefers named arguments over positional ones.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

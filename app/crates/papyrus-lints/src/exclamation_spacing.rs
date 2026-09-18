@@ -8,6 +8,11 @@ use papyrus_parser::token::TokenKind;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "exclamation-spacing";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Checks for a `!` negation operator (never `!=`, which the lexer tokenizes
 /// separately) whose following characters, on the same line, aren't exactly
 /// one plain space. Always reported as a `[warning]`. A `!` on a line

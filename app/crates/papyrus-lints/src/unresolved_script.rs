@@ -27,6 +27,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unresolved-script";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for calls through a script name that can't be
 /// resolved. Since this crate has no filesystem access on its own, no
 /// script can ever be confirmed missing this way; see [`check_with`] to

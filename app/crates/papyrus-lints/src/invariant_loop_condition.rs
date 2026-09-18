@@ -35,6 +35,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "invariant-loop-condition";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks every `While` loop in `source` for a condition that can never
 /// change across iterations, per the module documentation above.
 pub fn check(

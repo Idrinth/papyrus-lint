@@ -21,6 +21,11 @@ use crate::{fragment_code, Diagnostic};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-local-variable";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for local variable declarations whose value is never
 /// read anywhere in their enclosing function. Flagged as a `[warning]`.
 ///

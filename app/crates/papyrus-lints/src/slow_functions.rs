@@ -25,6 +25,11 @@ include!(concat!(env!("OUT_DIR"), "/slow_functions_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "slow-functions";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Checks `source` for calls to functions with a faster equivalent.
 ///
 /// A call site is any identifier immediately followed by `(`. The lexer

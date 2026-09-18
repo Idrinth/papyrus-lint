@@ -31,6 +31,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "formid-hex-notation";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Checks `source` for a non-hexadecimal FormID literal compared against
 /// `GetFormID()` or passed to `Game.GetFormFromFile`.
 pub fn check(

@@ -22,6 +22,11 @@ use crate::{fragment_code, Diagnostic};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "local-variable-shadowing";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for local variables that shadow a property or field
 /// declared on the same script. Shadowing a property or field declared on
 /// a parent script isn't checked this way, since resolving parent scripts

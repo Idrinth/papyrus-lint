@@ -28,6 +28,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "int-division-to-float";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 const MESSAGE: &str = "Int/Int division truncates its result before it widens into a Float; \
                         write one operand as a Float (e.g. 1.0 / x) to keep the fractional result";
 

@@ -22,6 +22,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "missing-doc-comment";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for a script header, `Property`, or `Function`/`Event`
 /// declaration with no `{ ... }` documentation comment on the line right
 /// after it. A script that doesn't parse cleanly is left unchecked rather

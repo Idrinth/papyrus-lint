@@ -8,6 +8,11 @@ use crate::{fragment_code, Diagnostic};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "indentation";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// The indentation unit to use for each level of nesting.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize)]
 pub enum Indentation {

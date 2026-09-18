@@ -52,6 +52,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "variable-used-before-assignment";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// The implicit default value Papyrus gives an unassigned local, grouped by
 /// which literal spells it: `Int`/`Float`/`Bool`/`String` locals default to
 /// `0`/`0.0`/`False`/`""` respectively, while every other type (object

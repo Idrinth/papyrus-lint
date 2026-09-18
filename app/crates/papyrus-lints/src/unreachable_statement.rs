@@ -12,6 +12,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unreachable-statement";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for statements that follow a `Return` in the same
 /// block (a function/event body, an `If`/`ElseIf`/`Else` branch, or a
 /// `While` body). Flagged as a `[warning]`.

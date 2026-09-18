@@ -22,6 +22,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "array-size-range";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// The maximum number of elements an array created by a script (via `New`
 /// or grown with `Add()`) can hold, per the CreationKit wiki's [Arrays
 /// (Papyrus)](https://ck.uesp.net/wiki/Arrays_(Papyrus)) page.

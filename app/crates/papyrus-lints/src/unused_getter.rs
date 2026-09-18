@@ -6,6 +6,11 @@ use papyrus_parser::token::{Token, TokenKind};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-getter";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::tokens()
+}
+
 /// Checks for calls whose function name begins with `Get` and whose result is
 /// discarded rather than assigned, returned, or used by another expression.
 /// Flagged as a `[warning]`.

@@ -17,6 +17,11 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "readonly-property-write";
 
+#[allow(dead_code)] // not dispatched from collect_diagnostics yet
+pub fn visitor() -> crate::visitor::LintVisitor {
+    crate::visitor::LintVisitor::ast()
+}
+
 /// Checks `source` for an assignment (`=`, `+=`, `-=`, ...) targeting a
 /// script-level property declared `AutoReadOnly`, either by its bare name
 /// or as `Self.PropertyName`. A bare name shadowed by a same-named local
