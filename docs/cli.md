@@ -164,9 +164,13 @@ flag above), the plain-text report's diagnostic locations, rule tags, and
 and the summary line is colorized green/yellow/red for no problems/problems
 that didn't fail the run/problems that did. `auto` colorizes only when
 stdout is a real terminal, `--output` isn't used (a file is never a
-terminal), and the `NO_COLOR` environment variable isn't set; `always`/
-`never` override that detection outright. `--json` output is never
-colorized, since it's meant for tooling rather than a terminal.
+terminal), and the environment allows it under the
+[NO_COLOR](https://no-color.org/) /
+[CLICOLOR](https://bixense.com/clicolors/) conventions (`NO_COLOR` or
+`CLICOLOR=0` disable auto color; `CLICOLOR_FORCE` enables it even when
+stdout is not a TTY); `always`/`never` override that detection outright.
+`--json` output is never colorized, since it's meant for tooling rather
+than a terminal.
 
 Given `--threads <n>` (combinable with every flag above), up to `<n>`
 scripts are read, fixed, and linted at once instead of one at a time —

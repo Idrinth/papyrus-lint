@@ -22,6 +22,16 @@ pub enum ColorChoice {
 /// Resolves whether the plain-text report should actually be colorized,
 /// given `--color <when>`, whether the report is being redirected to a file
 /// via `--output` (never a terminal), and whether stdout itself is one.
+///
+/// `--color always` / `--color never` win outright. `--color auto` follows
+/// the [NO_COLOR](https://no-color.org/) and
+/// [CLICOLOR](https://bixense.com/clicolors/) conventions, implemented by
+/// [`anstyle_query`] (the same lookups clap/anstream use) rather than a
+/// hand-rolled `NO_COLOR` check:
+///
+/// - a non-empty `CLICOLOR_FORCE` enables color even when stdout is not a TTY
+/// - a non-empty `NO_COLOR`, or `CLICOLOR=0`, disables auto color
+/// - otherwise color only when stdout is a terminal and `--output` is not used
 pub fn resolve_color(
     color_choice: ColorChoice,
     output_path: Option<&std::path::Path>,
@@ -30,10 +40,21 @@ pub fn resolve_color(
     match color_choice {
         ColorChoice::Always => true,
         ColorChoice::Never => false,
-        ColorChoice::Auto => {
-            output_path.is_none() && stdout_is_terminal && std::env::var_os("NO_COLOR").is_none()
-        }
+        ColorChoice::Auto => auto_color(output_path.is_none(), stdout_is_terminal),
     }
+}
+
+fn auto_color(report_goes_to_stdout: bool, stdout_is_terminal: bool) -> bool {
+    if !report_goes_to_stdout {
+        return false;
+    }
+    if anstyle_query::clicolor_force() {
+        return true;
+    }
+    if anstyle_query::no_color() || anstyle_query::clicolor() == Some(false) {
+        return false;
+    }
+    stdout_is_terminal
 }
 
 /// Wraps `text` in `code`/reset ANSI escapes when `use_color` is true,

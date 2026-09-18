@@ -6,6 +6,7 @@ authors = ["Idrinth"]
 edition = "2021"
 
 [dependencies]
+anstyle-query = "1.1.5"
 papyrus-lints = { path = "../papyrus-lints" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

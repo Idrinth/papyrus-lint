@@ -231,8 +231,11 @@
 //! ANSI escapes. `auto` colorizes only when the caller reports stdout as a
 //! terminal (see [`run`]'s `stdout_is_terminal` parameter, which both binary
 //! entry points set from `std::io::Stdout::is_terminal`), `--output` isn't
-//! used (a file isn't a terminal), and the `NO_COLOR` environment variable
-//! isn't set; `always`/`never` override that detection outright. `--json`
+//! used (a file isn't a terminal), and the environment allows it under the
+//! [NO_COLOR](https://no-color.org/) / [CLICOLOR](https://bixense.com/clicolors/)
+//! conventions (`NO_COLOR` or `CLICOLOR=0` disable auto color;
+//! `CLICOLOR_FORCE` enables it even when stdout is not a TTY); `always`/
+//! `never` override that detection outright. `--json`
 //! output is never colorized, since it's meant for tooling rather than a
 //! terminal.
 //!
