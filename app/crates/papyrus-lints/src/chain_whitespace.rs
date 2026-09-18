@@ -2,7 +2,7 @@
 //! e.g. `SomeProperty . DoThing()` instead of `SomeProperty.DoThing()`.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::{Token, TokenKind};
+use papyrus_parser::token::TokenKind;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "chain-whitespace";
@@ -16,7 +16,15 @@ const WHITESPACE: [u8; 2] = *b" \t";
 /// of the number itself and never reaches this check. Dots on a line
 /// protected by a CreationKit fragment-code wrapper (see [`fragment_code`])
 /// are never flagged.
-pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };
@@ -67,7 +75,14 @@ pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
 /// removed; anything past a newline (a chain continued onto another
 /// physical line) is untouched, matching what [`check`] considers "the same
 /// line".
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let protected = fragment_code::protected_lines(source);
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();

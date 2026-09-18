@@ -1,8 +1,43 @@
 use super::*;
 
 fn check(source: &str, indentation: Indentation) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
-    super::check(source, tokens.as_deref(), indentation)
+    let config = match indentation {
+        Indentation::Tabs => crate::config::Config {
+            indentation: crate::config::Indentation::Tab,
+            ..Default::default()
+        },
+        Indentation::Spaces(width) => crate::config::Config {
+            indentation: crate::config::Indentation::Space,
+            indentation_width: width,
+            ..Default::default()
+        },
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::argument_types::NoExternalSignatures,
+    )
+}
+
+fn repair(source: &str, indentation: Indentation) -> String {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = match indentation {
+        Indentation::Tabs => crate::config::Config {
+            indentation: crate::config::Indentation::Tab,
+            ..Default::default()
+        },
+        Indentation::Spaces(width) => crate::config::Config {
+            indentation: crate::config::Indentation::Space,
+            indentation_width: width,
+            ..Default::default()
+        },
+    };
+    super::repair(source, ast.as_ref(), tokens.as_deref(), &config)
 }
 
 const SOURCE: &str = "ScriptName Example\nFunction Run()\nIf ready\nDoThing()\nElseIf waiting\nWait()\nElse\nStop()\nEndIf\nEndFunction\n";

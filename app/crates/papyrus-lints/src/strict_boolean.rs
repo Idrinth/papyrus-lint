@@ -1,7 +1,7 @@
 //! Flags `If`/`ElseIf`/`While` conditions that aren't already boolean,
 //! instead of relying on Papyrus's implicit conversion to `Bool`.
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
+use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Stmt};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::Diagnostic;
@@ -19,7 +19,16 @@ pub const RULE: &str = "strict-boolean";
 /// the `Int` literal `1` or `0` is also left unflagged, since that's a
 /// common "bool-like" idiom; any other `Int` value is still flagged.
 /// Flagged as a `[warning]`.
-pub fn check(ast: Option<&Script>, allow_bool_like_int: bool) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, external);
+    let allow_bool_like_int = config.bool_like_int;
+
     let Some(script) = ast else {
         return Vec::new();
     };

@@ -45,7 +45,15 @@ pub const RULE: &str = "global-variable-increment";
 
 /// Checks every `SetValue` call in `source` for the `SetValue(GetValue() +
 /// x)`/`SetValue(x + GetValue())` pattern described above.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };
@@ -69,7 +77,14 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 /// Rewrites every `SetValue(GetValue() + x)`/`SetValue(x + GetValue())` call
 /// [`check`] would flag into `Mod(x)`. See the module docs for how each
 /// edit's span and `x`'s source text are recovered.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let (Ok(script), Ok(tokens)) = (
         papyrus_parser::parse(source),
         papyrus_parser::tokenize(source),

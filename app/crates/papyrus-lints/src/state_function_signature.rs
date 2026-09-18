@@ -20,7 +20,7 @@
 //! this exact name"), so a state function with no local empty-state
 //! counterpart is left unflagged rather than guessed at.
 
-use papyrus_parser::ast::{FunctionDecl, Script, TypeName};
+use papyrus_parser::ast::{FunctionDecl, TypeName};
 
 use crate::argument_types::format_type;
 use crate::Diagnostic;
@@ -31,7 +31,15 @@ pub const RULE: &str = "state-function-signature";
 /// Checks `source` for state-declared functions/events whose parameter
 /// list or return type doesn't match the same-named declaration in the
 /// script's empty state.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

@@ -20,7 +20,15 @@ pub const RULE: &str = "float-to-int";
 
 /// Checks `source` for Float values narrowed into an Int without an
 /// explicit cast.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

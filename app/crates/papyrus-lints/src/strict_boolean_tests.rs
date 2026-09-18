@@ -2,7 +2,18 @@ use super::*;
 
 fn check(source: &str, allow_bool_like_int: bool) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
-    super::check(ast.as_ref(), allow_bool_like_int)
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        bool_like_int: allow_bool_like_int,
+        ..Default::default()
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::argument_types::NoExternalSignatures,
+    )
 }
 
 #[test]

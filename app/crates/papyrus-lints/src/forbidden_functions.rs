@@ -57,7 +57,15 @@ pub const RULE: &str = "forbidden-functions";
 /// debug-flag `If`/`ElseIf` (see the module docs): those calls are the
 /// guarded form the rules themselves recommend, so they are not
 /// reported.
-pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };

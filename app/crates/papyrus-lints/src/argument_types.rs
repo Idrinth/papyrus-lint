@@ -216,9 +216,15 @@ impl ExternalSignatures for NoExternalSignatures {
 /// Checks `source` for argument/parameter type mismatches on calls to
 /// functions declared in the same script. Calls on other scripts' types
 /// are not checked; see [`check_with`] for that.
-#[allow(dead_code)]
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
-    check_with(ast, &mut NoExternalSignatures)
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config);
+    check_with(ast, external)
 }
 
 /// Like [`check`], but also checks calls to functions resolved through

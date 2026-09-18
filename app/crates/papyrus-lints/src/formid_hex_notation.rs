@@ -33,7 +33,15 @@ pub const RULE: &str = "formid-hex-notation";
 
 /// Checks `source` for a non-hexadecimal FormID literal compared against
 /// `GetFormID()` or passed to `Game.GetFormFromFile`.
-pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };
@@ -48,7 +56,14 @@ pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
 /// Rewrites every non-hexadecimal FormID literal [`check`] would flag into
 /// its hexadecimal equivalent, leaving every other token (including the
 /// call it appears in) exactly as it was.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();
     };

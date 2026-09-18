@@ -2,7 +2,18 @@ use super::*;
 
 fn check(source: &str, minimum: f64) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
-    super::check(ast.as_ref(), minimum)
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        min_wait_interval: minimum,
+        ..Default::default()
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::argument_types::NoExternalSignatures,
+    )
 }
 
 #[test]

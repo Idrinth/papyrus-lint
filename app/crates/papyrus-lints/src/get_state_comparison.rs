@@ -19,7 +19,7 @@ use std::collections::HashSet;
 
 use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
 
-use crate::argument_types::{ExternalSignatures, NoExternalSignatures};
+use crate::argument_types::ExternalSignatures;
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -30,9 +30,15 @@ pub const RULE: &str = "get-state-comparison";
 /// unchecked when the target isn't declared locally, since it may be
 /// declared further up that (unresolved) ancestry; see [`check_with`] to
 /// resolve that too.
-#[allow(dead_code)]
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
-    check_with(ast, &mut NoExternalSignatures)
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config);
+    check_with(ast, external)
 }
 
 /// Like [`check`], but resolves a target not declared on the script itself

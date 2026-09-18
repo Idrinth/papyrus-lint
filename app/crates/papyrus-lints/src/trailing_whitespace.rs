@@ -10,7 +10,15 @@ const TRAILING_WHITESPACE: [char; 2] = [' ', '\t'];
 /// Checks `source` for lines ending in trailing spaces or tabs. Lines
 /// inside a CreationKit fragment-code wrapper (see [`fragment_code`]),
 /// outside of its `;BEGIN CODE`/`;END CODE` markers, are never flagged.
-pub fn check(source: &str) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (ast, tokens, config, external);
+
     let protected = fragment_code::protected_lines(source);
 
     source
@@ -41,7 +49,14 @@ pub fn check(source: &str) -> Vec<Diagnostic> {
 /// trailing newline) and leaving lines that have no trailing whitespace
 /// untouched. Lines protected by a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]) are left exactly as-is.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let protected = fragment_code::protected_lines(source);
     let mut result = String::with_capacity(source.len());
     let mut rest = source;

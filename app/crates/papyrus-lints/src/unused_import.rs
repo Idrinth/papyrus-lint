@@ -35,9 +35,15 @@ pub const RULE: &str = "unused-import";
 /// this crate has no filesystem access on its own, no import can ever be
 /// resolved this way, so nothing is ever flagged; see [`check_with`] to
 /// actually resolve the imported scripts' `Global` functions.
-#[allow(dead_code)]
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
-    check_with(ast, &mut NoExternalSignatures)
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config);
+    check_with(ast, external)
 }
 
 /// Like [`check`], but resolves each unqualified call in `source` through
@@ -90,7 +96,14 @@ pub fn check_with<E: ExternalSignatures>(
 /// [`repair_with`] to actually remove imports resolved unused through a
 /// project's own external signatures.
 #[allow(dead_code)]
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     repair_with(source, &mut NoExternalSignatures)
 }
 

@@ -35,7 +35,15 @@ pub const RULE: &str = "empty-body";
 /// Checks `source` for `While` loops with no real effect and empty
 /// `If`/`ElseIf`/`Else` bodies. Flagged as a `[warning]`, since this is
 /// almost always an oversight rather than something intentional.
-pub fn check(ast: Option<&Script>, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, config, external);
+
     let Some(script) = ast else {
         // The AST can't tell an empty `Else` apart from no `Else` clause at
         // all without parsing, so fall back to scanning tokens directly for

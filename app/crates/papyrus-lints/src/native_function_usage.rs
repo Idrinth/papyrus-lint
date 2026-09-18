@@ -35,7 +35,15 @@ pub const RULE: &str = "native-function-usage";
 
 /// Checks `source` for `Native` functions/events not supplied by the base
 /// game, per `NATIVE_METHODS`.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

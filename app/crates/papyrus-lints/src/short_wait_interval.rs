@@ -56,7 +56,16 @@ pub(crate) const WAIT_FUNCTIONS: &[WaitFunction] = &[
 /// `RegisterForSingleUpdate`/`RegisterForUpdateGameTime`/
 /// `RegisterForSingleUpdateGameTime` in `source`, flagging one whose sole
 /// argument folds to a constant number below `minimum`.
-pub fn check(ast: Option<&Script>, minimum: f64) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, external);
+    let minimum = config.min_wait_interval;
+
     let Some(script) = ast else {
         return Vec::new();
     };

@@ -25,7 +25,17 @@ pub const RULE: &str = "cyclomatic-complexity";
 /// instead, so the misconfiguration can only ever make more functions read
 /// `[error]` (by collapsing the `[warning]` band down to nothing), never
 /// silently drop or downgrade a finding that a sane pair would have reported.
-pub fn check(ast: Option<&Script>, warning: usize, error: usize) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, external);
+    let warning = config.cyclomatic_complexity_warning;
+    let error = config.cyclomatic_complexity_error;
+
     let Some(script) = ast else {
         return Vec::new();
     };

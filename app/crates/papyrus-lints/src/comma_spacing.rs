@@ -9,7 +9,15 @@ pub const RULE: &str = "comma-spacing";
 /// Checks for argument-list commas that are immediately followed by another
 /// non-whitespace character. Commas on a line protected by a CreationKit
 /// fragment-code wrapper (see [`fragment_code`]) are never flagged.
-pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };
@@ -30,7 +38,14 @@ pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
 /// Inserts one space after every unspaced comma in an argument list. Commas
 /// on a line protected by a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]) are left exactly as-is.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let protected = fragment_code::protected_lines(source);
     let offsets: Vec<_> = comma_offsets(source)
         .into_iter()

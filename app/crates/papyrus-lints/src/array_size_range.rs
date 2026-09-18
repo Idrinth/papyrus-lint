@@ -14,7 +14,7 @@
 //! only ever looks at a `new <Type>[<N>]` expression's own literal size, so
 //! it has no state to track and nothing else can disable or narrow it.
 
-use papyrus_parser::ast::{BinaryOp, Expr, IfBranch, Literal, Script, Stmt, UnaryOp};
+use papyrus_parser::ast::{BinaryOp, Expr, IfBranch, Literal, Stmt, UnaryOp};
 
 use crate::none_form_usage::all_functions;
 use crate::Diagnostic;
@@ -29,7 +29,15 @@ const MAX_NEW_ARRAY_SIZE: i64 = 128;
 
 /// Checks every function/event in `source` for a `new <Type>[<N>]` whose
 /// literal `N` falls outside `0..=128`.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

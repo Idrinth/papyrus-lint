@@ -1,5 +1,28 @@
 use super::*;
 
+fn check(source: &str) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+        &mut crate::argument_types::NoExternalSignatures,
+    )
+}
+
+fn repair(source: &str) -> String {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::repair(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+    )
+}
+
 #[test]
 fn flags_trailing_spaces() {
     let diagnostics = check("ScriptName Example  \n");

@@ -16,7 +16,7 @@ use std::collections::HashSet;
 
 use papyrus_parser::ast::{FunctionDecl, Script, Stmt, VariableDecl};
 
-use crate::argument_types::{ExternalSignatures, NoExternalSignatures};
+use crate::argument_types::ExternalSignatures;
 use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -31,9 +31,15 @@ pub const RULE: &str = "local-variable-shadowing";
 /// A declaration inside a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers, is
 /// never flagged, since it's generated boilerplate the user can't edit.
-#[allow(dead_code)]
-pub fn check(source: &str, ast: Option<&Script>) -> Vec<Diagnostic> {
-    check_with(source, ast, &mut NoExternalSignatures)
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (tokens, config);
+    check_with(source, ast, external)
 }
 
 /// Like [`check`], but also flags a local variable that shadows a property

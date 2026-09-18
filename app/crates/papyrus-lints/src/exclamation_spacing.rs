@@ -3,7 +3,7 @@
 //! negation is easier to spot at a glance.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::{Token, TokenKind};
+use papyrus_parser::token::TokenKind;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "exclamation-spacing";
@@ -20,7 +20,15 @@ pub const RULE: &str = "exclamation-spacing";
 /// negation like `!!bReady`) is left alone too: only the last `!` in such a
 /// run needs the trailing space, since spreading the run's own `!`s apart
 /// makes the idiom harder to read, not easier.
-pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };
@@ -56,7 +64,14 @@ pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
 /// down to one). A `!` on a line protected by a CreationKit fragment-code
 /// wrapper (see [`fragment_code`]), or with nothing but a line ending/end of
 /// file after it, is left exactly as-is — see [`check`].
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let protected = fragment_code::protected_lines(source);
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();

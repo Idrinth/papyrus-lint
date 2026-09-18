@@ -32,8 +32,13 @@ pub const RULE: &str = "identifier-casing";
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
-    style: IdentifierCasing,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
 ) -> Vec<Diagnostic> {
+    let _ = (tokens, external);
+    let style = config.identifier_casing;
+
     let Some(script) = ast else {
         return Vec::new();
     };
@@ -78,7 +83,15 @@ pub fn check(
 /// way too. Tokens in comments and strings are naturally excluded by the
 /// lexer, and CreationKit-owned fragment wrapper lines are left untouched.
 /// If the source cannot be parsed or tokenized, it is returned unchanged.
-pub fn repair(source: &str, style: IdentifierCasing) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens);
+    let style = config.identifier_casing;
+
     let Ok(script) = papyrus_parser::parse(source) else {
         return source.to_string();
     };

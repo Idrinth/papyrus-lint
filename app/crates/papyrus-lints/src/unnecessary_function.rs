@@ -33,7 +33,15 @@ use crate::Diagnostic;
 pub const RULE: &str = "unnecessary-function";
 
 /// Checks `source` for `Function`s whose body is exactly one statement long.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };
@@ -105,7 +113,14 @@ fn is_fragment_function(name: &str) -> bool {
 /// that passes any argument by name (`A(argB = 1)`) is left alone even
 /// then: after rewriting, that name would be resolved against the wrapped
 /// function's own parameters, which may not share the wrapper's names.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let (Ok(script), Ok(tokens)) = (
         papyrus_parser::parse(source),
         papyrus_parser::tokenize(source),

@@ -17,7 +17,7 @@
 //! custom Actor Values that have no way to appear in
 //! `rules/actor-values.yaml`, which would otherwise be misreported here.
 
-use papyrus_parser::token::{Token, TokenKind};
+use papyrus_parser::token::TokenKind;
 
 use crate::Diagnostic;
 
@@ -50,7 +50,15 @@ pub const RULE: &str = "unknown-actor-value";
 
 /// Checks `source` for calls to an Actor Value function whose Actor Value
 /// argument isn't one of Skyrim's built-in Actor Values.
-pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };

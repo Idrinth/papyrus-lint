@@ -2,7 +2,19 @@ use super::*;
 
 fn check(source: &str, warning: usize, error: usize) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
-    super::check(ast.as_ref(), warning, error)
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        cyclomatic_complexity_warning: warning,
+        cyclomatic_complexity_error: error,
+        ..Default::default()
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::argument_types::NoExternalSignatures,
+    )
 }
 
 #[test]
