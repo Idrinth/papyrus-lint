@@ -57,8 +57,10 @@ it to have already done so.
 
 Rules that can walk a parsed script or the token stream also expose a
 `visitor()` function returning `LintVisitor::Ast` or
-`LintVisitor::Tokens` (see `papyrus_parser::visit`). That path is not
-wired into `collect_diagnostics` yet; `check` remains the live entry.
+`LintVisitor::Tokens`. `collect_diagnostics` registers enabled lints onto
+an AST walker and a token walker, runs each rule's `check` so the visitor
+already holds its diagnostics, walks both trees once, then emits those
+diagnostics in registration order. `check` itself is unchanged.
 
 Cross-script lint rules share the project-semantic resolver contract in
 `app/crates/papyrus-lints/src/external_signatures.rs`. That neutral module owns

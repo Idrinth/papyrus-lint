@@ -100,6 +100,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
         .map(|rule| metadata::module_name(&rule.id))
         .collect();
     let mut out = Renderer::new();
+    out.line("use crate::visitor::Session;");
     out.line("use crate::{");
     out.line(format_args!(
         "    {}, Diagnostic,",
@@ -121,7 +122,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
         "let ast = papyrus_parser::parse(source).ok();",
         "let ast = ast.as_ref();",
         "let rules = &config.rules;",
-        "let mut diagnostics = Vec::new();",
+        "let mut session = Session::new();",
     ] {
         out.line(format_args!("    {line}"));
     }
@@ -132,12 +133,32 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
         let key = metadata::config_key(&rule.id);
         let module = metadata::module_name(&rule.id);
         out.line(format_args!("    if rules.{key} {{"));
-        out.line(format_args!(
-            "        diagnostics.extend({module}::check(source, ast, tokens, config, external));"
-        ));
+        match rule.visitor.as_str() {
+            "none" => {
+                out.line("        session.add_direct(|source, ast, tokens, config, external| {");
+                out.line(format_args!(
+                    "            {module}::check(source, ast, tokens, config, external)"
+                ));
+                out.line("        });");
+            }
+            "ast" | "tokens" => {
+                out.line("        session.add(");
+                out.line(format_args!("            {module}::visitor(),"));
+                out.line("            |source, ast, tokens, config, external| {");
+                out.line(format_args!(
+                    "                {module}::check(source, ast, tokens, config, external)"
+                ));
+                out.line("            },");
+                out.line("        );");
+            }
+            other => panic!(
+                "shared/rules.json: unknown visitor `{other}` for {}",
+                rule.id
+            ),
+        }
         out.line("    }");
     }
-    out.line("    diagnostics");
+    out.line("    session.collect(source, ast, tokens, config, external)");
     out.line("}");
     out.blank();
     out.line("/// Applies every self-contained automatic fix whose ruleset is enabled.");
