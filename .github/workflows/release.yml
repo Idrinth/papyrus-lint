@@ -293,6 +293,7 @@ jobs:
           cp ../shared/images/logo.png logo.png
           npm ci
           npx @vscode/vsce package --out ../plugin-dist/papyrus-lint-vscode.vsix
+          npx @vscode/vsce publish -p ${{ secrets.VSCE_PAT }}
           rm LICENSE logo.png
 
       - name: Upload editor plugins to release
