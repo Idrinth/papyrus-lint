@@ -58,6 +58,7 @@ rules:
   get_form_from_file_skyrim_esm: true
   slow_functions: true
   unused_getter: true
+  unused_nodiscard: true
   unused_property: true
   semicolon: true
   float_int_conversion: true
