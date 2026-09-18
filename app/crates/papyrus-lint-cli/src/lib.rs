@@ -99,7 +99,7 @@
 //!
 //! `init` accepts its own `--preset <name>` flag (`strict`, `standard`, or
 //! `careful`, matched case-insensitively; see
-//! [`papyrus_lint_config::presets::Preset`] and `docs/presets/`), selecting
+//! [`papyrus_lint_config::presets::Preset`] and `configuration/presets/`), selecting
 //! which baseline `papyrus-lint.yaml` it generates. Defaults to `strict`,
 //! identical to the engine's built-in default, so plain `init` is
 //! unaffected by this flag existing at all. Any other name is looked up as

@@ -20,14 +20,14 @@
 #
 # Selected via `PapyrusLinterCLI init --preset standard` and by the desktop
 # app's first-run preset picker for a project with no
-# papyrus-lint.yaml/.yml yet. See docs/presets/papyrus-lint.strict.yaml
+# papyrus-lint.yaml/.yml yet. See configuration/presets/papyrus-lint.strict.yaml
 # (today's built-in default, and `init`'s own default) and
-# docs/presets/papyrus-lint.careful.yaml for the other two presets.
+# configuration/presets/papyrus-lint.careful.yaml for the other two presets.
 #
 # This preset has no overrides of its own to list: every "low" importance
-# rule is turned off here, except the ones `docs/rules.json` marks
+# rule is turned off here, except the ones `shared/rules.json` marks
 # `kept_in_standard` (the free formatting rules named above) — see
 # `papyrus-lint-config/build.rs`, which derives this preset's `rules:`
-# section from that file and `docs/papyrus-lint.default.yaml` rather than
+# section from that file and `configuration/papyrus-lint.default.yaml` rather than
 # from anything checked in here.
 # ===============================================================================

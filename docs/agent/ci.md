@@ -22,7 +22,7 @@
   `docs/nexuspage.bbcode` for unknown, mismatched, and unclosed tags.
   `docs/nexuspage.bbcode`'s five `[spoiler][table][/table][/spoiler]`
   blocks carry no checked-in rows — `release.yml`'s `nexus-page` job fills
-  them in from `docs/rules.json` before packaging a tagged release (see
+  them in from `shared/rules.json` before packaging a tagged release (see
   Releases below), so there is nothing for this job to keep in sync
   between releases.
 - **Semantic version advisory job** (`semver-advisory`, pushes to `the-one`

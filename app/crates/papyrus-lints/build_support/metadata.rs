@@ -52,7 +52,7 @@ impl fmt::Display for ValidationError {
 }
 
 pub fn load(context: &BuildContext) -> Vec<RuleMetadata> {
-    context.load_json("docs/rules.json", "rule metadata")
+    context.load_json("shared/rules.json", "rule metadata")
 }
 
 pub fn config_key(id: &str) -> String {
@@ -75,16 +75,16 @@ pub fn validate(rules: &[RuleMetadata]) -> Result<(), ValidationError> {
     for rule in rules {
         if !seen.insert(rule.id.as_str()) {
             return fail(format!(
-                "docs/rules.json lists `{}` more than once",
+                "shared/rules.json lists `{}` more than once",
                 rule.id
             ));
         }
         if rule.tags.is_empty() {
-            return fail(format!("docs/rules.json: {} has no tags", rule.id));
+            return fail(format!("shared/rules.json: {} has no tags", rule.id));
         }
         if !matches!(rule.importance.as_str(), "low" | "medium" | "high") {
             return fail(format!(
-                "docs/rules.json: unknown importance `{}` for {}",
+                "shared/rules.json: unknown importance `{}` for {}",
                 rule.importance, rule.id
             ));
         }
@@ -92,21 +92,21 @@ pub fn validate(rules: &[RuleMetadata]) -> Result<(), ValidationError> {
         let external_repair = EXTERNAL_REPAIR_IDS.contains(&rule.id.as_str());
         if no_source && rule.repair_order.is_some() {
             return fail(format!(
-                "docs/rules.json: {} is a project/post-pass rule and must not have `repair_order`",
+                "shared/rules.json: {} is a project/post-pass rule and must not have `repair_order`",
                 rule.id
             ));
         }
         if rule.repair_order.is_some() && !rule.fixable {
             return fail(format!(
-                "docs/rules.json: {} has `repair_order` but is not fixable",
+                "shared/rules.json: {} has `repair_order` but is not fixable",
                 rule.id
             ));
         }
         if rule.fixable && !external_repair && !no_source && rule.repair_order.is_none() {
-            return fail(format!("docs/rules.json: {} is fixable and needs `repair_order` (or belong to EXTERNAL_REPAIR_IDS)", rule.id));
+            return fail(format!("shared/rules.json: {} is fixable and needs `repair_order` (or belong to EXTERNAL_REPAIR_IDS)", rule.id));
         }
         if external_repair && rule.repair_order.is_some() {
-            return fail(format!("docs/rules.json: {} is repaired outside apply_repairs and must not have `repair_order`", rule.id));
+            return fail(format!("shared/rules.json: {} is repaired outside apply_repairs and must not have `repair_order`", rule.id));
         }
     }
     let mut orders: Vec<_> = rules.iter().filter_map(|rule| rule.repair_order).collect();
@@ -114,7 +114,7 @@ pub fn validate(rules: &[RuleMetadata]) -> Result<(), ValidationError> {
     let expected: Vec<_> = (1..=orders.len() as u32).collect();
     if orders != expected {
         return fail(format!(
-            "docs/rules.json `repair_order` values must be 1..=N without gaps, got {orders:?}"
+            "shared/rules.json `repair_order` values must be 1..=N without gaps, got {orders:?}"
         ));
     }
     Ok(())
@@ -134,14 +134,14 @@ pub fn order_by_config<'a>(
     let mut ordered = Vec::with_capacity(rules.len());
     for key in field_order {
         let Some(rule) = by_key.remove(key) else {
-            return fail(format!("docs/papyrus-lint.default.yaml lists rules.{key} but docs/rules.json has no matching id"));
+            return fail(format!("configuration/papyrus-lint.default.yaml lists rules.{key} but shared/rules.json has no matching id"));
         };
         ordered.push(rule);
     }
     if !by_key.is_empty() {
         let mut missing: Vec<_> = by_key.into_keys().collect();
         missing.sort();
-        return fail(format!("docs/papyrus-lint.default.yaml is missing rules: {missing:?}; add them next to the other `rules:` keys"));
+        return fail(format!("configuration/papyrus-lint.default.yaml is missing rules: {missing:?}; add them next to the other `rules:` keys"));
     }
     Ok(ordered)
 }

@@ -321,10 +321,10 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
 
             expected_schemas = {
                 path.name: path.read_bytes()
-                for path in site_assets.DOCS_DIR.glob(site_assets.SCHEMA_GLOB)
+                for path in site_assets.SCHEMA_DIR.glob(site_assets.SCHEMA_GLOB)
             }
             expected_schemas[site_assets.AI_EXPORT_LEGACY_SCHEMA] = (
-                site_assets.DOCS_DIR / site_assets.AI_EXPORT_V1_SCHEMA
+                site_assets.SCHEMA_DIR / site_assets.AI_EXPORT_V1_SCHEMA
             ).read_bytes()
             published_schemas = {
                 path.name: path.read_bytes() for path in (out_dir / "schema").glob("*.json")

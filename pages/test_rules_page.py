@@ -90,7 +90,7 @@ class RulesPageTest(unittest.TestCase):
 
 
 class RepositoryRulesConfigurationTest(unittest.TestCase):
-    """Keep rules_page.py's checked-in inputs synchronized with docs/rules.json."""
+    """Keep rules_page.py's checked-in inputs synchronized with shared/rules.json."""
 
     def test_rules_json_has_unique_ids_and_known_severities_and_tags(self) -> None:
         rules = rules_page.load_rules()

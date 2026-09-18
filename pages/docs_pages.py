@@ -32,12 +32,16 @@ except ImportError:  # running as pages/build.py
 ROOT = Path(__file__).resolve().parent.parent
 PAGES_DIR = Path(__file__).resolve().parent
 DOCS_DIR = ROOT / "docs"
+SCHEMA_DIR = ROOT / "schema"
+CONFIGURATION_DIR = ROOT / "configuration"
 
 GITHUB_BLOB_BASE = "https://github.com/idrinth/papyrus-lint/blob/the-one"
 
-# Every file in docs/ published as a browsable subpage, alongside a short
-# hand-written blurb shown in the docs list on the homepage and on the docs
-# index page. `kind` picks how build.py renders that file's own content.
+# Every file published as a browsable subpage, alongside a short hand-written
+# blurb shown in the docs list on the homepage and on the docs index page.
+# `kind` picks how build.py renders that file's own content. Sourced from
+# DOCS_DIR unless an entry overrides `source_dir` (the schemata and the
+# default configuration live in their own top-level directories, not docs/).
 DOCS = [
     {
         "filename": "papyrus-cli-usage.txt",
@@ -91,6 +95,8 @@ DOCS = [
     },
     {
         "filename": "papyrus-lint.default.yaml",
+        "source_dir": CONFIGURATION_DIR,
+        "repo_dir": "configuration",
         "slug": "papyrus-lint-default-yaml",
         "kind": "yaml",
         "title": "Default configuration (papyrus-lint.yaml)",
@@ -102,36 +108,48 @@ DOCS = [
     },
     {
         "filename": "papyrus-lint.schema.json",
+        "source_dir": SCHEMA_DIR,
+        "repo_dir": "schema",
         "slug": "papyrus-lint-schema",
         "kind": "json-schema",
         "blurb": "The JSON Schema for papyrus-lint.yaml / papyrus-lint.yml project configuration files.",
     },
     {
         "filename": "papyrus-lint-report.schema.json",
+        "source_dir": SCHEMA_DIR,
+        "repo_dir": "schema",
         "slug": "papyrus-lint-report-schema",
         "kind": "json-schema",
         "blurb": "The JSON Schema for the report PapyrusLinterCLI --json emits.",
     },
     {
         "filename": "papyrus-lint-ai-export.v3.schema.json",
+        "source_dir": SCHEMA_DIR,
+        "repo_dir": "schema",
         "slug": "papyrus-lint-ai-export-v3-schema",
         "kind": "json-schema",
         "blurb": "The current JSON Schema for documents produced by the desktop app's Export for AI feature.",
     },
     {
         "filename": "papyrus-lint-ai-export.v2.schema.json",
+        "source_dir": SCHEMA_DIR,
+        "repo_dir": "schema",
         "slug": "papyrus-lint-ai-export-v2-schema",
         "kind": "json-schema",
         "blurb": "The frozen v2 JSON Schema for Export for AI documents, superseded by v3 above.",
     },
     {
         "filename": "papyrus-lint-ai-export.v1.schema.json",
+        "source_dir": SCHEMA_DIR,
+        "repo_dir": "schema",
         "slug": "papyrus-lint-ai-export-v1-schema",
         "kind": "json-schema",
         "blurb": "The frozen v1 JSON Schema for Export for AI documents, superseded by v2 above.",
     },
     {
         "filename": "ast-cache-entry.schema.json",
+        "source_dir": SCHEMA_DIR,
+        "repo_dir": "schema",
         "slug": "ast-cache-entry-schema",
         "kind": "json-schema",
         "description": (
@@ -147,7 +165,7 @@ DOCS = [
         "title": "Nexus Mods page description (BBCode source)",
         "description": (
             "The BBCode source used for the project's listing on Nexus Mods. Its lint tables are generated from "
-            "docs/rules.json; the rest is kept in sync with the README by hand."
+            "shared/rules.json; the rest is kept in sync with the README by hand."
         ),
         "blurb": "The BBCode source behind the project's Nexus Mods page listing.",
     },
@@ -171,12 +189,14 @@ ACTION_DOC = {
 def resolve_doc_href(href: str) -> str:
     """Rewrites a link target found inside a docs/*.md file so it works from
     a published subpage: a link to another published doc resolves to that
-    doc's own subpage, a link into the repository resolves on GitHub. A
-    query string or fragment on the original link (e.g. `guide.md#setup`)
-    is preserved rather than dropped."""
+    doc's own subpage (matched by filename alone, so a correct repository-
+    relative path like `../schema/papyrus-lint.schema.json` still resolves
+    even though that doc's source no longer lives under docs/), a link into
+    the repository resolves on GitHub. A query string or fragment on the
+    original link (e.g. `guide.md#setup`) is preserved rather than dropped."""
     parts = urlsplit(href)
-    if not parts.scheme and not parts.netloc and parts.path in DOC_FILENAME_TO_SLUG:
-        path = f"{DOC_FILENAME_TO_SLUG[parts.path]}.html"
+    if not parts.scheme and not parts.netloc and Path(parts.path).name in DOC_FILENAME_TO_SLUG:
+        path = f"{DOC_FILENAME_TO_SLUG[Path(parts.path).name]}.html"
         return urlunsplit(("", "", path, parts.query, parts.fragment))
     if href.startswith("../"):
         return f"{GITHUB_BLOB_BASE}/{href[len('../'):]}"
@@ -185,7 +205,8 @@ def resolve_doc_href(href: str) -> str:
 
 def raw_github_link(doc: dict) -> str:
     """Link to a local doc on GitHub or a configured external source."""
-    href = doc["source_url"] if "source_url" in doc else f"{GITHUB_BLOB_BASE}/docs/{doc['filename']}"
+    repo_dir = doc.get("repo_dir", "docs")
+    href = doc["source_url"] if "source_url" in doc else f"{GITHUB_BLOB_BASE}/{repo_dir}/{doc['filename']}"
     return (
         f'<p><a class="doc-raw-link" href="{html.escape(href, quote=True)}">'
         "View raw source on GitHub &rarr;</a></p>"
@@ -206,7 +227,7 @@ def load_doc_source(doc: dict) -> str:
                 return response.read().decode("utf-8")
         except (HTTPError, URLError, TimeoutError, UnicodeDecodeError) as error:
             raise SystemExit(f"Could not download documentation from {content_url}: {error}") from error
-    return (DOCS_DIR / doc["filename"]).read_text(encoding="utf-8")
+    return (doc.get("source_dir", DOCS_DIR) / doc["filename"]).read_text(encoding="utf-8")
 
 
 def render_doc(doc: dict) -> tuple[str, str, str]:

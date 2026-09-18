@@ -30,7 +30,7 @@ when the script doesn't parse, since that's the only way it can still run
 then.
 
 `app/crates/papyrus-lints` currently implements all rules listed in
-[`docs/rules.json`](docs/rules.json), also browsable as the website's
+[`shared/rules.json`](shared/rules.json), also browsable as the website's
 [full lint rule reference](https://papyrus-lint.idrinth.de/rules.html).
 Rules inspect
 raw source or lexer tokens rather than requiring a successfully parsed AST.
@@ -100,11 +100,11 @@ keyword(s) (e.g. `"style"`, `"performance"`, `"correctness"`,
 `"maintainability"`), an `Importance` (`Low`/`Medium`/`High`) rating how
 much fixing that rule matters for keeping a codebase maintainable, a
 `description` copied verbatim from that rule's own `definition` field in
-[`docs/rules.json`](docs/rules.json) (kept in sync by hand — see "Docs
+[`shared/rules.json`](shared/rules.json) (kept in sync by hand — see "Docs
 sync" in AGENTS.md; `build.rs` compiles it into
 `RULE_TAGS`/`KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS` at build time, and
 `docs/nexuspage.bbcode`'s lint tables are generated straight from
-`docs/rules.json` too, so both stay in sync automatically), and an
+`shared/rules.json` too, so both stay in sync automatically), and an
 `auto_fixable()` method derived from `FIXABLE_RULE_IDS` rather than stored
 separately, so the two can never drift apart — for every id in
 `KNOWN_RULE_IDS`, looked up case-insensitively via `tags::tags_for`. The
@@ -183,9 +183,9 @@ and, via its own `format_issues_as_text`/`format_issues_as_json`/
 that crate was shared — no longer depends on whether the frontend's own
 `list_rule_tags` call has already populated `ruleTagsByRule`. The AI
 export's `$schema` was bumped to
-[v3](docs/papyrus-lint-ai-export.v3.schema.json) for it, with
-[v2](docs/papyrus-lint-ai-export.v2.schema.json) (and
-[v1](docs/papyrus-lint-ai-export.v1.schema.json)) kept frozen alongside it
+[v3](schema/papyrus-lint-ai-export.v3.schema.json) for it, with
+[v2](schema/papyrus-lint-ai-export.v2.schema.json) (and
+[v1](schema/papyrus-lint-ai-export.v1.schema.json)) kept frozen alongside it
 the same way v1 was kept when v2 introduced the `repair` field. The VS
 Code extension turns a diagnostic's `doc_url` into a clickable
 `{value, target}` diagnostic code (`toDiagnostic`/`ruleOfDiagnosticCode` in
@@ -539,7 +539,7 @@ to exist.
 
 See the [configuration
 reference](../configuration.md) for the per-key documentation, and
-[`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — the
+[`configuration/papyrus-lint.default.yaml`](configuration/papyrus-lint.default.yaml) — the
 same file `PapyrusLinterCLI init` writes and the one the README links to
 instead of dumping inline — for the complete default file. That file must
 stay byte-for-byte identical to `PapyrusLinterCLI init`'s output (built
@@ -556,14 +556,14 @@ field comment changes.
 baseline `presets::Preset` (`papyrus-lint-config/src/presets.rs`) it generates
 `papyrus-lint.yaml` from, in place of the hardcoded default. `strict` is
 identical to `papyrus_lints::Config::default()` (and to
-`docs/papyrus-lint.default.yaml`), so plain `init` — no `--preset` — is
+`configuration/papyrus-lint.default.yaml`), so plain `init` — no `--preset` — is
 unaffected by the flag existing at all; `standard` and `careful` are less
 noisy. Each built-in preset's own full, annotated YAML is generated at
 build time by `papyrus-lint-config/build.rs` — not checked in — from the
-small `docs/presets/papyrus-lint.<name>.yaml` overwrite file (a header
+small `configuration/presets/papyrus-lint.<name>.yaml` overwrite file (a header
 comment plus any non-rule settings the preset changes, e.g. `careful`'s
-relaxed cyclomatic complexity thresholds), `docs/papyrus-lint.default.yaml`,
-and (for `standard`/`careful`) `docs/rules.json`'s `importance`/
+relaxed cyclomatic complexity thresholds), `configuration/papyrus-lint.default.yaml`,
+and (for `standard`/`careful`) `shared/rules.json`'s `importance`/
 `kept_in_standard` fields, which decide which `rules:` toggles get turned
 off; the merged YAML is written to `$OUT_DIR/papyrus-lint.<name>.yaml` and
 compiled into the binary via `include_str!`, rather than read from disk at
@@ -651,7 +651,7 @@ rather than hand-editing each newly generated file the same way
 afterward. The lookup is split into a private `initialize_config_with_base(dir,
 base_dir, preset)` so tests can supply a controlled `base_dir` instead of
 depending on the test binary's own `current_exe()`; the checked-in
-`docs/papyrus-lint.default.yaml` copy is unaffected since CI's test
+`configuration/papyrus-lint.default.yaml` copy is unaffected since CI's test
 environment has no such file next to the test binary, and the `strict`
 preset (`init`'s own default) reproduces it byte-for-byte.
 
@@ -801,7 +801,7 @@ parse a script, independent of `ast_cache::ensure_primed` below. The
 on-disk entry format (the `modified_unix_secs`/`content_md5`/
 `linter_version`/`ast`/`tokens` envelope, and the `ast`/`tokens` fields'
 own shape) is published as a [JSON
-Schema](docs/ast-cache-entry.schema.json) using JSON Schema Draft
+Schema](schema/ast-cache-entry.schema.json) using JSON Schema Draft
 2020-12, versioned the same way the cache itself is: it describes
 entries whose `linter_version` is at or above `MIN_COMPATIBLE_VERSION`,
 so a consuming tool should check a read entry's `linter_version` against

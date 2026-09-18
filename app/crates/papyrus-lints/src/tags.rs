@@ -3,9 +3,9 @@
 //! `"correctness"`, `"maintainability"`), how important addressing them is
 //! to keeping a codebase maintainable, whether they're auto-fixable, and a
 //! detailed description of the rule. [`RULE_TAGS`] itself is generated at
-//! build time by `build.rs` from `docs/rules.json` — edit that file, not
+//! build time by `build.rs` from `shared/rules.json` — edit that file, not
 //! this one, to change a rule's tags, importance, or description.
-//! `docs/rules.json` is the source of truth for this metadata (see "Docs
+//! `shared/rules.json` is the source of truth for this metadata (see "Docs
 //! sync" in AGENTS.md); `docs/nexuspage.bbcode`'s lint tables and the
 //! website's `rules.html` are both generated from it too. This module only
 //! exposes that metadata; [`crate::repair_filtered_by_tag`] and the CLI's
@@ -35,7 +35,7 @@ pub const WEBSITE_URL: &str = "https://papyrus-lint.idrinth.de";
 pub struct RuleTags {
     pub rule: &'static str,
     /// The rule's detailed description, copied verbatim from its
-    /// `definition` field in `docs/rules.json`, so a consumer (e.g. the
+    /// `definition` field in `shared/rules.json`, so a consumer (e.g. the
     /// desktop app's "Export for AI" document) can surface the same
     /// explanation the website gives a human reader without needing that
     /// documentation on hand.
@@ -75,7 +75,7 @@ pub fn tags_for(rule: &str) -> Option<&'static RuleTags> {
 }
 
 // One entry per id in `KNOWN_RULE_IDS`. Generated at build time by
-// `build.rs` from `docs/rules.json`; do not edit this array by hand.
+// `build.rs` from `shared/rules.json`; do not edit this array by hand.
 include!(concat!(env!("OUT_DIR"), "/rule_tags_data.rs"));
 
 #[cfg(test)]

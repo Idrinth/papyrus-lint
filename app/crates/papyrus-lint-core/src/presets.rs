@@ -30,7 +30,7 @@ pub struct PresetInfo {
 }
 
 /// Label/description text for each of [`PRESET_NAMES`], in the same order.
-/// Kept in sync with `docs/presets/*.yaml`'s own header comments, which go
+/// Kept in sync with `configuration/presets/*.yaml`'s own header comments, which go
 /// into more detail about exactly what each preset turns on/off.
 const DESCRIPTIONS: [(&str, &str, &str); 3] = [
     (

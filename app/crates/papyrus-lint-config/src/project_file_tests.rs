@@ -242,23 +242,23 @@ fn save_config_at_path_rejects_invalid_existing_yaml_without_overwriting_it() {
 }
 
 #[test]
-fn default_config_matches_the_checked_in_docs_copy() {
+fn default_config_matches_the_checked_in_configuration_copy() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
 
     let path =
         initialize_default_config(dir.path(), Preset::default()).expect("init should succeed");
     let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
-    let docs_path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../docs/papyrus-lint.default.yaml");
-    let docs_copy =
-        fs::read_to_string(&docs_path).expect("failed to read docs/papyrus-lint.default.yaml");
+    let checked_in_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../configuration/papyrus-lint.default.yaml");
+    let checked_in_copy = fs::read_to_string(&checked_in_path)
+        .expect("failed to read configuration/papyrus-lint.default.yaml");
 
     let detected = detected_skyrim_script_lookup_dirs();
     if detected.is_empty() {
         assert_eq!(
-            generated, docs_copy,
-            "docs/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
+            generated, checked_in_copy,
+            "configuration/papyrus-lint.default.yaml is out of date; regenerate it with `PapyrusLinterCLI init`"
         );
     } else {
         for dir in &detected {

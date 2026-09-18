@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json",
   "title": "Papyrus Lint project configuration",
-  "description": "A papyrus-lint.yaml / papyrus-lint.yml file at a project root. Every key is optional; omitted keys fall back to the defaults documented here and in docs/papyrus-lint.default.yaml. The loader currently ignores unknown keys, but this schema sets additionalProperties to false so editors can flag typos.",
+  "description": "A papyrus-lint.yaml / papyrus-lint.yml file at a project root. Every key is optional; omitted keys fall back to the defaults documented here and in configuration/papyrus-lint.default.yaml. The loader currently ignores unknown keys, but this schema sets additionalProperties to false so editors can flag typos.",
   "type": "object",
   "additionalProperties": false,
   "properties": {

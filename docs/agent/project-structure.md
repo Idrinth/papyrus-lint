@@ -366,7 +366,7 @@
 │   │                            # footer, linked from the footer on every page
 │   ├── rules.template.html     # renders rules.html, a searchable/filterable
 │   ├── rules.js                 # reference of every lint rule generated from
-│   │                            # docs/rules.json's own metadata (id, severity,
+│   │                            # shared/rules.json's own metadata (id, severity,
 │   │                            # tags, fixable, full definition); rules.js
 │   │                            # (minified into the output directory like
 │   │                            # downloads.js) wires up its search box and

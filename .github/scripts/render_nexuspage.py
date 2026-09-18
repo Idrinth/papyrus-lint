@@ -44,7 +44,7 @@ def render(template: str, hit: int, found: int, version: str) -> str:
         "found": f"{found:,}",
         "percentage": f"{hit / found * 100:.1f}",
         "version": version,
-        "configuration": Path("docs/papyrus-lint.default.yaml").read_text(encoding="utf-8", errors="replace"),
+        "configuration": Path("configuration/papyrus-lint.default.yaml").read_text(encoding="utf-8", errors="replace"),
         "cli": Path("docs/papyrus-cli-usage.txt").read_text(encoding="utf-8", errors="replace"),
     }
     rendered = template

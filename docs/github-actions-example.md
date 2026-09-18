@@ -91,4 +91,4 @@ To also enforce automatic fixes are applied and commit the results, replace
 the last step's `PapyrusLinterCLI` invocation with `PapyrusLinterCLI fix`, or
 add a separate `PapyrusLinterCLI --json --output report.json` step to save a
 machine-readable report (see the [JSON
-Schema](papyrus-lint-report.schema.json)) as a build artifact instead.
+Schema](../schema/papyrus-lint-report.schema.json)) as a build artifact instead.
