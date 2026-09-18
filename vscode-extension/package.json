@@ -4,7 +4,7 @@
   "description": "Lints Bethesda Papyrus (.psc) scripts using PapyrusLinterCLI.",
   "version": "0.1.0",
   "publisher": "idrinth",
-  "icon": "logo.png",
+  "icon": "logo.jpg",
   "license": "MIT",
   "homepage": "https://papyrus-lint.idrinth.de/",
   "repository": {
