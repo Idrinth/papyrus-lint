@@ -1,8 +1,9 @@
 //! Single table of built-in lints.
 //!
-//! Adding a source-level rule should mean: a new module, a `mod` in
-//! `lib.rs`, and a `shared/rules.json` entry (`repair_order` if
-//! [`apply_repairs`] should auto-fix it). Every source-level `check` is
+//! Adding a source-level rule should mean: a new module and a
+//! `shared/rules.json` entry (`repair_order` if [`apply_repairs`] should
+//! auto-fix it). `build.rs` generates the `mod` in `lib.rs` from that
+//! entry. Every source-level `check` is
 //! `check(source, ast, tokens, config, external)` and every `apply_repairs`
 //! fix is `repair(source, ast, tokens, config)`. [`Rules`],
 //! [`default_rules`], [`collect_diagnostics`], [`apply_repairs`],

@@ -10,8 +10,45 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
         .unwrap_or_else(|error| panic!("{error}"));
     let ordered =
         metadata::order_by_config(rules, &order).unwrap_or_else(|error| panic!("{error}"));
+    lint_modules(context, rules);
     rules_struct(context, &ordered);
     rules_dispatch(context, rules);
+}
+
+/// Writes `$OUT_DIR/lint_modules.rs` with a `mod` for every rule that has a
+/// crate-local source file. `#[path]` is required because that file lives in
+/// `OUT_DIR`; `include!` of a plain `mod name;` would look for `name.rs`
+/// next to the generated file, not `src/`.
+fn lint_modules(context: &BuildContext, rules: &[RuleMetadata]) {
+    let mut modules = BTreeSet::new();
+    let mut out = Renderer::new();
+    out.line("// Rule modules generated from `shared/rules.json` by `build.rs`.");
+    out.line("// Do not edit by hand.");
+    out.blank();
+    for rule in rules {
+        let name = metadata::module_name(&rule.id);
+        if !modules.insert(name.clone()) {
+            continue;
+        }
+        let path = context.src_module(&name);
+        println!("cargo:rerun-if-changed={}", path.display());
+        if !path.is_file() {
+            if metadata::NO_SOURCE_CHECK_IDS.contains(&rule.id.as_str()) {
+                continue;
+            }
+            panic!(
+                "shared/rules.json lists `{}` but {} is missing; add the rule module (or list the id in NO_SOURCE_CHECK_IDS if it has no crate-local module)",
+                rule.id,
+                path.display()
+            );
+        }
+        let Some(path) = path.to_str() else {
+            panic!("{} is not valid UTF-8", path.display());
+        };
+        out.line(format_args!("#[path = {path:?}]"));
+        out.line(format_args!("mod {name};"));
+    }
+    context.write("lint_modules.rs", "lint modules", &out.finish());
 }
 
 fn rules_struct(context: &BuildContext, rules: &[&RuleMetadata]) {
