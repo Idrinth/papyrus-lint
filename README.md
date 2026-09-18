@@ -275,6 +275,9 @@ I assumed to be best practice.
 Another thank you to s3ngine and wall416 over on NexusMods for spotting
 bugs and reporting them in the early development of the tool.
 
+Also thank you to Cobb from the r/skyrimmods discord for giving me critical
+feedback and encouraging me further to clean up the ai slop here.
+
 ## How to help
 
 You can help the project by:
