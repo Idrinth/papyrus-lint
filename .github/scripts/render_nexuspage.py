@@ -11,6 +11,8 @@ MARKERS = {
     "<TOTAL_LINES>": "found",
     "<COVERAGE_PERCENTAGE>": "percentage",
     "<VERSION>": "version",
+    "<CONFIGURATION>": Path("docs/papyrus-lint.default.yaml").read_text(encoding="utf-8", errors="replace"),
+    "<CLI>": Path("docs/papyrus-cli-usage.txt").read_text(encoding="utf-8", errors="replace"),
 }
 
 

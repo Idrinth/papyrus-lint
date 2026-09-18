@@ -140,15 +140,13 @@ expected of a pull request.
 
 `papyrus-parser`, `papyrus-ast-cache`, `papyrus-lints`, `papyrus-lint-config`,
 `papyrus-lint-core`, `papyrus-lint-output`, and `papyrus-lint-cli` are separate
-crates (not yet
-Cargo workspace members,
-just path dependencies of each other and of `app/src-tauri`) so the lint
-engine and project-resolution logic stay reusable independent of the Tauri
-app — which is what lets `papyrus-lint-cli` link against them without
-pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
-depends on `papyrus-lint-cli` too, purely for its `run()` function (its
-`main.rs` calls straight into it for CLI mode), not for the
-`PapyrusLinterCLI` binary target that crate also defines.
+crates (not yet Cargo workspace members, just path dependencies of each other
+and of `app/src-tauri`) so the lint engine and project-resolution logic stay
+reusable independent of the Tauri app — which is what lets `papyrus-lint-cli`
+link against them without pulling in Tauri (and its system GUI dependencies) at all.
+`app/src-tauri` depends on `papyrus-lint-cli` too, purely for its `run()` function
+(its `main.rs` calls straight into it for CLI mode), not for the `PapyrusLinterCLI`
+binary target that crate also defines.
 
 Agent-oriented guidance lives in [`AGENTS.md`](AGENTS.md) (a short index)
 and [`docs/agent/`](docs/agent/) (CI, Pages, releases, implementation
