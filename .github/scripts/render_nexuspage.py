@@ -49,9 +49,6 @@ def render(template: str, hit: int, found: int, version: str) -> str:
     }
     rendered = template
     for marker, value_name in MARKERS.items():
-        count = rendered.count(marker)
-        if count != 1:
-            raise ValueError(f"expected exactly one {marker} marker, found {count}")
         rendered = rendered.replace(marker, values[value_name])
     return rendered
 
