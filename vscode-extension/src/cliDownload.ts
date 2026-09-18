@@ -1,7 +1,11 @@
-import { constants, createWriteStream, promises as fs } from 'fs';
+import { createHash } from 'crypto';
+import { constants, createReadStream, createWriteStream, promises as fs } from 'fs';
 import * as path from 'path';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
+import { CLI_SHA256 } from './cliHashes';
+
+export { CLI_SHA256 };
 
 const RELEASE_BASE = 'https://github.com/Idrinth/papyrus-lint/releases/download';
 
@@ -15,6 +19,30 @@ function assetName(platform: NodeJS.Platform): string {
       return 'PapyrusLinterCLI-linux';
     default:
       throw new Error(`Papyrus Lint does not publish a CLI for ${platform}.`);
+  }
+}
+
+export function expectedSha256(asset: string): string {
+  const expected = CLI_SHA256[asset];
+  if (!expected) {
+    throw new Error(`no baked SHA-256 for ${asset}`);
+  }
+  return expected;
+}
+
+export async function sha256File(filePath: string): Promise<string> {
+  const hash = createHash('sha256');
+  await pipeline(createReadStream(filePath), hash);
+  return hash.digest('hex');
+}
+
+async function assertExpectedSha256(filePath: string, asset: string): Promise<void> {
+  const actual = await sha256File(filePath);
+  const expected = expectedSha256(asset);
+  if (actual !== expected) {
+    throw new Error(
+      `${asset} SHA-256 mismatch (expected ${expected}, got ${actual}); refusing to use a manipulated file`,
+    );
   }
 }
 
@@ -41,6 +69,16 @@ async function pruneOtherVersions(storageDirectory: string, version: string): Pr
   }
 }
 
+async function isTrustedExecutable(executable: string, asset: string): Promise<boolean> {
+  try {
+    await fs.access(executable, constants.X_OK);
+    await assertExpectedSha256(executable, asset);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Returns this extension release's CLI, downloading it when this version isn't cached yet. */
 export async function ensureReleaseCli(
   storageDirectory: string,
@@ -50,18 +88,16 @@ export async function ensureReleaseCli(
   const asset = assetName(platform);
   const directory = path.join(storageDirectory, `v${version}`);
   const executable = path.join(directory, asset);
-  try {
-    await fs.access(executable, constants.X_OK);
+  if (await isTrustedExecutable(executable, asset)) {
     await pruneOtherVersions(storageDirectory, version);
     return executable;
-  } catch {
-    // Missing (or not executable): replace it atomically below.
   }
 
   await fs.mkdir(directory, { recursive: true });
   const temporary = `${executable}.${process.pid}.download`;
   try {
     await download(`${RELEASE_BASE}/v${version}/${asset}`, temporary);
+    await assertExpectedSha256(temporary, asset);
     await fs.chmod(temporary, 0o700);
     await fs.rename(temporary, executable);
   } finally {
