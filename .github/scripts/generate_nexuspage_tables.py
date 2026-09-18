@@ -18,7 +18,7 @@ from pathlib import Path
 
 CATEGORIES = ["Formatting", "Performance", "Reliability", "Bugprone", "Other"]
 
-TABLE_RE = re.compile(r"\[spoiler\]\[table\].*?\[/table\]\[/spoiler\]", re.DOTALL)
+TABLE_RE = re.compile(r"\[spoiler\]\[table\][/table\]\[/spoiler\]", re.DOTALL)
 
 
 def render_table(rules: list[dict]) -> str:
