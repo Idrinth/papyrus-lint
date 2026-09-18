@@ -164,12 +164,8 @@ pub(crate) fn compile_psc_file(
 pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     path: &Path,
     source: &str,
-    config: &papyrus_lints::Config,
+    context: &ProjectLintContext,
     function_table: &mut E,
-    root: &Path,
-    additional_roots: &[String],
-    compiler_path: &str,
-    compile_check: bool,
 ) -> Vec<papyrus_lints::Diagnostic> {
     // Computed up front and merged in via
     // `lint_with_external_arguments_and_extra_diagnostics` below, rather than
@@ -180,30 +176,30 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     // `papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`'s
     // own docs).
     let mut project_diagnostics = Vec::new();
-    if config.rules.conflicting_script_versions {
+    if context.config.rules.conflicting_script_versions {
         project_diagnostics.extend(script_locator::conflicting_script_versions(
             path,
-            root,
-            additional_roots,
+            Path::new(&context.root),
+            &context.additional_roots,
         ));
     }
-    if config.rules.stale_compiled_output {
+    if context.config.rules.stale_compiled_output {
         project_diagnostics.extend(stale_pex::check(path));
     }
-    if config.rules.script_filename_mismatch {
+    if context.config.rules.script_filename_mismatch {
         project_diagnostics.extend(script_filename_mismatch::check(path, source));
     }
     let mut diagnostics = papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
         source,
-        config,
+        &context.config,
         function_table,
         project_diagnostics,
     );
 
-    let compiler_path = compiler_path.trim();
-    if compile_check && !compiler_path.is_empty() {
+    let compiler_path = context.compiler_path.trim();
+    if context.compile_check && !compiler_path.is_empty() {
         if let Ok(outcome) =
-            compiler::check_psc_file(Path::new(compiler_path), path, additional_roots)
+            compiler::check_psc_file(Path::new(compiler_path), path, &context.additional_roots)
         {
             if !outcome.success {
                 diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
@@ -231,12 +227,8 @@ pub(crate) fn lint_psc_file(
     Ok(lint_with_compile_check(
         path,
         &source,
-        &context.config,
+        &context,
         &mut shared,
-        Path::new(&context.root),
-        &context.additional_roots,
-        &context.compiler_path,
-        context.compile_check,
     ))
 }
 

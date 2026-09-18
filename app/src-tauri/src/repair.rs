@@ -28,16 +28,7 @@ fn write_prime_and_relint(
     }
     ast_cache::ensure_primed(path, updated);
     let mut shared = SharedFunctionTable(function_table);
-    Ok(lint_with_compile_check(
-        path,
-        updated,
-        &context.config,
-        &mut shared,
-        Path::new(&context.root),
-        &context.additional_roots,
-        &context.compiler_path,
-        context.compile_check,
-    ))
+    Ok(lint_with_compile_check(path, updated, context, &mut shared))
 }
 
 /// Reads the `.psc` file at `path`, applies every automatic fix (honoring
