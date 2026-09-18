@@ -55,6 +55,11 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
             .map(|signature| signature.is_global)
     }
 
+    fn is_nodiscard_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        self.lookup_function(type_name, function_name)
+            .map(|signature| signature.nodiscard)
+    }
+
     fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
         self.ancestry_fully_known(type_name)
     }
