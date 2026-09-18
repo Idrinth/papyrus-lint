@@ -252,7 +252,8 @@ pub(crate) fn list_script_members(
     lookup_roots: Vec<String>,
 ) -> Vec<function_table::Member> {
     let function_table = project_function_table(root, additional_roots, lookup_roots);
-    lock_function_table(function_table.as_ref()).list_members(&type_name)
+    let members = lock_function_table(function_table.as_ref()).list_members(&type_name);
+    members
 }
 
 #[cfg(test)]
