@@ -93,6 +93,12 @@ DOCS = [
         "blurb": "The full default papyrus-lint.yaml, with every key's default value documented inline.",
     },
     {
+        "filename": "papyrus-lint.schema.json",
+        "slug": "papyrus-lint-schema",
+        "kind": "json-schema",
+        "blurb": "The JSON Schema for papyrus-lint.yaml / papyrus-lint.yml project configuration files.",
+    },
+    {
         "filename": "papyrus-lint-report.schema.json",
         "slug": "papyrus-lint-report-schema",
         "kind": "json-schema",

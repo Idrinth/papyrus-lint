@@ -1,0 +1,646 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json",
+  "title": "Papyrus Lint project configuration",
+  "description": "A papyrus-lint.yaml / papyrus-lint.yml file at a project root. Every key is optional; omitted keys fall back to the defaults documented here and in docs/papyrus-lint.default.yaml. The loader currently ignores unknown keys, but this schema sets additionalProperties to false so editors can flag typos.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "compiler_path": {
+      "description": "Path to PapyrusCompiler.exe, or null/omit to auto-detect it.",
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "additional_script_roots": {
+      "description": "Extra directories (relative to the project root, or absolute) to search for .psc files, besides scripts/source and source/scripts. Used for linting, cross-script resolution, and the compiler -i path.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "lookup_script_roots": {
+      "description": "Extra directories searched only as a fallback when resolving other scripts for analysis (argument/return types, Extends, autocompletion). Scripts found only here are never linted, and these directories are ignored by conflicting-script-versions.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "compile_check": {
+      "description": "Also run PapyrusCompiler.exe (into a throwaway temporary directory) as part of linting a .psc, reporting its errors alongside the lint engine. Requires compiler_path to be set or auto-detected.",
+      "type": "boolean",
+      "default": false
+    },
+    "strict_achlist_scope": {
+      "description": "When true, restrict cross-script resolution and conflicting-script-versions to an achlist's listed entries only. When false (the default), parent directories of listed entries are also search roots.",
+      "type": "boolean",
+      "default": false
+    },
+    "semicolon": {
+      "description": "Whether lines are required to end in a semicolon (true) or must not (false).",
+      "type": "boolean",
+      "default": false
+    },
+    "indentation": {
+      "description": "Expected indentation style, read by the indentation lint and automatic fix.",
+      "type": "string",
+      "enum": [
+        "tab",
+        "space"
+      ],
+      "default": "tab"
+    },
+    "indentation_width": {
+      "description": "Spaces per indentation level. Used only when indentation is space. The engine clamps this to 1..16.",
+      "type": "integer",
+      "minimum": 0,
+      "default": 4
+    },
+    "identifier_casing": {
+      "description": "Casing style declared identifiers must match (functions, events, properties, states, parameters, locals).",
+      "type": "string",
+      "enum": [
+        "camelCase",
+        "PascalCase",
+        "snake_case",
+        "CONSTANT_CASE"
+      ],
+      "default": "PascalCase"
+    },
+    "cyclomatic_complexity_warning": {
+      "description": "Cyclomatic complexity at which the cyclomatic-complexity lint reports a warning.",
+      "type": "integer",
+      "minimum": 0,
+      "default": 10
+    },
+    "cyclomatic_complexity_error": {
+      "description": "Cyclomatic complexity at which the cyclomatic-complexity lint reports an error. A value below cyclomatic_complexity_warning is treated as equal to it.",
+      "type": "integer",
+      "minimum": 0,
+      "default": 20
+    },
+    "type_casing": {
+      "description": "Casing convention for a script's declared type name (the identifier following ScriptName).",
+      "type": "string",
+      "enum": [
+        "PascalCase",
+        "camelCase",
+        "lowercase",
+        "UPPERCASE"
+      ],
+      "default": "PascalCase"
+    },
+    "named_arguments": {
+      "description": "How strongly a positional call argument should be passed by name instead.",
+      "type": "string",
+      "enum": [
+        "always",
+        "instead_of_defaults",
+        "never"
+      ],
+      "default": "never"
+    },
+    "min_wait_interval": {
+      "description": "Interval/duration argument a Utility.Wait / RegisterForUpdate / RegisterForSingleUpdate / RegisterForUpdateGameTime / RegisterForSingleUpdateGameTime call can go below before short-wait-interval flags it.",
+      "type": "number",
+      "minimum": 0,
+      "default": 0.1
+    },
+    "magic_numbers": {
+      "description": "Whether the magic-numbers lint also flags Wait/RegisterFor* interval arguments (strict) or leaves them unflagged (loose).",
+      "type": "string",
+      "enum": [
+        "loose",
+        "strict"
+      ],
+      "default": "loose"
+    },
+    "fail_on_warning": {
+      "description": "Whether the CLI treats a warning-level diagnostic as a non-zero exit. Has no effect on the desktop app.",
+      "type": "boolean",
+      "default": false
+    },
+    "fail_on_info": {
+      "description": "Whether the CLI treats an info-level diagnostic as a non-zero exit. Has no effect on the desktop app.",
+      "type": "boolean",
+      "default": false
+    },
+    "bool_like_int": {
+      "description": "Whether strict-boolean accepts the Int literals 1 and 0 used directly as If/ElseIf/While conditions.",
+      "type": "boolean",
+      "default": true
+    },
+    "assume_auto_properties_filled": {
+      "description": "Whether none-form-usage treats a script-level Auto/AutoReadOnly property as already filled in by the time a function runs, instead of possibly None.",
+      "type": "boolean",
+      "default": false
+    },
+    "rules": {
+      "description": "Per-lint enable/disable switches. Each key is a rule id with hyphens replaced by underscores (e.g. float-equality is float_equality). Setting a key to false turns that lint and its automatic fix off. Omitted keys fall back to their default.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trailing_whitespace": {
+          "description": "Whether the trailing-whitespace lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "comma_spacing": {
+          "description": "Whether the comma-spacing lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "forbidden_functions": {
+          "description": "Whether the forbidden-functions lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "formid_hex_notation": {
+          "description": "Whether the formid-hex-notation lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "get_form_from_file_skyrim_esm": {
+          "description": "Whether the get-form-from-file-skyrim-esm lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "slow_functions": {
+          "description": "Whether the slow-functions lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unused_getter": {
+          "description": "Whether the unused-getter lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unused_property": {
+          "description": "Whether the unused-property lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "semicolon": {
+          "description": "Whether the semicolon lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "float_int_conversion": {
+          "description": "Whether the float-int-conversion lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "int_division_to_float": {
+          "description": "Whether the int-division-to-float lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "strict_boolean": {
+          "description": "Whether the strict-boolean lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "argument_types": {
+          "description": "Whether the argument-types lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "return_types": {
+          "description": "Whether the return-types lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "function_override": {
+          "description": "Whether the function-override lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "argument_naming": {
+          "description": "Whether the argument-naming lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "argument_override_types": {
+          "description": "Whether the argument-override-types lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "numeric_comparison": {
+          "description": "Whether the numeric-comparison lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "indentation": {
+          "description": "Whether the indentation lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "cyclomatic_complexity": {
+          "description": "Whether the cyclomatic-complexity lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unreachable_statement": {
+          "description": "Whether the unreachable-statement lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "static_condition": {
+          "description": "Whether the static-condition lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unreachable_elseif": {
+          "description": "Whether the unreachable-elseif lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "division_by_zero": {
+          "description": "Whether the division-by-zero lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "empty_body": {
+          "description": "Whether the empty-body lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unused_local_variable": {
+          "description": "Whether the unused-local-variable lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "variable_used_before_assignment": {
+          "description": "Whether the variable-used-before-assignment lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "none_form_usage": {
+          "description": "Whether the none-form-usage lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "local_variable_shadowing": {
+          "description": "Whether the local-variable-shadowing lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "parameter_reassignment": {
+          "description": "Whether the parameter-reassignment lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "chain_whitespace": {
+          "description": "Whether the chain-whitespace lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "exclamation_spacing": {
+          "description": "Whether the exclamation-spacing lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "identifier_casing": {
+          "description": "Whether the identifier-casing lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "type_casing": {
+          "description": "Whether the type-casing lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "named_arguments": {
+          "description": "Whether the named-arguments lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "operator_spacing": {
+          "description": "Whether the operator-spacing lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "assignment_operator_spacing": {
+          "description": "Whether the assignment-operator-spacing lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "property_sorting": {
+          "description": "Whether the property-sorting lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "explicit_return": {
+          "description": "Whether the explicit-return lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unchecked_form_parameter": {
+          "description": "Whether the unchecked-form-parameter lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "unchecked_array_element": {
+          "description": "Whether the unchecked-array-element lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "unchecked_cast": {
+          "description": "Whether the unchecked-cast lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "useless_downcast": {
+          "description": "Whether the useless-downcast lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "impossible_cast": {
+          "description": "Whether the impossible-cast lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unresolved_script": {
+          "description": "Whether the unresolved-script lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "non_global_function_call": {
+          "description": "Whether the non-global-function-call lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "static_function_call_via_instance": {
+          "description": "Whether the static-function-call-via-instance lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "short_wait_interval": {
+          "description": "Whether the short-wait-interval lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "state_function_signature": {
+          "description": "Whether the state-function-signature lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "goto_state": {
+          "description": "Whether the goto-state lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "get_state_comparison": {
+          "description": "Whether the get-state-comparison lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "too_many_states": {
+          "description": "Whether the too-many-states lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "multiple_auto_states": {
+          "description": "Whether the multiple-auto-states lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "conflicting_script_versions": {
+          "description": "Whether the conflicting-script-versions lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "stale_compiled_output": {
+          "description": "Whether the stale-compiled-output lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "script_filename_mismatch": {
+          "description": "Whether the script-filename-mismatch lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unused_disable": {
+          "description": "Whether the unused-disable lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "magic_numbers": {
+          "description": "Whether the magic-numbers lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "native_function_usage": {
+          "description": "Whether the native-function-usage lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "repeated_getvalue": {
+          "description": "Whether the repeated-getvalue lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "global_variable_setvalue": {
+          "description": "Whether the global-variable-setvalue lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "global_variable_increment": {
+          "description": "Whether the global-variable-increment lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "setvalue_in_loop": {
+          "description": "Whether the setvalue-in-loop lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "invariant_loop_condition": {
+          "description": "Whether the invariant-loop-condition lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "script_name_collision": {
+          "description": "Whether the script-name-collision lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "array_bounds": {
+          "description": "Whether the array-bounds lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "array_size_range": {
+          "description": "Whether the array-size-range lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "readonly_property_write": {
+          "description": "Whether the readonly-property-write lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "default_property_value": {
+          "description": "Whether the default-property-value lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "unguarded_self_recursion": {
+          "description": "Whether the unguarded-self-recursion lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "self_assignment": {
+          "description": "Whether the self-assignment lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "debug_side_effects": {
+          "description": "Whether the debug-side-effects lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unnecessary_function": {
+          "description": "Whether the unnecessary-function lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "unknown_actor_value": {
+          "description": "Whether the unknown-actor-value lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "repeated_setoutfit": {
+          "description": "Whether the repeated-setoutfit lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "missing_doc_comment": {
+          "description": "Whether the missing-doc-comment lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "invalid_random_range": {
+          "description": "Whether the invalid-random-range lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "float_equality": {
+          "description": "Whether the float-equality lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "missing_update_handler": {
+          "description": "Whether the missing-update-handler lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "unused_import": {
+          "description": "Whether the unused-import lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
+        "event_signature_mismatch": {
+          "description": "Whether the event-signature-mismatch lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        },
+        "circular_dependency": {
+          "description": "Whether the circular-dependency lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "default": {
+        "trailing_whitespace": true,
+        "comma_spacing": true,
+        "forbidden_functions": true,
+        "formid_hex_notation": true,
+        "get_form_from_file_skyrim_esm": true,
+        "slow_functions": true,
+        "unused_getter": true,
+        "unused_property": true,
+        "semicolon": true,
+        "float_int_conversion": true,
+        "int_division_to_float": true,
+        "strict_boolean": true,
+        "argument_types": true,
+        "return_types": true,
+        "function_override": true,
+        "argument_naming": true,
+        "argument_override_types": true,
+        "numeric_comparison": true,
+        "indentation": true,
+        "cyclomatic_complexity": true,
+        "unreachable_statement": true,
+        "static_condition": true,
+        "unreachable_elseif": true,
+        "division_by_zero": true,
+        "empty_body": true,
+        "unused_local_variable": true,
+        "variable_used_before_assignment": true,
+        "none_form_usage": true,
+        "local_variable_shadowing": true,
+        "parameter_reassignment": true,
+        "chain_whitespace": true,
+        "exclamation_spacing": true,
+        "identifier_casing": true,
+        "type_casing": true,
+        "named_arguments": true,
+        "operator_spacing": true,
+        "assignment_operator_spacing": true,
+        "property_sorting": false,
+        "explicit_return": true,
+        "unchecked_form_parameter": false,
+        "unchecked_array_element": false,
+        "unchecked_cast": true,
+        "useless_downcast": true,
+        "impossible_cast": true,
+        "unresolved_script": true,
+        "non_global_function_call": true,
+        "static_function_call_via_instance": true,
+        "short_wait_interval": true,
+        "state_function_signature": true,
+        "goto_state": true,
+        "get_state_comparison": true,
+        "too_many_states": true,
+        "multiple_auto_states": true,
+        "conflicting_script_versions": true,
+        "stale_compiled_output": true,
+        "script_filename_mismatch": true,
+        "unused_disable": false,
+        "magic_numbers": false,
+        "native_function_usage": false,
+        "repeated_getvalue": false,
+        "global_variable_setvalue": false,
+        "global_variable_increment": true,
+        "setvalue_in_loop": true,
+        "invariant_loop_condition": true,
+        "script_name_collision": true,
+        "array_bounds": true,
+        "array_size_range": true,
+        "readonly_property_write": true,
+        "default_property_value": false,
+        "unguarded_self_recursion": true,
+        "self_assignment": true,
+        "debug_side_effects": true,
+        "unnecessary_function": true,
+        "unknown_actor_value": false,
+        "repeated_setoutfit": true,
+        "missing_doc_comment": false,
+        "invalid_random_range": true,
+        "float_equality": false,
+        "missing_update_handler": false,
+        "unused_import": true,
+        "event_signature_mismatch": false,
+        "circular_dependency": false
+      }
+    }
+  }
+}
