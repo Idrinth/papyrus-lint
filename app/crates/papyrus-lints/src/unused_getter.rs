@@ -9,7 +9,15 @@ pub const RULE: &str = "unused-getter";
 /// Checks for calls whose function name begins with `Get` and whose result is
 /// discarded rather than assigned, returned, or used by another expression.
 /// Flagged as a `[warning]`.
-pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };

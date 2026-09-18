@@ -1,5 +1,31 @@
 use super::*;
 
+fn check(source: &str, style: Style) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        semicolon: style == Style::Require,
+        ..Default::default()
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::argument_types::NoExternalSignatures,
+    )
+}
+
+fn repair(source: &str, style: Style) -> String {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        semicolon: style == Style::Require,
+        ..Default::default()
+    };
+    super::repair(source, ast.as_ref(), tokens.as_deref(), &config)
+}
+
 #[test]
 fn require_flags_and_repairs_missing_semicolons() {
     let source = "ScriptName Example\n\nInt value = 1;\r\n";

@@ -18,7 +18,7 @@
 
 use std::collections::HashSet;
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Script, Stmt};
+use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Stmt};
 
 use crate::none_form_usage::{
     all_functions, diverges, is_object_type, narrow_for_falsy, narrow_for_truthy,
@@ -30,7 +30,15 @@ pub const RULE: &str = "unchecked-form-parameter";
 
 /// Checks every function/event in `source` for member/method access on a
 /// `Form`-typed parameter that hasn't yet been confirmed non-`None`.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

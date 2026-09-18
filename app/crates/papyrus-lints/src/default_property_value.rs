@@ -19,7 +19,7 @@
 //! flagged: only a `Bool`, `Int`, `Float`, or `String` scalar property
 //! accepts a simple literal default at all.
 
-use papyrus_parser::ast::{PropertyDecl, Script};
+use papyrus_parser::ast::PropertyDecl;
 
 use crate::Diagnostic;
 
@@ -28,7 +28,15 @@ pub const RULE: &str = "default-property-value";
 
 /// Checks `source` for `Bool`/`Int`/`Float`/`String` `Auto`/`AutoReadOnly`
 /// properties with no explicit default value, flagged as a `[warning]`.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

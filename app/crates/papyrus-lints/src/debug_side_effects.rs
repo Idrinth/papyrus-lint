@@ -68,7 +68,15 @@ const SIDE_EFFECT_PREFIXES: &[&str] = &[
 
 /// Checks `source` for a side-effecting call nested inside any `Debug.*`
 /// argument list. Flagged as a `[warning]`.
-pub fn check(tokens: Option<&[Token]>, ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };

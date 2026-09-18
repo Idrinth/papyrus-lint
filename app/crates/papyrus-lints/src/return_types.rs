@@ -18,7 +18,7 @@
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
-use crate::argument_types::{self, ExternalSignatures, NoExternalSignatures};
+use crate::argument_types::{self, ExternalSignatures};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -28,9 +28,15 @@ pub const RULE: &str = "return-types";
 /// subtype of) the enclosing function's declared return type. Subtype
 /// relationships to scripts outside `source` are never resolved this way;
 /// see [`check_with`] for that.
-#[allow(dead_code)]
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
-    check_with(ast, &mut NoExternalSignatures)
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config);
+    check_with(ast, external)
 }
 
 /// Like [`check`], but resolves object-type return values through

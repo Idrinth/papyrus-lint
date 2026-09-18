@@ -24,7 +24,15 @@ pub const RULE: &str = "unreachable-elseif";
 
 /// Checks every `If` statement in `source` for an `ElseIf` branch whose
 /// condition is already fully covered by an earlier branch's condition.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

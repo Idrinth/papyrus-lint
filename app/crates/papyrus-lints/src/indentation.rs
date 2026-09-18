@@ -85,7 +85,16 @@ fn line_depths_from_tokens(source: &str, tokens: &[Token]) -> Vec<usize> {
 /// those markers are expected relative to the marker's own depth (see
 /// [`fragment_code::code_section_starts`]), not the file-wide depth of the
 /// (never-reindented) wrapper function around them.
-pub fn check(source: &str, tokens: Option<&[Token]>, indentation: Indentation) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (ast, external);
+    let indentation = config.indentation_unit();
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };
@@ -132,7 +141,15 @@ pub fn check(source: &str, tokens: Option<&[Token]>, indentation: Indentation) -
 /// exactly as-is; lines between a `;BEGIN CODE`/`;END CODE` pair are
 /// indented relative to that marker's own depth rather than the file-wide
 /// depth of the wrapper function around them (see [`check`]).
-pub fn repair(source: &str, indentation: Indentation) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens);
+    let indentation = config.indentation_unit();
+
     let unit = indentation.unit();
 
     // Do not risk changing a file whose structure cannot be identified.

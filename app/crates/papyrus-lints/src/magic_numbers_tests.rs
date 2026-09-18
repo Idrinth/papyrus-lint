@@ -2,7 +2,18 @@ use super::*;
 
 fn check(source: &str, mode: MagicNumbers) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
-    super::check(ast.as_ref(), mode)
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = crate::config::Config {
+        magic_numbers: mode,
+        ..Default::default()
+    };
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut crate::argument_types::NoExternalSignatures,
+    )
 }
 
 #[test]

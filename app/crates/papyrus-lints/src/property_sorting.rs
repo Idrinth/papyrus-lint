@@ -34,7 +34,15 @@ pub const RULE: &str = "property-sorting";
 /// then alphabetically by name, or aren't declared immediately after the
 /// `ScriptName` line (before any variable, function, or state
 /// declaration). Both are flagged as a `[warning]`.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };
@@ -85,11 +93,26 @@ pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
 /// line, sorted by type and then alphabetically by name. A script that
 /// doesn't parse cleanly, or that already satisfies [`check`], is
 /// returned unchanged.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = ast;
+
     let Ok(script) = papyrus_parser::parse(source) else {
         return source.to_string();
     };
-    if check(Some(&script)).is_empty() {
+    if check(
+        source,
+        Some(&script),
+        tokens,
+        config,
+        &mut crate::argument_types::NoExternalSignatures,
+    )
+    .is_empty()
+    {
         return source.to_string();
     }
     let scriptname_line = script.line;

@@ -30,7 +30,7 @@
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
-use crate::argument_types::{is_primitive, ExternalSignatures, NoExternalSignatures};
+use crate::argument_types::{is_primitive, ExternalSignatures};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -40,9 +40,15 @@ pub const RULE: &str = "impossible-cast";
 /// same-script information. Since that alone can never confirm a type's
 /// full ancestry resolves to a definite root (see the module docs), this
 /// never actually flags anything on its own — see [`check_with`].
-#[allow(dead_code)]
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
-    check_with(ast, &mut NoExternalSignatures)
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config);
+    check_with(ast, external)
 }
 
 /// Like [`check`], but resolves both the value's and the target's full

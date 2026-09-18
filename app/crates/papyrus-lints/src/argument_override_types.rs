@@ -29,7 +29,7 @@
 
 use papyrus_parser::ast::{Script, TypeName};
 
-use crate::argument_types::{format_type, ExternalSignatures, NoExternalSignatures};
+use crate::argument_types::{format_type, ExternalSignatures};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -39,9 +39,15 @@ pub const RULE: &str = "argument-override-types";
 /// parameter types drift from the inherited declaration. Since resolving
 /// the `Extends` chain always requires looking outside `source`, this alone
 /// never finds anything to flag; see [`check_with`].
-#[allow(dead_code)]
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
-    check_with(ast, &mut NoExternalSignatures)
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config);
+    check_with(ast, external)
 }
 
 /// Like [`check`], but resolves the script's `Extends` chain through

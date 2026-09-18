@@ -18,7 +18,15 @@ pub const RULE: &str = "get-form-from-file-skyrim-esm";
 
 /// Checks `source` for a qualified `Game.GetFormFromFile` call whose file
 /// name argument is the literal `"Skyrim.esm"` (case-insensitively).
-pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };
@@ -43,7 +51,14 @@ pub fn check(tokens: Option<&[Token]>) -> Vec<Diagnostic> {
 /// Rewrites every flagged call into `Game.GetForm(<id>)`, keeping the
 /// original FormID argument's source text (including any expression it's
 /// part of) and dropping the `"Skyrim.esm"` file name argument entirely.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();
     };

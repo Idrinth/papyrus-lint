@@ -2,7 +2,14 @@ use super::*;
 
 fn check(source: &str) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
-    super::check(source, ast.as_ref())
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+        &mut crate::argument_types::NoExternalSignatures,
+    )
 }
 
 fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {

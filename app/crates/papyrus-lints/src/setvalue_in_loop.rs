@@ -43,7 +43,15 @@ pub const RULE: &str = "setvalue-in-loop";
 /// Checks every `While` loop in `source` for a `SetValue`/`SetValueInt`
 /// call that runs on every (or every reached) iteration, unless the loop
 /// also calls a wait/update-registration function somewhere within it.
-pub fn check(ast: Option<&Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

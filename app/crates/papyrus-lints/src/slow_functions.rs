@@ -40,7 +40,15 @@ pub const RULE: &str = "slow-functions";
 /// used through a variable: those scripts are never subclassed, so a
 /// qualified call to one of their functions is only a real match when the
 /// qualifier is literally that script's name.
-pub fn check(tokens: Option<&[papyrus_parser::token::Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, ast, config, external);
+
     check_with_rules(tokens, SLOW_FUNCTIONS)
 }
 
@@ -51,7 +59,14 @@ pub fn check(tokens: Option<&[papyrus_parser::token::Token]>) -> Vec<Diagnostic>
 /// argument. A bare replacement names the faster function and retains the
 /// original argument list. Calls whose parentheses are unbalanced are left
 /// untouched.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     repair_with_rules(source, SLOW_FUNCTIONS)
 }
 

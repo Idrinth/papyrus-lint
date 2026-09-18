@@ -2,7 +2,7 @@
 //! and comparison (`==`, `!=`, `>`, `<`, `>=`, `<=`) operators.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::{Token, TokenKind};
+use papyrus_parser::token::TokenKind;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "operator-spacing";
@@ -29,7 +29,15 @@ fn operator_text(kind: &TokenKind) -> Option<&'static str> {
 /// statement continued across lines — is never flagged on that side).
 /// Operators on a line protected by a CreationKit fragment-code wrapper
 /// (see [`fragment_code`]) are never flagged.
-pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (ast, config, external);
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };
@@ -77,7 +85,14 @@ pub fn check(source: &str, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
 /// fragment-code exemption) as [`check`]. A gap that reaches a newline is
 /// left exactly as-is, so a statement continued across physical lines
 /// keeps its own line breaks.
-pub fn repair(source: &str) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
     let protected = fragment_code::protected_lines(source);
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();

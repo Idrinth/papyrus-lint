@@ -440,6 +440,8 @@ struct RawRuleMeta {
     id: String,
     name: String,
     fixable: bool,
+    #[serde(default)]
+    repair_order: Option<u32>,
     #[serde(default = "enabled_by_default_default")]
     enabled_by_default: bool,
 }
@@ -448,16 +450,13 @@ fn enabled_by_default_default() -> bool {
     true
 }
 
-#[derive(serde::Deserialize)]
-struct RawDispatch {
-    id: String,
-    #[serde(default)]
-    check: Option<String>,
-    #[serde(default)]
-    repair: Option<String>,
-    #[serde(default)]
-    repair_order: Option<u32>,
-}
+const RULE_ID_TO_MODULE: &[(&str, &str)] = &[
+    ("float-to-int", "float_int_conversion"),
+    ("unknown-actor-value", "actor_value"),
+    ("event-signature-mismatch", "event_signature"),
+    ("too-many-named-states", "too_many_states"),
+    ("multiple-auto-states", "multiple_auto_states"),
+];
 
 /// `docs/rules.json` ids that do not become `Rules` field names by replacing
 /// `-` with `_`. Keep in sync with `papyrus-lint-config/build.rs`.
@@ -467,13 +466,17 @@ const RULE_ID_TO_CONFIG_KEY: &[(&str, &str)] = &[
 ];
 
 /// Project-level rules plus `unused-disable` (run from `lib.rs` after the
-/// rest of the pass). These have no `check` in `rule_dispatch.json`.
+/// rest of the pass). These have no generated `check` call.
 const NO_SOURCE_CHECK_IDS: &[&str] = &[
     "unused-disable",
     "conflicting-script-versions",
     "stale-compiled-output",
     "script-filename-mismatch",
 ];
+
+/// Fixable in `docs/rules.json`, but applied through
+/// `unused_import::repair_with` in `lib.rs` rather than `apply_repairs`.
+const EXTERNAL_REPAIR_IDS: &[&str] = &["unused-import"];
 
 fn config_key_for(id: &str) -> String {
     RULE_ID_TO_CONFIG_KEY
@@ -483,27 +486,12 @@ fn config_key_for(id: &str) -> String {
         .unwrap_or_else(|| id.replace('-', "_"))
 }
 
-fn rust_ident_tail(chunk: &str) -> Option<String> {
-    let ident = chunk
-        .rsplit(|c: char| !c.is_ascii_alphanumeric() && c != '_')
-        .next()
-        .unwrap_or("");
-    if ident.is_empty() {
-        None
-    } else {
-        Some(ident.to_string())
-    }
-}
-
-fn modules_from_expr(expr: &str) -> Vec<String> {
-    let chunks: Vec<&str> = expr.split("::").collect();
-    if chunks.len() < 2 {
-        return Vec::new();
-    }
-    chunks[..chunks.len() - 1]
+fn module_for_id(id: &str) -> String {
+    RULE_ID_TO_MODULE
         .iter()
-        .filter_map(|chunk| rust_ident_tail(chunk))
-        .collect()
+        .find(|(rule_id, _)| *rule_id == id)
+        .map(|(_, module)| (*module).to_string())
+        .unwrap_or_else(|| id.replace('-', "_"))
 }
 
 fn load_rule_meta(manifest_dir: &str) -> Vec<RawRuleMeta> {
@@ -523,92 +511,48 @@ fn load_rule_meta(manifest_dir: &str) -> Vec<RawRuleMeta> {
     })
 }
 
-fn rule_mod_for_repair(repair: &str) -> String {
-    let Some(idx) = repair.find("::repair") else {
-        panic!("repair expression must contain `::repair`: {repair}");
-    };
-    rust_ident_tail(&repair[..idx]).unwrap_or_else(|| {
-        panic!("repair expression has no module path before `::repair`: {repair}")
-    })
-}
-
-fn load_dispatch(manifest_dir: &str) -> Vec<RawDispatch> {
-    let json_path = Path::new(manifest_dir).join("rule_dispatch.json");
-    println!("cargo:rerun-if-changed={}", json_path.display());
-    let json_src = fs::read_to_string(&json_path).unwrap_or_else(|err| {
-        panic!(
-            "failed to read rule dispatch at {}: {err}",
-            json_path.display()
-        )
-    });
-    serde_json::from_str(&json_src).unwrap_or_else(|err| {
-        panic!(
-            "failed to parse rule dispatch at {}: {err}",
-            json_path.display()
-        )
-    })
-}
-
-fn validate_dispatch(rules: &[RawRuleMeta], dispatch: &[RawDispatch]) {
-    let rule_ids: Vec<&str> = rules.iter().map(|r| r.id.as_str()).collect();
-    let dispatch_ids: Vec<&str> = dispatch.iter().map(|r| r.id.as_str()).collect();
-    for id in &rule_ids {
-        if !dispatch_ids.contains(id) {
-            panic!("docs/rules.json rule `{id}` is missing from rule_dispatch.json");
-        }
-    }
-    for id in &dispatch_ids {
-        if !rule_ids.contains(id) {
-            panic!("rule_dispatch.json rule `{id}` is missing from docs/rules.json");
-        }
-    }
-
+fn validate_rules(rules: &[RawRuleMeta]) {
     let mut seen = std::collections::HashSet::new();
-    for entry in dispatch {
+    for entry in rules {
         if !seen.insert(entry.id.as_str()) {
-            panic!("rule_dispatch.json lists `{}` more than once", entry.id);
+            panic!("docs/rules.json lists `{}` more than once", entry.id);
         }
-        let meta = rules
-            .iter()
-            .find(|r| r.id == entry.id)
-            .expect("ids already cross-checked");
         let no_source = NO_SOURCE_CHECK_IDS.contains(&entry.id.as_str());
-        match (entry.check.is_some(), no_source) {
-            (true, true) => panic!(
-                "rule_dispatch.json: {} is a project/post-pass rule and must not have `check`",
-                entry.id
-            ),
-            (false, false) => panic!(
-                "rule_dispatch.json: {} needs a `check` (or belong to NO_SOURCE_CHECK_IDS)",
-                entry.id
-            ),
-            _ => {}
-        }
-        match (&entry.repair, entry.repair_order) {
-            (Some(_), None) => panic!(
-                "rule_dispatch.json: {} has `repair` but no `repair_order`",
-                entry.id
-            ),
-            (None, Some(_)) => panic!(
-                "rule_dispatch.json: {} has `repair_order` but no `repair`",
-                entry.id
-            ),
-            _ => {}
-        }
-        if entry.repair.is_some() && !meta.fixable {
+        let external_repair = EXTERNAL_REPAIR_IDS.contains(&entry.id.as_str());
+        if no_source && entry.repair_order.is_some() {
             panic!(
-                "rule_dispatch.json: {} has `repair` but docs/rules.json says it is not fixable",
+                "docs/rules.json: {} is a project/post-pass rule and must not have `repair_order`",
+                entry.id
+            );
+        }
+        if entry.repair_order.is_some() && !entry.fixable {
+            panic!(
+                "docs/rules.json: {} has `repair_order` but is not fixable",
+                entry.id
+            );
+        }
+        if entry.fixable && !external_repair && !no_source && entry.repair_order.is_none() {
+            panic!(
+                "docs/rules.json: {} is fixable and needs `repair_order` (or belong to EXTERNAL_REPAIR_IDS)",
+                entry.id
+            );
+        }
+        if external_repair && entry.repair_order.is_some() {
+            panic!(
+                "docs/rules.json: {} is repaired outside apply_repairs and must not have `repair_order`",
                 entry.id
             );
         }
     }
 
-    let mut orders: Vec<u32> = dispatch.iter().filter_map(|e| e.repair_order).collect();
+    let mut orders: Vec<u32> = rules.iter().filter_map(|e| e.repair_order).collect();
     orders.sort();
     if !orders.is_empty() {
         let expected: Vec<u32> = (1..=orders.len() as u32).collect();
         if orders != expected {
-            panic!("rule_dispatch.json `repair_order` values must be 1..=N without gaps, got {orders:?}");
+            panic!(
+                "docs/rules.json `repair_order` values must be 1..=N without gaps, got {orders:?}"
+            );
         }
     }
 }
@@ -720,20 +664,14 @@ fn compile_rules_struct(out_dir: &str, rules: &[&RawRuleMeta]) {
     });
 }
 
-/// Generates `collect_diagnostics` / `apply_repairs` from `rule_dispatch.json`.
-fn compile_rules_dispatch(out_dir: &str, dispatch: &[RawDispatch]) {
+/// Generates `collect_diagnostics` / `apply_repairs` from `docs/rules.json`.
+fn compile_rules_dispatch(out_dir: &str, rules: &[RawRuleMeta]) {
     let mut modules = std::collections::BTreeSet::new();
-    for entry in dispatch {
-        if let Some(check) = &entry.check {
-            for m in modules_from_expr(check) {
-                modules.insert(m);
-            }
+    for entry in rules {
+        if NO_SOURCE_CHECK_IDS.contains(&entry.id.as_str()) {
+            continue;
         }
-        if let Some(repair) = &entry.repair {
-            for m in modules_from_expr(repair) {
-                modules.insert(m);
-            }
-        }
+        modules.insert(module_for_id(&entry.id));
     }
 
     let mut generated = String::new();
@@ -750,7 +688,7 @@ fn compile_rules_dispatch(out_dir: &str, dispatch: &[RawDispatch]) {
 
     generated.push_str("/// Runs every enabled source-level lint against `source`.\n");
     generated
-        .push_str("/// Generated from `rule_dispatch.json` by `build.rs`. Do not edit by hand.\n");
+        .push_str("/// Generated from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
     generated.push_str("#[allow(clippy::too_many_lines)]\n");
     generated.push_str("pub fn collect_diagnostics<E: ExternalSignatures>(\n");
     generated.push_str("    source: &str,\n");
@@ -763,13 +701,16 @@ fn compile_rules_dispatch(out_dir: &str, dispatch: &[RawDispatch]) {
     generated.push_str("    let ast = ast.as_ref();\n");
     generated.push_str("    let rules = &config.rules;\n");
     generated.push_str("    let mut diagnostics = Vec::new();\n");
-    for entry in dispatch {
-        let Some(check) = &entry.check else {
+    for entry in rules {
+        if NO_SOURCE_CHECK_IDS.contains(&entry.id.as_str()) {
             continue;
-        };
+        }
         let key = config_key_for(&entry.id);
+        let module = module_for_id(&entry.id);
         generated.push_str(&format!("    if rules.{key} {{\n"));
-        generated.push_str(&format!("        diagnostics.extend({check});\n"));
+        generated.push_str(&format!(
+            "        diagnostics.extend({module}::check(source, ast, tokens, config, external));\n"
+        ));
         generated.push_str("    }\n");
     }
     generated.push_str("    diagnostics\n");
@@ -778,28 +719,30 @@ fn compile_rules_dispatch(out_dir: &str, dispatch: &[RawDispatch]) {
     generated
         .push_str("/// Applies every self-contained automatic fix whose ruleset is enabled.\n");
     generated
-        .push_str("/// Generated from `rule_dispatch.json` by `build.rs`. Do not edit by hand.\n");
+        .push_str("/// Generated from `docs/rules.json` by `build.rs`. Do not edit by hand.\n");
     generated.push_str("/// Repair order is `repair_order` in that file (not rule-id order),\n");
     generated.push_str("/// because later fixes see earlier rewrites.\n");
     generated.push_str("#[allow(clippy::too_many_lines)]\n");
     generated.push_str("pub fn apply_repairs(source: &str, config: &Config, applies: impl Fn(&str) -> bool) -> String {\n");
     generated.push_str("    let rules = &config.rules;\n");
     generated.push_str("    let mut source = source.to_string();\n");
-    let mut repairs: Vec<&RawDispatch> = dispatch.iter().filter(|e| e.repair.is_some()).collect();
+    let mut repairs: Vec<&RawRuleMeta> =
+        rules.iter().filter(|e| e.repair_order.is_some()).collect();
     repairs.sort_by_key(|e| e.repair_order.unwrap());
     if repairs.is_empty() {
         generated.push_str("    let _ = (rules, applies);\n");
     } else {
         for entry in &repairs {
             let key = config_key_for(&entry.id);
-            let repair = entry.repair.as_ref().unwrap();
-            let rule_mod = rule_mod_for_repair(repair);
+            let module = module_for_id(&entry.id);
             generated.push_str("    source = apply_rule(\n");
             generated.push_str("        source,\n");
             generated.push_str(&format!(
-                "        rules.{key} && applies({rule_mod}::RULE),\n"
+                "        rules.{key} && applies({module}::RULE),\n"
             ));
-            generated.push_str(&format!("        {repair},\n"));
+            generated.push_str(&format!(
+                "        |source| {{\n            let tokens = papyrus_parser::tokenize(source).ok();\n            let ast = papyrus_parser::parse(source).ok();\n            {module}::repair(source, ast.as_ref(), tokens.as_deref(), config)\n        }},\n"
+            ));
             generated.push_str("    );\n");
         }
     }
@@ -817,10 +760,9 @@ fn compile_rules_dispatch(out_dir: &str, dispatch: &[RawDispatch]) {
 
 fn compile_generated_rules(manifest_dir: &str, out_dir: &str) {
     let rules = load_rule_meta(manifest_dir);
-    let dispatch = load_dispatch(manifest_dir);
-    validate_dispatch(&rules, &dispatch);
+    validate_rules(&rules);
     let field_order = default_yaml_rule_order(manifest_dir);
     let ordered = ordered_rule_meta(&rules, &field_order);
     compile_rules_struct(out_dir, &ordered);
-    compile_rules_dispatch(out_dir, &dispatch);
+    compile_rules_dispatch(out_dir, &rules);
 }

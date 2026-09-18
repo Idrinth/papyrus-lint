@@ -95,7 +95,15 @@ impl DefaultKind {
 
 /// Checks every function/event in `source` for a local variable read before
 /// it's ever been assigned a value.
-pub fn check(ast: Option<&papyrus_parser::ast::Script>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

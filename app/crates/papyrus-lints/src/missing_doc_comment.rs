@@ -26,7 +26,15 @@ pub const RULE: &str = "missing-doc-comment";
 /// declaration with no `{ ... }` documentation comment on the line right
 /// after it. A script that doesn't parse cleanly is left unchecked rather
 /// than guessed at.
-pub fn check(source: &str, ast: Option<&Script>, tokens: Option<&[Token]>) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (config, external);
+
     let Some(script) = ast else {
         return Vec::new();
     };

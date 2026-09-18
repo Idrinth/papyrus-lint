@@ -114,7 +114,16 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 
 /// Checks `source` for positional call arguments that `setting` prefers to
 /// see passed by name instead.
-pub fn check(ast: Option<&Script>, setting: NamedArguments) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, external);
+    let setting = config.named_arguments;
+
     if setting == NamedArguments::Never {
         return Vec::new();
     }
@@ -293,7 +302,15 @@ fn check_call(
 /// exactly the arguments `check` reports and nothing else; unparseable
 /// source is returned unchanged, the same way `check` reports nothing for
 /// it.
-pub fn repair(source: &str, setting: NamedArguments) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens);
+    let setting = config.named_arguments;
+
     if setting == NamedArguments::Never {
         return source.to_string();
     }

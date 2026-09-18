@@ -12,7 +12,7 @@
 //! [`strip_known_prefix`]), since that part of the name can't be renamed at
 //! all.
 
-use papyrus_parser::token::{Keyword, Token, TokenKind};
+use papyrus_parser::token::{Keyword, TokenKind};
 use serde::{Deserialize, Serialize};
 
 use crate::Diagnostic;
@@ -160,7 +160,16 @@ fn strip_known_prefix(name: &str) -> &str {
 /// [`repair`] can't actually fix (e.g. a name with underscores under
 /// `PascalCase`/`camelCase`) says so in its own message, so callers don't
 /// present it as automatically fixable when it isn't.
-pub fn check(tokens: Option<&[Token]>, style: Style) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, ast, external);
+    let style = config.type_casing;
+
     let Some(tokens) = tokens else {
         return Vec::new();
     };
@@ -209,7 +218,15 @@ pub fn check(tokens: Option<&[Token]>, style: Style) -> Vec<Diagnostic> {
 /// left as-is; only the remainder of the name is rewritten. A repair that
 /// would add or remove characters is skipped so the declaration remains
 /// compatible with its filename. Invalid source is returned verbatim.
-pub fn repair(source: &str, style: Style) -> String {
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens);
+    let style = config.type_casing;
+
     let Ok(tokens) = papyrus_parser::tokenize(source) else {
         return source.to_string();
     };

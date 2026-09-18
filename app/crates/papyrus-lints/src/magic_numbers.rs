@@ -49,7 +49,16 @@ pub enum MagicNumbers {
 
 /// Checks `source` for numeric literals used directly rather than through
 /// a named constant, property, or local variable, per `mode`.
-pub fn check(ast: Option<&Script>, mode: MagicNumbers) -> Vec<Diagnostic> {
+pub fn check(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut impl crate::argument_types::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    let _ = (source, tokens, external);
+    let mode = config.magic_numbers;
+
     let Some(script) = ast else {
         return Vec::new();
     };
