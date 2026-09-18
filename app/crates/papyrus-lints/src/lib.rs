@@ -29,6 +29,7 @@ mod empty_body;
 mod event_signature;
 mod exclamation_spacing;
 mod explicit_return;
+mod external_signatures;
 mod float_equality;
 mod float_int_conversion;
 mod forbidden_functions;
@@ -105,8 +106,8 @@ pub use registry::{FIXABLE_RULE_IDS, KNOWN_RULE_IDS};
 
 use serde::Serialize;
 
-pub use argument_types::{ExternalSignatures, NoExternalSignatures, ParamInfo};
 pub use config::{Config, MagicNumbers, NamedArguments, TypeCasing};
+pub use external_signatures::{ExternalSignatures, NoExternalSignatures, ParamInfo};
 
 /// Runs the "Argument type check" lint against `source`, resolving calls
 /// declared on other scripts through `external`.
@@ -193,7 +194,11 @@ impl Diagnostic {
 /// [`repair`], which still applies its fixes regardless of
 /// `@disable`/`@disable-file` comments.
 pub fn lint(source: &str, config: &Config) -> Vec<Diagnostic> {
-    lint_with_external_arguments(source, config, &mut argument_types::NoExternalSignatures)
+    lint_with_external_arguments(
+        source,
+        config,
+        &mut external_signatures::NoExternalSignatures,
+    )
 }
 
 /// Like [`lint`], but resolves calls to functions declared on other
@@ -295,7 +300,7 @@ pub fn repair_filtered_by_tag(source: &str, config: &Config, tag: Option<&str>) 
 
 /// Like [`repair`], but also applies the "unused-import" fix (see
 /// [`unused_import::repair_with`]), resolving each `Import`'s usage through
-/// `external` — the same [`argument_types::ExternalSignatures`] resolver
+/// `external` — the same [`external_signatures::ExternalSignatures`] resolver
 /// [`lint_with_external_arguments`] uses for that rule's own diagnostics.
 /// Every other fix in [`FIXABLE_RULE_IDS`] behaves exactly as it does under
 /// [`repair`], since only "unused-import" needs project-wide context to

@@ -17,7 +17,7 @@
 //!
 //! Like [`crate::function_override`]/[`crate::argument_naming`], this can
 //! never be answered from `source` alone and reuses
-//! [`crate::argument_types::ExternalSignatures`]; without one (see
+//! [`crate::external_signatures::ExternalSignatures`]; without one (see
 //! [`check`]), this never finds anything to flag. Only functions declared
 //! directly on the script are checked, matching
 //! [`crate::function_override`]'s treatment of `State`-based overrides as a
@@ -29,7 +29,8 @@
 
 use papyrus_parser::ast::{Script, TypeName};
 
-use crate::argument_types::{format_type, ExternalSignatures};
+use crate::argument_types::format_type;
+use crate::external_signatures::ExternalSignatures;
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -44,7 +45,7 @@ pub fn check(
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
-    external: &mut impl crate::argument_types::ExternalSignatures,
+    external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)

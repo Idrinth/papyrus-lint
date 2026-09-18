@@ -19,7 +19,7 @@
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
 use papyrus_parser::types::TypeEnv;
 
-use crate::argument_types::ExternalSignatures;
+use crate::external_signatures::ExternalSignatures;
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -34,7 +34,7 @@ pub fn check(
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
-    external: &mut impl crate::argument_types::ExternalSignatures,
+    external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)

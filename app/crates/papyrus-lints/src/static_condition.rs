@@ -24,7 +24,7 @@ pub fn check(
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
-    external: &mut impl crate::argument_types::ExternalSignatures,
+    external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config, external);
 

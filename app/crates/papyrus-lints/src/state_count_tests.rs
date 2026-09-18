@@ -129,7 +129,7 @@ impl ExternalSignatures for FakeExternalWithAncestorStates {
         &mut self,
         _type_name: &str,
         _function_name: &str,
-    ) -> Option<Vec<crate::argument_types::ParamInfo>> {
+    ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
         None
     }
 

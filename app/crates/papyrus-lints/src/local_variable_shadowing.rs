@@ -6,7 +6,7 @@
 //!
 //! Like [`crate::argument_types`], this works from the parsed AST rather
 //! than raw tokens, and reuses that module's
-//! [`argument_types::ExternalSignatures`] trait so a caller that can
+//! [`external_signatures::ExternalSignatures`] trait so a caller that can
 //! resolve other scripts (e.g. the desktop app's `FunctionTable`) can also
 //! check shadowing against a parent script's properties, not just the
 //! linted script's own. A script that doesn't parse cleanly is left
@@ -16,7 +16,7 @@ use std::collections::HashSet;
 
 use papyrus_parser::ast::{FunctionDecl, Script, Stmt, VariableDecl};
 
-use crate::argument_types::ExternalSignatures;
+use crate::external_signatures::ExternalSignatures;
 use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -36,7 +36,7 @@ pub fn check(
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
-    external: &mut impl crate::argument_types::ExternalSignatures,
+    external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (tokens, config);
     check_with(source, ast, external)

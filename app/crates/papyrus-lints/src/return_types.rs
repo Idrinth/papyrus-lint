@@ -3,7 +3,7 @@
 //!
 //! Like [`crate::argument_types`], this works from the parsed AST (via
 //! `papyrus_parser::types`) since it needs to know declared types, and
-//! reuses that module's [`argument_types::ExternalSignatures`] trait so a
+//! reuses that module's [`external_signatures::ExternalSignatures`] trait so a
 //! caller that can resolve other scripts' `Extends` chains (e.g. the
 //! desktop app's `FunctionTable`) lets a returned value whose type is a
 //! *subtype* of the declared return type pass, the same way argument
@@ -18,7 +18,8 @@
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
-use crate::argument_types::{self, ExternalSignatures};
+use crate::argument_types;
+use crate::external_signatures::ExternalSignatures;
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -33,7 +34,7 @@ pub fn check(
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
-    external: &mut impl crate::argument_types::ExternalSignatures,
+    external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)

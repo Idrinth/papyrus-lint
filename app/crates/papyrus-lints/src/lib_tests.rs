@@ -242,7 +242,7 @@ fn extra_diagnostics_disabled_by_a_directive_are_not_reported_as_unused() {
     let diagnostics = lint_with_external_arguments_and_extra_diagnostics(
         source,
         &config,
-        &mut argument_types::NoExternalSignatures,
+        &mut external_signatures::NoExternalSignatures,
         extra,
     );
 
@@ -266,7 +266,7 @@ fn extra_diagnostics_not_covered_by_a_directive_still_report_it_as_unused() {
     let diagnostics = lint_with_external_arguments_and_extra_diagnostics(
         source,
         &config,
-        &mut argument_types::NoExternalSignatures,
+        &mut external_signatures::NoExternalSignatures,
         Vec::new(),
     );
 
@@ -1024,12 +1024,12 @@ fn each_rule_flag_gates_only_its_own_lint() {
 
 struct FakeExternalWithParentFunction;
 
-impl argument_types::ExternalSignatures for FakeExternalWithParentFunction {
+impl external_signatures::ExternalSignatures for FakeExternalWithParentFunction {
     fn lookup(
         &mut self,
         type_name: &str,
         function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<external_signatures::ParamInfo>> {
         if type_name.eq_ignore_ascii_case("ParentScript")
             && function_name.eq_ignore_ascii_case("DoThing")
         {
@@ -1066,12 +1066,12 @@ fn function_override_flag_gates_only_its_own_lint() {
 
 struct FakeExternalWithMissingScript;
 
-impl argument_types::ExternalSignatures for FakeExternalWithMissingScript {
+impl external_signatures::ExternalSignatures for FakeExternalWithMissingScript {
     fn lookup(
         &mut self,
         _type_name: &str,
         _function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<external_signatures::ParamInfo>> {
         None
     }
 
@@ -1105,12 +1105,12 @@ fn unresolved_script_flag_gates_only_its_own_lint() {
 
 struct FakeExternalWithCircularProperty;
 
-impl argument_types::ExternalSignatures for FakeExternalWithCircularProperty {
+impl external_signatures::ExternalSignatures for FakeExternalWithCircularProperty {
     fn lookup(
         &mut self,
         _type_name: &str,
         _function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<external_signatures::ParamInfo>> {
         None
     }
 
@@ -1152,12 +1152,12 @@ fn circular_dependency_flag_gates_only_its_own_lint() {
 
 struct FakeExternalWithNonGlobalFunction;
 
-impl argument_types::ExternalSignatures for FakeExternalWithNonGlobalFunction {
+impl external_signatures::ExternalSignatures for FakeExternalWithNonGlobalFunction {
     fn lookup(
         &mut self,
         _type_name: &str,
         _function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<external_signatures::ParamInfo>> {
         None
     }
 
@@ -1203,12 +1203,12 @@ fn non_global_function_call_flag_gates_only_its_own_lint() {
 
 struct FakeExternalWithGlobalFunction;
 
-impl argument_types::ExternalSignatures for FakeExternalWithGlobalFunction {
+impl external_signatures::ExternalSignatures for FakeExternalWithGlobalFunction {
     fn lookup(
         &mut self,
         _type_name: &str,
         _function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<external_signatures::ParamInfo>> {
         None
     }
 
@@ -1255,16 +1255,16 @@ fn static_function_call_via_instance_flag_gates_only_its_own_lint() {
 
 struct FakeExternalWithRenamedParentParam;
 
-impl argument_types::ExternalSignatures for FakeExternalWithRenamedParentParam {
+impl external_signatures::ExternalSignatures for FakeExternalWithRenamedParentParam {
     fn lookup(
         &mut self,
         type_name: &str,
         function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<external_signatures::ParamInfo>> {
         if type_name.eq_ignore_ascii_case("ParentScript")
             && function_name.eq_ignore_ascii_case("DoThing")
         {
-            Some(vec![argument_types::ParamInfo {
+            Some(vec![external_signatures::ParamInfo {
                 name: "akTarget".to_string(),
                 type_name: papyrus_parser::ast::TypeName {
                     name: "ObjectReference".to_string(),
@@ -1304,12 +1304,12 @@ fn argument_naming_flag_gates_only_its_own_lint() {
 
 struct FakeExternalWithUnrelatedAncestry;
 
-impl argument_types::ExternalSignatures for FakeExternalWithUnrelatedAncestry {
+impl external_signatures::ExternalSignatures for FakeExternalWithUnrelatedAncestry {
     fn lookup(
         &mut self,
         _type_name: &str,
         _function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<external_signatures::ParamInfo>> {
         None
     }
 
@@ -1350,12 +1350,12 @@ fn impossible_cast_flag_gates_only_its_own_lint() {
 
 struct FakeExternalWithUnusedImport;
 
-impl argument_types::ExternalSignatures for FakeExternalWithUnusedImport {
+impl external_signatures::ExternalSignatures for FakeExternalWithUnusedImport {
     fn lookup(
         &mut self,
         _type_name: &str,
         _function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<external_signatures::ParamInfo>> {
         None
     }
 

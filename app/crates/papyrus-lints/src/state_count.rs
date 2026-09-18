@@ -39,7 +39,7 @@ use std::collections::HashMap;
 
 use papyrus_parser::ast::Script;
 
-use crate::argument_types::{ExternalSignatures, NoExternalSignatures};
+use crate::external_signatures::{ExternalSignatures, NoExternalSignatures};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id for the named-state-count check, for
