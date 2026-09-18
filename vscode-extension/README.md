@@ -25,6 +25,15 @@ for `.psc` files directly in the editor, by shelling out to
   `papyrus-lint.yaml`/`.yml` in favor of the CLI's defaults; the full,
   project-aware lint still runs again on save. Controlled by the
   `papyrusLint.liveLint`/`papyrusLint.liveLintDebounceMs` settings below.
+- **Schema validation for config files**: associates any
+  `papyrus-lint.yml` / `papyrus-lint.yaml` (same `**/*.yml` + `**/*.yaml`
+  pairing GitHub Actions uses for workflow files) with
+  [`docs/papyrus-lint.schema.json`](../docs/papyrus-lint.schema.json),
+  served at <https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json>.
+  The Red Hat YAML extension picks that `yamlValidation` contribution up
+  for hover, completion, and diagnostics. The extension also activates
+  when a YAML file is opened or when a workspace contains those filenames,
+  not only on `onLanguage:papyrus`.
 - **Papyrus Lint: Lint Current File** — re-lints on demand, from the
   command palette, the editor context menu, or a `.psc` file's explorer
   context menu.

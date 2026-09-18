@@ -19,7 +19,10 @@
     "Linters"
   ],
   "activationEvents": [
-    "onLanguage:papyrus"
+    "onLanguage:papyrus",
+    "onLanguage:yaml",
+    "workspaceContains:**/papyrus-lint.yml",
+    "workspaceContains:**/papyrus-lint.yaml"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -32,6 +35,15 @@
         "aliases": [
           "Papyrus"
         ]
+      }
+    ],
+    "yamlValidation": [
+      {
+        "fileMatch": [
+          "**/papyrus-lint.yml",
+          "**/papyrus-lint.yaml"
+        ],
+        "url": "https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json"
       }
     ],
     "configuration": {
