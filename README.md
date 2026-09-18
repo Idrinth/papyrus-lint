@@ -241,13 +241,13 @@ releases contain backward-compatible fixes.
 The desktop app can apply an auto-fixable lint's fix directly from the
 Lint results tab or the code viewer — per file, per finding, or per rule
 across the whole project — preview the change as a diff first, and add an
-[`; @disable`](#disabling-a-lint-on-a-specific-line) comment for a finding
-you'd rather ignore. The code viewer also re-lints live as you type. The
-Lint results tab can export the current (filtered) findings as text or
-JSON, or as a JSON document tailored for handing to an AI assistant,
-including each finding's own detailed rule documentation and, optionally,
-each file's source. See [Fixing lint findings](docs/fixing-findings.md)
-for exactly what each button does and the export formats' full shape.
+`; @disable` comment for a finding you'd rather ignore. The code viewer
+also re-lints live as you type. The Lint results tab can export the current
+(filtered) findings as text or JSON, or as a JSON document tailored for
+handing to an AI assistant, including each finding's own detailed rule
+documentation and, optionally, each file's source. See
+[Fixing lint findings](docs/fixing-findings.md) for exactly what each button does
+ and the export formats' full shape.
 
 ## Compiling a script
 
