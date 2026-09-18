@@ -271,6 +271,7 @@ class StaticScriptsTest(unittest.TestCase):
             "marketplace.visualstudio.com",
             page.locator(".download-panel__go").get_attribute("href"),
         )
+        page.locator("#download").click()
         page.locator("select").select_option("papyrus-lint-vscode.vsix")
         self.assertTrue(
             page.locator(".download-panel__go")
