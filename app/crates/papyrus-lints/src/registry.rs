@@ -13,7 +13,8 @@ use crate::config::{Config, Rules};
 use crate::{
     actor_value, argument_naming, argument_override_types, argument_types, array_bounds,
     array_size_range, assignment_operator_spacing, chain_whitespace, circular_dependency,
-    comma_spacing, cyclomatic_complexity, default_property_value, division_by_zero, empty_body,
+    comma_spacing, cyclomatic_complexity, debug_side_effects, default_property_value, division_by_zero,
+    empty_body,
     event_signature, exclamation_spacing, explicit_return, float_equality, float_int_conversion,
     forbidden_functions, formid_hex_notation, function_override, get_form_from_file_skyrim_esm,
     get_state_comparison, global_variable_increment, global_variable_setvalue, goto_state,
@@ -123,6 +124,7 @@ pub fn default_rules() -> Rules {
         default_property_value: false,
         unguarded_self_recursion: true,
         self_assignment: true,
+        debug_side_effects: true,
         unnecessary_function: true,
         unknown_actor_value: false,
         repeated_setoutfit: true,
@@ -421,6 +423,9 @@ fn collect_remaining_diagnostics<E: ExternalSignatures>(
 ) {
     if rules.self_assignment {
         diagnostics.extend(self_assignment::check(source));
+    }
+    if rules.debug_side_effects {
+        diagnostics.extend(debug_side_effects::check(source));
     }
     if rules.unnecessary_function {
         diagnostics.extend(unnecessary_function::check(source));

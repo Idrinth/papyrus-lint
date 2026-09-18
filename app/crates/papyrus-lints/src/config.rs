@@ -93,6 +93,7 @@
 //!   default_property_value: false
 //!   unguarded_self_recursion: true
 //!   self_assignment: true
+//!   debug_side_effects: true
 //!   unnecessary_function: true
 //!   unknown_actor_value: false
 //!   repeated_setoutfit: true
@@ -520,6 +521,8 @@ pub struct Rules {
     pub unguarded_self_recursion: bool,
     /// The "Self-assignment" lint.
     pub self_assignment: bool,
+    /// The "Side-effecting call inside Debug.*" lint.
+    pub debug_side_effects: bool,
     /// The "Unnecessary function" lint.
     pub unnecessary_function: bool,
     /// The "Unknown Actor Value" lint. Like [`Self::property_sorting`],

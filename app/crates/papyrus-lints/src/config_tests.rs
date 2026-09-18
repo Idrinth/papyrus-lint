@@ -127,6 +127,7 @@ fn all_rules_default_to_enabled() {
     assert!(!config.rules.default_property_value);
     assert!(config.rules.unguarded_self_recursion);
     assert!(config.rules.self_assignment);
+    assert!(config.rules.debug_side_effects);
     assert!(config.rules.unnecessary_function);
     // Also disabled by default: a project's own plugin can define
     // additional, custom Actor Values that have no way to appear in
