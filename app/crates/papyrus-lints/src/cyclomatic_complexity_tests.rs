@@ -13,7 +13,7 @@ fn check(source: &str, warning: usize, error: usize) -> Vec<Diagnostic> {
         ast.as_ref(),
         tokens.as_deref(),
         &config,
-        &mut crate::argument_types::NoExternalSignatures,
+        &mut crate::external_signatures::NoExternalSignatures,
     )
 }
 

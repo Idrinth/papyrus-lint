@@ -10,7 +10,7 @@
 //! `source` alone — the parent script's declared functions live in a
 //! different file. Like [`crate::argument_types`] and
 //! [`crate::return_types`], it reuses
-//! [`crate::argument_types::ExternalSignatures`] so a caller that can
+//! [`crate::external_signatures::ExternalSignatures`] so a caller that can
 //! resolve other scripts (e.g. the desktop app's `FunctionTable`) supplies
 //! that; without one (see [`check`]), this never finds anything to flag.
 //!
@@ -21,7 +21,7 @@
 
 use papyrus_parser::ast::Script;
 
-use crate::argument_types::ExternalSignatures;
+use crate::external_signatures::ExternalSignatures;
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -35,7 +35,7 @@ pub fn check(
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
-    external: &mut impl crate::argument_types::ExternalSignatures,
+    external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)

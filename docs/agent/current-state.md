@@ -54,6 +54,14 @@ standalone, single-rule entry point for a caller that isn't going through
 `lint`/`lint_with_external_arguments` at all — is the one exception that
 still parses `source` itself, since there's no shared registry pass around
 it to have already done so.
+
+Cross-script lint rules share the project-semantic resolver contract in
+`app/crates/papyrus-lints/src/external_signatures.rs`. That neutral module owns
+`ExternalSignatures`, `NoExternalSignatures`, and `ParamInfo`; the
+`argument_types` module now owns only its local signature index, AST traversal,
+call matching, and type-compatibility policy. The crate-root re-exports remain
+the public API used by `papyrus-lint-core` and other callers.
+
 Automatic repair is available for trailing whitespace, comma spacing,
 semicolons, indentation, whitespace around member-access dots, spacing
 around `!` negation, spacing around logical/comparison operators, spacing
@@ -924,4 +932,3 @@ itself has changed (a new drop, or a manual re-lint finishing) re-baselines
 instead of treating every file as changed, since none of them actually
 changed on disk just because the tracked set did; this is also what lets
 watch mode carry over transparently across drops without being told to.
-

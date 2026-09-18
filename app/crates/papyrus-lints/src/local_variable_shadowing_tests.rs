@@ -8,7 +8,7 @@ fn check(source: &str) -> Vec<Diagnostic> {
         ast.as_ref(),
         tokens.as_deref(),
         &crate::config::Config::default(),
-        &mut crate::argument_types::NoExternalSignatures,
+        &mut crate::external_signatures::NoExternalSignatures,
     )
 }
 
@@ -16,7 +16,7 @@ fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diag
     let ast = papyrus_parser::parse(source).ok();
     super::check_with(source, ast.as_ref(), external)
 }
-use crate::argument_types::ParamInfo;
+use crate::external_signatures::ParamInfo;
 
 #[test]
 fn flags_local_variable_shadowing_own_property() {

@@ -20,12 +20,13 @@
 //! Determining that a cast target is an *ancestor* of the value's type
 //! (rather than an exact match) needs to resolve the value's script's
 //! `Extends` chain, which may reach into other scripts; see [`check_with`]
-//! and [`crate::argument_types::ExternalSignatures::is_subtype`].
+//! and [`crate::external_signatures::ExternalSignatures::is_subtype`].
 
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
-use crate::argument_types::{is_primitive, ExternalSignatures};
+use crate::argument_types::is_primitive;
+use crate::external_signatures::ExternalSignatures;
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -39,7 +40,7 @@ pub fn check(
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
-    external: &mut impl crate::argument_types::ExternalSignatures,
+    external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)

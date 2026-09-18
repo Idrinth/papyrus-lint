@@ -8,7 +8,7 @@ fn check(source: &str) -> Vec<Diagnostic> {
         ast.as_ref(),
         tokens.as_deref(),
         &crate::config::Config::default(),
-        &mut crate::argument_types::NoExternalSignatures,
+        &mut crate::external_signatures::NoExternalSignatures,
     )
 }
 
@@ -109,7 +109,7 @@ impl ExternalSignatures for FakeExternalWithSubtypes {
         &mut self,
         _type_name: &str,
         _function_name: &str,
-    ) -> Option<Vec<argument_types::ParamInfo>> {
+    ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
         None
     }
 
