@@ -21,6 +21,7 @@ mod circular_dependency;
 mod comma_spacing;
 pub mod config;
 mod cyclomatic_complexity;
+mod debug_side_effects;
 mod default_property_value;
 mod disable_comments;
 mod division_by_zero;

@@ -74,6 +74,7 @@ export interface LintRules {
   default_property_value: boolean;
   unguarded_self_recursion: boolean;
   self_assignment: boolean;
+  debug_side_effects: boolean;
   unknown_actor_value: boolean;
 }
 
@@ -162,6 +163,7 @@ export const DEFAULT_RULES: LintRules = {
   default_property_value: false,
   unguarded_self_recursion: true,
   self_assignment: true,
+  debug_side_effects: true,
   unknown_actor_value: false,
 };
 

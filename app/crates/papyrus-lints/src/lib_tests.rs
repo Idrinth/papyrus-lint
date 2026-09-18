@@ -952,6 +952,12 @@ fn each_rule_flag_gates_only_its_own_lint() {
                 config_with(|c| c.rules.self_assignment = false),
             ),
             (
+                "ScriptName Example\n\nFunction Test(Actor akActor, Form item)\n    Debug.Trace(akActor.RemoveItem(item, 1))\nEndFunction\n",
+                debug_side_effects::RULE,
+                Config::default(),
+                config_with(|c| c.rules.debug_side_effects = false),
+            ),
+            (
                 "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n",
                 unnecessary_function::RULE,
                 Config::default(),
