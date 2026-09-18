@@ -246,16 +246,11 @@ fn caches_parsed_scripts_across_lookups() {
 
     let mut table = FunctionTable::new(root.path().to_path_buf());
     assert!(table.lookup_function("Foo", "Bar").is_some());
-
-    // Remove the backing file: a cached lookup must not touch disk again.
-    fs::remove_file(root.path().join("scripts/source/Foo.psc"))
-        .expect("failed to remove script file");
-
     assert!(table.lookup_function("Foo", "Bar").is_some());
 }
 
 #[test]
-fn caches_an_unparseable_script_as_unresolved() {
+fn reloads_a_script_when_its_mtime_changes() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(root.path(), "Foo", "this is not a Papyrus script\n");
 
@@ -268,6 +263,32 @@ fn caches_an_unparseable_script_as_unresolved() {
         "Foo",
         "ScriptName Foo\n\nFunction Bar()\nEndFunction\n",
     );
+    // `ensure_loaded` keys the cache by mtime-seconds; force a newer stamp
+    // so this rewrite is visible even on filesystems with 1s resolution.
+    let path = root.path().join("scripts/source/Foo.psc");
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(2);
+    fs::File::open(&path)
+        .expect("failed to open rewritten script")
+        .set_modified(later)
+        .expect("failed to bump script mtime");
+
+    assert!(table.lookup_function("Foo", "Bar").is_some());
+}
+
+#[test]
+fn drops_a_cached_script_when_the_file_disappears() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Foo",
+        "ScriptName Foo\n\nFunction Bar()\nEndFunction\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    assert!(table.lookup_function("Foo", "Bar").is_some());
+
+    fs::remove_file(root.path().join("scripts/source/Foo.psc"))
+        .expect("failed to remove script file");
 
     assert!(table.lookup_function("Foo", "Bar").is_none());
 }

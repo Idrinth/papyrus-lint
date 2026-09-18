@@ -76,8 +76,9 @@ anything either. A caller that does have one calls the sibling
 `lint_with_external_arguments`'s own split from plain `lint`. The CLI's
 `fix` (via its per-script `SharedFunctionTable`) and the desktop app's
 `repair_psc_file`/`repair_psc_finding`/`repair_psc_file_rule` Tauri commands
-(via their own per-call `FunctionTable`, built before the fix instead of
-after it) both use these external-aware entry points so "Apply fixes"/
+(via the same process-wide per-project `SharedFunctionTable` the lint
+commands share, locked before the fix instead of after it) both use these
+external-aware entry points so "Apply fixes"/
 `fix`/the mass-fix button actually remove a resolved-unused `Import` line;
 `preview_repair_psc_file`/`preview_repair_psc_line` still call the plain,
 resolver-less functions, so their previews never include this fix. Removing

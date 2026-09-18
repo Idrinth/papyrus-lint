@@ -31,18 +31,25 @@ pub(crate) fn repair_psc_file(
     // call, since "unused-import" -- unlike every other fixable rule -- can
     // only resolve which imports are unused through this project's own
     // cross-script resolver (see `papyrus_lints::repair_with_external_arguments`).
-    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
-    let repaired =
-        papyrus_lints::repair_with_external_arguments(&source, &config, &mut function_table);
+    let function_table =
+        project_function_table(root.clone(), additional_roots.clone(), lookup_roots);
+    let repaired = {
+        let mut shared =
+            papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
+        papyrus_lints::repair_with_external_arguments(&source, &config, &mut shared)
+    };
     if repaired != source {
         write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
     }
     ast_cache::ensure_primed(path, &repaired);
+    let mut shared =
+        papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
     Ok(lint_with_compile_check(
         path,
         &repaired,
         &config,
-        &mut function_table,
+        &mut shared,
+        Path::new(&root),
         &additional_roots,
         &compiler_path,
         compile_check,
@@ -122,15 +129,20 @@ pub(crate) fn repair_psc_finding(
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     // See `repair_psc_file`'s own comment: built before the fix so
     // "unused-import"'s fix (if `rule` names it) can resolve through it too.
-    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
-    let repaired = papyrus_lints::repair_selected_with_external_arguments(
-        &source,
-        &config,
-        &mut function_table,
-        Some(rule.as_str()),
-        None,
-        Some(line),
-    )
+    let function_table =
+        project_function_table(root.clone(), additional_roots.clone(), lookup_roots);
+    let repaired = {
+        let mut shared =
+            papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
+        papyrus_lints::repair_selected_with_external_arguments(
+            &source,
+            &config,
+            &mut shared,
+            Some(rule.as_str()),
+            None,
+            Some(line),
+        )
+    }
     .ok_or_else(|| {
         "Fixing this issue would change other lines in the file; use \"Apply fixes\" instead."
             .to_string()
@@ -139,11 +151,14 @@ pub(crate) fn repair_psc_finding(
         write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
     }
     ast_cache::ensure_primed(path, &repaired);
+    let mut shared =
+        papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
     Ok(lint_with_compile_check(
         path,
         &repaired,
         &config,
-        &mut function_table,
+        &mut shared,
+        Path::new(&root),
         &additional_roots,
         &compiler_path,
         compile_check,
@@ -173,22 +188,30 @@ pub(crate) fn repair_psc_file_rule(
     let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
     // See `repair_psc_file`'s own comment: built before the fix so
     // "unused-import"'s fix (if `rule` names it) can resolve through it too.
-    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
-    let repaired = papyrus_lints::repair_filtered_with_external_arguments(
-        &source,
-        &config,
-        &mut function_table,
-        Some(rule.as_str()),
-    );
+    let function_table =
+        project_function_table(root.clone(), additional_roots.clone(), lookup_roots);
+    let repaired = {
+        let mut shared =
+            papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
+        papyrus_lints::repair_filtered_with_external_arguments(
+            &source,
+            &config,
+            &mut shared,
+            Some(rule.as_str()),
+        )
+    };
     if repaired != source {
         write_psc_source(path, &repaired, encoding).map_err(|err| err.to_string())?;
     }
     ast_cache::ensure_primed(path, &repaired);
+    let mut shared =
+        papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
     Ok(lint_with_compile_check(
         path,
         &repaired,
         &config,
-        &mut function_table,
+        &mut shared,
+        Path::new(&root),
         &additional_roots,
         &compiler_path,
         compile_check,
@@ -223,12 +246,16 @@ pub(crate) fn add_disable_comment_to_psc_line(
         write_psc_source(path, &updated, encoding).map_err(|err| err.to_string())?;
     }
     ast_cache::ensure_primed(path, &updated);
-    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
+    let function_table =
+        project_function_table(root.clone(), additional_roots.clone(), lookup_roots);
+    let mut shared =
+        papyrus_lint_core::function_table::SharedFunctionTable(function_table.as_ref());
     Ok(lint_with_compile_check(
         path,
         &updated,
         &config,
-        &mut function_table,
+        &mut shared,
+        Path::new(&root),
         &additional_roots,
         &compiler_path,
         compile_check,
