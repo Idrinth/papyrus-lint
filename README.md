@@ -1,4 +1,6 @@
-# Papyrus Lint [![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint) [![Discord Server](https://img.shields.io/badge/discord-server-5865F2?logo=discord)](https://discord.gg/idrinth) [![NexusMods](https://img.shields.io/badge/nexusmods-page-yellow)](https://www.nexusmods.com/skyrimspecialedition/mods/189862) [![GitHub](https://img.shields.io/badge/github-repo-white?logo=github)](https://github.com/idrinth/papyrus-lint) [![Action](https://img.shields.io/badge/GitHubAction-Ready-Purple?logo=GitHub&label=Action&color=purple)](https://github.com/marketplace/actions/papyrus-lint) [![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-007ACC?logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=Idrinth.papyrus-lint-vscode) [![Feedback](https://img.shields.io/badge/feedback-tally-orange)](https://tally.so/r/aQL1dB)
+# Papyrus Lint
+
+[![Quality gate status](https://sonarcloud.io/api/project_badges/measure?project=Idrinth_papyrus-lint&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Idrinth_papyrus-lint) [![Discord Server](https://img.shields.io/badge/discord-server-5865F2?logo=discord)](https://discord.gg/idrinth) [![NexusMods](https://img.shields.io/badge/nexusmods-page-yellow)](https://www.nexusmods.com/skyrimspecialedition/mods/189862) [![GitHub](https://img.shields.io/badge/github-repo-white?logo=github)](https://github.com/idrinth/papyrus-lint) [![Action](https://img.shields.io/badge/GitHubAction-Ready-Purple?logo=GitHub&label=Action&color=purple)](https://github.com/marketplace/actions/papyrus-lint) [![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-007ACC?logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=Idrinth.papyrus-lint-vscode) [![Feedback](https://img.shields.io/badge/feedback-tally-orange)](https://tally.so/r/aQL1dB)
 
 ![Papyrus Lint logo](shared/images/logo-small.jpg)
 
@@ -203,54 +205,9 @@ directory) path to the desktop app's own executable (`PapyrusLinter`), or
 via the standalone `PapyrusLinterCLI` binary (`app/crates/papyrus-lint-cli`)
 built and shipped separately for use cases — e.g. a CI pipeline — that
 shouldn't need the desktop app's binary (and its GUI dependencies) at all.
-Both accept the same argument and behave identically:
+Both accept the same argument and behave identically.
 
-```text
-PapyrusLinterCLI path/to/project.achlist
-PapyrusLinterCLI init
-PapyrusLinterCLI init --preset standard
-PapyrusLinterCLI init --preset my-team
-PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml
-PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml --yes
-PapyrusLinterCLI doctor path/to/project.achlist
-PapyrusLinterCLI doctor --json path/to/project.achlist
-PapyrusLinterCLI path/to/Example.psc
-PapyrusLinterCLI path/to/scripts/source
-PapyrusLinterCLI fix path/to/project.achlist
-PapyrusLinterCLI fix path/to/Example.psc
-PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
-PapyrusLinterCLI fix --line 12 --type trailing-whitespace path/to/Example.psc
-PapyrusLinterCLI fix --dry-run path/to/project.achlist
-PapyrusLinterCLI --tag style path/to/project.achlist
-PapyrusLinterCLI fix --tag style path/to/project.achlist
-PapyrusLinterCLI --json path/to/project.achlist
-PapyrusLinterCLI --format ai path/to/project.achlist
-PapyrusLinterCLI --format ai --hash-source path/to/project.achlist
-PapyrusLinterCLI --json fix path/to/project.achlist
-PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
-PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
-PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
-PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
-PapyrusLinterCLI --short-paths path/to/project.achlist
-PapyrusLinterCLI --color never path/to/project.achlist
-PapyrusLinterCLI --progress --output path/to/report.txt path/to/project.achlist
-PapyrusLinterCLI --threads 8 path/to/project.achlist
-PapyrusLinterCLI --threads 1 path/to/project.achlist
-PapyrusLinterCLI --blob "ScriptName Example extends ObjectReference"
-PapyrusLinterCLI --json --blob "ScriptName Example extends ObjectReference"
-PapyrusLinterCLI --config path/to/papyrus-lint.yaml --blob "ScriptName Example extends ObjectReference"
-```
-
-`init`/`preset add` scaffold a config file or save one as a reusable
-preset; `doctor` validates a project's setup without linting anything;
-`fix` applies every automatic fix, with `--type`/`--line`/`--dry-run` to
-scope or preview it; `--json`/`--format ai` produce machine-readable
-reports (with a published [JSON Schema](docs/papyrus-lint-report.schema.json));
-and `--tag`/`--script-root`/`--config`/`--blob`/`--output`/`--threads`/
-`--color`/`--short-paths`/`--progress` round out filtering, project
-resolution, and output control. See the
-[command-line interface reference](docs/cli.md) for every subcommand and
-flag, the JSON report's full shape, and exit codes.
+[See the docs](docs/cli.md) for more details.
 
 Prebuilt `PapyrusLinterCLI`/`PapyrusLinterCLI.exe` standalone CLI binaries
 for Linux, macOS, and Windows are attached to each [GitHub
@@ -310,6 +267,10 @@ invocation and how each of these behaviors works.
 A big thank you to WraithFallen for doing a massive testing run on the
 versions of this tool, helping find bugs and improve it further with
 their dedication to rooting out false positives.
+
+A big thank you to Scrivener07 for helping me review the linting rules
+in a long call. I appreciate the feedback and willingness to test what
+I assumed to be best practice.
 
 Another thank you to s3ngine and wall416 over on NexusMods for spotting
 bugs and reporting them in the early development of the tool.

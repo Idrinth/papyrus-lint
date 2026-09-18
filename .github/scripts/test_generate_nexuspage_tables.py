@@ -82,7 +82,7 @@ class RenderTablesTests(unittest.TestCase):
 
 class ApplyTests(unittest.TestCase):
     def test_replaces_each_table_block_in_order_and_leaves_the_rest_alone(self) -> None:
-        text = wrap("[spoiler][table]old-first[/table][/spoiler]", "[spoiler][table]old-second[/table][/spoiler]")
+        text = wrap("[spoiler][table][/table][/spoiler]", "[spoiler][table][/table][/spoiler]")
 
         updated = generate_nexuspage_tables.apply(
             text, ["[spoiler][table]new-first[/table][/spoiler]", "[spoiler][table]new-second[/table][/spoiler]"]
@@ -96,7 +96,7 @@ class ApplyTests(unittest.TestCase):
         self.assertIn("Outro paragraph.", updated)
 
     def test_rejects_a_block_count_mismatch(self) -> None:
-        text = wrap("[spoiler][table]only-one[/table][/spoiler]")
+        text = wrap("[spoiler][table][/table][/spoiler]")
 
         with self.assertRaisesRegex(ValueError, r"expected 2 \[spoiler\]\[table\] blocks, found 1"):
             generate_nexuspage_tables.apply(text, ["a", "b"])
@@ -110,7 +110,7 @@ class MainTests(unittest.TestCase):
             encoding="utf-8",
         )
         placeholder_blocks = [
-            "[spoiler][table]stale[/table][/spoiler]" for _ in generate_nexuspage_tables.CATEGORIES
+            "[spoiler][table][/table][/spoiler]" for _ in generate_nexuspage_tables.CATEGORIES
         ]
         bbcode_path = Path(directory, "page.bbcode")
         bbcode_path.write_text(wrap(*placeholder_blocks), encoding="utf-8")

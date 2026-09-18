@@ -8,41 +8,8 @@ built and shipped separately for use cases — e.g. a CI pipeline — that
 shouldn't need the desktop app's binary (and its GUI dependencies) at all.
 Both accept the same argument and behave identically:
 
-```text
-PapyrusLinterCLI path/to/project.achlist
-PapyrusLinterCLI init
-PapyrusLinterCLI init --preset standard
-PapyrusLinterCLI init --preset my-team
-PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml
-PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml --yes
-PapyrusLinterCLI doctor path/to/project.achlist
-PapyrusLinterCLI doctor --json path/to/project.achlist
-PapyrusLinterCLI path/to/Example.psc
-PapyrusLinterCLI path/to/scripts/source
-PapyrusLinterCLI fix path/to/project.achlist
-PapyrusLinterCLI fix path/to/Example.psc
-PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
-PapyrusLinterCLI fix --line 12 --type trailing-whitespace path/to/Example.psc
-PapyrusLinterCLI fix --dry-run path/to/project.achlist
-PapyrusLinterCLI --tag style path/to/project.achlist
-PapyrusLinterCLI fix --tag style path/to/project.achlist
-PapyrusLinterCLI --json path/to/project.achlist
-PapyrusLinterCLI --format ai path/to/project.achlist
-PapyrusLinterCLI --format ai --hash-source path/to/project.achlist
-PapyrusLinterCLI --json fix path/to/project.achlist
-PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
-PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
-PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
-PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
-PapyrusLinterCLI --short-paths path/to/project.achlist
-PapyrusLinterCLI --color never path/to/project.achlist
-PapyrusLinterCLI --progress --output path/to/report.txt path/to/project.achlist
-PapyrusLinterCLI --threads 8 path/to/project.achlist
-PapyrusLinterCLI --threads 1 path/to/project.achlist
-PapyrusLinterCLI --blob "ScriptName Example extends ObjectReference"
-PapyrusLinterCLI --json --blob "ScriptName Example extends ObjectReference"
-PapyrusLinterCLI --config path/to/papyrus-lint.yaml --blob "ScriptName Example extends ObjectReference"
-```
+[See the docs](papyrus-cli-usage.txt) for a list of possible arguments
+and options or read on for explanations.
 
 ## Initializing a project (`init`, `preset add`, `doctor`)
 

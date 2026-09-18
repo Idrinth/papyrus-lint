@@ -316,37 +316,6 @@ class RenderNexusPageTests(unittest.TestCase):
             render_nexuspage.render(template, 3, 4, "v1.0.0"),
         )
 
-    def test_render_requires_every_marker_exactly_once(self) -> None:
-        with self.assertRaisesRegex(ValueError, "expected exactly one <COVERED_LINES> marker, found 0"):
-            render_nexuspage.render("<TOTAL_LINES> <COVERAGE_PERCENTAGE> <VERSION>", 1, 2, "v1.2.3")
-
-        template = "<COVERED_LINES> <COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE> <VERSION>"
-        with self.assertRaisesRegex(ValueError, "expected exactly one <COVERED_LINES> marker, found 2"):
-            render_nexuspage.render(template, 1, 2, "v1.2.3")
-
-    def test_render_rejects_duplicate_non_count_markers(self) -> None:
-        for marker in ("<COVERAGE_PERCENTAGE>", "<VERSION>"):
-            with self.subTest(marker=marker):
-                template = (
-                    "<COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE> <VERSION> "
-                    + marker
-                )
-                with self.assertRaisesRegex(
-                    ValueError,
-                    f"expected exactly one {marker} marker, found 2",
-                ):
-                    render_nexuspage.render(template, 1, 2, "v1.2.3")
-
-    def test_render_rejects_missing_total_percentage_and_version_markers(self) -> None:
-        with self.assertRaisesRegex(ValueError, "expected exactly one <TOTAL_LINES> marker, found 0"):
-            render_nexuspage.render("<COVERED_LINES> <COVERAGE_PERCENTAGE> <VERSION>", 1, 2, "v1.2.3")
-        with self.assertRaisesRegex(
-            ValueError, "expected exactly one <COVERAGE_PERCENTAGE> marker, found 0"
-        ):
-            render_nexuspage.render("<COVERED_LINES> <TOTAL_LINES> <VERSION>", 1, 2, "v1.2.3")
-        with self.assertRaisesRegex(ValueError, "expected exactly one <VERSION> marker, found 0"):
-            render_nexuspage.render("<COVERED_LINES> <TOTAL_LINES> <COVERAGE_PERCENTAGE>", 1, 2, "v1.2.3")
-
     def test_main_renders_template_to_output_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

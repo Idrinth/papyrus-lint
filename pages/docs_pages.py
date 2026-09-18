@@ -40,6 +40,14 @@ GITHUB_BLOB_BASE = "https://github.com/idrinth/papyrus-lint/blob/the-one"
 # index page. `kind` picks how build.py renders that file's own content.
 DOCS = [
     {
+        "filename": "papyrus-cli-usage.txt",
+        "slug": "papyrus-cli-usage",
+        "kind": "bash",
+        "blurb": "The full call suite of the Papyrus Lint CLI.",
+        "title": "Papyrus Lint CLI Usage",
+        "description": "The full call suite of the Papyrus Lint CLI."
+    },
+    {
         "filename": "examples.md",
         "slug": "examples",
         "kind": "markdown",
