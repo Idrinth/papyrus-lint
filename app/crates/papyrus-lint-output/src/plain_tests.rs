@@ -18,13 +18,22 @@ fn resolve_color_always_and_never_ignore_every_other_input() {
 
 #[test]
 fn resolve_color_auto_requires_a_terminal_and_no_output_path() {
-    assert!(resolve_color(ColorChoice::Auto, None, true));
+    let output = Some(std::path::Path::new("report.txt"));
+    assert!(!resolve_color(ColorChoice::Auto, output, true));
+
+    if anstyle_query::clicolor_force() {
+        assert!(resolve_color(ColorChoice::Auto, None, false));
+        assert!(resolve_color(ColorChoice::Auto, None, true));
+        return;
+    }
+
     assert!(!resolve_color(ColorChoice::Auto, None, false));
-    assert!(!resolve_color(
-        ColorChoice::Auto,
-        Some(std::path::Path::new("report.txt")),
-        true
-    ));
+
+    let env_blocks_auto = anstyle_query::no_color() || anstyle_query::clicolor() == Some(false);
+    assert_eq!(
+        resolve_color(ColorChoice::Auto, None, true),
+        !env_blocks_auto
+    );
 }
 
 #[test]

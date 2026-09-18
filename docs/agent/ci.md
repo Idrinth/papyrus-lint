@@ -19,7 +19,7 @@ build script.
   Every other job `needs` this one (directly, or transitively through
   `rust-fmt`/`rust-clippy`/`rust-test`), so an unlabeled pull request's CI
   stops here instead of spending time on the rest of the jobs below.
-- **Rules YAML lint job**: runs `yamllint` against every `rules/*.yaml` file
+- **Rules YAML lint job**: runs `yamllint` against every `shared/rules/data/*.yaml` file
   so malformed rule data cannot be merged.
 - **Python lint job** (`python-lint`): runs `ruff check` (configured in the
   root `pyproject.toml`) against every Python source under `.github/scripts`,

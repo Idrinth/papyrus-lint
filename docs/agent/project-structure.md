@@ -129,15 +129,15 @@
 │       │       ├── config_tests.rs            # config.rs's unit tests
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
 │       │       ├── trailing_whitespace_tests.rs # trailing_whitespace.rs's unit tests
-│       │       ├── forbidden_functions.rs     # Reads rules/forbidden-functions.yaml
+│       │       ├── forbidden_functions.rs     # Reads shared/rules/data/forbidden-functions.yaml
 │       │       │                              # via a build-time-generated array
-│       │       ├── native_function_usage.rs   # Reads rules/native-methods.yaml via a
+│       │       ├── native_function_usage.rs   # Reads shared/rules/data/native-methods.yaml via a
 │       │       │                              # build-time-generated array; disabled by
 │       │       │                              # default
 │       │       └── actor_value.rs             # Flags a call to an Actor Value function
 │       │                                      # (GetActorValue, SetActorValue, ...) whose
 │       │                                      # argument isn't a known Actor Value; reads
-│       │                                      # rules/actor-values.yaml via a build-time-
+│       │                                      # shared/rules/data/actor-values.yaml via a build-time-
 │       │                                      # generated array; disabled by default
 │       ├── papyrus-lint-config/  # Locates/loads/saves a project's
 │       │   └── src/               # papyrus-lint.yaml (lint settings, compiler
@@ -208,12 +208,12 @@
 │       │       ├── native_types.rs     # Fallback Extends hierarchy for native
 │       │       │                       # engine types (Actor, ObjectReference,
 │       │       │                       # Form, ...) with no .psc in the project;
-│       │       │                       # reads rules/native-types.yaml via a
+│       │       │                       # reads shared/rules/data/native-types.yaml via a
 │       │       │                       # build-time-generated array (build.rs)
 │       │       ├── native_globals.rs   # Known native singleton scripts (Game,
 │       │       │                       # Utility, Debug, ...) always called by
 │       │       │                       # literal name, with no .psc in the
-│       │       │                       # project; reads rules/native-globals.yaml
+│       │       │                       # project; reads shared/rules/data/native-globals.yaml
 │       │       │                       # via a build-time-generated array (build.rs)
 │       │       ├── presets.rs          # Label/description metadata for the desktop
 │       │       │                       # app's first-run preset picker, layered over
@@ -263,14 +263,13 @@
 │           ├── src/                # achlist's scripts against its project's
 │           │   ├── lib.rs           # run() dispatch + public API only; also
 │           │   │                    # linked into src-tauri for its CLI mode
-│           │   ├── args/            # Parses/validates run()'s own arguments
-│           │   │   ├── mod.rs         # (a plain lint/fix run, or --blob):
-│           │   │   ├── parse.rs       # parse.rs recognizes clap's raw
-│           │   │   ├── validate.rs    # --flag syntax, validate.rs applies
-│           │   │   └── help.rs        # the business rules on top of it (mod.rs
-│           │   │                      # wires the two together and owns the
-│           │   │                      # shared types), and help.rs turns a
-│           │   │                      # rejected ArgsError into stderr text
+│           │   ├── args/            # Parses/validates run()'s arguments
+│           │   │   ├── mod.rs         # parse.rs is clap's tree (init/preset/
+│           │   │   ├── parse.rs       # doctor as subcommands, lint/fix/--blob
+│           │   │   ├── validate.rs    # as the default command); validate.rs
+│           │   │   └── help.rs        # applies lint/fix/--blob business rules
+│           │   │                      # (mod.rs owns the shared types); help.rs
+│           │   │                      # turns a rejected ArgsError into stderr
 │           │   ├── run_lint_command.rs # Runs a parsed plain lint/fix
 │           │   │                    # invocation end to end (run_scan +
 │           │   │                    # run_fix/run_lint + report assembly)
@@ -307,36 +306,24 @@
 ├── shared/
 │   ├── images/               # Images used by README.md (logo, screenshots)
 │   ├── rules/                 # One <id>.json per lint rule (the single
-│   │                          # source of truth for rule metadata — see
-│   │                          # AGENTS.md hard rule 4); rules.json (the
-│   │                          # combined array every other consumer reads)
-│   │                          # is generated from these by
-│   │                          # .github/scripts/build_rules_json.py and is
-│   │                          # git-ignored, not checked in
+│   │   │                      # source of truth for rule metadata — see
+│   │   │                      # AGENTS.md hard rule 4); rules.json (the
+│   │   │                      # combined array every other consumer reads)
+│   │   │                      # is generated from these by
+│   │   │                      # .github/scripts/build_rules_json.py and is
+│   │   │                      # git-ignored, not checked in
+│   │   └── data/             # YAML lookup tables compiled into the Rust crates:
+│   │       ├── forbidden-functions.yaml # Discouraged/forbidden calls
+│   │       ├── slow-functions.yaml      # Slow calls and faster alternatives
+│   │       ├── native-methods.yaml      # Base-game native functions
+│   │       ├── update-event-handlers.yaml # RegisterFor*/Event pairs
+│   │       ├── known-events.yaml        # Curated native Event signatures
+│   │       ├── native-types.yaml        # Native engine class hierarchy
+│   │       ├── native-globals.yaml      # Native singleton scripts
+│   │       └── actor-values.yaml        # Skyrim's built-in Actor Values
 │   └── theme.css             # Palette, canvas, and primitives shared by
 │                              # app/src/styles.css and pages/styles.css so
 │                              # the desktop app and the website cannot drift
-
-├── rules/
-│   ├── forbidden-functions.yaml  # Calls discouraged or forbidden by policy
-│   ├── slow-functions.yaml       # Slow calls and their faster alternatives
-│   ├── native-methods.yaml       # Base-game native functions (see
-│   │                             # native_function_usage.rs above)
-│   ├── update-event-handlers.yaml # RegisterFor*/Event pairs read by
-│   │                              # papyrus-lints/src/missing_update_handler.rs
-│   ├── known-events.yaml         # Curated native Event signatures read by
-│   │                             # papyrus-lints/src/event_signature.rs;
-│   │                             # all five files above are compiled in by
-│   │                             # papyrus-lints/build.rs
-│   ├── native-types.yaml         # Native engine class hierarchy fallback (see
-│   │                              # papyrus-lint-core/src/native_types.rs above);
-│   │                              # compiled in by papyrus-lint-core/build.rs
-│   ├── native-globals.yaml       # Native singleton scripts always called by
-│   │                                  # literal name (see native_globals.rs above);
-│   │                                  # compiled in by papyrus-lint-core/build.rs
-│   └── actor-values.yaml         # Skyrim's built-in Actor Values (see
-│                                  # actor_value.rs above); compiled in by
-│                                  # papyrus-lints/build.rs
 ├── SublimeLinter-contrib-papyrus-lint/  # Standalone SublimeLinter plugin package,
 │   ├── linter.py                          # runs PapyrusLinterCLI against a saved
 │   ├── messages.json                      # .psc file and parses its output

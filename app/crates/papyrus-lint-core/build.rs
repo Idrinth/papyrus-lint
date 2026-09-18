@@ -1,4 +1,4 @@
-//! Compiles `rules/native-types.yaml` and `rules/native-globals.yaml` into
+//! Compiles `shared/rules/data/native-types.yaml` and `shared/rules/data/native-globals.yaml` into
 //! static Rust arrays at build time, so `native_types::parent_of` and
 //! `native_globals::is_known` never parse YAML at runtime (see
 //! `src/native_types.rs` and `src/native_globals.rs`).
@@ -28,7 +28,7 @@ fn main() {
 }
 
 fn compile_native_types(manifest_dir: &str, out_dir: &str) {
-    let yaml_path = Path::new(manifest_dir).join("../../../rules/native-types.yaml");
+    let yaml_path = Path::new(manifest_dir).join("../../../shared/rules/data/native-types.yaml");
     println!("cargo:rerun-if-changed={}", yaml_path.display());
 
     let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
@@ -46,7 +46,7 @@ fn compile_native_types(manifest_dir: &str, out_dir: &str) {
 
     let mut generated = String::new();
     generated.push_str(
-        "/// Compiled from `rules/native-types.yaml` by `build.rs`. Do not edit by hand.\n",
+        "/// Compiled from `shared/rules/data/native-types.yaml` by `build.rs`. Do not edit by hand.\n",
     );
     generated.push_str("const NATIVE_EXTENDS: &[(&str, &str)] = &[\n");
     for rule in &rules {
@@ -68,7 +68,7 @@ fn compile_native_types(manifest_dir: &str, out_dir: &str) {
 }
 
 fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
-    let yaml_path = Path::new(manifest_dir).join("../../../rules/native-globals.yaml");
+    let yaml_path = Path::new(manifest_dir).join("../../../shared/rules/data/native-globals.yaml");
     println!("cargo:rerun-if-changed={}", yaml_path.display());
 
     let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
@@ -86,7 +86,7 @@ fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
 
     let mut generated = String::new();
     generated.push_str(
-        "/// Compiled from `rules/native-globals.yaml` by `build.rs`. Do not edit by hand.\n",
+        "/// Compiled from `shared/rules/data/native-globals.yaml` by `build.rs`. Do not edit by hand.\n",
     );
     generated.push_str("const NATIVE_GLOBALS: &[&str] = &[\n");
     for rule in &rules {

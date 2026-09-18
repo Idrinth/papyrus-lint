@@ -16,7 +16,7 @@
 //! common native types shared by Skyrim and Fallout 4, so
 //! `FunctionTable::is_subtype` can keep walking a type's ancestry past the
 //! point where project resolution runs out. It is compiled from
-//! `rules/native-types.yaml` by `build.rs` at build time (like the
+//! `shared/rules/data/native-types.yaml` by `build.rs` at build time (like the
 //! "forbidden functions"/"slow functions" rules in `papyrus-lints`), so
 //! extending the table doesn't need a code change. It is deliberately not
 //! exhaustive: a type this table doesn't know about (including one the

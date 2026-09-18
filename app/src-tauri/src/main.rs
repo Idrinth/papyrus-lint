@@ -241,7 +241,7 @@ mod tests {
         assert!(report.contains("[trailing-whitespace]"));
         assert_eq!(
             report.contains('\x1b'),
-            std::env::var_os("NO_COLOR").is_none()
+            papyrus_lint_output::resolve_color(papyrus_lint_output::ColorChoice::Auto, None, true)
         );
         assert!(stderr.is_empty());
     }

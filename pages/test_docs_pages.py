@@ -56,8 +56,8 @@ class ResolveDocHrefTest(unittest.TestCase):
         ):
             self.assertEqual(docs_pages.resolve_doc_href("guide.md"), "guide.html")
             self.assertEqual(
-                docs_pages.resolve_doc_href("../rules/example.yaml"),
-                "https://example.test/repository/rules/example.yaml",
+                docs_pages.resolve_doc_href("../shared/rules/data/example.yaml"),
+                "https://example.test/repository/shared/rules/data/example.yaml",
             )
             self.assertEqual(docs_pages.resolve_doc_href("https://example.com"), "https://example.com")
 

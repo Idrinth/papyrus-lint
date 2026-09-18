@@ -1,16 +1,14 @@
-//! Parses and validates [`crate::run`]'s own arguments — a plain lint/fix
-//! run, or `--blob <source>` — once `init`, `preset add`, and `doctor` (each
-//! dispatched, and parsed, by their own module before `run` ever reaches
-//! this) are ruled out. Split out from `run` so the parsing and validation
-//! themselves are fully testable without touching the filesystem, the same
-//! reasoning behind [`crate::init::parse_init_preset`]/
-//! [`crate::init::parse_preset_add_args`].
+//! Parses and validates [`crate::run`]'s arguments.
 //!
-//! Split further into three concerns: [`parse`] (recognizing `clap`'s own
-//! `--flag`/`--flag=value`/`--flag value` syntax, nothing more),
-//! [`validate`] (the business rules layered on top of that — mutually
-//! exclusive flags, enum coercion, numeric ranges), and [`help`] (turning a
-//! rejected [`ArgsError`] into the text actually written to `stderr`).
+//! [`parse`] owns clap's view of the CLI: `init`/`preset add`/`doctor` as
+//! real subcommands, and a plain lint/fix/`--blob` run as the default
+//! command (flags mixed with `fix` and the path in any order). [`validate`]
+//! applies the business rules layered on a lint/fix/`--blob` extraction
+//! (mutually exclusive flags, enum coercion, numeric ranges). [`help`] turns
+//! a rejected [`ArgsError`] into the text actually written to `stderr`.
+//!
+//! [`parse_init_preset`] / [`parse_preset_add_args`] stay unit-testable
+//! without going through [`parse_cli`].
 
 mod help;
 mod parse;
@@ -19,14 +17,20 @@ mod validate;
 use std::path::PathBuf;
 
 pub(crate) use help::write_args_error;
+pub(crate) use parse::{parse_cli, DoctorRawArgs, ParsedCli};
+
+#[cfg(test)]
+pub(crate) use parse::{
+    parse_init_preset, parse_preset_add_args, InitPresetError, PresetAddArgsError,
+};
 
 use crate::output::{ColorChoice, OutputFormat};
 
-/// Why [`parse_run_args`] rejected `args`. `Usage` covers every case
-/// [`crate::run`] reports with the generic [`crate::USAGE`] text (a missing
-/// flag value, or an unrecognized combination of positional arguments);
-/// every other variant carries whatever its own more specific message
-/// needs.
+/// Why [`parse_run_args`] / [`parse_cli`] rejected `args`. `Usage` covers
+/// every case [`crate::run`] reports with the generic [`crate::USAGE`] text
+/// (a missing flag value, an unrecognized subcommand, or an unrecognized
+/// combination of positional arguments); every other variant carries
+/// whatever its own more specific message needs.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum ArgsError {
     Usage,
@@ -94,10 +98,11 @@ pub(crate) enum ParsedCommand {
     Lint(LintArgs),
 }
 
-/// Parses and validates `args` into a [`ParsedCommand`]: [`parse::parse_raw`]
-/// recognizes `clap`'s own syntax, then [`validate::validate`] applies every
-/// usage check a plain lint/fix run or `--blob` needs before any of the
-/// actual work (resolving paths, loading config, linting) begins.
+/// Parses and validates a lint/fix/`--blob` invocation into a
+/// [`ParsedCommand`]: [`parse::parse_raw`] recognizes clap's flag syntax,
+/// then [`validate::validate`] applies every usage check that run needs
+/// before any of the actual work begins. Subcommands (`init`, `preset`,
+/// `doctor`) are handled by [`parse_cli`] instead.
 pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError> {
     validate::validate(parse::parse_raw(args)?)
 }

@@ -22,7 +22,7 @@ pub const RULE: &str = "invalid-random-range";
 
 /// The native `Utility` singleton functions this lint checks, both only
 /// ever called through that literal script name (see
-/// `rules/native-globals.yaml`), the same way [`crate::short_wait_interval`]
+/// `shared/rules/data/native-globals.yaml`), the same way [`crate::short_wait_interval`]
 /// treats `Utility.Wait`.
 const RANDOM_FUNCTIONS: &[&str] = &["RandomInt", "RandomFloat"];
 
