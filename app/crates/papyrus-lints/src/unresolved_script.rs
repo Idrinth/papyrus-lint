@@ -48,12 +48,7 @@ pub fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<
 
     if let Some(parent) = &script.extends {
         if !external.type_exists(parent) {
-            diagnostics.push(missing_type(
-                header_line(source),
-                1,
-                parent,
-                "Parent script",
-            ));
+            diagnostics.push(missing_type(script.line, 1, parent, "Parent script"));
         }
     }
 
@@ -215,13 +210,6 @@ fn walk_expr<E: ExternalSignatures>(
         Expr::NamedArg { value, .. } => walk_expr(value, line, env, external, diagnostics),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
     }
-}
-
-fn header_line(source: &str) -> usize {
-    source
-        .lines()
-        .position(|line| line.to_ascii_lowercase().contains("scriptname"))
-        .map_or(1, |line| line + 1)
 }
 
 fn stmt_line(stmt: &Stmt) -> usize {
