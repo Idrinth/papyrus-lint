@@ -211,6 +211,18 @@ describe('PapyrusLinter', () => {
     assert.match(launchFailure.messages.error[0], /not found/);
   });
 
+  it('rejects a manually configured CLI from a different release', async () => {
+    const harness = createHarness({
+      versionResult: { error: null, stdout: 'PapyrusLinterCLI 1.2.2\n', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
+
+    assert.equal(harness.execCalls.length, 0);
+    assert.match(harness.messages.error[0], /expected "PapyrusLinterCLI 1\.2\.3"/);
+    assert.match(harness.messages.error[0], /got "PapyrusLinterCLI 1\.2\.2"/);
+  });
+
   it('retries an automatic CLI download after a non-Error rejection', async () => {
     let attempts = 0;
     const harness = createHarness({

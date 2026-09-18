@@ -7,7 +7,7 @@ import subprocess
 import sublime
 import sublime_plugin
 
-from .cli_download import ensure_release_cli
+from .cli_download import ensure_release_cli, verify_configured_cli
 
 
 def _windows_startupinfo():
@@ -34,9 +34,11 @@ class _PapyrusLintCliSettings:
     """
 
     def _executable(self):
-        return self._linter_settings().get('executable') or ensure_release_cli(
-            sublime.cache_path()
-        )
+        executable = self._linter_settings().get('executable')
+        if executable:
+            verify_configured_cli(executable)
+            return executable
+        return ensure_release_cli(sublime.cache_path())
 
     def _config_path(self):
         return (self._linter_settings().get('config_path') or '').strip()

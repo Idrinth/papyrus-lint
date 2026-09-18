@@ -6,6 +6,7 @@ import json
 import os
 import platform
 import shutil
+import subprocess
 import tempfile
 import threading
 from contextlib import suppress
@@ -32,6 +33,7 @@ CLI_SHA256 = _load_cli_sha256()
 RELEASE_BASE = 'https://github.com/Idrinth/papyrus-lint/releases/download'
 
 _download_lock = threading.Lock()
+_verified_executables = set()
 
 
 def _asset_name(system=None):
@@ -83,6 +85,26 @@ def release_version():
     # Release archives carry VERSION; Package Control installs additionally
     # expose their tag-derived version through package-metadata.json.
     return (_package_dir() / 'VERSION').read_text(encoding='utf-8').strip().removeprefix('v')
+
+
+def verify_configured_cli(executable):
+    """Require a manually selected CLI to match this plugin's release."""
+    if executable in _verified_executables:
+        return
+    expected = f'PapyrusLinterCLI {release_version()}'
+    try:
+        completed = subprocess.run(
+            [executable, '--version'], check=True, capture_output=True, text=True
+        )
+    except (OSError, subprocess.CalledProcessError) as err:
+        raise OSError(f'could not check configured CLI version: {err}') from err
+    actual = completed.stdout.strip()
+    if actual != expected:
+        detail = actual or completed.stderr.strip() or 'no version output'
+        raise OSError(
+            f'configured CLI version mismatch: expected "{expected}", got "{detail}"'
+        )
+    _verified_executables.add(executable)
 
 
 def expected_sha256(asset):

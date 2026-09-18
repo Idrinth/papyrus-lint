@@ -46,6 +46,10 @@ app's `PapyrusLinter` executable; both lint and fix commands honor this setting:
 }
 ```
 
+The manually configured executable's `--version` output must match this
+plugin's version. A mismatched binary is rejected before linting, fixing, or
+initializing a configuration.
+
 Lint configuration is read from `papyrus-lint.yaml`/`.yml` in the project
 root inferred by the CLI (two directories above a `.psc` in the conventional
 `Scripts/Source` or `Source/Scripts` layout). See the main project's README

@@ -26,6 +26,7 @@ export function createHarness({
   textDocuments = [],
   releaseCli = async () => '/downloaded/PapyrusLinterCLI',
   result,
+  versionResult,
   workspaceFolders,
   quickPickResult,
   inputBoxResult,
@@ -113,6 +114,15 @@ export function createHarness({
     if (request === 'child_process') {
       return {
         execFile(executable, args, options, callback) {
+          if (args.length === 1 && args[0] === '--version') {
+            const response = versionResult ?? {
+              error: null,
+              stdout: 'PapyrusLinterCLI 1.2.3\n',
+              stderr: '',
+            };
+            callback(response.error, response.stdout, response.stderr);
+            return;
+          }
           execCalls.push({ executable, args, options });
           if (typeof result === 'function') {
             result({ executable, args, options, callback });
