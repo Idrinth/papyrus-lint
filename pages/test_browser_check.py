@@ -252,6 +252,32 @@ class StaticScriptsTest(unittest.TestCase):
         self.assertTrue(page.locator(".download-panel").is_hidden())
         self.assertTrue(self.is_focused(page.locator("#download")))
 
+    def test_download_picker_offers_vscode_marketplace_and_vsix(self) -> None:
+        page = self.run_script(
+            """<div class="download-group"><a id="download" data-download-toggle
+               data-download-id="vscode"
+               data-options='[{"file":"vscode-marketplace","label":"VS Code Marketplace"},
+                              {"file":"papyrus-lint-vscode.vsix","label":"Download VSIX package"}]'
+               href="https://marketplace.visualstudio.com/items?itemName=Idrinth.papyrus-lint-vscode">
+               VS Code Extension</a></div>""",
+            "downloads.js",
+        )
+
+        self.assertEqual(
+            page.locator("select option").all_text_contents(),
+            ["VS Code Marketplace", "Download VSIX package"],
+        )
+        self.assertIn(
+            "marketplace.visualstudio.com",
+            page.locator(".download-panel__go").get_attribute("href"),
+        )
+        page.locator("select").select_option("papyrus-lint-vscode.vsix")
+        self.assertTrue(
+            page.locator(".download-panel__go")
+            .get_attribute("href")
+            .endswith("papyrus-lint-vscode.vsix")
+        )
+
     def test_download_picker_toggle_closes_its_open_panel(self) -> None:
         page = self.run_script(
             """<div class="download-group"><a id="download" data-download-toggle

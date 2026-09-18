@@ -46,7 +46,9 @@ profile on only one root would not apply to the other. The `ubuntu-latest` leg a
 `papyrus-lint.yaml` and attaches it to the release alongside the CLI
 binary, rather than generating it by running the freshly built CLI's
 `init` subcommand. A separate `editor-plugins` job runs independently,
-packages the VS Code extension into a `.vsix` (via `@vscode/vsce`)
+packages the VS Code extension into a `.vsix` (via `@vscode/vsce`, staging
+`shared/images/logo.png` in the extension directory first so the Marketplace
+package includes its declared icon without duplicating the image in source)
 and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip` while
 excluding its development-only `tests/` directory, and
 attaches both to the same release. A final `release-notes` job (after
