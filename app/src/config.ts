@@ -14,6 +14,7 @@ export interface LintRules {
   formid_hex_notation: boolean;
   slow_functions: boolean;
   unused_getter: boolean;
+  unused_nodiscard: boolean;
   unused_property: boolean;
   semicolon: boolean;
   float_int_conversion: boolean;
@@ -103,6 +104,7 @@ export const DEFAULT_RULES: LintRules = {
   formid_hex_notation: true,
   slow_functions: true,
   unused_getter: true,
+  unused_nodiscard: true,
   unused_property: true,
   semicolon: true,
   float_int_conversion: true,
