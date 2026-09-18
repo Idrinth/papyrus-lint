@@ -164,7 +164,15 @@ the rule has known tag metadata; and both the CLI's `--json`
 (`JsonDiagnostic::doc_url`, `null` for a rule with none) and `--format ai`
 (`AiRuleDetails::doc_url`, always present since untagged rules are
 filtered out of `rule_details`) output, and the desktop app's matching
-"Export issues"/"Export for AI" JSON, carry the same field — the AI
+"Export issues"/"Export for AI" JSON, carry the same field — both surfaces
+now go through the same `papyrus-lint-output` crate's `doc_url_for`
+(`app/crates/papyrus-lint-output`, depended on by both `papyrus-lint-cli`
+and, via its own `format_issues_as_text`/`format_issues_as_json`/
+`format_issues_for_ai_base` Tauri commands in
+`app/src-tauri/src/export.rs`, the desktop app), so a diagnostic's
+`doc_url` can never drift between the CLI and the GUI, and — unlike before
+that crate was shared — no longer depends on whether the frontend's own
+`list_rule_tags` call has already populated `ruleTagsByRule`. The AI
 export's `$schema` was bumped to
 [v3](docs/papyrus-lint-ai-export.v3.schema.json) for it, with
 [v2](docs/papyrus-lint-ai-export.v2.schema.json) (and

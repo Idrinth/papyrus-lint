@@ -127,8 +127,10 @@ fn append_json_summary(
 fn append_ai_summary(report: &mut AggregatedReport, lint_config: &papyrus_lints::Config) {
     let ai_report = build_ai_report(
         lint_config,
+        crate::VERSION,
         std::mem::take(&mut report.ai_files),
         report.total_diagnostics,
+        generated_at(),
     );
     write_json_report(&mut report.buf, &ai_report);
 }

@@ -29,7 +29,7 @@ GitHub release or included in release-asset signing and VirusTotal jobs.
 
 A separate release job syncs the
 tag's version into `app/src-tauri/tauri.conf.json`, `app/package.json`,
-`app/src-tauri/Cargo.toml`, and all six reusable crates' `Cargo.toml` files, then
+`app/src-tauri/Cargo.toml`, and all seven reusable crates' `Cargo.toml` files, then
 builds the Tauri desktop app (binary name `PapyrusLinter`) on Linux,
 macOS, and Windows (via `tauri-apps/tauri-action`) and the
 `PapyrusLinterCLI` CLI binary (via `cargo build --release --manifest-path
@@ -39,7 +39,7 @@ platform's desktop bundle and CLI binary
 to a GitHub release for that tag, creating the release if it doesn't
 already exist. Both cargo roots (`app/src-tauri` and
 `app/crates/papyrus-lint-cli`) set a size-oriented `[profile.release]`
-(`lto`, `codegen-units = 1`, `strip`, `panic = "abort"`) because the six
+(`lto`, `codegen-units = 1`, `strip`, `panic = "abort"`) because the seven
 reusable crates are path dependencies rather than workspace members, so a
 profile on only one root would not apply to the other. The `ubuntu-latest` leg also copies the checked-in
 `docs/papyrus-lint.default.yaml` (see Configuration above) to

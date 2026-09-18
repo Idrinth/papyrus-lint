@@ -32,6 +32,7 @@ papyrus-lints = { path = "../crates/papyrus-lints" }
 papyrus-lint-core = { path = "../crates/papyrus-lint-core" }
 papyrus-lint-config = { path = "../crates/papyrus-lint-config" }
 papyrus-lint-cli = { path = "../crates/papyrus-lint-cli" }
+papyrus-lint-output = { path = "../crates/papyrus-lint-output" }
 tempfile = "3"
 
 [profile.release]

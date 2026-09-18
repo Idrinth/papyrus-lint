@@ -9,6 +9,39 @@ export interface FilteredIssuesFile {
   findings: Diagnostic[];
 }
 
+// One finding as sent to the shared papyrus-lint-output crate's
+// format_issues_as_text/format_issues_as_json/format_issues_for_ai_base
+// Tauri commands (see app/src-tauri/src/export.rs): unlike Diagnostic,
+// `rule` is never missing, matching that crate's OwnedDiagnostic (an
+// IPC-friendly diagnostic can't carry an optional rule the way
+// papyrus_lints::Diagnostic never does either).
+export interface IssuesDiagnosticInput {
+  line: number;
+  column: number;
+  rule: string;
+  message: string;
+}
+
+export interface IssuesFileInput {
+  path: string;
+  findings: IssuesDiagnosticInput[];
+}
+
+// Converts already-filtered findings into the shape those Tauri commands
+// expect, defaulting a finding with no rule id to "unknown" the same way
+// the GUI's own export formatting always has.
+export function toIssuesFileInput(files: FilteredIssuesFile[]): IssuesFileInput[] {
+  return files.map((file) => ({
+    path: file.path,
+    findings: file.findings.map((finding) => ({
+      line: finding.line,
+      column: finding.column,
+      rule: finding.rule ?? "unknown",
+      message: finding.message,
+    })),
+  }));
+}
+
 // A serializable snapshot of the GUI-only result filters. The AI export
 // includes this alongside the already-filtered findings so its reader can
 // distinguish a genuinely clean category from one the user excluded.

@@ -71,7 +71,7 @@ pub(crate) fn run_blob(
     let use_color = resolve_color(color_choice, output_path, stdout_is_terminal);
 
     let total_diagnostics = diagnostics.len();
-    let json_diagnostics = to_json_diagnostics(&diagnostics);
+    let json_diagnostics = to_json_diagnostics(&diagnostics, false);
 
     let mut report_buf: Vec<u8> = Vec::new();
 
@@ -148,7 +148,7 @@ fn write_blob_ai(
         let severity_counts = severity_counts(&json_diagnostics);
         let ai_source = if hash_source {
             AiSource::Hash {
-                algorithm: "md5",
+                algorithm: "md5".to_string(),
                 hash: content_hash::md5_hex(source),
             }
         } else {
@@ -161,10 +161,16 @@ fn write_blob_ai(
             severity_counts,
             rule_counts,
             diagnostics: json_diagnostics,
-            source: ai_source,
+            source: Some(ai_source),
         }]
     };
-    let report = build_ai_report(lint_config, ai_files, total_diagnostics);
+    let report = build_ai_report(
+        lint_config,
+        crate::VERSION,
+        ai_files,
+        total_diagnostics,
+        generated_at(),
+    );
     write_json_report(report_buf, &report);
 }
 

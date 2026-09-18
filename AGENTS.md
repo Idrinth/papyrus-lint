@@ -33,13 +33,14 @@ Do not paste those files back into this index. Update the file you read.
 | `papyrus-lint-config` | `app/crates/papyrus-lint-config` | Locates/loads/saves a project's `papyrus-lint.yaml`, presets. |
 | `papyrus-lint-core` | `app/crates/papyrus-lint-core` | Project root, achlist, function table, compiler. |
 | `papyrus-lint-cli` | `app/crates/papyrus-lint-cli` | `PapyrusLinterCLI`. Shared `run()` used by the desktop binary too. |
+| `papyrus-lint-output` | `app/crates/papyrus-lint-output` | Plain-text/JSON/AI-export report formatting, shared by `papyrus-lint-cli` and the desktop app's Tauri commands (`app/src-tauri/src/export.rs`). |
 | desktop shell | `app/src-tauri` | Tauri commands + GUI/CLI dispatch. |
 | frontend | `app/src` | Vanilla TypeScript. No framework. |
 | VS Code | `vscode-extension/` | Editor integration. |
 | Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
 | rule data | `rules/*.yaml`, `docs/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`; `docs/rules.json`'s `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
 
-The six reusable crates are **path dependencies, not Cargo workspace
+The seven reusable crates are **path dependencies, not Cargo workspace
 members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each
 crate's own `Cargo.toml`. Only `app/src-tauri` needs Tauri system deps.
 
@@ -52,6 +53,7 @@ From the repo root, typical loops:
 - Lints: `cargo test --manifest-path app/crates/papyrus-lints/Cargo.toml`
 - Config: `cargo test --manifest-path app/crates/papyrus-lint-config/Cargo.toml`
 - Core: `cargo test --manifest-path app/crates/papyrus-lint-core/Cargo.toml`
+- Output formatting: `cargo test --manifest-path app/crates/papyrus-lint-output/Cargo.toml`
 - CLI: `cargo test --manifest-path app/crates/papyrus-lint-cli/Cargo.toml`
 - Frontend (`app/`): `npm test`, `npm run lint`, `npm run build`
 - VS Code (`vscode-extension/`): `npm test`, `npm run lint`, `npm run compile`

@@ -2542,6 +2542,7 @@ dependencies = [
  "papyrus-lint-cli",
  "papyrus-lint-config",
  "papyrus-lint-core",
+ "papyrus-lint-output",
  "papyrus-lints",
  "papyrus-parser",
  "serde",
@@ -2559,6 +2560,7 @@ dependencies = [
  "clap",
  "papyrus-lint-config",
  "papyrus-lint-core",
+ "papyrus-lint-output",
  "papyrus-lints",
  "papyrus-parser",
  "serde",
@@ -2594,6 +2596,15 @@ dependencies = [
  "similar",
  "tempfile",
  "walkdir",
+]
+
+[[package]]
+name = "papyrus-lint-output"
+version = "0.1.0"
+dependencies = [
+ "papyrus-lints",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

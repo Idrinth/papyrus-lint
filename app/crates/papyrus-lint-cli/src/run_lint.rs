@@ -186,13 +186,13 @@ fn build_file_reports(
     let mut json_file = None;
     let mut ai_file = None;
     if ctx.json {
-        let json_diagnostics = to_json_diagnostics(diagnostics);
+        let json_diagnostics = to_json_diagnostics(diagnostics, false);
         if ctx.output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
             let rule_counts = rule_counts(&json_diagnostics);
             let severity_counts = severity_counts(&json_diagnostics);
             let ai_source = if ctx.hash_source {
                 AiSource::Hash {
-                    algorithm: "md5",
+                    algorithm: "md5".to_string(),
                     hash: content_hash::md5_hex(source),
                 }
             } else {
@@ -205,7 +205,7 @@ fn build_file_reports(
                 severity_counts,
                 rule_counts,
                 diagnostics: json_diagnostics,
-                source: ai_source,
+                source: Some(ai_source),
             });
         } else if ctx.output_format == OutputFormat::Json {
             json_file = Some(JsonFileReport {

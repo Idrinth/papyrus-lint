@@ -1,11 +1,16 @@
-mod ai;
-mod json;
-mod plain;
-
-pub(crate) use ai::*;
-pub(crate) use json::*;
-pub use json::{JsonDiagnostic, JsonFileReport, JsonReport};
-pub(crate) use plain::*;
+// Plain-text/JSON/AI-export report *formatting* now lives in the shared
+// `papyrus-lint-output` crate (see its own docs), used here and by the
+// desktop app's Tauri commands (`app/src-tauri/src/export.rs`) so the two
+// can never disagree on a diagnostic's exported shape. This module keeps
+// only what's specific to running the CLI itself: which format was
+// selected, filtering/failure-threshold logic driven by CLI flags, and
+// writing the finished report to stdout or `--output <path>`.
+pub(crate) use papyrus_lint_output::{
+    build_ai_report, colorize, format_diagnostic_line, generated_at, resolve_color, rule_counts,
+    severity_counts, to_json_diagnostics, AiFileReport, AiSource, ColorChoice, ANSI_GREEN,
+    ANSI_RED, ANSI_YELLOW,
+};
+pub use papyrus_lint_output::{JsonDiagnostic, JsonFileReport, JsonReport};
 
 /// Normalizes a raw `--tag <kind>` value to lowercase and checks it against
 /// every rule's own tagged kind(s) (see [`papyrus_lints::tags::RULE_TAGS`]),

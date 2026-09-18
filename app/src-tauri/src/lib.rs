@@ -1,4 +1,5 @@
 mod config_presets;
+mod export;
 mod files;
 mod lint;
 mod lint_config;
@@ -7,6 +8,7 @@ mod project_root;
 mod repair;
 
 use config_presets::*;
+use export::*;
 use files::*;
 use lint::*;
 use lint_config::*;
@@ -60,7 +62,10 @@ pub fn run() {
             compile_psc_file,
             list_script_members,
             find_project_root,
-            find_psc_project_root_for_path
+            find_psc_project_root_for_path,
+            format_issues_as_text,
+            format_issues_as_json,
+            format_issues_for_ai_base
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
