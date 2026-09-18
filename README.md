@@ -535,7 +535,13 @@ at all. Either way, each script is linted against the project's
 case-insensitively) and taking the directory above it — so it's found
 correctly even for a script nested further still, e.g. a namespaced
 `Scripts/Source/User/MyScript.psc`, not just the conventional two
-directories up. A scanned directory's own resolved scripts are tried the
+directories up. If no such pair exists in the path at all (e.g. a project
+laid out like Requiem's own, without a `scripts/source` tree), it instead
+looks for the nearest ancestor directory that already has a
+`papyrus-lint.yaml`/`.yml`, so that project's config is still picked up for
+a single file linted directly (e.g. by an editor plugin on save) — only
+falling back to the fixed two-directories-up guess if neither finds
+anything. A scanned directory's own resolved scripts are tried the
 same way first, falling back to the scanned directory itself as the
 project root if none of them match that layout. If no config exists
 there, the documented defaults apply. Each diagnostic found is printed as

@@ -30,8 +30,15 @@
 //! `Data\Scripts\Source\abc.psc` — which also finds the right root for a
 //! script nested further still, e.g. a namespaced
 //! `Data\Scripts\Source\User\abc.psc`. For a bare `.psc` file given directly,
-//! that walk starts from the file itself, falling back to two directories up
-//! if no such pair is found in the path at all. For an `.achlist` or a
+//! that walk starts from the file itself; if no such pair is found in the
+//! path at all (e.g. a project laid out some other way, like Requiem's own,
+//! arbitrarily nested layout), it instead looks for the nearest ancestor
+//! directory that already has a `papyrus-lint.yaml`/`.yml`
+//! ([`papyrus_lint_core::project_root::find_psc_project_root`]'s
+//! `find_config_file_root` step), so that project's real config still gets
+//! picked up rather than silently falling back to the built-in defaults —
+//! only falling back to the previous fixed two-directories-up guess if
+//! neither finds anything. For an `.achlist` or a
 //! directory, the same walk is tried against each resolved `.psc` entry
 //! first, so a project whose `.achlist`/scanned directory sits somewhere
 //! other than the project root (e.g. a user drops it next to a game's
@@ -276,9 +283,11 @@ Lints every .psc script listed in the given .achlist file, a single\n\
 .psc file given directly, or every .psc file found recursively under a\n\
 given directory (any depth of subfolders), using the project's\n\
 papyrus-lint.yaml/.yml configuration (looked up next to the .achlist\n\
-file or scanned directory, or two directories up from a bare .psc file,\n\
-e.g. Data for Data\\Scripts\\Source\\abc.psc; falling back to defaults\n\
-if it has none).\n\n\
+file or scanned directory; for a bare .psc file, by walking up from it\n\
+for a Scripts/Source or Source/Scripts pair, e.g. Data for\n\
+Data\\Scripts\\Source\\abc.psc, then for the nearest ancestor directory\n\
+that already has a config file, then two directories up; falling back\n\
+to defaults if none of that finds one).\n\n\
 With the `fix` subcommand, applies every automatic fix (see README.md)\n\
 to those scripts first, rewriting each one on disk if it changed, then\n\
 reports whatever diagnostics remain the same way. With --dry-run, no\n\
