@@ -19,6 +19,7 @@ import { DEFAULT_LINT_CONFIG } from "./config";
 import { useProjectDir } from "./project";
 import {
   addDisableCommentToPscLine,
+  findingMessageWithRule,
   hasFixableFindings,
   isFixableFinding,
   lintPscFile,
@@ -67,6 +68,25 @@ describe("hasFixableFindings", () => {
 
   it("is false for an empty findings list", () => {
     expect(hasFixableFindings([])).toBe(false);
+  });
+});
+
+describe("findingMessageWithRule", () => {
+  it("appends the triggered rule id in parentheses", () => {
+    expect(
+      findingMessageWithRule({
+        line: 1,
+        column: 1,
+        message: "[warning] Line contains trailing whitespace",
+        rule: "trailing-whitespace",
+      }),
+    ).toBe("[warning] Line contains trailing whitespace (trailing-whitespace)");
+  });
+
+  it("falls back to 'unknown' when a finding has no rule id", () => {
+    expect(findingMessageWithRule({ line: 1, column: 1, message: "[error] compiler failure" })).toBe(
+      "[error] compiler failure (unknown)",
+    );
   });
 });
 

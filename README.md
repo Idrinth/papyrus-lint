@@ -539,7 +539,7 @@ directories up. A scanned directory's own resolved scripts are tried the
 same way first, falling back to the scanned directory itself as the
 project root if none of them match that layout. If no config exists
 there, the documented defaults apply. Each diagnostic found is printed as
-`<path>:<line>:<column>: [<rule>] <message>`, followed by that rule's own
+`<path>:<line>:<column>: <message> (<rule>)`, followed by that rule's own
 documentation link on the [project website](https://papyrus-lint.idrinth.de)
 when it has known tag metadata (a compiler-reported diagnostic doesn't),
 then a one-line summary. Calls to functions declared on other scripts under the project
@@ -648,7 +648,7 @@ instead of every enabled one, and `--line <n>` to further restrict
 whichever fix(es) run to just that 1-indexed line, leaving every other
 line untouched — useful for an editor that wants to fix just the issue
 under the cursor rather than the whole file. The rule id matches the one
-in `[<rule>]`/`"rule"` in the plain-text or JSON report (e.g.
+in `(<rule>)`/`"rule"` in the plain-text or JSON report (e.g.
 `trailing-whitespace`); `_` and `-` are interchangeable and matching is
 case-insensitive, so `--type trailing_whitespace` also works. Both flags
 are only valid alongside `fix` and can be combined. `--type` errors out on
@@ -923,8 +923,8 @@ The Lint results tab also has an "Export issues" button, next to an
 "Export format" selector (Text or JSON), that downloads every finding
 currently passing the tab's own filters (filename search, severity, tag,
 importance, auto-fixable, and rule) — exactly what's shown in the list
-above it. The text format is one `<path>:<line>:<column>: [<rule>]
-<message>` line per finding, the same layout the CLI's plain-text report
+above it. The text format is one `<path>:<line>:<column>: <message> (<rule>)`
+line per finding, the same layout the CLI's plain-text report
 uses; the JSON format mirrors the shape of the CLI's own `--json` report
 (a `files` array of `{path, diagnostics}`, plus `files_with_diagnostics`
 and `total_diagnostics` counts), restricted to the currently filtered

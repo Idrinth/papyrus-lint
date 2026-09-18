@@ -215,7 +215,7 @@ mod tests {
         assert!(stderr.is_empty());
         assert_eq!(code, 0);
         assert!(stdout.contains("<blob>:1:"));
-        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("(trailing-whitespace)"));
         assert!(stdout.contains("problem(s) found in the given blob"));
     }
 
@@ -238,7 +238,7 @@ mod tests {
 
         assert!(stderr.is_empty());
         assert_eq!(code, 1);
-        assert!(stdout.contains("[forbidden-functions]"));
+        assert!(stdout.contains("(forbidden-functions)"));
     }
 
     #[test]
@@ -271,8 +271,8 @@ mod tests {
 
         assert!(stderr.is_empty());
         assert_eq!(code, 1);
-        assert!(stdout.contains("[forbidden-functions]"));
-        assert!(!stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("(forbidden-functions)"));
+        assert!(!stdout.contains("(trailing-whitespace)"));
     }
 
     #[test]
@@ -290,7 +290,7 @@ mod tests {
 
         assert!(stderr.is_empty());
         assert_eq!(code, 0);
-        assert!(!stdout.contains("[trailing-whitespace]"));
+        assert!(!stdout.contains("(trailing-whitespace)"));
     }
 
     #[test]
@@ -481,6 +481,6 @@ mod tests {
         assert_eq!(code, 0);
         assert!(stdout.is_empty());
         let report = fs::read_to_string(&output_path).unwrap();
-        assert!(report.contains("[trailing-whitespace]"));
+        assert!(report.contains("(trailing-whitespace)"));
     }
 }

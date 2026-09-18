@@ -14,8 +14,8 @@ describe("formatIssuesAsText", () => {
     ]);
 
     expect(text).toBe(
-      "scripts/source/A.psc:1:1: [trailing-whitespace] [warning] trailing whitespace\n" +
-        "scripts/source/A.psc:5:3: [forbidden-functions] [error] forbidden function used",
+      "scripts/source/A.psc:1:1: [warning] trailing whitespace (trailing-whitespace)\n" +
+        "scripts/source/A.psc:5:3: [error] forbidden function used (forbidden-functions)",
     );
   });
 
@@ -24,7 +24,7 @@ describe("formatIssuesAsText", () => {
       { path: "A.psc", findings: [{ line: 1, column: 1, message: "[error] compiler failure" }] },
     ]);
 
-    expect(text).toBe("A.psc:1:1: [unknown] [error] compiler failure");
+    expect(text).toBe("A.psc:1:1: [error] compiler failure (unknown)");
   });
 
   it("returns an empty string for no files", () => {

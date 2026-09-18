@@ -55,14 +55,14 @@ pub(crate) fn level_color(level: &str) -> &'static str {
 }
 
 /// Renders one diagnostic's plain-text report line (`<path>:<line>:<column>:
-/// [<rule>] <message>`), colorizing the location, the rule tag, and the
+/// <message> (<rule>)`), colorizing the location, the `(<rule>)` tag, and the
 /// `[error]`/`[warning]`/`[info]` level tag already embedded at the front of
 /// `diagnostic.message` (see [`papyrus_lints::Diagnostic::level`]) when
 /// `use_color` is true. A rule with known [`papyrus_lints::tags`] metadata
 /// (i.e. a real lint rather than e.g. a compiler-reported diagnostic) gets
-/// its documentation link (`RuleTags::doc_url`) appended, so a reader can
-/// jump straight to that rule's own explanation instead of just seeing its
-/// id.
+/// its documentation link (`RuleTags::doc_url`) appended after the rule id,
+/// so a reader can jump straight to that rule's own explanation instead of
+/// just seeing its id.
 pub(crate) fn format_diagnostic_line(
     path_display: &str,
     diagnostic: &papyrus_lints::Diagnostic,
@@ -74,12 +74,12 @@ pub(crate) fn format_diagnostic_line(
 
     if !use_color {
         return format!(
-            "{}:{}:{}: [{}] {}{}",
+            "{}:{}:{}: {} ({}){}",
             path_display,
             diagnostic.line,
             diagnostic.column,
-            diagnostic.rule,
             diagnostic.message,
+            diagnostic.rule,
             doc_url_suffix
         );
     }
@@ -98,8 +98,8 @@ pub(crate) fn format_diagnostic_line(
             ANSI_BOLD,
             true
         ),
-        colorize(&format!("[{}]", diagnostic.rule), ANSI_DIM, true),
         message,
+        colorize(&format!("({})", diagnostic.rule), ANSI_DIM, true),
         if doc_url_suffix.is_empty() {
             String::new()
         } else {
@@ -124,7 +124,7 @@ mod tests {
             run_captured_with_terminal_stdout(&[script_path.to_string_lossy().into_owned()], false);
 
         assert_eq!(code, 0);
-        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("(trailing-whitespace)"));
         assert!(!stdout.contains('\x1b'));
     }
 
@@ -142,7 +142,7 @@ mod tests {
         // The rule id and level tag both still appear verbatim inside the
         // colorized escapes, so consumers scraping for them (and the other
         // tests here) still find them.
-        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("(trailing-whitespace)"));
         assert!(stdout.contains("[warning]"));
     }
 
@@ -237,8 +237,25 @@ mod tests {
         let formatted = format_diagnostic_line("Example.psc", &diagnostic, true);
 
         assert!(formatted.contains("\x1b[1mExample.psc:4:7\x1b[0m"));
-        assert!(formatted.contains("\x1b[2m[example-rule]\x1b[0m"));
+        assert!(formatted.contains("\x1b[2m(example-rule)\x1b[0m"));
         assert!(formatted.contains("\x1b[33m[warning]\x1b[0m example message"));
+    }
+
+    #[test]
+    fn diagnostic_formatter_appends_the_rule_id_in_parentheses() {
+        let diagnostic = papyrus_lints::Diagnostic {
+            line: 4,
+            column: 7,
+            rule: "example-rule",
+            message: "[warning] example message".to_string(),
+        };
+
+        let formatted = format_diagnostic_line("Example.psc", &diagnostic, false);
+
+        assert_eq!(
+            formatted,
+            "Example.psc:4:7: [warning] example message (example-rule)"
+        );
     }
 
     #[test]
@@ -252,7 +269,8 @@ mod tests {
 
         let formatted = format_diagnostic_line("Example.psc", &diagnostic, true);
 
-        assert!(formatted.ends_with("example message without a level tag"));
+        assert!(formatted.contains("example message without a level tag"));
+        assert!(formatted.contains("\x1b[2m(example-rule)\x1b[0m"));
         assert!(!formatted.contains("\x1b[31m[error]"));
     }
 

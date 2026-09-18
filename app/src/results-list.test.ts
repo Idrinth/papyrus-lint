@@ -165,7 +165,9 @@ describe("buildPscResultItem / renderPscResults", () => {
     expect(findingEls).toHaveLength(2);
     expect(findingEls[0].classList.contains("psc-result__finding--error")).toBe(true);
     expect(findingEls[0].textContent).toContain("line 3, col 5");
+    expect(findingEls[0].textContent).toContain("[error] bad thing (unknown)");
     expect(findingEls[1].classList.contains("psc-result__finding--warning")).toBe(true);
+    expect(findingEls[1].textContent).toContain("[warning] risky thing (unknown)");
   });
 
   it("shows a finding's tag badges when its rule has known tag metadata", () => {
@@ -185,6 +187,7 @@ describe("buildPscResultItem / renderPscResults", () => {
       expect(badgeText).toContain("style");
       expect(badgeText).toContain("low importance");
       expect(badgeText).toContain("auto-fixable");
+      expect(item!.textContent).toContain("[warning] trailing whitespace (trailing-whitespace)");
       const docsLink = item!.querySelector<HTMLAnchorElement>(".psc-result__tag-badge--docs-link");
       expect(docsLink?.href).toBe("https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace");
       expect(docsLink?.target).toBe("_blank");

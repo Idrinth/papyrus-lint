@@ -73,7 +73,7 @@ mod tests {
 
         assert_eq!(code, 0);
         assert!(stdout.contains("scripts/source/Example.psc:"));
-        assert!(stdout.contains("[trailing-whitespace]"));
+        assert!(stdout.contains("(trailing-whitespace)"));
         assert!(!stdout.contains(dir.path().to_string_lossy().as_ref()));
     }
 

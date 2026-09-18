@@ -1,3 +1,4 @@
+import { findingMessageWithRule } from "./backend";
 import { type FilteredIssuesFile } from "./results-export-types";
 
 // Renders `files` the same way the CLI's plain-text report does (see
@@ -8,7 +9,7 @@ export function formatIssuesAsText(files: FilteredIssuesFile[]): string {
   const lines: string[] = [];
   for (const file of files) {
     for (const finding of file.findings) {
-      lines.push(`${file.path}:${finding.line}:${finding.column}: [${finding.rule ?? "unknown"}] ${finding.message}`);
+      lines.push(`${file.path}:${finding.line}:${finding.column}: ${findingMessageWithRule(finding)}`);
     }
   }
   return lines.join("\n");

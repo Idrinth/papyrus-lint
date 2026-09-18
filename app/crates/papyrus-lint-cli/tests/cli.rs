@@ -137,7 +137,7 @@ fn lint_errors_produce_a_failure_status_through_the_binary_entry_point() {
     assert_eq!(output.status.code(), Some(1));
     assert!(output.stderr.is_empty());
     let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
-    assert!(stdout.contains("[forbidden-functions]"));
+    assert!(stdout.contains("(forbidden-functions)"));
     assert!(stdout.contains("[error]"));
     assert!(stdout.contains("problem(s) found in 1 of 1 script(s)"));
 }
@@ -153,7 +153,7 @@ fn quiet_warnings_hides_output_without_changing_the_binary_exit_status() {
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
     let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
-    assert!(!stdout.contains("[trailing-whitespace]"));
+    assert!(!stdout.contains("(trailing-whitespace)"));
     assert!(stdout.contains("no problems found in 1 script"));
 }
 
@@ -216,8 +216,8 @@ fn tag_filter_is_forwarded_through_the_binary_entry_point() {
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
     let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
-    assert!(stdout.contains("[trailing-whitespace]"));
-    assert!(!stdout.contains("[forbidden-functions]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
+    assert!(!stdout.contains("(forbidden-functions)"));
 }
 
 #[test]
@@ -238,8 +238,8 @@ fn typed_fix_only_repairs_the_selected_rule_through_the_binary() {
         "ScriptName Example\n\nFunction Add(Int left, Int right)\nEndFunction   \n"
     );
     let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
-    assert!(stdout.contains("[trailing-whitespace]"));
-    assert!(!stdout.contains("[comma-spacing]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
+    assert!(!stdout.contains("(comma-spacing)"));
 }
 
 #[test]
@@ -260,7 +260,7 @@ fn line_scoped_fix_only_rewrites_the_selected_line_through_the_binary() {
         "ScriptName Example   \n\nFunction DoThing()\nEndFunction\n"
     );
     let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
-    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
     assert!(stdout.contains("(1 script(s) fixed.)"));
 }
 

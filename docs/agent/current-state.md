@@ -139,8 +139,9 @@ it: the desktop app's
 `list_rule_tags` command includes `doc_url` in each `RuleTagsInfo`, and
 `buildFindingTagsEl` renders it as a "docs" badge/link alongside a
 finding's kind/importance/auto-fixable badges; the CLI's plain-text report
-appends it after a diagnostic's message (`format_diagnostic_line`) when
-the rule has known tag metadata; and both the CLI's `--json`
+puts the rule id in parentheses at the end of a diagnostic's message
+(`format_diagnostic_line`) and then appends that rule's documentation link
+when the rule has known tag metadata; and both the CLI's `--json`
 (`JsonDiagnostic::doc_url`, `null` for a rule with none) and `--format ai`
 (`AiRuleDetails::doc_url`, always present since untagged rules are
 filtered out of `rule_details`) output, and the desktop app's matching

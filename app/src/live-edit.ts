@@ -37,7 +37,14 @@ import {
   setCodeViewerState,
 } from "./code-viewer";
 import { renderPscResults } from "./results-list";
-import { type Diagnostic, lintPapyrusScript, lintPscFile, listScriptMembers, writePscFile } from "./backend";
+import {
+  type Diagnostic,
+  findingMessageWithRule,
+  lintPapyrusScript,
+  lintPscFile,
+  listScriptMembers,
+  writePscFile,
+} from "./backend";
 import { currentPscOutcomes } from "./drop";
 
 let autocompleteQuery: CompletionQuery | null = null;
@@ -147,7 +154,7 @@ function updateCodeViewerEditHighlight() {
   // every finding at once, since a screen-reader user has no equivalent of
   // "hovering a line" to reveal them one at a time.
   const diagnosticSummary = findings
-    .map((finding) => `Line ${finding.line}, column ${finding.column}: ${finding.message}`)
+    .map((finding) => `Line ${finding.line}, column ${finding.column}: ${findingMessageWithRule(finding)}`)
     .join("\n");
   codeViewerEditTextareaEl.setAttribute(
     "aria-label",
@@ -180,7 +187,7 @@ function updateCodeViewerEditTooltip(clientX: number, clientY: number) {
   const offsetY = clientY - rect.top + codeViewerEditTextareaEl.scrollTop - paddingTop;
   const line = Math.floor(offsetY / lineHeight) + 1;
   const lineFindings = codeViewerEditFindingsByLine.get(line);
-  const findingsTitle = lineFindings ? lineFindings.map((finding) => finding.message).join("\n") : "";
+  const findingsTitle = lineFindings ? lineFindings.map((finding) => findingMessageWithRule(finding)).join("\n") : "";
   const source = codeViewerEditTextareaEl.value;
   const index = sourceIndexFromPoint(codeViewerEditTextareaEl, computed, clientX, clientY);
   const ident = index !== null ? identifierAt(source, index) : null;

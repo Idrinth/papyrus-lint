@@ -1,6 +1,7 @@
 import {
   type Diagnostic,
   type PscParseOutcome,
+  findingMessageWithRule,
   hasNoAutomaticFix,
   hasFixableFindings,
   isFixableFinding,
@@ -201,7 +202,7 @@ export function buildPscResultItem(
         findingItem.addEventListener("click", () => void openCodeViewer(path, outcome.findings, finding.line));
 
         const label = document.createElement("span");
-        label.textContent = `line ${finding.line}, col ${finding.column}: ${finding.message}`;
+        label.textContent = `line ${finding.line}, col ${finding.column}: ${findingMessageWithRule(finding)}`;
         findingItem.append(label);
 
         const tagsEl = buildFindingTagsEl(finding);

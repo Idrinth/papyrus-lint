@@ -170,7 +170,7 @@ mod tests {
         assert!(stderr.is_empty());
         assert!(stdout.is_empty());
         let contents = fs::read_to_string(&output_path).expect("output file should exist");
-        assert!(contents.contains("[trailing-whitespace]"));
+        assert!(contents.contains("(trailing-whitespace)"));
         assert!(contents.contains("1 problem(s) found in 1 of 1 script(s)"));
     }
 

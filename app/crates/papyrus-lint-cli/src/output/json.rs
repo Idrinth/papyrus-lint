@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 /// A single diagnostic as printed by `--json`, mirroring the plain-text
-/// `<path>:<line>:<column>: [<rule>] <message>` line but with `level`
+/// `<path>:<line>:<column>: <message> (<rule>)` line but with `level`
 /// (see [`papyrus_lints::Diagnostic::level`]) broken out as its own field
 /// rather than left for a consumer to parse back out of `message`.
 #[derive(Debug, Serialize)]

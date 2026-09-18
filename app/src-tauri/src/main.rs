@@ -238,7 +238,7 @@ mod tests {
 
         assert_eq!(code, ExitCode::SUCCESS);
         let report = String::from_utf8(stdout).unwrap();
-        assert!(report.contains("[trailing-whitespace]"));
+        assert!(report.contains("(trailing-whitespace)"));
         assert_eq!(
             report.contains('\x1b'),
             std::env::var_os("NO_COLOR").is_none()
@@ -373,7 +373,7 @@ mod tests {
 
         assert_eq!(code, ExitCode::SUCCESS);
         let report = String::from_utf8(stdout).unwrap();
-        assert!(report.contains("[trailing-whitespace]"));
+        assert!(report.contains("(trailing-whitespace)"));
         assert!(!report.contains("forbidden-function"));
         assert!(stderr.is_empty());
     }

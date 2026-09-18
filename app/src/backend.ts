@@ -28,6 +28,14 @@ export interface Diagnostic {
   rule?: string;
 }
 
+// Appends the triggered rule id in parentheses at the end of a finding's
+// message, matching the CLI's plain-text report (see format_diagnostic_line).
+// A finding with no rule id (typical of a test fixture) is labelled
+// `(unknown)`, the same fallback the text export uses.
+export function findingMessageWithRule(finding: Diagnostic): string {
+  return `${finding.message} (${finding.rule ?? "unknown"})`;
+}
+
 export interface PscParseOutcome {
   path: string;
   ok: boolean;

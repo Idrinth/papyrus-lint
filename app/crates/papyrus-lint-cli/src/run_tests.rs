@@ -53,7 +53,7 @@ fn reports_diagnostics_and_exits_1_for_a_dirty_project() {
     let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
 
     assert_eq!(code, 1);
-    assert!(stdout.contains("[forbidden-functions]"));
+    assert!(stdout.contains("(forbidden-functions)"));
     assert!(stdout.contains("problem(s) found in 1 of 1 script(s)"));
 }
 
@@ -73,7 +73,7 @@ fn does_not_fail_on_warning_level_diagnostics_by_default() {
     let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
 
     assert_eq!(code, 0);
-    assert!(stdout.contains("[unused-property]"));
+    assert!(stdout.contains("(unused-property)"));
     assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
 }
 
@@ -97,7 +97,7 @@ fn fails_on_warning_level_diagnostics_when_configured() {
     let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
 
     assert_eq!(code, 1);
-    assert!(stdout.contains("[unused-property]"));
+    assert!(stdout.contains("(unused-property)"));
 }
 
 #[test]
@@ -243,7 +243,7 @@ fn recognizes_uppercase_psc_extensions_in_the_achlist() {
 
     assert_eq!(code, 0);
     assert!(stderr.is_empty());
-    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
     assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
 }
 
@@ -256,7 +256,7 @@ fn lints_a_single_psc_file_passed_directly() {
     let (code, stdout, _stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
 
     assert_eq!(code, 0);
-    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
     assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
 }
 
@@ -322,7 +322,7 @@ fn directory_scan_resolves_cross_script_calls_across_nested_subfolders() {
     let (code, stdout, _stderr) = run_captured(&[target.to_string_lossy().into_owned()]);
 
     assert_eq!(code, 1);
-    assert!(stdout.contains("[argument-types]"));
+    assert!(stdout.contains("(argument-types)"));
 }
 
 #[test]
@@ -352,8 +352,8 @@ fn same_script_lints_identically_via_achlist_and_directly_when_namespaced() {
 
     assert_eq!(achlist_code, 1);
     assert_eq!(direct_code, 1);
-    assert!(achlist_stdout.contains("[argument-types]"));
-    assert!(direct_stdout.contains("[argument-types]"));
+    assert!(achlist_stdout.contains("(argument-types)"));
+    assert!(direct_stdout.contains("(argument-types)"));
 }
 
 #[test]
@@ -413,7 +413,7 @@ fn fix_rewrites_fixable_issues_and_reports_the_rest() {
         "ScriptName Example\n\nFunction DoThing()\n\tGame.GetPlayer()\nEndFunction\n"
     );
     assert_eq!(code, 1);
-    assert!(!stdout.contains("[trailing-whitespace]"));
+    assert!(!stdout.contains("(trailing-whitespace)"));
     assert!(stdout.contains("Game.GetPlayer"));
     assert!(stdout.contains("(1 script(s) fixed.)"));
 }
@@ -560,8 +560,8 @@ fn tag_filter_restricts_reported_diagnostics_to_the_matching_kind() {
 
     assert!(stderr.is_empty());
     assert_eq!(code, 0);
-    assert!(stdout.contains("[trailing-whitespace]"));
-    assert!(!stdout.contains("[forbidden-functions]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
+    assert!(!stdout.contains("(forbidden-functions)"));
 }
 
 #[test]
@@ -577,7 +577,7 @@ fn tag_filter_matches_case_insensitively() {
 
     assert!(stderr.is_empty());
     assert_eq!(code, 0);
-    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
 }
 
 #[test]
@@ -897,7 +897,7 @@ fn resolves_cross_script_argument_types_from_the_project_root() {
     let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
 
     assert_eq!(code, 1);
-    assert!(stdout.contains("[argument-types]"));
+    assert!(stdout.contains("(argument-types)"));
 }
 
 #[test]
@@ -921,7 +921,7 @@ fn flags_a_call_through_a_script_name_to_a_function_not_declared_global() {
 
     assert_eq!(code, 1, "stderr: {stderr}");
     assert!(
-        stdout.contains("[non-global-function-call]"),
+        stdout.contains("(non-global-function-call)"),
         "stdout: {stdout}"
     );
     assert!(stdout.contains("'IMNotStatic' is not declared Global on 'MyScriptOne'"));
@@ -950,7 +950,7 @@ fn resolves_cross_script_types_from_every_directory_listed_in_the_achlist() {
         .into_owned()]);
 
     assert_eq!(code, 1, "stderr: {stderr}");
-    assert!(stdout.contains("[argument-types]"));
+    assert!(stdout.contains("(argument-types)"));
 }
 
 #[test]
@@ -983,7 +983,7 @@ fn goto_state_resolves_a_state_declared_on_a_parent_script_listed_in_the_achlist
     assert!(!stdout.contains("'Extra'"));
     assert!(!stdout.contains("'Idle'"));
     assert!(!stdout.contains("'Busy'"));
-    assert!(stdout.contains("[goto-state]"));
+    assert!(stdout.contains("(goto-state)"));
     assert!(stdout.contains("'NoSuchState'"));
 }
 
@@ -1016,7 +1016,7 @@ fn achlist_resolves_an_unlisted_sibling_script_by_default_for_backward_compatibi
         .into_owned()]);
 
     assert_eq!(code, 0, "stderr: {stderr}");
-    assert!(!stdout.contains("[unresolved-script]"), "stdout: {stdout}");
+    assert!(!stdout.contains("(unresolved-script)"), "stdout: {stdout}");
 }
 
 #[test]
@@ -1054,7 +1054,7 @@ fn strict_achlist_scope_does_not_leak_into_an_unlisted_sibling_script() {
         .into_owned()]);
 
     assert_eq!(code, 0, "stderr: {stderr}");
-    assert!(stdout.contains("[unresolved-script]"), "stdout: {stdout}");
+    assert!(stdout.contains("(unresolved-script)"), "stdout: {stdout}");
     assert!(stdout.contains("'Unlisted'"), "stdout: {stdout}");
 }
 
@@ -1092,7 +1092,7 @@ fn strict_achlist_scope_is_honored_from_an_explicit_config_path() {
     ]);
 
     assert_eq!(code, 0, "stderr: {stderr}");
-    assert!(stdout.contains("[unresolved-script]"), "stdout: {stdout}");
+    assert!(stdout.contains("(unresolved-script)"), "stdout: {stdout}");
     assert!(stdout.contains("'Unlisted'"), "stdout: {stdout}");
 }
 
@@ -1132,7 +1132,7 @@ fn strict_achlist_scope_still_flags_conflicting_versions_between_two_achlist_ent
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert_eq!(
-        stdout.matches("[conflicting-script-versions]").count(),
+        stdout.matches("(conflicting-script-versions)").count(),
         2,
         "stdout: {stdout}"
     );
@@ -1174,7 +1174,7 @@ fn strict_achlist_scope_does_not_double_report_a_conflict_also_visible_via_a_con
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert_eq!(
-        stdout.matches("[conflicting-script-versions]").count(),
+        stdout.matches("(conflicting-script-versions)").count(),
         2,
         "stdout: {stdout}"
     );
@@ -1202,7 +1202,7 @@ fn flags_a_script_newer_than_its_compiled_pex() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        stdout.contains("[stale-compiled-output]"),
+        stdout.contains("(stale-compiled-output)"),
         "stdout: {stdout}"
     );
     assert!(stdout.contains("[info]"), "stdout: {stdout}");
@@ -1228,7 +1228,7 @@ fn does_not_flag_a_script_older_than_its_compiled_pex() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[stale-compiled-output]"),
+        !stdout.contains("(stale-compiled-output)"),
         "stdout: {stdout}"
     );
 }
@@ -1259,7 +1259,7 @@ fn stale_compiled_output_can_be_disabled() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[stale-compiled-output]"),
+        !stdout.contains("(stale-compiled-output)"),
         "stdout: {stdout}"
     );
 }
@@ -1274,7 +1274,7 @@ fn flags_a_script_name_that_does_not_match_its_file_name() {
 
     assert_eq!(code, 1, "stderr: {stderr}");
     assert!(
-        stdout.contains("[script-filename-mismatch]"),
+        stdout.contains("(script-filename-mismatch)"),
         "stdout: {stdout}"
     );
     assert!(stdout.contains("[error]"), "stdout: {stdout}");
@@ -1290,7 +1290,7 @@ fn does_not_flag_a_script_name_matching_its_file_name() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[script-filename-mismatch]"),
+        !stdout.contains("(script-filename-mismatch)"),
         "stdout: {stdout}"
     );
 }
@@ -1309,7 +1309,7 @@ fn script_filename_mismatch_can_be_disabled() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[script-filename-mismatch]"),
+        !stdout.contains("(script-filename-mismatch)"),
         "stdout: {stdout}"
     );
 }
@@ -1327,7 +1327,7 @@ fn script_filename_mismatch_can_be_suppressed_with_a_disable_comment() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[script-filename-mismatch]"),
+        !stdout.contains("(script-filename-mismatch)"),
         "stdout: {stdout}"
     );
 }
@@ -1345,7 +1345,7 @@ fn script_filename_mismatch_can_be_suppressed_with_a_disable_file_comment() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[script-filename-mismatch]"),
+        !stdout.contains("(script-filename-mismatch)"),
         "stdout: {stdout}"
     );
 }
@@ -1388,10 +1388,10 @@ fn stale_compiled_output_disable_comment_is_not_reported_as_unused() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[stale-compiled-output]"),
+        !stdout.contains("(stale-compiled-output)"),
         "stdout: {stdout}"
     );
-    assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    assert!(!stdout.contains("(unused-disable)"), "stdout: {stdout}");
 }
 
 #[test]
@@ -1423,10 +1423,10 @@ fn stale_compiled_output_disable_file_comment_is_not_reported_as_unused() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[stale-compiled-output]"),
+        !stdout.contains("(stale-compiled-output)"),
         "stdout: {stdout}"
     );
-    assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    assert!(!stdout.contains("(unused-disable)"), "stdout: {stdout}");
 }
 
 #[test]
@@ -1450,10 +1450,10 @@ fn conflicting_script_versions_disable_comment_is_not_reported_as_unused() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[conflicting-script-versions]"),
+        !stdout.contains("(conflicting-script-versions)"),
         "stdout: {stdout}"
     );
-    assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    assert!(!stdout.contains("(unused-disable)"), "stdout: {stdout}");
 }
 
 #[test]
@@ -1477,10 +1477,10 @@ fn conflicting_script_versions_disable_file_comment_is_not_reported_as_unused() 
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[conflicting-script-versions]"),
+        !stdout.contains("(conflicting-script-versions)"),
         "stdout: {stdout}"
     );
-    assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    assert!(!stdout.contains("(unused-disable)"), "stdout: {stdout}");
 }
 
 #[test]
@@ -1500,10 +1500,10 @@ fn script_filename_mismatch_disable_comment_is_not_reported_as_unused() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[script-filename-mismatch]"),
+        !stdout.contains("(script-filename-mismatch)"),
         "stdout: {stdout}"
     );
-    assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    assert!(!stdout.contains("(unused-disable)"), "stdout: {stdout}");
 }
 
 #[test]
@@ -1523,10 +1523,10 @@ fn script_filename_mismatch_disable_file_comment_is_not_reported_as_unused() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(
-        !stdout.contains("[script-filename-mismatch]"),
+        !stdout.contains("(script-filename-mismatch)"),
         "stdout: {stdout}"
     );
-    assert!(!stdout.contains("[unused-disable]"), "stdout: {stdout}");
+    assert!(!stdout.contains("(unused-disable)"), "stdout: {stdout}");
 }
 
 #[test]
@@ -1557,7 +1557,7 @@ fn resolves_cross_script_argument_types_from_the_projects_configured_script_root
     let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
 
     assert_eq!(code, 1);
-    assert!(stdout.contains("[argument-types]"));
+    assert!(stdout.contains("(argument-types)"));
 }
 
 #[test]
@@ -1588,7 +1588,7 @@ fn resolves_cross_script_argument_types_from_lookup_script_roots_without_linting
     let (code, stdout, _stderr) = run_captured(&[achlist_path.to_string_lossy().into_owned()]);
 
     assert_eq!(code, 1);
-    assert!(stdout.contains("[argument-types]"));
+    assert!(stdout.contains("(argument-types)"));
     assert!(
         !stdout.contains("Greeter.psc"),
         "lookup-root scripts must not be linted"
@@ -1654,7 +1654,7 @@ fn resolves_cross_script_argument_types_from_a_script_root_flag() {
     ]);
 
     assert_eq!(code, 1);
-    assert!(stdout.contains("[argument-types]"));
+    assert!(stdout.contains("(argument-types)"));
 }
 
 #[test]
@@ -1694,7 +1694,7 @@ fn config_flag_skips_the_project_roots_additional_script_roots() {
     // declares the shared_dir root, is bypassed by --config), so the
     // "Argument type check" lint has nothing to flag.
     assert_eq!(code, 0);
-    assert!(!stdout.contains("[argument-types]"));
+    assert!(!stdout.contains("(argument-types)"));
 }
 
 #[test]
@@ -1882,6 +1882,6 @@ fn direct_psc_detection_is_case_insensitive() {
 
     assert_eq!(code, 0, "stderr: {stderr}");
     assert!(stderr.is_empty());
-    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
     assert!(stdout.contains("1 problem(s) found in 1 of 1 script(s)"));
 }

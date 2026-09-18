@@ -130,7 +130,7 @@ fn desktop_binary_preserves_plain_text_diagnostics() {
     assert!(output.stderr.is_empty());
     let stdout = String::from_utf8(output.stdout).unwrap();
     assert!(stdout.contains(&script.display().to_string()));
-    assert!(stdout.contains("[trailing-whitespace]"));
+    assert!(stdout.contains("(trailing-whitespace)"));
     assert!(
         !stdout.contains('\x1b'),
         "piped output must not contain ANSI color"
