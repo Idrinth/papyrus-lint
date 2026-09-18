@@ -1,0 +1,114 @@
+
+.container {
+  margin: 0;
+  padding: 10vh 2em 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+h1 {
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.app-version {
+  font-size: 0.5em;
+  font-weight: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  opacity: 0.6;
+}
+
+.theme-switch {
+  position: fixed;
+  top: 1em;
+  right: 1em;
+}
+
+.tabs {
+  margin-top: 2em;
+  width: 100%;
+  max-width: clamp(32em, 60vw, 56em);
+  text-align: left;
+}
+
+.tabs__list {
+  display: flex;
+  gap: 0.25em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tabs__tab {
+  padding: 0.6em 1.1em;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font: inherit;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.tabs__tab:hover {
+  opacity: 0.85;
+}
+
+.tabs__tab--active {
+  opacity: 1;
+  border-bottom-color: var(--color-accent-toggle);
+}
+
+.tabs__panel {
+  padding: 1.5em 0;
+}
+
+.lint-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+  margin-top: 0.75em;
+}
+
+/* Without this, the class's own `display: flex` above (an author-stylesheet
+   rule) outranks the browser's default `[hidden] { display: none }` (a
+   user-agent rule) at equal specificity, so toggling the `hidden` attribute
+   in JS never actually hides the element. */
+.lint-progress[hidden] {
+  display: none;
+}
+
+.lint-progress__label {
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+.lint-progress progress {
+  width: 100%;
+  height: 0.6em;
+  accent-color: var(--color-accent);
+}
+
+.contact-list__notice {
+  margin: 0 0 1em;
+  font-size: 0.9em;
+  opacity: 0.85;
+}
+
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.contact-list a {
+  color: var(--color-accent-toggle);
+}
+
