@@ -283,6 +283,26 @@ h1 {
   word-break: break-all;
 }
 
+.psc-result__watch {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5em 1em;
+  margin-bottom: 1em;
+}
+
+.psc-result__watch label {
+  display: flex;
+  align-items: center;
+  gap: 0.35em;
+  cursor: pointer;
+}
+
+.psc-result__watch-status {
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
 .psc-result__search {
   display: flex;
   flex-direction: column;

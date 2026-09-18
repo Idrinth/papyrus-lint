@@ -866,3 +866,25 @@ re-render the viewer/Lint results list entry afterward the same way
 `handleCodeViewerFixClick` does, so acting on a single line, like acting on
 the whole file, never requires closing the viewer first.
 
+The Lint results tab has a "Watch for changes and re-lint automatically"
+checkbox (`app/src/watch.ts`) that keeps the currently loaded `.psc` file(s)
+in sync with edits made outside the app (a text editor, a Creation Kit
+export) without the user having to drop the project again. Enabling it
+polls the new `get_psc_file_mtimes` Tauri command (`app/src-tauri/src/files.rs`
+— each requested path's last-modified time in Unix milliseconds, a path
+that can't be read simply omitted) every 1.5s for every path currently in
+`currentPscOutcomes`, rather than an OS-level filesystem-watcher dependency:
+since it just re-reads each file's current mtime, it notices a change
+however it was made, including the atomic write-then-rename many editors
+use for a "save", which a naive filesystem-event watcher can miss or
+double-report. Only the paths whose mtime (or existence) actually changed
+since the previous poll are re-parsed/re-linted, via the same `parsePscFiles`
+drop.ts's own drop handlers use, each result spliced back into
+`currentPscOutcomes` by path before `renderPscResults` re-renders the list —
+mirroring how `persistCodeViewerEdits` (live-edit.ts) already updates a
+single outcome in place after a save. A poll that finds the tracked path set
+itself has changed (a new drop, or a manual re-lint finishing) re-baselines
+instead of treating every file as changed, since none of them actually
+changed on disk just because the tracked set did; this is also what lets
+watch mode carry over transparently across drops without being told to.
+

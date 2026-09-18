@@ -28,6 +28,7 @@ pub fn run() {
             parse_psc_file,
             read_psc_file,
             hash_psc_file_md5,
+            get_psc_file_mtimes,
             write_psc_file,
             load_lint_config,
             save_lint_config,

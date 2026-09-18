@@ -12,6 +12,7 @@ import { bindLintProgress } from "./progress";
 import { bindConfigSettings } from "./config";
 import { bindProjectSettings } from "./project";
 import { bindTheme } from "./theme";
+import { bindWatchMode } from "./watch";
 
 let appVersionEl: HTMLElement | null;
 let dropZoneEl: HTMLElement | null;
@@ -169,6 +170,7 @@ window.addEventListener("DOMContentLoaded", () => {
   bindConfigSettings();
   bindLintProgress();
   bindTheme();
+  bindWatchMode();
 
   for (const id of TAB_IDS) {
     const button = document.querySelector<HTMLButtonElement>(`#tab-${id}`);
