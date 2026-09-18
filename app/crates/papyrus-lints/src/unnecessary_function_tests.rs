@@ -95,6 +95,55 @@ fn does_not_crash_on_unparseable_source() {
 }
 
 #[test]
+fn does_not_flag_a_parameterless_function_returning_int() {
+    let diagnostics = check(
+        "ScriptName Example\n\nInt Function GetFooThreshold() Global\n    Return 5\nEndFunction\n",
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn does_not_flag_a_parameterless_function_returning_float_bool_or_string() {
+    for return_type in ["Float", "Bool", "String"] {
+        let source = format!(
+            "ScriptName Example\n\n{return_type} Function GetFoo() Global\n    Return 5\nEndFunction\n"
+        );
+
+        assert!(
+            check(&source).is_empty(),
+            "expected no diagnostics for a parameterless {return_type} getter"
+        );
+    }
+}
+
+#[test]
+fn still_flags_a_parameterless_function_returning_an_object_type() {
+    let diagnostics =
+        check("ScriptName Example\n\nForm Function GetFoo() Global\n    Return B()\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
+fn still_flags_a_parameterless_function_returning_a_simple_type_array() {
+    let diagnostics = check(
+        "ScriptName Example\n\nInt[] Function GetFoo() Global\n    Return B()\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
+fn still_flags_a_function_returning_a_simple_type_when_it_takes_a_parameter() {
+    let diagnostics = check(
+        "ScriptName Example\n\nInt Function GetFoo(Int x) Global\n    Return B(x)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
 fn repair_inlines_call_sites_of_a_zero_argument_wrapper() {
     let source = "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
 
