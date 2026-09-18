@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import html
 import importlib.util
+import sys
 from pathlib import Path
 
 try:
@@ -46,7 +47,15 @@ REPO_CHECKOUT_MARKER = "/papyrus-lint/"
 def load_coverage_summary():
     """Loads .github/scripts/coverage_summary.py by file path (see
     COVERAGE_SUMMARY_SCRIPT above) so the coverage subpage shares its
-    MODULES grouping and pct() formatting instead of duplicating them."""
+    MODULES grouping and pct() formatting instead of duplicating them.
+
+    coverage_summary.py itself imports from the ci_lib package that lives
+    alongside it, so .github/scripts (ci_lib's parent) must be on sys.path
+    for that import to resolve, since exec_module doesn't add it there
+    automatically the way running the script directly would."""
+    scripts_dir = str(COVERAGE_SUMMARY_SCRIPT.parent)
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
     spec = importlib.util.spec_from_file_location("coverage_summary", COVERAGE_SUMMARY_SCRIPT)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

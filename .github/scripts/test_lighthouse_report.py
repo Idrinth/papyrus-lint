@@ -1,0 +1,247 @@
+#!/usr/bin/env python3
+"""Unit tests for the Lighthouse report summary-building logic."""
+
+import tempfile
+import unittest
+from pathlib import Path
+
+from ci_lib import lighthouse_report
+
+
+def make_report(url: str, scores: dict, failing_audits: dict | None = None) -> dict:
+    """Builds a minimal Lighthouse-report-shaped dict: `scores` maps category
+    ids (e.g. "performance") to a 0-1 score, `failing_audits` maps a category
+    id to a list of (audit_id, audit_score, audit_title) tuples referenced by
+    that category with nonzero weight."""
+    failing_audits = failing_audits or {}
+    categories = {}
+    audits = {}
+    for key, score in scores.items():
+        audit_refs = []
+        for audit_id, audit_score, title in failing_audits.get(key, []):
+            audit_refs.append({"id": audit_id, "weight": 1})
+            audits[audit_id] = {"score": audit_score, "title": title}
+        categories[key] = {"score": score, "auditRefs": audit_refs}
+    return {"finalUrl": url, "categories": categories, "audits": audits}
+
+
+class PageLabelTests(unittest.TestCase):
+    def test_uses_final_url_path(self) -> None:
+        report = {"finalUrl": "http://localhost:4173/docs/index.html"}
+        self.assertEqual("/docs/index.html", lighthouse_report.page_label(report))
+
+    def test_falls_back_to_requested_url(self) -> None:
+        report = {"requestedUrl": "http://localhost:4173/videos.html"}
+        self.assertEqual("/videos.html", lighthouse_report.page_label(report))
+
+    def test_root_path_when_url_has_no_path(self) -> None:
+        report = {"finalUrl": "http://localhost:4173"}
+        self.assertEqual("/", lighthouse_report.page_label(report))
+
+    def test_root_path_when_report_has_no_url(self) -> None:
+        self.assertEqual("/", lighthouse_report.page_label({}))
+
+
+class FormatScoreTests(unittest.TestCase):
+    def test_formats_a_passing_score_without_a_flag(self) -> None:
+        self.assertEqual("95", lighthouse_report.format_score(0.95))
+
+    def test_flags_a_score_below_threshold(self) -> None:
+        self.assertEqual("80 ⚠️", lighthouse_report.format_score(0.8))
+
+    def test_reports_n_a_for_a_missing_score(self) -> None:
+        self.assertEqual("n/a", lighthouse_report.format_score(None))
+
+    def test_threshold_score_is_not_flagged(self) -> None:
+        self.assertEqual("90", lighthouse_report.format_score(lighthouse_report.THRESHOLD))
+
+
+class FailingAuditsTests(unittest.TestCase):
+    def test_ignores_categories_at_or_above_threshold(self) -> None:
+        report = make_report(
+            "http://x/index.html",
+            {"performance": 1.0},
+            {"performance": [("unused-audit", 0.2, "Unused audit")]},
+        )
+        self.assertEqual([], lighthouse_report.failing_audits(report))
+
+    def test_lists_titles_for_a_failing_category_weakest_first(self) -> None:
+        report = make_report(
+            "http://x/index.html",
+            {"performance": 0.5},
+            {
+                "performance": [
+                    ("uses-optimized-images", 0.4, "Efficiently encode images"),
+                    ("render-blocking-resources", 0.1, "Eliminate render-blocking resources"),
+                ]
+            },
+        )
+        self.assertEqual(
+            ["Eliminate render-blocking resources", "Efficiently encode images"],
+            lighthouse_report.failing_audits(report),
+        )
+
+    def test_ignores_zero_weight_audit_refs(self) -> None:
+        report = {
+            "categories": {
+                "seo": {
+                    "score": 0.5,
+                    "auditRefs": [{"id": "manual-check", "weight": 0}],
+                }
+            },
+            "audits": {"manual-check": {"score": 0.0, "title": "Manual check"}},
+        }
+        self.assertEqual([], lighthouse_report.failing_audits(report))
+
+    def test_ignores_missing_and_passing_audits_and_falls_back_to_an_id(self) -> None:
+        report = {
+            "categories": {
+                "performance": {
+                    "score": 0.5,
+                    "auditRefs": [
+                        {"id": "missing", "weight": 1},
+                        {"id": "passing", "weight": 1},
+                        {"id": "untitled", "weight": 1},
+                        {"id": "unscored", "weight": 1},
+                    ],
+                }
+            },
+            "audits": {
+                "passing": {"score": 0.9, "title": "Passing"},
+                "untitled": {"score": 0.2},
+                "unscored": {"score": None, "title": "Unscored"},
+            },
+        }
+
+        self.assertEqual(["untitled"], lighthouse_report.failing_audits(report))
+
+    def test_deduplicates_an_audit_referenced_by_multiple_categories(self) -> None:
+        report = make_report(
+            "http://x/index.html",
+            {"performance": 0.5, "accessibility": 0.5},
+            {
+                "performance": [("shared", 0.1, "Shared audit")],
+                "accessibility": [("shared", 0.1, "Shared audit")],
+            },
+        )
+        self.assertEqual(["Shared audit"], lighthouse_report.failing_audits(report))
+
+
+class ActiveCategoriesTests(unittest.TestCase):
+    def test_includes_every_category_present_across_reports(self) -> None:
+        reports = [
+            make_report("http://x/a.html", {"performance": 1.0, "seo": 1.0}),
+            make_report("http://x/b.html", {"accessibility": 1.0}),
+        ]
+        self.assertEqual(
+            [("performance", "Performance"), ("accessibility", "Accessibility"), ("seo", "SEO")],
+            lighthouse_report.active_categories(reports),
+        )
+
+    def test_drops_a_category_missing_from_every_report(self) -> None:
+        reports = [
+            make_report(
+                "http://x/index.html",
+                {"performance": 1.0, "accessibility": 1.0, "best-practices": 1.0},
+            )
+        ]
+        self.assertEqual(
+            [("performance", "Performance"), ("accessibility", "Accessibility"), ("best-practices", "Best Practices")],
+            lighthouse_report.active_categories(reports),
+        )
+
+
+class BuildSummaryTests(unittest.TestCase):
+    def test_reports_no_reports_generated(self) -> None:
+        summary = lighthouse_report.build_summary([])
+        self.assertIn(lighthouse_report.MARKER, summary)
+        self.assertIn("No Lighthouse reports were generated.", summary)
+
+    def test_reports_all_pages_passing_when_nothing_fails(self) -> None:
+        reports = [
+            make_report(
+                "http://x/index.html",
+                {"performance": 1.0, "accessibility": 1.0, "best-practices": 1.0, "seo": 1.0},
+            )
+        ]
+        summary = lighthouse_report.build_summary(reports)
+        self.assertIn("| /index.html | 100 | 100 | 100 | 100 |", summary)
+        self.assertIn("All pages scored at least 90/100 in every category.", summary)
+
+    def test_flags_a_low_score_and_lists_its_audits_sorted_by_page(self) -> None:
+        reports = [
+            make_report(
+                "http://x/videos.html",
+                {"performance": 1.0, "accessibility": 1.0, "best-practices": 1.0, "seo": 1.0},
+            ),
+            make_report(
+                "http://x/index.html",
+                {"performance": 0.7, "accessibility": 1.0, "best-practices": 1.0, "seo": 1.0},
+                {"performance": [("render-blocking-resources", 0.2, "Eliminate render-blocking resources")]},
+            ),
+        ]
+        summary = lighthouse_report.build_summary(reports)
+
+        self.assertIn("| /index.html | 70 ⚠️ | 100 | 100 | 100 |", summary)
+        self.assertIn("| /videos.html | 100 | 100 | 100 | 100 |", summary)
+        self.assertIn("**/index.html**", summary)
+        self.assertIn("Eliminate render-blocking resources", summary)
+        self.assertNotIn("**/videos.html**", summary)
+        index_pos = summary.index("| /index.html")
+        videos_pos = summary.index("| /videos.html")
+        self.assertLess(index_pos, videos_pos)
+
+    def test_uses_the_default_marker_and_title_when_no_label_is_given(self) -> None:
+        summary = lighthouse_report.build_summary([])
+        self.assertIn(lighthouse_report.MARKER, summary)
+        self.assertIn("### Lighthouse report", summary)
+
+    def test_omits_the_seo_column_when_no_report_ran_it(self) -> None:
+        reports = [
+            make_report(
+                "http://x/index.html",
+                {"performance": 1.0, "accessibility": 1.0, "best-practices": 1.0},
+            )
+        ]
+        summary = lighthouse_report.build_summary(reports)
+        self.assertIn("| Page | Performance | Accessibility | Best Practices |", summary)
+        self.assertNotIn("SEO", summary)
+        self.assertIn("| /index.html | 100 | 100 | 100 |", summary)
+
+    def test_accepts_a_custom_marker_and_title(self) -> None:
+        summary = lighthouse_report.build_summary(
+            [], marker="<!-- custom-marker -->", title="Custom report"
+        )
+        self.assertIn("<!-- custom-marker -->", summary)
+        self.assertIn("### Custom report", summary)
+        self.assertNotIn(lighthouse_report.MARKER, summary)
+
+
+class LoadReportsTests(unittest.TestCase):
+    def test_returns_empty_list_for_a_missing_directory(self) -> None:
+        self.assertEqual([], lighthouse_report.load_reports(Path("does-not-exist")))
+
+    def test_loads_only_report_json_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "index__html.report.json").write_text('{"finalUrl": "http://x/index.html"}', encoding="utf-8")
+            (root / "index__html.report.html").write_text("<html></html>", encoding="utf-8")
+
+            reports = lighthouse_report.load_reports(root)
+
+        self.assertEqual(1, len(reports))
+        self.assertEqual("http://x/index.html", reports[0]["finalUrl"])
+
+    def test_loads_reports_in_filename_order(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "z.report.json").write_text('{"id": "z"}', encoding="utf-8")
+            (root / "a.report.json").write_text('{"id": "a"}', encoding="utf-8")
+
+            reports = lighthouse_report.load_reports(root)
+
+        self.assertEqual(["a", "z"], [report["id"] for report in reports])
+
+
+if __name__ == "__main__":
+    unittest.main()
