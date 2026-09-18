@@ -70,13 +70,16 @@ output is scoped to for a single-file invocation.
 
 ## Configuration
 
-- `papyrusLint.cliPath`: optional path to a `PapyrusLinterCLI` executable.
-  When empty (the default), the extension downloads the platform-specific CLI
-  from the GitHub release whose version matches the extension, caches it in
-  VS Code's extension storage, and uses it automatically. Updating the
-  extension downloads that new release's CLI (and drops the previously cached
-  copy). Set this only to override the release CLI with a locally installed
-  executable; its `--version` output must match the extension's version.
+- `papyrusLint.cliPath`: optional path to a `PapyrusLinterCLI` executable
+  or the desktop app's `PapyrusLinter` binary. When empty (the default),
+  the extension downloads the platform-specific CLI from the GitHub
+  release whose version matches the extension, caches it in VS Code's
+  extension storage, and uses it automatically. Updating the extension
+  downloads that new release's CLI (and drops the previously cached
+  copy). Set this only to override the release CLI with a locally
+  installed executable; its SHA-256 must match this release's baked CLI
+  or GUI digest, and its `--version` output must match the extension's
+  version.
 - `papyrusLint.configPath`: path to a papyrus-lint config file to pass to
   the CLI via `--config`, overriding the `papyrus-lint.yaml`/`.yml` it
   would otherwise discover from the project root. Leave empty (the

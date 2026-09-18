@@ -109,7 +109,10 @@ export function createHarness({
   Module._load = function (request, parent, isMain) {
     if (request === 'vscode') return vscode;
     if (request === './cliDownload' || request.endsWith('/cliDownload')) {
-      return { ensureReleaseCli: releaseCli };
+      return {
+        ensureReleaseCli: releaseCli,
+        verifyConfiguredExecutable: async () => undefined,
+      };
     }
     if (request === 'child_process') {
       return {

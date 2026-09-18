@@ -242,18 +242,31 @@ jobs:
       - name: Package CLI binary
         shell: bash
         run: |
-          mkdir -p cli-dist
+          mkdir -p cli-dist hash-binaries
           case "${{ matrix.platform }}" in
             windows-latest)
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe cli-dist/PapyrusLinterCLI-windows.exe
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI.exe hash-binaries/PapyrusLinterCLI-windows.exe
+              cp app/src-tauri/target/release/PapyrusLinter.exe hash-binaries/PapyrusLinter-windows.exe
               ;;
             macos-latest)
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-macos
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI hash-binaries/PapyrusLinterCLI-macos
+              cp app/src-tauri/target/release/PapyrusLinter hash-binaries/PapyrusLinter-macos
               ;;
             *)
               cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI cli-dist/PapyrusLinterCLI-linux
+              cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI hash-binaries/PapyrusLinterCLI-linux
+              cp app/src-tauri/target/release/PapyrusLinter hash-binaries/PapyrusLinter-linux
               ;;
           esac
+
+      - name: Upload hash binaries for plugin packaging
+        uses: actions/upload-artifact@v7
+        with:
+          name: hash-binaries-${{ matrix.platform }}
+          path: hash-binaries/*
+          if-no-files-found: error
 
       - name: Copy default configuration
         if: matrix.platform == 'ubuntu-latest'
@@ -273,6 +286,16 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
+
+      - name: Download release binaries for hash baking
+        uses: actions/download-artifact@v8
+        with:
+          pattern: hash-binaries-*
+          merge-multiple: true
+          path: hash-binaries
+
+      - name: Bake CLI and GUI SHA-256 digests into the plugin
+        run: python3 .github/scripts/write_cli_hashes.py hash-binaries
 
       - name: Sync plugin versions with release tag
         shell: bash
@@ -309,6 +332,16 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
+
+      - name: Download release binaries for hash baking
+        uses: actions/download-artifact@v8
+        with:
+          pattern: hash-binaries-*
+          merge-multiple: true
+          path: hash-binaries
+
+      - name: Bake CLI and GUI SHA-256 digests into the plugin
+        run: python3 .github/scripts/write_cli_hashes.py hash-binaries
 
       - name: Sync plugin versions with release tag
         shell: bash
