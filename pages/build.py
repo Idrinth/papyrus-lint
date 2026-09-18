@@ -171,7 +171,7 @@ def build_robots_txt(out_dir: Path) -> None:
 
 
 def build(out_dir: Path, version: str = "", coverage_dir: Path | None = None) -> None:
-    cli_examples = html.escape(Path("/docs/papyrus-cli-usage.txt").read_text(encoding="utf-8", errors="replace"))
+    cli_examples = html.escape(Path(PAGES_DIR / "../docs/papyrus-cli-usage.txt").read_text(encoding="utf-8", errors="replace"))
 
     doc_results = {}
     for doc in DOCS:
