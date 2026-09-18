@@ -9,7 +9,7 @@ export { CLI_SHA256 };
 
 const RELEASE_BASE = 'https://github.com/Idrinth/papyrus-lint/releases/download';
 
-function assetName(platform: NodeJS.Platform): string {
+export function assetName(platform: NodeJS.Platform): string {
   switch (platform) {
     case 'win32':
       return 'PapyrusLinterCLI-windows.exe';
@@ -22,12 +22,26 @@ function assetName(platform: NodeJS.Platform): string {
   }
 }
 
-export function expectedSha256(asset: string): string {
+function bakedDigests(asset: string): readonly string[] {
   const expected = CLI_SHA256[asset];
-  if (!expected) {
+  if (!expected || expected.length === 0) {
     throw new Error(`no baked SHA-256 for ${asset}`);
   }
   return expected;
+}
+
+/** SHA-256 of the official standalone CLI asset for this release. */
+export function expectedSha256(asset: string): string {
+  return bakedDigests(asset)[0];
+}
+
+/** Every SHA-256 accepted for `asset`: the CLI, then any GUI alternatives. */
+export function acceptedSha256s(asset: string): readonly string[] {
+  return bakedDigests(asset);
+}
+
+export function isAcceptedSha256(asset: string, digest: string): boolean {
+  return acceptedSha256s(asset).includes(digest);
 }
 
 export async function sha256File(filePath: string): Promise<string> {
@@ -42,6 +56,21 @@ async function assertExpectedSha256(filePath: string, asset: string): Promise<vo
   if (actual !== expected) {
     throw new Error(
       `${asset} SHA-256 mismatch (expected ${expected}, got ${actual}); refusing to use a manipulated file`,
+    );
+  }
+}
+
+/** Require a user-supplied executable to match this release's CLI or GUI digest. */
+export async function verifyConfiguredExecutable(
+  executable: string,
+  platform: NodeJS.Platform = process.platform,
+): Promise<void> {
+  const asset = assetName(platform);
+  const actual = await sha256File(executable);
+  if (!isAcceptedSha256(asset, actual)) {
+    throw new Error(
+      `configured executable SHA-256 mismatch (got ${actual}); ` +
+        `refusing to use a file that is not this release's PapyrusLinterCLI or PapyrusLinter`,
     );
   }
 }
