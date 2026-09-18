@@ -1,14 +1,11 @@
-// Progressively enhances the hero's "Download GUI"/"Download CLI" buttons
-// (see index.template.html): without JavaScript each is a plain link to the
-// latest GitHub release page. With JavaScript, clicking one instead opens a
-// small quick-select panel listing that release's actual per-platform
-// assets, with the option matching the OS the browser reports pre-selected,
-// so most visitors land on the right download without ever seeing the
-// release page.
+// Progressively enhances the hero's GUI, CLI, and VS Code extension buttons
+// (see index.template.html): without JavaScript each remains a plain link.
+// With JavaScript, clicking one instead opens a small quick-select panel;
+// platform-specific choices preselect the option matching the browser's OS.
 (function () {
   // Every href this script ever sets comes from this literal map, never
   // from the tainted data-options JSON directly: each button's markup only
-  // supplies a "file" key naming one of these assets, used purely to look
+  // supplies a "file" key naming one of these destinations, used purely to look
   // up the matching URL below. A getAttribute()-sourced string reaching a
   // href/src sink is otherwise flagged as a potential DOM XSS by static
   // analysis (CodeQL js/xss-through-dom), regardless of how trustworthy the
@@ -32,6 +29,9 @@
       "https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterCLI-windows.exe",
     "PapyrusLinterCLI-macos": "https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterCLI-macos",
     "PapyrusLinterCLI-linux": "https://github.com/idrinth/papyrus-lint/releases/latest/download/PapyrusLinterCLI-linux",
+    "vscode-marketplace": "https://marketplace.visualstudio.com/items?itemName=Idrinth.papyrus-lint-vscode",
+    "papyrus-lint-vscode.vsix":
+      "https://github.com/idrinth/papyrus-lint/releases/latest/download/papyrus-lint-vscode.vsix",
   };
 
   function detectOS() {
