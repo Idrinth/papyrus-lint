@@ -8,7 +8,7 @@ built and shipped separately for use cases — e.g. a CI pipeline — that
 shouldn't need the desktop app's binary (and its GUI dependencies) at all.
 Both accept the same argument and behave identically:
 
-[See the docs](/docs/papyrus-cli-usage.txt) for a list of possible arguments
+[See the docs](papyrus-cli-usage.txt) for a list of possible arguments
 and options or read on for explanations.
 
 ## Initializing a project (`init`, `preset add`, `doctor`)

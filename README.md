@@ -207,7 +207,7 @@ built and shipped separately for use cases — e.g. a CI pipeline — that
 shouldn't need the desktop app's binary (and its GUI dependencies) at all.
 Both accept the same argument and behave identically.
 
-[See the docs](/docs/cli.md) for more details.
+[See the docs](docs/cli.md) for more details.
 
 Prebuilt `PapyrusLinterCLI`/`PapyrusLinterCLI.exe` standalone CLI binaries
 for Linux, macOS, and Windows are attached to each [GitHub
