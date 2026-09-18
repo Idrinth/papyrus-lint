@@ -51,4 +51,29 @@ describe('extension activation', () => {
 
     assert.deepEqual(harness.diagnostics.deleted, []);
   });
+
+  it('starts downloading the matching CLI on activation when no override is configured', async () => {
+    const downloads = [];
+    createHarness({
+      cliPath: '',
+      releaseCli: async (...args) => {
+        downloads.push(args);
+        return '/downloaded/PapyrusLinterCLI';
+      },
+    });
+
+    assert.deepEqual(downloads, [['/extension-storage', '1.2.3']]);
+  });
+
+  it('does not download a CLI on activation when papyrusLint.cliPath is set', () => {
+    const downloads = [];
+    createHarness({
+      releaseCli: async (...args) => {
+        downloads.push(args);
+        return '/downloaded/PapyrusLinterCLI';
+      },
+    });
+
+    assert.deepEqual(downloads, []);
+  });
 });

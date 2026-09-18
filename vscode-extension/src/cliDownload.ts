@@ -26,7 +26,22 @@ async function download(url: string, destination: string): Promise<void> {
   await pipeline(Readable.fromWeb(response.body), createWriteStream(destination, { mode: 0o700 }));
 }
 
-/** Returns this extension release's CLI, downloading it once into extension storage. */
+/** Removes CLIs cached for other extension versions, so an update doesn't keep serving an old binary. */
+async function pruneOtherVersions(storageDirectory: string, version: string): Promise<void> {
+  const keep = `v${version}`;
+  try {
+    const entries = await fs.readdir(storageDirectory, { withFileTypes: true });
+    await Promise.all(
+      entries
+        .filter((entry) => entry.isDirectory() && entry.name.startsWith('v') && entry.name !== keep)
+        .map((entry) => fs.rm(path.join(storageDirectory, entry.name), { recursive: true, force: true })),
+    );
+  } catch {
+    // Best-effort: a leftover previous-version CLI is harmless next to the current one.
+  }
+}
+
+/** Returns this extension release's CLI, downloading it when this version isn't cached yet. */
 export async function ensureReleaseCli(
   storageDirectory: string,
   version: string,
@@ -37,6 +52,7 @@ export async function ensureReleaseCli(
   const executable = path.join(directory, asset);
   try {
     await fs.access(executable, constants.X_OK);
+    await pruneOtherVersions(storageDirectory, version);
     return executable;
   } catch {
     // Missing (or not executable): replace it atomically below.
@@ -51,5 +67,6 @@ export async function ensureReleaseCli(
   } finally {
     await fs.rm(temporary, { force: true });
   }
+  await pruneOtherVersions(storageDirectory, version);
   return executable;
 }

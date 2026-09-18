@@ -14,12 +14,21 @@ let automaticCli: Promise<string> | undefined;
 let automaticCliStorage = '';
 let extensionVersion = '';
 
-/** Records this activation's storage/version and drops any in-flight automatic
- * download so a later failure can be retried. */
+/** Records this activation's storage/version, drops any in-flight automatic
+ * download so a later failure can be retried, and starts fetching this
+ * release's CLI when the user hasn't overridden `papyrusLint.cliPath`.
+ * Starting the download here — rather than waiting for the first lint —
+ * is what picks up a new binary after the extension itself is updated. */
 export function configureCli(storageDirectory: string, version: string): void {
   automaticCliStorage = storageDirectory;
   extensionVersion = version;
   automaticCli = undefined;
+  if (!resolveCliPath()) {
+    automaticCli = ensureReleaseCli(automaticCliStorage, extensionVersion);
+    // The first lint/fix awaits this same promise; this extra handler only
+    // prevents an unhandled rejection if that hasn't happened yet.
+    void automaticCli.catch(() => undefined);
+  }
 }
 
 export function showCliLaunchFailure(result: CliResult): void {
