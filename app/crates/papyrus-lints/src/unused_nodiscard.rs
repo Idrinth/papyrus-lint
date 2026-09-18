@@ -178,7 +178,9 @@ fn resolved_qualifier_type(
     let mut env = TypeEnv::for_script(script);
     let mut found = None;
     env.with_function_scope(function, |env| {
-        found = env.lookup(qualifier).map(|type_name| type_name.name.clone());
+        found = env
+            .lookup(qualifier)
+            .map(|type_name| type_name.name.clone());
     });
     found
 }
@@ -205,10 +207,12 @@ fn script_name(ast: Option<&Script>, tokens: &[Token]) -> Option<String> {
     let script_name_at = tokens
         .iter()
         .position(|token| matches!(token.kind, TokenKind::Keyword(Keyword::ScriptName)))?;
-    tokens.get(script_name_at + 1).and_then(|token| match &token.kind {
-        TokenKind::Identifier(name) => Some(name.clone()),
-        _ => None,
-    })
+    tokens
+        .get(script_name_at + 1)
+        .and_then(|token| match &token.kind {
+            TokenKind::Identifier(name) => Some(name.clone()),
+            _ => None,
+        })
 }
 
 fn local_nodiscard_functions(source: &str, tokens: &[Token]) -> HashSet<String> {
