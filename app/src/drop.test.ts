@@ -636,7 +636,7 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
       await Promise.resolve();
     }
     const raceLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_psc_file");
-    expect((raceLintCall?.[1] as { config: LintConfig }).config.semicolon).toBe(false);
+    expect((raceLintCall?.[1] as { context: { config: LintConfig } }).context.config.semicolon).toBe(false);
 
     // The override's config load now finishes, well after that race relint
     // already cleared lintResultsStale.
@@ -654,6 +654,6 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
     }
 
     const secondLintCall = invokeMock.mock.calls.find(([command]) => command === "lint_psc_file");
-    expect((secondLintCall?.[1] as { config: LintConfig }).config.semicolon).toBe(true);
+    expect((secondLintCall?.[1] as { context: { config: LintConfig } }).context.config.semicolon).toBe(true);
   });
 });

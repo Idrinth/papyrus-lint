@@ -7,6 +7,7 @@ use papyrus_lint_core::{
     ast_cache, compile_diagnostics, compiler, function_table, script_filename_mismatch,
     script_locator, stale_pex,
 };
+use serde::{Deserialize, Serialize};
 
 pub(crate) fn project_function_table(
     root: String,
@@ -15,6 +16,47 @@ pub(crate) fn project_function_table(
 ) -> function_table::FunctionTable {
     function_table::FunctionTable::new_with_additional_roots(PathBuf::from(root), additional_roots)
         .with_lookup_roots(lookup_roots)
+}
+
+/// Project-level inputs shared by [`lint_psc_file`] and the mutating repair
+/// commands: the project root, lint configuration, extra script roots,
+/// analysis-only lookup roots, compiler path, and whether to merge
+/// PapyrusCompiler.exe errors into the result. Grouped so adding a
+/// project-level option only changes this type (and the frontend helper that
+/// builds it) rather than every command contract independently.
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+pub(crate) struct ProjectLintContext {
+    /// The project root (conventionally the directory containing the
+    /// `.achlist` file); it lets the "Argument type check" lint resolve
+    /// calls to functions declared on other scripts under `root`, and lets
+    /// the "Return type check" lint accept a returned value whose script
+    /// under `root` extends the declared return type.
+    pub(crate) root: String,
+    pub(crate) config: papyrus_lints::Config,
+    /// The project's configured additional script roots (see
+    /// [`load_script_roots`]), searched the same way alongside `root`'s
+    /// conventional source directories.
+    pub(crate) additional_roots: Vec<String>,
+    /// Analysis-only fallback directories (see [`load_lookup_script_roots`]),
+    /// searched only after those, never linted, and ignored by
+    /// `conflicting_script_versions`.
+    pub(crate) lookup_roots: Vec<String>,
+    /// See [`load_compiler_path`].
+    pub(crate) compiler_path: String,
+    /// See [`load_compile_check`]. Together with [`Self::compiler_path`],
+    /// controls whether PapyrusCompiler.exe's own errors are merged in too
+    /// — see [`lint_with_compile_check`].
+    pub(crate) compile_check: bool,
+}
+
+impl ProjectLintContext {
+    pub(crate) fn function_table(&self) -> function_table::FunctionTable {
+        project_function_table(
+            self.root.clone(),
+            self.additional_roots.clone(),
+            self.lookup_roots.clone(),
+        )
+    }
 }
 
 /// Compiles the `.psc` file at `path` using the compiler executable at
@@ -124,43 +166,26 @@ pub(crate) fn lint_with_compile_check(
 }
 
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
-/// honoring the semicolon style `config` selects. `root` is the project
-/// root (conventionally the directory containing the `.achlist` file); it
-/// lets the "Argument type check" lint resolve calls to functions declared
-/// on other scripts under `root`, and lets the "Return type check" lint
-/// accept a returned value whose script under `root` extends the declared
-/// return type. `additional_roots` are the project's configured additional
-/// script roots (see [`load_script_roots`]), searched the same way
-/// alongside `root`'s conventional source directories. `lookup_roots` are
-/// analysis-only fallback directories (see [`load_lookup_script_roots`]),
-/// searched only after those, never linted, and ignored by
-/// `conflicting_script_versions`. `compiler_path` and
-/// `compile_check` (see [`load_compiler_path`]/[`load_compile_check`])
-/// control whether PapyrusCompiler.exe's own errors are merged in too —
-/// see [`lint_with_compile_check`].
+/// honoring the semicolon style `context.config` selects. See
+/// [`ProjectLintContext`] for `root`/`additional_roots`/`lookup_roots`/
+/// `compiler_path`/`compile_check`.
 #[tauri::command(async)]
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn lint_psc_file(
     path: String,
-    root: String,
-    config: papyrus_lints::Config,
-    additional_roots: Vec<String>,
-    lookup_roots: Vec<String>,
-    compiler_path: String,
-    compile_check: bool,
+    context: ProjectLintContext,
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
     ast_cache::ensure_primed(path, &source);
-    let mut function_table = project_function_table(root, additional_roots.clone(), lookup_roots);
+    let mut function_table = context.function_table();
     Ok(lint_with_compile_check(
         path,
         &source,
-        &config,
+        &context.config,
         &mut function_table,
-        &additional_roots,
-        &compiler_path,
-        compile_check,
+        &context.additional_roots,
+        &context.compiler_path,
+        context.compile_check,
     ))
 }
 

@@ -39,12 +39,10 @@ fn lint_psc_file_lints_source_from_disk() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -61,12 +59,11 @@ fn lint_psc_file_ignores_compile_check_when_disabled() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        "/does/not/matter".to_string(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            compiler_path: "/does/not/matter".to_string(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -81,12 +78,12 @@ fn lint_psc_file_ignores_compile_check_when_no_compiler_path_is_set() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        "   ".to_string(),
-        true,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            compiler_path: "   ".to_string(),
+            compile_check: true,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -115,12 +112,10 @@ fn lint_psc_file_flags_a_script_newer_than_its_compiled_pex() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -159,12 +154,11 @@ fn lint_psc_file_ignores_stale_compiled_output_when_disabled() {
     };
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -183,12 +177,10 @@ fn lint_psc_file_reports_script_filename_mismatch() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -215,12 +207,11 @@ fn lint_psc_file_ignores_script_filename_mismatch_when_disabled() {
     };
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -243,12 +234,10 @@ fn lint_psc_file_honors_a_disable_comment_for_script_filename_mismatch() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -271,12 +260,10 @@ fn lint_psc_file_honors_a_disable_file_comment_for_script_filename_mismatch() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -302,12 +289,10 @@ fn lint_psc_file_reports_conflicting_script_versions() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -340,12 +325,11 @@ fn lint_psc_file_ignores_conflicting_script_versions_when_disabled() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -387,12 +371,11 @@ fn lint_psc_file_stale_compiled_output_disable_comment_is_not_reported_as_unused
     };
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -437,12 +420,11 @@ fn lint_psc_file_stale_compiled_output_disable_file_comment_is_not_reported_as_u
     };
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -482,12 +464,11 @@ fn lint_psc_file_conflicting_script_versions_disable_comment_is_not_reported_as_
     };
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -527,12 +508,11 @@ fn lint_psc_file_conflicting_script_versions_disable_file_comment_is_not_reporte
     };
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -565,12 +545,11 @@ fn lint_psc_file_script_filename_mismatch_disable_comment_is_not_reported_as_unu
     };
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -603,12 +582,11 @@ fn lint_psc_file_script_filename_mismatch_disable_file_comment_is_not_reported_a
     };
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        config,
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            config,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -640,12 +618,12 @@ fn lint_psc_file_merges_in_compiler_reported_errors_when_enabled() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        compiler_path.to_string_lossy().into_owned(),
-        true,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            compiler_path: compiler_path.to_string_lossy().into_owned(),
+            compile_check: true,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -672,12 +650,12 @@ fn lint_psc_file_omits_compiler_diagnostics_when_the_compiler_reports_success() 
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        compiler_path.to_string_lossy().into_owned(),
-        true,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            compiler_path: compiler_path.to_string_lossy().into_owned(),
+            compile_check: true,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -694,15 +672,16 @@ fn lint_psc_file_does_not_fail_when_the_configured_compiler_cannot_be_run() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        dir.path()
-            .join("missing-compiler")
-            .to_string_lossy()
-            .into_owned(),
-        true,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            compiler_path: dir
+                .path()
+                .join("missing-compiler")
+                .to_string_lossy()
+                .into_owned(),
+            compile_check: true,
+            ..Default::default()
+        },
     )
     .unwrap();
 
@@ -919,12 +898,10 @@ fn lint_psc_file_resolves_argument_types_through_additional_script_roots() {
 
     let without_roots = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        Vec::new(),
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
     )
     .unwrap();
     assert!(without_roots
@@ -933,12 +910,11 @@ fn lint_psc_file_resolves_argument_types_through_additional_script_roots() {
 
     let with_roots = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        vec![extra_root],
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            additional_roots: vec![extra_root],
+            ..Default::default()
+        },
     )
     .unwrap();
     assert!(with_roots.iter().any(|diagnostic| {
@@ -964,12 +940,11 @@ fn lint_psc_file_reports_conflicting_script_versions_in_an_additional_root() {
 
     let diagnostics = lint_psc_file(
         path.to_string_lossy().into_owned(),
-        dir.path().to_string_lossy().into_owned(),
-        Default::default(),
-        vec![extra.path().to_string_lossy().into_owned()],
-        Vec::new(),
-        String::new(),
-        false,
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            additional_roots: vec![extra.path().to_string_lossy().into_owned()],
+            ..Default::default()
+        },
     )
     .unwrap();
 

@@ -5,7 +5,7 @@
 // individual command is dispatched.
 import { invoke } from "@tauri-apps/api/core";
 import { type Member } from "./autocomplete";
-import { currentLintConfig } from "./config";
+import { currentLintConfig, type LintConfig } from "./config";
 import {
   currentCompileCheck,
   currentCompilerPath,
@@ -75,6 +75,30 @@ export interface CompileOutcome {
   personal_data_stripped: boolean;
 }
 
+// Mirrors the backend's ProjectLintContext: the project-level inputs shared
+// by lint_psc_file and the mutating repair commands. Built once here so a
+// new project-level option only has to be added in one frontend helper
+// rather than every invoke() payload independently.
+export interface ProjectLintContext {
+  root: string;
+  config: LintConfig;
+  additional_roots: string[];
+  lookup_roots: string[];
+  compiler_path: string;
+  compile_check: boolean;
+}
+
+export function currentProjectLintContext(): ProjectLintContext {
+  return {
+    root: currentProjectDir ?? "",
+    config: currentLintConfig,
+    additional_roots: effectiveScriptRoots(),
+    lookup_roots: currentLookupScriptRoots,
+    compiler_path: currentCompilerPath,
+    compile_check: currentCompileCheck,
+  };
+}
+
 // Lints `source` directly, in-process (the same `lint_papyrus_script`
 // Tauri command `app/src-tauri/src/files.rs` wraps around
 // `papyrus_lints::lint`), instead of a `.psc` path on disk. Used by the
@@ -97,12 +121,7 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", {
       path,
-      root: currentProjectDir ?? "",
-      config: currentLintConfig,
-      additionalRoots: effectiveScriptRoots(),
-      lookupRoots: currentLookupScriptRoots,
-      compilerPath: currentCompilerPath,
-      compileCheck: currentCompileCheck,
+      context: currentProjectLintContext(),
     });
   } catch (error) {
     console.error(error);
@@ -113,12 +132,7 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
 export async function repairPscFile(path: string): Promise<Diagnostic[]> {
   return invoke<Diagnostic[]>("repair_psc_file", {
     path,
-    root: currentProjectDir ?? "",
-    config: currentLintConfig,
-    additionalRoots: effectiveScriptRoots(),
-    lookupRoots: currentLookupScriptRoots,
-    compilerPath: currentCompilerPath,
-    compileCheck: currentCompileCheck,
+    context: currentProjectLintContext(),
   });
 }
 
@@ -206,12 +220,7 @@ export function hasFixableFindings(findings: Diagnostic[]): boolean {
 export async function repairPscFinding(path: string, rule: string, line: number): Promise<Diagnostic[]> {
   return invoke<Diagnostic[]>("repair_psc_finding", {
     path,
-    root: currentProjectDir ?? "",
-    config: currentLintConfig,
-    additionalRoots: effectiveScriptRoots(),
-    lookupRoots: currentLookupScriptRoots,
-    compilerPath: currentCompilerPath,
-    compileCheck: currentCompileCheck,
+    context: currentProjectLintContext(),
     rule,
     line,
   });
@@ -224,12 +233,7 @@ export async function repairPscFinding(path: string, rule: string, line: number)
 export async function repairPscFileRule(path: string, rule: string): Promise<Diagnostic[]> {
   return invoke<Diagnostic[]>("repair_psc_file_rule", {
     path,
-    root: currentProjectDir ?? "",
-    config: currentLintConfig,
-    additionalRoots: effectiveScriptRoots(),
-    lookupRoots: currentLookupScriptRoots,
-    compilerPath: currentCompilerPath,
-    compileCheck: currentCompileCheck,
+    context: currentProjectLintContext(),
     rule,
   });
 }
@@ -242,12 +246,7 @@ export async function repairPscFileRule(path: string, rule: string): Promise<Dia
 export async function addDisableCommentToPscLine(path: string, rules: string[], line: number): Promise<Diagnostic[]> {
   return invoke<Diagnostic[]>("add_disable_comment_to_psc_line", {
     path,
-    root: currentProjectDir ?? "",
-    config: currentLintConfig,
-    additionalRoots: effectiveScriptRoots(),
-    lookupRoots: currentLookupScriptRoots,
-    compilerPath: currentCompilerPath,
-    compileCheck: currentCompileCheck,
+    context: currentProjectLintContext(),
     rules,
     line,
   });

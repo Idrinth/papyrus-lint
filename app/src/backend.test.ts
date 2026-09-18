@@ -185,12 +185,14 @@ describe("lint/repair command wrappers", () => {
 
     expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", {
       path: "/scripts/MyScript.psc",
-      root: "/proj",
-      config: expect.anything(),
-      additionalRoots: expect.anything(),
-      lookupRoots: ["C:/Skyrim/Data/Scripts/Source"],
-      compilerPath: "C:\\Tools\\PapyrusCompiler.exe",
-      compileCheck: true,
+      context: {
+        root: "/proj",
+        config: expect.anything(),
+        additional_roots: expect.anything(),
+        lookup_roots: ["C:/Skyrim/Data/Scripts/Source"],
+        compiler_path: "C:\\Tools\\PapyrusCompiler.exe",
+        compile_check: true,
+      },
     });
   });
 
@@ -207,12 +209,14 @@ describe("lint/repair command wrappers", () => {
     await expect(repairPscFile("/scripts/MyScript.psc")).resolves.toEqual(remaining);
     expect(invokeMock).toHaveBeenCalledWith("repair_psc_file", {
       path: "/scripts/MyScript.psc",
-      root: expect.any(String),
-      config: expect.anything(),
-      additionalRoots: expect.anything(),
-      lookupRoots: expect.anything(),
-      compilerPath: expect.any(String),
-      compileCheck: expect.any(Boolean),
+      context: {
+        root: expect.any(String),
+        config: expect.anything(),
+        additional_roots: expect.anything(),
+        lookup_roots: expect.anything(),
+        compiler_path: expect.any(String),
+        compile_check: expect.any(Boolean),
+      },
     });
   });
 
@@ -234,12 +238,14 @@ describe("lint/repair command wrappers", () => {
     await expect(repairPscFinding("/scripts/MyScript.psc", "comma-spacing", 3)).resolves.toEqual(remaining);
     expect(invokeMock).toHaveBeenCalledWith("repair_psc_finding", {
       path: "/scripts/MyScript.psc",
-      root: expect.any(String),
-      config: expect.anything(),
-      additionalRoots: expect.anything(),
-      lookupRoots: expect.anything(),
-      compilerPath: expect.any(String),
-      compileCheck: expect.any(Boolean),
+      context: {
+        root: expect.any(String),
+        config: expect.anything(),
+        additional_roots: expect.anything(),
+        lookup_roots: expect.anything(),
+        compiler_path: expect.any(String),
+        compile_check: expect.any(Boolean),
+      },
       rule: "comma-spacing",
       line: 3,
     });
@@ -252,12 +258,14 @@ describe("lint/repair command wrappers", () => {
     await expect(repairPscFileRule("/scripts/MyScript.psc", "trailing-whitespace")).resolves.toEqual(remaining);
     expect(invokeMock).toHaveBeenCalledWith("repair_psc_file_rule", {
       path: "/scripts/MyScript.psc",
-      root: expect.any(String),
-      config: expect.anything(),
-      additionalRoots: expect.anything(),
-      lookupRoots: expect.anything(),
-      compilerPath: expect.any(String),
-      compileCheck: expect.any(Boolean),
+      context: {
+        root: expect.any(String),
+        config: expect.anything(),
+        additional_roots: expect.anything(),
+        lookup_roots: expect.anything(),
+        compiler_path: expect.any(String),
+        compile_check: expect.any(Boolean),
+      },
       rule: "trailing-whitespace",
     });
   });
@@ -271,12 +279,14 @@ describe("lint/repair command wrappers", () => {
     ).resolves.toEqual(remaining);
     expect(invokeMock).toHaveBeenCalledWith("add_disable_comment_to_psc_line", {
       path: "/scripts/MyScript.psc",
-      root: expect.any(String),
-      config: expect.anything(),
-      additionalRoots: expect.anything(),
-      lookupRoots: expect.anything(),
-      compilerPath: expect.any(String),
-      compileCheck: expect.any(Boolean),
+      context: {
+        root: expect.any(String),
+        config: expect.anything(),
+        additional_roots: expect.anything(),
+        lookup_roots: expect.anything(),
+        compiler_path: expect.any(String),
+        compile_check: expect.any(Boolean),
+      },
       rules: ["comma-spacing", "trailing-whitespace"],
       line: 3,
     });
