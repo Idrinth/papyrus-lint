@@ -55,6 +55,7 @@ rules:
   comma_spacing: true
   forbidden_functions: true
   formid_hex_notation: true
+  get_form_from_file_skyrim_esm: true
   slow_functions: true
   unused_getter: true
   unused_property: true

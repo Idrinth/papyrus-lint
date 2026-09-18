@@ -15,9 +15,9 @@ use crate::{
     array_size_range, assignment_operator_spacing, chain_whitespace, circular_dependency,
     comma_spacing, cyclomatic_complexity, default_property_value, division_by_zero, empty_body,
     event_signature, exclamation_spacing, explicit_return, float_equality, float_int_conversion,
-    forbidden_functions, formid_hex_notation, function_override, get_state_comparison,
-    global_variable_increment, global_variable_setvalue, goto_state, identifier_casing,
-    impossible_cast, indentation, int_division_to_float, invalid_random_range,
+    forbidden_functions, formid_hex_notation, function_override, get_form_from_file_skyrim_esm,
+    get_state_comparison, global_variable_increment, global_variable_setvalue, goto_state,
+    identifier_casing, impossible_cast, indentation, int_division_to_float, invalid_random_range,
     invariant_loop_condition, local_variable_shadowing, magic_numbers, missing_doc_comment,
     missing_update_handler, named_arguments, native_function_usage, non_global_function_call,
     none_form_usage, numeric_comparison, operator_spacing, parameter_reassignment,
@@ -56,6 +56,7 @@ pub fn default_rules() -> Rules {
         comma_spacing: true,
         forbidden_functions: true,
         formid_hex_notation: true,
+        get_form_from_file_skyrim_esm: true,
         slow_functions: true,
         unused_getter: true,
         unused_property: true,
@@ -172,6 +173,9 @@ fn collect_token_diagnostics(
     }
     if rules.formid_hex_notation {
         diagnostics.extend(formid_hex_notation::check(source));
+    }
+    if rules.get_form_from_file_skyrim_esm {
+        diagnostics.extend(get_form_from_file_skyrim_esm::check(source));
     }
     if rules.unused_getter {
         diagnostics.extend(unused_getter::check(source));
@@ -544,10 +548,15 @@ fn apply_remaining_repairs(
         rules.unnecessary_function && applies(unnecessary_function::RULE),
         unnecessary_function::repair,
     );
-    apply_rule(
+    let source = apply_rule(
         source,
         rules.formid_hex_notation && applies(formid_hex_notation::RULE),
         formid_hex_notation::repair,
+    );
+    apply_rule(
+        source,
+        rules.get_form_from_file_skyrim_esm && applies(get_form_from_file_skyrim_esm::RULE),
+        get_form_from_file_skyrim_esm::repair,
     )
 }
 

@@ -56,6 +56,20 @@
     "definition": "Flags, as a `[warning]`, a FormID literal that isn't written in hexadecimal notation when it's directly compared (`==`, `!=`, `<`, `<=`, `>`, `>=`) against a `GetFormID()` call, or passed as the FormID argument to `Game.GetFormFromFile` (positionally or by name), since hexadecimal is the convention used everywhere else a FormID appears (the Creation Kit, xEdit, mod documentation) and a stray decimal literal is easy to mistype or overlook. Only a literal directly adjacent to the comparison operator or the call's argument list is checked; one reached indirectly through a variable assigned earlier is left unflagged rather than guessed at. Automatically fixable: the fix rewrites the flagged literal's digits into their hexadecimal equivalent (e.g. `76935` becomes `0x12C87`) in place."
   },
   {
+    "id": "get-form-from-file-skyrim-esm",
+    "name": "Game.GetFormFromFile(\"Skyrim.esm\") simplification",
+    "category": "Performance",
+    "tags": [
+      "performance",
+      "style"
+    ],
+    "severity": "warning",
+    "importance": "medium",
+    "fixable": true,
+    "description": "Flags Game.GetFormFromFile(id, \"Skyrim.esm\"), which is exactly what Game.GetForm(id) already does.",
+    "definition": "Flags, as a `[warning]`, a qualified `Game.GetFormFromFile` call whose file name argument is the literal `\"Skyrim.esm\"` (positionally or by name, matched case-insensitively), since `Skyrim.esm` is always loaded as master index `0` and a FormID valid for it never needs the file name argument's extra resolution step at all — `Game.GetForm(id)` returns exactly the same `Form` for less overhead. Automatically fixable: the fix rewrites the call to `Game.GetForm(id)`, keeping the original FormID argument (including any expression it's part of) and dropping the file name argument and its name if it was passed by name."
+  },
+  {
     "id": "slow-functions",
     "name": "Slow function usage",
     "category": "Performance",

@@ -26,6 +26,7 @@
 //!   comma_spacing: true
 //!   forbidden_functions: true
 //!   formid_hex_notation: true
+//!   get_form_from_file_skyrim_esm: true
 //!   slow_functions: true
 //!   unused_getter: true
 //!   unused_property: true
@@ -358,6 +359,8 @@ pub struct Rules {
     pub forbidden_functions: bool,
     /// The "FormID hex notation" lint.
     pub formid_hex_notation: bool,
+    /// The "Game.GetFormFromFile(\"Skyrim.esm\") simplification" lint.
+    pub get_form_from_file_skyrim_esm: bool,
     /// The "Slow function usage" lint.
     pub slow_functions: bool,
     /// The "Getter usage without saving result" lint.

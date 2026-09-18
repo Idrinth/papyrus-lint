@@ -30,6 +30,7 @@ mod forbidden_functions;
 mod formid_hex_notation;
 mod fragment_code;
 mod function_override;
+mod get_form_from_file_skyrim_esm;
 mod get_state_comparison;
 mod global_variable_increment;
 mod global_variable_setvalue;
