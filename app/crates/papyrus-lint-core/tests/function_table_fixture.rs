@@ -85,7 +85,7 @@ fn member_listing_includes_inherited_functions_and_properties() {
 
 #[test]
 fn script_existence_covers_fixtures_native_globals_and_unknown_names() {
-    let mut table = table();
+    let table = table();
 
     assert!(table.script_exists("TYPEA"));
     assert!(table.script_exists("game"));

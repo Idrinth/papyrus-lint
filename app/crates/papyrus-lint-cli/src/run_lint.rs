@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::RwLock;
 
 use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
 use papyrus_lint_core::{ast_cache, compile_diagnostics, compiler, content_hash};
@@ -17,7 +17,7 @@ use crate::output::*;
 /// `--threads`, across every worker thread linting one).
 pub(crate) struct LintContext<'a> {
     pub(crate) lint_config: &'a papyrus_lints::Config,
-    pub(crate) function_table: &'a Mutex<FunctionTable>,
+    pub(crate) function_table: &'a RwLock<FunctionTable>,
     pub(crate) function_table_additional_roots: &'a [String],
     /// Achlist entries grouped by (lowercased) file name, for
     /// `conflicting_script_versions` in `strict_achlist_scope` mode (see

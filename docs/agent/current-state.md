@@ -408,13 +408,14 @@ machine's available parallelism), with `--threads 1` forcing the previous
 fully sequential behavior. Every script is otherwise independent, so the
 one thing worker threads actually share is the run's single
 `FunctionTable` (cross-script argument/return type lookups): it's wrapped
-in a `Mutex` and accessed through `function_table::SharedFunctionTable`, an
-`ExternalSignatures` adapter that locks only for the duration of one
-lookup (each forwarded through the `ExternalSignatures` trait itself via
-fully qualified syntax, so it can't drift from `FunctionTable`'s own trait
-impl) rather than for a whole script's lint pass — since `FunctionTable`
-caches everything it resolves, that's typically one lock acquisition per
-referenced type, not per lookup. This is also why `ast_cache`'s own
+in an `RwLock` and accessed through `function_table::SharedFunctionTable`, an
+`ExternalSignatures` adapter that takes a shared read lock for a cache hit
+and the exclusive write lock only when a lookup still has to
+`ensure_loaded` a script (each load miss is forwarded through the
+`ExternalSignatures` trait itself via fully qualified syntax, so it can't
+drift from `FunctionTable`'s own trait impl) rather than for a whole
+script's lint pass — once a type is cached, later lookups from other
+worker threads no longer serialize on that table. This is also why `ast_cache`'s own
 accessors (`get`/`put`/`get_tokens`/`put_tokens`/`ensure_primed`) serialize
 on a single process-wide lock: `std::fs::write` isn't atomic, and two
 scripts linted at once can both need the same cross-script dependency's

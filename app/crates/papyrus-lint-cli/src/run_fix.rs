@@ -4,7 +4,7 @@
 
 use std::io::Write;
 use std::path::Path;
-use std::sync::Mutex;
+use std::sync::RwLock;
 
 use papyrus_lint_core::diff::unified_diff;
 use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
@@ -39,7 +39,7 @@ pub(crate) fn fix_file(
     source: String,
     encoding: PscEncoding,
     lint_config: &papyrus_lints::Config,
-    function_table: &Mutex<FunctionTable>,
+    function_table: &RwLock<FunctionTable>,
     tag_filter: Option<&str>,
     rule_filter: Option<&'static str>,
     target_line: Option<usize>,

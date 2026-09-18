@@ -13,7 +13,7 @@
 //! the desktop app so both draw on the same tested implementation. The
 //! app's per-file Tauri commands (`lint_psc_file`/`repair_psc_file`) don't
 //! call this wrapper directly -- the frontend already bounds concurrency
-//! itself -- but they do share one `Mutex`-guarded [`crate::function_table::FunctionTable`]
+//! itself -- but they do share one `RwLock`-guarded [`crate::function_table::FunctionTable`]
 //! per project through [`crate::function_table::SharedFunctionTable`], the
 //! same adapter the CLI workers use. See [`crate::ast_cache`]'s module
 //! docs for the concurrency-safety work this shares with the app's own
@@ -43,7 +43,7 @@ pub fn default_thread_count() -> usize {
 ///
 /// `work` must be safe to call from multiple threads at once (`Sync`); it
 /// closes over whatever shared, thread-safe state each call actually needs
-/// (e.g. a `Mutex`-guarded [`crate::function_table::FunctionTable`] via
+/// (e.g. a `RwLock`-guarded [`crate::function_table::FunctionTable`] via
 /// [`crate::function_table::SharedFunctionTable`]) rather than this
 /// function knowing anything about lint-specific state itself.
 pub fn map_in_parallel<T, R>(

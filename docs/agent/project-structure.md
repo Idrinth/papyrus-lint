@@ -198,7 +198,8 @@
 │       │       │   ├── load_tests.rs   # load.rs's unit tests
 │       │       │   ├── external.rs     # ExternalSignatures impl for FunctionTable
 │       │       │   ├── external_tests.rs # external.rs's unit tests
-│       │       │   ├── shared.rs       # Mutex-guarded SharedFunctionTable adapter
+│       │       │   ├── shared.rs       # RwLock SharedFunctionTable adapter
+│       │       │                       # (write lock only on cache fill)
 │       │       │   ├── shared_tests.rs # shared.rs's unit tests
 │       │       │   └── test_support.rs # Shared helpers for this module's tests
 │       │       ├── script_functions.rs # Converts a parsed .psc AST into the
