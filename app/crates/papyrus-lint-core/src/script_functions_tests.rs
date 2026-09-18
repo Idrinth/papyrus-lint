@@ -110,3 +110,70 @@ fn side_effect_inside_a_while_loop_is_found() {
     let source = "ScriptName Foo\n\nInt Property Count Auto\n\nFunction Bar(Bool cond)\n    While cond\n        Count = 1\n    EndWhile\nEndFunction\n";
     assert!(has_side_effects(source, "Bar"));
 }
+
+fn nodiscard(source: &str, function_name: &str) -> bool {
+    functions_of(source)
+        .get(&function_name.to_ascii_lowercase())
+        .unwrap_or_else(|| panic!("function '{function_name}' should be in the function list"))
+        .nodiscard
+}
+
+#[test]
+fn function_without_nodiscard_comment_is_not_marked() {
+    let source = "ScriptName Foo\n\nInt Function Bar()\n    Return 1\nEndFunction\n";
+    assert!(!nodiscard(source, "Bar"));
+}
+
+#[test]
+fn trailing_nodiscard_comment_on_the_header_is_tracked() {
+    let source =
+        "ScriptName Foo\n\nInt Function RegisterFoo() ; @nodiscard\n    Return 1\nEndFunction\n";
+    assert!(nodiscard(source, "RegisterFoo"));
+}
+
+#[test]
+fn nodiscard_comment_on_the_line_above_the_header_is_tracked() {
+    let source =
+        "ScriptName Foo\n\n; @nodiscard\nInt Function RegisterFoo()\n    Return 1\nEndFunction\n";
+    assert!(nodiscard(source, "RegisterFoo"));
+}
+
+#[test]
+fn nodiscard_matching_is_case_insensitive() {
+    let source =
+        "ScriptName Foo\n\nInt Function RegisterFoo() ; @NoDiscard\n    Return 1\nEndFunction\n";
+    assert!(nodiscard(source, "RegisterFoo"));
+}
+
+#[test]
+fn nodiscardable_is_not_treated_as_nodiscard() {
+    let source =
+        "ScriptName Foo\n\nInt Function RegisterFoo() ; @nodiscardable\n    Return 1\nEndFunction\n";
+    assert!(!nodiscard(source, "RegisterFoo"));
+}
+
+#[test]
+fn nodiscard_inside_a_string_is_ignored() {
+    let source =
+        "ScriptName Foo\n\nInt Function RegisterFoo(String s = \"; @nodiscard\")\n    Return 1\nEndFunction\n";
+    assert!(!nodiscard(source, "RegisterFoo"));
+}
+
+#[test]
+fn nodiscard_on_one_function_does_not_mark_its_neighbor() {
+    let source = "ScriptName Foo\n\nInt Function RegisterFoo() ; @nodiscard\n    Return 1\nEndFunction\n\nInt Function Other()\n    Return 2\nEndFunction\n";
+    assert!(nodiscard(source, "RegisterFoo"));
+    assert!(!nodiscard(source, "Other"));
+}
+
+#[test]
+fn nodiscard_on_a_backslash_continued_header_is_tracked() {
+    let source = "ScriptName Foo\n\nInt Function RegisterFoo( \\\n    Int a \\\n) ; @nodiscard\n    Return a\nEndFunction\n";
+    assert!(nodiscard(source, "RegisterFoo"));
+}
+
+#[test]
+fn nodiscard_inside_a_state_only_function_is_tracked() {
+    let source = "ScriptName Foo\n\nState Active\n    Int Function RegisterFoo() ; @nodiscard\n        Return 1\n    EndFunction\nEndState\n";
+    assert!(nodiscard(source, "RegisterFoo"));
+}
