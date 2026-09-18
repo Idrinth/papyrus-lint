@@ -622,6 +622,16 @@ table.lint-rules-table {
   color: var(--color-text-muted);
 }
 
+.doc-content ul {
+  margin: 0 0 1em;
+  padding-left: 1.4em;
+  color: var(--color-text-muted);
+}
+
+.doc-content li {
+  margin: 0.4em 0;
+}
+
 .doc-content pre.code-block {
   margin: 1em 0;
   white-space: pre-wrap;

@@ -39,7 +39,7 @@ for `.psc` files directly in the editor, by shelling out to
   saved first, same as fixing the whole file.
 - **Papyrus Lint: Initialize Configuration** — runs `PapyrusLinterCLI init
   [--preset <name>]` to scaffold a `papyrus-lint.yaml` (see the project
-  README's [Configuration](../README.md#configuration) section), without
+  [configuration reference](../docs/configuration.md)), without
   overwriting an existing one. Available from the command palette (prompts
   for the workspace folder to initialize when more than one is open) or a
   folder's explorer context menu (initializes that folder directly).

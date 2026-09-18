@@ -528,8 +528,8 @@ with no `.pex` there yet (never compiled, or compiled somewhere else)
 isn't flagged — this only compares timestamps once both files are known
 to exist.
 
-See the [README configuration
-reference](README.md#configuration) for the per-key documentation, and
+See the [configuration
+reference](../configuration.md) for the per-key documentation, and
 [`docs/papyrus-lint.default.yaml`](docs/papyrus-lint.default.yaml) — the
 same file `PapyrusLinterCLI init` writes and the one the README links to
 instead of dumping inline — for the complete default file. That file must
