@@ -25,6 +25,27 @@ fn matches_property_shadowing_case_insensitively() {
 }
 
 #[test]
+fn flags_local_variable_shadowing_own_field() {
+    let diagnostics =
+        check("ScriptName Example\n\nInt MyValue = 1\n\nFunction Test()\n    Int MyValue = 2\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 6);
+    assert_eq!(diagnostics[0].rule, RULE);
+    assert!(diagnostics[0].message.starts_with("[warning]"));
+    assert!(diagnostics[0].message.contains("own variable"));
+    assert!(diagnostics[0].message.contains("'MyValue'"));
+}
+
+#[test]
+fn matches_field_shadowing_case_insensitively() {
+    let diagnostics =
+        check("ScriptName Example\n\nInt MyValue = 1\n\nFunction Test()\n    Int myvalue = 2\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
 fn does_not_flag_a_local_variable_with_no_matching_property() {
     let diagnostics =
             check("ScriptName Example\n\nInt Property MyValue Auto\n\nFunction Test()\n    Int total = 1\nEndFunction\n");
@@ -144,4 +165,40 @@ fn own_property_takes_precedence_over_external_lookup() {
 
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("own property"));
+}
+
+struct FakeExternalWithField;
+
+impl ExternalSignatures for FakeExternalWithField {
+    fn lookup(&mut self, _type_name: &str, _function_name: &str) -> Option<Vec<ParamInfo>> {
+        None
+    }
+
+    fn has_field(&mut self, type_name: &str, field_name: &str) -> bool {
+        type_name.eq_ignore_ascii_case("BaseScript") && field_name.eq_ignore_ascii_case("MyField")
+    }
+}
+
+#[test]
+fn flags_local_variable_shadowing_a_parent_field_through_external_resolver() {
+    let diagnostics = check_with(
+            "ScriptName Example Extends BaseScript\n\nFunction Test()\n    Int MyField = 1\nEndFunction\n",
+            &mut FakeExternalWithField,
+        );
+
+    assert_eq!(diagnostics.len(), 1);
+    // A parent field is reported as an inherited "variable", not a "property".
+    assert!(diagnostics[0]
+        .message
+        .contains("variable 'MyField' inherited from a parent script"));
+}
+
+#[test]
+fn does_not_flag_unrelated_variable_against_a_parent_field_resolver() {
+    let diagnostics = check_with(
+            "ScriptName Example Extends BaseScript\n\nFunction Test()\n    Int total = 1\nEndFunction\n",
+            &mut FakeExternalWithField,
+        );
+
+    assert!(diagnostics.is_empty());
 }

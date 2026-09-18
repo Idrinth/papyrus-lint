@@ -3,7 +3,7 @@
 //! caches per type name, plus the [`Member`] type it returns to editor
 //! autocompletion.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use serde::Serialize;
 
@@ -107,6 +107,12 @@ pub(crate) struct ScriptFunctions {
     pub(crate) extends: Option<String>,
     pub(crate) functions: HashMap<String, FunctionSignature>,
     pub(crate) properties: HashMap<String, PropertySignature>,
+    /// Every script-level variable (a plain field, not a `Property`)
+    /// declared directly on this script, lowercased. Used by
+    /// [`crate::function_table::FunctionTable::has_field`] so the "Local
+    /// variable shadowing" lint (`papyrus_lints::local_variable_shadowing`)
+    /// can also flag a local shadowing a parent script's field.
+    pub(crate) variables: HashSet<String>,
     /// Each named `State` declared directly on this script, lowercased,
     /// mapped to whether it's marked `Auto`. Used by
     /// [`crate::function_table::FunctionTable::has_state`] and
@@ -164,11 +170,17 @@ impl ScriptFunctions {
                 )
             })
             .collect();
+        let variables = script
+            .variables
+            .iter()
+            .map(|v| v.name.to_ascii_lowercase())
+            .collect();
 
         ScriptFunctions {
             extends: script.extends.clone(),
             functions,
             properties,
+            variables,
             states,
         }
     }
