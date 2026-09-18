@@ -141,9 +141,7 @@ fn honors_a_disable_comment_on_the_discarded_call() {
         &crate::config::Config::default(),
     );
 
-    assert!(diagnostics
-        .iter()
-        .all(|diagnostic| diagnostic.rule != RULE));
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
 }
 
 #[test]
