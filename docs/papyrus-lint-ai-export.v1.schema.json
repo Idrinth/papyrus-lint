@@ -143,6 +143,7 @@
         "formid_hex_notation",
         "slow_functions",
         "unused_getter",
+        "unused_nodiscard",
         "unused_property",
         "semicolon",
         "float_int_conversion",
@@ -215,6 +216,9 @@
           "type": "boolean"
         },
         "unused_getter": {
+          "type": "boolean"
+        },
+        "unused_nodiscard": {
           "type": "boolean"
         },
         "unused_property": {
