@@ -4,7 +4,7 @@ Extracted out of pages/build.py (which was getting long and crowded with
 unrelated site-assembly concerns) with no behavior change. Handles copying
 the site's own image assets (and generating their smaller WebP/AVIF
 siblings, see convert_to_modern_formats/wrap_images_with_modern_sources)
-and publishing docs/*.schema.json under /schema/ (see copy_json_schemas).
+and publishing schema/*.schema.json under /schema/ (see copy_json_schemas).
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-DOCS_DIR = ROOT / "docs"
+SCHEMA_DIR = ROOT / "schema"
 SCHEMA_GLOB = "*.schema.json"
 AI_EXPORT_V1_SCHEMA = "papyrus-lint-ai-export.v1.schema.json"
 AI_EXPORT_LEGACY_SCHEMA = "papyrus-lint-ai-export.schema.json"
@@ -93,12 +93,16 @@ def wrap_images_with_modern_sources(page_html: str) -> str:
 
 
 def copy_json_schemas(out_dir: Path) -> None:
-    """Publish docs schemas and the legacy AI-export URL under /schema/."""
+    """Publish the checked-in schemas and the legacy AI-export URL under /schema/.
+
+    build_doc_pages (pages/docs_pages.py) may have already created /schema/
+    for the schema DOCS entries' own rendered subpages by the time this
+    runs, hence exist_ok."""
     schema_out_dir = out_dir / "schema"
-    schema_out_dir.mkdir()
-    for source in sorted(DOCS_DIR.glob(SCHEMA_GLOB)):
+    schema_out_dir.mkdir(exist_ok=True)
+    for source in sorted(SCHEMA_DIR.glob(SCHEMA_GLOB)):
         shutil.copyfile(source, schema_out_dir / source.name)
     shutil.copyfile(
-        DOCS_DIR / AI_EXPORT_V1_SCHEMA,
+        SCHEMA_DIR / AI_EXPORT_V1_SCHEMA,
         schema_out_dir / AI_EXPORT_LEGACY_SCHEMA,
     )

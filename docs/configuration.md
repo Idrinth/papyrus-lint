@@ -11,12 +11,12 @@ the nearest ancestor directory that already has a config file; see
 resolution order. Any key it omits falls back to its
 default. The full default configuration, with every key documented inline,
 is checked in at
-[`docs/papyrus-lint.default.yaml`](papyrus-lint.default.yaml) — it's
+[`configuration/papyrus-lint.default.yaml`](../configuration/papyrus-lint.default.yaml) — it's
 also what `PapyrusLinterCLI init` (or `init --preset strict`, the default)
 writes into a project with no config file yet.
 
 A JSON Schema for the same file is checked in at
-[`docs/papyrus-lint.schema.json`](papyrus-lint.schema.json) (JSON Schema
+[`schema/papyrus-lint.schema.json`](../schema/papyrus-lint.schema.json) (JSON Schema
 Draft 2020-12), so editors that support YAML schema association can
 complete keys and flag typos. The published copy is served at
 `https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json`.
@@ -29,7 +29,7 @@ performance stake plus the cheap, auto-fixable formatting rules, and turns
 off purely naming/style and informational/advisory rules; `careful` keeps
 only `medium`/`high` importance rules and relaxes the cyclomatic complexity
 thresholds, for a quiet first pass over an unfamiliar or legacy codebase.
-See [`docs/presets/`](https://github.com/idrinth/papyrus-lint/tree/the-one/docs/presets)
+See [`configuration/presets/`](https://github.com/idrinth/papyrus-lint/tree/the-one/configuration/presets)
 for each built-in preset's own annotated YAML.
 
 Besides the three built-ins, `--preset <name>` also accepts the name of a
@@ -265,5 +265,5 @@ per line.
   references to each other for two-way communication (e.g. a manager and a
   worker script) is a common, legitimate design that enabling the "Circular
   script dependency" lint by default would flag as a mistake.
-  See [`docs/papyrus-lint.default.yaml`](papyrus-lint.default.yaml) for
+  See [`configuration/papyrus-lint.default.yaml`](../configuration/papyrus-lint.default.yaml) for
   every rule's key name and default value together in one place.

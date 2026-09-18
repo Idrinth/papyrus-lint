@@ -127,7 +127,7 @@ jobs:
             --pattern '*coverage*'
 
       - name: Regenerate Nexus page lint tables from rules.json
-        run: python3 .github/scripts/generate_nexuspage_tables.py docs/rules.json docs/nexuspage.bbcode
+        run: python3 .github/scripts/generate_nexuspage_tables.py shared/rules.json docs/nexuspage.bbcode
 
       - name: Generate version-specific Nexus page
         run: |
@@ -271,7 +271,7 @@ jobs:
       - name: Copy default configuration
         if: matrix.platform == 'ubuntu-latest'
         shell: bash
-        run: cp docs/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
+        run: cp configuration/papyrus-lint.default.yaml cli-dist/papyrus-lint.yaml
 
       - name: Upload CLI and default configuration to release
         shell: bash

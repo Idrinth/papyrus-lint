@@ -6,7 +6,7 @@ its CLI entrypoint) with no behavior change.
 Each `[spoiler][table]...[/table][/spoiler]` block in the BBCode file is
 replaced, in order, with a table row per rule sharing that block's category
 (the five categories, and their order, come from CATEGORIES below, matching
-docs/rules.json's own `category` values) - sourced from that rule's `name`,
+shared/rules.json's own `category` values) - sourced from that rule's `name`,
 `description`, and `fixable` fields. Everything else in the file (headings,
 intros, the configuration/CLI sections) is left untouched.
 """

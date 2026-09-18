@@ -90,7 +90,7 @@ out of `README.md`, so that content can never drift out of sync. The
 homepage's own "Implemented lints" section carries no per-rule content of
 its own at all — it only links to `rules.html` (see `pages/rules_page.py`'s
 `render_rules_table`/`build_rules_page` below), which is generated
-straight from `docs/rules.json` instead. It also
+straight from `shared/rules.json` instead. It also
 assembles the page's `assets/` directory (`pages/site_assets.py`) by
 copying the screenshots
 from `shared/images/` and the app icon from `app/src-tauri/icons/icon.png`,
@@ -156,7 +156,7 @@ able to inject markup into the built site), with its own top-level heading and
 first paragraph read back out as the subpage's title/description rather
 than duplicated in `DOCS`; a JSON Schema file renders its
 `title`/`description` fields plus the pretty-printed schema itself in a
-code block; anything else (`docs/papyrus-lint.default.yaml`,
+code block; anything else (`configuration/papyrus-lint.default.yaml`,
 `docs/nexuspage.bbcode`) renders as a plain code block under a
 hand-written title/description in `DOCS`. A link inside a rendered
 Markdown doc to another published doc (matched by filename) resolves to
@@ -181,7 +181,7 @@ adding an entry to `docs_pages.DOCS`, not touching either template.
 `rules.html` (`pages/rules.template.html`, `pages/rules_page.py`'s
 `render_rules_table`/
 `render_rules_filter_bar`/`build_rules_page`) is a searchable, filterable
-reference of every lint rule, generated straight from `docs/rules.json`'s own
+reference of every lint rule, generated straight from `shared/rules.json`'s own
 metadata (`id`, `severity`, `tags`, `fixable`, a short `description`, and the
 full `definition` prose) rather than from `README.md`'s shorter per-category
 tables — so a rule's severity, tags, and full documented behavior are always

@@ -291,7 +291,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
                 "coverage.html",
                 "imprint.html",
                 "docs/index.html",
-                *(f"docs/{doc['slug']}.html" for doc in page_builder.DOCS),
+                *(f"{docs_pages.doc_url_prefix(doc)}/{doc['slug']}.html" for doc in page_builder.DOCS),
             }
             built_html = {
                 path.relative_to(out_dir).as_posix() for path in out_dir.rglob("*.html")
@@ -309,7 +309,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
             self.assertIn('href="rules.html"', index)
             for doc in page_builder.DOCS:
                 with self.subTest(homepage_doc=doc["slug"]):
-                    self.assertIn(f'href="docs/{doc["slug"]}.html"', index)
+                    self.assertIn(f'href="{docs_pages.doc_href(doc, None)}"', index)
 
             docs_index = (out_dir / "docs" / "index.html").read_text(encoding="utf-8")
             self.assertIn('href="../index.html#top"', docs_index)
@@ -317,14 +317,14 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
             self.assertIn('href="../styles.css"', docs_index)
             for doc in page_builder.DOCS:
                 with self.subTest(docs_index_doc=doc["slug"]):
-                    self.assertIn(f'href="{doc["slug"]}.html"', docs_index)
+                    self.assertIn(f'href="{docs_pages.doc_href(doc, "docs")}"', docs_index)
 
             expected_schemas = {
                 path.name: path.read_bytes()
-                for path in site_assets.DOCS_DIR.glob(site_assets.SCHEMA_GLOB)
+                for path in site_assets.SCHEMA_DIR.glob(site_assets.SCHEMA_GLOB)
             }
             expected_schemas[site_assets.AI_EXPORT_LEGACY_SCHEMA] = (
-                site_assets.DOCS_DIR / site_assets.AI_EXPORT_V1_SCHEMA
+                site_assets.SCHEMA_DIR / site_assets.AI_EXPORT_V1_SCHEMA
             ).read_bytes()
             published_schemas = {
                 path.name: path.read_bytes() for path in (out_dir / "schema").glob("*.json")

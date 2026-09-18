@@ -4,8 +4,8 @@
 
 Pushing a tag matching `v*.*.*` triggers a `nexus-page` job that fills in
 `docs/nexuspage.bbcode`'s five lint tables from that tagged commit's own
-`docs/rules.json` (`.github/scripts/generate_nexuspage_tables.py
-docs/rules.json docs/nexuspage.bbcode`, rewriting the file in this job's
+`shared/rules.json` (`.github/scripts/generate_nexuspage_tables.py
+shared/rules.json docs/nexuspage.bbcode`, rewriting the file in this job's
 own checkout) — the checked-in file carries no rows in those tables at
 all, so this is the only place they're ever generated. It then
 downloads the coverage artifacts from the tagged commit's most recent
@@ -42,7 +42,7 @@ already exist. Both cargo roots (`app/src-tauri` and
 (`lto`, `codegen-units = 1`, `strip`, `panic = "abort"`) because the seven
 reusable crates are path dependencies rather than workspace members, so a
 profile on only one root would not apply to the other. The `ubuntu-latest` leg also copies the checked-in
-`docs/papyrus-lint.default.yaml` (see Configuration above) to
+`configuration/papyrus-lint.default.yaml` (see Configuration above) to
 `papyrus-lint.yaml` and attaches it to the release alongside the CLI
 binary, rather than generating it by running the freshly built CLI's
 `init` subcommand. A separate `editor-plugins` job runs independently,
@@ -95,7 +95,7 @@ authenticating with the `NEXUSMODS_API_KEY` repo secret, via the
 [`Nexus-Mods/upload-action`](https://github.com/Nexus-Mods/upload-action).
 It downloads the already-built assets straight off the GitHub release
 (rather than rebuilding anything) — the Windows installer (`*setup.exe`),
-`PapyrusLinterCLI-windows.exe`, the `docs/papyrus-lint.default.yaml` copy
+`PapyrusLinterCLI-windows.exe`, the `configuration/papyrus-lint.default.yaml` copy
 uploaded as `papyrus-lint.yaml` (zipped locally, since Nexus expects it
 as an archive), the SublimeLinter plugin `.zip`, and the VS Code
 extension `.vsix` (also zipped, for the same reason) — and uploads each

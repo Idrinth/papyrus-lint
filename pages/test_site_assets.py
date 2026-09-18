@@ -82,16 +82,16 @@ class RepositoryAssetConfigurationTest(unittest.TestCase):
     def test_copy_json_schemas_publishes_only_schemata_unchanged(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            docs_dir = root / "docs"
-            docs_dir.mkdir()
-            (docs_dir / "first.schema.json").write_bytes(b'{"title": "First"}\n')
-            (docs_dir / "second.schema.json").write_bytes(b'{\n  "type": "object"\n}\n')
-            (docs_dir / site_assets.AI_EXPORT_V1_SCHEMA).write_bytes(b'{"title": "AI export v1"}\n')
-            (docs_dir / "ordinary.json").write_bytes(b"{}\n")
+            schema_dir = root / "schema"
+            schema_dir.mkdir()
+            (schema_dir / "first.schema.json").write_bytes(b'{"title": "First"}\n')
+            (schema_dir / "second.schema.json").write_bytes(b'{\n  "type": "object"\n}\n')
+            (schema_dir / site_assets.AI_EXPORT_V1_SCHEMA).write_bytes(b'{"title": "AI export v1"}\n')
+            (schema_dir / "ordinary.json").write_bytes(b"{}\n")
             out_dir = root / "site"
             out_dir.mkdir()
 
-            with patch.object(site_assets, "DOCS_DIR", docs_dir):
+            with patch.object(site_assets, "SCHEMA_DIR", schema_dir):
                 site_assets.copy_json_schemas(out_dir)
 
             self.assertEqual(

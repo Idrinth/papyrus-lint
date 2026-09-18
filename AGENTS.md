@@ -38,7 +38,7 @@ Do not paste those files back into this index. Update the file you read.
 | frontend | `app/src` | Vanilla TypeScript. No framework. |
 | VS Code | `vscode-extension/` | Editor integration. |
 | Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
-| rule data | `rules/*.yaml`, `docs/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`; `docs/rules.json`'s `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
+| rule data | `rules/*.yaml`, `shared/rules.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs`; `shared/rules.json`'s `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
 
 The seven reusable crates are **path dependencies, not Cargo workspace
 members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each
@@ -77,7 +77,7 @@ CI treats clippy warnings as errors.
 3. **Do not duplicate agent docs.** Edit `AGENTS.md` (this index) or a
    file under `docs/agent/`. `CLAUDE.md` must remain a pointer to this
    file, not a copy of it.
-4. **`docs/rules.json` is the single source of truth for lint metadata.**
+4. **`shared/rules.json` is the single source of truth for lint metadata.**
    A rule's entry there (`id`, `name`, `definition` — the long text,
    `description` — a shorter blurb matching `docs/nexuspage.bbcode`'s own
    style, `category`, `tags`, `severity`, `importance`, `fixable`,
@@ -112,7 +112,7 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
    put its tests in a sibling `<rule>_tests.rs`, included via
    `#[cfg(test)] #[path = "<rule>_tests.rs"] mod tests;`.
 2. `app/crates/papyrus-lints/src/lib.rs` — `mod`.
-3. `docs/rules.json` — a new entry: `id`, `name`, `definition` (the long,
+3. `shared/rules.json` — a new entry: `id`, `name`, `definition` (the long,
    README-style description), a short `description` blurb matching
    `docs/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
    `Performance`, `Reliability`, `Bugprone`, `Other`), `tags`,
@@ -148,7 +148,7 @@ If the rule introduces a new *kind* keyword (not `style` /
 
 ## Docs sync (humans and AI)
 
-- README lint tables → `docs/rules.json` (rule 4). `docs/rules.json` →
+- README lint tables → `shared/rules.json` (rule 4). `shared/rules.json` →
   `docs/nexuspage.bbcode`'s lint tables (filled in at release time, never
   checked in — see Releases in `docs/agent/releases.md`) and
   `papyrus-lints`'s `registry.rs`/`tags.rs` (via `build.rs`) — all

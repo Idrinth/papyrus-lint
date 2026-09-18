@@ -15,7 +15,7 @@ from pages import docs_pages
 class PublishedSchemaTest(unittest.TestCase):
     def test_ai_export_rule_details_expose_auto_fixability(self) -> None:
         schema = json.loads(
-            (docs_pages.DOCS_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
+            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
         )
 
         rule_detail = schema["$defs"]["ruleDetail"]
@@ -24,7 +24,7 @@ class PublishedSchemaTest(unittest.TestCase):
 
     def test_ai_export_external_diagnostic_fields_require_each_other(self) -> None:
         schema = json.loads(
-            (docs_pages.DOCS_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
+            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
         )
 
         self.assertEqual(
@@ -34,7 +34,7 @@ class PublishedSchemaTest(unittest.TestCase):
 
     def test_ai_export_space_indentation_requires_positive_width(self) -> None:
         schema = json.loads(
-            (docs_pages.DOCS_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
+            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
         )
 
         configuration = schema["$defs"]["configuration"]
@@ -353,11 +353,26 @@ class DocsRenderingTest(unittest.TestCase):
         results = {"guide": {"title": "Guide & reference"}}
 
         with patch.object(docs_pages, "DOCS", docs):
-            output = docs_pages.render_docs_list_items(results, "docs/")
+            root_output = docs_pages.render_docs_list_items(results, None)
+            docs_output = docs_pages.render_docs_list_items(results, "docs")
 
-        self.assertIn('href="docs/guide.html"', output)
-        self.assertIn("Guide &amp; reference", output)
-        self.assertIn("Use &lt;carefully&gt; &amp; safely", output)
+        self.assertIn('href="docs/guide.html"', root_output)
+        self.assertIn("Guide &amp; reference", root_output)
+        self.assertIn("Use &lt;carefully&gt; &amp; safely", root_output)
+        self.assertIn('href="guide.html"', docs_output)
+
+    def test_render_docs_list_items_links_across_to_a_different_prefix(self) -> None:
+        docs = [{"slug": "papyrus-lint-schema", "blurb": "Schema", "repo_dir": "schema"}]
+        results = {"papyrus-lint-schema": {"title": "Schema"}}
+
+        with patch.object(docs_pages, "DOCS", docs):
+            root_output = docs_pages.render_docs_list_items(results, None)
+            docs_output = docs_pages.render_docs_list_items(results, "docs")
+            schema_output = docs_pages.render_docs_list_items(results, "schema")
+
+        self.assertIn('href="schema/papyrus-lint-schema.html"', root_output)
+        self.assertIn('href="../schema/papyrus-lint-schema.html"', docs_output)
+        self.assertIn('href="papyrus-lint-schema.html"', schema_output)
 
     def test_render_docs_list_items_preserves_configured_document_order(self) -> None:
         docs = [
@@ -479,14 +494,15 @@ class RepositoryDocsConfigurationTest(unittest.TestCase):
     """Keep docs_pages.py's checked-in inputs synchronized with the repository."""
 
     def test_document_manifest_has_unique_slugs_and_readable_local_sources(self) -> None:
+        docs_with_filenames = [doc for doc in docs_pages.DOCS if "filename" in doc]
         slugs = [doc["slug"] for doc in docs_pages.DOCS]
-        filenames = [doc["filename"] for doc in docs_pages.DOCS if "filename" in doc]
+        filenames = [doc["filename"] for doc in docs_with_filenames]
 
         self.assertEqual(len(slugs), len(set(slugs)), "documentation slugs must be unique")
         self.assertEqual(len(filenames), len(set(filenames)), "documentation sources must be unique")
-        for filename in filenames:
-            source = docs_pages.DOCS_DIR / filename
-            with self.subTest(filename=filename):
+        for doc in docs_with_filenames:
+            source = doc.get("source_dir", docs_pages.DOCS_DIR) / doc["filename"]
+            with self.subTest(filename=doc["filename"]):
                 self.assertTrue(source.is_file(), f"missing documentation source: {source}")
                 self.assertTrue(source.read_text(encoding="utf-8").strip())
 
@@ -501,7 +517,7 @@ class RepositoryDocsConfigurationTest(unittest.TestCase):
                 self.assertTrue(description.strip())
                 self.assertTrue(content.strip())
                 self.assertIn("View raw source on GitHub", content)
-                self.assertIn(f"/docs/{doc['filename']}", content)
+                self.assertIn(f"/{doc.get('repo_dir', 'docs')}/{doc['filename']}", content)
 
 
 if __name__ == "__main__":
