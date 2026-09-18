@@ -1,5 +1,7 @@
 """Download and cache the PapyrusLinterCLI matching this plugin release."""
 
+import hashlib
+import importlib.util
 import json
 import os
 import platform
@@ -12,6 +14,21 @@ from pathlib import Path
 from urllib.request import urlopen
 
 import sublime
+
+
+def _load_cli_sha256():
+    try:
+        from .cli_hashes import CLI_SHA256 as hashes
+        return hashes
+    except ImportError:
+        path = Path(__file__).resolve().parent / 'cli_hashes.py'
+        spec = importlib.util.spec_from_file_location('cli_hashes', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.CLI_SHA256
+
+
+CLI_SHA256 = _load_cli_sha256()
 
 RELEASE_BASE = 'https://github.com/Idrinth/papyrus-lint/releases/download'
 
@@ -90,8 +107,42 @@ def verify_configured_cli(executable):
     _verified_executables.add(executable)
 
 
-def _is_usable(executable):
-    return executable.is_file() and (os.name == 'nt' or os.access(str(executable), os.X_OK))
+def expected_sha256(asset):
+    expected = CLI_SHA256.get(asset)
+    if not expected:
+        raise OSError(f'no baked SHA-256 for {asset}')
+    return expected
+
+
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        while True:
+            chunk = handle.read(1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _assert_expected_sha256(path, asset):
+    actual = _sha256_file(path)
+    expected = expected_sha256(asset)
+    if actual != expected:
+        raise OSError(
+            f'{asset} SHA-256 mismatch (expected {expected}, got {actual}); '
+            'refusing to use a manipulated file'
+        )
+
+
+def _is_usable(executable, asset):
+    if not executable.is_file() or (os.name != 'nt' and not os.access(str(executable), os.X_OK)):
+        return False
+    try:
+        _assert_expected_sha256(str(executable), asset)
+    except OSError:
+        return False
+    return True
 
 
 def _prune_other_versions(cache_root, version):
@@ -114,7 +165,7 @@ def ensure_release_cli(cache_root, version=None, system=None):
     directory = Path(cache_root) / 'PapyrusLint' / ('v' + version)
     executable = directory / asset
     with _download_lock:
-        if _is_usable(executable):
+        if _is_usable(executable, asset):
             _prune_other_versions(cache_root, version)
             return str(executable)
 
@@ -128,6 +179,7 @@ def ensure_release_cli(cache_root, version=None, system=None):
                     if not chunk:
                         break
                     output.write(chunk)
+            _assert_expected_sha256(temporary, asset)
             os.chmod(temporary, 0o700)
             os.replace(temporary, str(executable))
         finally:
