@@ -10,11 +10,14 @@
 //!
 //! Used by `papyrus-lint-cli`'s per-script lint loop (see its `--threads`
 //! flag), sharing this module (rather than each having its own copy) with
-//! the desktop app so both draw on the same tested implementation, even
-//! though the app's own per-file Tauri commands (`lint_psc_file`/
-//! `repair_psc_file`) don't call it directly today -- see
-//! [`crate::ast_cache`]'s module docs for the concurrency-safety work this
-//! shares with the app's own already-concurrent command dispatch.
+//! the desktop app so both draw on the same tested implementation. The
+//! app's per-file Tauri commands (`lint_psc_file`/`repair_psc_file`) don't
+//! call this wrapper directly -- the frontend already bounds concurrency
+//! itself -- but they do share one `Mutex`-guarded [`crate::function_table::FunctionTable`]
+//! per project through [`crate::function_table::SharedFunctionTable`], the
+//! same adapter the CLI workers use. See [`crate::ast_cache`]'s module
+//! docs for the concurrency-safety work this shares with the app's own
+//! already-concurrent command dispatch.
 
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;

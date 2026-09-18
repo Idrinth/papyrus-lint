@@ -135,10 +135,6 @@ impl FunctionTable {
     /// kept in a process-wide table keyed by path+mtime, so a later
     /// `FunctionTable` in this process does not re-read them either.
     pub(super) fn ensure_loaded(&mut self, name_lower: &str) {
-        if self.scripts.contains_key(name_lower) {
-            return;
-        }
-
         // `name_lower` is only actually lowercased on a lookup's initial
         // call; walking further up an `Extends` chain re-enters this with
         // the parent's name cased exactly as written in `Extends ParentName`
@@ -147,6 +143,14 @@ impl FunctionTable {
         // so the known-scripts map (keyed by an already-lowercased stem)
         // has to do the same explicitly here.
         let resolved = self.resolve_script_path_kind(name_lower);
+        let mtime = resolved
+            .as_ref()
+            .and_then(|(path, _)| file_mtime_secs(path));
+        if self.scripts.contains_key(name_lower)
+            && self.script_mtimes.get(name_lower) == Some(&mtime)
+        {
+            return;
+        }
 
         let script = resolved.and_then(|(path, origin)| {
             if origin == ScriptOrigin::Lookup {
@@ -163,6 +167,7 @@ impl FunctionTable {
         });
 
         self.scripts.insert(name_lower.to_string(), script);
+        self.script_mtimes.insert(name_lower.to_string(), mtime);
     }
 }
 

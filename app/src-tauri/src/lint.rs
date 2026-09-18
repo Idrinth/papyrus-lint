@@ -1,6 +1,8 @@
 //! Project-aware linting, compile-check, and compile commands.
 
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{
@@ -9,13 +11,59 @@ use papyrus_lint_core::{
 };
 use serde::{Deserialize, Serialize};
 
+/// Identity of one desktop-app [`function_table::FunctionTable`]: project
+/// root plus the two configured search-root lists. Concurrent Tauri
+/// commands for the same project reuse one `Mutex`-guarded table through
+/// [`function_table::SharedFunctionTable`], matching the CLI's `--threads`
+/// workers rather than building an empty table per file.
+#[derive(Clone, PartialEq, Eq, Hash)]
+struct SharedTableKey {
+    root: PathBuf,
+    additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
+}
+
+fn shared_tables(
+) -> &'static Mutex<HashMap<SharedTableKey, Arc<Mutex<function_table::FunctionTable>>>> {
+    static TABLES: OnceLock<
+        Mutex<HashMap<SharedTableKey, Arc<Mutex<function_table::FunctionTable>>>>,
+    > = OnceLock::new();
+    TABLES.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
 pub(crate) fn project_function_table(
     root: String,
     additional_roots: Vec<String>,
     lookup_roots: Vec<String>,
-) -> function_table::FunctionTable {
-    function_table::FunctionTable::new_with_additional_roots(PathBuf::from(root), additional_roots)
-        .with_lookup_roots(lookup_roots)
+) -> Arc<Mutex<function_table::FunctionTable>> {
+    let key = SharedTableKey {
+        root: PathBuf::from(&root),
+        additional_roots: additional_roots.clone(),
+        lookup_roots: lookup_roots.clone(),
+    };
+    let mut cache = shared_tables()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    cache
+        .entry(key)
+        .or_insert_with(|| {
+            Arc::new(Mutex::new(
+                function_table::FunctionTable::new_with_additional_roots(
+                    PathBuf::from(root),
+                    additional_roots,
+                )
+                .with_lookup_roots(lookup_roots),
+            ))
+        })
+        .clone()
+}
+
+fn lock_function_table(
+    table: &Mutex<function_table::FunctionTable>,
+) -> std::sync::MutexGuard<'_, function_table::FunctionTable> {
+    table
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
 /// Project-level inputs shared by [`lint_psc_file`] and the mutating repair
@@ -50,7 +98,7 @@ pub(crate) struct ProjectLintContext {
 }
 
 impl ProjectLintContext {
-    pub(crate) fn function_table(&self) -> function_table::FunctionTable {
+    pub(crate) fn function_table(&self) -> Arc<Mutex<function_table::FunctionTable>> {
         project_function_table(
             self.root.clone(),
             self.additional_roots.clone(),
@@ -113,14 +161,11 @@ pub(crate) fn compile_psc_file(
 /// `compiler_path`) is silently left out rather than failing the whole
 /// lint — the engine's own diagnostics are still worth reporting either
 /// way.
-pub(crate) fn lint_with_compile_check(
+pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     path: &Path,
     source: &str,
-    config: &papyrus_lints::Config,
-    function_table: &mut function_table::FunctionTable,
-    additional_roots: &[String],
-    compiler_path: &str,
-    compile_check: bool,
+    context: &ProjectLintContext,
+    function_table: &mut E,
 ) -> Vec<papyrus_lints::Diagnostic> {
     // Computed up front and merged in via
     // `lint_with_external_arguments_and_extra_diagnostics` below, rather than
@@ -131,30 +176,30 @@ pub(crate) fn lint_with_compile_check(
     // `papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`'s
     // own docs).
     let mut project_diagnostics = Vec::new();
-    if config.rules.conflicting_script_versions {
+    if context.config.rules.conflicting_script_versions {
         project_diagnostics.extend(script_locator::conflicting_script_versions(
             path,
-            function_table.root(),
-            function_table.additional_roots(),
+            Path::new(&context.root),
+            &context.additional_roots,
         ));
     }
-    if config.rules.stale_compiled_output {
+    if context.config.rules.stale_compiled_output {
         project_diagnostics.extend(stale_pex::check(path));
     }
-    if config.rules.script_filename_mismatch {
+    if context.config.rules.script_filename_mismatch {
         project_diagnostics.extend(script_filename_mismatch::check(path, source));
     }
     let mut diagnostics = papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
         source,
-        config,
+        &context.config,
         function_table,
         project_diagnostics,
     );
 
-    let compiler_path = compiler_path.trim();
-    if compile_check && !compiler_path.is_empty() {
+    let compiler_path = context.compiler_path.trim();
+    if context.compile_check && !compiler_path.is_empty() {
         if let Ok(outcome) =
-            compiler::check_psc_file(Path::new(compiler_path), path, additional_roots)
+            compiler::check_psc_file(Path::new(compiler_path), path, &context.additional_roots)
         {
             if !outcome.success {
                 diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
@@ -177,15 +222,13 @@ pub(crate) fn lint_psc_file(
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
     ast_cache::ensure_primed(path, &source);
-    let mut function_table = context.function_table();
+    let function_table = context.function_table();
+    let mut shared = function_table::SharedFunctionTable(function_table.as_ref());
     Ok(lint_with_compile_check(
         path,
         &source,
-        &context.config,
-        &mut function_table,
-        &context.additional_roots,
-        &context.compiler_path,
-        context.compile_check,
+        &context,
+        &mut shared,
     ))
 }
 
@@ -200,8 +243,9 @@ pub(crate) fn list_script_members(
     additional_roots: Vec<String>,
     lookup_roots: Vec<String>,
 ) -> Vec<function_table::Member> {
-    let mut function_table = project_function_table(root, additional_roots, lookup_roots);
-    function_table.list_members(&type_name)
+    let function_table = project_function_table(root, additional_roots, lookup_roots);
+    let members = lock_function_table(function_table.as_ref()).list_members(&type_name);
+    members
 }
 
 #[cfg(test)]
