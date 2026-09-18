@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
@@ -10,6 +11,10 @@ const require = createRequire(import.meta.url);
 const cliDownloadModule = path.resolve('out-test/src/cliDownload.js');
 const originalFetch = globalThis.fetch;
 const temporaryDirectories = [];
+
+function sha256(body) {
+  return createHash('sha256').update(body).digest('hex');
+}
 
 function loadCliDownload(responses = []) {
   const requests = [];
@@ -30,7 +35,12 @@ function loadCliDownload(responses = []) {
   };
 
   delete require.cache[cliDownloadModule];
-  return { cliDownload: require(cliDownloadModule), requests };
+  const cliDownload = require(cliDownloadModule);
+  return { cliDownload, requests };
+}
+
+function trust(cliDownload, asset, body) {
+  cliDownload.CLI_SHA256[asset] = sha256(body);
 }
 
 async function temporaryDirectory() {
@@ -61,12 +71,14 @@ describe('ensureReleaseCli', () => {
   ]) {
     it(`downloads and installs the ${platform} release asset`, async () => {
       const storage = await temporaryDirectory();
-      const { cliDownload, requests } = loadCliDownload([{ body: `${platform} executable` }]);
+      const body = `${platform} executable`;
+      const { cliDownload, requests } = loadCliDownload([{ body }]);
+      trust(cliDownload, asset, body);
 
       const executable = await cliDownload.ensureReleaseCli(storage, '1.2.3', platform);
 
       assert.equal(executable, path.join(storage, 'v1.2.3', asset));
-      assert.equal(await fs.readFile(executable, 'utf8'), `${platform} executable`);
+      assert.equal(await fs.readFile(executable, 'utf8'), body);
       assert.deepEqual(requests, [
         `https://github.com/Idrinth/papyrus-lint/releases/download/v1.2.3/${asset}`,
       ]);
@@ -80,6 +92,7 @@ describe('ensureReleaseCli', () => {
     await fs.mkdir(path.dirname(executable));
     await fs.writeFile(executable, 'cached', { mode: 0o700 });
     const { cliDownload, requests } = loadCliDownload();
+    trust(cliDownload, 'PapyrusLinterCLI-linux', 'cached');
 
     assert.equal(await cliDownload.ensureReleaseCli(storage, '1.2.3', 'linux'), executable);
     assert.deepEqual(requests, []);
@@ -93,6 +106,7 @@ describe('ensureReleaseCli', () => {
     const leftover = path.join(storage, 'notes.txt');
     await fs.writeFile(leftover, 'keep');
     const { cliDownload, requests } = loadCliDownload([{ body: 'new CLI' }]);
+    trust(cliDownload, 'PapyrusLinterCLI-linux', 'new CLI');
 
     const executable = await cliDownload.ensureReleaseCli(storage, '1.2.4', 'linux');
 
@@ -114,6 +128,7 @@ describe('ensureReleaseCli', () => {
     await fs.writeFile(current, 'current', { mode: 0o700 });
     await fs.writeFile(previous, 'previous', { mode: 0o700 });
     const { cliDownload, requests } = loadCliDownload();
+    trust(cliDownload, 'PapyrusLinterCLI-linux', 'current');
 
     assert.equal(await cliDownload.ensureReleaseCli(storage, '2.0.0', 'linux'), current);
     assert.deepEqual(requests, []);
@@ -147,5 +162,38 @@ describe('ensureReleaseCli', () => {
       cliDownload.ensureReleaseCli(storage, '3.0.2', 'linux'),
       /download returned HTTP unknown/,
     );
+  });
+
+  it('rejects a download whose SHA-256 does not match the baked digest', async () => {
+    const storage = await temporaryDirectory();
+    const { cliDownload } = loadCliDownload([{ body: 'tampered' }]);
+    trust(cliDownload, 'PapyrusLinterCLI-linux', 'expected');
+
+    await assert.rejects(
+      cliDownload.ensureReleaseCli(storage, '3.0.3', 'linux'),
+      /SHA-256 mismatch/,
+    );
+    assert.deepEqual(await fs.readdir(path.join(storage, 'v3.0.3')), []);
+  });
+
+  it('redownloads a cached file whose SHA-256 does not match', async () => {
+    const storage = await temporaryDirectory();
+    const executable = path.join(storage, 'v1.2.3', 'PapyrusLinterCLI-linux');
+    await fs.mkdir(path.dirname(executable), { recursive: true });
+    await fs.writeFile(executable, 'tampered cache', { mode: 0o700 });
+    const { cliDownload, requests } = loadCliDownload([{ body: 'fresh' }]);
+    trust(cliDownload, 'PapyrusLinterCLI-linux', 'fresh');
+
+    assert.equal(await cliDownload.ensureReleaseCli(storage, '1.2.3', 'linux'), executable);
+    assert.equal(await fs.readFile(executable, 'utf8'), 'fresh');
+    assert.deepEqual(requests, [
+      'https://github.com/Idrinth/papyrus-lint/releases/download/v1.2.3/PapyrusLinterCLI-linux',
+    ]);
+  });
+
+  it('reports a missing baked hash', async () => {
+    const { cliDownload } = loadCliDownload();
+    delete cliDownload.CLI_SHA256['PapyrusLinterCLI-linux'];
+    assert.throws(() => cliDownload.expectedSha256('PapyrusLinterCLI-linux'), /no baked SHA-256/);
   });
 });

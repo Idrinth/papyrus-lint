@@ -1,6 +1,7 @@
 """Download and cache the PapyrusLinterCLI matching this plugin release."""
 
 import hashlib
+import importlib.util
 import json
 import os
 import platform
@@ -13,10 +14,20 @@ from urllib.request import urlopen
 
 import sublime
 
-try:
-    from .cli_hashes import CLI_SHA256
-except ImportError:
-    from cli_hashes import CLI_SHA256
+
+def _load_cli_sha256():
+    try:
+        from .cli_hashes import CLI_SHA256 as hashes
+        return hashes
+    except ImportError:
+        path = Path(__file__).resolve().parent / 'cli_hashes.py'
+        spec = importlib.util.spec_from_file_location('cli_hashes', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module.CLI_SHA256
+
+
+CLI_SHA256 = _load_cli_sha256()
 
 RELEASE_BASE = 'https://github.com/Idrinth/papyrus-lint/releases/download'
 
