@@ -43,9 +43,9 @@ DOCS = [
         "filename": "papyrus-cli-usage.txt",
         "slug": "papyrus-cli-usage",
         "kind": "bash",
-        "blurb": "The full call suit of the Papyrus Lint CLI.",
+        "blurb": "The full call suite of the Papyrus Lint CLI.",
         "title": "Papyrus Lint CLI Usage",
-        "description": "The full call suit of the Papyrus Lint CLI."
+        "description": "The full call suite of the Papyrus Lint CLI."
     },
     {
         "filename": "examples.md",
