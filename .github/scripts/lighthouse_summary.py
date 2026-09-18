@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Prints a Markdown Lighthouse report summary for the PR comment.
 
-The summary-building logic lives in lighthouse_report.py; this is just the
-CLI entrypoint.
+The summary-building logic lives in ci_lib/lighthouse_report.py; this is
+just the CLI entrypoint.
 
 Usage: lighthouse_summary.py <dir-of-report.json-files> [label]
 
@@ -15,7 +15,7 @@ as separate PR comments instead of overwriting each other.
 import sys
 from pathlib import Path
 
-from lighthouse_report import MARKER, build_summary, load_reports
+from ci_lib.lighthouse_report import MARKER, build_summary, load_reports
 
 
 def main() -> None:

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Render a Nexus page with aggregate line-coverage values.
 
-The rendering logic lives in nexuspage_render.py; this is just the CLI
-entrypoint.
+The rendering logic lives in ci_lib/nexuspage_render.py; this is just the
+CLI entrypoint.
 """
 
 import sys
 from pathlib import Path
 
-from nexuspage_render import coverage_totals, render
+from ci_lib.nexuspage_render import coverage_totals, render
 
 
 def main() -> None:

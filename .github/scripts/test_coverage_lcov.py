@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import coverage_lcov
+from ci_lib import coverage_lcov
 
 
 class CoverageLcovTests(unittest.TestCase):

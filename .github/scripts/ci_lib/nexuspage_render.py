@@ -6,7 +6,7 @@ entrypoint) with no behavior change.
 
 from pathlib import Path
 
-from coverage_lcov import MODULES, iter_leaf_paths, parse_lcov
+from .coverage_lcov import MODULES, iter_leaf_paths, parse_lcov
 
 MARKERS = {
     "<COVERED_LINES>": "hit",

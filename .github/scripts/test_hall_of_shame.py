@@ -9,7 +9,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import source_metrics
+from ci_lib import source_metrics
 
 
 def load_script(name: str):

@@ -58,7 +58,7 @@ class MainTests(unittest.TestCase):
             )
 
             with (
-                mock.patch("nexuspage_render.MODULES", modules),
+                mock.patch("ci_lib.nexuspage_render.MODULES", modules),
                 mock.patch.object(
                     sys,
                     "argv",

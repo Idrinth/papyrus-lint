@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Renders a Markdown coverage-by-module summary for the CI coverage PR
-comment, aggregating lcov.info reports via coverage_lcov.py.
+comment, aggregating lcov.info reports via ci_lib/coverage_lcov.py.
 
 Usage: coverage_summary.py <dir-containing-downloaded-artifacts>
 """
@@ -8,7 +8,7 @@ Usage: coverage_summary.py <dir-containing-downloaded-artifacts>
 import sys
 from pathlib import Path
 
-from coverage_lcov import MODULES, crap_estimate, format_crap, pct, render_entry
+from ci_lib.coverage_lcov import MODULES, crap_estimate, format_crap, pct, render_entry
 
 MARKER = "<!-- coverage-summary-comment -->"
 

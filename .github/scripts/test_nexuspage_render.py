@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-import nexuspage_render
+from ci_lib import nexuspage_render
 
 
 class CoverageTotalsTests(unittest.TestCase):

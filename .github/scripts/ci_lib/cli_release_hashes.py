@@ -38,7 +38,7 @@ GUI_ASSETS = {
     "PapyrusLinterCLI-windows.exe": "PapyrusLinter-windows.exe",
 }
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 TS_PATH = REPO_ROOT / "vscode-extension" / "src" / "cliHashes.ts"
 PY_PATH = REPO_ROOT / "SublimeLinter-contrib-papyrus-lint" / "cli_hashes.py"
 

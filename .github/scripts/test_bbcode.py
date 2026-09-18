@@ -7,7 +7,7 @@ import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
 
-import bbcode
+from ci_lib import bbcode
 
 
 class BbcodeLintTests(unittest.TestCase):

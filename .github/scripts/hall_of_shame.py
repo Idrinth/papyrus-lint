@@ -2,7 +2,7 @@
 """Prints a Markdown hall of shame and GitHub Actions `notice` annotations so
 the top offenders show up as Info messages on a pull request.
 
-The ranking logic lives in source_metrics.py; this is just the CLI
+The ranking logic lives in ci_lib/source_metrics.py; this is just the CLI
 entrypoint.
 
 Usage: hall_of_shame.py [--root DIR] [--lcov-dir DIR] [--top N] [--no-notices]
@@ -13,7 +13,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from source_metrics import build_rankings, emit_notices, render_report
+from ci_lib.source_metrics import build_rankings, emit_notices, render_report
 
 DEFAULT_TOP = 3
 

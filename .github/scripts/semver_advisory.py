@@ -3,7 +3,7 @@
 job, which gathers pull requests merged since the latest release via the
 GitHub API and passes them to this script).
 
-The recommendation logic lives in semver.py; this is just the CLI
+The recommendation logic lives in ci_lib/semver.py; this is just the CLI
 entrypoint.
 
 Usage: semver_advisory.py <pull-requests.json> [current-tag]
@@ -33,7 +33,7 @@ missing/empty, just means the section is left out.
 import argparse
 import json
 
-from semver import build_release_notes, build_summary, bump_version, dedupe_pull_requests, recommend_bump
+from ci_lib.semver import build_release_notes, build_summary, bump_version, dedupe_pull_requests, recommend_bump
 
 
 def main() -> None:

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Check Nexus Mods BBCode for basic structural errors.
 
-The actual linting logic lives in bbcode.py; this is just the CLI entrypoint.
+The actual linting logic lives in ci_lib/bbcode.py; this is just the CLI
+entrypoint.
 """
 
 from __future__ import annotations
@@ -9,7 +10,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from bbcode import check_file
+from ci_lib.bbcode import check_file
 
 
 def main() -> int:

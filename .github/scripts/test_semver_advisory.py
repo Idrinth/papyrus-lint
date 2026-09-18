@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-import semver
+from ci_lib import semver
 
 SCRIPT = Path(__file__).with_name("semver_advisory.py")
 SPEC = importlib.util.spec_from_file_location("semver_advisory", SCRIPT)

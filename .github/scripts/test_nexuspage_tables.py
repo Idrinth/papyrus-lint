@@ -3,7 +3,7 @@
 
 import unittest
 
-import nexuspage_tables
+from ci_lib import nexuspage_tables
 
 
 def wrap(*blocks: str) -> str:

@@ -7,7 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from cli_release_hashes import (
+from ci_lib.cli_release_hashes import (
     ASSETS,
     GUI_ASSETS,
     collect_hashes,

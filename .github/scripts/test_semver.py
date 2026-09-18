@@ -3,7 +3,7 @@
 
 import unittest
 
-import semver
+from ci_lib import semver
 
 
 class ClassifyPullRequestTests(unittest.TestCase):

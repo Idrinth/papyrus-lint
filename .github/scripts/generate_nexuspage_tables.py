@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Regenerate a Nexus page's lint tables from its rules.json.
 
-The table-generation logic lives in nexuspage_tables.py; this is just the
-CLI entrypoint.
+The table-generation logic lives in ci_lib/nexuspage_tables.py; this is
+just the CLI entrypoint.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import argparse
 import json
 from pathlib import Path
 
-from nexuspage_tables import apply, render_tables
+from ci_lib.nexuspage_tables import apply, render_tables
 
 
 def main() -> int:

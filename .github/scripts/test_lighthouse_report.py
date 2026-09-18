@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import lighthouse_report
+from ci_lib import lighthouse_report
 
 
 def make_report(url: str, scores: dict, failing_audits: dict | None = None) -> dict:

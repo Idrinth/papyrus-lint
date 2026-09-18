@@ -2,8 +2,8 @@
 """Bake PapyrusLinterCLI and PapyrusLinter SHA-256 digests into the editor
 plugins.
 
-The hashing/rendering logic lives in cli_release_hashes.py; this is just
-the CLI entrypoint.
+The hashing/rendering logic lives in ci_lib/cli_release_hashes.py; this is
+just the CLI entrypoint.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from cli_release_hashes import PY_PATH, TS_PATH, collect_hashes, write_hashes
+from ci_lib.cli_release_hashes import PY_PATH, TS_PATH, collect_hashes, write_hashes
 
 
 def main() -> int:

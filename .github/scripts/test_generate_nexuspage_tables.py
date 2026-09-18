@@ -10,7 +10,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-import nexuspage_tables
+from ci_lib import nexuspage_tables
 
 SCRIPT = Path(__file__).with_name("generate_nexuspage_tables.py")
 SPEC = importlib.util.spec_from_file_location("generate_nexuspage_tables", SCRIPT)
