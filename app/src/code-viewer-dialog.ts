@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { type Diagnostic } from "./backend";
+import { currentLintConfig } from "./config";
 import { isCodeViewerEditDirty } from "./live-edit";
 import { hideCompileOutput } from "./code-viewer-compile";
 import { hideDiffOutput } from "./code-viewer-diff";
@@ -15,6 +16,13 @@ import {
   updateCodeViewerFixButtonsVisibility,
 } from "./code-viewer-state";
 import { renderCodeViewerView } from "./code-viewer-view";
+import {
+  currentCompileCheck,
+  currentCompilerPath,
+  currentLookupScriptRoots,
+  currentProjectDir,
+  effectiveScriptRoots,
+} from "./project";
 
 // Closes the code viewer, confirming first if edit mode has unsaved changes.
 export function requestCloseCodeViewer() {
@@ -22,6 +30,27 @@ export function requestCloseCodeViewer() {
     return;
   }
   codeViewerEl?.close();
+}
+
+// Re-lints `path` against the current on-disk contents so per-line Fix/Ignore
+// (including `; @disable` comments) use line numbers that still match the
+// source we just read — the Lint results list can lag behind if the file
+// changed after the last project lint. Falls back to `fallback` when the
+// backend call fails so a viewer that opened from a snapshot still works.
+async function lintOpenedPscFile(path: string, fallback: Diagnostic[]): Promise<Diagnostic[]> {
+  try {
+    return await invoke<Diagnostic[]>("lint_psc_file", {
+      path,
+      root: currentProjectDir ?? "",
+      config: currentLintConfig,
+      additionalRoots: effectiveScriptRoots(),
+      lookupRoots: currentLookupScriptRoots,
+      compilerPath: currentCompilerPath,
+      compileCheck: currentCompileCheck,
+    });
+  } catch {
+    return fallback;
+  }
 }
 
 // Reads and syntax-highlights `path`'s source, then opens the code viewer
@@ -49,9 +78,10 @@ export async function openCodeViewer(path: string, findings: Diagnostic[], focus
     return;
   }
 
-  setCodeViewerState({ path, source, findings });
+  const liveFindings = await lintOpenedPscFile(path, findings);
+  setCodeViewerState({ path, source, findings: liveFindings });
   updateCodeViewerFixButtonsVisibility();
-  renderCodeViewerView(source, findings, focusLine);
+  renderCodeViewerView(source, liveFindings, focusLine);
 }
 
 // Toggles the code viewer between its default size and filling the window,
@@ -68,5 +98,5 @@ export function toggleCodeViewerFullscreen() {
 export function resetCodeViewerFullscreen() {
   codeViewerEl?.classList.remove("code-viewer--fullscreen");
   codeViewerFullscreenEl?.setAttribute("aria-pressed", "false");
-  codeViewerFullscreenEl?.setAttribute("aria-label", "Enter fullscreen");
+  codeViewerFullscreenEl.setAttribute("aria-label", "Enter fullscreen");
 }
