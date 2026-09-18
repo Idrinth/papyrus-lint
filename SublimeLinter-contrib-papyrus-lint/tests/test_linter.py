@@ -66,6 +66,7 @@ def load_linter_module():
     package.lint = lint_module
     sublime = types.ModuleType('sublime')
     sublime.cache_path = lambda: '/tmp/sublime-cache'
+    sublime.load_resource = Mock(side_effect=FileNotFoundError)
     sublime.Region = FakeRegion
 
     plugin_package = types.ModuleType('papyrus_lint_plugin')
@@ -95,6 +96,9 @@ class PapyrusLintTests(unittest.TestCase):
 
     def setUp(self):
         self.linter = self.module.PapyrusLint()
+        self.verify_patcher = patch.object(self.module, 'verify_configured_cli')
+        self.verify_cli = self.verify_patcher.start()
+        self.addCleanup(self.verify_patcher.stop)
 
     def test_command_and_selector_target_saved_papyrus_files(self):
         self.assertEqual(self.linter.executable, 'PapyrusLinterCLI')
@@ -123,6 +127,15 @@ class PapyrusLintTests(unittest.TestCase):
         self.assertEqual(
             self.linter.cmd(), ['/tools/PapyrusLinter', '--json', '${file}']
         )
+
+    def test_cmd_rejects_configured_executable_from_a_different_release(self):
+        self.linter.settings = {'executable': '/tools/PapyrusLinterCLI'}
+        self.verify_cli.side_effect = OSError('configured CLI version mismatch')
+
+        with self.assertRaisesRegex(FakePermanentError, 'version mismatch'):
+            self.linter.cmd()
+
+        self.verify_cli.assert_called_once_with('/tools/PapyrusLinterCLI')
 
     def test_cmd_passes_the_buffer_as_a_blob_when_the_view_has_unsaved_changes(self):
         self.linter.settings = {'executable': '/tools/PapyrusLinterCLI'}

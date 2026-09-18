@@ -20,6 +20,34 @@ with unittest.mock.patch.dict(sys.modules, {'sublime': sublime}):
 
 
 class CliDownloadTests(unittest.TestCase):
+    def setUp(self):
+        cli_download._verified_executables.clear()
+
+    def test_verifies_and_caches_a_matching_manually_configured_cli(self):
+        completed = unittest.mock.Mock(
+            stdout='PapyrusLinterCLI 0.1.0\n', stderr=''
+        )
+        with patch.object(cli_download.subprocess, 'run', return_value=completed) as run:
+            cli_download.verify_configured_cli('/tools/PapyrusLinterCLI')
+            cli_download.verify_configured_cli('/tools/PapyrusLinterCLI')
+
+        run.assert_called_once_with(
+            ['/tools/PapyrusLinterCLI', '--version'],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+    def test_rejects_a_mismatched_manually_configured_cli(self):
+        completed = unittest.mock.Mock(
+            stdout='PapyrusLinterCLI 0.0.9\n', stderr=''
+        )
+        with (
+            patch.object(cli_download.subprocess, 'run', return_value=completed),
+            self.assertRaisesRegex(OSError, 'expected "PapyrusLinterCLI 0.1.0"'),
+        ):
+            cli_download.verify_configured_cli('/tools/PapyrusLinterCLI')
+
     def test_selects_release_asset_for_each_supported_platform(self):
         self.assertEqual(cli_download._asset_name('Windows'), 'PapyrusLinterCLI-windows.exe')
         self.assertEqual(cli_download._asset_name('Darwin'), 'PapyrusLinterCLI-macos')

@@ -6,7 +6,7 @@ import re
 import sublime
 from SublimeLinter.lint import Linter, LintMatch, PermanentError
 
-from .cli_download import ensure_release_cli
+from .cli_download import ensure_release_cli, verify_configured_cli
 
 # Strips a diagnostic message's leading "[error]"/"[warning]"/"[info]" tag
 # (see app/crates/papyrus-lints/src/lib.rs Diagnostic::level) before it's shown
@@ -64,9 +64,14 @@ class PapyrusLint(Linter):
         substitution SublimeLinter's own placeholders support. See the
         class docstring above for why these two modes exist.
         """
-        executable = self.settings.get('executable') or ensure_release_cli(
-            sublime.cache_path()
-        )
+        executable = self.settings.get('executable')
+        if executable:
+            try:
+                verify_configured_cli(executable)
+            except OSError as err:
+                raise PermanentError(str(err)) from err
+        else:
+            executable = ensure_release_cli(sublime.cache_path())
         command = [executable, '--json']
         config_path = (self.settings.get('config_path') or '').strip()
         if config_path:

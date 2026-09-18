@@ -52,7 +52,7 @@
         "papyrusLint.cliPath": {
           "type": "string",
           "default": "",
-          "description": "Optional path to a PapyrusLinterCLI executable. When empty, the extension downloads and uses the CLI from its matching GitHub release, including after the extension itself is updated."
+          "description": "Optional path to a PapyrusLinterCLI executable. Its --version output must match the extension version. When empty, the extension downloads and uses the CLI from its matching GitHub release, including after the extension itself is updated."
         },
         "papyrusLint.configPath": {
           "type": "string",

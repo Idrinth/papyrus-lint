@@ -51,6 +51,7 @@ def load_commands_module(settings=None):
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         module.ensure_release_cli = Mock(return_value='/cache/PapyrusLinterCLI')
+        module.verify_configured_cli = Mock()
     return module, sublime
 
 

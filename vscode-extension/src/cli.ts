@@ -13,6 +13,8 @@ export interface CliResult {
 let automaticCli: Promise<string> | undefined;
 let automaticCliStorage = '';
 let extensionVersion = '';
+let configuredCliCheck: Promise<CliResult> | undefined;
+let checkedConfiguredCli = '';
 
 /** Records this activation's storage/version, drops any in-flight automatic
  * download so a later failure can be retried, and starts fetching this
@@ -23,6 +25,8 @@ export function configureCli(storageDirectory: string, version: string): void {
   automaticCliStorage = storageDirectory;
   extensionVersion = version;
   automaticCli = undefined;
+  configuredCliCheck = undefined;
+  checkedConfiguredCli = '';
   if (!resolveCliPath()) {
     automaticCli = ensureReleaseCli(automaticCliStorage, extensionVersion);
     // The first lint/fix awaits this same promise; this extra handler only
@@ -44,6 +48,20 @@ export async function runCli(args: string[], cwd: string): Promise<CliResult> {
     const configured = resolveCliPath();
     if (configured) {
       executable = configured;
+      if (checkedConfiguredCli !== configured) {
+        checkedConfiguredCli = configured;
+        configuredCliCheck = executeCli(configured, ['--version'], cwd);
+      }
+      const versionResult = await configuredCliCheck!;
+      const expected = `PapyrusLinterCLI ${extensionVersion}`;
+      if (versionResult.code !== 0 || versionResult.stdout.trim() !== expected) {
+        const actual = versionResult.stdout.trim() || versionResult.stderr.trim() || 'no version output';
+        return {
+          code: -1,
+          stdout: '',
+          stderr: `configured CLI version mismatch: expected "${expected}", got "${actual}"`,
+        };
+      }
     } else {
       automaticCli ??= ensureReleaseCli(automaticCliStorage, extensionVersion);
       executable = await automaticCli;
@@ -52,6 +70,10 @@ export async function runCli(args: string[], cwd: string): Promise<CliResult> {
     automaticCli = undefined;
     return { code: -1, stdout: '', stderr: error instanceof Error ? error.message : String(error) };
   }
+  return executeCli(executable, args, cwd);
+}
+
+function executeCli(executable: string, args: string[], cwd: string): Promise<CliResult> {
   return new Promise((resolve) => {
     execFile(executable, args, { cwd, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error && typeof (error as NodeJS.ErrnoException).code !== 'number') {
