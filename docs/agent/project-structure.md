@@ -263,14 +263,13 @@
 │           ├── src/                # achlist's scripts against its project's
 │           │   ├── lib.rs           # run() dispatch + public API only; also
 │           │   │                    # linked into src-tauri for its CLI mode
-│           │   ├── args/            # Parses/validates run()'s own arguments
-│           │   │   ├── mod.rs         # (a plain lint/fix run, or --blob):
-│           │   │   ├── parse.rs       # parse.rs recognizes clap's raw
-│           │   │   ├── validate.rs    # --flag syntax, validate.rs applies
-│           │   │   └── help.rs        # the business rules on top of it (mod.rs
-│           │   │                      # wires the two together and owns the
-│           │   │                      # shared types), and help.rs turns a
-│           │   │                      # rejected ArgsError into stderr text
+│           │   ├── args/            # Parses/validates run()'s arguments
+│           │   │   ├── mod.rs         # parse.rs is clap's tree (init/preset/
+│           │   │   ├── parse.rs       # doctor as subcommands, lint/fix/--blob
+│           │   │   ├── validate.rs    # as the default command); validate.rs
+│           │   │   └── help.rs        # applies lint/fix/--blob business rules
+│           │   │                      # (mod.rs owns the shared types); help.rs
+│           │   │                      # turns a rejected ArgsError into stderr
 │           │   ├── run_lint_command.rs # Runs a parsed plain lint/fix
 │           │   │                    # invocation end to end (run_scan +
 │           │   │                    # run_fix/run_lint + report assembly)

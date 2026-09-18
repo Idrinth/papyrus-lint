@@ -267,7 +267,7 @@ mod run_scan;
 
 pub use output::{JsonDiagnostic, JsonFileReport, JsonReport};
 
-use args::{parse_run_args, write_args_error, ParsedCommand};
+use args::{parse_cli, write_args_error, ParsedCli, ParsedCommand};
 use blob::run_blob;
 use doctor::run_doctor;
 use init::{run_init, run_preset_add};
@@ -328,37 +328,39 @@ pub fn run(
     stderr: &mut impl Write,
     stdout_is_terminal: bool,
 ) -> u8 {
-    match args.first().map(String::as_str) {
-        Some("init") => run_init(&args[1..], stdout, stderr),
-        Some("preset") => run_preset_add(&args[1..], stdout, stderr),
-        Some("doctor") => run_doctor(&args[1..], stdout, stderr),
-        _ => match parse_run_args(args) {
-            Err(err) => {
-                write_args_error(err, stderr);
-                2
-            }
-            Ok(ParsedCommand::Version) => {
-                let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
-                0
-            }
-            Ok(ParsedCommand::Blob(blob)) => run_blob(
-                &blob.source,
-                blob.config_path.as_deref(),
-                blob.output_format,
-                blob.hash_source,
-                blob.quiet_warnings,
-                blob.quiet_info,
-                blob.tag_filter.as_deref(),
-                blob.color_choice,
-                blob.output_path.as_deref(),
-                stdout_is_terminal,
-                stdout,
-                stderr,
-            ),
-            Ok(ParsedCommand::Lint(lint)) => {
-                run_lint_command(lint, stdout, stderr, stdout_is_terminal)
-            }
-        },
+    match parse_cli(args) {
+        Err(err) => {
+            write_args_error(err, stderr);
+            2
+        }
+        Ok(ParsedCli::Init(preset)) => run_init(preset, stdout, stderr),
+        Ok(ParsedCli::PresetAdd {
+            name,
+            source_path,
+            overwrite,
+        }) => run_preset_add(name, source_path, overwrite, stdout, stderr),
+        Ok(ParsedCli::Doctor(raw)) => run_doctor(raw, stdout),
+        Ok(ParsedCli::Run(ParsedCommand::Version)) => {
+            let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");
+            0
+        }
+        Ok(ParsedCli::Run(ParsedCommand::Blob(blob))) => run_blob(
+            &blob.source,
+            blob.config_path.as_deref(),
+            blob.output_format,
+            blob.hash_source,
+            blob.quiet_warnings,
+            blob.quiet_info,
+            blob.tag_filter.as_deref(),
+            blob.color_choice,
+            blob.output_path.as_deref(),
+            stdout_is_terminal,
+            stdout,
+            stderr,
+        ),
+        Ok(ParsedCli::Run(ParsedCommand::Lint(lint))) => {
+            run_lint_command(lint, stdout, stderr, stdout_is_terminal)
+        }
     }
 }
 
