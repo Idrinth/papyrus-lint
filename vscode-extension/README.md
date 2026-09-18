@@ -29,7 +29,7 @@ for `.psc` files directly in the editor, by shelling out to
   `papyrus-lint.yml` / `papyrus-lint.yaml` (same `**/*.yml` + `**/*.yaml`
   pairing GitHub Actions uses for workflow files) with
   [`docs/papyrus-lint.schema.json`](../docs/papyrus-lint.schema.json),
-  served at https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json.
+  served at <https://papyrus-lint.idrinth.de/schema/papyrus-lint.schema.json>.
   The Red Hat YAML extension picks that `yamlValidation` contribution up
   for hover, completion, and diagnostics. The extension also activates
   when a YAML file is opened or when a workspace contains those filenames,
