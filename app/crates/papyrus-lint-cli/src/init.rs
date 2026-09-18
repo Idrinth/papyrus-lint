@@ -4,6 +4,8 @@ use std::path::{Path, PathBuf};
 use clap::Parser;
 use papyrus_lint_config::presets;
 
+use crate::USAGE;
+
 /// `init`'s own flags, extracted by `clap` the same way `args.rs`'s
 /// `RawArgs` is for the main lint/fix invocation.
 #[derive(Parser, Debug)]
@@ -34,6 +36,56 @@ struct PresetAddRawArgs {
     #[arg(long)]
     yes: bool,
     positionals: Vec<String>,
+}
+
+/// Runs the `init` subcommand against `args` (i.e. `args[1..]` in
+/// [`crate::run`]): creates a `papyrus-lint.yaml` in the process's current
+/// directory from the selected `--preset` (see [`parse_init_preset`]),
+/// without overwriting an existing config.
+pub(crate) fn run_init(args: &[String], stdout: &mut impl Write, stderr: &mut impl Write) -> u8 {
+    let preset = match parse_init_preset(args) {
+        Ok(preset) => preset,
+        Err(InitPresetError::Usage) => {
+            let _ = write!(stderr, "{USAGE}");
+            return 2;
+        }
+    };
+
+    let current_dir = match std::env::current_dir() {
+        Ok(dir) => dir,
+        Err(err) => {
+            let _ = writeln!(
+                stderr,
+                "error: failed to determine current directory: {err}"
+            );
+            return 2;
+        }
+    };
+    initialize_config(&current_dir, preset, stdout, stderr)
+}
+
+/// Runs the `preset add` subcommand against `args` (i.e. `args[1..]` in
+/// [`crate::run`]): parses `add <name> <path-to-papyrus-lint.yaml> [--yes]`
+/// (see [`parse_preset_add_args`]) and adds the user preset it names (see
+/// [`presets::add_user_preset`]).
+pub(crate) fn run_preset_add(
+    args: &[String],
+    stdout: &mut impl Write,
+    stderr: &mut impl Write,
+) -> u8 {
+    if args.first().map(String::as_str) != Some("add") {
+        let _ = write!(stderr, "{USAGE}");
+        return 2;
+    }
+    let (name, source_path, overwrite) = match parse_preset_add_args(&args[1..]) {
+        Ok(parsed) => parsed,
+        Err(PresetAddArgsError::Usage) => {
+            let _ = write!(stderr, "{USAGE}");
+            return 2;
+        }
+    };
+    let result = presets::add_user_preset(&name, &source_path, overwrite);
+    report_add_user_preset(&name, result, stdout, stderr)
 }
 
 pub(crate) fn initialize_config(

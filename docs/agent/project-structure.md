@@ -225,10 +225,19 @@
 │       │                               # editing it
 │       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
 │           ├── src/                # achlist's scripts against its project's
-│           │   ├── lib.rs           # run() orchestration + public API; also
+│           │   ├── lib.rs           # run() dispatch + public API only; also
 │           │   │                    # linked into src-tauri for its CLI mode
-│           │   ├── args.rs          # Parses/validates run()'s own arguments
-│           │   │                    # (a plain lint/fix run, or --blob)
+│           │   ├── args/            # Parses/validates run()'s own arguments
+│           │   │   ├── mod.rs         # (a plain lint/fix run, or --blob):
+│           │   │   ├── parse.rs       # parse.rs recognizes clap's raw
+│           │   │   ├── validate.rs    # --flag syntax, validate.rs applies
+│           │   │   └── help.rs        # the business rules on top of it (mod.rs
+│           │   │                      # wires the two together and owns the
+│           │   │                      # shared types), and help.rs turns a
+│           │   │                      # rejected ArgsError into stderr text
+│           │   ├── run_lint_command.rs # Runs a parsed plain lint/fix
+│           │   │                    # invocation end to end (run_scan +
+│           │   │                    # run_fix/run_lint + report assembly)
 │           │   ├── run_scan.rs      # Resolves the scripts a run targets and
 │           │   │                    # the project state to lint/fix them against
 │           │   ├── run_lint.rs      # Lints one already-resolved script source
@@ -236,9 +245,15 @@
 │           │   │                    # before run_lint lints the result
 │           │   ├── project.rs       # Project-root discovery from .psc paths
 │           │   ├── output/          # Plain/JSON/AI report types and formatting
-│           │   ├── init.rs          # `init` / `preset add`
+│           │   ├── init.rs          # `init` / `preset add`: parsing, and the
+│           │   │                    # run_init/run_preset_add entrypoints run()
+│           │   │                    # dispatches straight to
 │           │   ├── blob.rs          # `--blob` in-memory lint
-│           │   ├── doctor.rs        # `doctor` subcommand
+│           │   ├── doctor/          # `doctor` subcommand: mod.rs owns arg
+│           │   │   ├── mod.rs         # parsing + orchestration and dispatches
+│           │   │   ├── checks.rs      # to checks.rs (each individual health
+│           │   │   └── report.rs      # check) and report.rs (its plain-text/
+│           │   │                      # --json rendering)
 │           │   ├── test_support.rs  # Shared helpers for each file's unit tests
 │           │   ├── run_tests.rs     # Integration-style tests for run()'s
 │           │   │                    # end-to-end pipeline
