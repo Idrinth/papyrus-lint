@@ -134,6 +134,12 @@ fn parser_can_parse_a_standalone_expression_token_stream() {
 }
 
 #[test]
+#[should_panic(expected = "parser token stream must not be empty")]
+fn parser_rejects_an_empty_token_stream() {
+    Parser::new(Vec::new());
+}
+
+#[test]
 fn parser_errors_use_the_current_token_location_and_display_format() {
     let mut parser = Parser::new(vec![
         Token::new(TokenKind::Keyword(Keyword::Return), 7, 13),

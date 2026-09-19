@@ -129,6 +129,10 @@ pub(crate) fn prime(source: &str, ast: Script) {
 /// code that tokenizes `source` itself -- without ever seeing those tokens
 /// -- runs, such as a raw-token-based lint rule.
 pub(crate) fn prime_tokens(source: &str, tokens: Vec<Token>) {
+    assert!(
+        !tokens.is_empty(),
+        "cached parser token stream must not be empty"
+    );
     TOKENS.with(|cell| {
         *cell.borrow_mut() = Some(Slot {
             source: source.to_string(),
@@ -140,6 +144,12 @@ pub(crate) fn prime_tokens(source: &str, tokens: Vec<Token>) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    #[should_panic(expected = "cached parser token stream must not be empty")]
+    fn prime_tokens_rejects_an_empty_token_stream() {
+        prime_tokens("ScriptName EmptyTokenCacheTest\n", Vec::new());
+    }
 
     /// Two calls with the same content -- even from separately built
     /// `String`s, so this isn't just pointer equality -- only lex once.
