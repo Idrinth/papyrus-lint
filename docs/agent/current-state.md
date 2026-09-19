@@ -60,9 +60,14 @@ Rules that can walk a parsed script or the token stream expose a
 `LintVisitor::Tokens`. Each visitor implements `AstLint` or `TokenLint`
 and owns a `Store` of diagnostics collected during the walk.
 `collect_diagnostics` registers enabled lints onto an AST walker and a
-token walker, walks both trees once, then drains those stores. Each such
-rule's `check` runs that same single-visitor walk and returns the
-store's issues. `none` rules still run through `check` directly.
+token walker, walks both trees once, then drains those stores. Most
+visitor rules emit from the matching per-node `visit_*` callback
+(`visit_expr`, `visit_function`, `visit_token`, …). A handful of
+flow-sensitive or whole-file analyses still run their existing pass from
+`visit_script` or `begin` rather than splitting the analysis across
+nodes. Each such rule's `check` runs that same single-visitor walk and
+returns the store's issues. `none` rules still run through `check`
+directly.
 
 Cross-script lint rules share the project-semantic resolver contract in
 `app/crates/papyrus-lints/src/external_signatures.rs`. That neutral module owns

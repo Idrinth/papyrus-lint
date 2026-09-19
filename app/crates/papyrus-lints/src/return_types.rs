@@ -20,6 +20,7 @@ use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::argument_types;
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -27,43 +28,67 @@ pub const RULE: &str = "return-types";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    env: Option<TypeEnv>,
+    return_type: Option<TypeName>,
+    function_name: String,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.env = Some(TypeEnv::for_script(script));
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.enter_function(function);
         }
+        self.return_type = function.return_type.clone();
+        self.function_name = function.name.clone();
+    }
+
+    fn leave_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.leave_function();
+        }
+        self.return_type = None;
+        self.function_name.clear();
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt, ctx: &mut VisitCtx<'_>) {
+        let Some(return_type) = self.return_type.as_ref() else {
+            return;
+        };
+        let Some(env) = self.env.as_ref() else {
+            return;
+        };
+        let Stmt::Return {
+            value: Some(value),
+            line,
+        } = stmt
+        else {
+            return;
+        };
+        let mut diagnostics = Vec::new();
+        check_return(
+            *line,
+            value,
+            return_type,
+            &self.function_name,
+            env,
+            ctx.external,
+            &mut diagnostics,
+        );
+        self.store.extend(diagnostics);
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `Return` values whose type doesn't match (or isn't a
@@ -81,20 +106,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but resolves object-type return values through
 /// `external` so a value whose script extends (directly or transitively)
 /// the declared return type is accepted.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,

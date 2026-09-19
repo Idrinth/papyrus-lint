@@ -20,53 +20,63 @@
 //! this exact name"), so a state function with no local empty-state
 //! counterpart is left unflagged rather than guessed at.
 
-use papyrus_parser::ast::{FunctionDecl, TypeName};
+use std::collections::HashMap;
+
+use papyrus_parser::ast::{FunctionDecl, Script, TypeName};
 
 use crate::argument_types::format_type;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "state-function-signature";
 
-#[derive(Default)]
-struct Collect {
-    store: crate::visitor::Store,
+struct EmptySignature {
+    params: Vec<TypeName>,
+    return_type: Option<TypeName>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    empty: HashMap<String, EmptySignature>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        let mut empty = HashMap::new();
+        for function in &script.functions {
+            empty.entry(function.name.to_ascii_lowercase()).or_insert_with(|| {
+                EmptySignature {
+                    params: function
+                        .params
+                        .iter()
+                        .map(|param| param.type_name.clone())
+                        .collect(),
+                    return_type: function.return_type.clone(),
+                }
+            });
+        }
+        self.empty = empty;
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
-        }
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        let Some(state_name) = &function.state else {
+            return;
+        };
+        let Some(base) = self.empty.get(&function.name.to_ascii_lowercase()) else {
+            return;
+        };
+        check_function(function, base, state_name, &mut self.store);
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for state-declared functions/events whose parameter
@@ -83,91 +93,60 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for state in &script.states {
-        for function in &state.functions {
-            let Some(base) = script
-                .functions
-                .iter()
-                .find(|candidate| candidate.name.eq_ignore_ascii_case(&function.name))
-            else {
-                continue;
-            };
-
-            check_function(function, base, state.name.as_str(), &mut diagnostics);
-        }
-    }
-
-    diagnostics
-}
-
 fn check_function(
     state_fn: &FunctionDecl,
-    base_fn: &FunctionDecl,
+    base_fn: &EmptySignature,
     state_name: &str,
-    diagnostics: &mut Vec<Diagnostic>,
+    store: &mut Store,
 ) {
     if state_fn.params.len() != base_fn.params.len() {
-        diagnostics.push(Diagnostic {
-            line: state_fn.line,
-            column: 1,
-            message: format!(
+        store.emit(
+            state_fn.line,
+            1,
+            format!(
                 "[error] Function '{}' in state '{}' declares {} but the empty state's declaration declares {}",
                 state_fn.name,
                 state_name,
                 param_count(state_fn.params.len()),
                 param_count(base_fn.params.len()),
             ),
-            rule: RULE,
-        });
+            RULE,
+        );
     } else {
-        for (index, (state_param, base_param)) in
+        for (index, (state_param, base_type)) in
             state_fn.params.iter().zip(&base_fn.params).enumerate()
         {
-            if !type_names_match(&state_param.type_name, &base_param.type_name) {
-                diagnostics.push(Diagnostic {
-                    line: state_fn.line,
-                    column: 1,
-                    message: format!(
+            if !type_names_match(&state_param.type_name, base_type) {
+                store.emit(
+                    state_fn.line,
+                    1,
+                    format!(
                         "[error] Parameter {} of '{}' in state '{}' is declared {} but the empty state's declaration declares {}",
                         index + 1,
                         state_fn.name,
                         state_name,
                         format_type(&state_param.type_name),
-                        format_type(&base_param.type_name),
+                        format_type(base_type),
                     ),
-                    rule: RULE,
-                });
+                    RULE,
+                );
             }
         }
     }
 
     if !return_types_match(&state_fn.return_type, &base_fn.return_type) {
-        diagnostics.push(Diagnostic {
-            line: state_fn.line,
-            column: 1,
-            message: format!(
+        store.emit(
+            state_fn.line,
+            1,
+            format!(
                 "[error] Function '{}' in state '{}' declares return type {} but the empty state's declaration declares {}",
                 state_fn.name,
                 state_name,
                 format_return_type(&state_fn.return_type),
                 format_return_type(&base_fn.return_type),
             ),
-            rule: RULE,
-        });
+            RULE,
+        );
     }
 }
 

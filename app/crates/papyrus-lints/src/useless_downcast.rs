@@ -27,6 +27,7 @@ use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::argument_types::is_primitive;
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -34,43 +35,58 @@ pub const RULE: &str = "useless-downcast";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    env: Option<TypeEnv>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.env = Some(TypeEnv::for_script(script));
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.enter_function(function);
+        }
+
+    }
+
+    fn leave_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.leave_function();
+        }
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let Some(env) = self.env.as_ref() else {
+            return;
+        };
+        let Expr::Cast { value, type_name } = expr else {
+            return;
+        };
+        let Some(value_type) = infer_type(value, env) else {
+            return;
+        };
+        if value_type.is_array {
+            return;
+        }
+        if let Some(reason) = useless_reason(&value_type.name, type_name, ctx.external) {
+            self.store.emit(
+                ctx.line,
+                1,
+                format!("[info] cast to '{type_name}' is redundant; {reason}"),
+                RULE,
+            );
         }
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a redundant `as` cast, only recognizing an
@@ -87,21 +103,11 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but also resolves a cast target that's an ancestor
 /// (rather than an exact match) of the value's known type through
 /// `external`, the same way [`crate::argument_types::check_with`] resolves
 /// argument subtyping.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,

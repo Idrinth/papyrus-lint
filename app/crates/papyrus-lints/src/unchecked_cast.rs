@@ -45,10 +45,11 @@
 use std::collections::HashSet;
 
 use papyrus_parser::ast::{
-    AssignOp, BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp,
+    AssignOp, BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Stmt, UnaryOp,
 };
 
 use crate::fragment_code;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -56,43 +57,34 @@ pub const RULE: &str = "unchecked-cast";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    protected: Vec<bool>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.protected = fragment_code::protected_lines(ctx.source);
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
-        }
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        let mut unchecked_vars = HashSet::new();
+        let mut diagnostics = Vec::new();
+        walk_body(
+            &function.body,
+            &self.protected,
+            &mut unchecked_vars,
+            &mut diagnostics,
+        );
+        self.store.extend(diagnostics);
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every function/event in `source` for a member/method access on
@@ -106,43 +98,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let protected = fragment_code::protected_lines(source);
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        let mut unchecked_vars = HashSet::new();
-        walk_body(
-            &function.body,
-            &protected,
-            &mut unchecked_vars,
-            &mut diagnostics,
-        );
-    }
-    diagnostics
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
 }
 
 fn walk_body(

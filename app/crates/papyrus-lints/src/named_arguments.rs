@@ -12,10 +12,11 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
+use papyrus_parser::ast::{Expr, FunctionDecl, Script};
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 use serde::{Deserialize, Serialize};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -23,43 +24,45 @@ pub const RULE: &str = "named-arguments";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    locals: Option<LocalFunctions>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.locals = Some(LocalFunctions::from_script(script));
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let setting = ctx.config.named_arguments;
+        if setting == NamedArguments::Never {
+            return;
         }
+        let Some(locals) = self.locals.as_ref() else {
+            return;
+        };
+        let Expr::Call {
+            callee,
+            args,
+            line,
+            col,
+        } = expr
+        else {
+            return;
+        };
+        let Some((name, params)) = resolve_local(callee, locals) else {
+            return;
+        };
+        check_call(*line, *col, &name, params, args, setting, &mut self.store);
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// How strongly this lint prefers named arguments over positional ones.
@@ -94,6 +97,7 @@ struct ParamInfo {
 /// `None`, since which declaration applies at a given call site can't be
 /// determined here — such calls are then skipped rather than checked
 /// against a possibly-wrong signature.
+#[derive(Default)]
 struct LocalFunctions {
     by_name: HashMap<String, Option<Vec<ParamInfo>>>,
 }
@@ -166,126 +170,6 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, external);
-    let setting = config.named_arguments;
-
-    if setting == NamedArguments::Never {
-        return Vec::new();
-    }
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let locals = LocalFunctions::from_script(script);
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        for stmt in &function.body {
-            walk_stmt(stmt, &locals, setting, &mut diagnostics);
-        }
-    }
-    diagnostics
-}
-
-/// Recursively visits every expression reachable from `stmt`, checking any
-/// call against `locals` per [`walk_expr`].
-fn walk_stmt(
-    stmt: &Stmt,
-    locals: &LocalFunctions,
-    setting: NamedArguments,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    match stmt {
-        Stmt::VarDecl(decl) => {
-            if let Some(value) = &decl.value {
-                walk_expr(value, locals, setting, diagnostics);
-            }
-        }
-        Stmt::Assign { target, value, .. } => {
-            walk_expr(target, locals, setting, diagnostics);
-            walk_expr(value, locals, setting, diagnostics);
-        }
-        Stmt::Expr { value, .. } => walk_expr(value, locals, setting, diagnostics),
-        Stmt::Return {
-            value: Some(value), ..
-        } => walk_expr(value, locals, setting, diagnostics),
-        Stmt::Return { value: None, .. } => {}
-        Stmt::If {
-            branches,
-            else_body,
-            ..
-        } => {
-            for IfBranch {
-                condition, body, ..
-            } in branches
-            {
-                walk_expr(condition, locals, setting, diagnostics);
-                for inner in body {
-                    walk_stmt(inner, locals, setting, diagnostics);
-                }
-            }
-            for inner in else_body {
-                walk_stmt(inner, locals, setting, diagnostics);
-            }
-        }
-        Stmt::While {
-            condition, body, ..
-        } => {
-            walk_expr(condition, locals, setting, diagnostics);
-            for inner in body {
-                walk_stmt(inner, locals, setting, diagnostics);
-            }
-        }
-    }
-}
-
-/// Recursively visits `expr` and its subexpressions, checking each
-/// [`Expr::Call`] resolved to a local function's parameters against
-/// `setting` (see [`check_call`]).
-fn walk_expr(
-    expr: &Expr,
-    locals: &LocalFunctions,
-    setting: NamedArguments,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    match expr {
-        Expr::Call {
-            callee,
-            args,
-            line,
-            col,
-        } => {
-            if let Some((name, params)) = resolve_local(callee, locals) {
-                check_call(*line, *col, &name, params, args, setting, diagnostics);
-            }
-            walk_expr(callee, locals, setting, diagnostics);
-            for arg in args {
-                walk_expr(arg, locals, setting, diagnostics);
-            }
-        }
-        Expr::Binary { left, right, .. } => {
-            walk_expr(left, locals, setting, diagnostics);
-            walk_expr(right, locals, setting, diagnostics);
-        }
-        Expr::Unary { operand, .. } => walk_expr(operand, locals, setting, diagnostics),
-        Expr::Member { object, .. } => walk_expr(object, locals, setting, diagnostics),
-        Expr::Index { object, index } => {
-            walk_expr(object, locals, setting, diagnostics);
-            walk_expr(index, locals, setting, diagnostics);
-        }
-        Expr::Cast { value, .. } => walk_expr(value, locals, setting, diagnostics),
-        Expr::NewArray { size, .. } => walk_expr(size, locals, setting, diagnostics),
-        Expr::NamedArg { value, .. } => walk_expr(value, locals, setting, diagnostics),
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
-    }
-}
-
 /// Resolves `callee` to a local function's name and parameters: either a
 /// bare call (`Func(...)`) or one explicitly qualified with `self`
 /// (`self.Func(...)`). A call on anything else (another script's property,
@@ -315,7 +199,7 @@ fn check_call(
     params: &[ParamInfo],
     args: &[Expr],
     setting: NamedArguments,
-    diagnostics: &mut Vec<Diagnostic>,
+    store: &mut Store,
 ) {
     for (index, arg) in args.iter().enumerate() {
         if matches!(arg, Expr::NamedArg { .. }) {
@@ -333,17 +217,17 @@ fn check_call(
             continue;
         }
 
-        diagnostics.push(Diagnostic {
+        store.emit(
             line,
-            column: col,
-            message: format!(
+            col,
+            format!(
                 "[warning] Argument {} to '{}' should be passed as a named argument ({} = ...)",
                 index + 1,
                 function_name,
                 param.name
             ),
-            rule: RULE,
-        });
+            RULE,
+        );
     }
 }
 

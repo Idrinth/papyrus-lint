@@ -20,9 +20,8 @@ use std::collections::HashSet;
 
 use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Stmt};
 
-use crate::none_form_usage::{
-    all_functions, diverges, is_object_type, narrow_for_falsy, narrow_for_truthy,
-};
+use crate::none_form_usage::{diverges, is_object_type, narrow_for_falsy, narrow_for_truthy};
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -30,43 +29,27 @@ pub const RULE: &str = "unchecked-form-parameter";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
-    }
-
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        let mut unchecked = form_params(function);
+        if unchecked.is_empty() {
+            return;
         }
+        let mut diagnostics = Vec::new();
+        walk_body(&function.body, &mut unchecked, &mut diagnostics);
+        self.store.extend(diagnostics);
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every function/event in `source` for member/method access on a
@@ -80,30 +63,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        let mut unchecked = form_params(function);
-        if unchecked.is_empty() {
-            continue;
-        }
-        walk_body(&function.body, &mut unchecked, &mut diagnostics);
-    }
-    diagnostics
 }
 
 /// The (lowercased) names of `function`'s object-typed (`Form` and its

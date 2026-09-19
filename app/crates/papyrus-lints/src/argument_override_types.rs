@@ -27,10 +27,11 @@
 //! against the parent's reference still binds against the parent's exact
 //! declared type regardless of what the override itself accepts.
 
-use papyrus_parser::ast::{Script, TypeName};
+use papyrus_parser::ast::{FunctionDecl, Script, TypeName};
 
 use crate::argument_types::format_type;
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -38,43 +39,74 @@ pub const RULE: &str = "argument-override-types";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    extends: Option<String>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.extends = script.extends.clone();
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_function(&mut self, function: &FunctionDecl, ctx: &mut VisitCtx<'_>) {
+        if function.state.is_some() {
+            return;
+        }
+        let Some(extends) = &self.extends else {
+            return;
+        };
+        let Some(parent_params) = ctx.external.lookup(extends, &function.name) else {
+            return;
+        };
+        let kind = if function.is_event {
+            "Event"
+        } else {
+            "Function"
+        };
+
+        if function.params.len() != parent_params.len() {
+            self.store.emit(
+                function.line,
+                1,
+                format!(
+                    "[error] {kind} '{}' declares {} but the inherited declaration on '{}' declares {}",
+                    function.name,
+                    param_count(function.params.len()),
+                    extends,
+                    param_count(parent_params.len()),
+                ),
+                RULE,
+            );
+            return;
+        }
+
+        for (index, (local, parent)) in function.params.iter().zip(&parent_params).enumerate() {
+            if type_names_match(&local.type_name, &parent.type_name) {
+                continue;
+            }
+            self.store.emit(
+                function.line,
+                1,
+                format!(
+                    "[error] Parameter {} of {kind} '{}' is declared {} but the inherited declaration on '{}' declares {}",
+                    index + 1,
+                    function.name,
+                    format_type(&local.type_name),
+                    extends,
+                    format_type(&parent.type_name),
+                ),
+                RULE,
+            );
         }
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for overridden functions/events whose parameter count or
@@ -92,23 +124,13 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but resolves the script's `Extends` chain through
 /// `external`, comparing each function/event declared on `source` against
 /// the same-named function declared somewhere along that chain (if any). A
 /// parameter count mismatch is reported as a single diagnostic for the
 /// whole declaration; a matching count is then compared parameter by
 /// parameter for a type mismatch at the same position.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,

@@ -14,9 +14,10 @@
 //! this would flag literally every declaration in such a project at once;
 //! a project opts in via `rules.missing_doc_comment`.
 
-use papyrus_parser::ast::{FunctionDecl, Script};
+use papyrus_parser::ast::{FunctionDecl, PropertyDecl, Script};
 use papyrus_parser::token::{Token, TokenKind};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -24,43 +25,66 @@ pub const RULE: &str = "missing-doc-comment";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    lines: Vec<String>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.lines = ctx.source.split('\n').map(str::to_string).collect();
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
-        }
+    fn visit_script(&mut self, script: &Script, ctx: &mut VisitCtx<'_>) {
+        let Some(tokens) = ctx.tokens else {
+            return;
+        };
+        check_declaration(
+            script.line,
+            format!("The `ScriptName {}` declaration", script.name),
+            tokens,
+            &self.lines,
+            &mut self.store,
+        );
+    }
+
+    fn visit_property(&mut self, property: &PropertyDecl, ctx: &mut VisitCtx<'_>) {
+        let Some(tokens) = ctx.tokens else {
+            return;
+        };
+        check_declaration(
+            property.line,
+            format!("Property `{}`", property.name),
+            tokens,
+            &self.lines,
+            &mut self.store,
+        );
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, ctx: &mut VisitCtx<'_>) {
+        let Some(tokens) = ctx.tokens else {
+            return;
+        };
+        let kind = if function.is_event {
+            "Event"
+        } else {
+            "Function"
+        };
+        check_declaration(
+            function.line,
+            format!("{kind} `{}`", function.name),
+            tokens,
+            &self.lines,
+            &mut self.store,
+        );
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a script header, `Property`, or `Function`/`Event`
@@ -78,61 +102,6 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let lines: Vec<&str> = source.split('\n').collect();
-    let mut diagnostics = Vec::new();
-
-    check_declaration(
-        script.line,
-        format!("The `ScriptName {}` declaration", script.name),
-        tokens,
-        &lines,
-        &mut diagnostics,
-    );
-
-    for property in &script.properties {
-        check_declaration(
-            property.line,
-            format!("Property `{}`", property.name),
-            tokens,
-            &lines,
-            &mut diagnostics,
-        );
-    }
-
-    for function in all_functions(script) {
-        let kind = if function.is_event {
-            "Event"
-        } else {
-            "Function"
-        };
-        check_declaration(
-            function.line,
-            format!("{kind} `{}`", function.name),
-            tokens,
-            &lines,
-            &mut diagnostics,
-        );
-    }
-
-    diagnostics
-}
-
 /// The `{ ... }` documentation comment immediately following the
 /// declaration that starts on `line` (1-indexed), if any. Placement
 /// matches [`check`]: after the header's last physical line
@@ -145,17 +114,6 @@ pub fn documentation_comment(source: &str, tokens: &[Token], line: usize) -> Opt
     brace_comment_starting_on_line(source, last_physical_line(line, tokens) + 1)
 }
 
-/// Every function declared directly on the script, plus every function
-/// declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
 /// Flags `subject` (rooted at `line`, 1-indexed) if the raw source line
 /// immediately following its actual last physical line (see
 /// [`last_physical_line`]) doesn't start (after leading whitespace) with a
@@ -166,8 +124,8 @@ fn check_declaration(
     line: usize,
     subject: String,
     tokens: &[Token],
-    lines: &[&str],
-    diagnostics: &mut Vec<Diagnostic>,
+    lines: &[String],
+    store: &mut Store,
 ) {
     let last_line = last_physical_line(line, tokens);
     let has_doc_comment = lines
@@ -176,15 +134,15 @@ fn check_declaration(
     if has_doc_comment {
         return;
     }
-    diagnostics.push(Diagnostic {
+    store.emit(
         line,
-        column: 1,
-        message: format!(
+        1,
+        format!(
             "[warning] {subject} has no documentation comment (`{{...}}`) on the line \
              immediately following it"
         ),
-        rule: RULE,
-    });
+        RULE,
+    );
 }
 
 /// The last physical source line (1-indexed) of the logical line starting
