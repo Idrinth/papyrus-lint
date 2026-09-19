@@ -6,15 +6,16 @@ ARG PRESET=strict
 RUN apk add --no-cache gcompat libgcc unzip \
     && addgroup -S papyrus-lint \
     && adduser -S -G papyrus-lint papyrus-lint \
-    && mkdir -p /project /cache /base-scripts /usr/local/share/papyrus-lint \
-    && chown papyrus-lint:papyrus-lint /project /cache /base-scripts
+    && mkdir -p /project /cache /base-scripts /skyrim-scripts /usr/local/share/papyrus-lint \
+    && chown papyrus-lint:papyrus-lint /project /cache /base-scripts /skyrim-scripts
 
 COPY --chmod=755 PapyrusLinterCLI /usr/local/bin/PapyrusLinterCLI
 COPY --chmod=755 entrypoint.sh /usr/local/bin/papyrus-lint-entrypoint
 COPY Scripts.zip /usr/local/share/papyrus-lint/Scripts.zip
 RUN PapyrusLinterCLI --version \
     && unzip -j -q /usr/local/share/papyrus-lint/Scripts.zip -d /base-scripts \
-    && chown -R papyrus-lint:papyrus-lint /base-scripts
+    && chown -R papyrus-lint:papyrus-lint /skyrim-scripts \
+    && rm Scripts.zip
 
 # Generate the selected preset's config and point lookup roots at the
 # container paths documented in the README (/project, /cache, /base-scripts).
