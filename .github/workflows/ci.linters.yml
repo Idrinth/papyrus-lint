@@ -1,0 +1,207 @@
+name: CI / Linters
+
+on:
+  push:
+    branches: [the-one]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  yaml:
+    name: Rules YAML lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install yamllint
+        run: pip install yamllint==1.37.1
+
+      - name: Lint YAML sources
+        run: yamllint shared/rules/data/*.yaml shared/links.yaml
+
+  python-lint:
+    name: Python lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install ruff
+        run: pip install ruff==0.14.14
+
+      - name: Lint Python sources
+        run: ruff check .github/scripts pages SublimeLinter-contrib-papyrus-lint
+
+  bbcode:
+    name: CI scripts and Nexus page BBCode lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Lint Nexus Mods page
+        run: python3 .github/scripts/bbcode_lint.py docs/nexuspage.bbcode
+
+  markdown:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Lint README files
+        uses: DavidAnson/markdownlint-cli2-action@v24
+        with:
+          globs: '**/README.md'
+
+  stylelint:
+    name: Frontend CSS lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Lint CSS
+        run: npm run lint:css
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Lint
+        run: npm run lint
+
+  rust-fmt:
+    name: Rust (fmt) (${{ matrix.crate }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        crate:
+        - src-tauri
+        - papyrus-parser
+        - papyrus-ast-cache
+        - papyrus-lints
+        - papyrus-lint-core
+        - papyrus-lint-output
+        - papyrus-lint-cli
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        if: matrix.crate != 'src-tauri'
+        run: cargo fmt --manifest-path "app/crates/${{ matrix.crate }}/Cargo.toml" -- --check
+
+      - name: Check formatting
+        if: matrix.crate == 'src-tauri'
+        run: cargo fmt --manifest-path "app/${{ matrix.crate }}/Cargo.toml" -- --check
+
+  rust-clippy:
+    name: Rust (clippy) (${{ matrix.crate }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        crate:
+        - src-tauri
+        - papyrus-parser
+        - papyrus-ast-cache
+        - papyrus-lints
+        - papyrus-lint-core
+        - papyrus-lint-output
+        - papyrus-lint-cli
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - name: Install Tauri Linux dependencies
+        if: matrix.crate == 'app/src-tauri'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        if: matrix.crate != 'src-tauri'
+        with:
+          workspaces: app/crates/${{ matrix.crate }}
+
+      - uses: Swatinem/rust-cache@v2
+        if: matrix.crate == 'src-tauri'
+        with:
+          workspaces: app/${{ matrix.crate }}
+
+      - name: Clippy
+        if: matrix.crate != 'src-tauri'
+        run: cargo clippy --manifest-path "app/crates/${{ matrix.crate }}/Cargo.toml" --all-targets -- -D warnings
+
+      - name: Clippy
+        if: matrix.crate == 'src-tauri'
+        run: cargo clippy --manifest-path "app/${{ matrix.crate }}/Cargo.toml" --all-targets -- -D warnings
+
+  vscode-extension:
+    name: VS Code extension (test & compile)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode-extension
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Lint
+        run: npm run lint

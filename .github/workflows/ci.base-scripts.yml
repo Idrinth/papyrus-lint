@@ -1,4 +1,4 @@
-name: Base scripts snapshot
+name: CI / Base scripts snapshot
 
 on:
   push:
