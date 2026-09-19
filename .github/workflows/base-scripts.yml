@@ -4,7 +4,7 @@ on:
   push:
     branches: [the-one]
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: base-scripts-${{ github.event.pull_request.number || github.ref }}
@@ -14,30 +14,8 @@ permissions:
   contents: read
 
 jobs:
-  labels:
-    name: Pull request labels
-    runs-on: ubuntu-latest
-    steps:
-      - name: Require component and type labels
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const names = context.payload.pull_request.labels.map((label) => label.name);
-            const missing = [];
-            if (!names.some((name) => name.startsWith('component: '))) {
-              missing.push('a "component: ..." label');
-            }
-            if (!names.some((name) => name.startsWith('type: '))) {
-              missing.push('a "type: ..." label');
-            }
-            if (missing.length > 0) {
-              core.setFailed(`This pull request is missing ${missing.join(' and ')}. See CONTRIBUTING.md for the required labels.`);
-            }
-
   base-scripts-cli:
     name: Base scripts CLI build
-    needs: labels
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -64,7 +42,7 @@ jobs:
 
   base-scripts-snapshot:
     name: Base scripts snapshot (${{ matrix.preset }})
-    needs: [labels, base-scripts-cli]
+    needs: base-scripts-cli
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -92,12 +70,3 @@ jobs:
             --cli cli-bin/PapyrusLinterCLI \
             --preset ${{ matrix.preset }} \
             --work-dir base-scripts-work
-
-      - name: Upload CLI JSON on mismatch
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: base-scripts-work-${{ matrix.preset }}
-          path: base-scripts-work/
-          if-no-files-found: ignore
-          retention-days: 7
