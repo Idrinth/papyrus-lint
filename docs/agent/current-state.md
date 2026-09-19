@@ -55,12 +55,13 @@ standalone, single-rule entry point for a caller that isn't going through
 still parses `source` itself, since there's no shared registry pass around
 it to have already done so.
 
-Rules that can walk a parsed script or the token stream also expose a
+Rules that can walk a parsed script or the token stream expose a
 `visitor()` function returning `LintVisitor::Ast` or
 `LintVisitor::Tokens`. `collect_diagnostics` registers enabled lints onto
-an AST walker and a token walker, runs each rule's `check` so the visitor
-already holds its diagnostics, walks both trees once, then emits those
-diagnostics in registration order. `check` itself is unchanged.
+an AST walker and a token walker, walks both trees once, and emits the
+diagnostics those visitors collected. Each such rule's `check` runs that
+same single-visitor walk and returns the traversal's issues. `none` rules
+still run through `check` directly.
 
 Cross-script lint rules share the project-semantic resolver contract in
 `app/crates/papyrus-lints/src/external_signatures.rs`. That neutral module owns

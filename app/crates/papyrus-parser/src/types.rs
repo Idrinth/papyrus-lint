@@ -64,15 +64,25 @@ impl TypeEnv {
         function: &FunctionDecl,
         f: impl FnOnce(&mut Self) -> R,
     ) -> R {
+        self.enter_function(function);
+        let result = f(self);
+        self.leave_function();
+        result
+    }
+
+    /// Pushes `function`'s parameters and locals as the innermost scope.
+    pub fn enter_function(&mut self, function: &FunctionDecl) {
         let mut scope = HashMap::new();
         for param in &function.params {
             scope.insert(param.name.to_ascii_lowercase(), param.type_name.clone());
         }
         collect_locals(&function.body, &mut scope);
         self.scopes.push(scope);
-        let result = f(self);
+    }
+
+    /// Pops the innermost function scope pushed by [`Self::enter_function`].
+    pub fn leave_function(&mut self) {
         self.scopes.pop();
-        result
     }
 }
 

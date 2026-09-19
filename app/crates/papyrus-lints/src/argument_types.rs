@@ -28,14 +28,14 @@ use crate::{Diagnostic, ExternalSignatures, ParamInfo};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "argument-types";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::ast()
+    crate::visitor::from_ast(lint_issues)
 }
 
 /// Checks `source` for argument/parameter type mismatches on calls to
 /// functions declared in the same script. Calls on other scripts' types
 /// are not checked; see [`check_with`] for that.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
@@ -43,13 +43,23 @@ pub fn check(
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)
 }
 
 /// Like [`check`], but also checks calls to functions resolved through
 /// `external` (typically functions declared on other scripts).
-pub fn check_with<E: ExternalSignatures>(
+pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -134,7 +144,7 @@ impl LocalFunctions {
     }
 }
 
-fn walk_stmt<E: ExternalSignatures>(
+fn walk_stmt<E: ExternalSignatures + ?Sized>(
     stmt: &Stmt,
     env: &TypeEnv,
     locals: &LocalFunctions,
@@ -186,7 +196,7 @@ fn walk_stmt<E: ExternalSignatures>(
     }
 }
 
-fn walk_expr<E: ExternalSignatures>(
+fn walk_expr<E: ExternalSignatures + ?Sized>(
     expr: &Expr,
     env: &TypeEnv,
     locals: &LocalFunctions,
@@ -240,7 +250,7 @@ fn walk_expr<E: ExternalSignatures>(
 /// functions down to full parameter info now too, a named argument
 /// (`func(argB = 1)`) can be matched to the parameter it fills either way
 /// (see [`check_args`]).
-fn resolve_signature<E: ExternalSignatures>(
+fn resolve_signature<E: ExternalSignatures + ?Sized>(
     callee: &Expr,
     env: &TypeEnv,
     locals: &LocalFunctions,
@@ -272,7 +282,7 @@ fn resolve_signature<E: ExternalSignatures>(
         .map(|params| (function_name, params))
 }
 
-fn check_args<E: ExternalSignatures>(
+fn check_args<E: ExternalSignatures + ?Sized>(
     (line, col): (usize, usize),
     function_name: &str,
     params: &[ParamInfo],
@@ -378,7 +388,7 @@ pub(crate) fn accepts_none(param_type: &TypeName) -> bool {
 /// `Float` parameter, and passing an object whose script extends (directly
 /// or transitively) the parameter's type, per `external`'s knowledge of
 /// the scripts' `Extends` chains.
-pub(crate) fn is_compatible<E: ExternalSignatures>(
+pub(crate) fn is_compatible<E: ExternalSignatures + ?Sized>(
     param_type: &TypeName,
     arg_type: &TypeName,
     external: &mut E,

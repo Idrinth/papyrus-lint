@@ -1,5 +1,5 @@
-use super::{AstLint, LintVisitor, Session, TokenLint};
-use crate::{comma_spacing, trailing_whitespace, Config, Diagnostic, NoExternalSignatures};
+use super::{AstLint, LintVisitor, Session, TokenLint, VisitCtx};
+use crate::{comma_spacing, trailing_whitespace, Config, NoExternalSignatures};
 use papyrus_parser::ast::Expr;
 use papyrus_parser::token::Token;
 use std::cell::Cell;
@@ -102,12 +102,7 @@ fn token_rules_return_a_token_visitor() {
 #[test]
 fn session_emits_check_diagnostics_in_registration_order() {
     let mut session = Session::new();
-    session.add(
-        comma_spacing::visitor(),
-        |source, ast, tokens, config, external| {
-            comma_spacing::check(source, ast, tokens, config, external)
-        },
-    );
+    session.add(comma_spacing::visitor());
     session.add_direct(|source, ast, tokens, config, external| {
         trailing_whitespace::check(source, ast, tokens, config, external)
     });
@@ -144,16 +139,13 @@ fn ast_walker_notifies_every_registered_lint_once_per_node() {
     let count = Rc::new(Cell::new(0));
     struct Counter(Rc<Cell<usize>>);
     impl AstLint for Counter {
-        fn visit_expr(&mut self, _: &Expr) {
+        fn visit_expr(&mut self, _: &Expr, _: &mut VisitCtx<'_>) {
             self.0.set(self.0.get() + 1);
         }
     }
 
     let mut session = Session::new();
-    session.add(
-        LintVisitor::Ast(Box::new(Counter(count.clone()))),
-        |_, _, _, _, _| Vec::<Diagnostic>::new(),
-    );
+    session.add(LintVisitor::Ast(Box::new(Counter(count.clone()))));
 
     let source = "ScriptName Example\nFunction Add(Int a = 1)\n    Return a + 2\nEndFunction\n";
     let tokens = papyrus_parser::tokenize(source).ok();
@@ -175,17 +167,14 @@ fn token_walker_notifies_every_registered_lint_once_per_token() {
     let count = Rc::new(Cell::new(0));
     struct Counter(Rc<Cell<usize>>);
     impl TokenLint for Counter {
-        fn visit_token(&mut self, _: &Token, _: usize, tokens: &[Token]) {
+        fn visit_token(&mut self, _: &Token, _: usize, tokens: &[Token], _: &mut VisitCtx<'_>) {
             let _ = tokens;
             self.0.set(self.0.get() + 1);
         }
     }
 
     let mut session = Session::new();
-    session.add(
-        LintVisitor::Tokens(Box::new(Counter(count.clone()))),
-        |_, _, _, _, _| Vec::<Diagnostic>::new(),
-    );
+    session.add(LintVisitor::Tokens(Box::new(Counter(count.clone()))));
 
     let source = "ScriptName Example\n";
     let tokens = papyrus_parser::tokenize(source).ok();

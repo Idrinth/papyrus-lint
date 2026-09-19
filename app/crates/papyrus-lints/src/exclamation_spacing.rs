@@ -8,9 +8,8 @@ use papyrus_parser::token::TokenKind;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "exclamation-spacing";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::tokens()
+    crate::visitor::from_tokens(lint_issues)
 }
 
 /// Checks for a `!` negation operator (never `!=`, which the lexer tokenizes
@@ -25,12 +24,23 @@ pub fn visitor() -> crate::visitor::LintVisitor {
 /// negation like `!!bReady`) is left alone too: only the last `!` in such a
 /// run needs the trailing space, since spreading the run's own `!`s apart
 /// makes the idiom harder to read, not easier.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (ast, config, external);
 

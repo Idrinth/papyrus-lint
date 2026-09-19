@@ -25,21 +25,31 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "return-types";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::ast()
+    crate::visitor::from_ast(lint_issues)
 }
 
 /// Checks `source` for `Return` values whose type doesn't match (or isn't a
 /// subtype of) the enclosing function's declared return type. Subtype
 /// relationships to scripts outside `source` are never resolved this way;
 /// see [`check_with`] for that.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)
@@ -48,7 +58,7 @@ pub fn check(
 /// Like [`check`], but resolves object-type return values through
 /// `external` so a value whose script extends (directly or transitively)
 /// the declared return type is accepted.
-pub fn check_with<E: ExternalSignatures>(
+pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -89,7 +99,7 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     )
 }
 
-fn check_body<E: ExternalSignatures>(
+fn check_body<E: ExternalSignatures + ?Sized>(
     body: &[Stmt],
     env: &TypeEnv,
     return_type: &TypeName,
@@ -139,7 +149,7 @@ fn check_body<E: ExternalSignatures>(
     }
 }
 
-fn check_return<E: ExternalSignatures>(
+fn check_return<E: ExternalSignatures + ?Sized>(
     line: usize,
     value: &Expr,
     return_type: &TypeName,

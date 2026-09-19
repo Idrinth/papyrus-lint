@@ -12,9 +12,8 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-nodiscard";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::tokens()
+    crate::visitor::from_tokens(lint_issues)
 }
 
 /// Shared lookup state for deciding whether a discarded call is `@nodiscard`.
@@ -28,12 +27,23 @@ struct NodiscardContext<'a> {
 /// Checks for calls to functions marked `; @nodiscard` whose result is
 /// discarded rather than assigned, returned, or used by another expression.
 /// Flagged as a `[warning]`.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = config;
 
@@ -63,7 +73,7 @@ pub fn check(
 fn check_statement(
     statement: &[Token],
     context: &NodiscardContext<'_>,
-    external: &mut impl ExternalSignatures,
+    external: &mut dyn ExternalSignatures,
 ) -> Option<Diagnostic> {
     if statement.iter().any(|token| {
         matches!(
@@ -88,7 +98,7 @@ fn check_statement(
 fn check_operand(
     operand: &[Token],
     context: &NodiscardContext<'_>,
-    external: &mut impl ExternalSignatures,
+    external: &mut dyn ExternalSignatures,
 ) -> Option<Diagnostic> {
     let last = operand.last()?;
     if !matches!(last.kind, TokenKind::RParen) {
@@ -136,7 +146,7 @@ fn is_nodiscard(
     qualifier: Option<&str>,
     line: usize,
     context: &NodiscardContext<'_>,
-    external: &mut impl ExternalSignatures,
+    external: &mut dyn ExternalSignatures,
 ) -> bool {
     let local_key = function_name.to_ascii_lowercase();
     let self_like = qualifier.is_none()

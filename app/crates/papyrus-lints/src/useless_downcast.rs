@@ -32,20 +32,30 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "useless-downcast";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::ast()
+    crate::visitor::from_ast(lint_issues)
 }
 
 /// Checks `source` for a redundant `as` cast, only recognizing an
 /// exact-type match (see the module docs for why a same-script check alone
 /// can't recognize an ancestor-type cast as redundant too).
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)
@@ -55,7 +65,7 @@ pub fn check(
 /// (rather than an exact match) of the value's known type through
 /// `external`, the same way [`crate::argument_types::check_with`] resolves
 /// argument subtyping.
-pub fn check_with<E: ExternalSignatures>(
+pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -86,7 +96,7 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     )
 }
 
-fn walk_stmt<E: ExternalSignatures>(
+fn walk_stmt<E: ExternalSignatures + ?Sized>(
     stmt: &Stmt,
     env: &TypeEnv,
     external: &mut E,
@@ -148,7 +158,7 @@ fn walk_stmt<E: ExternalSignatures>(
     }
 }
 
-fn walk_expr<E: ExternalSignatures>(
+fn walk_expr<E: ExternalSignatures + ?Sized>(
     expr: &Expr,
     env: &TypeEnv,
     external: &mut E,
@@ -201,7 +211,7 @@ fn walk_expr<E: ExternalSignatures>(
 /// side may be a primitive type, since Papyrus's only conversion between
 /// those (`Int` to `Float`) is a meaningful, non-identity change of
 /// representation, not a no-op.
-fn useless_reason<E: ExternalSignatures>(
+fn useless_reason<E: ExternalSignatures + ?Sized>(
     value_type_name: &str,
     target_type_name: &str,
     external: &mut E,
