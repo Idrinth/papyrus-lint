@@ -250,8 +250,14 @@ jobs:
           tool: cargo-llvm-cov
 
       - uses: Swatinem/rust-cache@v2
+        if: matrix.crate == 'src-tauri'
         with:
-          workspaces: ${{ matrix.crate }}
+          workspaces: app/${{ matrix.crate }}
+
+      - uses: Swatinem/rust-cache@v2
+        if: matrix.crate != 'src-tauri'
+        with:
+          workspaces: app/crates/${{ matrix.crate }}
 
       - name: Test with coverage
         if: matrix.crate == 'src-tauri'
