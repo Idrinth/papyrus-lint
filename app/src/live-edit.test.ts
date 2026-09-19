@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -17,21 +16,10 @@ vi.mock("@tauri-apps/api/window", () => ({
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
 import { lintPapyrusScript, listScriptMembers, type Diagnostic } from "./backend";
 import { handleDroppedPaths } from "./drop";
-import { DEFAULT_LINT_CONFIG } from "./config";
-import { openCodeViewer } from "./code-viewer";
-import {
-  applyAutocompleteSelection,
-  cancelCodeViewerEditMode,
-  enterCodeViewerEditMode,
-  handleAutocompleteKeydown,
-  handleEditorTabKeydown,
-  hideAutocomplete,
-  isCodeViewerEditDirty,
-  saveAndCompileCodeViewerEdits,
-  saveCodeViewerEdits,
-  updateAutocomplete,
-} from "./live-edit";
-
+import { DEFAULT_LINT_CONFIG } from "./config-types";
+import { openCodeViewer } from "./code-viewer-dialog";
+import { applyAutocompleteSelection, handleAutocompleteKeydown, handleEditorTabKeydown, hideAutocomplete, updateAutocomplete } from "./live-edit-autocomplete";
+import { cancelCodeViewerEditMode, enterCodeViewerEditMode, isCodeViewerEditDirty, saveAndCompileCodeViewerEdits, saveCodeViewerEdits } from "./live-edit-persist";
 describe("code viewer edit mode", () => {
   async function openWithSource(source: string, findings: Diagnostic[] = []) {
     invokeImplFor({ read_psc_file: () => source });

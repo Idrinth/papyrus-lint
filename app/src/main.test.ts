@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,22 +14,14 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
-import { DEFAULT_LINT_CONFIG } from "./config";
-import { buildPscResultItem } from "./results-list";
-import { openCodeViewer } from "./code-viewer";
+import { DEFAULT_LINT_CONFIG } from "./config-types";
+import { buildPscResultItem } from "./results-list-item";
+import { openCodeViewer } from "./code-viewer-dialog";
 import { handleDroppedPaths } from "./drop";
 import { type RuleTagsInfo, type PscParseOutcome } from "./backend";
-import {
-  applyRuleTags,
-  clearError,
-  escapeAttr,
-  levelOf,
-  severityOf,
-  showError,
-  showResult,
-  switchTab,
-} from "./main";
-
+import { applyRuleTags, clearError, showError, showResult } from "./main";
+import { escapeAttr, levelOf, severityOf } from "./main-severity";
+import { switchTab } from "./main-tabs";
 describe("severity helpers", () => {
   it("levelOf extracts a recognized bracketed prefix", () => {
     expect(levelOf("[error] boom")).toBe("error");
@@ -51,7 +42,7 @@ describe("severity helpers", () => {
 
 describe("escapeAttr", () => {
   it("escapes &, \", <, > for safe use inside an HTML attribute", () => {
-    expect(escapeAttr(`a & b " <c> `)).toBe("a &amp; b &quot; &lt;c&gt; ");
+    expect(escapeAttr(`a & b " <c> `)).toBe("a \u0026amp; b \u0026quot; \u0026lt;c\u0026gt; ");
   });
 });
 
@@ -83,7 +74,7 @@ describe("applyRuleTags", () => {
   };
 
   it("indexes tags by rule id for tagsForFinding", async () => {
-    const { tagsForFinding } = await import("./results-list");
+    const { tagsForFinding } = await import("./results-filter");
     applyRuleTags([trailingWhitespaceTags]);
 
     expect(tagsForFinding({ line: 1, column: 1, message: "x", rule: "trailing-whitespace" })).toEqual(

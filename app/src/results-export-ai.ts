@@ -1,11 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import { type PscParseOutcome, FIXABLE_RULE_IDS, hasNoAutomaticFix, previewRepairPscLine } from "./backend";
-import { type LintConfig } from "./config";
-import { currentProjectDir } from "./project";
+import { type LintConfig } from "./config-types";
+import { currentProjectDir } from "./project-state";
 import { relativePath } from "./path";
 import { type ActiveFilters, type AiSource, type FilteredIssuesFile, toIssuesFileInput } from "./results-export-types";
 import { sortedByPosition } from "./results-export-json";
-
 // The AI export's own `configuration` shape (see formatIssuesForAi below):
 // the same resolved LintConfig a lint run used, except its `rules` object
 // (58 individual enable flags, each with its own description in the

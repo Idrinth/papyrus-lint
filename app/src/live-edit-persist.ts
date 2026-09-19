@@ -1,24 +1,13 @@
 import { lintPscFile, writePscFile } from "./backend";
-import {
-  codeViewerCompileOutputEl,
-  codeViewerDiffOutputEl,
-  codeViewerEditTextareaEl,
-  codeViewerMode,
-  codeViewerSaveButtonEl,
-  codeViewerSaveCompileButtonEl,
-  codeViewerState,
-  compileAndShowOutput,
-  hideCompileOutput,
-  hideDiffOutput,
-  renderCodeViewerView,
-  setCodeViewerMode,
-  setCodeViewerState,
-} from "./code-viewer";
+import { compileAndShowOutput, hideCompileOutput } from "./code-viewer-compile";
+import { hideDiffOutput } from "./code-viewer-diff";
+import { setCodeViewerMode } from "./code-viewer-mode";
+import { codeViewerCompileOutputEl, codeViewerDiffOutputEl, codeViewerEditTextareaEl, codeViewerMode, codeViewerSaveButtonEl, codeViewerSaveCompileButtonEl, codeViewerState, setCodeViewerState } from "./code-viewer-state";
+import { renderCodeViewerView } from "./code-viewer-view";
 import { currentPscOutcomes } from "./drop";
 import { setLiveEditFindings, updateCodeViewerEditHighlight } from "./live-edit-highlight";
 import { cancelLiveEditLint } from "./live-edit-lint";
-import { renderPscResults } from "./results-list";
-
+import { renderPscResults } from "./results-list-render";
 // A textarea's `value` getter always normalizes CR/CRLF line breaks to LF
 // (per the HTML spec's "API value" transform), even though its `value`
 // setter stores whatever was assigned verbatim. A CRLF-saved .psc file's

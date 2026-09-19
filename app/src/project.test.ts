@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,36 +14,10 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { invokeImplFor, loadProjectConfigConfirmed } from "./test/harness";
-import { DEFAULT_LINT_CONFIG, type LintConfig } from "./config";
-import {
-  applyLookupScriptRootsToUI,
-  applyProjectInfoToUI,
-  applyScriptRootsToUI,
-  configPathOverride,
-  handleCompileCheckChanged,
-  handleCompilerPathChanged,
-  handleConfigPathOverrideChanged,
-  handleLookupScriptRootsChanged,
-  handleScriptRootsChanged,
-  loadCompileCheck,
-  loadCompilerPath,
-  loadLookupScriptRoots,
-  loadProjectConfig,
-  loadProjectInfo,
-  loadScriptRoots,
-  lookupScriptRootsFromUI,
-  projectDirForAchlist,
-  projectDirForDirectory,
-  projectDirForPscPath,
-  saveCompileCheck,
-  saveCompilerPath,
-  saveLookupScriptRoots,
-  saveScriptRoots,
-  scriptRootsFromUI,
-  setSettingsLocked,
-  useProjectDir,
-} from "./project";
-
+import { DEFAULT_LINT_CONFIG, type LintConfig } from "./config-types";
+import { applyLookupScriptRootsToUI, applyProjectInfoToUI, applyScriptRootsToUI, handleCompileCheckChanged, handleCompilerPathChanged, handleConfigPathOverrideChanged, handleLookupScriptRootsChanged, handleScriptRootsChanged, loadProjectConfig, lookupScriptRootsFromUI, scriptRootsFromUI, setSettingsLocked, useProjectDir } from "./project-settings";
+import { configPathOverride } from "./project-state";
+import { loadCompileCheck, loadCompilerPath, loadLookupScriptRoots, loadProjectInfo, loadScriptRoots, projectDirForAchlist, projectDirForDirectory, projectDirForPscPath, saveCompileCheck, saveCompilerPath, saveLookupScriptRoots, saveScriptRoots } from "./project-io";
 describe("projectDirForAchlist / projectDirForDirectory / projectDirForPscPath", () => {
   it("projectDirForAchlist asks the backend with only the .psc entries and the achlist's own directory as fallback", async () => {
     invokeImplFor({ find_project_root: () => "/proj/somefolder/otherfolder" });

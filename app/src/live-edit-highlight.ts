@@ -1,13 +1,7 @@
 import type { Diagnostic } from "./backend";
-import {
-  codeViewerEditGutterEl,
-  codeViewerEditHighlightEl,
-  codeViewerEditTextareaEl,
-  findingsGroupedByLine,
-  lineSeverityOf,
-} from "./code-viewer";
+import { findingsGroupedByLine, lineSeverityOf } from "./code-viewer-view";
+import { codeViewerEditGutterEl, codeViewerEditHighlightEl, codeViewerEditTextareaEl } from "./code-viewer-state";
 import { highlightPapyrusLines } from "./highlight";
-
 let codeViewerEditFindingsByLine: Map<number, Diagnostic[]> = new Map();
 let codeViewerEditLiveFindings: Diagnostic[] = [];
 

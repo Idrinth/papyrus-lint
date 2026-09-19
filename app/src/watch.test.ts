@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -16,9 +15,8 @@ vi.mock("@tauri-apps/api/window", () => ({
 
 import { invokeImplFor } from "./test/harness";
 import { handleDroppedPaths } from "./drop";
-import { DEFAULT_LINT_CONFIG } from "./config";
+import { DEFAULT_LINT_CONFIG } from "./config-types";
 import { isWatchModeEnabled, startWatchMode, stopWatchMode } from "./watch";
-
 // Drops a single .psc file, confirming the "select this project's
 // configuration" dialog if one comes up — it won't for a project directory
 // already confirmed earlier in the same test (see loadProjectConfig in

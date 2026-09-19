@@ -1,16 +1,9 @@
-import {
-  type Diagnostic,
-  type PscParseOutcome,
-  type RuleTagsInfo,
-  type TagImportance,
-  type TagKind,
-  TAG_IMPORTANCES,
-  TAG_KINDS,
-} from "./backend";
-import { type Severity, SEVERITIES, ruleTagsByRule, severityOf } from "./main";
-import { currentProjectDir } from "./project";
+import { type Diagnostic, type PscParseOutcome, type RuleTagsInfo, type TagImportance, type TagKind, TAG_IMPORTANCES, TAG_KINDS } from "./backend";
+import { type Severity, SEVERITIES, severityOf } from "./main-severity";
+import { currentProjectDir } from "./project-state";
 import { relativePath } from "./path";
 import { type ActiveFilters, type FilteredIssuesFile } from "./results-export-types";
+export const ruleTagsByRule: Map<string, RuleTagsInfo> = new Map();
 
 export let filenameFilterEl: HTMLInputElement | null;
 export let autoFixableFilterEl: HTMLInputElement | null;

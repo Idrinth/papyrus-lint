@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,8 +14,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
-import { openCodeViewer } from "./code-viewer";
-
+import { openCodeViewer } from "./code-viewer-dialog";
 describe("openCodeViewer fresh lint", () => {
   it("re-lints the file on open so Ignore/Fix use current line numbers", async () => {
     invokeImplFor({

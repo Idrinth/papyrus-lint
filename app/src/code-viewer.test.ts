@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,17 +14,10 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
-import { enterCodeViewerEditMode } from "./live-edit";
-import {
-  handleCodeViewerFixClick,
-  handleCodeViewerFixLineClick,
-  handleCodeViewerIgnoreLineClick,
-  handleCodeViewerPreviewFixClick,
-  openCodeViewer,
-  requestCloseCodeViewer,
-  toggleCodeViewerFullscreen,
-} from "./code-viewer";
-
+import { enterCodeViewerEditMode } from "./live-edit-persist";
+import { handleCodeViewerFixClick, handleCodeViewerFixLineClick, handleCodeViewerIgnoreLineClick } from "./code-viewer-actions";
+import { handleCodeViewerPreviewFixClick } from "./code-viewer-diff";
+import { openCodeViewer, requestCloseCodeViewer, toggleCodeViewerFullscreen } from "./code-viewer-dialog";
 describe("openCodeViewer", () => {
   it("loads and highlights the source, opening the dialog", async () => {
     invokeImplFor({ read_psc_file: () => 'Debug.Trace("hi")' });

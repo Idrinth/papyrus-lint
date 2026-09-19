@@ -10,8 +10,7 @@
 // which a naive filesystem-event watcher can miss or double-report.
 import { getPscFileMtimes } from "./backend";
 import { currentPscOutcomes, parsePscFiles } from "./drop";
-import { renderPscResults } from "./results-list";
-
+import { renderPscResults } from "./results-list-render";
 // How often watch mode polls the backend for the watched files' mtimes.
 const WATCH_POLL_INTERVAL_MS = 1500;
 

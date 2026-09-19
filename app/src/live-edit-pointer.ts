@@ -1,14 +1,7 @@
-import {
-  declarationDocumentationOnLine,
-  declaredTypes,
-  documentationForIdentifier,
-  identifierAt,
-  type IdentifierAt,
-} from "./autocomplete";
-import { codeViewerAutocompleteEl, codeViewerEditTextareaEl } from "./code-viewer";
+import { declarationDocumentationOnLine, declaredTypes, documentationForIdentifier, identifierAt, type IdentifierAt } from "./autocomplete";
+import { codeViewerAutocompleteEl, codeViewerEditTextareaEl } from "./code-viewer-state";
 import { findingsForEditorLine } from "./live-edit-highlight";
 import { cachedMembersForType, getCachedMembers } from "./live-edit-members";
-
 let hoverRequestId = 0;
 let codeViewerEditLastMouseY: number | null = null;
 let codeViewerEditLastMouseX: number | null = null;

@@ -1,9 +1,8 @@
 import { lintPapyrusScript } from "./backend";
-import { codeViewerEditTextareaEl, codeViewerMode } from "./code-viewer";
+import { codeViewerEditTextareaEl, codeViewerMode } from "./code-viewer-state";
 import { setLiveEditFindings, updateCodeViewerEditHighlight } from "./live-edit-highlight";
 import { resetMemberCache } from "./live-edit-members";
 import { invalidateHover } from "./live-edit-pointer";
-
 let codeViewerLiveLintTimer: ReturnType<typeof window.setTimeout> | null = null;
 let codeViewerLiveLintRequestId = 0;
 const LIVE_EDIT_LINT_DEBOUNCE_MS = 400;
