@@ -5,7 +5,7 @@ fn check_too_many_states(source: &str) -> Vec<Diagnostic> {
     super::check_too_many_states(ast.as_ref())
 }
 
-fn check_too_many_states_with<E: ExternalSignatures>(
+fn check_too_many_states_with<E: ExternalSignatures + ?Sized>(
     source: &str,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -18,7 +18,7 @@ fn check_multiple_auto_states(source: &str) -> Vec<Diagnostic> {
     super::check_multiple_auto_states(ast.as_ref())
 }
 
-fn check_multiple_auto_states_with<E: ExternalSignatures>(
+fn check_multiple_auto_states_with<E: ExternalSignatures + ?Sized>(
     source: &str,
     external: &mut E,
 ) -> Vec<Diagnostic> {

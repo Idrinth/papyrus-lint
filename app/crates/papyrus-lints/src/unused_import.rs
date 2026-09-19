@@ -31,21 +31,31 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-import";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::ast()
+    crate::visitor::from_ast(lint_issues)
 }
 
 /// Checks `source` for `Import` statements whose script goes unused. Since
 /// this crate has no filesystem access on its own, no import can ever be
 /// resolved this way, so nothing is ever flagged; see [`check_with`] to
 /// actually resolve the imported scripts' `Global` functions.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, config);
     check_with(ast, external)
@@ -54,7 +64,7 @@ pub fn check(
 /// Like [`check`], but resolves each unqualified call in `source` through
 /// `external`, flagging an `Import` whose script never has one of its
 /// `Global` functions called unqualified anywhere in `source`.
-pub fn check_with<E: ExternalSignatures>(
+pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -117,7 +127,7 @@ pub fn repair(
 /// line ending) rather than leaving a blank line in its place. A script
 /// that doesn't parse cleanly, or that [`check_with`] finds nothing to
 /// flag in, is returned unchanged.
-pub fn repair_with<E: ExternalSignatures>(source: &str, external: &mut E) -> String {
+pub fn repair_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) -> String {
     let ast = papyrus_parser::parse(source).ok();
     let lines_to_remove: std::collections::HashSet<usize> = check_with(ast.as_ref(), external)
         .into_iter()

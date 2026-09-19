@@ -67,7 +67,7 @@ pub fn check_too_many_states(ast: Option<&Script>) -> Vec<Diagnostic> {
 /// Like [`check_too_many_states`], but also resolves every `State`
 /// declared anywhere in `source`'s `Extends` ancestry through `external`
 /// (see the module docs) before comparing against [`MAX_NAMED_STATES`].
-pub fn check_too_many_states_with<E: ExternalSignatures>(
+pub fn check_too_many_states_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -94,7 +94,7 @@ pub fn check_multiple_auto_states(ast: Option<&Script>) -> Vec<Diagnostic> {
 /// Like [`check_multiple_auto_states`], but also resolves every `State`
 /// declared anywhere in `source`'s `Extends` ancestry through `external`
 /// (see the module docs) before counting how many are marked `Auto`.
-pub fn check_multiple_auto_states_with<E: ExternalSignatures>(
+pub fn check_multiple_auto_states_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -117,7 +117,7 @@ pub fn check_multiple_auto_states_with<E: ExternalSignatures>(
 /// states (lowercased name -> whether any declaration of it is `Auto`)
 /// drawn from the script's own `State`s and, when it `Extends` another
 /// script, everything `external` resolves in that ancestry.
-fn combined_states<'a, E: ExternalSignatures>(
+fn combined_states<'a, E: ExternalSignatures + ?Sized>(
     ast: Option<&'a Script>,
     external: &mut E,
 ) -> Option<(&'a Script, HashMap<String, bool>)> {

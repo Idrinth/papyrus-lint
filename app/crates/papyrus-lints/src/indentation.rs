@@ -8,9 +8,8 @@ use crate::{fragment_code, Diagnostic};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "indentation";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::tokens()
+    crate::visitor::from_tokens(lint_issues)
 }
 
 /// The indentation unit to use for each level of nesting.
@@ -90,12 +89,23 @@ fn line_depths_from_tokens(source: &str, tokens: &[Token]) -> Vec<usize> {
 /// those markers are expected relative to the marker's own depth (see
 /// [`fragment_code::code_section_starts`]), not the file-wide depth of the
 /// (never-reindented) wrapper function around them.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (ast, external);
     let indentation = config.indentation_unit();

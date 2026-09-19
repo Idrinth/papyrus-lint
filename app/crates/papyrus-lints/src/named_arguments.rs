@@ -21,9 +21,8 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "named-arguments";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::ast()
+    crate::visitor::from_ast(lint_issues)
 }
 
 /// How strongly this lint prefers named arguments over positional ones.
@@ -119,12 +118,23 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 
 /// Checks `source` for positional call arguments that `setting` prefers to
 /// see passed by name instead.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (source, tokens, external);
     let setting = config.named_arguments;

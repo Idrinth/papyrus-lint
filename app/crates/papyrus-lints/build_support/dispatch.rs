@@ -142,14 +142,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
                 out.line("        });");
             }
             "ast" | "tokens" => {
-                out.line("        session.add(");
-                out.line(format_args!("            {module}::visitor(),"));
-                out.line("            |source, ast, tokens, config, external| {");
-                out.line(format_args!(
-                    "                {module}::check(source, ast, tokens, config, external)"
-                ));
-                out.line("            },");
-                out.line("        );");
+                out.line(format_args!("        session.add({module}::visitor());"));
             }
             other => panic!(
                 "shared/rules.json: unknown visitor `{other}` for {}",

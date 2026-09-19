@@ -22,9 +22,8 @@ use crate::{fragment_code, Diagnostic};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "local-variable-shadowing";
 
-#[allow(dead_code)] // not dispatched from collect_diagnostics yet
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::ast()
+    crate::visitor::from_ast(lint_issues)
 }
 
 /// Checks `source` for local variables that shadow a property or field
@@ -36,12 +35,23 @@ pub fn visitor() -> crate::visitor::LintVisitor {
 /// A declaration inside a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers, is
 /// never flagged, since it's generated boilerplate the user can't edit.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
     external: &mut impl crate::external_signatures::ExternalSignatures,
+) -> Vec<Diagnostic> {
+    crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn lint_issues(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+    external: &mut dyn crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     let _ = (tokens, config);
     check_with(source, ast, external)
@@ -50,7 +60,7 @@ pub fn check(
 /// Like [`check`], but also flags a local variable that shadows a property
 /// or field declared on a parent script, resolved (including through
 /// `Extends`) through `external`.
-pub fn check_with<E: ExternalSignatures>(
+pub fn check_with<E: ExternalSignatures + ?Sized>(
     source: &str,
     ast: Option<&Script>,
     external: &mut E,
@@ -89,7 +99,7 @@ pub fn check_with<E: ExternalSignatures>(
     diagnostics
 }
 
-fn check_decl<E: ExternalSignatures>(
+fn check_decl<E: ExternalSignatures + ?Sized>(
     decl: &VariableDecl,
     script: &Script,
     own_properties: &HashSet<String>,
