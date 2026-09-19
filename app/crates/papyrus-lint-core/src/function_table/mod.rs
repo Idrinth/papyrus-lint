@@ -67,7 +67,7 @@ pub struct FunctionTable {
     /// registered here by name (lowercased file stem -> path), plus native
     /// singleton globals (see [`Self::script_exists`]/[`Self::ensure_loaded`])
     /// — `root`/`additional_roots` are never scanned at all, so nothing
-    /// outside this map (or the native fallback) can resolve, not even a
+    /// outside this map can resolve, not even a
     /// same-named file sitting right next to one of these paths, or one
     /// under the conventional `scripts/source`/`source/scripts` layout.
     /// Populated wholesale by [`Self::with_known_scripts`] from an explicit

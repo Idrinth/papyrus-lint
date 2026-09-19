@@ -11,9 +11,9 @@
 //! that doesn't exist.
 //!
 //! The `NATIVE_GLOBALS` table below is compiled from
-//! `shared/rules/data/native-globals.yaml` by `build.rs` at build time (like
-//! [`crate::native_types`]), so extending the list doesn't need a code
-//! change. It is deliberately not exhaustive: a script this table doesn't
+//! `shared/rules/data/native-globals.yaml` by `build.rs` at build time, so
+//! extending the list doesn't need a code change. It is deliberately not
+//! exhaustive: a script this table doesn't
 //! know about (including one the linter simply has no data for, e.g. a
 //! SKSE/F4SE plugin or community function library) is resolved by looking
 //! it up under the project instead, same as any other script name.
@@ -40,8 +40,8 @@ mod tests {
 
     #[test]
     fn is_case_sensitive_to_its_already_lowercased_input() {
-        // Callers are expected to lowercase before calling, same as
-        // `native_types::parent_of`; this only documents that expectation.
+        // Callers are expected to lowercase before calling; this only
+        // documents that expectation.
         assert!(!is_known("Game"));
     }
 

@@ -41,69 +41,6 @@ fn flags_a_local_variable_shadowing_a_parent_property_through_the_shadowing_lint
 }
 
 #[test]
-fn accepts_an_actor_argument_for_an_object_reference_parameter_with_no_native_scripts_in_project() {
-    // Regression test: `Actor`/`ObjectReference`/`Form`/`Spell` are
-    // native engine types with no `.psc` under `root` (the project
-    // ships none of the game's own scripts), so this can only pass via
-    // `FunctionTable::is_subtype`'s native type fallback.
-    let root = tempfile::tempdir().expect("failed to create temp dir");
-    write_script(
-        root.path(),
-        "UpcastProbe",
-        "ScriptName UpcastProbe extends Quest\n",
-    );
-
-    let mut table = FunctionTable::new(root.path().to_path_buf());
-    let diagnostics = papyrus_lints::check_argument_types(
-        r#"
-ScriptName UpcastProbe extends Quest
-
-ObjectReference Property AnObjRef Auto
-Actor           Property AnActor  Auto
-Form            Property AForm    Auto
-Spell           Property ASpell   Auto
-
-Function Takes(ObjectReference akRef)
-EndFunction
-
-Function Probe()
-Takes(AnObjRef)
-Takes(AnActor)
-Takes(AForm)
-Takes(ASpell)
-EndFunction
-"#,
-        &mut table,
-    );
-
-    assert_eq!(diagnostics.len(), 2);
-    assert!(diagnostics[0].message.contains("Takes"));
-    assert!(diagnostics[0].message.contains("got Form"));
-    assert!(diagnostics[1].message.contains("Takes"));
-    assert!(diagnostics[1].message.contains("got Spell"));
-}
-
-#[test]
-fn flags_a_cast_to_a_native_ancestor_type_through_the_useless_downcast_lint() {
-    // Regression test: `Actor`/`ObjectReference` are native engine types
-    // with no `.psc` under `root`, so this can only pass via
-    // `FunctionTable::is_subtype`'s native type fallback.
-    let root = tempfile::tempdir().expect("failed to create temp dir");
-
-    let mut table = FunctionTable::new(root.path().to_path_buf());
-    let diagnostics = diagnostics_for(
-        "useless-downcast",
-        "ScriptName Example\n\nFunction Test(Actor dude)\n    Foo(dude as ObjectReference)\nEndFunction\n",
-        &mut table,
-    );
-
-    assert_eq!(diagnostics.len(), 1);
-    assert!(diagnostics[0]
-        .message
-        .contains("'Actor' already extends 'ObjectReference'"));
-}
-
-#[test]
 fn resolves_an_armor_argument_for_a_form_parameter_through_the_argument_type_check_lint() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(root.path(), "Form", "ScriptName Form\n");
@@ -250,7 +187,7 @@ fn drives_the_argument_type_check_lint_across_scripts() {
 }
 
 #[test]
-fn external_signature_trait_reports_builtin_native_and_project_types() {
+fn external_signature_trait_reports_builtin_and_resolvable_project_types() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(
         root.path(),
@@ -263,7 +200,7 @@ fn external_signature_trait_reports_builtin_native_and_project_types() {
     assert!(papyrus_lints::ExternalSignatures::type_exists(
         &mut table, "FLOAT"
     ));
-    assert!(papyrus_lints::ExternalSignatures::type_exists(
+    assert!(!papyrus_lints::ExternalSignatures::type_exists(
         &mut table, "Actor"
     ));
     assert!(papyrus_lints::ExternalSignatures::type_exists(

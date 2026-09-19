@@ -123,8 +123,7 @@ pub const TOOL_NAME: &str = "Papyrus Lint";
 /// for, so an AI reading it doesn't have to guess whether a suggestion
 /// (e.g. referencing a native type only added in a later game/edition)
 /// actually applies. Neither the CLI nor the desktop app has a per-project
-/// game/edition setting of its own (see `shared/rules/data/native-types.yaml`'s shared
-/// Skyrim/Fallout 4 fallback), so this is the fixed target their native
+/// game/edition setting of its own, so this is the fixed target its native
 /// rule data is written against.
 pub const TARGET_GAME: &str = "Skyrim SE/AE";
 

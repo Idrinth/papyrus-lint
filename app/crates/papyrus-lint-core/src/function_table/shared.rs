@@ -19,8 +19,8 @@ use super::{CacheProbe, FunctionTable, Member};
 ///
 /// Load misses still forward through the [`ExternalSignatures`] trait on
 /// [`FunctionTable`] (via fully qualified syntax) so this adapter cannot
-/// drift from that impl's policy (e.g. `type_exists`'s primitive-type /
-/// native-type fallback).
+/// drift from that impl's policy (e.g. `type_exists`'s primitive-type
+/// handling).
 pub struct SharedFunctionTable<'a>(pub &'a RwLock<FunctionTable>);
 
 impl SharedFunctionTable<'_> {

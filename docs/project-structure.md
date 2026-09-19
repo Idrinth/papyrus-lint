@@ -239,11 +239,6 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       │                       # FunctionSignature/PropertySignature/Member
 │       │       │                       # types function_table looks up and
 │       │       │                       # caches (and re-exports from there)
-│       │       ├── native_types.rs     # Fallback Extends hierarchy for native
-│       │       │                       # engine types (Actor, ObjectReference,
-│       │       │                       # Form, ...) with no .psc in the project;
-│       │       │                       # reads shared/rules/data/native-types.yaml via a
-│       │       │                       # build-time-generated array (build.rs)
 │       │       ├── native_globals.rs   # Known native singleton scripts (Game,
 │       │       │                       # Utility, Debug, ...) always called by
 │       │       │                       # literal name, with no .psc in the
@@ -352,7 +347,6 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │   │       ├── native-methods.yaml      # Base-game native functions
 │   │       ├── update-event-handlers.yaml # RegisterFor*/Event pairs
 │   │       ├── known-events.yaml        # Curated native Event signatures
-│   │       ├── native-types.yaml        # Native engine class hierarchy
 │   │       ├── native-globals.yaml      # Native singleton scripts
 │   │       └── actor-values.yaml        # Skyrim's built-in Actor Values
 │   └── theme.css             # Palette, canvas, and primitives shared by

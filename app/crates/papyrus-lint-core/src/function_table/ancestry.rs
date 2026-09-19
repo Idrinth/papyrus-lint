@@ -65,12 +65,8 @@ impl FunctionTable {
     /// Whether `sub_type`'s script is, or extends (directly or
     /// transitively), `super_type`. Both names are matched
     /// case-insensitively. When a type along the way isn't a script in the
-    /// project (e.g. a native engine type like `Actor` or `ObjectReference`,
-    /// whose own `Extends` chain isn't declared anywhere in the project),
-    /// falls back to [`crate::native_types::parent_of`] for it rather than
-    /// giving up; returns `false` only once neither the project nor that
-    /// fallback can say what a type in the chain extends before reaching
-    /// `super_type`.
+    /// configured script roots. Returns `false` once a script in the chain
+    /// cannot be resolved before reaching `super_type`.
     pub fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
         let super_lower = super_type.to_ascii_lowercase();
         let mut visited = Vec::new();
@@ -85,10 +81,11 @@ impl FunctionTable {
             }
             self.ensure_loaded(&name);
 
-            current = match self.scripts.get(&name).and_then(Option::as_ref) {
-                Some(script) => parent_cache_key(script),
-                None => crate::native_types::parent_of(&name).map(str::to_string),
-            };
+            current = self
+                .scripts
+                .get(&name)
+                .and_then(Option::as_ref)
+                .and_then(parent_cache_key);
             visited.push(name);
         }
 
@@ -97,17 +94,14 @@ impl FunctionTable {
 
     /// Whether `type_name`'s full `Extends` ancestry resolves all the way to
     /// a definite root: a script found (and parsed) with no `Extends` line
-    /// at all, or — once project resolution runs out — a native engine type
-    /// from [`crate::native_types`] with no further parent. Matched
-    /// case-insensitively, mirroring [`Self::is_subtype`]'s own walk (and
-    /// falling back to [`crate::native_types::parent_of`] the same way past
-    /// the point where project resolution runs out), but tracking whether
+    /// at all. Matched case-insensitively, mirroring
+    /// [`Self::is_subtype`]'s own walk, but tracking whether
     /// the walk actually reached a confirmed root rather than just whether
     /// it reached a particular type. A circular `Extends` chain, or a type
     /// along the way this table has no data for at all (not a project
-    /// script, not in the native fallback), means the ancestry is *not*
-    /// fully known. Used by the "Impossible cast" lint
-    /// (`papyrus_lints::impossible_cast`) to tell a value/target pair
+    /// script) means the ancestry is *not* fully known. Used by the
+    /// "Impossible cast" lint (`papyrus_lints::impossible_cast`) to tell a
+    /// value/target pair
     /// *proven* unrelated (both sides fully resolved, per
     /// [`papyrus_lints::ExternalSignatures::ancestry_fully_known`])
     /// apart from one this table simply doesn't have enough information
@@ -127,12 +121,7 @@ impl FunctionTable {
                     Some(parent) => Some(parent),
                     None => return true, // an explicit script with no Extends is a definite root
                 },
-                None => match crate::native_types::parent_of(&name) {
-                    Some(parent) => Some(parent.to_string()),
-                    // No further parent: only a genuine root if the native
-                    // table actually knows this type at all.
-                    None => return crate::native_types::is_known(&name),
-                },
+                None => return false,
             };
             visited.push(name);
         }
@@ -382,7 +371,7 @@ impl FunctionTable {
                     .extends
                     .as_ref()
                     .map(|parent| parent.to_ascii_lowercase()),
-                CacheProbe::Hit(None) => crate::native_types::parent_of(&name).map(str::to_string),
+                CacheProbe::Hit(None) => None,
             };
             visited.push(name);
         }
@@ -404,10 +393,7 @@ impl FunctionTable {
                     Some(parent) => Some(parent.to_ascii_lowercase()),
                     None => return CacheProbe::Hit(true),
                 },
-                CacheProbe::Hit(None) => match crate::native_types::parent_of(&name) {
-                    Some(parent) => Some(parent.to_string()),
-                    None => return CacheProbe::Hit(crate::native_types::is_known(&name)),
-                },
+                CacheProbe::Hit(None) => return CacheProbe::Hit(false),
             };
             visited.push(name);
         }
