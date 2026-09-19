@@ -129,8 +129,8 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       │                   # point the same way papyrus-lint-cli's
 │       │       │                   # run_tests/ is split for run().
 │       │       ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
-│       │       ├── lib_tests/                 # lib.rs's unit tests, split by the
-│       │       │   ├── mod.rs                   # public entry points they cover
+│       │       ├── lib_tests/                 # lib.rs's unit tests, split by the public entry points they cover
+│       │       │   ├── mod.rs                   # test module declarations
 │       │       │   ├── diagnostic.rs            # Diagnostic::level
 │       │       │   ├── lint.rs                  # lint() / extra_diagnostics / @disable
 │       │       │   ├── repair.rs                # repair() / repair_filtered / by-tag
