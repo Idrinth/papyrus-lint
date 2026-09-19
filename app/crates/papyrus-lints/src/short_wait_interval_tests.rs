@@ -230,8 +230,3 @@ fn walks_array_index_cast_and_new_array_expressions_without_crashing() {
 
     assert!(diagnostics.is_empty());
 }
-
-#[test]
-fn as_number_rejects_a_non_numeric_literal() {
-    assert_eq!(as_number(&Literal::Bool(true)), None);
-}

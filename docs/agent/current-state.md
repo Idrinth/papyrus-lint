@@ -73,6 +73,13 @@ Each such rule's `check` runs that same single-visitor walk and
 returns the store's issues. `none` rules still run through `check`
 directly.
 
+Numeric AST lints that fold a compile-time-constant `Int`/`Float`
+(`division-by-zero`, `invalid-random-range`, `short-wait-interval`) share
+`const_eval::eval_const`; array-index/size lints share
+`const_eval::eval_const_int`. `static-condition` keeps its own broader
+folder (booleans, comparisons, `/`/`%`). Do not copy either helper into a
+new rule.
+
 Cross-script lint rules share the project-semantic resolver contract in
 `app/crates/papyrus-lints/src/external_signatures.rs`. That neutral module owns
 `ExternalSignatures`, `NoExternalSignatures`, and `ParamInfo`; the

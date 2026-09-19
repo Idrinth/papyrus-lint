@@ -11,6 +11,7 @@
 
 use papyrus_parser::ast::{BinaryOp, Expr, IfBranch, Literal, Stmt, UnaryOp};
 
+use crate::const_eval::as_number;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
@@ -120,17 +121,6 @@ fn eval_unary(op: UnaryOp, value: &Literal) -> Option<Literal> {
             Literal::Float(f) => Some(Literal::Float(-f)),
             _ => None,
         },
-    }
-}
-
-/// A numeric literal's value, promoted to `f64` so `Int`/`Float` operands
-/// can be combined uniformly; remembers whether either side was a `Float`
-/// so arithmetic results can be folded back to the right literal kind.
-fn as_number(value: &Literal) -> Option<(f64, bool)> {
-    match value {
-        Literal::Int { value, .. } => Some((*value as f64, false)),
-        Literal::Float(f) => Some((*f, true)),
-        _ => None,
     }
 }
 

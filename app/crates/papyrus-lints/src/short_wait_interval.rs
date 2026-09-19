@@ -13,8 +13,9 @@
 //! unflagged rather than guessed at. Always reported as a `[warning]`,
 //! regardless of how far below the minimum the value is.
 
-use papyrus_parser::ast::{BinaryOp, Expr, Literal, UnaryOp};
+use papyrus_parser::ast::Expr;
 
+use crate::const_eval::{as_number, eval_const};
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
@@ -148,54 +149,6 @@ pub(crate) fn matching_function(callee: &Expr) -> Option<&'static WaitFunction> 
             }
             Some(function)
         }
-        _ => None,
-    }
-}
-
-/// Attempts to fold `expr` down to a single constant numeric [`Literal`],
-/// the same way [`crate::division_by_zero`] does: returning `None` as soon
-/// as any part of it depends on something that can't be known without
-/// running the script.
-fn eval_const(expr: &Expr) -> Option<Literal> {
-    match expr {
-        Expr::Literal(literal @ (Literal::Int { .. } | Literal::Float(_))) => Some(literal.clone()),
-        Expr::Unary {
-            op: UnaryOp::Neg,
-            operand,
-        } => match eval_const(operand)? {
-            Literal::Int { value, .. } => Some(Literal::int(-value)),
-            Literal::Float(f) => Some(Literal::Float(-f)),
-            _ => None,
-        },
-        Expr::Binary {
-            left,
-            op: op @ (BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul),
-            right,
-        } => {
-            let (a, a_float) = as_number(&eval_const(left)?)?;
-            let (b, b_float) = as_number(&eval_const(right)?)?;
-            let result = match op {
-                BinaryOp::Add => a + b,
-                BinaryOp::Sub => a - b,
-                BinaryOp::Mul => a * b,
-                _ => unreachable!(),
-            };
-            Some(if a_float || b_float {
-                Literal::Float(result)
-            } else {
-                Literal::int(result as i64)
-            })
-        }
-        _ => None,
-    }
-}
-
-/// Returns a folded literal's numeric value, alongside whether it was a
-/// `Float` (as opposed to an `Int`) literal.
-fn as_number(value: &Literal) -> Option<(f64, bool)> {
-    match value {
-        Literal::Int { value, .. } => Some((*value as f64, false)),
-        Literal::Float(f) => Some((*f, true)),
         _ => None,
     }
 }
