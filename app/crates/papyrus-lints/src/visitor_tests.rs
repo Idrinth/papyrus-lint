@@ -1,4 +1,9 @@
-use super::LintVisitor;
+use super::{AstLint, LintVisitor, Session, TokenLint};
+use crate::{comma_spacing, trailing_whitespace, Config, Diagnostic, NoExternalSignatures};
+use papyrus_parser::ast::Expr;
+use papyrus_parser::token::Token;
+use std::cell::Cell;
+use std::rc::Rc;
 
 fn assert_ast(visitor: LintVisitor) {
     assert!(matches!(visitor, LintVisitor::Ast(_)));
@@ -92,4 +97,108 @@ fn token_rules_return_a_token_visitor() {
     assert_tokens(crate::unused_getter::visitor());
     assert_tokens(crate::unused_nodiscard::visitor());
     assert_tokens(crate::unused_property::visitor());
+}
+
+#[test]
+fn session_emits_check_diagnostics_in_registration_order() {
+    let mut session = Session::new();
+    session.add(
+        comma_spacing::visitor(),
+        |source, ast, tokens, config, external| {
+            comma_spacing::check(source, ast, tokens, config, external)
+        },
+    );
+    session.add_direct(|source, ast, tokens, config, external| {
+        trailing_whitespace::check(source, ast, tokens, config, external)
+    });
+
+    let source = "Function Run(Int a,Int b) \nEndFunction\n";
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let ast = papyrus_parser::parse(source).ok();
+    let config = Config::default();
+    let mut external = NoExternalSignatures;
+    let diagnostics = session.collect(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut external,
+    );
+    let rules: Vec<_> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.rule)
+        .collect();
+    let comma = rules
+        .iter()
+        .position(|rule| *rule == "comma-spacing")
+        .expect("comma-spacing");
+    let trailing = rules
+        .iter()
+        .position(|rule| *rule == "trailing-whitespace")
+        .expect("trailing-whitespace");
+    assert!(comma < trailing);
+}
+
+#[test]
+fn ast_walker_notifies_every_registered_lint_once_per_node() {
+    let count = Rc::new(Cell::new(0));
+    struct Counter(Rc<Cell<usize>>);
+    impl AstLint for Counter {
+        fn visit_expr(&mut self, _: &Expr) {
+            self.0.set(self.0.get() + 1);
+        }
+    }
+
+    let mut session = Session::new();
+    session.add(
+        LintVisitor::Ast(Box::new(Counter(count.clone()))),
+        |_, _, _, _, _| Vec::<Diagnostic>::new(),
+    );
+
+    let source = "ScriptName Example\nFunction Add(Int a = 1)\n    Return a + 2\nEndFunction\n";
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let ast = papyrus_parser::parse(source).ok();
+    let config = Config::default();
+    let mut external = NoExternalSignatures;
+    let _ = session.collect(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut external,
+    );
+    assert_eq!(count.get(), 4);
+}
+
+#[test]
+fn token_walker_notifies_every_registered_lint_once_per_token() {
+    let count = Rc::new(Cell::new(0));
+    struct Counter(Rc<Cell<usize>>);
+    impl TokenLint for Counter {
+        fn visit_token(&mut self, _: &Token, _: usize, tokens: &[Token]) {
+            let _ = tokens;
+            self.0.set(self.0.get() + 1);
+        }
+    }
+
+    let mut session = Session::new();
+    session.add(
+        LintVisitor::Tokens(Box::new(Counter(count.clone()))),
+        |_, _, _, _, _| Vec::<Diagnostic>::new(),
+    );
+
+    let source = "ScriptName Example\n";
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let ast = papyrus_parser::parse(source).ok();
+    let token_len = tokens.as_ref().map(Vec::len).unwrap_or(0);
+    let config = Config::default();
+    let mut external = NoExternalSignatures;
+    let _ = session.collect(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut external,
+    );
+    assert_eq!(count.get(), token_len);
 }
