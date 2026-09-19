@@ -60,7 +60,7 @@ jobs:
           SHA=$(gh api "repos/${{ github.repository }}/commits/${{ steps.version.outputs.version }}" --jq .sha 2>/dev/null || echo "")
           RUN_ID=""
           if [ -n "$SHA" ]; then
-            RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$SHA&status=completed" \
+            RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.tests.yml/runs?head_sha=$SHA&status=completed" \
               --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
           fi
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"

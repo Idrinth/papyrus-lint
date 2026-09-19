@@ -53,7 +53,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?branch=the-one&event=push&status=completed" \
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.tests.yml/runs?branch=the-one&event=push&status=completed" \
             --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
