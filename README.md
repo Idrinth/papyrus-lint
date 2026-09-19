@@ -84,7 +84,20 @@ to silence it across the whole file) when you've decided it doesn't apply.
 
 ![Papyrus Lint Results](shared/images/papyrus-lint-results.png)
 
+## Why should I trust this?
+
+Papyrus Lint is automatically tested with
+[public coverage reports](https://papyrus-lint.idrinth.de/coverage.html)
+against a combination of real life examples and synthetic tests.
+
+Additionally it is regularly run against the Skyrim base game scripts and
+different mods whose authors permitted the usage explicitly.
+
 ## Implemented Lints
+
+Lints are created when bugs and inconsistencies are found in real life code.
+In general all rules are conservative and rather not flag something than
+falsely flag it. This helps keep the noise down and your development speed unburdened.
 
 ![Papyrus Lint Viewer](shared/images/papyrus-lint-viewer.png)
 
