@@ -42,7 +42,7 @@ describe("severity helpers", () => {
 
 describe("escapeAttr", () => {
   it("escapes &, \", <, > for safe use inside an HTML attribute", () => {
-    expect(escapeAttr(`a & b " <c> `)).toBe("a & b " <c> ");
+    expect(escapeAttr(`a & b " <c> `)).toBe("a \u0026amp; b \u0026quot; \u0026lt;c\u0026gt; ");
   });
 });
 
