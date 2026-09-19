@@ -15,11 +15,10 @@
 //! script is currently in the empty state) is always valid and never
 //! flagged.
 
-use std::collections::HashSet;
-
 use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
 
 use crate::external_signatures::ExternalSignatures;
+use crate::state_reference::StateReferences;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
@@ -29,8 +28,7 @@ pub const RULE: &str = "get-state-comparison";
 #[derive(Default)]
 struct Collect {
     store: Store,
-    local_states: HashSet<String>,
-    extends: Option<String>,
+    states: StateReferences,
 }
 
 impl AstLint for Collect {
@@ -39,12 +37,7 @@ impl AstLint for Collect {
     }
 
     fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
-        self.local_states = script
-            .states
-            .iter()
-            .map(|state| state.name.to_ascii_lowercase())
-            .collect();
-        self.extends = script.extends.clone();
+        self.states = StateReferences::collect(script);
     }
 
     fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
@@ -57,8 +50,7 @@ impl AstLint for Collect {
         check_comparison(
             left,
             right,
-            self.extends.as_deref(),
-            &self.local_states,
+            &self.states,
             ctx.external,
             &mut self.store,
         );
@@ -97,19 +89,14 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
         return Vec::new();
     };
 
-    let local_states: HashSet<String> = script
-        .states
-        .iter()
-        .map(|state| state.name.to_ascii_lowercase())
-        .collect();
+    let states = StateReferences::collect(script);
 
     let mut diagnostics = Vec::new();
     for function in all_functions(script) {
         for stmt in &function.body {
             walk_stmt(
                 stmt,
-                script.extends.as_deref(),
-                &local_states,
+                &states,
                 external,
                 &mut diagnostics,
             );
@@ -131,25 +118,24 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 
 fn walk_stmt<E: ExternalSignatures + ?Sized>(
     stmt: &Stmt,
-    extends: Option<&str>,
-    local_states: &HashSet<String>,
+    states: &StateReferences,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     match stmt {
         Stmt::VarDecl(decl) => {
             if let Some(value) = &decl.value {
-                walk_expr(value, extends, local_states, external, diagnostics);
+                walk_expr(value, states, external, diagnostics);
             }
         }
         Stmt::Assign { target, value, .. } => {
-            walk_expr(target, extends, local_states, external, diagnostics);
-            walk_expr(value, extends, local_states, external, diagnostics);
+            walk_expr(target, states, external, diagnostics);
+            walk_expr(value, states, external, diagnostics);
         }
-        Stmt::Expr { value, .. } => walk_expr(value, extends, local_states, external, diagnostics),
+        Stmt::Expr { value, .. } => walk_expr(value, states, external, diagnostics),
         Stmt::Return { value, .. } => {
             if let Some(value) = value {
-                walk_expr(value, extends, local_states, external, diagnostics);
+                walk_expr(value, states, external, diagnostics);
             }
         }
         Stmt::If {
@@ -161,21 +147,21 @@ fn walk_stmt<E: ExternalSignatures + ?Sized>(
                 condition, body, ..
             } in branches
             {
-                walk_expr(condition, extends, local_states, external, diagnostics);
+                walk_expr(condition, states, external, diagnostics);
                 for stmt in body {
-                    walk_stmt(stmt, extends, local_states, external, diagnostics);
+                    walk_stmt(stmt, states, external, diagnostics);
                 }
             }
             for stmt in else_body {
-                walk_stmt(stmt, extends, local_states, external, diagnostics);
+                walk_stmt(stmt, states, external, diagnostics);
             }
         }
         Stmt::While {
             condition, body, ..
         } => {
-            walk_expr(condition, extends, local_states, external, diagnostics);
+            walk_expr(condition, states, external, diagnostics);
             for stmt in body {
-                walk_stmt(stmt, extends, local_states, external, diagnostics);
+                walk_stmt(stmt, states, external, diagnostics);
             }
         }
     }
@@ -183,19 +169,18 @@ fn walk_stmt<E: ExternalSignatures + ?Sized>(
 
 fn walk_expr<E: ExternalSignatures + ?Sized>(
     expr: &Expr,
-    extends: Option<&str>,
-    local_states: &HashSet<String>,
+    states: &StateReferences,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     if let Expr::Binary { left, op, right } = expr {
         if matches!(op, BinaryOp::Eq | BinaryOp::NotEq) {
             let mut store = Store::default();
-            check_comparison(left, right, extends, local_states, external, &mut store);
+            check_comparison(left, right, states, external, &mut store);
             diagnostics.extend(store.take());
         }
-        walk_expr(left, extends, local_states, external, diagnostics);
-        walk_expr(right, extends, local_states, external, diagnostics);
+        walk_expr(left, states, external, diagnostics);
+        walk_expr(right, states, external, diagnostics);
     }
 }
 
@@ -205,8 +190,7 @@ fn walk_expr<E: ExternalSignatures + ?Sized>(
 fn check_comparison<E: ExternalSignatures + ?Sized>(
     left: &Expr,
     right: &Expr,
-    extends: Option<&str>,
-    local_states: &HashSet<String>,
+    states: &StateReferences,
     external: &mut E,
     store: &mut Store,
 ) {
@@ -215,7 +199,7 @@ fn check_comparison<E: ExternalSignatures + ?Sized>(
         .or_else(|| get_state_call(right).zip(string_literal(left)));
 
     if let Some(((line, col), name)) = target {
-        if is_missing(name, extends, local_states, external) {
+        if states.is_missing(name, external) {
             store.push(missing(line, col, name));
         }
     }
@@ -253,25 +237,6 @@ fn is_get_state_callee(callee: &Expr) -> bool {
             matches!(**object, Expr::Self_) && property.eq_ignore_ascii_case("GetState")
         }
         _ => false,
-    }
-}
-
-/// Whether `name` can't be resolved as a state this script could ever be
-/// in: not the empty string, not declared locally, and — when this script
-/// `Extends` another — not found in that ancestry either (per `external`;
-/// see the module docs).
-fn is_missing<E: ExternalSignatures + ?Sized>(
-    name: &str,
-    extends: Option<&str>,
-    local_states: &HashSet<String>,
-    external: &mut E,
-) -> bool {
-    if name.is_empty() || local_states.contains(&name.to_ascii_lowercase()) {
-        return false;
-    }
-    match extends {
-        None => true,
-        Some(parent) => !external.has_state(parent, name),
     }
 }
 
