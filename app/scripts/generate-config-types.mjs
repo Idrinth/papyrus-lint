@@ -54,34 +54,35 @@ const LINT_CONFIG_FIELD_TYPES = {
   assume_auto_properties_filled: "boolean",
 };
 
-const HEADER = `// Generated from \`shared/rules/*.json\` and
-// \`configuration/papyrus-lint.default.yaml\` by
-// \`app/scripts/generate-config-types.mjs\`. Do not edit by hand.
-
-export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";
-export type IdentifierCasingStyle = "camelCase" | "PascalCase" | "snake_case" | "CONSTANT_CASE";
-export type NamedArgumentsStyle = "always" | "instead_of_defaults" | "never";
-export type MagicNumbersMode = "loose" | "strict";
-`;
+const HEADER = [
+  "// Generated from `shared/rules/*.json` and",
+  "// `configuration/papyrus-lint.default.yaml` by",
+  "// `app/scripts/generate-config-types.mjs`. Do not edit by hand.",
+  "",
+  'export type TypeCasingStyle = "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE";',
+  'export type IdentifierCasingStyle = "camelCase" | "PascalCase" | "snake_case" | "CONSTANT_CASE";',
+  'export type NamedArgumentsStyle = "always" | "instead_of_defaults" | "never";',
+  'export type MagicNumbersMode = "loose" | "strict";',
+  "",
+].join("\n");
 
 export function configKeyFor(ruleId) {
   return RULE_ID_TO_CONFIG_KEY[ruleId] ?? ruleId.replaceAll("-", "_");
 }
 
 export function assembleRules(rulesDir) {
-  const paths = fs
-    .readdirSync(rulesDir)
-    .filter((name) => name.endsWith(".json"))
-    .sort()
-    .map((name) => path.join(rulesDir, name));
-  if (paths.length === 0) {
+  const names = fs.readdirSync(rulesDir).filter((name) => name.endsWith(".json")).sort();
+  if (names.length === 0) {
     throw new Error(`no rule files found in ${rulesDir}`);
   }
-  return paths.map((filePath) => {
+  return names.map((name) => {
+    const filePath = path.join(rulesDir, name);
     const rule = JSON.parse(fs.readFileSync(filePath, "utf8"));
     const stem = path.basename(filePath, ".json");
     if (rule.id !== stem) {
-      throw new Error(`${filePath}: \`id\` is ${JSON.stringify(rule.id)}, expected ${JSON.stringify(stem)} to match the file name`);
+      throw new Error(
+        `${filePath}: id is ${JSON.stringify(rule.id)}, expected ${JSON.stringify(stem)} to match the file name`,
+      );
     }
     return rule;
   });
@@ -118,7 +119,7 @@ export function parseDefaultYaml(source) {
     rules.push([stripped.slice(0, sep).trim(), stripped.slice(sep + 1).trim() === "true"]);
   }
   if (rules.length === 0) {
-    throw new Error("default YAML has no \`rules:\` entries");
+    throw new Error("default YAML has no rules: entries");
   }
   return { top, rules };
 }
@@ -128,7 +129,7 @@ export function orderRules(rules, fieldOrder) {
   for (const rule of rules) {
     const key = configKeyFor(rule.id);
     if (byKey.has(key)) {
-      throw new Error(`duplicate Rules field \`${key}\``);
+      throw new Error(`duplicate Rules field ${key}`);
     }
     byKey.set(key, rule);
   }
@@ -146,7 +147,7 @@ export function orderRules(rules, fieldOrder) {
   if (byKey.size > 0) {
     const missing = [...byKey.keys()].sort().join(", ");
     throw new Error(
-      `configuration/papyrus-lint.default.yaml is missing rules: ${missing}; add them next to the other \`rules:\` keys`,
+      `configuration/papyrus-lint.default.yaml is missing rules: ${missing}; add them next to the other rules: keys`,
     );
   }
   return ordered;
@@ -157,13 +158,18 @@ function tsDefault(key, raw) {
 }
 
 export function renderConfigTypes(rules, defaultYaml) {
-  const { top, rules: yamlRules } = parseDefaultYaml(defaultYaml);
+  const parsed = parseDefaultYaml(defaultYaml);
+  const top = parsed.top;
+  const yamlRules = parsed.rules;
   const missingTop = LINT_CONFIG_KEYS.filter((key) => !(key in top));
   if (missingTop.length > 0) {
     throw new Error(`default YAML is missing LintConfig keys: ${missingTop.join(", ")}`);
   }
 
-  const ordered = orderRules(rules, yamlRules.map(([key]) => key));
+  const ordered = orderRules(
+    rules,
+    yamlRules.map((entry) => entry[0]),
+  );
   const yamlValues = Object.fromEntries(yamlRules);
   const lines = [HEADER, "export interface LintRules {"];
   const defaults = [];
@@ -178,35 +184,43 @@ export function renderConfigTypes(rules, defaultYaml) {
     lines.push(`  ${key}: boolean;`);
     defaults.push(`  ${key}: ${enabled ? "true" : "false"},`);
   }
-  lines.push("}", "", "export interface LintConfig {");
+  lines.push("}");
+  lines.push("");
+  lines.push("export interface LintConfig {");
   for (const key of LINT_CONFIG_KEYS) {
     lines.push(`  ${key}: ${LINT_CONFIG_FIELD_TYPES[key]};`);
   }
-  lines.push("  rules: LintRules;", "}", "");
+  lines.push("  rules: LintRules;");
+  lines.push("}");
+  lines.push("");
   lines.push("export const DEFAULT_RULES: LintRules = {");
   lines.push(...defaults);
-  lines.push("};", "");
+  lines.push("};");
+  lines.push("");
   lines.push("export const DEFAULT_LINT_CONFIG: LintConfig = {");
   for (const key of LINT_CONFIG_KEYS) {
-    lines.push(`  ${key}: ${tsDefault(key, top[key])},");
+    lines.push(`  ${key}: ${tsDefault(key, top[key])},`);
   }
-  lines.push("  rules: DEFAULT_RULES,", "};", "");
+  lines.push("  rules: DEFAULT_RULES,");
+  lines.push("};");
+  lines.push("");
   lines.push("export const RULE_KEYS = Object.keys(DEFAULT_RULES) as (keyof LintRules)[];");
   lines.push("");
   lines.push("export let currentLintConfig: LintConfig = DEFAULT_LINT_CONFIG;");
   lines.push("");
   lines.push("export function setCurrentLintConfig(config: LintConfig) {");
   lines.push("  currentLintConfig = config;");
-  lines.push("}", "");
+  lines.push("}");
+  lines.push("");
   return lines.join("\n");
 }
 
-export function writeConfigTypes({ rulesDir, defaultYamlPath, outPath }) {
-  const rules = assembleRules(rulesDir);
-  const defaultYaml = fs.readFileSync(defaultYamlPath, "utf8");
+export function writeConfigTypes(options) {
+  const rules = assembleRules(options.rulesDir);
+  const defaultYaml = fs.readFileSync(options.defaultYamlPath, "utf8");
   const rendered = renderConfigTypes(rules, defaultYaml);
-  fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, rendered, "utf8");
+  fs.mkdirSync(path.dirname(options.outPath), { recursive: true });
+  fs.writeFileSync(options.outPath, rendered, "utf8");
   return rules.length;
 }
 
