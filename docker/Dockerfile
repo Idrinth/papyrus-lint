@@ -9,7 +9,7 @@ RUN apk add --no-cache gcompat libgcc unzip \
     && addgroup -S papyrus-lint \
     && adduser -S -G papyrus-lint papyrus-lint \
     && mkdir -p /project /cache /base-scripts/usr/local/share/papyrus-lint \
-    && chown papyrus-lint:papyrus-lint /project /cache /base-scripts
+    && chown papyrus-lint:papyrus-lint /project /cache /base-scripts /usr/local/share/papyrus-lint/
 
 COPY --chmod=755 PapyrusLinterCLI /usr/local/bin/PapyrusLinterCLI
 COPY --chmod=755 entrypoint.sh /usr/local/bin/papyrus-lint-entrypoint
