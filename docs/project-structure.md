@@ -109,9 +109,12 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       │                    # into a content-addressed AST/token blob
 │       │       │                    # that get/get_tokens/ensure_primed consult
 │       │       │                    # before the on-disk cache, so vanilla
-│       │       │                    # base types hit on first analysis
+│       │       │                    # base types hit on first analysis, and
+│       │       │                    # that FunctionTable consults by ScriptName
+│       │       │                    # when no matching .psc is on disk
 │       │       ├── bundled.rs       # Runtime lookup into that blob (MD5 of
-│       │       │                    # decoded source → AST/tokens; no disk lock)
+│       │       │                    # decoded source → AST/tokens, and
+│       │       │                    # lowercased ScriptName → AST; no disk lock)
 │       │       ├── bundled_blob.rs  # Binary layout of the blob; shared with
 │       │       │                    # build.rs via a #[path] include
 │       │       ├── psc_decode.rs    # UTF-8 / Windows-1252 decode used by

@@ -233,6 +233,37 @@ fn is_subtype_false_for_unrelated_or_unresolvable_types() {
 }
 
 #[test]
+fn is_subtype_resolves_bundled_vanilla_types_with_no_project_script() {
+    // Regression for https://github.com/Idrinth/papyrus-lint/issues/1082:
+    // none of `Actor`/`ObjectReference`/`Form`/`Spell` have a `.psc` under
+    // `root` (typical for a mod project), so this can only pass via the
+    // bundled vanilla AST cache's name index.
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.is_subtype("Actor", "ObjectReference"));
+    assert!(table.is_subtype("Actor", "Form"));
+    assert!(table.is_subtype("Spell", "Form"));
+    assert!(!table.is_subtype("Form", "Actor"));
+    assert!(!table.is_subtype("Spell", "ObjectReference"));
+}
+
+#[test]
+fn is_subtype_falls_back_to_bundled_vanilla_types_past_a_project_scripts_extends_chain() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "MyQuestScript",
+        "ScriptName MyQuestScript Extends Quest\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.is_subtype("MyQuestScript", "Quest"));
+    assert!(table.is_subtype("MyQuestScript", "Form"));
+}
+
+#[test]
 fn is_subtype_does_not_infinite_loop_on_circular_extends() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(root.path(), "A", "ScriptName A Extends B\n");
@@ -250,6 +281,31 @@ fn ancestry_fully_known_true_for_a_script_with_no_extends() {
 
     let mut table = FunctionTable::new(root.path().to_path_buf());
 
+    assert!(table.ancestry_fully_known("Form"));
+}
+
+#[test]
+fn ancestry_fully_known_true_for_a_project_chain_ending_in_a_bundled_root() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "MyQuestScript",
+        "ScriptName MyQuestScript Extends Quest\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.ancestry_fully_known("MyQuestScript"));
+}
+
+#[test]
+fn ancestry_fully_known_true_for_bundled_vanilla_types_with_no_project_script() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.ancestry_fully_known("Armor"));
+    assert!(table.ancestry_fully_known("Weapon"));
+    assert!(table.ancestry_fully_known("Actor"));
     assert!(table.ancestry_fully_known("Form"));
 }
 

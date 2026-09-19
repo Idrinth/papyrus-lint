@@ -46,6 +46,22 @@ fn with_lookup_roots_resolves_a_script_as_a_fallback() {
 }
 
 #[test]
+fn bundled_vanilla_scripts_resolve_without_a_file_on_disk() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+
+    assert!(table.script_exists("Actor"));
+    assert!(table.script_exists("objectreference"));
+    assert!(table.script_exists("Form"));
+    assert!(!table.script_exists("DefinitelyMissingScript"));
+
+    let signature = table
+        .lookup_function("Actor", "GetActorValue")
+        .expect("bundled Actor.psc should expose GetActorValue");
+    assert_eq!(signature.name, "GetActorValue");
+}
+
+#[test]
 fn lookup_roots_do_not_override_a_project_script_of_the_same_name() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     let source = root.path().join("scripts/source");

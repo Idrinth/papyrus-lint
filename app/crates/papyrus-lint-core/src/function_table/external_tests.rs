@@ -200,7 +200,7 @@ fn external_signature_trait_reports_builtin_and_resolvable_project_types() {
     assert!(papyrus_lints::ExternalSignatures::type_exists(
         &mut table, "FLOAT"
     ));
-    assert!(!papyrus_lints::ExternalSignatures::type_exists(
+    assert!(papyrus_lints::ExternalSignatures::type_exists(
         &mut table, "Actor"
     ));
     assert!(papyrus_lints::ExternalSignatures::type_exists(

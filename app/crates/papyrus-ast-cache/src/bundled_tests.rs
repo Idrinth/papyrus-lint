@@ -39,16 +39,59 @@ fn encode_then_parse_round_trips_a_synthetic_entry() {
     let tokens = papyrus_parser::tokenize(source).unwrap();
     let packed = PackedEntry {
         md5: md5::compute(source.as_bytes()).0,
+        name: "bundledblobroundtrip".to_string(),
         ast: bundled_blob::serialize_ast(&ast).unwrap(),
         tokens: bundled_blob::serialize_tokens(&tokens).unwrap(),
     };
     let blob = bundled_blob::encode_blob(&[packed]);
-    let (index, payload_start) = bundled_blob::parse_blob(&blob).unwrap();
-    assert_eq!(index.len(), 1);
-    let payload = &blob[payload_start..];
-    let entry = index.get(&md5::compute(source.as_bytes()).0).unwrap();
+    let parsed = bundled_blob::parse_blob(&blob).unwrap();
+    assert_eq!(parsed.by_md5.len(), 1);
+    assert_eq!(parsed.by_name.len(), 1);
+    let payload = &blob[parsed.payload_start..];
+    let entry = parsed
+        .by_md5
+        .get(&md5::compute(source.as_bytes()).0)
+        .unwrap();
     assert_eq!(bundled_blob::decode_ast(payload, entry).unwrap(), ast);
     assert_eq!(bundled_blob::decode_tokens(payload, entry).unwrap(), tokens);
+    let named = parsed.by_name.get("bundledblobroundtrip").unwrap();
+    assert_eq!(bundled_blob::decode_ast(payload, named).unwrap(), ast);
+}
+
+#[test]
+fn parse_blob_name_index_keeps_the_last_duplicate_name() {
+    let first = "ScriptName SharedName\nInt Function First()\nEndFunction\n";
+    let second = "ScriptName SharedName\nInt Function Second()\nEndFunction\n";
+    let first_ast = papyrus_parser::parse(first).unwrap();
+    let second_ast = papyrus_parser::parse(second).unwrap();
+    let blob = bundled_blob::encode_blob(&[
+        PackedEntry {
+            md5: md5::compute(first.as_bytes()).0,
+            name: "sharedname".to_string(),
+            ast: bundled_blob::serialize_ast(&first_ast).unwrap(),
+            tokens: bundled_blob::serialize_tokens(&papyrus_parser::tokenize(first).unwrap())
+                .unwrap(),
+        },
+        PackedEntry {
+            md5: md5::compute(second.as_bytes()).0,
+            name: "sharedname".to_string(),
+            ast: bundled_blob::serialize_ast(&second_ast).unwrap(),
+            tokens: bundled_blob::serialize_tokens(&papyrus_parser::tokenize(second).unwrap())
+                .unwrap(),
+        },
+    ]);
+    let parsed = bundled_blob::parse_blob(&blob).unwrap();
+    assert_eq!(parsed.by_md5.len(), 2);
+    let named = parsed.by_name.get("sharedname").unwrap();
+    let ast = bundled_blob::decode_ast(&blob[parsed.payload_start..], named).unwrap();
+    assert!(ast
+        .functions
+        .iter()
+        .any(|function| function.name == "Second"));
+    assert!(!ast
+        .functions
+        .iter()
+        .any(|function| function.name == "First"));
 }
 
 #[test]
@@ -162,4 +205,30 @@ fn bundled_lookups_are_safe_under_concurrent_use() {
     });
     let ast = ast_for(&source).unwrap();
     assert_eq!(ast.name, "Quest");
+}
+
+#[test]
+fn actor_is_a_bundled_hit_by_script_name_without_source_bytes() {
+    assert!(contains_name("Actor"));
+    assert!(contains_name("actor"));
+    assert!(contains_name("OBJECTREFERENCE"));
+    assert!(!contains_name("DefinitelyNotAVanillaScript"));
+
+    let ast = ast_for_name("Actor").expect("Actor should be in the name index");
+    assert_eq!(ast.name, "Actor");
+    assert_eq!(ast.extends.as_deref(), Some("ObjectReference"));
+    let tokens = tokens_for_name("actor").expect("Actor tokens should be in the name index");
+    assert!(!tokens.is_empty());
+    assert_eq!(crate::ast_for_script_name("Actor"), Some(ast));
+    assert!(crate::contains_script_name("Form"));
+}
+
+#[test]
+fn name_lookup_walks_the_vanilla_extends_chain() {
+    let actor = ast_for_name("Actor").unwrap();
+    assert_eq!(actor.extends.as_deref(), Some("ObjectReference"));
+    let object_reference = ast_for_name(actor.extends.as_deref().unwrap()).unwrap();
+    assert_eq!(object_reference.extends.as_deref(), Some("Form"));
+    let form = ast_for_name(object_reference.extends.as_deref().unwrap()).unwrap();
+    assert!(form.extends.is_none());
 }
