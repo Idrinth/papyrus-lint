@@ -1,0 +1,103 @@
+name: Base scripts snapshot
+
+on:
+  push:
+    branches: [the-one]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: base-scripts-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  labels:
+    name: Pull request labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require component and type labels
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const names = context.payload.pull_request.labels.map((label) => label.name);
+            const missing = [];
+            if (!names.some((name) => name.startsWith('component: '))) {
+              missing.push('a "component: ..." label');
+            }
+            if (!names.some((name) => name.startsWith('type: '))) {
+              missing.push('a "type: ..." label');
+            }
+            if (missing.length > 0) {
+              core.setFailed(`This pull request is missing ${missing.join(' and ')}. See CONTRIBUTING.md for the required labels.`);
+            }
+
+  base-scripts-cli:
+    name: Base scripts CLI build
+    needs: labels
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/crates/papyrus-lint-cli
+
+      - name: Build release CLI binary
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
+
+      - name: Upload CLI binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: papyrus-linter-cli-linux
+          path: app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI
+          if-no-files-found: error
+          retention-days: 1
+
+  base-scripts-snapshot:
+    name: Base scripts snapshot (${{ matrix.preset }})
+    needs: [labels, base-scripts-cli]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [strict, standard, careful]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Download CLI binary
+        uses: actions/download-artifact@v7
+        with:
+          name: papyrus-linter-cli-linux
+          path: cli-bin
+
+      - name: Make CLI executable
+        run: chmod +x cli-bin/PapyrusLinterCLI
+
+      - name: Lint bundled base scripts and compare the snapshot
+        run: |
+          python3 .github/scripts/base_scripts_snapshot.py \
+            --cli cli-bin/PapyrusLinterCLI \
+            --preset ${{ matrix.preset }} \
+            --work-dir base-scripts-work
+
+      - name: Upload CLI JSON on mismatch
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: base-scripts-work-${{ matrix.preset }}
+          path: base-scripts-work/
+          if-no-files-found: ignore
+          retention-days: 7
