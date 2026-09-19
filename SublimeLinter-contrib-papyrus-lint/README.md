@@ -7,8 +7,7 @@ This package provides an interface to
 It will be used with files that have the `source.papyrus` scope, i.e. a
 Papyrus syntax package installed in Sublime Text. Each reported
 diagnostic's message ends with a link to that rule's own documentation on
-the [project website](https://papyrus-lint.idrinth.de) whenever the CLI's
-`--json` output knows one for it (a compiler-reported diagnostic doesn't).
+the [project website](https://papyrus-lint.idrinth.de) when available.
 
 ## Installation
 
@@ -56,30 +55,22 @@ root inferred by the CLI (the directory above a `Scripts/Source` or
 `Source/Scripts` pair, or the nearest ancestor that already has a config
 file). See the main project's [configuration
 reference](https://github.com/Idrinth/papyrus-lint/blob/the-one/docs/configuration.md)
-for the format and exact resolution order. Under the hood, this
-linter runs `PapyrusLinterCLI --json` and parses its structured JSON
-report rather than scraping plain-text output.
+for the format and exact resolution order.
 
 ## Live linting
 
-A saved `.psc` file with no unsaved changes is linted from disk as
-described above, getting the CLI's full project-aware lint (cross-script
-argument/return type checks, the project's own `papyrus-lint.yaml`/`.yml`,
-...). A view with unsaved changes is instead linted from its current
-buffer contents directly, via `PapyrusLinterCLI --blob`, so
+A saved `.psc` file with no unsaved changes gets the full project-aware lint,
+including cross-script checks and the project's own configuration. A view
+with unsaved changes is linted from its current contents, so
 [SublimeLinter's background linting](http://www.sublimelinter.com/en/stable/lint_modes.html)
 (as configured by the standard `lint_mode` setting) shows live feedback on
-what's actually in the editor rather than stale results from the last
-save. Since `--blob` lints in isolation, with no real project root to
-resolve, a live lint on an unsaved view only honors an explicit
-`config_path` override (see above); it doesn't discover the project's own
-`papyrus-lint.yaml`/`.yml`, and skips cross-script checks entirely — the
-same tradeoff the CLI's `--blob` flag itself makes.
+what's actually in the editor. Live results skip cross-script checks and use
+the default configuration unless `config_path` is set. Saving restores the
+full project-aware lint.
 
 To use a config file somewhere other than that inferred project root, set
-`config_path` (either as a linter setting, or per-project) to its path;
-this linter (and the fix command below) then passes it to the CLI via
-`--config`, overriding the CLI's own discovery:
+`config_path` (either as a linter setting or per-project) to its path. This
+also applies to fixes and overrides automatic configuration discovery:
 
 ```json
 {
@@ -95,33 +86,28 @@ this linter (and the fix command below) then passes it to the CLI via
 
 This package also exposes a "PapyrusLint: Fix Current File" command (via
 the Command Palette and the editor's right-click context menu, for a
-saved `.psc` file with no unsaved changes) that runs `PapyrusLinterCLI
-fix` against the file, applying every automatic fix (see the main
-project's README) and rewriting it on disk if anything changed, then
-reloads the file and re-lints it.
+saved `.psc` file with no unsaved changes). It applies every automatic fix
+(see the main project's README), reloads the file if anything changed, and
+checks it again.
 
 A "PapyrusLint: Fix This Issue" command is available the same way, for
 fixing just the diagnostic under (or nearest to) the caret instead of the
-whole file. It re-reads the file's current diagnostics via
-`PapyrusLinterCLI --json`, picks the one on the caret's line closest to
-its column, then runs `PapyrusLinterCLI fix --type <rule> --line <n>` so
-only that rule's fix is applied, and only to that line — every other line
-and every other rule's findings are left untouched. If the caret's line
-has no reported issue, or the issue there has no automatic fix, an error
-message explains why nothing changed.
+whole file. It selects the issue on the caret's line closest to its column
+and applies only that fix; every other issue is left untouched. If the
+caret's line has no reported issue, or the issue there has no automatic
+fix, an error message explains why nothing changed.
 
 ## Initializing a project
 
 A "PapyrusLint: Initialize Configuration" command (Command Palette only,
 since it's a project-wide action rather than one scoped to the current
-file) runs `PapyrusLinterCLI init [--preset <name>]` to scaffold a
-`papyrus-lint.yaml` in a project without overwriting an existing one. It
-picks a target directory from the window's open folder (prompting when
-more than one is open, or falling back to the active file's own directory
-when no folder is open at all), then prompts for a preset to start
-from — the built-in `strict` (the default), `standard`, or `careful`, or
-a custom preset name added via `PapyrusLinterCLI preset add` or the
-desktop app's "Save current settings as preset…" button.
+file) creates a `papyrus-lint.yaml` in a project without overwriting an
+existing one. It picks a target directory from the window's open folder
+(prompting when more than one is open, or falling back to the active file's
+own directory when no folder is open at all), then prompts for a preset to
+start from — the built-in `strict` (the default), `standard`, or `careful`,
+or a custom preset name added via `PapyrusLinterCLI preset add` or the desktop
+app's "Save current settings as preset…" button.
 
 ## Testing
 

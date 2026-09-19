@@ -1,29 +1,18 @@
 # Papyrus Lint for VS Code
 
 A VS Code extension that surfaces [Papyrus Lint](../README.md) diagnostics
-for `.psc` files directly in the editor, by shelling out to
-`PapyrusLinterCLI --json`.
+for `.psc` files directly in the editor.
 
 ## Features
 
-- Lints a `.psc` file automatically whenever it's opened or saved, by
-  running `PapyrusLinterCLI --json <file>` and turning its
-  [`JsonReport`](../app/crates/papyrus-lint-cli/src/lib.rs) into
-  `vscode.Diagnostic`s (severity taken from each diagnostic's `level`;
-  `rule` is shown as the diagnostic's code, clickable straight to that
-  rule's own documentation on the
-  [project website](https://papyrus-lint.idrinth.de) when its `doc_url`
-  is known — a compiler-reported diagnostic keeps a plain, unlinked code).
+- Lints a `.psc` file automatically whenever it's opened or saved. Each
+  issue shows its severity and rule, with a link to the rule's documentation
+  on the [project website](https://papyrus-lint.idrinth.de) when available.
 - **Live linting**: as you type, the document's current (possibly unsaved)
-  contents are also linted directly via `PapyrusLinterCLI --json --blob
-  <text>`, debounced so a burst of keystrokes triggers one lint pass
-  shortly after the last of them rather than one per keystroke. This runs
-  alongside the open/save lint above and only updates diagnostics — it
-  never touches the file on disk. Since `--blob` lints in isolation (no
-  project root to resolve), it skips cross-script checks and, unless
-  `papyrusLint.configPath` is set, the project's own
-  `papyrus-lint.yaml`/`.yml` in favor of the CLI's defaults; the full,
-  project-aware lint still runs again on save. Controlled by the
+  contents are checked after a short pause. This only updates diagnostics
+  and never touches the file on disk. Live results skip cross-script checks
+  and use the default configuration unless `papyrusLint.configPath` is set;
+  saving runs the full project-aware lint. Controlled by the
   `papyrusLint.liveLint`/`papyrusLint.liveLintDebounceMs` settings below.
 - **Schema validation for config files**: associates any
   `papyrus-lint.yml` / `papyrus-lint.yaml` (same `**/*.yml` + `**/*.yaml`
@@ -37,17 +26,15 @@ for `.psc` files directly in the editor, by shelling out to
 - **Papyrus Lint: Lint Current File** — re-lints on demand, from the
   command palette, the editor context menu, or a `.psc` file's explorer
   context menu.
-- **Papyrus Lint: Fix Current File** — runs `PapyrusLinterCLI fix --json
-  <file>`, which applies every automatic fix (see the project README) to
-  the file on disk, then reports the diagnostics (if any) that remain.
+- **Papyrus Lint: Fix Current File** — applies every available automatic
+  fix (see the project README), then reports any diagnostics that remain.
   Unsaved changes are saved first, since the CLI only reads from disk.
 - **Fix this issue** — a Quick Fix (lightbulb) offered on each individual
-  diagnostic, which runs `PapyrusLinterCLI fix --type <rule> --line <line>
-  --json <file>` to apply just that diagnostic's own rule on its own line,
-  leaving every other issue in the file untouched. Unsaved changes are
-  saved first, same as fixing the whole file.
-- **Papyrus Lint: Initialize Configuration** — runs `PapyrusLinterCLI init
-  [--preset <name>]` to scaffold a `papyrus-lint.yaml` (see the project
+  diagnostic. It applies the fix for only that issue, leaving every other
+  issue in the file untouched. Unsaved changes are saved first, same as
+  fixing the whole file.
+- **Papyrus Lint: Initialize Configuration** — creates a
+  `papyrus-lint.yaml` (see the project
   [configuration reference](../docs/configuration.md)), without
   overwriting an existing one. Available from the command palette (prompts
   for the workspace folder to initialize when more than one is open) or a
@@ -57,9 +44,8 @@ for `.psc` files directly in the editor, by shelling out to
   via `PapyrusLinterCLI preset add` or the desktop app's "Save current
   settings as preset…" button.
 
-Only the currently open/selected `.psc` file is linted or fixed — not the
-whole project's `.achlist` — since that's the unit the CLI's `--json`
-output is scoped to for a single-file invocation.
+Only the currently open or selected `.psc` file is linted or fixed, not the
+whole project.
 
 ## Development
 
