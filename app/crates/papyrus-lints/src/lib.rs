@@ -13,6 +13,7 @@
 // Infrastructure and shared helpers that are not a rule stay listed below.
 include!(concat!(env!("OUT_DIR"), "/lint_modules.rs"));
 
+mod block_comment;
 pub mod config;
 mod disable_comments;
 mod external_signatures;

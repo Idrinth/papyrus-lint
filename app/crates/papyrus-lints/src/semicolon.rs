@@ -1,6 +1,6 @@
 //! Enforces a configured trailing-semicolon style.
 
-use crate::{fragment_code, Diagnostic};
+use crate::{block_comment, fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "semicolon";
@@ -15,7 +15,9 @@ pub enum Style {
 /// Checks non-empty lines for the configured trailing-semicolon style.
 /// Lines inside a CreationKit fragment-code wrapper (see
 /// [`fragment_code`]), outside of its `;BEGIN CODE`/`;END CODE` markers,
-/// are never flagged.
+/// are never flagged, nor are lines touched by a `;/ .. /;` block comment
+/// (see [`block_comment`]), whose delimiters use `;` for something other
+/// than a statement terminator.
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
@@ -27,12 +29,13 @@ pub fn check(
     let style = config.semicolon_style();
 
     let protected = fragment_code::protected_lines(source);
+    let commented = block_comment::protected_lines(source);
 
     source
         .lines()
         .enumerate()
         .filter_map(|(index, line)| {
-            if protected[index + 1] {
+            if protected[index + 1] || commented[index + 1] {
                 return None;
             }
 
@@ -61,7 +64,9 @@ pub fn check(
 /// Adds or removes terminal semicolons while retaining line endings. In
 /// forbid mode only terminal semicolons are removed, so comment text is never
 /// discarded. Lines protected by a CreationKit fragment-code wrapper (see
-/// [`fragment_code`]) are left exactly as-is.
+/// [`fragment_code`]) or touched by a `;/ .. /;` block comment (see
+/// [`block_comment`]) are left exactly as-is, so a closing `/;` never gets
+/// stripped down to a bare `/`.
 pub fn repair(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
@@ -72,9 +77,10 @@ pub fn repair(
     let style = config.semicolon_style();
 
     let protected = fragment_code::protected_lines(source);
+    let commented = block_comment::protected_lines(source);
     let mut result = String::with_capacity(source.len());
     for (line_number, line_and_ending) in (1usize..).zip(source.split_inclusive('\n')) {
-        if protected[line_number] {
+        if protected[line_number] || commented[line_number] {
             result.push_str(line_and_ending);
         } else {
             let (line, ending) = line_and_ending.strip_suffix("\r\n").map_or_else(

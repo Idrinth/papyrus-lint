@@ -64,6 +64,8 @@ pub(super) enum RootCommand {
 pub(super) enum PresetCommand {
     #[command(disable_help_flag = true, disable_version_flag = true)]
     Add(PresetAddRawArgs),
+    #[command(disable_help_flag = true, disable_version_flag = true)]
+    List,
 }
 
 /// `init`'s own flags. Also usable standalone via [`Parser::try_parse_from`]
@@ -197,6 +199,7 @@ pub(crate) enum ParsedCli {
         source_path: PathBuf,
         overwrite: bool,
     },
+    PresetList,
     Doctor(DoctorRawArgs),
     Run(ParsedCommand),
 }
@@ -219,6 +222,9 @@ pub(crate) fn parse_cli(args: &[String]) -> Result<ParsedCli, ArgsError> {
                 overwrite,
             })
             .map_err(|_| ArgsError::Usage),
+        Some(RootCommand::Preset {
+            command: PresetCommand::List,
+        }) => Ok(ParsedCli::PresetList),
         Some(RootCommand::Doctor(raw)) => Ok(ParsedCli::Doctor(raw)),
         None => super::parse_run_args(args).map(ParsedCli::Run),
     }

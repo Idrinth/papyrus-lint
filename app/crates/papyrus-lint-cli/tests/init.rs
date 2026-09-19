@@ -206,6 +206,34 @@ fn preset_add_overwrites_an_existing_preset_with_yes() {
 }
 
 #[test]
+fn preset_list_prints_only_the_built_ins_with_no_user_presets() {
+    let output = run_cli(&["preset", "list"]);
+
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stdout).expect("stdout should be UTF-8"),
+        "strict\nstandard\ncareful\n"
+    );
+}
+
+#[test]
+fn preset_list_includes_user_presets_after_the_built_ins() {
+    let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
+    write_file(&exe_dir.path().join("presets/my-team.yaml"), "");
+    write_file(&exe_dir.path().join("presets/alpha.yaml"), "");
+
+    let project_dir = tempfile::tempdir().expect("failed to create temp directory");
+    let output = run_copied_cli(exe_dir.path(), &["preset", "list"], project_dir.path());
+
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).expect("stdout should be UTF-8"),
+        "strict\nstandard\ncareful\nalpha\nmy-team\n"
+    );
+}
+
+#[test]
 fn preset_add_rejects_a_name_matching_a_built_in_preset() {
     let exe_dir = tempfile::tempdir().expect("failed to create temp directory");
     let source_dir = tempfile::tempdir().expect("failed to create temp directory");

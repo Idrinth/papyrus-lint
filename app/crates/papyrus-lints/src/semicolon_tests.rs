@@ -79,6 +79,25 @@ EndFunction
 }
 
 #[test]
+fn block_comment_closing_delimiter_is_never_touched() {
+    let source = "\
+Event OnInit()
+    Value = 50
+    ;/this is a test comment
+    will this compile, we will never know/;
+endevent
+";
+
+    assert!(check(source, Style::Forbid).is_empty());
+    assert_eq!(repair(source, Style::Forbid), source);
+
+    let comment_lines: Vec<&str> = source.lines().skip(2).take(2).collect();
+    let required = repair(source, Style::Require);
+    let required_comment_lines: Vec<&str> = required.lines().skip(2).take(2).collect();
+    assert_eq!(required_comment_lines, comment_lines);
+}
+
+#[test]
 fn repair_is_idempotent() {
     for style in [Style::Require, Style::Forbid] {
         let repaired = repair("a  \r\n;b\n", style);
