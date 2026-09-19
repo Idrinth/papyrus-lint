@@ -70,6 +70,16 @@ fn constant_folding_handles_literal_arithmetic_in_the_size() {
 }
 
 #[test]
+fn constant_folding_handles_division_in_the_size() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    Int[] a = new Int[260 / 2]\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 4);
+}
+
+#[test]
 fn checks_a_new_array_nested_in_a_call_argument() {
     let diagnostics =
         check("ScriptName Example\n\nFunction Test()\n    Consume(new Int[200])\nEndFunction\n");

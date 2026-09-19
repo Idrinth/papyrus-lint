@@ -167,6 +167,15 @@ fn constant_folding_normalizes_the_index_key() {
 }
 
 #[test]
+fn constant_folding_normalizes_a_divided_index_key() {
+    let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Actor[] act = new Actor[3]\n    If act[4 / 2] != None\n        act[2].Kill()\n    EndIf\nEndFunction\n",
+        );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn does_not_flag_passing_an_unchecked_element_as_an_argument() {
     let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Actor[] act = new Actor[3]\n    Debug.Trace(act[0])\nEndFunction\n",

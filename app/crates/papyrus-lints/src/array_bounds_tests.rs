@@ -121,6 +121,16 @@ fn constant_folding_handles_literal_arithmetic_in_the_size_and_index() {
 }
 
 #[test]
+fn constant_folding_handles_division_in_the_index() {
+    let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int[] a = new Int[3]\n    a[6 / 2] = 1\nEndFunction\n",
+        );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+}
+
+#[test]
 fn does_not_flag_after_both_if_branches_agree_on_the_size() {
     let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Bool flag)\n    Int[] a\n    If flag\n        a = new Int[3]\n    Else\n        a = new Int[3]\n    EndIf\n    a[2] = 1\nEndFunction\n",

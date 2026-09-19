@@ -120,13 +120,27 @@ fn constant_folding_handles_mixed_numeric_arithmetic() {
 }
 
 #[test]
-fn does_not_fold_division_or_modulo_inside_the_divisor() {
+fn flags_division_by_a_folded_division_or_modulo_zero() {
     let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Int a)\n    Int first = a / (0 / 1)\n    Int second = a / (0 % 1)\nEndFunction\n",
         );
 
-    // The inner operations are safe, and their results deliberately are
-    // not folded to avoid evaluating potentially unsafe operations while
-    // linting. Consequently neither outer divisor is assumed to be zero.
-    assert!(diagnostics.is_empty());
+    assert_eq!(diagnostics.len(), 2);
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect::<Vec<_>>(),
+        vec![4, 5]
+    );
+}
+
+#[test]
+fn still_flags_an_inner_division_by_zero_when_the_outer_divisor_does_not_fold() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Int a)\n    Int value = a / (1 / 0)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains('/'));
 }

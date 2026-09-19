@@ -9,9 +9,9 @@
 //! access, a cast, or a `new` array is left unflagged rather than guessed
 //! at, since its value can't be known without running the script.
 
-use papyrus_parser::ast::{BinaryOp, Expr, IfBranch, Literal, Stmt, UnaryOp};
+use papyrus_parser::ast::{Expr, IfBranch, Stmt};
 
-use crate::const_eval::as_number;
+use crate::const_eval::{eval_const, truthy};
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
@@ -78,121 +78,6 @@ fn check_condition(condition: &Expr, line: usize, column: usize, store: &mut Sto
         ),
         RULE,
     );
-}
-
-/// Attempts to fold `expr` down to a single constant [`Literal`], returning
-/// `None` as soon as any part of it depends on something that can't be
-/// known without running the script (an identifier, a call, `Self`/
-/// `Parent`, a member/index access, a cast, or a `new` array).
-fn eval_const(expr: &Expr) -> Option<Literal> {
-    match expr {
-        Expr::Literal(literal) => Some(literal.clone()),
-        Expr::Unary { op, operand } => eval_unary(*op, &eval_const(operand)?),
-        Expr::Binary { left, op, right } => {
-            eval_binary(&eval_const(left)?, *op, &eval_const(right)?)
-        }
-        Expr::Identifier(_)
-        | Expr::Self_
-        | Expr::Parent
-        | Expr::Call { .. }
-        | Expr::Member { .. }
-        | Expr::Index { .. }
-        | Expr::Cast { .. }
-        | Expr::NewArray { .. }
-        | Expr::NamedArg { .. } => None,
-    }
-}
-
-fn truthy(value: &Literal) -> bool {
-    match value {
-        Literal::Bool(b) => *b,
-        Literal::Int { value, .. } => *value != 0,
-        Literal::Float(f) => *f != 0.0,
-        Literal::String(s) => !s.is_empty(),
-        Literal::None => false,
-    }
-}
-
-fn eval_unary(op: UnaryOp, value: &Literal) -> Option<Literal> {
-    match op {
-        UnaryOp::Not => Some(Literal::Bool(!truthy(value))),
-        UnaryOp::Neg => match value {
-            Literal::Int { value, .. } => Some(Literal::int(-value)),
-            Literal::Float(f) => Some(Literal::Float(-f)),
-            _ => None,
-        },
-    }
-}
-
-fn eval_binary(left: &Literal, op: BinaryOp, right: &Literal) -> Option<Literal> {
-    match op {
-        BinaryOp::And => Some(Literal::Bool(truthy(left) && truthy(right))),
-        BinaryOp::Or => Some(Literal::Bool(truthy(left) || truthy(right))),
-        BinaryOp::Eq => Some(Literal::Bool(literal_eq(left, right)?)),
-        BinaryOp::NotEq => Some(Literal::Bool(!literal_eq(left, right)?)),
-        BinaryOp::Add
-            if matches!(left, Literal::String(_)) || matches!(right, Literal::String(_)) =>
-        {
-            match (left, right) {
-                (Literal::String(a), Literal::String(b)) => {
-                    Some(Literal::String(format!("{a}{b}")))
-                }
-                _ => None,
-            }
-        }
-        BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul | BinaryOp::Div | BinaryOp::Mod => {
-            let (a, a_float) = as_number(left)?;
-            let (b, b_float) = as_number(right)?;
-            let result = match op {
-                BinaryOp::Add => a + b,
-                BinaryOp::Sub => a - b,
-                BinaryOp::Mul => a * b,
-                BinaryOp::Div => {
-                    if b == 0.0 {
-                        return None;
-                    }
-                    a / b
-                }
-                BinaryOp::Mod => {
-                    if b == 0.0 {
-                        return None;
-                    }
-                    a % b
-                }
-                _ => unreachable!(),
-            };
-            Some(if a_float || b_float {
-                Literal::Float(result)
-            } else {
-                Literal::int(result as i64)
-            })
-        }
-        BinaryOp::Gt | BinaryOp::Lt | BinaryOp::GtEq | BinaryOp::LtEq => {
-            let (a, _) = as_number(left)?;
-            let (b, _) = as_number(right)?;
-            Some(Literal::Bool(match op {
-                BinaryOp::Gt => a > b,
-                BinaryOp::Lt => a < b,
-                BinaryOp::GtEq => a >= b,
-                BinaryOp::LtEq => a <= b,
-                _ => unreachable!(),
-            }))
-        }
-    }
-}
-
-fn literal_eq(left: &Literal, right: &Literal) -> Option<bool> {
-    match (left, right) {
-        (Literal::String(a), Literal::String(b)) => Some(a == b),
-        (Literal::Bool(a), Literal::Bool(b)) => Some(a == b),
-        (Literal::None, Literal::None) => Some(true),
-        (Literal::None, _) | (_, Literal::None) => Some(false),
-        _ => {
-            let (a, _) = as_number(left)?;
-            let (b, _) = as_number(right)?;
-            Some(a == b)
-        }
-    }
 }
 
 #[cfg(test)]

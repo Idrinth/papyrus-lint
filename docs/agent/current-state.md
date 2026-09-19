@@ -76,8 +76,9 @@ directly.
 Numeric AST lints that fold a compile-time-constant `Int`/`Float`
 (`division-by-zero`, `invalid-random-range`, `short-wait-interval`) share
 `const_eval::eval_const`; array-index/size lints share
-`const_eval::eval_const_int`. `static-condition` keeps its own broader
-folder (booleans, comparisons, `/`/`%`). Do not copy either helper into a
+`const_eval::eval_const_int` (the `Int` view of the same folder).
+`static-condition` uses that same folder, including booleans, comparisons,
+and `/`/`%` (with a zero-divisor miss). Do not copy this helper into a
 new rule.
 
 Cross-script lint rules share the project-semantic resolver contract in

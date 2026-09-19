@@ -3,10 +3,10 @@
 //! the modulo) by zero crashes the script at runtime.
 //!
 //! Like [`crate::static_condition`], this only folds an operand built
-//! entirely from literals (optionally combined with arithmetic and unary
-//! operators); a divisor that depends on an identifier, a call, `Self`/
-//! `Parent`, a member/index access, a cast, or a `new` array is left
-//! unflagged rather than guessed at.
+//! entirely from literals (optionally combined with arithmetic, comparison,
+//! logical, and unary operators); a divisor that depends on an identifier,
+//! a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array
+//! is left unflagged rather than guessed at.
 
 use papyrus_parser::ast::{BinaryOp, Expr, Literal};
 

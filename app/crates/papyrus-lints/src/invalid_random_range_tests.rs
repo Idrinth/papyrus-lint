@@ -131,6 +131,16 @@ fn flags_a_constant_expression_that_folds_to_reversed_bounds() {
 }
 
 #[test]
+fn flags_a_constant_division_that_folds_to_reversed_bounds() {
+    let diagnostics = check(
+            "ScriptName Example\n\nFunction Test()\n    Int i = Utility.RandomInt(10 / 2, 2)\nEndFunction\n",
+        );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("RandomInt(5, 2)"));
+}
+
+#[test]
 fn does_not_flag_a_call_whose_callee_is_neither_an_identifier_nor_a_member_access() {
     let diagnostics =
         check("ScriptName Example\n\nFunction Test()\n    Self(10, 5)\nEndFunction\n");
