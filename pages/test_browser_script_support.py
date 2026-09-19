@@ -10,6 +10,7 @@ from pages import browser_check
 
 
 class StaticScriptTestCase(unittest.TestCase):
+    @classmethod
     def setUpClass(cls) -> None:
         cls.site_directory = tempfile.TemporaryDirectory()
         Path(cls.site_directory.name, "index.html").write_text("<!doctype html>", encoding="utf-8")
@@ -18,6 +19,7 @@ class StaticScriptTestCase(unittest.TestCase):
         cls.playwright = cls.playwright_context.start()
         cls.browser = cls.playwright.chromium.launch()
 
+    @classmethod
     def tearDownClass(cls) -> None:
         cls.browser.close()
         cls.playwright.stop()
