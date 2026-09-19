@@ -426,5 +426,5 @@ pub fn is_disabled(source: &str, line: usize, rule: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "lib_tests.rs"]
+#[path = "lib_tests/mod.rs"]
 mod tests;

@@ -124,8 +124,22 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       │                   # `<name>_tests.rs`, `#[path]`-included as
 │       │       │                   # its `mod tests`, so a file's own size
 │       │       │                   # tracks its implementation, not its tests.
+│       │       │                   # lib.rs is the exception: its tests live
+│       │       │                   # in lib_tests/, split by public entry
+│       │       │                   # point the same way papyrus-lint-cli's
+│       │       │                   # run_tests/ is split for run().
 │       │       ├── lib.rs                     # Diagnostic type + lint()/repair() entry points
-│       │       ├── lib_tests.rs               # lib.rs's unit tests
+│       │       ├── lib_tests/                 # lib.rs's unit tests, split by the
+│       │       │   ├── mod.rs                   # public entry points they cover
+│       │       │   ├── diagnostic.rs            # Diagnostic::level
+│       │       │   ├── lint.rs                  # lint() / extra_diagnostics / @disable
+│       │       │   ├── repair.rs                # repair() / repair_filtered / by-tag
+│       │       │   ├── repair_external.rs       # ExternalSignatures-aware repair
+│       │       │   ├── restrict_to_line.rs      # restrict_to_line / repaired_line
+│       │       │   ├── disable.rs               # add_disable_comment / is_disabled
+│       │       │   ├── rule_flags.rs            # each config.rules flag via lint()
+│       │       │   ├── rule_flags_external.rs   # flags that need ExternalSignatures
+│       │       │   └── support.rs               # config_with + fake ExternalSignatures
 │       │       ├── config.rs                  # Config type (YAML-deserializable) passed
 │       │       │                              # to every check/fix job; YAML file I/O
 │       │       │                              # lives in papyrus-lint-config
