@@ -20,13 +20,57 @@ use std::collections::HashSet;
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
 
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "goto-state";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    local_states: HashSet<String>,
+    extends: Option<String>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.local_states = script
+            .states
+            .iter()
+            .map(|state| state.name.to_ascii_lowercase())
+            .collect();
+        self.extends = script.extends.clone();
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let Expr::Call {
+            callee,
+            args,
+            line,
+            col,
+        } = expr
+        else {
+            return;
+        };
+        if !is_goto_state_callee(callee) {
+            return;
+        }
+        let [Expr::Literal(Literal::String(name))] = args.as_slice() else {
+            return;
+        };
+        if is_missing(name, self.extends.as_deref(), &self.local_states, ctx.external) {
+            self.store.push(missing(*line, *col, name));
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `GoToState` calls whose target state can't be found
@@ -45,20 +89,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but resolves a target not declared on the script itself
 /// through `external`'s knowledge of the script's `Extends` ancestry,
 /// flagging a target that can't be found there either.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
@@ -76,7 +110,7 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
     let mut diagnostics = Vec::new();
     for function in all_functions(script) {
         for stmt in &function.body {
-            walk_stmt(stmt, script, &local_states, external, &mut diagnostics);
+            walk_stmt(stmt, script.extends.as_deref(), &local_states, external, &mut diagnostics);
         }
     }
     diagnostics
@@ -95,7 +129,7 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 
 fn walk_stmt<E: ExternalSignatures + ?Sized>(
     stmt: &Stmt,
-    script: &Script,
+    extends: Option<&str>,
     local_states: &HashSet<String>,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
@@ -103,17 +137,17 @@ fn walk_stmt<E: ExternalSignatures + ?Sized>(
     match stmt {
         Stmt::VarDecl(decl) => {
             if let Some(value) = &decl.value {
-                walk_expr(value, script, local_states, external, diagnostics);
+                walk_expr(value, extends, local_states, external, diagnostics);
             }
         }
         Stmt::Assign { target, value, .. } => {
-            walk_expr(target, script, local_states, external, diagnostics);
-            walk_expr(value, script, local_states, external, diagnostics);
+            walk_expr(target, extends, local_states, external, diagnostics);
+            walk_expr(value, extends, local_states, external, diagnostics);
         }
-        Stmt::Expr { value, .. } => walk_expr(value, script, local_states, external, diagnostics),
+        Stmt::Expr { value, .. } => walk_expr(value, extends, local_states, external, diagnostics),
         Stmt::Return { value, .. } => {
             if let Some(value) = value {
-                walk_expr(value, script, local_states, external, diagnostics);
+                walk_expr(value, extends, local_states, external, diagnostics);
             }
         }
         Stmt::If {
@@ -125,21 +159,21 @@ fn walk_stmt<E: ExternalSignatures + ?Sized>(
                 condition, body, ..
             } in branches
             {
-                walk_expr(condition, script, local_states, external, diagnostics);
+                walk_expr(condition, extends, local_states, external, diagnostics);
                 for stmt in body {
-                    walk_stmt(stmt, script, local_states, external, diagnostics);
+                    walk_stmt(stmt, extends, local_states, external, diagnostics);
                 }
             }
             for stmt in else_body {
-                walk_stmt(stmt, script, local_states, external, diagnostics);
+                walk_stmt(stmt, extends, local_states, external, diagnostics);
             }
         }
         Stmt::While {
             condition, body, ..
         } => {
-            walk_expr(condition, script, local_states, external, diagnostics);
+            walk_expr(condition, extends, local_states, external, diagnostics);
             for stmt in body {
-                walk_stmt(stmt, script, local_states, external, diagnostics);
+                walk_stmt(stmt, extends, local_states, external, diagnostics);
             }
         }
     }
@@ -147,7 +181,7 @@ fn walk_stmt<E: ExternalSignatures + ?Sized>(
 
 fn walk_expr<E: ExternalSignatures + ?Sized>(
     expr: &Expr,
-    script: &Script,
+    extends: Option<&str>,
     local_states: &HashSet<String>,
     external: &mut E,
     diagnostics: &mut Vec<Diagnostic>,
@@ -161,34 +195,34 @@ fn walk_expr<E: ExternalSignatures + ?Sized>(
         } => {
             if is_goto_state_callee(callee) {
                 if let [Expr::Literal(Literal::String(name))] = args.as_slice() {
-                    if is_missing(name, script, local_states, external) {
+                    if is_missing(name, extends, local_states, external) {
                         diagnostics.push(missing(*line, *col, name));
                     }
                 }
             }
-            walk_expr(callee, script, local_states, external, diagnostics);
+            walk_expr(callee, extends, local_states, external, diagnostics);
             for arg in args {
-                walk_expr(arg, script, local_states, external, diagnostics);
+                walk_expr(arg, extends, local_states, external, diagnostics);
             }
         }
         Expr::Binary { left, right, .. } => {
-            walk_expr(left, script, local_states, external, diagnostics);
-            walk_expr(right, script, local_states, external, diagnostics);
+            walk_expr(left, extends, local_states, external, diagnostics);
+            walk_expr(right, extends, local_states, external, diagnostics);
         }
         Expr::Unary { operand, .. } => {
-            walk_expr(operand, script, local_states, external, diagnostics)
+            walk_expr(operand, extends, local_states, external, diagnostics)
         }
         Expr::Member { object, .. } => {
-            walk_expr(object, script, local_states, external, diagnostics)
+            walk_expr(object, extends, local_states, external, diagnostics)
         }
         Expr::Index { object, index } => {
-            walk_expr(object, script, local_states, external, diagnostics);
-            walk_expr(index, script, local_states, external, diagnostics);
+            walk_expr(object, extends, local_states, external, diagnostics);
+            walk_expr(index, extends, local_states, external, diagnostics);
         }
-        Expr::Cast { value, .. } => walk_expr(value, script, local_states, external, diagnostics),
-        Expr::NewArray { size, .. } => walk_expr(size, script, local_states, external, diagnostics),
+        Expr::Cast { value, .. } => walk_expr(value, extends, local_states, external, diagnostics),
+        Expr::NewArray { size, .. } => walk_expr(size, extends, local_states, external, diagnostics),
         Expr::NamedArg { value, .. } => {
-            walk_expr(value, script, local_states, external, diagnostics)
+            walk_expr(value, extends, local_states, external, diagnostics)
         }
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
     }
@@ -213,14 +247,14 @@ fn is_goto_state_callee(callee: &Expr) -> bool {
 /// `external`; see the module docs).
 fn is_missing<E: ExternalSignatures + ?Sized>(
     name: &str,
-    script: &Script,
+    extends: Option<&str>,
     local_states: &HashSet<String>,
     external: &mut E,
 ) -> bool {
     if name.is_empty() || local_states.contains(&name.to_ascii_lowercase()) {
         return false;
     }
-    match &script.extends {
+    match extends {
         None => true,
         Some(parent) => !external.has_state(parent, name),
     }

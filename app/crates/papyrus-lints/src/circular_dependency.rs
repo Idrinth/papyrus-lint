@@ -31,14 +31,62 @@
 
 use std::collections::HashSet;
 
+use papyrus_parser::ast::{PropertyDecl, Script};
+
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "circular-dependency";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    origin: String,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.origin = script.name.clone();
+    }
+
+    fn visit_property(&mut self, property: &PropertyDecl, ctx: &mut VisitCtx<'_>) {
+        if self.origin.is_empty() {
+            return;
+        }
+        if property.type_name.name.eq_ignore_ascii_case(&self.origin) {
+            return;
+        }
+        let mut visited = HashSet::new();
+        let Some(chain) = cycle_through(
+            &property.type_name.name,
+            &self.origin,
+            ctx.external,
+            &mut visited,
+        ) else {
+            return;
+        };
+        self.store.emit(
+            property.line,
+            1,
+            format!(
+                "[warning] Property '{}' creates a circular dependency: {} -> {}",
+                property.name,
+                self.origin,
+                chain.join(" -> "),
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a `Property` whose declared type, followed through
@@ -57,20 +105,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but follows each property's declared type through
 /// `external`, flagging one whose chain of `Property` declarations across
 /// other scripts leads back to this script.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&papyrus_parser::ast::Script>,
     external: &mut E,
@@ -83,8 +121,6 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
     let mut diagnostics = Vec::new();
     for property in &script.properties {
         if property.type_name.name.eq_ignore_ascii_case(origin) {
-            // A direct self-reference is a script depending on itself, not
-            // a cycle between scripts.
             continue;
         }
         let mut visited = HashSet::new();

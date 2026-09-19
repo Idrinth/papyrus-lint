@@ -13,17 +13,94 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{FunctionDecl, StateDecl, Stmt};
+use papyrus_parser::ast::{FunctionDecl, Param, PropertyDecl, StateDecl, Stmt, VariableDecl};
 use papyrus_parser::token::{Keyword, TokenKind};
 
 use crate::config::IdentifierCasing;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "identifier-casing";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    protected: Vec<bool>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.protected = fragment_code::protected_lines(ctx.source);
+    }
+
+    fn visit_property(&mut self, property: &PropertyDecl, ctx: &mut VisitCtx<'_>) {
+        check_name(
+            &property.name,
+            "Property",
+            property.line,
+            ctx.config.identifier_casing,
+            &self.protected,
+            &mut self.store,
+        );
+    }
+
+    fn visit_variable(&mut self, variable: &VariableDecl, ctx: &mut VisitCtx<'_>) {
+        check_name(
+            &variable.name,
+            "Variable",
+            variable.line,
+            ctx.config.identifier_casing,
+            &self.protected,
+            &mut self.store,
+        );
+    }
+
+    fn visit_state(&mut self, state: &StateDecl, ctx: &mut VisitCtx<'_>) {
+        check_name(
+            &state.name,
+            "State",
+            state.line,
+            ctx.config.identifier_casing,
+            &self.protected,
+            &mut self.store,
+        );
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, ctx: &mut VisitCtx<'_>) {
+        let kind = if function.is_event {
+            "Event"
+        } else {
+            "Function"
+        };
+        check_name(
+            &function.name,
+            kind,
+            function.line,
+            ctx.config.identifier_casing,
+            &self.protected,
+            &mut self.store,
+        );
+    }
+
+    fn visit_param(&mut self, param: &Param, ctx: &mut VisitCtx<'_>) {
+        check_name(
+            &param.name,
+            "Parameter",
+            ctx.line,
+            ctx.config.identifier_casing,
+            &self.protected,
+            &mut self.store,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for declared identifiers that don't conform to `style`.
@@ -42,53 +119,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (tokens, external);
-    let style = config.identifier_casing;
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-    let protected = fragment_code::protected_lines(source);
-
-    let mut diagnostics = Vec::new();
-
-    for variable in &script.variables {
-        check_name(
-            &variable.name,
-            "Variable",
-            variable.line,
-            style,
-            &protected,
-            &mut diagnostics,
-        );
-    }
-    for property in &script.properties {
-        check_name(
-            &property.name,
-            "Property",
-            property.line,
-            style,
-            &protected,
-            &mut diagnostics,
-        );
-    }
-    for state in &script.states {
-        check_state(state, style, &protected, &mut diagnostics);
-    }
-    for function in &script.functions {
-        check_function(function, style, &protected, &mut diagnostics);
-    }
-
-    diagnostics
 }
 
 /// Renames every non-conforming declaration and its references to `style`
@@ -312,104 +342,13 @@ fn line_offsets(source: &str) -> Vec<usize> {
         .collect()
 }
 
-fn check_state(
-    state: &StateDecl,
-    style: IdentifierCasing,
-    protected: &[bool],
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    check_name(
-        &state.name,
-        "State",
-        state.line,
-        style,
-        protected,
-        diagnostics,
-    );
-    for function in &state.functions {
-        check_function(function, style, protected, diagnostics);
-    }
-}
-
-fn check_function(
-    function: &FunctionDecl,
-    style: IdentifierCasing,
-    protected: &[bool],
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let kind = if function.is_event {
-        "Event"
-    } else {
-        "Function"
-    };
-    check_name(
-        &function.name,
-        kind,
-        function.line,
-        style,
-        protected,
-        diagnostics,
-    );
-    for param in &function.params {
-        check_name(
-            &param.name,
-            "Parameter",
-            function.line,
-            style,
-            protected,
-            diagnostics,
-        );
-    }
-    for stmt in &function.body {
-        check_stmt(stmt, style, protected, diagnostics);
-    }
-}
-
-fn check_stmt(
-    stmt: &Stmt,
-    style: IdentifierCasing,
-    protected: &[bool],
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    match stmt {
-        Stmt::VarDecl(decl) => check_name(
-            &decl.name,
-            "Variable",
-            decl.line,
-            style,
-            protected,
-            diagnostics,
-        ),
-        Stmt::If {
-            branches,
-            else_body,
-            ..
-        } => {
-            for branch in branches {
-                for inner in &branch.body {
-                    check_stmt(inner, style, protected, diagnostics);
-                }
-            }
-            for inner in else_body {
-                check_stmt(inner, style, protected, diagnostics);
-            }
-        }
-        Stmt::While { body, .. } => {
-            for inner in body {
-                check_stmt(inner, style, protected, diagnostics);
-            }
-        }
-        Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
-    }
-}
-
 fn check_name(
     name: &str,
     kind: &str,
     line: usize,
     style: IdentifierCasing,
     protected: &[bool],
-    diagnostics: &mut Vec<Diagnostic>,
+    store: &mut Store,
 ) {
     if protected.get(line).copied().unwrap_or(false) {
         return;
@@ -418,15 +357,15 @@ fn check_name(
         return;
     }
 
-    diagnostics.push(Diagnostic {
+    store.emit(
         line,
-        column: 1,
-        message: format!(
+        1,
+        format!(
             "[warning] {kind} '{name}' does not match the configured {} casing style",
             style.label()
         ),
-        rule: RULE,
-    });
+        RULE,
+    );
 }
 
 #[cfg(test)]

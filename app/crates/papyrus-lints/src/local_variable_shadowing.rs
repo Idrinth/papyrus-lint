@@ -14,16 +14,75 @@
 
 use std::collections::HashSet;
 
-use papyrus_parser::ast::{FunctionDecl, Script, Stmt, VariableDecl};
+use papyrus_parser::ast::{Script, VariableDecl};
 
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "local-variable-shadowing";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    protected: Vec<bool>,
+    own_properties: HashSet<String>,
+    own_variables: HashSet<String>,
+    extends: Option<String>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.protected = fragment_code::protected_lines(ctx.source);
+    }
+
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.own_properties = script
+            .properties
+            .iter()
+            .map(|property| property.name.to_ascii_lowercase())
+            .collect();
+        self.own_variables = script
+            .variables
+            .iter()
+            .map(|variable| variable.name.to_ascii_lowercase())
+            .collect();
+        self.extends = script.extends.clone();
+    }
+
+    fn visit_variable(&mut self, decl: &VariableDecl, ctx: &mut VisitCtx<'_>) {
+        let Some(script) = ctx.ast else {
+            return;
+        };
+        if script
+            .variables
+            .iter()
+            .any(|declared| std::ptr::eq(declared, decl))
+        {
+            return;
+        }
+        if self.protected.get(decl.line).copied().unwrap_or(false) {
+            return;
+        }
+        if let Some(diagnostic) = check_decl(
+            decl,
+            self.extends.as_deref(),
+            &self.own_properties,
+            &self.own_variables,
+            ctx.external,
+        ) {
+            self.store.push(diagnostic);
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for local variables that shadow a property or field
@@ -46,20 +105,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (tokens, config);
-    check_with(source, ast, external)
-}
-
 /// Like [`check`], but also flags a local variable that shadows a property
 /// or field declared on a parent script, resolved (including through
 /// `Extends`) through `external`.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     source: &str,
     ast: Option<&Script>,
@@ -82,14 +131,19 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
         .collect();
 
     let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
+    for function in script.functions.iter().chain(
+        script
+            .states
+            .iter()
+            .flat_map(|state| state.functions.iter()),
+    ) {
         for decl in collect_var_decls(&function.body) {
             if protected.get(decl.line).copied().unwrap_or(false) {
                 continue;
             }
             diagnostics.extend(check_decl(
                 decl,
-                script,
+                script.extends.as_deref(),
                 &own_properties,
                 &own_variables,
                 external,
@@ -101,7 +155,7 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
 
 fn check_decl<E: ExternalSignatures + ?Sized>(
     decl: &VariableDecl,
-    script: &Script,
+    extends: Option<&str>,
     own_properties: &HashSet<String>,
     own_variables: &HashSet<String>,
     external: &mut E,
@@ -132,7 +186,7 @@ fn check_decl<E: ExternalSignatures + ?Sized>(
         });
     }
 
-    let parent = script.extends.as_ref()?;
+    let parent = extends?;
     if external.has_property(parent, &decl.name) {
         return Some(Diagnostic {
             line: decl.line,
@@ -160,26 +214,15 @@ fn check_decl<E: ExternalSignatures + ?Sized>(
     None
 }
 
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
 /// Finds every `VariableDecl` in `body`, including ones nested inside
 /// `If`/`ElseIf`/`Else` branches and `While` bodies, since Papyrus locals
 /// aren't block-scoped.
-fn collect_var_decls(body: &[Stmt]) -> Vec<&VariableDecl> {
+fn collect_var_decls(body: &[papyrus_parser::ast::Stmt]) -> Vec<&VariableDecl> {
     let mut decls = Vec::new();
     for stmt in body {
         match stmt {
-            Stmt::VarDecl(decl) => decls.push(decl),
-            Stmt::If {
+            papyrus_parser::ast::Stmt::VarDecl(decl) => decls.push(decl),
+            papyrus_parser::ast::Stmt::If {
                 branches,
                 else_body,
                 ..
@@ -189,7 +232,9 @@ fn collect_var_decls(body: &[Stmt]) -> Vec<&VariableDecl> {
                 }
                 decls.extend(collect_var_decls(else_body));
             }
-            Stmt::While { body, .. } => decls.extend(collect_var_decls(body)),
+            papyrus_parser::ast::Stmt::While { body, .. } => {
+                decls.extend(collect_var_decls(body))
+            }
             _ => {}
         }
     }

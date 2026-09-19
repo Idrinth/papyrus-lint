@@ -32,13 +32,68 @@ use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::argument_types::is_primitive;
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "impossible-cast";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    env: Option<TypeEnv>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.env = Some(TypeEnv::for_script(script));
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.enter_function(function);
+        }
+    }
+
+    fn leave_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.leave_function();
+        }
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let Some(env) = self.env.as_ref() else {
+            return;
+        };
+        let Expr::Cast { value, type_name } = expr else {
+            return;
+        };
+        let Some(value_type) = infer_type(value, env) else {
+            return;
+        };
+        if value_type.is_array {
+            return;
+        }
+        if impossible(&value_type.name, type_name, ctx.external) {
+            self.store.emit(
+                ctx.line,
+                1,
+                format!(
+                    "[warning] cast to '{type_name}' can never succeed: '{}' and '{type_name}' are unrelated types, so this always evaluates to None",
+                    value_type.name
+                ),
+                RULE,
+            );
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for an `as` cast proven impossible using only
@@ -56,20 +111,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but resolves both the value's and the target's full
 /// `Extends` ancestry through `external`, the same way
 /// [`crate::useless_downcast::check_with`] resolves ancestor-type casts.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,

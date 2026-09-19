@@ -9,15 +9,44 @@
 //! access, a cast, or a `new` array is left unflagged rather than guessed
 //! at, since its value can't be known without running the script.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp};
+use papyrus_parser::ast::{BinaryOp, Expr, IfBranch, Literal, Stmt, UnaryOp};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "static-condition";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_if_branch(&mut self, branch: &IfBranch, _ctx: &mut VisitCtx<'_>) {
+        check_condition(&branch.condition, branch.line, branch.col, &mut self.store);
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt, _ctx: &mut VisitCtx<'_>) {
+        let Stmt::While {
+            condition,
+            line,
+            col,
+            ..
+        } = stmt
+        else {
+            return;
+        };
+        check_condition(condition, *line, *col, &mut self.store);
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every `If`/`ElseIf`/`While` condition in `source` and flags the
@@ -34,88 +63,20 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        check_body(&function.body, &mut diagnostics);
-    }
-    diagnostics
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
-    for stmt in body {
-        match stmt {
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for IfBranch {
-                    condition,
-                    body,
-                    line,
-                    col,
-                } in branches
-                {
-                    check_condition(condition, *line, *col, diagnostics);
-                    check_body(body, diagnostics);
-                }
-                check_body(else_body, diagnostics);
-            }
-            Stmt::While {
-                condition,
-                body,
-                line,
-                col,
-            } => {
-                check_condition(condition, *line, *col, diagnostics);
-                check_body(body, diagnostics);
-            }
-            Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
-        }
-    }
-}
-
-fn check_condition(
-    condition: &Expr,
-    line: usize,
-    column: usize,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+fn check_condition(condition: &Expr, line: usize, column: usize, store: &mut Store) {
     let Some(value) = eval_const(condition) else {
         return;
     };
 
     let always = if truthy(&value) { "true" } else { "false" };
-    diagnostics.push(Diagnostic {
+    store.emit(
         line,
         column,
-        message: format!(
+        format!(
             "[warning] Condition is always {always}; it does not depend on any runtime value"
         ),
-        rule: RULE,
-    });
+        RULE,
+    );
 }
 
 /// Attempts to fold `expr` down to a single constant [`Literal`], returning

@@ -12,16 +12,70 @@
 //! [`strip_known_prefix`]), since that part of the name can't be renamed at
 //! all.
 
-use papyrus_parser::token::{Keyword, TokenKind};
+use papyrus_parser::token::{Keyword, Token, TokenKind};
 use serde::{Deserialize, Serialize};
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "type-casing";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    saw_script_name: bool,
+}
+
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        index: usize,
+        tokens: &[Token],
+        ctx: &mut VisitCtx<'_>,
+    ) {
+        if self.saw_script_name {
+            return;
+        }
+        if token.kind != TokenKind::Keyword(Keyword::ScriptName) {
+            return;
+        }
+        self.saw_script_name = true;
+        let Some(name_token) = tokens.get(index + 1) else {
+            return;
+        };
+        let TokenKind::Identifier(name) = &name_token.kind else {
+            return;
+        };
+        let style = ctx.config.type_casing;
+        let checked = strip_known_prefix(name);
+        if style.matches(checked) {
+            return;
+        }
+        let unfixable_note = if style.fixable(checked) {
+            ""
+        } else {
+            " (fixing this would rename the script, so no automatic fix is applied)"
+        };
+        self.store.emit(
+            name_token.line,
+            name_token.col,
+            format!(
+                "[warning] Script name '{name}' does not follow the configured {} casing{unfixable_note}",
+                style.label()
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// The supported casing conventions for a script's declared type name.
@@ -173,57 +227,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, external);
-    let style = config.type_casing;
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let mut tokens = tokens.iter().cloned();
-    while let Some(token) = tokens.next() {
-        if token.kind != TokenKind::Keyword(Keyword::ScriptName) {
-            continue;
-        }
-        let Some(name_token) = tokens.next() else {
-            return Vec::new();
-        };
-        let TokenKind::Identifier(name) = &name_token.kind else {
-            return Vec::new();
-        };
-        let checked = strip_known_prefix(name);
-        if style.matches(checked) {
-            return Vec::new();
-        }
-        // A violation this rule can't actually repair (see `Style::fixable`)
-        // says so in its own message, since the frontend otherwise has no
-        // way to tell such a finding apart from one this rule's automatic
-        // fix can resolve.
-        let unfixable_note = if style.fixable(checked) {
-            ""
-        } else {
-            " (fixing this would rename the script, so no automatic fix is applied)"
-        };
-        return vec![Diagnostic {
-            line: name_token.line,
-            column: name_token.col,
-            message: format!(
-                "[warning] Script name '{name}' does not follow the configured {} casing{unfixable_note}",
-                style.label()
-            ),
-            rule: RULE,
-        }];
-    }
-    Vec::new()
 }
 
 /// Rewrites the declared `ScriptName` identifier to match `style` when letter

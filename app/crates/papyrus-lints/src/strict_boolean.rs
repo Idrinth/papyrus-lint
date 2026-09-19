@@ -1,16 +1,82 @@
 //! Flags `If`/`ElseIf`/`While` conditions that aren't already boolean,
 //! instead of relying on Papyrus's implicit conversion to `Bool`.
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Stmt};
+use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "strict-boolean";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    env: Option<TypeEnv>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.env = Some(TypeEnv::for_script(script));
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.enter_function(function);
+        }
+    }
+
+    fn leave_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.leave_function();
+        }
+    }
+
+    fn visit_if_branch(&mut self, branch: &IfBranch, ctx: &mut VisitCtx<'_>) {
+        let Some(env) = self.env.as_ref() else {
+            return;
+        };
+        check_condition(
+            &branch.condition,
+            branch.line,
+            branch.col,
+            env,
+            ctx.config.bool_like_int,
+            &mut self.store,
+        );
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt, ctx: &mut VisitCtx<'_>) {
+        let Stmt::While {
+            condition,
+            line,
+            col,
+            ..
+        } = stmt
+        else {
+            return;
+        };
+        let Some(env) = self.env.as_ref() else {
+            return;
+        };
+        check_condition(
+            condition,
+            *line,
+            *col,
+            env,
+            ctx.config.bool_like_int,
+            &mut self.store,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every `If`/`ElseIf`/`While` condition in `source` and flags the
@@ -34,99 +100,6 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, external);
-    let allow_bool_like_int = config.bool_like_int;
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut env = TypeEnv::for_script(script);
-    let mut diagnostics = Vec::new();
-
-    for function in script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    ) {
-        check_function(function, &mut env, allow_bool_like_int, &mut diagnostics);
-    }
-
-    diagnostics
-}
-
-fn check_function(
-    function: &FunctionDecl,
-    env: &mut TypeEnv,
-    allow_bool_like_int: bool,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    env.with_function_scope(function, |scoped| {
-        check_body(&function.body, scoped, allow_bool_like_int, diagnostics);
-    });
-}
-
-fn check_body(
-    body: &[Stmt],
-    env: &TypeEnv,
-    allow_bool_like_int: bool,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    for stmt in body {
-        match stmt {
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for IfBranch {
-                    condition,
-                    body,
-                    line,
-                    col,
-                } in branches
-                {
-                    check_condition(
-                        condition,
-                        *line,
-                        *col,
-                        env,
-                        allow_bool_like_int,
-                        diagnostics,
-                    );
-                    check_body(body, env, allow_bool_like_int, diagnostics);
-                }
-                check_body(else_body, env, allow_bool_like_int, diagnostics);
-            }
-            Stmt::While {
-                condition,
-                body,
-                line,
-                col,
-            } => {
-                check_condition(
-                    condition,
-                    *line,
-                    *col,
-                    env,
-                    allow_bool_like_int,
-                    diagnostics,
-                );
-                check_body(body, env, allow_bool_like_int, diagnostics);
-            }
-            Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
-        }
-    }
-}
-
 /// Whether `expr` is exactly the `Int` literal `1` or `0`, the "bool-like"
 /// idiom [`check`] allows past when `allow_bool_like_int` is set.
 fn is_bool_like_int(expr: &Expr) -> bool {
@@ -139,7 +112,7 @@ fn check_condition(
     column: usize,
     env: &TypeEnv,
     allow_bool_like_int: bool,
-    diagnostics: &mut Vec<Diagnostic>,
+    store: &mut Store,
 ) {
     let Some(type_name) = infer_type(condition, env) else {
         return;
@@ -159,14 +132,14 @@ fn check_condition(
         type_name.name
     };
 
-    diagnostics.push(Diagnostic {
+    store.emit(
         line,
         column,
-        message: format!(
+        format!(
             "[warning] Condition must be a boolean value or expression, found '{found}'"
         ),
-        rule: RULE,
-    });
+        RULE,
+    );
 }
 
 #[cfg(test)]

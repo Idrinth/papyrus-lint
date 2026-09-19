@@ -14,15 +14,38 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{AssignOp, Expr, FunctionDecl, Script, Stmt, VariableDecl};
+use papyrus_parser::ast::{AssignOp, Expr, FunctionDecl, Stmt, VariableDecl};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-local-variable";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    protected: Vec<bool>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.protected = fragment_code::protected_lines(ctx.source);
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        let mut diagnostics = Vec::new();
+        check_function(function, &self.protected, &mut diagnostics);
+        self.store.extend(diagnostics);
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for local variable declarations whose value is never
@@ -42,38 +65,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-    let protected = fragment_code::protected_lines(source);
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        check_function(function, &protected, &mut diagnostics);
-    }
-    diagnostics
-}
-
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
 }
 
 #[derive(Debug, Default, Clone, Copy)]

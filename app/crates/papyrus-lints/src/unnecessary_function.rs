@@ -34,13 +34,44 @@ use std::collections::HashMap;
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Param, Script, Stmt, TypeName};
 use papyrus_parser::token::{Token, TokenKind};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unnecessary-function";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if function.is_event || function.body.len() != 1 || is_fragment_function(&function.name) {
+            return;
+        }
+        if function.params.is_empty() && returns_simple_type(&function.return_type) {
+            return;
+        }
+        self.store.emit(
+            function.line,
+            1,
+            format!(
+                "[info] Function '{}' contains only a single statement; consider inlining it \
+                 at its call site(s) instead of keeping it as a separate function",
+                function.name
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `Function`s whose body is exactly one statement long.
@@ -53,40 +84,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    all_functions(script)
-        .filter(|function| {
-            if function.is_event || function.body.len() != 1 || is_fragment_function(&function.name)
-            {
-                return false;
-            }
-            !(function.params.is_empty() && returns_simple_type(&function.return_type))
-        })
-        .map(|function| Diagnostic {
-            line: function.line,
-            column: 1,
-            message: format!(
-                "[info] Function '{}' contains only a single statement; consider inlining it \
-                 at its call site(s) instead of keeping it as a separate function",
-                function.name
-            ),
-            rule: RULE,
-        })
-        .collect()
 }
 
 /// Iterates every function declared directly on a script, plus every

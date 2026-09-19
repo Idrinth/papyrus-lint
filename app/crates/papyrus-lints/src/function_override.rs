@@ -19,16 +19,57 @@
 //! from a named state is Papyrus's separate state-based override
 //! mechanism, not `Extends` inheritance.
 
-use papyrus_parser::ast::Script;
+use papyrus_parser::ast::{FunctionDecl, Script};
 
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "function-override";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    extends: Option<String>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.extends = script.extends.clone();
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, ctx: &mut VisitCtx<'_>) {
+        if function.state.is_some() {
+            return;
+        }
+        let Some(extends) = &self.extends else {
+            return;
+        };
+        if ctx.external.lookup(extends, &function.name).is_none() {
+            return;
+        }
+        let kind = if function.is_event { "Event" } else { "Function" };
+        self.store.emit(
+            function.line,
+            1,
+            format!(
+                "[info] {kind} '{}' overrides an inherited {} declared on '{}' or one of its ancestors",
+                function.name,
+                kind.to_ascii_lowercase(),
+                extends
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for functions that override an inherited one. Since
@@ -45,20 +86,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but resolves the script's `Extends` chain through
 /// `external`, flagging any function declared on `source` whose name is
 /// also declared somewhere along that chain.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,

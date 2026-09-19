@@ -1,13 +1,54 @@
 //! Flags getter calls used as standalone statements.
 
-use crate::Diagnostic;
 use papyrus_parser::token::{Token, TokenKind};
+
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
+use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-getter";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    statement: Vec<Token>,
+}
+
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        _index: usize,
+        _tokens: &[Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        if matches!(token.kind, TokenKind::Newline | TokenKind::Eof) {
+            self.flush_statement();
+            return;
+        }
+        self.statement.push(token.clone());
+    }
+
+    fn finish(&mut self, _ctx: &mut VisitCtx<'_>) {
+        self.flush_statement();
+    }
+}
+
+impl Collect {
+    fn flush_statement(&mut self) {
+        if let Some(diagnostic) = check_statement(&self.statement) {
+            self.store.push(diagnostic);
+        }
+        self.statement.clear();
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks for calls whose function name begins with `Get` and whose result is
@@ -22,25 +63,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    tokens
-        .split(|token| matches!(token.kind, TokenKind::Newline | TokenKind::Eof))
-        .filter_map(check_statement)
-        .collect()
 }
 
 /// Flags `statement` (the tokens between two newlines) if any top-level

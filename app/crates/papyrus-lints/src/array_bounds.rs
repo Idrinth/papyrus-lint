@@ -30,14 +30,33 @@ use std::collections::HashMap;
 
 use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IfBranch, Literal, Stmt, UnaryOp};
 
-use crate::none_form_usage::{all_functions, diverges};
+use crate::none_form_usage::diverges;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "array-bounds";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_function(&mut self, function: &papyrus_parser::ast::FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        let mut sizes = HashMap::new();
+        let mut diagnostics = Vec::new();
+        walk_body(&function.body, &mut sizes, &mut diagnostics);
+        self.store.extend(diagnostics);
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every function/event in `source` for a literal array index that
@@ -51,27 +70,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        let mut sizes = HashMap::new();
-        walk_body(&function.body, &mut sizes, &mut diagnostics);
-    }
-    diagnostics
 }
 
 fn walk_body(body: &[Stmt], sizes: &mut HashMap<String, i64>, diagnostics: &mut Vec<Diagnostic>) {
