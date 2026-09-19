@@ -29,6 +29,10 @@ export const FIXTURE_HTML = `
 
       <div id="panel-import" class="tabs__panel" role="tabpanel">
         <div id="drop-zone" class="drop-zone">
+          <div id="drop-zone-loading" class="drop-zone__loading" role="status" hidden>
+            <span class="drop-zone__spinner" aria-hidden="true"></span>
+            <span>Finding Papyrus files…</span>
+          </div>
           <p id="drop-zone-error" class="drop-zone__error" aria-live="polite"></p>
         </div>
       </div>

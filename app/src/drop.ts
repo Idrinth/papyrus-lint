@@ -5,7 +5,7 @@
 // results.
 import { invoke } from "@tauri-apps/api/core";
 import { lintPscFile, type PapyrusScript, type PscParseOutcome } from "./backend";
-import { clearError, showError, showResult } from "./main";
+import { clearError, setDropZoneLoading, showError, showResult } from "./main";
 import { switchTab } from "./main-tabs";
 import { isAchlistPath, isPscPath, scriptRootsForAchlist } from "./path";
 import { scheduleHideLintProgress, showLintProgress, updateLintProgress } from "./progress";
@@ -37,6 +37,11 @@ export function markLintResultsStale() {
 // straggling outcome from a drop superseded by a newer one can't get mixed
 // into the newer drop's results.
 let currentParseGeneration = 0;
+
+// Kept separate from currentParseGeneration because directory enumeration
+// happens before parsing begins. A superseded, slower drop must not hide the
+// newer drop's loading indicator when its own listing eventually completes.
+let currentListingGeneration = 0;
 
 // How many scripts parsePscFiles works on at once, mirroring the CLI's own
 // --threads default (papyrus_lint_core::parallel::default_thread_count): the
@@ -98,6 +103,13 @@ export async function parsePscFiles(
 }
 
 export async function handleDroppedPaths(paths: string[]) {
+  const listingGeneration = ++currentListingGeneration;
+  setDropZoneLoading(true);
+  const finishListing = () => {
+    if (listingGeneration === currentListingGeneration) {
+      setDropZoneLoading(false);
+    }
+  };
   const achlistPath = paths.find(isAchlistPath);
 
   if (achlistPath) {
@@ -114,6 +126,7 @@ export async function handleDroppedPaths(paths: string[]) {
       const generation = ++currentParseGeneration;
       const projectDir = await projectDirForAchlist(achlistPath, entries);
       showResult(achlistPath, entries, projectDir);
+      finishListing();
       switchTab("lint");
       renderPscResults(currentPscOutcomes);
 
@@ -136,6 +149,7 @@ export async function handleDroppedPaths(paths: string[]) {
         scheduleHideLintProgress();
       }
     } catch (error) {
+      finishListing();
       showError("Failed to read that .achlist file. Please try again.");
       console.error(error);
     }
@@ -150,6 +164,7 @@ export async function handleDroppedPaths(paths: string[]) {
     const generation = ++currentParseGeneration;
     const projectDir = await projectDirForPscPath(pscPath);
     showResult(pscPath, [pscPath], projectDir);
+    finishListing();
     switchTab("lint");
     renderPscResults(currentPscOutcomes);
 
@@ -188,6 +203,7 @@ export async function handleDroppedPaths(paths: string[]) {
       const generation = ++currentParseGeneration;
       const projectDir = await projectDirForDirectory(dirPath, entries);
       showResult(dirPath, entries, projectDir);
+      finishListing();
       switchTab("lint");
       renderPscResults(currentPscOutcomes);
 
@@ -211,6 +227,7 @@ export async function handleDroppedPaths(paths: string[]) {
     }
   }
 
+  finishListing();
   showError("Please drop a single .achlist or .psc file, or a folder to scan recursively.");
 }
 
