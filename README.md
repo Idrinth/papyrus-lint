@@ -176,38 +176,27 @@ produces a diagnostic anywhere in the file, is flagged; a bare
 
 ## Configuration
 
-Lint/fix behavior is configured via an optional YAML file named
-`papyrus-lint.yaml` (or `papyrus-lint.yml`), placed at the project root:
-next to the `.achlist` file you drop into the app, or, for a single
-`.psc` file dropped directly, two directories above it (e.g. `Data` for
-`Data/Scripts/Source/abc.psc`). Any key it omits falls back to its
-default. The full default configuration, with every key documented inline,
-is checked in at
-[`configuration/papyrus-lint.default.yaml`](configuration/papyrus-lint.default.yaml) — it's
-also what `PapyrusLinterCLI init` (or `init --preset strict`, the default)
-writes into a project with no config file yet. `PapyrusLinterCLI init
---preset <name>` picks a different built-in (`standard`, `careful`) or
-user-defined starting point instead, and the desktop app offers the same
-presets from its own Settings/Presets tabs.
+Lint/fix behavior is configured via an optional `papyrus-lint.yaml` (or
+`.yml`) at the project root. Keys you omit fall back to the defaults in
+[`configuration/papyrus-lint.default.yaml`](configuration/papyrus-lint.default.yaml),
+which is also what `PapyrusLinterCLI init` writes. Built-in and user
+presets (`strict`, `standard`, `careful`, plus files next to the binary)
+are available from `init --preset` and from the desktop app's
+Settings/Presets tabs.
 
-See the [configuration reference](docs/configuration.md) for what every
-key does, how presets and the desktop app's Settings/Presets tabs work,
-and [`configuration/presets/`](configuration/presets/) for each built-in preset's own
-annotated YAML.
+See the [configuration reference](docs/configuration.md) for where that
+file is resolved, what every key does, and how presets work, and
+[`configuration/presets/`](configuration/presets/) for each built-in
+preset's own annotated YAML.
 
 ## Command-line interface
 
 ![Papyrus Lint CLI example](shared/images/papyrus-lint-cli.png)
 
-Besides its GUI, Papyrus Lint can lint non-interactively from the
-command line two ways: by passing an `.achlist` (or a single `.psc`, or a
-directory) path to the desktop app's own executable (`PapyrusLinter`), or
-via the standalone `PapyrusLinterCLI` binary (`app/crates/papyrus-lint-cli`)
-built and shipped separately for use cases — e.g. a CI pipeline — that
-shouldn't need the desktop app's binary (and its GUI dependencies) at all.
-Both accept the same argument and behave identically.
-
-[See the docs](docs/cli.md) for more details.
+The desktop app (`PapyrusLinter`) and the standalone `PapyrusLinterCLI`
+binary accept the same arguments and lint an `.achlist`, a `.psc`, or a
+directory without a GUI. See the [CLI reference](docs/cli.md) for
+subcommands, project resolution, and report formats.
 
 Prebuilt `PapyrusLinterCLI`/`PapyrusLinterCLI.exe` standalone CLI binaries
 for Linux, macOS, and Windows are attached to each [GitHub

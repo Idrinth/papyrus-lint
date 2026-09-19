@@ -25,24 +25,12 @@ Do not paste those files back into this index. Update the file you read.
 
 ## Crate map
 
-| Crate | Path | Role |
-| --- | --- | --- |
-| `papyrus-parser` | `app/crates/papyrus-parser` | Lexer, AST, parser. No lint rules. |
-| `papyrus-ast-cache` | `app/crates/papyrus-ast-cache` | Disk-backed AST/token cache, keyed by content MD5 + mtime + linter version. Re-exported by `papyrus-lint-core` as `ast_cache`. |
-| `papyrus-lints` | `app/crates/papyrus-lints` | Rules, `lint()` / `repair()`, config, tags. |
-| `papyrus-lint-config` | `app/crates/papyrus-lint-config` | Locates/loads/saves a project's `papyrus-lint.yaml`, presets. |
-| `papyrus-lint-core` | `app/crates/papyrus-lint-core` | Project root, achlist, function table, compiler. |
-| `papyrus-lint-cli` | `app/crates/papyrus-lint-cli` | `PapyrusLinterCLI`. Shared `run()` used by the desktop binary too. |
-| `papyrus-lint-output` | `app/crates/papyrus-lint-output` | Plain-text/JSON/AI-export report formatting, shared by `papyrus-lint-cli` and the desktop app's Tauri commands (`app/src-tauri/src/export.rs`). |
-| desktop shell | `app/src-tauri` | Tauri commands + GUI/CLI dispatch. |
-| frontend | `app/src` | Vanilla TypeScript. No framework. |
-| VS Code | `vscode-extension/` | Editor integration. |
-| Sublime | `SublimeLinter-contrib-papyrus-lint/` | Editor integration. |
-| rule data | `shared/rules/data/*.yaml`, `shared/rules/*.json` | Compiled in by `papyrus-lints` / `papyrus-lint-core` `build.rs` (via the generated `shared/rules.json`, see hard rule 4); `importance`/`kept_in_standard` also drive `papyrus-lint-config/build.rs`'s generated `standard`/`careful` presets. |
-
-The seven reusable crates are **path dependencies, not Cargo workspace
-members**. Run `cargo test` / `cargo fmt` / `cargo clippy` against each
-crate's own `Cargo.toml`. Only `app/src-tauri` needs Tauri system deps.
+The seven reusable crates under `app/crates/` are **path dependencies, not
+Cargo workspace members**. Run `cargo test` / `cargo fmt` / `cargo clippy`
+against each crate's own `Cargo.toml`. Only `app/src-tauri` needs Tauri
+system deps. Paths and roles live in
+[`docs/project-structure.md`](docs/project-structure.md) — do not recopy
+that table here.
 
 ## Commands
 
@@ -172,6 +160,10 @@ If the rule introduces a new *kind* keyword (not `style` /
   `docs/nexuspage.bbcode` CLI or configuration section (hand-edited; not
   covered by the generator above). Other README/`docs/*.md` edits do not
   need a Nexus update.
+- `CONTRIBUTING.md` development setup and this index's crate map are
+  pointers, not copies: edit [`docs/agent/development.md`](docs/agent/development.md)
+  or [`docs/project-structure.md`](docs/project-structure.md) instead of
+  pasting those files back here.
 - `pages/index.template.html`'s CLI examples and every `docs/` subpage are
   generated from `README.md`/`docs/*.md` on deploy — see Pages in
   `docs/agent/pages.md` for the `<!--CLI_EXAMPLES-->` extraction and the

@@ -52,9 +52,11 @@ release's baked `PapyrusLinterCLI` or `PapyrusLinter` digest, and its
 is rejected before linting, fixing, or initializing a configuration.
 
 Lint configuration is read from `papyrus-lint.yaml`/`.yml` in the project
-root inferred by the CLI (two directories above a `.psc` in the conventional
-`Scripts/Source` or `Source/Scripts` layout). See the main project's README
-for the configuration format. Under the hood, this
+root inferred by the CLI (the directory above a `Scripts/Source` or
+`Source/Scripts` pair, or the nearest ancestor that already has a config
+file). See the main project's [configuration
+reference](https://github.com/Idrinth/papyrus-lint/blob/the-one/docs/configuration.md)
+for the format and exact resolution order. Under the hood, this
 linter runs `PapyrusLinterCLI --json` and parses its structured JSON
 report rather than scraping plain-text output.
 
