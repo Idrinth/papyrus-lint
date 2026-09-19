@@ -865,18 +865,22 @@ jobs:
           ignore: DL3018
 
   docker-build:
-    name: Docker image build (${{ matrix.preset }})
+    name: Docker image build (${{ matrix.preset }}) for ${{ matrix.game }}
     needs: labels
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         preset: [strict, standard, careful]
+        game: [skyrim]
     steps:
       - uses: actions/checkout@v7
 
       - name: Build rules.json from shared/rules/
         run: python3 .github/scripts/build_rules_json.py
+
+      - name: Provide scripts as expected
+        run: cp shared/${{ matrix.game }}-scripts.zip docker/Scripts.zip
 
       - uses: dtolnay/rust-toolchain@stable
 

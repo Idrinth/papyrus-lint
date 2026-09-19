@@ -7,19 +7,23 @@ on:
 
 jobs:
   container:
-    name: Publish CLI container (${{ matrix.preset }})
+    name: Publish CLI container (${{ matrix.preset }}) for ${{ matrix.game }}
     runs-on: ubuntu-latest
     needs: release
     strategy:
       fail-fast: false
       matrix:
         preset: [strict, standard, careful]
+        game: [skyrim]
     permissions:
       contents: read
       id-token: write
       packages: write
     steps:
       - uses: actions/checkout@v7
+
+      - name: Provide scripts as expected
+        run: cp shared/${{ matrix.game }}-scripts.zip docker/Scripts.zip
 
       - name: Download released Linux CLI
         env:
@@ -52,14 +56,23 @@ jobs:
         run: |
           name="${{ steps.image.outputs.name }}"
           preset="${{ matrix.preset }}"
+          game="${{ matrix.game }}"
           tag="${{ github.ref_name }}"
           {
             echo "list<<EOF"
-            echo "$name:$tag-$preset"
-            echo "$name:$preset"
+            echo "$name:$tag-$game-$preset"
+            echo "$name:$game-$preset"
             if [ "$preset" = strict ]; then
-              echo "$name:$tag"
-              echo "$name:latest"
+              echo "$name:$game-$tag"
+              echo "$name:$game-latest"
+            fi
+            if [ "$game" = skyrim ]; then
+              echo "$name:$tag-$preset"
+              echo "$name:$preset"
+              if [ "$preset" = strict ]; then
+                echo "$name:$tag"
+                echo "$name:latest"
+              fi
             fi
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
