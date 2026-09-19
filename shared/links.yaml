@@ -1,31 +1,34 @@
+# Project destinations. Labels are the mapping keys; `type` values are tags
+# that build-time markers filter by (`<!--CONTACT-LINKS-->`, `<LINKS>`, ...)
+# instead of naming a label at each destination.
 Discord:
   url: https://discord.gg/idrinth
   type:
-  - contact
+    - contact
 Nexus Mods:
   url: https://www.nexusmods.com/skyrimspecialedition/mods/189862
   type:
-  - contact
-  - download
+    - contact
+    - download
 GitHub:
   url: https://github.com/idrinth/papyrus-lint
   type:
-  - contact
-  - download
+    - contact
+    - download
 Tally Feedback Form:
   url: https://tally.so/r/aQL1dB
   type:
-  - contact
+    - contact
 Documentation Website:
   url: https://papyrus-lint.idrinth.de
   type:
-  - download
-  - documentation
+    - download
+    - documentation
 GitHub Action:
   url: https://github.com/marketplace/actions/papyrus-lint
   type:
-  - download
+    - download
 VSCode Extension:
   url: https://marketplace.visualstudio.com/items?itemName=Idrinth.papyrus-lint-vscode
   type:
-  - download
+    - download

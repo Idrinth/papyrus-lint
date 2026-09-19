@@ -77,6 +77,26 @@ class RenderSharedComponentsTest(unittest.TestCase):
         )
 
 
+class TaggedLinksTest(unittest.TestCase):
+    def test_replaces_contact_link_markers_from_shared_yaml_by_tag(self) -> None:
+        result = site_chrome.render_shared_components(
+            '<div class="badge-row"><!--CONTACT-LINKS--></div>',
+            "",
+            "",
+        )
+
+        self.assertNotIn("<!--CONTACT-LINKS-->", result)
+        self.assertIn('href="https://discord.gg/idrinth"', result)
+        self.assertIn('href="https://tally.so/r/aQL1dB"', result)
+        self.assertNotIn("marketplace.visualstudio.com", result)
+        self.assertNotIn("github.com/marketplace/actions", result)
+
+    def test_leaves_templates_without_link_markers_unchanged(self) -> None:
+        result = site_chrome.render_shared_components("<main>plain</main>", "", "")
+
+        self.assertEqual(result, "<main>plain</main>")
+
+
 class FundingLinksTest(unittest.TestCase):
     def test_parse_funding_values_accepts_scalars_lists_quotes_and_empty_values(self) -> None:
         self.assertEqual(site_chrome.parse_funding_values(" sponsor "), ["sponsor"])

@@ -40,3 +40,6 @@ panic = "abort"
 # crate's Cargo.toml for why the build-script profile is optimized.
 [profile.dev.build-override]
 opt-level = 3
+
+[build-dependencies]
+serde_norway = "0.9"

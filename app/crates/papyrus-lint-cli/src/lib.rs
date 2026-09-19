@@ -286,6 +286,8 @@ use std::io::Write;
 /// Command-line help printed on a usage error (`--help`, missing path, etc.).
 /// Synopsis lives here; the example invocations are the checked-in
 /// `docs/papyrus-cli-usage.txt` so that file and this help stay in lockstep.
+/// Contact URLs are generated at compile time from `shared/links.yaml`,
+/// filtered by the `contact` tag rather than named individually.
 pub const USAGE: &str = concat!(
     "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       ",
     "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--output <path>] [--color <when>] [--tag <kind>] --blob <source>\n       ",
@@ -303,7 +305,7 @@ pub const USAGE: &str = concat!(
     "fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n",
     "I/O error.\n\n",
     "Contact:\n",
-    "<CONTACT-LINKS>"
+    include_str!(concat!(env!("OUT_DIR"), "/contact_links.txt"))
 );
 
 /// The crate's version, as set in `crates/papyrus-lint-cli/Cargo.toml`
@@ -387,5 +389,15 @@ mod usage_tests {
         assert!(crate::USAGE.contains("PapyrusLinterCLI path/to/project.achlist"));
         assert!(crate::USAGE.contains("PapyrusLinterCLI --blob"));
         assert!(crate::USAGE.contains("PapyrusLinterCLI doctor path/to/project.achlist"));
+    }
+
+    #[test]
+    fn usage_embeds_contact_tagged_links_from_shared_yaml() {
+        assert!(crate::USAGE.contains("https://discord.gg/idrinth"));
+        assert!(crate::USAGE.contains("https://tally.so/r/aQL1dB"));
+        assert!(
+            !crate::USAGE.contains("marketplace.visualstudio.com"),
+            "CLI help should only include contact-tagged links"
+        );
     }
 }

@@ -7,6 +7,7 @@ entrypoint) with no behavior change.
 from pathlib import Path
 
 from .coverage_lcov import MODULES, iter_leaf_paths, parse_lcov
+from .links import render_bbcode_list, replace_angle_link_markers
 
 MARKERS = {
     "<COVERED_LINES>": "hit",
@@ -15,7 +16,6 @@ MARKERS = {
     "<VERSION>": "version",
     "<CONFIGURATION>": "configuration",
     "<CLI>": "cli",
-    "<LINKS>": "links",
 }
 
 
@@ -49,9 +49,8 @@ def render(template: str, hit: int, found: int, version: str) -> str:
         "version": version,
         "configuration": Path("configuration/papyrus-lint.default.yaml").read_text(encoding="utf-8", errors="replace"),
         "cli": Path("docs/papyrus-cli-usage.txt").read_text(encoding="utf-8", errors="replace"),
-        "links": "",#to be filled from /shared/links.yaml with contact links
     }
     rendered = template
     for marker, value_name in MARKERS.items():
         rendered = rendered.replace(marker, values[value_name])
-    return rendered
+    return replace_angle_link_markers(rendered, render_bbcode_list)

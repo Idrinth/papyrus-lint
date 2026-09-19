@@ -128,6 +128,25 @@ class RenderTests(unittest.TestCase):
             nexuspage_render.render(template, 3, 4, "v1.0.0"),
         )
 
+    def test_render_fills_links_marker_from_shared_yaml(self) -> None:
+        result = nexuspage_render.render("go <LINKS> here", 1, 2, "v1")
+
+        self.assertNotIn("<LINKS>", result)
+        self.assertIn("[list]", result)
+        self.assertIn("[url=https://discord.gg/idrinth]Discord[/url]", result)
+        self.assertIn(
+            "[url=https://marketplace.visualstudio.com/items?itemName=Idrinth.papyrus-lint-vscode]"
+            "VSCode Extension[/url]",
+            result,
+        )
+
+    def test_render_filters_contact_links_by_the_marker_tag(self) -> None:
+        result = nexuspage_render.render("<CONTACT-LINKS>", 1, 2, "v1")
+
+        self.assertIn("[url=https://discord.gg/idrinth]Discord[/url]", result)
+        self.assertIn("[url=https://tally.so/r/aQL1dB]Tally Feedback Form[/url]", result)
+        self.assertNotIn("marketplace.visualstudio.com", result)
+
 
 if __name__ == "__main__":
     unittest.main()
