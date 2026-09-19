@@ -1,7 +1,6 @@
 #!/bin/sh
 set -eu
 
-bundled_archive=/usr/local/share/papyrus-lint/Scripts.zip
 user_archive=${PAPYRUS_LINT_BASE_SCRIPTS_ARCHIVE:-/base-scripts/skyrim-scripts.zip}
 default_config=/usr/local/share/papyrus-lint/papyrus-lint.yaml
 
@@ -28,10 +27,6 @@ else
     archive=
     if [ -f "$user_archive" ]; then
         archive=$user_archive
-    elif [ -f "$bundled_archive" ]; then
-        archive=$bundled_archive
-    fi
-    if [ -n "$archive" ]; then
         unpacked=/tmp/skyrim-base-scripts
         rm -rf "$unpacked"
         mkdir -p "$unpacked"
@@ -43,7 +38,9 @@ else
 fi
 
 if [ -n "$base_scripts" ]; then
-    set -- --script-root "$base_scripts" "$@"
+    set -- --script-root "$base_scripts" --script-root "/skyrim-scripts" "$@"
+else
+    set -- --script-root "/skyrim-scripts" "$@"
 fi
 
 has_config_flag=0
