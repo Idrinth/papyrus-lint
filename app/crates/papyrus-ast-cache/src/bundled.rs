@@ -1,5 +1,5 @@
 //! Content-addressed AST/token cache of the Skyrim and SKSE scripts in
-//! `shared/skyrim-scripts.zip` and `shared/skyrim-extender-scripts.zip`,
+//! `shared/scripts/skyrim-scripts.zip` and `shared/scripts/skyrim-extender-scripts.zip`,
 //! compiled into the binary by `build.rs`.
 //!
 //! Lookups are keyed only by an MD5 of the decoded source text, so a
