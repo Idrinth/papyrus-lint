@@ -17,6 +17,14 @@ parsing (`pages/markdown_render.py`), syntax highlighting
 already their own modules - see below. Each module has its own
 `pages/test_*.py`.
 
+The Playwright checker's tests are split by the concern they exercise rather
+than collected in one counterpart to `pages/browser_check.py`: helper and
+server behavior, checker lifecycle, links, runtime browser events, document
+validation, and the CLI each have a `pages/test_browser_check_*.py` module.
+The browser tests for `theme.js`, `downloads.js`, and `rules.js` likewise live
+in separate `pages/test_*_script.py` modules and share their Playwright setup
+through `pages/test_browser_script_support.py`.
+
 A manual `workflow_dispatch` run (including one fired remotely by
 `release.yml`'s `update-pages` job, see Releases below) builds and deploys
 a discoverability landing page to GitHub Pages. It deliberately has no
