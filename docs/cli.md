@@ -1,8 +1,9 @@
 # Command-line interface reference
 
 Besides its GUI, Papyrus Lint can lint non-interactively from the
-command line two ways: by passing an `.achlist` (or a single `.psc`, or a
-directory) path to the desktop app's own executable (`PapyrusLinter`), or
+command line two ways: by passing an `.achlist` (or a `.ppj`, a single
+`.psc`, or a directory) path to the desktop app's own executable
+(`PapyrusLinter`), or
 via the standalone `PapyrusLinterCLI` binary (`app/crates/papyrus-lint-cli`)
 built and shipped separately for use cases — e.g. a CI pipeline — that
 shouldn't need the desktop app's binary (and its GUI dependencies) at all.
@@ -25,6 +26,17 @@ refuses to overwrite an existing `papyrus-lint.yaml` or `papyrus-lint.yml`
 file, and a `--preset` name matching neither a built-in nor a file in that
 directory is reported as an error.
 
+If the current working directory has exactly one `.ppj` (Papyrus Project
+XML) file — the project format used by Caprica and Bethesda's own
+`PapyrusCompiler.exe`/Creation Kit tooling — `init` also seeds the new
+config's `additional_script_roots` from that file's own `<Import>` entries,
+so a real project's own compile-time import search paths (which would
+otherwise have to be guessed, or hand-copied from the `.ppj`) are picked up
+automatically. This only happens on a brand new config with no
+`additional_script_roots` of its own yet (an executable-adjacent base config
+that already sets some is left untouched), and never fails `init` itself:
+a `.ppj` that fails to parse is reported as a warning, not an error.
+
 If a `papyrus-lint.yaml`/`.yml` file exists next to the running executable
 (the CLI binary itself, or the desktop app's binary when it delegates to CLI
 mode), `init` merges it in as the base instead of the selected preset's own
@@ -46,15 +58,16 @@ via `--preset <name>`, one per line: the three built-ins first, then any
 user preset found under the executable-adjacent `presets` directory, in
 alphabetical order.
 
-`PapyrusLinterCLI doctor <path-to-achlist-or-psc-or-directory>` validates a
+`PapyrusLinterCLI doctor <path-to-achlist-or-ppj-or-psc-or-directory>` validates a
 project's setup without linting any script: that the given path itself
-exists (and, for an `.achlist`, that every entry it lists exists on disk);
-that a discovered — or `--config`-overridden — `papyrus-lint.yaml`/`.yml`
+exists (and, for an `.achlist`/`.ppj`, that every entry it lists exists on
+disk); that a discovered — or `--config`-overridden — `papyrus-lint.yaml`/`.yml`
 actually parses; that at least one of `scripts/source`/`source/scripts`
 exists under the resolved project root; that each configured
-`additional_script_roots` entry (and any `--script-root` given alongside
-`doctor`) and each configured `lookup_script_roots` entry resolves to an
-existing directory; and that a configured, or
+`additional_script_roots` entry (any `--script-root` given alongside
+`doctor`, and, for a `.ppj`, each of its own `<Import>` entries) and each
+configured `lookup_script_roots` entry resolves to an existing directory;
+and that a configured, or
 auto-detected, `compiler_path` points at an existing file — warning
 instead if `compile_check` is enabled but no compiler path could be
 resolved at all. Each check is printed as its own `[ok]`/`[warning]`/
@@ -67,16 +80,25 @@ convention every other subcommand follows.
 ## Resolving a project
 
 Given an `.achlist` path, it resolves every `.psc` entry listed in it.
-Given a single `.psc` path directly, it lints just that file, treating it
-as the achlist's sole entry. Given a directory instead, it recursively
-scans it (and every subdirectory beneath it, at any depth) for `.psc`
-files and lints every one found — useful for a mod whose scripts are
-spread across arbitrarily nested subfolders instead of a flat
+Given a `.ppj` (Papyrus Project XML) path instead — the project format used
+by Caprica and Bethesda's own `PapyrusCompiler.exe`/Creation Kit tooling —
+it resolves every `.psc` its `<Folders>` entries contain (recursively,
+unless a `<Folder>` sets `NoRecurse="true"`) plus every `<Script>` entry
+(a dotted Papyrus object name, e.g. `MyMod:MyQuestScript`, resolved against
+the ppj's own `<Import>` entries the same way the compiler resolves an
+`Extends`), and feeds those `<Import>` entries into `additional_script_roots`
+for that run — on top of whatever the project's own config already sets —
+so calls into a script that only exists under a vendored/base-game
+`<Import>` still resolve. Given a single `.psc` path directly, it lints just
+that file, treating it as the achlist's sole entry. Given a directory
+instead, it recursively scans it (and every subdirectory beneath it, at any
+depth) for `.psc` files and lints every one found — useful for a mod whose
+scripts are spread across arbitrarily nested subfolders instead of a flat
 `scripts/source` (e.g. Requiem's own layout) and that ships no `.achlist`
 at all. Either way, each script is linted against the project's
 `papyrus-lint.yaml`/`.yml` config file (see the configuration reference).
-For an `.achlist`, the project root is its containing directory; for a bare
-`.psc`, the root is found by walking up from the file for a
+For an `.achlist`/`.ppj`, the project root is its containing directory; for
+a bare `.psc`, the root is found by walking up from the file for a
 `Scripts/Source` or `Source/Scripts` directory pair (matched
 case-insensitively) and taking the directory above it — so it's found
 correctly even for a script nested further still, e.g. a namespaced

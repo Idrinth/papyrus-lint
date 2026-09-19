@@ -28,7 +28,7 @@ use crate::project::{is_psc_path, resolve_input_project_root};
 /// error, a failed check never aborts the remaining ones: `doctor` always
 /// runs every check it can and reports the full picture in one go.
 ///
-/// Accepts the same positional `<path-to-achlist-or-psc-or-directory>` as a
+/// Accepts the same positional `<path-to-achlist-or-ppj-or-psc-or-directory>` as a
 /// plain lint run, plus `--config <path>` and one or more `--script-root
 /// <path>` (see [`crate::USAGE`]), so it reports on exactly the project
 /// configuration a matching lint/fix run would actually use. `--json`
@@ -48,7 +48,7 @@ pub(crate) fn run_doctor(raw: DoctorRawArgs, stdout: &mut impl Write) -> u8 {
 
     let is_psc_file = is_psc_path(&input_path);
     let is_directory = !is_psc_file && input_path.is_dir();
-    let script_paths =
+    let (script_paths, ppj_imports) =
         collect_doctor_input_checks(&input_path, is_psc_file, is_directory, &mut checks);
 
     // Mirrors `run`'s own project-root resolution (see
@@ -62,12 +62,13 @@ pub(crate) fn run_doctor(raw: DoctorRawArgs, stdout: &mut impl Write) -> u8 {
     )));
 
     check_lint_config(&project_root, config_path.as_deref(), &mut checks);
-    let additional_script_roots = load_additional_script_roots(
+    let mut additional_script_roots = load_additional_script_roots(
         &project_root,
         config_path.is_some(),
         cli_script_roots,
         &mut checks,
     );
+    additional_script_roots.extend(ppj_imports);
     check_configured_roots(
         &project_root,
         &additional_script_roots,

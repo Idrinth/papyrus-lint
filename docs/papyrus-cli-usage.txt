@@ -1,4 +1,5 @@
 PapyrusLinterCLI path/to/project.achlist
+PapyrusLinterCLI path/to/Project.ppj
 PapyrusLinterCLI init
 PapyrusLinterCLI init --preset standard
 PapyrusLinterCLI init --preset my-team
@@ -7,6 +8,7 @@ PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml --yes
 PapyrusLinterCLI preset list
 PapyrusLinterCLI doctor path/to/project.achlist
 PapyrusLinterCLI doctor --json path/to/project.achlist
+PapyrusLinterCLI doctor path/to/Project.ppj
 PapyrusLinterCLI path/to/Example.psc
 PapyrusLinterCLI path/to/scripts/source
 PapyrusLinterCLI fix path/to/project.achlist

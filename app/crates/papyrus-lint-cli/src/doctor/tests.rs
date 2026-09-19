@@ -309,6 +309,89 @@ fn doctor_reports_a_malformed_achlist_and_continues_other_checks() {
 }
 
 #[test]
+fn doctor_reports_a_healthy_ppj_project_and_its_imports() {
+    // Uses the conventional `scripts/source` layout so this only exercises
+    // ppj-specific behavior, leaving the (unrelated, pre-existing)
+    // conventional-directory warning untouched.
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    write_file(
+        &dir.path().join("scripts/source/Example.psc"),
+        "ScriptName Example\n",
+    );
+    write_file(
+        &dir.path().join("Project.ppj"),
+        r#"<PapyrusProject>
+    <Imports>
+        <Import>scripts/source</Import>
+    </Imports>
+    <Folders>
+        <Folder>scripts/source</Folder>
+    </Folders>
+</PapyrusProject>"#,
+    );
+    let ppj_path = dir.path().join("Project.ppj");
+
+    let (code, stdout, stderr) = run_captured(&[
+        "doctor".to_string(),
+        ppj_path.to_string_lossy().into_owned(),
+    ]);
+
+    assert_eq!(code, 0, "stderr: {stderr}, stdout: {stdout}");
+    assert!(stdout.contains("every entry in"));
+    assert!(stdout.contains(&format!(
+        "[ok] additional script root {} exists",
+        dir.path().join("scripts/source").display()
+    )));
+    assert!(stdout.contains("no problems found"));
+}
+
+#[test]
+fn doctor_reports_each_missing_ppj_script_entry() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    write_file(
+        &dir.path().join("Project.ppj"),
+        r#"<PapyrusProject>
+    <Folders>
+        <Folder>Missing</Folder>
+    </Folders>
+    <Scripts>
+        <Script>Absent</Script>
+    </Scripts>
+</PapyrusProject>"#,
+    );
+    let ppj_path = dir.path().join("Project.ppj");
+
+    let (code, stdout, _stderr) = run_captured(&[
+        "doctor".to_string(),
+        ppj_path.to_string_lossy().into_owned(),
+    ]);
+
+    assert_eq!(code, 1);
+    assert!(stdout.contains(&format!(
+        "[error] ppj entry {} does not exist",
+        dir.path().join("Absent.psc").display()
+    )));
+}
+
+#[test]
+fn doctor_reports_a_malformed_ppj_and_continues_other_checks() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let ppj_path = dir.path().join("broken.ppj");
+    write_file(&ppj_path, "not xml at all <<<");
+
+    let (code, stdout, stderr) = run_captured(&[
+        "doctor".to_string(),
+        ppj_path.to_string_lossy().into_owned(),
+    ]);
+
+    assert_eq!(code, 1);
+    assert!(stderr.is_empty());
+    assert!(stdout.contains("[error] failed to parse ppj"));
+    assert!(stdout.contains("[ok] project root resolved to"));
+    assert!(stdout.contains("PapyrusLinterCLI doctor:"));
+}
+
+#[test]
 fn doctor_rejects_missing_flag_values() {
     for flag in ["--config", "--script-root"] {
         let (code, stdout, stderr) = run_captured(&["doctor".to_string(), flag.to_string()]);

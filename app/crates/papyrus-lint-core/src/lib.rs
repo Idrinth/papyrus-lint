@@ -25,6 +25,7 @@ pub mod function_table;
 mod native_globals;
 pub mod parallel;
 pub mod pex_header;
+pub mod ppj;
 pub mod presets;
 pub mod project_root;
 pub mod script_filename_mismatch;
