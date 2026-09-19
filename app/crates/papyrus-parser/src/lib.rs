@@ -88,6 +88,11 @@ pub fn prime_cache(source: &str, ast: ast::Script) {
 /// `papyrus_lints::lint()`/`repair()`, whose raw-token-based rules
 /// tokenize their `source` argument internally without ever seeing these
 /// tokens themselves.
+///
+/// # Panics
+///
+/// Panics when `tokens` is empty, because an empty stream cannot be passed
+/// safely to [`parser::Parser`].
 pub fn prime_tokenize_cache(source: &str, tokens: Vec<token::Token>) {
     cache::prime_tokens(source, tokens);
 }

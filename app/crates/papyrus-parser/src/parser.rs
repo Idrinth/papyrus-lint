@@ -24,7 +24,14 @@ pub struct Parser {
 }
 
 impl Parser {
+    /// Creates a parser over a non-empty token stream.
+    ///
+    /// # Panics
+    ///
+    /// Panics when `tokens` is empty. Lexer-produced streams always contain
+    /// at least the final [`TokenKind::Eof`] token.
     pub fn new(tokens: Vec<Token>) -> Self {
+        assert!(!tokens.is_empty(), "parser token stream must not be empty");
         Parser { tokens, pos: 0 }
     }
 
