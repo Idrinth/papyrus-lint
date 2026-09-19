@@ -1,6 +1,6 @@
 # Papyrus Lint
 
-[![Papyrus Lint logo](shared/images/logo-small.jpg)](shared/links.yaml)
+[![Papyrus Lint logo](shared/images/logo-small.jpg)](https://papyrus-lint.idrinth.de)
 
 **Papyrus Lint goes far beyond style: it catches bugs that CreationKit's
 compiler lets through.**
