@@ -41,7 +41,7 @@ jobs:
           retention-days: 1
 
   base-scripts-snapshot:
-    name: Base scripts snapshot (${{ matrix.preset }})
+    name: Base scripts output (${{ matrix.preset }})
     needs: base-scripts-cli
     runs-on: ubuntu-latest
     strategy:
@@ -64,7 +64,7 @@ jobs:
       - name: Make CLI executable
         run: chmod +x cli-bin/PapyrusLinterCLI
 
-      - name: Lint bundled base scripts and compare the snapshot
+      - name: Lint bundled base scripts and compare the baseline
         run: |
           python3 .github/scripts/base_scripts_snapshot.py \
             --cli cli-bin/PapyrusLinterCLI \

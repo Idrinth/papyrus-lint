@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Compare PapyrusLinterCLI output on bundled Skyrim base scripts to snapshots.
-
-Usage:
-  base_scripts_snapshot.py --cli PATH --preset strict
-  base_scripts_snapshot.py --cli PATH --all
-  base_scripts_snapshot.py --cli PATH --all --update
-"""
+"""Run CLI preset output against unordered line-based baseline fixtures."""
 
 from __future__ import annotations
 
@@ -15,13 +9,13 @@ import tempfile
 from pathlib import Path
 
 from ci_lib.base_scripts_snapshot import (
+    FIXTURE_DIR,
     PRESETS,
-    SNAPSHOT_DIR,
     SnapshotError,
-    compare_snapshot,
-    render_snapshot,
-    snapshot_path,
-    write_snapshot,
+    compare_output,
+    fixture_path,
+    render_output,
+    write_fixture,
 )
 
 
@@ -36,21 +30,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         dest="presets",
         help="Built-in preset to run (repeatable). Defaults to all three when omitted.",
     )
-    parser.add_argument(
-        "--all",
-        action="store_true",
-        help="Run every built-in preset (strict, standard, careful)",
-    )
+    parser.add_argument("--all", action="store_true", help="Run every built-in preset")
     parser.add_argument(
         "--update",
         action="store_true",
-        help=f"Rewrite snapshots under {SNAPSHOT_DIR} instead of comparing",
+        help=f"Rewrite baselines under {FIXTURE_DIR} instead of comparing",
     )
     parser.add_argument(
         "--work-dir",
         type=Path,
         default=None,
-        help="Directory used to unpack the zip and store CLI JSON (default: a temp dir)",
+        help="Directory used to unpack the zip and store CLI output (default: a temp dir)",
     )
     return parser.parse_args(argv)
 
@@ -76,37 +66,29 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     root = args.root.resolve()
     cli = args.cli if args.cli.is_absolute() else (Path.cwd() / args.cli)
-    failed = 0
 
     def run(work_dir: Path) -> int:
-        nonlocal failed
+        failed = False
         for preset in selected_presets(args):
             print(f"linting base scripts with preset {preset}", flush=True)
             try:
-                actual = render_snapshot(root, cli, preset, work_dir / preset)
+                actual = render_output(root, cli, preset, work_dir / preset)
             except SnapshotError as exc:
                 print(f"error ({preset}): {exc}", file=sys.stderr)
-                failed += 1
+                failed = True
                 continue
-            destination = snapshot_path(root, preset)
+            destination = fixture_path(root, preset)
             if args.update:
-                write_snapshot(destination, actual)
+                write_fixture(destination, actual)
                 print(f"wrote {destination.relative_to(root)}")
                 continue
-            diff = compare_snapshot(actual, destination)
+            diff = compare_output(actual, destination)
             if diff is None:
                 print(f"ok ({preset}): matches {destination.relative_to(root)}")
                 continue
-            print(f"snapshot mismatch ({preset})", file=sys.stderr)
+            print(f"baseline mismatch ({preset})", file=sys.stderr)
             print(_truncate_diff(diff), file=sys.stderr)
-            print(
-                "Re-generate with "
-                "`python3 .github/scripts/base_scripts_snapshot.py "
-                f"--cli <PapyrusLinterCLI> --preset {preset} --update` "
-                "after reviewing the delta.",
-                file=sys.stderr,
-            )
-            failed += 1
+            failed = True
         return 1 if failed else 0
 
     if args.work_dir is not None:

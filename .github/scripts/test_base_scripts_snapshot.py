@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Unit tests for the base-scripts snapshot helper."""
+"""Unit tests for the base-scripts output comparison helper."""
 
 from __future__ import annotations
 
 import io
-import json
 import stat
 import tempfile
 import unittest
@@ -16,25 +15,20 @@ from base_scripts_snapshot import main as entry_main
 from ci_lib import base_scripts_snapshot as snap
 
 
-def _write_fake_cli(directory: Path, report: dict) -> Path:
-    payload = json.dumps(report)
+def _write_fake_cli(directory: Path, output: str, exit_code: int = 1) -> Path:
     script = directory / "fake-cli"
     script.write_text(
         "#!/usr/bin/env python3\n"
         "import sys\n"
-        f"REPORT = {payload!r}\n"
-        "output = None\n"
+        f"OUTPUT = {output!r}\n"
+        f"EXIT_CODE = {exit_code}\n"
         "args = sys.argv[1:]\n"
-        "for index, arg in enumerate(args):\n"
-        "    if arg == '--output' and index + 1 < len(args):\n"
-        "        output = args[index + 1]\n"
-        "        break\n"
-        "if output is None:\n"
-        "    sys.stderr.write('missing --output')\n"
-        "    sys.exit(2)\n"
+        "assert '--format' in args and args[args.index('--format') + 1] == 'plain'\n"
+        "assert '--json' not in args\n"
+        "output_path = args[args.index('--output') + 1]\n"
         "from pathlib import Path\n"
-        "Path(output).write_text(REPORT, encoding='utf-8')\n"
-        "sys.exit(1)\n",
+        "Path(output_path).write_text(OUTPUT, encoding='utf-8')\n"
+        "sys.exit(EXIT_CODE)\n",
         encoding="utf-8",
     )
     script.chmod(script.stat().st_mode | stat.S_IEXEC)
@@ -45,116 +39,48 @@ def _write_repo(directory: Path) -> Path:
     root = directory / "repo"
     (root / "shared" / "scripts").mkdir(parents=True)
     (root / "configuration" / "presets").mkdir(parents=True)
-    (root / "testdata" / "base-scripts").mkdir(parents=True)
     archive = root / "shared" / "scripts" / "skyrim-scripts.zip"
     with zipfile.ZipFile(archive, "w") as bundle:
         bundle.writestr("Source/Scripts/Actor.psc", "ScriptName Actor\n")
     for preset in snap.PRESETS:
         (root / "configuration" / "presets" / f"papyrus-lint.{preset}.yaml").write_text(
-            f"# {preset}\n",
-            encoding="utf-8",
+            f"# {preset}\n", encoding="utf-8"
         )
     return root
 
 
-class NormalizeReportTests(unittest.TestCase):
-    def test_sorts_and_drops_empty_files(self) -> None:
-        report = {
-            "scripts_checked": 3,
-            "files": [
-                {
-                    "path": "Source/Scripts/Zebra.psc",
-                    "diagnostics": [
-                        {
-                            "line": 2,
-                            "column": 4,
-                            "level": "warning",
-                            "rule": "trailing-whitespace",
-                            "message": "  trailing   space ",
-                        }
-                    ],
-                },
-                {"path": "Source/Scripts/Clean.psc", "diagnostics": []},
-                {
-                    "path": r"Source\\Scripts\\Actor.psc",
-                    "diagnostics": [
-                        {
-                            "line": 1,
-                            "column": 1,
-                            "level": "info",
-                            "rule": "unused-import",
-                            "message": "unused",
-                        }
-                    ],
-                },
-            ],
-        }
-        text = snap.normalize_report(report)
-        self.assertIn("# scripts_checked: 3", text)
-        self.assertIn("# files_with_diagnostics: 2", text)
-        self.assertIn("# total_diagnostics: 2", text)
-        summary = snap.summarize_snapshot("strict", f"# preset: strict\n{text}")
-        self.assertIn("# total_diagnostics: 2", summary)
-        self.assertIn("trailing-whitespace\t1", summary)
-        self.assertIn("unused-import\t1", summary)
-        self.assertNotIn("Clean.psc", text)
-        lines = [line for line in text.splitlines() if not line.startswith("#")]
-        self.assertEqual(
-            lines,
-            [
-                "Source/Scripts/Actor.psc\t1\t1\tinfo\tunused-import\tunused",
-                "Source/Scripts/Zebra.psc\t2\t4\twarning\ttrailing-whitespace\ttrailing space",
-            ],
-        )
-
-
-class CompareSnapshotTests(unittest.TestCase):
-    def test_reports_missing_and_mismatch(self) -> None:
+class CompareOutputTests(unittest.TestCase):
+    def test_ignores_line_order_and_preserves_duplicate_counts(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "strict.summary.txt"
-            self.assertIn("missing validated snapshot", snap.compare_snapshot("x\n", path))
-            snap.write_snapshot(path, "expected\n")
-            self.assertIsNone(snap.compare_snapshot("expected\n", path))
-            diff = snap.compare_snapshot("actual\n", path)
+            path = Path(directory) / "strict.txt"
+            self.assertIn("missing baseline", snap.compare_output("x\n", path))
+            snap.write_fixture(path, "first\nsecond\nfirst\n")
+            self.assertIsNone(snap.compare_output("second\nfirst\nfirst\n", path))
+
+            diff = snap.compare_output("second\nthird\nfirst\n", path)
             assert diff is not None
-            self.assertIn("-expected", diff)
-            self.assertIn("+actual", diff)
+            self.assertIn("- first", diff)
+            self.assertIn("+ third", diff)
+            self.assertNotIn("- second", diff)
 
 
 class RenderAndMainTests(unittest.TestCase):
-    def test_render_snapshot_and_update_round_trip(self) -> None:
-        report = {
-            "scripts_checked": 1,
-            "files": [
-                {
-                    "path": "Source/Scripts/Actor.psc",
-                    "diagnostics": [
-                        {
-                            "line": 1,
-                            "column": 1,
-                            "level": "warning",
-                            "rule": "trailing-whitespace",
-                            "message": "trailing",
-                        }
-                    ],
-                }
-            ],
-        }
+    def test_render_output_runs_cli_in_plain_text_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             root = _write_repo(base)
-            cli = _write_fake_cli(base, report)
-            work = base / "work"
-            actual = snap.render_snapshot(root, cli, "strict", work)
-            self.assertTrue(actual.startswith("# preset: strict\n"))
-            self.assertIn("trailing-whitespace\t1", actual)
-            self.assertIn("# sha256:", actual)
-            self.assertIn("# total_diagnostics: 1", actual)
+            cli = _write_fake_cli(base, "diagnostic\nsummary\n")
+            actual = snap.render_output(root, cli, "strict", base / "work")
+            self.assertEqual("diagnostic\nsummary\n", actual)
 
-            snap.write_snapshot(snap.snapshot_path(root, "strict"), actual)
-            stdout = io.StringIO()
+    def test_main_returns_one_and_prints_added_and_removed_lines(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            root = _write_repo(base)
+            cli = _write_fake_cli(base, "kept\nadded\n")
+            snap.write_fixture(snap.fixture_path(root, "strict"), "removed\nkept\n")
             stderr = io.StringIO()
-            with mock.patch("sys.stdout", stdout), mock.patch("sys.stderr", stderr):
+            with mock.patch("sys.stderr", stderr):
                 status = entry_main(
                     [
                         "--cli",
@@ -164,54 +90,43 @@ class RenderAndMainTests(unittest.TestCase):
                         "--preset",
                         "strict",
                         "--work-dir",
-                        str(base / "work2"),
-                    ]
-                )
-            self.assertEqual(0, status)
-            self.assertIn("ok (strict)", stdout.getvalue())
-
-    def test_main_update_writes_snapshot(self) -> None:
-        report = {
-            "scripts_checked": 1,
-            "files": [{"path": "Source/Scripts/Actor.psc", "diagnostics": []}],
-        }
-        with tempfile.TemporaryDirectory() as directory:
-            base = Path(directory)
-            root = _write_repo(base)
-            cli = _write_fake_cli(base, report)
-            stdout = io.StringIO()
-            with mock.patch("sys.stdout", stdout):
-                status = entry_main(
-                    [
-                        "--cli",
-                        str(cli),
-                        "--root",
-                        str(root),
-                        "--preset",
-                        "careful",
-                        "--update",
-                        "--work-dir",
                         str(base / "work"),
                     ]
                 )
-            self.assertEqual(0, status)
-            written = (root / "testdata" / "base-scripts" / "careful.summary.txt").read_text(
-                encoding="utf-8"
-            )
-            self.assertIn("# preset: careful", written)
-            self.assertIn("# total_diagnostics: 0", written)
+            self.assertEqual(1, status)
+            self.assertIn("- removed", stderr.getvalue())
+            self.assertIn("+ added", stderr.getvalue())
+
+    def test_main_update_writes_fixture_and_matching_run_succeeds(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            root = _write_repo(base)
+            cli = _write_fake_cli(base, "second\nfirst\n")
+            common_args = [
+                "--cli",
+                str(cli),
+                "--root",
+                str(root),
+                "--preset",
+                "careful",
+                "--work-dir",
+                str(base / "work"),
+            ]
+            self.assertEqual(0, entry_main([*common_args, "--update"]))
+            self.assertEqual("second\nfirst\n", snap.fixture_path(root, "careful").read_text())
+
+            cli = _write_fake_cli(base, "first\nsecond\n")
+            self.assertEqual(0, entry_main(common_args))
 
     def test_unknown_preset_and_cli_crash(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             root = _write_repo(base)
             with self.assertRaises(snap.SnapshotError):
-                snap.render_snapshot(root, base / "missing", "nope", base / "work")
-            crashing = base / "crash"
-            crashing.write_text("#!/bin/sh\necho boom >&2\nexit 2\n", encoding="utf-8")
-            crashing.chmod(crashing.stat().st_mode | stat.S_IEXEC)
+                snap.render_output(root, base / "missing", "nope", base / "work")
+            crashing = _write_fake_cli(base, "", exit_code=2)
             with self.assertRaises(snap.SnapshotError) as ctx:
-                snap.render_snapshot(root, crashing, "strict", base / "work")
+                snap.render_output(root, crashing, "strict", base / "work")
             self.assertIn("exited 2", str(ctx.exception))
 
 
