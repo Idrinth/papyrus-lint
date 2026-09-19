@@ -1,0 +1,36 @@
+name: CI / Labels
+
+on:
+  push:
+    branches: [the-one]
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  labels:
+    name: Pull request labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require component and type labels
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const names = context.payload.pull_request.labels.map((label) => label.name);
+            const missing = [];
+            if (!names.some((name) => name.startsWith('component: '))) {
+              missing.push('a "component: ..." label');
+            }
+            if (!names.some((name) => name.startsWith('type: '))) {
+              missing.push('a "type: ..." label');
+            }
+            if (missing.length > 0) {
+              core.setFailed(`This pull request is missing ${missing.join(' and ')}. See CONTRIBUTING.md for the required labels.`);
+            }

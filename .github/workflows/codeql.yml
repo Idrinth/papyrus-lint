@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: CodeQL
 
 on:
   # Keep a manual trigger available so the default branch can be rescanned

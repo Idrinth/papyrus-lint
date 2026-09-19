@@ -1,0 +1,419 @@
+name: CI / Tests
+
+on:
+  push:
+    branches: [the-one]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  bbcode:
+    name: CI scripts and Nexus page BBCode lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install coverage
+        run: pip install coverage
+
+      - name: Test Nexus page scripts
+        run: |
+          coverage run --source=.github/scripts --omit='.github/scripts/test_*.py' \
+            -m unittest discover -s .github/scripts -p 'test_*.py' -v
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### CI scripts coverage"
+            echo '```'
+            coverage report -m
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always()
+        run: coverage lcov -o lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ci-scripts-coverage
+          path: lcov.info
+
+  pages:
+    name: GitHub Pages builder tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install coverage -r pages/requirements-build.txt -r pages/requirements-browser-check.txt
+          playwright install --with-deps chromium
+
+      - name: Test site builder with coverage
+        run: |
+          coverage run --source=pages --omit='pages/test_*.py' \
+            -m unittest discover -s pages -p 'test_*.py' -v
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### GitHub Pages builder coverage"
+            echo '```'
+            coverage report -m
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always()
+        run: coverage lcov -o lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pages-coverage
+          path: lcov.info
+
+  sublime-extension:
+    name: Sublime Text extension tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install coverage
+
+      - name: Test with coverage
+        run: |
+          coverage run --source=SublimeLinter-contrib-papyrus-lint \
+            --omit='SublimeLinter-contrib-papyrus-lint/tests/*' \
+            -m unittest discover -s SublimeLinter-contrib-papyrus-lint/tests -v
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### Sublime Text extension coverage"
+            echo '```'
+            coverage report -m
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always()
+        run: coverage lcov -o lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sublime-extension-coverage
+          path: lcov.info
+
+  frontend:
+    name: Frontend (typecheck & build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Test with coverage
+        run: npm run test:coverage | tee coverage-output.txt
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### Frontend coverage"
+            echo '```'
+            sed -n '/% Coverage report/,$p' coverage-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-coverage
+          path: app/coverage/
+
+      - name: Build
+        run: npm run build
+
+  vscode-extension:
+    name: VS Code extension (test & compile)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode-extension
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Test with coverage
+        run: npm run test:coverage | tee coverage-output.txt
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### VS Code extension coverage"
+            echo '```'
+            sed -n '/start of coverage report/,/end of coverage report/p' coverage-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: vscode-extension-coverage
+          path: vscode-extension/lcov.info
+
+      - name: Compile
+        run: npm run compile
+
+  rust-test:
+    name: Rust test (${{ matrix.crate }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        crate:
+        - src-tauri
+        - papyrus-parser
+        - papyrus-ast-cache
+        - papyrus-lints
+        - papyrus-lint-core
+        - papyrus-lint-output
+        - papyrus-lint-cli
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - name: Install Tauri Linux dependencies
+        if: matrix.crate == 'src-tauri'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+
+      - uses: taiki-e/install-action@3f74d7c16a4242f1c95561e98edc25d36adb4375 # v2.87.12
+        with:
+          tool: cargo-llvm-cov
+
+      - uses: Swatinem/rust-cache@v2
+        if: matrix.crate == 'src-tauri'
+        with:
+          workspaces: app/${{ matrix.crate }}
+
+      - uses: Swatinem/rust-cache@v2
+        if: matrix.crate != 'src-tauri'
+        with:
+          workspaces: app/crates/${{ matrix.crate }}
+
+      - name: Test with coverage
+        if: matrix.crate == 'src-tauri'
+        run: cargo llvm-cov --manifest-path app/${{ matrix.crate }}/Cargo.toml --no-report
+
+      - name: Test with coverage
+        if: matrix.crate != 'src-tauri'
+        run: cargo llvm-cov --manifest-path app/crates/${{ matrix.crate }}/Cargo.toml --no-report
+
+      - name: Publish coverage summary
+        if: always() && matrix.crate == 'src-tauri'
+        run: |
+          {
+            echo "### Rust coverage — ${{ matrix.crate }}"
+            echo '```'
+            cargo llvm-cov report --manifest-path app/${{ matrix.crate }}/Cargo.toml --summary-only
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish coverage summary
+        if: always() && matrix.crate != 'src-tauri'
+        run: |
+          {
+            echo "### Rust coverage — ${{ matrix.crate }}"
+            echo '```'
+            cargo llvm-cov report --manifest-path app/crates/${{ matrix.crate }}/Cargo.toml --summary-only
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always() && matrix.crate == 'src-tauri'
+        run: cargo llvm-cov report --manifest-path app/${{ matrix.crate }}/Cargo.toml --lcov --output-path lcov.info
+
+      - name: Generate lcov report
+        if: always() && matrix.crate != 'src-tauri'
+        run: cargo llvm-cov report --manifest-path app/crates/${{ matrix.crate }}/Cargo.toml --lcov --output-path lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rust-coverage-${{ matrix.crate }}
+          path: lcov.info
+
+  coverage-comment:
+    name: Coverage summary comment
+    if: always() && github.event_name == 'pull_request'
+    needs: [bbcode, pages, sublime-extension, frontend, vscode-extension, rust-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: coverage-artifacts
+
+      - name: Build coverage summary
+        run: python3 .github/scripts/coverage_summary.py coverage-artifacts > coverage-summary.md
+
+      - name: Publish coverage summary
+        run: cat coverage-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post coverage comment
+        # Forked PRs get a read-only GITHUB_TOKEN, so posting the comment
+        # can fail there; the step summary above still carries the report.
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- coverage-summary-comment -->';
+            const body = fs.readFileSync('coverage-summary.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  hall-of-shame:
+    name: Hall of shame
+    # Runs in the same workflow run as the coverage-producing jobs so its
+    # uncovered-line ranking always reflects this push, never a lagging
+    # prior run's artifacts.
+    if: always() && github.event_name == 'pull_request'
+    needs: [bbcode, pages, sublime-extension, frontend, vscode-extension, rust-test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: coverage-artifacts
+
+      - name: Rank files and emit Info notices
+        run: python3 .github/scripts/hall_of_shame.py --lcov-dir coverage-artifacts > hall-of-shame.md
+
+      - name: Publish hall of shame
+        run: cat hall-of-shame.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post hall of shame comment
+        # Forked PRs get a read-only GITHUB_TOKEN, so posting the comment
+        # can fail there; the step summary and notice annotations above
+        # still carry the report.
+        continue-on-error: true
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- hall-of-shame-comment -->';
+            const body = fs.readFileSync('hall-of-shame.md', 'utf8');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

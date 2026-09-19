@@ -1,0 +1,122 @@
+name: Semver
+
+on:
+  push:
+    branches: [the-one]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: read
+
+jobs:
+  semver-advisory:
+    name: Semantic version advisory
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Determine latest release tag
+        id: latest_tag
+        run: |
+          TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Collect pull requests merged since the latest release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.latest_tag.outputs.tag }}"
+          if [ -n "$TAG" ]; then
+            RANGE="$TAG..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+
+          : > pull-requests.jsonl
+          for sha in $(git log "$RANGE" --pretty=format:%H); do
+            gh api "repos/${{ github.repository }}/commits/$sha/pulls" \
+              --jq '.[] | {number: .number, title: .title, labels: [.labels[].name]}' \
+              >> pull-requests.jsonl 2>/dev/null || true
+          done
+          jq -s '.' pull-requests.jsonl > pull-requests.json
+
+      - name: Find latest successful CI run for coverage data
+        id: ci_run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.tests.yml/runs?branch=the-one&event=push&status=completed" \
+            --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download coverage artifacts
+        if: steps.ci_run.outputs.run_id != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh run download "${{ steps.ci_run.outputs.run_id }}" \
+            --repo "${{ github.repository }}" \
+            -D coverage-artifacts \
+            -p '*coverage*'
+
+      - name: Build coverage summary
+        run: |
+          if [ -d coverage-artifacts ]; then
+            python3 .github/scripts/coverage_summary.py coverage-artifacts | tail -n +2 > semver-coverage-summary.md
+          else
+            echo "_Coverage data unavailable: no successful CI run found yet._" > semver-coverage-summary.md
+          fi
+
+      - name: Build semantic version advisory
+        run: |
+          python3 .github/scripts/semver_advisory.py pull-requests.json "${{ steps.latest_tag.outputs.tag }}" \
+            --release-notes semver-release-notes.md \
+            --outputs semver-outputs.json \
+            --coverage-summary semver-coverage-summary.md \
+            > semver-advisory.md
+
+      - name: Publish semantic version advisory
+        run: cat semver-advisory.md >> "$GITHUB_STEP_SUMMARY" && cat semver-advisory.md
+
+      - name: Create or update draft release for the detected version jump
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MARKER: "<!-- semver-advisory: auto-generated draft -->"
+        run: |
+          NEXT_VERSION=$(jq -r '.next_version // empty' semver-outputs.json)
+          if [ -z "$NEXT_VERSION" ]; then
+            echo "No version bump recommended; leaving any existing draft release untouched."
+            exit 0
+          fi
+
+          # Only ever touch a draft release this job created itself (identified
+          # by the marker in its body), never one a maintainer drafted by hand.
+          EXISTING_TAG=$(gh api "repos/${{ github.repository }}/releases" --paginate \
+            --jq '.[] | select(.draft) | select((.body // "") | contains(env.MARKER)) | .tag_name' \
+            | head -n1)
+
+          if [ -n "$EXISTING_TAG" ] && [ "$EXISTING_TAG" != "$NEXT_VERSION" ]; then
+            echo "Recommended version changed from $EXISTING_TAG to $NEXT_VERSION; retargeting the draft release."
+            gh release delete "$EXISTING_TAG" --repo "${{ github.repository }}" --yes
+            EXISTING_TAG=""
+          fi
+
+          if [ -n "$EXISTING_TAG" ]; then
+            echo "Updating existing draft release $EXISTING_TAG."
+            gh release edit "$EXISTING_TAG" --repo "${{ github.repository }}" \
+              --title "$NEXT_VERSION" --notes-file semver-release-notes.md \
+              --target "${{ github.sha }}"
+          else
+            echo "Creating draft release $NEXT_VERSION."
+            gh release create "$NEXT_VERSION" --repo "${{ github.repository }}" \
+              --title "$NEXT_VERSION" --notes-file semver-release-notes.md \
+              --target "${{ github.sha }}" --draft
+          fi

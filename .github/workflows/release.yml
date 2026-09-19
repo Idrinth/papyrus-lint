@@ -119,7 +119,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${{ github.sha }}&status=completed" \
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.tests.yml/runs?head_sha=${{ github.sha }}&status=completed" \
             --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
           if [ -z "$RUN_ID" ]; then
             echo "No successful CI run found for tagged commit ${{ github.sha }}" >&2
@@ -711,7 +711,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=${{ steps.tag_sha.outputs.sha }}&status=completed" \
+          RUN_ID=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.tests.yml/runs?head_sha=${{ steps.tag_sha.outputs.sha }}&status=completed" \
             --jq '.workflow_runs | map(select(.conclusion == "success")) | sort_by(.created_at) | last | .id // empty')
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
