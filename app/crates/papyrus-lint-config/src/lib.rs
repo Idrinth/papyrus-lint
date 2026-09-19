@@ -7,15 +7,17 @@
 //!
 //! Split by reason to change: [`project_file`] owns the YAML document
 //! itself — the project-file model, discovery, and the per-field
-//! loaders/savers built on it; [`comments`] owns the README-synced
-//! explanatory comments injected above each saved key; [`skyrim`] owns
+//! loaders/savers built on it; the generated [`comments`] module injects
+//! the default config's explanatory comments above each saved key; [`skyrim`] owns
 //! detecting a Skyrim Special Edition install (via the Windows registry)
 //! and its vanilla script directories; and [`compiler`] owns locating
 //! `PapyrusCompiler.exe`. This module re-exports their combined public API
 //! at the crate root, so callers outside this crate are unaffected by the
 //! split.
 
-mod comments;
+mod comments {
+    include!(concat!(env!("OUT_DIR"), "/comments.rs"));
+}
 mod compiler;
 pub mod presets;
 mod project_file;
