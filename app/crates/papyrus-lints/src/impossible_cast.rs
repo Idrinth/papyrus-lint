@@ -23,9 +23,8 @@
 //! guessing. [`ExternalSignatures::ancestry_fully_known`] is what
 //! distinguishes the two: a cast is only ever flagged once both the
 //! value's and the target's `Extends` chains are confirmed to resolve all
-//! the way to a definite root (a script with no `Extends` at all, or a
-//! native engine type from `shared/rules/data/native-types.yaml` with no further
-//! parent) without ever reaching each other.
+//! the way to a definite root (a resolved script with no `Extends` at all)
+//! without ever reaching each other.
 
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
 use papyrus_parser::types::{infer_type, TypeEnv};

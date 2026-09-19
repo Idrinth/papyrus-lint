@@ -1,20 +1,20 @@
 //! Integration test using real `.psc` fixture files (rather than inline
 //! source strings) to make sure the "Return type check" lint resolves
-//! subtype relationships that mix project scripts with a native engine
-//! type in the middle of the `Extends` chain.
+//! subtype relationships that mix project scripts with external engine
+//! scripts in the middle of the `Extends` chain.
 //!
-//! `typec.psc` (`TypeC Extends Armor`, `Armor` a native engine type with no
-//! `.psc` in the project) and `typed.psc` (`TypeD Extends TypeC`) exercise:
+//! `typec.psc` (`TypeC Extends Armor`) and `typed.psc` (`TypeD Extends TypeC`)
+//! exercise:
 //! - `TypeC.GetMe` (declared `Armor Function`) returning `self` (`TypeC`),
 //!   a direct project-to-native subtype;
 //! - `TypeC.GetC` (declared `Form Function`) returning its `TypeC`-typed
 //!   `c` property, requiring the chain `TypeC -> Armor -> Form` to resolve
-//!   through the native fallback past `Armor`;
+//!   through the resolved `Armor.psc` script;
 //! - `TypeD.GetAsA` (declared `TypeC Function`) returning `self` (`TypeD`),
 //!   a direct project-to-project subtype;
 //! - `TypeD.GetD` (declared `Armor Function`) returning its `TypeD`-typed
 //!   `d` property, requiring the transitive chain `TypeD -> TypeC -> Armor`
-//!   across two project scripts plus the native fallback past `Armor`.
+//!   across two project scripts plus the resolved `Armor.psc` script.
 
 use std::path::PathBuf;
 

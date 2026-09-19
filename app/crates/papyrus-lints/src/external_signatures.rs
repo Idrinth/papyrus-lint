@@ -78,7 +78,7 @@ pub trait ExternalSignatures {
     }
 
     /// Whether a declared type can be resolved to a project script, a
-    /// known native engine type, or one of Papyrus's primitive types.
+    /// resolvable script type, or one of Papyrus's primitive types.
     /// Used by the "Unresolved script reference" lint for `Extends` and
     /// type annotations. The default remains conservative for callers
     /// without project resolution.
@@ -179,9 +179,8 @@ pub trait ExternalSignatures {
     }
 
     /// Whether `type_name`'s full `Extends` ancestry can be walked all the
-    /// way to a definite root — a script with no `Extends` at all, or a
-    /// native engine type from `shared/rules/data/native-types.yaml` with no further
-    /// parent — rather than trailing off at some type along the way this
+    /// way to a definite root — a resolved script with no `Extends` at all —
+    /// rather than trailing off at some type along the way this
     /// crate simply has no data for. Used by the "Impossible cast" lint
     /// (`crate::impossible_cast`) to tell two types *proven* unrelated
     /// (neither's fully-resolved chain reaches the other) apart from two
