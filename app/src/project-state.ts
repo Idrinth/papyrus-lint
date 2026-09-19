@@ -77,3 +77,15 @@ export function setAchlistScriptRoots(roots: string[]) {
 export function configPathOverride(): string {
   return configPathOverrideEl?.value.trim() ?? "";
 }
+
+export function bindProjectSettingsDom() {
+  configPathOverrideEl = document.querySelector("#config-path-override");
+  compilerPathEl = document.querySelector("#compiler-path");
+  compileCheckEl = document.querySelector("#compile-check");
+  scriptRootsEl = document.querySelector("#script-roots");
+  lookupScriptRootsEl = document.querySelector("#lookup-script-roots");
+  detectedScriptRootsEl = document.querySelector("#detected-script-roots");
+  usedConfigurationFileEl = document.querySelector("#used-configuration-file");
+  settingsFieldsetEl = document.querySelector("#settings-fieldset");
+  settingsLockedNoticeEl = document.querySelector("#settings-locked-notice");
+}
