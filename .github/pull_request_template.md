@@ -1,16 +1,14 @@
 ## Description
 
-<!-- Briefly describe what this pull request changes and why. -->
+<!-- Briefly describe what this pull request changes. -->
 
-<!--
-Label this pull request with at least one "component: ..." label and at least
-one "type: ..." label; CI will not continue until both are present.
+## Reasoning
 
-Components: sublime lint plugin, vscode extension, frontend, linting, ci,
-parsing, documentation, pages, gui, or cli.
-Types: breaking change, feature, refactoring, tests, documentation, or
-dependency. Use multiple labels when the change spans components or types.
--->
+<!-- Briefly state why this change is benefitial or necessary. -->
+
+## Related Issues
+
+<!-- List any related issues here -->
 
 ## Checklist
 
