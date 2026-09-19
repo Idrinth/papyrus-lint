@@ -15,7 +15,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { aiConfiguration } from "./results-export-ai";
-import { DEFAULT_LINT_CONFIG, DEFAULT_RULES } from "./config";
+import { DEFAULT_LINT_CONFIG, DEFAULT_RULES } from "./config-types";
 
 describe("aiConfiguration", () => {
   it("replaces the rules object with a sorted list of just the enabled rule ids", () => {
