@@ -150,6 +150,21 @@ pub trait ExternalSignatures {
         None
     }
 
+    /// Whether calling `function_name` on `type_name` is known to have side
+    /// effects. `None` means the function could not be resolved; `false`
+    /// means it was resolved but no side effect could be proven.
+    ///
+    /// This flag is supplied by the project-level function index so every
+    /// consumer shares one definition of a side effect. The default leaves
+    /// it unknown for callers that cannot resolve scripts.
+    fn function_has_side_effects(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<bool> {
+        None
+    }
+
     /// Whether `type_name`'s script can be located by this resolver at
     /// all, with enough project data to answer for it. Used by the "Unused
     /// import" lint (`crate::unused_import`) as a gate before flagging an

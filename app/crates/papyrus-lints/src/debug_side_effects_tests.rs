@@ -1,6 +1,34 @@
 use super::*;
 
 fn check(source: &str) -> Vec<Diagnostic> {
+    check_with_side_effects(source, &[])
+}
+
+fn check_with_side_effects(source: &str, side_effects: &[&str]) -> Vec<Diagnostic> {
+    struct External<'a>(&'a [&'a str]);
+
+    impl crate::external_signatures::ExternalSignatures for External<'_> {
+        fn lookup(
+            &mut self,
+            _type_name: &str,
+            _function_name: &str,
+        ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
+            None
+        }
+
+        fn function_has_side_effects(
+            &mut self,
+            type_name: &str,
+            function_name: &str,
+        ) -> Option<bool> {
+            (type_name.eq_ignore_ascii_case("Example")).then(|| {
+                self.0
+                    .iter()
+                    .any(|name| name.eq_ignore_ascii_case(function_name))
+            })
+        }
+    }
+
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();
     super::check(
@@ -8,7 +36,7 @@ fn check(source: &str) -> Vec<Diagnostic> {
         ast.as_ref(),
         tokens.as_deref(),
         &crate::config::Config::default(),
-        &mut crate::external_signatures::NoExternalSignatures,
+        &mut External(side_effects),
     )
 }
 use crate::config::Config;
@@ -52,7 +80,7 @@ fn flags_wait_inside_debug_messagebox() {
 #[test]
 fn flags_same_script_function_that_writes_a_property() {
     let source = "ScriptName Example\n\nInt Property Count Auto\n\nInt Function Bump()\n    Count += 1\n    Return Count\nEndFunction\n\nFunction Test()\n    Debug.Trace(\"count=\" + Bump())\nEndFunction\n";
-    let diagnostics = check(source);
+    let diagnostics = check_with_side_effects(source, &["Bump"]);
 
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("Bump"));
@@ -61,7 +89,7 @@ fn flags_same_script_function_that_writes_a_property() {
 #[test]
 fn flags_transitive_same_script_side_effect() {
     let source = "ScriptName Example\n\nInt Property Count Auto\n\nFunction Write()\n    Count = 1\nEndFunction\n\nInt Function Indirect()\n    Write()\n    Return Count\nEndFunction\n\nFunction Test()\n    Debug.Trace(Indirect())\nEndFunction\n";
-    let diagnostics = check(source);
+    let diagnostics = check_with_side_effects(source, &["Indirect"]);
 
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("Indirect"));

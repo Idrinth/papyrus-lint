@@ -78,7 +78,12 @@ Cross-script lint rules share the project-semantic resolver contract in
 `ExternalSignatures`, `NoExternalSignatures`, and `ParamInfo`; the
 `argument_types` module now owns only its local signature index, AST traversal,
 call matching, and type-compatibility policy. The crate-root re-exports remain
-the public API used by `papyrus-lint-core` and other callers.
+the public API used by `papyrus-lint-core` and other callers. The
+`debug-side-effects` lint also consumes `ExternalSignatures`'s
+`function_has_side_effects` flag for same-script calls. The flag is computed
+once in `papyrus-lint-core`'s `ScriptFunctions` index and exposed by both
+`FunctionTable` adapters; the lint does not carry a second copy of the AST
+side-effect analysis.
 
 Automatic repair is available for trailing whitespace, comma spacing,
 semicolons, indentation, whitespace around member-access dots, spacing
