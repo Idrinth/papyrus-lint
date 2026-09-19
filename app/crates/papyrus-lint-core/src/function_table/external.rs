@@ -69,6 +69,11 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
             .map(|signature| signature.nodiscard)
     }
 
+    fn function_has_side_effects(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        self.lookup_function(type_name, function_name)
+            .map(|signature| signature.has_side_effects)
+    }
+
     fn ancestry_fully_known(&mut self, type_name: &str) -> bool {
         self.ancestry_fully_known(type_name)
     }

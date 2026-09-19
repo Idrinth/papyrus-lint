@@ -2,6 +2,23 @@ use super::super::test_support::{diagnostics_for, write_script};
 use super::*;
 
 #[test]
+fn exposes_the_canonical_side_effect_flag_to_lints() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let source = "ScriptName Example\n\nInt Property Count Auto\n\nInt Function Bump()\n    Count += 1\n    Return Count\nEndFunction\n\nFunction Test()\n    Debug.Trace(Bump())\nEndFunction\n";
+    write_script(root.path(), "Example", source);
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    assert_eq!(
+        papyrus_lints::ExternalSignatures::function_has_side_effects(&mut table, "Example", "Bump"),
+        Some(true)
+    );
+
+    let diagnostics = diagnostics_for("debug-side-effects", source, &mut table);
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("Bump"));
+}
+
+#[test]
 fn flags_a_local_variable_shadowing_a_parent_property_through_the_shadowing_lint() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(

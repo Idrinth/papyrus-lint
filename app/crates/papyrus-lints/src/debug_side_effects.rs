@@ -9,15 +9,13 @@
 //! author intended.
 //!
 //! Matching is token-based so a script that doesn't parse cleanly is
-//! still checked. Same-script side effects (a function that writes a
-//! property/field, or transitively calls one that does) are proven from
-//! the AST when the script parses; calls that can't be proven that way
-//! are classified by a conservative name heuristic covering common
+//! still checked. Same-script side effects come from the project function
+//! index's canonical flag; calls that can't be resolved that way are
+//! classified by a conservative name heuristic covering common
 //! mutating native prefixes (`Set`, `Remove`, `Wait`, …).
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-use papyrus_parser::ast::{Expr, FunctionDecl, Script, Stmt};
 use papyrus_parser::token::{Token, TokenKind};
 
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
@@ -39,7 +37,25 @@ impl TokenLint for Collect {
     }
 
     fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
-        self.same_script = same_script_side_effects(ctx.ast);
+        self.same_script.clear();
+        if let Some(script) = ctx.ast {
+            for function in script
+                .functions
+                .iter()
+                .chain(script.states.iter().flat_map(|state| &state.functions))
+            {
+                let key = function.name.to_ascii_lowercase();
+                if self.same_script.contains_key(&key) {
+                    continue;
+                }
+                if let Some(has_side_effects) = ctx
+                    .external
+                    .function_has_side_effects(&script.name, &function.name)
+                {
+                    self.same_script.insert(key, has_side_effects);
+                }
+            }
+        }
         self.skip_until = 0;
     }
 
@@ -210,186 +226,6 @@ fn looks_side_effecting(name: &str, same_script: &HashMap<String, bool>) -> bool
         .any(|prefix| key.starts_with(prefix))
 }
 
-fn same_script_side_effects(ast: Option<&Script>) -> HashMap<String, bool> {
-    let Some(script) = ast else {
-        return HashMap::new();
-    };
-    side_effects_by_name(&collect_decls(script))
-}
-
-fn collect_decls(script: &Script) -> HashMap<String, &FunctionDecl> {
-    let mut decls = HashMap::new();
-    for function in &script.functions {
-        decls
-            .entry(function.name.to_ascii_lowercase())
-            .or_insert(function);
-    }
-    for state in &script.states {
-        for function in &state.functions {
-            decls
-                .entry(function.name.to_ascii_lowercase())
-                .or_insert(function);
-        }
-    }
-    decls
-}
-
-fn side_effects_by_name(decls: &HashMap<String, &FunctionDecl>) -> HashMap<String, bool> {
-    let mut result: HashMap<String, bool> = HashMap::with_capacity(decls.len());
-    let mut calls: HashMap<String, HashSet<String>> = HashMap::with_capacity(decls.len());
-
-    for (name, decl) in decls {
-        let locals = local_names(decl);
-        let mut writes = false;
-        let mut called = HashSet::new();
-        scan_stmts(&decl.body, &locals, &mut writes, &mut called);
-        result.insert(name.clone(), writes);
-        calls.insert(name.clone(), called);
-    }
-
-    let mut changed = true;
-    while changed {
-        changed = false;
-        for (name, callees) in &calls {
-            if result[name] {
-                continue;
-            }
-            if callees
-                .iter()
-                .any(|callee| result.get(callee).copied().unwrap_or(false))
-            {
-                result.insert(name.clone(), true);
-                changed = true;
-            }
-        }
-    }
-    result
-}
-
-fn local_names(decl: &FunctionDecl) -> HashSet<String> {
-    let mut locals: HashSet<String> = decl
-        .params
-        .iter()
-        .map(|p| p.name.to_ascii_lowercase())
-        .collect();
-    collect_var_decl_names(&decl.body, &mut locals);
-    locals
-}
-
-fn collect_var_decl_names(body: &[Stmt], locals: &mut HashSet<String>) {
-    for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                locals.insert(decl.name.to_ascii_lowercase());
-            }
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for branch in branches {
-                    collect_var_decl_names(&branch.body, locals);
-                }
-                collect_var_decl_names(else_body, locals);
-            }
-            Stmt::While { body, .. } => collect_var_decl_names(body, locals),
-            _ => {}
-        }
-    }
-}
-
-fn scan_stmts(
-    body: &[Stmt],
-    locals: &HashSet<String>,
-    writes: &mut bool,
-    called: &mut HashSet<String>,
-) {
-    for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                if let Some(value) = &decl.value {
-                    scan_expr(value, called);
-                }
-            }
-            Stmt::Assign { target, value, .. } => {
-                if writes_field(target, locals) {
-                    *writes = true;
-                }
-                scan_expr(target, called);
-                scan_expr(value, called);
-            }
-            Stmt::Expr { value, .. } => scan_expr(value, called),
-            Stmt::Return { value, .. } => {
-                if let Some(value) = value {
-                    scan_expr(value, called);
-                }
-            }
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for branch in branches {
-                    scan_expr(&branch.condition, called);
-                    scan_stmts(&branch.body, locals, writes, called);
-                }
-                scan_stmts(else_body, locals, writes, called);
-            }
-            Stmt::While {
-                condition, body, ..
-            } => {
-                scan_expr(condition, called);
-                scan_stmts(body, locals, writes, called);
-            }
-        }
-    }
-}
-
-fn writes_field(target: &Expr, locals: &HashSet<String>) -> bool {
-    match target {
-        Expr::Identifier(name) => !locals.contains(&name.to_ascii_lowercase()),
-        Expr::Member { .. } => true,
-        _ => false,
-    }
-}
-
-fn scan_expr(expr: &Expr, called: &mut HashSet<String>) {
-    match expr {
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
-        Expr::Binary { left, right, .. } => {
-            scan_expr(left, called);
-            scan_expr(right, called);
-        }
-        Expr::Unary { operand, .. } => scan_expr(operand, called),
-        Expr::Call { callee, args, .. } => {
-            if let Some(name) = called_same_script_name(callee) {
-                called.insert(name);
-            }
-            scan_expr(callee, called);
-            for arg in args {
-                scan_expr(arg, called);
-            }
-        }
-        Expr::NamedArg { value, .. } => scan_expr(value, called),
-        Expr::Member { object, .. } => scan_expr(object, called),
-        Expr::Index { object, index } => {
-            scan_expr(object, called);
-            scan_expr(index, called);
-        }
-        Expr::Cast { value, .. } => scan_expr(value, called),
-        Expr::NewArray { size, .. } => scan_expr(size, called),
-    }
-}
-
-fn called_same_script_name(callee: &Expr) -> Option<String> {
-    match callee {
-        Expr::Identifier(name) => Some(name.to_ascii_lowercase()),
-        Expr::Member { object, property } if matches!(object.as_ref(), Expr::Self_) => {
-            Some(property.to_ascii_lowercase())
-        }
-        _ => None,
-    }
-}
 
 #[cfg(test)]
 #[path = "debug_side_effects_tests.rs"]
