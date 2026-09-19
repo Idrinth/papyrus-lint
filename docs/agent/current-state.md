@@ -73,6 +73,11 @@ Each such rule's `check` runs that same single-visitor walk and
 returns the store's issues. `none` rules still run through `check`
 directly.
 
+The sibling `int-division-to-float` and `float-to-int` rules share the
+`type_flow` visitor: it owns their `TypeEnv` function scoping, local-function
+signature index, and declaration/assignment/return/argument dispatch. Each
+rule supplies only its typed-slot predicate and diagnostic wording.
+
 Numeric AST lints that fold a compile-time-constant `Int`/`Float`
 (`division-by-zero`, `invalid-random-range`, `short-wait-interval`) share
 `const_eval::eval_const`; array-index/size lints share
