@@ -15,15 +15,38 @@
 //! `&&`/`\|\|` conditions, a non-numeric operand, a differently-shaped
 //! left-hand expression) is left unflagged rather than guessed at.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp};
+use papyrus_parser::ast::{BinaryOp, Expr, IfBranch, Literal, Stmt, UnaryOp};
 
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unreachable-elseif";
 
+
+#[derive(Default)]
+struct Collect {
+    store: crate::visitor::Store,
+}
+
+impl crate::visitor::AstLint for Collect {
+    fn store(&mut self) -> &mut crate::visitor::Store {
+        &mut self.store
+    }
+
+    fn visit_function(
+        &mut self,
+        function: &papyrus_parser::ast::FunctionDecl,
+        ctx: &mut crate::visitor::VisitCtx<'_>,
+    ) {
+        let mut diagnostics = Vec::new();
+        check_body(&function.body, &mut diagnostics);
+        let _ = ctx;
+        self.store.extend(diagnostics);
+    }
+}
+
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every `If` statement in `source` for an `ElseIf` branch whose
@@ -39,34 +62,7 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
 
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        check_body(&function.body, &mut diagnostics);
-    }
-    diagnostics
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
 
 fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
     for stmt in body {

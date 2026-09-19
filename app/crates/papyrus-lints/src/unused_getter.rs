@@ -6,8 +6,29 @@ use papyrus_parser::token::{Token, TokenKind};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-getter";
 
+#[derive(Default)]
+struct Collect {
+    store: crate::visitor::Store,
+}
+
+impl crate::visitor::TokenLint for Collect {
+    fn store(&mut self) -> &mut crate::visitor::Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
+        self.store.extend(lint_issues(
+            ctx.source,
+            ctx.ast,
+            ctx.tokens,
+            ctx.config,
+            ctx.external,
+        ));
+    }
+}
+
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks for calls whose function name begins with `Get` and whose result is

@@ -57,10 +57,11 @@ it to have already done so.
 
 Rules that can walk a parsed script or the token stream expose a
 `visitor()` function returning `LintVisitor::Ast` or
-`LintVisitor::Tokens`. Each visitor owns a `Store` of diagnostics collected
-during the walk. `collect_diagnostics` registers enabled lints onto an AST
-walker and a token walker, walks both trees once, then drains those stores.
-Each such rule's `check` runs that same single-visitor walk and returns the
+`LintVisitor::Tokens`. Each visitor implements `AstLint` or `TokenLint`
+and owns a `Store` of diagnostics collected during the walk.
+`collect_diagnostics` registers enabled lints onto an AST walker and a
+token walker, walks both trees once, then drains those stores. Each such
+rule's `check` runs that same single-visitor walk and returns the
 store's issues. `none` rules still run through `check` directly.
 
 Cross-script lint rules share the project-semantic resolver contract in

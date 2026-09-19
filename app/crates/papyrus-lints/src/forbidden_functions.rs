@@ -16,6 +16,7 @@
 //! like a debug flag is still flagged, as is every other forbidden
 //! function even when it sits behind the same guard.
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
@@ -36,8 +37,81 @@ include!(concat!(env!("OUT_DIR"), "/forbidden_functions_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "forbidden-functions";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    if_stack: Vec<bool>,
+    debug_guard_depth: usize,
+}
+
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        index: usize,
+        tokens: &[Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        match &token.kind {
+            TokenKind::Keyword(Keyword::If) => {
+                let guarded = is_simple_debug_guard(tokens, index + 1);
+                self.if_stack.push(guarded);
+                if guarded {
+                    self.debug_guard_depth += 1;
+                }
+            }
+            TokenKind::Keyword(Keyword::ElseIf) => {
+                replace_current_branch(
+                    &mut self.if_stack,
+                    &mut self.debug_guard_depth,
+                    is_simple_debug_guard(tokens, index + 1),
+                );
+            }
+            TokenKind::Keyword(Keyword::Else) => {
+                replace_current_branch(&mut self.if_stack, &mut self.debug_guard_depth, false);
+            }
+            TokenKind::Keyword(Keyword::EndIf) => {
+                if let Some(guarded) = self.if_stack.pop() {
+                    if guarded {
+                        self.debug_guard_depth = self.debug_guard_depth.saturating_sub(1);
+                    }
+                }
+            }
+            TokenKind::Identifier(name)
+                if tokens
+                    .get(index + 1)
+                    .is_some_and(|token| matches!(token.kind, TokenKind::LParen)) =>
+            {
+                let Some(rule) = find_rule(name) else {
+                    return;
+                };
+                if rule.global && !qualifier_matches(tokens, index, rule.script) {
+                    return;
+                }
+                if is_debug_script(rule) && self.debug_guard_depth > 0 {
+                    return;
+                }
+                self.store.emit(
+                    token.line,
+                    token.col,
+                    format!(
+                        "[{}] {}.{}: {}",
+                        rule.level, rule.script, rule.function, rule.message
+                    ),
+                    RULE,
+                );
+            }
+            _ => {}
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks `source` for calls to forbidden/discouraged functions.
@@ -70,79 +144,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    let mut if_stack: Vec<bool> = Vec::new();
-    let mut debug_guard_depth = 0usize;
-
-    for i in 0..tokens.len() {
-        match &tokens[i].kind {
-            TokenKind::Keyword(Keyword::If) => {
-                let guarded = is_simple_debug_guard(tokens, i + 1);
-                if_stack.push(guarded);
-                if guarded {
-                    debug_guard_depth += 1;
-                }
-            }
-            TokenKind::Keyword(Keyword::ElseIf) => {
-                replace_current_branch(
-                    &mut if_stack,
-                    &mut debug_guard_depth,
-                    is_simple_debug_guard(tokens, i + 1),
-                );
-            }
-            TokenKind::Keyword(Keyword::Else) => {
-                replace_current_branch(&mut if_stack, &mut debug_guard_depth, false);
-            }
-            TokenKind::Keyword(Keyword::EndIf) => {
-                if let Some(guarded) = if_stack.pop() {
-                    if guarded {
-                        debug_guard_depth = debug_guard_depth.saturating_sub(1);
-                    }
-                }
-            }
-            TokenKind::Identifier(name)
-                if tokens
-                    .get(i + 1)
-                    .is_some_and(|token| matches!(token.kind, TokenKind::LParen)) =>
-            {
-                let Some(rule) = find_rule(name) else {
-                    continue;
-                };
-                if rule.global && !qualifier_matches(tokens, i, rule.script) {
-                    continue;
-                }
-                if is_debug_script(rule) && debug_guard_depth > 0 {
-                    continue;
-                }
-                diagnostics.push(Diagnostic {
-                    line: tokens[i].line,
-                    column: tokens[i].col,
-                    message: format!(
-                        "[{}] {}.{}: {}",
-                        rule.level, rule.script, rule.function, rule.message
-                    ),
-                    rule: RULE,
-                });
-            }
-            _ => {}
-        }
-    }
-    diagnostics
 }
 
 /// Whether the call at `tokens[call_index]` is qualified with `script`

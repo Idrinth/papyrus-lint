@@ -26,6 +26,7 @@
 
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 
 pub struct UpdateEventPairRule {
@@ -38,8 +39,69 @@ include!(concat!(env!("OUT_DIR"), "/update_event_pairs_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "missing-update-handler";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    events: Vec<String>,
+    calls: Vec<(String, usize, usize, &'static UpdateEventPairRule)>,
+}
+
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        index: usize,
+        tokens: &[Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        if matches!(token.kind, TokenKind::Keyword(Keyword::Event)) {
+            if let Some(TokenKind::Identifier(name)) = tokens.get(index + 1).map(|token| &token.kind)
+            {
+                self.events.push(name.clone());
+            }
+        }
+        let TokenKind::Identifier(name) = &token.kind else {
+            return;
+        };
+        if !matches!(tokens.get(index + 1).map(|token| &token.kind), Some(TokenKind::LParen)) {
+            return;
+        }
+        let Some(rule) = find_rule(name) else {
+            return;
+        };
+        self.calls
+            .push((name.clone(), token.line, token.col, rule));
+    }
+
+    fn finish(&mut self, _ctx: &mut VisitCtx<'_>) {
+        for (name, line, column, rule) in &self.calls {
+            if self
+                .events
+                .iter()
+                .any(|event| event.eq_ignore_ascii_case(rule.event))
+            {
+                continue;
+            }
+            self.store.emit(
+                *line,
+                *column,
+                format!(
+                    "[warning] {name}(...) registers for updates, but this script declares no \
+                     Event {}() to receive them; the registration has no effect",
+                    rule.event
+                ),
+                RULE,
+            );
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a `RegisterFor*` call with no matching `Event`
@@ -55,60 +117,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for window in tokens.windows(2) {
-        let TokenKind::Identifier(name) = &window[0].kind else {
-            continue;
-        };
-        if !matches!(window[1].kind, TokenKind::LParen) {
-            continue;
-        }
-        let Some(rule) = find_rule(name) else {
-            continue;
-        };
-        if declares_event(tokens, rule.event) {
-            continue;
-        }
-        diagnostics.push(Diagnostic {
-            line: window[0].line,
-            column: window[0].col,
-            message: format!(
-                "[warning] {name}(...) registers for updates, but this script declares no \
-                 Event {}() to receive them; the registration has no effect",
-                rule.event
-            ),
-            rule: RULE,
-        });
-    }
-    diagnostics
-}
-
 fn find_rule(name: &str) -> Option<&'static UpdateEventPairRule> {
     UPDATE_EVENT_PAIRS
         .iter()
         .find(|rule| rule.register.eq_ignore_ascii_case(name))
-}
-
-/// Whether `tokens` declares an `Event` named `event` (case-insensitively)
-/// anywhere, regardless of which `State` block (if any) it's declared in.
-fn declares_event(tokens: &[Token], event: &str) -> bool {
-    tokens.windows(2).any(|window| {
-        matches!(window[0].kind, TokenKind::Keyword(Keyword::Event))
-            && matches!(&window[1].kind, TokenKind::Identifier(name) if name.eq_ignore_ascii_case(event))
-    })
 }
 
 #[cfg(test)]

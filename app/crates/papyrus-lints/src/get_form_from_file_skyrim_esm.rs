@@ -11,13 +11,46 @@
 
 use papyrus_parser::token::{Token, TokenKind};
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "get-form-from-file-skyrim-esm";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        index: usize,
+        tokens: &[Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        if !is_matching_call(tokens, index) {
+            return;
+        }
+        self.store.emit(
+            token.line,
+            token.col,
+            "[warning] Game.GetFormFromFile(id, \"Skyrim.esm\") always resolves to \
+             exactly what Game.GetForm(id) already returns, since Skyrim.esm is always \
+             loaded as master index 0; use Game.GetForm(id) instead and drop the file \
+             name argument",
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a qualified `Game.GetFormFromFile` call whose file
@@ -31,36 +64,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    visit_matching_calls(tokens, |call_index, _close, _value_start, _delimiter| {
-        let call_token = &tokens[call_index];
-        diagnostics.push(Diagnostic {
-            line: call_token.line,
-            column: call_token.col,
-            message: "[warning] Game.GetFormFromFile(id, \"Skyrim.esm\") always resolves to \
-                      exactly what Game.GetForm(id) already returns, since Skyrim.esm is always \
-                      loaded as master index 0; use Game.GetForm(id) instead and drop the file \
-                      name argument"
-                .to_string(),
-            rule: RULE,
-        });
-    });
-    diagnostics
 }
 
 /// Rewrites every flagged call into `Game.GetForm(<id>)`, keeping the
@@ -112,27 +115,35 @@ pub fn repair(
 /// place [`check`] and [`repair`] agree on which calls this lint flags.
 fn visit_matching_calls(tokens: &[Token], mut on_match: impl FnMut(usize, usize, usize, usize)) {
     for call_index in 0..tokens.len() {
+        if let Some((close, value_start, delimiter)) = matching_call(tokens, call_index) {
+            on_match(call_index, close, value_start, delimiter);
+        }
+    }
+}
+
+fn is_matching_call(tokens: &[Token], call_index: usize) -> bool {
+    matching_call(tokens, call_index).is_some()
+}
+
+fn matching_call(tokens: &[Token], call_index: usize) -> Option<(usize, usize, usize)> {
         if !is_game_get_form_from_file_call(tokens, call_index) {
-            continue;
+            return None;
         }
         let open = call_index + 1;
-        let Some(close) = matching_close_paren(tokens, open) else {
-            continue;
-        };
+        let close = matching_close_paren(tokens, open)?;
         let args = split_arguments(tokens, open, close);
         let [first, second] = args.as_slice() else {
-            continue;
+            return None;
         };
         let form_id_arg = if is_skyrim_esm_literal(tokens, first.0, first.1) {
             *second
         } else if is_skyrim_esm_literal(tokens, second.0, second.1) {
             *first
         } else {
-            continue;
+            return None;
         };
         let value_start = skip_named_argument_prefix(tokens, form_id_arg.0, form_id_arg.1);
-        on_match(call_index, close, value_start, form_id_arg.1 + 1);
-    }
+        Some((close, value_start, form_id_arg.1 + 1))
 }
 
 /// Whether `tokens[index]` starts a `GetFormFromFile(...)` call qualified by

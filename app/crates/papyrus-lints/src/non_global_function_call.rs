@@ -25,8 +25,45 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "non-global-function-call";
 
+#[derive(Default)]
+struct Collect {
+    store: crate::visitor::Store,
+}
+
+impl crate::visitor::AstLint for Collect {
+    fn store(&mut self) -> &mut crate::visitor::Store {
+        &mut self.store
+    }
+
+    fn visit_script(
+        &mut self,
+        script: &papyrus_parser::ast::Script,
+        ctx: &mut crate::visitor::VisitCtx<'_>,
+    ) {
+        self.store.extend(lint_issues(
+            ctx.source,
+            Some(script),
+            ctx.tokens,
+            ctx.config,
+            ctx.external,
+        ));
+    }
+
+    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
+        if ctx.ast.is_none() {
+            self.store.extend(lint_issues(
+                ctx.source,
+                None,
+                ctx.tokens,
+                ctx.config,
+                ctx.external,
+            ));
+        }
+    }
+}
+
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for calls through a script name whose target function

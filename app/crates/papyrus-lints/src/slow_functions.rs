@@ -6,6 +6,7 @@
 //! lints in this crate, it works on tokens rather than the parsed AST, so
 //! it still runs on scripts that don't parse cleanly.
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 use papyrus_parser::token::TokenKind;
 
@@ -25,8 +26,52 @@ include!(concat!(env!("OUT_DIR"), "/slow_functions_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "slow-functions";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &papyrus_parser::token::Token,
+        index: usize,
+        tokens: &[papyrus_parser::token::Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        let TokenKind::Identifier(name) = &token.kind else {
+            return;
+        };
+        if !matches!(
+            tokens.get(index + 1).map(|token| &token.kind),
+            Some(TokenKind::LParen)
+        ) {
+            return;
+        }
+        let Some(rule) = find_rule(SLOW_FUNCTIONS, name) else {
+            return;
+        };
+        if rule.global && !qualifier_matches(tokens, index, rule.object) {
+            return;
+        }
+        self.store.emit(
+            token.line,
+            token.col,
+            format!(
+                "[info] {}.{} is slower than necessary; use `{}` instead",
+                rule.object, rule.function, rule.replacement
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks `source` for calls to functions with a faster equivalent.
@@ -53,18 +98,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, config, external);
-
-    check_with_rules(tokens, SLOW_FUNCTIONS)
 }
 
 /// Replaces slow calls with the faster expression supplied by their rule.
@@ -176,6 +209,7 @@ fn token_offset(line_starts: &[usize], token: &papyrus_parser::token::Token) -> 
     line_starts[token.line - 1] + token.col - 1
 }
 
+#[allow(dead_code)] // unit tests
 fn check_with_rules(
     tokens: Option<&[papyrus_parser::token::Token]>,
     rules: &'static [SlowFunctionRule],

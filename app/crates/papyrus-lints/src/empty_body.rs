@@ -24,16 +24,92 @@
 //! whitespace/newlines between them) by `EndIf`, so it still runs on a
 //! script that doesn't parse.
 
-use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, FunctionDecl, Literal, Script, Stmt};
+use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IfBranch, Literal, Stmt};
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "empty-body";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_if_branch(&mut self, branch: &IfBranch, _ctx: &mut VisitCtx<'_>) {
+        if branch.body.is_empty() {
+            self.store.emit(
+                branch.line,
+                branch.col,
+                "[warning] Empty If/ElseIf body; this looks like an oversight rather than \
+                 something intentional",
+                RULE,
+            );
+        }
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt, _ctx: &mut VisitCtx<'_>) {
+        match stmt {
+            Stmt::If {
+                else_body,
+                else_line,
+                else_col,
+                ..
+            } => {
+                if let (Some(line), Some(column)) = (else_line, else_col) {
+                    if else_body.is_empty() {
+                        self.store.emit(
+                            *line,
+                            *column,
+                            "[warning] Empty Else body; this looks like an oversight \
+                             rather than something intentional",
+                            RULE,
+                        );
+                    }
+                }
+            }
+            Stmt::While {
+                body, line, col, ..
+            } => {
+                if body.is_empty() {
+                    self.store.emit(
+                        *line,
+                        *col,
+                        "[warning] Loop body is empty; this looks like an oversight \
+                         rather than something intentional",
+                        RULE,
+                    );
+                } else if is_trivial_loop_body(body) {
+                    self.store.emit(
+                        *line,
+                        *col,
+                        "[warning] Loop only increments or decrements a variable, \
+                         with no other effect; this looks like an oversight rather \
+                         than something intentional",
+                        RULE,
+                    );
+                }
+            }
+            Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
+        }
+    }
+
+    fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
+        if ctx.ast.is_none() {
+            self.store.extend(empty_else_diagnostics(ctx.tokens));
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `While` loops with no real effect and empty
@@ -48,107 +124,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, config, external);
-
-    let Some(script) = ast else {
-        // The AST can't tell an empty `Else` apart from no `Else` clause at
-        // all without parsing, so fall back to scanning tokens directly for
-        // this one case on a script that doesn't parse cleanly.
-        return empty_else_diagnostics(tokens);
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        check_body(&function.body, &mut diagnostics);
-    }
-    diagnostics
-}
-
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
-    for stmt in body {
-        match stmt {
-            Stmt::If {
-                branches,
-                else_body,
-                else_line,
-                else_col,
-                ..
-            } => {
-                for branch in branches {
-                    if branch.body.is_empty() {
-                        diagnostics.push(Diagnostic {
-                            line: branch.line,
-                            column: branch.col,
-                            message: "[warning] Empty If/ElseIf body; this looks like an \
-                                      oversight rather than something intentional"
-                                .to_string(),
-                            rule: RULE,
-                        });
-                    }
-                    check_body(&branch.body, diagnostics);
-                }
-                if let (Some(line), Some(column)) = (else_line, else_col) {
-                    if else_body.is_empty() {
-                        diagnostics.push(Diagnostic {
-                            line: *line,
-                            column: *column,
-                            message: "[warning] Empty Else body; this looks like an oversight \
-                                      rather than something intentional"
-                                .to_string(),
-                            rule: RULE,
-                        });
-                    }
-                }
-                check_body(else_body, diagnostics);
-            }
-            Stmt::While {
-                body, line, col, ..
-            } => {
-                if body.is_empty() {
-                    diagnostics.push(Diagnostic {
-                        line: *line,
-                        column: *col,
-                        message: "[warning] Loop body is empty; this looks like an oversight \
-                                  rather than something intentional"
-                            .to_string(),
-                        rule: RULE,
-                    });
-                } else if is_trivial_loop_body(body) {
-                    diagnostics.push(Diagnostic {
-                        line: *line,
-                        column: *col,
-                        message: "[warning] Loop only increments or decrements a variable, \
-                                  with no other effect; this looks like an oversight rather \
-                                  than something intentional"
-                            .to_string(),
-                        rule: RULE,
-                    });
-                }
-                check_body(body, diagnostics);
-            }
-            Stmt::VarDecl(_) | Stmt::Assign { .. } | Stmt::Expr { .. } | Stmt::Return { .. } => {}
-        }
-    }
 }
 
 /// Whether every statement in a (non-empty) loop body is nothing more than

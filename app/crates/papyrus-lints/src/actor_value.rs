@@ -17,8 +17,9 @@
 //! custom Actor Values that have no way to appear in
 //! `shared/rules/data/actor-values.yaml`, which would otherwise be misreported here.
 
-use papyrus_parser::token::TokenKind;
+use papyrus_parser::token::{Token, TokenKind};
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 
 include!(concat!(env!("OUT_DIR"), "/actor_values_data.rs"));
@@ -48,8 +49,52 @@ const ACTOR_VALUE_FUNCTIONS: &[&str] = &[
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unknown-actor-value";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        index: usize,
+        tokens: &[Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        let TokenKind::Identifier(name) = &token.kind else {
+            return;
+        };
+        if !matches!(tokens.get(index + 1).map(|token| &token.kind), Some(TokenKind::LParen)) {
+            return;
+        }
+        if !is_actor_value_function(name) {
+            return;
+        }
+        let Some(TokenKind::StringLiteral(value)) = tokens.get(index + 2).map(|token| &token.kind)
+        else {
+            return;
+        };
+        if is_known_actor_value(value) {
+            return;
+        }
+        self.store.emit(
+            token.line,
+            token.col,
+            format!(
+                "[warning] {name}(\"{value}\", ...): \"{value}\" is not a recognized Actor Value"
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks `source` for calls to an Actor Value function whose Actor Value
@@ -63,48 +108,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for (i, window) in tokens.windows(2).enumerate() {
-        let TokenKind::Identifier(name) = &window[0].kind else {
-            continue;
-        };
-        if !matches!(window[1].kind, TokenKind::LParen) {
-            continue;
-        }
-        if !is_actor_value_function(name) {
-            continue;
-        }
-        let Some(TokenKind::StringLiteral(value)) = tokens.get(i + 2).map(|t| &t.kind) else {
-            continue;
-        };
-        if is_known_actor_value(value) {
-            continue;
-        }
-        diagnostics.push(Diagnostic {
-            line: window[0].line,
-            column: window[0].col,
-            message: format!(
-                "[warning] {name}(\"{value}\", ...): \"{value}\" is not a recognized Actor Value"
-            ),
-            rule: RULE,
-        });
-    }
-    diagnostics
 }
 
 fn is_actor_value_function(name: &str) -> bool {

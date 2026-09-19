@@ -8,14 +8,77 @@
 //! script's property) is treated as used; this only produces false
 //! negatives, never false positives.
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-property";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    decls: Vec<(String, String, usize, usize, usize)>,
+    uses: Vec<(String, usize)>,
+}
+
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        index: usize,
+        tokens: &[Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        if let TokenKind::Identifier(name) = &token.kind {
+            self.uses.push((name.to_ascii_lowercase(), index));
+        }
+        if !matches!(token.kind, TokenKind::Keyword(Keyword::Property)) {
+            return;
+        }
+        if !preceded_by_type_name(tokens, index) {
+            return;
+        }
+        let Some(name_token) = tokens.get(index + 1) else {
+            return;
+        };
+        let TokenKind::Identifier(name) = &name_token.kind else {
+            return;
+        };
+        self.decls.push((
+            name.to_ascii_lowercase(),
+            name.clone(),
+            index + 1,
+            name_token.line,
+            name_token.col,
+        ));
+    }
+
+    fn finish(&mut self, _ctx: &mut VisitCtx<'_>) {
+        for (lower, name, decl_index, line, column) in &self.decls {
+            let used = self
+                .uses
+                .iter()
+                .any(|(candidate, index)| index != decl_index && candidate == lower);
+            if used {
+                continue;
+            }
+            self.store.emit(
+                *line,
+                *column,
+                format!("[warning] Property '{name}' is declared but never used"),
+                RULE,
+            );
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `Property` declarations whose name is never used
@@ -29,73 +92,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    property_declarations(tokens)
-        .into_iter()
-        .filter(|decl| !is_used_elsewhere(tokens, decl))
-        .map(|decl| Diagnostic {
-            line: decl.token.line,
-            column: decl.token.col,
-            message: format!(
-                "[warning] Property '{}' is declared but never used",
-                decl.name
-            ),
-            rule: RULE,
-        })
-        .collect()
-}
-
-struct PropertyDecl<'a> {
-    name: &'a str,
-    /// Index of the property's name token in `tokens`, excluded when
-    /// searching for uses so the declaration doesn't count as a use.
-    index: usize,
-    token: &'a Token,
-}
-
-/// Finds every `Type PropertyName ... Property` declaration, matching the
-/// grammar in `papyrus_parser::parser::Parser::parse_property` (an
-/// identifier type name, with an optional `[]` array suffix, followed by
-/// the `Property` keyword and the property's name).
-fn property_declarations(tokens: &[Token]) -> Vec<PropertyDecl<'_>> {
-    let mut decls = Vec::new();
-
-    for (index, token) in tokens.iter().enumerate() {
-        if !matches!(token.kind, TokenKind::Keyword(Keyword::Property)) {
-            continue;
-        }
-        if !preceded_by_type_name(tokens, index) {
-            continue;
-        }
-        let Some(name_token) = tokens.get(index + 1) else {
-            continue;
-        };
-        let TokenKind::Identifier(name) = &name_token.kind else {
-            continue;
-        };
-
-        decls.push(PropertyDecl {
-            name,
-            index: index + 1,
-            token: name_token,
-        });
-    }
-
-    decls
 }
 
 fn preceded_by_type_name(tokens: &[Token], property_index: usize) -> bool {
@@ -112,13 +108,6 @@ fn preceded_by_type_name(tokens: &[Token], property_index: usize) -> bool {
         && matches!(tokens[property_index - 1].kind, TokenKind::RBracket)
         && matches!(tokens[property_index - 2].kind, TokenKind::LBracket)
         && matches!(tokens[property_index - 3].kind, TokenKind::Identifier(_))
-}
-
-fn is_used_elsewhere(tokens: &[Token], decl: &PropertyDecl) -> bool {
-    tokens.iter().enumerate().any(|(index, token)| {
-        index != decl.index
-            && matches!(&token.kind, TokenKind::Identifier(candidate) if candidate.eq_ignore_ascii_case(decl.name))
-    })
 }
 
 #[cfg(test)]

@@ -25,8 +25,29 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "debug-side-effects";
 
+#[derive(Default)]
+struct Collect {
+    store: crate::visitor::Store,
+}
+
+impl crate::visitor::TokenLint for Collect {
+    fn store(&mut self) -> &mut crate::visitor::Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
+        self.store.extend(lint_issues(
+            ctx.source,
+            ctx.ast,
+            ctx.tokens,
+            ctx.config,
+            ctx.external,
+        ));
+    }
+}
+
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Native / conventional names that mutate game or script state even

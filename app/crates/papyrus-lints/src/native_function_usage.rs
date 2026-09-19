@@ -21,6 +21,7 @@
 
 use papyrus_parser::ast::{FunctionDecl, Script};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 pub struct NativeMethodRule {
@@ -33,8 +34,42 @@ include!(concat!(env!("OUT_DIR"), "/native_methods_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "native-function-usage";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    script_name: String,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.script_name = script.name.clone();
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if !function.is_native {
+            return;
+        }
+        if is_base_game_native(&self.script_name, &function.name) {
+            return;
+        }
+        self.store.emit(
+            function.line,
+            1,
+            format!(
+                "[warning] Native function '{}.{}' isn't supplied by the base game; it likely requires SKSE/F4SE or another native extension",
+                self.script_name, function.name
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `Native` functions/events not supplied by the base
@@ -48,45 +83,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    all_functions(script)
-        .filter(|function| function.is_native)
-        .filter(|function| !is_base_game_native(&script.name, &function.name))
-        .map(|function| Diagnostic {
-            line: function.line,
-            column: 1,
-            message: format!(
-                "[warning] Native function '{}.{}' isn't supplied by the base game; it likely requires SKSE/F4SE or another native extension",
-                script.name, function.name
-            ),
-            rule: RULE,
-        })
-        .collect()
-}
-
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
 }
 
 /// Whether `(script_name, function_name)` matches a base-game native

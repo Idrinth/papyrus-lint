@@ -31,8 +31,39 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "formid-hex-notation";
 
+#[derive(Default)]
+struct Collect {
+    store: crate::visitor::Store,
+}
+
+impl crate::visitor::TokenLint for Collect {
+    fn store(&mut self) -> &mut crate::visitor::Store {
+        &mut self.store
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        index: usize,
+        tokens: &[Token],
+        _ctx: &mut crate::visitor::VisitCtx<'_>,
+    ) {
+        if is_get_form_id_call(tokens, index) {
+            check_get_form_id_comparison(tokens, index, &mut |literal, context| {
+                self.store.push(diagnostic_for(literal, context));
+            });
+        }
+        if is_game_get_form_from_file_call(tokens, index) {
+            check_get_form_from_file_argument(tokens, index, &mut |literal, context| {
+                self.store.push(diagnostic_for(literal, context));
+            });
+        }
+        let _ = token;
+    }
+}
+
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a non-hexadecimal FormID literal compared against
@@ -46,26 +77,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    visit_decimal_formid_literals(tokens, |literal, context| {
-        diagnostics.push(diagnostic_for(literal, context));
-    });
-    diagnostics
 }
 
 /// Rewrites every non-hexadecimal FormID literal [`check`] would flag into

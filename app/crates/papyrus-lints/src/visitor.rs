@@ -3,7 +3,9 @@
 //! Each visitor owns a [`Store`] of diagnostics collected during the walk.
 //! [`Session`] walks AST and tokens once, then drains those stores.
 //! [`run`] is the same path for a single rule — that is what each visitor
-//! rule's `check` calls.
+//! rule's `check` calls. Rules implement [`AstLint`] or [`TokenLint`] and
+//! emit from the matching `visit_*` callbacks instead of re-scanning the
+//! file inside `check`.
 
 use papyrus_parser::ast::{
     Expr, FunctionDecl, IfBranch, ImportDecl, Param, PropertyDecl, Script, StateDecl, Stmt,
@@ -151,99 +153,6 @@ pub trait TokenLint {
 pub enum LintVisitor {
     Ast(Box<dyn AstLint>),
     Tokens(Box<dyn TokenLint>),
-}
-
-/// Collects diagnostics from a full-script `check` into a local [`Store`].
-pub fn from_ast(
-    collect: impl Fn(
-            &str,
-            Option<&Script>,
-            Option<&[Token]>,
-            &Config,
-            &mut dyn ExternalSignatures,
-        ) -> Vec<Diagnostic>
-        + 'static,
-) -> LintVisitor {
-    struct Collect<F> {
-        collect: F,
-        store: Store,
-    }
-    impl<
-            F: Fn(
-                &str,
-                Option<&Script>,
-                Option<&[Token]>,
-                &Config,
-                &mut dyn ExternalSignatures,
-            ) -> Vec<Diagnostic>,
-        > AstLint for Collect<F>
-    {
-        fn store(&mut self) -> &mut Store {
-            &mut self.store
-        }
-
-        fn visit_script(&mut self, script: &Script, ctx: &mut VisitCtx<'_>) {
-            let issues = (self.collect)(
-                ctx.source,
-                Some(script),
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            );
-            self.store.extend(issues);
-        }
-
-        fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
-            if ctx.ast.is_none() {
-                let issues = (self.collect)(ctx.source, None, ctx.tokens, ctx.config, ctx.external);
-                self.store.extend(issues);
-            }
-        }
-    }
-    LintVisitor::Ast(Box::new(Collect {
-        collect,
-        store: Store::default(),
-    }))
-}
-
-/// Collects diagnostics from a full-stream `check` into a local [`Store`].
-pub fn from_tokens(
-    collect: impl Fn(
-            &str,
-            Option<&Script>,
-            Option<&[Token]>,
-            &Config,
-            &mut dyn ExternalSignatures,
-        ) -> Vec<Diagnostic>
-        + 'static,
-) -> LintVisitor {
-    struct Collect<F> {
-        collect: F,
-        store: Store,
-    }
-    impl<
-            F: Fn(
-                &str,
-                Option<&Script>,
-                Option<&[Token]>,
-                &Config,
-                &mut dyn ExternalSignatures,
-            ) -> Vec<Diagnostic>,
-        > TokenLint for Collect<F>
-    {
-        fn store(&mut self) -> &mut Store {
-            &mut self.store
-        }
-
-        fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
-            let issues = (self.collect)(ctx.source, ctx.ast, ctx.tokens, ctx.config, ctx.external);
-            self.store.extend(issues);
-        }
-    }
-    LintVisitor::Tokens(Box::new(Collect {
-        collect,
-        store: Store::default(),
-    }))
 }
 
 struct RegisteredAst {
