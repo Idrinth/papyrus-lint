@@ -306,7 +306,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
                     self.assertNotIn("<!--", output)
 
             index = (out_dir / "index.html").read_text(encoding="utf-8")
-            self.assertIn('href="rules.html"', index)
+            self.assertIn('href=rules.html', index)
             for doc in page_builder.DOCS:
                 with self.subTest(homepage_doc=doc["slug"]):
                     self.assertIn(f'href="{docs_pages.doc_href(doc, None)}"', index)
@@ -477,9 +477,9 @@ class BuildTest(unittest.TestCase):
             self.assertNotIn("<!--DOCS_LIST-->", output)
             self.assertNotIn("<!--VERSION-->", output)
             self.assertIn(
-                '<picture><source srcset="assets/screenshot.avif" type="image/avif" />'
-                '<source srcset="assets/screenshot.webp" type="image/webp" />'
-                '<img src="assets/screenshot.png" alt="Screenshot" /></picture>',
+                '<picture><source srcset="assets/screenshot.avif" type="image/avif">'
+                '<source srcset="assets/screenshot.webp" type="image/webp">'
+                '<img src="assets/screenshot.png" alt="Screenshot"></picture>',
                 output,
             )
             self.assertEqual(
