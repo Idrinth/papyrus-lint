@@ -7,19 +7,23 @@ on:
 
 jobs:
   container:
-    name: Publish CLI container (${{ matrix.preset }})
+    name: Publish CLI container (${{ matrix.preset }}) for ${{ matrix.game }}
     runs-on: ubuntu-latest
     needs: release
     strategy:
       fail-fast: false
       matrix:
         preset: [strict, standard, careful]
+        game: [skyrim]
     permissions:
       contents: read
       id-token: write
       packages: write
     steps:
       - uses: actions/checkout@v7
+
+      - name: Provide scripts as expected
+        run: cp shared/${{ matrix.game }}-scripts.zip docker/Scripts.zip
 
       - name: Download released Linux CLI
         env:
