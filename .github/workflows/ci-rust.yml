@@ -1,0 +1,196 @@
+name: CI / Rust
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-crates:
+    name: Rust crate matrix
+    runs-on: ubuntu-latest
+    outputs:
+      crates: ${{ steps.crates.outputs.crates }}
+    steps:
+      - id: crates
+        name: Build shared crate matrix
+        # Single source of truth for the crate list `rust-fmt`, `rust-clippy`,
+        # and `rust-test` all matrix over below, so it's declared once instead
+        # of repeated identically in all three jobs. `name` is each crate's
+        # own directory basename.
+        run: |
+          crates=(
+            app/src-tauri
+            app/crates/papyrus-parser
+            app/crates/papyrus-ast-cache
+            app/crates/papyrus-lints
+            app/crates/papyrus-lint-config
+            app/crates/papyrus-lint-core
+            app/crates/papyrus-lint-output
+            app/crates/papyrus-lint-cli
+          )
+          json=$(printf '%s\n' "${crates[@]}" \
+            | jq -R '{crate: ., name: (split("/") | last)}' \
+            | jq -sc '{include: .}')
+          echo "crates=$json" >> "$GITHUB_OUTPUT"
+  rust-fmt:
+    name: Rust (fmt) (${{ matrix.name }})
+    needs: rust-crates
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.rust-crates.outputs.crates) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --manifest-path "${{ matrix.crate }}/Cargo.toml" -- --check
+  rust-clippy:
+    name: Rust (clippy) (${{ matrix.name }})
+    needs: rust-crates
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.rust-crates.outputs.crates) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - name: Install Tauri Linux dependencies
+        if: matrix.crate == 'app/src-tauri'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ matrix.crate }}
+
+      - name: Clippy
+        run: cargo clippy --manifest-path "${{ matrix.crate }}/Cargo.toml" --all-targets -- -D warnings
+  rust-test:
+    name: Rust test (${{ matrix.name }})
+    needs: [rust-clippy, rust-crates]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.rust-crates.outputs.crates) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - name: Install Tauri Linux dependencies
+        if: matrix.crate == 'app/src-tauri'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+
+      - uses: taiki-e/install-action@3f74d7c16a4242f1c95561e98edc25d36adb4375 # v2.87.12
+        with:
+          tool: cargo-llvm-cov
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ matrix.crate }}
+
+      - name: Test with coverage
+        run: cargo llvm-cov --manifest-path ${{ matrix.crate }}/Cargo.toml --no-report
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo "### Rust coverage — ${{ matrix.name }}"
+            echo '```'
+            cargo llvm-cov report --manifest-path ${{ matrix.crate }}/Cargo.toml --summary-only
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate lcov report
+        if: always()
+        run: cargo llvm-cov report --manifest-path ${{ matrix.crate }}/Cargo.toml --lcov --output-path lcov.info
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: rust-coverage-${{ matrix.name }}
+          path: lcov.info
+  docker-build:
+    name: Docker image build (${{ matrix.preset }}) for ${{ matrix.game }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [strict, standard, careful]
+        game: [skyrim]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/crates/papyrus-lint-cli
+
+      - name: Build release CLI binary
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
+
+      - name: Stage CLI binary for the image
+        run: cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI docker/PapyrusLinterCLI
+
+      - name: Build container image
+        uses: docker/build-push-action@v6
+        env:
+          # Buildx otherwise uploads a "*.dockerbuild" build-summary artifact
+          # per matrix leg, which the coverage-comment/hall-of-shame jobs'
+          # unfiltered `download-artifact` (elsewhere in this workflow) then
+          # trips over.
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          context: docker
+          push: false
+          load: true
+          build-args: |
+            PRESET=${{ matrix.preset }}
+            EXTENDER=${{ matrix.extender }}
+          tags: papyrus-lint:${{ matrix.preset }}
+
+      - name: Smoke test container image
+        run: |
+          docker run --rm papyrus-lint:${{ matrix.preset }} --version
+
+          mkdir -p smoke-project
+          cp app/crates/papyrus-lint-core/tests/fixtures/typea.psc smoke-project/
+
+          set +e
+          docker run --rm -v "$PWD/smoke-project:/project:ro" papyrus-lint:${{ matrix.preset }}
+          status=$?
+          set -e
+          # 0 = no issues, 1 = lint issues found; either means the container
+          # itself ran correctly. Anything else (usage/IO error, crash) fails
+          # the job.
+          if [ "$status" -ge 2 ]; then
+            echo "papyrus-lint container exited with unexpected status $status" >&2
+            exit 1
+          fi

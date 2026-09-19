@@ -1,6 +1,14 @@
 <!-- Extracted from AGENTS.md so the always-on agent index stays small. -->
 # CI
- (`.github/workflows/ci.yml`)
+
+The top-level `.github/workflows/ci.yml` orchestrates three reusable workflows:
+
+- `.github/workflows/ci-python.yml` for Python checks and tests.
+- `.github/workflows/ci-typescript.yml` for TypeScript/JavaScript checks and tests.
+- `.github/workflows/ci-rust.yml` for Rust checks, tests, and the CLI-backed container build.
+
+Language-neutral orchestration, reporting, and advisory jobs remain in `ci.yml`.
+`.github/workflows/labels.yml` checks pull request labels separately.
 
 `shared/rules.json` is generated from `shared/rules/*.json` (see AGENTS.md
 hard rule 4) and git-ignored, so every job below that reads it — directly
@@ -10,15 +18,13 @@ whose `build.rs` does (`rust-clippy`, `rust-test`, `docker-build`) — runs
 rebuild it first. `rust-fmt` is exempt: `cargo fmt --check` never runs a
 build script.
 
-- **Pull request labels job** (`labels`): on a pull request, fails unless
-  the pull request carries at least one `component: ...` label and at
-  least one `type: ...` label (see Pull request labels below), via
-  `actions/github-script` reading `context.payload.pull_request.labels`
-  directly rather than calling the API. It's a no-op on an ordinary push
-  to `the-one`, since that event carries no pull request labels to check.
-  Every other job `needs` this one (directly, or transitively through
-  `rust-fmt`/`rust-clippy`/`rust-test`), so an unlabeled pull request's CI
-  stops here instead of spending time on the rest of the jobs below.
+- **Pull request labels workflow** (`labels.yml`): fails unless the pull request
+  carries at least one `component: ...` label and at least one `type: ...` label
+  (see Pull request labels below), via `actions/github-script` reading
+  `context.payload.pull_request.labels` directly rather than calling the API.
+  This is the only workflow that reacts to `labeled` and `unlabeled` events;
+  changing labels therefore reruns the inexpensive policy check without
+  restarting the language test suites.
 - **Rules YAML lint job**: runs `yamllint` against every `shared/rules/data/*.yaml` file
   and `shared/links.yaml` so malformed rule data or link sources cannot be merged.
 - **Python lint job** (`python-lint`): runs `ruff check` (configured in the
@@ -175,8 +181,8 @@ build script.
   separate crates rather than workspace members and so aren't checked
   together by a single invocation. Only the `app/src-tauri` leg installs
   Tauri's Linux system dependencies, since the other seven crates don't need
-  them. Runs in parallel with `rust-fmt` (both only `need` the `labels`
-  and `rust-crates` jobs); `rust-test` (below) `needs` both.
+  them. Runs in parallel with `rust-fmt` (both only need the shared `rust-crates`
+  matrix job); `rust-test` (below) waits for Clippy before running.
 - **Rust test job**: matrixing over the same `rust-crates` output, runs
   each crate's tests via `cargo llvm-cov`. Each matrix leg posts its text
   coverage summary to the job's step summary and uploads its lcov report
@@ -203,7 +209,7 @@ build script.
   the entrypoint, base scripts, and config all wired up correctly — while
   anything `2` or higher (a usage/IO error or crash) fails the job.
 - **Coverage summary comment job** (`coverage-comment`, pull requests
-  only): downloads every job's lcov artifact and runs
+  only, in `ci.yml`): downloads every job's lcov artifact and runs
   `.github/scripts/coverage_summary.py` to aggregate line coverage by
   module — App (`src-tauri`, the frontend, and Crates — the seven reusable
   crates combined, nested underneath it), editor plugins (the VS Code
@@ -225,11 +231,10 @@ build script.
 - **Hall of shame job** (`hall-of-shame`, pull requests only): runs
   `.github/scripts/hall_of_shame.py` against the PR checkout and this
   same workflow run's `*coverage*` artifacts, downloaded the same way the
-  coverage summary comment job does (`needs: [bbcode, pages,
-  sublime-extension, frontend, vscode-extension, rust-test]`, `if:
-  always()`, so it still runs — and still has whatever artifacts did
-  upload — even if one of those jobs fails). Being part of `ci.yml`
-  itself rather than a separate workflow, its uncovered-line ranking
+  coverage summary comment job does (`needs: [python, typescript, rust]`,
+  `if: always()`, so it still runs — and still has whatever artifacts did
+  upload — even if one of the language workflows fails). Being part of the
+  orchestrating `ci.yml` run rather than a separate workflow, its uncovered-line ranking
   always reflects the current push rather than lagging behind the most
   recent prior successful run. It excludes the `docs/` tree and all
   Markdown files, then lists the top 3 source files by byte
@@ -241,5 +246,6 @@ build script.
   (`continue-on-error`) since forked PRs get a read-only `GITHUB_TOKEN`.
   The job never fails the pull request.
 
-Note: CI runs on pushes to `the-one` (the default branch, not `main`) and
-on all pull requests.
+Note: the orchestrating CI workflow runs on pushes to `the-one` (the default
+branch, not `main`) and on pull request creation, reopening, and synchronization.
+Only `labels.yml` also runs when a label is added or removed.

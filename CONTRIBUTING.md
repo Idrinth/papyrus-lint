@@ -20,9 +20,11 @@ list here.
 
 ## Before opening a pull request
 
-CI (`.github/workflows/ci.yml`) runs on every pull request and on pushes to
-`the-one` (the default branch — not `main`). Make sure your change passes
-the same checks locally first:
+CI is orchestrated by `.github/workflows/ci.yml`, with its Python,
+TypeScript/JavaScript, and Rust jobs defined in language-specific reusable
+workflows. It runs on every pull request and on pushes to `the-one` (the
+default branch — not `main`). Make sure your change passes the same checks
+locally first:
 
 - **Sublime Text extension job**: runs `python -m unittest discover -s
   SublimeLinter-contrib-papyrus-lint/tests -v`.
