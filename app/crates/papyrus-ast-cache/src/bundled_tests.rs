@@ -83,6 +83,16 @@ fn actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
 }
 
 #[test]
+fn bundled_script_can_be_loaded_by_name_without_source_on_disk() {
+    assert!(contains_name("aCtOr"));
+    let ast = ast_for_name("Actor").expect("Actor should be indexed by script name");
+    assert_eq!(ast.name, "Actor");
+    assert_eq!(ast.extends.as_deref(), Some("ObjectReference"));
+    assert!(!contains_name("NotAVanillaScript"));
+    assert!(ast_for_name("NotAVanillaScript").is_none());
+}
+
+#[test]
 fn form_and_game_are_bundled_hits() {
     let form = zip_script("Form.psc");
     let ast = ast_for(&form).expect("Form.psc should be in the bundled cache");

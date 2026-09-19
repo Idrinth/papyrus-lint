@@ -820,7 +820,12 @@ or `PapyrusLinterCLI`'s, whichever process is doing the parsing. Vanilla
 Skyrim scripts from `shared/skyrim-scripts.zip` are compiled into that
 crate at build time as a gzip-compressed AST+token blob, keyed by an MD5
 of the decoded source (the same digest the on-disk entry stores as
-`content_md5`). `get`/`get_tokens`/`ensure_primed` consult the blob first,
+`content_md5`) and accompanied by a generated script-name index.
+`FunctionTable` uses that name index as its last lookup tier, so base-game
+scripts and their real `Extends` chains resolve even when no corresponding
+`.psc` exists under the project or configured lookup roots; there is no
+separate hand-maintained native-type hierarchy. `get`/`get_tokens`/
+`ensure_primed` consult the content index first,
 before the on-disk cache and without taking its process-wide lock, so a
 stock `Actor.psc`/`ObjectReference.psc`/`Form.psc`/… hits on the first
 analysis of a project even when the file was just extracted to a new path

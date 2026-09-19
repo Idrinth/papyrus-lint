@@ -116,6 +116,18 @@ pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Scri
     ops::get_in(&entry::cache_dir()?, source_path, source)
 }
 
+/// Returns the cached AST for a vanilla script by its declared script name.
+/// This lets cross-script analysis use the shipped base-game scripts even
+/// when the corresponding `.psc` files are not installed on disk.
+pub fn get_bundled_by_name(name: &str) -> Option<papyrus_parser::ast::Script> {
+    bundled::ast_for_name(name)
+}
+
+/// Whether the bundled base-game cache contains a script with this name.
+pub fn has_bundled_name(name: &str) -> bool {
+    bundled::contains_name(name)
+}
+
 /// Persists `ast`, parsed from `source_path`/`source`, to the on-disk cache
 /// for later [`get`] calls. Any failure (e.g. an unwritable install
 /// directory) is silently ignored.

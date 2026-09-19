@@ -26,6 +26,7 @@ use flate2::read::GzDecoder;
 use crate::bundled_blob::{self, IndexEntry};
 
 static COMPRESSED: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/skyrim-ast-cache.bin.gz"));
+include!(concat!(env!("OUT_DIR"), "/skyrim-ast-cache-names.rs"));
 
 struct BundledCache {
     index: HashMap<[u8; 16], IndexEntry>,
@@ -61,6 +62,27 @@ fn lookup(source: &str) -> Option<(&'static BundledCache, IndexEntry)> {
     let cache = cache()?;
     let entry = *cache.index.get(&digest.0)?;
     Some((cache, entry))
+}
+
+fn lookup_name(name: &str) -> Option<(&'static BundledCache, IndexEntry)> {
+    let (_, digest) = BUNDLED_NAMES
+        .iter()
+        .find(|(candidate, _)| candidate.eq_ignore_ascii_case(name))?;
+    let cache = cache()?;
+    let entry = *cache.index.get(digest)?;
+    Some((cache, entry))
+}
+
+/// Cached AST for a bundled vanilla script, looked up by script name.
+pub(crate) fn ast_for_name(name: &str) -> Option<papyrus_parser::ast::Script> {
+    let (cache, entry) = lookup_name(name)?;
+    bundled_blob::decode_ast(cache.payload(), &entry)
+}
+
+pub(crate) fn contains_name(name: &str) -> bool {
+    BUNDLED_NAMES
+        .iter()
+        .any(|(candidate, _)| candidate.eq_ignore_ascii_case(name))
 }
 
 /// Cached AST for `source` when it matches a bundled vanilla script.

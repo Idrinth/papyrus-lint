@@ -45,7 +45,7 @@ fn accepts_an_actor_argument_for_an_object_reference_parameter_with_no_native_sc
     // Regression test: `Actor`/`ObjectReference`/`Form`/`Spell` are
     // native engine types with no `.psc` under `root` (the project
     // ships none of the game's own scripts), so this can only pass via
-    // `FunctionTable::is_subtype`'s native type fallback.
+    // `FunctionTable::is_subtype`'s bundled base-game script cache.
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(
         root.path(),
@@ -87,7 +87,7 @@ EndFunction
 fn flags_a_cast_to_a_native_ancestor_type_through_the_useless_downcast_lint() {
     // Regression test: `Actor`/`ObjectReference` are native engine types
     // with no `.psc` under `root`, so this can only pass via
-    // `FunctionTable::is_subtype`'s native type fallback.
+    // `FunctionTable::is_subtype`'s bundled base-game script cache.
     let root = tempfile::tempdir().expect("failed to create temp dir");
 
     let mut table = FunctionTable::new(root.path().to_path_buf());

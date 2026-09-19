@@ -42,6 +42,7 @@ fn main() {
     // Last-write wins on a duplicate digest (two zip entries with identical
     // decoded source): they share one AST/token stream anyway.
     let mut by_md5: HashMap<[u8; 16], bundled_blob::PackedEntry> = HashMap::new();
+    let mut names = HashMap::new();
     let mut skipped = 0u32;
     for i in 0..archive.len() {
         let mut entry = archive.by_index(i).unwrap_or_else(|err| {
@@ -78,6 +79,7 @@ fn main() {
             continue;
         };
         let md5 = md5::compute(source.as_bytes()).0;
+        names.insert(ast.name.to_ascii_lowercase(), md5);
         by_md5.insert(
             md5,
             bundled_blob::PackedEntry {
@@ -112,6 +114,24 @@ fn main() {
         panic!(
             "failed to write bundled Skyrim AST cache to {}: {err}",
             dest.display()
+        )
+    });
+
+    let mut names: Vec<_> = names.into_iter().collect();
+    names.sort_by(|(left, _), (right, _)| left.cmp(right));
+    let mut generated = String::from(
+        "/// Script-name index generated from `shared/skyrim-scripts.zip`.\n\
+         const BUNDLED_NAMES: &[(&str, [u8; 16])] = &[\n",
+    );
+    for (name, digest) in names {
+        generated.push_str(&format!("    ({name:?}, {digest:?}),\n"));
+    }
+    generated.push_str("];\n");
+    let names_dest = Path::new(&out_dir).join("skyrim-ast-cache-names.rs");
+    std::fs::write(&names_dest, generated).unwrap_or_else(|err| {
+        panic!(
+            "failed to write bundled script-name index to {}: {err}",
+            names_dest.display()
         )
     });
 

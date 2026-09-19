@@ -5,15 +5,15 @@ use papyrus_lints::ParamInfo;
 use super::FunctionTable;
 
 impl FunctionTable {
-    /// Whether `type_name` is a Papyrus primitive, a known native engine
-    /// type, or a script this table can locate. Read-only: never fills the
+    /// Whether `type_name` is a Papyrus primitive, a bundled base-game
+    /// script, or a script this table can locate. Read-only: never fills the
     /// parse cache.
     pub fn type_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         matches!(
             name_lower.as_str(),
             "int" | "float" | "bool" | "string" | "var"
-        ) || crate::native_types::is_known(&name_lower)
+        ) || crate::ast_cache::has_bundled_name(&name_lower)
             || self.script_exists(type_name)
     }
 }

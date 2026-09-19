@@ -241,7 +241,7 @@ fn is_subtype_resolves_native_engine_types_with_no_project_script() {
     // None of `Actor`, `ObjectReference`, `Form`, `Spell` or `MagicItem`
     // have a `.psc` anywhere under `root` (typical for a mod project,
     // which doesn't ship copies of the game's own scripts), so this can
-    // only pass via the native type fallback.
+    // only pass via the bundled base-game script cache.
     assert!(table.is_subtype("Actor", "ObjectReference"));
     assert!(table.is_subtype("Actor", "Form"));
     assert!(table.is_subtype("Spell", "Form"));
@@ -250,7 +250,7 @@ fn is_subtype_resolves_native_engine_types_with_no_project_script() {
 }
 
 #[test]
-fn is_subtype_falls_back_to_native_types_past_a_project_scripts_extends_chain() {
+fn is_subtype_uses_bundled_base_type_past_a_project_scripts_extends_chain() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     // `MyQuestScript` is a project script, but the `Quest` it extends is
     // the native engine type and has no `.psc` under `root`.

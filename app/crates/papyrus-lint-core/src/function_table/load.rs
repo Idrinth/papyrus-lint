@@ -90,6 +90,7 @@ impl FunctionTable {
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
+            || crate::ast_cache::has_bundled_name(&name_lower)
             || crate::native_globals::is_known(&name_lower)
     }
 
@@ -157,19 +158,24 @@ impl FunctionTable {
             return;
         }
 
-        let script = resolved.and_then(|(path, origin)| {
-            if origin == ScriptOrigin::Lookup {
-                if let Some(mtime_secs) = file_mtime_secs(&path) {
-                    if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
-                        return cached;
+        let script = resolved
+            .and_then(|(path, origin)| {
+                if origin == ScriptOrigin::Lookup {
+                    if let Some(mtime_secs) = file_mtime_secs(&path) {
+                        if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
+                            return cached;
+                        }
+                        let loaded = load_script_functions(&path);
+                        store_lookup_script(path, mtime_secs, loaded.clone());
+                        return loaded;
                     }
-                    let loaded = load_script_functions(&path);
-                    store_lookup_script(path, mtime_secs, loaded.clone());
-                    return loaded;
                 }
-            }
-            load_script_functions(&path)
-        });
+                load_script_functions(&path)
+            })
+            .or_else(|| {
+                crate::ast_cache::get_bundled_by_name(&name_lower)
+                    .map(|ast| ScriptFunctions::from_script(&ast, ""))
+            });
 
         self.scripts.insert(name_lower.clone(), script);
         self.script_mtimes.insert(name_lower, mtime);

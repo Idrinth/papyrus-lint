@@ -9,12 +9,12 @@
 //!   a direct project-to-native subtype;
 //! - `TypeC.GetC` (declared `Form Function`) returning its `TypeC`-typed
 //!   `c` property, requiring the chain `TypeC -> Armor -> Form` to resolve
-//!   through the native fallback past `Armor`;
+//!   through the bundled base-game scripts past `Armor`;
 //! - `TypeD.GetAsA` (declared `TypeC Function`) returning `self` (`TypeD`),
 //!   a direct project-to-project subtype;
 //! - `TypeD.GetD` (declared `Armor Function`) returning its `TypeD`-typed
 //!   `d` property, requiring the transitive chain `TypeD -> TypeC -> Armor`
-//!   across two project scripts plus the native fallback past `Armor`.
+//!   across two project scripts plus the bundled base-game scripts past `Armor`.
 
 use std::path::PathBuf;
 
