@@ -1,5 +1,8 @@
-<!-- Extracted from AGENTS.md so the always-on agent index stays small. -->
 # Project structure
+
+This is the single source of truth for the repository layout, shared by
+contributors and coding agents. Update this document when the layout changes;
+do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 
 
 ```text

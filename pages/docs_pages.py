@@ -47,6 +47,12 @@ GITHUB_BLOB_BASE = "https://github.com/idrinth/papyrus-lint/blob/the-one"
 # default configuration live in their own top-level directories, not docs/).
 DOCS = [
     {
+        "filename": "project-structure.md",
+        "slug": "project-structure",
+        "kind": "markdown",
+        "blurb": "The canonical repository tree and the responsibilities of its apps, crates, integrations, and tooling.",
+    },
+    {
         "filename": "papyrus-cli-usage.txt",
         "slug": "papyrus-cli-usage",
         "kind": "bash",

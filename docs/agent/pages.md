@@ -143,7 +143,8 @@ generate those pages, so it can't drift out of sync with what's actually
 published — and a `robots.txt` (`build_robots_txt`) allowing all crawling
 and pointing at that sitemap.
 
-Every file in the `docs/` directory (see Project structure above) is also
+Every published file in the `docs/` directory (see the shared
+[project structure](../project-structure.md)) is also
 published as its own browsable subpage, so that reference material isn't
 only reachable as raw source on GitHub. `pages/docs_pages.py`'s `DOCS` list names
 each local file or remote `content_url`, a `slug` for its output filename, and a `kind`
