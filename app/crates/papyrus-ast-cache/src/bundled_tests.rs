@@ -5,7 +5,7 @@ use std::path::Path;
 
 fn zip_path(archive_name: &str) -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../../shared")
+        .join("../../../shared/scripts")
         .join(archive_name)
 }
 
