@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   base-scripts-cli:
-    name: Base scripts CLI build
+    name: CI / Base scripts snapshot / Build CLI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -41,7 +41,7 @@ jobs:
           retention-days: 1
 
   base-scripts-snapshot:
-    name: Base scripts snapshot (${{ matrix.preset }})
+    name: CI / Base scripts snapshot / Compare lint snapshot (${{ matrix.preset }})
     needs: base-scripts-cli
     runs-on: ubuntu-latest
     strategy:
