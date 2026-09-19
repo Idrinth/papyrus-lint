@@ -11,7 +11,7 @@ Both accept the same argument and behave identically:
 [See the docs](papyrus-cli-usage.txt) for a list of possible arguments
 and options or read on for explanations.
 
-## Initializing a project (`init`, `preset add`, `doctor`)
+## Initializing a project (`init`, `preset add`, `preset list`, `doctor`)
 
 `PapyrusLinterCLI init` creates a `papyrus-lint.yaml` in the current working
 directory from the selected `--preset` (`strict`, `standard`, or `careful`,
@@ -40,6 +40,11 @@ selectable via `init --preset <name>` afterward (see the configuration
 reference). It refuses a blank name or one matching a built-in preset (`strict`,
 `standard`, `careful`), and refuses to overwrite a preset that already
 exists under that name unless `--yes` is also given.
+
+`PapyrusLinterCLI preset list` prints the name of every preset selectable
+via `--preset <name>`, one per line: the three built-ins first, then any
+user preset found under the executable-adjacent `presets` directory, in
+alphabetical order.
 
 `PapyrusLinterCLI doctor <path-to-achlist-or-psc-or-directory>` validates a
 project's setup without linting any script: that the given path itself

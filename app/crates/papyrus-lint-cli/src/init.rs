@@ -36,6 +36,24 @@ pub(crate) fn run_preset_add(
     report_add_user_preset(&name, result, stdout, stderr)
 }
 
+/// Runs the `preset list` subcommand: prints the name of every preset
+/// selectable via `--preset <name>`, one per line — the three built-ins
+/// (see [`presets::PRESET_NAMES`]) first, then any user preset found under
+/// the executable-adjacent `presets` directory (see
+/// [`presets::user_presets_dir`]), in the same alphabetical order
+/// [`presets::list_user_preset_names`] returns them.
+pub(crate) fn run_preset_list(stdout: &mut impl Write) -> u8 {
+    for name in presets::PRESET_NAMES {
+        let _ = writeln!(stdout, "{name}");
+    }
+    if let Some(dir) = presets::user_presets_dir() {
+        for name in presets::list_user_preset_names(&dir) {
+            let _ = writeln!(stdout, "{name}");
+        }
+    }
+    0
+}
+
 pub(crate) fn initialize_config(
     dir: &Path,
     preset: presets::Preset,

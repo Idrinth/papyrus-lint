@@ -6,6 +6,7 @@
 //! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
 //! PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]
 //! PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]
+//! PapyrusLinterCLI preset list
 //! PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>
 //! ```
 //!
@@ -129,6 +130,13 @@
 //! exists, this refuses to overwrite it and reports an error naming the
 //! existing file, unless `--yes` is also given — the confirmation an
 //! overwrite requires, since there's no interactive prompt.
+//!
+//! `preset list` prints the name of every preset selectable via `--preset
+//! <name>`, one per line: the three built-ins (`strict`, `standard`,
+//! `careful`) first, then any user preset found under the
+//! executable-adjacent `presets` directory (see
+//! [`papyrus_lint_config::presets::list_user_preset_names`]), in
+//! alphabetical order.
 //!
 //! `doctor` validates a project's setup — the paths its configuration
 //! assumes or names — without linting any script: that the given
@@ -270,7 +278,7 @@ pub use output::{JsonDiagnostic, JsonFileReport, JsonReport};
 use args::{parse_cli, write_args_error, ParsedCli, ParsedCommand};
 use blob::run_blob;
 use doctor::run_doctor;
-use init::{run_init, run_preset_add};
+use init::{run_init, run_preset_add, run_preset_list};
 use run_lint_command::run_lint_command;
 
 use std::io::Write;
@@ -284,6 +292,7 @@ pub const USAGE: &str = concat!(
     "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n",
     "PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n",
     "PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n",
+    "PapyrusLinterCLI preset list\n\n",
     "PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>\n\n",
     "Examples:\n",
     include_str!(concat!(
@@ -339,6 +348,7 @@ pub fn run(
             source_path,
             overwrite,
         }) => run_preset_add(name, source_path, overwrite, stdout, stderr),
+        Ok(ParsedCli::PresetList) => run_preset_list(stdout),
         Ok(ParsedCli::Doctor(raw)) => run_doctor(raw, stdout),
         Ok(ParsedCli::Run(ParsedCommand::Version)) => {
             let _ = writeln!(stdout, "PapyrusLinterCLI {VERSION}");

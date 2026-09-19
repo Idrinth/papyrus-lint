@@ -166,6 +166,43 @@ fn report_add_user_preset_reports_an_invalid_name() {
 }
 
 #[test]
+fn run_preset_list_prints_the_built_in_names_when_no_user_presets_exist() {
+    // No `presets` directory exists next to the test binary, so this only
+    // lists the three built-ins (see `presets::user_presets_dir`).
+    let mut stdout = Vec::new();
+
+    let code = run_preset_list(&mut stdout);
+
+    assert_eq!(code, 0);
+    assert_eq!(
+        String::from_utf8(stdout).unwrap(),
+        "strict\nstandard\ncareful\n"
+    );
+}
+
+#[test]
+fn preset_list_prints_the_built_in_names_through_run() {
+    let (code, stdout, stderr) = run_captured(&["preset".to_string(), "list".to_string()]);
+
+    assert_eq!(code, 0);
+    assert!(stderr.is_empty());
+    assert_eq!(stdout, "strict\nstandard\ncareful\n");
+}
+
+#[test]
+fn preset_list_rejects_extra_arguments() {
+    let (code, stdout, stderr) = run_captured(&[
+        "preset".to_string(),
+        "list".to_string(),
+        "extra".to_string(),
+    ]);
+
+    assert_eq!(code, 2);
+    assert!(stdout.is_empty());
+    assert!(stderr.contains("Usage: PapyrusLinterCLI"));
+}
+
+#[test]
 fn init_creates_a_default_config() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     let mut stdout = Vec::new();
