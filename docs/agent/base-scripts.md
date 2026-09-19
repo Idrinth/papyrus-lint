@@ -13,6 +13,14 @@ plus per-rule counts). Findings on vanilla scripts are expected — the job
 fails only when the report drifts from the snapshot or the CLI exits 2+
 (usage, I/O, crash).
 
+After all three quick summary checks finish, the workflow builds the CLI from
+the pull request's base revision (or the preceding revision on a push) and
+runs both that binary and the current binary with plain-text output. This runs
+even when a summary check found drift, so a unified line-by-line diff can show
+the exact change for every preset: `-` lines only occurred in the base run,
+while `+` lines only occur in the current run. Failed reports are uploaded in
+the `base-scripts-text-reports` artifact.
+
 Regenerate after a deliberate change:
 
 ```console

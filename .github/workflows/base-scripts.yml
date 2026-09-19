@@ -70,3 +70,99 @@ jobs:
             --cli cli-bin/PapyrusLinterCLI \
             --preset ${{ matrix.preset }} \
             --work-dir base-scripts-work
+
+  base-scripts-text-diff:
+    name: Base scripts line-by-line diff
+    needs: [base-scripts-cli, base-scripts-snapshot]
+    if: ${{ always() && needs.base-scripts-cli.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check out the base revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.event.before }}
+          path: base-revision
+
+      - name: Build base rules.json from shared/rules/
+        working-directory: base-revision
+        run: python3 .github/scripts/build_rules_json.py
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: base-revision/app/crates/papyrus-lint-cli
+          shared-key: base-scripts-base-revision
+
+      - name: Build base revision CLI binary
+        working-directory: base-revision
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
+
+      - name: Download current CLI binary
+        uses: actions/download-artifact@v7
+        with:
+          name: papyrus-linter-cli-linux
+          path: current-cli-bin
+
+      - name: Make current CLI executable
+        run: chmod +x current-cli-bin/PapyrusLinterCLI
+
+      - name: Unpack bundled base scripts
+        run: unzip -q shared/scripts/skyrim-scripts.zip -d base-scripts-work/scripts
+
+      - name: Compare plain-text output line by line
+        shell: bash
+        run: |
+          set -uo pipefail
+          failed=0
+          base_cli="base-revision/app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI"
+          current_cli="current-cli-bin/PapyrusLinterCLI"
+
+          run_linter() {
+            local cli="$1"
+            local preset="$2"
+            local output="$3"
+            "$cli" \
+              --format plain \
+              --short-paths \
+              --color never \
+              --config "configuration/presets/papyrus-lint.$preset.yaml" \
+              --output "$output" \
+              base-scripts-work/scripts
+            local status=$?
+            if (( status > 1 )); then
+              echo "::error::PapyrusLinterCLI exited $status for the $preset preset"
+              return "$status"
+            fi
+            return 0
+          }
+
+          for preset in strict standard careful; do
+            echo "Comparing plain-text output for $preset"
+            if ! run_linter "$base_cli" "$preset" "base-scripts-work/$preset.base.txt"; then
+              failed=1
+              continue
+            fi
+            if ! run_linter "$current_cli" "$preset" "base-scripts-work/$preset.current.txt"; then
+              failed=1
+              continue
+            fi
+            if ! diff -u \
+              --label "base/$preset" \
+              --label "current/$preset" \
+              "base-scripts-work/$preset.base.txt" \
+              "base-scripts-work/$preset.current.txt"; then
+              failed=1
+            fi
+          done
+          exit "$failed"
+
+      - name: Upload plain-text reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: base-scripts-text-reports
+          path: base-scripts-work/*.txt
+          if-no-files-found: warn
