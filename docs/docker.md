@@ -6,6 +6,10 @@ cache in `/cache`, and uses Papyrus base scripts mounted under
 `/base-scripts` for cross-script lookups. The base scripts can be an extracted
 directory or a zip named `skyrim-scripts.zip`; set
 `PAPYRUS_LINT_BASE_SCRIPTS_ARCHIVE` when the mounted archive has another name.
+Vanilla scripts whose content still matches the zip shipped in
+`shared/skyrim-scripts.zip` are also served from a pre-compiled AST/token
+blob baked into `PapyrusLinterCLI`, so the first analysis does not re-parse
+`Actor`/`Form`/… even when the archive was just unpacked into a new path.
 
 ```bash
 docker run --rm \

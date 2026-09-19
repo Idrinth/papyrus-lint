@@ -40,3 +40,8 @@ lto = true
 codegen-units = 1
 strip = true
 panic = "abort"
+
+# papyrus-ast-cache's build.rs parses the bundled Skyrim scripts; see that
+# crate's Cargo.toml for why the build-script profile is optimized.
+[profile.dev.build-override]
+opt-level = 3

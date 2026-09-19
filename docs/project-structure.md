@@ -98,13 +98,24 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │                           # parses it once no matter how many lint
 │       │                           # rules each ask for their own tokens/AST
 │       ├── papyrus-ast-cache/    # Standalone crate: disk-backed cache of
-│       │   └── src/               # parsed .psc ASTs/token streams, keyed by
-│       │       ├── lib.rs           # content MD5 + mtime + linter version;
-│       │       │                    # depends only on papyrus-parser, so it's
+│       │   ├── build.rs           # parsed .psc ASTs/token streams, keyed by
+│       │   └── src/               # content MD5 + mtime + linter version;
+│       │       ├── lib.rs           # depends only on papyrus-parser, so it's
 │       │       │                    # reusable on its own. papyrus-lint-core
 │       │       │                    # re-exports it as its own ast_cache
 │       │       │                    # module (see below); this crate's own
-│       │       │                    # public get/put/ensure_primed API
+│       │       │                    # public get/put/ensure_primed API.
+│       │       │                    # build.rs compiles shared/skyrim-scripts.zip
+│       │       │                    # into a content-addressed AST/token blob
+│       │       │                    # that get/get_tokens/ensure_primed consult
+│       │       │                    # before the on-disk cache, so vanilla
+│       │       │                    # base types hit on first analysis
+│       │       ├── bundled.rs       # Runtime lookup into that blob (MD5 of
+│       │       │                    # decoded source → AST/tokens; no disk lock)
+│       │       ├── bundled_blob.rs  # Binary layout of the blob; shared with
+│       │       │                    # build.rs via a #[path] include
+│       │       ├── psc_decode.rs    # UTF-8 / Windows-1252 decode used by
+│       │       │                    # build.rs (same policy as source_encoding)
 │       │       ├── entry.rs         # On-disk entry representation: where a
 │       │       │                    # cache entry lives, how it's addressed,
 │       │       │                    # and its raw read/write
