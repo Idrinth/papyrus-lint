@@ -20,6 +20,41 @@
   opacity: 0.75;
 }
 
+.drop-zone__loading {
+  display: flex;
+  gap: 0.6em;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1em;
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.drop-zone__loading[hidden] {
+  display: none;
+}
+
+.drop-zone__spinner {
+  width: 1em;
+  height: 1em;
+  border: 0.18em solid currentcolor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: drop-zone-spin 0.7s linear infinite;
+}
+
+@keyframes drop-zone-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drop-zone__spinner {
+    animation-duration: 1.5s;
+  }
+}
+
 .drop-zone__error {
   margin: 0.75em 0 0;
   min-height: 1.5em;
@@ -380,4 +415,3 @@
   border-left-color: var(--color-error-strong);
   color: var(--color-error-strong);
 }
-

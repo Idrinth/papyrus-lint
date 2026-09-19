@@ -16,6 +16,7 @@ import { bindWatchMode } from "./watch";
 
 let appVersionEl: HTMLElement | null;
 let dropZoneEl: HTMLElement | null;
+let dropZoneLoadingEl: HTMLElement | null;
 let dropZoneErrorEl: HTMLElement | null;
 let resultEl: HTMLElement | null;
 let resultTitleEl: HTMLElement | null;
@@ -106,6 +107,13 @@ export function clearError() {
   }
 }
 
+// Gives immediate feedback while the backend recursively enumerates a dropped
+// directory (or reads an achlist), before the Files tab can be populated.
+export function setDropZoneLoading(loading: boolean) {
+  dropZoneLoadingEl?.toggleAttribute("hidden", !loading);
+  dropZoneEl?.setAttribute("aria-busy", String(loading));
+}
+
 // `base` is the project root (see projectDirForAchlist/projectDirForPscPath),
 // used to shorten each entry to a path relative to it so long absolute
 // paths stay readable; entries outside `base` (or when it isn't known)
@@ -157,6 +165,7 @@ export function applyRuleTags(tags: RuleTagsInfo[]) {
 window.addEventListener("DOMContentLoaded", () => {
   appVersionEl = document.querySelector("#app-version");
   dropZoneEl = document.querySelector("#drop-zone");
+  dropZoneLoadingEl = document.querySelector("#drop-zone-loading");
   dropZoneErrorEl = document.querySelector("#drop-zone-error");
   resultEl = document.querySelector("#achlist-result");
   resultTitleEl = document.querySelector("#achlist-result-title");

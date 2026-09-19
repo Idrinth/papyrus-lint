@@ -112,6 +112,34 @@ describe("parsePscFiles", () => {
 });
 
 describe("handleDroppedPaths", () => {
+  it("shows a loading indicator while a dropped directory is being listed", async () => {
+    let resolveListing: (paths: string[]) => void = () => {};
+    const listing = new Promise<string[]>((resolve) => {
+      resolveListing = resolve;
+    });
+    invokeImplFor({
+      list_psc_files_recursively: () => listing,
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [],
+    });
+
+    const pending = handleDroppedPaths(["/proj"]);
+    const loading = document.querySelector<HTMLElement>("#drop-zone-loading")!;
+    expect(loading.hidden).toBe(false);
+    expect(document.querySelector("#drop-zone")!.getAttribute("aria-busy")).toBe("true");
+
+    resolveListing(["/proj/A.psc"]);
+    await confirmDetectedConfig();
+    await pending;
+
+    expect(loading.hidden).toBe(true);
+    expect(document.querySelector("#drop-zone")!.getAttribute("aria-busy")).toBe("false");
+  });
+
   it("rejects a drop with no .achlist file and more than one file", async () => {
     await handleDroppedPaths(["/scripts/A.psc", "/scripts/B.psc"]);
     expect(document.querySelector("#drop-zone-error")!.textContent).toContain(".achlist");
