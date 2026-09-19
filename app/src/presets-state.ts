@@ -1,0 +1,13 @@
+export let saveConfigAsPresetButtonEl: HTMLButtonElement | null;
+export let resetToPresetSelectEl: HTMLSelectElement | null;
+export let resetToPresetButtonEl: HTMLButtonElement | null;
+export let configPickerEl: HTMLDialogElement | null;
+export let configPickerDetectedEl: HTMLElement | null;
+export let configPickerDetectedPathEl: HTMLElement | null;
+export let configPickerNoneEl: HTMLElement | null;
+export let configPickerPresetListEl: HTMLElement | null;
+export let configPickerPathInputEl: HTMLInputElement | null;
+export let configPickerUsePathButtonEl: HTMLButtonElement | null;
+export let configPickerContinueEl: HTMLButtonElement | null;
+export let presetManagementTabEl: HTMLButtonElement | null;
+export let presetManagementListEl: HTMLElement | null;
