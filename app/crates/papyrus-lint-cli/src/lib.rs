@@ -303,9 +303,7 @@ pub const USAGE: &str = concat!(
     "fail_on_warning/fail_on_info threshold), 1 if any did, 2 on a usage or\n",
     "I/O error.\n\n",
     "Contact:\n",
-    "  Discord    https://discord.gg/idrinth\n",
-    "  NexusMods  https://www.nexusmods.com/skyrimspecialedition/mods/189862\n",
-    "  GitHub     https://github.com/idrinth/papyrus-lint\n"
+    "<CONTACT-LINKS>"
 );
 
 /// The crate's version, as set in `crates/papyrus-lint-cli/Cargo.toml`

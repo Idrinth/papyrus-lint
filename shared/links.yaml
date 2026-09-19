@@ -1,0 +1,31 @@
+Discord:
+  url: https://discord.gg/idrinth
+  type:
+  - contact
+Nexus Mods:
+  url: https://www.nexusmods.com/skyrimspecialedition/mods/189862
+  type:
+  - contact
+  - download
+GitHub:
+  url: https://github.com/idrinth/papyrus-lint
+  type:
+  - contact
+  - download
+Tally Feedback Form:
+  url: https://tally.so/r/aQL1dB
+  type:
+  - contact
+Documentation Website:
+  url: https://papyrus-lint.idrinth.de
+  type:
+  - download
+  - documentation
+GitHub Action:
+  url: https://github.com/marketplace/actions/papyrus-lint
+  type:
+  - download
+VSCode Extension:
+  url: https://marketplace.visualstudio.com/items?itemName=Idrinth.papyrus-lint-vscode
+  type:
+  - download

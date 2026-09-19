@@ -15,6 +15,7 @@ MARKERS = {
     "<VERSION>": "version",
     "<CONFIGURATION>": "configuration",
     "<CLI>": "cli",
+    "<LINKS>": "links",
 }
 
 
@@ -48,6 +49,7 @@ def render(template: str, hit: int, found: int, version: str) -> str:
         "version": version,
         "configuration": Path("configuration/papyrus-lint.default.yaml").read_text(encoding="utf-8", errors="replace"),
         "cli": Path("docs/papyrus-cli-usage.txt").read_text(encoding="utf-8", errors="replace"),
+        "links": "",#to be filled from /shared/links.yaml with contact links
     }
     rendered = template
     for marker, value_name in MARKERS.items():
