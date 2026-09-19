@@ -1,5 +1,5 @@
-//! Compiles `shared/skyrim-scripts.zip` and
-//! `shared/skyrim-extender-scripts.zip` into a gzip-compressed AST/token
+//! Compiles `shared/scripts/skyrim-scripts.zip` and
+//! `shared/scripts/skyrim-extender-scripts.zip` into a gzip-compressed AST/token
 //! blob (`skyrim-ast-cache.bin.gz` in `OUT_DIR`) that [`bundled`] embeds
 //! at compile time. Keyed by MD5 of decoded source, so a known script hits
 //! regardless of extract path. Scripts the parser cannot currently lex are
@@ -30,7 +30,7 @@ fn main() {
     let mut skipped = 0u32;
     for archive_name in ["skyrim-scripts.zip", "skyrim-extender-scripts.zip"] {
         let zip_path = Path::new(&manifest_dir)
-            .join("../../../shared")
+            .join("../../../shared/scripts")
             .join(archive_name);
         println!("cargo:rerun-if-changed={}", zip_path.display());
         let file = File::open(&zip_path).unwrap_or_else(|err| {
