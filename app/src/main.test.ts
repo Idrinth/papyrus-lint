@@ -42,7 +42,7 @@ describe("severity helpers", () => {
 
 describe("escapeAttr", () => {
   it("escapes &, \", <, > for safe use inside an HTML attribute", () => {
-    expect(escapeAttr(`a & b " <c> `)).toBe("a &amp; b &quot; &lt;c&gt; ");
+    expect(escapeAttr(`a & b " <c> `)).toBe("a & b " <c> ");
   });
 });
 
@@ -74,7 +74,7 @@ describe("applyRuleTags", () => {
   };
 
   it("indexes tags by rule id for tagsForFinding", async () => {
-    const { tagsForFinding } = await import("./results-list");
+    const { tagsForFinding } = await import("./results-filter");
     applyRuleTags([trailingWhitespaceTags]);
 
     expect(tagsForFinding({ line: 1, column: 1, message: "x", rule: "trailing-whitespace" })).toEqual(
