@@ -356,7 +356,7 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
             self.assertIn(str(len(rules)), rules_output)
             for rule in rules:
                 with self.subTest(rule=rule["id"]):
-                    self.assertIn(f'id="rule-{rule["id"]}"', rules_output)
+                    self.assertIn(f'id=rule-{rule["id"]}', rules_output)
 
 
 class BuildTest(unittest.TestCase):
