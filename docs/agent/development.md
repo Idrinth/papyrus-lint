@@ -9,10 +9,10 @@
   any of the commands below that touch it.
 - Frontend (`app/`): `npm install`, then `npm run dev` (Vite dev server) or
   `npm run build` (generate `src/config-types.ts`, typecheck + build).
-  `npm run generate:config-types` regenerates that file on its own from
-  `shared/rules/*.json` and `configuration/papyrus-lint.default.yaml`; it
-  is git-ignored, the same way `papyrus-lints/build.rs` writes `Rules`
-  into `$OUT_DIR`. `npm run test` runs the frontend's
+  `npm run generate:config-types` runs `app/scripts/generate-config-types.mjs`
+  against `shared/rules/*.json` and `configuration/papyrus-lint.default.yaml`;
+  the result is git-ignored, the same way `papyrus-lints/build.rs` writes
+  `Rules` into `$OUT_DIR`. `npm run test` runs the frontend's
   Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
   same suite instrumented with `@vitest/coverage-v8`, printing a text
   report and writing HTML/lcov reports to `coverage/`.
