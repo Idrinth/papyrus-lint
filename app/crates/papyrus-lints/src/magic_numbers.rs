@@ -64,13 +64,17 @@ impl AstLint for Collect {
 
     fn visit_property(&mut self, property: &PropertyDecl, _ctx: &mut VisitCtx<'_>) {
         if let Some(value) = &property.value {
-            mark_tree(value, &mut self.ignore);
+            if is_bare_number_literal(value) {
+                mark_bare_literal(value, &mut self.ignore);
+            }
         }
     }
 
     fn visit_param(&mut self, param: &Param, _ctx: &mut VisitCtx<'_>) {
         if let Some(default) = &param.default {
-            mark_tree(default, &mut self.ignore);
+            if is_bare_number_literal(default) {
+                mark_bare_literal(default, &mut self.ignore);
+            }
         }
     }
 
@@ -174,33 +178,6 @@ fn mark_bare_literal(expr: &Expr, ignore: &mut HashSet<*const Expr>) {
     ignore.insert(expr as *const Expr);
     if let Expr::Unary { operand, .. } = expr {
         ignore.insert(operand.as_ref() as *const Expr);
-    }
-}
-
-fn mark_tree(expr: &Expr, ignore: &mut HashSet<*const Expr>) {
-    ignore.insert(expr as *const Expr);
-    match expr {
-        Expr::Binary { left, right, .. } => {
-            mark_tree(left, ignore);
-            mark_tree(right, ignore);
-        }
-        Expr::Unary { operand, .. } => mark_tree(operand, ignore),
-        Expr::Call { callee, args, .. } => {
-            mark_tree(callee, ignore);
-            for arg in args {
-                mark_tree(arg, ignore);
-            }
-        }
-        Expr::NamedArg { value, .. } | Expr::Member { object: value, .. } => {
-            mark_tree(value, ignore)
-        }
-        Expr::Index { object, index } => {
-            mark_tree(object, ignore);
-            mark_tree(index, ignore);
-        }
-        Expr::Cast { value, .. } => mark_tree(value, ignore),
-        Expr::NewArray { size, .. } => mark_tree(size, ignore),
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
     }
 }
 
