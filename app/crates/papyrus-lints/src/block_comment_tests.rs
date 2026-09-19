@@ -2,7 +2,8 @@ use super::*;
 
 #[test]
 fn marks_both_delimiter_lines_and_everything_between() {
-    let source = "Value = 50\n;/this is a test comment\nwill this compile, we will never know/;\nendevent\n";
+    let source =
+        "Value = 50\n;/this is a test comment\nwill this compile, we will never know/;\nendevent\n";
     let protected = protected_lines(source);
 
     assert_eq!(protected, vec![false, false, true, true, false]);
