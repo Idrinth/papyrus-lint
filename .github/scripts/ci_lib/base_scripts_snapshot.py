@@ -18,10 +18,6 @@ class SnapshotError(RuntimeError):
     """Raised when CLI output cannot be produced."""
 
 
-def preset_config_path(root: Path, preset: str) -> Path:
-    return root / PRESET_CONFIG / f"papyrus-lint.{preset}.yaml"
-
-
 def fixture_path(root: Path, preset: str) -> Path:
     return root / FIXTURE_DIR / f"{preset}.txt"
 
@@ -39,7 +35,7 @@ def extract_base_scripts(archive: Path, destination: Path) -> Path:
 def run_cli(
     cli: Path,
     project: Path,
-    config: Path,
+    preset: str,
     output: Path,
     extra_args: Sequence[str] | None = None,
 ) -> str:
@@ -49,8 +45,16 @@ def run_cli(
     """
     if not cli.exists():
         raise SnapshotError(f"CLI binary not found: {cli}")
-    if not config.is_file():
-        raise SnapshotError(f"preset config not found: {config}")
+    config = Path(project / "papyrus-lint.yaml")
+    if config.exists():
+        config.unlink()
+    command = [
+        str(cli),
+        "init",
+        "--preset",
+        preset
+    ]
+    subprocess.run(command, check=False, capture_output=False, text=True, cwd=project)
     output.parent.mkdir(parents=True, exist_ok=True)
     command = [
         str(cli),
@@ -90,7 +94,7 @@ def render_output(
     return run_cli(
         cli,
         extracted,
-        preset_config_path(root, preset),
+        preset,
         work_dir / f"{preset}.txt",
         extra_args,
     )
