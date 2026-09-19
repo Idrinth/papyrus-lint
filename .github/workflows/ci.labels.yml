@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   labels:
-    name: Pull request labels
+    name: CI / Labels / Require component and type
     runs-on: ubuntu-latest
     steps:
       - name: Require component and type labels

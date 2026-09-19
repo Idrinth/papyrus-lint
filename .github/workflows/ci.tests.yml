@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 jobs:
-  bbcode:
-    name: CI scripts and Nexus page BBCode lint
+  ci-scripts:
+    name: CI / Tests / CI Python scripts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -50,7 +50,7 @@ jobs:
           path: lcov.info
 
   pages:
-    name: GitHub Pages builder tests
+    name: CI / Tests / GitHub Pages builder
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -94,7 +94,7 @@ jobs:
           path: lcov.info
 
   sublime-extension:
-    name: Sublime Text extension tests
+    name: CI / Tests / Sublime Text extension
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -134,7 +134,7 @@ jobs:
           path: lcov.info
 
   frontend:
-    name: Frontend (typecheck & build)
+    name: CI / Tests / Frontend coverage, typecheck and build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -175,7 +175,7 @@ jobs:
         run: npm run build
 
   vscode-extension:
-    name: VS Code extension (test & compile)
+    name: CI / Tests / VS Code extension coverage and compile
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -216,7 +216,7 @@ jobs:
         run: npm run compile
 
   rust-test:
-    name: Rust test (${{ matrix.crate }})
+    name: CI / Tests / Rust (${{ matrix.crate }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -303,9 +303,9 @@ jobs:
           path: lcov.info
 
   coverage-comment:
-    name: Coverage summary comment
+    name: CI / Tests / Coverage summary comment
     if: always() && github.event_name == 'pull_request'
-    needs: [bbcode, pages, sublime-extension, frontend, vscode-extension, rust-test]
+    needs: [ci-scripts, pages, sublime-extension, frontend, vscode-extension, rust-test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -359,12 +359,12 @@ jobs:
             }
 
   hall-of-shame:
-    name: Hall of shame
+    name: CI / Tests / Hall of shame (uncovered lines)
     # Runs in the same workflow run as the coverage-producing jobs so its
     # uncovered-line ranking always reflects this push, never a lagging
     # prior run's artifacts.
     if: always() && github.event_name == 'pull_request'
-    needs: [bbcode, pages, sublime-extension, frontend, vscode-extension, rust-test]
+    needs: [ci-scripts, pages, sublime-extension, frontend, vscode-extension, rust-test]
     runs-on: ubuntu-latest
     permissions:
       contents: read
