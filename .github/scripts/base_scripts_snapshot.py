@@ -101,7 +101,8 @@ def main(argv: list[str] | None = None) -> int:
             print(_truncate_diff(diff), file=sys.stderr)
             print(
                 "Re-generate with "
-                f"`python3 .github/scripts/base_scripts_snapshot.py --cli <PapyrusLinterCLI> --preset {preset} --update` "
+                "`python3 .github/scripts/base_scripts_snapshot.py "
+                f"--cli <PapyrusLinterCLI> --preset {preset} --update` "
                 "after reviewing the delta.",
                 file=sys.stderr,
             )

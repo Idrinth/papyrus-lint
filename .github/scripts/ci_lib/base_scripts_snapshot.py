@@ -73,7 +73,10 @@ def normalize_report(report: dict) -> str:
         f"# files_with_diagnostics: {sum(1 for _ in _unique_paths(rows))}",
         f"# total_diagnostics: {len(rows)}",
     ]
-    body = [f"{path}\t{line}\t{column}\t{level}\t{rule}\t{message}" for path, line, column, level, rule, message in rows]
+    body = [
+        f"{path}\t{line}\t{column}\t{level}\t{rule}\t{message}"
+        for path, line, column, level, rule, message in rows
+    ]
     return "\n".join([*header, *body]) + "\n"
 
 
@@ -124,7 +127,8 @@ def _unique_paths(rows: Sequence[tuple[str, int, int, str, str, str]]) -> Iterab
 
 
 def _normalize_path(path: str) -> str:
-    return path.replace("\\", "/").lstrip("./")
+    # Collapse mixed / doubled separators from Windows JSON paths and zip layouts.
+    return Path(path.replace("\\", "/")).as_posix().lstrip("./")
 
 
 def _one_line(message: str) -> str:

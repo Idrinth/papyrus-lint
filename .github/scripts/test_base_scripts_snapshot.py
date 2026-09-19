@@ -12,9 +12,8 @@ import zipfile
 from pathlib import Path
 from unittest import mock
 
-from ci_lib import base_scripts_snapshot as snap
-
 from base_scripts_snapshot import main as entry_main
+from ci_lib import base_scripts_snapshot as snap
 
 
 def _write_fake_cli(directory: Path, report: dict) -> Path:
@@ -196,7 +195,9 @@ class RenderAndMainTests(unittest.TestCase):
                     ]
                 )
             self.assertEqual(0, status)
-            written = (root / "testdata" / "base-scripts" / "careful.summary.txt").read_text(encoding="utf-8")
+            written = (root / "testdata" / "base-scripts" / "careful.summary.txt").read_text(
+                encoding="utf-8"
+            )
             self.assertIn("# preset: careful", written)
             self.assertIn("# total_diagnostics: 0", written)
 
