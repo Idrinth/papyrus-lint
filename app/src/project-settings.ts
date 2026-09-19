@@ -3,8 +3,7 @@ import { markLintResultsStale } from "./drop";
 import { applyConfigPreset } from "./presets-api";
 import { promptForConfigSelection } from "./presets-picker";
 import { loadCompileCheck, loadCompilerPath, loadLookupScriptRoots, loadProjectInfo, loadScriptRoots, saveCompileCheck, saveCompilerPath, saveLookupScriptRoots, saveScriptRoots } from "./project-io";
-import { type ProjectInfo, compileCheckEl, compilerPathEl, configPathOverride, configPathOverrideEl, currentProjectDir, detectedScriptRootsEl, lookupScriptRootsEl, scriptRootsEl, setCurrentCompileCheck, setCurrentCompilerPath, setCurrentLookupScriptRoots, setCurrentProjectDir, setCurrentScriptRoots, settingsFieldsetEl, settingsLockedNoticeEl, usedConfigurationFileEl } from "./project-state";
-import * as projectState from "./project-state";
+import { type ProjectInfo, bindProjectSettingsDom, compileCheckEl, compilerPathEl, configPathOverride, configPathOverrideEl, currentProjectDir, detectedScriptRootsEl, lookupScriptRootsEl, scriptRootsEl, setCurrentCompileCheck, setCurrentCompilerPath, setCurrentLookupScriptRoots, setCurrentProjectDir, setCurrentScriptRoots, settingsFieldsetEl, settingsLockedNoticeEl, usedConfigurationFileEl } from "./project-state";
 
 export function applyProjectInfoToUI(info: ProjectInfo) {
   if (detectedScriptRootsEl) {
@@ -216,21 +215,13 @@ export async function handleConfigPathOverrideChanged() {
 }
 
 export function bindProjectSettings() {
-  projectState.configPathOverrideEl = document.querySelector("#config-path-override");
-  projectState.compilerPathEl = document.querySelector("#compiler-path");
-  projectState.compileCheckEl = document.querySelector("#compile-check");
-  projectState.scriptRootsEl = document.querySelector("#script-roots");
-  projectState.lookupScriptRootsEl = document.querySelector("#lookup-script-roots");
-  projectState.detectedScriptRootsEl = document.querySelector("#detected-script-roots");
-  projectState.usedConfigurationFileEl = document.querySelector("#used-configuration-file");
-  projectState.settingsFieldsetEl = document.querySelector("#settings-fieldset");
-  projectState.settingsLockedNoticeEl = document.querySelector("#settings-locked-notice");
+  bindProjectSettingsDom();
 
-  projectState.configPathOverrideEl?.addEventListener("change", handleConfigPathOverrideChanged);
-  projectState.compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
-  projectState.compileCheckEl?.addEventListener("change", handleCompileCheckChanged);
-  projectState.scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);
-  projectState.lookupScriptRootsEl?.addEventListener("change", handleLookupScriptRootsChanged);
+  configPathOverrideEl?.addEventListener("change", handleConfigPathOverrideChanged);
+  compilerPathEl?.addEventListener("change", handleCompilerPathChanged);
+  compileCheckEl?.addEventListener("change", handleCompileCheckChanged);
+  scriptRootsEl?.addEventListener("change", handleScriptRootsChanged);
+  lookupScriptRootsEl?.addEventListener("change", handleLookupScriptRootsChanged);
 
   // No project's configuration is loaded yet at startup, so the Settings
   // tab starts locked (see setSettingsLocked); the markup itself also
