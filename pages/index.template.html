@@ -294,9 +294,10 @@
       <section id="cli">
         <h2>Command-line interface</h2>
         <p class="section-intro">
-          Besides its GUI, Papyrus Lint runs non-interactively via a standalone <code>PapyrusLinterCLI</code> binary
-          (or the desktop app's own executable, launched with an <code>.achlist</code>/<code>.psc</code> path),
-          supporting automatic fixes and structured JSON output.
+          The desktop app (<code>PapyrusLinter</code>) and the standalone <code>PapyrusLinterCLI</code>
+          binary accept the same arguments and lint an <code>.achlist</code>, a <code>.psc</code>, or a
+          directory without a GUI. See the <a href="docs/cli.html">CLI reference</a> for
+          subcommands, project resolution, and report formats.
         </p>
         <!--CLI_EXAMPLES-->
         <p class="section-intro">
@@ -305,23 +306,22 @@
           run it in CI is the
           <a href="https://github.com/marketplace/actions/papyrus-lint">Papyrus Lint GitHub Action</a>
           (<code>idrinth/papyrus-lint-action</code>), which posts findings as inline PR review comments. See the
-          <a href="https://github.com/idrinth/papyrus-lint#command-line-interface">README</a> for every flag.
+          <a href="docs/cli.html">CLI reference</a> for every flag.
         </p>
       </section>
 
       <section id="config">
         <h2>Configuration</h2>
         <p class="section-intro">
-          Lint/fix behavior is configured via an optional <code>papyrus-lint.yaml</code> (or <code>.yml</code>) file
-          at the project root — next to the <code>.achlist</code>, or two directories above a bare
-          <code>.psc</code>. Any key it omits falls back to its documented default. It controls formatting
-          (semicolons, indentation, casing), which rules are enabled, complexity thresholds, CLI failure levels, and
-          the compiler path — <code>PapyrusLinterCLI init</code> writes the full default file into a project with
-          none yet.
+          Lint/fix behavior is configured via an optional <code>papyrus-lint.yaml</code> (or <code>.yml</code>)
+          at the project root. Keys you omit fall back to their documented defaults.
+          <code>PapyrusLinterCLI init</code> writes the full default file. See the
+          <a href="docs/configuration.html">configuration reference</a> for where that file is
+          resolved and what every key does.
         </p>
         <div class="hero__actions" style="justify-content: flex-start">
           <a class="button" href="configuration/papyrus-lint-default-yaml.html">View the default configuration</a>
-          <a class="button" href="https://github.com/idrinth/papyrus-lint#configuration">Full configuration reference</a>
+          <a class="button" href="docs/configuration.html">Full configuration reference</a>
         </div>
       </section>
 

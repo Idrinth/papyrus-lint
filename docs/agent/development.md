@@ -37,6 +37,10 @@
     (used by `npm run build`) actually runs. See
     https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0.
 - Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
+  The desktop shell is built with [Tauri](https://tauri.app/), so building
+  it requires Tauri's platform prerequisites (a Rust toolchain, plus the
+  usual webview dependencies for your OS — see the
+  [Tauri prerequisites guide](https://v2.tauri.app/start/prerequisites/)).
 - Rust backend only: `cargo check` / `cargo test` from `app/src-tauri/`.
   `app/src-tauri/build.rs` generates `icons/` from `shared/images/logo.png`
   during the build, so those platform-specific PNG/ICO/ICNS variants are

@@ -12,38 +12,11 @@ coding agents so contributors only have one project tree to keep current.
 
 ## Development setup
 
-- Frontend (`app/`): `npm install`, then `npm run dev` (Vite dev server) or
-  `npm run build` (typecheck + build). `npm run test` runs the frontend's
-  Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
-  same suite instrumented with `@vitest/coverage-v8`, printing a text
-  report and writing HTML/lcov reports to `coverage/`. `npm run lint` runs
-  ESLint (flat config in `eslint.config.js`) over `src/`.
-  - `typescript-eslint` doesn't yet support TypeScript 7 (this repo's
-    `typescript` devDependency), so `app/package.json` installs it under an
-    npm alias: `typescript` resolves to the `@typescript/typescript6` shim
-    (TS 6, satisfying typescript-eslint) and the real TS 7 compiler is
-    installed separately as `@typescript/native`, which is what `tsc`
-    (used by `npm run build`) actually runs. See
-    https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-6.0.
-- Full desktop app: `npm run tauri dev` / `npm run tauri build` (from `app/`).
-- Rust backend only: `cargo check` / `cargo test` from `app/src-tauri/`.
-- Parser crate only: `cargo test` from `app/crates/papyrus-parser/`.
-- AST cache crate only: `cargo test` from `app/crates/papyrus-ast-cache/`.
-- Lints crate only: `cargo test` from `app/crates/papyrus-lints/`.
-- Config crate only: `cargo test` from `app/crates/papyrus-lint-config/`.
-- Shared project-resolution crate only: `cargo test` from
-  `app/crates/papyrus-lint-core/`.
-- Output formatting crate only: `cargo test` from
-  `app/crates/papyrus-lint-output/`.
-- CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --
-  <path-to-achlist>`, or `cargo build --release --manifest-path
-  app/crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
-  binary. `cargo test` from `app/crates/papyrus-lint-cli/` runs its tests.
-
-The desktop shell is built with [Tauri](https://tauri.app/), so building it
-requires Tauri's platform prerequisites (a Rust toolchain, plus the usual
-webview dependencies for your OS — see the
-[Tauri prerequisites guide](https://v2.tauri.app/start/prerequisites/)).
+How to install, test, and run each crate, the desktop app, and the editor
+plugins lives in [`docs/agent/development.md`](docs/agent/development.md)
+(including generating `shared/rules.json` after clone, and Tauri's
+platform prerequisites for a desktop build). Do not recopy that command
+list here.
 
 ## Before opening a pull request
 
