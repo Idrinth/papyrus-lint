@@ -36,7 +36,7 @@ use papyrus_parser::ast::{
     BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Stmt, TypeName, UnaryOp,
 };
 
-use crate::array_bounds::eval_const_int;
+use crate::const_eval::eval_const_int;
 use crate::none_form_usage::diverges;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;

@@ -15,6 +15,7 @@ include!(concat!(env!("OUT_DIR"), "/lint_modules.rs"));
 
 mod block_comment;
 pub mod config;
+mod const_eval;
 mod disable_comments;
 mod external_signatures;
 mod fragment_code;

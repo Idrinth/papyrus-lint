@@ -14,8 +14,9 @@
 //! only ever looks at a `new <Type>[<N>]` expression's own literal size, so
 //! it has no state to track and nothing else can disable or narrow it.
 
-use papyrus_parser::ast::{BinaryOp, Expr, Literal, UnaryOp};
+use papyrus_parser::ast::Expr;
 
+use crate::const_eval::eval_const_int;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
@@ -74,36 +75,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-/// Attempts to fold `expr` down to a single constant `Int`, returning `None`
-/// as soon as any part of it depends on something that can't be known
-/// without running the script (an identifier, a call, `Self`/`Parent`, a
-/// member/index access, a cast, a `new` array, a `Float`, division, or
-/// modulo).
-fn eval_const_int(expr: &Expr) -> Option<i64> {
-    match expr {
-        Expr::Literal(Literal::Int { value, .. }) => Some(*value),
-        Expr::Unary {
-            op: UnaryOp::Neg,
-            operand,
-        } => eval_const_int(operand).map(|value| -value),
-        Expr::Binary {
-            left,
-            op: op @ (BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul),
-            right,
-        } => {
-            let left = eval_const_int(left)?;
-            let right = eval_const_int(right)?;
-            Some(match op {
-                BinaryOp::Add => left + right,
-                BinaryOp::Sub => left - right,
-                BinaryOp::Mul => left * right,
-                _ => unreachable!(),
-            })
-        }
-        _ => None,
-    }
 }
 
 #[cfg(test)]

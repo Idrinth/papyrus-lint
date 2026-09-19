@@ -28,8 +28,9 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IfBranch, Literal, Stmt, UnaryOp};
+use papyrus_parser::ast::{AssignOp, Expr, IfBranch, Stmt};
 
+use crate::const_eval::eval_const_int;
 use crate::none_form_usage::diverges;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
@@ -247,41 +248,6 @@ fn check_expr(
         }
         Expr::NamedArg { value, .. } => check_expr(value, sizes, diagnostics, line),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
-    }
-}
-
-/// Attempts to fold `expr` down to a single constant `Int`, returning `None`
-/// as soon as any part of it depends on something that can't be known
-/// without running the script (an identifier, a call, `Self`/`Parent`, a
-/// member/index access, a cast, a `new` array, a `Float`, division, or
-/// modulo).
-///
-/// `pub(crate)` rather than private so [`crate::unchecked_array_element`] can
-/// fold an index expression to the same constant this lint would, keeping
-/// the two lints' notion of "the same array element" (e.g. `a[2]` and
-/// `a[1 + 1]`) identical.
-pub(crate) fn eval_const_int(expr: &Expr) -> Option<i64> {
-    match expr {
-        Expr::Literal(Literal::Int { value, .. }) => Some(*value),
-        Expr::Unary {
-            op: UnaryOp::Neg,
-            operand,
-        } => eval_const_int(operand).map(|value| -value),
-        Expr::Binary {
-            left,
-            op: op @ (BinaryOp::Add | BinaryOp::Sub | BinaryOp::Mul),
-            right,
-        } => {
-            let left = eval_const_int(left)?;
-            let right = eval_const_int(right)?;
-            Some(match op {
-                BinaryOp::Add => left + right,
-                BinaryOp::Sub => left - right,
-                BinaryOp::Mul => left * right,
-                _ => unreachable!(),
-            })
-        }
-        _ => None,
     }
 }
 

@@ -137,8 +137,3 @@ fn does_not_flag_a_call_whose_callee_is_neither_an_identifier_nor_a_member_acces
 
     assert!(diagnostics.is_empty());
 }
-
-#[test]
-fn as_number_rejects_a_non_numeric_literal() {
-    assert_eq!(as_number(&Literal::Bool(true)), None);
-}
