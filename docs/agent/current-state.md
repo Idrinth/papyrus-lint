@@ -809,17 +809,33 @@ per-script lint loop (via `ast_cache::ensure_primed`, see below) cache
 each parsed `.psc` AST on disk
 (`app/crates/papyrus-ast-cache/src/` — split across `lib.rs`'s public
 API, `entry.rs`'s on-disk storage primitives, `version.rs`'s compatibility
-check, and `ops/`'s `get`/`put`/`ensure_primed` logic, itself split into
+check, `bundled.rs`/`bundled_blob.rs`'s content-addressed vanilla-script
+blob, and `ops/`'s `get`/`put`/`ensure_primed` logic, itself split into
 `load.rs`/`store.rs`/`prime.rs` behind a `mod.rs` facade; a standalone crate
 `papyrus-lint-core` re-exports as its own `ast_cache` module, since the
 cache only depends on `papyrus_parser` and is self-contained enough to be
 reusable on its own), in an `ast-cache`
 directory next to the running executable — the desktop app's own binary,
-or `PapyrusLinterCLI`'s, whichever process is doing the parsing. A cached
-entry is only reused when its stored MD5 of the file's content and the
+or `PapyrusLinterCLI`'s, whichever process is doing the parsing. Vanilla
+Skyrim scripts from `shared/skyrim-scripts.zip` are compiled into that
+crate at build time as a gzip-compressed AST+token blob, keyed by an MD5
+of the decoded source (the same digest the on-disk entry stores as
+`content_md5`). `get`/`get_tokens`/`ensure_primed` consult the blob first,
+before the on-disk cache and without taking its process-wide lock, so a
+stock `Actor.psc`/`ObjectReference.psc`/`Form.psc`/… hits on the first
+analysis of a project even when the file was just extracted to a new path
+(Docker's `--script-root`, `lookup_script_roots`, the user's Skyrim
+install). Parallel lint workers resolving the same base type therefore
+do not serialize on `CACHE_LOCK` for that lookup — the original reason
+two workers hitting a cold shared script would reparse it. A modified
+copy of a vanilla script has a different digest and falls through to the
+on-disk cache / a fresh parse as before. The blob is rebuilt whenever
+`papyrus-ast-cache` or `papyrus-parser` rebuilds (`build.rs` reads the
+zip), so it does not participate in `MIN_COMPATIBLE_VERSION`. A cached
+on-disk entry is only reused when its stored MD5 of the file's content and the
 file's last-modified timestamp still match, and the linter version that
 wrote the entry is at or above a `MIN_COMPATIBLE_VERSION` constant
-(currently `1.28.0`) rather than an exact match against the running
+(currently `1.36.0`) rather than an exact match against the running
 version — so an ordinary app update doesn't discard an otherwise
 still-valid cache, and `MIN_COMPATIBLE_VERSION` only needs bumping when a
 release actually changes the cache entry layout or the AST shape it
