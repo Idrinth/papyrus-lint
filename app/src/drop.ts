@@ -5,18 +5,14 @@
 // results.
 import { invoke } from "@tauri-apps/api/core";
 import { lintPscFile, type PapyrusScript, type PscParseOutcome } from "./backend";
-import { clearError, showError, showResult, switchTab } from "./main";
+import { clearError, showError, showResult } from "./main";
+import { switchTab } from "./main-tabs";
 import { isAchlistPath, isPscPath, scriptRootsForAchlist } from "./path";
 import { scheduleHideLintProgress, showLintProgress, updateLintProgress } from "./progress";
-import {
-  loadProjectConfig,
-  projectDirForAchlist,
-  projectDirForDirectory,
-  projectDirForPscPath,
-  setAchlistScriptRoots,
-} from "./project";
-import { renderPscResults } from "./results-list";
-
+import { loadProjectConfig } from "./project-settings";
+import { projectDirForAchlist, projectDirForDirectory, projectDirForPscPath } from "./project-io";
+import { setAchlistScriptRoots } from "./project-state";
+import { renderPscResults } from "./results-list-render";
 export let currentPscOutcomes: PscParseOutcome[] = [];
 
 // Set whenever a setting affecting lint output (formatting/rule config,

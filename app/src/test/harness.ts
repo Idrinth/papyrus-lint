@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, expect, vi } from "vitest";
 import { invokeMock } from "./mocks";
 import { mountFixture } from "./fixture";
-import { cancelLiveEditLint } from "../live-edit";
-import { loadProjectConfig, resetConfirmedProjectDirs } from "../project";
+import { cancelLiveEditLint } from "../live-edit-lint";
+import { loadProjectConfig, resetConfirmedProjectDirs } from "../project-settings";
 import { dirnameOf } from "../path";
 import { stopWatchMode } from "../watch";
 import { type RuleTagsInfo } from "../backend";
-import { type LintConfig } from "../config";
-import { ruleTagsByRule } from "../main";
+import { type LintConfig } from "../config-types";
+import { ruleTagsByRule } from "../results-filter";
 import { aiConfiguration } from "../results-export-ai";
 
 // Default backend behavior for the project-root discovery commands (see

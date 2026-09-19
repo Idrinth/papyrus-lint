@@ -11,14 +11,16 @@ vi.mock("@tauri-apps/api/webview", () => ({
 }));
 
 import { applyRuleTags, showResult } from "./main";
-import { DEFAULT_LINT_CONFIG, applyLintConfigToUI, lintConfigFromUI } from "./config";
-import { applyProjectInfoToUI, applyScriptRootsToUI } from "./project";
+import { DEFAULT_LINT_CONFIG } from "./config-types";
+import { applyLintConfigToUI, lintConfigFromUI } from "./config-ui";
+import { applyProjectInfoToUI, applyScriptRootsToUI } from "./project-settings";
 import { hideLintProgress, showLintProgress, updateLintProgress } from "./progress";
-import { applyAutocompleteSelection, handleAutocompleteKeydown, handleEditorTabKeydown, saveAndCompileCodeViewerEdits, saveCodeViewerEdits, updateAutocomplete } from "./live-edit";
-import { openCodeViewer, requestCloseCodeViewer, toggleCodeViewerFullscreen } from "./code-viewer";
-import { populateResetPresetSelect, renderPresetManagementTab } from "./presets";
-import { renderMassFixList, renderPscResults } from "./results-list";
-
+import { applyAutocompleteSelection, handleAutocompleteKeydown, handleEditorTabKeydown, updateAutocomplete } from "./live-edit-autocomplete";
+import { saveAndCompileCodeViewerEdits, saveCodeViewerEdits } from "./live-edit-persist";
+import { openCodeViewer, requestCloseCodeViewer, toggleCodeViewerFullscreen } from "./code-viewer-dialog";
+import { populateResetPresetSelect, renderPresetManagementTab } from "./presets-management";
+import { renderMassFixList } from "./results-list-mass-fix";
+import { renderPscResults } from "./results-list-render";
 // The per-module UI tests exercise the application with the complete
 // index.html-shaped fixture. This suite deliberately boots it without that fixture: the same
 // situation occurs briefly while the module loads, and can also occur in a

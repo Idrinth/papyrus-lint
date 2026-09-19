@@ -5,15 +5,8 @@
 // individual command is dispatched.
 import { invoke } from "@tauri-apps/api/core";
 import { type Member } from "./autocomplete";
-import { currentLintConfig, type LintConfig } from "./config";
-import {
-  currentCompileCheck,
-  currentCompilerPath,
-  currentLookupScriptRoots,
-  currentProjectDir,
-  effectiveScriptRoots,
-} from "./project";
-
+import { currentLintConfig, type LintConfig } from "./config-types";
+import { currentCompileCheck, currentCompilerPath, currentLookupScriptRoots, currentProjectDir, effectiveScriptRoots } from "./project-state";
 export interface PapyrusScript {
   name: string;
 }

@@ -1,15 +1,6 @@
-import { cancelLiveEditLint, hideAutocomplete } from "./live-edit";
-import {
-  codeViewerCancelButtonEl,
-  codeViewerEditButtonEl,
-  codeViewerEditEl,
-  codeViewerSaveButtonEl,
-  codeViewerSaveCompileButtonEl,
-  codeViewerViewEl,
-  setCodeViewerModeValue,
-  updateCodeViewerFixButtonsVisibility,
-} from "./code-viewer-state";
-
+import { hideAutocomplete } from "./live-edit-autocomplete";
+import { cancelLiveEditLint } from "./live-edit-lint";
+import { codeViewerCancelButtonEl, codeViewerEditButtonEl, codeViewerEditEl, codeViewerSaveButtonEl, codeViewerSaveCompileButtonEl, codeViewerViewEl, setCodeViewerModeValue, updateCodeViewerFixButtonsVisibility } from "./code-viewer-state";
 // Shows the view-mode table or the edit-mode textarea/highlight overlay,
 // toggling the header's Edit/Save/Cancel buttons to match.
 export function setCodeViewerMode(mode: "view" | "edit") {

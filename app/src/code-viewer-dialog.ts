@@ -1,21 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { currentProjectLintContext, type Diagnostic } from "./backend";
-import { isCodeViewerEditDirty } from "./live-edit";
+import { isCodeViewerEditDirty } from "./live-edit-persist";
 import { hideCompileOutput } from "./code-viewer-compile";
 import { hideDiffOutput } from "./code-viewer-diff";
 import { setCodeViewerMode } from "./code-viewer-mode";
-import {
-  codeViewerCompileOutputEl,
-  codeViewerDiffOutputEl,
-  codeViewerEl,
-  codeViewerFullscreenEl,
-  codeViewerTitleEl,
-  codeViewerViewEl,
-  setCodeViewerState,
-  updateCodeViewerFixButtonsVisibility,
-} from "./code-viewer-state";
+import { codeViewerCompileOutputEl, codeViewerDiffOutputEl, codeViewerEl, codeViewerFullscreenEl, codeViewerTitleEl, codeViewerViewEl, setCodeViewerState, updateCodeViewerFixButtonsVisibility } from "./code-viewer-state";
 import { renderCodeViewerView } from "./code-viewer-view";
-
 // Closes the code viewer, confirming first if edit mode has unsaved changes.
 export function requestCloseCodeViewer() {
   if (isCodeViewerEditDirty() && !window.confirm("Discard unsaved changes?")) {

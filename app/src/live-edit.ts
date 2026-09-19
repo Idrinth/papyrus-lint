@@ -1,43 +1,12 @@
-import {
-  codeViewerCancelButtonEl,
-  codeViewerEditButtonEl,
-  codeViewerEditGutterEl,
-  codeViewerEditHighlightEl,
-  codeViewerEditTextareaEl,
-  codeViewerSaveButtonEl,
-  codeViewerSaveCompileButtonEl,
-} from "./code-viewer";
-import {
-  handleAutocompleteKeydown,
-  handleEditorTabKeydown,
-  hideAutocomplete,
-  updateAutocomplete,
-} from "./live-edit-autocomplete";
+import { codeViewerCancelButtonEl, codeViewerEditButtonEl, codeViewerEditGutterEl, codeViewerEditHighlightEl, codeViewerEditTextareaEl, codeViewerSaveButtonEl, codeViewerSaveCompileButtonEl } from "./code-viewer-state";
+import { handleAutocompleteKeydown, handleEditorTabKeydown, hideAutocomplete, updateAutocomplete } from "./live-edit-autocomplete";
 import { updateCodeViewerEditHighlight } from "./live-edit-highlight";
 import { scheduleLiveEditLint } from "./live-edit-lint";
 import { cancelCodeViewerEditMode, enterCodeViewerEditMode, saveAndCompileCodeViewerEdits, saveCodeViewerEdits } from "./live-edit-persist";
 import { clearPointerPosition, recordPointerPosition, refreshPointerTooltip } from "./live-edit-pointer";
-
-export { cancelLiveEditLint } from "./live-edit-lint";
-export {
-  applyAutocompleteSelection,
-  handleAutocompleteKeydown,
-  handleEditorTabKeydown,
-  hideAutocomplete,
-  updateAutocomplete,
-} from "./live-edit-autocomplete";
-export {
-  cancelCodeViewerEditMode,
-  enterCodeViewerEditMode,
-  isCodeViewerEditDirty,
-  saveAndCompileCodeViewerEdits,
-  saveCodeViewerEdits,
-} from "./live-edit-persist";
-
 // Wires up edit mode's DOM event listeners; the actual feature behavior
 // (live linting, highlighting, autocompletion, hover documentation,
-// persistence) lives in the sibling live-edit-*.ts modules this facade
-// re-exports, keeping event wiring separate from what each event triggers.
+// persistence) lives in the sibling live-edit-*.ts modules.
 export function bindLiveEdit() {
   codeViewerEditButtonEl?.addEventListener("click", () => enterCodeViewerEditMode());
   codeViewerCancelButtonEl?.addEventListener("click", () => cancelCodeViewerEditMode());

@@ -1,8 +1,7 @@
 import { type Diagnostic, findingMessageWithRule, isFixableFinding } from "./backend";
 import { highlightPapyrusLines } from "./highlight";
-import { escapeAttr, levelOf } from "./main";
+import { escapeAttr, levelOf } from "./main-severity";
 import { codeViewerViewEl } from "./code-viewer-state";
-
 export function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warning" | "info" | "flagged" | null {
   if (!lineFindings || lineFindings.length === 0) {
     return null;

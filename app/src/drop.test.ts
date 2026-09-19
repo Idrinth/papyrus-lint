@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,12 +14,12 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
-import { switchTab } from "./main";
+import { switchTab } from "./main-tabs";
 import { handleDroppedPaths, parsePscFiles, relintCurrentFiles } from "./drop";
 import { type Diagnostic } from "./backend";
-import { DEFAULT_LINT_CONFIG, handleLintConfigChanged, type LintConfig } from "./config";
-import { handleConfigPathOverrideChanged } from "./project";
-
+import { DEFAULT_LINT_CONFIG, type LintConfig } from "./config-types";
+import { handleLintConfigChanged } from "./config-ui";
+import { handleConfigPathOverrideChanged } from "./project-settings";
 describe("parsePscFiles", () => {
   it("reports a successful parse with its lint findings", async () => {
     invokeImplFor({

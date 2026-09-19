@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,22 +14,14 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
-import { DEFAULT_LINT_CONFIG } from "./config";
-import { buildPscResultItem } from "./results-list";
-import { openCodeViewer } from "./code-viewer";
+import { DEFAULT_LINT_CONFIG } from "./config-types";
+import { buildPscResultItem } from "./results-list-item";
+import { openCodeViewer } from "./code-viewer-dialog";
 import { handleDroppedPaths } from "./drop";
 import { type RuleTagsInfo, type PscParseOutcome } from "./backend";
-import {
-  applyRuleTags,
-  clearError,
-  escapeAttr,
-  levelOf,
-  severityOf,
-  showError,
-  showResult,
-  switchTab,
-} from "./main";
-
+import { applyRuleTags, clearError, showError, showResult } from "./main";
+import { escapeAttr, levelOf, severityOf } from "./main-severity";
+import { switchTab } from "./main-tabs";
 describe("severity helpers", () => {
   it("levelOf extracts a recognized bracketed prefix", () => {
     expect(levelOf("[error] boom")).toBe("error");

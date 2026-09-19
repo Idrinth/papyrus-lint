@@ -1,18 +1,8 @@
-import {
-  completionInsertText,
-  completionLabel,
-  completionQueryAt,
-  filterMembers,
-  memberDocumentation,
-  overlayLocalDocumentation,
-  type CompletionQuery,
-  type Member,
-} from "./autocomplete";
-import { codeViewerAutocompleteEl, codeViewerEditTextareaEl, codeViewerMode } from "./code-viewer";
+import { completionInsertText, completionLabel, completionQueryAt, filterMembers, memberDocumentation, overlayLocalDocumentation, type CompletionQuery, type Member } from "./autocomplete";
+import { codeViewerAutocompleteEl, codeViewerEditTextareaEl, codeViewerMode } from "./code-viewer-state";
 import { updateCodeViewerEditHighlight } from "./live-edit-highlight";
 import { cachedMembersForType } from "./live-edit-members";
 import { positionAutocomplete } from "./live-edit-pointer";
-
 let autocompleteQuery: CompletionQuery | null = null;
 let autocompleteMembers: Member[] = [];
 let autocompleteSelectedIndex = 0;

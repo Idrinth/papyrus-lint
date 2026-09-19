@@ -1,23 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
-import {
-  type Diagnostic,
-  addDisableCommentToPscLine,
-  isFixableFinding,
-  repairPscFile,
-  repairPscFinding,
-} from "./backend";
+import { type Diagnostic, addDisableCommentToPscLine, isFixableFinding, repairPscFile, repairPscFinding } from "./backend";
 import { currentPscOutcomes } from "./drop";
-import { renderPscResults } from "./results-list";
-import {
-  codeViewerDiffOutputEl,
-  codeViewerFixButtonEl,
-  codeViewerState,
-  setCodeViewerState,
-  updateCodeViewerFixButtonsVisibility,
-} from "./code-viewer-state";
+import { renderPscResults } from "./results-list-render";
+import { codeViewerDiffOutputEl, codeViewerFixButtonEl, codeViewerState, setCodeViewerState, updateCodeViewerFixButtonsVisibility } from "./code-viewer-state";
 import { hideDiffOutput } from "./code-viewer-diff";
 import { renderCodeViewerView } from "./code-viewer-view";
-
 // Re-reads `path` after a disk mutation, refreshes the viewer's source and
 // findings in place, and re-syncs the matching Lint results list entry so
 // acting on a file no longer requires closing the viewer first.

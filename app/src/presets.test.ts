@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,28 +14,14 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
-import { switchTab, type ConfigSelectionResult } from "./main";
-import { DEFAULT_LINT_CONFIG, handleLintConfigChanged } from "./config";
-import { useProjectDir } from "./project";
-import {
-  applyConfigPreset,
-  deleteUserPreset,
-  exportUserPreset,
-  getPresetLintConfig,
-  handleDeletePresetClick,
-  handleExportPresetClick,
-  handleRenamePresetClick,
-  handleResetToPresetClick,
-  handleSaveConfigAsPresetClick,
-  isCustomPreset,
-  loadConfigPresets,
-  populateResetPresetSelect,
-  promptForConfigSelection,
-  refreshPresetManagementTab,
-  renameUserPreset,
-  renderPresetManagementTab,
-} from "./presets";
-
+import { switchTab } from "./main-tabs";
+import { type ConfigSelectionResult } from "./main-types";
+import { DEFAULT_LINT_CONFIG } from "./config-types";
+import { handleLintConfigChanged } from "./config-ui";
+import { useProjectDir } from "./project-settings";
+import { applyConfigPreset, deleteUserPreset, exportUserPreset, getPresetLintConfig, isCustomPreset, loadConfigPresets, renameUserPreset } from "./presets-api";
+import { handleDeletePresetClick, handleExportPresetClick, handleRenamePresetClick, handleResetToPresetClick, handleSaveConfigAsPresetClick, populateResetPresetSelect, refreshPresetManagementTab, renderPresetManagementTab } from "./presets-management";
+import { promptForConfigSelection } from "./presets-picker";
 describe("promptForConfigSelection", () => {
   it("shows the detected configuration and no preset list when one was found", async () => {
     const pending = promptForConfigSelection({
