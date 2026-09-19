@@ -30,15 +30,15 @@ export let currentLookupScriptRoots: string[] = [];
 // not displayed as user configuration or persisted to papyrus-lint.yaml.
 export let currentAchlistScriptRoots: string[] = [];
 
-export let configPathOverrideEl: HTMLInputElement | null;
-export let compilerPathEl: HTMLInputElement | null;
-export let compileCheckEl: HTMLInputElement | null;
-export let scriptRootsEl: HTMLTextAreaElement | null;
-export let lookupScriptRootsEl: HTMLTextAreaElement | null;
-export let detectedScriptRootsEl: HTMLOutputElement | null;
-export let usedConfigurationFileEl: HTMLOutputElement | null;
-export let settingsFieldsetEl: HTMLFieldSetElement | null;
-export let settingsLockedNoticeEl: HTMLElement | null;
+export let configPathOverrideEl: HTMLInputElement | null = null;
+export let compilerPathEl: HTMLInputElement | null = null;
+export let compileCheckEl: HTMLInputElement | null = null;
+export let scriptRootsEl: HTMLTextAreaElement | null = null;
+export let lookupScriptRootsEl: HTMLTextAreaElement | null = null;
+export let detectedScriptRootsEl: HTMLOutputElement | null = null;
+export let usedConfigurationFileEl: HTMLOutputElement | null = null;
+export let settingsFieldsetEl: HTMLFieldSetElement | null = null;
+export let settingsLockedNoticeEl: HTMLElement | null = null;
 
 export function setCurrentProjectDir(dir: string | null) {
   currentProjectDir = dir;
