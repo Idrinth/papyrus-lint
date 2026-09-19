@@ -200,6 +200,11 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       ├── papyrus-lint-core/    # Project-level logic shared by the desktop app
 │       │   └── src/               # and the CLI, independent of Tauri:
 │       │       ├── achlist.rs      # Parses .achlist files (JSON arrays of paths)
+│       │       ├── ppj.rs          # Parses .ppj (Papyrus Project XML) files:
+│       │       │                   # <Import>/<Folder>/<Script> into search
+│       │       │                   # roots and the scripts they name, so a
+│       │       │                   # .ppj can drive lint/fix/doctor/init the
+│       │       │                   # same way an .achlist does
 │       │       ├── lib.rs          # Re-exports papyrus-ast-cache (see above) as
 │       │       │                   # this crate's own ast_cache module
 │       │       ├── content_hash.rs # MD5 hashing helper for the "Export for AI"
@@ -291,8 +296,8 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       │                  # ai_configuration
 │       │       └── plain.rs        # format_diagnostic_line, ColorChoice/
 │       │                          # resolve_color, colorize
-│       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-psc>`: lints an
-│           ├── src/                # achlist's scripts against its project's
+│       └── papyrus-lint-cli/     # `PapyrusLinterCLI <achlist-or-ppj-or-psc>`: lints
+│           ├── src/                # an achlist's/ppj's scripts against its project's
 │           │   ├── lib.rs           # run() dispatch + public API only; also
 │           │   │                    # linked into src-tauri for its CLI mode
 │           │   ├── args/            # Parses/validates run()'s arguments
@@ -310,11 +315,14 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │           │   ├── run_lint.rs      # Lints one already-resolved script source
 │           │   ├── run_fix.rs       # Applies automatic fixes to one script,
 │           │   │                    # before run_lint lints the result
-│           │   ├── project.rs       # Project-root discovery from .psc paths
+│           │   ├── project.rs       # Project-root discovery from .psc paths,
+│           │   │                    # is_psc_path/is_ppj_path, absolutize
 │           │   ├── output/          # Plain/JSON/AI report types and formatting
 │           │   ├── init.rs          # `init` / `preset add`: parsing, and the
 │           │   │                    # run_init/run_preset_add entrypoints run()
-│           │   │                    # dispatches straight to
+│           │   │                    # dispatches straight to; also seeds
+│           │   │                    # additional_script_roots from a .ppj
+│           │   │                    # found next to a freshly initialized config
 │           │   ├── blob.rs          # `--blob` in-memory lint
 │           │   ├── doctor/          # `doctor` subcommand: mod.rs owns arg
 │           │   │   ├── mod.rs         # parsing + orchestration and dispatches

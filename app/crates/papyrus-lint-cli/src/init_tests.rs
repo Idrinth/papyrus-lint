@@ -248,6 +248,86 @@ fn init_refuses_to_overwrite_an_existing_config() {
 }
 
 #[test]
+fn init_seeds_additional_script_roots_from_a_ppj_in_the_same_directory() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    write_file(
+        &dir.path().join("Project.ppj"),
+        r#"<PapyrusProject>
+    <Imports>
+        <Import>Source/Scripts</Import>
+        <Import>C:\Games\Skyrim\Data\Source\Scripts</Import>
+    </Imports>
+</PapyrusProject>"#,
+    );
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = initialize_config(
+        dir.path(),
+        presets::Preset::default(),
+        &mut stdout,
+        &mut stderr,
+    );
+
+    assert_eq!(code, 0);
+    assert!(String::from_utf8(stderr).unwrap().is_empty());
+    assert!(String::from_utf8(stdout)
+        .unwrap()
+        .contains("Seeded additional_script_roots from"));
+    let roots = config::load_script_roots(dir.path()).expect("roots should load");
+    assert_eq!(
+        roots,
+        vec![
+            "Source/Scripts".to_string(),
+            "C:/Games/Skyrim/Data/Source/Scripts".to_string(),
+        ]
+    );
+}
+
+#[test]
+fn init_does_not_seed_script_roots_without_a_ppj_file() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = initialize_config(
+        dir.path(),
+        presets::Preset::default(),
+        &mut stdout,
+        &mut stderr,
+    );
+
+    assert_eq!(code, 0);
+    assert!(!String::from_utf8(stdout)
+        .unwrap()
+        .contains("Seeded additional_script_roots"));
+    let roots = config::load_script_roots(dir.path()).expect("roots should load");
+    assert!(roots.is_empty());
+}
+
+#[test]
+fn init_warns_but_still_succeeds_on_an_unparseable_ppj() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    write_file(&dir.path().join("broken.ppj"), "not xml at all <<<");
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = initialize_config(
+        dir.path(),
+        presets::Preset::default(),
+        &mut stdout,
+        &mut stderr,
+    );
+
+    assert_eq!(code, 0);
+    assert!(String::from_utf8(stderr)
+        .unwrap()
+        .contains("failed to parse it"));
+    let roots = config::load_script_roots(dir.path()).expect("roots should load");
+    assert!(roots.is_empty());
+}
+
+#[test]
 fn parse_init_preset_defaults_to_strict_when_no_flag_is_given() {
     assert_eq!(parse_init_preset(&[]), Ok(presets::Preset::Strict));
 }

@@ -10,6 +10,7 @@ mod basic;
 mod compile_check;
 mod cross_script_resolution;
 mod fix;
+mod ppj;
 mod script_roots_and_config;
 mod stale_output_and_filename_checks;
 mod tag_filter;

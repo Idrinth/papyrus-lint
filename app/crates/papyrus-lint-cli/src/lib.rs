@@ -1,19 +1,22 @@
 //! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-psc-or-directory>
+//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-ppj-or-psc-or-directory>
 //! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--tag <kind>] --blob <source>
-//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-psc-or-directory>
+//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-ppj-or-psc-or-directory>
 //! PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]
 //! PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]
 //! PapyrusLinterCLI preset list
-//! PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>
+//! PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-ppj-or-psc-or-directory>
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
-//! [`papyrus_lint_core::achlist`]) — or, if given a single `.psc` file
-//! directly, treats that file as the achlist's sole entry, or, if given a
-//! directory, recursively scans it (and every subdirectory beneath it, at
+//! [`papyrus_lint_core::achlist`]) — or, given a `.ppj` (Papyrus Project XML)
+//! file instead, every `.psc` its `<Folders>`/`<Scripts>` entries name (see
+//! [`papyrus_lint_core::ppj`]), also feeding its `<Import>` entries into
+//! `additional_script_roots` for this run — or, if given a single `.psc`
+//! file directly, treats that file as the achlist's sole entry, or, if given
+//! a directory, recursively scans it (and every subdirectory beneath it, at
 //! any depth) for `.psc` files instead (see
 //! [`papyrus_lint_core::script_locator::find_psc_files_recursively`]) —
 //! lints each against the project's `papyrus-lint.yaml`/`.yml`
@@ -39,16 +42,16 @@
 //! `find_config_file_root` step), so that project's real config still gets
 //! picked up rather than silently falling back to the built-in defaults —
 //! only falling back to the previous fixed two-directories-up guess if
-//! neither finds anything. For an `.achlist` or a
+//! neither finds anything. For an `.achlist`, a `.ppj`, or a
 //! directory, the same walk is tried against each resolved `.psc` entry
-//! first, so a project whose `.achlist`/scanned directory sits somewhere
-//! other than the project root (e.g. a user drops it next to a game's
-//! `Data` directory while the actual project, and its `papyrus-lint.yaml`,
-//! live in a subfolder alongside the `scripts/source`/`source/scripts`
-//! tree) still finds the right root; falling back to the achlist's own
-//! parent directory (the previous, simpler rule), or to the scanned
-//! directory itself, only if none of the resolved entries match that
-//! layout. This is what lets editor plugins that invoke the CLI on a single
+//! first, so a project whose `.achlist`/`.ppj`/scanned directory sits
+//! somewhere other than the project root (e.g. a user drops it next to a
+//! game's `Data` directory while the actual project, and its
+//! `papyrus-lint.yaml`, live in a subfolder alongside the
+//! `scripts/source`/`source/scripts` tree) still finds the right root;
+//! falling back to the achlist's/ppj's own parent directory (the previous,
+//! simpler rule), or to the scanned directory itself, only if none of the
+//! resolved entries match that layout. This is what lets editor plugins that invoke the CLI on a single
 //! saved file (see `SublimeLinter-contrib-papyrus-lint/linter.py`) still
 //! pick up the project's config regardless of how the project organizes its
 //! scripts under `scripts/source`. Calls to functions declared on other
@@ -289,13 +292,13 @@ use std::io::Write;
 /// Contact URLs are generated at compile time from `shared/links.yaml`,
 /// filtered by the `contact` tag rather than named individually.
 pub const USAGE: &str = concat!(
-    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-psc-or-directory>\n       ",
+    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-ppj-or-psc-or-directory>\n       ",
     "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--output <path>] [--color <when>] [--tag <kind>] --blob <source>\n       ",
-    "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-psc-or-directory>\n\n",
+    "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-ppj-or-psc-or-directory>\n\n",
     "PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n",
     "PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n",
     "PapyrusLinterCLI preset list\n\n",
-    "PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-psc-or-directory>\n\n",
+    "PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-ppj-or-psc-or-directory>\n\n",
     "Examples:\n",
     include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),

@@ -124,7 +124,11 @@ per line.
   [Compiling a script](compiling-scripts.md)) — useful when a script
   imports from a shared library location outside the project. The CLI also
   accepts one or more `--script-root <path>` flags on top of this setting
-  (see the [CLI reference](cli.md)).
+  (see the [CLI reference](cli.md)), and, for a `.ppj` (Papyrus Project XML)
+  input, feeds that file's own `<Import>` entries in on top too. `init` also
+  seeds this setting itself from a `.ppj` file found in the directory it
+  initializes, if that config has none of its own yet (see the
+  [CLI reference](cli.md)'s "Initializing a project" section).
 - `lookup_script_roots`: extra directories searched only as a last-resort
   fallback when resolving a script by name for analysis — argument/return
   types, `Extends`, autocompletion — set via the app's Settings tab, one

@@ -205,9 +205,10 @@ preset's own annotated YAML.
 ![Papyrus Lint CLI example](shared/images/papyrus-lint-cli.png)
 
 The desktop app (`PapyrusLinter`) and the standalone `PapyrusLinterCLI`
-binary accept the same arguments and lint an `.achlist`, a `.psc`, or a
-directory without a GUI. See the [CLI reference](docs/cli.md) for
-subcommands, project resolution, and report formats.
+binary accept the same arguments and lint an `.achlist`, a `.ppj` (Papyrus
+Project XML), a `.psc`, or a directory without a GUI. See the [CLI
+reference](docs/cli.md) for subcommands, project resolution, and report
+formats.
 
 Prebuilt `PapyrusLinterCLI`/`PapyrusLinterCLI.exe` standalone CLI binaries
 for Linux, macOS, and Windows are attached to each [GitHub

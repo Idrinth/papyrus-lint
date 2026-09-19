@@ -42,6 +42,13 @@ update the cited code *and* this list.
 - On-disk AST cache is keyed by content MD5 + mtime +
   `MIN_COMPATIBLE_VERSION`. Bump that floor only when the entry layout
   or embedded AST changes, and update `schema/ast-cache-entry.schema.json`.
+- A `.ppj`'s own `<Import>` entries (`ppj::PpjProject::imports`) feed
+  `additional_script_roots` for that run/`init` — never
+  `lookup_script_roots`. `ppj::parse_ppj` normalizes `\` to `/` before
+  resolving a path (a ppj is Windows-authored) but never decomposes an
+  already-absolute Windows/UNC path into components; the CLI's `.ppj`
+  handling lives in `run_scan.rs`/`doctor/checks.rs`/`init.rs`, not
+  `papyrus-lint-core`, which only parses the file.
 - Vanilla engine types without an on-disk `.psc` resolve from the bundled
   AST cache by `ScriptName` (`FunctionTable::ensure_loaded` /
   `script_exists`). A project or lookup-root file of the same name still
@@ -55,7 +62,7 @@ update the cited code *and* this list.
 | Disk AST/token cache, bundled vanilla scripts | `app/crates/papyrus-ast-cache/src/` |
 | Rule dispatch, visitors, tags, disable comments | `app/crates/papyrus-lints/src/` (`lib.rs`, generated `registry`/`tags`/`config`, `external_signatures.rs`, `const_eval.rs`) |
 | A single rule | `app/crates/papyrus-lints/src/<rule>.rs` + `shared/rules/<id>.json` |
-| Project root, achlist, script index, FunctionTable, compile/stale `.pex` | `app/crates/papyrus-lint-core/src/` |
+| Project root, achlist/ppj, script index, FunctionTable, compile/stale `.pex` | `app/crates/papyrus-lint-core/src/` |
 | `papyrus-lint.yaml`, presets, compiler/Skyrim detection | `app/crates/papyrus-lint-config/src/` |
 | CLI (`run`, `run_blob`, `fix`, `doctor`, `--tag`) | `app/crates/papyrus-lint-cli/src/` |
 | Text / JSON / AI report formatting | `app/crates/papyrus-lint-output/` and `schema/` |

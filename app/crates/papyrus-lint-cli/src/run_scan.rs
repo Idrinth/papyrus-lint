@@ -1,8 +1,8 @@
-//! Resolves which scripts a run targets — from an `.achlist`, a bare `.psc`
-//! file, or a directory scanned recursively — and the project state (lint
-//! config, cross-script function table, script index) needed to lint or fix
-//! them. This is the discovery phase [`crate::run_lint`] and [`crate::run_fix`]
-//! share, done once up front rather than per script.
+//! Resolves which scripts a run targets — from an `.achlist`, a `.ppj`, a
+//! bare `.psc` file, or a directory scanned recursively — and the project
+//! state (lint config, cross-script function table, script index) needed to
+//! lint or fix them. This is the discovery phase [`crate::run_lint`] and
+//! [`crate::run_fix`] share, done once up front rather than per script.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -11,9 +11,10 @@ use std::sync::Arc;
 use papyrus_lint_config as config;
 use papyrus_lint_core::achlist;
 use papyrus_lint_core::function_table::FunctionTable;
+use papyrus_lint_core::ppj;
 use papyrus_lint_core::script_locator::find_psc_files_recursively;
 
-use crate::project::{is_psc_path, resolve_input_project_root};
+use crate::project::{is_ppj_path, is_psc_path, resolve_input_project_root};
 
 /// Project state resolved by [`scan_project`]: the scripts a run should
 /// process, alongside everything [`crate::run_lint`]/[`crate::run_fix`] need
@@ -50,18 +51,18 @@ pub(crate) fn scan_project(
     let is_psc_file = is_psc_path(input_path);
     let is_directory = !is_psc_file && input_path.is_dir();
 
-    let script_paths = collect_script_paths(input_path, is_psc_file, is_directory)?;
+    let (script_paths, ppj_imports) = collect_script_paths(input_path, is_psc_file, is_directory)?;
 
     // A bare .psc file's project root is found by walking up for a
     // `scripts/source`/`source/scripts` directory pair (see
     // `find_psc_project_root`) so it still works when the script is nested
-    // deeper still, e.g. under a namespaced subfolder. An .achlist's own
-    // entries, or a scanned directory's own recursively-found entries, are
-    // tried the same way first, so a project whose .achlist/scanned
+    // deeper still, e.g. under a namespaced subfolder. An .achlist's/.ppj's
+    // own entries, or a scanned directory's own recursively-found entries,
+    // are tried the same way first, so a project whose .achlist/.ppj/scanned
     // directory doesn't live in the project root still resolves correctly;
     // only if none of the resolved scripts sit under such a pair do we fall
-    // back to the achlist's own parent directory (the conventional layout)
-    // or, for a scanned directory, the directory itself.
+    // back to the achlist's/ppj's own parent directory (the conventional
+    // layout) or, for a scanned directory, the directory itself.
     let project_root =
         resolve_input_project_root(input_path, &script_paths, is_psc_file, is_directory);
 
@@ -69,6 +70,7 @@ pub(crate) fn scan_project(
         &project_root,
         config_path,
         cli_script_roots,
+        ppj_imports,
         is_psc_file,
         &script_paths,
     )?;
@@ -88,6 +90,7 @@ fn load_scan_settings(
     project_root: &Path,
     config_path: Option<&Path>,
     cli_script_roots: Vec<String>,
+    ppj_imports: Vec<String>,
     is_psc_file: bool,
     script_paths: &[PathBuf],
 ) -> Result<ScanSettings, String> {
@@ -101,13 +104,15 @@ fn load_scan_settings(
     // `--config` bypasses discovering the project root's own
     // papyrus-lint.yaml/.yml entirely (see USAGE), so its
     // additional_script_roots is skipped too in that case; `--script-root`
-    // still applies on top either way.
+    // and a `.ppj` input's own `<Import>` entries still apply on top either
+    // way.
     let mut additional_script_roots = if config_path.is_some() {
         Vec::new()
     } else {
         config::load_script_roots(project_root)
             .map_err(|err| format!("error: failed to load lint config: {err}"))?
     };
+    additional_script_roots.extend(ppj_imports);
     additional_script_roots.extend(cli_script_roots);
 
     // `strict_achlist_scope` (off by default) picks between two ways of
@@ -239,22 +244,45 @@ fn assemble_scan_outcome(
     }
 }
 
+/// Resolves `input_path` into the scripts a run should process, alongside
+/// any `<Import>` search paths it names — populated only for a `.ppj` input,
+/// where they're the project's own `additional_script_roots` equivalent
+/// (see [`papyrus_lint_core::ppj`]'s module docs), made absolute (relative
+/// to the process's current directory) so they can be appended to
+/// `additional_script_roots` regardless of what `project_root` resolves to.
 fn collect_script_paths(
     input_path: &Path,
     is_psc_file: bool,
     is_directory: bool,
-) -> Result<Vec<PathBuf>, String> {
+) -> Result<(Vec<PathBuf>, Vec<String>), String> {
     if is_psc_file {
-        return Ok(vec![input_path.to_path_buf()]);
+        return Ok((vec![input_path.to_path_buf()], Vec::new()));
     }
     if is_directory {
-        return Ok(find_psc_files_recursively(input_path));
+        return Ok((find_psc_files_recursively(input_path), Vec::new()));
+    }
+    if is_ppj_path(input_path) {
+        let project = ppj::parse_ppj(input_path).map_err(|err| format!("error: {err}"))?;
+        let scripts = project
+            .scripts
+            .into_iter()
+            .filter(|path| is_psc_path(path))
+            .collect();
+        let imports = project
+            .imports
+            .iter()
+            .map(|import| crate::project::absolutize(import))
+            .collect();
+        return Ok((scripts, imports));
     }
     let entries = achlist::parse_achlist(input_path).map_err(|err| format!("error: {err}"))?;
-    Ok(entries
-        .into_iter()
-        .filter(|path| is_psc_path(path))
-        .collect())
+    Ok((
+        entries
+            .into_iter()
+            .filter(|path| is_psc_path(path))
+            .collect(),
+        Vec::new(),
+    ))
 }
 
 fn group_scripts_by_name(script_paths: &[PathBuf]) -> HashMap<String, Vec<PathBuf>> {

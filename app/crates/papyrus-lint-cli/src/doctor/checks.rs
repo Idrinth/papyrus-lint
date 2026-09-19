@@ -10,10 +10,11 @@ use std::path::{Path, PathBuf};
 
 use papyrus_lint_config as config;
 use papyrus_lint_core::achlist;
+use papyrus_lint_core::ppj;
 use papyrus_lint_core::script_locator::{find_psc_files_recursively, CANDIDATE_DIRS};
 use serde::Serialize;
 
-use crate::project::is_psc_path;
+use crate::project::{absolutize, is_ppj_path, is_psc_path};
 
 /// One health-check result reported by [`super::run_doctor`]: whether a path
 /// assumed by convention or named in the project's configuration actually
@@ -69,19 +70,33 @@ impl DoctorCheck {
     }
 }
 
+/// Resolves `input_path` into the scripts `doctor` reports on, alongside any
+/// `<Import>` search paths it names — populated only for a `.ppj` input, the
+/// same as [`crate::run_scan`]'s own `collect_script_paths`, so `doctor`
+/// validates the same additional roots a matching lint/fix run would
+/// actually use.
 pub(super) fn collect_doctor_input_checks(
     input_path: &Path,
     is_psc_file: bool,
     is_directory: bool,
     checks: &mut Vec<DoctorCheck>,
-) -> Vec<PathBuf> {
+) -> (Vec<PathBuf>, Vec<String>) {
     if is_psc_file {
-        return collect_doctor_psc_checks(input_path, checks);
+        return (collect_doctor_psc_checks(input_path, checks), Vec::new());
     }
     if is_directory {
-        return collect_doctor_directory_checks(input_path, checks);
+        return (
+            collect_doctor_directory_checks(input_path, checks),
+            Vec::new(),
+        );
     }
-    collect_doctor_achlist_checks(input_path, checks)
+    if is_ppj_path(input_path) {
+        return collect_doctor_ppj_checks(input_path, checks);
+    }
+    (
+        collect_doctor_achlist_checks(input_path, checks),
+        Vec::new(),
+    )
 }
 
 fn collect_doctor_psc_checks(input_path: &Path, checks: &mut Vec<DoctorCheck>) -> Vec<PathBuf> {
@@ -156,6 +171,60 @@ fn collect_doctor_achlist_checks(input_path: &Path, checks: &mut Vec<DoctorCheck
                 input_path.display()
             )));
             Vec::new()
+        }
+    }
+}
+
+fn collect_doctor_ppj_checks(
+    input_path: &Path,
+    checks: &mut Vec<DoctorCheck>,
+) -> (Vec<PathBuf>, Vec<String>) {
+    if !input_path.is_file() {
+        checks.push(DoctorCheck::error(format!(
+            "ppj {} does not exist",
+            input_path.display()
+        )));
+        return (Vec::new(), Vec::new());
+    }
+    match ppj::parse_ppj(input_path) {
+        Ok(project) => {
+            let missing: Vec<&PathBuf> = project
+                .scripts
+                .iter()
+                .filter(|path| !path.is_file())
+                .collect();
+            if missing.is_empty() {
+                checks.push(DoctorCheck::ok(format!(
+                    "every entry in {} exists on disk ({} total)",
+                    input_path.display(),
+                    project.scripts.len()
+                )));
+            } else {
+                for path in &missing {
+                    checks.push(DoctorCheck::error(format!(
+                        "ppj entry {} does not exist",
+                        path.display()
+                    )));
+                }
+            }
+            let scripts = project
+                .scripts
+                .into_iter()
+                .filter(|path| is_psc_path(path))
+                .collect();
+            let imports = project
+                .imports
+                .iter()
+                .map(|import| absolutize(import))
+                .collect();
+            (scripts, imports)
+        }
+        Err(err) => {
+            checks.push(DoctorCheck::error(format!(
+                "failed to parse ppj {}: {err}",
+                input_path.display()
+            )));
+            (Vec::new(), Vec::new())
         }
     }
 }
