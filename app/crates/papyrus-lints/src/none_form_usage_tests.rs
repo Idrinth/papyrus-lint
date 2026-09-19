@@ -376,3 +376,13 @@ fn does_not_flag_short_circuited_and_guard_on_a_property() {
 
     assert!(diagnostics.is_empty());
 }
+
+#[test]
+fn does_not_flag_property_access_guarded_by_multiple_and_operands() {
+    let diagnostics = check(
+        "ScriptName Example\n\nQuest Property AelaCurrentQuest Auto\nQuest Property AelaNextQuest Auto\n\nFunction Test()\n    If (AelaCurrentQuest && AelaNextQuest && !AelaCurrentQuest.IsAccepted)\n        Debug.Trace(\"x\")\n    EndIf\nEndFunction\n",
+        false,
+    );
+
+    assert!(diagnostics.is_empty());
+}
