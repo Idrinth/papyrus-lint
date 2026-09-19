@@ -22,6 +22,7 @@ use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt, TypeName};
 use papyrus_parser::types::TypeEnv;
 
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -29,43 +30,75 @@ pub const RULE: &str = "unresolved-script";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    env: Option<TypeEnv>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, ctx: &mut VisitCtx<'_>) {
+        self.env = Some(TypeEnv::for_script(script));
+        if let Some(parent) = &script.extends {
+            if !ctx.external.type_exists(parent) {
+                self.store.push(missing_type(script.line, 1, parent, "Parent script"));
+            }
+        }
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.enter_function(function);
+        }
+    }
+
+    fn leave_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.leave_function();
+        }
+    }
+
+    fn visit_type_name(&mut self, type_name: &TypeName, ctx: &mut VisitCtx<'_>) {
+        if !ctx.external.type_exists(&type_name.name) {
+            self.store
+                .push(missing_type(ctx.line, 1, &type_name.name, "Type"));
+        }
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        match expr {
+            Expr::Call {
+                callee,
+                line,
+                col,
+                ..
+            } => {
+                let Expr::Member { object, .. } = &**callee else {
+                    return;
+                };
+                let Expr::Identifier(name) = &**object else {
+                    return;
+                };
+                let Some(env) = self.env.as_ref() else {
+                    return;
+                };
+                if env.lookup(name).is_none() && !ctx.external.script_exists(name) {
+                    self.store.push(missing(*line, *col, name));
+                }
+            }
+            Expr::Cast { type_name, .. } if !ctx.external.type_exists(type_name) => {
+                self.store
+                    .push(missing_type(ctx.line, 1, type_name, "Type"));
+            }
+            _ => {}
         }
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for calls through a script name that can't be
@@ -83,19 +116,9 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but resolves each call's target script through
 /// `external`, flagging one that can't be located.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,

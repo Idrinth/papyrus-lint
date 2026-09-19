@@ -23,9 +23,10 @@
 //! never removing anything since [`NoExternalSignatures`] never resolves a
 //! script either.
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Script, Stmt};
+use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, ImportDecl, Script, Stmt};
 
 use crate::external_signatures::{ExternalSignatures, NoExternalSignatures};
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -33,43 +34,55 @@ pub const RULE: &str = "unused-import";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    imports: Vec<(String, usize)>,
+    called: Vec<String>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_import(&mut self, import: &ImportDecl, _ctx: &mut VisitCtx<'_>) {
+        self.imports.push((import.name.clone(), import.line));
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_expr(&mut self, expr: &Expr, _ctx: &mut VisitCtx<'_>) {
+        let Expr::Call { callee, .. } = expr else {
+            return;
+        };
+        if let Expr::Identifier(name) = &**callee {
+            self.called.push(name.clone());
+        }
+    }
+
+    fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
+        for (name, line) in &self.imports {
+            if !ctx.external.can_resolve_script(name) {
+                continue;
+            }
+            let is_used = self
+                .called
+                .iter()
+                .any(|called| ctx.external.is_global_function(name, called) == Some(true));
+            if is_used {
+                continue;
+            }
+            self.store.emit(
+                *line,
+                1,
+                format!(
+                    "[warning] Import '{name}' is never used: none of its Global functions are called unqualified anywhere in this script"
+                ),
+                RULE,
+            );
         }
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `Import` statements whose script goes unused. Since
@@ -87,20 +100,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but resolves each unqualified call in `source` through
 /// `external`, flagging an `Import` whose script never has one of its
 /// `Global` functions called unqualified anywhere in `source`.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,

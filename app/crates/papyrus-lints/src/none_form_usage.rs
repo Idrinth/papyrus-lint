@@ -41,6 +41,7 @@ use papyrus_parser::ast::{
     AssignOp, BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName, UnaryOp,
 };
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -48,43 +49,241 @@ pub const RULE: &str = "none-form-usage";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    none_vars: HashSet<String>,
+    default_none_properties: HashSet<String>,
+    if_stack: Vec<IfFrame>,
+    while_stack: Vec<WhileFrame>,
+    expr_stack: Vec<ExprFrame>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+struct IfFrame {
+    incoming: HashSet<String>,
+    surviving: Vec<HashSet<String>>,
+    branch_count: usize,
+    seen_branches: usize,
+    first_condition: Option<*const Expr>,
+    pending_condition: Option<*const Expr>,
+}
+
+struct WhileFrame {
+    incoming: HashSet<String>,
+    condition: *const Expr,
+}
+
+enum ExprFrame {
+    And {
+        incoming: HashSet<String>,
+        left: *const Expr,
+    },
+    Or {
+        incoming: HashSet<String>,
+        left: *const Expr,
+    },
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, ctx: &mut VisitCtx<'_>) {
+        self.default_none_properties = if ctx.config.assume_auto_properties_filled {
+            HashSet::new()
+        } else {
+            default_none_properties(script)
+        };
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        self.none_vars = self.default_none_properties.clone();
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt, _ctx: &mut VisitCtx<'_>) {
+        match stmt {
+            Stmt::If { branches, .. } => {
+                self.if_stack.push(IfFrame {
+                    incoming: self.none_vars.clone(),
+                    surviving: Vec::new(),
+                    branch_count: branches.len(),
+                    seen_branches: 0,
+                    first_condition: branches.first().map(|branch| ptr_of(&branch.condition)),
+                    pending_condition: None,
+                });
+            }
+            Stmt::While { condition, .. } => {
+                self.while_stack.push(WhileFrame {
+                    incoming: self.none_vars.clone(),
+                    condition: ptr_of(condition),
+                });
+            }
+            _ => {}
+        }
+    }
+
+    fn visit_if_branch(&mut self, branch: &IfBranch, _ctx: &mut VisitCtx<'_>) {
+        let Some(frame) = self.if_stack.last_mut() else {
+            return;
+        };
+        self.none_vars.clone_from(&frame.incoming);
+        frame.pending_condition = Some(ptr_of(&branch.condition));
+    }
+
+    fn leave_if_branch(&mut self, branch: &IfBranch, _ctx: &mut VisitCtx<'_>) {
+        let Some(frame) = self.if_stack.last_mut() else {
+            return;
+        };
+        if !diverges(&branch.body) {
+            frame.surviving.push(self.none_vars.clone());
+        }
+        frame.seen_branches += 1;
+        if frame.seen_branches == frame.branch_count {
+            self.none_vars.clone_from(&frame.incoming);
+            if frame.branch_count == 1 {
+                if let Some(condition) = frame.first_condition {
+                    narrow_for_falsy(unsafe { &*condition }, &mut self.none_vars);
+                }
+            }
+        }
+    }
+
+    fn leave_stmt(&mut self, stmt: &Stmt, _ctx: &mut VisitCtx<'_>) {
+        match stmt {
+            Stmt::VarDecl(decl) => {
+                if let Some(value) = &decl.value {
+                    record_write(&decl.name, value, &mut self.none_vars);
+                } else if is_object_type(&decl.type_name) {
+                    self.none_vars.insert(decl.name.to_lowercase());
+                } else {
+                    self.none_vars.remove(&decl.name.to_lowercase());
+                }
+            }
+            Stmt::Assign {
+                target,
+                op,
+                value,
+                ..
+            } => {
+                if let (Expr::Identifier(name), AssignOp::Assign) = (target, op) {
+                    record_write(name, value, &mut self.none_vars);
+                }
+            }
+            Stmt::If { else_body, .. } => {
+                let Some(frame) = self.if_stack.pop() else {
+                    return;
+                };
+                let mut surviving = frame.surviving;
+                if !diverges(else_body) {
+                    surviving.push(self.none_vars.clone());
+                }
+                self.none_vars = if surviving.is_empty() {
+                    frame.incoming
+                } else {
+                    surviving.into_iter().flatten().collect()
+                };
+            }
+            Stmt::While { condition, .. } => {
+                let Some(frame) = self.while_stack.pop() else {
+                    return;
+                };
+                self.none_vars = frame.incoming;
+                narrow_for_falsy(condition, &mut self.none_vars);
+            }
+            _ => {}
+        }
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, _ctx: &mut VisitCtx<'_>) {
+        match expr {
+            Expr::Binary {
+                left,
+                op: BinaryOp::And,
+                ..
+            } => {
+                self.expr_stack.push(ExprFrame::And {
+                    incoming: self.none_vars.clone(),
+                    left: ptr_of(left),
+                });
+            }
+            Expr::Binary {
+                left,
+                op: BinaryOp::Or,
+                ..
+            } => {
+                self.expr_stack.push(ExprFrame::Or {
+                    incoming: self.none_vars.clone(),
+                    left: ptr_of(left),
+                });
+            }
+            _ => {}
+        }
+    }
+
+    fn leave_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        if let Expr::Member { object, property } = expr {
+            if let Expr::Identifier(name) = &**object {
+                if self.none_vars.contains(&name.to_lowercase()) {
+                    self.store.emit(
+                        ctx.line,
+                        1,
+                        format!(
+                            "[warning] '{name}' may still be None here; accessing '.{property}' on it will crash the script"
+                        ),
+                        RULE,
+                    );
+                }
+            }
+        }
+
+        match self.expr_stack.last() {
+            Some(ExprFrame::And { left, .. }) if *left == ptr_of(expr) => {
+                narrow_for_truthy(expr, &mut self.none_vars);
+            }
+            Some(ExprFrame::Or { left, .. }) if *left == ptr_of(expr) => {
+                narrow_for_falsy(expr, &mut self.none_vars);
+            }
+            _ => {}
+        }
+
+        let is_and_or_root = matches!(
+            expr,
+            Expr::Binary {
+                op: BinaryOp::And | BinaryOp::Or,
+                ..
+            }
+        );
+        if is_and_or_root {
+            if let Some(frame) = self.expr_stack.pop() {
+                self.none_vars = match frame {
+                    ExprFrame::And { incoming, .. } | ExprFrame::Or { incoming, .. } => incoming,
+                };
+            }
+        }
+
+        if self
+            .if_stack
+            .last()
+            .and_then(|frame| frame.pending_condition)
+            == Some(ptr_of(expr))
+        {
+            if let Some(frame) = self.if_stack.last_mut() {
+                frame.pending_condition = None;
+            }
+            narrow_for_truthy(expr, &mut self.none_vars);
+        }
+
+        if self.while_stack.last().map(|frame| frame.condition) == Some(ptr_of(expr)) {
+            narrow_for_truthy(expr, &mut self.none_vars);
         }
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+fn ptr_of(expr: &Expr) -> *const Expr {
+    expr as *const Expr
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every function/event in `source` for member/method access on a
@@ -104,34 +303,6 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, external);
-    let assume_auto_properties_filled = config.assume_auto_properties_filled;
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let default_none_properties = if assume_auto_properties_filled {
-        HashSet::new()
-    } else {
-        default_none_properties(script)
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        let mut none_vars = default_none_properties.clone();
-        walk_body(&function.body, &mut none_vars, &mut diagnostics);
-    }
-    diagnostics
-}
-
 /// Script-level `Auto`/`AutoReadOnly` properties that default to `None`
 /// until something outside the script (or a later statement) sets them:
 /// object-typed ones with no explicit initializer, or an explicit `= None`.
@@ -146,69 +317,6 @@ fn default_none_properties(script: &Script) -> HashSet<String> {
         .filter(|property| matches!(&property.value, None | Some(Expr::Literal(Literal::None))))
         .map(|property| property.name.to_lowercase())
         .collect()
-}
-
-pub(crate) fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn walk_body(body: &[Stmt], none_vars: &mut HashSet<String>, diagnostics: &mut Vec<Diagnostic>) {
-    for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                if let Some(value) = &decl.value {
-                    check_expr(value, none_vars, diagnostics, decl.line);
-                    record_write(&decl.name, value, none_vars);
-                } else if is_object_type(&decl.type_name) {
-                    none_vars.insert(decl.name.to_lowercase());
-                } else {
-                    none_vars.remove(&decl.name.to_lowercase());
-                }
-            }
-            Stmt::Assign {
-                target,
-                op,
-                value,
-                line,
-            } => {
-                check_expr(value, none_vars, diagnostics, *line);
-                check_expr(target, none_vars, diagnostics, *line);
-                if let (Expr::Identifier(name), AssignOp::Assign) = (target, op) {
-                    record_write(name, value, none_vars);
-                }
-            }
-            Stmt::Expr { value, line } => check_expr(value, none_vars, diagnostics, *line),
-            Stmt::Return {
-                value: Some(value),
-                line,
-            } => check_expr(value, none_vars, diagnostics, *line),
-            Stmt::Return { value: None, .. } => {}
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => handle_if(branches, else_body, none_vars, diagnostics),
-            Stmt::While {
-                condition,
-                body,
-                line,
-                ..
-            } => {
-                check_expr(condition, none_vars, diagnostics, *line);
-                let mut loop_vars = none_vars.clone();
-                narrow_for_truthy(condition, &mut loop_vars);
-                walk_body(body, &mut loop_vars, diagnostics);
-                // A `While` loop can only exit when its condition is
-                // false, since this language has no `break`/`continue`.
-                narrow_for_falsy(condition, none_vars);
-            }
-        }
-    }
 }
 
 /// Whether `type_name` is an object type (`Form` or one of its subtypes,
@@ -242,50 +350,6 @@ fn record_write(name: &str, value: &Expr, none_vars: &mut HashSet<String>) {
     } else {
         none_vars.remove(&key);
     }
-}
-
-/// Handles an `If`/`ElseIf`/`Else` chain: each branch (and the trailing
-/// `Else`, if any) is checked with the incoming state narrowed by that
-/// branch's own condition, and only branches that don't unconditionally
-/// `Return` contribute their exit state to what follows the `If` — a
-/// variable stays known-`None` afterward if it's still `None` along any
-/// surviving path.
-fn handle_if(
-    branches: &[IfBranch],
-    else_body: &[Stmt],
-    none_vars: &mut HashSet<String>,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    let entry_vars = none_vars.clone();
-    let mut surviving = Vec::new();
-
-    for branch in branches {
-        check_expr(&branch.condition, &entry_vars, diagnostics, branch.line);
-        let mut branch_vars = entry_vars.clone();
-        narrow_for_truthy(&branch.condition, &mut branch_vars);
-        walk_body(&branch.body, &mut branch_vars, diagnostics);
-        if !diverges(&branch.body) {
-            surviving.push(branch_vars);
-        }
-    }
-
-    let mut else_vars = entry_vars.clone();
-    if let [only_branch] = branches {
-        narrow_for_falsy(&only_branch.condition, &mut else_vars);
-    }
-    walk_body(else_body, &mut else_vars, diagnostics);
-    if !diverges(else_body) {
-        surviving.push(else_vars);
-    }
-
-    *none_vars = if surviving.is_empty() {
-        // Every branch (including the implicit/explicit else) returns, so
-        // nothing after the `If` is reached through it; keep the
-        // pre-`If` state rather than guess.
-        entry_vars
-    } else {
-        surviving.into_iter().flatten().collect()
-    };
 }
 
 /// Whether `body` unconditionally exits its enclosing function, judged
@@ -374,74 +438,6 @@ pub(crate) fn narrow_for_falsy(condition: &Expr, state: &mut HashSet<String>) {
     {
         narrow_for_falsy(left, state);
         narrow_for_falsy(right, state);
-    }
-}
-
-/// Recursively checks `expr` for a member/method access on a variable
-/// currently in `none_vars`.
-fn check_expr(
-    expr: &Expr,
-    none_vars: &HashSet<String>,
-    diagnostics: &mut Vec<Diagnostic>,
-    line: usize,
-) {
-    match expr {
-        Expr::Member { object, property } => {
-            check_expr(object, none_vars, diagnostics, line);
-            if let Expr::Identifier(name) = &**object {
-                if none_vars.contains(&name.to_lowercase()) {
-                    diagnostics.push(Diagnostic {
-                        line,
-                        column: 1,
-                        message: format!(
-                            "[warning] '{name}' may still be None here; accessing '.{property}' on it will crash the script"
-                        ),
-                        rule: RULE,
-                    });
-                }
-            }
-        }
-        Expr::Call { callee, args, .. } => {
-            check_expr(callee, none_vars, diagnostics, line);
-            for arg in args {
-                check_expr(arg, none_vars, diagnostics, line);
-            }
-        }
-        Expr::Binary {
-            left,
-            op: BinaryOp::And,
-            right,
-        } => {
-            check_expr(left, none_vars, diagnostics, line);
-            // Short-circuit: `right` only evaluates once `left` is truthy.
-            let mut narrowed = none_vars.clone();
-            narrow_for_truthy(left, &mut narrowed);
-            check_expr(right, &narrowed, diagnostics, line);
-        }
-        Expr::Binary {
-            left,
-            op: BinaryOp::Or,
-            right,
-        } => {
-            check_expr(left, none_vars, diagnostics, line);
-            // Short-circuit: `right` only evaluates once `left` is falsy.
-            let mut narrowed = none_vars.clone();
-            narrow_for_falsy(left, &mut narrowed);
-            check_expr(right, &narrowed, diagnostics, line);
-        }
-        Expr::Binary { left, right, .. } => {
-            check_expr(left, none_vars, diagnostics, line);
-            check_expr(right, none_vars, diagnostics, line);
-        }
-        Expr::Unary { operand, .. } => check_expr(operand, none_vars, diagnostics, line),
-        Expr::Index { object, index } => {
-            check_expr(object, none_vars, diagnostics, line);
-            check_expr(index, none_vars, diagnostics, line);
-        }
-        Expr::Cast { value, .. } => check_expr(value, none_vars, diagnostics, line),
-        Expr::NewArray { size, .. } => check_expr(size, none_vars, diagnostics, line),
-        Expr::NamedArg { value, .. } => check_expr(value, none_vars, diagnostics, line),
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
     }
 }
 

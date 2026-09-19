@@ -23,6 +23,7 @@ use std::collections::HashMap;
 use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::{Diagnostic, ExternalSignatures, ParamInfo};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -30,43 +31,65 @@ pub const RULE: &str = "argument-types";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    locals: LocalFunctions,
+    env: Option<TypeEnv>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.locals = LocalFunctions::from_script(script);
+        self.env = Some(TypeEnv::for_script(script));
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.enter_function(function);
         }
+    }
+
+    fn leave_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.leave_function();
+        }
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let Expr::Call {
+            callee,
+            args,
+            line,
+            col,
+        } = expr
+        else {
+            return;
+        };
+        let Some(env) = self.env.as_ref() else {
+            return;
+        };
+        let Some((name, params)) = resolve_signature(callee, env, &self.locals, ctx.external) else {
+            return;
+        };
+        let mut diagnostics = Vec::new();
+        check_args(
+            (*line, *col),
+            &name,
+            &params,
+            args,
+            env,
+            ctx.external,
+            &mut diagnostics,
+        );
+        self.store.extend(diagnostics);
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for argument/parameter type mismatches on calls to
@@ -83,19 +106,9 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config);
-    check_with(ast, external)
-}
-
 /// Like [`check`], but also checks calls to functions resolved through
 /// `external` (typically functions declared on other scripts).
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
@@ -137,6 +150,7 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
 /// as `None`, since which declaration applies at a given call site can't
 /// be determined here — such calls are then skipped rather than checked
 /// against a possibly-wrong signature.
+#[derive(Default)]
 struct LocalFunctions {
     by_name: HashMap<String, Option<Vec<ParamInfo>>>,
 }

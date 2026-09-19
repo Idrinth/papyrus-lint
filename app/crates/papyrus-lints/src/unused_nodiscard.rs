@@ -2,11 +2,12 @@
 
 use std::collections::HashSet;
 
-use papyrus_parser::ast::Script;
+use papyrus_parser::ast::{FunctionDecl, Script};
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 use papyrus_parser::types::TypeEnv;
 
 use crate::external_signatures::ExternalSignatures;
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -14,27 +15,88 @@ pub const RULE: &str = "unused-nodiscard";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    statement: Vec<Token>,
+    statements: Vec<Vec<Token>>,
+    local: HashSet<String>,
+    script_name: Option<String>,
+    env: Option<TypeEnv>,
 }
 
-impl crate::visitor::TokenLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn begin(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            ctx.ast,
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.script_name = ctx.ast.map(|script| script.name.clone());
+        self.env = ctx.ast.map(TypeEnv::for_script);
+        self.local.clear();
+        self.statement.clear();
+        self.statements.clear();
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        index: usize,
+        tokens: &[Token],
+        ctx: &mut VisitCtx<'_>,
+    ) {
+        match &token.kind {
+            TokenKind::Keyword(Keyword::ScriptName) if self.script_name.is_none() => {
+                if let Some(TokenKind::Identifier(name)) =
+                    tokens.get(index + 1).map(|token| &token.kind)
+                {
+                    self.script_name = Some(name.clone());
+                }
+            }
+            TokenKind::Keyword(Keyword::Function) => {
+                if let Some(TokenKind::Identifier(name)) =
+                    tokens.get(index + 1).map(|token| &token.kind)
+                {
+                    let lines: Vec<&str> = ctx.source.lines().collect();
+                    if header_has_nodiscard(&lines, tokens, token.line) {
+                        self.local.insert(name.to_ascii_lowercase());
+                    }
+                }
+            }
+            _ => {}
+        }
+
+        if matches!(token.kind, TokenKind::Newline | TokenKind::Eof) {
+            self.flush_statement();
+            return;
+        }
+        self.statement.push(token.clone());
+    }
+
+    fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.flush_statement();
+        let context = NodiscardContext {
+            ast: ctx.ast,
+            local: &self.local,
+            script_name: self.script_name.as_deref(),
+            type_env: self.env.as_ref(),
+        };
+        for statement in &self.statements {
+            if let Some(diagnostic) = check_statement(statement, &context, ctx.external) {
+                self.store.push(diagnostic);
+            }
+        }
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
+impl Collect {
+    fn flush_statement(&mut self) {
+        if !self.statement.is_empty() {
+            self.statements.push(std::mem::take(&mut self.statement));
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Shared lookup state for deciding whether a discarded call is `@nodiscard`.
@@ -57,35 +119,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = config;
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let local = local_nodiscard_functions(source, tokens);
-    let script_name = script_name(ast, tokens);
-    let type_env = ast.map(TypeEnv::for_script);
-    let context = NodiscardContext {
-        ast,
-        local: &local,
-        script_name: script_name.as_deref(),
-        type_env: type_env.as_ref(),
-    };
-
-    tokens
-        .split(|token| matches!(token.kind, TokenKind::Newline | TokenKind::Eof))
-        .filter_map(|statement| check_statement(statement, &context, external))
-        .collect()
 }
 
 /// Flags `statement` if any top-level operand of its expression is a call
@@ -221,54 +254,19 @@ fn resolved_qualifier_type(
     found
 }
 
-fn containing_function(script: &Script, line: usize) -> Option<&papyrus_parser::ast::FunctionDecl> {
+fn containing_function(script: &Script, line: usize) -> Option<&FunctionDecl> {
     all_functions(script)
         .filter(|function| function.line <= line)
         .max_by_key(|function| function.line)
 }
 
-fn all_functions(script: &Script) -> impl Iterator<Item = &papyrus_parser::ast::FunctionDecl> {
+fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     script.functions.iter().chain(
         script
             .states
             .iter()
             .flat_map(|state| state.functions.iter()),
     )
-}
-
-fn script_name(ast: Option<&Script>, tokens: &[Token]) -> Option<String> {
-    if let Some(script) = ast {
-        return Some(script.name.clone());
-    }
-    let script_name_at = tokens
-        .iter()
-        .position(|token| matches!(token.kind, TokenKind::Keyword(Keyword::ScriptName)))?;
-    tokens
-        .get(script_name_at + 1)
-        .and_then(|token| match &token.kind {
-            TokenKind::Identifier(name) => Some(name.clone()),
-            _ => None,
-        })
-}
-
-fn local_nodiscard_functions(source: &str, tokens: &[Token]) -> HashSet<String> {
-    let lines: Vec<&str> = source.lines().collect();
-    let mut names = HashSet::new();
-    let mut index = 0;
-    while index < tokens.len() {
-        if matches!(tokens[index].kind, TokenKind::Keyword(Keyword::Function)) {
-            if let Some(name) = tokens.get(index + 1).and_then(|token| match &token.kind {
-                TokenKind::Identifier(name) => Some(name.as_str()),
-                _ => None,
-            }) {
-                if header_has_nodiscard(&lines, tokens, tokens[index].line) {
-                    names.insert(name.to_ascii_lowercase());
-                }
-            }
-        }
-        index += 1;
-    }
-    names
 }
 
 fn header_has_nodiscard(lines: &[&str], tokens: &[Token], line: usize) -> bool {
