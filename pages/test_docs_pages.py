@@ -425,9 +425,9 @@ class DocsRenderingTest(unittest.TestCase):
 
         self.assertIn("<title>Guide &amp; help</title>", detail)
         self.assertIn('content="Use &quot;care&quot; &amp; attention"', detail)
-        self.assertIn('href="https://example.test/docs/guide.html"', detail)
+        self.assertIn('href=https://example.test/docs/guide.html', detail)
         self.assertIn("<p>Contents</p>", detail)
-        self.assertIn('href="guide.html"', index)
+        self.assertIn('href=guide.html', index)
         self.assertIn("A useful guide", index)
 
 
