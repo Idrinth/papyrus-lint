@@ -65,6 +65,7 @@
 
 use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -72,43 +73,41 @@ pub const RULE: &str = "unguarded-self-recursion";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    states: Vec<(String, Vec<String>)>,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.states = script
+            .states
+            .iter()
+            .map(|state| {
+                (
+                    state.name.clone(),
+                    state
+                        .functions
+                        .iter()
+                        .map(|function| function.name.clone())
+                        .collect(),
+                )
+            })
+            .collect();
     }
 
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
-        }
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        let mut diagnostics = Vec::new();
+        check_function(function, &self.states, &mut diagnostics);
+        self.store.extend(diagnostics);
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every function/event declared in `source` for an unconditional
@@ -124,63 +123,51 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        if function.is_native || has_disqualifying_branch(&function.body) {
-            continue;
-        }
-        let name_lower = function.name.to_lowercase();
-        let current_state_lower = function.state.as_deref().unwrap_or("").to_lowercase();
-        let mut guarded_by_goto_state = false;
-        for stmt in &function.body {
-            if !guarded_by_goto_state {
-                for expr in stmt_exprs(stmt) {
-                    find_self_calls(expr, &name_lower, &mut diagnostics);
-                }
-                if let Stmt::If {
-                    branches,
-                    else_body,
-                    else_line,
-                    ..
-                } = stmt
-                {
-                    if all_branches_recurse(branches, else_body, *else_line, &name_lower) {
-                        for branch in branches {
-                            for expr in branch.body.iter().flat_map(stmt_exprs) {
-                                find_self_calls(expr, &name_lower, &mut diagnostics);
-                            }
+fn check_function(
+    function: &FunctionDecl,
+    states: &[(String, Vec<String>)],
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    if function.is_native || has_disqualifying_branch(&function.body) {
+        return;
+    }
+    let name_lower = function.name.to_lowercase();
+    let current_state_lower = function.state.as_deref().unwrap_or("").to_lowercase();
+    let mut guarded_by_goto_state = false;
+    for stmt in &function.body {
+        if !guarded_by_goto_state {
+            for expr in stmt_exprs(stmt) {
+                find_self_calls(expr, &name_lower, diagnostics);
+            }
+            if let Stmt::If {
+                branches,
+                else_body,
+                else_line,
+                ..
+            } = stmt
+            {
+                if all_branches_recurse(branches, else_body, *else_line, &name_lower) {
+                    for branch in branches {
+                        for expr in branch.body.iter().flat_map(stmt_exprs) {
+                            find_self_calls(expr, &name_lower, diagnostics);
                         }
-                        for expr in else_body.iter().flat_map(stmt_exprs) {
-                            find_self_calls(expr, &name_lower, &mut diagnostics);
-                        }
+                    }
+                    for expr in else_body.iter().flat_map(stmt_exprs) {
+                        find_self_calls(expr, &name_lower, diagnostics);
                     }
                 }
             }
-            if let Stmt::Expr { value, .. } = stmt {
-                if let Some(target_state) = goto_state_target(value) {
-                    if !target_state.eq_ignore_ascii_case(&current_state_lower)
-                        && state_has_handler(script, target_state, &name_lower)
-                    {
-                        guarded_by_goto_state = true;
-                    }
+        }
+        if let Stmt::Expr { value, .. } = stmt {
+            if let Some(target_state) = goto_state_target(value) {
+                if !target_state.eq_ignore_ascii_case(&current_state_lower)
+                    && state_has_handler(states, target_state, &name_lower)
+                {
+                    guarded_by_goto_state = true;
                 }
             }
         }
     }
-    diagnostics
 }
 
 /// Whether `expr` is a call to `GoToState("SomeState")` (a bare call, or
@@ -209,23 +196,17 @@ fn goto_state_target(expr: &Expr) -> Option<&str> {
 /// function/event named `function_name_lower` (matched case-insensitively),
 /// i.e. whether switching into that state would actually dispatch calls to
 /// `function_name_lower` somewhere other than the empty state's declaration.
-fn state_has_handler(script: &Script, target_state_name: &str, function_name_lower: &str) -> bool {
-    script.states.iter().any(|state| {
-        state.name.eq_ignore_ascii_case(target_state_name)
-            && state
-                .functions
+fn state_has_handler(
+    states: &[(String, Vec<String>)],
+    target_state_name: &str,
+    function_name_lower: &str,
+) -> bool {
+    states.iter().any(|(state_name, functions)| {
+        state_name.eq_ignore_ascii_case(target_state_name)
+            && functions
                 .iter()
-                .any(|f| f.name.to_lowercase() == function_name_lower)
+                .any(|name| name.to_lowercase() == function_name_lower)
     })
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
 }
 
 /// Whether `body` contains a top-level `While` (always disqualifying), or a

@@ -25,6 +25,7 @@ use std::collections::BTreeSet;
 
 use papyrus_parser::ast::{PropertyDecl, Script};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -32,43 +33,21 @@ pub const RULE: &str = "property-sorting";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
 }
 
-impl crate::visitor::AstLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn visit_script(
-        &mut self,
-        script: &papyrus_parser::ast::Script,
-        ctx: &mut crate::visitor::VisitCtx<'_>,
-    ) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            Some(script),
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
-    }
-
-    fn finish(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        if ctx.ast.is_none() {
-            self.store.extend(lint_issues(
-                ctx.source,
-                None,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
-        }
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.store.extend(script_issues(script));
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Ast(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for properties that either aren't sorted by type and
@@ -86,18 +65,7 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
+fn script_issues(script: &Script) -> Vec<Diagnostic> {
     if script.properties.is_empty() {
         return Vec::new();
     }

@@ -62,10 +62,14 @@ and owns a `Store` of diagnostics collected during the walk.
 `collect_diagnostics` registers enabled lints onto an AST walker and a
 token walker, walks both trees once, then drains those stores. Most
 visitor rules emit from the matching per-node `visit_*` callback
-(`visit_expr`, `visit_function`, `visit_token`, …). A handful of
-flow-sensitive or whole-file analyses still run their existing pass from
-`visit_script` or `begin` rather than splitting the analysis across
-nodes. Each such rule's `check` runs that same single-visitor walk and
+(`visit_expr`, `visit_function`, `visit_token`, …). Whole-file rules
+(`property-sorting`) emit from `visit_script`; flow-sensitive function
+analyses (`unguarded-self-recursion`, `none-form-usage`) keep per-function
+or `leave_stmt`/`leave_expr` state on the shared walk. `TypeEnv` rules
+enter/leave function scope from `visit_function`/`leave_function`. Token
+rules that need a whole statement (`unused-getter`, `unused-nodiscard`,
+`indentation`) accumulate across `visit_token` and emit in `finish`.
+Each such rule's `check` runs that same single-visitor walk and
 returns the store's issues. `none` rules still run through `check`
 directly.
 

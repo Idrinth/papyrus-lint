@@ -20,6 +20,7 @@ use std::collections::{HashMap, HashSet};
 use papyrus_parser::ast::{Expr, FunctionDecl, Script, Stmt};
 use papyrus_parser::token::{Token, TokenKind};
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -27,27 +28,58 @@ pub const RULE: &str = "debug-side-effects";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    same_script: HashMap<String, bool>,
+    skip_until: usize,
 }
 
-impl crate::visitor::TokenLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn begin(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            ctx.ast,
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.same_script = same_script_side_effects(ctx.ast);
+        self.skip_until = 0;
+    }
+
+    fn visit_token(
+        &mut self,
+        _token: &Token,
+        index: usize,
+        tokens: &[Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        if index < self.skip_until {
+            return;
+        }
+        if index + 3 >= tokens.len() || !is_debug_call(tokens, index) {
+            return;
+        }
+        let method = match &tokens[index + 2].kind {
+            TokenKind::Identifier(name) => name.clone(),
+            _ => return,
+        };
+        let open = index + 3;
+        let Some(close) = matching_rparen(tokens, open) else {
+            return;
+        };
+        let mut diagnostics = Vec::new();
+        collect_nested_calls(
+            tokens,
+            open + 1,
+            close,
+            &method,
+            &self.same_script,
+            &mut diagnostics,
+        );
+        self.store.extend(diagnostics);
+        self.skip_until = close + 1;
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Native / conventional names that mutate game or script state even
@@ -102,50 +134,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let same_script = same_script_side_effects(ast);
-    let mut diagnostics = Vec::new();
-    let mut i = 0;
-    while i + 3 < tokens.len() {
-        if is_debug_call(tokens, i) {
-            let method = match &tokens[i + 2].kind {
-                TokenKind::Identifier(name) => name.clone(),
-                _ => {
-                    i += 1;
-                    continue;
-                }
-            };
-            let open = i + 3;
-            if let Some(close) = matching_rparen(tokens, open) {
-                collect_nested_calls(
-                    tokens,
-                    open + 1,
-                    close,
-                    &method,
-                    &same_script,
-                    &mut diagnostics,
-                );
-                i = close + 1;
-                continue;
-            }
-        }
-        i += 1;
-    }
-    diagnostics
 }
 
 fn is_debug_call(tokens: &[Token], i: usize) -> bool {
