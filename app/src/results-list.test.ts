@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,29 +14,20 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
-import { applyRuleTags, SEVERITIES, switchTab } from "./main";
+import { applyRuleTags } from "./main";
+import { SEVERITIES } from "./main-severity";
+import { switchTab } from "./main-tabs";
 import { handleDroppedPaths } from "./drop";
 import { type Diagnostic, type PscParseOutcome } from "./backend";
-import { DEFAULT_LINT_CONFIG } from "./config";
-import { useProjectDir } from "./project";
+import { DEFAULT_LINT_CONFIG } from "./config-types";
+import { useProjectDir } from "./project-settings";
 import { aiConfiguration } from "./results-export-ai";
-import {
-  buildPscResultItem,
-  formatIssuesForAi,
-  handleCompileClick,
-  handleExportAiClick,
-  handleExportIssuesClick,
-  handleFixClick,
-  handleFixIssueClick,
-  handleMassFixClick,
-  massFixRuleCounts,
-  massFixRuleDisplayName,
-  renderMassFixList,
-  renderPscResults,
-  updateExportIssuesButtonState,
-  type AiSource,
-} from "./results-list";
-
+import { buildPscResultItem } from "./results-list-item";
+import { formatIssuesForAi, handleExportAiClick, handleExportIssuesClick, updateExportIssuesButtonState } from "./results-list-export";
+import { handleCompileClick, handleFixClick, handleFixIssueClick, handleMassFixClick } from "./results-list-actions";
+import { massFixRuleCounts, massFixRuleDisplayName, renderMassFixList } from "./results-list-mass-fix";
+import { renderPscResults } from "./results-list-render";
+import { type AiSource } from "./results-export-types";
 describe("buildPscResultItem / renderPscResults", () => {
   function outcome(overrides: Partial<PscParseOutcome> = {}): PscParseOutcome {
     return { path: "/a.psc", ok: true, detail: 'parsed as "A"', findings: [], ...overrides };

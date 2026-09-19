@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -18,7 +17,6 @@ import "./test/harness";
 import { TAG_IMPORTANCES, type Diagnostic, type PscParseOutcome, type RuleTagsInfo } from "./backend";
 import { applyRuleTags } from "./main";
 import { collectFilteredIssues, filterOutcomes, matchesFilenameFilter, matchesTagFilters } from "./results-filter";
-
 describe("matchesFilenameFilter", () => {
   it("matches everything when the pattern is empty or blank", () => {
     expect(matchesFilenameFilter("Scripts/MyQuest.psc", "")).toBe(true);

@@ -1,7 +1,6 @@
 import { previewRepairPscFile } from "./backend";
-import { escapeAttr } from "./main";
+import { escapeAttr } from "./main-severity";
 import { codeViewerDiffOutputEl, codeViewerPreviewFixButtonEl, codeViewerState } from "./code-viewer-state";
-
 // Classifies one line of a unified diff (see papyrus_lint_core::diff's
 // `--- `/`+++ `/`@@ `/`+`/`-` conventions) for `renderDiffOutput` below, so
 // each kind of line can be colored distinctly the way a typical diff viewer

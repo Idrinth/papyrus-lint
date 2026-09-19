@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,20 +14,10 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
-import { useProjectDir } from "./project";
-import {
-  applyLintConfigToUI,
-  DEFAULT_LINT_CONFIG,
-  DEFAULT_RULES,
-  handleLintConfigChanged,
-  lintConfigFromUI,
-  loadLintConfig,
-  loadLintConfigFromPath,
-  saveLintConfig,
-  saveLintConfigToPath,
-  type LintConfig,
-} from "./config";
-
+import { useProjectDir } from "./project-settings";
+import { applyLintConfigToUI, handleLintConfigChanged, lintConfigFromUI } from "./config-ui";
+import { DEFAULT_LINT_CONFIG, DEFAULT_RULES, type LintConfig } from "./config-types";
+import { loadLintConfig, loadLintConfigFromPath, saveLintConfig, saveLintConfigToPath } from "./config-io";
 describe("lint config UI round trip", () => {
   it("applyLintConfigToUI followed by lintConfigFromUI reproduces the config", () => {
     const config: LintConfig = {

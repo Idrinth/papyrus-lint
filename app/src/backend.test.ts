@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { invokeMock, onDragDropEventMock, showWindowMock } from "./test/mocks";
-
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: (...args: unknown[]) => invokeMock(...args),
   isTauri: () => true,
@@ -15,23 +14,9 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
-import { DEFAULT_LINT_CONFIG } from "./config";
-import { useProjectDir } from "./project";
-import {
-  addDisableCommentToPscLine,
-  hasFixableFindings,
-  isFixableFinding,
-  lintPscFile,
-  loadAppVersion,
-  loadRuleTags,
-  previewRepairPscFile,
-  repairPscFile,
-  repairPscFileRule,
-  repairPscFinding,
-  type Diagnostic,
-  type RuleTagsInfo,
-} from "./backend";
-
+import { DEFAULT_LINT_CONFIG } from "./config-types";
+import { useProjectDir } from "./project-settings";
+import { addDisableCommentToPscLine, hasFixableFindings, isFixableFinding, lintPscFile, loadAppVersion, loadRuleTags, previewRepairPscFile, repairPscFile, repairPscFileRule, repairPscFinding, type Diagnostic, type RuleTagsInfo } from "./backend";
 describe("hasFixableFindings", () => {
   it("is true for trailing whitespace findings", () => {
     expect(
