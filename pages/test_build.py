@@ -30,7 +30,7 @@ class RenderVideosListTest(unittest.TestCase):
         )
 
         self.assertIn(
-            'src="https://www.youtube-nocookie.com/embed/abc123?feature=&quot;test&quot;&amp;safe=yes"',
+            'src=https://www.youtube-nocookie.com/embed/abc123?feature=&quot;test&quot;&amp;safe=yes',
             result,
         )
         escaped_title = "1.0.0 &lt;overview&gt; &amp; &quot;tour&quot;"
@@ -309,15 +309,15 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
             self.assertIn('href=rules.html', index)
             for doc in page_builder.DOCS:
                 with self.subTest(homepage_doc=doc["slug"]):
-                    self.assertIn(f'href="{docs_pages.doc_href(doc, None)}"', index)
+                    self.assertIn(f'href={docs_pages.doc_href(doc, None)}', index)
 
             docs_index = (out_dir / "docs" / "index.html").read_text(encoding="utf-8")
-            self.assertIn('href="../index.html#top"', docs_index)
-            self.assertIn('src="../theme.js"', docs_index)
-            self.assertIn('href="../styles.css"', docs_index)
+            self.assertIn('href=../index.html#top', docs_index)
+            self.assertIn('src=../theme.js', docs_index)
+            self.assertIn('href=../styles.css', docs_index)
             for doc in page_builder.DOCS:
                 with self.subTest(docs_index_doc=doc["slug"]):
-                    self.assertIn(f'href="{docs_pages.doc_href(doc, "docs")}"', docs_index)
+                    self.assertIn(f'href={docs_pages.doc_href(doc, "docs")}', docs_index)
 
             expected_schemas = {
                 path.name: path.read_bytes()
