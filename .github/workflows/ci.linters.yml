@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   yaml:
-    name: Rules YAML lint
+    name: CI / Linters / Rules and links YAML
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -31,7 +31,7 @@ jobs:
         run: yamllint shared/rules/data/*.yaml shared/links.yaml
 
   python-lint:
-    name: Python lint
+    name: CI / Linters / Python (ruff)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -47,7 +47,7 @@ jobs:
         run: ruff check .github/scripts pages SublimeLinter-contrib-papyrus-lint
 
   bbcode:
-    name: CI scripts and Nexus page BBCode lint
+    name: CI / Linters / Nexus page BBCode
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -56,7 +56,7 @@ jobs:
         run: python3 .github/scripts/bbcode_lint.py docs/nexuspage.bbcode
 
   markdown:
-    name: Markdown lint
+    name: CI / Linters / README Markdown
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -67,7 +67,7 @@ jobs:
           globs: '**/README.md'
 
   stylelint:
-    name: Frontend CSS lint
+    name: CI / Linters / Frontend CSS
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -88,7 +88,7 @@ jobs:
         run: npm run lint:css
 
   frontend:
-    name: Frontend
+    name: CI / Linters / Frontend ESLint
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -109,7 +109,7 @@ jobs:
         run: npm run lint
 
   rust-fmt:
-    name: Rust (fmt) (${{ matrix.crate }})
+    name: CI / Linters / Rust fmt (${{ matrix.crate }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -138,7 +138,7 @@ jobs:
         run: cargo fmt --manifest-path "app/${{ matrix.crate }}/Cargo.toml" -- --check
 
   rust-clippy:
-    name: Rust (clippy) (${{ matrix.crate }})
+    name: CI / Linters / Rust clippy (${{ matrix.crate }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -186,7 +186,7 @@ jobs:
         run: cargo clippy --manifest-path "app/${{ matrix.crate }}/Cargo.toml" --all-targets -- -D warnings
 
   vscode-extension:
-    name: VS Code extension (test & compile)
+    name: CI / Linters / VS Code extension ESLint
     runs-on: ubuntu-latest
     defaults:
       run:

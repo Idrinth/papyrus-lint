@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   pages-browser:
-    name: GitHub Pages browser smoke test
+    name: CI / Browser / GitHub Pages smoke test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -39,7 +39,7 @@ jobs:
         run: python3 pages/browser_check.py --dist pages/dist
 
   pages-lighthouse:
-    name: GitHub Pages Lighthouse check
+    name: CI / Browser / GitHub Pages Lighthouse
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -153,7 +153,7 @@ jobs:
             }
 
   frontend-browser:
-    name: Frontend (in-browser layout tests)
+    name: CI / Browser / Frontend layout tests
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -185,7 +185,7 @@ jobs:
           retention-days: 7
 
   app-lighthouse:
-    name: Frontend Lighthouse check
+    name: CI / Browser / Frontend Lighthouse
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
