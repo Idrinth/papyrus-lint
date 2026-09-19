@@ -4,14 +4,16 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "generate:config-types": "node ./scripts/generate-config-types.mjs",
+    "prepare": "node ./scripts/generate-config-types.mjs",
+    "dev": "npm run generate:config-types && vite",
+    "build": "npm run generate:config-types && tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:browser": "playwright test",
-    "lint": "eslint .",
+    "test": "npm run generate:config-types && vitest run",
+    "test:coverage": "npm run generate:config-types && vitest run --coverage",
+    "test:browser": "npm run generate:config-types && playwright test",
+    "lint": "npm run generate:config-types && eslint .",
     "lint:css": "stylelint \"src/**/*.css\" \"../shared/**/*.css\""
   },
   "dependencies": {
