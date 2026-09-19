@@ -22,9 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Provide scripts as expected
-        run: cp shared/${{ matrix.game }}-scripts.zip docker/Scripts.zip
-
       - name: Download released Linux CLI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

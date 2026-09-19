@@ -2,19 +2,19 @@ FROM alpine:3.24
 
 # One published image per built-in preset (strict/standard/careful).
 ARG PRESET=strict
+# Overwrite base files with extender files
+ARG EXTENDER=no
 
 RUN apk add --no-cache gcompat libgcc unzip \
     && addgroup -S papyrus-lint \
     && adduser -S -G papyrus-lint papyrus-lint \
-    && mkdir -p /project /cache /base-scripts /skyrim-scripts /usr/local/share/papyrus-lint \
-    && chown papyrus-lint:papyrus-lint /project /cache /base-scripts /skyrim-scripts
+    && mkdir -p /project /cache /base-scripts/usr/local/share/papyrus-lint \
+    && chown papyrus-lint:papyrus-lint /project /cache /base-scripts
 
 COPY --chmod=755 PapyrusLinterCLI /usr/local/bin/PapyrusLinterCLI
 COPY --chmod=755 entrypoint.sh /usr/local/bin/papyrus-lint-entrypoint
 COPY Scripts.zip /usr/local/share/papyrus-lint/Scripts.zip
 RUN PapyrusLinterCLI --version \
-    && unzip -j -q /usr/local/share/papyrus-lint/Scripts.zip -d /base-scripts \
-    && chown -R papyrus-lint:papyrus-lint /skyrim-scripts \
     && rm /usr/local/share/papyrus-lint/Scripts.zip
 
 # Generate the selected preset's config and point lookup roots at the
