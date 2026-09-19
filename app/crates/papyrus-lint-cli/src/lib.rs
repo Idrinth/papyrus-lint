@@ -305,7 +305,8 @@ pub const USAGE: &str = concat!(
     "Contact:\n",
     "  Discord    https://discord.gg/idrinth\n",
     "  NexusMods  https://www.nexusmods.com/skyrimspecialedition/mods/189862\n",
-    "  GitHub     https://github.com/idrinth/papyrus-lint\n"
+    "  GitHub     https://github.com/idrinth/papyrus-lint\n",
+    "  Feedback   https://tally.so/r/aQL1dB\n"
 );
 
 /// The crate's version, as set in `crates/papyrus-lint-cli/Cargo.toml`
