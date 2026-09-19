@@ -6,10 +6,10 @@
 //! bounds equal or reversed never produces any actual randomness.
 //!
 //! Like [`crate::division_by_zero`], this only folds an argument built
-//! entirely from literals (optionally combined with arithmetic and unary
-//! operators); an argument that depends on an identifier, a call, `Self`/
-//! `Parent`, a member/index access, a cast, or a `new` array is left
-//! unflagged rather than guessed at. A named argument is matched by its
+//! entirely from literals (optionally combined with arithmetic, comparison,
+//! logical, and unary operators); an argument that depends on an identifier,
+//! a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array
+//! is left unflagged rather than guessed at. A named argument is matched by its
 //! position in the call, not by its name, the same way every other
 //! argument-inspecting lint in this crate does.
 

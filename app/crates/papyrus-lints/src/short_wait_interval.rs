@@ -7,10 +7,10 @@
 //! performance overhead.
 //!
 //! Like [`crate::division_by_zero`], this only folds an argument built
-//! entirely from literals (optionally combined with arithmetic and unary
-//! operators); an argument that depends on an identifier, a call, `Self`/
-//! `Parent`, a member/index access, a cast, or a `new` array is left
-//! unflagged rather than guessed at. Always reported as a `[warning]`,
+//! entirely from literals (optionally combined with arithmetic, comparison,
+//! logical, and unary operators); an argument that depends on an identifier,
+//! a call, `Self`/`Parent`, a member/index access, a cast, or a `new` array
+//! is left unflagged rather than guessed at. Always reported as a `[warning]`,
 //! regardless of how far below the minimum the value is.
 
 use papyrus_parser::ast::Expr;

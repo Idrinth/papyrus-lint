@@ -23,7 +23,8 @@
 //! reverts to unconfirmed again the moment that element is assigned a new
 //! value, since the value just written could itself be `None`. Only a
 //! plain identifier's own element, indexed by a literal (optionally
-//! combined with arithmetic and unary operators), is tracked; a
+//! combined with arithmetic, comparison, logical, and unary operators), is
+//! tracked; a
 //! member/property array, or an index built from anything else (a variable,
 //! a call, ...), is left unflagged rather than guessed at, the same
 //! restriction [`crate::array_bounds`] places on its own indices. Passing

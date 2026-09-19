@@ -222,6 +222,17 @@ fn flags_a_constant_multiplication_that_folds_below_the_minimum() {
 }
 
 #[test]
+fn flags_a_constant_division_that_folds_below_the_minimum() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    Utility.Wait(1.0 / 20.0)\nEndFunction\n",
+        0.1,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("Wait(0.05)"));
+}
+
+#[test]
 fn walks_array_index_cast_and_new_array_expressions_without_crashing() {
     let diagnostics = check(
             "ScriptName Example\n\nFunction Test(Int[] values)\n    Int x = values[0]\n    Int y = 5 as Int\n    Int[] arr = new Int[3]\nEndFunction\n",

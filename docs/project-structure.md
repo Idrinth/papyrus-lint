@@ -145,9 +145,9 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       │                              # lives in papyrus-lint-config
 │       │       ├── config_tests.rs            # config.rs's unit tests
 │       │       ├── const_eval.rs              # Shared compile-time folding of
-│       │       │                              # literal `+`/`-`/`*` (`eval_const`,
+│       │       │                              # literal expressions (`eval_const`,
 │       │       │                              # `eval_const_int`); used by the
-│       │       │                              # numeric AST lints
+│       │       │                              # numeric AST lints and static-condition
 │       │       ├── const_eval_tests.rs        # const_eval.rs's unit tests
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
 │       │       ├── trailing_whitespace_tests.rs # trailing_whitespace.rs's unit tests

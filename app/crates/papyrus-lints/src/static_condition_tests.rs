@@ -84,43 +84,6 @@ fn folds_arithmetic_string_and_comparison_operators() {
 }
 
 #[test]
-fn literal_equality_handles_bool_none_and_incompatible_values() {
-    assert_eq!(
-        literal_eq(&Literal::Bool(true), &Literal::Bool(false)),
-        Some(false)
-    );
-    assert_eq!(literal_eq(&Literal::None, &Literal::None), Some(true));
-    assert_eq!(literal_eq(&Literal::None, &Literal::int(1)), Some(false));
-    assert_eq!(literal_eq(&Literal::int(1), &Literal::None), Some(false));
-    assert_eq!(
-        literal_eq(&Literal::String("1".into()), &Literal::int(1)),
-        None
-    );
-}
-
-#[test]
-fn invalid_constant_operations_are_not_folded() {
-    assert_eq!(eval_unary(UnaryOp::Neg, &Literal::Bool(true)), None);
-    assert_eq!(as_number(&Literal::String("nope".into())), None);
-    assert_eq!(
-        eval_binary(
-            &Literal::String("left".into()),
-            BinaryOp::Add,
-            &Literal::int(1),
-        ),
-        None
-    );
-    assert_eq!(
-        eval_binary(&Literal::int(1), BinaryOp::Div, &Literal::int(0)),
-        None
-    );
-    assert_eq!(
-        eval_binary(&Literal::int(1), BinaryOp::Mod, &Literal::int(0)),
-        None
-    );
-}
-
-#[test]
 fn flags_constant_while_condition() {
     let diagnostics =
             check("ScriptName Example\n\nFunction Test()\n    While 1 > 0\n        Return\n    EndWhile\nEndFunction\n");

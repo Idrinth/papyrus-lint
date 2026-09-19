@@ -18,8 +18,8 @@
 //! inside its body is never assumed to still hold once execution reaches
 //! the code after the loop. Only a plain identifier's own index is checked;
 //! a member/property array, or an index built from anything other than a
-//! literal (optionally combined with arithmetic and unary operators), is
-//! left unflagged rather than guessed at.
+//! literal (optionally combined with arithmetic, comparison, logical, and
+//! unary operators), is left unflagged rather than guessed at.
 //!
 //! A `new <Type>[<N>]` whose own literal `N` falls outside the range
 //! Papyrus allows for a script-created array is flagged separately, by
