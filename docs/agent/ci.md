@@ -20,7 +20,7 @@ build script.
   `rust-fmt`/`rust-clippy`/`rust-test`), so an unlabeled pull request's CI
   stops here instead of spending time on the rest of the jobs below.
 - **Rules YAML lint job**: runs `yamllint` against every `shared/rules/data/*.yaml` file
-  so malformed rule data cannot be merged.
+  and `shared/links.yaml` so malformed rule data or link sources cannot be merged.
 - **Python lint job** (`python-lint`): runs `ruff check` (configured in the
   root `pyproject.toml`) against every Python source under `.github/scripts`,
   `pages`, and `SublimeLinter-contrib-papyrus-lint`.

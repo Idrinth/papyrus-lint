@@ -8,6 +8,7 @@ unrelated site-assembly concerns) with no behavior change.
 from __future__ import annotations
 
 import html
+import sys
 from pathlib import Path
 from urllib.parse import quote, urlparse
 
@@ -44,6 +45,22 @@ FUNDING_PROVIDERS = {
     "buy_me_a_coffee": ("Buy Me a Coffee", "https://www.buymeacoffee.com/{}"),
     "thanks_dev": ("thanks.dev", "https://thanks.dev/d/{}"),
 }
+
+
+def _replace_link_markers(page: str) -> str:
+    """Fill ``<!--TAG-LINKS-->`` / ``<!--LINKS-->`` from shared/links.yaml.
+
+    `.github/scripts` isn't on the default import path (its directory name
+    starts with a dot), so this loads ci_lib.links the same way
+    coverage_report.py loads coverage_summary.py — by putting that scripts
+    directory on sys.path first.
+    """
+    scripts_dir = str(ROOT / ".github" / "scripts")
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    from ci_lib.links import render_html_anchors, replace_html_link_markers
+
+    return replace_html_link_markers(page, render_html_anchors)
 
 
 def parse_funding_values(value: str) -> list[str]:
@@ -106,7 +123,7 @@ def render_shared_components(page: str, root_path: str, version: str) -> str:
     markers = {"<!--SITE_HEADER-->": "header.html", "<!--SITE_FOOTER-->": "footer.html"}
     present = [marker for marker in markers if marker in page]
     if not present:
-        return page
+        return _replace_link_markers(page)
     if len(present) != len(markers):
         missing = next(marker for marker in markers if marker not in page)
         raise SystemExit(f"page template: missing shared component marker {missing}")
@@ -117,7 +134,7 @@ def render_shared_components(page: str, root_path: str, version: str) -> str:
         for placeholder, value in replacements.items():
             component = component.replace(placeholder, value)
         rendered = rendered.replace(marker, component)
-    return rendered
+    return _replace_link_markers(rendered)
 
 
 def finalize_page(page_html: str) -> str:

@@ -95,6 +95,10 @@ having to keep them in sync by hand), it carries a `<!--CLI_EXAMPLES-->`
 placeholder comment that `pages/build.py` fills in at build time by
 extracting and converting the corresponding Markdown code block straight
 out of `README.md`, so that content can never drift out of sync. The
+homepage's hero `<!--CONTACT-LINKS-->` marker (and any `<!--TAG-LINKS-->`
+/ `<!--LINKS-->` marker) is filled the same way from `shared/links.yaml`,
+filtered by the tag in the marker rather than by naming a YAML key — see
+`.github/scripts/ci_lib/links.py`. The
 homepage's own "Implemented lints" section carries no per-rule content of
 its own at all — it only links to `rules.html` (see `pages/rules_page.py`'s
 `render_rules_table`/`build_rules_page` below), which is generated

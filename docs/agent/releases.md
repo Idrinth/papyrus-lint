@@ -14,7 +14,9 @@ all, so this is the only place they're ever generated. It then
 downloads the coverage artifacts from the tagged commit's most recent
 successful `ci.yml` run and calls `.github/scripts/render_nexuspage.py` to
 fill in that freshly-regenerated file's `<COVERED_LINES>`/`<TOTAL_LINES>`/
-`<COVERAGE_PERCENTAGE>`/`<VERSION>` markers, attaching the result as
+`<COVERAGE_PERCENTAGE>`/`<VERSION>`/`<LINKS>` markers (`<LINKS>` from
+`shared/links.yaml`; a `<CONTACT-LINKS>` marker would filter by the
+`contact` tag instead of naming labels), attaching the result as
 `nexuspage-<tag>.bbcode` to the GitHub release (creating it if it doesn't
 already exist).
 

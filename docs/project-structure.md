@@ -334,6 +334,10 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │           └── tests/               # Binary e2e tests, one file per src module
 ├── shared/
 │   ├── images/               # Images used by README.md (logo, screenshots)
+│   ├── links.yaml            # Contact/download/documentation URLs; labels
+│   │                         # are the keys, `type` values are tags that
+│   │                         # `<!--CONTACT-LINKS-->` / `<LINKS>` markers
+│   │                         # filter by at build time
 │   ├── rules/                 # One <id>.json per lint rule (the single
 │   │   │                      # source of truth for rule metadata — see
 │   │   │                      # AGENTS.md hard rule 4); rules.json (the

@@ -191,7 +191,7 @@ class RepositoryConfigurationTest(unittest.TestCase):
 
     def test_page_templates_have_complete_shared_chrome_and_required_markers(self) -> None:
         required_markers = {
-            "index.template.html": {"<!--CLI_EXAMPLES-->", "<!--DOCS_LIST-->"},
+            "index.template.html": {"<!--CLI_EXAMPLES-->", "<!--DOCS_LIST-->", "<!--CONTACT-LINKS-->"},
             "videos.template.html": {"<!--VIDEOS_LIST-->"},
             "action.template.html": {
                 "<!--ACTION_TITLE-->",
@@ -307,6 +307,8 @@ class RepositoryBuildIntegrationTest(unittest.TestCase):
 
             index = (out_dir / "index.html").read_text(encoding="utf-8")
             self.assertIn('href=rules.html', index)
+            self.assertIn("discord.gg/idrinth", index)
+            self.assertNotIn("CONTACT-LINKS", index)
             for doc in page_builder.DOCS:
                 with self.subTest(homepage_doc=doc["slug"]):
                     self.assertIn(f'href={docs_pages.doc_href(doc, None)}', index)

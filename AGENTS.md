@@ -168,6 +168,10 @@ If the rule introduces a new *kind* keyword (not `style` /
   generated from `README.md`/`docs/*.md` on deploy — see Pages in
   `docs/agent/pages.md` for the `<!--CLI_EXAMPLES-->` extraction and the
   `DOCS` list a new `docs/*.md` file needs an entry in.
+- Contact / download / documentation URLs → `shared/links.yaml`. Markers
+  (`<!--CONTACT-LINKS-->`, `<CONTACT-LINKS>`, `<LINKS>`) are filled at
+  build time by the tag in the marker; never name a YAML key at a
+  destination.
 
 ## Pull request body
 

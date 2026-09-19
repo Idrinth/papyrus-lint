@@ -49,8 +49,8 @@ jobs:
       - name: Install yamllint
         run: pip install yamllint==1.37.1
 
-      - name: Lint rule files
-        run: yamllint shared/rules/data/*.yaml
+      - name: Lint YAML sources
+        run: yamllint shared/rules/data/*.yaml shared/links.yaml
 
   python-lint:
     name: Python lint
