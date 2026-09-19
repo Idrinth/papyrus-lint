@@ -30,7 +30,7 @@ class RenderVideosListTest(unittest.TestCase):
         )
 
         self.assertIn(
-            'src=https://www.youtube-nocookie.com/embed/abc123?feature=&quot;test&quot;&amp;safe=yes',
+            'src="https://www.youtube-nocookie.com/embed/abc123?feature=&quot;test&quot;&amp;safe=yes"',
             result,
         )
         escaped_title = "1.0.0 &lt;overview&gt; &amp; &quot;tour&quot;"
@@ -477,9 +477,9 @@ class BuildTest(unittest.TestCase):
             self.assertNotIn("<!--DOCS_LIST-->", output)
             self.assertNotIn("<!--VERSION-->", output)
             self.assertIn(
-                '<picture><source srcset="assets/screenshot.avif" type="image/avif">'
-                '<source srcset="assets/screenshot.webp" type="image/webp">'
-                '<img src="assets/screenshot.png" alt="Screenshot"></picture>',
+                '<picture><source srcset=assets/screenshot.avif type=image/avif>'
+                '<source srcset=assets/screenshot.webp type=image/webp>'
+                '<img src=assets/screenshot.png alt=Screenshot></picture>',
                 output,
             )
             self.assertEqual(
