@@ -113,6 +113,38 @@ fn does_not_flag_property_defaults() {
 }
 
 #[test]
+fn flags_a_literal_nested_in_a_property_default() {
+    let diagnostics = check(
+        "ScriptName Example\n\nInt Property MaxTargets = Compute(250) Auto\n",
+        MagicNumbers::Loose,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("250"));
+}
+
+#[test]
+fn does_not_flag_a_bare_literal_parameter_default() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Int count = 5)\nEndFunction\n",
+        MagicNumbers::Loose,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn flags_a_literal_nested_in_a_parameter_default() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test(Int count = Compute(250))\nEndFunction\n",
+        MagicNumbers::Loose,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("250"));
+}
+
+#[test]
 fn loose_mode_does_not_flag_wait_or_register_for_update_intervals() {
     let diagnostics = check(
             "ScriptName Example\n\nFunction Test()\n    Utility.Wait(5)\n    RegisterForSingleUpdate(5)\nEndFunction\n",

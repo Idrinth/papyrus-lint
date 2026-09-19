@@ -1,4 +1,4 @@
-use super::{AstLint, LintVisitor, Session, TokenLint, VisitCtx};
+use super::{AstLint, LintVisitor, Session, Store, TokenLint, VisitCtx};
 use crate::{comma_spacing, trailing_whitespace, Config, NoExternalSignatures};
 use papyrus_parser::ast::Expr;
 use papyrus_parser::token::Token;
@@ -137,15 +137,24 @@ fn session_emits_check_diagnostics_in_registration_order() {
 #[test]
 fn ast_walker_notifies_every_registered_lint_once_per_node() {
     let count = Rc::new(Cell::new(0));
-    struct Counter(Rc<Cell<usize>>);
+    struct Counter {
+        count: Rc<Cell<usize>>,
+        store: Store,
+    }
     impl AstLint for Counter {
+        fn store(&mut self) -> &mut Store {
+            &mut self.store
+        }
         fn visit_expr(&mut self, _: &Expr, _: &mut VisitCtx<'_>) {
-            self.0.set(self.0.get() + 1);
+            self.count.set(self.count.get() + 1);
         }
     }
 
     let mut session = Session::new();
-    session.add(LintVisitor::Ast(Box::new(Counter(count.clone()))));
+    session.add(LintVisitor::Ast(Box::new(Counter {
+        count: count.clone(),
+        store: Store::default(),
+    })));
 
     let source = "ScriptName Example\nFunction Add(Int a = 1)\n    Return a + 2\nEndFunction\n";
     let tokens = papyrus_parser::tokenize(source).ok();
@@ -165,16 +174,25 @@ fn ast_walker_notifies_every_registered_lint_once_per_node() {
 #[test]
 fn token_walker_notifies_every_registered_lint_once_per_token() {
     let count = Rc::new(Cell::new(0));
-    struct Counter(Rc<Cell<usize>>);
+    struct Counter {
+        count: Rc<Cell<usize>>,
+        store: Store,
+    }
     impl TokenLint for Counter {
+        fn store(&mut self) -> &mut Store {
+            &mut self.store
+        }
         fn visit_token(&mut self, _: &Token, _: usize, tokens: &[Token], _: &mut VisitCtx<'_>) {
             let _ = tokens;
-            self.0.set(self.0.get() + 1);
+            self.count.set(self.count.get() + 1);
         }
     }
 
     let mut session = Session::new();
-    session.add(LintVisitor::Tokens(Box::new(Counter(count.clone()))));
+    session.add(LintVisitor::Tokens(Box::new(Counter {
+        count: count.clone(),
+        store: Store::default(),
+    })));
 
     let source = "ScriptName Example\n";
     let tokens = papyrus_parser::tokenize(source).ok();
@@ -190,4 +208,33 @@ fn token_walker_notifies_every_registered_lint_once_per_token() {
         &mut external,
     );
     assert_eq!(count.get(), token_len);
+}
+
+#[test]
+fn check_returns_diagnostics_from_the_visitor_store() {
+    let source = "ScriptName Example\nFunction Run(Int a,Int b)\n    Int x = 1 / 0\nEndFunction\n";
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    let config = Config::default();
+    let mut external = NoExternalSignatures;
+    let comma = comma_spacing::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut external,
+    );
+    let zero = crate::division_by_zero::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &config,
+        &mut external,
+    );
+    assert!(comma
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "comma-spacing"));
+    assert!(zero
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "division-by-zero"));
 }

@@ -11,16 +11,58 @@
 //! to parse simply isn't checked. Disabled by default: see
 //! `crate::config::Rules::float_equality`.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Script, Stmt, TypeName};
+use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, Script, TypeName};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "float-equality";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    env: Option<TypeEnv>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_script(&mut self, script: &Script, _ctx: &mut VisitCtx<'_>) {
+        self.env = Some(TypeEnv::for_script(script));
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.enter_function(function);
+        }
+    }
+
+    fn leave_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(env) = &mut self.env {
+            env.leave_function();
+        }
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let Expr::Binary { left, op, right } = expr else {
+            return;
+        };
+        if !is_equality(*op) {
+            return;
+        }
+        let Some(env) = self.env.as_ref() else {
+            return;
+        };
+        check_comparison(left, right, env, ctx.line, &mut self.store);
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `Float`/`Float` `==`/`!=` comparisons.
@@ -35,133 +77,6 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut env = TypeEnv::for_script(script);
-    let mut diagnostics = Vec::new();
-
-    for function in all_functions(script) {
-        env.with_function_scope(function, |scoped| {
-            check_body(&function.body, scoped, &mut diagnostics);
-        });
-    }
-
-    diagnostics
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn check_body(body: &[Stmt], env: &TypeEnv, diagnostics: &mut Vec<Diagnostic>) {
-    for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                if let Some(value) = &decl.value {
-                    walk_expr(value, env, decl.line, diagnostics);
-                }
-            }
-            Stmt::Assign {
-                target,
-                value,
-                line,
-                ..
-            } => {
-                walk_expr(target, env, *line, diagnostics);
-                walk_expr(value, env, *line, diagnostics);
-            }
-            Stmt::Expr { value, line } => walk_expr(value, env, *line, diagnostics),
-            Stmt::Return {
-                value: Some(value),
-                line,
-            } => {
-                walk_expr(value, env, *line, diagnostics);
-            }
-            Stmt::Return { value: None, .. } => {}
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for IfBranch {
-                    condition,
-                    body,
-                    line,
-                    ..
-                } in branches
-                {
-                    walk_expr(condition, env, *line, diagnostics);
-                    check_body(body, env, diagnostics);
-                }
-                check_body(else_body, env, diagnostics);
-            }
-            Stmt::While {
-                condition,
-                body,
-                line,
-                ..
-            } => {
-                walk_expr(condition, env, *line, diagnostics);
-                check_body(body, env, diagnostics);
-            }
-        }
-    }
-}
-
-/// Recursively walks `expr` looking for `Float`/`Float` `==`/`!=` comparisons.
-///
-/// `line` is the enclosing statement's line, since expressions don't carry
-/// their own position in this AST.
-fn walk_expr(expr: &Expr, env: &TypeEnv, line: usize, diagnostics: &mut Vec<Diagnostic>) {
-    if let Expr::Binary { left, op, right } = expr {
-        if is_equality(*op) {
-            check_comparison(left, right, env, line, diagnostics);
-        }
-        walk_expr(left, env, line, diagnostics);
-        walk_expr(right, env, line, diagnostics);
-        return;
-    }
-
-    match expr {
-        Expr::Unary { operand, .. } => walk_expr(operand, env, line, diagnostics),
-        Expr::Call { callee, args, .. } => {
-            walk_expr(callee, env, line, diagnostics);
-            for arg in args {
-                walk_expr(arg, env, line, diagnostics);
-            }
-        }
-        Expr::Member { object, .. } => walk_expr(object, env, line, diagnostics),
-        Expr::Index { object, index } => {
-            walk_expr(object, env, line, diagnostics);
-            walk_expr(index, env, line, diagnostics);
-        }
-        Expr::Cast { value, .. } => walk_expr(value, env, line, diagnostics),
-        Expr::NewArray { size, .. } => walk_expr(size, env, line, diagnostics),
-        Expr::NamedArg { value, .. } => walk_expr(value, env, line, diagnostics),
-        Expr::Literal(_)
-        | Expr::Identifier(_)
-        | Expr::Self_
-        | Expr::Parent
-        | Expr::Binary { .. } => {}
-    }
-}
-
 fn is_equality(op: BinaryOp) -> bool {
     matches!(op, BinaryOp::Eq | BinaryOp::NotEq)
 }
@@ -172,13 +87,7 @@ fn is_float(type_name: &TypeName) -> bool {
 
 /// Flags `left op right` when both sides are `Float`. Flagged as an
 /// `[info]`.
-fn check_comparison(
-    left: &Expr,
-    right: &Expr,
-    env: &TypeEnv,
-    line: usize,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+fn check_comparison(left: &Expr, right: &Expr, env: &TypeEnv, line: usize, store: &mut Store) {
     let Some(left_ty) = infer_type(left, env) else {
         return;
     };
@@ -187,14 +96,13 @@ fn check_comparison(
     };
 
     if is_float(&left_ty) && is_float(&right_ty) {
-        diagnostics.push(Diagnostic {
+        store.emit(
             line,
-            column: 1,
-            message: "[info] Comparing two Float values with '==' or '!=' directly; \
-                      floating-point rounding error can make this comparison unreliable"
-                .to_string(),
-            rule: RULE,
-        });
+            1,
+            "[info] Comparing two Float values with '==' or '!=' directly; \
+                      floating-point rounding error can make this comparison unreliable",
+            RULE,
+        );
     }
 }
 

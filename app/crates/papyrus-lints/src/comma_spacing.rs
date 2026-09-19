@@ -6,8 +6,59 @@ use papyrus_parser::token::{Token, TokenKind};
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "comma-spacing";
 
+#[derive(Default)]
+struct Collect {
+    store: crate::visitor::Store,
+    paren_depth: usize,
+    protected: Vec<bool>,
+    line_starts: Vec<usize>,
+}
+
+impl crate::visitor::TokenLint for Collect {
+    fn store(&mut self) -> &mut crate::visitor::Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
+        self.protected = fragment_code::protected_lines(ctx.source);
+        self.line_starts = line_starts(ctx.source);
+        self.paren_depth = 0;
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        _index: usize,
+        _tokens: &[Token],
+        ctx: &mut crate::visitor::VisitCtx<'_>,
+    ) {
+        match token.kind {
+            TokenKind::LParen => self.paren_depth += 1,
+            TokenKind::RParen => self.paren_depth = self.paren_depth.saturating_sub(1),
+            TokenKind::Comma if self.paren_depth > 0 => {
+                if self.protected.get(token.line).copied().unwrap_or(false) {
+                    return;
+                }
+                let line_start = self.line_starts[token.line - 1];
+                let offset = line_start + token.col - 1;
+                let next = ctx.source.as_bytes().get(offset + 1).copied();
+                if next.is_some_and(|byte| !byte.is_ascii_whitespace() && byte != b')') {
+                    let column = ctx.source[line_start..offset].chars().count() + 1;
+                    self.store.emit(
+                        token.line,
+                        column,
+                        "[warning] Comma in argument list must be followed by whitespace",
+                        RULE,
+                    );
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks for argument-list commas that are immediately followed by another
@@ -22,32 +73,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-    let protected = fragment_code::protected_lines(source);
-
-    comma_offsets_from_tokens(source, tokens)
-        .into_iter()
-        .filter(|(_, line, _)| !protected[*line])
-        .map(|(_, line, column)| Diagnostic {
-            line,
-            column,
-            message: "[warning] Comma in argument list must be followed by whitespace".to_string(),
-            rule: RULE,
-        })
-        .collect()
 }
 
 /// Inserts one space after every unspaced comma in an argument list. Commas

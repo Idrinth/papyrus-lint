@@ -5,15 +5,31 @@
 //! the block structure of the function body; a script that doesn't parse
 //! cleanly is left unchecked rather than guessed at.
 
-use papyrus_parser::ast::{FunctionDecl, Script, Stmt};
+use papyrus_parser::ast::{FunctionDecl, Stmt};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unreachable-statement";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        check_body(&function.body, &mut self.store);
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for statements that follow a `Return` in the same
@@ -30,49 +46,17 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        check_body(&function.body, &mut diagnostics);
-    }
-    diagnostics
-}
-
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
+fn check_body(body: &[Stmt], store: &mut Store) {
     let mut returned = false;
     for stmt in body {
         if returned {
-            diagnostics.push(Diagnostic {
-                line: stmt_line(stmt),
-                column: 1,
-                message: "[warning] Unreachable statement: this can never execute because the \
-                          block already returned above it"
-                    .to_string(),
-                rule: RULE,
-            });
+            store.emit(
+                stmt_line(stmt),
+                1,
+                "[warning] Unreachable statement: this can never execute because the \
+                          block already returned above it",
+                RULE,
+            );
         }
         match stmt {
             Stmt::Return { .. } => returned = true,
@@ -82,11 +66,11 @@ fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
                 ..
             } => {
                 for branch in branches {
-                    check_body(&branch.body, diagnostics);
+                    check_body(&branch.body, store);
                 }
-                check_body(else_body, diagnostics);
+                check_body(else_body, store);
             }
-            Stmt::While { body, .. } => check_body(body, diagnostics),
+            Stmt::While { body, .. } => check_body(body, store),
             _ => {}
         }
     }

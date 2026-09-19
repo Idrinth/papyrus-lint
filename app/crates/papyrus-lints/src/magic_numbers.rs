@@ -24,17 +24,16 @@
 //! interval there is both common and usually self-explanatory. The
 //! "strict" mode also checks those arguments like any other.
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp};
+use std::collections::HashSet;
+
+use papyrus_parser::ast::{Expr, Literal, Param, PropertyDecl, Stmt, UnaryOp, VariableDecl};
 use serde::{Deserialize, Serialize};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "magic-numbers";
-
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
-}
 
 /// Whether this lint also checks the interval argument of a
 /// `Utility.Wait`/`RegisterForUpdate`/`RegisterForSingleUpdate`/
@@ -51,6 +50,99 @@ pub enum MagicNumbers {
     Strict,
 }
 
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    ignore: HashSet<*const Expr>,
+    pending_neg: bool,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_property(&mut self, property: &PropertyDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(value) = &property.value {
+            if is_bare_number_literal(value) {
+                mark_bare_literal(value, &mut self.ignore);
+            }
+        }
+    }
+
+    fn visit_param(&mut self, param: &Param, _ctx: &mut VisitCtx<'_>) {
+        if let Some(default) = &param.default {
+            if is_bare_number_literal(default) {
+                mark_bare_literal(default, &mut self.ignore);
+            }
+        }
+    }
+
+    fn visit_variable(&mut self, variable: &VariableDecl, _ctx: &mut VisitCtx<'_>) {
+        if let Some(value) = &variable.value {
+            if is_bare_number_literal(value) {
+                mark_bare_literal(value, &mut self.ignore);
+            }
+        }
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt, _ctx: &mut VisitCtx<'_>) {
+        let Stmt::Assign { value, .. } = stmt else {
+            return;
+        };
+        if is_bare_number_literal(value) {
+            mark_bare_literal(value, &mut self.ignore);
+        }
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        if ctx.config.magic_numbers == MagicNumbers::Loose {
+            if let Expr::Call { callee, args, .. } = expr {
+                if crate::short_wait_interval::matching_function(callee).is_some() {
+                    for arg in args {
+                        let value = match arg {
+                            Expr::NamedArg { value, .. } => value.as_ref(),
+                            other => other,
+                        };
+                        mark_wait_exempt(value, &mut self.ignore);
+                    }
+                }
+            }
+        }
+
+        let ignored = self.ignore.contains(&(expr as *const Expr));
+        match expr {
+            Expr::Unary {
+                op: UnaryOp::Neg,
+                operand,
+            } if is_number_literal(operand) => {
+                if !ignored {
+                    self.pending_neg = true;
+                }
+            }
+            Expr::Literal(Literal::Int { value, .. }) => {
+                if !ignored {
+                    let value = if self.pending_neg { -*value } else { *value };
+                    flag_int(value, ctx.line, &mut self.store);
+                }
+                self.pending_neg = false;
+            }
+            Expr::Literal(Literal::Float(f)) => {
+                if !ignored {
+                    let value = if self.pending_neg { -*f } else { *f };
+                    flag_float(value, ctx.line, &mut self.store);
+                }
+                self.pending_neg = false;
+            }
+            _ => self.pending_neg = false,
+        }
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
+}
+
 /// Checks `source` for numeric literals used directly rather than through
 /// a named constant, property, or local variable, per `mode`.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
@@ -64,195 +156,45 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, external);
-    let mode = config.magic_numbers;
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for variable in &script.variables {
-        if let Some(value) = &variable.value {
-            walk_declaration_value(value, mode, variable.line, &mut diagnostics);
-        }
-    }
-    for function in all_functions(script) {
-        check_body(&function.body, mode, &mut diagnostics);
-    }
-    diagnostics
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn check_body(body: &[Stmt], mode: MagicNumbers, diagnostics: &mut Vec<Diagnostic>) {
-    for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                if let Some(value) = &decl.value {
-                    walk_declaration_value(value, mode, decl.line, diagnostics);
-                }
-            }
-            Stmt::Assign {
-                target,
-                value,
-                line,
-                ..
-            } => {
-                walk_expr(target, mode, *line, false, diagnostics);
-                walk_declaration_value(value, mode, *line, diagnostics);
-            }
-            Stmt::Expr { value, line } => walk_expr(value, mode, *line, false, diagnostics),
-            Stmt::Return {
-                value: Some(value),
-                line,
-            } => {
-                walk_expr(value, mode, *line, false, diagnostics);
-            }
-            Stmt::Return { value: None, .. } => {}
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for IfBranch {
-                    condition,
-                    body,
-                    line,
-                    ..
-                } in branches
-                {
-                    walk_expr(condition, mode, *line, false, diagnostics);
-                    check_body(body, mode, diagnostics);
-                }
-                check_body(else_body, mode, diagnostics);
-            }
-            Stmt::While {
-                condition,
-                body,
-                line,
-                ..
-            } => {
-                walk_expr(condition, mode, *line, false, diagnostics);
-                check_body(body, mode, diagnostics);
-            }
-        }
-    }
-}
-
-/// Checks a declaration's or assignment's value expression: a bare numeric
-/// literal (optionally negated) is exempt, since naming it there already
-/// gives it the meaning this lint is after; anything else is walked
-/// normally, so a literal nested inside a more complex initializer is
-/// still checked.
-fn walk_declaration_value(
-    value: &Expr,
-    mode: MagicNumbers,
-    line: usize,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    if is_bare_number_literal(value) {
-        return;
-    }
-    walk_expr(value, mode, line, false, diagnostics);
-}
-
 fn is_bare_number_literal(expr: &Expr) -> bool {
     match expr {
         Expr::Literal(Literal::Int { .. } | Literal::Float(_)) => true,
         Expr::Unary {
             op: UnaryOp::Neg,
             operand,
-        } => matches!(
-            operand.as_ref(),
-            Expr::Literal(Literal::Int { .. } | Literal::Float(_))
-        ),
+        } => is_number_literal(operand),
         _ => false,
     }
 }
 
-/// Recursively walks `expr`, flagging every numeric literal it finds
-/// (subject to the ignored-value list and, in "loose" mode, the
-/// `Wait`/`RegisterFor*` exemption). `wait_exempt` is threaded through
-/// arithmetic composition (`Binary`, `Unary`) so a literal combined with
-/// others inside an exempted call's argument stays exempt too, but resets
-/// to `false` across a `Call`, `Member`, `Index`, `Cast`, or `NewArray`
-/// boundary, since those introduce a value of their own rather than
-/// composing the exempted argument's.
-fn walk_expr(
-    expr: &Expr,
-    mode: MagicNumbers,
-    line: usize,
-    wait_exempt: bool,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+fn is_number_literal(expr: &Expr) -> bool {
+    matches!(
+        expr,
+        Expr::Literal(Literal::Int { .. } | Literal::Float(_))
+    )
+}
+
+fn mark_bare_literal(expr: &Expr, ignore: &mut HashSet<*const Expr>) {
+    ignore.insert(expr as *const Expr);
+    if let Expr::Unary { operand, .. } = expr {
+        ignore.insert(operand.as_ref() as *const Expr);
+    }
+}
+
+/// Marks every expression that inherits a loose-mode `Wait`/`RegisterFor*`
+/// argument exemption: arithmetic composition (`Binary`, `Unary`,
+/// `NamedArg`) stays exempt, but a `Call`, `Member`, `Index`, `Cast`, or
+/// `NewArray` boundary resets it.
+fn mark_wait_exempt(expr: &Expr, ignore: &mut HashSet<*const Expr>) {
+    ignore.insert(expr as *const Expr);
     match expr {
-        Expr::Literal(Literal::Int { value, .. }) => {
-            if !wait_exempt {
-                flag_int(*value, line, diagnostics);
-            }
-        }
-        Expr::Literal(Literal::Float(f)) => {
-            if !wait_exempt {
-                flag_float(*f, line, diagnostics);
-            }
-        }
-        Expr::Unary {
-            op: UnaryOp::Neg,
-            operand,
-        } => match operand.as_ref() {
-            Expr::Literal(Literal::Int { value, .. }) => {
-                if !wait_exempt {
-                    flag_int(-*value, line, diagnostics);
-                }
-            }
-            Expr::Literal(Literal::Float(f)) => {
-                if !wait_exempt {
-                    flag_float(-*f, line, diagnostics);
-                }
-            }
-            _ => walk_expr(operand, mode, line, wait_exempt, diagnostics),
-        },
-        Expr::Unary { operand, .. } => walk_expr(operand, mode, line, wait_exempt, diagnostics),
         Expr::Binary { left, right, .. } => {
-            walk_expr(left, mode, line, wait_exempt, diagnostics);
-            walk_expr(right, mode, line, wait_exempt, diagnostics);
+            mark_wait_exempt(left, ignore);
+            mark_wait_exempt(right, ignore);
         }
-        Expr::Call { callee, args, .. } => {
-            let exempt = mode == MagicNumbers::Loose
-                && crate::short_wait_interval::matching_function(callee).is_some();
-            for arg in args {
-                let value_expr = match arg {
-                    Expr::NamedArg { value, .. } => value.as_ref(),
-                    other => other,
-                };
-                walk_expr(value_expr, mode, line, exempt, diagnostics);
-            }
-            walk_expr(callee, mode, line, false, diagnostics);
-        }
-        Expr::NamedArg { value, .. } => walk_expr(value, mode, line, wait_exempt, diagnostics),
-        Expr::Member { object, .. } => walk_expr(object, mode, line, false, diagnostics),
-        Expr::Index { object, index } => {
-            walk_expr(object, mode, line, false, diagnostics);
-            walk_expr(index, mode, line, false, diagnostics);
-        }
-        Expr::Cast { value, .. } => walk_expr(value, mode, line, false, diagnostics),
-        Expr::NewArray { size, .. } => walk_expr(size, mode, line, false, diagnostics),
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::Unary { operand, .. } => mark_wait_exempt(operand, ignore),
+        Expr::NamedArg { value, .. } => mark_wait_exempt(value, ignore),
+        _ => {}
     }
 }
 
@@ -264,28 +206,28 @@ fn is_ignored_float(value: f64) -> bool {
     value == -1.0 || value == 0.0 || value == 1.0
 }
 
-fn flag_int(value: i64, line: usize, diagnostics: &mut Vec<Diagnostic>) {
+fn flag_int(value: i64, line: usize, store: &mut Store) {
     if !is_ignored_int(value) {
-        push(value.to_string(), line, diagnostics);
+        push(value.to_string(), line, store);
     }
 }
 
-fn flag_float(value: f64, line: usize, diagnostics: &mut Vec<Diagnostic>) {
+fn flag_float(value: f64, line: usize, store: &mut Store) {
     if !is_ignored_float(value) {
-        push(value.to_string(), line, diagnostics);
+        push(value.to_string(), line, store);
     }
 }
 
-fn push(display: String, line: usize, diagnostics: &mut Vec<Diagnostic>) {
-    diagnostics.push(Diagnostic {
+fn push(display: String, line: usize, store: &mut Store) {
+    store.emit(
         line,
-        column: 1,
-        message: format!(
+        1,
+        format!(
             "[warning] Magic number {display}; extract it into a named constant, property, \
              or local variable so its meaning is clear"
         ),
-        rule: RULE,
-    });
+        RULE,
+    );
 }
 
 #[cfg(test)]

@@ -16,15 +16,52 @@
 //! assignment (`+=`, `-=`, ...) is never flagged either, since unlike
 //! plain `=` it does change the target's value.
 
-use papyrus_parser::ast::{AssignOp, Expr, FunctionDecl, Script, Stmt};
+use papyrus_parser::ast::{AssignOp, Expr, Stmt};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "self-assignment";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt, ctx: &mut VisitCtx<'_>) {
+        let Stmt::Assign {
+            target,
+            op: AssignOp::Assign,
+            value,
+            ..
+        } = stmt
+        else {
+            return;
+        };
+        let (Some(target_key), Some(value_key)) = (reference_key(target), reference_key(value))
+        else {
+            return;
+        };
+        if target_key != value_key {
+            return;
+        }
+        self.store.emit(
+            ctx.line,
+            1,
+            "[warning] This assigns a value to itself, which has no effect",
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a plain `=` assignment whose target and value are the
@@ -38,51 +75,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        for assign in collect_assigns(&function.body) {
-            let Stmt::Assign {
-                target,
-                op: AssignOp::Assign,
-                value,
-                line,
-            } = assign
-            else {
-                continue;
-            };
-            let (Some(target_key), Some(value_key)) = (reference_key(target), reference_key(value))
-            else {
-                continue;
-            };
-            if target_key != value_key {
-                continue;
-            }
-
-            diagnostics.push(Diagnostic {
-                line: *line,
-                column: 1,
-                message: "[warning] This assigns a value to itself, which has no effect"
-                    .to_string(),
-                rule: RULE,
-            });
-        }
-    }
-    diagnostics
 }
 
 /// A canonical, case-insensitive key identifying a "simple reference"
@@ -100,41 +92,6 @@ fn reference_key(expr: &Expr) -> Option<String> {
         )),
         _ => None,
     }
-}
-
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-/// Finds every `Assign` statement in `body`, including ones nested inside
-/// `If`/`ElseIf`/`Else` branches and `While` bodies.
-fn collect_assigns(body: &[Stmt]) -> Vec<&Stmt> {
-    let mut assigns = Vec::new();
-    for stmt in body {
-        match stmt {
-            Stmt::Assign { .. } => assigns.push(stmt),
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for branch in branches {
-                    assigns.extend(collect_assigns(&branch.body));
-                }
-                assigns.extend(collect_assigns(else_body));
-            }
-            Stmt::While { body, .. } => assigns.extend(collect_assigns(body)),
-            _ => {}
-        }
-    }
-    assigns
 }
 
 #[cfg(test)]

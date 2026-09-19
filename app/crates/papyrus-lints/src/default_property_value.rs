@@ -21,13 +21,43 @@
 
 use papyrus_parser::ast::PropertyDecl;
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "default-property-value";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_property(&mut self, property: &PropertyDecl, _ctx: &mut VisitCtx<'_>) {
+        if !(property.is_auto || property.is_auto_read_only) || property.value.is_some() {
+            return;
+        }
+        let Some(literal) = default_literal_for(property) else {
+            return;
+        };
+        self.store.emit(
+            property.line,
+            1,
+            format!(
+                "[warning] {} Property '{}' has no explicit default value; consider '= {}'",
+                property.type_name.name, property.name, literal
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for `Bool`/`Int`/`Float`/`String` `Auto`/`AutoReadOnly`
@@ -41,40 +71,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    script
-        .properties
-        .iter()
-        .filter(|property| {
-            (property.is_auto || property.is_auto_read_only) && property.value.is_none()
-        })
-        .filter_map(|property| {
-            let literal = default_literal_for(property)?;
-            Some(Diagnostic {
-                line: property.line,
-                column: 1,
-                message: format!(
-                    "[warning] {} Property '{}' has no explicit default value; consider '= {}'",
-                    property.type_name.name, property.name, literal
-                ),
-                rule: RULE,
-            })
-        })
-        .collect()
 }
 
 /// The literal Papyrus would otherwise use as `property`'s implicit

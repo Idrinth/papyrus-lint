@@ -9,15 +9,50 @@
 //! block structure of the function body; a script that doesn't parse
 //! cleanly is left unchecked rather than guessed at.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, Script, Stmt};
+use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, Stmt};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "cyclomatic-complexity";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, ctx: &mut VisitCtx<'_>) {
+        let warning = ctx.config.cyclomatic_complexity_warning;
+        let error = ctx.config.cyclomatic_complexity_error.max(warning);
+        let complexity = complexity_of(function);
+        let level = if complexity > error {
+            "error"
+        } else if complexity > warning {
+            "warning"
+        } else {
+            return;
+        };
+
+        self.store.emit(
+            ctx.line,
+            1,
+            format!(
+                "[{}] Function '{}' has a cyclomatic complexity of {} (warning: {}, error: {})",
+                level, function.name, complexity, warning, error
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for functions/events whose cyclomatic complexity exceeds
@@ -38,57 +73,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, external);
-    let warning = config.cyclomatic_complexity_warning;
-    let error = config.cyclomatic_complexity_error;
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-    let error = error.max(warning);
-
-    all_functions(script)
-        .filter_map(|function| {
-            let complexity = complexity_of(function);
-            let level = if complexity > error {
-                "error"
-            } else if complexity > warning {
-                "warning"
-            } else {
-                return None;
-            };
-
-            Some(Diagnostic {
-                line: function.line,
-                column: 1,
-                message: format!(
-                    "[{}] Function '{}' has a cyclomatic complexity of {} (warning: {}, error: {})",
-                    level, function.name, complexity, warning, error
-                ),
-                rule: RULE,
-            })
-        })
-        .collect()
-}
-
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
 }
 
 fn complexity_of(function: &FunctionDecl) -> usize {

@@ -1,9 +1,9 @@
 //! Per-rule visitors and the two walkers the lint registry uses.
 //!
-//! [`Session`] registers every enabled source-level rule onto an AST walker
-//! or a token walker, walks each tree once, and emits the diagnostics those
-//! visitors collected. [`run`] is the same path for a single rule — that is
-//! what each visitor rule's `check` calls.
+//! Each visitor owns a [`Store`] of diagnostics collected during the walk.
+//! [`Session`] walks AST and tokens once, then drains those stores.
+//! [`run`] is the same path for a single rule — that is what each visitor
+//! rule's `check` calls.
 
 use papyrus_parser::ast::{
     Expr, FunctionDecl, IfBranch, ImportDecl, Param, PropertyDecl, Script, StateDecl, Stmt,
@@ -19,31 +19,65 @@ use crate::config::Config;
 use crate::external_signatures::ExternalSignatures;
 use crate::Diagnostic;
 
-/// Context passed to every visitor callback during a walk.
+/// Diagnostics collected by one visitor during a walk. `check` returns
+/// [`Store::take`] after the walk finishes.
+#[derive(Debug, Default)]
+pub struct Store {
+    issues: Vec<Diagnostic>,
+}
+
+impl Store {
+    pub fn emit(
+        &mut self,
+        line: usize,
+        column: usize,
+        message: impl Into<String>,
+        rule: &'static str,
+    ) {
+        self.issues.push(Diagnostic {
+            line,
+            column,
+            message: message.into(),
+            rule,
+        });
+    }
+
+    #[allow(dead_code)]
+    pub fn push(&mut self, diagnostic: Diagnostic) {
+        self.issues.push(diagnostic);
+    }
+
+    pub fn extend(&mut self, diagnostics: impl IntoIterator<Item = Diagnostic>) {
+        self.issues.extend(diagnostics);
+    }
+
+    pub fn take(&mut self) -> Vec<Diagnostic> {
+        std::mem::take(&mut self.issues)
+    }
+}
+
+/// Context passed to every visitor callback during a walk. Diagnostics go
+/// on the visitor's [`Store`], not here.
 pub struct VisitCtx<'a> {
     pub source: &'a str,
     pub ast: Option<&'a Script>,
     pub tokens: Option<&'a [Token]>,
     pub config: &'a Config,
     pub external: &'a mut dyn ExternalSignatures,
-    pub diagnostics: &'a mut Vec<Diagnostic>,
-}
-
-impl VisitCtx<'_> {
-    #[allow(dead_code)]
-    pub fn emit(&mut self, line: usize, column: usize, message: String, rule: &'static str) {
-        self.diagnostics.push(Diagnostic {
-            line,
-            column,
-            message,
-            rule,
-        });
-    }
+    /// Line of the node currently being visited (1-indexed). Expression
+    /// callbacks inherit the enclosing statement's line.
+    pub line: usize,
 }
 
 /// Observation-only AST visitor. Methods do not recurse; [`AstWalker`]
 /// walks the tree once and fans each node out to every registered lint.
 pub trait AstLint {
+    fn store(&mut self) -> &mut Store;
+
+    fn take_issues(&mut self) -> Vec<Diagnostic> {
+        self.store().take()
+    }
+
     fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
         let _ = ctx;
     }
@@ -90,6 +124,12 @@ pub trait AstLint {
 
 /// Observation-only token visitor. [`TokenWalker`] walks the stream once.
 pub trait TokenLint {
+    fn store(&mut self) -> &mut Store;
+
+    fn take_issues(&mut self) -> Vec<Diagnostic> {
+        self.store().take()
+    }
+
     fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
         let _ = ctx;
     }
@@ -113,7 +153,7 @@ pub enum LintVisitor {
     Tokens(Box<dyn TokenLint>),
 }
 
-/// Collects diagnostics from a full-script `check` during [`AstLint::visit_script`].
+/// Collects diagnostics from a full-script `check` into a local [`Store`].
 pub fn from_ast(
     collect: impl Fn(
             &str,
@@ -124,7 +164,10 @@ pub fn from_ast(
         ) -> Vec<Diagnostic>
         + 'static,
 ) -> LintVisitor {
-    struct Collect<F>(F);
+    struct Collect<F> {
+        collect: F,
+        store: Store,
+    }
     impl<
             F: Fn(
                 &str,
@@ -135,32 +178,35 @@ pub fn from_ast(
             ) -> Vec<Diagnostic>,
         > AstLint for Collect<F>
     {
+        fn store(&mut self) -> &mut Store {
+            &mut self.store
+        }
+
         fn visit_script(&mut self, script: &Script, ctx: &mut VisitCtx<'_>) {
-            ctx.diagnostics.extend((self.0)(
+            let issues = (self.collect)(
                 ctx.source,
                 Some(script),
                 ctx.tokens,
                 ctx.config,
                 ctx.external,
-            ));
+            );
+            self.store.extend(issues);
         }
 
         fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
             if ctx.ast.is_none() {
-                ctx.diagnostics.extend((self.0)(
-                    ctx.source,
-                    None,
-                    ctx.tokens,
-                    ctx.config,
-                    ctx.external,
-                ));
+                let issues = (self.collect)(ctx.source, None, ctx.tokens, ctx.config, ctx.external);
+                self.store.extend(issues);
             }
         }
     }
-    LintVisitor::Ast(Box::new(Collect(collect)))
+    LintVisitor::Ast(Box::new(Collect {
+        collect,
+        store: Store::default(),
+    }))
 }
 
-/// Collects diagnostics from a full-stream `check` at the start of the token walk.
+/// Collects diagnostics from a full-stream `check` into a local [`Store`].
 pub fn from_tokens(
     collect: impl Fn(
             &str,
@@ -171,7 +217,10 @@ pub fn from_tokens(
         ) -> Vec<Diagnostic>
         + 'static,
 ) -> LintVisitor {
-    struct Collect<F>(F);
+    struct Collect<F> {
+        collect: F,
+        store: Store,
+    }
     impl<
             F: Fn(
                 &str,
@@ -182,17 +231,19 @@ pub fn from_tokens(
             ) -> Vec<Diagnostic>,
         > TokenLint for Collect<F>
     {
+        fn store(&mut self) -> &mut Store {
+            &mut self.store
+        }
+
         fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
-            ctx.diagnostics.extend((self.0)(
-                ctx.source,
-                ctx.ast,
-                ctx.tokens,
-                ctx.config,
-                ctx.external,
-            ));
+            let issues = (self.collect)(ctx.source, ctx.ast, ctx.tokens, ctx.config, ctx.external);
+            self.store.extend(issues);
         }
     }
-    LintVisitor::Tokens(Box::new(Collect(collect)))
+    LintVisitor::Tokens(Box::new(Collect {
+        collect,
+        store: Store::default(),
+    }))
 }
 
 struct RegisteredAst {
@@ -304,6 +355,13 @@ impl<E: ExternalSignatures> Session<E> {
             self.tokens.finish(&mut ctx);
         }
 
+        for registered in &mut self.ast.lints {
+            registered.diagnostics = registered.lint.take_issues();
+        }
+        for registered in &mut self.tokens.lints {
+            registered.diagnostics = registered.lint.take_issues();
+        }
+
         let order = self.order.clone();
         for item in &order {
             if let Item::Direct(index) = *item {
@@ -340,6 +398,17 @@ pub fn run<E: ExternalSignatures>(
     session.collect(source, ast, tokens, config, external)
 }
 
+fn stmt_line(stmt: &Stmt) -> usize {
+    match stmt {
+        Stmt::VarDecl(variable) => variable.line,
+        Stmt::Assign { line, .. }
+        | Stmt::Expr { line, .. }
+        | Stmt::Return { line, .. }
+        | Stmt::If { line, .. }
+        | Stmt::While { line, .. } => *line,
+    }
+}
+
 struct WalkCtx<'a, E> {
     source: &'a str,
     ast: Option<&'a Script>,
@@ -350,11 +419,11 @@ struct WalkCtx<'a, E> {
 
 impl AstWalker {
     fn begin<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
-        self.notify(ctx, |lint, ctx| lint.begin(ctx));
+        self.notify(ctx, 1, |lint, ctx| lint.begin(ctx));
     }
 
     fn finish<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
-        self.notify(ctx, |lint, ctx| lint.finish(ctx));
+        self.notify(ctx, 1, |lint, ctx| lint.finish(ctx));
     }
 
     fn walk<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
@@ -368,6 +437,7 @@ impl AstWalker {
             tokens: ctx.tokens,
             config: ctx.config,
             external: ctx.external,
+            line: script.line,
         };
         fanout.visit_script(script);
     }
@@ -375,6 +445,7 @@ impl AstWalker {
     fn notify<E: ExternalSignatures>(
         &mut self,
         ctx: &mut WalkCtx<'_, E>,
+        line: usize,
         mut f: impl FnMut(&mut dyn AstLint, &mut VisitCtx<'_>),
     ) {
         let source = ctx.source;
@@ -382,15 +453,15 @@ impl AstWalker {
         let tokens = ctx.tokens;
         let config = ctx.config;
         let external: &mut dyn ExternalSignatures = ctx.external;
+        let mut visit = VisitCtx {
+            source,
+            ast,
+            tokens,
+            config,
+            external,
+            line,
+        };
         for registered in &mut self.lints {
-            let mut visit = VisitCtx {
-                source,
-                ast,
-                tokens,
-                config,
-                external,
-                diagnostics: &mut registered.diagnostics,
-            };
             f(&mut *registered.lint, &mut visit);
         }
     }
@@ -430,15 +501,15 @@ impl TokenWalker {
         let tokens = ctx.tokens;
         let config = ctx.config;
         let external: &mut dyn ExternalSignatures = ctx.external;
+        let mut visit = VisitCtx {
+            source,
+            ast,
+            tokens,
+            config,
+            external,
+            line: 1,
+        };
         for registered in &mut self.lints {
-            let mut visit = VisitCtx {
-                source,
-                ast,
-                tokens,
-                config,
-                external,
-                diagnostics: &mut registered.diagnostics,
-            };
             f(&mut *registered.lint, &mut visit);
         }
     }
@@ -451,6 +522,7 @@ struct AstFanout<'a> {
     tokens: Option<&'a [Token]>,
     config: &'a Config,
     external: &'a mut dyn ExternalSignatures,
+    line: usize,
 }
 
 impl AstFanout<'_> {
@@ -460,15 +532,16 @@ impl AstFanout<'_> {
         let tokens = self.tokens;
         let config = self.config;
         let external = &mut *self.external;
+        let line = self.line;
+        let mut ctx = VisitCtx {
+            source,
+            ast,
+            tokens,
+            config,
+            external,
+            line,
+        };
         for registered in &mut *self.lints {
-            let mut ctx = VisitCtx {
-                source,
-                ast,
-                tokens,
-                config,
-                external,
-                diagnostics: &mut registered.diagnostics,
-            };
             f(&mut *registered.lint, &mut ctx);
         }
     }
@@ -476,30 +549,36 @@ impl AstFanout<'_> {
 
 impl Visitor for AstFanout<'_> {
     fn visit_script(&mut self, script: &Script) {
+        self.line = script.line;
         self.notify(|lint, ctx| lint.visit_script(script, ctx));
         walk_script(self, script);
     }
 
     fn visit_import(&mut self, import: &ImportDecl) {
+        self.line = import.line;
         self.notify(|lint, ctx| lint.visit_import(import, ctx));
     }
 
     fn visit_property(&mut self, property: &PropertyDecl) {
+        self.line = property.line;
         self.notify(|lint, ctx| lint.visit_property(property, ctx));
         walk_property(self, property);
     }
 
     fn visit_variable(&mut self, variable: &VariableDecl) {
+        self.line = variable.line;
         self.notify(|lint, ctx| lint.visit_variable(variable, ctx));
         walk_variable(self, variable);
     }
 
     fn visit_state(&mut self, state: &StateDecl) {
+        self.line = state.line;
         self.notify(|lint, ctx| lint.visit_state(state, ctx));
         walk_state(self, state);
     }
 
     fn visit_function(&mut self, function: &FunctionDecl) {
+        self.line = function.line;
         self.notify(|lint, ctx| lint.visit_function(function, ctx));
         walk_function(self, function);
         self.notify(|lint, ctx| lint.leave_function(function, ctx));
@@ -511,11 +590,13 @@ impl Visitor for AstFanout<'_> {
     }
 
     fn visit_stmt(&mut self, stmt: &Stmt) {
+        self.line = stmt_line(stmt);
         self.notify(|lint, ctx| lint.visit_stmt(stmt, ctx));
         walk_stmt(self, stmt);
     }
 
     fn visit_if_branch(&mut self, branch: &IfBranch) {
+        self.line = branch.line;
         self.notify(|lint, ctx| lint.visit_if_branch(branch, ctx));
         walk_if_branch(self, branch);
     }
@@ -546,15 +627,15 @@ impl TokenFanout<'_> {
         let tokens = self.tokens;
         let config = self.config;
         let external = &mut *self.external;
+        let mut ctx = VisitCtx {
+            source,
+            ast,
+            tokens,
+            config,
+            external,
+            line: 1,
+        };
         for registered in &mut *self.lints {
-            let mut ctx = VisitCtx {
-                source,
-                ast,
-                tokens,
-                config,
-                external,
-                diagnostics: &mut registered.diagnostics,
-            };
             f(&mut *registered.lint, &mut ctx);
         }
     }

@@ -9,15 +9,73 @@
 //! property with the same name; a script that doesn't parse cleanly is
 //! left unchecked rather than guessed at.
 
-use papyrus_parser::ast::{Expr, FunctionDecl, Script, Stmt};
+use papyrus_parser::ast::{Expr, FunctionDecl, Stmt};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "parameter-reassignment";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+    protected: Vec<bool>,
+    params: Vec<String>,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.protected = fragment_code::protected_lines(ctx.source);
+    }
+
+    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        self.params = function
+            .params
+            .iter()
+            .map(|param| param.name.clone())
+            .collect();
+    }
+
+    fn leave_function(&mut self, _function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+        self.params.clear();
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt, ctx: &mut VisitCtx<'_>) {
+        let Stmt::Assign { target, .. } = stmt else {
+            return;
+        };
+        let Expr::Identifier(name) = target else {
+            return;
+        };
+        if self.protected.get(ctx.line).copied().unwrap_or(false) {
+            return;
+        }
+        let Some(param) = self
+            .params
+            .iter()
+            .find(|param| param.eq_ignore_ascii_case(name))
+        else {
+            return;
+        };
+
+        self.store.emit(
+            ctx.line,
+            1,
+            format!(
+                "[warning] Parameter '{param}' is reassigned inside its function; consider using a local variable instead"
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a function/event parameter reassigned somewhere in
@@ -35,92 +93,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-    let protected = fragment_code::protected_lines(source);
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        if function.params.is_empty() {
-            continue;
-        }
-        for assign in collect_assigns(&function.body) {
-            let Stmt::Assign { target, line, .. } = assign else {
-                continue;
-            };
-            let Expr::Identifier(name) = target else {
-                continue;
-            };
-            if protected.get(*line).copied().unwrap_or(false) {
-                continue;
-            }
-            let Some(param) = function
-                .params
-                .iter()
-                .find(|param| param.name.eq_ignore_ascii_case(name))
-            else {
-                continue;
-            };
-
-            diagnostics.push(Diagnostic {
-                line: *line,
-                column: 1,
-                message: format!(
-                    "[warning] Parameter '{}' is reassigned inside its function; consider using a local variable instead",
-                    param.name
-                ),
-                rule: RULE,
-            });
-        }
-    }
-    diagnostics
-}
-
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-/// Finds every `Assign` statement in `body`, including ones nested inside
-/// `If`/`ElseIf`/`Else` branches and `While` bodies.
-fn collect_assigns(body: &[Stmt]) -> Vec<&Stmt> {
-    let mut assigns = Vec::new();
-    for stmt in body {
-        match stmt {
-            Stmt::Assign { .. } => assigns.push(stmt),
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for branch in branches {
-                    assigns.extend(collect_assigns(&branch.body));
-                }
-                assigns.extend(collect_assigns(else_body));
-            }
-            Stmt::While { body, .. } => assigns.extend(collect_assigns(body)),
-            _ => {}
-        }
-    }
-    assigns
 }
 
 #[cfg(test)]

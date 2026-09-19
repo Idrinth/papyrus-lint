@@ -13,15 +13,65 @@
 //! unflagged rather than guessed at. Always reported as a `[warning]`,
 //! regardless of how far below the minimum the value is.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp};
+use papyrus_parser::ast::{BinaryOp, Expr, Literal, UnaryOp};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "short-wait-interval";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let Expr::Call { callee, args, .. } = expr else {
+            return;
+        };
+        let Some(function) = matching_function(callee) else {
+            return;
+        };
+        let Some(argument) = args.first() else {
+            return;
+        };
+        let value_expr = match argument {
+            Expr::NamedArg { value, .. } => value,
+            other => other,
+        };
+        let Some(value) = eval_const(value_expr) else {
+            return;
+        };
+        let Some((number, _)) = as_number(&value) else {
+            return;
+        };
+        let minimum = ctx.config.min_wait_interval;
+        if number >= minimum {
+            return;
+        }
+        self.store.emit(
+            ctx.line,
+            1,
+            format!(
+                "[warning] {}({number}) is below the configured minimum \
+                 interval of {minimum}; an interval that short runs far \
+                 more often than typically useful and can add up to \
+                 meaningful performance overhead",
+                function.name
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 pub(crate) struct WaitFunction {
@@ -69,145 +119,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, external);
-    let minimum = config.min_wait_interval;
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        check_body(&function.body, minimum, &mut diagnostics);
-    }
-    diagnostics
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn check_body(body: &[Stmt], minimum: f64, diagnostics: &mut Vec<Diagnostic>) {
-    for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                if let Some(value) = &decl.value {
-                    walk_expr(value, minimum, diagnostics);
-                }
-            }
-            Stmt::Assign { target, value, .. } => {
-                walk_expr(target, minimum, diagnostics);
-                walk_expr(value, minimum, diagnostics);
-            }
-            Stmt::Expr { value, .. } => walk_expr(value, minimum, diagnostics),
-            Stmt::Return {
-                value: Some(value), ..
-            } => {
-                walk_expr(value, minimum, diagnostics);
-            }
-            Stmt::Return { value: None, .. } => {}
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for IfBranch {
-                    condition, body, ..
-                } in branches
-                {
-                    walk_expr(condition, minimum, diagnostics);
-                    check_body(body, minimum, diagnostics);
-                }
-                check_body(else_body, minimum, diagnostics);
-            }
-            Stmt::While {
-                condition, body, ..
-            } => {
-                walk_expr(condition, minimum, diagnostics);
-                check_body(body, minimum, diagnostics);
-            }
-        }
-    }
-}
-
-fn walk_expr(expr: &Expr, minimum: f64, diagnostics: &mut Vec<Diagnostic>) {
-    if let Expr::Call {
-        callee,
-        args,
-        line,
-        col,
-    } = expr
-    {
-        if let Some(function) = matching_function(callee) {
-            if let Some(argument) = args.first() {
-                let value_expr = match argument {
-                    Expr::NamedArg { value, .. } => value,
-                    other => other,
-                };
-                if let Some(value) = eval_const(value_expr) {
-                    if let Some((number, _)) = as_number(&value) {
-                        if number < minimum {
-                            diagnostics.push(Diagnostic {
-                                line: *line,
-                                column: *col,
-                                message: format!(
-                                    "[warning] {}({number}) is below the configured minimum \
-                                     interval of {minimum}; an interval that short runs far \
-                                     more often than typically useful and can add up to \
-                                     meaningful performance overhead",
-                                    function.name
-                                ),
-                                rule: RULE,
-                            });
-                        }
-                    }
-                }
-                walk_expr(value_expr, minimum, diagnostics);
-            }
-            for arg in args.iter().skip(1) {
-                walk_expr(arg, minimum, diagnostics);
-            }
-            walk_expr(callee, minimum, diagnostics);
-            return;
-        }
-        walk_expr(callee, minimum, diagnostics);
-        for arg in args {
-            walk_expr(arg, minimum, diagnostics);
-        }
-        return;
-    }
-
-    match expr {
-        Expr::Binary { left, right, .. } => {
-            walk_expr(left, minimum, diagnostics);
-            walk_expr(right, minimum, diagnostics);
-        }
-        Expr::Unary { operand, .. } => walk_expr(operand, minimum, diagnostics),
-        Expr::Member { object, .. } => walk_expr(object, minimum, diagnostics),
-        Expr::Index { object, index } => {
-            walk_expr(object, minimum, diagnostics);
-            walk_expr(index, minimum, diagnostics);
-        }
-        Expr::Cast { value, .. } => walk_expr(value, minimum, diagnostics),
-        Expr::NewArray { size, .. } => walk_expr(size, minimum, diagnostics),
-        Expr::NamedArg { value, .. } => walk_expr(value, minimum, diagnostics),
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent | Expr::Call { .. } => {
-        }
-    }
 }
 
 /// Whether `callee` is a call to one of [`WAIT_FUNCTIONS`], honoring each
