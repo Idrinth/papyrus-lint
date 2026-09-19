@@ -3,8 +3,10 @@ use crate::bundled_blob::{self, PackedEntry};
 use std::io::Read;
 use std::path::Path;
 
-fn zip_path() -> std::path::PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../shared/skyrim-scripts.zip")
+fn zip_path(archive_name: &str) -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../shared")
+        .join(archive_name)
 }
 
 fn decode_psc_bytes(bytes: &[u8]) -> String {
@@ -13,8 +15,9 @@ fn decode_psc_bytes(bytes: &[u8]) -> String {
     })
 }
 
-fn zip_script(file_name: &str) -> String {
-    let file = std::fs::File::open(zip_path()).unwrap();
+fn zip_script(archive_name: &str, file_name: &str) -> String {
+    let zip_path = zip_path(archive_name);
+    let file = std::fs::File::open(&zip_path).unwrap();
     let mut archive = zip::ZipArchive::new(file).unwrap();
     let suffix = format!("/{file_name}");
     for i in 0..archive.len() {
@@ -26,7 +29,7 @@ fn zip_script(file_name: &str) -> String {
             return decode_psc_bytes(&bytes);
         }
     }
-    panic!("no {file_name} in {}", zip_path().display());
+    panic!("no {file_name} in {}", zip_path.display());
 }
 
 #[test]
@@ -69,7 +72,7 @@ fn bundled_cache_covers_the_vanilla_script_archive() {
 
 #[test]
 fn actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
-    let source = zip_script("Actor.psc");
+    let source = zip_script("skyrim-scripts.zip", "Actor.psc");
     let missing = Path::new("/does/not/exist/Actor.psc");
     let ast = ast_for(&source).expect("Actor.psc should be in the bundled cache");
     assert_eq!(ast.name, "Actor");
@@ -84,19 +87,28 @@ fn actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
 
 #[test]
 fn form_and_game_are_bundled_hits() {
-    let form = zip_script("Form.psc");
+    let form = zip_script("skyrim-scripts.zip", "Form.psc");
     let ast = ast_for(&form).expect("Form.psc should be in the bundled cache");
     assert_eq!(ast.name, "Form");
     assert!(ast.extends.is_none());
 
-    let game = zip_script("Game.psc");
+    let game = zip_script("skyrim-scripts.zip", "Game.psc");
     let ast = ast_for(&game).expect("Game.psc should be in the bundled cache");
     assert_eq!(ast.name, "Game");
 }
 
 #[test]
+fn skse_psc_is_a_bundled_hit() {
+    let source = zip_script("skyrim-extender-scripts.zip", "SKSE.psc");
+    let ast = ast_for(&source).expect("SKSE.psc should be in the bundled cache");
+    assert_eq!(ast.name, "SKSE");
+    assert_eq!(tokens_for(&source), papyrus_parser::tokenize(&source).ok());
+    assert!(prime(&source));
+}
+
+#[test]
 fn a_modified_vanilla_script_is_a_bundled_miss() {
-    let mut source = zip_script("Actor.psc");
+    let mut source = zip_script("skyrim-scripts.zip", "Actor.psc");
     source.push_str("\n; user edit\n");
     assert!(ast_for(&source).is_none());
     assert!(tokens_for(&source).is_none());
@@ -113,7 +125,7 @@ fn unrelated_source_is_a_bundled_miss() {
 
 #[test]
 fn bundled_actor_matches_a_fresh_parse_and_tokenize() {
-    let source = zip_script("Actor.psc");
+    let source = zip_script("skyrim-scripts.zip", "Actor.psc");
     let ast = ast_for(&source).unwrap();
     let tokens = tokens_for(&source).unwrap();
     assert_eq!(ast, papyrus_parser::parse(&source).unwrap());
@@ -122,7 +134,7 @@ fn bundled_actor_matches_a_fresh_parse_and_tokenize() {
 
 #[test]
 fn ensure_primed_skips_the_disk_cache_for_a_bundled_script() {
-    let source = zip_script("ObjectReference.psc");
+    let source = zip_script("skyrim-scripts.zip", "ObjectReference.psc");
     let missing = Path::new("/does/not/exist/ObjectReference.psc");
     crate::ensure_primed(missing, &source);
     assert_eq!(
@@ -137,7 +149,7 @@ fn ensure_primed_skips_the_disk_cache_for_a_bundled_script() {
 
 #[test]
 fn bundled_lookups_are_safe_under_concurrent_use() {
-    let source = zip_script("Quest.psc");
+    let source = zip_script("skyrim-scripts.zip", "Quest.psc");
     std::thread::scope(|scope| {
         for _ in 0..8 {
             let source = &source;

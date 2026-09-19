@@ -1,8 +1,9 @@
-//! Content-addressed AST/token cache of the vanilla Skyrim scripts in
-//! `shared/skyrim-scripts.zip`, compiled into the binary by `build.rs`.
+//! Content-addressed AST/token cache of the Skyrim and SKSE scripts in
+//! `shared/skyrim-scripts.zip` and `shared/skyrim-extender-scripts.zip`,
+//! compiled into the binary by `build.rs`.
 //!
 //! Lookups are keyed only by an MD5 of the decoded source text, so a
-//! stock `Actor.psc` (or any other vanilla script) hits regardless of
+//! known `Actor.psc`, `SKSE.psc`, or other bundled script hits regardless of
 //! extract path or mtime — the user's Skyrim install, Docker's unpacked
 //! zip, and `--script-root` copies of the same bytes all share one entry.
 //! A modified copy (SKSE patch, user edit) has a different digest and
@@ -63,7 +64,7 @@ fn lookup(source: &str) -> Option<(&'static BundledCache, IndexEntry)> {
     Some((cache, entry))
 }
 
-/// Cached AST for `source` when it matches a bundled vanilla script.
+/// Cached AST for `source` when it matches a bundled script.
 /// Also primes `papyrus_parser`'s in-memory memoization, matching
 /// [`crate::ops::get_in`].
 pub(crate) fn ast_for(source: &str) -> Option<papyrus_parser::ast::Script> {
@@ -73,7 +74,7 @@ pub(crate) fn ast_for(source: &str) -> Option<papyrus_parser::ast::Script> {
     Some(ast)
 }
 
-/// Cached tokens for `source` when it matches a bundled vanilla script.
+/// Cached tokens for `source` when it matches a bundled script.
 /// Also primes `papyrus_parser`'s in-memory memoization, matching
 /// [`crate::ops::get_tokens_in`].
 pub(crate) fn tokens_for(source: &str) -> Option<Vec<papyrus_parser::token::Token>> {
@@ -84,7 +85,7 @@ pub(crate) fn tokens_for(source: &str) -> Option<Vec<papyrus_parser::token::Toke
 }
 
 /// Primes both in-memory caches from the bundled blob when `source` is a
-/// known vanilla script. Returns `true` when both an AST and a token
+/// known bundled script. Returns `true` when both an AST and a token
 /// stream were present, so [`crate::ensure_primed`] can skip the disk
 /// cache (and its process-wide lock) entirely.
 pub(crate) fn prime(source: &str) -> bool {

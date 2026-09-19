@@ -57,10 +57,11 @@ fn store_lookup_script(path: PathBuf, mtime_secs: u64, script: Option<ScriptFunc
 }
 
 /// Parse `path` through [`crate::ast_cache`], the same path linted source
-/// files take via `ast_cache::ensure_primed`. Vanilla Skyrim scripts whose
-/// content matches `shared/skyrim-scripts.zip` hit the cache's bundled
-/// blob and never take its disk lock, so parallel workers resolving the
-/// same base type do not serialize on that lookup.
+/// files take via `ast_cache::ensure_primed`. Bundled Skyrim/SKSE scripts
+/// whose content matches `shared/skyrim-scripts.zip` or
+/// `shared/skyrim-extender-scripts.zip` hit the cache's bundled blob and never
+/// take its disk lock, so parallel workers resolving the same base type do not
+/// serialize on that lookup.
 fn load_script_functions(path: &Path) -> Option<ScriptFunctions> {
     let source = read_psc_source(path).ok()?;
     let parsed = if let Some(cached) = crate::ast_cache::get(path, &source) {
@@ -137,14 +138,14 @@ impl FunctionTable {
     /// script's content and modification time haven't changed since it was
     /// last parsed, so repeatedly resolving the same cross-script lookup
     /// (across separate CLI invocations, or separate desktop app commands)
-    /// skips re-parsing it. Vanilla scripts whose content still matches
-    /// `shared/skyrim-scripts.zip` hit that crate's bundled blob instead
-    /// of the on-disk cache, so the first analysis of a project does not
-    /// re-parse `Actor`/`Form`/… either, and parallel workers resolving
-    /// those base types do not serialize on the disk-cache lock. Scripts
-    /// found only under lookup roots are also kept in a process-wide table
-    /// keyed by path+mtime, so a later `FunctionTable` in this process does
-    /// not re-read them either.
+    /// skips re-parsing it. Bundled scripts whose content still matches
+    /// `shared/skyrim-scripts.zip` or `shared/skyrim-extender-scripts.zip` hit
+    /// that crate's bundled blob instead of the on-disk cache, so the first
+    /// analysis of a project does not re-parse `Actor`/`Form`/… either, and
+    /// parallel workers resolving those base types do not serialize on the
+    /// disk-cache lock. Scripts found only under lookup roots are also kept in
+    /// a process-wide table keyed by path+mtime, so a later `FunctionTable` in
+    /// this process does not re-read them either.
     pub(super) fn ensure_loaded(&mut self, type_name: &str) {
         let name_lower = type_name.to_ascii_lowercase();
         let resolved = self.resolve_script_path_kind(&name_lower);

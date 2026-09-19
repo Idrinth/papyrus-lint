@@ -10,16 +10,17 @@
 //! content, and the linter version that wrote the entry -- if any of the
 //! three is no longer valid, it's treated as a miss and the caller re-parses.
 //!
-//! Vanilla Skyrim scripts shipped in `shared/skyrim-scripts.zip` are also
-//! compiled into the binary as a content-addressed AST/token blob (see
-//! [`bundled`]). [`get`]/[`get_tokens`]/[`ensure_primed`] consult that blob
-//! first, keyed only by an MD5 of the decoded source, so a stock `Actor.psc`
-//! hits on the first analysis even when the file was just extracted to a
-//! new path (Docker, `--script-root`, the user's Skyrim install). A bundled
-//! hit does not take the disk-cache lock below, so parallel lint workers
-//! resolving the same base type do not serialize on each other for that
-//! lookup. A modified copy of a vanilla script has a different digest and
-//! falls through to the on-disk cache / a fresh parse as before.
+//! Vanilla Skyrim and SKSE scripts shipped in `shared/skyrim-scripts.zip` and
+//! `shared/skyrim-extender-scripts.zip` are also compiled into the binary as
+//! a content-addressed AST/token blob (see [`bundled`]). [`get`]/
+//! [`get_tokens`]/[`ensure_primed`] consult that blob first, keyed only by an
+//! MD5 of the decoded source, so a stock `Actor.psc` or `SKSE.psc` hits on the
+//! first analysis even when the file was just extracted to a new path
+//! (Docker, `--script-root`, the user's Skyrim install). A bundled hit does
+//! not take the disk-cache lock below, so parallel lint workers resolving the
+//! same base type do not serialize on each other for that lookup. A modified
+//! copy of a bundled script has a different digest and falls through to the
+//! on-disk cache / a fresh parse as before.
 //!
 //! The version check is a minimum-compatible-version check against
 //! [`version::MIN_COMPATIBLE_VERSION`], not an exact match against the
@@ -77,7 +78,7 @@
 //! on-disk representation (paths, freshness metadata, read/write),
 //! [`version`] is the compatibility check against
 //! [`version::MIN_COMPATIBLE_VERSION`], [`bundled`] is the content-addressed
-//! vanilla-script blob, and [`ops`] is the `get`/`put`/`ensure_primed`
+//! bundled-script blob, and [`ops`] is the `get`/`put`/`ensure_primed`
 //! logic built on top of the on-disk primitives, parameterized over a
 //! cache directory so it can be tested without touching the real one. This
 //! file wraps [`ops`] with [`CACHE_LOCK`] and the real cache directory to
@@ -98,8 +99,8 @@ mod version;
 /// hits never take this lock.
 static CACHE_LOCK: Mutex<()> = Mutex::new(());
 
-/// Returns the cached AST for `source_path` if the bundled vanilla-script
-/// cache knows `source`, or if the on-disk cache has a still-valid entry
+/// Returns the cached AST for `source_path` if the bundled-script cache knows
+/// `source`, or if the on-disk cache has a still-valid entry
 /// for `source`'s current content, `source_path`'s modification time, and
 /// a linter version at or above [`version::MIN_COMPATIBLE_VERSION`].
 /// Returns `None` on any cache miss, mismatch, or error -- the caller
@@ -128,10 +129,10 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
     }
 }
 
-/// Returns the cached tokens for `source_path` if the bundled
-/// vanilla-script cache knows `source`, or if the on-disk cache has a
-/// still-valid entry for `source`'s current content, `source_path`'s
-/// modification time, and a linter version at or above
+/// Returns the cached tokens for `source_path` if the bundled-script cache
+/// knows `source`, or if the on-disk cache has a still-valid entry for
+/// `source`'s current content, `source_path`'s modification time, and a linter
+/// version at or above
 /// [`version::MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss,
 /// mismatch, or error -- the caller should tokenize `source` fresh in that
 /// case. See [`ops::get_tokens_in`] for the in-memory priming a disk hit
@@ -168,8 +169,8 @@ pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::to
 /// a token stream ready for `source` before something that parses/
 /// tokenizes `source` itself -- typically `papyrus_lints::lint()`/
 /// `repair()`, called with only the raw source text, never `source_path` --
-/// runs. A bundled vanilla-script hit primes both without touching the
-/// disk cache (or its lock). A disk cache hit for either already primes
+/// runs. A bundled-script hit primes both without touching the disk cache (or
+/// its lock). A disk cache hit for either already primes
 /// the matching in-memory cache as a side effect; a miss for either
 /// parses/tokenizes `source` once here instead (which populates the
 /// in-memory cache the same way a hit would) and writes the result to the
