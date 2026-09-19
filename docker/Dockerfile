@@ -15,7 +15,7 @@ COPY Scripts.zip /usr/local/share/papyrus-lint/Scripts.zip
 RUN PapyrusLinterCLI --version \
     && unzip -j -q /usr/local/share/papyrus-lint/Scripts.zip -d /base-scripts \
     && chown -R papyrus-lint:papyrus-lint /skyrim-scripts \
-    && rm Scripts.zip
+    && rm /usr/local/share/papyrus-lint/Scripts.zip
 
 # Generate the selected preset's config and point lookup roots at the
 # container paths documented in the README (/project, /cache, /base-scripts).
