@@ -21,6 +21,7 @@ mod external_signatures;
 mod fragment_code;
 mod registry;
 mod state_count;
+mod state_reference;
 pub mod tags;
 mod visitor;
 
