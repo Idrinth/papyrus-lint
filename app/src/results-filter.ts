@@ -3,7 +3,7 @@ import { type Severity, SEVERITIES, severityOf } from "./main-severity";
 import { currentProjectDir } from "./project-state";
 import { relativePath } from "./path";
 import { type ActiveFilters, type FilteredIssuesFile } from "./results-export-types";
-export let ruleTagsByRule: Map<string, RuleTagsInfo> = new Map();
+export const ruleTagsByRule: Map<string, RuleTagsInfo> = new Map();
 
 export let filenameFilterEl: HTMLInputElement | null;
 export let autoFixableFilterEl: HTMLInputElement | null;
