@@ -11,13 +11,72 @@
 //! function body. A script that doesn't parse cleanly is left unchecked
 //! rather than guessed at.
 
+use papyrus_parser::ast::{PropertyDecl, VariableDecl};
+
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "script-name-collision";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_property(&mut self, property: &PropertyDecl, ctx: &mut VisitCtx<'_>) {
+        let Some(script) = ctx.ast else {
+            return;
+        };
+        if !property.name.eq_ignore_ascii_case(&script.name) {
+            return;
+        }
+        self.store.emit(
+            property.line,
+            1,
+            format!(
+                "[error] Property '{}' may not share its name with the script it's declared in ('{}')",
+                property.name, script.name
+            ),
+            RULE,
+        );
+    }
+
+    fn visit_variable(&mut self, variable: &VariableDecl, ctx: &mut VisitCtx<'_>) {
+        let Some(script) = ctx.ast else {
+            return;
+        };
+        // `visit_variable` also fires for function-local `VarDecl`s; this lint
+        // only flags script-level declarations.
+        if !script
+            .variables
+            .iter()
+            .any(|declared| std::ptr::eq(declared, variable))
+        {
+            return;
+        }
+        if !variable.name.eq_ignore_ascii_case(&script.name) {
+            return;
+        }
+        self.store.emit(
+            variable.line,
+            1,
+            format!(
+                "[error] Variable '{}' may not share its name with the script it's declared in ('{}')",
+                variable.name, script.name
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks `source` for a script-level `Property` or variable declaration
@@ -33,49 +92,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for property in &script.properties {
-        if property.name.eq_ignore_ascii_case(&script.name) {
-            diagnostics.push(Diagnostic {
-                line: property.line,
-                column: 1,
-                message: format!(
-                    "[error] Property '{}' may not share its name with the script it's declared in ('{}')",
-                    property.name, script.name
-                ),
-                rule: RULE,
-            });
-        }
-    }
-    for variable in &script.variables {
-        if variable.name.eq_ignore_ascii_case(&script.name) {
-            diagnostics.push(Diagnostic {
-                line: variable.line,
-                column: 1,
-                message: format!(
-                    "[error] Variable '{}' may not share its name with the script it's declared in ('{}')",
-                    variable.name, script.name
-                ),
-                rule: RULE,
-            });
-        }
-    }
-    diagnostics
 }
 
 #[cfg(test)]

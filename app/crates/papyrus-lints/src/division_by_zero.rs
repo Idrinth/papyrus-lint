@@ -8,15 +8,52 @@
 //! `Parent`, a member/index access, a cast, or a `new` array is left
 //! unflagged rather than guessed at.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp};
+use papyrus_parser::ast::{BinaryOp, Expr, Literal, UnaryOp};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "division-by-zero";
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let Expr::Binary { op, right, .. } = expr else {
+            return;
+        };
+        if !matches!(op, BinaryOp::Div | BinaryOp::Mod) {
+            return;
+        }
+        let Some(value) = eval_const(right) else {
+            return;
+        };
+        if !is_zero(&value) {
+            return;
+        }
+        let operator = if *op == BinaryOp::Div { "/" } else { "%" };
+        self.store.emit(
+            ctx.line,
+            1,
+            format!(
+                "[warning] Right-hand side of `{operator}` is always zero; this \
+                 divides by zero at runtime"
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
 }
 
 /// Checks every `/` and `%` expression in `source` and flags the ones whose
@@ -30,141 +67,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        check_body(&function.body, &mut diagnostics);
-    }
-    diagnostics
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
-    for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                if let Some(value) = &decl.value {
-                    walk_expr(value, decl.line, diagnostics);
-                }
-            }
-            Stmt::Assign {
-                target,
-                value,
-                line,
-                ..
-            } => {
-                walk_expr(target, *line, diagnostics);
-                walk_expr(value, *line, diagnostics);
-            }
-            Stmt::Expr { value, line } => walk_expr(value, *line, diagnostics),
-            Stmt::Return {
-                value: Some(value),
-                line,
-            } => {
-                walk_expr(value, *line, diagnostics);
-            }
-            Stmt::Return { value: None, .. } => {}
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for IfBranch {
-                    condition,
-                    body,
-                    line,
-                    ..
-                } in branches
-                {
-                    walk_expr(condition, *line, diagnostics);
-                    check_body(body, diagnostics);
-                }
-                check_body(else_body, diagnostics);
-            }
-            Stmt::While {
-                condition,
-                body,
-                line,
-                ..
-            } => {
-                walk_expr(condition, *line, diagnostics);
-                check_body(body, diagnostics);
-            }
-        }
-    }
-}
-
-/// Recursively walks `expr` looking for `/`/`%` by a constant zero.
-///
-/// `line` is the enclosing statement's line, since expressions don't carry
-/// their own position in this AST.
-fn walk_expr(expr: &Expr, line: usize, diagnostics: &mut Vec<Diagnostic>) {
-    if let Expr::Binary { left, op, right } = expr {
-        if matches!(op, BinaryOp::Div | BinaryOp::Mod) {
-            if let Some(value) = eval_const(right) {
-                if is_zero(&value) {
-                    let operator = if *op == BinaryOp::Div { "/" } else { "%" };
-                    diagnostics.push(Diagnostic {
-                        line,
-                        column: 1,
-                        message: format!(
-                            "[warning] Right-hand side of `{operator}` is always zero; this \
-                             divides by zero at runtime"
-                        ),
-                        rule: RULE,
-                    });
-                }
-            }
-        }
-        walk_expr(left, line, diagnostics);
-        walk_expr(right, line, diagnostics);
-        return;
-    }
-
-    match expr {
-        Expr::Unary { operand, .. } => walk_expr(operand, line, diagnostics),
-        Expr::Call { callee, args, .. } => {
-            walk_expr(callee, line, diagnostics);
-            for arg in args {
-                walk_expr(arg, line, diagnostics);
-            }
-        }
-        Expr::Member { object, .. } => walk_expr(object, line, diagnostics),
-        Expr::Index { object, index } => {
-            walk_expr(object, line, diagnostics);
-            walk_expr(index, line, diagnostics);
-        }
-        Expr::Cast { value, .. } => walk_expr(value, line, diagnostics),
-        Expr::NewArray { size, .. } => walk_expr(size, line, diagnostics),
-        Expr::NamedArg { value, .. } => walk_expr(value, line, diagnostics),
-        Expr::Literal(_)
-        | Expr::Identifier(_)
-        | Expr::Self_
-        | Expr::Parent
-        | Expr::Binary { .. } => {}
-    }
 }
 
 fn is_zero(value: &Literal) -> bool {

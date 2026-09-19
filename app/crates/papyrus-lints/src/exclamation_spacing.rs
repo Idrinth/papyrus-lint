@@ -3,13 +3,57 @@
 //! negation is easier to spot at a glance.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::TokenKind;
+use papyrus_parser::token::{Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "exclamation-spacing";
 
+#[derive(Default)]
+struct Collect {
+    store: crate::visitor::Store,
+    protected: Vec<bool>,
+    line_starts: Vec<usize>,
+}
+
+impl crate::visitor::TokenLint for Collect {
+    fn store(&mut self) -> &mut crate::visitor::Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
+        self.protected = fragment_code::protected_lines(ctx.source);
+        self.line_starts = line_starts(ctx.source);
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        _index: usize,
+        _tokens: &[Token],
+        ctx: &mut crate::visitor::VisitCtx<'_>,
+    ) {
+        if token.kind != TokenKind::Not || self.protected[token.line] {
+            return;
+        }
+        let offset = self.line_starts[token.line - 1] + token.col - 1;
+        let bytes = ctx.source.as_bytes();
+        let (start, end) = whitespace_run(bytes, offset);
+        if starts_another_negation(bytes, start, end) {
+            return;
+        }
+        if !at_end_of_line(bytes, end) && !is_single_space(bytes, start, end) {
+            self.store.emit(
+                token.line,
+                token.col,
+                "[warning] '!' must be followed by exactly one space",
+                RULE,
+            );
+        }
+    }
+}
+
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// Checks for a `!` negation operator (never `!=`, which the lexer tokenizes
@@ -33,44 +77,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-    let protected = fragment_code::protected_lines(source);
-    let line_starts = line_starts(source);
-    let bytes = source.as_bytes();
-
-    let mut diagnostics = Vec::new();
-    for token in tokens {
-        if token.kind != TokenKind::Not || protected[token.line] {
-            continue;
-        }
-        let offset = line_starts[token.line - 1] + token.col - 1;
-        let (start, end) = whitespace_run(bytes, offset);
-        if starts_another_negation(bytes, start, end) {
-            continue;
-        }
-        if !at_end_of_line(bytes, end) && !is_single_space(bytes, start, end) {
-            diagnostics.push(Diagnostic {
-                line: token.line,
-                column: token.col,
-                message: "[warning] '!' must be followed by exactly one space".to_string(),
-                rule: RULE,
-            });
-        }
-    }
-    diagnostics
 }
 
 /// Rewrites the whitespace immediately after every `!` negation operator so

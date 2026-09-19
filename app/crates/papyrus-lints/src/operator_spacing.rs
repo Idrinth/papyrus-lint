@@ -2,13 +2,70 @@
 //! and comparison (`==`, `!=`, `>`, `<`, `>=`, `<=`) operators.
 
 use crate::{fragment_code, Diagnostic};
-use papyrus_parser::token::TokenKind;
+use papyrus_parser::token::{Token, TokenKind};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "operator-spacing";
 
+#[derive(Default)]
+struct Collect {
+    store: crate::visitor::Store,
+    protected: Vec<bool>,
+    line_starts: Vec<usize>,
+}
+
+impl crate::visitor::TokenLint for Collect {
+    fn store(&mut self) -> &mut crate::visitor::Store {
+        &mut self.store
+    }
+
+    fn begin(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
+        self.protected = fragment_code::protected_lines(ctx.source);
+        self.line_starts = line_starts(ctx.source);
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        _index: usize,
+        _tokens: &[Token],
+        ctx: &mut crate::visitor::VisitCtx<'_>,
+    ) {
+        let Some(text) = operator_text(&token.kind) else {
+            return;
+        };
+        if self.protected[token.line] {
+            return;
+        }
+        let offset = self.line_starts[token.line - 1] + token.col - 1;
+        let end = offset + text.len();
+        let bytes = ctx.source.as_bytes();
+
+        if let Some((start, len)) = leading_gap(bytes, offset) {
+            if !(len == 1 && bytes[start] == b' ') {
+                self.store.emit(
+                    token.line,
+                    token.col,
+                    format!("[warning] '{text}' must be preceded by exactly one space"),
+                    RULE,
+                );
+            }
+        }
+        if let Some((start, gend)) = trailing_gap(bytes, end) {
+            if !(gend - start == 1 && bytes[start] == b' ') {
+                self.store.emit(
+                    token.line,
+                    token.col,
+                    format!("[warning] '{text}' must be followed by exactly one space"),
+                    RULE,
+                );
+            }
+        }
+    }
+}
+
 pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_tokens(lint_issues)
+    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// The source text of a token this lint cares about, or `None` for every
@@ -42,57 +99,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (ast, config, external);
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-    let protected = fragment_code::protected_lines(source);
-    let line_starts = line_starts(source);
-    let bytes = source.as_bytes();
-
-    let mut diagnostics = Vec::new();
-    for token in tokens {
-        let Some(text) = operator_text(&token.kind) else {
-            continue;
-        };
-        if protected[token.line] {
-            continue;
-        }
-        let offset = line_starts[token.line - 1] + token.col - 1;
-        let end = offset + text.len();
-
-        if let Some((start, len)) = leading_gap(bytes, offset) {
-            if !(len == 1 && bytes[start] == b' ') {
-                diagnostics.push(Diagnostic {
-                    line: token.line,
-                    column: token.col,
-                    message: format!("[warning] '{text}' must be preceded by exactly one space"),
-                    rule: RULE,
-                });
-            }
-        }
-        if let Some((start, gend)) = trailing_gap(bytes, end) {
-            if !(gend - start == 1 && bytes[start] == b' ') {
-                diagnostics.push(Diagnostic {
-                    line: token.line,
-                    column: token.col,
-                    message: format!("[warning] '{text}' must be followed by exactly one space"),
-                    rule: RULE,
-                });
-            }
-        }
-    }
-    diagnostics
 }
 
 /// Normalizes the whitespace on either side of every logical/comparison

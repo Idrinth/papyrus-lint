@@ -13,22 +13,69 @@
 //! position in the call, not by its name, the same way every other
 //! argument-inspecting lint in this crate does.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, UnaryOp};
+use papyrus_parser::ast::{BinaryOp, Expr, Literal, UnaryOp};
 
+use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "invalid-random-range";
-
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::from_ast(lint_issues)
-}
 
 /// The native `Utility` singleton functions this lint checks, both only
 /// ever called through that literal script name (see
 /// `shared/rules/data/native-globals.yaml`), the same way [`crate::short_wait_interval`]
 /// treats `Utility.Wait`.
 const RANDOM_FUNCTIONS: &[&str] = &["RandomInt", "RandomFloat"];
+
+#[derive(Default)]
+struct Collect {
+    store: Store,
+}
+
+impl AstLint for Collect {
+    fn store(&mut self) -> &mut Store {
+        &mut self.store
+    }
+
+    fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let Expr::Call { callee, args, .. } = expr else {
+            return;
+        };
+        let Some(name) = matching_function(callee) else {
+            return;
+        };
+        let (Some(min_arg), Some(max_arg)) = (args.first(), args.get(1)) else {
+            return;
+        };
+        let (Some(min_literal), Some(max_literal)) = (
+            eval_const(unwrap_value(min_arg)),
+            eval_const(unwrap_value(max_arg)),
+        ) else {
+            return;
+        };
+        let (Some((min, _)), Some((max, _))) = (as_number(&min_literal), as_number(&max_literal))
+        else {
+            return;
+        };
+        if min < max {
+            return;
+        }
+        self.store.emit(
+            ctx.line,
+            1,
+            format!(
+                "[error] Utility.{name}({min}, {max}): the first argument \
+                 must be smaller than the second, or the call never \
+                 produces any actual randomness"
+            ),
+            RULE,
+        );
+    }
+}
+
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Ast(Box::new(Collect::default()))
+}
 
 /// Checks every call to `Utility.RandomInt`/`Utility.RandomFloat` in
 /// `source`, flagging one whose first two arguments both fold to constant
@@ -42,142 +89,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn lint_issues(
-    source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
-    config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
-) -> Vec<Diagnostic> {
-    let _ = (source, tokens, config, external);
-
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        check_body(&function.body, &mut diagnostics);
-    }
-    diagnostics
-}
-
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
-    )
-}
-
-fn check_body(body: &[Stmt], diagnostics: &mut Vec<Diagnostic>) {
-    for stmt in body {
-        match stmt {
-            Stmt::VarDecl(decl) => {
-                if let Some(value) = &decl.value {
-                    walk_expr(value, diagnostics);
-                }
-            }
-            Stmt::Assign { target, value, .. } => {
-                walk_expr(target, diagnostics);
-                walk_expr(value, diagnostics);
-            }
-            Stmt::Expr { value, .. } => walk_expr(value, diagnostics),
-            Stmt::Return {
-                value: Some(value), ..
-            } => {
-                walk_expr(value, diagnostics);
-            }
-            Stmt::Return { value: None, .. } => {}
-            Stmt::If {
-                branches,
-                else_body,
-                ..
-            } => {
-                for IfBranch {
-                    condition, body, ..
-                } in branches
-                {
-                    walk_expr(condition, diagnostics);
-                    check_body(body, diagnostics);
-                }
-                check_body(else_body, diagnostics);
-            }
-            Stmt::While {
-                condition, body, ..
-            } => {
-                walk_expr(condition, diagnostics);
-                check_body(body, diagnostics);
-            }
-        }
-    }
-}
-
-fn walk_expr(expr: &Expr, diagnostics: &mut Vec<Diagnostic>) {
-    if let Expr::Call {
-        callee,
-        args,
-        line,
-        col,
-    } = expr
-    {
-        if let Some(name) = matching_function(callee) {
-            if let (Some(min_arg), Some(max_arg)) = (args.first(), args.get(1)) {
-                if let (Some(min_literal), Some(max_literal)) = (
-                    eval_const(unwrap_value(min_arg)),
-                    eval_const(unwrap_value(max_arg)),
-                ) {
-                    if let (Some((min, _)), Some((max, _))) =
-                        (as_number(&min_literal), as_number(&max_literal))
-                    {
-                        if min >= max {
-                            diagnostics.push(Diagnostic {
-                                line: *line,
-                                column: *col,
-                                message: format!(
-                                    "[error] Utility.{name}({min}, {max}): the first argument \
-                                     must be smaller than the second, or the call never \
-                                     produces any actual randomness"
-                                ),
-                                rule: RULE,
-                            });
-                        }
-                    }
-                }
-            }
-            for arg in args {
-                walk_expr(arg, diagnostics);
-            }
-            walk_expr(callee, diagnostics);
-            return;
-        }
-        walk_expr(callee, diagnostics);
-        for arg in args {
-            walk_expr(arg, diagnostics);
-        }
-        return;
-    }
-
-    match expr {
-        Expr::Binary { left, right, .. } => {
-            walk_expr(left, diagnostics);
-            walk_expr(right, diagnostics);
-        }
-        Expr::Unary { operand, .. } => walk_expr(operand, diagnostics),
-        Expr::Member { object, .. } => walk_expr(object, diagnostics),
-        Expr::Index { object, index } => {
-            walk_expr(object, diagnostics);
-            walk_expr(index, diagnostics);
-        }
-        Expr::Cast { value, .. } => walk_expr(value, diagnostics),
-        Expr::NewArray { size, .. } => walk_expr(size, diagnostics),
-        Expr::NamedArg { value, .. } => walk_expr(value, diagnostics),
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent | Expr::Call { .. } => {
-        }
-    }
 }
 
 /// Unwraps a call argument's underlying value, ignoring a `NamedArg` name.
