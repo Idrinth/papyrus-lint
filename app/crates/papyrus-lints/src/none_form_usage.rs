@@ -235,16 +235,6 @@ impl AstLint for Collect {
             }
         }
 
-        match self.expr_stack.last() {
-            Some(ExprFrame::And { left, .. }) if *left == ptr_of(expr) => {
-                narrow_for_truthy(expr, &mut self.none_vars);
-            }
-            Some(ExprFrame::Or { left, .. }) if *left == ptr_of(expr) => {
-                narrow_for_falsy(expr, &mut self.none_vars);
-            }
-            _ => {}
-        }
-
         let is_and_or_root = matches!(
             expr,
             Expr::Binary {
@@ -258,6 +248,16 @@ impl AstLint for Collect {
                     ExprFrame::And { incoming, .. } | ExprFrame::Or { incoming, .. } => incoming,
                 };
             }
+        }
+
+        match self.expr_stack.last() {
+            Some(ExprFrame::And { left, .. }) if *left == ptr_of(expr) => {
+                narrow_for_truthy(expr, &mut self.none_vars);
+            }
+            Some(ExprFrame::Or { left, .. }) if *left == ptr_of(expr) => {
+                narrow_for_falsy(expr, &mut self.none_vars);
+            }
+            _ => {}
         }
 
         if self
