@@ -110,10 +110,19 @@ pub trait AstLint {
     fn visit_stmt(&mut self, stmt: &Stmt, ctx: &mut VisitCtx<'_>) {
         let _ = (stmt, ctx);
     }
+    fn leave_stmt(&mut self, stmt: &Stmt, ctx: &mut VisitCtx<'_>) {
+        let _ = (stmt, ctx);
+    }
     fn visit_if_branch(&mut self, branch: &IfBranch, ctx: &mut VisitCtx<'_>) {
         let _ = (branch, ctx);
     }
+    fn leave_if_branch(&mut self, branch: &IfBranch, ctx: &mut VisitCtx<'_>) {
+        let _ = (branch, ctx);
+    }
     fn visit_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
+        let _ = (expr, ctx);
+    }
+    fn leave_expr(&mut self, expr: &Expr, ctx: &mut VisitCtx<'_>) {
         let _ = (expr, ctx);
     }
     fn visit_type_name(&mut self, type_name: &TypeName, ctx: &mut VisitCtx<'_>) {
@@ -502,17 +511,20 @@ impl Visitor for AstFanout<'_> {
         self.line = stmt_line(stmt);
         self.notify(|lint, ctx| lint.visit_stmt(stmt, ctx));
         walk_stmt(self, stmt);
+        self.notify(|lint, ctx| lint.leave_stmt(stmt, ctx));
     }
 
     fn visit_if_branch(&mut self, branch: &IfBranch) {
         self.line = branch.line;
         self.notify(|lint, ctx| lint.visit_if_branch(branch, ctx));
         walk_if_branch(self, branch);
+        self.notify(|lint, ctx| lint.leave_if_branch(branch, ctx));
     }
 
     fn visit_expr(&mut self, expr: &Expr) {
         self.notify(|lint, ctx| lint.visit_expr(expr, ctx));
         walk_expr(self, expr);
+        self.notify(|lint, ctx| lint.leave_expr(expr, ctx));
     }
 
     fn visit_type_name(&mut self, type_name: &TypeName) {

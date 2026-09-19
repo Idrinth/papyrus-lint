@@ -3,6 +3,7 @@
 
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 
+use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::{fragment_code, Diagnostic};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
@@ -10,27 +11,46 @@ pub const RULE: &str = "indentation";
 
 #[derive(Default)]
 struct Collect {
-    store: crate::visitor::Store,
+    store: Store,
+    keywords_by_line: Vec<Vec<Keyword>>,
 }
 
-impl crate::visitor::TokenLint for Collect {
-    fn store(&mut self) -> &mut crate::visitor::Store {
+impl TokenLint for Collect {
+    fn store(&mut self) -> &mut Store {
         &mut self.store
     }
 
-    fn begin(&mut self, ctx: &mut crate::visitor::VisitCtx<'_>) {
-        self.store.extend(lint_issues(
-            ctx.source,
-            ctx.ast,
-            ctx.tokens,
-            ctx.config,
-            ctx.external,
-        ));
+    fn begin(&mut self, ctx: &mut VisitCtx<'_>) {
+        self.keywords_by_line = vec![Vec::new(); ctx.source.lines().count() + 1];
+    }
+
+    fn visit_token(
+        &mut self,
+        token: &Token,
+        _index: usize,
+        _tokens: &[Token],
+        _ctx: &mut VisitCtx<'_>,
+    ) {
+        let TokenKind::Keyword(keyword) = token.kind else {
+            return;
+        };
+        if let Some(keywords) = self.keywords_by_line.get_mut(token.line) {
+            keywords.push(keyword);
+        }
+    }
+
+    fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
+        if ctx.tokens.is_none() {
+            return;
+        }
+        let depths = depths_from_keywords(&self.keywords_by_line);
+        self.store
+            .extend(issues_for_depths(ctx.source, ctx.config, &depths));
     }
 }
 
-pub fn visitor() -> crate::visitor::LintVisitor {
-    crate::visitor::LintVisitor::Tokens(Box::new(Collect::default()))
+pub fn visitor() -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::default()))
 }
 
 /// The indentation unit to use for each level of nesting.
@@ -76,6 +96,10 @@ fn line_depths(source: &str) -> Option<Vec<usize>> {
 /// of lexing `source` itself; used by [`check`], which receives `tokens`
 /// already computed by its caller.
 fn line_depths_from_tokens(source: &str, tokens: &[Token]) -> Vec<usize> {
+    depths_from_keywords(&keywords_by_line(source, tokens))
+}
+
+fn keywords_by_line(source: &str, tokens: &[Token]) -> Vec<Vec<Keyword>> {
     let mut keywords_by_line = vec![Vec::new(); source.lines().count() + 1];
 
     for token in tokens {
@@ -86,6 +110,10 @@ fn line_depths_from_tokens(source: &str, tokens: &[Token]) -> Vec<usize> {
         }
     }
 
+    keywords_by_line
+}
+
+fn depths_from_keywords(keywords_by_line: &[Vec<Keyword>]) -> Vec<usize> {
     let mut depths = vec![0usize; keywords_by_line.len()];
     let mut depth = 0usize;
     for (line_number, keywords) in keywords_by_line.iter().enumerate().skip(1) {
@@ -121,20 +149,12 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn lint_issues(
+fn issues_for_depths(
     source: &str,
-    ast: Option<&papyrus_parser::ast::Script>,
-    tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
-    external: &mut dyn crate::external_signatures::ExternalSignatures,
+    depths: &[usize],
 ) -> Vec<Diagnostic> {
-    let _ = (ast, external);
     let indentation = config.indentation_unit();
-
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-    let depths = line_depths_from_tokens(source, tokens);
     let protected = fragment_code::protected_lines(source);
     let code_section_starts = fragment_code::code_section_starts(source);
     let unit = indentation.unit();
@@ -152,7 +172,7 @@ fn lint_issues(
                 return None;
             }
 
-            let depth = expected_depth(&depths, code_section_starts[index + 1], index + 1);
+            let depth = expected_depth(depths, code_section_starts[index + 1], index + 1);
             let leading = &line[..line.len() - content.len()];
             if leading == unit.repeat(depth) {
                 return None;
