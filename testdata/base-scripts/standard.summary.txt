@@ -1,0 +1,47 @@
+# preset: standard
+# papyrus-lint base-scripts snapshot
+# scripts_checked: 14301
+# files_with_diagnostics: 11231
+# total_diagnostics: 164896
+# sha256: 604ee49b58ad7f47b101ebb5ec3cecce2d144b4151fa943537f6492cf6eceb9e
+argument-naming	1313
+argument-types	2178
+assignment-operator-spacing	1599
+chain-whitespace	67
+comma-spacing	2829
+cyclomatic-complexity	381
+empty-body	782
+exclamation-spacing	1798
+explicit-return	33
+forbidden-functions	9098
+function-override	3999
+global-variable-increment	20
+goto-state	19
+identifier-casing	26950
+indentation	21659
+int-division-to-float	2
+local-variable-shadowing	7
+multiple-auto-states	13
+none-form-usage	29895
+numeric-comparison	166
+operator-spacing	631
+parameter-reassignment	104
+semicolon	933
+setvalue-in-loop	5
+short-wait-interval	75
+slow-functions	331
+static-condition	1
+strict-boolean	816
+trailing-whitespace	26951
+type-casing	4970
+unchecked-cast	7898
+unnecessary-function	1260
+unreachable-elseif	2
+unreachable-statement	4
+unresolved-script	211
+unused-getter	19
+unused-import	680
+unused-local-variable	151
+unused-property	14429
+useless-downcast	2542
+variable-used-before-assignment	75
