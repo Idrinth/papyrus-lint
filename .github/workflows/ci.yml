@@ -879,9 +879,6 @@ jobs:
       - name: Build rules.json from shared/rules/
         run: python3 .github/scripts/build_rules_json.py
 
-      - name: Provide scripts as expected
-        run: cp shared/${{ matrix.game }}-scripts.zip docker/Scripts.zip
-
       - uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2
@@ -908,6 +905,7 @@ jobs:
           load: true
           build-args: |
             PRESET=${{ matrix.preset }}
+            EXTENDER=${{ matrix.extender }}
           tags: papyrus-lint:${{ matrix.preset }}
 
       - name: Smoke test container image
