@@ -29,32 +29,9 @@ pub struct PresetInfo {
     pub description: String,
 }
 
-/// Label/description text for each of [`PRESET_NAMES`], in the same order.
-/// Kept in sync with `configuration/presets/*.yaml`'s own header comments, which go
-/// into more detail about exactly what each preset turns on/off.
-const DESCRIPTIONS: [(&str, &str, &str); 3] = [
-    (
-        "strict",
-        "Strict",
-        "Catches everything the linter knows how to catch, including pure \
-         style/naming nits and purely informational findings. Best suited to a project \
-         written for this linter from day one, or a team willing to triage every finding.",
-    ),
-    (
-        "standard",
-        "Standard",
-        "A middle ground for most projects: every rule that can catch a real \
-         bug or performance problem, plus the free, auto-fixable formatting rules. Naming \
-         conventions and purely informational notices are left off.",
-    ),
-    (
-        "careful",
-        "Careful",
-        "The quietest option: meant for a first pass over a project that wasn't \
-         necessarily written with this linter in mind. Only rules that catch real \
-         correctness/performance problems are on; formatting and style rules stay off.",
-    ),
-];
+// Generated from the first descriptive paragraph in each built-in preset's
+// YAML header, making those headers the GUI picker's single source of truth.
+include!(concat!(env!("OUT_DIR"), "/preset_descriptions.rs"));
 
 /// Every built-in preset's identity/description (in [`PRESET_NAMES`]'s
 /// order), followed by every user preset found under the
