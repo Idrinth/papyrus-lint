@@ -65,8 +65,9 @@ impl FunctionTable {
     /// Whether `sub_type`'s script is, or extends (directly or
     /// transitively), `super_type`. Both names are matched
     /// case-insensitively. When a type along the way isn't a script in the
-    /// configured script roots. Returns `false` once a script in the chain
-    /// cannot be resolved before reaching `super_type`.
+    /// configured script roots, falls back to the bundled vanilla/SKSE
+    /// AST cache by `ScriptName`. Returns `false` once a script in the
+    /// chain cannot be resolved before reaching `super_type`.
     pub fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
         let super_lower = super_type.to_ascii_lowercase();
         let mut visited = Vec::new();
@@ -95,13 +96,14 @@ impl FunctionTable {
     /// Whether `type_name`'s full `Extends` ancestry resolves all the way to
     /// a definite root: a script found (and parsed) with no `Extends` line
     /// at all. Matched case-insensitively, mirroring
-    /// [`Self::is_subtype`]'s own walk, but tracking whether
+    /// [`Self::is_subtype`]'s own walk (including the bundled vanilla/SKSE
+    /// name fallback), but tracking whether
     /// the walk actually reached a confirmed root rather than just whether
     /// it reached a particular type. A circular `Extends` chain, or a type
     /// along the way this table has no data for at all (not a project
-    /// script) means the ancestry is *not* fully known. Used by the
-    /// "Impossible cast" lint (`papyrus_lints::impossible_cast`) to tell a
-    /// value/target pair
+    /// script, not in the bundled cache) means the ancestry is *not*
+    /// fully known. Used by the "Impossible cast" lint
+    /// (`papyrus_lints::impossible_cast`) to tell a value/target pair
     /// *proven* unrelated (both sides fully resolved, per
     /// [`papyrus_lints::ExternalSignatures::ancestry_fully_known`])
     /// apart from one this table simply doesn't have enough information

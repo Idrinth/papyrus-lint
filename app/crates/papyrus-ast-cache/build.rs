@@ -1,9 +1,11 @@
 //! Compiles `shared/scripts/skyrim-scripts.zip` and
 //! `shared/scripts/skyrim-extender-scripts.zip` into a gzip-compressed AST/token
 //! blob (`skyrim-ast-cache.bin.gz` in `OUT_DIR`) that [`bundled`] embeds
-//! at compile time. Keyed by MD5 of decoded source, so a known script hits
-//! regardless of extract path. Scripts the parser cannot currently lex are
-//! skipped (a `cargo:warning`); an empty blob is a hard error.
+//! at compile time. Keyed by MD5 of decoded source *and* by lowercased
+//! `ScriptName`, so a known script hits regardless of extract path, and a
+//! vanilla type can resolve when no matching `.psc` is on disk. Scripts the
+//! parser cannot currently lex are skipped (a `cargo:warning`); an empty
+//! blob is a hard error.
 
 use std::collections::HashMap;
 use std::env;
@@ -24,9 +26,13 @@ fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
     let started = Instant::now();
-    // Last-write wins on a duplicate digest (two zip entries with identical
-    // decoded source): they share one AST/token stream anyway.
-    let mut by_md5: HashMap<[u8; 16], bundled_blob::PackedEntry> = HashMap::new();
+    // Insertion order is zip order (vanilla, then SKSE). The name index
+    // last-write-wins, so an SKSE script of the same `ScriptName` as a
+    // vanilla one is what a no-file lookup resolves. Duplicate digests
+    // (identical decoded source) share one AST/token stream; the later
+    // zip entry replaces the earlier in place so order stays stable.
+    let mut packed: Vec<bundled_blob::PackedEntry> = Vec::new();
+    let mut by_md5: HashMap<[u8; 16], usize> = HashMap::new();
     let mut skipped = 0u32;
     for archive_name in ["skyrim-scripts.zip", "skyrim-extender-scripts.zip"] {
         let zip_path = Path::new(&manifest_dir)
@@ -80,23 +86,25 @@ fn main() {
                 continue;
             };
             let md5 = md5::compute(source.as_bytes()).0;
-            by_md5.insert(
+            let packed_entry = bundled_blob::PackedEntry {
                 md5,
-                bundled_blob::PackedEntry {
-                    md5,
-                    ast: ast_bytes,
-                    tokens: token_bytes,
-                },
-            );
+                name: ast.name.to_ascii_lowercase(),
+                ast: ast_bytes,
+                tokens: token_bytes,
+            };
+            if let Some(&idx) = by_md5.get(&md5) {
+                packed[idx] = packed_entry;
+            } else {
+                by_md5.insert(md5, packed.len());
+                packed.push(packed_entry);
+            }
         }
     }
 
-    if by_md5.is_empty() {
+    if packed.is_empty() {
         panic!("bundled Skyrim AST cache is empty — papyrus-parser produced no usable scripts");
     }
 
-    let mut packed: Vec<_> = by_md5.into_values().collect();
-    packed.sort_by_key(|entry| entry.md5);
     let count = packed.len();
     let raw = bundled_blob::encode_blob(&packed);
     let mut encoder = GzEncoder::new(Vec::new(), Compression::default());

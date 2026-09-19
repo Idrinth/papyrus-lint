@@ -49,6 +49,10 @@ update the cited code *and* this list.
   already-absolute Windows/UNC path into components; the CLI's `.ppj`
   handling lives in `run_scan.rs`/`doctor/checks.rs`/`init.rs`, not
   `papyrus-lint-core`, which only parses the file.
+- Vanilla engine types without an on-disk `.psc` resolve from the bundled
+  AST cache by `ScriptName` (`FunctionTable::ensure_loaded` /
+  `script_exists`). A project or lookup-root file of the same name still
+  wins.
 
 ## Where to read
 

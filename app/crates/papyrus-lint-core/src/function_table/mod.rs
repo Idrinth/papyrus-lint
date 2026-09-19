@@ -75,6 +75,8 @@ pub struct FunctionTable {
     /// default) preserves ordinary directory-based resolution instead.
     /// [`Self::with_lookup_roots`] is still consulted as a last-resort
     /// fallback, so vanilla game scripts can resolve without being listed.
+    /// Names still unresolved after that fall through to the bundled
+    /// vanilla/SKSE AST cache by `ScriptName`.
     known_scripts: Option<HashMap<String, PathBuf>>,
     /// Snapshot of ordinary directory-based resolution, when the caller has
     /// already scanned the search roots. Unlike `known_scripts`, this does
