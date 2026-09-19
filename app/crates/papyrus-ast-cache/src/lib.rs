@@ -16,7 +16,10 @@
 //! [`get_tokens`]/[`ensure_primed`] consult that blob first, keyed only by an
 //! MD5 of the decoded source, so a stock `Actor.psc` or `SKSE.psc` hits on the
 //! first analysis even when the file was just extracted to a new path
-//! (Docker, `--script-root`, the user's Skyrim install). A bundled hit does
+//! (Docker, `--script-root`, the user's Skyrim install). [`ast_for_script_name`]/
+//! [`contains_script_name`] look the same blob up by `ScriptName` when no
+//! matching `.psc` is on disk, so `FunctionTable` can still walk vanilla
+//! `Extends` chains without game data. A bundled hit does
 //! not take the disk-cache lock below, so parallel lint workers resolving the
 //! same base type do not serialize on each other for that lookup. A modified
 //! copy of a bundled script has a different digest and falls through to the
@@ -191,6 +194,19 @@ pub fn ensure_primed(source_path: &Path, source: &str) {
         return;
     };
     ops::ensure_primed_in(&dir, source_path, source, version::stamped_version());
+}
+
+/// Cached AST of a bundled vanilla/SKSE script looked up by `ScriptName`
+/// (case-insensitive). Used by `FunctionTable` when no matching `.psc` is
+/// on disk. Returns `None` when the name is not in the bundled blob.
+pub fn ast_for_script_name(name: &str) -> Option<papyrus_parser::ast::Script> {
+    bundled::ast_for_name(name)
+}
+
+/// Whether the bundled vanilla/SKSE blob has a script whose `ScriptName`
+/// matches `name` (case-insensitive). Does not deserialize the AST.
+pub fn contains_script_name(name: &str) -> bool {
+    bundled::contains_name(name)
 }
 
 #[cfg(test)]

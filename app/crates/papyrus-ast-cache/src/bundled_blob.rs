@@ -4,7 +4,9 @@
 //! `#[path]` include from the build script, so this file must stay free of
 //! `crate::` / `super::` paths. Entries are keyed by the MD5 of decoded
 //! source text — the same digest the on-disk cache stores as `content_md5`
-//! — so a vanilla script hits regardless of where it was extracted.
+//! — so a vanilla script hits regardless of where it was extracted. Each
+//! entry also carries the script's lowercased `ScriptName`, so a type
+//! like `Actor` can be resolved when no matching `.psc` is on disk.
 //!
 //! Each compilation unit only uses half of the API (the build script
 //! writes, the library reads), so unused-item warnings are expected.
@@ -21,9 +23,13 @@ pub const MAGIC: &[u8; 4] = b"PLAC";
 /// Layout version. Bump when the header/index/payload encoding changes;
 /// the matching `build.rs` rewrites the blob, so a running binary never
 /// sees an older layout of its own include.
-pub const FORMAT_VERSION: u32 = 1;
+///
+/// Version 2 adds a length-prefixed lowercased script name to each index
+/// entry so vanilla types can be looked up by `ScriptName` as well as MD5.
+pub const FORMAT_VERSION: u32 = 2;
 
-const INDEX_ENTRY_SIZE: usize = 16 + 8 + 4 + 8 + 4;
+/// Fixed bytes per index entry, excluding the variable-length name.
+const INDEX_ENTRY_FIXED_SIZE: usize = 16 + 2 + 8 + 4 + 8 + 4;
 
 /// One script's location inside the payload section.
 #[derive(Clone, Copy)]
@@ -35,9 +41,10 @@ pub struct IndexEntry {
 }
 
 /// One compiled script waiting to be packed: MD5 of its decoded source,
-/// plus bincode of its AST and token stream.
+/// lowercased `ScriptName`, plus bincode of its AST and token stream.
 pub struct PackedEntry {
     pub md5: [u8; 16],
+    pub name: String,
     pub ast: Vec<u8>,
     pub tokens: Vec<u8>,
 }
@@ -53,8 +60,10 @@ pub fn serialize_tokens(tokens: &[Token]) -> Option<Vec<u8>> {
 }
 
 /// Packs `entries` into the uncompressed on-disk/in-memory blob layout:
-/// magic, format version, count, then a fixed-size index, then the
-/// concatenated bincode payloads the index points into.
+/// magic, format version, count, then a variable-size index (MD5 + name +
+/// payload offsets), then the concatenated bincode payloads the index
+/// points into. Duplicate names are allowed in the index; the reader keeps
+/// the last one, matching zip processing order (SKSE after vanilla).
 pub fn encode_blob(entries: &[PackedEntry]) -> Vec<u8> {
     let count = entries.len() as u32;
     let mut payload = Vec::new();
@@ -66,6 +75,7 @@ pub fn encode_blob(entries: &[PackedEntry]) -> Vec<u8> {
         payload.extend_from_slice(&entry.tokens);
         index.push((
             entry.md5,
+            entry.name.as_bytes(),
             IndexEntry {
                 ast_offset,
                 ast_len: entry.ast.len() as u32,
@@ -75,12 +85,20 @@ pub fn encode_blob(entries: &[PackedEntry]) -> Vec<u8> {
         ));
     }
 
-    let mut out = Vec::with_capacity(12 + index.len() * INDEX_ENTRY_SIZE + payload.len());
+    let index_bytes: usize = index
+        .iter()
+        .map(|(_, name, _)| INDEX_ENTRY_FIXED_SIZE + name.len())
+        .sum();
+    let mut out = Vec::with_capacity(12 + index_bytes + payload.len());
     out.extend_from_slice(MAGIC);
     out.extend_from_slice(&FORMAT_VERSION.to_le_bytes());
     out.extend_from_slice(&count.to_le_bytes());
-    for (md5, loc) in &index {
+    for (md5, name, loc) in &index {
+        let name_len = u16::try_from(name.len()).unwrap_or(u16::MAX);
+        let name = &name[..name_len as usize];
         out.extend_from_slice(md5);
+        out.extend_from_slice(&name_len.to_le_bytes());
+        out.extend_from_slice(name);
         out.extend_from_slice(&loc.ast_offset.to_le_bytes());
         out.extend_from_slice(&loc.ast_len.to_le_bytes());
         out.extend_from_slice(&loc.tokens_offset.to_le_bytes());
@@ -90,10 +108,18 @@ pub fn encode_blob(entries: &[PackedEntry]) -> Vec<u8> {
     out
 }
 
-/// Parses the uncompressed blob into an MD5-keyed index and the byte
+/// Result of [`parse_blob`]: MD5 and name indexes plus the payload offset.
+pub struct ParsedBlob {
+    pub by_md5: HashMap<[u8; 16], IndexEntry>,
+    pub by_name: HashMap<String, IndexEntry>,
+    pub payload_start: usize,
+}
+
+/// Parses the uncompressed blob into an MD5-keyed index, a lowercased
+/// script-name index (last write wins on a duplicate name), and the byte
 /// offset where the payload section starts. Returns `None` on a truncated
 /// or unrecognized blob; callers treat that as "no bundled cache".
-pub fn parse_blob(blob: &[u8]) -> Option<(HashMap<[u8; 16], IndexEntry>, usize)> {
+pub fn parse_blob(blob: &[u8]) -> Option<ParsedBlob> {
     if blob.len() < 12 || &blob[..4] != MAGIC {
         return None;
     }
@@ -102,16 +128,25 @@ pub fn parse_blob(blob: &[u8]) -> Option<(HashMap<[u8; 16], IndexEntry>, usize)>
         return None;
     }
     let count = u32::from_le_bytes(blob[8..12].try_into().ok()?) as usize;
-    let index_bytes = count.checked_mul(INDEX_ENTRY_SIZE)?;
-    let header_end = 12usize.checked_add(index_bytes)?;
-    if blob.len() < header_end {
-        return None;
-    }
     let mut index = HashMap::with_capacity(count);
+    let mut by_name = HashMap::with_capacity(count);
     let mut cursor = 12usize;
     for _ in 0..count {
+        if blob.len() < cursor.checked_add(INDEX_ENTRY_FIXED_SIZE)? {
+            return None;
+        }
         let md5: [u8; 16] = blob[cursor..cursor + 16].try_into().ok()?;
         cursor += 16;
+        let name_len = u16::from_le_bytes(blob[cursor..cursor + 2].try_into().ok()?) as usize;
+        cursor += 2;
+        let name_end = cursor.checked_add(name_len)?;
+        if blob.len() < name_end.checked_add(8 + 4 + 8 + 4)? {
+            return None;
+        }
+        let name = std::str::from_utf8(&blob[cursor..name_end])
+            .ok()?
+            .to_string();
+        cursor = name_end;
         let ast_offset = u64::from_le_bytes(blob[cursor..cursor + 8].try_into().ok()?);
         cursor += 8;
         let ast_len = u32::from_le_bytes(blob[cursor..cursor + 4].try_into().ok()?);
@@ -120,17 +155,22 @@ pub fn parse_blob(blob: &[u8]) -> Option<(HashMap<[u8; 16], IndexEntry>, usize)>
         cursor += 8;
         let tokens_len = u32::from_le_bytes(blob[cursor..cursor + 4].try_into().ok()?);
         cursor += 4;
-        index.insert(
-            md5,
-            IndexEntry {
-                ast_offset,
-                ast_len,
-                tokens_offset,
-                tokens_len,
-            },
-        );
+        let loc = IndexEntry {
+            ast_offset,
+            ast_len,
+            tokens_offset,
+            tokens_len,
+        };
+        index.insert(md5, loc);
+        if !name.is_empty() {
+            by_name.insert(name, loc);
+        }
     }
-    Some((index, header_end))
+    Some(ParsedBlob {
+        by_md5: index,
+        by_name,
+        payload_start: cursor,
+    })
 }
 
 fn payload_slice(payload: &[u8], offset: u64, len: u32) -> Option<&[u8]> {

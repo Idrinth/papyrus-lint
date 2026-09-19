@@ -42,6 +42,10 @@ update the cited code *and* this list.
 - On-disk AST cache is keyed by content MD5 + mtime +
   `MIN_COMPATIBLE_VERSION`. Bump that floor only when the entry layout
   or embedded AST changes, and update `schema/ast-cache-entry.schema.json`.
+- Vanilla engine types without an on-disk `.psc` resolve from the bundled
+  AST cache by `ScriptName` (`FunctionTable::ensure_loaded` /
+  `script_exists`). A project or lookup-root file of the same name still
+  wins.
 
 ## Where to read
 

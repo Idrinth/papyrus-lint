@@ -56,6 +56,32 @@ fn store_lookup_script(path: PathBuf, mtime_secs: u64, script: Option<ScriptFunc
     cache.insert(path, LookupScriptEntry { mtime_secs, script });
 }
 
+/// Process-wide cache of scripts loaded from the bundled vanilla/SKSE blob
+/// by `ScriptName`. Name lookups have no path or mtime, so this is the
+/// only reuse across `FunctionTable`s in the same process.
+fn bundled_script_cache() -> &'static Mutex<HashMap<String, Option<ScriptFunctions>>> {
+    static CACHE: OnceLock<Mutex<HashMap<String, Option<ScriptFunctions>>>> = OnceLock::new();
+    CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn bundled_script_functions(name_lower: &str) -> Option<ScriptFunctions> {
+    {
+        let cache = bundled_script_cache()
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if let Some(cached) = cache.get(name_lower) {
+            return cached.clone();
+        }
+    }
+    let loaded = crate::ast_cache::ast_for_script_name(name_lower)
+        .map(|ast| ScriptFunctions::from_script(&ast, ""));
+    let mut cache = bundled_script_cache()
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    cache.insert(name_lower.to_string(), loaded.clone());
+    loaded
+}
+
 /// Parse `path` through [`crate::ast_cache`], the same path linted source
 /// files take via `ast_cache::ensure_primed`. Bundled Skyrim/SKSE scripts
 /// whose content matches `shared/skyrim-scripts.zip` or
@@ -80,17 +106,20 @@ fn load_script_functions(path: &Path) -> Option<ScriptFunctions> {
 impl FunctionTable {
     /// Whether a script named `type_name` can be located at all: either
     /// found under the project root (regardless of whether it parses
-    /// cleanly), or known as a native singleton script always called
-    /// through its literal name (e.g. `Game`, `Utility`, `Debug`; see
-    /// [`crate::native_globals`]). In known-scripts mode (see
-    /// [`Self::with_known_scripts`]), "found under the project root" means
-    /// registered there specifically — `root`/`additional_roots` are never
-    /// scanned. Matched case-insensitively. Used by the "Unresolved script
-    /// reference" lint (`papyrus_lints::unresolved_script`) to flag a call
-    /// like `MyMissingScript.DoThing()`.
+    /// cleanly), known as a bundled vanilla/SKSE script (see
+    /// [`papyrus_ast_cache::contains_script_name`]), or known as a native
+    /// singleton script always called through its literal name (e.g.
+    /// `Game`, `Utility`, `Debug`; see [`crate::native_globals`]). In
+    /// known-scripts mode (see [`Self::with_known_scripts`]), "found under
+    /// the project root" means registered there specifically —
+    /// `root`/`additional_roots` are never scanned. Matched
+    /// case-insensitively. Used by the "Unresolved script reference" lint
+    /// (`papyrus_lints::unresolved_script`) to flag a call like
+    /// `MyMissingScript.DoThing()`.
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
+            || crate::ast_cache::contains_script_name(&name_lower)
             || crate::native_globals::is_known(&name_lower)
     }
 
@@ -134,7 +163,10 @@ impl FunctionTable {
     /// [`Self::with_lookup_roots`] so vanilla game scripts can resolve
     /// without being listed. Otherwise, the lowercased name is looked up
     /// with [`find_psc_file`] as before `with_known_scripts` existed, then
-    /// lookup roots. Reuses the on-disk [`crate::ast_cache`] when the
+    /// lookup roots. A name still unresolved after that is loaded from the
+    /// bundled vanilla/SKSE AST cache by `ScriptName`, so engine types
+    /// (`Actor`, `ObjectReference`, `Form`, …) resolve without game data
+    /// on disk. Reuses the on-disk [`crate::ast_cache`] when the
     /// script's content and modification time haven't changed since it was
     /// last parsed, so repeatedly resolving the same cross-script lookup
     /// (across separate CLI invocations, or separate desktop app commands)
@@ -158,19 +190,26 @@ impl FunctionTable {
             return;
         }
 
-        let script = resolved.and_then(|(path, origin)| {
-            if origin == ScriptOrigin::Lookup {
-                if let Some(mtime_secs) = file_mtime_secs(&path) {
-                    if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
-                        return cached;
+        let script = match resolved {
+            Some((path, origin)) => {
+                if origin == ScriptOrigin::Lookup {
+                    if let Some(mtime_secs) = file_mtime_secs(&path) {
+                        if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
+                            cached
+                        } else {
+                            let loaded = load_script_functions(&path);
+                            store_lookup_script(path, mtime_secs, loaded.clone());
+                            loaded
+                        }
+                    } else {
+                        load_script_functions(&path)
                     }
-                    let loaded = load_script_functions(&path);
-                    store_lookup_script(path, mtime_secs, loaded.clone());
-                    return loaded;
+                } else {
+                    load_script_functions(&path)
                 }
             }
-            load_script_functions(&path)
-        });
+            None => bundled_script_functions(&name_lower),
+        };
 
         self.scripts.insert(name_lower.clone(), script);
         self.script_mtimes.insert(name_lower, mtime);

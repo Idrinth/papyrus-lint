@@ -5,8 +5,9 @@ use papyrus_lints::ParamInfo;
 use super::FunctionTable;
 
 impl FunctionTable {
-    /// Whether `type_name` is a Papyrus primitive or a script this table can
-    /// locate. Read-only: never fills the parse cache.
+    /// Whether `type_name` is a Papyrus primitive, a bundled vanilla/SKSE
+    /// script, or a script this table can locate. Read-only: never fills
+    /// the parse cache.
     pub fn type_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         matches!(

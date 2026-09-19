@@ -113,6 +113,57 @@ fn goto_state_resolves_a_state_declared_on_a_parent_script_listed_in_the_achlist
 }
 
 #[test]
+fn accepts_legal_vanilla_upcasts_without_game_scripts_on_disk() {
+    // Regression for https://github.com/Idrinth/papyrus-lint/issues/1082:
+    // `PapyrusLinterCLI <dir>` with stock config and no game data must
+    // not flag Actor → ObjectReference upcasts.
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let source = include_str!("../../../papyrus-lint-core/tests/fixtures/VahlokInheritProbe.psc");
+    write_file(&dir.path().join("VahlokInheritProbe.psc"), source);
+
+    let (code, stdout, stderr) = run_captured(&[dir.path().to_string_lossy().into_owned()]);
+
+    assert_eq!(code, 1, "stderr: {stderr}, stdout: {stdout}");
+    let type_lines: Vec<&str> = stdout
+        .lines()
+        .filter(|line| line.contains("[argument-types]") || line.contains("[return-types]"))
+        .collect();
+    assert_eq!(
+        type_lines.len(),
+        3,
+        "expected 3 type diagnostics, got {type_lines:?}\nstdout: {stdout}"
+    );
+    assert!(
+        type_lines.iter().any(|line| line.contains("got Form")),
+        "expected Form downcast, got {type_lines:?}"
+    );
+    assert!(
+        type_lines
+            .iter()
+            .filter(|line| line.contains("[argument-types]") && line.contains("got Spell"))
+            .count()
+            == 1,
+        "expected Spell sibling argument, got {type_lines:?}"
+    );
+    assert!(
+        type_lines
+            .iter()
+            .any(|line| line.contains("[return-types]") && line.contains("Spell")),
+        "expected Spell sibling return, got {type_lines:?}"
+    );
+    assert!(
+        type_lines.iter().all(|line| !line.contains("got Actor")),
+        "Actor → ObjectReference is a legal upcast, got {type_lines:?}"
+    );
+    assert!(
+        type_lines
+            .iter()
+            .all(|line| !line.contains("returns Actor")),
+        "returning Actor from ObjectReference is a legal upcast, got {type_lines:?}"
+    );
+}
+
+#[test]
 fn achlist_resolves_an_unlisted_sibling_script_by_default_for_backward_compatibility() {
     // `strict_achlist_scope` defaults to false, so an achlist-based
     // project already depending on the pre-#311-fix behavior (every
