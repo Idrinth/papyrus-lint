@@ -8,12 +8,16 @@
   cloning and again whenever a `shared/rules/*.json` file changes, before
   any of the commands below that touch it.
 - Frontend (`app/`): `npm install`, then `npm run dev` (Vite dev server) or
-  `npm run build` (typecheck + build). `npm run test` runs the frontend's
+  `npm run build` (generate `src/config-types.ts`, typecheck + build).
+  `npm run generate:config-types` regenerates that file on its own from
+  `shared/rules/*.json` and `configuration/papyrus-lint.default.yaml`; it
+  is git-ignored, the same way `papyrus-lints/build.rs` writes `Rules`
+  into `$OUT_DIR`. `npm run test` runs the frontend's
   Vitest unit tests (`src/**/*.test.ts`); `npm run test:coverage` runs the
   same suite instrumented with `@vitest/coverage-v8`, printing a text
-  report and writing HTML/lcov reports to `coverage/`. `npm run lint` runs
-  ESLint (flat config in `eslint.config.js`) over `src/`, using
-  `typescript-eslint`'s recommended rules plus `@vitest/eslint-plugin`'s
+  report and writing HTML/lcov reports to `coverage/`.
+  `npm run lint` runs ESLint (flat config in `eslint.config.js`) over `src/`,
+  using `typescript-eslint`'s recommended rules plus `@vitest/eslint-plugin`'s
   recommended rules on test files. `npm run lint:css` runs stylelint (config
   in `.stylelintrc.json`, extending `stylelint-config-recommended`) over
   `src/**/*.css`. `npm run test:browser` runs `app/e2e/*.spec.ts` (config in
