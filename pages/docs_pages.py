@@ -50,7 +50,10 @@ DOCS = [
         "filename": "project-structure.md",
         "slug": "project-structure",
         "kind": "markdown",
-        "blurb": "The canonical repository tree and the responsibilities of its apps, crates, integrations, and tooling.",
+        "blurb": (
+            "The canonical repository tree and the responsibilities of its apps, "
+            "crates, integrations, and tooling."
+        ),
     },
     {
         "filename": "papyrus-cli-usage.txt",
