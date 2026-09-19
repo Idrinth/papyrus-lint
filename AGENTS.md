@@ -14,7 +14,7 @@ them. `CLAUDE.md` is a pointer here, not a second copy.
 | --- | --- |
 | Anything, first time in this repo | This file, then [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | Parser, a lint rule, CLI, GUI, or editor plugin | [`docs/agent/current-state.md`](docs/agent/current-state.md) |
-| Crate / folder layout | [`docs/agent/project-structure.md`](docs/agent/project-structure.md) |
+| Crate / folder layout | [`docs/project-structure.md`](docs/project-structure.md) |
 | How to run tests or the desktop app | [`docs/agent/development.md`](docs/agent/development.md) |
 | `.github/workflows/ci.yml` or CI scripts | [`docs/agent/ci.md`](docs/agent/ci.md) |
 | `pages/` or the GitHub Pages workflow | [`docs/agent/pages.md`](docs/agent/pages.md) |
