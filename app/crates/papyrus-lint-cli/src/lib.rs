@@ -26,25 +26,30 @@
 //! project with no `.achlist` at all whose scripts are spread across
 //! arbitrarily nested subfolders (e.g. Requiem's own layout) rather than
 //! flatly under `scripts/source`. The project root the config (and the
-//! function table below) is looked up under is found by walking up from a
-//! resolved `.psc` file's own position for a `scripts/source`/
-//! `source/scripts` directory pair (matching
-//! [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`], case-insensitively)
-//! and taking the directory above that pair, e.g. `Data` for
+//! function table below) is looked up under is, for a bare `.psc` file given
+//! directly, found by [`papyrus_lint_core::project_root::find_psc_project_root`]:
+//! walking up from the file's own position for the nearest ancestor
+//! directory that already has a `papyrus-lint.yaml`/`.yml`
+//! (`find_config_file_root`) — an actual config file on disk always wins,
+//! so a project root placed above a `Data`/`Scripts`/`Source`-style
+//! subfolder (e.g. `<root>/Data/Scripts/Source/abc.psc` with
+//! `<root>/papyrus-lint.yaml`) still gets its config picked up when an
+//! editor plugin (VS Code, Sublime) invokes the CLI on that single file,
+//! rather than the naming guess below landing one directory too low and
+//! silently falling back to the built-in defaults. Only when no config file
+//! exists anywhere in the file's ancestry does it fall back to
+//! `find_candidate_pair_root`: a `scripts/source`/`source/scripts`
+//! directory pair (matching
+//! [`papyrus_lint_core::script_locator::CANDIDATE_DIRS`], case-insensitively),
+//! taking the directory above that pair, e.g. `Data` for
 //! `Data\\Scripts\\Source\\abc.psc` — which also finds the right root for a
 //! script nested further still, e.g. a namespaced
-//! `Data\\Scripts\\Source\\User\\abc.psc`. For a bare `.psc` file given directly,
-//! that walk starts from the file itself; if no such pair is found in the
-//! path at all (e.g. a project laid out some other way, like Requiem's own,
-//! arbitrarily nested layout), it instead looks for the nearest ancestor
-//! directory that already has a `papyrus-lint.yaml`/`.yml`
-//! ([`papyrus_lint_core::project_root::find_psc_project_root`]'s
-//! `find_config_file_root` step), so that project's real config still gets
-//! picked up rather than silently falling back to the built-in defaults —
-//! only falling back to the previous fixed two-directories-up guess if
-//! neither finds anything. For an `.achlist`, a `.ppj`, or a
-//! directory, the same walk is tried against each resolved `.psc` entry
-//! first, so a project whose `.achlist`/`.ppj`/scanned directory sits
+//! `Data\\Scripts\\Source\\User\\abc.psc`. Only falling back further still
+//! to the previous fixed two-directories-up guess if neither finds
+//! anything. For an `.achlist`, a `.ppj`, or a
+//! directory, the `find_candidate_pair_root` naming-pair walk (not the
+//! config-file-first walk above) is tried against each resolved `.psc`
+//! entry first, so a project whose `.achlist`/`.ppj`/scanned directory sits
 //! somewhere other than the project root (e.g. a user drops it next to a
 //! game's `Data` directory while the actual project, and its
 //! `papyrus-lint.yaml`, live in a subfolder alongside the

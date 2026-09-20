@@ -73,16 +73,16 @@ pub fn find_candidate_pair_root(psc_path: &Path) -> Option<PathBuf> {
 /// file (see [`papyrus_lint_config::config_file_path`]), and returns the
 /// first such ancestor.
 ///
-/// This is [`find_psc_project_root`]'s second-choice project root, tried
-/// when `psc_path` doesn't sit under a `scripts/source`/`source/scripts`
-/// pair — e.g. a mod whose scripts are spread across arbitrarily nested
-/// subfolders instead (see [`crate::script_locator::find_psc_files_recursively`]'s
-/// own docs) — so a config file placed at that project's real root still
-/// gets found and applied, rather than silently falling back to the
-/// built-in defaults just because a fixed "two directories up" guess
-/// missed it. Checks the filesystem directly rather than just path
-/// components, unlike [`find_candidate_pair_root`], since there's no
-/// naming convention here to match against.
+/// This is [`find_psc_project_root`]'s first choice: an actual config file
+/// on disk beats the `scripts/source`/`source/scripts` naming guess, so a
+/// `papyrus-lint.yaml` placed at a project's real root — e.g. above a
+/// `Data` folder whose own `Scripts/Source` pair would otherwise make
+/// [`find_candidate_pair_root`] land one directory too low — still gets
+/// found and applied, rather than editor plugins (VS Code, Sublime) silently
+/// linting against the built-in defaults because their single-file
+/// invocation walked past it. Checks the filesystem directly rather than
+/// just path components, unlike [`find_candidate_pair_root`], since there's
+/// no naming convention here to match against.
 fn find_config_file_root(psc_path: &Path) -> Option<PathBuf> {
     psc_path
         .ancestors()
@@ -94,18 +94,19 @@ fn find_config_file_root(psc_path: &Path) -> Option<PathBuf> {
 /// Finds the project root for a bare `.psc` file given directly on the
 /// command line.
 ///
-/// Tries [`find_candidate_pair_root`] first, then [`find_config_file_root`]
-/// when no `scripts/source`/`source/scripts` pair is found in the path at
-/// all, so a project laid out some other way (e.g. Requiem's own,
-/// arbitrarily nested layout) still has its `papyrus-lint.yaml`/`.yml`
-/// picked up for a single file linted directly (e.g. by an editor plugin
-/// on save), the same way it already is when scanning that project's
-/// directory instead. Only falls back to the previous fixed "two
-/// directories up" guess if neither finds anything, e.g. a `.psc` with no
-/// project config anywhere in its ancestry at all.
+/// Tries [`find_config_file_root`] first — an actual `papyrus-lint.yaml`/
+/// `.yml` found anywhere in `psc_path`'s ancestry wins, since that's the
+/// project's real, explicit root — then falls back to
+/// [`find_candidate_pair_root`]'s `scripts/source`/`source/scripts` naming
+/// guess when no config file exists anywhere above the script, e.g. a
+/// project laid out some other way (Requiem's own, arbitrarily nested
+/// layout) that hasn't added a config file yet. Only falls back to the
+/// previous fixed "two directories up" guess if neither finds anything,
+/// e.g. a `.psc` with no project config anywhere in its ancestry at all and
+/// no recognizable `scripts/source` pair either.
 pub fn find_psc_project_root(psc_path: &Path) -> PathBuf {
-    find_candidate_pair_root(psc_path)
-        .or_else(|| find_config_file_root(psc_path))
+    find_config_file_root(psc_path)
+        .or_else(|| find_candidate_pair_root(psc_path))
         .unwrap_or_else(|| {
             psc_path
                 .ancestors()
@@ -207,16 +208,35 @@ mod tests {
     }
 
     #[test]
-    fn psc_project_root_prefers_a_candidate_pair_over_a_farther_config_file() {
+    fn psc_project_root_uses_a_candidate_pair_when_no_config_file_exists() {
         let dir = tempfile::tempdir().expect("failed to create temp dir");
         let outer_root = dir.path().join("Outer");
         let inner_root = outer_root.join("scripts/source");
         let script_path = inner_root.join("Example.psc");
         std::fs::create_dir_all(&inner_root).expect("failed to create dirs");
-        std::fs::write(outer_root.join("papyrus-lint.yaml"), "semicolon: true\n")
-            .expect("failed to write config file");
 
         assert_eq!(find_psc_project_root(&script_path), outer_root);
+    }
+
+    #[test]
+    fn psc_project_root_prefers_a_config_file_above_a_candidate_pair_root() {
+        // A common Bethesda mod layout: the workspace/project root (with its
+        // own papyrus-lint.yaml) sits one level above a `Data` folder whose
+        // `Scripts/Source` pair would otherwise make find_candidate_pair_root
+        // land on `Data` instead — the exact case VS Code/Sublime hit, since
+        // they invoke the CLI on a single .psc file.
+        let dir = tempfile::tempdir().expect("failed to create temp dir");
+        let workspace_root = dir.path().join("Workspace");
+        let script_dir = workspace_root.join("Data/Scripts/Source");
+        let script_path = script_dir.join("Example.psc");
+        std::fs::create_dir_all(&script_dir).expect("failed to create dirs");
+        std::fs::write(
+            workspace_root.join("papyrus-lint.yaml"),
+            "semicolon: true\n",
+        )
+        .expect("failed to write config file");
+
+        assert_eq!(find_psc_project_root(&script_path), workspace_root);
     }
 
     #[test]
