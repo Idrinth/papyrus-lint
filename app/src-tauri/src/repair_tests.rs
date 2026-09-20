@@ -456,6 +456,16 @@ fn targeted_repair_commands_report_io_errors_without_creating_a_file() {
     )
     .is_err());
     assert!(add_disable_comment_to_psc_line(
+        path.clone(),
+        ProjectLintContext {
+            root: root.clone(),
+            ..Default::default()
+        },
+        vec!["trailing-whitespace".to_string()],
+        1
+    )
+    .is_err());
+    assert!(add_disable_file_comment_to_psc_line(
         path,
         ProjectLintContext {
             root,
@@ -655,6 +665,79 @@ fn add_disable_comment_to_psc_line_preserves_a_cp1252_encoded_files_encoding() {
     let mut expected = b"Call(1,2) ; @disable comma-spacing\n; caf".to_vec();
     expected.extend_from_slice(&[0xE9, b'\n']);
     assert_eq!(std::fs::read(path).unwrap(), expected);
+}
+
+#[test]
+fn add_disable_file_comment_to_psc_line_adds_the_directive_and_relints() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    std::fs::write(&path, "Call(1,2)\nCall(3,4)\n").unwrap();
+
+    let diagnostics = add_disable_file_comment_to_psc_line(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+        vec!["comma-spacing".to_string()],
+        1,
+    )
+    .unwrap();
+
+    assert_eq!(
+        std::fs::read_to_string(&path).unwrap(),
+        "Call(1,2) ; @disable-file comma-spacing\nCall(3,4)\n"
+    );
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.rule != "comma-spacing"));
+}
+
+#[test]
+fn add_disable_file_comment_to_psc_line_covers_multiple_rules_and_merges_into_an_existing_directive(
+) {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    std::fs::write(&path, "Call(1,2)  \n").unwrap();
+    let path_string = path.to_string_lossy().into_owned();
+    let root = dir.path().to_string_lossy().into_owned();
+
+    add_disable_file_comment_to_psc_line(
+        path_string.clone(),
+        ProjectLintContext {
+            root: root.clone(),
+            ..Default::default()
+        },
+        vec![
+            "comma-spacing".to_string(),
+            "trailing-whitespace".to_string(),
+        ],
+        1,
+    )
+    .unwrap();
+    assert_eq!(
+        std::fs::read_to_string(&path).unwrap(),
+        "Call(1,2)   ; @disable-file comma-spacing, trailing-whitespace\n"
+    );
+
+    let diagnostics = add_disable_file_comment_to_psc_line(
+        path_string,
+        ProjectLintContext {
+            root,
+            ..Default::default()
+        },
+        vec!["trailing-whitespace".to_string()],
+        1,
+    )
+    .unwrap();
+
+    assert_eq!(
+        std::fs::read_to_string(&path).unwrap(),
+        "Call(1,2)   ; @disable-file comma-spacing, trailing-whitespace\n"
+    );
+    assert!(diagnostics.iter().all(|diagnostic| {
+        diagnostic.rule != "comma-spacing" && diagnostic.rule != "trailing-whitespace"
+    }));
 }
 
 #[test]

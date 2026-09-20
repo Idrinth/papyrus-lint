@@ -250,3 +250,58 @@ fn add_disable_directive_is_a_noop_for_an_out_of_range_line() {
         source
     );
 }
+
+#[test]
+fn add_disable_file_directive_appends_a_new_comment_to_a_bare_line() {
+    let updated =
+        add_disable_file_directive("action = 1\nother = 2\n", 1, &rules(&["float-to-int"]));
+    assert_eq!(
+        updated,
+        "action = 1 ; @disable-file float-to-int\nother = 2\n"
+    );
+}
+
+#[test]
+fn add_disable_file_directive_merges_into_an_existing_rule_list() {
+    let updated = add_disable_file_directive(
+        "action = 1 ; @disable-file float-to-int\n",
+        1,
+        &rules(&["strict-boolean"]),
+    );
+    assert_eq!(
+        updated,
+        "action = 1 ; @disable-file float-to-int, strict-boolean\n"
+    );
+}
+
+#[test]
+fn add_disable_file_directive_leaves_a_bare_disable_file_untouched() {
+    let updated =
+        add_disable_file_directive("action = 1 ; @disable-file\n", 1, &rules(&["float-to-int"]));
+    assert_eq!(updated, "action = 1 ; @disable-file\n");
+}
+
+#[test]
+fn add_disable_file_directive_does_not_merge_into_a_line_disable() {
+    let updated = add_disable_file_directive(
+        "action = 1 ; @disable float-to-int\n",
+        1,
+        &rules(&["strict-boolean"]),
+    );
+    assert_eq!(
+        updated,
+        "action = 1 ; @disable float-to-int @disable-file strict-boolean\n"
+    );
+}
+
+#[test]
+fn add_disable_file_directive_preserves_a_trailing_carriage_return() {
+    let updated = add_disable_file_directive("action = 1\r\n", 1, &rules(&["float-to-int"]));
+    assert_eq!(updated, "action = 1 ; @disable-file float-to-int\r\n");
+}
+
+#[test]
+fn add_disable_file_directive_is_a_noop_for_an_empty_rule_list() {
+    let source = "action = 1\n";
+    assert_eq!(add_disable_file_directive(source, 1, &[]), source);
+}

@@ -17,6 +17,8 @@ export { currentLintConfig } from "./config-types";
 export {
   applyLintConfigToUI,
   bindConfigSettings,
+  configKeyForRuleId,
+  disableRulesInLintConfig,
   handleLintConfigChanged,
   loadAndApplyLintConfig,
 } from "./config-ui";

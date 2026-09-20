@@ -175,3 +175,45 @@ export function bindConfigSettings() {
     ruleEls[key]?.addEventListener("change", handleLintConfigChanged);
   }
 }
+
+// Mirrors RULE_ID_TO_CONFIG_KEY in scripts/generate-config-types.mjs: the
+// handful of rule ids whose config key isn't just hyphens-to-underscores.
+const RULE_ID_TO_CONFIG_KEY: Record<string, keyof LintRules> = {
+  "float-to-int": "float_int_conversion",
+  "too-many-named-states": "too_many_states",
+};
+
+// Maps a hyphenated lint rule id (Diagnostic.rule) onto its LintRules key,
+// or undefined when the id isn't a configurable papyrus-lints rule (e.g. a
+// compiler diagnostic).
+export function configKeyForRuleId(ruleId: string): keyof LintRules | undefined {
+  const key = (RULE_ID_TO_CONFIG_KEY[ruleId] ?? ruleId.replaceAll("-", "_")) as keyof LintRules;
+  return RULE_KEYS.includes(key) ? key : undefined;
+}
+
+// Turns off every configurable rule in `ruleIds` in the in-memory lint
+// config, reflects that onto the Settings tab, and persists it the same way
+// unchecking those rules by hand would. Returns false when none of the ids
+// map to a still-enabled rule, so the caller can no-op instead of re-linting.
+export function disableRulesInLintConfig(ruleIds: string[]): boolean {
+  const keys = Array.from(
+    new Set(ruleIds.map(configKeyForRuleId).filter((key): key is keyof LintRules => key !== undefined)),
+  );
+  if (keys.length === 0) {
+    return false;
+  }
+  const next = lintConfigFromUI();
+  let changed = false;
+  for (const key of keys) {
+    if (next.rules[key]) {
+      next.rules[key] = false;
+      changed = true;
+    }
+  }
+  if (!changed) {
+    return false;
+  }
+  applyLintConfigToUI(next);
+  handleLintConfigChanged();
+  return true;
+}

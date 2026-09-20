@@ -111,6 +111,25 @@ impl Disables {
 /// comment. An empty `rules` list, or a `line` outside `source`, leaves
 /// `source` untouched.
 pub(crate) fn add_disable_directive(source: &str, line: usize, rules: &[String]) -> String {
+    add_named_disable_directive(source, line, rules, "@disable")
+}
+
+/// Adds an `@disable-file` directive covering every rule id in `rules` to
+/// `line` (1-indexed) of `source`, driving the code viewer's per-line "File
+/// disable" button. Merging and no-op rules match
+/// [`add_disable_directive`], but against `@disable-file` rather than
+/// `@disable`, so an existing line-level `@disable` on the same line is
+/// left alone and a new `@disable-file` is appended beside it.
+pub(crate) fn add_disable_file_directive(source: &str, line: usize, rules: &[String]) -> String {
+    add_named_disable_directive(source, line, rules, "@disable-file")
+}
+
+fn add_named_disable_directive(
+    source: &str,
+    line: usize,
+    rules: &[String],
+    keyword: &str,
+) -> String {
     if rules.is_empty() {
         return source.to_string();
     }
@@ -121,7 +140,7 @@ pub(crate) fn add_disable_directive(source: &str, line: usize, rules: &[String])
     if lines.get(index).is_none() {
         return source.to_string();
     }
-    let replaced = add_disable_directive_to_line(lines[index], rules);
+    let replaced = add_disable_directive_to_line(lines[index], rules, keyword);
     lines
         .iter()
         .enumerate()
@@ -136,13 +155,13 @@ pub(crate) fn add_disable_directive(source: &str, line: usize, rules: &[String])
         .join("\n")
 }
 
-fn add_disable_directive_to_line(line: &str, rules: &[String]) -> String {
+fn add_disable_directive_to_line(line: &str, rules: &[String], keyword: &str) -> String {
     let (content, trailing_cr) = match line.strip_suffix('\r') {
         Some(stripped) => (stripped, "\r"),
         None => (line, ""),
     };
 
-    match parse_directive(content, "@disable") {
+    match parse_directive(content, keyword) {
         Some(Directive::All { .. }) => line.to_string(),
         Some(Directive::Rules(existing)) => {
             let mut seen: HashSet<String> = existing.into_iter().map(|rule| rule.id).collect();
@@ -163,7 +182,7 @@ fn add_disable_directive_to_line(line: &str, rules: &[String]) -> String {
                 " ; "
             };
             format!(
-                "{content}{separator}@disable {}{trailing_cr}",
+                "{content}{separator}{keyword} {}{trailing_cr}",
                 rules.join(", ")
             )
         }

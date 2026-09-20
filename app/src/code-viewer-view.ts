@@ -1,4 +1,5 @@
 import { type Diagnostic, findingMessageWithRule, isFixableFinding } from "./backend";
+import { configKeyForRuleId } from "./config-ui";
 import { highlightPapyrusLines } from "./highlight";
 import { escapeAttr, levelOf } from "./main-severity";
 import { codeViewerViewEl } from "./code-viewer-state";
@@ -26,11 +27,13 @@ export function findingsGroupedByLine(findings: Diagnostic[]): Map<number, Diagn
   return findingsByLine;
 }
 
-// Builds the per-line "Fix"/"Ignore" buttons for `lineNumber`'s own table
-// cell: "Fix" only when at least one of `lineFindings` has an automatic fix
-// (isFixableFinding), "Ignore" only when at least one carries a rule id at
-// all (a rule-less finding, e.g. a compiler diagnostic, can't be named in an
-// `@disable` comment). Neither button is shown when neither applies, so an
+// Builds the per-line action buttons for `lineNumber`'s own table cell:
+// "Fix" only when at least one of `lineFindings` has an automatic fix
+// (isFixableFinding), "Ignore"/"File disable" only when at least one
+// carries a rule id at all (a rule-less finding, e.g. a compiler
+// diagnostic, can't be named in an `@disable`/`@disable-file` comment),
+// and "Config disable" only when at least one maps onto a papyrus-lint.yaml
+// `rules.*` switch. None of the buttons is shown when none apply, so an
 // unremarkable line's actions cell stays empty. The click itself is handled
 // by a single delegated listener on codeViewerViewEl (see
 // handleCodeViewerLineActionClick), since this HTML is rebuilt from a
@@ -49,6 +52,14 @@ function buildLineActionsHtml(lineNumber: number, lineFindings: Diagnostic[] | u
   if (lineFindings.some((finding) => finding.rule !== undefined)) {
     buttons.push(
       `<button type="button" class="code-viewer__line-action code-viewer__line-action--ignore" data-line-action="ignore" data-line="${lineNumber}">Ignore</button>`,
+    );
+    buttons.push(
+      `<button type="button" class="code-viewer__line-action code-viewer__line-action--file-disable" data-line-action="file-disable" data-line="${lineNumber}">File disable</button>`,
+    );
+  }
+  if (lineFindings.some((finding) => finding.rule !== undefined && configKeyForRuleId(finding.rule) !== undefined)) {
+    buttons.push(
+      `<button type="button" class="code-viewer__line-action code-viewer__line-action--config-disable" data-line-action="config-disable" data-line="${lineNumber}">Config disable</button>`,
     );
   }
   return buttons.join("");

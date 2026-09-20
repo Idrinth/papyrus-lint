@@ -15,7 +15,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 
 import { invokeImplFor } from "./test/harness";
 import { useProjectDir } from "./project-settings";
-import { applyLintConfigToUI, handleLintConfigChanged, lintConfigFromUI } from "./config-ui";
+import { applyLintConfigToUI, configKeyForRuleId, disableRulesInLintConfig, handleLintConfigChanged, lintConfigFromUI } from "./config-ui";
 import { DEFAULT_LINT_CONFIG, DEFAULT_RULES, type LintConfig } from "./config-types";
 import { loadLintConfig, loadLintConfigFromPath, saveLintConfig, saveLintConfigToPath } from "./config-io";
 describe("lint config UI round trip", () => {
@@ -136,6 +136,30 @@ describe("lint config UI round trip", () => {
       config: expect.objectContaining({ semicolon: true }),
     });
     expect(invokeMock).not.toHaveBeenCalledWith("save_lint_config", expect.anything());
+  });
+});
+
+describe("configKeyForRuleId / disableRulesInLintConfig", () => {
+  it("maps hyphenated rule ids onto LintRules keys, including the two exceptions", () => {
+    expect(configKeyForRuleId("comma-spacing")).toBe("comma_spacing");
+    expect(configKeyForRuleId("float-to-int")).toBe("float_int_conversion");
+    expect(configKeyForRuleId("too-many-named-states")).toBe("too_many_states");
+    expect(configKeyForRuleId("compiler-error")).toBeUndefined();
+  });
+
+  it("disableRulesInLintConfig unchecks the matching Settings checkboxes", () => {
+    expect(document.querySelector<HTMLInputElement>("#rule-comma_spacing")!.checked).toBe(true);
+
+    expect(disableRulesInLintConfig(["comma-spacing", "compiler-error"])).toBe(true);
+
+    expect(document.querySelector<HTMLInputElement>("#rule-comma_spacing")!.checked).toBe(false);
+    expect(lintConfigFromUI().rules.comma_spacing).toBe(false);
+  });
+
+  it("disableRulesInLintConfig is a no-op when nothing configurable is still enabled", () => {
+    expect(disableRulesInLintConfig(["compiler-error"])).toBe(false);
+    expect(disableRulesInLintConfig(["comma-spacing"])).toBe(true);
+    expect(disableRulesInLintConfig(["comma-spacing"])).toBe(false);
   });
 });
 

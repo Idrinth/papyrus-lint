@@ -1,7 +1,8 @@
 //! Edge-case coverage for the crate's black-box lint and repair API.
 
 use papyrus_lints::{
-    add_disable_comment, lint, repair, repair_filtered, repaired_line, restrict_to_line,
+    add_disable_comment, add_disable_file_comment, lint, repair, repair_filtered, repaired_line,
+    restrict_to_line,
     tags::{tags_for, Importance, RULE_TAGS},
     Config, ExternalSignatures, ParamInfo, KNOWN_RULE_IDS,
 };
@@ -168,6 +169,22 @@ fn public_disable_comment_is_a_noop_without_a_valid_target_and_rules() {
         add_disable_comment(source, 3, &rules(&["comma-spacing"])),
         source
     );
+}
+
+#[test]
+fn public_disable_file_comment_can_suppress_multiple_rules_across_the_file() {
+    let source = "Call(1,2)  \nCall(3,4)  \n";
+    let updated =
+        add_disable_file_comment(source, 1, &rules(&["comma-spacing", "trailing-whitespace"]));
+    let diagnostics = lint(&updated, &Config::default());
+
+    assert_eq!(
+        updated,
+        "Call(1,2)   ; @disable-file comma-spacing, trailing-whitespace\nCall(3,4)  \n"
+    );
+    assert!(diagnostics.iter().all(|diagnostic| {
+        diagnostic.rule != "comma-spacing" && diagnostic.rule != "trailing-whitespace"
+    }));
 }
 
 #[test]

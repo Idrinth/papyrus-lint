@@ -16,7 +16,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 import { invokeImplFor } from "./test/harness";
 import { DEFAULT_LINT_CONFIG } from "./config-types";
 import { useProjectDir } from "./project-settings";
-import { addDisableCommentToPscLine, hasFixableFindings, isFixableFinding, lintPscFile, loadAppVersion, loadRuleTags, previewRepairPscFile, repairPscFile, repairPscFileRule, repairPscFinding, type Diagnostic, type RuleTagsInfo } from "./backend";
+import { addDisableCommentToPscLine, addDisableFileCommentToPscLine, hasFixableFindings, isFixableFinding, lintPscFile, loadAppVersion, loadRuleTags, previewRepairPscFile, repairPscFile, repairPscFileRule, repairPscFinding, type Diagnostic, type RuleTagsInfo } from "./backend";
 describe("hasFixableFindings", () => {
   it("is true for trailing whitespace findings", () => {
     expect(
@@ -263,6 +263,28 @@ describe("lint/repair command wrappers", () => {
       addDisableCommentToPscLine("/scripts/MyScript.psc", ["comma-spacing", "trailing-whitespace"], 3),
     ).resolves.toEqual(remaining);
     expect(invokeMock).toHaveBeenCalledWith("add_disable_comment_to_psc_line", {
+      path: "/scripts/MyScript.psc",
+      context: {
+        root: expect.any(String),
+        config: expect.anything(),
+        additional_roots: expect.anything(),
+        lookup_roots: expect.anything(),
+        compiler_path: expect.any(String),
+        compile_check: expect.any(Boolean),
+      },
+      rules: ["comma-spacing", "trailing-whitespace"],
+      line: 3,
+    });
+  });
+
+  it("addDisableFileCommentToPscLine forwards the rules and line to the add_disable_file_comment_to_psc_line command", async () => {
+    const remaining: Diagnostic[] = [{ line: 1, column: 1, message: "[error] still broken" }];
+    invokeImplFor({ add_disable_file_comment_to_psc_line: () => remaining });
+
+    await expect(
+      addDisableFileCommentToPscLine("/scripts/MyScript.psc", ["comma-spacing", "trailing-whitespace"], 3),
+    ).resolves.toEqual(remaining);
+    expect(invokeMock).toHaveBeenCalledWith("add_disable_file_comment_to_psc_line", {
       path: "/scripts/MyScript.psc",
       context: {
         root: expect.any(String),

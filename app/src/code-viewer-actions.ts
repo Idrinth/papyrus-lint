@@ -1,5 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
-import { type Diagnostic, addDisableCommentToPscLine, isFixableFinding, repairPscFile, repairPscFinding } from "./backend";
+import {
+  type Diagnostic,
+  addDisableCommentToPscLine,
+  addDisableFileCommentToPscLine,
+  isFixableFinding,
+  lintPscFile,
+  repairPscFile,
+  repairPscFinding,
+} from "./backend";
+import { disableRulesInLintConfig } from "./config-ui";
 import { currentPscOutcomes } from "./drop";
 import { renderPscResults } from "./results-list-render";
 import { codeViewerDiffOutputEl, codeViewerFixButtonEl, codeViewerState, setCodeViewerState, updateCodeViewerFixButtonsVisibility } from "./code-viewer-state";
@@ -22,6 +31,16 @@ async function refreshViewerAfterMutation(path: string, findings: Diagnostic[], 
     outcome.findings = findings;
     renderPscResults(currentPscOutcomes);
   }
+}
+
+function uniqueRulesOnLine(findings: Diagnostic[], line: number): string[] {
+  return Array.from(
+    new Set(
+      findings
+        .filter((finding) => finding.line === line && finding.rule !== undefined)
+        .map((finding) => finding.rule as string),
+    ),
+  );
 }
 
 // The code viewer's own "Apply fixes" button: applies every automatic fix
@@ -51,11 +70,11 @@ export async function handleCodeViewerFixClick() {
 
 // Dispatches a click anywhere in the read-only view's table to the right
 // per-line handler below, reading which line and which action
-// (buildLineActionsHtml's "fix"/"ignore" buttons) off the clicked button's
-// own data attributes — the buttons are rebuilt from an HTML string on
-// every render, so they're wired up through one delegated listener on
-// codeViewerViewEl rather than individual per-button listeners that would
-// need reattaching each time.
+// (buildLineActionsHtml's "fix"/"ignore"/"file-disable"/"config-disable"
+// buttons) off the clicked button's own data attributes — the buttons are
+// rebuilt from an HTML string on every render, so they're wired up through
+// one delegated listener on codeViewerViewEl rather than individual
+// per-button listeners that would need reattaching each time.
 export async function handleCodeViewerLineActionClick(event: MouseEvent) {
   if (!(event.target instanceof Element)) {
     return;
@@ -72,6 +91,10 @@ export async function handleCodeViewerLineActionClick(event: MouseEvent) {
     await handleCodeViewerFixLineClick(line, button);
   } else if (button.dataset.lineAction === "ignore") {
     await handleCodeViewerIgnoreLineClick(line, button);
+  } else if (button.dataset.lineAction === "file-disable") {
+    await handleCodeViewerFileDisableLineClick(line, button);
+  } else if (button.dataset.lineAction === "config-disable") {
+    await handleCodeViewerConfigDisableLineClick(line, button);
   }
 }
 
@@ -123,19 +146,67 @@ export async function handleCodeViewerIgnoreLineClick(line: number, button: HTML
     return;
   }
   const { path, findings: initialFindings } = codeViewerState;
-  const rules = Array.from(
-    new Set(
-      initialFindings
-        .filter((finding) => finding.line === line && finding.rule !== undefined)
-        .map((finding) => finding.rule as string),
-    ),
-  );
+  const rules = uniqueRulesOnLine(initialFindings, line);
   if (rules.length === 0) {
     return;
   }
   button.disabled = true;
   try {
     const findings = await addDisableCommentToPscLine(path, rules, line);
+    await refreshViewerAfterMutation(path, findings, false);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// The code viewer's per-line "File disable" button: adds (or extends) an
+// `; @disable-file <rules>` comment covering every rule id found on `line`
+// (see addDisableFileCommentToPscLine), silencing those findings across the
+// whole file instead of just that line, then refreshes the viewer and the
+// matching Lint results list entry in place the same way
+// handleCodeViewerIgnoreLineClick does.
+export async function handleCodeViewerFileDisableLineClick(line: number, button: HTMLButtonElement) {
+  if (!codeViewerState) {
+    return;
+  }
+  const { path, findings: initialFindings } = codeViewerState;
+  const rules = uniqueRulesOnLine(initialFindings, line);
+  if (rules.length === 0) {
+    return;
+  }
+  button.disabled = true;
+  try {
+    const findings = await addDisableFileCommentToPscLine(path, rules, line);
+    await refreshViewerAfterMutation(path, findings, false);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// The code viewer's per-line "Config disable" button: turns off every
+// configurable rule found on `line` in papyrus-lint.yaml (see
+// disableRulesInLintConfig), then re-lints the open file so those findings
+// disappear without writing a disable comment. Other loaded files are
+// marked stale the same way unchecking the rule on the Settings tab is.
+export async function handleCodeViewerConfigDisableLineClick(line: number, button: HTMLButtonElement) {
+  if (!codeViewerState) {
+    return;
+  }
+  const { path, findings: initialFindings } = codeViewerState;
+  const rules = uniqueRulesOnLine(initialFindings, line);
+  if (rules.length === 0) {
+    return;
+  }
+  button.disabled = true;
+  try {
+    if (!disableRulesInLintConfig(rules)) {
+      return;
+    }
+    const findings = await lintPscFile(path);
     await refreshViewerAfterMutation(path, findings, false);
   } catch (error) {
     console.error(error);

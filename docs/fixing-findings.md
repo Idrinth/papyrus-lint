@@ -45,7 +45,8 @@ and the project's Lint results list is only refreshed once you actually
 save.
 
 Every line in the code viewer that has at least one finding also gets its
-own small "Fix"/"Ignore" buttons next to it, in view mode. "Fix" only
+own small "Fix"/"Ignore"/"File disable"/"Config disable" buttons next to
+it, in view mode. "Fix" only
 appears when at least one of that line's findings is auto-fixable, and
 applies each such finding's own fix restricted to that line, the same way
 "Fix this issue" does — a rule whose fix would shift other lines (e.g.
@@ -57,6 +58,18 @@ comment naming every rule found on that line instead of fixing it — merging
 into an already-present `; @disable` comment on that line rather than
 adding a second one, so clicking it again after a later run flags something
 new just extends the same comment.
+"File disable" appears next to "Ignore" and adds a
+[`; @disable-file <rule-id>[, <rule-id>...]`](../README.md#disabling-a-lint-on-a-specific-line)
+comment naming those same rules instead, silencing them across the whole
+file no matter which line the comment sits on — merging into an
+already-present `; @disable-file` comment on that line the same way
+"Ignore" merges into `; @disable`.
+"Config disable" appears whenever at least one of the line's rules has a
+`rules.*` switch in `papyrus-lint.yaml`, and turns those rules off in the
+project's lint configuration (the same as unchecking them on the Settings
+tab) rather than writing a disable comment — the currently open file is
+re-linted immediately, and the rest of the Lint results list is marked
+stale so switching back to it re-lints against the new settings.
 
 ## Reviewing and exporting findings
 

@@ -15,7 +15,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 
 import { invokeImplFor } from "./test/harness";
 import { enterCodeViewerEditMode } from "./live-edit-persist";
-import { handleCodeViewerFixClick, handleCodeViewerFixLineClick, handleCodeViewerIgnoreLineClick } from "./code-viewer-actions";
+import { handleCodeViewerFixClick, handleCodeViewerFixLineClick, handleCodeViewerIgnoreLineClick, handleCodeViewerFileDisableLineClick, handleCodeViewerConfigDisableLineClick } from "./code-viewer-actions";
 import { handleCodeViewerPreviewFixClick } from "./code-viewer-diff";
 import { openCodeViewer, requestCloseCodeViewer, toggleCodeViewerFullscreen } from "./code-viewer-dialog";
 describe("openCodeViewer", () => {
@@ -92,7 +92,7 @@ describe("openCodeViewer", () => {
     expect(document.querySelector<HTMLButtonElement>("#code-viewer-preview-fix")!.hidden).toBe(true);
   });
 
-  it("shows a per-line Fix and Ignore button for a fixable finding", async () => {
+  it("shows a per-line Fix, Ignore, File disable, and Config disable button for a fixable finding", async () => {
     invokeImplFor({ read_psc_file: () => "line one  \n" });
 
     await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] Line contains trailing whitespace", rule: "trailing-whitespace" }]);
@@ -100,9 +100,11 @@ describe("openCodeViewer", () => {
     const row = document.querySelector("#code-viewer-line-1")!;
     expect(row.querySelector('[data-line-action="fix"]')).not.toBeNull();
     expect(row.querySelector('[data-line-action="ignore"]')).not.toBeNull();
+    expect(row.querySelector('[data-line-action="file-disable"]')).not.toBeNull();
+    expect(row.querySelector('[data-line-action="config-disable"]')).not.toBeNull();
   });
 
-  it("shows only a per-line Ignore button for a rule with no automatic fix", async () => {
+  it("shows Ignore, File disable, and Config disable for a rule with no automatic fix", async () => {
     invokeImplFor({ read_psc_file: () => 'Debug.Trace("hi")\n' });
 
     await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[error] forbidden function used", rule: "forbidden-functions" }]);
@@ -110,6 +112,8 @@ describe("openCodeViewer", () => {
     const row = document.querySelector("#code-viewer-line-1")!;
     expect(row.querySelector('[data-line-action="fix"]')).toBeNull();
     expect(row.querySelector('[data-line-action="ignore"]')).not.toBeNull();
+    expect(row.querySelector('[data-line-action="file-disable"]')).not.toBeNull();
+    expect(row.querySelector('[data-line-action="config-disable"]')).not.toBeNull();
   });
 
   it("shows neither per-line button for a finding with no rule id", async () => {
@@ -120,6 +124,8 @@ describe("openCodeViewer", () => {
     const row = document.querySelector("#code-viewer-line-1")!;
     expect(row.querySelector('[data-line-action="fix"]')).toBeNull();
     expect(row.querySelector('[data-line-action="ignore"]')).toBeNull();
+    expect(row.querySelector('[data-line-action="file-disable"]')).toBeNull();
+    expect(row.querySelector('[data-line-action="config-disable"]')).toBeNull();
   });
 
   it("shows no per-line buttons for a line with no findings", async () => {
@@ -365,6 +371,170 @@ describe("handleCodeViewerIgnoreLineClick", () => {
   });
 });
 
+describe("handleCodeViewerFileDisableLineClick", () => {
+  function fileDisableLineButton(): HTMLButtonElement {
+    return document.querySelector<HTMLButtonElement>('#code-viewer-line-1 [data-line-action="file-disable"]')!;
+  }
+
+  it("disables the button, adds the file-disable comment, and re-renders with the re-read source", async () => {
+    invokeImplFor({
+      read_psc_file: vi
+        .fn()
+        .mockResolvedValueOnce("Foo(1,2)\n")
+        .mockResolvedValueOnce("Foo(1,2) ; @disable-file comma-spacing\n"),
+      add_disable_file_comment_to_psc_line: () => [],
+    });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] missing space after comma", rule: "comma-spacing" }]);
+    const button = fileDisableLineButton();
+
+    const promise = handleCodeViewerFileDisableLineClick(1, button);
+    expect(button.disabled).toBe(true);
+    await promise;
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      "add_disable_file_comment_to_psc_line",
+      expect.objectContaining({ path: "/a.psc", rules: ["comma-spacing"], line: 1 }),
+    );
+    expect(document.querySelectorAll("#code-viewer-view .code-viewer__line--warning")).toHaveLength(0);
+  });
+
+  it("covers every distinct rule found on the line in one call", async () => {
+    invokeImplFor({
+      read_psc_file: () => "line one  \n",
+      add_disable_file_comment_to_psc_line: () => [],
+    });
+    await openCodeViewer("/a.psc", [
+      { line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" },
+      { line: 1, column: 1, message: "[error] forbidden function used", rule: "forbidden-functions" },
+    ]);
+    const button = fileDisableLineButton();
+
+    await handleCodeViewerFileDisableLineClick(1, button);
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      "add_disable_file_comment_to_psc_line",
+      expect.objectContaining({ rules: ["trailing-whitespace", "forbidden-functions"], line: 1 }),
+    );
+  });
+
+  it("does nothing when the code viewer has no loaded file", async () => {
+    invokeMock.mockRejectedValue(new Error("permission denied"));
+    await openCodeViewer("/a.psc", []);
+    invokeMock.mockReset();
+    const button = document.createElement("button");
+
+    await handleCodeViewerFileDisableLineClick(1, button);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("does nothing for a line with no rule-bearing finding", async () => {
+    invokeImplFor({ read_psc_file: () => 'Debug.Trace("hi")\n' });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[error] compiler error" }]);
+    invokeMock.mockReset();
+    const button = document.createElement("button");
+
+    await handleCodeViewerFileDisableLineClick(1, button);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("re-enables the button and leaves the viewer untouched when adding the comment fails", async () => {
+    invokeImplFor({
+      read_psc_file: () => "Foo(1,2)\n",
+      add_disable_file_comment_to_psc_line: () => Promise.reject(new Error("disk full")),
+    });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] missing space after comma", rule: "comma-spacing" }]);
+    const button = fileDisableLineButton();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await handleCodeViewerFileDisableLineClick(1, button);
+
+    expect(button.disabled).toBe(false);
+    expect(document.querySelectorAll("#code-viewer-view .code-viewer__line--warning")).toHaveLength(1);
+  });
+});
+
+describe("handleCodeViewerConfigDisableLineClick", () => {
+  function configDisableLineButton(): HTMLButtonElement {
+    return document.querySelector<HTMLButtonElement>('#code-viewer-line-1 [data-line-action="config-disable"]')!;
+  }
+
+  it("disables the button, turns the rule off in config, and re-lints the file", async () => {
+    invokeImplFor({ read_psc_file: () => "Foo(1,2)\n" });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] missing space after comma", rule: "comma-spacing" }]);
+    invokeImplFor({
+      read_psc_file: () => "Foo(1,2)\n",
+      lint_psc_file: () => [],
+    });
+    const button = configDisableLineButton();
+    const checkbox = document.querySelector<HTMLInputElement>("#rule-comma_spacing")!;
+    expect(checkbox.checked).toBe(true);
+
+    const promise = handleCodeViewerConfigDisableLineClick(1, button);
+    expect(button.disabled).toBe(true);
+    await promise;
+
+    expect(checkbox.checked).toBe(false);
+    expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", expect.objectContaining({ path: "/a.psc" }));
+    expect(document.querySelectorAll("#code-viewer-view .code-viewer__line--warning")).toHaveLength(0);
+  });
+
+  it("turns off every configurable rule found on the line", async () => {
+    invokeImplFor({ read_psc_file: () => "line one  \n" });
+    await openCodeViewer("/a.psc", [
+      { line: 1, column: 1, message: "[warning] trailing whitespace", rule: "trailing-whitespace" },
+      { line: 1, column: 1, message: "[error] forbidden function used", rule: "forbidden-functions" },
+    ]);
+    invokeImplFor({
+      read_psc_file: () => "line one  \n",
+      lint_psc_file: () => [],
+    });
+    const button = configDisableLineButton();
+
+    await handleCodeViewerConfigDisableLineClick(1, button);
+
+    expect(document.querySelector<HTMLInputElement>("#rule-trailing_whitespace")!.checked).toBe(false);
+    expect(document.querySelector<HTMLInputElement>("#rule-forbidden_functions")!.checked).toBe(false);
+  });
+
+  it("maps float-to-int onto the float_int_conversion config key", async () => {
+    invokeImplFor({ read_psc_file: () => "Int x = 1.5\n" });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] implicit float-to-int", rule: "float-to-int" }]);
+    invokeImplFor({
+      read_psc_file: () => "Int x = 1.5\n",
+      lint_psc_file: () => [],
+    });
+    const button = configDisableLineButton();
+
+    await handleCodeViewerConfigDisableLineClick(1, button);
+
+    expect(document.querySelector<HTMLInputElement>("#rule-float_int_conversion")!.checked).toBe(false);
+  });
+
+  it("does nothing when the code viewer has no loaded file", async () => {
+    invokeMock.mockRejectedValue(new Error("permission denied"));
+    await openCodeViewer("/a.psc", []);
+    invokeMock.mockReset();
+    const button = document.createElement("button");
+
+    await handleCodeViewerConfigDisableLineClick(1, button);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("does nothing for a line with no rule-bearing finding", async () => {
+    invokeImplFor({ read_psc_file: () => 'Debug.Trace("hi")\n' });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[error] compiler error" }]);
+    invokeMock.mockReset();
+    const button = document.createElement("button");
+
+    await handleCodeViewerConfigDisableLineClick(1, button);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+});
+
 describe("handleCodeViewerLineActionClick (delegated click handling)", () => {
   it("routes a click on the per-line Fix button to handleCodeViewerFixLineClick", async () => {
     invokeImplFor({
@@ -392,6 +562,35 @@ describe("handleCodeViewerLineActionClick (delegated click handling)", () => {
     await Promise.resolve();
 
     expect(invokeMock).toHaveBeenCalledWith("add_disable_comment_to_psc_line", expect.objectContaining({ line: 1 }));
+  });
+
+  it("routes a click on the per-line File disable button to handleCodeViewerFileDisableLineClick", async () => {
+    invokeImplFor({
+      read_psc_file: () => "Foo(1,2)\n",
+      add_disable_file_comment_to_psc_line: () => [],
+    });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] missing space after comma", rule: "comma-spacing" }]);
+
+    document.querySelector<HTMLButtonElement>('#code-viewer-line-1 [data-line-action="file-disable"]')!.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(invokeMock).toHaveBeenCalledWith("add_disable_file_comment_to_psc_line", expect.objectContaining({ line: 1 }));
+  });
+
+  it("routes a click on the per-line Config disable button to handleCodeViewerConfigDisableLineClick", async () => {
+    invokeImplFor({ read_psc_file: () => "Foo(1,2)\n" });
+    await openCodeViewer("/a.psc", [{ line: 1, column: 1, message: "[warning] missing space after comma", rule: "comma-spacing" }]);
+    invokeImplFor({
+      read_psc_file: () => "Foo(1,2)\n",
+      lint_psc_file: () => [],
+    });
+
+    document.querySelector<HTMLButtonElement>('#code-viewer-line-1 [data-line-action="config-disable"]')!.click();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", expect.objectContaining({ path: "/a.psc" }));
   });
 
   it("ignores a click that doesn't land on an action button", async () => {

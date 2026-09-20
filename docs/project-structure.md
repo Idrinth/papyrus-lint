@@ -14,7 +14,7 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │   │   │                        # wiring, drop/lint orchestration; re-exports the
 │   │   │                        # feature modules below
 │   │   ├── presets.ts           # Config presets: picker, save/reset, Presets tab
-│   │   ├── code-viewer.ts       # Code viewer dialog: open/close, view, line fix/ignore
+│   │   ├── code-viewer.ts       # Code viewer dialog: open/close, view, line fix/ignore/file-disable/config-disable
 │   │   ├── results-list.ts      # Lint results list, mass-fix; calls filter + export helpers
 │   │   ├── results-filter.ts    # Lint results filters: state, matching, filterOutcomes
 │   │   ├── results-export-types.ts # Shared types for issue exports (filters, files, AI source)
@@ -76,7 +76,7 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │   │       ├── lint_tests.rs     # lint.rs's unit tests, `#[path]`-included as its
 │   │       │                     # `mod tests` so lint.rs's own size tracks its
 │   │       │                     # actual (small) implementation
-│   │       ├── repair.rs         # Apply/preview fixes and per-line @disable
+│   │       ├── repair.rs         # Apply/preview fixes and per-line @disable / @disable-file
 │   │       └── export.rs         # format_issues_as_text/format_issues_as_json/
 │   │                             # format_issues_for_ai_base: the "Export
 │   │                             # issues"/"Export for AI" buttons' own
@@ -150,7 +150,7 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       │   ├── repair.rs                # repair() / repair_filtered / by-tag
 │       │       │   ├── repair_external.rs       # ExternalSignatures-aware repair
 │       │       │   ├── restrict_to_line.rs      # restrict_to_line / repaired_line
-│       │       │   ├── disable.rs               # add_disable_comment / is_disabled
+│       │       │   ├── disable.rs               # add_disable_comment / add_disable_file_comment / is_disabled
 │       │       │   ├── rule_flags.rs            # each config.rules flag via lint()
 │       │       │   ├── rule_flags_external.rs   # flags that need ExternalSignatures
 │       │       │   └── support.rs               # config_with + fake ExternalSignatures
