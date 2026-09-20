@@ -149,8 +149,9 @@ build script.
   get a read-only `GITHUB_TOKEN`.
 - **Markdown job**: runs markdownlint-cli2 against every `README.md` in the
   repository, using the root `.markdownlint-cli2.yaml` configuration, then
-  checks local links in every Markdown file with
-  `.github/scripts/markdown_link_lint.py`. External URLs are not fetched.
+  checks local links and GitHub-generated heading anchors in every Markdown
+  file with `.github/scripts/markdown_link_lint.py`. External URLs are not
+  fetched.
 - **VS Code extension job**: installs its dependencies, then runs `npm run
   test:coverage` (the Node test runner's built-in coverage, via
   `--experimental-test-coverage`), ESLint, and TypeScript compilation. The

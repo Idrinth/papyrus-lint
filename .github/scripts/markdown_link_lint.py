@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Check that local links in Markdown files point to existing paths."""
+"""Check that local Markdown links point to existing paths and anchors."""
 
 from __future__ import annotations
 
 import argparse
+import html
 import re
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -14,6 +15,11 @@ INLINE_LINK = re.compile(r"!?\[[^]]*\]\(\s*(<[^>]+>|[^\s)]+)")
 REFERENCE_LINK = re.compile(r"^\s{0,3}\[[^]]+\]:\s*(<[^>]+>|\S+)")
 FENCE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
 CODE_SPAN = re.compile(r"(`+)(.*?)\1")
+ATX_HEADING = re.compile(r"^\s{0,3}#{1,6}\s+(.+?)\s*$")
+SETEXT_HEADING = re.compile(r"^\s{0,3}(?:=+|-+)\s*$")
+MARKDOWN_LINK_TEXT = re.compile(r"!?\[([^]]*)\]\([^)]*\)")
+HTML_TAG = re.compile(r"<[^>]+>")
+GITHUB_SLUG_PUNCTUATION = re.compile(r"[\u2000-\u206f\u2e00-\u2e7f\\'!\"#$%&()*+,./:;<=>?@[\]^`{|}~]")
 
 
 def markdown_files(root: Path) -> list[Path]:
@@ -38,8 +44,49 @@ def local_target(destination: str) -> str | None:
     return unquote(parsed.path) or None
 
 
+def github_slug(heading: str) -> str:
+    """Return the anchor GitHub generates for a Markdown heading."""
+    heading = MARKDOWN_LINK_TEXT.sub(r"\1", heading)
+    heading = HTML_TAG.sub("", heading)
+    heading = html.unescape(heading).strip().lower()
+    return re.sub(r"\s", "-", GITHUB_SLUG_PUNCTUATION.sub("", heading))
+
+
+def anchors(path: Path) -> set[str]:
+    """Return the GitHub-style heading anchors generated for a Markdown file."""
+    result: set[str] = set()
+    occurrences: dict[str, int] = {}
+    fence_marker: str | None = None
+    previous_line: str | None = None
+    for line in path.read_text(encoding="utf-8").splitlines():
+        fence = FENCE.match(line)
+        if fence:
+            marker = fence.group(1)[0]
+            fence_marker = None if fence_marker == marker else marker
+            previous_line = None
+            continue
+        if fence_marker:
+            continue
+
+        match = ATX_HEADING.match(line)
+        heading = match.group(1).rstrip("#").rstrip() if match else None
+        if SETEXT_HEADING.match(line) and previous_line and previous_line.strip():
+            heading = previous_line.strip()
+        if heading is not None:
+            slug = github_slug(heading)
+            duplicate = occurrences.get(slug, 0)
+            candidate = slug if duplicate == 0 else f"{slug}-{duplicate}"
+            while candidate in result:
+                duplicate += 1
+                candidate = f"{slug}-{duplicate}"
+            occurrences[slug] = duplicate + 1
+            result.add(candidate)
+        previous_line = line
+    return result
+
+
 def broken_links(path: Path) -> list[tuple[int, str]]:
-    """Return line numbers and destinations for nonexistent local links."""
+    """Return line numbers and destinations for nonexistent local links or anchors."""
     issues: list[tuple[int, str]] = []
     fence_marker: str | None = None
     for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
@@ -57,9 +104,20 @@ def broken_links(path: Path) -> list[tuple[int, str]]:
         if reference:
             destinations.append(reference.group(1))
         for destination in destinations:
+            cleaned_destination = destination.strip("<>")
             target = local_target(destination)
             if target and not (path.parent / target).exists():
-                issues.append((line_number, destination.strip("<>")))
+                issues.append((line_number, cleaned_destination))
+                continue
+
+            parsed = urlsplit(destination.removeprefix("<").removesuffix(">"))
+            if parsed.scheme or parsed.netloc or not parsed.fragment:
+                continue
+            target_path = path.parent / unquote(parsed.path) if parsed.path else path
+            if target_path.suffix.lower() in MARKDOWN_SUFFIXES and target_path.exists():
+                fragment = unquote(parsed.fragment)
+                if fragment not in anchors(target_path):
+                    issues.append((line_number, cleaned_destination))
     return issues
 
 
