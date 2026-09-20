@@ -386,7 +386,9 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       ├── linter.ts         # PapyrusLinter: lint / blob / fix / applyResult
 │       ├── liveLint.ts       # debounced as-you-type --blob lint
 │       ├── init.ts           # papyrusLint.initializeConfig wizard
-│       └── codeActions.ts    # "Fix this issue" CodeActionProvider
+│       ├── suppressions.ts   # @disable / @disable-file / papyrus-lint.yaml rule-off edits
+│       ├── ignore.ts         # "Ignore this lint for the line/file/project" commands
+│       └── codeActions.ts    # "Fix this issue" / ignore CodeActionProvider
 │   └── test/                 # Node-based extension unit tests (per-module)
 ├── pages/                   # Source for the GitHub Pages discoverability site
 │   ├── index.template.html    # (see GitHub Pages below): index.template.html is

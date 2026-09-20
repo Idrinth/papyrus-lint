@@ -161,7 +161,13 @@ The desktop app's code viewer can add this comment for you instead of
 typing it by hand — see its per-line "Ignore" button
 [above](#fixing-lint-findings). Its "File disable" button writes the
 `; @disable-file` form below instead, and "Config disable" turns the
-rule off in `papyrus-lint.yaml`.
+rule off in `papyrus-lint.yaml`. The VS Code extension's lightbulb menu
+offers **Ignore this lint for the line**, which writes the same
+`; @disable` comment, **Ignore this lint for the file**, which writes a
+[`; @disable-file`](#disabling-a-lint-on-a-specific-line) comment instead,
+and **Ignore this lint for the project**, which turns the rule off in
+`papyrus-lint.yaml` (creating that file if the workspace doesn't have one
+yet).
 
 `; @disable` with no rule ids suppresses every lint on that line. Matching
 against the directive's rule id(s) is case-insensitive. This only affects

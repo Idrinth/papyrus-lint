@@ -95,6 +95,21 @@
         "category": "Papyrus Lint"
       },
       {
+        "command": "papyrusLint.ignoreIssueForLine",
+        "title": "Papyrus Lint: Ignore This Lint For The Line",
+        "category": "Papyrus Lint"
+      },
+      {
+        "command": "papyrusLint.ignoreIssueForFile",
+        "title": "Papyrus Lint: Ignore This Lint For The File",
+        "category": "Papyrus Lint"
+      },
+      {
+        "command": "papyrusLint.ignoreIssueForProject",
+        "title": "Papyrus Lint: Ignore This Lint For The Project",
+        "category": "Papyrus Lint"
+      },
+      {
         "command": "papyrusLint.initializeConfig",
         "title": "Papyrus Lint: Initialize Configuration",
         "category": "Papyrus Lint"
@@ -112,6 +127,18 @@
         },
         {
           "command": "papyrusLint.fixIssue",
+          "when": "false"
+        },
+        {
+          "command": "papyrusLint.ignoreIssueForLine",
+          "when": "false"
+        },
+        {
+          "command": "papyrusLint.ignoreIssueForFile",
+          "when": "false"
+        },
+        {
+          "command": "papyrusLint.ignoreIssueForProject",
           "when": "false"
         },
         {
