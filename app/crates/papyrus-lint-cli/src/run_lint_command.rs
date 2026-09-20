@@ -145,7 +145,12 @@ fn parse_scripts(
         |file_index| {
             let result = parse_script(&script_paths[file_index]);
             if progress {
-                report_file_progress(&progress_completed, total_scripts, progress_stdout, "Parsing");
+                report_file_progress(
+                    &progress_completed,
+                    total_scripts,
+                    progress_stdout,
+                    "Parsing",
+                );
             }
             result
         },
@@ -224,7 +229,12 @@ fn process_scripts<'a>(
 
     let progress_stdout: Mutex<&mut (dyn Write + Send)> = Mutex::new(stdout);
 
-    let parsed_files = parse_scripts(&script_paths, lint.thread_count, lint.progress, &progress_stdout);
+    let parsed_files = parse_scripts(
+        &script_paths,
+        lint.thread_count,
+        lint.progress,
+        &progress_stdout,
+    );
     if lint.progress && total_scripts > 0 {
         // Ends the "Parsing" bar's line so "Linting"'s own `\r`-updated one
         // starts fresh below it instead of overwriting it mid-word.
@@ -384,7 +394,12 @@ fn process_script(
     plain_text.extend_from_slice(&lint_outcome.plain_text);
 
     if job.progress {
-        report_file_progress(progress_completed, total_scripts, progress_stdout, "Linting");
+        report_file_progress(
+            progress_completed,
+            total_scripts,
+            progress_stdout,
+            "Linting",
+        );
     }
 
     Ok(FileOutcome {

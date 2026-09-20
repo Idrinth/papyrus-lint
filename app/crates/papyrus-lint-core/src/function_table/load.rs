@@ -221,9 +221,14 @@ impl FunctionTable {
     /// [`super::FunctionTable::preload`] to check whether a caller-supplied
     /// path/AST for `name_lower` is still exactly what this table would
     /// resolve on its own, without loading (or locking) anything itself.
-    pub(super) fn resolved_path_and_mtime(&self, name_lower: &str) -> (Option<PathBuf>, Option<u64>) {
+    pub(super) fn resolved_path_and_mtime(
+        &self,
+        name_lower: &str,
+    ) -> (Option<PathBuf>, Option<u64>) {
         let resolved = self.resolve_script_path_kind(name_lower);
-        let mtime = resolved.as_ref().and_then(|(path, _)| file_mtime_secs(path));
+        let mtime = resolved
+            .as_ref()
+            .and_then(|(path, _)| file_mtime_secs(path));
         (resolved.map(|(path, _)| path), mtime)
     }
 
