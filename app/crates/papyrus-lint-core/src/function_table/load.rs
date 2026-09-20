@@ -215,6 +215,18 @@ impl FunctionTable {
         self.script_mtimes.insert(name_lower, mtime);
     }
 
+    /// Resolves `name_lower` to a path and that path's current mtime, the
+    /// same read-only lookup [`Self::ensure_loaded`] does before deciding
+    /// whether to (re)load it. Used by [`super::PreloadedScript`]'s
+    /// [`super::FunctionTable::preload`] to check whether a caller-supplied
+    /// path/AST for `name_lower` is still exactly what this table would
+    /// resolve on its own, without loading (or locking) anything itself.
+    pub(super) fn resolved_path_and_mtime(&self, name_lower: &str) -> (Option<PathBuf>, Option<u64>) {
+        let resolved = self.resolve_script_path_kind(name_lower);
+        let mtime = resolved.as_ref().and_then(|(path, _)| file_mtime_secs(path));
+        (resolved.map(|(path, _)| path), mtime)
+    }
+
     /// Cached slot for `name` when it is still valid for the file's current
     /// mtime. `None` means a writer must call [`Self::ensure_loaded`].
     /// `Some(None)` is a cached unresolved type.
