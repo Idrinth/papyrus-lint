@@ -125,6 +125,50 @@ fn handles_case_insensitive_syntax_comments_and_line_continuations_together() {
 }
 
 #[test]
+fn line_continuations_allow_trailing_horizontal_whitespace() {
+    let continued = parse(concat!(
+        "ScriptName ContinuedConditions\n",
+        "Function Update()\n",
+        "    If (((HousePurchase as HousePurchaseScript).SolitudeHouseVar >= 1) \\\n",
+        "        || ((HousePurchase as HousePurchaseScript).WindhelmHouseVar >= 1) \\ \t\n",
+        "        || ((HousePurchase as HousePurchaseScript).MarkarthHouseVar >= 1) \\\t\t\n",
+        "        || ((BYOHHouseFalkreath as BYOHHouseScript).bAllowSpouse))\n",
+        "        BYOHAdoption_PlayerOwnsAnyHouse = True\n",
+        "    EndIf\n",
+        "EndFunction\n",
+    ))
+    .expect("line continuations may be followed by spaces or tabs");
+    let flattened = parse(
+        "ScriptName ContinuedConditions\n\
+         Function Update()\n\
+             If (((HousePurchase as HousePurchaseScript).SolitudeHouseVar >= 1) || ((HousePurchase as HousePurchaseScript).WindhelmHouseVar >= 1) || ((HousePurchase as HousePurchaseScript).MarkarthHouseVar >= 1) || ((BYOHHouseFalkreath as BYOHHouseScript).bAllowSpouse))\n\
+                 BYOHAdoption_PlayerOwnsAnyHouse = True\n\
+             EndIf\n\
+         EndFunction\n",
+    )
+    .expect("the equivalent single-line condition should parse");
+
+    let Stmt::If {
+        branches: continued_branches,
+        ..
+    } = &continued.functions[0].body[0]
+    else {
+        panic!("expected the continued condition to produce an if statement");
+    };
+    let Stmt::If {
+        branches: flattened_branches,
+        ..
+    } = &flattened.functions[0].body[0]
+    else {
+        panic!("expected the single-line condition to produce an if statement");
+    };
+    assert_eq!(
+        continued_branches[0].condition,
+        flattened_branches[0].condition
+    );
+}
+
+#[test]
 fn reports_the_unexpected_terminator_when_a_nested_terminator_is_missing() {
     let error = parse(
         "ScriptName Broken\n\

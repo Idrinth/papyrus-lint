@@ -69,6 +69,14 @@ impl<'a> Lexer<'a> {
         Some(c)
     }
 
+    fn starts_line_continuation(&self) -> bool {
+        let mut offset = 1;
+        while matches!(self.peek_at(offset), Some(b' ' | b'\t')) {
+            offset += 1;
+        }
+        matches!(self.peek_at(offset), Some(b'\n' | b'\r'))
+    }
+
     fn next_token(&mut self) -> Result<Token, LexError> {
         if let Some(token) = self.skip_ignorable()? {
             return Ok(token);
@@ -95,9 +103,13 @@ impl<'a> Lexer<'a> {
                 Some(b' ') | Some(b'\t') | Some(b'\r') => {
                     self.advance();
                 }
-                Some(b'\\') if matches!(self.peek_at(1), Some(b'\n') | Some(b'\r')) => {
-                    // Line continuation: swallow the backslash and the newline.
+                Some(b'\\') if self.starts_line_continuation() => {
+                    // Line continuation: swallow the backslash, trailing horizontal
+                    // whitespace, and the newline.
                     self.advance();
+                    while matches!(self.peek(), Some(b' ' | b'\t')) {
+                        self.advance();
+                    }
                     if self.peek() == Some(b'\r') {
                         self.advance();
                     }
