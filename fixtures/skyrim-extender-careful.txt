@@ -28,4 +28,6 @@ Scripts/Source/ObjectReference.psc:336:32: [forbidden-functions] [warning] Objec
 Scripts/Source/ObjectReference.psc:337:2: [strict-boolean] [warning] Condition must be a boolean value or expression, found 'ObjectReference' (https://papyrus-lint.idrinth.de/rules.html#rule-strict-boolean)
 Scripts/Source/ObjectReference.psc:339:29: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/Quest.psc:17:1: [numeric-comparison] [warning] Comparison between Int and Float without an explicit cast; floating-point precision may make this inexact (https://papyrus-lint.idrinth.de/rules.html#rule-numeric-comparison)
-PapyrusLinterCLI: 30 problem(s) found in 6 of 62 script(s).
+PapyrusLinterCLI: 32 problem(s) found in 7 of 62 script(s).
+Scripts/Source/Spell.psc:16:10: [forbidden-functions] [warning] Spell.Preload: Spell.Preload is documented as likely to be deprecated; misuse leaks memory and produces inconsistent art. Avoid calling it (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
+Scripts/Source/Spell.psc:22:10: [forbidden-functions] [warning] Spell.Unload: Spell.Unload is documented as likely to be deprecated; misuse can unload in-use spell art and leak memory. Avoid calling it (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
