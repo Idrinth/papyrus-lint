@@ -16,6 +16,18 @@ fn check_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) ->
     let ast = papyrus_parser::parse(source).ok();
     super::check_with(ast.as_ref(), external)
 }
+
+fn check_visitor<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::check(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+        external,
+    )
+}
 use crate::external_signatures::ParamInfo;
 
 struct FakeExternal;
@@ -195,6 +207,95 @@ fn does_not_crash_on_unparseable_source() {
         "ScriptName Example Extends ParentScript\n\nFunction DoThing(\nEndFunction\n",
         &mut FakeExternal,
     );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn visitor_flags_function_parameter_count_mismatches() {
+    let diagnostics = check_visitor(
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing()\nEndFunction\n",
+        &mut FakeExternal,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 3);
+    assert_eq!(diagnostics[0].column, 1);
+    assert_eq!(diagnostics[0].rule, RULE);
+    assert!(diagnostics[0]
+        .message
+        .contains("Function 'DoThing' declares 0 parameters"));
+    assert!(diagnostics[0]
+        .message
+        .contains("'ParentScript' declares 2 parameters"));
+}
+
+#[test]
+fn visitor_flags_event_parameter_type_mismatches() {
+    let diagnostics = check_visitor(
+        "ScriptName Example Extends ParentScript\n\nEvent OnLoad(Int abFirst)\nEndEvent\n",
+        &mut FakeExternal,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].rule, RULE);
+    assert!(diagnostics[0]
+        .message
+        .contains("Parameter 1 of Event 'OnLoad' is declared Int"));
+    assert!(diagnostics[0]
+        .message
+        .contains("'ParentScript' declares Bool"));
+}
+
+#[test]
+fn visitor_compares_array_shape_as_part_of_the_parameter_type() {
+    let diagnostics = check_visitor(
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference[] akTarget, Int aiCount)\nEndFunction\n",
+        &mut FakeExternal,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0]
+        .message
+        .contains("is declared ObjectReference[]"));
+    assert!(diagnostics[0]
+        .message
+        .contains("declares ObjectReference"));
+}
+
+#[test]
+fn visitor_allows_case_insensitive_matching_types() {
+    let diagnostics = check_visitor(
+        "ScriptName Example Extends parentscript\n\nFunction dOtHiNg(objectreference akTarget, int aiCount)\nEndFunction\n",
+        &mut FakeExternal,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn visitor_ignores_state_functions_and_unknown_inherited_functions() {
+    let diagnostics = check_visitor(
+        "ScriptName Example Extends ParentScript\n\nState Loud\n    Function DoThing(String akTarget, String aiCount)\n    EndFunction\nEndState\n\nFunction SomethingElse(String value)\nEndFunction\n",
+        &mut FakeExternal,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn visitor_ignores_scripts_without_a_parent() {
+    let diagnostics = check_visitor(
+        "ScriptName Example\n\nFunction DoThing(String akTarget, String aiCount)\nEndFunction\n",
+        &mut FakeExternal,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn direct_check_returns_no_diagnostics_without_an_ast() {
+    let diagnostics = super::check_with(None, &mut FakeExternal);
 
     assert!(diagnostics.is_empty());
 }
