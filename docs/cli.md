@@ -98,21 +98,25 @@ scripts are spread across arbitrarily nested subfolders instead of a flat
 at all. Either way, each script is linted against the project's
 `papyrus-lint.yaml`/`.yml` config file (see the configuration reference).
 For an `.achlist`/`.ppj`, the project root is its containing directory; for
-a bare `.psc`, the root is found by walking up from the file for a
-`Scripts/Source` or `Source/Scripts` directory pair (matched
+a bare `.psc` — the case an editor plugin (VS Code, Sublime) hits when it
+invokes the CLI on a single saved file — the root is found by walking up
+from the file for the nearest ancestor directory that already has a
+`papyrus-lint.yaml`/`.yml`, so that project's config is always picked up
+first when one exists, even if it sits above a `Data`/`Scripts`/`Source`-
+style subfolder rather than right next to the script. Only when no config
+file exists anywhere in the file's ancestry does it fall back to walking up
+for a `Scripts/Source` or `Source/Scripts` directory pair (matched
 case-insensitively) and taking the directory above it — so it's found
 correctly even for a script nested further still, e.g. a namespaced
 `Scripts/Source/User/MyScript.psc`, not just the conventional two
-directories up. If no such pair exists in the path at all (e.g. a project
-laid out like Requiem's own, without a `scripts/source` tree), it instead
-looks for the nearest ancestor directory that already has a
-`papyrus-lint.yaml`/`.yml`, so that project's config is still picked up for
-a single file linted directly (e.g. by an editor plugin on save) — only
-falling back to the fixed two-directories-up guess if neither finds
-anything. A scanned directory's own resolved scripts are tried the
-same way first, falling back to the scanned directory itself as the
-project root if none of them match that layout. If no config exists
-there, the documented defaults apply. Each diagnostic found is printed as
+directories up — and only falls back to the fixed two-directories-up guess
+if neither finds anything, e.g. a project laid out like Requiem's own,
+without a `scripts/source` tree and no config file yet either. A scanned
+directory's own resolved scripts are instead tried against the
+`Scripts/Source`/`Source/Scripts` naming pair alone (not the config-file
+walk), falling back to the scanned directory itself as the project root if
+none of them match that layout. If no config exists there, the documented
+defaults apply. Each diagnostic found is printed as
 `<path>:<line>:<column>: [<rule>] <message>`, followed by that rule's own
 documentation link on the [project website](https://papyrus-lint.idrinth.de)
 when it has known tag metadata (a compiler-reported diagnostic doesn't),

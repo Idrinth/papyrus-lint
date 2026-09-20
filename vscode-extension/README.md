@@ -10,10 +10,14 @@ for `.psc` files directly in the editor.
   on the [project website](https://papyrus-lint.idrinth.de) when available.
 - **Live linting**: as you type, the document's current (possibly unsaved)
   contents are checked after a short pause. This only updates diagnostics
-  and never touches the file on disk. Live results skip cross-script checks
-  and use the default configuration unless `papyrusLint.configPath` is set;
-  saving runs the full project-aware lint. Controlled by the
-  `papyrusLint.liveLint`/`papyrusLint.liveLintDebounceMs` settings below.
+  and never touches the file on disk. Live results skip cross-script checks,
+  but still apply the workspace's own `papyrus-lint.yaml`/`.yml` (see
+  `papyrusLint.configPath` below — the extension finds it itself via VS
+  Code's workspace-folder API rather than relying on the CLI's on-disk
+  project-root discovery, since a live, unsaved lint has no real file
+  position for that to walk up from); saving runs the full project-aware
+  lint. Controlled by the `papyrusLint.liveLint`/`papyrusLint.liveLintDebounceMs`
+  settings below.
 - **Schema validation for config files**: associates any
   `papyrus-lint.yml` / `papyrus-lint.yaml` (same `**/*.yml` + `**/*.yaml`
   pairing GitHub Actions uses for workflow files) with
@@ -67,9 +71,12 @@ whole project.
   or GUI digest, and its `--version` output must match the extension's
   version.
 - `papyrusLint.configPath`: path to a papyrus-lint config file to pass to
-  the CLI via `--config`, overriding the `papyrus-lint.yaml`/`.yml` it
-  would otherwise discover from the project root. Leave empty (the
-  default) to use that discovery as normal.
+  the CLI via `--config`, overriding auto-detection. Leave empty (the
+  default) to auto-detect instead: the extension itself looks for a
+  `papyrus-lint.yaml`/`.yml` by walking up from the linted file to its
+  enclosing VS Code workspace folder (found via `workspace.getWorkspaceFolder`),
+  so a config placed at the workspace root is picked up for live linting
+  too, not only a saved file's own CLI-side project-root discovery.
 - `papyrusLint.liveLint`: whether to lint a document's current, possibly
   unsaved contents as you type (see "Live linting" above). Defaults to
   `true`; set to `false` to only lint on open/save.
