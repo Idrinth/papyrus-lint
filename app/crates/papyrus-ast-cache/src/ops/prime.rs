@@ -16,15 +16,21 @@ use super::store::{put_in, put_tokens_in};
 /// in-memory cache the same way a hit would) and writes the result to the
 /// disk cache for next time. See [`crate::ensure_primed`], the public
 /// wrapper that supplies the real cache directory and version.
-pub(crate) fn ensure_primed_in(dir: &Path, source_path: &Path, source: &str, linter_version: &str) {
-    if get_in(dir, source_path, source).is_none() {
-        if let Ok(ast) = papyrus_parser::parse(source) {
-            put_in(dir, source_path, source, &ast, linter_version);
+pub(crate) fn ensure_primed_in(
+    dir: &Path,
+    game: papyrus_parser::Game,
+    source_path: &Path,
+    source: &str,
+    linter_version: &str,
+) {
+    if get_in(dir, game, source_path, source).is_none() {
+        if let Ok(ast) = papyrus_parser::parse_for_game(game, source) {
+            put_in(dir, game, source_path, source, &ast, linter_version);
         }
     }
-    if get_tokens_in(dir, source_path, source).is_none() {
+    if get_tokens_in(dir, game, source_path, source).is_none() {
         if let Ok(tokens) = papyrus_parser::tokenize(source) {
-            put_tokens_in(dir, source_path, source, &tokens, linter_version);
+            put_tokens_in(dir, game, source_path, source, &tokens, linter_version);
         }
     }
 }

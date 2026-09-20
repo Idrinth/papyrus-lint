@@ -137,7 +137,7 @@ pub fn repair(
     let _ = (ast, tokens);
     let style = config.identifier_casing;
 
-    let Ok(script) = papyrus_parser::parse(source) else {
+    let Ok(script) = papyrus_parser::parse_for_game(config.game, source) else {
         return source.to_string();
     };
     let protected = fragment_code::protected_lines(source);

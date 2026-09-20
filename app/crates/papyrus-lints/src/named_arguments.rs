@@ -251,7 +251,7 @@ pub fn repair(
         return source.to_string();
     }
     let (Ok(script), Ok(tokens)) = (
-        papyrus_parser::parse(source),
+        papyrus_parser::parse_for_game(config.game, source),
         papyrus_parser::tokenize(source),
     ) else {
         return source.to_string();

@@ -23,6 +23,31 @@ pub mod visit;
 
 use lexer::LexError;
 use parser::ParseError;
+use serde::{Deserialize, Serialize};
+
+/// The game whose Papyrus dialect is being parsed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Game {
+    #[default]
+    Skyrim,
+}
+
+impl Game {
+    /// Stable lowercase key used in caches and serialized configuration.
+    pub const fn key(self) -> &'static str {
+        match self {
+            Self::Skyrim => "skyrim",
+        }
+    }
+
+    fn assert_supported(self) {
+        assert!(
+            matches!(self, Self::Skyrim),
+            "only Skyrim Papyrus is currently supported"
+        );
+    }
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PapyrusError {
@@ -54,7 +79,13 @@ impl From<ParseError> for PapyrusError {
 /// Parses Papyrus source text into a `Script` AST. Memoized against the
 /// most recently seen `source` -- see [`cache`].
 pub fn parse(source: &str) -> Result<ast::Script, PapyrusError> {
-    cache::parse(source)
+    parse_for_game(Game::default(), source)
+}
+
+/// Parses source using the selected game's Papyrus dialect.
+pub fn parse_for_game(game: Game, source: &str) -> Result<ast::Script, PapyrusError> {
+    game.assert_supported();
+    cache::parse(game, source)
 }
 
 /// Lexes Papyrus source text into tokens, the same as
@@ -75,7 +106,13 @@ pub fn tokenize(source: &str) -> Result<Vec<token::Token>, LexError> {
 /// `papyrus_lints::lint()`/`repair()`, which parse their `source` argument
 /// internally without ever seeing this AST themselves.
 pub fn prime_cache(source: &str, ast: ast::Script) {
-    cache::prime(source, ast);
+    prime_cache_for_game(Game::default(), source, ast);
+}
+
+/// Game-aware variant of [`prime_cache`].
+pub fn prime_cache_for_game(game: Game, source: &str, ast: ast::Script) {
+    game.assert_supported();
+    cache::prime(game, source, ast);
 }
 
 /// Same as [`prime_cache`], but for [`tokenize`]'s in-memory memoization

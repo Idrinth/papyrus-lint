@@ -30,8 +30,10 @@ struct LookupScriptEntry {
     script: Option<ScriptFunctions>,
 }
 
-fn lookup_script_cache() -> &'static Mutex<HashMap<PathBuf, LookupScriptEntry>> {
-    static CACHE: OnceLock<Mutex<HashMap<PathBuf, LookupScriptEntry>>> = OnceLock::new();
+fn lookup_script_cache(
+) -> &'static Mutex<HashMap<(papyrus_parser::Game, PathBuf), LookupScriptEntry>> {
+    static CACHE: OnceLock<Mutex<HashMap<(papyrus_parser::Game, PathBuf), LookupScriptEntry>>> =
+        OnceLock::new();
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
@@ -40,45 +42,60 @@ fn file_mtime_secs(path: &Path) -> Option<u64> {
     Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
 }
 
-fn cached_lookup_script(path: &Path, mtime_secs: u64) -> Option<Option<ScriptFunctions>> {
+fn cached_lookup_script(
+    game: papyrus_parser::Game,
+    path: &Path,
+    mtime_secs: u64,
+) -> Option<Option<ScriptFunctions>> {
     let cache = lookup_script_cache()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     cache
-        .get(path)
+        .get(&(game, path.to_path_buf()))
         .and_then(|entry| (entry.mtime_secs == mtime_secs).then(|| entry.script.clone()))
 }
 
-fn store_lookup_script(path: PathBuf, mtime_secs: u64, script: Option<ScriptFunctions>) {
+fn store_lookup_script(
+    game: papyrus_parser::Game,
+    path: PathBuf,
+    mtime_secs: u64,
+    script: Option<ScriptFunctions>,
+) {
     let mut cache = lookup_script_cache()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    cache.insert(path, LookupScriptEntry { mtime_secs, script });
+    cache.insert((game, path), LookupScriptEntry { mtime_secs, script });
 }
 
 /// Process-wide cache of scripts loaded from the bundled vanilla/SKSE blob
 /// by `ScriptName`. Name lookups have no path or mtime, so this is the
 /// only reuse across `FunctionTable`s in the same process.
-fn bundled_script_cache() -> &'static Mutex<HashMap<String, Option<ScriptFunctions>>> {
-    static CACHE: OnceLock<Mutex<HashMap<String, Option<ScriptFunctions>>>> = OnceLock::new();
+fn bundled_script_cache(
+) -> &'static Mutex<HashMap<(papyrus_parser::Game, String), Option<ScriptFunctions>>> {
+    static CACHE: OnceLock<
+        Mutex<HashMap<(papyrus_parser::Game, String), Option<ScriptFunctions>>>,
+    > = OnceLock::new();
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-fn bundled_script_functions(name_lower: &str) -> Option<ScriptFunctions> {
+fn bundled_script_functions(
+    game: papyrus_parser::Game,
+    name_lower: &str,
+) -> Option<ScriptFunctions> {
     {
         let cache = bundled_script_cache()
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner());
-        if let Some(cached) = cache.get(name_lower) {
+        if let Some(cached) = cache.get(&(game, name_lower.to_string())) {
             return cached.clone();
         }
     }
-    let loaded = crate::ast_cache::ast_for_script_name(name_lower)
+    let loaded = crate::ast_cache::ast_for_script_name(game, name_lower)
         .map(|ast| ScriptFunctions::from_script(&ast, ""));
     let mut cache = bundled_script_cache()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    cache.insert(name_lower.to_string(), loaded.clone());
+    cache.insert((game, name_lower.to_string()), loaded.clone());
     loaded
 }
 
@@ -88,15 +105,15 @@ fn bundled_script_functions(name_lower: &str) -> Option<ScriptFunctions> {
 /// `shared/skyrim-extender-scripts.zip` hit the cache's bundled blob and never
 /// take its disk lock, so parallel workers resolving the same base type do not
 /// serialize on that lookup.
-fn load_script_functions(path: &Path) -> Option<ScriptFunctions> {
+fn load_script_functions(game: papyrus_parser::Game, path: &Path) -> Option<ScriptFunctions> {
     let source = read_psc_source(path).ok()?;
-    let parsed = if let Some(cached) = crate::ast_cache::get(path, &source) {
+    let parsed = if let Some(cached) = crate::ast_cache::get(game, path, &source) {
         cached
     } else {
-        let parsed = papyrus_parser::parse(&source).ok()?;
-        crate::ast_cache::put(path, &source, &parsed);
+        let parsed = papyrus_parser::parse_for_game(game, &source).ok()?;
+        crate::ast_cache::put(game, path, &source, &parsed);
         if let Ok(tokens) = papyrus_parser::tokenize(&source) {
-            crate::ast_cache::put_tokens(path, &source, &tokens);
+            crate::ast_cache::put_tokens(game, path, &source, &tokens);
         }
         parsed
     };
@@ -119,7 +136,7 @@ impl FunctionTable {
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
-            || crate::ast_cache::contains_script_name(&name_lower)
+            || crate::ast_cache::contains_script_name(self.game, &name_lower)
             || crate::native_globals::is_known(&name_lower)
     }
 
@@ -194,21 +211,21 @@ impl FunctionTable {
             Some((path, origin)) => {
                 if origin == ScriptOrigin::Lookup {
                     if let Some(mtime_secs) = file_mtime_secs(&path) {
-                        if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
+                        if let Some(cached) = cached_lookup_script(self.game, &path, mtime_secs) {
                             cached
                         } else {
-                            let loaded = load_script_functions(&path);
-                            store_lookup_script(path, mtime_secs, loaded.clone());
+                            let loaded = load_script_functions(self.game, &path);
+                            store_lookup_script(self.game, path, mtime_secs, loaded.clone());
                             loaded
                         }
                     } else {
-                        load_script_functions(&path)
+                        load_script_functions(self.game, &path)
                     }
                 } else {
-                    load_script_functions(&path)
+                    load_script_functions(self.game, &path)
                 }
             }
-            None => bundled_script_functions(&name_lower),
+            None => bundled_script_functions(self.game, &name_lower),
         };
 
         self.scripts.insert(name_lower.clone(), script);

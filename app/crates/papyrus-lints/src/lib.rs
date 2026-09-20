@@ -322,7 +322,7 @@ fn repair_with_external<E: ExternalSignatures>(
 ) -> String {
     let source = repair_with(source, config, &applies);
     if config.rules.unused_import && applies(unused_import::RULE) {
-        unused_import::repair_with(&source, external)
+        unused_import::repair_with_for_game(config.game, &source, external)
     } else {
         source
     }

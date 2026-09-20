@@ -328,6 +328,7 @@ export async function listScriptMembers(typeName: string): Promise<Member[]> {
   try {
     return await invoke<Member[]>("list_script_members", {
       root: currentProjectDir ?? "",
+      game: currentLintConfig.game,
       typeName,
       additionalRoots: effectiveScriptRoots(),
       lookupRoots: currentLookupScriptRoots,
@@ -344,6 +345,7 @@ export async function listScriptMembers(typeName: string): Promise<Member[]> {
 export async function compilePscFile(path: string): Promise<CompileOutcome> {
   return invoke<CompileOutcome>("compile_psc_file", {
     path,
+    game: currentLintConfig.game,
     compilerPath: currentCompilerPath,
     additionalRoots: effectiveScriptRoots(),
   });

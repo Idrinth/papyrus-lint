@@ -121,7 +121,7 @@ pub fn repair(
 ) -> String {
     let _ = ast;
 
-    let Ok(script) = papyrus_parser::parse(source) else {
+    let Ok(script) = papyrus_parser::parse_for_game(config.game, source) else {
         return source.to_string();
     };
     if check(

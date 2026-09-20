@@ -3,7 +3,13 @@ use tempfile::tempdir;
 
 #[test]
 fn compile_psc_file_rejects_a_blank_compiler_path_before_spawning() {
-    assert!(compile_psc_file("Example.psc".to_string(), "  \t".to_string(), Vec::new()).is_err());
+    assert!(compile_psc_file(
+        "Example.psc".to_string(),
+        papyrus_parser::Game::Skyrim,
+        "  \t".to_string(),
+        Vec::new()
+    )
+    .is_err());
 }
 
 #[test]
@@ -16,6 +22,7 @@ fn compile_psc_file_reports_a_spawn_error_from_the_compiler_module() {
 
     let error = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
+        papyrus_parser::Game::Skyrim,
         dir.path()
             .join("missing-compiler")
             .to_string_lossy()
@@ -848,6 +855,7 @@ fn compile_command_trims_the_executable_path_and_returns_its_output() {
 
     let outcome = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
+        papyrus_parser::Game::Skyrim,
         format!("  {}  ", compiler_path.display()),
         Vec::new(),
     )
@@ -877,6 +885,7 @@ fn compile_command_returns_a_failed_compiler_outcome() {
 
     let outcome = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
+        papyrus_parser::Game::Skyrim,
         compiler_path.to_string_lossy().into_owned(),
         Vec::new(),
     )
@@ -904,6 +913,7 @@ fn compile_command_forwards_additional_script_roots() {
 
     let outcome = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
+        papyrus_parser::Game::Skyrim,
         compiler_path.to_string_lossy().into_owned(),
         vec![additional_root.to_string_lossy().into_owned()],
     )
@@ -997,8 +1007,13 @@ fn project_function_table_reuses_one_table_for_the_same_roots() {
     let additional = vec!["/extra".to_string()];
     let lookup = vec!["/vanilla".to_string()];
 
-    let first = project_function_table(root.clone(), additional.clone(), lookup.clone());
-    let second = project_function_table(root, additional, lookup);
+    let first = project_function_table(
+        papyrus_parser::Game::Skyrim,
+        root.clone(),
+        additional.clone(),
+        lookup.clone(),
+    );
+    let second = project_function_table(papyrus_parser::Game::Skyrim, root, additional, lookup);
 
     assert!(std::sync::Arc::ptr_eq(&first, &second));
 }
@@ -1009,11 +1024,13 @@ fn project_function_table_is_distinct_for_different_roots() {
     let second_dir = tempdir().unwrap();
 
     let first = project_function_table(
+        papyrus_parser::Game::Skyrim,
         first_dir.path().to_string_lossy().into_owned(),
         Vec::new(),
         Vec::new(),
     );
     let second = project_function_table(
+        papyrus_parser::Game::Skyrim,
         second_dir.path().to_string_lossy().into_owned(),
         Vec::new(),
         Vec::new(),

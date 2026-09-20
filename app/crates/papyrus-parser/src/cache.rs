@@ -23,9 +23,11 @@ use crate::ast::Script;
 use crate::lexer::{LexError, Lexer};
 use crate::parser::Parser;
 use crate::token::Token;
+use crate::Game;
 use crate::PapyrusError;
 
 struct Slot<T> {
+    game: Game,
     source: String,
     result: T,
 }
@@ -66,6 +68,7 @@ pub(crate) fn tokenize(source: &str) -> Result<Vec<Token>, LexError> {
     let result = Lexer::new(source).tokenize();
     TOKENS.with(|cell| {
         *cell.borrow_mut() = Some(Slot {
+            game: Game::default(),
             source: source.to_string(),
             result: result.clone(),
         });
@@ -80,11 +83,11 @@ fn parse_uncached(source: &str) -> Result<Script, PapyrusError> {
 
 /// Same as [`crate::parse`], except memoized the same way as [`tokenize`]
 /// (and reuses its cache for the lexing step underneath).
-pub(crate) fn parse(source: &str) -> Result<Script, PapyrusError> {
+pub(crate) fn parse(game: Game, source: &str) -> Result<Script, PapyrusError> {
     let cached = AST.with(|cell| {
         cell.borrow()
             .as_ref()
-            .filter(|slot| slot.source == source)
+            .filter(|slot| slot.game == game && slot.source == source)
             .map(|slot| slot.result.clone())
     });
     if let Some(result) = cached {
@@ -97,6 +100,7 @@ pub(crate) fn parse(source: &str) -> Result<Script, PapyrusError> {
     let result = parse_uncached(source);
     AST.with(|cell| {
         *cell.borrow_mut() = Some(Slot {
+            game,
             source: source.to_string(),
             result: result.clone(),
         });
@@ -111,9 +115,10 @@ pub(crate) fn parse(source: &str) -> Result<Script, PapyrusError> {
 /// elsewhere (e.g. `papyrus-lint-core`'s disk-backed `ast_cache`) prime
 /// this cache before code that parses `source` itself -- without ever
 /// seeing that AST -- runs, such as `papyrus_lints::lint()`.
-pub(crate) fn prime(source: &str, ast: Script) {
+pub(crate) fn prime(game: Game, source: &str, ast: Script) {
     AST.with(|cell| {
         *cell.borrow_mut() = Some(Slot {
+            game,
             source: source.to_string(),
             result: Ok(ast),
         });
@@ -135,6 +140,7 @@ pub(crate) fn prime_tokens(source: &str, tokens: Vec<Token>) {
     );
     TOKENS.with(|cell| {
         *cell.borrow_mut() = Some(Slot {
+            game: Game::default(),
             source: source.to_string(),
             result: Ok(tokens),
         });
@@ -205,8 +211,8 @@ mod tests {
         let before = PARSE_COMPUTATIONS.with(|c| c.get());
         let source = format!("ScriptName {}\n", "ParseMemoTest");
 
-        let first = parse(&source).unwrap();
-        let second = parse(&source.clone()).unwrap();
+        let first = parse(Game::Skyrim, &source).unwrap();
+        let second = parse(Game::Skyrim, &source.clone()).unwrap();
 
         assert_eq!(first, second);
         assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 1);
@@ -216,8 +222,8 @@ mod tests {
     fn parse_recomputes_when_source_changes() {
         let before = PARSE_COMPUTATIONS.with(|c| c.get());
 
-        parse("ScriptName ParseChangeTestA\n").unwrap();
-        parse("ScriptName ParseChangeTestB\n").unwrap();
+        parse(Game::Skyrim, "ScriptName ParseChangeTestA\n").unwrap();
+        parse(Game::Skyrim, "ScriptName ParseChangeTestB\n").unwrap();
 
         assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 2);
     }
@@ -227,8 +233,8 @@ mod tests {
         let before = PARSE_COMPUTATIONS.with(|c| c.get());
         let source = "ScriptName ParseErrorMemoTest\nFunction Broken(\n";
 
-        let first = parse(source);
-        let second = parse(source);
+        let first = parse(Game::Skyrim, source);
+        let second = parse(Game::Skyrim, source);
 
         assert!(matches!(first, Err(PapyrusError::Parse(_))));
         assert_eq!(first, second);
@@ -240,8 +246,8 @@ mod tests {
         let before = PARSE_COMPUTATIONS.with(|c| c.get());
         let source = "ScriptName ParseLexErrorMemoTest\n@";
 
-        let first = parse(source);
-        let second = parse(source);
+        let first = parse(Game::Skyrim, source);
+        let second = parse(Game::Skyrim, source);
 
         assert!(matches!(first, Err(PapyrusError::Lex(_))));
         assert_eq!(first, second);
@@ -253,9 +259,9 @@ mod tests {
         let before = PARSE_COMPUTATIONS.with(|c| c.get());
         let first = "ScriptName ParseEvictionTestA\n";
 
-        parse(first).unwrap();
-        parse("ScriptName ParseEvictionTestB\n").unwrap();
-        parse(first).unwrap();
+        parse(Game::Skyrim, first).unwrap();
+        parse(Game::Skyrim, "ScriptName ParseEvictionTestB\n").unwrap();
+        parse(Game::Skyrim, first).unwrap();
 
         assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 3);
     }
@@ -268,8 +274,8 @@ mod tests {
             .parse_script()
             .unwrap();
 
-        prime(source, ast.clone());
-        let result = parse(source).unwrap();
+        prime(Game::Skyrim, source, ast.clone());
+        let result = parse(Game::Skyrim, source).unwrap();
 
         assert_eq!(result, ast);
         assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()), before);
@@ -281,12 +287,12 @@ mod tests {
         let ast = Parser::new(Lexer::new(source).tokenize().unwrap())
             .parse_script()
             .unwrap();
-        prime(source, ast);
+        prime(Game::Skyrim, source, ast);
 
-        parse("ScriptName PrimeEvictionOther\n").unwrap();
+        parse(Game::Skyrim, "ScriptName PrimeEvictionOther\n").unwrap();
 
         let before = PARSE_COMPUTATIONS.with(|c| c.get());
-        parse(source).unwrap();
+        parse(Game::Skyrim, source).unwrap();
         assert_eq!(PARSE_COMPUTATIONS.with(|c| c.get()) - before, 1);
     }
 
@@ -321,7 +327,7 @@ mod tests {
         let source =
             "ScriptName ParseCorrectnessTest extends Quest\n\nInt Property MyValue = 1 Auto\n";
 
-        let cached = parse(source).unwrap();
+        let cached = parse(Game::Skyrim, source).unwrap();
         let uncached = Parser::new(Lexer::new(source).tokenize().unwrap())
             .parse_script()
             .unwrap();

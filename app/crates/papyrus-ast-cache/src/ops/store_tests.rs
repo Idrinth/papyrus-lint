@@ -15,13 +15,22 @@ fn put_then_get_returns_the_cached_ast_when_nothing_changed() {
     let ast = sample_ast();
     put_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &ast,
         COMPATIBLE_VERSION,
     );
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
+    assert_eq!(
+        get_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
+        Some(ast)
+    );
 }
 
 #[test]
@@ -35,6 +44,7 @@ fn put_creates_the_cache_directory_if_missing() {
 
     put_in(
         &nested_cache_dir,
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &sample_ast(),
@@ -42,7 +52,13 @@ fn put_creates_the_cache_directory_if_missing() {
     );
 
     assert!(nested_cache_dir.is_dir());
-    assert!(get_in(&nested_cache_dir, &source_path, source).is_some());
+    assert!(get_in(
+        &nested_cache_dir,
+        papyrus_parser::Game::Skyrim,
+        &source_path,
+        source
+    )
+    .is_some());
 }
 
 #[test]
@@ -54,22 +70,39 @@ fn put_replaces_a_corrupt_entry_with_a_readable_cache_entry() {
     std::fs::write(&source_path, source).unwrap();
 
     std::fs::write(
-        cache_file_path(cache_dir.path(), &source_path),
+        cache_file_path(cache_dir.path(), papyrus_parser::Game::Skyrim, &source_path),
         b"a previous process left an incomplete cache entry",
     )
     .unwrap();
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), None);
+    assert_eq!(
+        get_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
+        None
+    );
 
     let ast = sample_ast();
     put_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &ast,
         COMPATIBLE_VERSION,
     );
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
+    assert_eq!(
+        get_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
+        Some(ast)
+    );
 }
 
 #[test]
@@ -79,13 +112,19 @@ fn put_is_a_noop_when_the_source_file_does_not_exist() {
 
     put_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &missing_source,
         "ScriptName Missing\n",
         &sample_ast(),
         COMPATIBLE_VERSION,
     );
 
-    assert!(!cache_file_path(cache_dir.path(), &missing_source).exists());
+    assert!(!cache_file_path(
+        cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
+        &missing_source
+    )
+    .exists());
 }
 
 #[test]
@@ -99,6 +138,7 @@ fn put_tokens_then_get_tokens_returns_the_cached_tokens_when_nothing_changed() {
     let tokens = sample_tokens();
     put_tokens_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &tokens,
@@ -106,7 +146,12 @@ fn put_tokens_then_get_tokens_returns_the_cached_tokens_when_nothing_changed() {
     );
 
     assert_eq!(
-        get_tokens_in(cache_dir.path(), &source_path, source),
+        get_tokens_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
         Some(tokens)
     );
 }
@@ -118,13 +163,19 @@ fn put_tokens_is_a_noop_when_the_source_file_does_not_exist() {
 
     put_tokens_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &missing_source,
         "ScriptName Missing\n",
         &sample_tokens(),
         COMPATIBLE_VERSION,
     );
 
-    assert!(!cache_file_path(cache_dir.path(), &missing_source).exists());
+    assert!(!cache_file_path(
+        cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
+        &missing_source
+    )
+    .exists());
 }
 
 #[test]
@@ -138,6 +189,7 @@ fn writes_are_silently_ignored_when_the_cache_directory_is_a_file() {
 
     put_in(
         &cache_path,
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &sample_ast(),
@@ -145,6 +197,7 @@ fn writes_are_silently_ignored_when_the_cache_directory_is_a_file() {
     );
     put_tokens_in(
         &cache_path,
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &sample_tokens(),
@@ -152,8 +205,24 @@ fn writes_are_silently_ignored_when_the_cache_directory_is_a_file() {
     );
 
     assert_eq!(std::fs::read_to_string(&cache_path).unwrap(), "occupied");
-    assert_eq!(get_in(&cache_path, &source_path, source), None);
-    assert_eq!(get_tokens_in(&cache_path, &source_path, source), None);
+    assert_eq!(
+        get_in(
+            &cache_path,
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
+        None
+    );
+    assert_eq!(
+        get_tokens_in(
+            &cache_path,
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
+        None
+    );
 }
 
 #[test]
@@ -167,6 +236,7 @@ fn putting_tokens_preserves_an_already_cached_ast() {
     let ast = sample_ast();
     put_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &ast,
@@ -176,15 +246,29 @@ fn putting_tokens_preserves_an_already_cached_ast() {
     let tokens = sample_tokens();
     put_tokens_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &tokens,
         COMPATIBLE_VERSION,
     );
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
     assert_eq!(
-        get_tokens_in(cache_dir.path(), &source_path, source),
+        get_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
+        Some(ast)
+    );
+    assert_eq!(
+        get_tokens_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
         Some(tokens)
     );
 }
@@ -200,6 +284,7 @@ fn putting_ast_preserves_already_cached_tokens() {
     let tokens = sample_tokens();
     put_tokens_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &tokens,
@@ -209,15 +294,29 @@ fn putting_ast_preserves_already_cached_tokens() {
     let ast = sample_ast();
     put_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         source,
         &ast,
         COMPATIBLE_VERSION,
     );
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, source), Some(ast));
     assert_eq!(
-        get_tokens_in(cache_dir.path(), &source_path, source),
+        get_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
+        Some(ast)
+    );
+    assert_eq!(
+        get_tokens_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        ),
         Some(tokens)
     );
 }
@@ -232,6 +331,7 @@ fn putting_ast_does_not_preserve_tokens_cached_for_different_content() {
     std::fs::write(&source_path, original).unwrap();
     put_tokens_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         original,
         &papyrus_parser::tokenize(original).unwrap(),
@@ -242,6 +342,7 @@ fn putting_ast_does_not_preserve_tokens_cached_for_different_content() {
     let changed_ast = papyrus_parser::parse(changed).unwrap();
     put_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         changed,
         &changed_ast,
@@ -249,10 +350,23 @@ fn putting_ast_does_not_preserve_tokens_cached_for_different_content() {
     );
 
     assert_eq!(
-        get_in(cache_dir.path(), &source_path, changed),
+        get_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            changed
+        ),
         Some(changed_ast)
     );
-    assert_eq!(get_tokens_in(cache_dir.path(), &source_path, changed), None);
+    assert_eq!(
+        get_tokens_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            changed
+        ),
+        None
+    );
 }
 
 #[test]
@@ -265,6 +379,7 @@ fn putting_tokens_does_not_preserve_an_ast_cached_for_different_content() {
     std::fs::write(&source_path, original).unwrap();
     put_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         original,
         &papyrus_parser::parse(original).unwrap(),
@@ -275,15 +390,29 @@ fn putting_tokens_does_not_preserve_an_ast_cached_for_different_content() {
     let changed_tokens = papyrus_parser::tokenize(changed).unwrap();
     put_tokens_in(
         cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &source_path,
         changed,
         &changed_tokens,
         COMPATIBLE_VERSION,
     );
 
-    assert_eq!(get_in(cache_dir.path(), &source_path, changed), None);
     assert_eq!(
-        get_tokens_in(cache_dir.path(), &source_path, changed),
+        get_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            changed
+        ),
+        None
+    );
+    assert_eq!(
+        get_tokens_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            changed
+        ),
         Some(changed_tokens)
     );
 }
@@ -293,6 +422,7 @@ fn putting_ast_overwrites_a_previously_cached_ast() {
     let h = harness("Example.psc", "ScriptName Example\n");
     put_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &sample_ast(),
@@ -303,6 +433,7 @@ fn putting_ast_overwrites_a_previously_cached_ast() {
         papyrus_parser::parse("ScriptName Example\n\nInt Property Marker = 1 Auto\n").unwrap();
     put_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &replacement,
@@ -310,7 +441,12 @@ fn putting_ast_overwrites_a_previously_cached_ast() {
     );
 
     assert_eq!(
-        get_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_in(
+            h.cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &h.source_path,
+            h.source
+        ),
         Some(replacement)
     );
 }
@@ -320,6 +456,7 @@ fn putting_tokens_overwrites_previously_cached_tokens() {
     let h = harness("Example.psc", "ScriptName Example\n");
     put_tokens_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &sample_tokens(),
@@ -330,6 +467,7 @@ fn putting_tokens_overwrites_previously_cached_tokens() {
         papyrus_parser::tokenize("ScriptName Example\n\nInt Property Marker = 1 Auto\n").unwrap();
     put_tokens_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &replacement,
@@ -337,7 +475,12 @@ fn putting_tokens_overwrites_previously_cached_tokens() {
     );
 
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_tokens_in(
+            h.cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &h.source_path,
+            h.source
+        ),
         Some(replacement)
     );
 }
@@ -358,15 +501,29 @@ fn putting_tokens_does_not_preserve_an_ast_from_an_incompatible_entry() {
 
     put_tokens_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &sample_tokens(),
         COMPATIBLE_VERSION,
     );
 
-    assert_eq!(get_in(h.cache_dir.path(), &h.source_path, h.source), None);
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_in(
+            h.cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &h.source_path,
+            h.source
+        ),
+        None
+    );
+    assert_eq!(
+        get_tokens_in(
+            h.cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &h.source_path,
+            h.source
+        ),
         Some(sample_tokens())
     );
 }
@@ -387,6 +544,7 @@ fn putting_ast_does_not_preserve_tokens_from_an_incompatible_entry() {
 
     put_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &sample_ast(),
@@ -394,11 +552,21 @@ fn putting_ast_does_not_preserve_tokens_from_an_incompatible_entry() {
     );
 
     assert_eq!(
-        get_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_in(
+            h.cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &h.source_path,
+            h.source
+        ),
         Some(sample_ast())
     );
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_tokens_in(
+            h.cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &h.source_path,
+            h.source
+        ),
         None
     );
 }
@@ -408,6 +576,7 @@ fn putting_updates_the_stamped_linter_version() {
     let h = harness("Example.psc", "ScriptName Example\n");
     put_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &sample_ast(),
@@ -415,13 +584,19 @@ fn putting_updates_the_stamped_linter_version() {
     );
     put_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &sample_ast(),
         "9.9.9",
     );
 
-    let raw = std::fs::read_to_string(cache_file_path(h.cache_dir.path(), &h.source_path)).unwrap();
+    let raw = std::fs::read_to_string(cache_file_path(
+        h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
+        &h.source_path,
+    ))
+    .unwrap();
     assert!(raw.contains("\"linter_version\":\"9.9.9\""));
     assert!(!raw.contains(&format!("\"linter_version\":\"{COMPATIBLE_VERSION}\"")));
 }
@@ -433,6 +608,7 @@ fn unicode_source_paths_round_trip() {
     let tokens = sample_tokens();
     put_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &ast,
@@ -440,6 +616,7 @@ fn unicode_source_paths_round_trip() {
     );
     put_tokens_in(
         h.cache_dir.path(),
+        papyrus_parser::Game::Skyrim,
         &h.source_path,
         h.source,
         &tokens,
@@ -447,11 +624,21 @@ fn unicode_source_paths_round_trip() {
     );
 
     assert_eq!(
-        get_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_in(
+            h.cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &h.source_path,
+            h.source
+        ),
         Some(ast)
     );
     assert_eq!(
-        get_tokens_in(h.cache_dir.path(), &h.source_path, h.source),
+        get_tokens_in(
+            h.cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &h.source_path,
+            h.source
+        ),
         Some(tokens)
     );
 }

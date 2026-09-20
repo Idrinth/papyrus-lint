@@ -26,7 +26,7 @@ fn write_prime_and_relint(
     if updated != original {
         write_psc_source(path, updated, encoding).map_err(|err| err.to_string())?;
     }
-    ast_cache::ensure_primed(path, updated);
+    ast_cache::ensure_primed(context.config.game, path, updated);
     let mut shared = SharedFunctionTable(function_table);
     Ok(lint_with_compile_check(path, updated, context, &mut shared))
 }

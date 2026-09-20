@@ -46,12 +46,7 @@ pub use crate::type_casing::Style as TypeCasing;
 ///
 /// Only Skyrim is supported today, but representing the target as an enum
 /// keeps the configuration extensible as support for other games is added.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Game {
-    #[default]
-    Skyrim,
-}
+pub use papyrus_parser::Game;
 
 /// The indentation style a project expects, for the "Formatting checks"/
 /// "Indentation" lint and automatic fix described in README.md.

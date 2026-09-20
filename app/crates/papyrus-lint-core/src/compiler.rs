@@ -183,10 +183,16 @@ fn run_compiler(
 /// `-i`/`-o` from, etc.); see [`CompileOutcome`] for how an actual compile
 /// failure is reported instead.
 pub fn compile_psc_file(
+    game: papyrus_parser::Game,
     compiler_path: &Path,
     script_path: &Path,
     additional_roots: &[String],
 ) -> Result<CompileOutcome, String> {
+    assert_eq!(
+        game,
+        papyrus_parser::Game::Skyrim,
+        "compiler integration only supports Skyrim"
+    );
     let (source_dir, output_dir) = resolve_locations(script_path)?;
     let import_dirs = import_dirs(source_dir, output_dir.parent(), additional_roots);
 
@@ -207,10 +213,16 @@ pub fn compile_psc_file(
 /// discarded either way, `personal_data_stripped` is always `false` on the
 /// returned [`CompileOutcome`], unlike [`compile_psc_file`].
 pub fn check_psc_file(
+    game: papyrus_parser::Game,
     compiler_path: &Path,
     script_path: &Path,
     additional_roots: &[String],
 ) -> Result<CompileOutcome, String> {
+    assert_eq!(
+        game,
+        papyrus_parser::Game::Skyrim,
+        "compiler integration only supports Skyrim"
+    );
     let (source_dir, output_dir) = resolve_locations(script_path)?;
     let import_dirs = import_dirs(source_dir, output_dir.parent(), additional_roots);
 

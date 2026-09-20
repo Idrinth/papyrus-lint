@@ -110,25 +110,41 @@ static CACHE_LOCK: Mutex<()> = Mutex::new(());
 /// should parse `source` fresh in that case. See [`ops::get_in`] for the
 /// in-memory priming a disk hit also does (a bundled hit primes the same
 /// way).
-pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
+pub fn get(
+    game: papyrus_parser::Game,
+    source_path: &Path,
+    source: &str,
+) -> Option<papyrus_parser::ast::Script> {
     if let Some(ast) = bundled::ast_for(source) {
         return Some(ast);
     }
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    ops::get_in(&entry::cache_dir()?, source_path, source)
+    ops::get_in(&entry::cache_dir()?, game, source_path, source)
 }
 
 /// Persists `ast`, parsed from `source_path`/`source`, to the on-disk cache
 /// for later [`get`] calls. Any failure (e.g. an unwritable install
 /// directory) is silently ignored.
-pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) {
+pub fn put(
+    game: papyrus_parser::Game,
+    source_path: &Path,
+    source: &str,
+    ast: &papyrus_parser::ast::Script,
+) {
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(dir) = entry::cache_dir() {
-        ops::put_in(&dir, source_path, source, ast, version::stamped_version());
+        ops::put_in(
+            &dir,
+            game,
+            source_path,
+            source,
+            ast,
+            version::stamped_version(),
+        );
     }
 }
 
@@ -140,26 +156,36 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
 /// mismatch, or error -- the caller should tokenize `source` fresh in that
 /// case. See [`ops::get_tokens_in`] for the in-memory priming a disk hit
 /// also does (a bundled hit primes the same way).
-pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser::token::Token>> {
+pub fn get_tokens(
+    game: papyrus_parser::Game,
+    source_path: &Path,
+    source: &str,
+) -> Option<Vec<papyrus_parser::token::Token>> {
     if let Some(tokens) = bundled::tokens_for(source) {
         return Some(tokens);
     }
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    ops::get_tokens_in(&entry::cache_dir()?, source_path, source)
+    ops::get_tokens_in(&entry::cache_dir()?, game, source_path, source)
 }
 
 /// Persists `tokens`, lexed from `source_path`/`source`, to the on-disk
 /// cache for later [`get_tokens`] calls. Any failure (e.g. an unwritable
 /// install directory) is silently ignored.
-pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::token::Token]) {
+pub fn put_tokens(
+    game: papyrus_parser::Game,
+    source_path: &Path,
+    source: &str,
+    tokens: &[papyrus_parser::token::Token],
+) {
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(dir) = entry::cache_dir() {
         ops::put_tokens_in(
             &dir,
+            game,
             source_path,
             source,
             tokens,
@@ -183,7 +209,7 @@ pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::to
 /// or CLI invocations -- skips both re-parsing and re-tokenizing it there
 /// too, not just in `get`/`get_tokens`'s other existing callers. See
 /// [`ops::ensure_primed_in`].
-pub fn ensure_primed(source_path: &Path, source: &str) {
+pub fn ensure_primed(game: papyrus_parser::Game, source_path: &Path, source: &str) {
     if bundled::prime(source) {
         return;
     }
@@ -193,19 +219,32 @@ pub fn ensure_primed(source_path: &Path, source: &str) {
     let Some(dir) = entry::cache_dir() else {
         return;
     };
-    ops::ensure_primed_in(&dir, source_path, source, version::stamped_version());
+    ops::ensure_primed_in(&dir, game, source_path, source, version::stamped_version());
 }
 
 /// Cached AST of a bundled vanilla/SKSE script looked up by `ScriptName`
 /// (case-insensitive). Used by `FunctionTable` when no matching `.psc` is
 /// on disk. Returns `None` when the name is not in the bundled blob.
-pub fn ast_for_script_name(name: &str) -> Option<papyrus_parser::ast::Script> {
+pub fn ast_for_script_name(
+    game: papyrus_parser::Game,
+    name: &str,
+) -> Option<papyrus_parser::ast::Script> {
+    assert_eq!(
+        game,
+        papyrus_parser::Game::Skyrim,
+        "bundled scripts only support Skyrim"
+    );
     bundled::ast_for_name(name)
 }
 
 /// Whether the bundled vanilla/SKSE blob has a script whose `ScriptName`
 /// matches `name` (case-insensitive). Does not deserialize the AST.
-pub fn contains_script_name(name: &str) -> bool {
+pub fn contains_script_name(game: papyrus_parser::Game, name: &str) -> bool {
+    assert_eq!(
+        game,
+        papyrus_parser::Game::Skyrim,
+        "bundled scripts only support Skyrim"
+    );
     bundled::contains_name(name)
 }
 

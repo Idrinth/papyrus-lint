@@ -1,3 +1,4 @@
+import { currentLintConfig } from "./config-types";
 // Drop-folder handling: turning a dropped .achlist/.ppj/.psc/directory into a
 // project root and a parsed+linted set of results, and re-linting that same
 // set later against changed settings. Kept separate from the page-chrome
@@ -63,7 +64,7 @@ export async function parsePscFiles(
   return mapWithConcurrency(paths, parseConcurrencyLimit(), async (path) => {
     let outcome: PscParseOutcome;
     try {
-      const script = await invoke<PapyrusScript>("parse_psc_file", { path });
+      const script = await invoke<PapyrusScript>("parse_psc_file", { path, game: currentLintConfig.game });
       const findings = await lintPscFile(path);
       outcome = { path, ok: true, detail: `parsed as "${script.name}"`, findings };
     } catch (error) {
@@ -79,7 +80,7 @@ async function runParseThenLint(paths: string[], generation: number) {
   let parsed = 0;
   await mapWithConcurrency(paths, parseConcurrencyLimit(), async (path) => {
     try {
-      await invoke<PapyrusScript>("parse_psc_file", { path });
+      await invoke<PapyrusScript>("parse_psc_file", { path, game: currentLintConfig.game });
     } catch {
       // The lint-phase parsePscFiles call reports the real per-file error.
     }

@@ -133,6 +133,7 @@ struct ParsedFile {
 /// script today.
 fn parse_scripts(
     script_paths: &[PathBuf],
+    game: papyrus_parser::Game,
     thread_count: usize,
     progress: bool,
     progress_stdout: &Mutex<&mut (dyn Write + Send)>,
@@ -143,7 +144,7 @@ fn parse_scripts(
         (0..total_scripts).collect(),
         thread_count,
         |file_index| {
-            let result = parse_script(&script_paths[file_index]);
+            let result = parse_script(game, &script_paths[file_index]);
             if progress {
                 report_file_progress(
                     &progress_completed,
@@ -157,12 +158,12 @@ fn parse_scripts(
     )
 }
 
-fn parse_script(script_path: &Path) -> Result<ParsedFile, String> {
+fn parse_script(game: papyrus_parser::Game, script_path: &Path) -> Result<ParsedFile, String> {
     let (source, encoding) = read_psc_source_with_encoding(script_path)
         .map_err(|err| format!("error: failed to read {}: {err}", script_path.display()))?;
-    ast_cache::ensure_primed(script_path, &source);
-    let ast = ast_cache::get(script_path, &source);
-    let tokens = ast_cache::get_tokens(script_path, &source);
+    ast_cache::ensure_primed(game, script_path, &source);
+    let ast = ast_cache::get(game, script_path, &source);
+    let tokens = ast_cache::get_tokens(game, script_path, &source);
     Ok(ParsedFile {
         source,
         encoding,
@@ -231,6 +232,7 @@ fn process_scripts<'a>(
 
     let parsed_files = parse_scripts(
         &script_paths,
+        lint_config.game,
         lint.thread_count,
         lint.progress,
         &progress_stdout,

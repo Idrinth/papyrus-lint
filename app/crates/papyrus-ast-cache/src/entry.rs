@@ -45,9 +45,13 @@ fn cache_dir_from(
 /// The cache file `source_path` is stored under within `dir`: an MD5 of its
 /// absolute path, so path separators and length can't collide with
 /// filesystem naming limits.
-pub(crate) fn cache_file_path(dir: &Path, source_path: &Path) -> PathBuf {
+pub(crate) fn cache_file_path(
+    dir: &Path,
+    game: papyrus_parser::Game,
+    source_path: &Path,
+) -> PathBuf {
     let digest = md5::compute(source_path.to_string_lossy().as_bytes());
-    dir.join(format!("{digest:x}.json"))
+    dir.join(format!("{}-{digest:x}.json", game.key()))
 }
 
 pub(crate) fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
@@ -61,8 +65,13 @@ pub(crate) fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
 /// `tokens` accessors in [`crate::ops`], and by each one's `put` so that
 /// writing one field preserves whatever still-valid value the other field
 /// already held.
-pub(crate) fn valid_entry_in(dir: &Path, source_path: &Path, source: &str) -> Option<CacheEntry> {
-    let raw = std::fs::read(cache_file_path(dir, source_path)).ok()?;
+pub(crate) fn valid_entry_in(
+    dir: &Path,
+    game: papyrus_parser::Game,
+    source_path: &Path,
+    source: &str,
+) -> Option<CacheEntry> {
+    let raw = std::fs::read(cache_file_path(dir, game, source_path)).ok()?;
     let entry: CacheEntry = serde_json::from_slice(&raw).ok()?;
 
     if !is_compatible_version(&entry.linter_version)
@@ -75,14 +84,19 @@ pub(crate) fn valid_entry_in(dir: &Path, source_path: &Path, source: &str) -> Op
     Some(entry)
 }
 
-pub(crate) fn write_entry_in(dir: &Path, source_path: &Path, entry: &CacheEntry) {
+pub(crate) fn write_entry_in(
+    dir: &Path,
+    game: papyrus_parser::Game,
+    source_path: &Path,
+    entry: &CacheEntry,
+) {
     let Ok(serialized) = serde_json::to_vec(entry) else {
         return;
     };
     if std::fs::create_dir_all(dir).is_err() {
         return;
     }
-    let _ = std::fs::write(cache_file_path(dir, source_path), serialized);
+    let _ = std::fs::write(cache_file_path(dir, game, source_path), serialized);
 }
 
 #[cfg(test)]
@@ -142,12 +156,19 @@ mod tests {
     }
 
     #[test]
-    fn cache_file_path_is_a_32_hex_digit_json_file() {
+    fn cache_file_path_is_prefixed_by_game_and_has_a_32_hex_digit_digest() {
         let dir = Path::new("/tmp/ast-cache");
-        let path = cache_file_path(dir, Path::new("/mods/Scripts/Example.psc"));
+        let path = cache_file_path(
+            dir,
+            papyrus_parser::Game::Skyrim,
+            Path::new("/mods/Scripts/Example.psc"),
+        );
         let name = path.file_name().unwrap().to_str().unwrap();
         assert!(name.ends_with(".json"));
-        let digest = name.trim_end_matches(".json");
+        let digest = name
+            .strip_prefix("skyrim-")
+            .unwrap()
+            .trim_end_matches(".json");
         assert_eq!(digest.len(), 32);
         assert!(digest.chars().all(|c| c.is_ascii_hexdigit()));
         assert_eq!(path.parent(), Some(dir));
@@ -157,7 +178,10 @@ mod tests {
     fn cache_file_path_is_stable_for_the_same_source_path() {
         let dir = Path::new("/tmp/ast-cache");
         let source = Path::new("/mods/Scripts/Example.psc");
-        assert_eq!(cache_file_path(dir, source), cache_file_path(dir, source));
+        assert_eq!(
+            cache_file_path(dir, papyrus_parser::Game::Skyrim, source),
+            cache_file_path(dir, papyrus_parser::Game::Skyrim, source)
+        );
     }
 
     #[test]
@@ -166,8 +190,8 @@ mod tests {
         let absolute = Path::new("/mods/Scripts/Example.psc");
         let relative = Path::new("Example.psc");
         assert_ne!(
-            cache_file_path(dir, absolute),
-            cache_file_path(dir, relative)
+            cache_file_path(dir, papyrus_parser::Game::Skyrim, absolute),
+            cache_file_path(dir, papyrus_parser::Game::Skyrim, relative)
         );
     }
 
@@ -200,15 +224,33 @@ mod tests {
         std::fs::write(&source_path, source).unwrap();
         std::fs::create_dir_all(cache_dir.path()).unwrap();
 
-        let file = cache_file_path(cache_dir.path(), &source_path);
+        let file = cache_file_path(cache_dir.path(), papyrus_parser::Game::Skyrim, &source_path);
         std::fs::write(&file, b"").unwrap();
-        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+        assert!(valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        )
+        .is_none());
 
         std::fs::write(&file, b"{\"modified_unix_secs\":1").unwrap();
-        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+        assert!(valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        )
+        .is_none());
 
         std::fs::write(&file, b"[]").unwrap();
-        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+        assert!(valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        )
+        .is_none());
     }
 
     #[test]
@@ -230,9 +272,19 @@ mod tests {
             md5::compute(source.as_bytes()),
             MIN_COMPATIBLE_VERSION,
         );
-        std::fs::write(cache_file_path(cache_dir.path(), &source_path), raw).unwrap();
+        std::fs::write(
+            cache_file_path(cache_dir.path(), papyrus_parser::Game::Skyrim, &source_path),
+            raw,
+        )
+        .unwrap();
 
-        let entry = valid_entry_in(cache_dir.path(), &source_path, source).unwrap();
+        let entry = valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source,
+        )
+        .unwrap();
         assert!(entry.ast.is_none());
         assert!(entry.tokens.is_none());
     }
@@ -252,12 +304,18 @@ mod tests {
             .insert("future_field".to_string(), serde_json::json!(true));
         std::fs::create_dir_all(cache_dir.path()).unwrap();
         std::fs::write(
-            cache_file_path(cache_dir.path(), &source_path),
+            cache_file_path(cache_dir.path(), papyrus_parser::Game::Skyrim, &source_path),
             serde_json::to_vec(&value).unwrap(),
         )
         .unwrap();
 
-        let entry = valid_entry_in(cache_dir.path(), &source_path, source).unwrap();
+        let entry = valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source,
+        )
+        .unwrap();
         assert_eq!(entry.ast, Some(sample_ast()));
         assert_eq!(entry.tokens, Some(sample_tokens()));
     }
@@ -275,9 +333,20 @@ mod tests {
             tokens: None,
             ..fresh_entry(&source_path, source)
         };
-        write_entry_in(cache_dir.path(), &source_path, &entry);
+        write_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            &entry,
+        );
 
-        let loaded = valid_entry_in(cache_dir.path(), &source_path, source).unwrap();
+        let loaded = valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source,
+        )
+        .unwrap();
         assert!(loaded.ast.is_none());
         assert!(loaded.tokens.is_none());
     }
@@ -292,18 +361,51 @@ mod tests {
 
         let mut entry = fresh_entry(&source_path, source);
         entry.linter_version = "1.0.0".to_string();
-        write_entry_in(cache_dir.path(), &source_path, &entry);
-        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+        write_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            &entry,
+        );
+        assert!(valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        )
+        .is_none());
 
         let mut entry = fresh_entry(&source_path, source);
         entry.content_md5 = format!("{:x}", md5::compute(b"different source"));
-        write_entry_in(cache_dir.path(), &source_path, &entry);
-        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+        write_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            &entry,
+        );
+        assert!(valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        )
+        .is_none());
 
         let mut entry = fresh_entry(&source_path, source);
         entry.modified_unix_secs = entry.modified_unix_secs.saturating_add(1);
-        write_entry_in(cache_dir.path(), &source_path, &entry);
-        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+        write_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            &entry,
+        );
+        assert!(valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        )
+        .is_none());
     }
 
     #[test]
@@ -314,7 +416,13 @@ mod tests {
         let source = "ScriptName Example\n";
         std::fs::write(&source_path, source).unwrap();
 
-        assert!(valid_entry_in(cache_dir.path(), &source_path, source).is_none());
+        assert!(valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source
+        )
+        .is_none());
     }
 
     #[test]
@@ -326,9 +434,20 @@ mod tests {
         std::fs::write(&source_path, source).unwrap();
 
         let entry = fresh_entry(&source_path, source);
-        write_entry_in(cache_dir.path(), &source_path, &entry);
+        write_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            &entry,
+        );
 
-        let loaded = valid_entry_in(cache_dir.path(), &source_path, source).unwrap();
+        let loaded = valid_entry_in(
+            cache_dir.path(),
+            papyrus_parser::Game::Skyrim,
+            &source_path,
+            source,
+        )
+        .unwrap();
         assert_eq!(loaded.modified_unix_secs, entry.modified_unix_secs);
         assert_eq!(loaded.content_md5, entry.content_md5);
         assert_eq!(loaded.linter_version, entry.linter_version);
@@ -339,8 +458,16 @@ mod tests {
     #[test]
     fn unicode_source_paths_get_their_own_cache_file() {
         let dir = Path::new("/tmp/ast-cache");
-        let ascii = cache_file_path(dir, Path::new("/mods/Scripts/Example.psc"));
-        let unicode = cache_file_path(dir, Path::new("/mods/Scripts/Привет.psc"));
+        let ascii = cache_file_path(
+            dir,
+            papyrus_parser::Game::Skyrim,
+            Path::new("/mods/Scripts/Example.psc"),
+        );
+        let unicode = cache_file_path(
+            dir,
+            papyrus_parser::Game::Skyrim,
+            Path::new("/mods/Scripts/Привет.psc"),
+        );
         assert_ne!(ascii, unicode);
         let name = unicode.file_name().unwrap().to_str().unwrap();
         assert!(name.ends_with(".json"));

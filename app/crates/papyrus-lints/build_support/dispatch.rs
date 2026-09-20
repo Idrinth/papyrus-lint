@@ -119,7 +119,7 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
     for line in [
         "let tokens = papyrus_parser::tokenize(source).ok();",
         "let tokens = tokens.as_deref();",
-        "let ast = papyrus_parser::parse(source).ok();",
+        "let ast = papyrus_parser::parse_for_game(config.game, source).ok();",
         "let ast = ast.as_ref();",
         "let rules = &config.rules;",
         "let mut session = Session::new();",
@@ -176,7 +176,8 @@ fn rules_dispatch(context: &BuildContext, rules: &[RuleMetadata]) {
             format!("        rules.{key} && applies({module}::RULE),"),
             "        |source| {".to_string(),
             "            let tokens = papyrus_parser::tokenize(source).ok();".to_string(),
-            "            let ast = papyrus_parser::parse(source).ok();".to_string(),
+            "            let ast = papyrus_parser::parse_for_game(config.game, source).ok();"
+                .to_string(),
             format!(
                 "            {module}::repair(source, ast.as_ref(), tokens.as_deref(), config)"
             ),

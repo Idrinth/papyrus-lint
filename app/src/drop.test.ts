@@ -170,8 +170,8 @@ describe("handleDroppedPaths", () => {
     await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/scripts/source");
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc" });
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/Requiem/B.psc" });
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc", game: "skyrim" });
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/Requiem/B.psc", game: "skyrim" });
   });
 
   it("falls back to the dropped directory itself as project root when no scripts/source pair is found", async () => {
@@ -206,8 +206,8 @@ describe("handleDroppedPaths", () => {
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/list.achlist");
     // readme.txt isn't a .psc file, so only A.psc should have been linted.
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc" });
-    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "readme.txt" });
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc", game: "skyrim" });
+    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "readme.txt", game: "skyrim" });
   });
 
   it("preloads the achlist's own .psc entries' function table before lint_psc_file", async () => {
@@ -294,7 +294,7 @@ describe("handleDroppedPaths", () => {
     await pending;
 
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/project.ppj");
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/Source/Scripts/A.psc" });
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/Source/Scripts/A.psc", game: "skyrim" });
     expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", {
       path: "/proj/Source/Scripts/A.psc",
       context: expect.objectContaining({
@@ -350,7 +350,7 @@ describe("handleDroppedPaths", () => {
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe(
       "Loaded /proj/scripts/source/New.psc",
     );
-    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "/proj/Old.psc" });
+    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "/proj/Old.psc", game: "skyrim" });
   });
 
   it("lints a single dropped .psc file, resolving the project root two directories up", async () => {
@@ -370,7 +370,7 @@ describe("handleDroppedPaths", () => {
     expect(document.querySelector("#achlist-result-title")!.textContent).toBe(
       "Loaded /proj/scripts/source/A.psc",
     );
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc" });
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/scripts/source/A.psc", game: "skyrim" });
   });
 
   it("clears previous findings before re-rendering, so re-dropping the same achlist can't show stale diagnostics while it reloads", async () => {
@@ -707,7 +707,7 @@ describe("relintCurrentFiles / Lint results tab settings staleness", () => {
       await Promise.resolve();
     }
 
-    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc" });
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "A.psc", game: "skyrim" });
     expect(document.querySelector("#psc-result")!.hasAttribute("hidden")).toBe(false);
     const items = document.querySelectorAll("#psc-result-list > li");
     expect(items).toHaveLength(1);

@@ -8,14 +8,16 @@ use crate::entry::{file_modified_unix_secs, valid_entry_in, write_entry_in, Cach
 
 pub(crate) fn put_in(
     dir: &Path,
+    game: papyrus_parser::Game,
     source_path: &Path,
     source: &str,
     ast: &papyrus_parser::ast::Script,
     linter_version: &str,
 ) {
-    let tokens = valid_entry_in(dir, source_path, source).and_then(|entry| entry.tokens);
+    let tokens = valid_entry_in(dir, game, source_path, source).and_then(|entry| entry.tokens);
     write_stamped_entry(
         dir,
+        game,
         source_path,
         source,
         linter_version,
@@ -26,14 +28,16 @@ pub(crate) fn put_in(
 
 pub(crate) fn put_tokens_in(
     dir: &Path,
+    game: papyrus_parser::Game,
     source_path: &Path,
     source: &str,
     tokens: &[papyrus_parser::token::Token],
     linter_version: &str,
 ) {
-    let ast = valid_entry_in(dir, source_path, source).and_then(|entry| entry.ast);
+    let ast = valid_entry_in(dir, game, source_path, source).and_then(|entry| entry.ast);
     write_stamped_entry(
         dir,
+        game,
         source_path,
         source,
         linter_version,
@@ -44,6 +48,7 @@ pub(crate) fn put_tokens_in(
 
 fn write_stamped_entry(
     dir: &Path,
+    game: papyrus_parser::Game,
     source_path: &Path,
     source: &str,
     linter_version: &str,
@@ -60,7 +65,7 @@ fn write_stamped_entry(
         ast,
         tokens,
     };
-    write_entry_in(dir, source_path, &entry);
+    write_entry_in(dir, game, source_path, &entry);
 }
 
 #[cfg(test)]

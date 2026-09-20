@@ -168,7 +168,15 @@ pub fn repair(
 /// that doesn't parse cleanly, or that [`check_with`] finds nothing to
 /// flag in, is returned unchanged.
 pub fn repair_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) -> String {
-    let ast = papyrus_parser::parse(source).ok();
+    repair_with_for_game(crate::Game::default(), source, external)
+}
+
+pub(crate) fn repair_with_for_game<E: ExternalSignatures + ?Sized>(
+    game: crate::Game,
+    source: &str,
+    external: &mut E,
+) -> String {
+    let ast = papyrus_parser::parse_for_game(game, source).ok();
     let lines_to_remove: std::collections::HashSet<usize> = check_with(ast.as_ref(), external)
         .into_iter()
         .map(|diagnostic| diagnostic.line)

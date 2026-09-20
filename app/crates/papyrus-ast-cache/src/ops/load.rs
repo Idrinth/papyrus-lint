@@ -13,11 +13,12 @@ use crate::entry::valid_entry_in;
 /// can't consult this cache directly -- reuses it instead of re-parsing.
 pub(crate) fn get_in(
     dir: &Path,
+    game: papyrus_parser::Game,
     source_path: &Path,
     source: &str,
 ) -> Option<papyrus_parser::ast::Script> {
-    let ast = valid_entry_in(dir, source_path, source)?.ast?;
-    papyrus_parser::prime_cache(source, ast.clone());
+    let ast = valid_entry_in(dir, game, source_path, source)?.ast?;
+    papyrus_parser::prime_cache_for_game(game, source, ast.clone());
     Some(ast)
 }
 
@@ -26,10 +27,11 @@ pub(crate) fn get_in(
 /// [`get_in`] does for the AST.
 pub(crate) fn get_tokens_in(
     dir: &Path,
+    game: papyrus_parser::Game,
     source_path: &Path,
     source: &str,
 ) -> Option<Vec<papyrus_parser::token::Token>> {
-    let tokens = valid_entry_in(dir, source_path, source)?.tokens?;
+    let tokens = valid_entry_in(dir, game, source_path, source)?.tokens?;
     papyrus_parser::prime_tokenize_cache(source, tokens.clone());
     Some(tokens)
 }
