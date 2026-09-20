@@ -17,7 +17,7 @@ class MarkdownLinkLintTests(unittest.TestCase):
             root = Path(directory)
             docs = root / "docs"
             docs.mkdir()
-            (root / "README.md").touch()
+            (root / "README.md").write_text("# Start\n", encoding="utf-8")
             markdown = docs / "guide.md"
             markdown.write_text(
                 "[readme](../README.md#start)\n"
@@ -33,11 +33,38 @@ class MarkdownLinkLintTests(unittest.TestCase):
                 markdown_link_lint.broken_links(markdown),
             )
 
-    def test_broken_links_ignores_external_anchor_and_code_links(self) -> None:
+    def test_broken_links_checks_github_heading_anchors(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            markdown = root / "README.md"
+            guide = root / "guide.md"
+            guide.write_text(
+                "# Getting Started!\n"
+                "## Repeated heading\n"
+                "## Repeated heading\n"
+                "Linked [`code`](elsewhere.md) &amp; details\n"
+                "------------------------------------------\n",
+                encoding="utf-8",
+            )
+            markdown.write_text(
+                "# Local Section\n"
+                "[local](#local-section) [heading](guide.md#getting-started)\n"
+                "[punctuation](guide.md#getting-started) [duplicate](guide.md#repeated-heading-1)\n"
+                "[setext](guide.md#linked-code--details)\n"
+                "[missing local](#missing) [missing remote](guide.md#missing)\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual(
+                [(5, "#missing"), (5, "guide.md#missing")],
+                markdown_link_lint.broken_links(markdown),
+            )
+
+    def test_broken_links_ignores_external_and_code_links(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             markdown = Path(directory, "README.md")
             markdown.write_text(
-                "[web](https://something.de) [mail](mailto:hello@example.com) [anchor](#section)\n"
+                "[web](https://something.de#section) [mail](mailto:hello@example.com)\n"
                 "`[inline code](missing.md)`\n"
                 "```markdown\n[code fence](missing.md)\n```\n",
                 encoding="utf-8",
