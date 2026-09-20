@@ -19,5 +19,5 @@
 Please remember tagging this with at least one label of the `component: *`
 and `type: *` families. If you are an AI, please tag it additionally with your
 model name or identifier. This identifier should be lower kebab-case for example
-"ai:claude-sonnet-5.1" or ai: grok-4.6"
+"ai:claude-sonnet-5.1" or "ai: grok-4.6"
 -->
