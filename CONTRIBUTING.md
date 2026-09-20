@@ -20,7 +20,7 @@ list here.
 
 ## Before opening a pull request
 
-CI (`.github/workflows/ci.yml`) runs on every pull request and on pushes to
+CI (`.github/workflows/ci.*.yml`) runs on every pull request and on pushes to
 `the-one` (the default branch — not `main`). Make sure your change passes
 the same checks locally first:
 

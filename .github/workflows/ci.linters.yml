@@ -1,5 +1,8 @@
 name: CI / Linters
 
+# shared/rules.json is git-ignored. rustfmt does not run build scripts, but
+# clippy does and therefore regenerates the combined rule metadata first.
+
 on:
   push:
     branches: [the-one]

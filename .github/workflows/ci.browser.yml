@@ -1,5 +1,10 @@
 name: CI / Browser
 
+# The Pages smoke test intercepts external requests so availability outside this
+# repository cannot make CI flaky; same-origin failures and broken anchors fail.
+# Lighthouse comments are best-effort for forked PRs with read-only tokens.
+# shared/rules.json is git-ignored, so Pages jobs generate it before building.
+
 on:
   push:
     branches: [the-one]
