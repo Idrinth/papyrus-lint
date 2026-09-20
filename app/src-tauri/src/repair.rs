@@ -221,6 +221,33 @@ pub(crate) fn add_disable_comment_to_psc_line(
     )
 }
 
+/// Adds `; @nodiscard` to `line` (1-indexed)'s function header, or extends
+/// its existing trailing comment, via [`papyrus_lints::add_nodiscard_comment`]
+/// — the code viewer's per-line "Nodiscard" button, offered only on headers
+/// the frontend's own eligibility check (a function that returns a value or
+/// is `Native`, and isn't flagged already) allows. Re-lints the file
+/// afterward and returns its updated diagnostics, the same as every other
+/// mutating command here.
+#[tauri::command(async)]
+pub(crate) fn add_nodiscard_comment_to_psc_line(
+    path: String,
+    context: ProjectLintContext,
+    line: usize,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let path = Path::new(&path);
+    let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
+    let updated = papyrus_lints::add_nodiscard_comment(&source, line);
+    let function_table = context.function_table();
+    write_prime_and_relint(
+        path,
+        &source,
+        &updated,
+        encoding,
+        &context,
+        function_table.as_ref(),
+    )
+}
+
 #[cfg(test)]
 #[path = "repair_tests.rs"]
 mod tests;

@@ -52,6 +52,11 @@ for `.psc` files directly in the editor.
   `papyrus-lint.yaml` is created so you don't have to run Initialize
   Configuration first. Compiler-reported diagnostics (`compiler-error`)
   have no such toggle and don't get these ignore actions.
+- **Add ; @nodiscard flag** — a lightbulb action offered on a function
+  header that returns a value or is `Native` and isn't flagged already. It
+  adds (or extends) a trailing `; @nodiscard` comment marking the function
+  for the `unused-nodiscard` rule's discarded-result check, applied
+  directly to the buffer with no CLI round-trip needed.
 - **Papyrus Lint: Initialize Configuration** — creates a
   `papyrus-lint.yaml` (see the project
   [configuration reference](../docs/configuration.md)), without

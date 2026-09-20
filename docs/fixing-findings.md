@@ -58,6 +58,14 @@ into an already-present `; @disable` comment on that line rather than
 adding a second one, so clicking it again after a later run flags something
 new just extends the same comment.
 
+A function header that returns a value or is `Native`, and isn't already
+flagged, also gets its own "Nodiscard" button, regardless of whether that
+line has any finding at all. Clicking it adds (or extends) a trailing
+`; @nodiscard` comment on that header, marking the function so the
+`unused-nodiscard` rule flags a caller that discards its result. The VS
+Code extension offers the same action as a lightbulb Quick Action on an
+eligible header, applying the edit directly to the buffer.
+
 ## Reviewing and exporting findings
 
 The Lint results tab also has a "Mass fix an issue" panel, listing every

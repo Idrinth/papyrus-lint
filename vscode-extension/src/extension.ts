@@ -13,6 +13,7 @@ import { isPapyrusDocument, resolveTargetUri } from './documents';
 import { initializeConfig } from './init';
 import { PapyrusLinter } from './linter';
 import { cancelLiveLint, resetLiveLint, scheduleLiveLint } from './liveLint';
+import { PapyrusNodiscardActionProvider, papyrusNodiscardActionSelector } from './nodiscardAction';
 
 export function activate(context: vscode.ExtensionContext): void {
   configureCli(context.globalStorageUri.fsPath, String(context.extension.packageJSON.version));
@@ -77,6 +78,11 @@ export function activate(context: vscode.ExtensionContext): void {
       papyrusCodeActionSelector(),
       new PapyrusFixIssueActionProvider(),
       { providedCodeActionKinds: PapyrusFixIssueActionProvider.providedCodeActionKinds },
+    ),
+    vscode.languages.registerCodeActionsProvider(
+      papyrusNodiscardActionSelector(),
+      new PapyrusNodiscardActionProvider(),
+      { providedCodeActionKinds: PapyrusNodiscardActionProvider.providedCodeActionKinds },
     ),
   );
 }
