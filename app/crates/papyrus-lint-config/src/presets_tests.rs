@@ -7,6 +7,83 @@ fn write_config(dir: &Path, name: &str, contents: &str) {
     fs::write(dir.join(name), contents).expect("failed to write test config file");
 }
 
+/// The subset of a `shared/rules.json` entry the tests below need. Mirrors
+/// `build.rs`'s own `RuleEntry`.
+#[derive(serde::Deserialize)]
+struct RuleEntry {
+    id: String,
+    importance: String,
+    #[serde(default)]
+    kept_in_standard: bool,
+}
+
+fn repo_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..")
+}
+
+fn shared_rules() -> Vec<RuleEntry> {
+    let path = repo_root().join("shared/rules.json");
+    let contents = fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!(
+            "failed to read {}: {err} (run .github/scripts/build_rules_json.py first)",
+            path.display()
+        )
+    });
+    serde_json::from_str(&contents)
+        .unwrap_or_else(|err| panic!("failed to parse {}: {err}", path.display()))
+}
+
+/// `id`'s `Config.rules` toggle name, mirroring `build.rs`'s own
+/// `config_key_for` (not reachable from here: `build.rs` isn't compiled
+/// into this crate).
+fn config_key_for(id: &str) -> String {
+    match id {
+        "float-to-int" => "float_int_conversion".to_string(),
+        "too-many-named-states" => "too_many_states".to_string(),
+        _ => id.replace('-', "_"),
+    }
+}
+
+/// Picks two `Config.rules` toggle names straight out of `shared/rules.json`
+/// — one `"low"` importance rule `standard` turns off (not marked
+/// `kept_in_standard`), and one `"low"` importance rule `standard` keeps on
+/// (marked `kept_in_standard`) — rather than hardcoding which specific rule
+/// happens to be tagged which way today. Both are confirmed enabled under
+/// `strict` first, so the tests below actually exercise a preset turning a
+/// rule *off*, not one that was off to begin with.
+fn low_importance_rule_pair() -> (String, String) {
+    let strict = Preset::Strict
+        .yaml(None)
+        .expect("strict preset should resolve");
+    let is_enabled_under_strict = |key: &str| strict.contains(&format!("  {key}: true\n"));
+
+    let rules = shared_rules();
+    let pick = |kept_in_standard: bool| {
+        rules
+            .iter()
+            .filter(|rule| rule.importance == "low" && rule.kept_in_standard == kept_in_standard)
+            .map(|rule| config_key_for(&rule.id))
+            .find(|key| is_enabled_under_strict(key))
+            .unwrap_or_else(|| {
+                panic!(
+                    "expected at least one low-importance rule with kept_in_standard={kept_in_standard} enabled by default"
+                )
+            })
+    };
+    (pick(false), pick(true))
+}
+
+/// `key`'s value on its own top-level `key: value` line in `yaml` (ignoring
+/// any trailing inline comment), e.g. reading
+/// `cyclomatic_complexity_warning: 20  # was 10: ...` as `20`.
+fn top_level_value(yaml: &str, key: &str) -> u32 {
+    yaml.lines()
+        .find_map(|line| line.strip_prefix(&format!("{key}:")))
+        .and_then(|rest| rest.split_whitespace().next())
+        .and_then(|value| value.parse().ok())
+        .unwrap_or_else(|| panic!("no `{key}: <number>` line found"))
+}
+
 #[test]
 fn add_preset_errors_have_actionable_display_messages() {
     let invalid = AddPresetError::InvalidName("strict".to_string()).to_string();
@@ -891,27 +968,60 @@ fn init_refuses_to_replace_either_supported_config_name() {
 
 #[test]
 fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
-    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let (dropped, kept) = low_importance_rule_pair();
 
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
     let path = initialize_config_with_base(dir.path(), None, Preset::Standard)
         .expect("init should succeed");
     let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
-    assert!(generated.contains("  identifier_casing: false\n"));
-    assert!(generated.contains("  trailing_whitespace: true\n"));
+    assert!(
+        generated.contains(&format!("  {dropped}: false\n")),
+        "standard should turn off {dropped:?} (low importance, not kept_in_standard)"
+    );
+    assert!(
+        generated.contains(&format!("  {kept}: true\n")),
+        "standard should keep {kept:?} on (low importance, but kept_in_standard)"
+    );
 }
 
 #[test]
 fn careful_preset_relaxes_complexity_thresholds_and_disables_formatting() {
-    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let default_yaml =
+        fs::read_to_string(repo_root().join("configuration/papyrus-lint.default.yaml"))
+            .expect("failed to read configuration/papyrus-lint.default.yaml");
+    let careful_overwrite =
+        fs::read_to_string(repo_root().join("configuration/presets/papyrus-lint.careful.yaml"))
+            .expect("failed to read configuration/presets/papyrus-lint.careful.yaml");
+    let default_warning = top_level_value(&default_yaml, "cyclomatic_complexity_warning");
+    let default_error = top_level_value(&default_yaml, "cyclomatic_complexity_error");
+    let careful_warning = top_level_value(&careful_overwrite, "cyclomatic_complexity_warning");
+    let careful_error = top_level_value(&careful_overwrite, "cyclomatic_complexity_error");
+    assert!(
+        careful_warning >= default_warning && careful_error >= default_error,
+        "careful's complexity thresholds should relax, not tighten, the defaults"
+    );
+    // kept is a rule "standard" keeps on but "careful" is expected to turn
+    // off too, since careful ignores kept_in_standard entirely.
+    let (dropped, kept) = low_importance_rule_pair();
 
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
     let path = initialize_config_with_base(dir.path(), None, Preset::Careful)
         .expect("init should succeed");
     let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
-    assert!(generated.contains("cyclomatic_complexity_warning: 20\n"));
-    assert!(generated.contains("cyclomatic_complexity_error: 40\n"));
-    assert!(generated.contains("  trailing_whitespace: false\n"));
+    assert!(generated.contains(&format!(
+        "cyclomatic_complexity_warning: {careful_warning}\n"
+    )));
+    assert!(generated.contains(&format!("cyclomatic_complexity_error: {careful_error}\n")));
+    assert!(
+        generated.contains(&format!("  {dropped}: false\n")),
+        "careful should turn off {dropped:?} (low importance)"
+    );
+    assert!(
+        generated.contains(&format!("  {kept}: false\n")),
+        "careful should turn off {kept:?} too, unlike standard, since careful ignores kept_in_standard"
+    );
 }
 
 #[test]
@@ -932,17 +1042,31 @@ fn strict_preset_matches_the_built_in_default() {
 }
 
 #[test]
-fn executable_adjacent_base_config_overrides_a_non_strict_preset() {
+fn executable_adjacent_base_config_overrides_a_selected_preset() {
+    // A synthetic custom preset, not a real built-in one: this test only
+    // exercises the base-config-over-preset merge mechanism itself, so it
+    // shouldn't depend on which rules a built-in preset happens to change.
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+    fs::create_dir(&presets_dir).expect("failed to create presets dir");
+    write_config(
+        &presets_dir,
+        "custom.yaml",
+        "cyclomatic_complexity_warning: 99\nrules:\n  trailing_whitespace: false\n",
+    );
     write_config(
         base_dir.path(),
         "papyrus-lint.yaml",
         "semicolon: true\nrules:\n  property_sorting: true\n",
     );
 
-    let path = initialize_config_with_base(dir.path(), Some(base_dir.path()), Preset::Careful)
-        .expect("init should succeed");
+    let path = initialize_config_with_base(
+        dir.path(),
+        Some(base_dir.path()),
+        Preset::Custom("custom".to_string()),
+    )
+    .expect("init should succeed");
     let generated = fs::read_to_string(&path).expect("failed to read generated config");
 
     // The base's own settings win, even over the preset's own values...
@@ -950,7 +1074,7 @@ fn executable_adjacent_base_config_overrides_a_non_strict_preset() {
     assert!(generated.contains("  property_sorting: true\n"));
     // ...while every other rule/setting still falls back to the
     // selected preset rather than the hardcoded built-in default.
-    assert!(generated.contains("cyclomatic_complexity_warning: 20\n"));
+    assert!(generated.contains("cyclomatic_complexity_warning: 99\n"));
     assert!(generated.contains("  trailing_whitespace: false\n"));
 }
 
@@ -982,21 +1106,31 @@ fn preset_lint_config_ignores_a_pre_existing_project_config() {
 
 #[test]
 fn preset_lint_config_is_still_layered_over_an_executable_adjacent_base_config() {
+    // Same synthetic-preset approach as
+    // `executable_adjacent_base_config_overrides_a_selected_preset`: only
+    // the merge mechanism is under test here, not a real preset's content.
     let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+    fs::create_dir(&presets_dir).expect("failed to create presets dir");
+    write_config(
+        &presets_dir,
+        "custom.yaml",
+        "cyclomatic_complexity_warning: 99\nrules:\n  trailing_whitespace: false\n",
+    );
     write_config(
         base_dir.path(),
         "papyrus-lint.yaml",
         "semicolon: true\nrules:\n  property_sorting: true\n",
     );
 
-    let config =
-        preset_lint_config(Some(base_dir.path()), Preset::Careful).expect("should resolve");
+    let config = preset_lint_config(Some(base_dir.path()), Preset::Custom("custom".to_string()))
+        .expect("should resolve");
 
     assert!(config.semicolon);
     assert!(config.rules.property_sorting);
     // Every other rule/setting still falls back to the selected preset
     // rather than the hardcoded built-in default.
-    assert_eq!(config.cyclomatic_complexity_warning, 20);
+    assert_eq!(config.cyclomatic_complexity_warning, 99);
     assert!(!config.rules.trailing_whitespace);
 }
 

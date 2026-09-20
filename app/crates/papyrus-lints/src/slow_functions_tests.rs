@@ -37,7 +37,14 @@ static GLOBAL_RULES: &[SlowFunctionRule] = &[SlowFunctionRule {
 
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
-    assert_eq!(SLOW_FUNCTIONS.len(), 2);
+    // Not a specific count: shared/rules/data/slow-functions.yaml's entry
+    // list is expected to grow over time, so this only pins the loader's
+    // shape (non-empty, each entry has its expected fields), not its
+    // current content.
+    assert!(!SLOW_FUNCTIONS.is_empty());
+    assert!(SLOW_FUNCTIONS
+        .iter()
+        .all(|r| !r.object.is_empty() && !r.function.is_empty() && !r.replacement.is_empty()));
     assert!(SLOW_FUNCTIONS
         .iter()
         .any(|r| r.object == "GlobalVariable" && r.function == "GetValueInt"));
