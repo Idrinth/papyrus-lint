@@ -1,5 +1,8 @@
 name: CI / Docker
 
+# Keep the preset matrix aligned with the images published by release.yml.
+# shared/rules.json is git-ignored, so the image build generates it first.
+
 on:
   push:
     branches: [the-one]

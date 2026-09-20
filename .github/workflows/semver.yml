@@ -1,5 +1,13 @@
 name: Semver
 
+# Advisory precedence is breaking > feature > refactoring/tests/documentation.
+# PRs whose components are exclusively CI, Pages, and/or documentation always
+# recommend a patch because those changes do not independently reach users.
+# This workflow only manages drafts containing its marker; publishing remains a
+# maintainer decision and is what creates the tag and triggers release.yml.
+# Coverage comes from the latest completed successful CI Tests run, so it may
+# trail this push; unavailable coverage is advisory rather than an error.
+
 on:
   push:
     branches: [the-one]

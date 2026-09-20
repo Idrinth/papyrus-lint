@@ -1,5 +1,9 @@
 name: CI / Tests
 
+# Coverage comments are best-effort for forked PRs with read-only tokens.
+# shared/rules.json is git-ignored, so jobs that consume rule metadata generate
+# it before building or testing.
+
 on:
   push:
     branches: [the-one]
@@ -320,6 +324,8 @@ jobs:
           path: coverage-artifacts
 
       - name: Build coverage summary
+        # "Est. CRAP" uses average executable lines/function as a complexity
+        # proxy because these coverage tools do not report cyclomatic complexity.
         run: python3 .github/scripts/coverage_summary.py coverage-artifacts > coverage-summary.md
 
       - name: Publish coverage summary
@@ -361,9 +367,9 @@ jobs:
 
   hall-of-shame:
     name: CI / Tests / Hall of shame (uncovered lines)
-    # Runs in the same workflow run as the coverage-producing jobs so its
-    # uncovered-line ranking always reflects this push, never a lagging
-    # prior run's artifacts.
+    # Uses this run's artifacts so the ranking never lags behind the PR push.
+    # Documentation and Markdown are excluded; this job only reports and never
+    # fails the pull request.
     if: always() && github.event_name == 'pull_request'
     needs: [ci-scripts, pages, sublime-extension, frontend, vscode-extension, rust-test]
     runs-on: ubuntu-latest

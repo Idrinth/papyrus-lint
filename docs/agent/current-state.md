@@ -94,7 +94,8 @@ the other column before calling the work done.
 
 - Per-rule descriptions — `shared/rules/<id>.json` and `rules.html`.
 - CLI flag lists and config keys — `docs/cli.md`, `docs/configuration.md`.
-- CI / Pages / release steps — `ci.md`, `pages.md`, `releases.md`.
+- CI steps — comments in the related workflow; Pages / release steps —
+  `pages.md`, `releases.md`.
 - File-by-file tree — `docs/project-structure.md`.
 - Historical "unlike before" narrative. If the code changed, delete the
   story; keep the invariant.

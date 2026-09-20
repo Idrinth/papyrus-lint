@@ -16,7 +16,7 @@ them. `CLAUDE.md` is a pointer here, not a second copy.
 | Parser, a lint rule, CLI, GUI, or editor plugin | [`docs/agent/current-state.md`](docs/agent/current-state.md) |
 | Crate / folder layout | [`docs/project-structure.md`](docs/project-structure.md) |
 | How to run tests or the desktop app | [`docs/agent/development.md`](docs/agent/development.md) |
-| `.github/workflows/ci.yml`, `.github/workflows/base-scripts.yml`, or CI scripts | [`docs/agent/ci.md`](docs/agent/ci.md), [`docs/agent/base-scripts.md`](docs/agent/base-scripts.md) |
+| `.github/workflows/ci.*.yml` or CI scripts | The explanatory comments in the related workflow |
 | `pages/` or the GitHub Pages workflow | [`docs/agent/pages.md`](docs/agent/pages.md) |
 | `.github/workflows/release.yml` | [`docs/agent/releases.md`](docs/agent/releases.md) |
 | Lint descriptions / rule docs | [`README.md`](README.md#implemented-lints) |
