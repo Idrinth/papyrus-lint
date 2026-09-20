@@ -2,6 +2,7 @@ import { type Diagnostic, findingMessageWithRule, isFixableFinding } from "./bac
 import { highlightPapyrusLines } from "./highlight";
 import { escapeAttr, levelOf } from "./main-severity";
 import { codeViewerViewEl } from "./code-viewer-state";
+import { nodiscardEligibleLines } from "./nodiscard";
 export function lineSeverityOf(lineFindings: Diagnostic[] | undefined): "error" | "warning" | "info" | "flagged" | null {
   if (!lineFindings || lineFindings.length === 0) {
     return null;
@@ -26,29 +27,37 @@ export function findingsGroupedByLine(findings: Diagnostic[]): Map<number, Diagn
   return findingsByLine;
 }
 
-// Builds the per-line "Fix"/"Ignore" buttons for `lineNumber`'s own table
-// cell: "Fix" only when at least one of `lineFindings` has an automatic fix
-// (isFixableFinding), "Ignore" only when at least one carries a rule id at
-// all (a rule-less finding, e.g. a compiler diagnostic, can't be named in an
-// `@disable` comment). Neither button is shown when neither applies, so an
-// unremarkable line's actions cell stays empty. The click itself is handled
-// by a single delegated listener on codeViewerViewEl (see
+// Builds the per-line "Fix"/"Ignore"/"Nodiscard" buttons for `lineNumber`'s
+// own table cell: "Fix" only when at least one of `lineFindings` has an
+// automatic fix (isFixableFinding), "Ignore" only when at least one carries
+// a rule id at all (a rule-less finding, e.g. a compiler diagnostic, can't
+// be named in an `@disable` comment), and "Nodiscard" only when
+// `nodiscardEligible` says this line's header returns a value or is
+// Native and isn't flagged already - unlike the other two, this doesn't
+// depend on any existing finding, so it can appear on an otherwise clean
+// line. No button is shown when none apply, so an unremarkable line's
+// actions cell stays empty. The click itself is handled by a single
+// delegated listener on codeViewerViewEl (see
 // handleCodeViewerLineActionClick), since this HTML is rebuilt from a
 // string on every render rather than built up via individual DOM nodes with
 // their own listeners.
-function buildLineActionsHtml(lineNumber: number, lineFindings: Diagnostic[] | undefined): string {
-  if (!lineFindings || lineFindings.length === 0) {
-    return "";
-  }
+function buildLineActionsHtml(lineNumber: number, lineFindings: Diagnostic[] | undefined, nodiscardEligible: boolean): string {
   const buttons: string[] = [];
-  if (lineFindings.some((finding) => isFixableFinding(finding))) {
-    buttons.push(
-      `<button type="button" class="code-viewer__line-action code-viewer__line-action--fix" data-line-action="fix" data-line="${lineNumber}">Fix</button>`,
-    );
+  if (lineFindings && lineFindings.length > 0) {
+    if (lineFindings.some((finding) => isFixableFinding(finding))) {
+      buttons.push(
+        `<button type="button" class="code-viewer__line-action code-viewer__line-action--fix" data-line-action="fix" data-line="${lineNumber}">Fix</button>`,
+      );
+    }
+    if (lineFindings.some((finding) => finding.rule !== undefined)) {
+      buttons.push(
+        `<button type="button" class="code-viewer__line-action code-viewer__line-action--ignore" data-line-action="ignore" data-line="${lineNumber}">Ignore</button>`,
+      );
+    }
   }
-  if (lineFindings.some((finding) => finding.rule !== undefined)) {
+  if (nodiscardEligible) {
     buttons.push(
-      `<button type="button" class="code-viewer__line-action code-viewer__line-action--ignore" data-line-action="ignore" data-line="${lineNumber}">Ignore</button>`,
+      `<button type="button" class="code-viewer__line-action code-viewer__line-action--nodiscard" data-line-action="nodiscard" data-line="${lineNumber}">Nodiscard</button>`,
     );
   }
   return buttons.join("");
@@ -64,6 +73,7 @@ export function renderCodeViewerView(source: string, findings: Diagnostic[], foc
   }
 
   const findingsByLine = findingsGroupedByLine(findings);
+  const nodiscardEligible = nodiscardEligibleLines(source);
 
   const lines = highlightPapyrusLines(source);
   const rows = lines.map((lineHtml, index) => {
@@ -78,7 +88,7 @@ export function renderCodeViewerView(source: string, findings: Diagnostic[], foc
       `<tr id="code-viewer-line-${lineNumber}"${rowClass}${title}>` +
       `<td class="code-viewer__line-number">${lineNumber}</td>` +
       `<td class="code-viewer__line-code">${lineHtml}</td>` +
-      `<td class="code-viewer__line-actions">${buildLineActionsHtml(lineNumber, lineFindings)}</td>` +
+      `<td class="code-viewer__line-actions">${buildLineActionsHtml(lineNumber, lineFindings, nodiscardEligible.has(lineNumber))}</td>` +
       `</tr>`
     );
   });

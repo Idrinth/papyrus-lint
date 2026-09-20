@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { type Diagnostic, addDisableCommentToPscLine, isFixableFinding, repairPscFile, repairPscFinding } from "./backend";
+import { type Diagnostic, addDisableCommentToPscLine, addNodiscardCommentToPscLine, isFixableFinding, repairPscFile, repairPscFinding } from "./backend";
 import { currentPscOutcomes } from "./drop";
 import { renderPscResults } from "./results-list-render";
 import { codeViewerDiffOutputEl, codeViewerFixButtonEl, codeViewerState, setCodeViewerState, updateCodeViewerFixButtonsVisibility } from "./code-viewer-state";
@@ -72,6 +72,8 @@ export async function handleCodeViewerLineActionClick(event: MouseEvent) {
     await handleCodeViewerFixLineClick(line, button);
   } else if (button.dataset.lineAction === "ignore") {
     await handleCodeViewerIgnoreLineClick(line, button);
+  } else if (button.dataset.lineAction === "nodiscard") {
+    await handleCodeViewerNodiscardLineClick(line, button);
   }
 }
 
@@ -136,6 +138,30 @@ export async function handleCodeViewerIgnoreLineClick(line: number, button: HTML
   button.disabled = true;
   try {
     const findings = await addDisableCommentToPscLine(path, rules, line);
+    await refreshViewerAfterMutation(path, findings, false);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// The code viewer's per-line "Nodiscard" button: adds (or extends) an
+// `; @nodiscard` comment on `line`'s function header (see
+// addNodiscardCommentToPscLine), marking it for unused-nodiscard's own
+// discarded-result check, then refreshes the viewer and the matching Lint
+// results list entry in place the same way the "Fix"/"Ignore" buttons do.
+// Only offered on a header nodiscardEligibleLines (nodiscard.ts) says is
+// eligible - a function that returns a value or is Native - so unlike
+// those two, this button isn't gated by any existing finding on the line.
+export async function handleCodeViewerNodiscardLineClick(line: number, button: HTMLButtonElement) {
+  if (!codeViewerState) {
+    return;
+  }
+  const { path } = codeViewerState;
+  button.disabled = true;
+  try {
+    const findings = await addNodiscardCommentToPscLine(path, line);
     await refreshViewerAfterMutation(path, findings, false);
   } catch (error) {
     console.error(error);

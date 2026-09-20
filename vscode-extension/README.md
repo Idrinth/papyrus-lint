@@ -37,6 +37,11 @@ for `.psc` files directly in the editor.
   diagnostic. It applies the fix for only that issue, leaving every other
   issue in the file untouched. Unsaved changes are saved first, same as
   fixing the whole file.
+- **Add ; @nodiscard flag** — a lightbulb action offered on a function
+  header that returns a value or is `Native` and isn't flagged already. It
+  adds (or extends) a trailing `; @nodiscard` comment marking the function
+  for the `unused-nodiscard` rule's discarded-result check, applied
+  directly to the buffer with no CLI round-trip needed.
 - **Papyrus Lint: Initialize Configuration** — creates a
   `papyrus-lint.yaml` (see the project
   [configuration reference](../docs/configuration.md)), without

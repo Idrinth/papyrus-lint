@@ -55,7 +55,7 @@ export function createHarness({
         Object.assign(this, { title, kind });
       }
     },
-    CodeActionKind: { QuickFix: 'quickfix' },
+    CodeActionKind: { QuickFix: 'quickfix', RefactorRewrite: 'refactor.rewrite' },
     Diagnostic: class {
       constructor(range, message, severity) {
         Object.assign(this, { range, message, severity });
@@ -65,6 +65,14 @@ export function createHarness({
     Range: class {
       constructor(startLine, startColumn, endLine, endColumn) {
         Object.assign(this, { startLine, startColumn, endLine, endColumn });
+      }
+    },
+    WorkspaceEdit: class {
+      constructor() {
+        this.inserts = [];
+      }
+      insert(uri, position, newText) {
+        this.inserts.push({ uri, position, newText });
       }
     },
     Uri: {
@@ -200,5 +208,15 @@ export function validReport(overrides = {}) {
 }
 
 export function papyrusDocument(fsPath, text) {
-  return { uri: uri(fsPath), languageId: 'papyrus', isDirty: true, getText: () => text };
+  const lines = text.split(/\r?\n/);
+  return {
+    uri: uri(fsPath),
+    languageId: 'papyrus',
+    isDirty: true,
+    getText: () => text,
+    lineAt: (line) => ({
+      text: lines[line],
+      range: { end: { line, character: lines[line].length } },
+    }),
+  };
 }

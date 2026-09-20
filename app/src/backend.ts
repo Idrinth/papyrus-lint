@@ -266,6 +266,21 @@ export async function addDisableCommentToPscLine(path: string, rules: string[], 
   });
 }
 
+// Adds `; @nodiscard` to `line`'s function header (or extends its existing
+// trailing comment) - the code viewer's per-line "Nodiscard" button,
+// offered only where nodiscardEligibleLines (nodiscard.ts) says the header
+// is eligible: a function that returns a value or is Native, and isn't
+// flagged already. See add_nodiscard_comment_to_psc_line/
+// papyrus_lints::add_nodiscard_comment on the backend for the exact
+// merging rules.
+export async function addNodiscardCommentToPscLine(path: string, line: number): Promise<Diagnostic[]> {
+  return invoke<Diagnostic[]>("add_nodiscard_comment_to_psc_line", {
+    path,
+    context: currentProjectLintContext(),
+    line,
+  });
+}
+
 export async function writePscFile(path: string, contents: string): Promise<void> {
   await invoke("write_psc_file", { path, contents });
 }
