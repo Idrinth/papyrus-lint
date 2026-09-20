@@ -91,13 +91,3 @@
   replacement: MoveTo(akTarget, afXOffset, afYOffset, afZOffset)
   level: error
   message: MoveToWhenUnloaded is marked DEPRECATED and must not be used; it busy-waits with Utility.Wait until both locations unload and can stall quest stage fragments. Call MoveTo() (or MoveToIfUnloaded() when the caller is already unloaded) instead
-
-- script: Spell
-  function: Preload
-  level: warning
-  message: Spell.Preload is documented as likely to be deprecated; misuse leaks memory and produces inconsistent art. Avoid calling it
-
-- script: Spell
-  function: Unload
-  level: warning
-  message: Spell.Unload is documented as likely to be deprecated; misuse can unload in-use spell art and leak memory. Avoid calling it

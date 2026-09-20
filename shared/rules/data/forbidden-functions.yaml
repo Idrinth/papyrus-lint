@@ -83,3 +83,13 @@
   level: warning
   message: Looking values up by string key in StorageUtil's global hashtable on every call is expensive; cache the retrieved value in a local variable instead of calling this repeatedly
   global: true
+
+- script: Spell
+  function: Preload
+  level: warning
+  message: Spell.Preload is documented as likely to be deprecated; misuse leaks memory and produces inconsistent art. Avoid calling it
+
+- script: Spell
+  function: Unload
+  level: warning
+  message: Spell.Unload is documented as likely to be deprecated; misuse can unload in-use spell art and leak memory. Avoid calling it
