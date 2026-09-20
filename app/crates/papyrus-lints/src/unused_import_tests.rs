@@ -27,6 +27,7 @@ fn check_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) ->
     let ast = papyrus_parser::parse(source).ok();
     super::check_with(ast.as_ref(), external)
 }
+
 use crate::external_signatures::ParamInfo;
 
 struct FakeExternal;
@@ -117,6 +118,65 @@ fn does_nothing_when_the_script_has_no_imports() {
 }
 
 #[test]
+fn does_not_flag_an_import_that_the_resolver_cannot_load() {
+    let diagnostics = check_with("ScriptName A\n\nImport Unknown\n", &mut FakeExternal);
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn finds_calls_in_state_functions() {
+    let diagnostics = check_with(
+        "ScriptName A\n\nImport B\n\nState Active\n    Function C()\n        BC()\n    EndFunction\nEndState\n",
+        &mut FakeExternal,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn finds_calls_in_every_statement_position() {
+    let bodies = [
+        "Int value = BC()",
+        "value = BC()",
+        "Return BC()",
+        "If BC()\n    EndIf",
+        "If false\n    ElseIf BC()\n    EndIf",
+        "If false\n    Else\n        BC()\n    EndIf",
+        "While BC()\n    EndWhile",
+    ];
+
+    for body in bodies {
+        let source = format!(
+            "ScriptName A\n\nImport B\n\nInt Function C()\n    {body}\n    Return 0\nEndFunction\n"
+        );
+        let diagnostics = check_with(&source, &mut FakeExternal);
+        assert!(diagnostics.is_empty(), "failed to find call in `{body}`");
+    }
+}
+
+#[test]
+fn finds_calls_nested_in_every_expression_kind() {
+    let expressions = [
+        "BC() + 1",
+        "!BC()",
+        "BC().Length",
+        "values[BC()]",
+        "BC() as Int",
+        "new Int[BC()]",
+        "Consume(value = BC())",
+    ];
+
+    for expression in expressions {
+        let source = format!(
+            "ScriptName A\n\nImport B\n\nFunction C(Int[] values)\n    Consume({expression})\nEndFunction\n"
+        );
+        let diagnostics = check_with(&source, &mut FakeExternal);
+        assert!(diagnostics.is_empty(), "failed to find call in `{expression}`");
+    }
+}
+
+#[test]
 fn repair_removes_only_the_unused_imports_line() {
     let source = "ScriptName A\n\nImport B ; provided BC, so loaded\nImport D ; unused\n\nFunction C()\n    BC()\nEndFunction\n";
 
@@ -169,4 +229,11 @@ fn repair_does_not_crash_on_unparseable_source() {
     let source = "ScriptName A\n\nImport B\n\nFunction C(\nEndFunction\n";
 
     assert_eq!(repair_with(source, &mut FakeExternal), source);
+}
+
+#[test]
+fn repair_can_remove_a_final_line_without_a_line_ending() {
+    let source = "ScriptName A\nImport D";
+
+    assert_eq!(repair_with(source, &mut FakeExternal), "ScriptName A\n");
 }
