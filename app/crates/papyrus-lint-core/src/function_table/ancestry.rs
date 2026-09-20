@@ -512,7 +512,7 @@ impl FunctionTable {
                     members.push(Member::Property(signature.clone()));
                 }
             }
-            current = script.extends.clone();
+            current = parent_cache_key(script);
             visited.push(name);
         }
 
