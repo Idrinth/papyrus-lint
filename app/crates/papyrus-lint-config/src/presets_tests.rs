@@ -115,6 +115,21 @@ fn custom_preset_yaml_supports_uppercase_yml_extensions() {
 }
 
 #[test]
+fn custom_preset_yaml_reports_a_file_read_error() {
+    let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
+    fs::create_dir(&presets_dir).expect("failed to create presets dir");
+    fs::write(presets_dir.join("invalid.yaml"), [0xff])
+        .expect("failed to write invalid UTF-8 preset");
+
+    let error = Preset::Custom("invalid".to_string())
+        .yaml(Some(base_dir.path()))
+        .expect_err("invalid UTF-8 should fail to load");
+
+    assert!(error.contains("stream did not contain valid UTF-8"));
+}
+
+#[test]
 fn user_presets_dir_under_requires_an_existing_directory() {
     let base_dir = tempfile::tempdir().expect("failed to create temp dir");
 
@@ -159,6 +174,19 @@ fn deep_merge_recurses_through_mappings_and_replaces_scalar_values() {
 }
 
 #[test]
+fn deep_merge_replaces_a_mapping_with_a_non_mapping_override() {
+    let base = serde_norway::from_str("rules:\n  trailing_whitespace: true\n")
+        .expect("base YAML should parse");
+    let over = serde_norway::from_str("rules: disabled\n").expect("override YAML should parse");
+
+    let merged = deep_merge(base, over);
+    let expected: serde_norway::Value =
+        serde_norway::from_str("rules: disabled\n").expect("expected YAML should parse");
+
+    assert_eq!(merged, expected);
+}
+
+#[test]
 fn save_user_preset_rejects_a_blank_name() {
     let error = save_user_preset_under(None, "   ", &papyrus_lints::Config::default(), false)
         .expect_err("blank name should be rejected");
@@ -188,6 +216,26 @@ fn save_user_preset_errors_without_a_resolvable_base_dir() {
         .expect_err("should fail without a base dir");
 
     assert!(error.contains("executable's directory"));
+}
+
+#[test]
+fn save_user_preset_reports_an_error_when_the_presets_dir_cannot_be_created() {
+    let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+    fs::write(
+        base_dir.path().join(USER_PRESETS_DIR_NAME),
+        "not a directory",
+    )
+    .expect("failed to create blocking file");
+
+    let error = save_user_preset_under(
+        Some(base_dir.path()),
+        "my-preset",
+        &papyrus_lints::Config::default(),
+        false,
+    )
+    .expect_err("a file at the presets path should prevent saving");
+
+    assert!(!error.is_empty());
 }
 
 #[test]
@@ -612,6 +660,37 @@ fn add_user_preset_errors_when_the_source_file_does_not_exist() {
         false,
     )
     .expect_err("a missing source file should be reported as an error");
+
+    assert!(matches!(error, AddPresetError::Io(_)));
+}
+
+#[test]
+fn add_user_preset_reports_invalid_utf8_in_the_source_file() {
+    let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let source = base_dir.path().join("source.yaml");
+    fs::write(&source, [0xff]).expect("failed to write invalid UTF-8 source");
+
+    let error = add_user_preset_under(Some(base_dir.path()), "my-team", &source, false)
+        .expect_err("invalid UTF-8 should fail to copy");
+
+    assert!(
+        matches!(error, AddPresetError::Io(message) if message.contains("stream did not contain valid UTF-8"))
+    );
+}
+
+#[test]
+fn add_user_preset_reports_an_error_when_the_presets_dir_cannot_be_created() {
+    let base_dir = tempfile::tempdir().expect("failed to create temp dir");
+    let source = base_dir.path().join("source.yaml");
+    fs::write(&source, "semicolon: true\n").expect("failed to write source file");
+    fs::write(
+        base_dir.path().join(USER_PRESETS_DIR_NAME),
+        "not a directory",
+    )
+    .expect("failed to create blocking file");
+
+    let error = add_user_preset_under(Some(base_dir.path()), "my-team", &source, false)
+        .expect_err("a file at the presets path should prevent adding");
 
     assert!(matches!(error, AddPresetError::Io(_)));
 }
