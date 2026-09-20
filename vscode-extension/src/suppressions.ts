@@ -1,6 +1,6 @@
 /** PapyrusCompiler.exe diagnostics (see `papyrus_lint_core::compile_diagnostics`)
  * are appended after `@disable`/`@disable-file` filtering and have no `rules.*`
- * config toggle, so neither ignore action can silence them. */
+ * config toggle, so none of the ignore actions can silence them. */
 export const UNCONFIGURABLE_RULES = new Set(['compiler-error']);
 
 export function isIgnorableRule(rule: string): boolean {
@@ -51,14 +51,13 @@ function lineCommentText(line: string): string | undefined {
   return undefined;
 }
 
-type FileDirective = { kind: 'all' } | { kind: 'rules'; ids: string[] };
+type DisableDirective = { kind: 'all' } | { kind: 'rules'; ids: string[] };
 
-function parseDisableFile(line: string): FileDirective | undefined {
+function parseDirective(line: string, keyword: string): DisableDirective | undefined {
   const comment = lineCommentText(line);
   if (comment === undefined) {
     return undefined;
   }
-  const keyword = '@disable-file';
   const index = comment.toLowerCase().indexOf(keyword);
   if (index < 0) {
     return undefined;
@@ -78,18 +77,50 @@ function parseDisableFile(line: string): FileDirective | undefined {
   return { kind: 'rules', ids };
 }
 
+function parseDisableFile(line: string): DisableDirective | undefined {
+  return parseDirective(line, '@disable-file');
+}
+
+function parseLineDisable(line: string): DisableDirective | undefined {
+  return parseDirective(line, '@disable');
+}
+
+function directiveCovers(directive: DisableDirective | undefined, rule: string): boolean {
+  if (directive === undefined) {
+    return false;
+  }
+  if (directive.kind === 'all') {
+    return true;
+  }
+  return directive.ids.includes(rule.toLowerCase());
+}
+
+function lineWithoutCarriageReturn(line: string): { content: string; trailingCr: string } {
+  if (line.endsWith('\r')) {
+    return { content: line.slice(0, -1), trailingCr: '\r' };
+  }
+  return { content: line, trailingCr: '' };
+}
+
 export function fileDisableCovers(source: string, rule: string): boolean {
-  const needle = rule.toLowerCase();
   for (const line of source.split(/\r?\n/)) {
-    const directive = parseDisableFile(line);
-    if (directive?.kind === 'all') {
-      return true;
-    }
-    if (directive?.kind === 'rules' && directive.ids.includes(needle)) {
+    if (directiveCovers(parseDisableFile(line), rule)) {
       return true;
     }
   }
   return false;
+}
+
+export function lineDisableCovers(source: string, line: number, rule: string): boolean {
+  if (rule === '' || line < 1) {
+    return false;
+  }
+  const { lines } = splitLines(source);
+  const index = line - 1;
+  if (index >= lines.length) {
+    return false;
+  }
+  return directiveCovers(parseLineDisable(lineWithoutCarriageReturn(lines[index]).content), rule);
 }
 
 /** Adds (or extends) a `; @disable-file <rule>` comment in `source`, matching the
@@ -103,9 +134,7 @@ export function addFileDisableComment(source: string, rule: string): string {
   const { lines, eol, trailingEol } = splitLines(source);
   const needle = rule.toLowerCase();
   for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    const content = line.endsWith('\r') ? line.slice(0, -1) : line;
-    const trailingCr = line.endsWith('\r') ? '\r' : '';
+    const { content, trailingCr } = lineWithoutCarriageReturn(lines[index]);
     const directive = parseDisableFile(content);
     if (directive?.kind === 'all') {
       return source;
@@ -123,6 +152,38 @@ export function addFileDisableComment(source: string, rule: string): string {
     return `${comment}${eol}`;
   }
   return `${comment}${eol}${source}`;
+}
+
+/** Adds (or extends) a `; @disable <rule>` comment on the 1-indexed `line` of
+ * `source`, matching `papyrus_lints::add_disable_comment`: a bare `@disable`
+ * is left untouched, an existing named list is extended in place, a trailing
+ * comment without a directive gets ` @disable <rule>` appended, and otherwise
+ * ` ; @disable <rule>` is added. An empty rule id or an out-of-range line
+ * leaves `source` untouched. */
+export function addLineDisableComment(source: string, line: number, rule: string): string {
+  if (rule === '' || line < 1) {
+    return source;
+  }
+  const { lines, eol, trailingEol } = splitLines(source);
+  const index = line - 1;
+  if (index >= lines.length) {
+    return source;
+  }
+  const { content, trailingCr } = lineWithoutCarriageReturn(lines[index]);
+  const directive = parseLineDisable(content);
+  if (directive?.kind === 'all') {
+    return source;
+  }
+  if (directive?.kind === 'rules') {
+    if (directive.ids.includes(rule.toLowerCase())) {
+      return source;
+    }
+    lines[index] = `${content}, ${rule}${trailingCr}`;
+    return joinLines(lines, eol, trailingEol);
+  }
+  const separator = lineCommentText(content) === undefined ? ' ; ' : ' ';
+  lines[index] = `${content}${separator}@disable ${rule}${trailingCr}`;
+  return joinLines(lines, eol, trailingEol);
 }
 
 const BOOLEAN = String.raw`(true|false|yes|no|on|off)`;
@@ -152,7 +213,7 @@ export function disableRuleInConfigYaml(yaml: string, ruleId: string): string {
     return `rules:${eol}  ${key}: false${eol}`;
   }
 
-  const flowIndex = lines.findIndex((line) => /^rules:\s*\{/.test(line));
+  const flowIndex = lines.findIndex((candidate) => /^rules:\s*\{/.test(candidate));
   if (flowIndex >= 0) {
     const updated = disableRuleInFlowMapping(lines[flowIndex], key, eol);
     if (updated === lines[flowIndex]) {
@@ -163,7 +224,7 @@ export function disableRuleInConfigYaml(yaml: string, ruleId: string): string {
 
   }
 
-  const blockIndex = lines.findIndex((line) => /^rules:\s*(?:#.*)?$/.test(line));
+  const blockIndex = lines.findIndex((candidate) => /^rules:\s*(?:#.*)?$/.test(candidate));
   if (blockIndex < 0) {
     const prefix = joinLines(lines, eol, true);
     return `${prefix}rules:${eol}  ${key}: false${eol}`;
@@ -172,18 +233,18 @@ export function disableRuleInConfigYaml(yaml: string, ruleId: string): string {
   const keyLine = new RegExp(`^(?<indent>[ \\t]+)${ruleKeyPattern(key)}\\s*:\\s*${BOOLEAN}\\b(?<rest>.*)$`, 'i');
   let childIndent: string | undefined;
   for (let index = blockIndex + 1; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (isBlankOrComment(line)) {
+    const candidate = lines[index];
+    if (isBlankOrComment(candidate)) {
       continue;
     }
-    const indent = indentWidth(line);
+    const indent = indentWidth(candidate);
     if (indent === 0) {
       break;
     }
-    childIndent ??= line.slice(0, indent);
-    const matched = keyLine.exec(line);
+    childIndent ??= candidate.slice(0, indent);
+    const matched = keyLine.exec(candidate);
     if (matched?.groups) {
-      const current = line.slice(matched.groups.indent.length);
+      const current = candidate.slice(matched.groups.indent.length);
       const replaced = current.replace(new RegExp(`^${ruleKeyPattern(key)}\\s*:\\s*${BOOLEAN}\\b`, 'i'), (whole) =>
         whole.replace(new RegExp(BOOLEAN, 'i'), 'false'),
       );

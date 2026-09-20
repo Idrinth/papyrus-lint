@@ -4,9 +4,11 @@ import suppressions from '../out-test/src/suppressions.js';
 
 const {
   addFileDisableComment,
+  addLineDisableComment,
   disableRuleInConfigYaml,
   fileDisableCovers,
   isIgnorableRule,
+  lineDisableCovers,
   ruleConfigKey,
 } = suppressions;
 
@@ -81,6 +83,65 @@ describe('addFileDisableComment', () => {
 
   it('is a no-op for an empty rule id', () => {
     assert.equal(addFileDisableComment('ScriptName Example\n', ''), 'ScriptName Example\n');
+  });
+});
+
+describe('addLineDisableComment', () => {
+  it('appends a new comment to a bare line', () => {
+    assert.equal(
+      addLineDisableComment('action = 1\nother = 2\n', 1, 'float-to-int'),
+      'action = 1 ; @disable float-to-int\nother = 2\n',
+    );
+  });
+
+  it('extends an unrelated trailing comment and preserves CRLF', () => {
+    assert.equal(
+      addLineDisableComment('action = 1 ; some note\n', 1, 'float-to-int'),
+      'action = 1 ; some note @disable float-to-int\n',
+    );
+    assert.equal(
+      addLineDisableComment('action = 1\r\n', 1, 'float-to-int'),
+      'action = 1 ; @disable float-to-int\r\n',
+    );
+  });
+
+  it('merges into an existing named @disable and is a no-op when already covered', () => {
+    const source = 'action = 1 ; @disable float-to-int\n';
+    assert.equal(
+      addLineDisableComment(source, 1, 'strict-boolean'),
+      'action = 1 ; @disable float-to-int, strict-boolean\n',
+    );
+    assert.equal(addLineDisableComment(source, 1, 'FLOAT-TO-INT'), source);
+    assert.equal(lineDisableCovers(source, 1, 'float-to-int'), true);
+    assert.equal(lineDisableCovers(source, 1, 'strict-boolean'), false);
+    assert.equal(lineDisableCovers(source, 2, 'float-to-int'), false);
+  });
+
+  it('leaves a bare @disable untouched and ignores @disable-file lookalikes', () => {
+    const bare = 'action = 1 ; @disable\n';
+    assert.equal(addLineDisableComment(bare, 1, 'float-to-int'), bare);
+    assert.equal(lineDisableCovers(bare, 1, 'float-to-int'), true);
+    const fileDirective = 'action = 1 ; @disable-file float-to-int\n';
+    assert.equal(
+      addLineDisableComment(fileDirective, 1, 'comma-spacing'),
+      'action = 1 ; @disable-file float-to-int @disable comma-spacing\n',
+    );
+    assert.equal(lineDisableCovers(fileDirective, 1, 'float-to-int'), false);
+  });
+
+  it('only touches the target line and is a no-op out of range or for an empty rule', () => {
+    const source = 'action = 1\nother = 2\n';
+    assert.equal(addLineDisableComment(source, 2, 'float-to-int'), 'action = 1\nother = 2 ; @disable float-to-int\n');
+    assert.equal(addLineDisableComment(source, 99, 'float-to-int'), source);
+    assert.equal(addLineDisableComment(source, 0, 'float-to-int'), source);
+    assert.equal(addLineDisableComment(source, 1, ''), source);
+  });
+
+  it('does not treat a semicolon inside a string as a comment', () => {
+    assert.equal(
+      addLineDisableComment('String Message = "; @disable comma-spacing"\n', 1, 'comma-spacing'),
+      'String Message = "; @disable comma-spacing" ; @disable comma-spacing\n',
+    );
   });
 });
 

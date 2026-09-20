@@ -37,6 +37,10 @@ for `.psc` files directly in the editor.
   diagnostic. It applies the fix for only that issue, leaving every other
   issue in the file untouched. Unsaved changes are saved first, same as
   fixing the whole file.
+- **Ignore this lint for the line** — a Quick Fix that adds (or extends) a
+  `; @disable <rule>` comment on the diagnostic's own line, silencing that
+  rule there only. The buffer is left unsaved so the comment can
+  be undone; diagnostics refresh from the in-memory text.
 - **Ignore this lint for the file** — a Quick Fix that adds (or extends) a
   `; @disable-file <rule>` comment in the current script, silencing that
   rule for the whole file. The buffer is left unsaved so the comment can

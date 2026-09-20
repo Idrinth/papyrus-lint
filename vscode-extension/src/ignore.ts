@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { configPathForWrite } from './config';
 import { isPapyrusDocument } from './documents';
 import type { PapyrusLinter } from './linter';
-import { addFileDisableComment, disableRuleInConfigYaml } from './suppressions';
+import { addFileDisableComment, addLineDisableComment, disableRuleInConfigYaml } from './suppressions';
 
 function sameUri(left: vscode.Uri, right: vscode.Uri): boolean {
   return left.toString() === right.toString() || left.fsPath === right.fsPath;
@@ -23,6 +23,42 @@ async function replaceDocumentText(document: vscode.TextDocument, updated: strin
   const edit = new vscode.WorkspaceEdit();
   edit.replace(document.uri, fullDocumentRange(document), updated);
   return vscode.workspace.applyEdit(edit);
+}
+
+async function loadDocument(uri: vscode.Uri): Promise<vscode.TextDocument | undefined> {
+  const open = openDocument(uri);
+  if (open) {
+    return open;
+  }
+  try {
+    return await vscode.workspace.openTextDocument(uri);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    void vscode.window.showErrorMessage(`Papyrus Lint: could not open ${path.basename(uri.fsPath)} (${message}).`);
+    return undefined;
+  }
+}
+
+async function applyScriptComment(
+  linter: PapyrusLinter,
+  uri: vscode.Uri,
+  update: (source: string) => string,
+  failedMessage: string,
+): Promise<boolean> {
+  const document = await loadDocument(uri);
+  if (!document) {
+    return false;
+  }
+  const updated = update(document.getText());
+  if (updated !== document.getText()) {
+    const applied = await replaceDocumentText(document, updated);
+    if (!applied) {
+      void vscode.window.showErrorMessage(failedMessage);
+      return false;
+    }
+  }
+  await linter.lintBlob(document);
+  return true;
 }
 
 async function readConfigText(configUri: vscode.Uri): Promise<string> {
@@ -64,29 +100,42 @@ async function relintOpenPapyrusDocuments(linter: PapyrusLinter): Promise<void> 
   }
 }
 
+/** Inserts or extends a `; @disable <rule>` comment on `line` (1-indexed), then
+ * re-lints the (now dirty) buffer via `--blob` so the diagnostic disappears
+ * without forcing a save. */
+export async function ignoreIssueForLine(
+  linter: PapyrusLinter,
+  uri: vscode.Uri,
+  rule: string,
+  line: number,
+): Promise<void> {
+  const applied = await applyScriptComment(
+    linter,
+    uri,
+    (source) => addLineDisableComment(source, line, rule),
+    `Papyrus Lint: could not add @disable for "${rule}".`,
+  );
+  if (!applied) {
+    return;
+  }
+  void vscode.window.showInformationMessage(
+    `Papyrus Lint: ignoring "${rule}" on line ${line} of ${path.basename(uri.fsPath)}.`,
+  );
+}
+
 /** Inserts or extends a `; @disable-file <rule>` comment in the script, then
  * re-lints the (now dirty) buffer via `--blob` so the diagnostic disappears
  * without forcing a save. */
 export async function ignoreIssueForFile(linter: PapyrusLinter, uri: vscode.Uri, rule: string): Promise<void> {
-  let document = openDocument(uri);
-  if (!document) {
-    try {
-      document = await vscode.workspace.openTextDocument(uri);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      void vscode.window.showErrorMessage(`Papyrus Lint: could not open ${path.basename(uri.fsPath)} (${message}).`);
-      return;
-    }
+  const applied = await applyScriptComment(
+    linter,
+    uri,
+    (source) => addFileDisableComment(source, rule),
+    `Papyrus Lint: could not add @disable-file for "${rule}".`,
+  );
+  if (!applied) {
+    return;
   }
-  const updated = addFileDisableComment(document.getText(), rule);
-  if (updated !== document.getText()) {
-    const applied = await replaceDocumentText(document, updated);
-    if (!applied) {
-      void vscode.window.showErrorMessage(`Papyrus Lint: could not add @disable-file for "${rule}".`);
-      return;
-    }
-  }
-  await linter.lintBlob(document);
   void vscode.window.showInformationMessage(
     `Papyrus Lint: ignoring "${rule}" for ${path.basename(uri.fsPath)}.`,
   );

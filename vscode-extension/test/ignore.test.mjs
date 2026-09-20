@@ -7,6 +7,68 @@ import { createHarness, papyrusDocument, restoreModules, uri, validReport } from
 
 afterEach(restoreModules);
 
+describe('papyrusLint.ignoreIssueForLine', () => {
+  it('inserts @disable on the diagnostic line and re-lints the unsaved buffer via --blob', async () => {
+    const target = uri('/project/Test.psc');
+    const document = papyrusDocument('/project/Test.psc', 'ScriptName Example\nCall(1,2)\n');
+    const harness = createHarness({ textDocuments: [document] });
+
+    await harness.commands.get('papyrusLint.ignoreIssueForLine')(target, 'comma-spacing', 2);
+
+    assert.equal(document.getText(), 'ScriptName Example\nCall(1,2) ; @disable comma-spacing\n');
+    assert.equal(document.isDirty, true);
+    assert.equal(harness.appliedEdits.length, 1);
+    assert.match(harness.execCalls.at(-1).args.join(' '), /--blob/);
+    assert.deepEqual(harness.messages.information, [
+      'Papyrus Lint: ignoring "comma-spacing" on line 2 of Test.psc.',
+    ]);
+  });
+
+  it('still re-lints when the line already disables the rule', async () => {
+    const target = uri('/project/Test.psc');
+    const document = papyrusDocument('/project/Test.psc', 'Call(1,2) ; @disable comma-spacing\n');
+    const harness = createHarness({ textDocuments: [document] });
+
+    await harness.commands.get('papyrusLint.ignoreIssueForLine')(target, 'comma-spacing', 1);
+
+    assert.equal(harness.appliedEdits.length, 0);
+    assert.match(harness.execCalls[0].args.join(' '), /--blob/);
+  });
+
+  it('reports when the workspace edit cannot be applied', async () => {
+    const target = uri('/project/Test.psc');
+    const document = papyrusDocument('/project/Test.psc', 'Call(1,2)\n');
+    const harness = createHarness({ textDocuments: [document], applyEditResult: false });
+
+    await harness.commands.get('papyrusLint.ignoreIssueForLine')(target, 'comma-spacing', 1);
+
+    assert.match(harness.messages.error[0], /could not add @disable/);
+    assert.equal(harness.execCalls.length, 0);
+  });
+
+  it('reports when the script cannot be opened', async () => {
+    const harness = createHarness();
+
+    await harness.commands.get('papyrusLint.ignoreIssueForLine')(uri('/project/Missing.psc'), 'comma-spacing', 1);
+
+    assert.match(harness.messages.error[0], /could not open Missing.psc/);
+  });
+
+  it('opens the script when it is not already in the editor', async () => {
+    const document = papyrusDocument('/project/Test.psc', 'Call(1,2)\n');
+    const harness = createHarness();
+    harness.vscode.workspace.openTextDocument = async () => {
+      harness.vscode.workspace.textDocuments.push(document);
+      return document;
+    };
+
+    await harness.commands.get('papyrusLint.ignoreIssueForLine')(document.uri, 'comma-spacing', 1);
+
+    assert.equal(document.getText(), 'Call(1,2) ; @disable comma-spacing\n');
+    assert.match(harness.execCalls.at(-1).args.join(' '), /--blob/);
+  });
+});
+
 describe('papyrusLint.ignoreIssueForFile', () => {
   it('inserts @disable-file and re-lints the unsaved buffer via --blob', async () => {
     const target = uri('/project/Test.psc');

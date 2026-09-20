@@ -95,6 +95,11 @@
         "category": "Papyrus Lint"
       },
       {
+        "command": "papyrusLint.ignoreIssueForLine",
+        "title": "Papyrus Lint: Ignore This Lint For The Line",
+        "category": "Papyrus Lint"
+      },
+      {
         "command": "papyrusLint.ignoreIssueForFile",
         "title": "Papyrus Lint: Ignore This Lint For The File",
         "category": "Papyrus Lint"
@@ -122,6 +127,10 @@
         },
         {
           "command": "papyrusLint.fixIssue",
+          "when": "false"
+        },
+        {
+          "command": "papyrusLint.ignoreIssueForLine",
           "when": "false"
         },
         {
