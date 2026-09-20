@@ -9,9 +9,13 @@ from collections.abc import Sequence
 from pathlib import Path
 
 PRESETS: tuple[str, ...] = ("strict", "standard", "careful")
-GAMES: tuple[str, ...] = ("skyrim", "fallout", "starfield")
+GAMES: tuple[str, ...] = ("skyrim", "fallout4", "starfield")
 SKYRIM_BASE_SCRIPTS_ZIP = Path("shared/scripts/skyrim-scripts.zip")
+FALLOUT4_BASE_SCRIPTS_ZIP = Path("shared/scripts/fallout4-scripts.zip")
+STARFIELD_BASE_SCRIPTS_ZIP = Path("shared/scripts/starfield-scripts.zip")
 SKYRIM_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/skyrim-extender-scripts.zip")
+FALLOUT4_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/fallout4-extender-scripts.zip")
+STARFIELD_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/starfield-extender-scripts.zip")
 FIXTURE_DIR = Path("fixtures")
 PRESET_CONFIG = Path("configuration/presets")
 
