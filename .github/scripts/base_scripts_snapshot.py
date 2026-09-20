@@ -11,6 +11,7 @@ from pathlib import Path
 from ci_lib.base_scripts_snapshot import (
     FIXTURE_DIR,
     PRESETS,
+    GAMES,
     SnapshotError,
     compare_output,
     fixture_path,
@@ -35,6 +36,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--update",
         action="store_true",
         help=f"Rewrite baselines under {FIXTURE_DIR} instead of comparing",
+    )
+    parser.add_argument(
+        "--game",
+        choices=GAMES,
+        action="append",
+        help=f"The game to run this for",
+    )
+    parser.add_argument(
+        "--extender",
+        action="store_true",
+        help=f"The chosen game uses its script extender",
     )
     parser.add_argument(
         "--work-dir",
@@ -72,12 +84,12 @@ def main(argv: list[str] | None = None) -> int:
         for preset in selected_presets(args):
             print(f"linting base scripts with preset {preset}", flush=True)
             try:
-                actual = render_output(root, cli, preset, work_dir / preset)
+                actual = render_output(root, cli, preset, work_dir / preset, args.game, args.extender)
             except SnapshotError as exc:
                 print(f"error ({preset}): {exc}", file=sys.stderr)
                 failed = True
                 continue
-            destination = fixture_path(root, preset)
+            destination = fixture_path(root, preset, args.game, args.extender)
             if args.update:
                 write_fixture(destination, actual)
                 print(f"wrote {destination.relative_to(root)}")
