@@ -36,7 +36,12 @@ fn compile_stub_with_retry_and_roots(
     roots: &[String],
 ) -> Result<CompileOutcome, String> {
     for attempt in 0.. {
-        match compile_psc_file(compiler_path, script_path, roots) {
+        match compile_psc_file(
+            papyrus_lints::Game::Skyrim,
+            compiler_path,
+            script_path,
+            roots,
+        ) {
             Err(err) if attempt < 5 && err.contains("Text file busy") => {
                 std::thread::sleep(std::time::Duration::from_millis(20));
             }
@@ -394,7 +399,12 @@ fn errors_when_compiler_cannot_be_run() {
     fs::write(&script_path, "").expect("failed to write stub script");
     let missing_compiler = root.path().join("does-not-exist.exe");
 
-    let result = compile_psc_file(&missing_compiler, &script_path, &[]);
+    let result = compile_psc_file(
+        papyrus_lints::Game::Skyrim,
+        &missing_compiler,
+        &script_path,
+        &[],
+    );
 
     assert!(result
         .unwrap_err()
@@ -406,7 +416,7 @@ fn errors_when_script_path_has_no_parent_directory() {
     let compiler_path = Path::new("compiler");
     let script_path = Path::new("Foo.psc");
 
-    let result = compile_psc_file(compiler_path, script_path, &[]);
+    let result = compile_psc_file(papyrus_lints::Game::Skyrim, compiler_path, script_path, &[]);
 
     assert_eq!(
         result.unwrap_err(),
@@ -416,7 +426,12 @@ fn errors_when_script_path_has_no_parent_directory() {
 
 #[test]
 fn errors_when_source_directory_has_no_parent_output_directory() {
-    let result = compile_psc_file(Path::new("compiler"), Path::new("/Foo.psc"), &[]);
+    let result = compile_psc_file(
+        papyrus_lints::Game::Skyrim,
+        Path::new("compiler"),
+        Path::new("/Foo.psc"),
+        &[],
+    );
 
     assert_eq!(
         result.unwrap_err(),
@@ -437,7 +452,7 @@ fn check_stub_with_retry(
     script_path: &Path,
 ) -> Result<CompileOutcome, String> {
     for attempt in 0.. {
-        match check_psc_file(compiler_path, script_path, &[]) {
+        match check_psc_file(papyrus_lints::Game::Skyrim, compiler_path, script_path, &[]) {
             Err(err) if attempt < 5 && err.contains("Text file busy") => {
                 std::thread::sleep(std::time::Duration::from_millis(20));
             }
@@ -533,7 +548,12 @@ fn check_psc_file_reports_a_failed_compile_as_ok_with_success_false() {
 
 #[test]
 fn check_psc_file_errors_when_script_path_has_no_parent_directory() {
-    let result = check_psc_file(Path::new("compiler"), Path::new("Foo.psc"), &[]);
+    let result = check_psc_file(
+        papyrus_lints::Game::Skyrim,
+        Path::new("compiler"),
+        Path::new("Foo.psc"),
+        &[],
+    );
 
     assert_eq!(
         result.unwrap_err(),
@@ -543,7 +563,12 @@ fn check_psc_file_errors_when_script_path_has_no_parent_directory() {
 
 #[test]
 fn check_psc_file_errors_when_source_directory_has_no_parent_output_directory() {
-    let result = check_psc_file(Path::new("compiler"), Path::new("/Foo.psc"), &[]);
+    let result = check_psc_file(
+        papyrus_lints::Game::Skyrim,
+        Path::new("compiler"),
+        Path::new("/Foo.psc"),
+        &[],
+    );
 
     assert_eq!(
         result.unwrap_err(),
@@ -560,7 +585,12 @@ fn check_psc_file_reports_when_the_compiler_cannot_be_started() {
     fs::write(&script_path, "ScriptName Example\n").expect("failed to write script");
     let missing_compiler = root.path().join("missing-compiler");
 
-    let result = check_psc_file(&missing_compiler, &script_path, &[]);
+    let result = check_psc_file(
+        papyrus_lints::Game::Skyrim,
+        &missing_compiler,
+        &script_path,
+        &[],
+    );
 
     assert!(result
         .unwrap_err()

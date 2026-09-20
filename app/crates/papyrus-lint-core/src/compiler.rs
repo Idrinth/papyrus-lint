@@ -21,9 +21,9 @@
 //! [`papyrus_lint_config::load_script_roots`]), so a script that
 //! imports from a shared library location outside those two conventional
 //! directories still compiles. The compiler is run with its own containing
-//! directory as the working directory, so it can resolve the bundled
-//! `TESV_Papyrus_Flags.flg` the trailing `-f` argument names by its
-//! relative path.
+//! directory as the working directory, so it can resolve the target game's
+//! bundled flags file named by the trailing `-f` argument via its relative
+//! path.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -31,6 +31,16 @@ use std::process::Command;
 use serde::Serialize;
 
 use crate::pex_header;
+
+/// Returns the compiler flags file shipped for `game`.
+///
+/// Keeping this selection exhaustive means adding another [`papyrus_lints::Game`]
+/// cannot silently reuse Skyrim's flags.
+fn flags_file(game: papyrus_lints::Game) -> &'static str {
+    match game {
+        papyrus_lints::Game::Skyrim => "TESV_Papyrus_Flags.flg",
+    }
+}
 
 /// The result of running the compiler against a script.
 ///
@@ -134,12 +144,13 @@ fn import_dirs(source_dir: &Path, root: Option<&Path>, additional_roots: &[Strin
 /// Runs `compiler_path` against `script_path`, searching `import_dirs` and
 /// writing whatever it compiles into `output_dir`. Run with the compiler
 /// executable's own directory as the working directory, so it can resolve
-/// the bundled `TESV_Papyrus_Flags.flg` (distributed beside
-/// `PapyrusCompiler.exe`) that the fixed trailing `-f` argument names by
-/// its relative path. `personal_data_stripped` is always `false` on the
+/// the flags file selected for `game` (distributed beside
+/// `PapyrusCompiler.exe`) that the trailing `-f` argument names by its
+/// relative path. `personal_data_stripped` is always `false` on the
 /// returned [`CompileOutcome`] — stripping (when wanted) is the caller's
 /// job, since it depends on where the `.pex` actually landed.
 fn run_compiler(
+    game: papyrus_lints::Game,
     compiler_path: &Path,
     script_path: &Path,
     import_dirs: &str,
@@ -150,7 +161,7 @@ fn run_compiler(
         .arg(script_path)
         .arg(format!("-i={import_dirs}"))
         .arg(format!("-o={}", output_dir.display()))
-        .arg("-f=TESV_Papyrus_Flags.flg");
+        .arg(format!("-f={}", flags_file(game)));
 
     if let Some(compiler_dir) = compiler_path
         .parent()
@@ -172,7 +183,8 @@ fn run_compiler(
 }
 
 /// Compiles the `.psc` file at `script_path` using the compiler executable
-/// at `compiler_path`. `additional_roots` are the project's configured
+/// at `compiler_path` and the flags file selected for `game`.
+/// `additional_roots` are the project's configured
 /// `additional_script_roots` (see
 /// [`papyrus_lint_config::load_script_roots`]), included in the `-i`
 /// argument alongside the two conventional source directories.
@@ -183,6 +195,7 @@ fn run_compiler(
 /// `-i`/`-o` from, etc.); see [`CompileOutcome`] for how an actual compile
 /// failure is reported instead.
 pub fn compile_psc_file(
+    game: papyrus_lints::Game,
     compiler_path: &Path,
     script_path: &Path,
     additional_roots: &[String],
@@ -190,7 +203,7 @@ pub fn compile_psc_file(
     let (source_dir, output_dir) = resolve_locations(script_path)?;
     let import_dirs = import_dirs(source_dir, output_dir.parent(), additional_roots);
 
-    let mut outcome = run_compiler(compiler_path, script_path, &import_dirs, &output_dir)?;
+    let mut outcome = run_compiler(game, compiler_path, script_path, &import_dirs, &output_dir)?;
     outcome.personal_data_stripped =
         outcome.success && strip_pex_personal_data(script_path, &output_dir);
     Ok(outcome)
@@ -207,6 +220,7 @@ pub fn compile_psc_file(
 /// discarded either way, `personal_data_stripped` is always `false` on the
 /// returned [`CompileOutcome`], unlike [`compile_psc_file`].
 pub fn check_psc_file(
+    game: papyrus_lints::Game,
     compiler_path: &Path,
     script_path: &Path,
     additional_roots: &[String],
@@ -216,7 +230,13 @@ pub fn check_psc_file(
 
     let temp_dir = tempfile::tempdir()
         .map_err(|err| format!("failed to create a temporary output directory: {err}"))?;
-    run_compiler(compiler_path, script_path, &import_dirs, temp_dir.path())
+    run_compiler(
+        game,
+        compiler_path,
+        script_path,
+        &import_dirs,
+        temp_dir.path(),
+    )
 }
 
 #[cfg(test)]

@@ -120,7 +120,8 @@ impl ProjectLintContext {
 
 /// Compiles the `.psc` file at `path` using the compiler executable at
 /// `compiler_path` (see [`load_compiler_path`]/[`resolve_compiler_path`]
-/// for how the frontend obtains that path). `additional_roots` are the
+/// for how the frontend obtains that path), selecting compiler flags for
+/// `game`. `additional_roots` are the
 /// project's configured additional script roots (see
 /// [`load_script_roots`]), included in the compiler's `-i` argument
 /// alongside the two conventional source directories. Returns an error if
@@ -131,6 +132,7 @@ impl ProjectLintContext {
 #[tauri::command(async)]
 pub(crate) fn compile_psc_file(
     path: String,
+    game: papyrus_lints::Game,
     compiler_path: String,
     additional_roots: Vec<String>,
 ) -> Result<compiler::CompileOutcome, String> {
@@ -142,6 +144,7 @@ pub(crate) fn compile_psc_file(
     }
 
     compiler::compile_psc_file(
+        game,
         Path::new(compiler_path),
         &PathBuf::from(path),
         &additional_roots,
@@ -209,9 +212,12 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
 
     let compiler_path = context.compiler_path.trim();
     if context.compile_check && !compiler_path.is_empty() {
-        if let Ok(outcome) =
-            compiler::check_psc_file(Path::new(compiler_path), path, &context.additional_roots)
-        {
+        if let Ok(outcome) = compiler::check_psc_file(
+            context.config.game,
+            Path::new(compiler_path),
+            path,
+            &context.additional_roots,
+        ) {
             if !outcome.success {
                 diagnostics.extend(compile_diagnostics::parse_compile_errors(&outcome));
             }

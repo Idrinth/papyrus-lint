@@ -94,6 +94,7 @@ pub(crate) fn lint_file(
     // silently left out rather than failing the whole lint run.
     if ctx.compile_check && !ctx.compiler_path.is_empty() {
         if let Ok(outcome) = compiler::check_psc_file(
+            ctx.lint_config.game,
             Path::new(ctx.compiler_path),
             script_path,
             ctx.function_table_additional_roots,
