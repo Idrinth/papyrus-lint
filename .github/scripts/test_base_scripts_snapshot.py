@@ -64,6 +64,22 @@ class CompareOutputTests(unittest.TestCase):
             self.assertIn("+ third", diff)
             self.assertNotIn("- second", diff)
 
+    def test_applies_sibling_extra_delta(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "careful.txt"
+            snap.write_fixture(path, "old-summary\nkept\n")
+            path.with_name("careful.txt.extra").write_text(
+                "- old-summary\n+ new-summary\n+ extra\n",
+                encoding="utf-8",
+            )
+            self.assertIsNone(snap.compare_output("kept\nnew-summary\nextra\n", path))
+
+            diff = snap.compare_output("kept\nold-summary\n", path)
+            assert diff is not None
+            self.assertIn("- extra", diff)
+            self.assertIn("- new-summary", diff)
+            self.assertIn("+ old-summary", diff)
+
 
 class RenderAndMainTests(unittest.TestCase):
     def test_render_output_runs_cli_in_plain_text_mode(self) -> None:
