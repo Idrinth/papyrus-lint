@@ -48,7 +48,11 @@ update the cited code *and* this list.
   resolving a path (a ppj is Windows-authored) but never decomposes an
   already-absolute Windows/UNC path into components; the CLI's `.ppj`
   handling lives in `run_scan.rs`/`doctor/checks.rs`/`init.rs`, not
-  `papyrus-lint-core`, which only parses the file.
+  `papyrus-lint-core`, which only parses the file. The GUI's own `.ppj`
+  drop mode (`parse_ppj_file` in `app/src-tauri/src/files.rs`) mirrors
+  this: its `<Import>` entries land in `currentPpjImportRoots`
+  (`project-state.ts`), folded into `effectiveScriptRoots()` the same way
+  `currentAchlistScriptRoots` is.
 - Vanilla engine types without an on-disk `.psc` resolve from the bundled
   AST cache by `ScriptName` (`FunctionTable::ensure_loaded` /
   `script_exists`). A project or lookup-root file of the same name still

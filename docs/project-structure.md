@@ -67,7 +67,7 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │   │       ├── lib.rs            # Façade: registers Tauri commands from the
 │   │       │                     # modules below and starts the GUI
 │   │       ├── meta.rs           # get_app_version, list_rule_tags
-│   │       ├── files.rs          # Achlist/directory listing, .psc read/write/
+│   │       ├── files.rs          # Achlist/ppj/directory listing, .psc read/write/
 │   │       │                     # hash/parse, in-memory parse/lint
 │   │       ├── lint_config.rs    # papyrus-lint.yaml, compiler path, compile_check,
 │   │       │                     # script roots, project info

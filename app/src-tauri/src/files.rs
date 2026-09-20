@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
 use papyrus_lint_core::source_encoding::read_psc_source;
-use papyrus_lint_core::{achlist, ast_cache, content_hash, script_locator};
+use papyrus_lint_core::{achlist, ast_cache, content_hash, ppj, script_locator};
 
 /// Parses the `.achlist` file at `path` and returns the resolved paths it lists.
 #[tauri::command(async)]
@@ -16,6 +16,44 @@ pub(crate) fn parse_achlist_file(path: String) -> Result<Vec<String>, String> {
         .into_iter()
         .map(|entry| entry.to_string_lossy().into_owned())
         .collect())
+}
+
+/// A parsed `.ppj`'s own `.psc` entries and `<Import>` search paths, for the
+/// frontend's ppj-drop mode (mirroring the CLI's `scan_project`, see
+/// `papyrus_lint_cli::run_scan::collect_script_paths`). `imports` are the
+/// project's `additional_script_roots` equivalent — passed back so the
+/// frontend can add them to its own script roots the same way it does for an
+/// achlist's inferred directories (see `setAchlistScriptRoots`).
+#[derive(Debug, PartialEq, serde::Serialize)]
+pub(crate) struct PpjParseResult {
+    scripts: Vec<String>,
+    imports: Vec<String>,
+}
+
+/// Parses the `.ppj` file at `path` and returns the `.psc` files it compiles
+/// alongside its own `<Import>` search paths.
+#[tauri::command(async)]
+pub(crate) fn parse_ppj_file(path: String) -> Result<PpjParseResult, String> {
+    let project = ppj::parse_ppj(&PathBuf::from(path)).map_err(|err| err.to_string())?;
+
+    let scripts = project
+        .scripts
+        .into_iter()
+        .filter(|script| {
+            script
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("psc"))
+        })
+        .map(|entry| entry.to_string_lossy().into_owned())
+        .collect();
+    let imports = project
+        .imports
+        .into_iter()
+        .map(|entry| entry.to_string_lossy().into_owned())
+        .collect();
+
+    Ok(PpjParseResult { scripts, imports })
 }
 
 /// Recursively scans `dir` (and every subdirectory beneath it, at any
@@ -342,6 +380,54 @@ mod tests {
 
         let missing = dir.path().join("missing.achlist");
         assert!(parse_achlist_file(missing.to_string_lossy().into_owned()).is_err());
+    }
+
+    #[test]
+    fn ppj_command_resolves_scripts_and_imports_and_reports_invalid_xml() {
+        let dir = tempdir().unwrap();
+        std::fs::create_dir_all(dir.path().join("Source/Scripts")).unwrap();
+        std::fs::write(
+            dir.path().join("Source/Scripts/Example.psc"),
+            "ScriptName Example\n",
+        )
+        .unwrap();
+        let path = dir.path().join("project.ppj");
+        std::fs::write(
+            &path,
+            r#"<PapyrusProject xmlns="PapyrusProject.xsd">
+                <Imports>
+                    <Import>.\Source\Scripts</Import>
+                </Imports>
+                <Folders>
+                    <Folder>.\Source\Scripts</Folder>
+                </Folders>
+            </PapyrusProject>"#,
+        )
+        .unwrap();
+
+        let result = parse_ppj_file(path.to_string_lossy().into_owned()).unwrap();
+        assert_eq!(
+            result.scripts,
+            vec![dir
+                .path()
+                .join("./Source/Scripts/Example.psc")
+                .to_string_lossy()
+                .into_owned()]
+        );
+        assert_eq!(
+            result.imports,
+            vec![dir
+                .path()
+                .join("./Source/Scripts")
+                .to_string_lossy()
+                .into_owned()]
+        );
+
+        std::fs::write(&path, "not xml").unwrap();
+        assert!(parse_ppj_file(path.to_string_lossy().into_owned()).is_err());
+
+        let missing = dir.path().join("missing.ppj");
+        assert!(parse_ppj_file(missing.to_string_lossy().into_owned()).is_err());
     }
 
     #[test]
