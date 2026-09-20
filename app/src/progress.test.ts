@@ -27,6 +27,13 @@ describe("showLintProgress / updateLintProgress / hideLintProgress", () => {
     expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Linting 0 / 3 files");
   });
 
+  it("labels the bar with the requested phase", () => {
+    showLintProgress(4, "Parsing");
+    expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Parsing 0 / 4 files");
+    updateLintProgress(2, 4, "Parsing");
+    expect(document.querySelector("#lint-progress-label")!.textContent).toBe("Parsing 2 / 4 files");
+  });
+
   it("stays hidden when there are no files to process", () => {
     showLintProgress(0);
 
