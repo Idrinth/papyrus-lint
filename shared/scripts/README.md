@@ -7,3 +7,8 @@ owned by this project.
 - `skyrim-scripts.zip` is content owned by Bethesda Softworks and published
   as part of the Creation Kit.
 - `skyrim-extender-scripts.zip` is owned by the SKSE Team.
+- `fallout4-scripts.zip` is content owned by Bethesda Softworks and published
+  as part of the Creation Kit.
+- `fallout4-extender-scripts.zip` is owned by the F4SE Team. (v0.7.9)
+- `starfield-scripts.zip` is content owned by Bethesda Softworks and published
+as part of the Creation Kit.
