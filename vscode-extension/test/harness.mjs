@@ -37,6 +37,7 @@ export function createHarness({
    * way VS Code resolves a resource-scoped setting against the folder that
    * contains the resource passed to `getConfiguration`. */
   folderConfig = {},
+  applyEditResult = true,
 } = {}) {
   const commands = new Map();
   const listeners = {};
@@ -49,6 +50,7 @@ export function createHarness({
   };
   const output = { lines: [], appendLine(line) { this.lines.push(line); }, dispose() {} };
   const codeActionProviders = [];
+  const appliedEdits = [];
   const vscode = {
     CodeAction: class {
       constructor(title, kind) {
@@ -62,13 +64,27 @@ export function createHarness({
       }
     },
     DiagnosticSeverity: { Error: 0, Warning: 1, Information: 2 },
+    Position: class {
+      constructor(line, character) {
+        Object.assign(this, { line, character });
+      }
+    },
     Range: class {
       constructor(startLine, startColumn, endLine, endColumn) {
         Object.assign(this, { startLine, startColumn, endLine, endColumn });
       }
     },
+    WorkspaceEdit: class {
+      constructor() {
+        this.replacements = [];
+      }
+      replace(uri, range, newText) {
+        this.replacements.push({ uri, range, newText });
+      }
+    },
     Uri: {
       parse: (value) => ({ scheme: value.split(':')[0], toString: () => value }),
+      file: (fsPath) => uri(fsPath),
     },
     commands: {
       registerCommand(name, callback) {
@@ -108,6 +124,35 @@ export function createHarness({
       onDidSaveTextDocument: (callback) => registerListener('save', callback),
       textDocuments,
       workspaceFolders,
+      applyEdit: async (edit) => {
+        appliedEdits.push(edit);
+        if (!applyEditResult) {
+          return false;
+        }
+        for (const replacement of edit.replacements ?? []) {
+          const document = textDocuments.find((candidate) => (
+            candidate.uri === replacement.uri
+            || candidate.uri?.toString?.() === replacement.uri?.toString?.()
+            || candidate.uri?.fsPath === replacement.uri?.fsPath
+          ));
+          if (document) {
+            document.getText = () => replacement.newText;
+            document.isDirty = true;
+          }
+        }
+        return true;
+      },
+      openTextDocument: async (openUri) => {
+        const found = textDocuments.find((candidate) => (
+          candidate.uri === openUri
+          || candidate.uri?.toString?.() === openUri?.toString?.()
+          || candidate.uri?.fsPath === openUri?.fsPath
+        ));
+        if (found) {
+          return found;
+        }
+        throw new Error(`File not found: ${openUri?.fsPath ?? openUri}`);
+      },
     },
   };
   const execCalls = [];
@@ -170,6 +215,7 @@ export function createHarness({
   };
   extension.activate(context);
   return {
+    appliedEdits,
     codeActionProviders,
     commands,
     context,
@@ -200,5 +246,12 @@ export function validReport(overrides = {}) {
 }
 
 export function papyrusDocument(fsPath, text) {
-  return { uri: uri(fsPath), languageId: 'papyrus', isDirty: true, getText: () => text };
+  return {
+    uri: uri(fsPath),
+    languageId: 'papyrus',
+    isDirty: true,
+    getText: () => text,
+    positionAt: (offset) => ({ line: 0, character: offset }),
+    async save() { return true; },
+  };
 }

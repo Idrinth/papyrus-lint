@@ -72,7 +72,7 @@ update the cited code *and* this list.
 | Text / JSON / AI report formatting | `app/crates/papyrus-lint-output/` and `schema/` |
 | Tauri commands | `app/src-tauri/src/` (`files.rs`, `lint.rs`, `repair.rs`, `export.rs`, `lint_config.rs`) |
 | Desktop UI (drop, results, live edit, watch, presets) | `app/src/` (`drop.ts`, `results-filter.ts`, `live-edit.ts`, `watch.ts`, `presets.ts`) |
-| VS Code live lint | `vscode-extension/src/liveLint.ts`, `linter.ts` |
+| VS Code live lint / ignore | `vscode-extension/src/liveLint.ts`, `linter.ts`, `ignore.ts` |
 | Sublime unsaved-buffer lint | `SublimeLinter-contrib-papyrus-lint/linter.py` |
 
 ## Surfaces that must stay aligned
