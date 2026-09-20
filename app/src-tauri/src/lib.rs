@@ -24,6 +24,7 @@ pub fn run() {
             get_app_version,
             list_rule_tags,
             parse_achlist_file,
+            parse_ppj_file,
             list_psc_files_recursively,
             parse_papyrus_script,
             lint_papyrus_script,

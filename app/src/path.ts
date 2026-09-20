@@ -4,10 +4,15 @@
 // lives in project.ts, since it now calls into the Rust backend.
 
 const ACHLIST_EXTENSION = ".achlist";
+const PPJ_EXTENSION = ".ppj";
 const PSC_EXTENSION = ".psc";
 
 export function isAchlistPath(path: string): boolean {
   return path.toLowerCase().endsWith(ACHLIST_EXTENSION);
+}
+
+export function isPpjPath(path: string): boolean {
+  return path.toLowerCase().endsWith(PPJ_EXTENSION);
 }
 
 export function isPscPath(path: string): boolean {

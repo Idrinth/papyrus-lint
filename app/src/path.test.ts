@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { dirnameOf, isAchlistPath, isPscPath, relativePath, scriptRootsForAchlist } from "./path";
+import { dirnameOf, isAchlistPath, isPpjPath, isPscPath, relativePath, scriptRootsForAchlist } from "./path";
 
 describe("path helpers", () => {
   it("isAchlistPath matches .achlist regardless of case", () => {
     expect(isAchlistPath("C:/mods/list.achlist")).toBe(true);
     expect(isAchlistPath("C:/mods/list.ACHLIST")).toBe(true);
     expect(isAchlistPath("C:/mods/list.psc")).toBe(false);
+  });
+
+  it("isPpjPath matches .ppj regardless of case", () => {
+    expect(isPpjPath("C:/mods/project.ppj")).toBe(true);
+    expect(isPpjPath("C:/mods/project.PPJ")).toBe(true);
+    expect(isPpjPath("C:/mods/list.achlist")).toBe(false);
   });
 
   it("isPscPath matches .psc regardless of case", () => {

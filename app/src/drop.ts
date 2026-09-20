@@ -1,4 +1,4 @@
-// Drop-folder handling: turning a dropped .achlist/.psc/directory into a
+// Drop-folder handling: turning a dropped .achlist/.ppj/.psc/directory into a
 // project root and a parsed+linted set of results, and re-linting that same
 // set later against changed settings. Kept separate from the page-chrome
 // orchestration in main.ts, which this module calls back into to render its
@@ -7,13 +7,26 @@ import { invoke } from "@tauri-apps/api/core";
 import { lintPscFile, type PapyrusScript, type PscParseOutcome } from "./backend";
 import { clearError, setDropZoneLoading, showError, showResult } from "./main";
 import { switchTab } from "./main-tabs";
-import { isAchlistPath, isPscPath, scriptRootsForAchlist } from "./path";
+import { isAchlistPath, isPpjPath, isPscPath, scriptRootsForAchlist } from "./path";
 import { scheduleHideLintProgress, showLintProgress, updateLintProgress } from "./progress";
 import { loadProjectConfig } from "./project-settings";
-import { projectDirForAchlist, projectDirForDirectory, projectDirForPscPath } from "./project-io";
-import { setAchlistScriptRoots } from "./project-state";
+import {
+  projectDirForAchlist,
+  projectDirForDirectory,
+  projectDirForPpj,
+  projectDirForPscPath,
+} from "./project-io";
+import { setAchlistScriptRoots, setPpjImportRoots } from "./project-state";
 import { renderPscResults } from "./results-list-render";
 export let currentPscOutcomes: PscParseOutcome[] = [];
+
+// Mirrors the backend's PpjParseResult (see parse_ppj_file in
+// app/src-tauri/src/files.rs): a dropped .ppj's own .psc entries and
+// <Import> search paths.
+interface PpjParseResult {
+  scripts: string[];
+  imports: string[];
+}
 
 // Set whenever a setting affecting lint output (formatting/rule config,
 // compiler path, compile-check toggle, additional/lookup script roots, or the
@@ -132,6 +145,7 @@ export async function handleDroppedPaths(paths: string[]) {
 
       await loadProjectConfig(projectDir);
       setAchlistScriptRoots(scriptRootsForAchlist(entries));
+      setPpjImportRoots([]);
       const pscEntries = entries.filter(isPscPath);
       showLintProgress(pscEntries.length);
       await parsePscFiles(pscEntries, (outcome) => {
@@ -156,6 +170,50 @@ export async function handleDroppedPaths(paths: string[]) {
     return;
   }
 
+  const ppjPath = paths.find(isPpjPath);
+
+  if (ppjPath) {
+    try {
+      const { scripts, imports } = await invoke<PpjParseResult>("parse_ppj_file", {
+        path: ppjPath,
+      });
+      clearError();
+      // Cleared before rendering, same as the .achlist branch above, so a
+      // View click during the parse/lint pass below can't show a previous
+      // drop's stale findings for a path that happens to match one of this
+      // drop's scripts.
+      currentPscOutcomes = [];
+      lintResultsStale = false;
+      const generation = ++currentParseGeneration;
+      const projectDir = await projectDirForPpj(ppjPath, scripts);
+      showResult(ppjPath, scripts, projectDir);
+      finishListing();
+      switchTab("lint");
+      renderPscResults(currentPscOutcomes);
+
+      await loadProjectConfig(projectDir);
+      setAchlistScriptRoots(scriptRootsForAchlist(scripts));
+      setPpjImportRoots(imports);
+      showLintProgress(scripts.length);
+      await parsePscFiles(scripts, (outcome) => {
+        if (generation !== currentParseGeneration) {
+          return;
+        }
+        currentPscOutcomes.push(outcome);
+        renderPscResults(currentPscOutcomes);
+        updateLintProgress(currentPscOutcomes.length, scripts.length);
+      });
+      if (generation === currentParseGeneration) {
+        scheduleHideLintProgress();
+      }
+    } catch (error) {
+      finishListing();
+      showError("Failed to read that .ppj file. Please try again.");
+      console.error(error);
+    }
+    return;
+  }
+
   if (paths.length === 1 && isPscPath(paths[0])) {
     const pscPath = paths[0];
     clearError();
@@ -170,6 +228,7 @@ export async function handleDroppedPaths(paths: string[]) {
 
     await loadProjectConfig(projectDir);
     setAchlistScriptRoots([]);
+    setPpjImportRoots([]);
     showLintProgress(1);
     await parsePscFiles([pscPath], (outcome) => {
       if (generation !== currentParseGeneration) {
@@ -185,12 +244,12 @@ export async function handleDroppedPaths(paths: string[]) {
     return;
   }
 
-  // Neither an .achlist nor a single .psc: try treating the single dropped
-  // path as a directory to scan recursively for .psc files, for a project
-  // (e.g. Requiem's own layout) with no .achlist at all whose scripts are
-  // spread across arbitrarily nested subfolders. list_psc_files_recursively
-  // errors out if the path isn't actually a directory, so that case falls
-  // through to the usual error message below.
+  // Neither an .achlist, a .ppj, nor a single .psc: try treating the single
+  // dropped path as a directory to scan recursively for .psc files, for a
+  // project (e.g. Requiem's own layout) with no .achlist at all whose
+  // scripts are spread across arbitrarily nested subfolders.
+  // list_psc_files_recursively errors out if the path isn't actually a
+  // directory, so that case falls through to the usual error message below.
   if (paths.length === 1) {
     const dirPath = paths[0];
     try {
@@ -209,6 +268,7 @@ export async function handleDroppedPaths(paths: string[]) {
 
       await loadProjectConfig(projectDir);
       setAchlistScriptRoots(scriptRootsForAchlist(entries));
+      setPpjImportRoots([]);
       showLintProgress(entries.length);
       await parsePscFiles(entries, (outcome) => {
         if (generation !== currentParseGeneration) {
@@ -228,7 +288,7 @@ export async function handleDroppedPaths(paths: string[]) {
   }
 
   finishListing();
-  showError("Please drop a single .achlist or .psc file, or a folder to scan recursively.");
+  showError("Please drop a single .achlist, .ppj, or .psc file, or a folder to scan recursively.");
 }
 
 // Re-lints the same set of files currently shown in the Lint results tab
