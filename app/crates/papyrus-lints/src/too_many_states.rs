@@ -41,3 +41,7 @@ pub fn check(
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
+
+#[cfg(test)]
+#[path = "too_many_states_tests.rs"]
+mod tests;
