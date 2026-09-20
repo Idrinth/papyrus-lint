@@ -15,7 +15,14 @@ vi.mock("@tauri-apps/api/window", () => ({
 
 import { invokeImplFor } from "./test/harness";
 import { enterCodeViewerEditMode } from "./live-edit-persist";
-import { handleCodeViewerFixClick, handleCodeViewerFixLineClick, handleCodeViewerIgnoreLineClick, handleCodeViewerFileDisableLineClick, handleCodeViewerConfigDisableLineClick } from "./code-viewer-actions";
+import {
+  handleCodeViewerFixClick,
+  handleCodeViewerFixLineClick,
+  handleCodeViewerIgnoreLineClick,
+  handleCodeViewerFileDisableLineClick,
+  handleCodeViewerConfigDisableLineClick,
+  handleCodeViewerNodiscardLineClick,
+} from "./code-viewer-actions";
 import { handleCodeViewerPreviewFixClick } from "./code-viewer-diff";
 import { openCodeViewer, requestCloseCodeViewer, toggleCodeViewerFullscreen } from "./code-viewer-dialog";
 describe("openCodeViewer", () => {
@@ -135,6 +142,42 @@ describe("openCodeViewer", () => {
 
     const row = document.querySelector("#code-viewer-line-1")!;
     expect(row.querySelector(".code-viewer__line-action")).toBeNull();
+  });
+
+  it("shows a per-line Nodiscard button on a function header that returns a value, with no finding needed", async () => {
+    invokeImplFor({ read_psc_file: () => "Int Function GetValue()\n    Return 1\nEndFunction\n" });
+
+    await openCodeViewer("/a.psc", []);
+
+    const row = document.querySelector("#code-viewer-line-1")!;
+    expect(row.querySelector('[data-line-action="nodiscard"]')).not.toBeNull();
+  });
+
+  it("shows a per-line Nodiscard button on a Native function with no return value", async () => {
+    invokeImplFor({ read_psc_file: () => "Function DoThing() Native\n" });
+
+    await openCodeViewer("/a.psc", []);
+
+    const row = document.querySelector("#code-viewer-line-1")!;
+    expect(row.querySelector('[data-line-action="nodiscard"]')).not.toBeNull();
+  });
+
+  it("does not show a per-line Nodiscard button on a void, non-native function", async () => {
+    invokeImplFor({ read_psc_file: () => "Function DoThing()\nEndFunction\n" });
+
+    await openCodeViewer("/a.psc", []);
+
+    const row = document.querySelector("#code-viewer-line-1")!;
+    expect(row.querySelector('[data-line-action="nodiscard"]')).toBeNull();
+  });
+
+  it("does not show a per-line Nodiscard button on a header already flagged @nodiscard", async () => {
+    invokeImplFor({ read_psc_file: () => "Int Function GetValue() ; @nodiscard\n" });
+
+    await openCodeViewer("/a.psc", []);
+
+    const row = document.querySelector("#code-viewer-line-1")!;
+    expect(row.querySelector('[data-line-action="nodiscard"]')).toBeNull();
   });
 });
 
@@ -532,6 +575,58 @@ describe("handleCodeViewerConfigDisableLineClick", () => {
     await handleCodeViewerConfigDisableLineClick(1, button);
 
     expect(invokeMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("handleCodeViewerNodiscardLineClick", () => {
+  function nodiscardLineButton(): HTMLButtonElement {
+    return document.querySelector<HTMLButtonElement>('#code-viewer-line-1 [data-line-action="nodiscard"]')!;
+  }
+
+  it("disables the button, adds the nodiscard flag, and re-renders with the re-read source", async () => {
+    invokeImplFor({
+      read_psc_file: vi
+        .fn()
+        .mockResolvedValueOnce("Int Function GetValue()\n")
+        .mockResolvedValueOnce("Int Function GetValue() ; @nodiscard\n"),
+      add_nodiscard_comment_to_psc_line: () => [],
+    });
+    await openCodeViewer("/a.psc", []);
+    const button = nodiscardLineButton();
+
+    const promise = handleCodeViewerNodiscardLineClick(1, button);
+    expect(button.disabled).toBe(true);
+    await promise;
+
+    expect(invokeMock).toHaveBeenCalledWith("add_nodiscard_comment_to_psc_line", expect.objectContaining({ path: "/a.psc", line: 1 }));
+    expect(document.querySelector('#code-viewer-line-1 [data-line-action="nodiscard"]')).toBeNull();
+    expect(button.disabled).toBe(false);
+  });
+
+  it("does nothing when the code viewer has no loaded file", async () => {
+    invokeMock.mockRejectedValue(new Error("permission denied"));
+    await openCodeViewer("/a.psc", []);
+    invokeMock.mockReset();
+    const button = document.createElement("button");
+
+    await handleCodeViewerNodiscardLineClick(1, button);
+
+    expect(invokeMock).not.toHaveBeenCalled();
+  });
+
+  it("re-enables the button and leaves the viewer untouched when adding the flag fails", async () => {
+    invokeImplFor({
+      read_psc_file: () => "Int Function GetValue()\n",
+      add_nodiscard_comment_to_psc_line: () => Promise.reject(new Error("disk full")),
+    });
+    await openCodeViewer("/a.psc", []);
+    const button = nodiscardLineButton();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await handleCodeViewerNodiscardLineClick(1, button);
+
+    expect(button.disabled).toBe(false);
+    expect(document.querySelector('#code-viewer-line-1 [data-line-action="nodiscard"]')).not.toBeNull();
   });
 });
 

@@ -71,6 +71,14 @@ tab) rather than writing a disable comment — the currently open file is
 re-linted immediately, and the rest of the Lint results list is marked
 stale so switching back to it re-lints against the new settings.
 
+A function header that returns a value or is `Native`, and isn't already
+flagged, also gets its own "Nodiscard" button, regardless of whether that
+line has any finding at all. Clicking it adds (or extends) a trailing
+`; @nodiscard` comment on that header, marking the function so the
+`unused-nodiscard` rule flags a caller that discards its result. The VS
+Code extension offers the same action as a lightbulb Quick Action on an
+eligible header, applying the edit directly to the buffer.
+
 ## Reviewing and exporting findings
 
 The Lint results tab also has a "Mass fix an issue" panel, listing every

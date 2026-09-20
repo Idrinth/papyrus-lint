@@ -3,6 +3,7 @@ import {
   type Diagnostic,
   addDisableCommentToPscLine,
   addDisableFileCommentToPscLine,
+  addNodiscardCommentToPscLine,
   isFixableFinding,
   lintPscFile,
   repairPscFile,
@@ -70,11 +71,11 @@ export async function handleCodeViewerFixClick() {
 
 // Dispatches a click anywhere in the read-only view's table to the right
 // per-line handler below, reading which line and which action
-// (buildLineActionsHtml's "fix"/"ignore"/"file-disable"/"config-disable"
-// buttons) off the clicked button's own data attributes — the buttons are
-// rebuilt from an HTML string on every render, so they're wired up through
-// one delegated listener on codeViewerViewEl rather than individual
-// per-button listeners that would need reattaching each time.
+// (buildLineActionsHtml's "fix"/"ignore"/"file-disable"/"config-disable"/
+// "nodiscard" buttons) off the clicked button's own data attributes — the
+// buttons are rebuilt from an HTML string on every render, so they're wired
+// up through one delegated listener on codeViewerViewEl rather than
+// individual per-button listeners that would need reattaching each time.
 export async function handleCodeViewerLineActionClick(event: MouseEvent) {
   if (!(event.target instanceof Element)) {
     return;
@@ -95,6 +96,8 @@ export async function handleCodeViewerLineActionClick(event: MouseEvent) {
     await handleCodeViewerFileDisableLineClick(line, button);
   } else if (button.dataset.lineAction === "config-disable") {
     await handleCodeViewerConfigDisableLineClick(line, button);
+  } else if (button.dataset.lineAction === "nodiscard") {
+    await handleCodeViewerNodiscardLineClick(line, button);
   }
 }
 
@@ -207,6 +210,30 @@ export async function handleCodeViewerConfigDisableLineClick(line: number, butto
       return;
     }
     const findings = await lintPscFile(path);
+    await refreshViewerAfterMutation(path, findings, false);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// The code viewer's per-line "Nodiscard" button: adds (or extends) an
+// `; @nodiscard` comment on `line`'s function header (see
+// addNodiscardCommentToPscLine), marking it for unused-nodiscard's own
+// discarded-result check, then refreshes the viewer and the matching Lint
+// results list entry in place the same way the "Fix"/"Ignore" buttons do.
+// Only offered on a header nodiscardEligibleLines (nodiscard.ts) says is
+// eligible - a function that returns a value or is Native - so unlike
+// those two, this button isn't gated by any existing finding on the line.
+export async function handleCodeViewerNodiscardLineClick(line: number, button: HTMLButtonElement) {
+  if (!codeViewerState) {
+    return;
+  }
+  const { path } = codeViewerState;
+  button.disabled = true;
+  try {
+    const findings = await addNodiscardCommentToPscLine(path, line);
     await refreshViewerAfterMutation(path, findings, false);
   } catch (error) {
     console.error(error);

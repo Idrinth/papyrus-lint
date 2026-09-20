@@ -69,7 +69,7 @@ export function stripComments(source: string): string {
     .replace(/;[^\n]*/g, blank);
 }
 
-const IDENTIFIER = "[A-Za-z_]\\w*";
+export const IDENTIFIER = "[A-Za-z_]\\w*";
 
 // A declaration-like "Type name" pair, immediately followed by "=", ";", or
 // end of line - distinguishing `ObjectReference akRef = None` (a

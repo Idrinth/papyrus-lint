@@ -284,7 +284,12 @@ fn header_has_nodiscard(lines: &[&str], tokens: &[Token], line: usize) -> bool {
         .is_some_and(|slice| slice.iter().any(|row| line_has_nodiscard(row)))
 }
 
-fn line_has_nodiscard(line: &str) -> bool {
+/// Whether `line`'s trailing `;` comment carries a bare `@nodiscard` token
+/// (case-insensitive, bounded by whitespace/comma so `@nodiscardable`
+/// doesn't match). Also used by [`crate::nodiscard_comments`] to decide
+/// whether a header (or the line above it) is already flagged before
+/// adding the directive.
+pub(crate) fn line_has_nodiscard(line: &str) -> bool {
     let Some(comment) = line_comment_text(line) else {
         return false;
     };
@@ -305,7 +310,11 @@ fn line_has_nodiscard(line: &str) -> bool {
     before_ok && after_ok
 }
 
-fn line_comment_text(line: &str) -> Option<&str> {
+/// Returns the text following the `;` that starts `line`'s line comment, if
+/// any, ignoring semicolons inside string literals and treating a `;/`
+/// block-comment opener as not starting a line comment. Also used by
+/// [`crate::nodiscard_comments`] to find where to append `@nodiscard`.
+pub(crate) fn line_comment_text(line: &str) -> Option<&str> {
     let bytes = line.as_bytes();
     let mut in_string = false;
     let mut index = 0;

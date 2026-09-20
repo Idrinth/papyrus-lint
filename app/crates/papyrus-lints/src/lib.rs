@@ -19,6 +19,7 @@ mod const_eval;
 mod disable_comments;
 mod external_signatures;
 mod fragment_code;
+mod nodiscard_comments;
 mod registry;
 mod state_count;
 mod state_reference;
@@ -420,6 +421,19 @@ pub fn add_disable_comment(source: &str, target_line: usize, rules: &[String]) -
 /// out-of-range `target_line` leaves `source` untouched.
 pub fn add_disable_file_comment(source: &str, target_line: usize, rules: &[String]) -> String {
     disable_comments::add_disable_file_directive(source, target_line, rules)
+}
+
+/// Adds `; @nodiscard` to `target_line` (1-indexed) of `source`'s function
+/// header, or extends its existing trailing comment — the desktop app's and
+/// VS Code extension's "Add nodiscard" quick action, marking a function
+/// (one that returns a value or is `Native`) for [`unused_nodiscard`]'s own
+/// discarded-result check. Left untouched if `target_line` is out of range,
+/// or already carries the flag (on that line or the one directly above it,
+/// the same lookback `unused_nodiscard` itself reads with). See
+/// [`nodiscard_comments::add_nodiscard_directive`] for the exact
+/// merging/formatting rules.
+pub fn add_nodiscard_comment(source: &str, target_line: usize) -> String {
+    nodiscard_comments::add_nodiscard_directive(source, target_line)
 }
 
 /// Whether `rule` is suppressed on `line` (1-indexed) of `source` by an

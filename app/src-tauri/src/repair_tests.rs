@@ -430,6 +430,52 @@ fn add_disable_comment_to_psc_line_leaves_the_file_untouched_for_an_empty_rule_l
 }
 
 #[test]
+fn add_nodiscard_comment_to_psc_line_adds_the_flag_and_relints() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    std::fs::write(
+        &path,
+        "ScriptName Example\n\nInt Function RegisterFoo()\n    Return 1\nEndFunction\n",
+    )
+    .unwrap();
+
+    add_nodiscard_comment_to_psc_line(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+        3,
+    )
+    .unwrap();
+
+    assert_eq!(
+        std::fs::read_to_string(&path).unwrap(),
+        "ScriptName Example\n\nInt Function RegisterFoo() ; @nodiscard\n    Return 1\nEndFunction\n"
+    );
+}
+
+#[test]
+fn add_nodiscard_comment_to_psc_line_leaves_an_already_flagged_header_untouched() {
+    let dir = tempdir().unwrap();
+    let path = dir.path().join("Example.psc");
+    let source = "Int Function RegisterFoo() ; @nodiscard\n";
+    std::fs::write(&path, source).unwrap();
+
+    add_nodiscard_comment_to_psc_line(
+        path.to_string_lossy().into_owned(),
+        ProjectLintContext {
+            root: dir.path().to_string_lossy().into_owned(),
+            ..Default::default()
+        },
+        1,
+    )
+    .unwrap();
+
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), source);
+}
+
+#[test]
 fn targeted_repair_commands_report_io_errors_without_creating_a_file() {
     let dir = tempdir().unwrap();
     let missing = dir.path().join("missing.psc");
@@ -466,12 +512,21 @@ fn targeted_repair_commands_report_io_errors_without_creating_a_file() {
     )
     .is_err());
     assert!(add_disable_file_comment_to_psc_line(
+        path.clone(),
+        ProjectLintContext {
+            root: root.clone(),
+            ..Default::default()
+        },
+        vec!["trailing-whitespace".to_string()],
+        1
+    )
+    .is_err());
+    assert!(add_nodiscard_comment_to_psc_line(
         path,
         ProjectLintContext {
             root,
             ..Default::default()
         },
-        vec!["trailing-whitespace".to_string()],
         1
     )
     .is_err());
