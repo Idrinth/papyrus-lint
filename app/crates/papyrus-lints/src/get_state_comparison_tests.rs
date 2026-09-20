@@ -214,3 +214,113 @@ fn walks_an_indexed_argument_without_crashing() {
 
     assert!(diagnostics.is_empty());
 }
+
+#[test]
+fn line_and_file_disable_directives_suppress_diagnostics() {
+    let line_disabled = crate::lint(
+        "ScriptName Example\n\nFunction Test()\n    If GetState() == \"Missing\" ; @disable get-state-comparison\n    EndIf\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+    let file_disabled = crate::lint(
+        "; @disable-file get-state-comparison\nScriptName Example\n\nFunction Test()\n    If GetState() == \"Missing\"\n    EndIf\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+
+    assert!(line_disabled.iter().all(|diagnostic| diagnostic.rule != RULE));
+    assert!(file_disabled.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn config_off_switch_suppresses_diagnostics() {
+    let source = "ScriptName Example\n\nFunction Test()\n    If GetState() == \"Missing\"\n    EndIf\nEndFunction\n";
+    let mut config = crate::config::Config::default();
+    config.rules.get_state_comparison = false;
+
+    let diagnostics = crate::lint(source, &config);
+
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn check_with_returns_no_diagnostics_without_an_ast() {
+    let diagnostics = super::check_with(None, &mut FakeExternalWithAncestorState);
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn check_with_walks_every_statement_location() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+Function Test(Bool condition)
+    Bool initialized = GetState() == "Initializer"
+    initialized = GetState() == "Assignment"
+    GetState() == "Expression"
+    If GetState() == "IfCondition"
+        GetState() == "IfBody"
+    ElseIf condition
+        GetState() == "ElseIfBody"
+    Else
+        GetState() == "ElseBody"
+    EndIf
+    While GetState() == "WhileCondition"
+        GetState() == "WhileBody"
+    EndWhile
+    Return GetState() == "Return"
+EndFunction
+"#,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(diagnostics.len(), 10);
+}
+
+#[test]
+fn check_with_walks_nested_binary_expressions_and_visits_assignment_targets() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+Function Test(Bool[] values)
+    values[GetState() == "Target"] = (GetState() == "Nested") == false
+EndFunction
+"#,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("'Nested'"));
+}
+
+#[test]
+fn skips_get_state_calls_with_arguments_and_non_equality_operators() {
+    let diagnostics = check(
+        r#"ScriptName Example
+
+Function Test()
+    If GetState("argument") == "Missing"
+    EndIf
+    If GetState() > "Missing"
+    EndIf
+EndFunction
+"#,
+    );
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn get_state_name_and_self_qualifier_are_case_insensitive() {
+    let diagnostics = check(
+        "ScriptName Example\n\nFunction Test()\n    If SELF.gEtStAtE() == \"Missing\"\n    EndIf\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+}
+
+#[test]
+fn fake_external_function_lookup_returns_none() {
+    assert!(FakeExternalWithAncestorState
+        .lookup("BaseScript", "SomeFunction")
+        .is_none());
+}
