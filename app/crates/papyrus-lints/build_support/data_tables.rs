@@ -13,6 +13,16 @@ struct ForbiddenRule {
     global: bool,
 }
 #[derive(Deserialize)]
+struct DeprecatedRule {
+    script: String,
+    function: String,
+    replacement: Option<String>,
+    level: String,
+    message: String,
+    #[serde(default)]
+    global: bool,
+}
+#[derive(Deserialize)]
 struct SlowRule {
     object: String,
     function: String,
@@ -45,6 +55,7 @@ struct KnownEvent {
 
 pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
     forbidden_functions(context);
+    deprecated_functions(context);
     slow_functions(context);
     native_methods(context);
     actor_values(context);
@@ -52,6 +63,29 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
     known_events(context);
     rule_tags(context, rules);
     known_rule_ids(context, rules);
+}
+
+fn deprecated_functions(context: &BuildContext) {
+    let values: Vec<DeprecatedRule> = context.load_yaml(
+        "shared/rules/data/deprecated-functions.yaml",
+        "deprecated-functions rules",
+    );
+    let mut out = Renderer::new();
+    out.line(generated_header(
+        "shared/rules/data/deprecated-functions.yaml",
+    ));
+    out.line("pub static DEPRECATED_FUNCTIONS: &[DeprecatedFunctionRule] = &[");
+    for rule in values {
+        if !matches!(rule.level.as_str(), "error" | "warning" | "info") {
+            panic!(
+                "deprecated-functions.yaml: unknown level `{}` for {}.{}",
+                rule.level, rule.script, rule.function
+            );
+        }
+        out.line(format_args!("    DeprecatedFunctionRule {{ script: {:?}, function: {:?}, replacement: {:?}, level: {:?}, message: {:?}, global: {:?} }},", rule.script, rule.function, rule.replacement, rule.level, rule.message, rule.global));
+    }
+    out.line("];");
+    context.write("deprecated_functions_data.rs", "rule data", &out.finish());
 }
 
 fn table<T>(
