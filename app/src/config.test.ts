@@ -21,6 +21,7 @@ import { loadLintConfig, loadLintConfigFromPath, saveLintConfig, saveLintConfigT
 describe("lint config UI round trip", () => {
   it("applyLintConfigToUI followed by lintConfigFromUI reproduces the config", () => {
     const config: LintConfig = {
+      game: "skyrim",
       semicolon: true,
       indentation: "space",
       indentation_width: 8,

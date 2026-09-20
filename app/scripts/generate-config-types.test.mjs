@@ -4,7 +4,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { assembleRules, configKeyFor, renderConfigTypes } from "./generate-config-types.mjs";
 
-const MINIMAL_TOP = `semicolon: false
+const MINIMAL_TOP = `game: skyrim
+semicolon: false
 indentation: tab
 indentation_width: 4
 identifier_casing: PascalCase
@@ -45,6 +46,7 @@ describe("generate-config-types", () => {
     );
     expect(rendered).toContain("  comma_spacing: true,\n  property_sorting: false,\n");
     expect(rendered).toContain('indentation: "tab"');
+    expect(rendered).toContain('game: "skyrim"');
     expect(rendered).toContain("app/scripts/generate-config-types.mjs");
   });
 

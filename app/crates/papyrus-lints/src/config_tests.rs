@@ -191,6 +191,7 @@ fn rules_round_trip_through_yaml() {
 #[test]
 fn defaults_match_documented_default() {
     let config = Config::default();
+    assert_eq!(config.game, crate::Game::Skyrim);
     assert!(!config.semicolon);
     assert_eq!(config.indentation, Indentation::Tab);
     assert_eq!(config.indentation_width, 4);
@@ -211,6 +212,16 @@ fn defaults_match_documented_default() {
     assert!(!config.fail_on_info);
     assert!(config.bool_like_int);
     assert!(!config.assume_auto_properties_filled);
+}
+
+#[test]
+fn parses_game_and_defaults_omitted_game_to_skyrim() {
+    assert_eq!(parse("game: skyrim\n").unwrap().game, crate::Game::Skyrim);
+    assert_eq!(
+        parse("semicolon: true\n").unwrap().game,
+        crate::Game::Skyrim
+    );
+    assert!(parse("game: fallout4\n").is_err());
 }
 
 #[test]

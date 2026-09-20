@@ -1,3 +1,5 @@
+# Target game. Currently supported: skyrim
+game: skyrim
 # Path to PapyrusCompiler.exe, or null to auto-detect it
 compiler_path: null
 # Extra directories (relative to the project root, or absolute) to search

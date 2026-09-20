@@ -29,7 +29,8 @@ use walkdir::WalkDir;
 
 use crate::comments::with_field_comments;
 use crate::project_file::{
-    existing_config_path, non_lint_yaml, seed_lookup_script_roots, ProjectFile, CONFIG_FILE_NAMES,
+    existing_config_path, game_key_first, non_lint_yaml, seed_lookup_script_roots, ProjectFile,
+    CONFIG_FILE_NAMES,
 };
 
 /// A named baseline `init` can generate `papyrus-lint.yaml` from, selected
@@ -566,7 +567,7 @@ fn initialize_config_with_base(
 
     let path = dir.join(CONFIG_FILE_NAMES[0]);
     let lint_yaml = crate::lint_config_to_yaml(&base.lint)?;
-    let yaml = format!("{}{lint_yaml}", non_lint_yaml(&base)?);
+    let yaml = game_key_first(&format!("{}{lint_yaml}", non_lint_yaml(&base)?));
     let mut file = OpenOptions::new()
         .write(true)
         .create_new(true)

@@ -13,6 +13,7 @@ export const RULE_ID_TO_CONFIG_KEY = {
 };
 
 export const LINT_CONFIG_KEYS = [
+  "game",
   "semicolon",
   "indentation",
   "indentation_width",
@@ -30,6 +31,7 @@ export const LINT_CONFIG_KEYS = [
 ];
 
 const STRING_LINT_CONFIG_KEYS = new Set([
+  "game",
   "indentation",
   "identifier_casing",
   "type_casing",
@@ -38,6 +40,7 @@ const STRING_LINT_CONFIG_KEYS = new Set([
 ]);
 
 const LINT_CONFIG_FIELD_TYPES = {
+  game: "Game",
   semicolon: "boolean",
   indentation: '"tab" | "space"',
   indentation_width: "number",
@@ -63,6 +66,7 @@ const HEADER = [
   'export type IdentifierCasingStyle = "camelCase" | "PascalCase" | "snake_case" | "CONSTANT_CASE";',
   'export type NamedArgumentsStyle = "always" | "instead_of_defaults" | "never";',
   'export type MagicNumbersMode = "loose" | "strict";',
+  'export type Game = "skyrim";',
   "",
 ].join("\n");
 
