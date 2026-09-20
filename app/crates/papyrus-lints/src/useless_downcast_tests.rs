@@ -180,3 +180,49 @@ fn fake_external_with_subtypes_lookup_always_returns_none() {
         .lookup("Actor", "IsGlobal")
         .is_none());
 }
+
+#[test]
+fn check_with_returns_no_diagnostics_without_an_ast() {
+    assert!(super::check_with(None, &mut FakeExternalWithSubtypes).is_empty());
+}
+
+#[test]
+fn check_with_finds_casts_in_assignments_and_control_flow() {
+    let diagnostics = check_with(
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    Actor local\n    local = akActor as Actor\n    If akActor as Actor\n        Foo(akActor as Actor)\n    ElseIf akActor as Actor\n        Return akActor as Actor\n    Else\n        Actor other = akActor as Actor\n    EndIf\n    While akActor as Actor\n        Foo(akActor as Actor)\n    EndWhile\n    Return\nEndFunction\n",
+        &mut FakeExternalWithSubtypes,
+    );
+
+    let lines: Vec<_> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.line)
+        .collect();
+    assert_eq!(lines, vec![5, 6, 7, 8, 9, 11, 13, 14]);
+}
+
+#[test]
+fn check_with_finds_casts_nested_in_composite_expressions() {
+    let diagnostics = check_with(
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    Bool compared = (akActor as Actor) == None\n    Bool negated = !(akActor as Actor)\n    Foo((akActor as Actor).GetName())\nEndFunction\n",
+        &mut FakeExternalWithSubtypes,
+    );
+
+    let lines: Vec<_> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.line)
+        .collect();
+    assert_eq!(lines, vec![4, 5, 6]);
+}
+
+#[test]
+fn check_with_flags_each_redundant_nested_cast() {
+    let diagnostics = check_with(
+        "ScriptName Example\n\nFunction Test(Actor akActor)\n    Foo((akActor as Actor) as Actor)\nEndFunction\n",
+        &mut FakeExternalWithSubtypes,
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.line == 4 && diagnostic.rule == RULE));
+}
