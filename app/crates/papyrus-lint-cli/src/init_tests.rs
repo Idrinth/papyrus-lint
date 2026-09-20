@@ -306,6 +306,119 @@ fn init_does_not_seed_script_roots_without_a_ppj_file() {
 }
 
 #[test]
+fn find_ppj_returns_none_when_the_directory_cannot_be_read() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let missing = dir.path().join("missing");
+
+    assert_eq!(find_ppj_in_dir(&missing), None);
+}
+
+#[test]
+fn init_uses_the_first_ppj_alphabetically_and_ignores_nested_projects() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let nested = dir.path().join("nested");
+    fs::create_dir(&nested).expect("failed to create nested directory");
+    write_file(
+        &dir.path().join("z-last.ppj"),
+        "<PapyrusProject><Imports><Import>Last</Import></Imports></PapyrusProject>",
+    );
+    write_file(
+        &dir.path().join("A-first.PPJ"),
+        "<PapyrusProject><Imports><Import>First</Import></Imports></PapyrusProject>",
+    );
+    write_file(
+        &nested.join("0-nested.ppj"),
+        "<PapyrusProject><Imports><Import>Nested</Import></Imports></PapyrusProject>",
+    );
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = initialize_config(
+        dir.path(),
+        presets::Preset::default(),
+        &mut stdout,
+        &mut stderr,
+    );
+
+    assert_eq!(code, 0);
+    assert!(stderr.is_empty());
+    assert_eq!(
+        config::load_script_roots(dir.path()).expect("roots should load"),
+        vec!["First".to_string()]
+    );
+}
+
+#[test]
+fn seed_from_ppj_preserves_existing_script_roots() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    write_file(
+        &dir.path().join("papyrus-lint.yaml"),
+        "additional_script_roots:\n  - Existing\n",
+    );
+    write_file(
+        &dir.path().join("Project.ppj"),
+        "<PapyrusProject><Imports><Import>Imported</Import></Imports></PapyrusProject>",
+    );
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    seed_additional_script_roots_from_ppj(dir.path(), &mut stdout, &mut stderr);
+
+    assert!(stdout.is_empty());
+    assert!(stderr.is_empty());
+    assert_eq!(
+        config::load_script_roots(dir.path()).expect("roots should load"),
+        vec!["Existing".to_string()]
+    );
+}
+
+#[test]
+fn seed_from_ppj_warns_when_the_existing_config_cannot_be_read() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    write_file(&dir.path().join("papyrus-lint.yaml"), "rules: [\n");
+    write_file(
+        &dir.path().join("Project.ppj"),
+        "<PapyrusProject><Imports><Import>Imported</Import></Imports></PapyrusProject>",
+    );
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    seed_additional_script_roots_from_ppj(dir.path(), &mut stdout, &mut stderr);
+
+    assert!(stdout.is_empty());
+    assert!(String::from_utf8(stderr)
+        .unwrap()
+        .contains("failed to read additional_script_roots"));
+}
+
+#[test]
+fn init_does_not_report_seeding_for_a_ppj_without_imports() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    write_file(
+        &dir.path().join("Project.ppj"),
+        "<PapyrusProject><Imports /></PapyrusProject>",
+    );
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = initialize_config(
+        dir.path(),
+        presets::Preset::default(),
+        &mut stdout,
+        &mut stderr,
+    );
+
+    assert_eq!(code, 0);
+    assert!(stderr.is_empty());
+    assert!(!String::from_utf8(stdout)
+        .unwrap()
+        .contains("Seeded additional_script_roots"));
+    assert!(config::load_script_roots(dir.path())
+        .expect("roots should load")
+        .is_empty());
+}
+
+#[test]
 fn init_warns_but_still_succeeds_on_an_unparseable_ppj() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     write_file(&dir.path().join("broken.ppj"), "not xml at all <<<");
