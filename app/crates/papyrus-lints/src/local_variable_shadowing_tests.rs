@@ -121,6 +121,16 @@ fn does_not_crash_on_unparseable_source() {
 }
 
 #[test]
+fn check_with_returns_no_diagnostics_without_an_ast() {
+    assert!(super::check_with(
+        "ScriptName Example\n",
+        None,
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
+    .is_empty());
+}
+
+#[test]
 fn does_not_flag_parent_shadowing_without_an_external_resolver() {
     let diagnostics = check(
             "ScriptName Example Extends BaseScript\n\nFunction Test()\n    Int MyValue = 1\nEndFunction\n",
@@ -182,6 +192,82 @@ fn own_property_takes_precedence_over_external_lookup() {
 
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("own property"));
+}
+
+#[test]
+fn own_field_takes_precedence_over_external_lookup() {
+    let diagnostics = check_with(
+        "ScriptName Example Extends BaseScript\n\nInt MyValue = 0\n\nFunction Test()\n    Int MyValue = 1\nEndFunction\n",
+        &mut FakeExternalWithProperty,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("own variable"));
+}
+
+#[test]
+fn check_with_finds_declarations_in_nested_control_flow() {
+    let diagnostics = check_with(
+        "ScriptName Example\n\nInt MyValue = 0\n\nFunction Test()\n    If true\n        While true\n            Int MyValue = 1\n        EndWhile\n    ElseIf false\n        Int myvalue = 2\n    Else\n        Int MYVALUE = 3\n    EndIf\nEndFunction\n",
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.line)
+            .collect::<Vec<_>>(),
+        vec![8, 11, 13]
+    );
+}
+
+#[test]
+fn flags_a_shadowing_local_inside_editable_fragment_code() {
+    let source = "\
+;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
+Scriptname Example Extends TopicInfo Hidden
+Function Fragment_0()
+;BEGIN CODE
+Int MyValue = 1
+;END CODE
+EndFunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+Int Property MyValue Auto
+";
+
+    let diagnostics = check(source);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+}
+
+#[test]
+fn honors_a_disable_on_the_declaration_line() {
+    let source = "ScriptName Example\n\nInt Property MyValue Auto\n\nFunction Test()\n    Int MyValue = 1 ; @disable local-variable-shadowing\nEndFunction\n";
+
+    let diagnostics = crate::lint(source, &crate::config::Config::default());
+
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn honors_a_file_disable() {
+    let source = "; @disable-file local-variable-shadowing\nScriptName Example\n\nInt Property MyValue Auto\n\nFunction Test()\n    Int MyValue = 1\nEndFunction\n";
+
+    let diagnostics = crate::lint(source, &crate::config::Config::default());
+
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn honors_the_config_off_switch() {
+    let source = "ScriptName Example\n\nInt Property MyValue Auto\n\nFunction Test()\n    Int MyValue = 1\nEndFunction\n";
+    let mut config = crate::config::Config::default();
+    config.rules.local_variable_shadowing = false;
+
+    let diagnostics = crate::lint(source, &config);
+
+    assert!(diagnostics.iter().all(|diagnostic| diagnostic.rule != RULE));
 }
 
 struct FakeExternalWithField;
