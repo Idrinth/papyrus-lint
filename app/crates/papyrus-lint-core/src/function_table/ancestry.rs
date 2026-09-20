@@ -348,7 +348,7 @@ impl FunctionTable {
             if let Some(signature) = script.functions.get(&function_key) {
                 return CacheProbe::Hit(Some(signature.clone()));
             }
-            current = script.extends.clone();
+            current = parent_cache_key(script);
             visited.push(name);
         }
 
@@ -447,7 +447,7 @@ impl FunctionTable {
             if found(script) {
                 return CacheProbe::Hit(true);
             }
-            current = script.extends.clone();
+            current = parent_cache_key(script);
             visited.push(name);
         }
 
