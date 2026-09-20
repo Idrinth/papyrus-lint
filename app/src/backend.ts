@@ -266,6 +266,24 @@ export async function addDisableCommentToPscLine(path: string, rules: string[], 
   });
 }
 
+// Adds (or extends) an `; @disable-file <rules>` comment on `line`, silencing
+// every named rule across the whole file instead of just that line — the
+// code viewer's per-line "File disable" button. See
+// add_disable_file_comment_to_psc_line/papyrus_lints::add_disable_file_comment
+// on the backend for the exact merging rules.
+export async function addDisableFileCommentToPscLine(
+  path: string,
+  rules: string[],
+  line: number,
+): Promise<Diagnostic[]> {
+  return invoke<Diagnostic[]>("add_disable_file_comment_to_psc_line", {
+    path,
+    context: currentProjectLintContext(),
+    rules,
+    line,
+  });
+}
+
 // Adds `; @nodiscard` to `line`'s function header (or extends its existing
 // trailing comment) - the code viewer's per-line "Nodiscard" button,
 // offered only where nodiscardEligibleLines (nodiscard.ts) says the header

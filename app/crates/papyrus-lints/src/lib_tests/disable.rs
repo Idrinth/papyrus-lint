@@ -30,3 +30,18 @@ fn is_disabled_exposes_line_and_file_directive_checks() {
     assert!(is_disabled(source, 2, trailing_whitespace::RULE));
     assert!(!is_disabled(source, 2, semicolon::RULE));
 }
+
+#[test]
+fn add_disable_file_comment_suppresses_the_named_rule_on_every_line() {
+    let source = "Call(1,2)  \nCall(3,4)  \n";
+    let config = Config::default();
+    assert!(!lint(source, &config).is_empty());
+
+    let updated = add_disable_file_comment(source, 1, &[comma_spacing::RULE.to_string()]);
+    let remaining: Vec<_> = lint(&updated, &config)
+        .into_iter()
+        .filter(|finding| finding.rule == comma_spacing::RULE)
+        .collect();
+
+    assert!(remaining.is_empty());
+}

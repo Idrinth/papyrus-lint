@@ -159,7 +159,9 @@ action = 1 ; @disable float-to-int
 
 The desktop app's code viewer can add this comment for you instead of
 typing it by hand — see its per-line "Ignore" button
-[above](#fixing-lint-findings). The VS Code extension's lightbulb menu
+[above](#fixing-lint-findings). Its "File disable" button writes the
+`; @disable-file` form below instead, and "Config disable" turns the
+rule off in `papyrus-lint.yaml`. The VS Code extension's lightbulb menu
 offers **Ignore this lint for the line**, which writes the same
 `; @disable` comment, **Ignore this lint for the file**, which writes a
 [`; @disable-file`](#disabling-a-lint-on-a-specific-line) comment instead,
@@ -247,8 +249,10 @@ releases contain backward-compatible fixes.
 
 The desktop app can apply an auto-fixable lint's fix directly from the
 Lint results tab or the code viewer — per file, per finding, or per rule
-across the whole project — preview the change as a diff first, and add an
-`; @disable` comment for a finding you'd rather ignore. The code viewer
+across the whole project — preview the change as a diff first, add an
+`; @disable` comment for a finding you'd rather ignore, silence it for
+the whole file with `; @disable-file`, or turn the rule off in
+`papyrus-lint.yaml`. The code viewer
 also re-lints live as you type. The Lint results tab can export the current
 (filtered) findings as text or JSON, or as a JSON document tailored for
 handing to an AI assistant, including each finding's own detailed rule

@@ -14,11 +14,12 @@ export function requestCloseCodeViewer() {
   codeViewerEl?.close();
 }
 
-// Re-lints `path` against the current on-disk contents so per-line Fix/Ignore
-// (including `; @disable` comments) use line numbers that still match the
-// source we just read — the Lint results list can lag behind if the file
-// changed after the last project lint. Falls back to `fallback` when the
-// backend call fails so a viewer that opened from a snapshot still works.
+// Re-lints `path` against the current on-disk contents so per-line Fix/Ignore/
+// File disable/Config disable (including `; @disable` comments) use line
+// numbers that still match the source we just read — the Lint results list
+// can lag behind if the file changed after the last project lint. Falls
+// back to `fallback` when the backend call fails so a viewer that opened
+// from a snapshot still works.
 async function lintOpenedPscFile(path: string, fallback: Diagnostic[]): Promise<Diagnostic[]> {
   try {
     return await invoke<Diagnostic[]>("lint_psc_file", {

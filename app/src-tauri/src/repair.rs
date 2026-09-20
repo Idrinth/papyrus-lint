@@ -221,6 +221,34 @@ pub(crate) fn add_disable_comment_to_psc_line(
     )
 }
 
+/// Adds (or extends) an `; @disable-file <rules>` comment on `line`
+/// (1-indexed) of the named `.psc` file, covering every id in `rules` —
+/// the code viewer's per-line "File disable" button, silencing those
+/// findings across the whole file via
+/// [`papyrus_lints::add_disable_file_comment`] instead of just the clicked
+/// line. Re-lints the file afterward and returns its updated diagnostics,
+/// the same as every other mutating command here.
+#[tauri::command(async)]
+pub(crate) fn add_disable_file_comment_to_psc_line(
+    path: String,
+    context: ProjectLintContext,
+    rules: Vec<String>,
+    line: usize,
+) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
+    let path = Path::new(&path);
+    let (source, encoding) = read_psc_source_with_encoding(path).map_err(|err| err.to_string())?;
+    let updated = papyrus_lints::add_disable_file_comment(&source, line, &rules);
+    let function_table = context.function_table();
+    write_prime_and_relint(
+        path,
+        &source,
+        &updated,
+        encoding,
+        &context,
+        function_table.as_ref(),
+    )
+}
+
 /// Adds `; @nodiscard` to `line` (1-indexed)'s function header, or extends
 /// its existing trailing comment, via [`papyrus_lints::add_nodiscard_comment`]
 /// — the code viewer's per-line "Nodiscard" button, offered only on headers

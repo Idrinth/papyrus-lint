@@ -410,6 +410,19 @@ pub fn add_disable_comment(source: &str, target_line: usize, rules: &[String]) -
     disable_comments::add_disable_directive(source, target_line, rules)
 }
 
+/// Adds (or extends) an `; @disable-file <rules>` line comment on
+/// `target_line` (1-indexed) of `source`, covering every rule id in
+/// `rules` — the whole-file counterpart of [`add_disable_comment`], driving
+/// the desktop app's per-line "File disable" button in the code viewer.
+/// See [`crate::disable_comments::add_disable_file_directive`] for the
+/// exact merging/formatting rules. A rule already covered by an existing
+/// `@disable-file` directive on that line, or a bare `@disable-file`
+/// already covering every rule, is left as-is; an empty `rules` list or an
+/// out-of-range `target_line` leaves `source` untouched.
+pub fn add_disable_file_comment(source: &str, target_line: usize, rules: &[String]) -> String {
+    disable_comments::add_disable_file_directive(source, target_line, rules)
+}
+
 /// Adds `; @nodiscard` to `target_line` (1-indexed) of `source`'s function
 /// header, or extends its existing trailing comment — the desktop app's and
 /// VS Code extension's "Add nodiscard" quick action, marking a function
