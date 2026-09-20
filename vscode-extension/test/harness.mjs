@@ -31,6 +31,12 @@ export function createHarness({
   quickPickResult,
   inputBoxResult,
   workspaceFolderPickResult,
+  /** Per-workspace-folder overrides for the `resource`-scoped settings
+   * (`configPath`, `liveLint`, `liveLintDebounceMs`), keyed by that folder's
+   * `uri.fsPath`. Lets multi-root tests give each folder its own value, the
+   * way VS Code resolves a resource-scoped setting against the folder that
+   * contains the resource passed to `getConfiguration`. */
+  folderConfig = {},
 } = {}) {
   const commands = new Map();
   const listeners = {};
@@ -88,13 +94,14 @@ export function createHarness({
       showWorkspaceFolderPick: async () => workspaceFolderPickResult,
     },
     workspace: {
-      getConfiguration: () => ({
-        get: (key, fallback) => ({ cliPath, configPath, liveLint, liveLintDebounceMs })[key] ?? fallback,
+      getConfiguration: (_section, resource) => ({
+        get: (key, fallback) => {
+          const overrides = resource ? findFolderOverrides(resource) : undefined;
+          const value = overrides?.[key] ?? { cliPath, configPath, liveLint, liveLintDebounceMs }[key];
+          return value ?? fallback;
+        },
       }),
-      getWorkspaceFolder: (docUri) => (workspaceFolders ?? []).find((folder) => {
-        const base = folder.uri.fsPath.endsWith('/') ? folder.uri.fsPath : `${folder.uri.fsPath}/`;
-        return docUri.fsPath === folder.uri.fsPath || docUri.fsPath.startsWith(base);
-      }),
+      getWorkspaceFolder,
       onDidChangeTextDocument: (callback) => registerListener('change', callback),
       onDidCloseTextDocument: (callback) => registerListener('close', callback),
       onDidOpenTextDocument: (callback) => registerListener('open', callback),
@@ -104,6 +111,18 @@ export function createHarness({
     },
   };
   const execCalls = [];
+
+  function getWorkspaceFolder(docUri) {
+    return (workspaceFolders ?? []).find((folder) => {
+      const base = folder.uri.fsPath.endsWith('/') ? folder.uri.fsPath : `${folder.uri.fsPath}/`;
+      return docUri.fsPath === folder.uri.fsPath || docUri.fsPath.startsWith(base);
+    });
+  }
+
+  function findFolderOverrides(resource) {
+    const folder = getWorkspaceFolder(resource);
+    return folder ? folderConfig[folder.uri.fsPath] : undefined;
+  }
 
   function registerListener(name, callback) {
     listeners[name] = callback;

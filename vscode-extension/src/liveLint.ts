@@ -34,7 +34,7 @@ export function cancelLiveLint(document: vscode.TextDocument): void {
 /** Debounces `linter.lintBlob(document)` so a burst of keystrokes triggers one CLI
  * run `liveLintDebounceMs()` after the last of them, not one per keystroke. */
 export function scheduleLiveLint(linter: PapyrusLinter, document: vscode.TextDocument): void {
-  if (!isPapyrusDocument(document) || !liveLintEnabled()) {
+  if (!isPapyrusDocument(document) || !liveLintEnabled(document.uri)) {
     return;
   }
   cancelLiveLint(document);
@@ -45,6 +45,6 @@ export function scheduleLiveLint(linter: PapyrusLinter, document: vscode.TextDoc
     setTimeout(() => {
       liveLintTimers.delete(key);
       void linter.lintBlob(document, () => liveLintRequests.get(key) === request);
-    }, liveLintDebounceMs()),
+    }, liveLintDebounceMs(document.uri)),
   );
 }

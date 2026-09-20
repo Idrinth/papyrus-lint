@@ -18,6 +18,9 @@
   "categories": [
     "Linters"
   ],
+  "keywords": [
+    "multi-root ready"
+  ],
   "activationEvents": [
     "onLanguage:papyrus",
     "onLanguage:yaml",
@@ -52,22 +55,26 @@
         "papyrusLint.cliPath": {
           "type": "string",
           "default": "",
+          "scope": "window",
           "description": "Optional path to a PapyrusLinterCLI or PapyrusLinter (desktop app) executable. Its SHA-256 must match this extension release's baked CLI or GUI digest, and its --version output must match the extension version. When empty, the extension downloads and uses the CLI from its matching GitHub release, including after the extension itself is updated."
         },
         "papyrusLint.configPath": {
           "type": "string",
           "default": "",
-          "description": "Path to a papyrus-lint config file to use instead of the one PapyrusLinterCLI would otherwise discover from the project root. Leave empty to use the default discovery."
+          "scope": "resource",
+          "description": "Path to a papyrus-lint config file to use instead of the one PapyrusLinterCLI would otherwise discover from the project root. Leave empty to use the default discovery. Can be set per workspace folder in a multi-root workspace."
         },
         "papyrusLint.liveLint": {
           "type": "boolean",
           "default": true,
-          "description": "Lint a Papyrus document's current, possibly unsaved contents as you type (via PapyrusLinterCLI's --blob flag), in addition to linting it on open/save. Turn off to only lint on open/save."
+          "scope": "resource",
+          "description": "Lint a Papyrus document's current, possibly unsaved contents as you type (via PapyrusLinterCLI's --blob flag), in addition to linting it on open/save. Turn off to only lint on open/save. Can be set per workspace folder in a multi-root workspace."
         },
         "papyrusLint.liveLintDebounceMs": {
           "type": "number",
           "default": 400,
-          "description": "How long to wait, in milliseconds, after the last keystroke in a Papyrus document before running a live lint of its current contents."
+          "scope": "resource",
+          "description": "How long to wait, in milliseconds, after the last keystroke in a Papyrus document before running a live lint of its current contents. Can be set per workspace folder in a multi-root workspace."
         }
       }
     },

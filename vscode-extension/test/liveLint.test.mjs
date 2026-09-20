@@ -154,7 +154,10 @@ describe('live linting via --blob', () => {
       const document = papyrusDocument(scriptPath, 'ScriptName Test\n');
 
       harness.listeners.change({ document });
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Unlike the other harness-only cases above, resolving this config path walks
+      // the real filesystem (see findConfigInWorkspace in config.ts), so it needs more
+      // than a single macrotask tick to settle before the debounced lint fires.
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       assert.deepEqual(harness.execCalls[0].args, [
         '--config',
