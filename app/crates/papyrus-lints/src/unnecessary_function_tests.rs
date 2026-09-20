@@ -57,6 +57,20 @@ fn does_not_flag_a_fragment_function_regardless_of_case() {
 }
 
 #[test]
+fn still_flags_functions_that_only_resemble_fragment_names() {
+    for name in ["Fragment_", "Fragment_12x", "NotFragment_12"] {
+        let source =
+            format!("ScriptName Example\n\nFunction {name}()\n    B()\nEndFunction\n");
+
+        assert_eq!(
+            check(&source).len(),
+            1,
+            "expected {name} to be treated as a user-authored function"
+        );
+    }
+}
+
+#[test]
 fn does_not_flag_a_function_with_no_statements() {
     let diagnostics = check("ScriptName Example\n\nFunction A()\nEndFunction\n");
 
@@ -171,6 +185,24 @@ fn repair_inlines_call_sites_of_a_pass_through_wrapper() {
 }
 
 #[test]
+fn repair_matches_wrapper_and_parameter_names_case_insensitively() {
+    let source = "ScriptName Example\n\nFunction Wrapper(Int Value)\n    Target(value)\nEndFunction\n\nFunction Caller()\n    WRAPPER(1)\nEndFunction\n";
+
+    let repaired = repair(source);
+
+    assert!(repaired.contains("    Target(1)\n"));
+}
+
+#[test]
+fn repair_rewrites_property_qualified_wrappers_and_state_call_sites() {
+    let source = "ScriptName Example\n\nObjectReference Property Receiver Auto\n\nFunction A(Int x)\n    Receiver.B(x)\nEndFunction\n\nState Active\n    Function Caller()\n        Self.A(1)\n    EndFunction\nEndState\n";
+
+    let repaired = repair(source);
+
+    assert!(repaired.contains("        Receiver.B(1)\n"));
+}
+
+#[test]
 fn repair_rewrites_a_self_qualified_call_site_to_a_self_qualified_wrapped_call() {
     let source = "ScriptName Example\n\nFunction A()\n    Self.B()\nEndFunction\n\nFunction Caller()\n    Self.A()\nEndFunction\n";
 
@@ -195,10 +227,33 @@ fn repair_rewrites_a_call_nested_inside_another_expression() {
 }
 
 #[test]
+fn repair_finds_calls_in_every_statement_and_expression_shape() {
+    let source = "ScriptName Example\n\nFunction A()\n    B()\nEndFunction\n\nInt Function Caller(Int[] values)\n    Int local = A()\n    local = A()\n    values[A()] = A()\n    While !A()\n        C(argument = A())\n        local = (A() as Int) + values[A()]\n        Int[] created = new Int[A()]\n        D(A().Name)\n    EndWhile\n    Return A()\nEndFunction\n";
+
+    let repaired = repair(source);
+
+    // Only the wrapper declaration keeps `A()`; every one of the eleven
+    // call sites is rewritten, in addition to the wrapper's own `B()`.
+    assert_eq!(repaired.matches("A()").count(), 1);
+    assert_eq!(repaired.matches("B()").count(), 12);
+}
+
+#[test]
 fn repair_leaves_a_wrapper_whose_arguments_are_not_a_pure_forward_untouched() {
     let source = "ScriptName Example\n\nFunction A(Int x, Int y)\n    B(y, x)\nEndFunction\n\nFunction Caller()\n    A(1, 2)\nEndFunction\n";
 
     assert_eq!(repair(source), source);
+}
+
+#[test]
+fn repair_rejects_wrappers_that_drop_or_replace_parameters() {
+    for call in ["B(x)", "B(x, 1)"] {
+        let source = format!(
+            "ScriptName Example\n\nFunction A(Int x, Int y)\n    {call}\nEndFunction\n\nFunction Caller()\n    A(1, 2)\nEndFunction\n"
+        );
+
+        assert_eq!(repair(&source), source, "unexpectedly repaired {call}");
+    }
 }
 
 #[test]
@@ -234,6 +289,15 @@ fn repair_leaves_a_call_to_parent_untouched() {
     let source = "ScriptName Example\n\nFunction A()\n    Parent.A()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
 
     assert_eq!(repair(source), source);
+}
+
+#[test]
+fn repair_leaves_deeply_qualified_wrappers_and_event_wrappers_untouched() {
+    let deep = "ScriptName Example\n\nFunction A()\n    Receiver.Child.B()\nEndFunction\n\nFunction Caller()\n    A()\nEndFunction\n";
+    assert_eq!(repair(deep), deep);
+
+    let event = "ScriptName Example\n\nEvent A()\n    B()\nEndEvent\n\nFunction Caller()\n    A()\nEndFunction\n";
+    assert_eq!(repair(event), event);
 }
 
 #[test]
