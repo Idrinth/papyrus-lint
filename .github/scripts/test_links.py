@@ -14,6 +14,7 @@ from ci_lib.links import (
     render_bbcode_list,
     render_html_anchors,
     render_html_list_items,
+    render_markdown_list_items,
     render_plain_text,
     replace_angle_link_markers,
     replace_html_link_markers,
@@ -158,6 +159,15 @@ class FilterAndRenderTests(unittest.TestCase):
         rendered = render_bbcode_list(filter_by_tag(sample_links(), "documentation"))
 
         self.assertEqual("[list]\n[*][url=https://docs.example/]Docs[/url][/*]\n[/list]", rendered)
+
+    def test_render_markdown_list_items_emits_linked_bullets(self) -> None:
+        rendered = render_markdown_list_items(filter_by_tag(sample_links(), "contact"))
+
+        self.assertEqual(
+            "- [Discord](https://discord.example/invite)\n"
+            "- [Nexus Mods](https://nexus.example/mod)",
+            rendered,
+        )
 
     def test_render_plain_text_pads_labels_to_the_longest(self) -> None:
         rendered = render_plain_text(filter_by_tag(sample_links(), "contact"))

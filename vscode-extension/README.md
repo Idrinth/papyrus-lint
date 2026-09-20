@@ -92,6 +92,4 @@ much larger set of scripts) instead of one value applying to every folder.
 
 ## Contact
 
-- Discord: <https://discord.gg/idrinth>
-- NexusMods: <https://www.nexusmods.com/skyrimspecialedition/mods/189862>
-- GitHub: <https://github.com/idrinth/papyrus-lint>
+<!--CONTACT-LINKS-->
