@@ -1,0 +1,59 @@
+name: Update base-scripts snapshots
+
+# Regenerates fixtures/skyrim-*.txt from the current CLI and pushes them
+# back to the branch that dispatched the workflow. Use after an intentional
+# lint-output change (see ci.base-scripts.yml).
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: update-base-scripts-snapshots-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Regenerate and push Skyrim snapshot fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/crates/papyrus-lint-cli
+
+      - name: Build release CLI binary
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Regenerate Skyrim snapshot fixtures
+        run: |
+          python3 .github/scripts/base_scripts_snapshot.py \
+            --cli app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI \
+            --all \
+            --game skyrim \
+            --update
+
+      - name: Commit and push updated fixtures
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fixtures/skyrim-*.txt
+          if git diff --cached --quiet; then
+            echo "No fixture changes"
+            exit 0
+          fi
+          git commit -m "Regenerate Skyrim base-script snapshot fixtures"
+          git push
