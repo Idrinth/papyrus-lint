@@ -47,7 +47,7 @@ fn allows_int_returned_from_float_function() {
 
 #[test]
 fn does_not_flag_functions_with_no_declared_return_type() {
-    let diagnostics = check("ScriptName Example\n\nFunction Test()\n    Return\nEndFunction\n");
+    let diagnostics = check("ScriptName Example\n\nFunction Test()\n    Return 1\nEndFunction\n");
 
     assert!(diagnostics.is_empty());
 }
@@ -74,6 +74,14 @@ fn flags_none_returned_from_a_primitive_function() {
 fn allows_none_returned_from_an_object_typed_function() {
     let diagnostics =
         check("ScriptName Example\n\nActor Function Test()\n    Return None\nEndFunction\n");
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn allows_none_returned_from_an_array_typed_function() {
+    let diagnostics =
+        check("ScriptName Example\n\nInt[] Function Test()\n    Return None\nEndFunction\n");
 
     assert!(diagnostics.is_empty());
 }
@@ -126,6 +134,46 @@ fn accepts_a_return_value_whose_script_extends_the_declared_type() {
         );
 
     assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn check_with_returns_no_diagnostics_without_an_ast() {
+    let diagnostics = super::check_with(None, &mut FakeExternalWithSubtypes);
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn check_with_checks_state_functions_and_nested_control_flow() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+State Active
+    Int Function Test(Bool flag)
+        Int value = 1
+        value = 2
+        value
+        If flag
+            Return "if"
+        ElseIf !flag
+            Return
+        Else
+            While flag
+                Return "while"
+            EndWhile
+        EndIf
+    EndFunction
+EndState
+"#,
+        &mut FakeExternalWithSubtypes,
+    );
+
+    assert_eq!(diagnostics.len(), 2);
+    assert_eq!(diagnostics[0].line, 9);
+    assert_eq!(diagnostics[1].line, 14);
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.message.contains("'Test'")));
 }
 
 #[test]
