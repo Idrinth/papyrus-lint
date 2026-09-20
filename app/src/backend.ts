@@ -122,6 +122,27 @@ export async function lintPscFile(path: string): Promise<Diagnostic[]> {
   }
 }
 
+// Parses every one of `paths` up front and preloads the current project's
+// shared function table from the result (see `preload_project_scripts` in
+// `app/src-tauri/src/lint.rs`), before `parsePscFiles` (drop.ts) runs its own
+// per-file `parse_psc_file`/`lintPscFile` pair across the same batch.
+// Resolving an Extends/type reference to another script in `paths` is then
+// a cache hit from the start for every one of those per-file calls, rather
+// than a write-locked, on-demand parse the first one to need it triggers.
+// Purely a perf optimization -- a failure here is logged and otherwise
+// ignored, since the per-file calls that follow still resolve everything
+// correctly (just without this head start) either way.
+export async function preloadProjectScripts(paths: string[]): Promise<void> {
+  try {
+    await invoke("preload_project_scripts", {
+      paths,
+      context: currentProjectLintContext(),
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 export async function repairPscFile(path: string): Promise<Diagnostic[]> {
   return invoke<Diagnostic[]>("repair_psc_file", {
     path,

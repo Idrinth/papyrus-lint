@@ -210,6 +210,29 @@ describe("handleDroppedPaths", () => {
     expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "readme.txt" });
   });
 
+  it("preloads the achlist's own .psc entries' function table before lint_psc_file", async () => {
+    const order: string[] = [];
+    invokeImplFor({
+      parse_achlist_file: () => ["A.psc", "readme.txt"],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      preload_project_scripts: (args) => {
+        order.push("preload_project_scripts");
+        expect((args as { paths: string[] }).paths).toEqual(["A.psc"]);
+      },
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => {
+        order.push("lint_psc_file");
+        return [];
+      },
+    });
+
+    const pending = handleDroppedPaths(["/proj/list.achlist"]);
+    await confirmDetectedConfig();
+    await pending;
+
+    expect(order).toEqual(["preload_project_scripts", "lint_psc_file"]);
+  });
+
   it("resolves the project root from a resolved script's own position when the achlist itself lives elsewhere", async () => {
     // Users sometimes drop the .achlist somewhere other than the project
     // root (e.g. next to a game's Data directory) while the actual

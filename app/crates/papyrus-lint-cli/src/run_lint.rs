@@ -53,14 +53,24 @@ pub(crate) struct LintFileOutcome {
 /// `script_path`, reported under `reported_path`. `file_diff` is
 /// [`crate::run_fix::fix_file`]'s unified diff, if any, carried through into
 /// this file's `--json` report as-is.
+///
+/// `already_primed` is true when the caller has already primed
+/// `papyrus_parser`'s in-memory memoization for this exact `source` --
+/// typically from a "parse every file first" pass's own in-memory AST/token
+/// store (see `crate::run_lint_command`), rather than this call touching
+/// `ast_cache`'s disk cache (and its process-wide lock) again for a source
+/// string it already knows is unchanged.
 pub(crate) fn lint_file(
     ctx: &LintContext,
     script_path: &Path,
     reported_path: String,
     source: &str,
     file_diff: Option<String>,
+    already_primed: bool,
 ) -> LintFileOutcome {
-    ast_cache::ensure_primed(script_path, source);
+    if !already_primed {
+        ast_cache::ensure_primed(script_path, source);
+    }
     // Computed up front and merged in via
     // `lint_with_external_arguments_and_extra_diagnostics` below, rather
     // than appended to that call's own result afterward, so a

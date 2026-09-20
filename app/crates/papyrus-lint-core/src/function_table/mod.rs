@@ -15,7 +15,7 @@
 //! its [`FunctionSignature`], [`PropertySignature`] and [`Member`] types.
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use crate::script_functions::ScriptFunctions;
@@ -190,6 +190,59 @@ impl FunctionTable {
         self.script_index = Some(index);
         self
     }
+
+    /// Merges `entries` -- typically every script a run is about to lint,
+    /// already read and parsed by the caller in its own "parse every file
+    /// first" pass, before this table is shared read-write across lint
+    /// workers (see [`SharedFunctionTable`]) -- into this table's cache in
+    /// one pass, without ever taking a lock: each entry's resolution is
+    /// double-checked against what this table would resolve `name_lower` to
+    /// on its own ([`FunctionTable::resolved_path_and_mtime`]), and only
+    /// substituted in when the two agree, so a name that actually resolves
+    /// elsewhere (e.g. a same-named script in a higher-priority search root
+    /// that isn't part of `entries`) is left for [`Self::ensure_loaded`] to
+    /// resolve correctly later, exactly as it would without this call. A
+    /// name two entries both claim keeps the first (matching directory
+    /// search's own first-match-wins order).
+    ///
+    /// Once this returns, [`SharedFunctionTable`]'s exclusive write lock is
+    /// only ever needed afterward for a name never passed here -- typically
+    /// a vanilla `Extends` ancestor outside the project.
+    pub fn preload(&mut self, entries: Vec<PreloadedScript<'_>>) {
+        for entry in entries {
+            if self.scripts.contains_key(&entry.name_lower) {
+                continue;
+            }
+            let (resolved_path, mtime) = self.resolved_path_and_mtime(&entry.name_lower);
+            if resolved_path.as_deref() != Some(entry.path) {
+                continue;
+            }
+            let functions = entry
+                .ast
+                .map(|ast| ScriptFunctions::from_script(ast, entry.source));
+            self.scripts.insert(entry.name_lower.clone(), functions);
+            self.script_mtimes.insert(entry.name_lower, mtime);
+        }
+    }
+}
+
+/// One project script already read and parsed by the caller, ready to be
+/// merged into a [`FunctionTable`]'s cache by [`FunctionTable::preload`]
+/// instead of being resolved and parsed again on first use.
+pub struct PreloadedScript<'a> {
+    /// The exact path this script was read from -- compared against
+    /// [`FunctionTable`]'s own resolution of `name_lower` before its parsed
+    /// data is trusted (see [`FunctionTable::preload`]).
+    pub path: &'a Path,
+    /// This script's lowercased file stem, the same key [`FunctionTable`]
+    /// resolves an `Extends`/type reference to it by.
+    pub name_lower: String,
+    /// This script's parsed AST, or `None` if it failed to parse (still
+    /// worth preloading as a cached-unresolved entry, matching what
+    /// [`FunctionTable::ensure_loaded`] would cache for an unparseable
+    /// script).
+    pub ast: Option<&'a papyrus_parser::ast::Script>,
+    pub source: &'a str,
 }
 
 #[cfg(test)]
