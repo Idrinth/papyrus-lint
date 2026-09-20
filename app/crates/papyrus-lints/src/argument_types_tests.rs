@@ -317,3 +317,133 @@ fn check_with_resolves_calls_through_the_external_resolver() {
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("expects ObjectReference"));
 }
+
+#[test]
+fn check_with_without_an_ast_returns_no_diagnostics() {
+    assert!(super::check_with(None, &mut FakeExternal).is_empty());
+}
+
+#[test]
+fn check_with_walks_calls_in_every_statement_position() {
+    let diagnostics = check_with(
+        r#"
+ScriptName Example
+
+Function Test(Actor akActor)
+    ObjectReference result = akActor.MoveTo(1)
+    result = akActor.MoveTo(2)
+    akActor.MoveTo(3)
+    If akActor.MoveTo(4)
+        akActor.MoveTo(5)
+    ElseIf akActor.MoveTo(6)
+        akActor.MoveTo(7)
+    Else
+        akActor.MoveTo(8)
+    EndIf
+    While akActor.MoveTo(9)
+        akActor.MoveTo(10)
+    EndWhile
+    Return akActor.MoveTo(11)
+EndFunction
+"#,
+        &mut FakeExternal,
+    );
+
+    assert_eq!(diagnostics.len(), 11);
+    assert!(diagnostics
+        .iter()
+        .all(|diagnostic| diagnostic.message.contains("expects ObjectReference")));
+}
+
+#[test]
+fn check_with_walks_calls_nested_in_each_expression_shape() {
+    let diagnostics = check_with(
+        r#"
+ScriptName Example
+
+Function Test(Actor akActor, Int[] values)
+    Int binary = akActor.MoveTo(1) + akActor.MoveTo(2)
+    Bool unary = !akActor.MoveTo(3)
+    Int member = akActor.MoveTo(4).Length
+    Int indexed = values[akActor.MoveTo(5)]
+    Actor casted = akActor.MoveTo(6) as Actor
+    Int[] created = new Int[akActor.MoveTo(7)]
+    TestNested(value = akActor.MoveTo(8))
+EndFunction
+
+Function TestNested(ObjectReference value)
+EndFunction
+"#,
+        &mut FakeExternal,
+    );
+
+    assert_eq!(diagnostics.len(), 8);
+}
+
+#[test]
+fn consistently_redeclared_local_function_is_still_checked() {
+    let diagnostics = check(
+        r#"
+ScriptName Example
+
+Function Greet(String name)
+EndFunction
+
+State Greeting
+    Function Greet(String NAME)
+    EndFunction
+EndState
+
+Function Test()
+    Greet(1)
+EndFunction
+"#,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("Argument 1 to 'Greet'"));
+}
+
+#[test]
+fn compatibility_covers_arrays_primitives_and_object_subtypes() {
+    let scalar = |name: &str| TypeName {
+        name: name.to_string(),
+        is_array: false,
+    };
+    let array = |name: &str| TypeName {
+        name: name.to_string(),
+        is_array: true,
+    };
+    let mut external = FakeExternalWithSubtypes;
+
+    assert!(is_compatible(
+        &scalar("STRING"),
+        &scalar("string"),
+        &mut external
+    ));
+    assert!(is_compatible(
+        &scalar("Float"),
+        &scalar("Int"),
+        &mut external
+    ));
+    assert!(is_compatible(
+        &scalar("Form"),
+        &scalar("Armor"),
+        &mut external
+    ));
+    assert!(!is_compatible(
+        &array("Form"),
+        &scalar("Form"),
+        &mut external
+    ));
+    assert!(!is_compatible(
+        &array("Form"),
+        &array("Armor"),
+        &mut external
+    ));
+    assert!(!is_compatible(
+        &scalar("String"),
+        &scalar("Armor"),
+        &mut external
+    ));
+}
