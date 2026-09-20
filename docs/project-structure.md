@@ -465,12 +465,10 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 
 `papyrus-parser`, `papyrus-ast-cache`, `papyrus-lints`, `papyrus-lint-config`,
 `papyrus-lint-core`, `papyrus-lint-output`, and `papyrus-lint-cli` are separate
-crates (not yet
-Cargo workspace members,
-just path dependencies of each other and of `app/src-tauri`) so the lint
-engine and project-resolution logic stay reusable independent of the Tauri
-app — which is what lets `papyrus-lint-cli` link against them without
-pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
+crates (not Cargo workspace members, just path dependencies of each other and of
+`app/src-tauri`) so the lint engine and project-resolution logic stay reusable
+independent of the Tauri app — which is what lets `papyrus-lint-cli` link against
+them without pulling in Tauri (and its system GUI dependencies) at all. `app/src-tauri`
 depends on `papyrus-lint-cli` too, purely for its `run()` function (its
 `main.rs` calls straight into it for CLI mode), not for the `PapyrusLinterCLI`
 binary target that crate also defines. `app/src-tauri` also depends on
