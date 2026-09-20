@@ -66,6 +66,15 @@ jobs:
         with:
           globs: '**/README.md'
 
+  markdown-links:
+    name: CI / Linters / Markdown Links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check local Markdown links
+        run: python3 .github/scripts/markdown_link_lint.py
+
   stylelint:
     name: CI / Linters / Frontend CSS
     runs-on: ubuntu-latest
