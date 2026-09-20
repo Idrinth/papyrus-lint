@@ -14,7 +14,7 @@ fn check(source: &str) -> Vec<Diagnostic> {
 
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
-    assert_eq!(FORBIDDEN_FUNCTIONS.len(), 12);
+    assert_eq!(FORBIDDEN_FUNCTIONS.len(), 14);
     assert!(FORBIDDEN_FUNCTIONS
         .iter()
         .any(|r| r.script == "Game" && r.function == "GetPlayer" && r.level == "error"));
