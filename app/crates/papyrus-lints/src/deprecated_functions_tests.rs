@@ -14,7 +14,15 @@ fn check(source: &str) -> Vec<Diagnostic> {
 
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
-    assert_eq!(DEPRECATED_FUNCTIONS.len(), 13);
+    // Not a specific count: shared/rules/data/deprecated-functions.yaml's
+    // entry list is expected to grow (and shrink, as entries move to
+    // forbidden-functions.yaml) over time, so this only pins the loader's
+    // shape (non-empty, each entry has its expected fields), not its
+    // current content.
+    assert!(!DEPRECATED_FUNCTIONS.is_empty());
+    assert!(DEPRECATED_FUNCTIONS
+        .iter()
+        .all(|r| !r.script.is_empty() && !r.function.is_empty() && !r.level.is_empty()));
     let rule = DEPRECATED_FUNCTIONS
         .iter()
         .find(|rule| rule.function == "MoveToWhenUnloaded")

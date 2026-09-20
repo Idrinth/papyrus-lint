@@ -14,7 +14,14 @@ fn check(source: &str) -> Vec<Diagnostic> {
 
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
-    assert_eq!(FORBIDDEN_FUNCTIONS.len(), 14);
+    // Not a specific count: shared/rules/data/forbidden-functions.yaml's
+    // entry list is expected to grow over time, so this only pins the
+    // loader's shape (non-empty, each entry has its expected fields),
+    // not its current content.
+    assert!(!FORBIDDEN_FUNCTIONS.is_empty());
+    assert!(FORBIDDEN_FUNCTIONS
+        .iter()
+        .all(|r| !r.script.is_empty() && !r.function.is_empty() && !r.level.is_empty()));
     assert!(FORBIDDEN_FUNCTIONS
         .iter()
         .any(|r| r.script == "Game" && r.function == "GetPlayer" && r.level == "error"));
