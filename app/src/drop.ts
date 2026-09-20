@@ -177,6 +177,12 @@ export async function handleDroppedPaths(paths: string[]) {
       const { scripts, imports } = await invoke<PpjParseResult>("parse_ppj_file", {
         path: ppjPath,
       });
+      // A newer drop (of any kind) started while parse_ppj_file was
+      // pending; let that newer drop's own flow own the UI instead of
+      // clobbering it with this now-obsolete .ppj's results below.
+      if (listingGeneration !== currentListingGeneration) {
+        return;
+      }
       clearError();
       // Cleared before rendering, same as the .achlist branch above, so a
       // View click during the parse/lint pass below can't show a previous
@@ -186,12 +192,18 @@ export async function handleDroppedPaths(paths: string[]) {
       lintResultsStale = false;
       const generation = ++currentParseGeneration;
       const projectDir = await projectDirForPpj(ppjPath, scripts);
+      if (listingGeneration !== currentListingGeneration) {
+        return;
+      }
       showResult(ppjPath, scripts, projectDir);
       finishListing();
       switchTab("lint");
       renderPscResults(currentPscOutcomes);
 
       await loadProjectConfig(projectDir);
+      if (listingGeneration !== currentListingGeneration) {
+        return;
+      }
       setAchlistScriptRoots(scriptRootsForAchlist(scripts));
       setPpjImportRoots(imports);
       showLintProgress(scripts.length);
@@ -208,6 +220,9 @@ export async function handleDroppedPaths(paths: string[]) {
       }
     } catch (error) {
       finishListing();
+      if (listingGeneration !== currentListingGeneration) {
+        return;
+      }
       showError("Failed to read that .ppj file. Please try again.");
       console.error(error);
     }
