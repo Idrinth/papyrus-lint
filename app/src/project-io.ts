@@ -37,6 +37,16 @@ export async function projectDirForAchlist(achlistPath: string, entries: string[
   return findProjectRoot(entries.filter(isPscPath), dirnameOf(achlistPath));
 }
 
+// Finds the project root for a dropped `.ppj`: tries each of its resolved
+// `.psc` scripts' own position under a `scripts/source`/`source/scripts`
+// directory pair first (see findProjectRoot), the same way
+// projectDirForAchlist does for an achlist's entries. Falls back to the
+// ppj's own parent directory (the conventional layout) if none of its
+// scripts match.
+export async function projectDirForPpj(ppjPath: string, scripts: string[]): Promise<string> {
+  return findProjectRoot(scripts.filter(isPscPath), dirnameOf(ppjPath));
+}
+
 // Finds the project root for a dropped directory (see handleDroppedPaths'
 // directory-scan mode, for a project with no .achlist at all whose scripts
 // are spread across arbitrarily nested subfolders, e.g. Requiem's own

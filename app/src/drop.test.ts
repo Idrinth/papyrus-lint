@@ -252,6 +252,84 @@ describe("handleDroppedPaths", () => {
     expect(document.querySelector("#drop-zone-error")!.textContent).toContain("Failed to read");
   });
 
+  it("parses the ppj, loads project config, and lints each .psc script, adding its <Import> entries as script roots", async () => {
+    invokeImplFor({
+      parse_ppj_file: () => ({
+        scripts: ["/proj/Source/Scripts/A.psc"],
+        imports: ["/proj/Source/Scripts", "/vendor/Skyrim/Source/Scripts"],
+      }),
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "A" }),
+      lint_psc_file: () => [],
+    });
+
+    const pending = handleDroppedPaths(["/proj/project.ppj"]);
+    await confirmDetectedConfig();
+    await pending;
+
+    expect(document.querySelector("#achlist-result-title")!.textContent).toBe("Loaded /proj/project.ppj");
+    expect(invokeMock).toHaveBeenCalledWith("parse_psc_file", { path: "/proj/Source/Scripts/A.psc" });
+    expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", {
+      path: "/proj/Source/Scripts/A.psc",
+      context: expect.objectContaining({
+        additional_roots: expect.arrayContaining([
+          "/proj/Source/Scripts",
+          "/vendor/Skyrim/Source/Scripts",
+        ]),
+      }),
+    });
+  });
+
+  it("shows an error when the ppj itself fails to parse", async () => {
+    invokeMock.mockRejectedValue(new Error("bad xml"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await handleDroppedPaths(["/proj/project.ppj"]);
+
+    expect(document.querySelector("#drop-zone-error")!.textContent).toContain("Failed to read");
+  });
+
+  it("ignores a stale ppj drop's own parse result once a newer drop has already finished, instead of clobbering its results", async () => {
+    let resolveOldParse: (result: { scripts: string[]; imports: string[] }) => void = () => {};
+    const pendingOldParse = new Promise<{ scripts: string[]; imports: string[] }>((resolve) => {
+      resolveOldParse = resolve;
+    });
+    invokeImplFor({
+      parse_ppj_file: () => pendingOldParse,
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      parse_psc_file: () => ({ name: "New" }),
+      lint_psc_file: () => [],
+    });
+
+    // The .ppj drop is stuck resolving parse_ppj_file (before it has even
+    // reached loadProjectConfig, let alone confirmDetectedConfig) when a
+    // second, unrelated drop starts and finishes first.
+    const oldDrop = handleDroppedPaths(["/proj/old.ppj"]);
+    const newDrop = handleDroppedPaths(["/proj/scripts/source/New.psc"]);
+    await confirmDetectedConfig();
+    await newDrop;
+
+    expect(document.querySelector("#achlist-result-title")!.textContent).toBe(
+      "Loaded /proj/scripts/source/New.psc",
+    );
+
+    // The stale ppj's parse finally resolves; it must not overwrite the
+    // newer drop's already-rendered project/results, nor lint its scripts.
+    resolveOldParse({ scripts: ["/proj/Old.psc"], imports: ["/proj/Vendor"] });
+    await oldDrop;
+
+    expect(document.querySelector("#achlist-result-title")!.textContent).toBe(
+      "Loaded /proj/scripts/source/New.psc",
+    );
+    expect(invokeMock).not.toHaveBeenCalledWith("parse_psc_file", { path: "/proj/Old.psc" });
+  });
+
   it("lints a single dropped .psc file, resolving the project root two directories up", async () => {
     invokeImplFor({
       load_lint_config: () => DEFAULT_LINT_CONFIG,

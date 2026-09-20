@@ -29,6 +29,11 @@ export let currentLookupScriptRoots: string[] = [];
 // achlist. These are runtime-only roots: unlike currentScriptRoots, they are
 // not displayed as user configuration or persisted to papyrus-lint.yaml.
 export let currentAchlistScriptRoots: string[] = [];
+// A dropped .ppj's own <Import> search paths (see parse_ppj_file), mirroring
+// the CLI's ppj_imports (papyrus_lint_cli::run_scan::collect_script_paths):
+// the project's additional_script_roots equivalent. Runtime-only, like
+// currentAchlistScriptRoots above.
+export let currentPpjImportRoots: string[] = [];
 
 export let configPathOverrideEl: HTMLInputElement | null = null;
 export let compilerPathEl: HTMLInputElement | null = null;
@@ -61,7 +66,9 @@ export function setCurrentLookupScriptRoots(roots: string[]) {
 }
 
 export function effectiveScriptRoots(): string[] {
-  return [...new Set([...currentScriptRoots, ...currentAchlistScriptRoots])];
+  return [
+    ...new Set([...currentScriptRoots, ...currentAchlistScriptRoots, ...currentPpjImportRoots]),
+  ];
 }
 
 // Sets the runtime-only script roots inferred from the currently loaded
@@ -69,6 +76,14 @@ export function effectiveScriptRoots(): string[] {
 // as part of loading a drop, since that state belongs to the project module.
 export function setAchlistScriptRoots(roots: string[]) {
   currentAchlistScriptRoots = roots;
+}
+
+// Sets the runtime-only script roots from a dropped .ppj's own <Import>
+// entries (see currentPpjImportRoots above). Called by handleDroppedPaths the
+// same way setAchlistScriptRoots is, and reset to empty whenever a
+// non-.ppj input is dropped.
+export function setPpjImportRoots(roots: string[]) {
+  currentPpjImportRoots = roots;
 }
 
 // Reads the Settings tab's "Configuration file" override input, trimmed. An

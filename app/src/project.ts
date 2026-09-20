@@ -11,10 +11,12 @@ export {
   currentProjectDir,
   effectiveScriptRoots,
   setAchlistScriptRoots,
+  setPpjImportRoots,
 } from "./project-state";
 export {
   projectDirForAchlist,
   projectDirForDirectory,
+  projectDirForPpj,
   projectDirForPscPath,
 } from "./project-io";
 export { bindProjectSettings, loadProjectConfig, useProjectDir } from "./project-settings";
