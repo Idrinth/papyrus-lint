@@ -39,9 +39,10 @@ def _write_repo(directory: Path) -> Path:
     root = directory / "repo"
     (root / "shared" / "scripts").mkdir(parents=True)
     (root / "configuration" / "presets").mkdir(parents=True)
-    archive = root / "shared" / "scripts" / "skyrim-scripts.zip"
-    with zipfile.ZipFile(archive, "w") as bundle:
-        bundle.writestr("Source/Scripts/Actor.psc", "ScriptName Actor\n")
+    for name in ("skyrim-scripts.zip", "skyrim-extender-scripts.zip"):
+        archive = root / "shared" / "scripts" / name
+        with zipfile.ZipFile(archive, "w") as bundle:
+            bundle.writestr("Source/Scripts/Actor.psc", "ScriptName Actor\n")
     for preset in snap.PRESETS:
         (root / "configuration" / "presets" / f"papyrus-lint.{preset}.yaml").write_text(
             f"# {preset}\n", encoding="utf-8"
@@ -70,7 +71,7 @@ class RenderAndMainTests(unittest.TestCase):
             base = Path(directory)
             root = _write_repo(base)
             cli = _write_fake_cli(base, "diagnostic\nsummary\n")
-            actual = snap.render_output(root, cli, "strict", base / "work")
+            actual = snap.render_output(root, cli, "strict", base / "work", "skyrim", True)
             self.assertEqual("diagnostic\nsummary\n", actual)
 
     def test_main_returns_one_and_prints_added_and_removed_lines(self) -> None:
@@ -78,7 +79,7 @@ class RenderAndMainTests(unittest.TestCase):
             base = Path(directory)
             root = _write_repo(base)
             cli = _write_fake_cli(base, "kept\nadded\n")
-            snap.write_fixture(snap.fixture_path(root, "strict"), "removed\nkept\n")
+            snap.write_fixture(snap.fixture_path(root, "strict", "skyrim", True), "removed\nkept\n")
             stderr = io.StringIO()
             with mock.patch("sys.stderr", stderr):
                 status = entry_main(
@@ -89,6 +90,9 @@ class RenderAndMainTests(unittest.TestCase):
                         str(root),
                         "--preset",
                         "strict",
+                        "--game",
+                        "skyrim",
+                        "--extender",
                         "--work-dir",
                         str(base / "work"),
                     ]
@@ -109,11 +113,13 @@ class RenderAndMainTests(unittest.TestCase):
                 str(root),
                 "--preset",
                 "careful",
+                "--game",
+                "skyrim",
                 "--work-dir",
                 str(base / "work"),
             ]
             self.assertEqual(0, entry_main([*common_args, "--update"]))
-            self.assertEqual("second\nfirst\n", snap.fixture_path(root, "careful").read_text())
+            self.assertEqual("second\nfirst\n", snap.fixture_path(root, "careful", "skyrim", False).read_text())
 
             cli = _write_fake_cli(base, "first\nsecond\n")
             self.assertEqual(0, entry_main(common_args))
@@ -123,10 +129,10 @@ class RenderAndMainTests(unittest.TestCase):
             base = Path(directory)
             root = _write_repo(base)
             with self.assertRaises(snap.SnapshotError):
-                snap.render_output(root, base / "missing", "nope", base / "work")
+                snap.render_output(root, base / "missing", "nope", base / "work", "hello", True)
             crashing = _write_fake_cli(base, "", exit_code=2)
             with self.assertRaises(snap.SnapshotError) as ctx:
-                snap.render_output(root, crashing, "strict", base / "work")
+                snap.render_output(root, crashing, "strict", base / "work", "skyrim", False)
             self.assertIn("exited 2", str(ctx.exception))
 
 

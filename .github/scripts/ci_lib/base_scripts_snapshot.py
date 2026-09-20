@@ -9,7 +9,9 @@ from collections.abc import Sequence
 from pathlib import Path
 
 PRESETS: tuple[str, ...] = ("strict", "standard", "careful")
-BASE_SCRIPTS_ZIP = Path("shared/scripts/skyrim-scripts.zip")
+GAMES: tuple[str, ...] = ("skyrim", "fallout", "starfield")
+SKYRIM_BASE_SCRIPTS_ZIP = Path("shared/scripts/skyrim-scripts.zip")
+SKYRIM_EXTENDER_SCRIPTS_ZIP = Path("shared/scripts/skyrim-extender-scripts.zip")
 FIXTURE_DIR = Path("fixtures")
 PRESET_CONFIG = Path("configuration/presets")
 
@@ -18,8 +20,10 @@ class SnapshotError(RuntimeError):
     """Raised when CLI output cannot be produced."""
 
 
-def fixture_path(root: Path, preset: str) -> Path:
-    return root / FIXTURE_DIR / f"{preset}.txt"
+def fixture_path(root: Path, preset: str, game: str, extender: bool) -> Path:
+    if extender:
+        return root / FIXTURE_DIR / f"{game}-extender-{preset}.txt"
+    return root / FIXTURE_DIR / f"{game}-base-{preset}.txt"
 
 
 def extract_base_scripts(archive: Path, destination: Path) -> Path:
@@ -86,11 +90,18 @@ def render_output(
     cli: Path,
     preset: str,
     work_dir: Path,
+    game: str,
+    extender: bool,
     extra_args: Sequence[str] | None = None,
 ) -> str:
     if preset not in PRESETS:
         raise SnapshotError(f"unknown preset {preset!r}; expected one of {', '.join(PRESETS)}")
-    extracted = extract_base_scripts(root / BASE_SCRIPTS_ZIP, work_dir / "scripts")
+    if game != "skyrim":
+        raise SnapshotError(f"unknown game {game}; expected one of skyrim")
+    path = root / SKYRIM_BASE_SCRIPTS_ZIP
+    if extender:
+        path = root / SKYRIM_EXTENDER_SCRIPTS_ZIP
+    extracted = extract_base_scripts(path, work_dir / "scripts")
     return run_cli(
         cli,
         extracted,

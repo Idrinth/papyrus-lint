@@ -41,13 +41,15 @@ jobs:
           retention-days: 1
 
   base-scripts-snapshot:
-    name: CI / Base scripts snapshot / Compare lint snapshot (${{ matrix.preset }})
+    name: CI / Base scripts snapshot / Compare lint snapshot (${{ matrix.preset }}, ${{ matrix.game }}, extender ${{ matrix.extender }})
     needs: base-scripts-cli
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         preset: [strict, standard, careful]
+        game: [skyrim]
+        extender: [yes, no]
     steps:
       - uses: actions/checkout@v7
 
@@ -65,8 +67,20 @@ jobs:
         run: chmod +x cli-bin/PapyrusLinterCLI
 
       - name: Lint bundled base scripts and compare the baseline
+        if: matrix.extender == 'no'
         run: |
           python3 .github/scripts/base_scripts_snapshot.py \
             --cli cli-bin/PapyrusLinterCLI \
             --preset ${{ matrix.preset }} \
+            --game ${{ matrix.game }} \
+            --work-dir base-scripts-work
+
+      - name: Lint bundled base scripts and compare the baseline
+        if: matrix.extender == 'yes'
+        run: |
+          python3 .github/scripts/base_scripts_snapshot.py \
+            --cli cli-bin/PapyrusLinterCLI \
+            --preset ${{ matrix.preset }} \
+            --game ${{ matrix.game }} \
+            --extender \
             --work-dir base-scripts-work
