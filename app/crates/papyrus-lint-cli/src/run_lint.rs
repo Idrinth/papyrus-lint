@@ -69,7 +69,7 @@ pub(crate) fn lint_file(
     already_primed: bool,
 ) -> LintFileOutcome {
     if !already_primed {
-        ast_cache::ensure_primed(script_path, source);
+        ast_cache::ensure_primed_for_game(ctx.lint_config.game.as_str(), script_path, source);
     }
     // Computed up front and merged in via
     // `lint_with_external_arguments_and_extra_diagnostics` below, rather

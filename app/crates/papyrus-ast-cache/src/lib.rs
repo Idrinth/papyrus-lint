@@ -2,10 +2,12 @@
 //! the CLI, so reopening an unchanged script (e.g. switching between files
 //! in the code viewer, relinting an achlist, or resolving the same
 //! cross-script lookup across separate CLI invocations) skips re-parsing
-//! it. Entries live as one JSON file per source path in the directory named
+//! it. Entries live as one JSON file per target game and source path in the directory named
 //! by `PAPYRUS_LINT_AST_CACHE_DIR`, or, when that isn't set, an `ast-cache`
 //! directory next to the running executable -- the desktop app's own binary,
-//! or `PapyrusLinterCLI`'s, whichever process is doing the parsing -- and are
+//! or `PapyrusLinterCLI`'s, whichever process is doing the parsing -- and
+//! are named `{game}-{path-md5}.json`. Legacy Skyrim entries named only
+//! `{path-md5}.json` are migrated on their first successful lookup. Entries are
 //! invalidated by the source file's last-modified timestamp, an MD5 of its
 //! content, and the linter version that wrote the entry -- if any of the
 //! three is no longer valid, it's treated as a miss and the caller re-parses.
@@ -111,24 +113,52 @@ static CACHE_LOCK: Mutex<()> = Mutex::new(());
 /// in-memory priming a disk hit also does (a bundled hit primes the same
 /// way).
 pub fn get(source_path: &Path, source: &str) -> Option<papyrus_parser::ast::Script> {
-    if let Some(ast) = bundled::ast_for(source) {
-        return Some(ast);
+    get_for_game("skyrim", source_path, source)
+}
+
+/// Game-aware form of [`get`], using `game` as the cache filename namespace.
+pub fn get_for_game(
+    game: &str,
+    source_path: &Path,
+    source: &str,
+) -> Option<papyrus_parser::ast::Script> {
+    if game == "skyrim" {
+        if let Some(ast) = bundled::ast_for(source) {
+            return Some(ast);
+        }
     }
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    ops::get_in(&entry::cache_dir()?, source_path, source)
+    ops::get_in_for_game(&entry::cache_dir()?, game, source_path, source)
 }
 
 /// Persists `ast`, parsed from `source_path`/`source`, to the on-disk cache
 /// for later [`get`] calls. Any failure (e.g. an unwritable install
 /// directory) is silently ignored.
 pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) {
+    put_for_game("skyrim", source_path, source, ast);
+}
+
+/// Game-aware form of [`put`], using `game` as the cache filename namespace.
+pub fn put_for_game(
+    game: &str,
+    source_path: &Path,
+    source: &str,
+    ast: &papyrus_parser::ast::Script,
+) {
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(dir) = entry::cache_dir() {
-        ops::put_in(&dir, source_path, source, ast, version::stamped_version());
+        ops::put_in_for_game(
+            &dir,
+            game,
+            source_path,
+            source,
+            ast,
+            version::stamped_version(),
+        );
     }
 }
 
@@ -141,25 +171,47 @@ pub fn put(source_path: &Path, source: &str, ast: &papyrus_parser::ast::Script) 
 /// case. See [`ops::get_tokens_in`] for the in-memory priming a disk hit
 /// also does (a bundled hit primes the same way).
 pub fn get_tokens(source_path: &Path, source: &str) -> Option<Vec<papyrus_parser::token::Token>> {
-    if let Some(tokens) = bundled::tokens_for(source) {
-        return Some(tokens);
+    get_tokens_for_game("skyrim", source_path, source)
+}
+
+/// Game-aware form of [`get_tokens`], using `game` as the cache filename namespace.
+pub fn get_tokens_for_game(
+    game: &str,
+    source_path: &Path,
+    source: &str,
+) -> Option<Vec<papyrus_parser::token::Token>> {
+    if game == "skyrim" {
+        if let Some(tokens) = bundled::tokens_for(source) {
+            return Some(tokens);
+        }
     }
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    ops::get_tokens_in(&entry::cache_dir()?, source_path, source)
+    ops::get_tokens_in_for_game(&entry::cache_dir()?, game, source_path, source)
 }
 
 /// Persists `tokens`, lexed from `source_path`/`source`, to the on-disk
 /// cache for later [`get_tokens`] calls. Any failure (e.g. an unwritable
 /// install directory) is silently ignored.
 pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::token::Token]) {
+    put_tokens_for_game("skyrim", source_path, source, tokens);
+}
+
+/// Game-aware form of [`put_tokens`], using `game` as the cache filename namespace.
+pub fn put_tokens_for_game(
+    game: &str,
+    source_path: &Path,
+    source: &str,
+    tokens: &[papyrus_parser::token::Token],
+) {
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(dir) = entry::cache_dir() {
-        ops::put_tokens_in(
+        ops::put_tokens_in_for_game(
             &dir,
+            game,
             source_path,
             source,
             tokens,
@@ -184,7 +236,12 @@ pub fn put_tokens(source_path: &Path, source: &str, tokens: &[papyrus_parser::to
 /// too, not just in `get`/`get_tokens`'s other existing callers. See
 /// [`ops::ensure_primed_in`].
 pub fn ensure_primed(source_path: &Path, source: &str) {
-    if bundled::prime(source) {
+    ensure_primed_for_game("skyrim", source_path, source);
+}
+
+/// Game-aware form of [`ensure_primed`], using `game` as the cache filename namespace.
+pub fn ensure_primed_for_game(game: &str, source_path: &Path, source: &str) {
+    if game == "skyrim" && bundled::prime(source) {
         return;
     }
     let _guard = CACHE_LOCK
@@ -193,7 +250,7 @@ pub fn ensure_primed(source_path: &Path, source: &str) {
     let Some(dir) = entry::cache_dir() else {
         return;
     };
-    ops::ensure_primed_in(&dir, source_path, source, version::stamped_version());
+    ops::ensure_primed_in_for_game(&dir, game, source_path, source, version::stamped_version());
 }
 
 /// Cached AST of a bundled vanilla/SKSE script looked up by `ScriptName`

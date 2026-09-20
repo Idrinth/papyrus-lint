@@ -99,14 +99,26 @@ pub(crate) fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
 
-    if let Some(cached) = ast_cache::get(path, &source) {
+    if let Some(cached) =
+        ast_cache::get_for_game(papyrus_lints::Game::default().as_str(), path, &source)
+    {
         return Ok(cached);
     }
 
     let script = papyrus_parser::parse(&source).map_err(|err| err.to_string())?;
-    ast_cache::put(path, &source, &script);
+    ast_cache::put_for_game(
+        papyrus_lints::Game::default().as_str(),
+        path,
+        &source,
+        &script,
+    );
     if let Ok(tokens) = papyrus_parser::tokenize(&source) {
-        ast_cache::put_tokens(path, &source, &tokens);
+        ast_cache::put_tokens_for_game(
+            papyrus_lints::Game::default().as_str(),
+            path,
+            &source,
+            &tokens,
+        );
     }
     Ok(script)
 }

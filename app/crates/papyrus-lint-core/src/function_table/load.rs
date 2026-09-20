@@ -88,15 +88,15 @@ fn bundled_script_functions(name_lower: &str) -> Option<ScriptFunctions> {
 /// `shared/skyrim-extender-scripts.zip` hit the cache's bundled blob and never
 /// take its disk lock, so parallel workers resolving the same base type do not
 /// serialize on that lookup.
-fn load_script_functions(path: &Path) -> Option<ScriptFunctions> {
+fn load_script_functions(game: &str, path: &Path) -> Option<ScriptFunctions> {
     let source = read_psc_source(path).ok()?;
-    let parsed = if let Some(cached) = crate::ast_cache::get(path, &source) {
+    let parsed = if let Some(cached) = crate::ast_cache::get_for_game(game, path, &source) {
         cached
     } else {
         let parsed = papyrus_parser::parse(&source).ok()?;
-        crate::ast_cache::put(path, &source, &parsed);
+        crate::ast_cache::put_for_game(game, path, &source, &parsed);
         if let Ok(tokens) = papyrus_parser::tokenize(&source) {
-            crate::ast_cache::put_tokens(path, &source, &tokens);
+            crate::ast_cache::put_tokens_for_game(game, path, &source, &tokens);
         }
         parsed
     };
@@ -119,7 +119,7 @@ impl FunctionTable {
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
-            || crate::ast_cache::contains_script_name(&name_lower)
+            || (self.game == "skyrim" && crate::ast_cache::contains_script_name(&name_lower))
             || crate::native_globals::is_known(&name_lower)
     }
 
@@ -197,18 +197,19 @@ impl FunctionTable {
                         if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
                             cached
                         } else {
-                            let loaded = load_script_functions(&path);
+                            let loaded = load_script_functions(&self.game, &path);
                             store_lookup_script(path, mtime_secs, loaded.clone());
                             loaded
                         }
                     } else {
-                        load_script_functions(&path)
+                        load_script_functions(&self.game, &path)
                     }
                 } else {
-                    load_script_functions(&path)
+                    load_script_functions(&self.game, &path)
                 }
             }
-            None => bundled_script_functions(&name_lower),
+            None if self.game == "skyrim" => bundled_script_functions(&name_lower),
+            None => None,
         };
 
         self.scripts.insert(name_lower.clone(), script);

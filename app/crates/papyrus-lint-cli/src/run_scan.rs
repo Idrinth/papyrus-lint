@@ -198,6 +198,7 @@ fn assemble_scan_outcome(
 ) -> ScanOutcome {
     let mut function_table =
         FunctionTable::new_with_additional_roots(project_root, settings.additional_script_roots)
+            .with_game(settings.lint_config.game)
             .with_lookup_roots(settings.lookup_script_roots);
     if settings.strict_achlist_scope {
         function_table = function_table.with_known_scripts(&script_paths);
