@@ -314,6 +314,9 @@ jobs:
       - name: Bake CLI and GUI SHA-256 digests into the plugin
         run: python3 .github/scripts/write_cli_hashes.py hash-binaries
 
+      - name: Bake contact links into the plugin README
+        run: python3 .github/scripts/write_readme_links.py vscode-extension/README.md
+
       - name: Sync plugin versions with release tag
         shell: bash
         run: |
@@ -359,6 +362,9 @@ jobs:
 
       - name: Bake CLI and GUI SHA-256 digests into the plugin
         run: python3 .github/scripts/write_cli_hashes.py hash-binaries
+
+      - name: Bake contact links into the plugin README
+        run: python3 .github/scripts/write_readme_links.py SublimeLinter-contrib-papyrus-lint/README.md
 
       - name: Sync plugin versions with release tag
         shell: bash
