@@ -197,3 +197,106 @@ fn fake_external_with_ancestor_state_lookup_always_returns_none() {
         .lookup("BaseScript", "SomeFunction")
         .is_none());
 }
+
+#[test]
+fn line_and_file_disable_directives_suppress_diagnostics() {
+    let line_disabled = crate::lint(
+        "ScriptName Example\n\nFunction Test()\n    GoToState(\"Missing\") ; @disable goto-state\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+    let file_disabled = crate::lint(
+        "; @disable-file goto-state\nScriptName Example\n\nFunction Test()\n    GoToState(\"Missing\")\nEndFunction\n",
+        &crate::config::Config::default(),
+    );
+
+    assert!(line_disabled.iter().all(|diagnostic| diagnostic.rule != RULE));
+    assert!(file_disabled.iter().all(|diagnostic| diagnostic.rule != RULE));
+}
+
+#[test]
+fn check_with_returns_no_diagnostics_without_an_ast() {
+    let diagnostics = super::check_with(None, &mut FakeExternalWithAncestorState);
+
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn check_with_walks_variable_initializers_assignments_and_returns() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+Function Test()
+    Bool initialized = GoToState("FromInitializer")
+    initialized = GoToState("FromAssignment")
+    Return GoToState("FromReturn")
+EndFunction
+"#,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(diagnostics.len(), 3);
+    assert!(diagnostics[0].message.contains("'FromInitializer'"));
+    assert!(diagnostics[1].message.contains("'FromAssignment'"));
+    assert!(diagnostics[2].message.contains("'FromReturn'"));
+}
+
+#[test]
+fn check_with_walks_conditions_and_every_control_flow_body() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+Function Test()
+    If GoToState("FromIfCondition")
+        GoToState("FromIfBody")
+    ElseIf GoToState("FromElseIfCondition")
+        GoToState("FromElseIfBody")
+    Else
+        GoToState("FromElseBody")
+    EndIf
+    While GoToState("FromWhileCondition")
+        GoToState("FromWhileBody")
+    EndWhile
+EndFunction
+"#,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(diagnostics.len(), 7);
+}
+
+#[test]
+fn check_with_walks_calls_nested_in_compound_expressions() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+Function Test(Int[] values, Int index)
+    Bool binary = GoToState("Binary") == false
+    Bool unary = !GoToState("Unary")
+    Int casted = GoToState("Cast") as Int
+    Int indexed = values[GoToState("Index")]
+    Int[] allocated = new Int[GoToState("ArraySize")]
+    SomeCall(named = GoToState("NamedArgument"), GoToState("CallArgument"))
+EndFunction
+"#,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert_eq!(diagnostics.len(), 7);
+}
+
+#[test]
+fn check_with_ignores_non_string_and_wrong_arity_calls() {
+    let diagnostics = check_with(
+        r#"ScriptName Example
+
+Function Test(String target)
+    GoToState(target)
+    GoToState("One", "Two")
+    Other.GoToState("Missing")
+EndFunction
+"#,
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+
+    assert!(diagnostics.is_empty());
+}
