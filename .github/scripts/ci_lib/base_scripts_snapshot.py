@@ -115,15 +115,39 @@ def render_output(
     )
 
 
+def expected_lines(expected_path: Path) -> list[str]:
+    """Load a baseline, applying an optional sibling ``*.extra`` delta.
+
+    Each line in ``<fixture>.extra`` is either ``- exact line`` (remove one
+    copy of that line from the baseline) or ``+ exact line`` (append it).
+    This lets small lint-output additions land without rewriting multi-megabyte
+    fixture files.
+    """
+    lines = expected_path.read_text(encoding="utf-8").splitlines()
+    extra_path = expected_path.with_name(f"{expected_path.name}.extra")
+    if not extra_path.is_file():
+        return lines
+    for raw in extra_path.read_text(encoding="utf-8").splitlines():
+        if raw.startswith("- "):
+            drop = raw[2:]
+            try:
+                lines.remove(drop)
+            except ValueError:
+                continue
+        elif raw.startswith("+ "):
+            lines.append(raw[2:])
+    return lines
+
+
 def compare_output(actual: str, expected_path: Path) -> str | None:
     """Return added/removed lines, ignoring their order, or ``None`` on a match."""
     if not expected_path.is_file():
         return f"missing baseline: {expected_path}"
 
-    expected_lines = Counter(expected_path.read_text(encoding="utf-8").splitlines())
+    expected_lines_counter = Counter(expected_lines(expected_path))
     actual_lines = Counter(actual.splitlines())
-    removed = expected_lines - actual_lines
-    added = actual_lines - expected_lines
+    removed = expected_lines_counter - actual_lines
+    added = actual_lines - expected_lines_counter
     if not removed and not added:
         return None
 

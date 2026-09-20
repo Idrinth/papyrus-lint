@@ -1,0 +1,4 @@
+- PapyrusLinterCLI: 53130 problem(s) found in 8467 of 14301 script(s).
++ PapyrusLinterCLI: 53132 problem(s) found in 8468 of 14301 script(s).
++ Source/Scripts/Spell.psc:16:10: [forbidden-functions] [warning] Spell.Preload: Spell.Preload is documented as likely to be deprecated; misuse leaks memory and produces inconsistent art. Avoid calling it (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
++ Source/Scripts/Spell.psc:22:10: [forbidden-functions] [warning] Spell.Unload: Spell.Unload is documented as likely to be deprecated; misuse can unload in-use spell art and leak memory. Avoid calling it (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
