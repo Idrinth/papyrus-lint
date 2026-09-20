@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { configureCli } from './cli';
-import { FIX_ISSUE_COMMAND, PapyrusFixIssueActionProvider, papyrusCodeActionSelector } from './codeActions';
+import { FIX_ISSUE_COMMAND, IGNORE_ISSUE_FOR_FILE_COMMAND, IGNORE_ISSUE_FOR_PROJECT_COMMAND, PapyrusFixIssueActionProvider, papyrusCodeActionSelector } from './codeActions';
+import { ignoreIssueForFile, ignoreIssueForProject } from './ignore';
 import { isPapyrusDocument, resolveTargetUri } from './documents';
 import { initializeConfig } from './init';
 import { PapyrusLinter } from './linter';
@@ -49,6 +50,12 @@ export function activate(context: vscode.ExtensionContext): void {
       if (target) {
         await linter.fixIssue(target, rule, line);
       }
+    }),
+    vscode.commands.registerCommand(IGNORE_ISSUE_FOR_FILE_COMMAND, async (uri: vscode.Uri, rule: string) => {
+      await ignoreIssueForFile(linter, uri, rule);
+    }),
+    vscode.commands.registerCommand(IGNORE_ISSUE_FOR_PROJECT_COMMAND, async (uri: vscode.Uri, rule: string) => {
+      await ignoreIssueForProject(linter, uri, rule);
     }),
     vscode.commands.registerCommand('papyrusLint.initializeConfig', (uri?: vscode.Uri) =>
       initializeConfig(output, uri),

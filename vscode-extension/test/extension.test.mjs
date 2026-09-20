@@ -10,10 +10,17 @@ describe('extension activation', () => {
 
     assert.deepEqual(
       [...harness.commands.keys()],
-      ['papyrusLint.lintFile', 'papyrusLint.fixFile', 'papyrusLint.fixIssue', 'papyrusLint.initializeConfig'],
+      [
+        'papyrusLint.lintFile',
+        'papyrusLint.fixFile',
+        'papyrusLint.fixIssue',
+        'papyrusLint.ignoreIssueForFile',
+        'papyrusLint.ignoreIssueForProject',
+        'papyrusLint.initializeConfig',
+      ],
     );
     assert.deepEqual(Object.keys(harness.listeners).sort(), ['change', 'close', 'open', 'save']);
-    assert.equal(harness.context.subscriptions.length, 11);
+    assert.equal(harness.context.subscriptions.length, 13);
     assert.equal(harness.codeActionProviders.length, 1);
     assert.equal(harness.extension.deactivate(), undefined);
   });

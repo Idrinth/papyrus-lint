@@ -78,6 +78,24 @@ export async function configPath(documentUri: vscode.Uri): Promise<string | unde
   return findConfigInWorkspace(path.dirname(documentUri.fsPath), workspaceFolder.uri.fsPath);
 }
 
+/** Resolves the config file an "ignore this lint for the project" edit should
+ * write: the same path `configPath` would pass as `--config` when one exists
+ * (including `papyrusLint.configPath`), otherwise `papyrus-lint.yaml` in the
+ * document's VS Code workspace folder so the ignore can still land without
+ * requiring `initializeConfig` first. Returns `undefined` when there's no
+ * workspace folder to write into and no override path either. */
+export async function configPathForWrite(documentUri: vscode.Uri): Promise<string | undefined> {
+  const existing = await configPath(documentUri);
+  if (existing) {
+    return existing;
+  }
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(documentUri);
+  if (!workspaceFolder) {
+    return undefined;
+  }
+  return path.join(workspaceFolder.uri.fsPath, CONFIG_FILE_NAMES[0]);
+}
+
 /** Prepends `--config <path>` to `args` when a config is resolved for `documentUri`
  * (see `configPath` above). */
 export async function withConfigOverride(args: string[], documentUri: vscode.Uri): Promise<string[]> {
