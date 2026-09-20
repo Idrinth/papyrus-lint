@@ -95,30 +95,21 @@ pub(crate) fn lint_papyrus_script(
 /// content and modification time when the file hasn't changed since it was
 /// last parsed.
 #[tauri::command(async)]
-pub(crate) fn parse_psc_file(path: String) -> Result<papyrus_parser::ast::Script, String> {
+pub(crate) fn parse_psc_file(
+    path: String,
+    game: papyrus_lints::Game,
+) -> Result<papyrus_parser::ast::Script, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
 
-    if let Some(cached) =
-        ast_cache::get_for_game(papyrus_lints::Game::default().as_str(), path, &source)
-    {
+    if let Some(cached) = ast_cache::get_for_game(game.as_str(), path, &source) {
         return Ok(cached);
     }
 
     let script = papyrus_parser::parse(&source).map_err(|err| err.to_string())?;
-    ast_cache::put_for_game(
-        papyrus_lints::Game::default().as_str(),
-        path,
-        &source,
-        &script,
-    );
+    ast_cache::put_for_game(game.as_str(), path, &source, &script);
     if let Ok(tokens) = papyrus_parser::tokenize(&source) {
-        ast_cache::put_tokens_for_game(
-            papyrus_lints::Game::default().as_str(),
-            path,
-            &source,
-            &tokens,
-        );
+        ast_cache::put_tokens_for_game(game.as_str(), path, &source, &tokens);
     }
     Ok(script)
 }
@@ -221,7 +212,11 @@ mod tests {
         );
         write_psc_file(path.to_string_lossy().into_owned(), replacement.to_string()).unwrap();
 
-        let script = parse_psc_file(path.to_string_lossy().into_owned()).unwrap();
+        let script = parse_psc_file(
+            path.to_string_lossy().into_owned(),
+            papyrus_lints::Game::default(),
+        )
+        .unwrap();
         assert_eq!(script.name, "Replacement");
         assert_eq!(std::fs::read_to_string(path).unwrap(), replacement);
     }
@@ -302,7 +297,12 @@ mod tests {
             read_psc_file(path_string.clone()).unwrap(),
             "ScriptName Example\n\n; café\n"
         );
-        assert_eq!(parse_psc_file(path_string).unwrap().name, "Example");
+        assert_eq!(
+            parse_psc_file(path_string, papyrus_lints::Game::default())
+                .unwrap()
+                .name,
+            "Example"
+        );
     }
 
     #[test]
@@ -312,11 +312,11 @@ mod tests {
         let path_string = path.to_string_lossy().into_owned();
 
         std::fs::write(&path, "ScriptName Initial\n").unwrap();
-        let first = parse_psc_file(path_string.clone()).unwrap();
+        let first = parse_psc_file(path_string.clone(), papyrus_lints::Game::default()).unwrap();
         assert_eq!(first.name, "Initial");
 
         std::fs::write(&path, "ScriptName Changed\n").unwrap();
-        let second = parse_psc_file(path_string).unwrap();
+        let second = parse_psc_file(path_string, papyrus_lints::Game::default()).unwrap();
         assert_eq!(second.name, "Changed");
     }
 
@@ -327,11 +327,16 @@ mod tests {
         let path_string = path.to_string_lossy().into_owned();
 
         std::fs::write(&path, "ScriptName Example\n").unwrap();
-        assert_eq!(parse_psc_file(path_string.clone()).unwrap().name, "Example");
+        assert_eq!(
+            parse_psc_file(path_string.clone(), papyrus_lints::Game::default())
+                .unwrap()
+                .name,
+            "Example"
+        );
 
         std::fs::write(&path, "Function MissingScriptName()\nEndFunction\n").unwrap();
 
-        assert!(parse_psc_file(path_string).is_err());
+        assert!(parse_psc_file(path_string, papyrus_lints::Game::default()).is_err());
     }
 
     #[test]
@@ -341,8 +346,18 @@ mod tests {
         let path_string = path.to_string_lossy().into_owned();
         std::fs::write(&path, "ScriptName Cached\n").unwrap();
 
-        assert_eq!(parse_psc_file(path_string.clone()).unwrap().name, "Cached");
-        assert_eq!(parse_psc_file(path_string).unwrap().name, "Cached");
+        assert_eq!(
+            parse_psc_file(path_string.clone(), papyrus_lints::Game::default())
+                .unwrap()
+                .name,
+            "Cached"
+        );
+        assert_eq!(
+            parse_psc_file(path_string, papyrus_lints::Game::default())
+                .unwrap()
+                .name,
+            "Cached"
+        );
     }
 
     #[test]
@@ -353,7 +368,7 @@ mod tests {
         assert!(read_psc_file(path.clone()).is_err());
         assert!(hash_psc_file_md5(path.clone()).is_err());
         assert!(write_psc_file(path.clone(), "ScriptName Example\n".to_string()).is_err());
-        assert!(parse_psc_file(path.clone()).is_err());
+        assert!(parse_psc_file(path.clone(), papyrus_lints::Game::default()).is_err());
         assert!(lint_psc_file(
             path.clone(),
             ProjectLintContext {
@@ -536,7 +551,11 @@ mod tests {
         let dir = tempdir().unwrap();
         let path = dir.path().join("Invalid.psc");
         std::fs::write(&path, invalid).unwrap();
-        assert!(parse_psc_file(path.to_string_lossy().into_owned()).is_err());
+        assert!(parse_psc_file(
+            path.to_string_lossy().into_owned(),
+            papyrus_lints::Game::default()
+        )
+        .is_err());
     }
 
     #[test]
