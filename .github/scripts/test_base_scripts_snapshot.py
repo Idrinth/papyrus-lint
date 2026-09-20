@@ -70,7 +70,7 @@ class RenderAndMainTests(unittest.TestCase):
             base = Path(directory)
             root = _write_repo(base)
             cli = _write_fake_cli(base, "diagnostic\nsummary\n")
-            actual = snap.render_output(root, cli, "strict", base / "work")
+            actual = snap.render_output(root, cli, "strict", base / "work", "skyrim", True)
             self.assertEqual("diagnostic\nsummary\n", actual)
 
     def test_main_returns_one_and_prints_added_and_removed_lines(self) -> None:
@@ -78,7 +78,7 @@ class RenderAndMainTests(unittest.TestCase):
             base = Path(directory)
             root = _write_repo(base)
             cli = _write_fake_cli(base, "kept\nadded\n")
-            snap.write_fixture(snap.fixture_path(root, "strict"), "removed\nkept\n")
+            snap.write_fixture(snap.fixture_path(root, "strict", "skyrim", True), "removed\nkept\n")
             stderr = io.StringIO()
             with mock.patch("sys.stderr", stderr):
                 status = entry_main(

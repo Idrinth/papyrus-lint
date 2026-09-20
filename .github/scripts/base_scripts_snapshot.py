@@ -41,7 +41,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--game",
         choices=GAMES,
         action="append",
-        help="The game to run this for",
+        dest="games",
+        help="The game(s) to run this for",
     )
     parser.add_argument(
         "--extender",
@@ -74,6 +75,12 @@ def selected_presets(args: argparse.Namespace) -> tuple[str, ...]:
     return tuple(dict.fromkeys(args.presets))
 
 
+def selected_games(args: argparse.Namespace) -> tuple[str, ...]:
+    if args.all or not args.games:
+        return PRESETS
+    return tuple(dict.fromkeys(args.games))
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     root = args.root.resolve()
@@ -81,26 +88,34 @@ def main(argv: list[str] | None = None) -> int:
 
     def run(work_dir: Path) -> int:
         failed = False
-        for preset in selected_presets(args):
-            print(f"linting base scripts with preset {preset}", flush=True)
-            try:
-                actual = render_output(root, cli, preset, work_dir / preset, args.game, args.extender)
-            except SnapshotError as exc:
-                print(f"error ({preset}): {exc}", file=sys.stderr)
-                failed = True
-                continue
-            destination = fixture_path(root, preset, args.game, args.extender)
-            if args.update:
-                write_fixture(destination, actual)
-                print(f"wrote {destination.relative_to(root)}")
-                continue
-            diff = compare_output(actual, destination)
-            if diff is None:
-                print(f"ok ({preset}): matches {destination.relative_to(root)}")
-                continue
-            print(f"baseline mismatch ({preset})", file=sys.stderr)
-            print(_truncate_diff(diff), file=sys.stderr)
-            failed = True
+        extenders = [args.extender]
+        if args.all:
+            extenders = [True, False]
+        for extender in extenders:
+            definer = "base"
+            if extender:
+                definer = "extended"
+            for preset in selected_presets(args):
+                for game in selected_games(args):
+                    print(f"linting {game} {definer} scripts with preset {preset}", flush=True)
+                    try:
+                        actual = render_output(root, cli, preset, work_dir / preset, args.game, extender)
+                    except SnapshotError as exc:
+                        print(f"error ({preset}): {exc}", file=sys.stderr)
+                        failed = True
+                        continue
+                    destination = fixture_path(root, preset, game, args.extender)
+                    if args.update:
+                        write_fixture(destination, actual)
+                        print(f"wrote {destination.relative_to(root)}")
+                        continue
+                    diff = compare_output(actual, destination)
+                    if diff is None:
+                        print(f"ok ({preset}): matches {destination.relative_to(root)}")
+                        continue
+                    print(f"baseline mismatch ({preset})", file=sys.stderr)
+                    print(_truncate_diff(diff), file=sys.stderr)
+                    failed = True
         return 1 if failed else 0
 
     if args.work_dir is not None:
