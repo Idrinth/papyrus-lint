@@ -107,6 +107,9 @@ per line.
 
 ## Each key
 
+- `game`: the game whose Papyrus dialect and runtime APIs the project
+  targets. Currently the only accepted value is `skyrim`; omitted keys also
+  default to `skyrim` for compatibility with existing configuration files.
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
   app's Settings tab. When unset (or blank), the app auto-detects it at
   `PapyrusCompiler.exe` inside a `Papyrus Compiler` directory one level

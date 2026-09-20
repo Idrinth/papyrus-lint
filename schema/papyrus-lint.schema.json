@@ -6,6 +6,14 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "game": {
+      "description": "Game whose Papyrus dialect and runtime APIs the project targets.",
+      "type": "string",
+      "enum": [
+        "skyrim"
+      ],
+      "default": "skyrim"
+    },
     "compiler_path": {
       "description": "Path to PapyrusCompiler.exe, or null/omit to auto-detect it.",
       "type": [

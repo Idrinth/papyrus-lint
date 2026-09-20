@@ -81,6 +81,9 @@ export function lintConfigFromUI(): LintConfig {
     rules[key] = ruleEls[key]?.checked ?? DEFAULT_RULES[key];
   }
   return {
+    // There is only one selectable game today, so preserve the loaded enum
+    // value until the Settings UI needs a game picker.
+    game: currentLintConfig.game,
     semicolon: semicolonStyleEl?.value === "require",
     indentation,
     indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),

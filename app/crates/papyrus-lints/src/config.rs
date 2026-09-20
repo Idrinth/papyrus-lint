@@ -7,6 +7,7 @@
 //! back to the default shown below:
 //!
 //! ```yaml
+//! game: skyrim
 //! semicolon: false
 //! indentation: tab
 //! indentation_width: 4
@@ -40,6 +41,17 @@ use crate::Diagnostic;
 pub use crate::magic_numbers::MagicNumbers;
 pub use crate::named_arguments::NamedArguments;
 pub use crate::type_casing::Style as TypeCasing;
+
+/// The game whose Papyrus dialect and runtime APIs a project targets.
+///
+/// Only Skyrim is supported today, but representing the target as an enum
+/// keeps the configuration extensible as support for other games is added.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Game {
+    #[default]
+    Skyrim,
+}
 
 /// The indentation style a project expects, for the "Formatting checks"/
 /// "Indentation" lint and automatic fix described in README.md.
@@ -114,6 +126,10 @@ impl IdentifierCasing {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
+    /// The game whose Papyrus dialect and runtime APIs this project targets.
+    /// Defaults to [`Game::Skyrim`] for compatibility with configurations
+    /// created before this key existed.
+    pub game: Game,
     /// Whether lines are required to end in a semicolon (`true`) or must
     /// not (`false`). See the "Semicolon at end of line" lint in
     /// README.md.
@@ -195,6 +211,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            game: Game::default(),
             semicolon: false,
             indentation: Indentation::default(),
             indentation_width: 4,
