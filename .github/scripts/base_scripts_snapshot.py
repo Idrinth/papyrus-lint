@@ -77,7 +77,7 @@ def selected_presets(args: argparse.Namespace) -> tuple[str, ...]:
 
 def selected_games(args: argparse.Namespace) -> tuple[str, ...]:
     if args.all or not args.games:
-        return PRESETS
+        return GAMES
     return tuple(dict.fromkeys(args.games))
 
 
@@ -92,19 +92,24 @@ def main(argv: list[str] | None = None) -> int:
         if args.all:
             extenders = [True, False]
         for extender in extenders:
-            definer = "base"
-            if extender:
-                definer = "extended"
+            definer = "extended" if extender else "base"
             for preset in selected_presets(args):
                 for game in selected_games(args):
                     print(f"linting {game} {definer} scripts with preset {preset}", flush=True)
                     try:
-                        actual = render_output(root, cli, preset, work_dir / preset, args.game, extender)
+                        actual = render_output(
+                            root,
+                            cli,
+                            preset,
+                            work_dir / game / definer / preset,
+                            game,
+                            extender,
+                        )
                     except SnapshotError as exc:
                         print(f"error ({preset}): {exc}", file=sys.stderr)
                         failed = True
                         continue
-                    destination = fixture_path(root, preset, game, args.extender)
+                    destination = fixture_path(root, preset, game, extender)
                     if args.update:
                         write_fixture(destination, actual)
                         print(f"wrote {destination.relative_to(root)}")

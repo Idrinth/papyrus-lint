@@ -39,9 +39,10 @@ def _write_repo(directory: Path) -> Path:
     root = directory / "repo"
     (root / "shared" / "scripts").mkdir(parents=True)
     (root / "configuration" / "presets").mkdir(parents=True)
-    archive = root / "shared" / "scripts" / "skyrim-scripts.zip"
-    with zipfile.ZipFile(archive, "w") as bundle:
-        bundle.writestr("Source/Scripts/Actor.psc", "ScriptName Actor\n")
+    for name in ("skyrim-scripts.zip", "skyrim-extender-scripts.zip"):
+        archive = root / "shared" / "scripts" / name
+        with zipfile.ZipFile(archive, "w") as bundle:
+            bundle.writestr("Source/Scripts/Actor.psc", "ScriptName Actor\n")
     for preset in snap.PRESETS:
         (root / "configuration" / "presets" / f"papyrus-lint.{preset}.yaml").write_text(
             f"# {preset}\n", encoding="utf-8"
@@ -89,6 +90,9 @@ class RenderAndMainTests(unittest.TestCase):
                         str(root),
                         "--preset",
                         "strict",
+                        "--game",
+                        "skyrim",
+                        "--extender",
                         "--work-dir",
                         str(base / "work"),
                     ]
@@ -109,6 +113,8 @@ class RenderAndMainTests(unittest.TestCase):
                 str(root),
                 "--preset",
                 "careful",
+                "--game",
+                "skyrim",
                 "--work-dir",
                 str(base / "work"),
             ]
@@ -126,7 +132,7 @@ class RenderAndMainTests(unittest.TestCase):
                 snap.render_output(root, base / "missing", "nope", base / "work", "hello", True)
             crashing = _write_fake_cli(base, "", exit_code=2)
             with self.assertRaises(snap.SnapshotError) as ctx:
-                snap.render_output(root, crashing, "strict", base / "work", "hello", False)
+                snap.render_output(root, crashing, "strict", base / "work", "skyrim", False)
             self.assertIn("exited 2", str(ctx.exception))
 
 
