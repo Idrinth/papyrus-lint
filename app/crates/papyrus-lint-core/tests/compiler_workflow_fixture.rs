@@ -21,7 +21,7 @@ fn write_stub_compiler(directory: &Path, body: &str) -> PathBuf {
 #[cfg(unix)]
 fn check_with_retry(compiler: &Path, script: &Path) -> Result<CompileOutcome, String> {
     for attempt in 0.. {
-        match check_psc_file(compiler, script, &[]) {
+        match check_psc_file(papyrus_lints::Game::Skyrim, compiler, script, &[]) {
             Err(error) if attempt < 5 && error.contains("Text file busy") => {
                 std::thread::sleep(std::time::Duration::from_millis(20));
             }

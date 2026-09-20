@@ -344,6 +344,7 @@ export async function listScriptMembers(typeName: string): Promise<Member[]> {
 export async function compilePscFile(path: string): Promise<CompileOutcome> {
   return invoke<CompileOutcome>("compile_psc_file", {
     path,
+    game: currentLintConfig.game,
     compilerPath: currentCompilerPath,
     additionalRoots: effectiveScriptRoots(),
   });

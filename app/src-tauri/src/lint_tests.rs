@@ -3,7 +3,13 @@ use tempfile::tempdir;
 
 #[test]
 fn compile_psc_file_rejects_a_blank_compiler_path_before_spawning() {
-    assert!(compile_psc_file("Example.psc".to_string(), "  \t".to_string(), Vec::new()).is_err());
+    assert!(compile_psc_file(
+        "Example.psc".to_string(),
+        papyrus_lints::Game::Skyrim,
+        "  \t".to_string(),
+        Vec::new(),
+    )
+    .is_err());
 }
 
 #[test]
@@ -16,6 +22,7 @@ fn compile_psc_file_reports_a_spawn_error_from_the_compiler_module() {
 
     let error = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
+        papyrus_lints::Game::Skyrim,
         dir.path()
             .join("missing-compiler")
             .to_string_lossy()
@@ -848,6 +855,7 @@ fn compile_command_trims_the_executable_path_and_returns_its_output() {
 
     let outcome = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
+        papyrus_lints::Game::Skyrim,
         format!("  {}  ", compiler_path.display()),
         Vec::new(),
     )
@@ -877,6 +885,7 @@ fn compile_command_returns_a_failed_compiler_outcome() {
 
     let outcome = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
+        papyrus_lints::Game::Skyrim,
         compiler_path.to_string_lossy().into_owned(),
         Vec::new(),
     )
@@ -904,6 +913,7 @@ fn compile_command_forwards_additional_script_roots() {
 
     let outcome = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
+        papyrus_lints::Game::Skyrim,
         compiler_path.to_string_lossy().into_owned(),
         vec![additional_root.to_string_lossy().into_owned()],
     )

@@ -501,7 +501,10 @@ describe("code viewer edit mode", () => {
       await saveAndCompileCodeViewerEdits();
 
       expect(invokeMock).toHaveBeenCalledWith("write_psc_file", { path: "/a.psc", contents: "Int x = 2\n" });
-      expect(invokeMock).toHaveBeenCalledWith("compile_psc_file", expect.objectContaining({ path: "/a.psc" }));
+      expect(invokeMock).toHaveBeenCalledWith(
+        "compile_psc_file",
+        expect.objectContaining({ path: "/a.psc", game: "skyrim" }),
+      );
       expect(compileOutputEl().hidden).toBe(false);
       expect(compileOutputEl().textContent).toContain("Compilation succeeded.");
       expect(compileOutputEl().classList.contains("psc-result__compile-output--ok")).toBe(true);
