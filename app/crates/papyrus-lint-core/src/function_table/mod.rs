@@ -57,6 +57,7 @@ impl<T> CacheProbe<T> {
 /// are cached. A type that can't be found or fails to parse is cached as
 /// unresolved so repeated lookups don't retry the filesystem or parser.
 pub struct FunctionTable {
+    game: String,
     root: PathBuf,
     additional_roots: Vec<String>,
     /// Analysis-only fallback directories, searched after `root` /
@@ -110,6 +111,7 @@ impl FunctionTable {
     /// `scripts/source` / `source/scripts` under `root`.
     pub fn new(root: PathBuf) -> Self {
         FunctionTable {
+            game: papyrus_lints::Game::default().as_str().to_string(),
             root,
             additional_roots: Vec::new(),
             lookup_roots: Vec::new(),
@@ -126,6 +128,7 @@ impl FunctionTable {
     /// alongside `scripts/source` / `source/scripts` under `root`.
     pub fn new_with_additional_roots(root: PathBuf, additional_roots: Vec<String>) -> Self {
         FunctionTable {
+            game: papyrus_lints::Game::default().as_str().to_string(),
             root,
             additional_roots,
             lookup_roots: Vec::new(),
@@ -135,6 +138,12 @@ impl FunctionTable {
             scripts: HashMap::new(),
             script_mtimes: HashMap::new(),
         }
+    }
+
+    /// Selects the target game used to namespace on-disk AST cache entries.
+    pub fn with_game(mut self, game: papyrus_lints::Game) -> Self {
+        self.game = game.as_str().to_string();
+        self
     }
 
     /// Analysis-only fallback directories, searched after the project's own

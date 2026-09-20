@@ -50,6 +50,11 @@ pub(crate) fn cache_file_path(dir: &Path, source_path: &Path) -> PathBuf {
     dir.join(format!("{digest:x}.json"))
 }
 
+pub(crate) fn cache_file_path_for_game(dir: &Path, game: &str, source_path: &Path) -> PathBuf {
+    let digest = md5::compute(source_path.to_string_lossy().as_bytes());
+    dir.join(format!("{game}-{digest:x}.json"))
+}
+
 pub(crate) fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
     let modified = std::fs::metadata(source_path).ok()?.modified().ok()?;
     Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
@@ -63,6 +68,29 @@ pub(crate) fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
 /// already held.
 pub(crate) fn valid_entry_in(dir: &Path, source_path: &Path, source: &str) -> Option<CacheEntry> {
     let raw = std::fs::read(cache_file_path(dir, source_path)).ok()?;
+    deserialize_fresh_entry(raw, source_path, source)
+}
+
+pub(crate) fn valid_entry_in_for_game(
+    dir: &Path,
+    game: &str,
+    source_path: &Path,
+    source: &str,
+) -> Option<CacheEntry> {
+    let expected = cache_file_path_for_game(dir, game, source_path);
+    if let Ok(raw) = std::fs::read(&expected) {
+        return deserialize_fresh_entry(raw, source_path, source);
+    }
+    if game != "skyrim" {
+        return None;
+    }
+    let legacy = cache_file_path(dir, source_path);
+    let entry = deserialize_fresh_entry(std::fs::read(&legacy).ok()?, source_path, source)?;
+    let _ = std::fs::rename(legacy, expected);
+    Some(entry)
+}
+
+fn deserialize_fresh_entry(raw: Vec<u8>, source_path: &Path, source: &str) -> Option<CacheEntry> {
     let entry: CacheEntry = serde_json::from_slice(&raw).ok()?;
 
     if !is_compatible_version(&entry.linter_version)
@@ -83,6 +111,21 @@ pub(crate) fn write_entry_in(dir: &Path, source_path: &Path, entry: &CacheEntry)
         return;
     }
     let _ = std::fs::write(cache_file_path(dir, source_path), serialized);
+}
+
+pub(crate) fn write_entry_in_for_game(
+    dir: &Path,
+    game: &str,
+    source_path: &Path,
+    entry: &CacheEntry,
+) {
+    let Ok(serialized) = serde_json::to_vec(entry) else {
+        return;
+    };
+    if std::fs::create_dir_all(dir).is_err() {
+        return;
+    }
+    let _ = std::fs::write(cache_file_path_for_game(dir, game, source_path), serialized);
 }
 
 #[cfg(test)]
@@ -158,6 +201,61 @@ mod tests {
         let dir = Path::new("/tmp/ast-cache");
         let source = Path::new("/mods/Scripts/Example.psc");
         assert_eq!(cache_file_path(dir, source), cache_file_path(dir, source));
+    }
+
+    #[test]
+    fn game_cache_file_path_prefixes_the_path_digest() {
+        let dir = Path::new("/tmp/ast-cache");
+        let source = Path::new("/mods/Scripts/Example.psc");
+        let name = cache_file_path_for_game(dir, "skyrim", source)
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        assert!(name.starts_with("skyrim-"));
+        assert_eq!(name.len(), "skyrim-".len() + 32 + ".json".len());
+    }
+
+    #[test]
+    fn skyrim_read_migrates_a_legacy_cache_file() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+        let legacy = cache_file_path(cache_dir.path(), &source_path);
+        write_entry_in(
+            cache_dir.path(),
+            &source_path,
+            &fresh_entry(&source_path, source),
+        );
+
+        assert!(
+            valid_entry_in_for_game(cache_dir.path(), "skyrim", &source_path, source).is_some()
+        );
+        assert!(!legacy.exists());
+        assert!(cache_file_path_for_game(cache_dir.path(), "skyrim", &source_path).exists());
+    }
+
+    #[test]
+    fn another_game_does_not_consume_a_legacy_skyrim_cache_file() {
+        let cache_dir = tempdir().unwrap();
+        let project_dir = tempdir().unwrap();
+        let source_path = project_dir.path().join("Example.psc");
+        let source = "ScriptName Example\n";
+        std::fs::write(&source_path, source).unwrap();
+        let legacy = cache_file_path(cache_dir.path(), &source_path);
+        write_entry_in(
+            cache_dir.path(),
+            &source_path,
+            &fresh_entry(&source_path, source),
+        );
+
+        assert!(
+            valid_entry_in_for_game(cache_dir.path(), "fallout4", &source_path, source).is_none()
+        );
+        assert!(legacy.exists());
     }
 
     #[test]

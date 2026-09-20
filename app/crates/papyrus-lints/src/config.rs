@@ -46,11 +46,19 @@ pub use crate::type_casing::Style as TypeCasing;
 ///
 /// Only Skyrim is supported today, but representing the target as an enum
 /// keeps the configuration extensible as support for other games is added.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Game {
     #[default]
     Skyrim,
+}
+
+impl Game {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Skyrim => "skyrim",
+        }
+    }
 }
 
 /// The indentation style a project expects, for the "Formatting checks"/

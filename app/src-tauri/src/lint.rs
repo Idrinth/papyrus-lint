@@ -19,6 +19,7 @@ use serde::{Deserialize, Serialize};
 /// is taken only when a lookup still has to parse a script.
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct SharedTableKey {
+    game: papyrus_lints::Game,
     root: PathBuf,
     additional_roots: Vec<String>,
     lookup_roots: Vec<String>,
@@ -37,7 +38,22 @@ pub(crate) fn project_function_table(
     additional_roots: Vec<String>,
     lookup_roots: Vec<String>,
 ) -> Arc<RwLock<function_table::FunctionTable>> {
+    project_function_table_for_game(
+        papyrus_lints::Game::default(),
+        root,
+        additional_roots,
+        lookup_roots,
+    )
+}
+
+pub(crate) fn project_function_table_for_game(
+    game: papyrus_lints::Game,
+    root: String,
+    additional_roots: Vec<String>,
+    lookup_roots: Vec<String>,
+) -> Arc<RwLock<function_table::FunctionTable>> {
     let key = SharedTableKey {
+        game,
         root: PathBuf::from(&root),
         additional_roots: additional_roots.clone(),
         lookup_roots: lookup_roots.clone(),
@@ -53,6 +69,7 @@ pub(crate) fn project_function_table(
                     PathBuf::from(root),
                     additional_roots,
                 )
+                .with_game(game)
                 .with_lookup_roots(lookup_roots),
             ))
         })
@@ -92,7 +109,8 @@ pub(crate) struct ProjectLintContext {
 
 impl ProjectLintContext {
     pub(crate) fn function_table(&self) -> Arc<RwLock<function_table::FunctionTable>> {
-        project_function_table(
+        project_function_table_for_game(
+            self.config.game,
             self.root.clone(),
             self.additional_roots.clone(),
             self.lookup_roots.clone(),
@@ -214,7 +232,7 @@ pub(crate) fn lint_psc_file(
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
-    ast_cache::ensure_primed(path, &source);
+    ast_cache::ensure_primed_for_game(context.config.game.as_str(), path, &source);
     let function_table = context.function_table();
     let mut shared = function_table::SharedFunctionTable(function_table.as_ref());
     Ok(lint_with_compile_check(
@@ -254,13 +272,20 @@ pub(crate) fn preload_project_scripts(paths: Vec<String>, context: ProjectLintCo
             |path| {
                 let source = read_psc_source(&path).ok();
                 let ast = source.as_ref().and_then(|source| {
-                    if let Some(cached) = ast_cache::get(&path, source) {
+                    if let Some(cached) =
+                        ast_cache::get_for_game(context.config.game.as_str(), &path, source)
+                    {
                         return Some(cached);
                     }
                     let parsed = papyrus_parser::parse(source).ok()?;
-                    ast_cache::put(&path, source, &parsed);
+                    ast_cache::put_for_game(context.config.game.as_str(), &path, source, &parsed);
                     if let Ok(tokens) = papyrus_parser::tokenize(source) {
-                        ast_cache::put_tokens(&path, source, &tokens);
+                        ast_cache::put_tokens_for_game(
+                            context.config.game.as_str(),
+                            &path,
+                            source,
+                            &tokens,
+                        );
                     }
                     Some(parsed)
                 });

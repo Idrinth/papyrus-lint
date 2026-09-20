@@ -4,7 +4,7 @@
 
 use std::path::Path;
 
-use crate::entry::valid_entry_in;
+use crate::entry::{valid_entry_in, valid_entry_in_for_game};
 
 /// Also primes `papyrus_parser`'s own in-memory memoization (see
 /// [`papyrus_parser::prime_cache`]) with a hit, so anything that parses
@@ -21,6 +21,17 @@ pub(crate) fn get_in(
     Some(ast)
 }
 
+pub(crate) fn get_in_for_game(
+    dir: &Path,
+    game: &str,
+    source_path: &Path,
+    source: &str,
+) -> Option<papyrus_parser::ast::Script> {
+    let ast = valid_entry_in_for_game(dir, game, source_path, source)?.ast?;
+    papyrus_parser::prime_cache(source, ast.clone());
+    Some(ast)
+}
+
 /// Also primes `papyrus_parser`'s own in-memory memoization (see
 /// [`papyrus_parser::prime_tokenize_cache`]) with a hit, the same way
 /// [`get_in`] does for the AST.
@@ -30,6 +41,17 @@ pub(crate) fn get_tokens_in(
     source: &str,
 ) -> Option<Vec<papyrus_parser::token::Token>> {
     let tokens = valid_entry_in(dir, source_path, source)?.tokens?;
+    papyrus_parser::prime_tokenize_cache(source, tokens.clone());
+    Some(tokens)
+}
+
+pub(crate) fn get_tokens_in_for_game(
+    dir: &Path,
+    game: &str,
+    source_path: &Path,
+    source: &str,
+) -> Option<Vec<papyrus_parser::token::Token>> {
+    let tokens = valid_entry_in_for_game(dir, game, source_path, source)?.tokens?;
     papyrus_parser::prime_tokenize_cache(source, tokens.clone());
     Some(tokens)
 }

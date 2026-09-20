@@ -39,7 +39,8 @@ update the cited code *and* this list.
   Drift is a CI failure in `papyrus-lint-config`.
 - Filesystem Tauri commands that parse, lint, repair, or compile are
   `#[tauri::command(async)]`. Only instant in-memory commands stay sync.
-- On-disk AST cache is keyed by content MD5 + mtime +
+- On-disk AST cache filenames are namespaced by target game and entries are
+  keyed by content MD5 + mtime +
   `MIN_COMPATIBLE_VERSION`. Bump that floor only when the entry layout
   or embedded AST changes, and update `schema/ast-cache-entry.schema.json`.
 - A `.ppj`'s own `<Import>` entries (`ppj::PpjProject::imports`) feed
