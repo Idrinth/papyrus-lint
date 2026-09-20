@@ -187,7 +187,7 @@ const RULE_ID_TO_CONFIG_KEY: Record<string, keyof LintRules> = {
 // or undefined when the id isn't a configurable papyrus-lints rule (e.g. a
 // compiler diagnostic).
 export function configKeyForRuleId(ruleId: string): keyof LintRules | undefined {
-  const key = (RULE_ID_TO_CONFIG_KEY[ruleId] ?? ruleId.replaceAll("-", "_")) as keyof LintRules;
+  const key = (RULE_ID_TO_CONFIG_KEY[ruleId] ?? ruleId.replace(/-/g, "_")) as keyof LintRules;
   return RULE_KEYS.includes(key) ? key : undefined;
 }
 
