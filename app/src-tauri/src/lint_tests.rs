@@ -52,6 +52,44 @@ fn lint_psc_file_lints_source_from_disk() {
 }
 
 #[test]
+fn preload_project_scripts_lets_lint_psc_file_resolve_a_sibling_immediately() {
+    let dir = tempdir().unwrap();
+    let source_dir = dir.path().join("scripts/source");
+    std::fs::create_dir_all(&source_dir).unwrap();
+    let base_path = source_dir.join("BaseScript.psc");
+    std::fs::write(
+        &base_path,
+        "ScriptName BaseScript\n\nFunction DoIt()\nEndFunction\n",
+    )
+    .unwrap();
+    let derived_path = source_dir.join("DerivedScript.psc");
+    std::fs::write(
+        &derived_path,
+        "ScriptName DerivedScript extends BaseScript\n\nFunction DoIt()\nEndFunction\n",
+    )
+    .unwrap();
+
+    let context = ProjectLintContext {
+        root: dir.path().to_string_lossy().into_owned(),
+        ..Default::default()
+    };
+
+    preload_project_scripts(
+        vec![
+            base_path.to_string_lossy().into_owned(),
+            derived_path.to_string_lossy().into_owned(),
+        ],
+        context.clone(),
+    );
+
+    let diagnostics = lint_psc_file(derived_path.to_string_lossy().into_owned(), context).unwrap();
+
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "function-override"));
+}
+
+#[test]
 fn lint_psc_file_ignores_compile_check_when_disabled() {
     let dir = tempdir().unwrap();
     let path = dir.path().join("Example.psc");

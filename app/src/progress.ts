@@ -12,8 +12,12 @@ let lintProgressHideTimer: ReturnType<typeof setTimeout> | null = null;
 const LINT_PROGRESS_HIDE_DELAY_MS = 2000;
 
 // Shows the progress bar reset to 0/`total`, for a drop about to start
-// parsing/linting `total` files.
-export function showLintProgress(total: number) {
+// parsing/linting `total` files. `phase` names the step this bar is
+// currently tracking -- "Parsing" for preloadProjectScripts's bulk pass
+// (see `handleDroppedPaths`/`relintCurrentFiles` in drop.ts), then "Linting"
+// once the per-file parsePscFiles loop actually starts -- mirroring the
+// CLI's own two progress bars for the same two-phase pipeline.
+export function showLintProgress(total: number, phase: string = "Linting") {
   if (lintProgressHideTimer !== null) {
     clearTimeout(lintProgressHideTimer);
     lintProgressHideTimer = null;
@@ -27,16 +31,16 @@ export function showLintProgress(total: number) {
   }
   lintProgressBarEl.max = total;
   lintProgressBarEl.value = 0;
-  lintProgressLabelEl.textContent = `Linting 0 / ${total} files`;
+  lintProgressLabelEl.textContent = `${phase} 0 / ${total} files`;
   lintProgressEl.hidden = false;
 }
 
-export function updateLintProgress(processed: number, total: number) {
+export function updateLintProgress(processed: number, total: number, phase: string = "Linting") {
   if (!lintProgressEl || !lintProgressLabelEl || !lintProgressBarEl) {
     return;
   }
   lintProgressBarEl.value = processed;
-  lintProgressLabelEl.textContent = `Linting ${processed} / ${total} files`;
+  lintProgressLabelEl.textContent = `${phase} ${processed} / ${total} files`;
 }
 
 export function hideLintProgress() {

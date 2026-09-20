@@ -4,7 +4,7 @@
 // orchestration in main.ts, which this module calls back into to render its
 // results.
 import { invoke } from "@tauri-apps/api/core";
-import { lintPscFile, type PapyrusScript, type PscParseOutcome } from "./backend";
+import { lintPscFile, preloadProjectScripts, type PapyrusScript, type PscParseOutcome } from "./backend";
 import { clearError, setDropZoneLoading, showError, showResult } from "./main";
 import { switchTab } from "./main-tabs";
 import { isAchlistPath, isPpjPath, isPscPath, scriptRootsForAchlist } from "./path";
@@ -147,7 +147,9 @@ export async function handleDroppedPaths(paths: string[]) {
       setAchlistScriptRoots(scriptRootsForAchlist(entries));
       setPpjImportRoots([]);
       const pscEntries = entries.filter(isPscPath);
-      showLintProgress(pscEntries.length);
+      showLintProgress(pscEntries.length, "Parsing");
+      await preloadProjectScripts(pscEntries);
+      showLintProgress(pscEntries.length, "Linting");
       await parsePscFiles(pscEntries, (outcome) => {
         // A newer drop started (and so already reset currentPscOutcomes to
         // its own array) while this one was still parsing/linting; don't
@@ -206,7 +208,9 @@ export async function handleDroppedPaths(paths: string[]) {
       }
       setAchlistScriptRoots(scriptRootsForAchlist(scripts));
       setPpjImportRoots(imports);
-      showLintProgress(scripts.length);
+      showLintProgress(scripts.length, "Parsing");
+      await preloadProjectScripts(scripts);
+      showLintProgress(scripts.length, "Linting");
       await parsePscFiles(scripts, (outcome) => {
         if (generation !== currentParseGeneration) {
           return;
@@ -244,7 +248,9 @@ export async function handleDroppedPaths(paths: string[]) {
     await loadProjectConfig(projectDir);
     setAchlistScriptRoots([]);
     setPpjImportRoots([]);
-    showLintProgress(1);
+    showLintProgress(1, "Parsing");
+    await preloadProjectScripts([pscPath]);
+    showLintProgress(1, "Linting");
     await parsePscFiles([pscPath], (outcome) => {
       if (generation !== currentParseGeneration) {
         return;
@@ -284,7 +290,9 @@ export async function handleDroppedPaths(paths: string[]) {
       await loadProjectConfig(projectDir);
       setAchlistScriptRoots(scriptRootsForAchlist(entries));
       setPpjImportRoots([]);
-      showLintProgress(entries.length);
+      showLintProgress(entries.length, "Parsing");
+      await preloadProjectScripts(entries);
+      showLintProgress(entries.length, "Linting");
       await parsePscFiles(entries, (outcome) => {
         if (generation !== currentParseGeneration) {
           return;
@@ -325,7 +333,9 @@ export async function relintCurrentFiles() {
   switchTab("lint");
   renderPscResults(currentPscOutcomes);
 
-  showLintProgress(paths.length);
+  showLintProgress(paths.length, "Parsing");
+  await preloadProjectScripts(paths);
+  showLintProgress(paths.length, "Linting");
   await parsePscFiles(paths, (outcome) => {
     if (generation !== currentParseGeneration) {
       return;

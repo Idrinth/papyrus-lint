@@ -54,6 +54,7 @@ pub fn run() {
             delete_user_preset,
             export_user_preset,
             lint_psc_file,
+            preload_project_scripts,
             repair_psc_file,
             preview_repair_psc_file,
             preview_repair_psc_line,
