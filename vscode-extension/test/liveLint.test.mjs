@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { afterEach, describe, it } from 'node:test';
 import { createHarness, papyrusDocument, restoreModules, uri, validReport } from './harness.mjs';
 
@@ -140,5 +143,28 @@ describe('live linting via --blob', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     assert.equal(harness.execCalls.length, 0);
+  });
+
+  it('picks up a papyrus-lint.yaml at the workspace root via getWorkspaceFolder, unlike the CLI\'s own --blob discovery', async () => {
+    const workspaceRoot = await mkdtemp(path.join(tmpdir(), 'papyrus-lint-'));
+    try {
+      await writeFile(path.join(workspaceRoot, 'papyrus-lint.yaml'), 'semicolon: true\n');
+      const scriptPath = path.join(workspaceRoot, 'Test.psc');
+      const harness = createHarness({ workspaceFolders: [{ uri: uri(workspaceRoot) }] });
+      const document = papyrusDocument(scriptPath, 'ScriptName Test\n');
+
+      harness.listeners.change({ document });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      assert.deepEqual(harness.execCalls[0].args, [
+        '--config',
+        path.join(workspaceRoot, 'papyrus-lint.yaml'),
+        '--json',
+        '--blob',
+        'ScriptName Test\n',
+      ]);
+    } finally {
+      await rm(workspaceRoot, { recursive: true, force: true });
+    }
   });
 });

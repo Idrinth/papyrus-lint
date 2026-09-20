@@ -1,3 +1,5 @@
+import { promises as fs } from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 function configuredCliPath(): string | undefined {
@@ -5,16 +7,77 @@ function configuredCliPath(): string | undefined {
   return configured.trim() || undefined;
 }
 
-/** The `papyrusLint.configPath` setting, or `undefined` if unset/blank, in which case
- * the CLI falls back to its own papyrus-lint.yaml/.yml discovery from the project root. */
-export function configPath(): string | undefined {
+/** The config file names the CLI itself recognizes, checked in the same order (see
+ * `papyrus_lint_config::project_file::CONFIG_FILE_NAMES`). */
+const CONFIG_FILE_NAMES = ['papyrus-lint.yaml', 'papyrus-lint.yml'];
+
+/** The `papyrusLint.configPath` setting, or `undefined` if unset/blank. */
+function configuredConfigPath(): string | undefined {
   const configured = vscode.workspace.getConfiguration('papyrusLint').get<string>('configPath', '');
   return configured.trim() === '' ? undefined : configured;
 }
 
-/** Prepends `--config <path>` to `args` when `papyrusLint.configPath` is set. */
-export function withConfigOverride(args: string[]): string[] {
-  const override = configPath();
+/** Walks up from `startDir` to (and including) `workspaceRoot`, returning the path to
+ * the first `papyrus-lint.yaml`/`.yml` found, or `undefined` if neither exists
+ * anywhere in between. Mirrors the CLI's own config-file discovery
+ * (`papyrus_lint_core::project_root::find_config_file_root`), but bounded to the
+ * current VS Code workspace folder instead of walking all the way to the filesystem
+ * root, since that's the boundary `getWorkspaceFolder` below already gives us. */
+async function findConfigInWorkspace(startDir: string, workspaceRoot: string): Promise<string | undefined> {
+  const relativeStart = path.relative(workspaceRoot, startDir);
+  if (relativeStart.startsWith('..') || path.isAbsolute(relativeStart)) {
+    // startDir isn't actually under workspaceRoot (shouldn't happen, since
+    // getWorkspaceFolder already established that it is); nothing to walk.
+    return undefined;
+  }
+
+  let dir = startDir;
+  for (;;) {
+    for (const name of CONFIG_FILE_NAMES) {
+      const candidate = path.join(dir, name);
+      try {
+        if ((await fs.stat(candidate)).isFile()) {
+          return candidate;
+        }
+      } catch {
+        // Not found (or not readable) here; keep looking further up.
+      }
+    }
+    if (path.relative(workspaceRoot, dir) === '') {
+      return undefined;
+    }
+    dir = path.dirname(dir);
+  }
+}
+
+/** Resolves the `papyrus-lint.yaml`/`.yml` that should be used for `documentUri`: the
+ * `papyrusLint.configPath` setting when set, otherwise a config file found by walking
+ * up from the document towards its enclosing VS Code workspace folder — found via
+ * `vscode.workspace.getWorkspaceFolder`, the same workspace-roots API
+ * `papyrusLint.initializeConfig` already uses to pick a project directory (see
+ * `resolveInitDirectory` in `init.ts`). Detecting it here, rather than leaving it
+ * entirely to the CLI's own project-root discovery, is what lets live, as-you-type
+ * `--blob` linting — which otherwise skips that discovery altogether, see
+ * `PapyrusLinter.lintBlob` below — pick up a config placed at the workspace root too,
+ * and lets on-save linting find it without depending on whichever CLI release happens
+ * to already be installed. Returns `undefined` when neither finds one, leaving a
+ * saved file's own CLI invocation to fall back to the CLI's own discovery as before. */
+export async function configPath(documentUri: vscode.Uri): Promise<string | undefined> {
+  const configured = configuredConfigPath();
+  if (configured) {
+    return configured;
+  }
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(documentUri);
+  if (!workspaceFolder) {
+    return undefined;
+  }
+  return findConfigInWorkspace(path.dirname(documentUri.fsPath), workspaceFolder.uri.fsPath);
+}
+
+/** Prepends `--config <path>` to `args` when a config is resolved for `documentUri`
+ * (see `configPath` above). */
+export async function withConfigOverride(args: string[], documentUri: vscode.Uri): Promise<string[]> {
+  const override = await configPath(documentUri);
   return override ? ['--config', override, ...args] : args;
 }
 

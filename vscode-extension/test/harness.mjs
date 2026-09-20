@@ -91,6 +91,10 @@ export function createHarness({
       getConfiguration: () => ({
         get: (key, fallback) => ({ cliPath, configPath, liveLint, liveLintDebounceMs })[key] ?? fallback,
       }),
+      getWorkspaceFolder: (docUri) => (workspaceFolders ?? []).find((folder) => {
+        const base = folder.uri.fsPath.endsWith('/') ? folder.uri.fsPath : `${folder.uri.fsPath}/`;
+        return docUri.fsPath === folder.uri.fsPath || docUri.fsPath.startsWith(base);
+      }),
       onDidChangeTextDocument: (callback) => registerListener('change', callback),
       onDidCloseTextDocument: (callback) => registerListener('close', callback),
       onDidOpenTextDocument: (callback) => registerListener('open', callback),

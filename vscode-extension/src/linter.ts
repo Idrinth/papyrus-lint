@@ -20,7 +20,7 @@ export class PapyrusLinter {
   }
 
   async lint(uri: vscode.Uri): Promise<void> {
-    const result = await runCli(withConfigOverride(['--json', uri.fsPath]), path.dirname(uri.fsPath));
+    const result = await runCli(await withConfigOverride(['--json', uri.fsPath], uri), path.dirname(uri.fsPath));
     this.applyResult(uri, result);
   }
 
@@ -28,17 +28,20 @@ export class PapyrusLinter {
    * contents directly via the CLI's `--blob` flag instead of its saved-to-disk
    * contents, so a diagnostic reflects what's actually in the editor even before
    * it's saved. Unlike `lint`, this skips every piece of project-level machinery
-   * (cross-script resolution, and — unless `papyrusLint.configPath` is set — the
-   * project's own papyrus-lint.yaml/.yml) the same way the CLI's `--blob` flag
-   * itself does, and never pops an error message box: it runs on every pause in
-   * typing, so a transient failure (e.g. a download hiccup) is logged to the
-   * output channel instead of interrupting the user. */
+   * (cross-script resolution, and the CLI's own project-root discovery) the same
+   * way the CLI's `--blob` flag itself does — but still picks up the project's own
+   * papyrus-lint.yaml/.yml via `withConfigOverride`'s own workspace-folder-based
+   * detection (see `config.ts`), so live linting isn't stuck on the built-in
+   * defaults just because there's no on-disk file position for the CLI to walk up
+   * from. Never pops an error message box: it runs on every pause in typing, so a
+   * transient failure (e.g. a download hiccup) is logged to the output channel
+   * instead of interrupting the user. */
   async lintBlob(
     document: vscode.TextDocument,
     shouldApply: () => boolean = () => true,
   ): Promise<void> {
     const result = await runCli(
-      withConfigOverride(['--json', '--blob', document.getText()]),
+      await withConfigOverride(['--json', '--blob', document.getText()], document.uri),
       path.dirname(document.uri.fsPath),
     );
     if (shouldApply()) {
@@ -48,7 +51,7 @@ export class PapyrusLinter {
 
   async fix(uri: vscode.Uri): Promise<void> {
     const result = await runCli(
-      withConfigOverride(['fix', '--json', uri.fsPath]),
+      await withConfigOverride(['fix', '--json', uri.fsPath], uri),
       path.dirname(uri.fsPath),
     );
     const report = this.applyResult(uri, result);
@@ -70,7 +73,7 @@ export class PapyrusLinter {
    * in the file untouched. Used by the "Fix this issue" quick fix on a single diagnostic. */
   async fixIssue(uri: vscode.Uri, rule: string, line: number): Promise<void> {
     const result = await runCli(
-      withConfigOverride(['fix', '--type', rule, '--line', String(line), '--json', uri.fsPath]),
+      await withConfigOverride(['fix', '--type', rule, '--line', String(line), '--json', uri.fsPath], uri),
       path.dirname(uri.fsPath),
     );
     const report = this.applyResult(uri, result);

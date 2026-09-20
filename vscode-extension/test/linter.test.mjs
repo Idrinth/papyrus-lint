@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile, mkdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { afterEach, describe, it } from 'node:test';
 import { createHarness, restoreModules, uri, validReport } from './harness.mjs';
 
@@ -268,5 +271,68 @@ describe('PapyrusLinter', () => {
 
     assert.deepEqual(harness.output.lines, ['papyrus-lint: failed to lint file.']);
     assert.deepEqual(harness.messages.error, ['Papyrus Lint: failed to lint file.']);
+  });
+});
+
+describe('workspace-root config auto-detection', () => {
+  let workspaceRoot;
+
+  afterEach(async () => {
+    if (workspaceRoot) {
+      await rm(workspaceRoot, { recursive: true, force: true });
+      workspaceRoot = undefined;
+    }
+  });
+
+  it('passes --config for a papyrus-lint.yaml found at the workspace root via getWorkspaceFolder, even when the script sits deeper under a Data/Scripts/Source subfolder', async () => {
+    workspaceRoot = await mkdtemp(path.join(tmpdir(), 'papyrus-lint-'));
+    const scriptDir = path.join(workspaceRoot, 'Data', 'Scripts', 'Source');
+    await mkdir(scriptDir, { recursive: true });
+    const configFile = path.join(workspaceRoot, 'papyrus-lint.yaml');
+    await writeFile(configFile, 'semicolon: true\n');
+    const scriptPath = path.join(scriptDir, 'Test.psc');
+
+    const harness = createHarness({ workspaceFolders: [{ uri: uri(workspaceRoot) }] });
+
+    await harness.commands.get('papyrusLint.lintFile')(uri(scriptPath));
+
+    assert.deepEqual(harness.execCalls[0].args, ['--config', configFile, '--json', scriptPath]);
+  });
+
+  it('leaves args untouched when the document is outside every open workspace folder', async () => {
+    workspaceRoot = await mkdtemp(path.join(tmpdir(), 'papyrus-lint-'));
+    await writeFile(path.join(workspaceRoot, 'papyrus-lint.yaml'), 'semicolon: true\n');
+
+    const harness = createHarness({ workspaceFolders: [{ uri: uri(workspaceRoot) }] });
+
+    await harness.commands.get('papyrusLint.lintFile')(uri('/elsewhere/Test.psc'));
+
+    assert.deepEqual(harness.execCalls[0].args, ['--json', '/elsewhere/Test.psc']);
+  });
+
+  it('leaves args untouched when no config file exists anywhere in the workspace folder', async () => {
+    workspaceRoot = await mkdtemp(path.join(tmpdir(), 'papyrus-lint-'));
+    const scriptPath = path.join(workspaceRoot, 'Test.psc');
+
+    const harness = createHarness({ workspaceFolders: [{ uri: uri(workspaceRoot) }] });
+
+    await harness.commands.get('papyrusLint.lintFile')(uri(scriptPath));
+
+    assert.deepEqual(harness.execCalls[0].args, ['--json', scriptPath]);
+  });
+
+  it('still prefers the explicit papyrusLint.configPath setting over an auto-detected workspace config', async () => {
+    workspaceRoot = await mkdtemp(path.join(tmpdir(), 'papyrus-lint-'));
+    await writeFile(path.join(workspaceRoot, 'papyrus-lint.yaml'), 'semicolon: true\n');
+    const scriptPath = path.join(workspaceRoot, 'Test.psc');
+
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri(workspaceRoot) }],
+      configPath: '/explicit/override.yaml',
+    });
+
+    await harness.commands.get('papyrusLint.lintFile')(uri(scriptPath));
+
+    assert.deepEqual(harness.execCalls[0].args, ['--config', '/explicit/override.yaml', '--json', scriptPath]);
   });
 });
