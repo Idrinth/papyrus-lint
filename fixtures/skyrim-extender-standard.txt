@@ -493,8 +493,6 @@ Scripts/Source/ObjectReference.psc:96:1: [indentation] [warning] Line should be 
 Scripts/Source/ObjectReference.psc:99:1: [indentation] [warning] Line should be indented with 2 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/ObjectReference.psc:100:11: [forbidden-functions] [warning] Utility.Wait: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at RegisterForSingleUpdate/OnUpdate for example (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/ObjectReference.psc:109:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
-Scripts/Source/ObjectReference.psc:112:18: [argument-types] [error] Argument 1 to 'GetItemCount' expects Form but got key (https://papyrus-lint.idrinth.de/rules.html#rule-argument-types)
-Scripts/Source/ObjectReference.psc:113:11: [argument-types] [error] Argument 1 to 'AddItem' expects Form but got key (https://papyrus-lint.idrinth.de/rules.html#rule-argument-types)
 Scripts/Source/ObjectReference.psc:121:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/ObjectReference.psc:122:1: [indentation] [warning] Line should be indented with 2 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/ObjectReference.psc:123:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
@@ -605,4 +603,4 @@ Scripts/Source/Weather.psc:10:36: [assignment-operator-spacing] [warning] '=' mu
 Scripts/Source/Weather.psc:10:36: [assignment-operator-spacing] [warning] '=' must be followed by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-assignment-operator-spacing)
 Scripts/Source/Weather.psc:10:61: [assignment-operator-spacing] [warning] '=' must be preceded by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-assignment-operator-spacing)
 Scripts/Source/Weather.psc:10:61: [assignment-operator-spacing] [warning] '=' must be followed by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-assignment-operator-spacing)
-PapyrusLinterCLI: 673 problem(s) found in 37 of 62 script(s).
+PapyrusLinterCLI: 605 problem(s) found in 26 of 62 script(s).

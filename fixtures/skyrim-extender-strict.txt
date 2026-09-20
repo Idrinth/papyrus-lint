@@ -2160,8 +2160,6 @@ Scripts/Source/ObjectReference.psc:96:1: [indentation] [warning] Line should be 
 Scripts/Source/ObjectReference.psc:99:1: [indentation] [warning] Line should be indented with 2 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/ObjectReference.psc:100:11: [forbidden-functions] [warning] Utility.Wait: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at RegisterForSingleUpdate/OnUpdate for example (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/ObjectReference.psc:109:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
-Scripts/Source/ObjectReference.psc:112:18: [argument-types] [error] Argument 1 to 'GetItemCount' expects Form but got key (https://papyrus-lint.idrinth.de/rules.html#rule-argument-types)
-Scripts/Source/ObjectReference.psc:113:11: [argument-types] [error] Argument 1 to 'AddItem' expects Form but got key (https://papyrus-lint.idrinth.de/rules.html#rule-argument-types)
 Scripts/Source/ObjectReference.psc:121:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/ObjectReference.psc:122:1: [indentation] [warning] Line should be indented with 2 tabs (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
 Scripts/Source/ObjectReference.psc:123:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
@@ -3070,4 +3068,4 @@ Scripts/Source/WornObject.psc:59:1: [identifier-casing] [warning] Parameter 'slo
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'akActor' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'handSlot' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'slotMask' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
-PapyrusLinterCLI: 3138 problem(s) found in 61 of 62 script(s).
+PapyrusLinterCLI: 3070 problem(s) found in 59 of 62 script(s).
