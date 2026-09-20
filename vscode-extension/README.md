@@ -69,7 +69,7 @@ whole project.
   copy). Set this only to override the release CLI with a locally
   installed executable; its SHA-256 must match this release's baked CLI
   or GUI digest, and its `--version` output must match the extension's
-  version.
+  version. Applies to the whole VS Code window.
 - `papyrusLint.configPath`: path to a papyrus-lint config file to pass to
   the CLI via `--config`, overriding auto-detection. Leave empty (the
   default) to auto-detect instead: the extension itself looks for a
@@ -82,6 +82,13 @@ whole project.
   `true`; set to `false` to only lint on open/save.
 - `papyrusLint.liveLintDebounceMs`: how long, in milliseconds, to wait
   after the last keystroke before running a live lint. Defaults to `400`.
+
+`configPath`, `liveLint`, and `liveLintDebounceMs` are all
+[resource-scoped](https://code.visualstudio.com/api/references/contribution-points#contributes.configuration)
+settings, so in a multi-root workspace each folder can set its own value
+(e.g. a `.vscode/settings.json` in one folder pointing at that folder's
+own `papyrus-lint.yaml`, or turning live linting off for a folder with a
+much larger set of scripts) instead of one value applying to every folder.
 
 ## Contact
 

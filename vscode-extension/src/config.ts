@@ -11,9 +11,13 @@ function configuredCliPath(): string | undefined {
  * `papyrus_lint_config::project_file::CONFIG_FILE_NAMES`). */
 const CONFIG_FILE_NAMES = ['papyrus-lint.yaml', 'papyrus-lint.yml'];
 
-/** The `papyrusLint.configPath` setting, or `undefined` if unset/blank. */
-function configuredConfigPath(): string | undefined {
-  const configured = vscode.workspace.getConfiguration('papyrusLint').get<string>('configPath', '');
+/** The `papyrusLint.configPath` setting for `documentUri`, or `undefined` if
+ * unset/blank. `configPath` is a `resource`-scoped setting (see `package.json`), so
+ * each workspace folder in a multi-root workspace can point at its own config file;
+ * `documentUri` is passed as the resource so VS Code resolves the value that applies
+ * to the folder that actually contains it, rather than a single workspace-wide value. */
+function configuredConfigPath(documentUri: vscode.Uri): string | undefined {
+  const configured = vscode.workspace.getConfiguration('papyrusLint', documentUri).get<string>('configPath', '');
   return configured.trim() === '' ? undefined : configured;
 }
 
@@ -63,7 +67,7 @@ async function findConfigInWorkspace(startDir: string, workspaceRoot: string): P
  * to already be installed. Returns `undefined` when neither finds one, leaving a
  * saved file's own CLI invocation to fall back to the CLI's own discovery as before. */
 export async function configPath(documentUri: vscode.Uri): Promise<string | undefined> {
-  const configured = configuredConfigPath();
+  const configured = configuredConfigPath(documentUri);
   if (configured) {
     return configured;
   }
@@ -82,17 +86,20 @@ export async function withConfigOverride(args: string[], documentUri: vscode.Uri
 }
 
 /** Whether live, as-you-type linting (via `--blob`, see `PapyrusLinter.lintBlob`)
- * is enabled. Defaults to on; a user can turn it off if spawning the CLI on every
- * pause in typing is more overhead than they want. */
-export function liveLintEnabled(): boolean {
-  return vscode.workspace.getConfiguration('papyrusLint').get<boolean>('liveLint', true);
+ * is enabled for `documentUri`. Defaults to on; a user can turn it off if spawning
+ * the CLI on every pause in typing is more overhead than they want, either for the
+ * whole window or, since this is a `resource`-scoped setting, for just one workspace
+ * folder in a multi-root workspace (e.g. one holding a much larger mod). */
+export function liveLintEnabled(documentUri: vscode.Uri): boolean {
+  return vscode.workspace.getConfiguration('papyrusLint', documentUri).get<boolean>('liveLint', true);
 }
 
-/** How long to wait, in milliseconds, after the last keystroke in a Papyrus
- * document before running a live `--blob` lint of its current (possibly unsaved)
- * contents. Exposed as a setting mainly so tests can drive it down to `0`. */
-export function liveLintDebounceMs(): number {
-  return vscode.workspace.getConfiguration('papyrusLint').get<number>('liveLintDebounceMs', 400);
+/** How long to wait, in milliseconds, after the last keystroke in `documentUri`
+ * before running a live `--blob` lint of its current (possibly unsaved) contents.
+ * `resource`-scoped, like `liveLintEnabled` above, so it can also be tuned per
+ * workspace folder; exposed as a setting mainly so tests can drive it down to `0`. */
+export function liveLintDebounceMs(documentUri: vscode.Uri): number {
+  return vscode.workspace.getConfiguration('papyrusLint', documentUri).get<number>('liveLintDebounceMs', 400);
 }
 
 export function resolveCliPath(): string | undefined {
