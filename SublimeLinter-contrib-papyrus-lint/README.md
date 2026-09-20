@@ -120,6 +120,4 @@ python -m unittest discover -s tests -v
 
 ## Contact
 
-- Discord: <https://discord.gg/idrinth>
-- NexusMods: <https://www.nexusmods.com/skyrimspecialedition/mods/189862>
-- GitHub: <https://github.com/idrinth/papyrus-lint>
+<!--CONTACT-LINKS-->

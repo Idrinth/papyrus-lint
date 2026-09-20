@@ -53,13 +53,21 @@ profile on only one root would not apply to the other. The `ubuntu-latest` leg a
 `configuration/papyrus-lint.default.yaml` (see Configuration above) to
 `papyrus-lint.yaml` and attaches it to the release alongside the CLI
 binary, rather than generating it by running the freshly built CLI's
-`init` subcommand. A separate `editor-plugins` job runs independently,
+`init` subcommand. Separate `vscode-plugin` and `sublime-plugin` jobs run independently, each
+first baking CLI/GUI SHA-256 digests into the plugin (see above) and then
+this same commit's `shared/links.yaml` contact links into the plugin's own
+checked-in `README.md` (`.github/scripts/write_readme_links.py`, which
+fills its `<!--CONTACT-LINKS-->` marker via `ci_lib/readme_links.py`'s
+Markdown renderer — the checked-in READMEs carry no contact links of their
+own, so this is the only place they're ever filled in, matching the Nexus
+page tables above). `vscode-plugin` then
 packages the VS Code extension into a `.vsix` (via `@vscode/vsce`, staging
 `shared/images/logo.png` in the extension directory first so the Marketplace
 package includes its declared icon without duplicating the image in source)
-and the `SublimeLinter-contrib-papyrus-lint` directory into a `.zip` while
-excluding its development-only `tests/` directory, and
-attaches both to the same release. A final `release-notes` job (after
+and `sublime-plugin` packages the
+`SublimeLinter-contrib-papyrus-lint` directory into a `.zip` while
+excluding its development-only `tests/` directory; both
+attach their artifact to the same release. A final `release-notes` job (after
 both `release` and `editor-plugins` succeed) overwrites the release's
 title and body — replacing the generic body `tauri-apps/tauri-action`
 set on the `release` job — with the tag name as the title; a changelist

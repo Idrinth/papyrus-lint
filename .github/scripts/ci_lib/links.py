@@ -158,6 +158,11 @@ def render_plain_text(links: Sequence[Link]) -> str:
     return "".join(f"  {link.label.ljust(width)}  {link.url}\n" for link in links)
 
 
+def render_markdown_list_items(links: Sequence[Link]) -> str:
+    """``- [Label](url)`` lines, for a Markdown contact list."""
+    return "\n".join(f"- [{link.label}]({link.url})" for link in links)
+
+
 def replace_html_link_markers(
     text: str,
     renderer: Callable[[Sequence[Link]], str],
