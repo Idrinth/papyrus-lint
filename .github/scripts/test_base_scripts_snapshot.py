@@ -113,7 +113,7 @@ class RenderAndMainTests(unittest.TestCase):
                 str(base / "work"),
             ]
             self.assertEqual(0, entry_main([*common_args, "--update"]))
-            self.assertEqual("second\nfirst\n", snap.fixture_path(root, "careful").read_text())
+            self.assertEqual("second\nfirst\n", snap.fixture_path(root, "careful", "skyrim", False).read_text())
 
             cli = _write_fake_cli(base, "first\nsecond\n")
             self.assertEqual(0, entry_main(common_args))
@@ -123,10 +123,10 @@ class RenderAndMainTests(unittest.TestCase):
             base = Path(directory)
             root = _write_repo(base)
             with self.assertRaises(snap.SnapshotError):
-                snap.render_output(root, base / "missing", "nope", base / "work")
+                snap.render_output(root, base / "missing", "nope", base / "work", "hello", True)
             crashing = _write_fake_cli(base, "", exit_code=2)
             with self.assertRaises(snap.SnapshotError) as ctx:
-                snap.render_output(root, crashing, "strict", base / "work")
+                snap.render_output(root, crashing, "strict", base / "work", "hello", False)
             self.assertIn("exited 2", str(ctx.exception))
 
 

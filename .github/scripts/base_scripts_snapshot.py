@@ -10,8 +10,8 @@ from pathlib import Path
 
 from ci_lib.base_scripts_snapshot import (
     FIXTURE_DIR,
-    PRESETS,
     GAMES,
+    PRESETS,
     SnapshotError,
     compare_output,
     fixture_path,
@@ -41,12 +41,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--game",
         choices=GAMES,
         action="append",
-        help=f"The game to run this for",
+        help="The game to run this for",
     )
     parser.add_argument(
         "--extender",
         action="store_true",
-        help=f"The chosen game uses its script extender",
+        help="The chosen game uses its script extender",
     )
     parser.add_argument(
         "--work-dir",
