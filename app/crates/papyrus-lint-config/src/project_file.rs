@@ -172,7 +172,30 @@ fn save_project_file_at(path: &Path, project: &ProjectFile) -> Result<(), String
     let mut project = project.clone();
     seed_lookup_script_roots(&mut project);
     let yaml = serde_norway::to_string(&project).map_err(|err| err.to_string())?;
+    let yaml = game_key_first(&yaml);
     fs::write(path, with_field_comments(&yaml)).map_err(|err| err.to_string())
+}
+
+/// Moves the serialized `game` key ahead of the app-only settings. `game`
+/// belongs to the flattened lint config, so serde otherwise emits it after
+/// every field declared directly on [`ProjectFile`]. Keeping it first makes
+/// saved files match the checked-in default configuration and presents the
+/// project's target before settings whose behavior depends on that target.
+pub(crate) fn game_key_first(yaml: &str) -> String {
+    let mut game = None;
+    let mut rest = String::with_capacity(yaml.len());
+    for line in yaml.split_inclusive('\n') {
+        if game.is_none() && line.starts_with("game:") {
+            game = Some(line);
+        } else {
+            rest.push_str(line);
+        }
+    }
+
+    match game {
+        Some(game) => format!("{game}{rest}"),
+        None => rest,
+    }
 }
 
 /// Serializes the app-only (non-lint) settings of `project`, always
