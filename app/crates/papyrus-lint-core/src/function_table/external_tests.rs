@@ -2,6 +2,66 @@ use super::super::test_support::{diagnostics_for, write_script};
 use super::*;
 
 #[test]
+fn function_table_forwards_every_external_signature_lookup() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "Base",
+        "ScriptName Base\n\nInt Property Count Auto\nString Label = \"\"\n\nAuto State Idle\nEndState\n\nFunction Run(String message) Global\nEndFunction\n\nInt Function RegisterFoo() ; @nodiscard\n    Count += 1\n    Return Count\nEndFunction\n",
+    );
+    write_script(
+        root.path(),
+        "Child",
+        "ScriptName Child Extends Base\n\nForm Property Target Auto\n\nState Active\nEndState\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let external: &mut dyn papyrus_lints::ExternalSignatures = &mut table;
+
+    let params = external
+        .lookup("child", "run")
+        .expect("inherited function should resolve through the adapter");
+    assert_eq!(params.len(), 1);
+    assert_eq!(params[0].name, "message");
+    assert_eq!(params[0].type_name.name, "String");
+    assert!(external.is_subtype("Child", "Base"));
+    assert!(external.has_property("Child", "Count"));
+    assert!(external.has_field("Child", "Label"));
+    assert!(external.script_exists("Child"));
+    assert!(external.can_resolve_script("Child"));
+    assert!(!external.can_resolve_script("DefinitelyMissing"));
+
+    for primitive in ["INT", "float", "Bool", "STRING", "Var"] {
+        assert!(external.type_exists(primitive));
+    }
+    assert!(external.type_exists("Child"));
+    assert!(!external.type_exists("DefinitelyMissing"));
+
+    assert!(external.has_state("Child", "Idle"));
+    let mut states = external.ancestor_states("Child");
+    states.sort();
+    assert_eq!(
+        states,
+        vec![("active".to_string(), false), ("idle".to_string(), true)]
+    );
+    assert_eq!(external.is_global_function("Child", "Run"), Some(true));
+    assert_eq!(
+        external.is_nodiscard_function("Child", "RegisterFoo"),
+        Some(true)
+    );
+    assert_eq!(
+        external.function_has_side_effects("Child", "RegisterFoo"),
+        Some(true)
+    );
+    assert_eq!(external.is_global_function("Child", "Missing"), None);
+    assert_eq!(external.is_nodiscard_function("Child", "Missing"), None);
+    assert_eq!(external.function_has_side_effects("Child", "Missing"), None);
+    assert!(external.ancestry_fully_known("Child"));
+    assert!(!external.ancestry_fully_known("DefinitelyMissing"));
+    assert_eq!(external.property_types("Child"), vec!["Form"]);
+}
+
+#[test]
 fn exposes_the_canonical_side_effect_flag_to_lints() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     let source = "ScriptName Example\n\nInt Property Count Auto\n\nInt Function Bump()\n    Count += 1\n    Return Count\nEndFunction\n\nFunction Test()\n    Debug.Trace(Bump())\nEndFunction\n";
