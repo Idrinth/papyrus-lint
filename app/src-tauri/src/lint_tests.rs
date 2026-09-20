@@ -798,16 +798,15 @@ fn list_script_members_matches_type_names_case_insensitively() {
 #[test]
 #[cfg(unix)]
 fn compile_command_trims_the_executable_path_and_returns_its_output() {
-    use std::os::unix::fs::PermissionsExt;
+    use std::os::unix::fs::symlink;
 
     let dir = tempdir().unwrap();
     let source_dir = dir.path().join("Scripts/Source");
     std::fs::create_dir_all(&source_dir).unwrap();
     let script_path = source_dir.join("Example.psc");
-    std::fs::write(&script_path, "").unwrap();
+    std::fs::write(&script_path, "echo command wrapper\n").unwrap();
     let compiler_path = dir.path().join("compiler.sh");
-    std::fs::write(&compiler_path, "#!/bin/sh\necho command wrapper\n").unwrap();
-    std::fs::set_permissions(&compiler_path, std::fs::Permissions::from_mode(0o755)).unwrap();
+    symlink("/bin/sh", &compiler_path).unwrap();
 
     let outcome = compile_psc_file(
         script_path.to_string_lossy().into_owned(),
