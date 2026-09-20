@@ -1,0 +1,16 @@
+{
+  "id": "deprecated-functions",
+  "name": "Deprecated function usage",
+  "category": "Reliability",
+  "visitor": "tokens",
+  "tags": [
+    "correctness",
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "kept_in_standard": true,
+  "fixable": false,
+  "description": "Flags calls to deprecated functions and recommends supported alternatives where available.",
+  "definition": "Flags calls to functions listed in `shared/rules/data/deprecated-functions.yaml`, using the severity and migration guidance supplied by that data. Native singleton functions must be qualified by their declaring script, while object methods are matched case-insensitively by function name. This rule is enabled by the strict and standard presets and disabled by the careful preset."
+}
