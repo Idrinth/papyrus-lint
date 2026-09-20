@@ -24,8 +24,8 @@ pub(crate) fn run_init(
     initialize_config(&current_dir, preset, stdout, stderr)
 }
 
-/// The `.ppj` (Papyrus Project XML) file directly inside `dir`, if there's
-/// exactly one — matched the same way [`crate::project::is_ppj_path`] does.
+/// The first `.ppj` (Papyrus Project XML) file directly inside `dir`, if any —
+/// matched the same way [`crate::project::is_ppj_path`] does.
 /// A project with several `.ppj` files (e.g. one per DLC) picks the first in
 /// alphabetical order rather than refusing to seed anything, since guessing
 /// wrong here is no worse than `init`'s previous behavior of not looking at
@@ -43,7 +43,7 @@ fn find_ppj_in_dir(dir: &Path) -> Option<PathBuf> {
 
 /// Seeds a freshly initialized config's `additional_script_roots` from a
 /// `.ppj` file's own `<Import>` entries (see [`papyrus_lint_core::ppj`]),
-/// when `dir` has exactly one and the config `init` just wrote doesn't
+/// when `dir` has one and the config `init` just wrote doesn't
 /// already have roots of its own (e.g. from an executable-adjacent base
 /// config) — otherwise this project's own compile-time import search paths
 /// would otherwise have to be guessed or hand-copied from the `.ppj` file.
