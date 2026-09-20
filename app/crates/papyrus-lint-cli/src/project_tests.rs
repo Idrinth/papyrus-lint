@@ -230,3 +230,82 @@ fn is_psc_path_matches_psc_extensions_case_insensitively() {
     assert!(!is_psc_path(Path::new("sources.achlist")));
     assert!(!is_psc_path(Path::new("scripts")));
 }
+
+#[test]
+fn is_ppj_path_matches_ppj_extensions_case_insensitively() {
+    assert!(is_ppj_path(Path::new("project.ppj")));
+    assert!(is_ppj_path(Path::new("project.PPJ")));
+    assert!(!is_ppj_path(Path::new("project.xml")));
+    assert!(!is_ppj_path(Path::new("project")));
+}
+
+#[test]
+fn absolutize_preserves_absolute_paths() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let path = dir.path().join("missing/import/root");
+
+    assert_eq!(absolutize(&path), path.to_string_lossy());
+}
+
+#[test]
+fn absolutize_resolves_relative_paths_from_the_current_directory() {
+    let path = Path::new("missing/import/root");
+    let expected = std::env::current_dir()
+        .expect("failed to read current directory")
+        .join(path);
+
+    assert_eq!(absolutize(path), expected.to_string_lossy());
+}
+
+#[test]
+fn resolve_input_project_root_uses_the_psc_path_for_a_single_script() {
+    let script = Path::new("project/scripts/source/User/Example.psc");
+
+    assert_eq!(
+        resolve_input_project_root(script, &[], true, false),
+        PathBuf::from("project")
+    );
+}
+
+#[test]
+fn resolve_input_project_root_uses_the_first_script_with_a_candidate_pair() {
+    let scripts = [
+        PathBuf::from("unconventional/Example.psc"),
+        PathBuf::from("first/scripts/source/Example.psc"),
+        PathBuf::from("second/source/scripts/Other.psc"),
+    ];
+
+    assert_eq!(
+        resolve_input_project_root(Path::new("sources.achlist"), &scripts, false, false),
+        PathBuf::from("first")
+    );
+}
+
+#[test]
+fn resolve_input_project_root_falls_back_to_a_scanned_directory() {
+    let input = Path::new("unconventional/scripts");
+    let scripts = [input.join("Example.psc")];
+
+    assert_eq!(
+        resolve_input_project_root(input, &scripts, false, true),
+        input
+    );
+}
+
+#[test]
+fn resolve_input_project_root_falls_back_to_a_project_file_parent() {
+    let input = Path::new("project/lists/sources.achlist");
+
+    assert_eq!(
+        resolve_input_project_root(input, &[], false, false),
+        PathBuf::from("project/lists")
+    );
+}
+
+#[test]
+fn resolve_input_project_root_uses_current_directory_for_a_bare_project_file() {
+    assert_eq!(
+        resolve_input_project_root(Path::new("sources.achlist"), &[], false, false),
+        PathBuf::from(".")
+    );
+}
