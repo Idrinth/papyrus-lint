@@ -180,7 +180,8 @@ fn deep_merge_replaces_a_mapping_with_a_non_mapping_override() {
     let over = serde_norway::from_str("rules: disabled\n").expect("override YAML should parse");
 
     let merged = deep_merge(base, over);
-    let expected = serde_norway::from_str("rules: disabled\n").expect("expected YAML should parse");
+    let expected: serde_norway::Value =
+        serde_norway::from_str("rules: disabled\n").expect("expected YAML should parse");
 
     assert_eq!(merged, expected);
 }
