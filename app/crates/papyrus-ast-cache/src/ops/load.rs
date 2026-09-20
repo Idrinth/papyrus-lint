@@ -4,13 +4,16 @@
 
 use std::path::Path;
 
-use crate::entry::{valid_entry_in, valid_entry_in_for_game};
+#[cfg(test)]
+use crate::entry::valid_entry_in;
+use crate::entry::valid_entry_in_for_game;
 
 /// Also primes `papyrus_parser`'s own in-memory memoization (see
 /// [`papyrus_parser::prime_cache`]) with a hit, so anything that parses
 /// `source` itself later in this process -- notably
 /// `papyrus_lints::lint()`/`repair()`, which never see `source_path` and so
 /// can't consult this cache directly -- reuses it instead of re-parsing.
+#[cfg(test)]
 pub(crate) fn get_in(
     dir: &Path,
     source_path: &Path,
@@ -35,6 +38,7 @@ pub(crate) fn get_in_for_game(
 /// Also primes `papyrus_parser`'s own in-memory memoization (see
 /// [`papyrus_parser::prime_tokenize_cache`]) with a hit, the same way
 /// [`get_in`] does for the AST.
+#[cfg(test)]
 pub(crate) fn get_tokens_in(
     dir: &Path,
     source_path: &Path,

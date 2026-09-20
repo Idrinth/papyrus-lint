@@ -66,6 +66,7 @@ pub(crate) fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
 /// `tokens` accessors in [`crate::ops`], and by each one's `put` so that
 /// writing one field preserves whatever still-valid value the other field
 /// already held.
+#[cfg(test)]
 pub(crate) fn valid_entry_in(dir: &Path, source_path: &Path, source: &str) -> Option<CacheEntry> {
     let raw = std::fs::read(cache_file_path(dir, source_path)).ok()?;
     deserialize_fresh_entry(raw, source_path, source)
@@ -103,6 +104,7 @@ fn deserialize_fresh_entry(raw: Vec<u8>, source_path: &Path, source: &str) -> Op
     Some(entry)
 }
 
+#[cfg(test)]
 pub(crate) fn write_entry_in(dir: &Path, source_path: &Path, entry: &CacheEntry) {
     let Ok(serialized) = serde_json::to_vec(entry) else {
         return;

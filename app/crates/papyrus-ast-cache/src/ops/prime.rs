@@ -3,8 +3,10 @@
 
 use std::path::Path;
 
+#[cfg(test)]
 use super::load::{get_in, get_tokens_in};
 use super::load::{get_in_for_game, get_tokens_in_for_game};
+#[cfg(test)]
 use super::store::{put_in, put_tokens_in};
 use super::store::{put_in_for_game, put_tokens_in_for_game};
 
@@ -18,6 +20,7 @@ use super::store::{put_in_for_game, put_tokens_in_for_game};
 /// in-memory cache the same way a hit would) and writes the result to the
 /// disk cache for next time. See [`crate::ensure_primed`], the public
 /// wrapper that supplies the real cache directory and version.
+#[cfg(test)]
 pub(crate) fn ensure_primed_in(dir: &Path, source_path: &Path, source: &str, linter_version: &str) {
     if get_in(dir, source_path, source).is_none() {
         if let Ok(ast) = papyrus_parser::parse(source) {

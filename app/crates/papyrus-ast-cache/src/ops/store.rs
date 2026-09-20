@@ -5,10 +5,12 @@
 use std::path::Path;
 
 use crate::entry::{
-    file_modified_unix_secs, valid_entry_in, valid_entry_in_for_game, write_entry_in,
-    write_entry_in_for_game, CacheEntry,
+    file_modified_unix_secs, valid_entry_in_for_game, write_entry_in_for_game, CacheEntry,
 };
+#[cfg(test)]
+use crate::entry::{valid_entry_in, write_entry_in};
 
+#[cfg(test)]
 pub(crate) fn put_in(
     dir: &Path,
     source_path: &Path,
@@ -48,6 +50,7 @@ pub(crate) fn put_in_for_game(
     );
 }
 
+#[cfg(test)]
 pub(crate) fn put_tokens_in(
     dir: &Path,
     source_path: &Path,
@@ -108,6 +111,7 @@ fn write_stamped_entry_for_game(
     write_entry_in_for_game(dir, game, source_path, &entry);
 }
 
+#[cfg(test)]
 fn write_stamped_entry(
     dir: &Path,
     source_path: &Path,
