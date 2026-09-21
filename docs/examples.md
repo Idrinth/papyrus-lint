@@ -281,6 +281,5 @@ EndFunction
 
 See the [lint rule reference](https://papyrus-lint.idrinth.de/rules.html)
 for the full list, including the purely style/formatting lints not shown
-here, and [Disabling a lint on a specific
-line](../README.md#disabling-a-lint-on-a-specific-line) for the full
+here, and see the [annotations reference](annotations.md) for the full
 `; @disable`/`; @disable-file` directive syntax.

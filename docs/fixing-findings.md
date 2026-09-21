@@ -53,13 +53,13 @@ applies each such finding's own fix restricted to that line, the same way
 `property-sorting`, or `unused-import` removing its own `Import` line) is
 silently skipped rather than blocking the rest.
 "Ignore" appears whenever at least one finding on the line carries a rule
-id, and adds a [`; @disable <rule-id>[, <rule-id>...]`](../README.md#disabling-a-lint-on-a-specific-line)
+id, and adds a [`; @disable <rule-id>[, <rule-id>...]`](annotations.md)
 comment naming every rule found on that line instead of fixing it — merging
 into an already-present `; @disable` comment on that line rather than
 adding a second one, so clicking it again after a later run flags something
 new just extends the same comment.
 "File disable" appears next to "Ignore" and adds a
-[`; @disable-file <rule-id>[, <rule-id>...]`](../README.md#disabling-a-lint-on-a-specific-line)
+[`; @disable-file <rule-id>[, <rule-id>...]`](annotations.md)
 comment naming those same rules instead, silencing them across the whole
 file no matter which line the comment sits on — merging into an
 already-present `; @disable-file` comment on that line the same way

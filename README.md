@@ -78,9 +78,9 @@ diagnostic and dismiss it.
 Treat every diagnostic here as **advice, not a guaranteed defect report**: a
 suggestion worth a second look, not proof the code is broken. Use your own
 judgment for whether a flagged line needs changing, and use the
-[`; @disable`](#disabling-a-lint-on-a-specific-line) comment below to
-silence a specific rule on a specific line (or [`; @disable-file`](#disabling-a-lint-on-a-specific-line)
-to silence it across the whole file) when you've decided it doesn't apply.
+[`; @disable`](docs/annotations.md) annotation to silence a specific rule on a
+specific line (or `; @disable-file` to silence it across the whole file) when
+you've decided it doesn't apply.
 
 ![Papyrus Lint Results](shared/images/papyrus-lint-results.png)
 
@@ -148,50 +148,12 @@ would make CreationKit fail to recognize the fragment.
 
 ![Papyrus Lint Mass Fix](shared/images/papyrus-lint-massfix.png)
 
-## Disabling a lint on a specific line
+## Annotations
 
-A line carrying a trailing `; @disable <rule-id>[, <rule-id>...]` comment
-has diagnostics from the named rule(s) suppressed for that line only, e.g.:
-
-```papyrus
-action = 1 ; @disable float-to-int
-```
-
-The desktop app's code viewer can add this comment for you instead of
-typing it by hand — see its per-line "Ignore" button
-[above](#fixing-lint-findings). Its "File disable" button writes the
-`; @disable-file` form below instead, and "Config disable" turns the
-rule off in `papyrus-lint.yaml`. The VS Code extension's lightbulb menu
-offers **Ignore this lint for the line**, which writes the same
-`; @disable` comment, **Ignore this lint for the file**, which writes a
-[`; @disable-file`](#disabling-a-lint-on-a-specific-line) comment instead,
-and **Ignore this lint for the project**, which turns the rule off in
-`papyrus-lint.yaml` (creating that file if the workspace doesn't have one
-yet).
-
-`; @disable` with no rule ids suppresses every lint on that line. Matching
-against the directive's rule id(s) is case-insensitive. This only affects
-linting — it does not change what automatic fixes do to that line. A
-rule's id is named on its own row on the [lint rule
-reference](https://papyrus-lint.idrinth.de/rules.html) (e.g. `float-to-int`
-for "Implicit Float-to-Int conversion", linked directly at
-[`#rule-float-to-int`](https://papyrus-lint.idrinth.de/rules.html#rule-float-to-int)).
-
-A `; @disable-file <rule-id>[, <rule-id>...]` comment does the same across
-the entire file instead of just the line it's written on, no matter where
-in the file it appears, e.g.:
-
-```papyrus
-; @disable-file float-to-int
-```
-
-`; @disable-file` with no rule ids suppresses every lint in the file. It
-accepts the same rule ids, matched the same case-insensitive way, and
-likewise never changes what automatic fixes do. The **Unused disable
-directive** lint (`unused-disable`) treats an `@disable-file` directive the
-same way it treats `@disable`: an unknown rule id, or one that never
-produces a diagnostic anywhere in the file, is flagged; a bare
-`@disable-file` is flagged only when the whole file has no diagnostics at all.
+Papyrus Lint supports comment annotations for deprecated and must-use
+functions, line and file lint suppression, and declaration access metadata.
+See the [annotations reference](docs/annotations.md) for their syntax and
+behavior.
 
 ## Configuration
 
