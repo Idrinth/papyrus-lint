@@ -26,9 +26,18 @@ include!(concat!(env!("OUT_DIR"), "/slow_functions_data.rs"));
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "slow-functions";
 
-#[derive(Default)]
 struct Collect {
     store: Store,
+    rules: &'static [SlowFunctionRule],
+}
+
+impl Collect {
+    fn new(rules: &'static [SlowFunctionRule]) -> Self {
+        Self {
+            store: Store::default(),
+            rules,
+        }
+    }
 }
 
 impl TokenLint for Collect {
@@ -52,7 +61,7 @@ impl TokenLint for Collect {
         ) {
             return;
         }
-        let Some(rule) = find_rule(SLOW_FUNCTIONS, name) else {
+        let Some(rule) = find_rule(self.rules, name) else {
             return;
         };
         if rule.global && !qualifier_matches(tokens, index, rule.object) {
@@ -71,7 +80,11 @@ impl TokenLint for Collect {
 }
 
 pub fn visitor() -> LintVisitor {
-    LintVisitor::Tokens(Box::new(Collect::default()))
+    LintVisitor::Tokens(Box::new(Collect::new(SLOW_FUNCTIONS)))
+}
+
+fn visitor_with_rules(rules: &'static [SlowFunctionRule]) -> LintVisitor {
+    LintVisitor::Tokens(Box::new(Collect::new(rules)))
 }
 
 /// Checks `source` for calls to functions with a faster equivalent.
@@ -214,35 +227,14 @@ fn check_with_rules(
     tokens: Option<&[papyrus_parser::token::Token]>,
     rules: &'static [SlowFunctionRule],
 ) -> Vec<Diagnostic> {
-    let Some(tokens) = tokens else {
-        return Vec::new();
-    };
-
-    let mut diagnostics = Vec::new();
-    for (i, window) in tokens.windows(2).enumerate() {
-        let TokenKind::Identifier(name) = &window[0].kind else {
-            continue;
-        };
-        if !matches!(window[1].kind, TokenKind::LParen) {
-            continue;
-        }
-        let Some(rule) = find_rule(rules, name) else {
-            continue;
-        };
-        if rule.global && !qualifier_matches(tokens, i, rule.object) {
-            continue;
-        }
-        diagnostics.push(Diagnostic {
-            line: window[0].line,
-            column: window[0].col,
-            message: format!(
-                "[info] {}.{} is slower than necessary; use `{}` instead",
-                rule.object, rule.function, rule.replacement
-            ),
-            rule: RULE,
-        });
-    }
-    diagnostics
+    crate::visitor::run(
+        visitor_with_rules(rules),
+        "",
+        None,
+        tokens,
+        &crate::config::Config::default(),
+        &mut crate::external_signatures::NoExternalSignatures,
+    )
 }
 
 /// Whether the call at `tokens[call_index]` is qualified with `object`

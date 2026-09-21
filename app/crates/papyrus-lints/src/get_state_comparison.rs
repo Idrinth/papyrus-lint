@@ -15,7 +15,7 @@
 //! script is currently in the empty state) is always valid and never
 //! flagged.
 
-use papyrus_parser::ast::{BinaryOp, Expr, FunctionDecl, IfBranch, Literal, Script, Stmt};
+use papyrus_parser::ast::{BinaryOp, Expr, Literal, Script};
 
 use crate::external_signatures::ExternalSignatures;
 use crate::state_reference::StateReferences;
@@ -81,107 +81,15 @@ pub fn check(
 /// through `external`'s knowledge of the script's `Extends` ancestry,
 /// flagging a target that can't be found there either.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
-pub fn check_with<E: ExternalSignatures + ?Sized>(
-    ast: Option<&Script>,
-    external: &mut E,
-) -> Vec<Diagnostic> {
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let states = StateReferences::collect(script);
-
-    let mut diagnostics = Vec::new();
-    for function in all_functions(script) {
-        for stmt in &function.body {
-            walk_stmt(
-                stmt,
-                &states,
-                external,
-                &mut diagnostics,
-            );
-        }
-    }
-    diagnostics
-}
-
-/// Iterates every function declared directly on a script, plus every
-/// function declared in each of its states.
-fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
-    script.functions.iter().chain(
-        script
-            .states
-            .iter()
-            .flat_map(|state| state.functions.iter()),
+pub fn check_with<E: ExternalSignatures>(ast: Option<&Script>, external: &mut E) -> Vec<Diagnostic> {
+    crate::visitor::run(
+        visitor(),
+        "",
+        ast,
+        None,
+        &crate::config::Config::default(),
+        external,
     )
-}
-
-fn walk_stmt<E: ExternalSignatures + ?Sized>(
-    stmt: &Stmt,
-    states: &StateReferences,
-    external: &mut E,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    match stmt {
-        Stmt::VarDecl(decl) => {
-            if let Some(value) = &decl.value {
-                walk_expr(value, states, external, diagnostics);
-            }
-        }
-        Stmt::Assign { target, value, .. } => {
-            walk_expr(target, states, external, diagnostics);
-            walk_expr(value, states, external, diagnostics);
-        }
-        Stmt::Expr { value, .. } => walk_expr(value, states, external, diagnostics),
-        Stmt::Return { value, .. } => {
-            if let Some(value) = value {
-                walk_expr(value, states, external, diagnostics);
-            }
-        }
-        Stmt::If {
-            branches,
-            else_body,
-            ..
-        } => {
-            for IfBranch {
-                condition, body, ..
-            } in branches
-            {
-                walk_expr(condition, states, external, diagnostics);
-                for stmt in body {
-                    walk_stmt(stmt, states, external, diagnostics);
-                }
-            }
-            for stmt in else_body {
-                walk_stmt(stmt, states, external, diagnostics);
-            }
-        }
-        Stmt::While {
-            condition, body, ..
-        } => {
-            walk_expr(condition, states, external, diagnostics);
-            for stmt in body {
-                walk_stmt(stmt, states, external, diagnostics);
-            }
-        }
-    }
-}
-
-fn walk_expr<E: ExternalSignatures + ?Sized>(
-    expr: &Expr,
-    states: &StateReferences,
-    external: &mut E,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    if let Expr::Binary { left, op, right } = expr {
-        if matches!(op, BinaryOp::Eq | BinaryOp::NotEq) {
-            let mut store = Store::default();
-            check_comparison(left, right, states, external, &mut store);
-            diagnostics.extend(store.take());
-        }
-        walk_expr(left, states, external, diagnostics);
-        walk_expr(right, states, external, diagnostics);
-    }
 }
 
 /// Flags `left op right` when exactly one side is a bare/`self`-qualified

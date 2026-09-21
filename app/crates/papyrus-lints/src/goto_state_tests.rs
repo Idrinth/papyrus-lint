@@ -12,7 +12,7 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
-fn check_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) -> Vec<Diagnostic> {
+fn check_with<E: ExternalSignatures>(source: &str, external: &mut E) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
     super::check_with(ast.as_ref(), external)
 }
