@@ -46,6 +46,68 @@ impl crate::external_signatures::ExternalSignatures for DeprecatedExternal {
 }
 
 #[test]
+fn compiled_rules_are_loaded_from_yaml() {
+    // Not a specific count: shared/rules/data/deprecated-functions.yaml's
+    // entry list is expected to grow (and shrink, as entries move to
+    // forbidden-functions.yaml) over time, so this only pins the loader's
+    // shape (non-empty, each entry has its expected fields), not its
+    // current content.
+    assert!(!DEPRECATED_FUNCTIONS.is_empty());
+    assert!(DEPRECATED_FUNCTIONS
+        .iter()
+        .all(|r| !r.script.is_empty() && !r.function.is_empty() && !r.level.is_empty()));
+    let rule = DEPRECATED_FUNCTIONS
+        .iter()
+        .find(|rule| rule.function == "MoveToWhenUnloaded")
+        .expect("MoveToWhenUnloaded rule");
+    assert_eq!(rule.level, "error");
+    assert_eq!(
+        rule.replacement,
+        Some("MoveTo(akTarget, afXOffset, afYOffset, afZOffset)")
+    );
+}
+
+#[test]
+fn flags_object_method_with_data_message_and_severity() {
+    let diagnostics = check("ScriptName Example\nFunction Test(Actor akActor)\n  akActor.ModFavorPoints(1)\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (3, 11));
+    assert!(diagnostics[0].message.starts_with("[warning] Actor.ModFavorPoints:"));
+    assert!(diagnostics[0].message.contains("MakePlayerFriend()"));
+}
+
+#[test]
+fn compiled_object_method_declarations_remain_flagged() {
+    let diagnostics = check(
+        "ScriptName Actor\nFunction ModFavorPoints(Int aiFavorPoints = 1)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (2, 10));
+    assert!(diagnostics[0]
+        .message
+        .starts_with("[warning] Actor.ModFavorPoints:"));
+}
+
+#[test]
+fn global_rule_requires_its_literal_qualifier_case_insensitively() {
+    let diagnostics = check("Game.GetSkillLegendaryLevel(\"Smithing\")\ngame.getskilllegendarylevel(\"Smithing\")\nakOther.GetSkillLegendaryLevel(\"Smithing\")\nGetSkillLegendaryLevel(\"Smithing\")\n");
+
+    assert_eq!(diagnostics.len(), 2);
+    assert_eq!(diagnostics[0].line, 1);
+    assert_eq!(diagnostics[1].line, 2);
+}
+
+#[test]
+fn chained_replacement_call_is_not_a_global_qualifier() {
+    let diagnostics = check(
+        "ScriptName Game\nInt Function GetSkillLegendaryLevel(String asActorValue) Global\n    Return ActorValueInfo.GetActorValueInfoByName(asActorValue).GetSkillLegendaryLevel()\nEndFunction\n",
+    );
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn emits_structured_external_deprecation_guidance() {
     let source = "ScriptName Example\nLegacyApi Property Api Auto\nFunction Test()\n    Api.OldWay()\nEndFunction\n";
     let ast = papyrus_parser::parse(source).unwrap();

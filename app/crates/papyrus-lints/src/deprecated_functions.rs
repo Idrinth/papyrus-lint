@@ -1,8 +1,12 @@
-//! Flags calls to functions declared with `; @deprecated` or marked as
-//! deprecated in an externally resolved saved AST. Token-based matching also
-//! lets the rule run when the source does not produce a complete AST.
+//! Flags calls to functions listed in `shared/rules/data/deprecated-functions.yaml`
+//! or declared with `; @deprecated`.
+//!
+//! The data is compiled into `DEPRECATED_FUNCTIONS` by `build.rs`, so the
+//! linter does not parse YAML at runtime. Token-based matching also lets the
+//! rule run when the source does not produce a complete AST. Bundled AST
+//! enrichment and project directives share the same follow-up lookup path.
 
-use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::external_signatures::ExternalSignatures;
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
@@ -11,12 +15,26 @@ use papyrus_parser::ast::{Deprecation, FunctionDecl, Script};
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 use papyrus_parser::types::TypeEnv;
 
+pub struct DeprecatedFunctionRule {
+    pub script: &'static str,
+    pub function: &'static str,
+    #[allow(dead_code)]
+    pub replacement: Option<&'static str>,
+    pub level: &'static str,
+    pub message: &'static str,
+    /// Whether `script` is a native singleton that must be called through
+    /// its literal script name rather than through an object instance.
+    pub global: bool,
+}
+
+include!(concat!(env!("OUT_DIR"), "/deprecated_functions_data.rs"));
+
 pub const RULE: &str = "deprecated-functions";
 
 #[derive(Default)]
 struct Collect {
     store: Store,
-    local: HashMap<String, Deprecation>,
+    local: HashSet<String>,
     script_name: Option<String>,
     env: Option<TypeEnv>,
 }
@@ -31,12 +49,11 @@ impl TokenLint for Collect {
         self.env = ctx.ast.map(TypeEnv::for_script);
         self.local.clear();
         if let Some(script) = ctx.ast {
-            self.local.extend(all_functions(script).filter_map(|function| {
-                function
-                    .deprecation
-                    .clone()
-                    .map(|deprecation| (function.name.to_ascii_lowercase(), deprecation))
-            }));
+            self.local.extend(
+                all_functions(script)
+                    .filter(|function| function.deprecation.is_some())
+                    .map(|function| function.name.to_ascii_lowercase()),
+            );
         }
         let Some(tokens) = ctx.tokens else {
             return;
@@ -52,10 +69,7 @@ impl TokenLint for Collect {
                 continue;
             };
             if header_has_deprecated(&lines, tokens, token.line) {
-                self.local.insert(
-                    name.to_ascii_lowercase(),
-                    generic_deprecation(name),
-                );
+                self.local.insert(name.to_ascii_lowercase());
             }
         }
     }
@@ -73,7 +87,23 @@ impl TokenLint for Collect {
         if !matches!(tokens.get(index + 1).map(|token| &token.kind), Some(TokenKind::LParen)) {
             return;
         }
-        // A deprecation marker applies to callers, not the declaration itself.
+        if let Some(rule) = find_rule(name) {
+            if !rule.global || qualifier_matches(tokens, index, rule.script) {
+                self.store.emit(
+                    token.line,
+                    token.col,
+                    format!(
+                        "[{}] {}.{}: {}",
+                        rule.level, rule.script, rule.function, rule.message
+                    ),
+                    RULE,
+                );
+                return;
+            }
+        }
+        // A project directive marks callers, not the declaration itself.
+        // Keep this after the compiled-rule lookup: declarations in the
+        // bundled API scripts have historically been reported by that data.
         if matches!(
             tokens.get(index.wrapping_sub(1)).map(|token| &token.kind),
             Some(TokenKind::Keyword(Keyword::Function))
@@ -101,7 +131,7 @@ impl TokenLint for Collect {
 
 struct DeprecatedContext<'a> {
     ast: Option<&'a Script>,
-    local: &'a HashMap<String, Deprecation>,
+    local: &'a HashSet<String>,
     script_name: Option<&'a str>,
     type_env: Option<&'a TypeEnv>,
 }
@@ -119,6 +149,16 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
+}
+
+fn qualifier_matches(tokens: &[Token], call_index: usize, script: &str) -> bool {
+    if call_index < 2 || !matches!(tokens[call_index - 1].kind, TokenKind::Dot) {
+        return false;
+    }
+    let TokenKind::Identifier(qualifier) = &tokens[call_index - 2].kind else {
+        return false;
+    };
+    qualifier.eq_ignore_ascii_case(script)
 }
 
 fn qualifier_before(tokens: &[Token], call_index: usize) -> Option<&str> {
@@ -146,10 +186,15 @@ fn deprecation(
         || qualifier.is_some_and(|name| {
             name.eq_ignore_ascii_case("self") || name.eq_ignore_ascii_case("parent")
         });
-    if self_like {
-        if let Some(deprecation) = context.local.get(&function_name.to_ascii_lowercase()) {
-            return Some(deprecation.clone());
+    if self_like && context.local.contains(&function_name.to_ascii_lowercase()) {
+        if let Some(script) = context.ast {
+            if let Some(found) = all_functions(script).find(|function| {
+                function.name.eq_ignore_ascii_case(function_name) && function.deprecation.is_some()
+            }) {
+                return found.deprecation.clone();
+            }
         }
+        return Some(generic_deprecation(function_name));
     }
     if self_like {
         return context
@@ -223,6 +268,12 @@ fn line_has_deprecated(line: &str) -> bool {
     papyrus_parser::comment_annotations::parse_line_annotations(line)
         .iter()
         .any(|annotation| annotation.name.eq_ignore_ascii_case("deprecated"))
+}
+
+fn find_rule(name: &str) -> Option<&'static DeprecatedFunctionRule> {
+    DEPRECATED_FUNCTIONS
+        .iter()
+        .find(|rule| rule.function.eq_ignore_ascii_case(name))
 }
 
 #[cfg(test)]

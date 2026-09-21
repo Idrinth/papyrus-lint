@@ -11,6 +11,6 @@
   "importance": "low",
   "kept_in_standard": true,
   "fixable": false,
-  "description": "Flags calls to base-game or project functions marked as deprecated, and recommends supported alternatives where available.",
-  "definition": "Flags calls to project functions marked `; @deprecated` on the function header or the comment line immediately above it. Base-game functions catalogued in `shared/rules/data/deprecated-functions.yaml` are marked on their bundled saved ASTs at build time, including the configured severity and migration guidance, and follow the same external-signature lookup path. Calls and declarations are resolved case-insensitively. This rule is enabled by the strict and standard presets and disabled by the careful preset."
+  "description": "Flags calls to compiled-in deprecated functions or project functions marked `; @deprecated`, and recommends supported alternatives where available.",
+  "definition": "Flags calls to functions listed in `shared/rules/data/deprecated-functions.yaml`, using the severity and migration guidance supplied by that data, as well as project functions marked `; @deprecated` on the function header or the comment line immediately above it. Native singleton functions must be qualified by their declaring script, while object methods and project declarations are resolved case-insensitively. The same catalog is stamped onto bundled saved ASTs at build time so external-signature lookups can carry identical metadata. This rule is enabled by the strict and standard presets and disabled by the careful preset."
 }
