@@ -1,5 +1,20 @@
 //! Flags a call through Papyrus's static/global call syntax
-//! (`ScriptName.Function(...)`) whose target function isn't declared `Global`.
+//! (`ScriptName.Function(...)`, e.g. `MyScript.DoThing()`) whose target
+//! function isn't declared `Global` on that script — Papyrus only allows
+//! the static syntax to reach a script's `Global` functions; calling an
+//! ordinary instance function that way fails to compile, since it needs an
+//! actual object reference (or `Self`) to run against.
+//!
+//! Like [`crate::unresolved_script`], only a call whose object is a bare
+//! identifier not already known as a local variable, parameter, or
+//! property is treated as a script reference at all — anything resolvable
+//! locally is a normal instance call, left to the "Argument type check"
+//! lint instead. Whether a resolved function is declared `Global` depends
+//! on the project's own scripts, which this crate has no filesystem access
+//! to on its own; a caller that can resolve it (e.g. the desktop app's
+//! `FunctionTable`) does so by implementing
+//! [`ExternalSignatures::is_global_function`] and calling [`check_with`]
+//! instead of [`check`].
 
 use papyrus_parser::ast::{Expr, FunctionDecl, Script};
 use papyrus_parser::types::TypeEnv;
@@ -8,6 +23,7 @@ use crate::external_signatures::ExternalSignatures;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "non-global-function-call";
 
 #[derive(Default)]
@@ -69,7 +85,11 @@ pub fn visitor() -> LintVisitor {
     LintVisitor::Ast(Box::new(Collect::default()))
 }
 
-#[allow(dead_code)]
+/// Checks `source` for calls through a script name whose target function
+/// isn't declared `Global`. Since this crate has no filesystem access on
+/// its own, no such call can ever be confirmed this way; see
+/// [`check_with`] to actually resolve function signatures.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
@@ -80,6 +100,9 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
+/// Like [`check`], but resolves each call's target function through
+/// `external`, flagging one that resolves but isn't declared `Global`.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,

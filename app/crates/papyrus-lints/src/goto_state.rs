@@ -22,6 +22,7 @@ use crate::state_reference::StateReferences;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
+/// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "goto-state";
 
 #[derive(Default)]
@@ -65,7 +66,12 @@ pub fn visitor() -> LintVisitor {
     LintVisitor::Ast(Box::new(Collect::default()))
 }
 
-#[allow(dead_code)]
+/// Checks `source` for `GoToState` calls whose target state can't be found
+/// on the script itself. A script that `Extends` another is left
+/// unchecked when the target isn't declared locally, since it may be
+/// declared further up that (unresolved) ancestry; see [`check_with`] to
+/// resolve that too.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check(
     source: &str,
     ast: Option<&papyrus_parser::ast::Script>,
@@ -76,6 +82,10 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
+/// Like [`check`], but resolves a target not declared on the script itself
+/// through `external`'s knowledge of the script's `Extends` ancestry,
+/// flagging a target that can't be found there either.
+#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
@@ -90,6 +100,9 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
     )
 }
 
+/// Whether `callee` is a bare `GoToState(...)` call, or one explicitly
+/// qualified with `self.GoToState(...)`. `GoToState` always acts on the
+/// script it's called from, so no other qualifier is recognized.
 fn is_goto_state_callee(callee: &Expr) -> bool {
     match callee {
         Expr::Identifier(name) => name.eq_ignore_ascii_case("GoToState"),
