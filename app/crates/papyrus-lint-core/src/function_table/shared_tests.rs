@@ -10,7 +10,7 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
     write_script(
         root.path(),
         "Helpers",
-        "ScriptName Helpers\n\nFunction Run() Global\nEndFunction\n\nInt Function RegisterFoo() ; @nodiscard\n    Return 1\nEndFunction\n",
+        "ScriptName Helpers\n\nFunction Run() Global ; @deprecated\nEndFunction\n\nInt Function RegisterFoo() ; @nodiscard\n    Return 1\nEndFunction\n",
     );
     write_script(root.path(), "Child", "ScriptName Child Extends Helpers\n");
     write_script(
@@ -51,6 +51,7 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
         vec![("active".to_string(), false)]
     );
     assert_eq!(shared.is_global_function("Helpers", "Run"), Some(true));
+    assert_eq!(shared.is_deprecated_function("Helpers", "Run"), Some(true));
     assert_eq!(shared.is_nodiscard_function("Helpers", "Run"), Some(false));
     assert_eq!(
         shared.function_has_side_effects("Helpers", "Run"),
@@ -87,6 +88,7 @@ fn cached_negative_results_are_returned_without_a_write_lock() {
     assert!(!shared.has_state("Known", "Missing"));
     assert_eq!(shared.is_global_function("Known", "Missing"), None);
     assert_eq!(shared.is_nodiscard_function("Known", "Missing"), None);
+    assert_eq!(shared.is_deprecated_function("Known", "Missing"), None);
     assert_eq!(shared.function_has_side_effects("Known", "Missing"), None);
 
     // Every query above has a complete cached answer. Holding another read
@@ -101,6 +103,7 @@ fn cached_negative_results_are_returned_without_a_write_lock() {
     assert!(!shared.has_state("Known", "Missing"));
     assert_eq!(shared.is_global_function("Known", "Missing"), None);
     assert_eq!(shared.is_nodiscard_function("Known", "Missing"), None);
+    assert_eq!(shared.is_deprecated_function("Known", "Missing"), None);
     assert_eq!(shared.function_has_side_effects("Known", "Missing"), None);
     assert!(shared.list_members("Known").is_empty());
     assert!(shared.property_types("Known").is_empty());

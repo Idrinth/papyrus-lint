@@ -54,6 +54,10 @@ pub struct FunctionSignature {
     /// Tracked so later lints (and editors) can treat the function like a
     /// `Get*`-prefixed getter even when its name does not start with `Get`.
     pub nodiscard: bool,
+    /// Whether the declaration carries a `; @deprecated` line-comment
+    /// directive, using the same placement and word-boundary rules as
+    /// `; @nodiscard`.
+    pub deprecated: bool,
 }
 
 impl FunctionSignature {
@@ -62,6 +66,7 @@ impl FunctionSignature {
         doc: Option<String>,
         has_side_effects: bool,
         nodiscard: bool,
+        deprecated: bool,
     ) -> Self {
         FunctionSignature {
             name: decl.name.clone(),
@@ -81,6 +86,7 @@ impl FunctionSignature {
             doc,
             has_side_effects,
             nodiscard,
+            deprecated,
         }
     }
 }
@@ -156,6 +162,7 @@ impl ScriptFunctions {
                 .and_then(|tokens| papyrus_lints::documentation_comment(source, tokens, line))
         };
         let nodiscard_for = |line: usize| nodiscard_directive(source, tokens.as_deref(), line);
+        let deprecated_for = |line: usize| deprecated_directive(source, tokens.as_deref(), line);
         let mut states: HashMap<String, bool> = HashMap::new();
         for state in &script.states {
             let is_auto = states
@@ -193,6 +200,7 @@ impl ScriptFunctions {
                         doc_for(f.line),
                         has_side_effects,
                         nodiscard_for(f.line),
+                        deprecated_for(f.line),
                     ),
                 )
             })
@@ -215,6 +223,7 @@ impl ScriptFunctions {
                         doc_for(f.line),
                         has_side_effects,
                         nodiscard_for(f.line),
+                        deprecated_for(f.line),
                     )
                 });
             }
@@ -450,6 +459,19 @@ fn called_same_script_name(callee: &Expr) -> Option<String> {
 /// marked `; @nodiscard`. Checks the immediately preceding source line and
 /// every physical line of a backslash-continued header.
 fn nodiscard_directive(source: &str, tokens: Option<&[Token]>, line: usize) -> bool {
+    function_directive(source, tokens, line, "@nodiscard")
+}
+
+fn deprecated_directive(source: &str, tokens: Option<&[Token]>, line: usize) -> bool {
+    function_directive(source, tokens, line, "@deprecated")
+}
+
+fn function_directive(
+    source: &str,
+    tokens: Option<&[Token]>,
+    line: usize,
+    directive: &str,
+) -> bool {
     if line == 0 {
         return false;
     }
@@ -461,7 +483,7 @@ fn nodiscard_directive(source: &str, tokens: Option<&[Token]>, line: usize) -> b
     let start = first.saturating_sub(1);
     lines
         .get(start..last.min(lines.len()))
-        .is_some_and(|slice| slice.iter().any(|row| line_has_nodiscard(row)))
+        .is_some_and(|slice| slice.iter().any(|row| line_has_directive(row, directive)))
 }
 
 /// Last physical source line (1-indexed) of the logical header starting at
@@ -479,15 +501,12 @@ fn last_physical_line(line: usize, tokens: Option<&[Token]>) -> usize {
         .unwrap_or(line)
 }
 
-/// Whether `line`'s trailing `;` comment contains `@nodiscard` as its own
-/// word (case-insensitive). Semicolons inside strings and `;/` block
-/// comments are ignored, matching `@disable` parsing.
-fn line_has_nodiscard(line: &str) -> bool {
+fn line_has_directive(line: &str, directive: &str) -> bool {
     let Some(comment) = line_comment_text(line) else {
         return false;
     };
     let lowered = comment.to_ascii_lowercase();
-    let Some(index) = lowered.find("@nodiscard") else {
+    let Some(index) = lowered.find(directive) else {
         return false;
     };
     let before_ok = index == 0
@@ -495,7 +514,7 @@ fn line_has_nodiscard(line: &str) -> bool {
             .chars()
             .next_back()
             .is_some_and(|c| c.is_whitespace() || c == ',');
-    let after = &lowered[index + "@nodiscard".len()..];
+    let after = &lowered[index + directive.len()..];
     let after_ok = after
         .chars()
         .next()

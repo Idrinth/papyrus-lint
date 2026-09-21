@@ -45,6 +45,19 @@ fn flags_object_method_with_data_message_and_severity() {
 }
 
 #[test]
+fn compiled_object_method_declarations_remain_flagged() {
+    let diagnostics = check(
+        "ScriptName Actor\nFunction ModFavorPoints(Int aiFavorPoints = 1)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (2, 10));
+    assert!(diagnostics[0]
+        .message
+        .starts_with("[warning] Actor.ModFavorPoints:"));
+}
+
+#[test]
 fn global_rule_requires_its_literal_qualifier_case_insensitively() {
     let diagnostics = check("Game.GetSkillLegendaryLevel(\"Smithing\")\ngame.getskilllegendarylevel(\"Smithing\")\nakOther.GetSkillLegendaryLevel(\"Smithing\")\nGetSkillLegendaryLevel(\"Smithing\")\n");
 
@@ -56,6 +69,37 @@ fn global_rule_requires_its_literal_qualifier_case_insensitively() {
 #[test]
 fn ignores_comments_strings_and_identifiers_that_are_not_calls() {
     let diagnostics = check("String value = \"Spell.Preload()\" ; Spell.Preload()\nInt Preload = 1\n");
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn flags_calls_to_a_locally_deprecated_function() {
+    let diagnostics = check(
+        "ScriptName Example\n\n; @deprecated\nFunction OldWay()\nEndFunction\n\nFunction Test()\n    OldWay()\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (8, 5));
+    assert_eq!(
+        diagnostics[0].message,
+        "[warning] Function 'OldWay' is marked deprecated"
+    );
+}
+
+#[test]
+fn supports_a_trailing_deprecated_directive_case_insensitively() {
+    let diagnostics = check(
+        "ScriptName Example\nFunction OldWay() ; @DePrEcAtEd\nEndFunction\nFunction Test()\n    Self.OldWay()\nEndFunction\n",
+    );
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+}
+
+#[test]
+fn deprecated_word_must_be_bounded_and_inside_a_comment() {
+    let diagnostics = check(
+        "ScriptName Example\nFunction Similar(String value = \"; @deprecated\") ; @deprecatedSoon\nEndFunction\nFunction Test()\n    Similar()\nEndFunction\n",
+    );
     assert!(diagnostics.is_empty());
 }
 
