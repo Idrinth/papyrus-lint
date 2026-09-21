@@ -108,6 +108,32 @@ fn chained_replacement_call_is_not_a_global_qualifier() {
 }
 
 #[test]
+fn chained_call_to_a_same_named_method_does_not_match_its_own_ast_deprecation() {
+    // Mirrors what `papyrus-ast-cache`'s build-time catalog merge does for a
+    // bundled script whose own declaration matches a `deprecated-functions`
+    // entry: the declaration's own `FunctionDecl.deprecation` is set. That
+    // must not make a chained call to a same-named method on a different
+    // type (whose receiver isn't a plain identifier) look like a recursive
+    // self-call to the deprecated declaration.
+    let source = "ScriptName Game\nInt Function GetSkillLegendaryLevel(String asActorValue) Global\n    Return ActorValueInfo.GetActorValueInfoByName(asActorValue).GetSkillLegendaryLevel()\nEndFunction\n";
+    let mut ast = papyrus_parser::parse(source).unwrap();
+    ast.functions[0].deprecation = Some(papyrus_parser::ast::Deprecation {
+        replacement: None,
+        level: "warning".to_string(),
+        message: "Game.GetSkillLegendaryLevel: deprecated SKSE wrapper".to_string(),
+    });
+    let tokens = papyrus_parser::tokenize(source).unwrap();
+    let diagnostics = super::check(
+        source,
+        Some(&ast),
+        Some(&tokens),
+        &crate::config::Config::default(),
+        &mut crate::external_signatures::NoExternalSignatures,
+    );
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
 fn emits_structured_external_deprecation_guidance() {
     let source = "ScriptName Example\nLegacyApi Property Api Auto\nFunction Test()\n    Api.OldWay()\nEndFunction\n";
     let ast = papyrus_parser::parse(source).unwrap();
@@ -144,6 +170,19 @@ fn flags_calls_to_a_locally_deprecated_function() {
     assert_eq!(
         diagnostics[0].message,
         "[warning] Function 'OldWay' is marked deprecated"
+    );
+}
+
+#[test]
+fn includes_a_local_deprecated_directives_note_in_the_message() {
+    let diagnostics = check(
+        "ScriptName Example\n\n; @deprecated Use New() instead\nFunction OldWay()\nEndFunction\n\nFunction Test()\n    OldWay()\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(
+        diagnostics[0].message,
+        "[warning] Function 'OldWay' is marked deprecated: Use New() instead"
     );
 }
 

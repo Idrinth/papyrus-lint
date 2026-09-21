@@ -24,9 +24,9 @@ EndFunction
 ```
 
 Replacement information after `@deprecated` is free-form documentation for
-readers. Papyrus Lint currently uses the annotation itself to identify the
-function and does not include that text in its diagnostic. Keep the annotation
-as a separate word: names such as `@deprecatedSoon` are not recognized.
+readers; when present, it is included in the diagnostic message. Keep the
+annotation as a separate word: names such as `@deprecatedSoon` are not
+recognized.
 
 ### `@nodiscard`
 

@@ -6,7 +6,7 @@
 //! rule run when the source does not produce a complete AST. Bundled AST
 //! enrichment and project directives share the same follow-up lookup path.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::external_signatures::ExternalSignatures;
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
@@ -35,6 +35,11 @@ pub const RULE: &str = "deprecated-functions";
 struct Collect {
     store: Store,
     local: HashSet<String>,
+    /// Replacement/guidance text captured from a local `; @deprecated <note>`
+    /// annotation, keyed by lowercased function name. A present key with a
+    /// `None` value means the function is annotated but the annotation
+    /// carries no note text.
+    local_notes: HashMap<String, Option<String>>,
     script_name: Option<String>,
     env: Option<TypeEnv>,
 }
@@ -48,6 +53,7 @@ impl TokenLint for Collect {
         self.script_name = ctx.ast.map(|script| script.name.clone());
         self.env = ctx.ast.map(TypeEnv::for_script);
         self.local.clear();
+        self.local_notes.clear();
         if let Some(script) = ctx.ast {
             self.local.extend(
                 all_functions(script)
@@ -68,8 +74,10 @@ impl TokenLint for Collect {
             else {
                 continue;
             };
-            if header_has_deprecated(&lines, tokens, token.line) {
-                self.local.insert(name.to_ascii_lowercase());
+            if let Some(note) = header_deprecated_note(&lines, tokens, token.line) {
+                let key = name.to_ascii_lowercase();
+                self.local.insert(key.clone());
+                self.local_notes.insert(key, note);
             }
         }
     }
@@ -111,10 +119,17 @@ impl TokenLint for Collect {
             return;
         }
 
-        let qualifier = qualifier_before(tokens, index);
+        // `None` here means a dot precedes the call but its receiver isn't a
+        // plain identifier/Self/Parent (e.g. a chained call's return value):
+        // that's not resolvable to a script name, so don't guess it's a
+        // same-script ("self-like") call either.
+        let Some(qualifier) = qualifier_before(tokens, index) else {
+            return;
+        };
         let context = DeprecatedContext {
             ast: ctx.ast,
             local: &self.local,
+            local_notes: &self.local_notes,
             script_name: self.script_name.as_deref(),
             type_env: self.env.as_ref(),
         };
@@ -132,6 +147,7 @@ impl TokenLint for Collect {
 struct DeprecatedContext<'a> {
     ast: Option<&'a Script>,
     local: &'a HashSet<String>,
+    local_notes: &'a HashMap<String, Option<String>>,
     script_name: Option<&'a str>,
     type_env: Option<&'a TypeEnv>,
 }
@@ -161,16 +177,22 @@ fn qualifier_matches(tokens: &[Token], call_index: usize, script: &str) -> bool 
     qualifier.eq_ignore_ascii_case(script)
 }
 
-fn qualifier_before(tokens: &[Token], call_index: usize) -> Option<&str> {
-    let dot_index = call_index.checked_sub(1)?;
+/// The qualifier preceding a call, distinguishing an unqualified call
+/// (`Some(None)`) from one whose receiver can't be resolved to a name
+/// (`None`, e.g. a chained call's return value) from a plain qualifier
+/// (`Some(Some(name))`).
+fn qualifier_before(tokens: &[Token], call_index: usize) -> Option<Option<&str>> {
+    let Some(dot_index) = call_index.checked_sub(1) else {
+        return Some(None);
+    };
     if !matches!(tokens[dot_index].kind, TokenKind::Dot) {
-        return None;
+        return Some(None);
     }
     let qualifier_index = dot_index.checked_sub(1)?;
     match &tokens[qualifier_index].kind {
-        TokenKind::Identifier(name) => Some(name),
-        TokenKind::Keyword(Keyword::Self_) => Some("Self"),
-        TokenKind::Keyword(Keyword::Parent) => Some("Parent"),
+        TokenKind::Identifier(name) => Some(Some(name)),
+        TokenKind::Keyword(Keyword::Self_) => Some(Some("Self")),
+        TokenKind::Keyword(Keyword::Parent) => Some(Some("Parent")),
         _ => None,
     }
 }
@@ -194,7 +216,12 @@ fn deprecation(
                 return found.deprecation.clone();
             }
         }
-        return Some(generic_deprecation(function_name));
+        let note = context
+            .local_notes
+            .get(&function_name.to_ascii_lowercase())
+            .cloned()
+            .flatten();
+        return Some(generic_deprecation(function_name, note));
     }
     if self_like {
         return context
@@ -210,11 +237,15 @@ fn deprecation(
         .and_then(|type_name| external.deprecated_function(&type_name, function_name))
 }
 
-fn generic_deprecation(function_name: &str) -> Deprecation {
+fn generic_deprecation(function_name: &str, note: Option<String>) -> Deprecation {
+    let message = match note {
+        Some(note) => format!("Function '{function_name}' is marked deprecated: {note}"),
+        None => format!("Function '{function_name}' is marked deprecated"),
+    };
     Deprecation {
         replacement: None,
         level: "warning".to_string(),
-        message: format!("Function '{function_name}' is marked deprecated"),
+        message,
     }
 }
 
@@ -249,9 +280,12 @@ fn all_functions(script: &Script) -> impl Iterator<Item = &FunctionDecl> {
     )
 }
 
-fn header_has_deprecated(lines: &[&str], tokens: &[Token], line: usize) -> bool {
+/// Whether the function header starting at `line` (or the line above it) is
+/// marked with `; @deprecated`, and the note text following it, if any.
+/// Returns `None` when no `@deprecated` annotation is present at all.
+fn header_deprecated_note(lines: &[&str], tokens: &[Token], line: usize) -> Option<Option<String>> {
     if line == 0 {
-        return false;
+        return None;
     }
     let last = tokens
         .iter()
@@ -260,14 +294,24 @@ fn header_has_deprecated(lines: &[&str], tokens: &[Token], line: usize) -> bool 
         .unwrap_or(line);
     let start = line.saturating_sub(2);
     lines
-        .get(start..last.min(lines.len()))
-        .is_some_and(|slice| slice.iter().any(|row| line_has_deprecated(row)))
+        .get(start..last.min(lines.len()))?
+        .iter()
+        .find_map(|row| deprecated_note(row))
 }
 
-fn line_has_deprecated(line: &str) -> bool {
+fn deprecated_note(line: &str) -> Option<Option<String>> {
     papyrus_parser::comment_annotations::parse_line_annotations(line)
-        .iter()
-        .any(|annotation| annotation.name.eq_ignore_ascii_case("deprecated"))
+        .into_iter()
+        .find(|annotation| annotation.name.eq_ignore_ascii_case("deprecated"))
+        .map(|annotation| {
+            let note = annotation.arguments.trim();
+            (!note.is_empty()).then(|| note.to_string())
+        })
+}
+
+#[cfg(test)]
+fn line_has_deprecated(line: &str) -> bool {
+    deprecated_note(line).is_some()
 }
 
 fn find_rule(name: &str) -> Option<&'static DeprecatedFunctionRule> {

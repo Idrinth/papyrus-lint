@@ -188,8 +188,19 @@ fn bundled_actor_matches_a_fresh_parse_and_tokenize() {
     let mut ast = ast_for(&source).unwrap();
     strip_deprecation(&mut ast);
     let tokens = tokens_for(&source).unwrap();
-    assert_eq!(ast, papyrus_parser::parse(&source).unwrap());
-    assert_eq!(tokens, papyrus_parser::tokenize(&source).unwrap());
+    // `ast_for`/`tokens_for` above prime `papyrus_parser`'s in-memory memo
+    // cache with the catalog-enriched result for this exact source, so
+    // `papyrus_parser::parse`/`tokenize` would just hand that same result
+    // back instead of doing a real fresh parse. Bypass the memo cache to
+    // get a genuinely independent parse to compare against.
+    let fresh_tokens = papyrus_parser::lexer::Lexer::new(&source)
+        .tokenize()
+        .unwrap();
+    let fresh_ast = papyrus_parser::parser::Parser::new(fresh_tokens.clone())
+        .parse_script()
+        .unwrap();
+    assert_eq!(ast, fresh_ast);
+    assert_eq!(tokens, fresh_tokens);
 }
 
 #[test]
