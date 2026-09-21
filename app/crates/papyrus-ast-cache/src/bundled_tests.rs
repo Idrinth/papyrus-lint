@@ -34,8 +34,13 @@ fn zip_script(archive_name: &str, file_name: &str) -> String {
 
 #[test]
 fn encode_then_parse_round_trips_a_synthetic_entry() {
-    let source = "ScriptName BundledBlobRoundtrip\n";
-    let ast = papyrus_parser::parse(source).unwrap();
+    let source = "ScriptName BundledBlobRoundtrip\nFunction Legacy()\nEndFunction\n";
+    let mut ast = papyrus_parser::parse(source).unwrap();
+    ast.functions[0].deprecation = Some(papyrus_parser::ast::Deprecation {
+        replacement: Some("Current()".to_string()),
+        level: "warning".to_string(),
+        message: "Use Current() instead".to_string(),
+    });
     let tokens = papyrus_parser::tokenize(source).unwrap();
     let packed = PackedEntry {
         md5: md5::compute(source.as_bytes()).0,
@@ -164,30 +169,6 @@ fn unrelated_source_is_a_bundled_miss() {
     assert!(ast_for(source).is_none());
     assert!(tokens_for(source).is_none());
     assert!(!prime(source));
-}
-
-#[test]
-fn bundled_actor_marks_catalogued_deprecations_on_the_saved_ast() {
-    let source = zip_script("skyrim-scripts.zip", "Actor.psc");
-    let fresh = papyrus_parser::parse(&source).unwrap();
-    let ast = ast_for(&source).unwrap();
-    let tokens = tokens_for(&source).unwrap();
-    assert!(!fresh
-        .functions
-        .iter()
-        .find(|function| function.name == "ModFavorPoints")
-        .unwrap()
-        .deprecation
-        .is_some());
-    assert!(ast
-        .functions
-        .iter()
-        .find(|function| function.name == "ModFavorPoints")
-        .unwrap()
-        .deprecation
-        .as_ref()
-        .is_some_and(|deprecation| deprecation.message.contains("MakePlayerFriend")));
-    assert_eq!(tokens, papyrus_parser::tokenize(&source).unwrap());
 }
 
 #[test]

@@ -116,19 +116,6 @@ fn deprecated_function_lint_reads_project_directives() {
 }
 
 #[test]
-fn deprecated_function_lint_reads_bundled_ast_metadata() {
-    let root = tempfile::tempdir().expect("failed to create temp dir");
-    let source = "ScriptName Example\n\nActor Property Subject Auto\n\nFunction Test()\n    Subject.ModFavorPoints()\nEndFunction\n";
-    let mut table = FunctionTable::new(root.path().to_path_buf());
-
-    let diagnostics = diagnostics_for("deprecated-functions", source, &mut table);
-
-    assert_eq!(diagnostics.len(), 1);
-    assert!(diagnostics[0].message.contains("ModFavorPoints"));
-    assert!(diagnostics[0].message.contains("MakePlayerFriend()"));
-}
-
-#[test]
 fn flags_a_local_variable_shadowing_a_parent_property_through_the_shadowing_lint() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(

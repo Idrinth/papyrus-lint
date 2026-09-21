@@ -19,6 +19,52 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
+struct DeprecatedExternal;
+
+impl crate::external_signatures::ExternalSignatures for DeprecatedExternal {
+    fn lookup(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
+        None
+    }
+
+    fn deprecated_function(
+        &mut self,
+        type_name: &str,
+        function_name: &str,
+    ) -> Option<papyrus_parser::ast::Deprecation> {
+        (type_name.eq_ignore_ascii_case("LegacyApi")
+            && function_name.eq_ignore_ascii_case("OldWay"))
+        .then(|| papyrus_parser::ast::Deprecation {
+            replacement: Some("NewWay()".to_string()),
+            level: "info".to_string(),
+            message: "LegacyApi.OldWay: call NewWay() instead".to_string(),
+        })
+    }
+}
+
+#[test]
+fn emits_structured_external_deprecation_guidance() {
+    let source = "ScriptName Example\nLegacyApi Property Api Auto\nFunction Test()\n    Api.OldWay()\nEndFunction\n";
+    let ast = papyrus_parser::parse(source).unwrap();
+    let tokens = papyrus_parser::tokenize(source).unwrap();
+    let diagnostics = super::check(
+        source,
+        Some(&ast),
+        Some(&tokens),
+        &crate::config::Config::default(),
+        &mut DeprecatedExternal,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(
+        diagnostics[0].message,
+        "[info] LegacyApi.OldWay: call NewWay() instead"
+    );
+}
+
 #[test]
 fn ignores_comments_strings_and_identifiers_that_are_not_calls() {
     let diagnostics = check("String value = \"Spell.Preload()\" ; Spell.Preload()\nInt Preload = 1\n");
