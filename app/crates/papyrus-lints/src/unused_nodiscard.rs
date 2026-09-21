@@ -290,24 +290,9 @@ fn header_has_nodiscard(lines: &[&str], tokens: &[Token], line: usize) -> bool {
 /// whether a header (or the line above it) is already flagged before
 /// adding the directive.
 pub(crate) fn line_has_nodiscard(line: &str) -> bool {
-    let Some(comment) = line_comment_text(line) else {
-        return false;
-    };
-    let lowered = comment.to_ascii_lowercase();
-    let Some(index) = lowered.find("@nodiscard") else {
-        return false;
-    };
-    let before_ok = index == 0
-        || lowered[..index]
-            .chars()
-            .next_back()
-            .is_some_and(|c| c.is_whitespace() || c == ',');
-    let after = &lowered[index + "@nodiscard".len()..];
-    let after_ok = after
-        .chars()
-        .next()
-        .is_none_or(|c| c.is_whitespace() || c == ',');
-    before_ok && after_ok
+    papyrus_parser::comment_annotations::parse_line_annotations(line)
+        .iter()
+        .any(|annotation| annotation.name.eq_ignore_ascii_case("nodiscard"))
 }
 
 /// Returns the text following the `;` that starts `line`'s line comment, if
@@ -315,25 +300,8 @@ pub(crate) fn line_has_nodiscard(line: &str) -> bool {
 /// block-comment opener as not starting a line comment. Also used by
 /// [`crate::nodiscard_comments`] to find where to append `@nodiscard`.
 pub(crate) fn line_comment_text(line: &str) -> Option<&str> {
-    let bytes = line.as_bytes();
-    let mut in_string = false;
-    let mut index = 0;
-    while index < bytes.len() {
-        match bytes[index] {
-            b'"' => in_string = !in_string,
-            b'\\' if in_string => index += 1,
-            b';' if !in_string => {
-                return if bytes.get(index + 1) == Some(&b'/') {
-                    None
-                } else {
-                    Some(line[index + 1..].trim())
-                };
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    None
+    papyrus_parser::comment_annotations::line_comment(line)
+        .map(|(_, comment)| comment.trim())
 }
 
 fn top_level_operands(tokens: &[Token]) -> Vec<&[Token]> {

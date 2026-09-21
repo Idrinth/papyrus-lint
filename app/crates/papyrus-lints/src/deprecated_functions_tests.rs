@@ -1,5 +1,12 @@
 use super::*;
 
+#[test]
+fn recognizes_deprecated_with_replacement_before_other_annotations() {
+    assert!(line_has_deprecated(
+        "Function Old() ; @deprecated Use New() @nodiscard @public"
+    ));
+}
+
 fn check(source: &str) -> Vec<Diagnostic> {
     let ast = papyrus_parser::parse(source).ok();
     let tokens = papyrus_parser::tokenize(source).ok();

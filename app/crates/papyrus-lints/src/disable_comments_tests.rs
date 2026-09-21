@@ -1,6 +1,35 @@
 use super::*;
 
 #[test]
+fn stops_rule_ids_at_the_next_annotation() {
+    let disables = Disables::scan(
+        "Function Old() ; @deprecated Use New() @nodiscard @disable comma-spacing @public\n",
+    );
+    assert!(disables.is_disabled(1, "comma-spacing"));
+    assert!(!disables.is_disabled(1, "@public"));
+}
+
+#[test]
+fn accepts_file_disable_alias_among_other_annotations() {
+    let disables = Disables::scan("; @deprecated Use New() @file-disable comma-spacing @public\n");
+    assert!(disables.is_disabled(2, "comma-spacing"));
+    assert!(!disables.is_disabled(2, "semicolon"));
+}
+
+#[test]
+fn extends_a_disable_before_another_annotation_in_place() {
+    let updated = add_disable_directive(
+        "Call() ; @disable comma-spacing @nodiscard\n",
+        1,
+        &rules(&["semicolon"]),
+    );
+    assert_eq!(
+        updated,
+        "Call() ; @disable comma-spacing, semicolon @nodiscard\n"
+    );
+}
+
+#[test]
 fn disables_a_specific_rule_on_its_line() {
     let disables = Disables::scan("action = 1 ; @disable float-to-int\nother = 2\n");
     assert!(disables.is_disabled(1, "float-to-int"));

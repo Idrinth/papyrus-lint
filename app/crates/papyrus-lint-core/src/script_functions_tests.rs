@@ -1,5 +1,14 @@
 use super::*;
 
+#[test]
+fn extracts_multiple_function_annotations_from_one_comment() {
+    let source = "ScriptName Foo\n\nInt Function Old() ; @deprecated Use New() @nodiscard @public\n    Return 1\nEndFunction\n";
+    let functions = functions_of(source);
+    let old = functions.get("old").expect("function should be extracted");
+    assert!(old.nodiscard);
+    assert!(old.deprecated);
+}
+
 fn functions_of(source: &str) -> HashMap<String, FunctionSignature> {
     let script = papyrus_parser::parse(source).expect("test source should parse");
     ScriptFunctions::from_script(&script, source).functions
