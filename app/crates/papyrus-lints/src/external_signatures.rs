@@ -150,6 +150,13 @@ pub trait ExternalSignatures {
         None
     }
 
+    /// Whether `type_name` or one of its ancestors declares
+    /// `function_name` with a `; @deprecated` directive. `None` means the
+    /// function could not be resolved.
+    fn is_deprecated_function(&mut self, _type_name: &str, _function_name: &str) -> Option<bool> {
+        None
+    }
+
     /// Whether calling `function_name` on `type_name` is known to have side
     /// effects. `None` means the function could not be resolved; `false`
     /// means it was resolved but no side effect could be proven.

@@ -68,6 +68,11 @@ impl papyrus_lints::ExternalSignatures for FunctionTable {
             .map(|signature| signature.nodiscard)
     }
 
+    fn is_deprecated_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        self.lookup_function(type_name, function_name)
+            .map(|signature| signature.deprecated)
+    }
+
     fn function_has_side_effects(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
         self.lookup_function(type_name, function_name)
             .map(|signature| signature.has_side_effects)

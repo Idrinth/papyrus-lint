@@ -7,7 +7,7 @@ fn function_table_forwards_every_external_signature_lookup() {
     write_script(
         root.path(),
         "Base",
-        "ScriptName Base\n\nInt Property Count Auto\nString Label = \"\"\n\nAuto State Idle\nEndState\n\nFunction Run(String message) Global\nEndFunction\n\nInt Function RegisterFoo() ; @nodiscard\n    Count += 1\n    Return Count\nEndFunction\n",
+        "ScriptName Base\n\nInt Property Count Auto\nString Label = \"\"\n\nAuto State Idle\nEndState\n\nFunction Run(String message) Global ; @deprecated\nEndFunction\n\nInt Function RegisterFoo() ; @nodiscard\n    Count += 1\n    Return Count\nEndFunction\n",
     );
     write_script(
         root.path(),
@@ -45,6 +45,7 @@ fn function_table_forwards_every_external_signature_lookup() {
         vec![("active".to_string(), false), ("idle".to_string(), true)]
     );
     assert_eq!(external.is_global_function("Child", "Run"), Some(true));
+    assert_eq!(external.is_deprecated_function("Child", "Run"), Some(true));
     assert_eq!(
         external.is_nodiscard_function("Child", "RegisterFoo"),
         Some(true)
@@ -55,6 +56,7 @@ fn function_table_forwards_every_external_signature_lookup() {
     );
     assert_eq!(external.is_global_function("Child", "Missing"), None);
     assert_eq!(external.is_nodiscard_function("Child", "Missing"), None);
+    assert_eq!(external.is_deprecated_function("Child", "Missing"), None);
     assert_eq!(external.function_has_side_effects("Child", "Missing"), None);
     assert!(external.ancestry_fully_known("Child"));
     assert!(!external.ancestry_fully_known("DefinitelyMissing"));
@@ -76,6 +78,24 @@ fn exposes_the_canonical_side_effect_flag_to_lints() {
     let diagnostics = diagnostics_for("debug-side-effects", source, &mut table);
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("Bump"));
+}
+
+#[test]
+fn deprecated_function_lint_reads_project_directives() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "LegacyApi",
+        "ScriptName LegacyApi\n\nFunction OldWay() ; @deprecated\nEndFunction\n",
+    );
+    let source = "ScriptName Example\n\nLegacyApi Property Api Auto\n\nFunction Test()\n    Api.OldWay()\nEndFunction\n";
+    write_script(root.path(), "Example", source);
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let diagnostics = diagnostics_for("deprecated-functions", source, &mut table);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("OldWay"));
 }
 
 #[test]

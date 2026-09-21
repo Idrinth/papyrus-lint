@@ -177,3 +177,11 @@ fn nodiscard_inside_a_state_only_function_is_tracked() {
     let source = "ScriptName Foo\n\nState Active\n    Int Function RegisterFoo() ; @nodiscard\n        Return 1\n    EndFunction\nEndState\n";
     assert!(nodiscard(source, "RegisterFoo"));
 }
+
+#[test]
+fn deprecated_directive_is_tracked_on_function_signatures() {
+    let source = "ScriptName Foo\n\n; @deprecated\nFunction OldWay()\nEndFunction\n\nFunction CurrentWay() ; @deprecatedSoon\nEndFunction\n";
+    let functions = functions_of(source);
+    assert!(functions["oldway"].deprecated);
+    assert!(!functions["currentway"].deprecated);
+}

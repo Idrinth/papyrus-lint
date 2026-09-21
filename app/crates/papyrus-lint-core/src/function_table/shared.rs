@@ -156,6 +156,23 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         )
     }
 
+    fn is_deprecated_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+        self.probe_or_load(
+            |table| {
+                table
+                    .lookup_function_cached(type_name, function_name)
+                    .map(|signature| signature.map(|signature| signature.deprecated))
+            },
+            |table| {
+                papyrus_lints::ExternalSignatures::is_deprecated_function(
+                    table,
+                    type_name,
+                    function_name,
+                )
+            },
+        )
+    }
+
     fn function_has_side_effects(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
         self.probe_or_load(
             |table| {
