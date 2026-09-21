@@ -79,12 +79,6 @@ impl TokenLint for Collect {
         if !matches!(tokens.get(index + 1).map(|token| &token.kind), Some(TokenKind::LParen)) {
             return;
         }
-        if matches!(
-            tokens.get(index.wrapping_sub(1)).map(|token| &token.kind),
-            Some(TokenKind::Keyword(Keyword::Function))
-        ) {
-            return;
-        }
         if let Some(rule) = find_rule(name) {
             if !rule.global || qualifier_matches(tokens, index, rule.script) {
                 self.store.emit(
@@ -98,6 +92,15 @@ impl TokenLint for Collect {
                 );
                 return;
             }
+        }
+        // A project directive marks callers, not the declaration itself.
+        // Keep this after the compiled-rule lookup: declarations in the
+        // bundled API scripts have historically been reported by that data.
+        if matches!(
+            tokens.get(index.wrapping_sub(1)).map(|token| &token.kind),
+            Some(TokenKind::Keyword(Keyword::Function))
+        ) {
+            return;
         }
 
         let qualifier = qualifier_before(tokens, index);

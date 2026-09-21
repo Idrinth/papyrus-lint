@@ -45,6 +45,19 @@ fn flags_object_method_with_data_message_and_severity() {
 }
 
 #[test]
+fn compiled_object_method_declarations_remain_flagged() {
+    let diagnostics = check(
+        "ScriptName Actor\nFunction ModFavorPoints(Int aiFavorPoints = 1)\nEndFunction\n",
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!((diagnostics[0].line, diagnostics[0].column), (2, 10));
+    assert!(diagnostics[0]
+        .message
+        .starts_with("[warning] Actor.ModFavorPoints:"));
+}
+
+#[test]
 fn global_rule_requires_its_literal_qualifier_case_insensitively() {
     let diagnostics = check("Game.GetSkillLegendaryLevel(\"Smithing\")\ngame.getskilllegendarylevel(\"Smithing\")\nakOther.GetSkillLegendaryLevel(\"Smithing\")\nGetSkillLegendaryLevel(\"Smithing\")\n");
 
