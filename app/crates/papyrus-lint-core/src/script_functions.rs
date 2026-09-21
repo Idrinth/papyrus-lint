@@ -8,7 +8,9 @@ use std::collections::{HashMap, HashSet};
 use serde::Serialize;
 
 use papyrus_lints::ParamInfo;
-use papyrus_parser::ast::{AccessLevel, Expr, FunctionDecl, PropertyDecl, Script, Stmt, TypeName};
+use papyrus_parser::ast::{
+    AccessLevel, Deprecation, Expr, FunctionDecl, PropertyDecl, Script, Stmt, TypeName,
+};
 use papyrus_parser::token::{Token, TokenKind};
 
 /// The parameters (name and type) and return type of a single function, as
@@ -55,10 +57,11 @@ pub struct FunctionSignature {
     /// Tracked so later lints (and editors) can treat the function like a
     /// `Get*`-prefixed getter even when its name does not start with `Get`.
     pub nodiscard: bool,
-    /// Whether the declaration carries a `; @deprecated` line-comment
-    /// directive, using the same placement and word-boundary rules as
-    /// `; @nodiscard`.
-    pub deprecated: bool,
+    /// Severity and migration guidance when this declaration is deprecated.
+    /// `None` means it is not. Project `; @deprecated` annotations receive
+    /// the generic warning used by the lint; bundled APIs retain their
+    /// catalogued text.
+    pub deprecation: Option<Deprecation>,
 }
 
 impl FunctionSignature {
@@ -67,7 +70,7 @@ impl FunctionSignature {
         doc: Option<String>,
         has_side_effects: bool,
         nodiscard: bool,
-        deprecated: bool,
+        deprecation: Option<Deprecation>,
     ) -> Self {
         FunctionSignature {
             name: decl.name.clone(),
@@ -88,7 +91,7 @@ impl FunctionSignature {
             doc,
             has_side_effects,
             nodiscard,
-            deprecated,
+            deprecation,
         }
     }
 }
@@ -204,7 +207,7 @@ impl ScriptFunctions {
                         doc_for(f.line),
                         has_side_effects,
                         nodiscard_for(f.line),
-                        deprecated_for(f.line),
+                        deprecation_for(f, deprecated_for(f.line)),
                     ),
                 )
             })
@@ -227,7 +230,7 @@ impl ScriptFunctions {
                         doc_for(f.line),
                         has_side_effects,
                         nodiscard_for(f.line),
-                        deprecated_for(f.line),
+                        deprecation_for(f, deprecated_for(f.line)),
                     )
                 });
             }
@@ -256,6 +259,16 @@ impl ScriptFunctions {
             states,
         }
     }
+}
+
+fn deprecation_for(decl: &FunctionDecl, annotated: bool) -> Option<Deprecation> {
+    decl.deprecation.clone().or_else(|| {
+        annotated.then(|| Deprecation {
+            replacement: None,
+            level: "warning".to_string(),
+            message: format!("Function '{}' is marked deprecated", decl.name),
+        })
+    })
 }
 
 /// Computes, for every function keyed (by lowercased name) in `decls`,

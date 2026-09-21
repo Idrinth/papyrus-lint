@@ -6,7 +6,7 @@ fn extracts_multiple_function_annotations_from_one_comment() {
     let functions = functions_of(source);
     let old = functions.get("old").expect("function should be extracted");
     assert!(old.nodiscard);
-    assert!(old.deprecated);
+    assert!(old.deprecation.is_some());
 }
 
 fn functions_of(source: &str) -> HashMap<String, FunctionSignature> {
@@ -191,6 +191,6 @@ fn nodiscard_inside_a_state_only_function_is_tracked() {
 fn deprecated_directive_is_tracked_on_function_signatures() {
     let source = "ScriptName Foo\n\n; @deprecated\nFunction OldWay()\nEndFunction\n\nFunction CurrentWay() ; @deprecatedSoon\nEndFunction\n";
     let functions = functions_of(source);
-    assert!(functions["oldway"].deprecated);
-    assert!(!functions["currentway"].deprecated);
+    assert!(functions["oldway"].deprecation.is_some());
+    assert!(functions["currentway"].deprecation.is_none());
 }

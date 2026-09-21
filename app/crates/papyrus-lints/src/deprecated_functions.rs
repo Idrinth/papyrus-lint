@@ -3,14 +3,15 @@
 //!
 //! The data is compiled into `DEPRECATED_FUNCTIONS` by `build.rs`, so the
 //! linter does not parse YAML at runtime. Token-based matching also lets the
-//! rule run when the source does not produce a complete AST.
+//! rule run when the source does not produce a complete AST. Bundled AST
+//! enrichment and project directives share the same follow-up lookup path.
 
 use std::collections::HashSet;
 
 use crate::external_signatures::ExternalSignatures;
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
-use papyrus_parser::ast::{FunctionDecl, Script};
+use papyrus_parser::ast::{Deprecation, FunctionDecl, Script};
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 use papyrus_parser::types::TypeEnv;
 
@@ -47,6 +48,13 @@ impl TokenLint for Collect {
         self.script_name = ctx.ast.map(|script| script.name.clone());
         self.env = ctx.ast.map(TypeEnv::for_script);
         self.local.clear();
+        if let Some(script) = ctx.ast {
+            self.local.extend(
+                all_functions(script)
+                    .filter(|function| function.deprecation.is_some())
+                    .map(|function| function.name.to_ascii_lowercase()),
+            );
+        }
         let Some(tokens) = ctx.tokens else {
             return;
         };
@@ -110,11 +118,11 @@ impl TokenLint for Collect {
             script_name: self.script_name.as_deref(),
             type_env: self.env.as_ref(),
         };
-        if is_deprecated(name, qualifier, token.line, &context, ctx.external) {
+        if let Some(deprecation) = deprecation(name, qualifier, token.line, &context, ctx.external) {
             self.store.emit(
                 token.line,
                 token.col,
-                format!("[warning] Function '{name}' is marked deprecated"),
+                format!("[{}] {}", deprecation.level, deprecation.message),
                 RULE,
             );
         }
@@ -167,35 +175,47 @@ fn qualifier_before(tokens: &[Token], call_index: usize) -> Option<&str> {
     }
 }
 
-fn is_deprecated(
+fn deprecation(
     function_name: &str,
     qualifier: Option<&str>,
     line: usize,
     context: &DeprecatedContext<'_>,
     external: &mut dyn ExternalSignatures,
-) -> bool {
+) -> Option<Deprecation> {
     let self_like = qualifier.is_none()
         || qualifier.is_some_and(|name| {
             name.eq_ignore_ascii_case("self") || name.eq_ignore_ascii_case("parent")
         });
     if self_like && context.local.contains(&function_name.to_ascii_lowercase()) {
-        return true;
+        if let Some(script) = context.ast {
+            if let Some(found) = all_functions(script).find(|function| {
+                function.name.eq_ignore_ascii_case(function_name) && function.deprecation.is_some()
+            }) {
+                return found.deprecation.clone();
+            }
+        }
+        return Some(generic_deprecation(function_name));
     }
     if self_like {
-        return context.script_name.is_some_and(|script| {
-            external.is_deprecated_function(script, function_name) == Some(true)
-        });
+        return context
+            .script_name
+            .and_then(|script| external.deprecated_function(script, function_name));
     }
 
-    let Some(qualifier) = qualifier else {
-        return false;
-    };
-    if external.is_deprecated_function(qualifier, function_name) == Some(true) {
-        return true;
+    let qualifier = qualifier?;
+    if let Some(deprecation) = external.deprecated_function(qualifier, function_name) {
+        return Some(deprecation);
     }
-    resolved_qualifier_type(qualifier, context, line).is_some_and(|type_name| {
-        external.is_deprecated_function(&type_name, function_name) == Some(true)
-    })
+    resolved_qualifier_type(qualifier, context, line)
+        .and_then(|type_name| external.deprecated_function(&type_name, function_name))
+}
+
+fn generic_deprecation(function_name: &str) -> Deprecation {
+    Deprecation {
+        replacement: None,
+        level: "warning".to_string(),
+        message: format!("Function '{function_name}' is marked deprecated"),
+    }
 }
 
 fn resolved_qualifier_type(

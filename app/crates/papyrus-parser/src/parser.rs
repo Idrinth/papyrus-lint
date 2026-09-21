@@ -430,6 +430,7 @@ impl Parser {
             is_native,
             is_event,
             access_level,
+            deprecation: None,
             body,
             line,
             state: None,

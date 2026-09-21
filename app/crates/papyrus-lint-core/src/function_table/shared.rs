@@ -180,15 +180,19 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         )
     }
 
-    fn is_deprecated_function(&mut self, type_name: &str, function_name: &str) -> Option<bool> {
+    fn deprecated_function(
+        &mut self,
+        type_name: &str,
+        function_name: &str,
+    ) -> Option<papyrus_parser::ast::Deprecation> {
         self.probe_or_load(
             |table| {
                 table
                     .lookup_function_cached(type_name, function_name)
-                    .map(|signature| signature.map(|signature| signature.deprecated))
+                    .map(|signature| signature.and_then(|signature| signature.deprecation.clone()))
             },
             |table| {
-                papyrus_lints::ExternalSignatures::is_deprecated_function(
+                papyrus_lints::ExternalSignatures::deprecated_function(
                     table,
                     type_name,
                     function_name,

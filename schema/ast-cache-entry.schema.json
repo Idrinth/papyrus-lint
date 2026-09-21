@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://papyrus-lint.idrinth.de/schema/ast-cache-entry.schema.json",
   "title": "Papyrus Lint AST cache entry",
-  "description": "One `<md5-of-source-path>.json` file inside an `ast-cache` directory next to a running PapyrusLinterCLI/desktop app binary (see app/crates/papyrus-ast-cache/src/lib.rs, re-exported by papyrus-lint-core as its own ast_cache module). This describes entries whose `linter_version` is at or above MIN_COMPATIBLE_VERSION (currently 1.46.0) in that file: an entry is only ever read back by a linter build whose own MIN_COMPATIBLE_VERSION accepts its linter_version, so a consuming tool should apply the same check -- against its own known-compatible floor -- before relying on this schema, and must otherwise treat the entry as opaque and fall back to re-parsing the source itself. MIN_COMPATIBLE_VERSION only moves forward when a release changes this layout or the embedded `ast` shape incompatibly, so a schema fetched at a given linter_version stays valid for every later entry until the next such bump.",
+  "description": "One `<md5-of-source-path>.json` file inside an `ast-cache` directory next to a running PapyrusLinterCLI/desktop app binary (see app/crates/papyrus-ast-cache/src/lib.rs, re-exported by papyrus-lint-core as its own ast_cache module). This describes entries whose `linter_version` is at or above MIN_COMPATIBLE_VERSION (currently 1.47.0) in that file: an entry is only ever read back by a linter build whose own MIN_COMPATIBLE_VERSION accepts its linter_version, so a consuming tool should apply the same check -- against its own known-compatible floor -- before relying on this schema, and must otherwise treat the entry as opaque and fall back to re-parsing the source itself. MIN_COMPATIBLE_VERSION only moves forward when a release changes this layout or the embedded `ast` shape incompatibly, so a schema fetched at a given linter_version stays valid for every later entry until the next such bump.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -315,6 +315,7 @@
         "is_native",
         "is_event",
         "access_level",
+        "deprecation",
         "body",
         "line",
         "state"
@@ -335,6 +336,10 @@
           "description": "The function's access level. Unannotated functions are Public.",
           "enum": ["Private", "Protected", "Public"]
         },
+        "deprecation": {
+          "description": "Build-time deprecation metadata for a catalogued bundled function. Ordinary parser output is null.",
+          "anyOf": [{ "$ref": "#/$defs/deprecation" }, { "type": "null" }]
+        },
         "body": {
           "type": "array",
           "items": { "$ref": "#/$defs/stmt" }
@@ -344,6 +349,16 @@
           "description": "The name of the State block this function/event is declared in, or null when it's declared directly on the script (the \"empty state\").",
           "type": ["string", "null"]
         }
+      }
+    },
+    "deprecation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replacement", "level", "message"],
+      "properties": {
+        "replacement": { "type": ["string", "null"] },
+        "level": { "enum": ["error", "warning", "info"] },
+        "message": { "type": "string" }
       }
     },
     "stateDecl": {

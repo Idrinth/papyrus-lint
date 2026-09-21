@@ -19,6 +19,32 @@ fn check(source: &str) -> Vec<Diagnostic> {
     )
 }
 
+struct DeprecatedExternal;
+
+impl crate::external_signatures::ExternalSignatures for DeprecatedExternal {
+    fn lookup(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<Vec<crate::external_signatures::ParamInfo>> {
+        None
+    }
+
+    fn deprecated_function(
+        &mut self,
+        type_name: &str,
+        function_name: &str,
+    ) -> Option<papyrus_parser::ast::Deprecation> {
+        (type_name.eq_ignore_ascii_case("LegacyApi")
+            && function_name.eq_ignore_ascii_case("OldWay"))
+        .then(|| papyrus_parser::ast::Deprecation {
+            replacement: Some("NewWay()".to_string()),
+            level: "info".to_string(),
+            message: "LegacyApi.OldWay: call NewWay() instead".to_string(),
+        })
+    }
+}
+
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
     // Not a specific count: shared/rules/data/deprecated-functions.yaml's
@@ -71,6 +97,34 @@ fn global_rule_requires_its_literal_qualifier_case_insensitively() {
     assert_eq!(diagnostics.len(), 2);
     assert_eq!(diagnostics[0].line, 1);
     assert_eq!(diagnostics[1].line, 2);
+}
+
+#[test]
+fn chained_replacement_call_is_not_a_global_qualifier() {
+    let diagnostics = check(
+        "ScriptName Game\nInt Function GetSkillLegendaryLevel(String asActorValue) Global\n    Return ActorValueInfo.GetActorValueInfoByName(asActorValue).GetSkillLegendaryLevel()\nEndFunction\n",
+    );
+    assert!(diagnostics.is_empty());
+}
+
+#[test]
+fn emits_structured_external_deprecation_guidance() {
+    let source = "ScriptName Example\nLegacyApi Property Api Auto\nFunction Test()\n    Api.OldWay()\nEndFunction\n";
+    let ast = papyrus_parser::parse(source).unwrap();
+    let tokens = papyrus_parser::tokenize(source).unwrap();
+    let diagnostics = super::check(
+        source,
+        Some(&ast),
+        Some(&tokens),
+        &crate::config::Config::default(),
+        &mut DeprecatedExternal,
+    );
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(
+        diagnostics[0].message,
+        "[info] LegacyApi.OldWay: call NewWay() instead"
+    );
 }
 
 #[test]

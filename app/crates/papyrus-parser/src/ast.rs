@@ -78,6 +78,14 @@ pub enum AccessLevel {
     Public,
 }
 
+/// Build-time metadata describing why a function is deprecated.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Deprecation {
+    pub replacement: Option<String>,
+    pub level: String,
+    pub message: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDecl {
     pub name: String,
@@ -90,6 +98,10 @@ pub struct FunctionDecl {
     /// default public access level.
     #[serde(default)]
     pub access_level: AccessLevel,
+    /// Deprecation metadata supplied by a build-time AST producer. Ordinary
+    /// parser output leaves this empty.
+    #[serde(default)]
+    pub deprecation: Option<Deprecation>,
     pub body: Vec<Stmt>,
     pub line: usize,
     /// The name of the `State` block this function/event is declared in, or

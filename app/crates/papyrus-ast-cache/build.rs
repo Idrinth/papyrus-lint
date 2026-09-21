@@ -16,15 +16,41 @@ use std::time::Instant;
 
 use flate2::write::GzEncoder;
 use flate2::Compression;
+use serde::Deserialize;
 
 #[path = "src/bundled_blob.rs"]
 mod bundled_blob;
 #[path = "src/psc_decode.rs"]
 mod psc_decode;
 
+#[derive(Deserialize)]
+struct DeprecatedFunction {
+    script: String,
+    function: String,
+    replacement: Option<String>,
+    level: String,
+    message: String,
+}
+
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
+    let deprecated_path =
+        Path::new(&manifest_dir).join("../../../shared/rules/data/deprecated-functions.yaml");
+    println!("cargo:rerun-if-changed={}", deprecated_path.display());
+    let deprecated: Vec<DeprecatedFunction> =
+        serde_norway::from_reader(File::open(&deprecated_path).unwrap_or_else(|err| {
+            panic!(
+                "failed to open deprecated-function data at {}: {err}",
+                deprecated_path.display()
+            )
+        }))
+        .unwrap_or_else(|err| {
+            panic!(
+                "failed to parse deprecated-function data at {}: {err}",
+                deprecated_path.display()
+            )
+        });
     let started = Instant::now();
     // Insertion order is zip order (vanilla, then SKSE). The name index
     // last-write-wins, so an SKSE script of the same `ScriptName` as a
@@ -67,7 +93,7 @@ fn main() {
                 panic!("failed to read {name} from {}: {err}", zip_path.display())
             });
             let source = psc_decode::decode_psc_bytes(&bytes);
-            let (Ok(ast), Ok(tokens)) = (
+            let (Ok(mut ast), Ok(tokens)) = (
                 papyrus_parser::parse(&source),
                 papyrus_parser::tokenize(&source),
             ) else {
@@ -75,6 +101,7 @@ fn main() {
                 println!("cargo:warning=skipping {name}: papyrus-parser could not lex/parse it");
                 continue;
             };
+            mark_deprecated_functions(&mut ast, &deprecated);
             let Some(ast_bytes) = bundled_blob::serialize_ast(&ast) else {
                 skipped += 1;
                 println!("cargo:warning=skipping {name}: AST failed to serialize");
@@ -127,4 +154,28 @@ fn main() {
         "cargo:warning=bundled Skyrim AST cache: {count} scripts ({skipped} skipped) in {:?}",
         started.elapsed()
     );
+}
+
+fn mark_deprecated_functions(
+    ast: &mut papyrus_parser::ast::Script,
+    deprecated: &[DeprecatedFunction],
+) {
+    for rule in deprecated
+        .iter()
+        .filter(|rule| rule.script.eq_ignore_ascii_case(&ast.name))
+    {
+        for function in ast
+            .functions
+            .iter_mut()
+            .chain(ast.states.iter_mut().flat_map(|state| &mut state.functions))
+        {
+            if function.name.eq_ignore_ascii_case(&rule.function) {
+                function.deprecation = Some(papyrus_parser::ast::Deprecation {
+                    replacement: rule.replacement.clone(),
+                    level: rule.level.clone(),
+                    message: format!("{}.{}: {}", rule.script, rule.function, rule.message),
+                });
+            }
+        }
+    }
 }

@@ -32,10 +32,26 @@ fn zip_script(archive_name: &str, file_name: &str) -> String {
     panic!("no {file_name} in {}", zip_path.display());
 }
 
+fn strip_deprecation(script: &mut papyrus_parser::ast::Script) {
+    for function in script.functions.iter_mut().chain(
+        script
+            .states
+            .iter_mut()
+            .flat_map(|state| state.functions.iter_mut()),
+    ) {
+        function.deprecation = None;
+    }
+}
+
 #[test]
 fn encode_then_parse_round_trips_a_synthetic_entry() {
-    let source = "ScriptName BundledBlobRoundtrip\n";
-    let ast = papyrus_parser::parse(source).unwrap();
+    let source = "ScriptName BundledBlobRoundtrip\nFunction Legacy()\nEndFunction\n";
+    let mut ast = papyrus_parser::parse(source).unwrap();
+    ast.functions[0].deprecation = Some(papyrus_parser::ast::Deprecation {
+        replacement: Some("Current()".to_string()),
+        level: "warning".to_string(),
+        message: "Use Current() instead".to_string(),
+    });
     let tokens = papyrus_parser::tokenize(source).unwrap();
     let packed = PackedEntry {
         md5: md5::compute(source.as_bytes()).0,
@@ -169,10 +185,30 @@ fn unrelated_source_is_a_bundled_miss() {
 #[test]
 fn bundled_actor_matches_a_fresh_parse_and_tokenize() {
     let source = zip_script("skyrim-scripts.zip", "Actor.psc");
-    let ast = ast_for(&source).unwrap();
+    let mut ast = ast_for(&source).unwrap();
+    strip_deprecation(&mut ast);
     let tokens = tokens_for(&source).unwrap();
     assert_eq!(ast, papyrus_parser::parse(&source).unwrap());
     assert_eq!(tokens, papyrus_parser::tokenize(&source).unwrap());
+}
+
+#[test]
+fn bundled_actor_carries_catalogued_deprecation_metadata() {
+    let ast = ast_for_name("Actor").expect("Actor should be in the name index");
+    let favor = ast
+        .functions
+        .iter()
+        .find(|function| function.name.eq_ignore_ascii_case("ModFavorPoints"))
+        .expect("ModFavorPoints should exist on Actor");
+    let deprecation = favor
+        .deprecation
+        .as_ref()
+        .expect("catalogued Actor.ModFavorPoints should be marked deprecated");
+    assert_eq!(deprecation.level, "warning");
+    assert_eq!(
+        deprecation.replacement.as_deref(),
+        Some("MakePlayerFriend()")
+    );
 }
 
 #[test]
