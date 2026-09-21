@@ -20,7 +20,7 @@
 
 use std::collections::HashMap;
 
-use papyrus_parser::ast::{Expr, FunctionDecl, IfBranch, Literal, Script, Stmt, TypeName};
+use papyrus_parser::ast::{Expr, FunctionDecl, Literal, Script, TypeName};
 use papyrus_parser::types::{infer_type, TypeEnv};
 
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
@@ -109,27 +109,15 @@ pub fn check(
 /// Like [`check`], but also checks calls to functions resolved through
 /// `external` (typically functions declared on other scripts).
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
-pub fn check_with<E: ExternalSignatures + ?Sized>(
-    ast: Option<&Script>,
-    external: &mut E,
-) -> Vec<Diagnostic> {
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-
-    let locals = LocalFunctions::from_script(script);
-    let mut env = TypeEnv::for_script(script);
-    let mut diagnostics = Vec::new();
-
-    for function in all_functions(script) {
-        env.with_function_scope(function, |env| {
-            for stmt in &function.body {
-                walk_stmt(stmt, env, &locals, external, &mut diagnostics);
-            }
-        });
-    }
-
-    diagnostics
+pub fn check_with<E: ExternalSignatures>(ast: Option<&Script>, external: &mut E) -> Vec<Diagnostic> {
+    crate::visitor::run(
+        visitor(),
+        "",
+        ast,
+        None,
+        &crate::config::Config::default(),
+        external,
+    )
 }
 
 /// Iterates every function declared directly on a script, plus every
@@ -192,105 +180,6 @@ impl LocalFunctions {
 
     fn lookup(&self, name: &str) -> Option<&[ParamInfo]> {
         self.by_name.get(&name.to_ascii_lowercase())?.as_deref()
-    }
-}
-
-fn walk_stmt<E: ExternalSignatures + ?Sized>(
-    stmt: &Stmt,
-    env: &TypeEnv,
-    locals: &LocalFunctions,
-    external: &mut E,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    match stmt {
-        Stmt::VarDecl(decl) => {
-            if let Some(value) = &decl.value {
-                walk_expr(value, env, locals, external, diagnostics);
-            }
-        }
-        Stmt::Assign { target, value, .. } => {
-            walk_expr(target, env, locals, external, diagnostics);
-            walk_expr(value, env, locals, external, diagnostics);
-        }
-        Stmt::Expr { value, .. } => walk_expr(value, env, locals, external, diagnostics),
-        Stmt::Return { value, .. } => {
-            if let Some(value) = value {
-                walk_expr(value, env, locals, external, diagnostics);
-            }
-        }
-        Stmt::If {
-            branches,
-            else_body,
-            ..
-        } => {
-            for IfBranch {
-                condition, body, ..
-            } in branches
-            {
-                walk_expr(condition, env, locals, external, diagnostics);
-                for stmt in body {
-                    walk_stmt(stmt, env, locals, external, diagnostics);
-                }
-            }
-            for stmt in else_body {
-                walk_stmt(stmt, env, locals, external, diagnostics);
-            }
-        }
-        Stmt::While {
-            condition, body, ..
-        } => {
-            walk_expr(condition, env, locals, external, diagnostics);
-            for stmt in body {
-                walk_stmt(stmt, env, locals, external, diagnostics);
-            }
-        }
-    }
-}
-
-fn walk_expr<E: ExternalSignatures + ?Sized>(
-    expr: &Expr,
-    env: &TypeEnv,
-    locals: &LocalFunctions,
-    external: &mut E,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
-    match expr {
-        Expr::Call {
-            callee,
-            args,
-            line,
-            col,
-        } => {
-            if let Some((name, params)) = resolve_signature(callee, env, locals, external) {
-                check_args(
-                    (*line, *col),
-                    &name,
-                    &params,
-                    args,
-                    env,
-                    external,
-                    diagnostics,
-                );
-            }
-            walk_expr(callee, env, locals, external, diagnostics);
-            for arg in args {
-                walk_expr(arg, env, locals, external, diagnostics);
-            }
-        }
-        Expr::Binary { left, right, .. } => {
-            walk_expr(left, env, locals, external, diagnostics);
-            walk_expr(right, env, locals, external, diagnostics);
-        }
-        Expr::Unary { operand, .. } => walk_expr(operand, env, locals, external, diagnostics),
-        Expr::Member { object, .. } => walk_expr(object, env, locals, external, diagnostics),
-        Expr::Index { object, index } => {
-            walk_expr(object, env, locals, external, diagnostics);
-            walk_expr(index, env, locals, external, diagnostics);
-        }
-        Expr::Cast { value, .. } => walk_expr(value, env, locals, external, diagnostics),
-        Expr::NewArray { size, .. } => walk_expr(size, env, locals, external, diagnostics),
-        Expr::NamedArg { value, .. } => walk_expr(value, env, locals, external, diagnostics),
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
     }
 }
 
