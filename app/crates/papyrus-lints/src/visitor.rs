@@ -208,7 +208,7 @@ pub struct Session<E> {
     order: Vec<Item>,
 }
 
-impl<E: ExternalSignatures> Session<E> {
+impl<E: ExternalSignatures + ?Sized> Session<E> {
     pub fn new() -> Self {
         Self {
             ast: AstWalker::default(),
@@ -303,7 +303,7 @@ impl<E: ExternalSignatures> Session<E> {
 }
 
 /// Runs a single rule visitor through the same walk [`Session`] uses.
-pub fn run<E: ExternalSignatures>(
+pub fn run<E: ExternalSignatures + ?Sized>(
     visitor: LintVisitor,
     source: &str,
     ast: Option<&Script>,
@@ -336,15 +336,15 @@ struct WalkCtx<'a, E> {
 }
 
 impl AstWalker {
-    fn begin<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
+    fn begin<E: ExternalSignatures + ?Sized>(&mut self, ctx: &mut WalkCtx<'_, E>) {
         self.notify(ctx, 1, |lint, ctx| lint.begin(ctx));
     }
 
-    fn finish<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
+    fn finish<E: ExternalSignatures + ?Sized>(&mut self, ctx: &mut WalkCtx<'_, E>) {
         self.notify(ctx, 1, |lint, ctx| lint.finish(ctx));
     }
 
-    fn walk<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
+    fn walk<E: ExternalSignatures + ?Sized>(&mut self, ctx: &mut WalkCtx<'_, E>) {
         let Some(script) = ctx.ast else {
             return;
         };
@@ -360,7 +360,7 @@ impl AstWalker {
         fanout.visit_script(script);
     }
 
-    fn notify<E: ExternalSignatures>(
+    fn notify<E: ExternalSignatures + ?Sized>(
         &mut self,
         ctx: &mut WalkCtx<'_, E>,
         line: usize,
@@ -386,15 +386,15 @@ impl AstWalker {
 }
 
 impl TokenWalker {
-    fn begin<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
+    fn begin<E: ExternalSignatures + ?Sized>(&mut self, ctx: &mut WalkCtx<'_, E>) {
         self.notify(ctx, |lint, ctx| lint.begin(ctx));
     }
 
-    fn finish<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
+    fn finish<E: ExternalSignatures + ?Sized>(&mut self, ctx: &mut WalkCtx<'_, E>) {
         self.notify(ctx, |lint, ctx| lint.finish(ctx));
     }
 
-    fn walk<E: ExternalSignatures>(&mut self, ctx: &mut WalkCtx<'_, E>) {
+    fn walk<E: ExternalSignatures + ?Sized>(&mut self, ctx: &mut WalkCtx<'_, E>) {
         let Some(tokens) = ctx.tokens else {
             return;
         };
@@ -409,7 +409,7 @@ impl TokenWalker {
         fanout.visit_tokens(tokens);
     }
 
-    fn notify<E: ExternalSignatures>(
+    fn notify<E: ExternalSignatures + ?Sized>(
         &mut self,
         ctx: &mut WalkCtx<'_, E>,
         mut f: impl FnMut(&mut dyn TokenLint, &mut VisitCtx<'_>),
