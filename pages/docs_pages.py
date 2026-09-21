@@ -70,6 +70,12 @@ DOCS = [
         "blurb": "Real bugs Papyrus Lint catches that PapyrusCompiler.exe lets through, beyond the README's example.",
     },
     {
+        "filename": "annotations.md",
+        "slug": "annotations",
+        "kind": "markdown",
+        "blurb": "Comment annotations for API metadata, lint suppression, and declaration visibility.",
+    },
+    {
         "filename": "github-actions-example.md",
         "slug": "github-actions-example",
         "kind": "markdown",
