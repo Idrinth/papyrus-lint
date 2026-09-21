@@ -3,7 +3,7 @@
 
 /// The oldest linter release whose AST cache entries the running binary
 /// still accepts. See the crate docs for when to bump this.
-pub(crate) const MIN_COMPATIBLE_VERSION: &str = "1.36.0";
+pub(crate) const MIN_COMPATIBLE_VERSION: &str = "1.46.0";
 
 /// Parses a `major.minor.patch` version string into a comparable tuple.
 /// Returns `None` for anything that doesn't parse that way, so a malformed
@@ -93,9 +93,9 @@ mod tests {
     #[test]
     fn is_compatible_version_accepts_the_minimum_and_anything_newer() {
         assert!(is_compatible_version(MIN_COMPATIBLE_VERSION));
-        assert!(is_compatible_version("1.36.1"));
+        assert!(is_compatible_version("1.46.1"));
         assert!(is_compatible_version("2.0.0"));
-        assert!(!is_compatible_version("1.35.99"));
+        assert!(!is_compatible_version("1.45.99"));
         assert!(!is_compatible_version("not-a-version"));
     }
 
