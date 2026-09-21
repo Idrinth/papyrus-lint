@@ -127,7 +127,9 @@ impl<'a> Lexer<'a> {
                     if self.peek_at(1) == Some(b'/') {
                         self.skip_block_comment()?;
                     } else {
-                        self.skip_line_comment();
+                        if let Some(annotation) = self.read_line_comment_annotation() {
+                            return Ok(Some(annotation));
+                        }
                     }
                 }
                 Some(b'{') => {
@@ -182,13 +184,39 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn skip_line_comment(&mut self) {
+    fn read_line_comment_annotation(&mut self) -> Option<Token> {
+        let mut annotation = None;
         while let Some(c) = self.peek() {
             if c == b'\n' {
                 break;
             }
+            if c == b'@' {
+                let line = self.line;
+                let col = self.col;
+                let start = self.pos + 1;
+                self.advance();
+                while matches!(
+                    self.peek(),
+                    Some(b'_' | b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9')
+                ) {
+                    self.advance();
+                }
+                let name = String::from_utf8_lossy(&self.source[start..self.pos]);
+                if matches!(
+                    name.to_ascii_lowercase().as_str(),
+                    "public" | "protected" | "private"
+                ) {
+                    annotation = Some(Token::new(
+                        TokenKind::CommentAnnotation(name.into_owned()),
+                        line,
+                        col,
+                    ));
+                }
+                continue;
+            }
             self.advance();
         }
+        annotation
     }
 
     fn skip_block_comment(&mut self) -> Result<(), LexError> {
