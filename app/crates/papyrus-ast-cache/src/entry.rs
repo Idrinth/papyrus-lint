@@ -45,6 +45,7 @@ fn cache_dir_from(
 /// The cache file `source_path` is stored under within `dir`: an MD5 of its
 /// absolute path, so path separators and length can't collide with
 /// filesystem naming limits.
+#[cfg(test)]
 pub(crate) fn cache_file_path(dir: &Path, source_path: &Path) -> PathBuf {
     let digest = md5::compute(source_path.to_string_lossy().as_bytes());
     dir.join(format!("{digest:x}.json"))
