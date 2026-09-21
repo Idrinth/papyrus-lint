@@ -109,7 +109,7 @@ pub fn check(
 /// `external`, flagging one whose chain of `Property` declarations across
 /// other scripts leads back to this script.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
-pub fn check_with<E: ExternalSignatures + ?Sized>(
+pub fn check_with<E: ExternalSignatures>(
     ast: Option<&papyrus_parser::ast::Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
@@ -131,7 +131,7 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
 /// instead of looping forever. Returns the chain of script names from
 /// `current_type` back to `origin` (inclusive of both ends) the first time
 /// one is found.
-fn cycle_through<E: ExternalSignatures + ?Sized>(
+fn cycle_through<E: ExternalSignatures>(
     current_type: &str,
     origin: &str,
     external: &mut E,

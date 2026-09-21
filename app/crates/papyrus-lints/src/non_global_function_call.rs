@@ -103,7 +103,7 @@ pub fn check(
 /// Like [`check`], but resolves each call's target function through
 /// `external`, flagging one that resolves but isn't declared `Global`.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
-pub fn check_with<E: ExternalSignatures + ?Sized>(
+pub fn check_with<E: ExternalSignatures>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
