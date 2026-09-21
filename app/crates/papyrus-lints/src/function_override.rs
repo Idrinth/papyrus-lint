@@ -90,7 +90,7 @@ pub fn check(
 /// `external`, flagging any function declared on `source` whose name is
 /// also declared somewhere along that chain.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
-pub fn check_with<E: ExternalSignatures + ?Sized>(
+pub fn check_with<E: ExternalSignatures>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {

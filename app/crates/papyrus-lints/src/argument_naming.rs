@@ -102,7 +102,7 @@ pub fn check(
 /// position. A parameter beyond the shorter of the two declarations' count
 /// (a signature that doesn't even match in length) isn't compared.
 #[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
-pub fn check_with<E: ExternalSignatures + ?Sized>(
+pub fn check_with<E: ExternalSignatures>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
