@@ -66,6 +66,14 @@ pub struct Param {
     pub default: Option<Expr>,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AccessLevel {
+    Private,
+    Protected,
+    #[default]
+    Public,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDecl {
     pub name: String,
@@ -74,6 +82,10 @@ pub struct FunctionDecl {
     pub is_global: bool,
     pub is_native: bool,
     pub is_event: bool,
+    /// The function's visibility. Until access modifiers are parsed, every
+    /// function uses Papyrus's default public access level.
+    #[serde(default)]
+    pub access_level: AccessLevel,
     pub body: Vec<Stmt>,
     pub line: usize,
     /// The name of the `State` block this function/event is declared in, or

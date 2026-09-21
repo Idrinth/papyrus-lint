@@ -422,6 +422,7 @@ impl Parser {
             is_global,
             is_native,
             is_event,
+            access_level: AccessLevel::default(),
             body,
             line,
             state: None,

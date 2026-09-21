@@ -303,6 +303,7 @@
         "is_global",
         "is_native",
         "is_event",
+        "access_level",
         "body",
         "line",
         "state"
@@ -319,6 +320,10 @@
         "is_global": { "type": "boolean" },
         "is_native": { "type": "boolean" },
         "is_event": { "type": "boolean" },
+        "access_level": {
+          "description": "The function's access level. Currently always Public until access modifiers are parsed.",
+          "enum": ["Private", "Protected", "Public"]
+        },
         "body": {
           "type": "array",
           "items": { "$ref": "#/$defs/stmt" }

@@ -1,4 +1,6 @@
-use papyrus_parser::ast::{AssignOp, BinaryOp, Expr, IntFormat, Literal, Stmt, UnaryOp};
+use papyrus_parser::ast::{
+    AccessLevel, AssignOp, BinaryOp, Expr, IntFormat, Literal, Stmt, UnaryOp,
+};
 use papyrus_parser::{parse, PapyrusError};
 
 #[test]
@@ -21,6 +23,27 @@ fn parses_all_property_and_script_modifiers() {
     assert!(script.properties[1].is_auto);
     assert!(script.properties[1].is_conditional);
     assert!(script.variables[0].is_conditional);
+}
+
+#[test]
+fn functions_default_to_public_access() {
+    let script = parse(
+        "ScriptName AccessLevels\n\
+         Function TopLevel()\n\
+         EndFunction\n\
+         State Active\n\
+             Event OnBeginState()\n\
+             EndEvent\n\
+         EndState\n",
+    )
+    .expect("script should parse");
+
+    assert_eq!(script.functions[0].access_level, AccessLevel::Public);
+    assert_eq!(
+        script.states[0].functions[0].access_level,
+        AccessLevel::Public
+    );
+    assert_eq!(AccessLevel::default(), AccessLevel::Public);
 }
 
 #[test]
