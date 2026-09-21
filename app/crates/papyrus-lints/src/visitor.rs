@@ -174,7 +174,7 @@ struct RegisteredTokens {
     diagnostics: Vec<Diagnostic>,
 }
 
-struct RegisteredDirect<E> {
+struct RegisteredDirect<E: ?Sized> {
     #[allow(clippy::type_complexity)]
     check:
         Box<dyn FnMut(&str, Option<&Script>, Option<&[Token]>, &Config, &mut E) -> Vec<Diagnostic>>,
@@ -201,7 +201,7 @@ pub struct TokenWalker {
 }
 
 /// Collects enabled lints into the two walkers, then emits diagnostics.
-pub struct Session<E> {
+pub struct Session<E: ?Sized> {
     ast: AstWalker,
     tokens: TokenWalker,
     directs: Vec<RegisteredDirect<E>>,
@@ -327,7 +327,7 @@ fn stmt_line(stmt: &Stmt) -> usize {
     }
 }
 
-struct WalkCtx<'a, E> {
+struct WalkCtx<'a, E: ?Sized> {
     source: &'a str,
     ast: Option<&'a Script>,
     tokens: Option<&'a [Token]>,
@@ -542,7 +542,7 @@ struct TokenFanout<'a> {
 }
 
 impl TokenFanout<'_> {
-    fn notify(&mut self, mut f: impl FnMut(&mut dyn TokenLint, &mut VisitCtx<'_>)) {
+    fn notify(&mut self, mut f: impl FnMut(&mut dyn TokenLint, &mut VisitCtx<'_>) ) {
         let source = self.source;
         let ast = self.ast;
         let tokens = self.tokens;
