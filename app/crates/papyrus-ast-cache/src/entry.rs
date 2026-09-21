@@ -78,17 +78,8 @@ pub(crate) fn valid_entry_in_for_game(
     source_path: &Path,
     source: &str,
 ) -> Option<CacheEntry> {
-    let expected = cache_file_path_for_game(dir, game, source_path);
-    if let Ok(raw) = std::fs::read(&expected) {
-        return deserialize_fresh_entry(raw, source_path, source);
-    }
-    if game != "skyrim" {
-        return None;
-    }
-    let legacy = cache_file_path(dir, source_path);
-    let entry = deserialize_fresh_entry(std::fs::read(&legacy).ok()?, source_path, source)?;
-    let _ = std::fs::rename(legacy, expected);
-    Some(entry)
+    let raw = std::fs::read(cache_file_path_for_game(dir, game, source_path)).ok()?;
+    deserialize_fresh_entry(raw, source_path, source)
 }
 
 fn deserialize_fresh_entry(raw: Vec<u8>, source_path: &Path, source: &str) -> Option<CacheEntry> {
@@ -220,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    fn skyrim_read_migrates_a_legacy_cache_file() {
+    fn game_read_does_not_consume_a_prefixless_cache_file() {
         let cache_dir = tempdir().unwrap();
         let project_dir = tempdir().unwrap();
         let source_path = project_dir.path().join("Example.psc");
@@ -234,28 +225,7 @@ mod tests {
         );
 
         assert!(
-            valid_entry_in_for_game(cache_dir.path(), "skyrim", &source_path, source).is_some()
-        );
-        assert!(!legacy.exists());
-        assert!(cache_file_path_for_game(cache_dir.path(), "skyrim", &source_path).exists());
-    }
-
-    #[test]
-    fn another_game_does_not_consume_a_legacy_skyrim_cache_file() {
-        let cache_dir = tempdir().unwrap();
-        let project_dir = tempdir().unwrap();
-        let source_path = project_dir.path().join("Example.psc");
-        let source = "ScriptName Example\n";
-        std::fs::write(&source_path, source).unwrap();
-        let legacy = cache_file_path(cache_dir.path(), &source_path);
-        write_entry_in(
-            cache_dir.path(),
-            &source_path,
-            &fresh_entry(&source_path, source),
-        );
-
-        assert!(
-            valid_entry_in_for_game(cache_dir.path(), "fallout4", &source_path, source).is_none()
+            valid_entry_in_for_game(cache_dir.path(), "skyrim", &source_path, source).is_none()
         );
         assert!(legacy.exists());
     }
