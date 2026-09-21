@@ -7,7 +7,7 @@ fn function_table_forwards_every_external_signature_lookup() {
     write_script(
         root.path(),
         "Base",
-        "ScriptName Base\n\nInt Property Count Auto\nString Label = \"\"\n\nAuto State Idle\nEndState\n\nFunction Run(String message) Global ; @deprecated\nEndFunction\n\nInt Function RegisterFoo() ; @nodiscard\n    Count += 1\n    Return Count\nEndFunction\n",
+        "ScriptName Base\n\nInt Property Count Auto ; @private\nString Label = \"\"\n\nAuto State Idle\nEndState\n\nFunction Run(String message) Global ; @deprecated @protected\nEndFunction\n\nInt Function RegisterFoo() ; @nodiscard\n    Count += 1\n    Return Count\nEndFunction\n",
     );
     write_script(
         root.path(),
@@ -26,6 +26,13 @@ fn function_table_forwards_every_external_signature_lookup() {
     assert_eq!(params[0].type_name.name, "String");
     assert!(external.is_subtype("Child", "Base"));
     assert!(external.has_property("Child", "Count"));
+    assert_eq!(
+        external.property_access("Child", "Count"),
+        Some(papyrus_lints::MemberAccess {
+            declaring_type: "base".to_string(),
+            access_level: papyrus_parser::ast::AccessLevel::Private,
+        })
+    );
     assert!(external.has_field("Child", "Label"));
     assert!(external.script_exists("Child"));
     assert!(external.can_resolve_script("Child"));
@@ -45,6 +52,13 @@ fn function_table_forwards_every_external_signature_lookup() {
         vec![("active".to_string(), false), ("idle".to_string(), true)]
     );
     assert_eq!(external.is_global_function("Child", "Run"), Some(true));
+    assert_eq!(
+        external.function_access("Child", "Run"),
+        Some(papyrus_lints::MemberAccess {
+            declaring_type: "base".to_string(),
+            access_level: papyrus_parser::ast::AccessLevel::Protected,
+        })
+    );
     assert_eq!(external.is_deprecated_function("Child", "Run"), Some(true));
     assert_eq!(
         external.is_nodiscard_function("Child", "RegisterFoo"),

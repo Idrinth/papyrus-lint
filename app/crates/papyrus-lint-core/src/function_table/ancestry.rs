@@ -5,6 +5,7 @@ use std::collections::HashSet;
 
 use super::{CacheProbe, FunctionTable};
 use crate::script_functions::{FunctionSignature, Member, ScriptFunctions};
+use papyrus_lints::MemberAccess;
 
 fn cached_script<'a>(
     table: &'a FunctionTable,
@@ -28,6 +29,44 @@ fn parent_cache_key(script: &ScriptFunctions) -> Option<String> {
 }
 
 impl FunctionTable {
+    pub fn function_access(&mut self, type_name: &str, member_name: &str) -> Option<MemberAccess> {
+        self.member_access(type_name, member_name, |script, key| {
+            script.functions.get(key).map(|member| member.access_level)
+        })
+    }
+
+    pub fn property_access(&mut self, type_name: &str, member_name: &str) -> Option<MemberAccess> {
+        self.member_access(type_name, member_name, |script, key| {
+            script.properties.get(key).map(|member| member.access_level)
+        })
+    }
+
+    fn member_access(
+        &mut self,
+        type_name: &str,
+        member_name: &str,
+        find: impl Fn(&ScriptFunctions, &str) -> Option<papyrus_parser::ast::AccessLevel>,
+    ) -> Option<MemberAccess> {
+        let key = member_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                break;
+            }
+            self.ensure_loaded(&name);
+            let script = self.scripts.get(&name)?.as_ref()?;
+            if let Some(access_level) = find(script, &key) {
+                return Some(MemberAccess {
+                    declaring_type: name,
+                    access_level,
+                });
+            }
+            current = parent_cache_key(script);
+            visited.push(name);
+        }
+        None
+    }
     /// Looks up the signature of `function_name` as callable on an object
     /// of type `type_name`, searching `type_name` and its ancestors in
     /// `Extends` order.
