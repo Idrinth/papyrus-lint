@@ -1,37 +1,93 @@
-# Deprecated functions to mark on the bundled Skyrim/SKSE ASTs.
+# Deprecated function calls for the papyrus-lint "deprecated functions" rule.
 #
-# Sourced from deprecation comments in the scripts under `shared/scripts/`.
-# The AST-cache build script matches script and function names case-insensitively.
+# Sourced from comments in the bundled Skyrim Creation Kit and SKSE scripts
+# (`shared/scripts/skyrim-scripts.zip`, `shared/scripts/skyrim-extender-scripts.zip`).
+# Only functions whose own documentation marks them deprecated (or "will
+# likely be deprecated") are listed; deprecated properties and quest-script
+# internals are omitted.
+#
+# Each entry:
+#   script:      the script (native/global or object) the function is defined on
+#   function:    the function name, as written in Papyrus source
+#   replacement: the call to use instead, when one exists
+#   level:       severity of the finding - one of: error, warning, info
+#   message:     explanation shown to the user, including a suggested alternative
+#   global:      true if `script` is a native singleton that's always called
+#                through its literal name (e.g. `Game`, `NetImmerse`) rather
+#                than a base type called through a variable of some subclass
+#                (e.g. `Actor`, `ObjectReference`). Defaults to false. See
+#                `shared/rules/data/forbidden-functions.yaml` for the full rationale.
 
 - script: Actor
   function: ModFavorPoints
+  replacement: MakePlayerFriend()
+  level: warning
+  message: ModFavorPoints is deprecated; it only ever promotes a unique, rank-0 actor to Friend and ignores non-positive values. Call MakePlayerFriend() instead
 
 - script: Actor
   function: ModFavorPointsWithGlobal
+  replacement: MakePlayerFriend()
+  level: warning
+  message: ModFavorPointsWithGlobal is deprecated along with ModFavorPoints; call MakePlayerFriend() instead of reading a GlobalVariable just to ignore its value
 
 - script: Game
   function: GetSkillLegendaryLevel
+  replacement: ActorValueInfo.GetActorValueInfoByName(actorValue).GetSkillLegendaryLevel()
+  level: warning
+  message: Game.GetSkillLegendaryLevel is a deprecated SKSE wrapper; look the ActorValueInfo up once and call GetSkillLegendaryLevel() on that
+  global: true
 
 - script: Game
   function: SetSkillLegendaryLevel
+  replacement: ActorValueInfo.GetActorValueInfoByName(actorValue).SetSkillLegendaryLevel(level)
+  level: warning
+  message: Game.SetSkillLegendaryLevel is a deprecated SKSE wrapper; look the ActorValueInfo up once and call SetSkillLegendaryLevel() on that
+  global: true
 
 - script: NetImmerse
   function: SetNodePositionX
+  replacement: NetImmerse.SetNodeLocalPositionX(ref, node, x, firstPerson)
+  level: warning
+  message: SetNodePositionX is a deprecated alias for SetNodeLocalPositionX; call the local-position setter so the local-vs-world distinction stays explicit
+  global: true
 
 - script: NetImmerse
   function: SetNodePositionY
+  replacement: NetImmerse.SetNodeLocalPositionY(ref, node, y, firstPerson)
+  level: warning
+  message: SetNodePositionY is a deprecated alias for SetNodeLocalPositionY; call the local-position setter so the local-vs-world distinction stays explicit
+  global: true
 
 - script: NetImmerse
   function: SetNodePositionZ
+  replacement: NetImmerse.SetNodeLocalPositionZ(ref, node, z, firstPerson)
+  level: warning
+  message: SetNodePositionZ is a deprecated alias for SetNodeLocalPositionZ; call the local-position setter so the local-vs-world distinction stays explicit
+  global: true
 
 - script: NetImmerse
   function: GetNodePositionX
+  replacement: NetImmerse.GetNodeWorldPositionX(ref, node, firstPerson)
+  level: warning
+  message: GetNodePositionX is a deprecated alias for GetNodeWorldPositionX; call the world-position getter so the local-vs-world distinction stays explicit
+  global: true
 
 - script: NetImmerse
   function: GetNodePositionY
+  replacement: NetImmerse.GetNodeWorldPositionY(ref, node, firstPerson)
+  level: warning
+  message: GetNodePositionY is a deprecated alias for GetNodeWorldPositionY; call the world-position getter so the local-vs-world distinction stays explicit
+  global: true
 
 - script: NetImmerse
   function: GetNodePositionZ
+  replacement: NetImmerse.GetNodeWorldPositionZ(ref, node, firstPerson)
+  level: warning
+  message: GetNodePositionZ is a deprecated alias for GetNodeWorldPositionZ; call the world-position getter so the local-vs-world distinction stays explicit
+  global: true
 
 - script: ObjectReference
   function: MoveToWhenUnloaded
+  replacement: MoveTo(akTarget, afXOffset, afYOffset, afZOffset)
+  level: error
+  message: MoveToWhenUnloaded is marked DEPRECATED and must not be used; it busy-waits with Utility.Wait until both locations unload and can stall quest stage fragments. Call MoveTo() (or MoveToIfUnloaded() when the caller is already unloaded) instead

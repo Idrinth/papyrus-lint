@@ -167,10 +167,14 @@ pub trait ExternalSignatures {
         None
     }
 
-    /// Whether `type_name` or one of its ancestors declares
-    /// `function_name` with a `; @deprecated` directive. `None` means the
-    /// function could not be resolved.
-    fn is_deprecated_function(&mut self, _type_name: &str, _function_name: &str) -> Option<bool> {
+    /// Metadata for `function_name` when `type_name` or one of its ancestors
+    /// declares it as deprecated. `None` means it is not deprecated or could
+    /// not be resolved.
+    fn deprecated_function(
+        &mut self,
+        _type_name: &str,
+        _function_name: &str,
+    ) -> Option<papyrus_parser::ast::Deprecation> {
         None
     }
 

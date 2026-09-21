@@ -315,7 +315,7 @@
         "is_native",
         "is_event",
         "access_level",
-        "deprecated",
+        "deprecation",
         "body",
         "line",
         "state"
@@ -336,9 +336,9 @@
           "description": "The function's access level. Unannotated functions are Public.",
           "enum": ["Private", "Protected", "Public"]
         },
-        "deprecated": {
-          "description": "Whether a build-time AST producer marked this function as deprecated. Ordinary parser output is false.",
-          "type": "boolean"
+        "deprecation": {
+          "description": "Build-time deprecation metadata for a catalogued bundled function. Ordinary parser output is null.",
+          "anyOf": [{ "$ref": "#/$defs/deprecation" }, { "type": "null" }]
         },
         "body": {
           "type": "array",
@@ -349,6 +349,16 @@
           "description": "The name of the State block this function/event is declared in, or null when it's declared directly on the script (the \"empty state\").",
           "type": ["string", "null"]
         }
+      }
+    },
+    "deprecation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replacement", "level", "message"],
+      "properties": {
+        "replacement": { "type": ["string", "null"] },
+        "level": { "enum": ["error", "warning", "info"] },
+        "message": { "type": "string" }
       }
     },
     "stateDecl": {

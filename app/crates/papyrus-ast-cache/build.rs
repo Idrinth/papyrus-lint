@@ -27,6 +27,9 @@ mod psc_decode;
 struct DeprecatedFunction {
     script: String,
     function: String,
+    replacement: Option<String>,
+    level: String,
+    message: String,
 }
 
 fn main() {
@@ -167,7 +170,11 @@ fn mark_deprecated_functions(
             .chain(ast.states.iter_mut().flat_map(|state| &mut state.functions))
         {
             if function.name.eq_ignore_ascii_case(&rule.function) {
-                function.deprecated = true;
+                function.deprecation = Some(papyrus_parser::ast::Deprecation {
+                    replacement: rule.replacement.clone(),
+                    level: rule.level.clone(),
+                    message: format!("{}.{}: {}", rule.script, rule.function, rule.message),
+                });
             }
         }
     }

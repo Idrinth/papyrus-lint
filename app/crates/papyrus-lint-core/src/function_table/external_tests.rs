@@ -59,7 +59,10 @@ fn function_table_forwards_every_external_signature_lookup() {
             access_level: papyrus_parser::ast::AccessLevel::Protected,
         })
     );
-    assert_eq!(external.is_deprecated_function("Child", "Run"), Some(true));
+    assert_eq!(
+        external.deprecated_function("Child", "Run").unwrap().level,
+        "warning"
+    );
     assert_eq!(
         external.is_nodiscard_function("Child", "RegisterFoo"),
         Some(true)
@@ -70,7 +73,7 @@ fn function_table_forwards_every_external_signature_lookup() {
     );
     assert_eq!(external.is_global_function("Child", "Missing"), None);
     assert_eq!(external.is_nodiscard_function("Child", "Missing"), None);
-    assert_eq!(external.is_deprecated_function("Child", "Missing"), None);
+    assert_eq!(external.deprecated_function("Child", "Missing"), None);
     assert_eq!(external.function_has_side_effects("Child", "Missing"), None);
     assert!(external.ancestry_fully_known("Child"));
     assert!(!external.ancestry_fully_known("DefinitelyMissing"));
@@ -122,6 +125,7 @@ fn deprecated_function_lint_reads_bundled_ast_metadata() {
 
     assert_eq!(diagnostics.len(), 1);
     assert!(diagnostics[0].message.contains("ModFavorPoints"));
+    assert!(diagnostics[0].message.contains("MakePlayerFriend()"));
 }
 
 #[test]

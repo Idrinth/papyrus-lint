@@ -172,21 +172,21 @@ fn bundled_actor_marks_catalogued_deprecations_on_the_saved_ast() {
     let fresh = papyrus_parser::parse(&source).unwrap();
     let ast = ast_for(&source).unwrap();
     let tokens = tokens_for(&source).unwrap();
-    assert!(
-        !fresh
-            .functions
-            .iter()
-            .find(|function| function.name == "ModFavorPoints")
-            .unwrap()
-            .deprecated
-    );
-    assert!(
-        ast.functions
-            .iter()
-            .find(|function| function.name == "ModFavorPoints")
-            .unwrap()
-            .deprecated
-    );
+    assert!(!fresh
+        .functions
+        .iter()
+        .find(|function| function.name == "ModFavorPoints")
+        .unwrap()
+        .deprecation
+        .is_some());
+    assert!(ast
+        .functions
+        .iter()
+        .find(|function| function.name == "ModFavorPoints")
+        .unwrap()
+        .deprecation
+        .as_ref()
+        .is_some_and(|deprecation| deprecation.message.contains("MakePlayerFriend")));
     assert_eq!(tokens, papyrus_parser::tokenize(&source).unwrap());
 }
 

@@ -2,12 +2,12 @@
 //! deprecated in an externally resolved saved AST. Token-based matching also
 //! lets the rule run when the source does not produce a complete AST.
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 use crate::external_signatures::ExternalSignatures;
 use crate::visitor::{LintVisitor, Store, TokenLint, VisitCtx};
 use crate::Diagnostic;
-use papyrus_parser::ast::{FunctionDecl, Script};
+use papyrus_parser::ast::{Deprecation, FunctionDecl, Script};
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 use papyrus_parser::types::TypeEnv;
 
@@ -16,7 +16,7 @@ pub const RULE: &str = "deprecated-functions";
 #[derive(Default)]
 struct Collect {
     store: Store,
-    local: HashSet<String>,
+    local: HashMap<String, Deprecation>,
     script_name: Option<String>,
     env: Option<TypeEnv>,
 }
@@ -31,11 +31,12 @@ impl TokenLint for Collect {
         self.env = ctx.ast.map(TypeEnv::for_script);
         self.local.clear();
         if let Some(script) = ctx.ast {
-            self.local.extend(
-                all_functions(script)
-                    .filter(|function| function.deprecated)
-                    .map(|function| function.name.to_ascii_lowercase()),
-            );
+            self.local.extend(all_functions(script).filter_map(|function| {
+                function
+                    .deprecation
+                    .clone()
+                    .map(|deprecation| (function.name.to_ascii_lowercase(), deprecation))
+            }));
         }
         let Some(tokens) = ctx.tokens else {
             return;
@@ -51,7 +52,10 @@ impl TokenLint for Collect {
                 continue;
             };
             if header_has_deprecated(&lines, tokens, token.line) {
-                self.local.insert(name.to_ascii_lowercase());
+                self.local.insert(
+                    name.to_ascii_lowercase(),
+                    generic_deprecation(name),
+                );
             }
         }
     }
@@ -84,11 +88,11 @@ impl TokenLint for Collect {
             script_name: self.script_name.as_deref(),
             type_env: self.env.as_ref(),
         };
-        if is_deprecated(name, qualifier, token.line, &context, ctx.external) {
+        if let Some(deprecation) = deprecation(name, qualifier, token.line, &context, ctx.external) {
             self.store.emit(
                 token.line,
                 token.col,
-                format!("[warning] Function '{name}' is marked deprecated"),
+                format!("[{}] {}", deprecation.level, deprecation.message),
                 RULE,
             );
         }
@@ -97,7 +101,7 @@ impl TokenLint for Collect {
 
 struct DeprecatedContext<'a> {
     ast: Option<&'a Script>,
-    local: &'a HashSet<String>,
+    local: &'a HashMap<String, Deprecation>,
     script_name: Option<&'a str>,
     type_env: Option<&'a TypeEnv>,
 }
@@ -131,35 +135,42 @@ fn qualifier_before(tokens: &[Token], call_index: usize) -> Option<&str> {
     }
 }
 
-fn is_deprecated(
+fn deprecation(
     function_name: &str,
     qualifier: Option<&str>,
     line: usize,
     context: &DeprecatedContext<'_>,
     external: &mut dyn ExternalSignatures,
-) -> bool {
+) -> Option<Deprecation> {
     let self_like = qualifier.is_none()
         || qualifier.is_some_and(|name| {
             name.eq_ignore_ascii_case("self") || name.eq_ignore_ascii_case("parent")
         });
-    if self_like && context.local.contains(&function_name.to_ascii_lowercase()) {
-        return true;
+    if self_like {
+        if let Some(deprecation) = context.local.get(&function_name.to_ascii_lowercase()) {
+            return Some(deprecation.clone());
+        }
     }
     if self_like {
-        return context.script_name.is_some_and(|script| {
-            external.is_deprecated_function(script, function_name) == Some(true)
-        });
+        return context
+            .script_name
+            .and_then(|script| external.deprecated_function(script, function_name));
     }
 
-    let Some(qualifier) = qualifier else {
-        return false;
-    };
-    if external.is_deprecated_function(qualifier, function_name) == Some(true) {
-        return true;
+    let qualifier = qualifier?;
+    if let Some(deprecation) = external.deprecated_function(qualifier, function_name) {
+        return Some(deprecation);
     }
-    resolved_qualifier_type(qualifier, context, line).is_some_and(|type_name| {
-        external.is_deprecated_function(&type_name, function_name) == Some(true)
-    })
+    resolved_qualifier_type(qualifier, context, line)
+        .and_then(|type_name| external.deprecated_function(&type_name, function_name))
+}
+
+fn generic_deprecation(function_name: &str) -> Deprecation {
+    Deprecation {
+        replacement: None,
+        level: "warning".to_string(),
+        message: format!("Function '{function_name}' is marked deprecated"),
+    }
 }
 
 fn resolved_qualifier_type(
