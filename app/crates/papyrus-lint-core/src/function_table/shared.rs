@@ -73,6 +73,30 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         )
     }
 
+    fn function_access(
+        &mut self,
+        type_name: &str,
+        function_name: &str,
+    ) -> Option<papyrus_lints::MemberAccess> {
+        papyrus_lints::ExternalSignatures::function_access(
+            &mut *self.write(),
+            type_name,
+            function_name,
+        )
+    }
+
+    fn property_access(
+        &mut self,
+        type_name: &str,
+        property_name: &str,
+    ) -> Option<papyrus_lints::MemberAccess> {
+        papyrus_lints::ExternalSignatures::property_access(
+            &mut *self.write(),
+            type_name,
+            property_name,
+        )
+    }
+
     fn is_subtype(&mut self, sub_type: &str, super_type: &str) -> bool {
         self.probe_or_load(
             |table| table.is_subtype_cached(sub_type, super_type),

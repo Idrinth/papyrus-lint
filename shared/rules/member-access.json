@@ -1,0 +1,14 @@
+{
+  "id": "member-access",
+  "name": "Member access control",
+  "category": "Reliability",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "error",
+  "importance": "high",
+  "fixable": false,
+  "description": "Flags access to a function or property whose @private or @protected visibility does not permit access from the current script.",
+  "definition": "Flags, as an `[error]`, access to a function or property from a script that its visibility annotation does not permit. `@public` members (and unannotated members) are available from any script, `@protected` members are available only from their declaring script and its inheritors, and `@private` members are available only from their declaring script. This project-aware check follows inherited members and resolves typed properties, parameters, and local variables before checking access."
+}

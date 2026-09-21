@@ -37,7 +37,7 @@ pub use registry::{FIXABLE_RULE_IDS, KNOWN_RULE_IDS};
 use serde::Serialize;
 
 pub use config::{Config, Game, MagicNumbers, NamedArguments, TypeCasing};
-pub use external_signatures::{ExternalSignatures, NoExternalSignatures, ParamInfo};
+pub use external_signatures::{ExternalSignatures, MemberAccess, NoExternalSignatures, ParamInfo};
 
 /// Runs the "Argument type check" lint against `source`, resolving calls
 /// declared on other scripts through `external`.

@@ -8,7 +8,7 @@ use std::collections::{HashMap, HashSet};
 use serde::Serialize;
 
 use papyrus_lints::ParamInfo;
-use papyrus_parser::ast::{Expr, FunctionDecl, PropertyDecl, Script, Stmt, TypeName};
+use papyrus_parser::ast::{AccessLevel, Expr, FunctionDecl, PropertyDecl, Script, Stmt, TypeName};
 use papyrus_parser::token::{Token, TokenKind};
 
 /// The parameters (name and type) and return type of a single function, as
@@ -21,6 +21,7 @@ pub struct FunctionSignature {
     pub is_global: bool,
     pub is_native: bool,
     pub is_event: bool,
+    pub access_level: AccessLevel,
     /// The name of the `State` block this signature was resolved from, or
     /// `None` when it comes from the script's empty state — either because
     /// it's declared directly on the script, or because no state overrides
@@ -82,6 +83,7 @@ impl FunctionSignature {
             is_global: decl.is_global,
             is_native: decl.is_native,
             is_event: decl.is_event,
+            access_level: decl.access_level,
             state: decl.state.clone(),
             doc,
             has_side_effects,
@@ -96,6 +98,7 @@ impl FunctionSignature {
 pub struct PropertySignature {
     pub name: String,
     pub type_name: TypeName,
+    pub access_level: AccessLevel,
     /// Inner text of the `{ ... }` documentation comment on the line
     /// immediately after this property's header, if any. Same placement
     /// rules as [`FunctionSignature::doc`].
@@ -107,6 +110,7 @@ impl PropertySignature {
         PropertySignature {
             name: decl.name.clone(),
             type_name: decl.type_name.clone(),
+            access_level: decl.access_level,
             doc,
         }
     }

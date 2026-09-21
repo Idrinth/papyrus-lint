@@ -4,7 +4,7 @@
 //! resolve project scripts implement [`ExternalSignatures`]; callers checking a
 //! script in isolation use [`NoExternalSignatures`].
 
-use papyrus_parser::ast::TypeName;
+use papyrus_parser::ast::{AccessLevel, TypeName};
 use serde::Serialize;
 
 /// A declared function parameter's name and type, as needed to resolve
@@ -18,12 +18,29 @@ pub struct ParamInfo {
     pub type_name: TypeName,
 }
 
+/// The access level and declaring script of a resolved function or property.
+#[derive(Debug, Clone, PartialEq)]
+pub struct MemberAccess {
+    pub declaring_type: String,
+    pub access_level: AccessLevel,
+}
+
 /// Resolves the parameters (name and type) of a function declared on some
 /// other script, for callers that can look such scripts up (see the module
 /// docs). Both names are matched case-insensitively; returning `None`
 /// means the function couldn't be resolved and the call site is skipped.
 pub trait ExternalSignatures {
     fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>>;
+
+    /// Resolves the access metadata of a function callable on `type_name`.
+    fn function_access(&mut self, _type_name: &str, _function_name: &str) -> Option<MemberAccess> {
+        None
+    }
+
+    /// Resolves the access metadata of a property available on `type_name`.
+    fn property_access(&mut self, _type_name: &str, _property_name: &str) -> Option<MemberAccess> {
+        None
+    }
 
     /// Whether `sub_type` inherits from `super_type`, directly or
     /// transitively (i.e. `sub_type`'s script, or one of its ancestors'
