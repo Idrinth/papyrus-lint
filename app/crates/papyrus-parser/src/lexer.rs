@@ -148,6 +148,7 @@ impl<'a> Lexer<'a> {
             b',' => Ok(TokenKind::Comma),
             b'.' => Ok(TokenKind::Dot),
             b':' => Ok(TokenKind::Colon),
+            b'@' => Ok(TokenKind::At),
             b'+' => Ok(self.with_eq(TokenKind::PlusAssign, TokenKind::Plus)),
             b'-' => Ok(self.with_eq(TokenKind::MinusAssign, TokenKind::Minus)),
             b'*' => Ok(self.with_eq(TokenKind::StarAssign, TokenKind::Star)),
@@ -517,7 +518,7 @@ mod tests {
 
     #[test]
     fn reads_punctuation_single_character_operators_and_escapes() {
-        let toks = kinds(r#"()[],.: + - * / % = ! > < "tab\tquote\"slash\\unknown\q""#);
+        let toks = kinds(r#"()[],.:@ + - * / % = ! > < "tab\tquote\"slash\\unknown\q""#);
         assert_eq!(
             toks,
             vec![
@@ -528,6 +529,7 @@ mod tests {
                 TokenKind::Comma,
                 TokenKind::Dot,
                 TokenKind::Colon,
+                TokenKind::At,
                 TokenKind::Plus,
                 TokenKind::Minus,
                 TokenKind::Star,
@@ -573,8 +575,8 @@ mod tests {
 
     #[test]
     fn reports_invalid_characters_and_numeric_literals() {
-        let unexpected = Lexer::new("Int x = @").tokenize().unwrap_err();
-        assert_eq!(unexpected.message, "unexpected character '@'");
+        let unexpected = Lexer::new("Int x = #").tokenize().unwrap_err();
+        assert_eq!(unexpected.message, "unexpected character '#'");
         assert_eq!((unexpected.line, unexpected.col), (1, 9));
 
         let invalid_hex = Lexer::new("0x").tokenize().unwrap_err();

@@ -26,11 +26,12 @@ fn parses_all_property_and_script_modifiers() {
 }
 
 #[test]
-fn functions_default_to_public_access() {
+fn declarations_default_to_public_access() {
     let script = parse(
         "ScriptName AccessLevels\n\
          Function TopLevel()\n\
          EndFunction\n\
+         Int Property Value Auto\n\
          State Active\n\
              Event OnBeginState()\n\
              EndEvent\n\
@@ -39,11 +40,40 @@ fn functions_default_to_public_access() {
     .expect("script should parse");
 
     assert_eq!(script.functions[0].access_level, AccessLevel::Public);
+    assert_eq!(script.properties[0].access_level, AccessLevel::Public);
     assert_eq!(
         script.states[0].functions[0].access_level,
         AccessLevel::Public
     );
     assert_eq!(AccessLevel::default(), AccessLevel::Public);
+}
+
+#[test]
+fn parses_access_level_annotations_on_functions_and_properties() {
+    let script = parse(
+        "ScriptName AccessLevels\n\
+         Int Property PublicValue Auto @public\n\
+         Int Property ProtectedValue @PrOtEcTeD AutoReadOnly\n\
+         Int Property PrivateValue Auto @private Hidden\n\
+         Function PublicFunction() @public\n\
+         EndFunction\n\
+         Int Function ProtectedFunction() Native @protected Global\n\
+         State Active\n\
+             Event PrivateEvent() @PRIVATE\n\
+             EndEvent\n\
+         EndState\n",
+    )
+    .expect("access level annotations should parse");
+
+    assert_eq!(script.properties[0].access_level, AccessLevel::Public);
+    assert_eq!(script.properties[1].access_level, AccessLevel::Protected);
+    assert_eq!(script.properties[2].access_level, AccessLevel::Private);
+    assert_eq!(script.functions[0].access_level, AccessLevel::Public);
+    assert_eq!(script.functions[1].access_level, AccessLevel::Protected);
+    assert_eq!(
+        script.states[0].functions[0].access_level,
+        AccessLevel::Private
+    );
 }
 
 #[test]
@@ -201,8 +231,8 @@ fn parses_typed_state_functions_array_parameters_and_empty_calls() {
 
 #[test]
 fn returns_precise_lex_and_parse_errors() {
-    let lex_error = parse("ScriptName Bad\n@").unwrap_err();
-    assert_eq!(lex_error.to_string(), "2:1: unexpected character '@'");
+    let lex_error = parse("ScriptName Bad\n#").unwrap_err();
+    assert_eq!(lex_error.to_string(), "2:1: unexpected character '#'");
     assert!(matches!(lex_error, PapyrusError::Lex(_)));
 
     for (source, expected_message) in [

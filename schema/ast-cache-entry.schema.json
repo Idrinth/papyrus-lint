@@ -217,6 +217,7 @@
         { "const": "Comma" },
         { "const": "Dot" },
         { "const": "Colon" },
+        { "const": "At" },
         { "const": "Assign" },
         { "const": "PlusAssign" },
         { "const": "MinusAssign" },
@@ -252,6 +253,7 @@
         "is_auto_read_only",
         "is_hidden",
         "is_conditional",
+        "access_level",
         "line"
       ],
       "properties": {
@@ -264,6 +266,10 @@
         "is_auto_read_only": { "type": "boolean" },
         "is_hidden": { "type": "boolean" },
         "is_conditional": { "type": "boolean" },
+        "access_level": {
+          "description": "The property's access level. Unannotated properties are Public.",
+          "enum": ["Private", "Protected", "Public"]
+        },
         "line": { "type": "integer", "minimum": 1 }
       }
     },
@@ -321,7 +327,7 @@
         "is_native": { "type": "boolean" },
         "is_event": { "type": "boolean" },
         "access_level": {
-          "description": "The function's access level. Currently always Public until access modifiers are parsed.",
+          "description": "The function's access level. Unannotated functions are Public.",
           "enum": ["Private", "Protected", "Public"]
         },
         "body": {

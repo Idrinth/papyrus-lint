@@ -47,6 +47,10 @@ pub struct PropertyDecl {
     pub is_auto_read_only: bool,
     pub is_hidden: bool,
     pub is_conditional: bool,
+    /// The property's visibility. Unannotated properties use Papyrus's
+    /// default public access level.
+    #[serde(default)]
+    pub access_level: AccessLevel,
     pub line: usize,
 }
 
@@ -82,8 +86,8 @@ pub struct FunctionDecl {
     pub is_global: bool,
     pub is_native: bool,
     pub is_event: bool,
-    /// The function's visibility. Until access modifiers are parsed, every
-    /// function uses Papyrus's default public access level.
+    /// The function's visibility. Unannotated functions use Papyrus's
+    /// default public access level.
     #[serde(default)]
     pub access_level: AccessLevel,
     pub body: Vec<Stmt>,

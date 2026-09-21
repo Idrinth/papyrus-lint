@@ -264,6 +264,7 @@ impl Parser {
         let mut is_auto_read_only = false;
         let mut is_hidden = false;
         let mut is_conditional = false;
+        let mut access_level = AccessLevel::default();
         loop {
             if self.at_keyword(Keyword::Auto) {
                 self.advance();
@@ -277,6 +278,8 @@ impl Parser {
             } else if self.at_keyword(Keyword::Conditional) {
                 self.advance();
                 is_conditional = true;
+            } else if matches!(self.kind(), TokenKind::At) {
+                access_level = self.parse_access_level()?;
             } else {
                 break;
             }
@@ -301,6 +304,7 @@ impl Parser {
             is_auto_read_only,
             is_hidden,
             is_conditional,
+            access_level,
             line,
         })
     }
@@ -390,6 +394,7 @@ impl Parser {
 
         let mut is_global = false;
         let mut is_native = false;
+        let mut access_level = AccessLevel::default();
         loop {
             if self.at_keyword(Keyword::Global) {
                 self.advance();
@@ -397,6 +402,8 @@ impl Parser {
             } else if self.at_keyword(Keyword::Native) {
                 self.advance();
                 is_native = true;
+            } else if matches!(self.kind(), TokenKind::At) {
+                access_level = self.parse_access_level()?;
             } else {
                 break;
             }
@@ -422,11 +429,24 @@ impl Parser {
             is_global,
             is_native,
             is_event,
-            access_level: AccessLevel::default(),
+            access_level,
             body,
             line,
             state: None,
         })
+    }
+
+    fn parse_access_level(&mut self) -> PResult<AccessLevel> {
+        self.expect(TokenKind::At)?;
+        let annotation = self.expect_identifier()?;
+        match annotation.to_ascii_lowercase().as_str() {
+            "public" => Ok(AccessLevel::Public),
+            "protected" => Ok(AccessLevel::Protected),
+            "private" => Ok(AccessLevel::Private),
+            _ => Err(self.error(format!(
+                "expected access level annotation, found @{annotation}"
+            ))),
+        }
     }
 
     fn parse_params(&mut self) -> PResult<Vec<Param>> {

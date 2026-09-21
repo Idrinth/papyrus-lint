@@ -113,6 +113,7 @@ pub enum TokenKind {
     Comma,
     Dot,
     Colon,
+    At,
 
     Assign,
     PlusAssign,
