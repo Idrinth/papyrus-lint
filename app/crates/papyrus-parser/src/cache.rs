@@ -178,7 +178,7 @@ mod tests {
     #[test]
     fn tokenize_memoizes_lex_errors_too() {
         let before = TOKENIZE_COMPUTATIONS.with(|c| c.get());
-        let source = "Int x = #TokenizeErrorMemoTest";
+        let source = "Int x = @TokenizeErrorMemoTest";
 
         let first = tokenize(source);
         let second = tokenize(source);
@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn parse_memoizes_lexer_errors_too() {
         let before = PARSE_COMPUTATIONS.with(|c| c.get());
-        let source = "ScriptName ParseLexErrorMemoTest\n#";
+        let source = "ScriptName ParseLexErrorMemoTest\n@";
 
         let first = parse(source);
         let second = parse(source);

@@ -754,9 +754,9 @@ EndFunction
 
     #[test]
     fn reports_lex_errors_with_location_and_message() {
-        let error = parse("ScriptName Example\n#\n").unwrap_err();
+        let error = parse("ScriptName Example\n@\n").unwrap_err();
 
-        assert_eq!(error.to_string(), "2:1: unexpected character '#'");
+        assert_eq!(error.to_string(), "2:1: unexpected character '@'");
         assert!(matches!(
             error,
             PapyrusError::Lex(LexError {

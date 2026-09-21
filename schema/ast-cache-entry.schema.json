@@ -210,6 +210,12 @@
           "required": ["StringLiteral"],
           "properties": { "StringLiteral": { "type": "string" } }
         },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["CommentAnnotation"],
+          "properties": { "CommentAnnotation": { "type": "string" } }
+        },
         { "const": "LParen" },
         { "const": "RParen" },
         { "const": "LBracket" },
@@ -217,7 +223,6 @@
         { "const": "Comma" },
         { "const": "Dot" },
         { "const": "Colon" },
-        { "const": "At" },
         { "const": "Assign" },
         { "const": "PlusAssign" },
         { "const": "MinusAssign" },

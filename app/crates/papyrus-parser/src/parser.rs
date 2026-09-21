@@ -278,7 +278,7 @@ impl Parser {
             } else if self.at_keyword(Keyword::Conditional) {
                 self.advance();
                 is_conditional = true;
-            } else if matches!(self.kind(), TokenKind::At) {
+            } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 access_level = self.parse_access_level()?;
             } else {
                 break;
@@ -402,7 +402,7 @@ impl Parser {
             } else if self.at_keyword(Keyword::Native) {
                 self.advance();
                 is_native = true;
-            } else if matches!(self.kind(), TokenKind::At) {
+            } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 access_level = self.parse_access_level()?;
             } else {
                 break;
@@ -437,15 +437,14 @@ impl Parser {
     }
 
     fn parse_access_level(&mut self) -> PResult<AccessLevel> {
-        self.expect(TokenKind::At)?;
-        let annotation = self.expect_identifier()?;
+        let TokenKind::CommentAnnotation(annotation) = self.advance().kind else {
+            unreachable!("parse_access_level is only called for a comment annotation");
+        };
         match annotation.to_ascii_lowercase().as_str() {
             "public" => Ok(AccessLevel::Public),
             "protected" => Ok(AccessLevel::Protected),
             "private" => Ok(AccessLevel::Private),
-            _ => Err(self.error(format!(
-                "expected access level annotation, found @{annotation}"
-            ))),
+            _ => unreachable!("the lexer only emits supported access level annotations"),
         }
     }
 

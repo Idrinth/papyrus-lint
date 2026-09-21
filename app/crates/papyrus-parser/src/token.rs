@@ -105,6 +105,8 @@ pub enum TokenKind {
     IntLiteral(i64, IntFormat),
     FloatLiteral(f64),
     StringLiteral(String),
+    /// A parser-relevant `@name` marker found inside a line comment.
+    CommentAnnotation(String),
 
     LParen,
     RParen,
@@ -113,7 +115,6 @@ pub enum TokenKind {
     Comma,
     Dot,
     Colon,
-    At,
 
     Assign,
     PlusAssign,
