@@ -205,7 +205,10 @@ fn bundled_actor_carries_catalogued_deprecation_metadata() {
         .as_ref()
         .expect("catalogued Actor.ModFavorPoints should be marked deprecated");
     assert_eq!(deprecation.level, "warning");
-    assert_eq!(deprecation.replacement.as_deref(), Some("MakePlayerFriend()"));
+    assert_eq!(
+        deprecation.replacement.as_deref(),
+        Some("MakePlayerFriend()")
+    );
 }
 
 #[test]
