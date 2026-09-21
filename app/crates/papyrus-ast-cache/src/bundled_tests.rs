@@ -167,11 +167,26 @@ fn unrelated_source_is_a_bundled_miss() {
 }
 
 #[test]
-fn bundled_actor_matches_a_fresh_parse_and_tokenize() {
+fn bundled_actor_marks_catalogued_deprecations_on_the_saved_ast() {
     let source = zip_script("skyrim-scripts.zip", "Actor.psc");
+    let fresh = papyrus_parser::parse(&source).unwrap();
     let ast = ast_for(&source).unwrap();
     let tokens = tokens_for(&source).unwrap();
-    assert_eq!(ast, papyrus_parser::parse(&source).unwrap());
+    assert!(
+        !fresh
+            .functions
+            .iter()
+            .find(|function| function.name == "ModFavorPoints")
+            .unwrap()
+            .deprecated
+    );
+    assert!(
+        ast.functions
+            .iter()
+            .find(|function| function.name == "ModFavorPoints")
+            .unwrap()
+            .deprecated
+    );
     assert_eq!(tokens, papyrus_parser::tokenize(&source).unwrap());
 }
 

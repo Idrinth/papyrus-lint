@@ -204,7 +204,7 @@ impl ScriptFunctions {
                         doc_for(f.line),
                         has_side_effects,
                         nodiscard_for(f.line),
-                        deprecated_for(f.line),
+                        f.deprecated || deprecated_for(f.line),
                     ),
                 )
             })
@@ -227,7 +227,7 @@ impl ScriptFunctions {
                         doc_for(f.line),
                         has_side_effects,
                         nodiscard_for(f.line),
-                        deprecated_for(f.line),
+                        f.deprecated || deprecated_for(f.line),
                     )
                 });
             }

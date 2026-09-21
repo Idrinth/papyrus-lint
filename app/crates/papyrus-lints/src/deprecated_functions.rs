@@ -1,9 +1,6 @@
-//! Flags calls to functions listed in `shared/rules/data/deprecated-functions.yaml`
-//! or declared with `; @deprecated`.
-//!
-//! The data is compiled into `DEPRECATED_FUNCTIONS` by `build.rs`, so the
-//! linter does not parse YAML at runtime. Token-based matching also lets the
-//! rule run when the source does not produce a complete AST.
+//! Flags calls to functions declared with `; @deprecated` or marked as
+//! deprecated in an externally resolved saved AST. Token-based matching also
+//! lets the rule run when the source does not produce a complete AST.
 
 use std::collections::HashSet;
 
@@ -13,20 +10,6 @@ use crate::Diagnostic;
 use papyrus_parser::ast::{FunctionDecl, Script};
 use papyrus_parser::token::{Keyword, Token, TokenKind};
 use papyrus_parser::types::TypeEnv;
-
-pub struct DeprecatedFunctionRule {
-    pub script: &'static str,
-    pub function: &'static str,
-    #[allow(dead_code)]
-    pub replacement: Option<&'static str>,
-    pub level: &'static str,
-    pub message: &'static str,
-    /// Whether `script` is a native singleton that must be called through
-    /// its literal script name rather than through an object instance.
-    pub global: bool,
-}
-
-include!(concat!(env!("OUT_DIR"), "/deprecated_functions_data.rs"));
 
 pub const RULE: &str = "deprecated-functions";
 
@@ -47,6 +30,13 @@ impl TokenLint for Collect {
         self.script_name = ctx.ast.map(|script| script.name.clone());
         self.env = ctx.ast.map(TypeEnv::for_script);
         self.local.clear();
+        if let Some(script) = ctx.ast {
+            self.local.extend(
+                all_functions(script)
+                    .filter(|function| function.deprecated)
+                    .map(|function| function.name.to_ascii_lowercase()),
+            );
+        }
         let Some(tokens) = ctx.tokens else {
             return;
         };
@@ -79,23 +69,7 @@ impl TokenLint for Collect {
         if !matches!(tokens.get(index + 1).map(|token| &token.kind), Some(TokenKind::LParen)) {
             return;
         }
-        if let Some(rule) = find_rule(name) {
-            if !rule.global || qualifier_matches(tokens, index, rule.script) {
-                self.store.emit(
-                    token.line,
-                    token.col,
-                    format!(
-                        "[{}] {}.{}: {}",
-                        rule.level, rule.script, rule.function, rule.message
-                    ),
-                    RULE,
-                );
-                return;
-            }
-        }
-        // A project directive marks callers, not the declaration itself.
-        // Keep this after the compiled-rule lookup: declarations in the
-        // bundled API scripts have historically been reported by that data.
+        // A deprecation marker applies to callers, not the declaration itself.
         if matches!(
             tokens.get(index.wrapping_sub(1)).map(|token| &token.kind),
             Some(TokenKind::Keyword(Keyword::Function))
@@ -141,16 +115,6 @@ pub fn check(
     external: &mut impl crate::external_signatures::ExternalSignatures,
 ) -> Vec<Diagnostic> {
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
-}
-
-fn qualifier_matches(tokens: &[Token], call_index: usize, script: &str) -> bool {
-    if call_index < 2 || !matches!(tokens[call_index - 1].kind, TokenKind::Dot) {
-        return false;
-    }
-    let TokenKind::Identifier(qualifier) = &tokens[call_index - 2].kind else {
-        return false;
-    };
-    qualifier.eq_ignore_ascii_case(script)
 }
 
 fn qualifier_before(tokens: &[Token], call_index: usize) -> Option<&str> {
@@ -248,12 +212,6 @@ fn line_has_deprecated(line: &str) -> bool {
     papyrus_parser::comment_annotations::parse_line_annotations(line)
         .iter()
         .any(|annotation| annotation.name.eq_ignore_ascii_case("deprecated"))
-}
-
-fn find_rule(name: &str) -> Option<&'static DeprecatedFunctionRule> {
-    DEPRECATED_FUNCTIONS
-        .iter()
-        .find(|rule| rule.function.eq_ignore_ascii_case(name))
 }
 
 #[cfg(test)]

@@ -90,6 +90,12 @@ pub struct FunctionDecl {
     /// default public access level.
     #[serde(default)]
     pub access_level: AccessLevel,
+    /// Whether this declaration is known to be deprecated. Ordinary parser
+    /// output leaves this false; build-time AST producers may enrich saved
+    /// ASTs with deprecation metadata that is not expressed as a Papyrus
+    /// annotation in the source itself.
+    #[serde(default)]
+    pub deprecated: bool,
     pub body: Vec<Stmt>,
     pub line: usize,
     /// The name of the `State` block this function/event is declared in, or

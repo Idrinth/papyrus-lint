@@ -16,6 +16,8 @@ papyrus-parser = { path = "../papyrus-parser" }
 
 [build-dependencies]
 papyrus-parser = { path = "../papyrus-parser" }
+serde = { version = "1", features = ["derive"] }
+serde_norway = "0.9"
 md5 = "0.7"
 bincode = "1"
 flate2 = "1"
