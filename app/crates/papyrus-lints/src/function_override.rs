@@ -89,37 +89,18 @@ pub fn check(
 /// Like [`check`], but resolves the script's `Extends` chain through
 /// `external`, flagging any function declared on `source` whose name is
 /// also declared somewhere along that chain.
-#[allow(dead_code)] // unit tests; collect_diagnostics uses visitor()
 pub fn check_with<E: ExternalSignatures + ?Sized>(
     ast: Option<&Script>,
     external: &mut E,
 ) -> Vec<Diagnostic> {
-    let Some(script) = ast else {
-        return Vec::new();
-    };
-    let Some(extends) = &script.extends else {
-        return Vec::new();
-    };
-
-    script
-        .functions
-        .iter()
-        .filter(|function| external.lookup(extends, &function.name).is_some())
-        .map(|function| {
-            let kind = if function.is_event { "Event" } else { "Function" };
-            Diagnostic {
-                line: function.line,
-                column: 1,
-                message: format!(
-                    "[info] {kind} '{}' overrides an inherited {} declared on '{}' or one of its ancestors",
-                    function.name,
-                    kind.to_ascii_lowercase(),
-                    extends
-                ),
-                rule: RULE,
-            }
-        })
-        .collect()
+    crate::visitor::run(
+        visitor(),
+        "",
+        ast,
+        None,
+        &crate::config::Config::default(),
+        external,
+    )
 }
 
 #[cfg(test)]
