@@ -1,6 +1,8 @@
 //! Hand-written lexer for Papyrus source.
 
 use super::token::{IntFormat, Keyword, Token, TokenKind};
+use crate::comment_annotations::parse_line_annotations;
+use std::collections::VecDeque;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LexError {
@@ -14,6 +16,7 @@ pub struct Lexer<'a> {
     pos: usize,
     line: usize,
     col: usize,
+    pending: VecDeque<Token>,
 }
 
 impl<'a> Lexer<'a> {
@@ -23,6 +26,7 @@ impl<'a> Lexer<'a> {
             pos: 0,
             line: 1,
             col: 1,
+            pending: VecDeque::new(),
         }
     }
 
@@ -78,6 +82,9 @@ impl<'a> Lexer<'a> {
     }
 
     fn next_token(&mut self) -> Result<Token, LexError> {
+        if let Some(token) = self.pending.pop_front() {
+            return Ok(token);
+        }
         if let Some(token) = self.skip_ignorable()? {
             return Ok(token);
         }
@@ -127,7 +134,8 @@ impl<'a> Lexer<'a> {
                     if self.peek_at(1) == Some(b'/') {
                         self.skip_block_comment()?;
                     } else {
-                        if let Some(annotation) = self.read_line_comment_annotation() {
+                        self.read_line_comment_annotations();
+                        if let Some(annotation) = self.pending.pop_front() {
                             return Ok(Some(annotation));
                         }
                     }
@@ -184,39 +192,25 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn read_line_comment_annotation(&mut self) -> Option<Token> {
-        let mut annotation = None;
-        while let Some(c) = self.peek() {
-            if c == b'\n' {
-                break;
-            }
-            if c == b'@' {
-                let line = self.line;
-                let col = self.col;
-                let start = self.pos + 1;
-                self.advance();
-                while matches!(
-                    self.peek(),
-                    Some(b'_' | b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9')
-                ) {
-                    self.advance();
-                }
-                let name = String::from_utf8_lossy(&self.source[start..self.pos]);
-                if matches!(
-                    name.to_ascii_lowercase().as_str(),
-                    "public" | "protected" | "private"
-                ) {
-                    annotation = Some(Token::new(
-                        TokenKind::CommentAnnotation(name.into_owned()),
-                        line,
-                        col,
-                    ));
-                }
-                continue;
-            }
+    fn read_line_comment_annotations(&mut self) {
+        let start = self.pos;
+        let start_col = self.col;
+        while self.peek().is_some_and(|c| c != b'\n') {
             self.advance();
         }
-        annotation
+        let comment = String::from_utf8_lossy(&self.source[start..self.pos]);
+        for annotation in parse_line_annotations(&comment) {
+            if matches!(
+                annotation.name.to_ascii_lowercase().as_str(),
+                "public" | "protected" | "private"
+            ) {
+                self.pending.push_back(Token::new(
+                    TokenKind::CommentAnnotation(annotation.name.to_string()),
+                    self.line,
+                    start_col + annotation.column - 1,
+                ));
+            }
+        }
     }
 
     fn skip_block_comment(&mut self) -> Result<(), LexError> {
@@ -582,6 +576,21 @@ mod tests {
         );
         assert_eq!(tokens[1].kind, TokenKind::Identifier("name".to_string()));
         assert_eq!((tokens[1].line, tokens[1].col), (2, 1));
+    }
+
+    #[test]
+    fn emits_all_parser_relevant_annotations_from_one_comment() {
+        let tokens = Lexer::new("Function Foo() ; @public @nodiscard @private")
+            .tokenize()
+            .expect("valid tokens");
+        let annotations: Vec<_> = tokens
+            .iter()
+            .filter_map(|token| match &token.kind {
+                TokenKind::CommentAnnotation(name) => Some(name.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(annotations, ["public", "private"]);
     }
 
     #[test]

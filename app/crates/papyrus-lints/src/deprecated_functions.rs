@@ -245,24 +245,9 @@ fn header_has_deprecated(lines: &[&str], tokens: &[Token], line: usize) -> bool 
 }
 
 fn line_has_deprecated(line: &str) -> bool {
-    let Some(comment) = crate::unused_nodiscard::line_comment_text(line) else {
-        return false;
-    };
-    let lowered = comment.to_ascii_lowercase();
-    let Some(index) = lowered.find("@deprecated") else {
-        return false;
-    };
-    let before_ok = index == 0
-        || lowered[..index]
-            .chars()
-            .next_back()
-            .is_some_and(|c| c.is_whitespace() || c == ',');
-    let after = &lowered[index + "@deprecated".len()..];
-    let after_ok = after
-        .chars()
-        .next()
-        .is_none_or(|c| c.is_whitespace() || c == ',');
-    before_ok && after_ok
+    papyrus_parser::comment_annotations::parse_line_annotations(line)
+        .iter()
+        .any(|annotation| annotation.name.eq_ignore_ascii_case("deprecated"))
 }
 
 fn find_rule(name: &str) -> Option<&'static DeprecatedFunctionRule> {

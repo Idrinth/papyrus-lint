@@ -1,6 +1,13 @@
 use super::*;
 
 #[test]
+fn recognizes_nodiscard_among_other_annotations() {
+    assert!(crate::unused_nodiscard::line_has_nodiscard(
+        "Function Old() ; @deprecated Use New() @nodiscard @public"
+    ));
+}
+
+#[test]
 fn adds_a_bare_nodiscard_comment_to_a_header_with_no_comment() {
     let updated =
         add_nodiscard_directive("Int Function RegisterFoo()\n    Return 1\nEndFunction\n", 1);

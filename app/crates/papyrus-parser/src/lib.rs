@@ -15,6 +15,7 @@
 
 pub mod ast;
 mod cache;
+pub mod comment_annotations;
 pub mod lexer;
 pub mod parser;
 pub mod token;

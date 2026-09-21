@@ -502,49 +502,10 @@ fn last_physical_line(line: usize, tokens: Option<&[Token]>) -> usize {
 }
 
 fn line_has_directive(line: &str, directive: &str) -> bool {
-    let Some(comment) = line_comment_text(line) else {
-        return false;
-    };
-    let lowered = comment.to_ascii_lowercase();
-    let Some(index) = lowered.find(directive) else {
-        return false;
-    };
-    let before_ok = index == 0
-        || lowered[..index]
-            .chars()
-            .next_back()
-            .is_some_and(|c| c.is_whitespace() || c == ',');
-    let after = &lowered[index + directive.len()..];
-    let after_ok = after
-        .chars()
-        .next()
-        .is_none_or(|c| c.is_whitespace() || c == ',');
-    before_ok && after_ok
-}
-
-/// Text following the `;` that starts `line`'s line comment, if any.
-/// Copied in spirit from `papyrus_lints::disable_comments` so function
-/// tables can see the same comments the linter itself would.
-fn line_comment_text(line: &str) -> Option<&str> {
-    let bytes = line.as_bytes();
-    let mut in_string = false;
-    let mut index = 0;
-    while index < bytes.len() {
-        match bytes[index] {
-            b'"' => in_string = !in_string,
-            b'\\' if in_string => index += 1,
-            b';' if !in_string => {
-                return if bytes.get(index + 1) == Some(&b'/') {
-                    None
-                } else {
-                    Some(&line[index + 1..])
-                };
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    None
+    let name = directive.trim_start_matches('@');
+    papyrus_parser::comment_annotations::parse_line_annotations(line)
+        .iter()
+        .any(|annotation| annotation.name.eq_ignore_ascii_case(name))
 }
 
 #[cfg(test)]

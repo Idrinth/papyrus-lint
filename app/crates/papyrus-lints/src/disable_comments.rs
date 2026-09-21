@@ -1,5 +1,6 @@
 //! Parses `@disable <rule-id>[, <rule-id>...]` and
-//! `@disable-file <rule-id>[, <rule-id>...]` directives out of trailing `;`
+//! `@disable-file <rule-id>[, <rule-id>...]` (also spelled `@file-disable`)
+//! directives out of trailing `;`
 //! line comments. `@disable` suppresses specific lints on just the line it
 //! appears on, e.g.:
 //!
@@ -23,6 +24,8 @@
 //! effect on [`crate::repair`].
 
 use std::collections::{HashMap, HashSet};
+
+use papyrus_parser::comment_annotations::{line_comment, parse_line_annotations};
 
 /// Which rules a directive disables: every rule, or a specific set of rule
 /// ids (lowercased). Shared shape for both a single-line `@disable` and a
@@ -49,8 +52,8 @@ pub struct Disables {
 }
 
 impl Disables {
-    /// Scans `source` for `@disable`/`@disable-file` directives in trailing
-    /// line comments.
+    /// Scans `source` for `@disable`, `@disable-file`, and `@file-disable`
+    /// directives in trailing line comments.
     pub fn scan(source: &str) -> Self {
         let mut lines = HashMap::new();
         let mut file = Vec::new();
@@ -59,8 +62,10 @@ impl Disables {
             if let Some(directive) = parse_directive(line, "@disable") {
                 lines.insert(line_number, directive);
             }
-            if let Some(directive) = parse_directive(line, "@disable-file") {
-                file.push((line_number, directive));
+            for keyword in ["@disable-file", "@file-disable"] {
+                if let Some(directive) = parse_directive(line, keyword) {
+                    file.push((line_number, directive));
+                }
             }
         }
         Disables { lines, file }
@@ -173,7 +178,18 @@ fn add_disable_directive_to_line(line: &str, rules: &[String], keyword: &str) ->
             if additions.is_empty() {
                 return line.to_string();
             }
-            format!("{content}, {}{trailing_cr}", additions.join(", "))
+            let name = keyword.trim_start_matches('@');
+            let end = parse_line_annotations(content)
+                .into_iter()
+                .find(|annotation| annotation.name.eq_ignore_ascii_case(name))
+                .map_or(content.len(), |annotation| annotation.byte_end);
+            format!(
+                "{}, {}{}{}",
+                &content[..end],
+                additions.join(", "),
+                &content[end..],
+                trailing_cr
+            )
         }
         None => {
             let separator = if line_comment_text(content).is_some() {
@@ -192,28 +208,18 @@ fn add_disable_directive_to_line(line: &str, rules: &[String], keyword: &str) ->
 /// Finds a `keyword` (`@disable` or `@disable-file`) directive within
 /// `line`'s trailing line comment, if it has one.
 fn parse_directive(line: &str, keyword: &str) -> Option<Directive> {
-    let comment = line_comment_text(line)?;
-    // `to_ascii_lowercase` maps each byte to itself or another single ASCII
-    // byte, so the index found still lands on the same offset in `comment`.
-    let index = comment.to_ascii_lowercase().find(keyword)?;
-    let after = &comment[index + keyword.len()..];
-    // Require a word boundary so `@disabled-rule`/`@disable-file-thing`
-    // isn't mistaken for the directive with an empty rule list.
-    if after.starts_with(|c: char| !c.is_whitespace()) {
-        return None;
-    }
-
-    let rest = after.trim();
+    let name = keyword.trim_start_matches('@');
+    let annotation = parse_line_annotations(line)
+        .into_iter()
+        .find(|annotation| annotation.name.eq_ignore_ascii_case(name))?;
+    let rest = annotation.arguments;
     if rest.is_empty() {
         return Some(Directive::All {
-            column: line[..line.len() - after.len() - keyword.len()]
-                .chars()
-                .count()
-                + 1,
+            column: annotation.column,
         });
     }
 
-    let rest_offset = line.len() - rest.len();
+    let rest_offset = annotation.arguments_byte_start;
     let mut seen = HashSet::new();
     let rules = rule_parts(rest)
         .filter_map(|(offset, rule)| {
@@ -246,25 +252,7 @@ fn rule_parts(value: &str) -> impl Iterator<Item = (usize, &str)> {
 /// any, ignoring semicolons inside string literals and treating a `;/`
 /// block-comment opener as not starting a line comment.
 fn line_comment_text(line: &str) -> Option<&str> {
-    let bytes = line.as_bytes();
-    let mut in_string = false;
-    let mut index = 0;
-    while index < bytes.len() {
-        match bytes[index] {
-            b'"' => in_string = !in_string,
-            b'\\' if in_string => index += 1,
-            b';' if !in_string => {
-                return if bytes.get(index + 1) == Some(&b'/') {
-                    None
-                } else {
-                    Some(&line[index + 1..])
-                };
-            }
-            _ => {}
-        }
-        index += 1;
-    }
-    None
+    line_comment(line).map(|(_, comment)| comment)
 }
 
 #[cfg(test)]
