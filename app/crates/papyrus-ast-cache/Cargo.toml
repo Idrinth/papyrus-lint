@@ -13,6 +13,7 @@ md5 = "0.7"
 bincode = "1"
 flate2 = "1"
 papyrus-parser = { path = "../papyrus-parser" }
+papyrus-lint-globals = { path = "../papyrus-lint-globals" }
 
 [build-dependencies]
 papyrus-parser = { path = "../papyrus-parser" }

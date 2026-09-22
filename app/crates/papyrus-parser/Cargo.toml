@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
+papyrus-lint-globals = { path = "../papyrus-lint-globals" }
 
 [dev-dependencies]
 serde_json = "1"
