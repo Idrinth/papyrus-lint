@@ -99,17 +99,24 @@ fn title_case(id: &str) -> String {
 
 fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
     let scripts_dir = Path::new(manifest_dir).join("../../../shared/scripts");
-    let rules = script_catalog::native_global_names(&scripts_dir);
 
     let mut generated = String::new();
     generated.push_str(
         "/// Compiled from bundled Creation Kit / script-extender archives by `build.rs`. Do not edit by hand.\n",
     );
-    generated.push_str("const NATIVE_GLOBALS: &[&str] = &[\n");
-    for script in &rules {
-        generated.push_str(&format!("    {:?},\n", script));
+    for game in script_catalog::GAMES {
+        let rules = script_catalog::native_global_names(&scripts_dir, game);
+        let const_name = match *game {
+            "fallout4" => "FALLOUT4_NATIVE_GLOBALS",
+            _ => "SKYRIM_NATIVE_GLOBALS",
+        };
+        generated.push_str(&format!("const {const_name}: &[&str] = &[\n"));
+        for script in &rules {
+            generated.push_str(&format!("    {:?},\n", script));
+        }
+        generated.push_str("];\n");
     }
-    generated.push_str("];\n");
+    generated.push_str("const NATIVE_GLOBALS: &[&str] = SKYRIM_NATIVE_GLOBALS;\n");
 
     let dest = Path::new(out_dir).join("native_globals_data.rs");
     fs::write(&dest, generated).unwrap_or_else(|err| {
