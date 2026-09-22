@@ -1,7 +1,14 @@
 # Papyrus Lint for VS Code
 
 A VS Code extension that surfaces [Papyrus Lint](../README.md) diagnostics
-for `.psc` files directly in the editor.
+for `.psc` files directly in the editor. It is only handling Skyrim SE/AE
+at the moment, but might already work on Fallout 4 or Starfield partially.
+Full support for the later two games is in the works.
+
+Attention: If you don't provide an executable for this extension to lint with,
+it will download the matching github release executable for your system. This
+executable and any other provided are validated by hash to make sure that you
+are not executing something untrusted.
 
 ## Features
 
