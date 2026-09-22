@@ -120,7 +120,7 @@ impl FunctionTable {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
             || crate::ast_cache::contains_script_name(&name_lower)
-            || crate::native_globals::is_known_for(self.game, &name_lower)
+            || crate::native_globals::is_known_for(&self.game.to_string(), &name_lower)
     }
 
     fn resolve_script_path(&self, name_lower: &str) -> Option<PathBuf> {
