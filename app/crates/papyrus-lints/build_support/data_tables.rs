@@ -1,56 +1,8 @@
 use super::metadata::RuleMetadata;
+use super::policy;
 use super::renderer::Renderer;
+use super::script_catalog;
 use super::{generated_header, BuildContext};
-use serde::Deserialize;
-
-#[derive(Deserialize)]
-struct ForbiddenRule {
-    script: String,
-    function: String,
-    level: String,
-    message: String,
-    #[serde(default)]
-    global: bool,
-}
-#[derive(Deserialize)]
-struct DeprecatedRule {
-    script: String,
-    function: String,
-    replacement: Option<String>,
-    message: String,
-    #[serde(default)]
-    global: bool,
-}
-#[derive(Deserialize)]
-struct SlowRule {
-    object: String,
-    function: String,
-    replacement: String,
-    #[serde(default)]
-    global: bool,
-}
-#[derive(Deserialize)]
-struct NativeMethod {
-    object: String,
-    function: String,
-}
-#[derive(Deserialize)]
-struct UpdateEventPair {
-    register: String,
-    event: String,
-}
-#[derive(Deserialize)]
-struct EventArg {
-    #[serde(rename = "type")]
-    type_name: String,
-    name: String,
-}
-#[derive(Deserialize)]
-struct KnownEvent {
-    event: String,
-    form: String,
-    args: Vec<EventArg>,
-}
 
 pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
     forbidden_functions(context);
@@ -65,13 +17,10 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
 }
 
 fn deprecated_functions(context: &BuildContext) {
-    let values: Vec<DeprecatedRule> = context.load_yaml(
-        "shared/rules/data/skyrim/deprecated-functions.yaml",
-        "deprecated-functions rules",
-    );
+    let values = policy::deprecated_functions(context);
     let mut out = Renderer::new();
     out.line(generated_header(
-        "shared/rules/data/skyrim/deprecated-functions.yaml",
+        "shared/rules/data/{skyrim,fallout4}/deprecated-functions.yaml",
     ));
     out.line("pub static DEPRECATED_FUNCTIONS: &[DeprecatedFunctionRule] = &[");
     for rule in values {
@@ -81,35 +30,11 @@ fn deprecated_functions(context: &BuildContext) {
     context.write("deprecated_functions_data.rs", "rule data", &out.finish());
 }
 
-fn table<T>(
-    context: &BuildContext,
-    input: &str,
-    description: &str,
-    output: &str,
-    declaration: &str,
-    render: impl Fn(&T) -> String,
-) where
-    T: serde::de::DeserializeOwned,
-{
-    let values: Vec<T> = context.load_yaml(input, description);
-    let mut out = Renderer::new();
-    out.line(generated_header(input));
-    out.line(declaration);
-    for value in &values {
-        out.line(render(value));
-    }
-    out.line("];");
-    context.write(output, "rule data", &out.finish());
-}
-
 fn forbidden_functions(context: &BuildContext) {
-    let values: Vec<ForbiddenRule> = context.load_yaml(
-        "shared/rules/data/skyrim/forbidden-functions.yaml",
-        "forbidden-functions rules",
-    );
+    let values = policy::forbidden_functions(context);
     let mut out = Renderer::new();
     out.line(generated_header(
-        "shared/rules/data/skyrim/forbidden-functions.yaml",
+        "shared/rules/data/{skyrim,fallout4}/forbidden-functions.yaml",
     ));
     out.line("pub static FORBIDDEN_FUNCTIONS: &[ForbiddenFunctionRule] = &[");
     for rule in values {
@@ -126,82 +51,94 @@ fn forbidden_functions(context: &BuildContext) {
 }
 
 fn slow_functions(context: &BuildContext) {
-    table(
-        context,
-        "shared/rules/data/skyrim/slow-functions.yaml",
-        "slow-functions rules",
-        "slow_functions_data.rs",
-        "pub static SLOW_FUNCTIONS: &[SlowFunctionRule] = &[",
-        |r: &SlowRule| {
-            format!("    SlowFunctionRule {{ object: {:?}, function: {:?}, replacement: {:?}, global: {:?} }},", r.object, r.function, r.replacement, r.global)
-        },
-    );
+    let values = policy::slow_functions(context);
+    let mut out = Renderer::new();
+    out.line(generated_header(
+        "shared/rules/data/{skyrim,fallout4}/slow-functions.yaml",
+    ));
+    out.line("pub static SLOW_FUNCTIONS: &[SlowFunctionRule] = &[");
+    for rule in values {
+        out.line(format_args!("    SlowFunctionRule {{ object: {:?}, function: {:?}, replacement: {:?}, global: {:?} }},", rule.object, rule.function, rule.replacement, rule.global));
+    }
+    out.line("];");
+    context.write("slow_functions_data.rs", "rule data", &out.finish());
 }
+
 fn native_methods(context: &BuildContext) {
-    table(
-        context,
-        "shared/rules/data/skyrim/native-methods.yaml",
-        "native-methods rules",
-        "native_methods_data.rs",
-        "pub static NATIVE_METHODS: &[NativeMethodRule] = &[",
-        |r: &NativeMethod| {
-            format!(
-                "    NativeMethodRule {{ object: {:?}, function: {:?} }},",
-                r.object, r.function
-            )
-        },
-    );
+    let scripts_dir = context.input("shared/scripts");
+    let values = script_catalog::native_methods(&scripts_dir);
+    let mut out = Renderer::new();
+    out.line(generated_header(
+        "bundled Creation Kit archives under shared/scripts",
+    ));
+    out.line("pub static NATIVE_METHODS: &[NativeMethodRule] = &[");
+    for rule in values {
+        out.line(format_args!(
+            "    NativeMethodRule {{ object: {:?}, function: {:?} }},",
+            rule.object, rule.function
+        ));
+    }
+    out.line("];");
+    context.write("native_methods_data.rs", "rule data", &out.finish());
 }
+
 fn actor_values(context: &BuildContext) {
-    table(
-        context,
-        "shared/rules/data/skyrim/actor-values.yaml",
-        "actor-values rules",
-        "actor_values_data.rs",
-        "pub static ACTOR_VALUES: &[&str] = &[",
-        |value: &String| format!("    {value:?},"),
-    );
+    let values = policy::actor_values(context);
+    let mut out = Renderer::new();
+    out.line(generated_header(
+        "shared/rules/data/{skyrim,fallout4}/actor-values.yaml",
+    ));
+    out.line("pub static ACTOR_VALUES: &[&str] = &[");
+    for value in values {
+        out.line(format_args!("    {value:?},"));
+    }
+    out.line("];");
+    context.write("actor_values_data.rs", "rule data", &out.finish());
 }
+
 fn update_event_pairs(context: &BuildContext) {
-    table(
-        context,
-        "shared/rules/data/skyrim/update-event-handlers.yaml",
-        "update-event-handlers rules",
-        "update_event_pairs_data.rs",
-        "pub static UPDATE_EVENT_PAIRS: &[UpdateEventPairRule] = &[",
-        |r: &UpdateEventPair| {
-            format!(
-                "    UpdateEventPairRule {{ register: {:?}, event: {:?} }},",
-                r.register, r.event
-            )
-        },
-    );
+    let values = policy::update_event_pairs(context);
+    let mut out = Renderer::new();
+    out.line(generated_header(
+        "shared/rules/data/{skyrim,fallout4}/update-event-handlers.yaml",
+    ));
+    out.line("pub static UPDATE_EVENT_PAIRS: &[UpdateEventPairRule] = &[");
+    for rule in values {
+        out.line(format_args!(
+            "    UpdateEventPairRule {{ register: {:?}, event: {:?} }},",
+            rule.register, rule.event
+        ));
+    }
+    out.line("];");
+    context.write("update_event_pairs_data.rs", "rule data", &out.finish());
 }
 
 fn known_events(context: &BuildContext) {
-    table(
-        context,
-        "shared/rules/data/skyrim/known-events.yaml",
-        "known-events rules",
-        "known_events_data.rs",
-        "pub static KNOWN_EVENTS: &[KnownEventRule] = &[",
-        |event: &KnownEvent| {
-            let args = event
-                .args
-                .iter()
-                .map(|arg| {
-                    format!(
-                        "EventArg {{ type_name: {:?}, name: {:?} }}, ",
-                        arg.type_name, arg.name
-                    )
-                })
-                .collect::<String>();
-            format!(
-                "    KnownEventRule {{ event: {:?}, form: {:?}, args: &[{args}] }},",
-                event.event, event.form
-            )
-        },
-    );
+    let scripts_dir = context.input("shared/scripts");
+    let values = script_catalog::known_events(&scripts_dir);
+    let mut out = Renderer::new();
+    out.line(generated_header(
+        "bundled Creation Kit archives under shared/scripts",
+    ));
+    out.line("pub static KNOWN_EVENTS: &[KnownEventRule] = &[");
+    for event in values {
+        let args = event
+            .args
+            .iter()
+            .map(|arg| {
+                format!(
+                    "EventArg {{ type_name: {:?}, name: {:?} }}, ",
+                    arg.type_name, arg.name
+                )
+            })
+            .collect::<String>();
+        out.line(format_args!(
+            "    KnownEventRule {{ event: {:?}, form: {:?}, args: &[{args}] }},",
+            event.event, event.form
+        ));
+    }
+    out.line("];");
+    context.write("known_events_data.rs", "rule data", &out.finish());
 }
 
 fn rule_tags(context: &BuildContext, rules: &[RuleMetadata]) {
