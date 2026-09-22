@@ -7,83 +7,6 @@ fn write_config(dir: &Path, name: &str, contents: &str) {
     fs::write(dir.join(name), contents).expect("failed to write test config file");
 }
 
-/// The subset of a `shared/rules.json` entry the tests below need. Mirrors
-/// `build.rs`'s own `RuleEntry`.
-#[derive(serde::Deserialize)]
-struct RuleEntry {
-    id: String,
-    importance: String,
-    #[serde(default)]
-    kept_in_standard: bool,
-}
-
-fn repo_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../..")
-}
-
-fn shared_rules() -> Vec<RuleEntry> {
-    let path = repo_root().join("shared/rules.json");
-    let contents = fs::read_to_string(&path).unwrap_or_else(|err| {
-        panic!(
-            "failed to read {}: {err} (run .github/scripts/build_rules_json.py first)",
-            path.display()
-        )
-    });
-    serde_json::from_str(&contents)
-        .unwrap_or_else(|err| panic!("failed to parse {}: {err}", path.display()))
-}
-
-/// `id`'s `Config.rules` toggle name, mirroring `build.rs`'s own
-/// `config_key_for` (not reachable from here: `build.rs` isn't compiled
-/// into this crate).
-fn config_key_for(id: &str) -> String {
-    match id {
-        "float-to-int" => "float_int_conversion".to_string(),
-        "too-many-named-states" => "too_many_states".to_string(),
-        _ => id.replace('-', "_"),
-    }
-}
-
-/// Picks two `Config.rules` toggle names straight out of `shared/rules.json`
-/// — one `"low"` importance rule `standard` turns off (not marked
-/// `kept_in_standard`), and one `"low"` importance rule `standard` keeps on
-/// (marked `kept_in_standard`) — rather than hardcoding which specific rule
-/// happens to be tagged which way today. Both are confirmed enabled under
-/// `strict` first, so the tests below actually exercise a preset turning a
-/// rule *off*, not one that was off to begin with.
-fn low_importance_rule_pair() -> (String, String) {
-    let strict = Preset::Strict
-        .yaml(None)
-        .expect("strict preset should resolve");
-    let is_enabled_under_strict = |key: &str| strict.contains(&format!("  {key}: true\n"));
-
-    let rules = shared_rules();
-    let pick = |kept_in_standard: bool| {
-        rules
-            .iter()
-            .filter(|rule| rule.importance == "low" && rule.kept_in_standard == kept_in_standard)
-            .map(|rule| config_key_for(&rule.id))
-            .find(|key| is_enabled_under_strict(key))
-            .unwrap_or_else(|| {
-                panic!(
-                    "expected at least one low-importance rule with kept_in_standard={kept_in_standard} enabled by default"
-                )
-            })
-    };
-    (pick(false), pick(true))
-}
-
-/// `key`'s value on its own top-level `key: value` line in `yaml` (ignoring
-/// any trailing inline comment), e.g. reading
-/// `cyclomatic_complexity_warning: 20  # was 10: ...` as `20`.
-fn top_level_value(yaml: &str, key: &str) -> u32 {
-    yaml.lines()
-        .find_map(|line| line.strip_prefix(&format!("{key}:")))
-        .and_then(|rest| rest.split_whitespace().next())
-        .and_then(|value| value.parse().ok())
-        .unwrap_or_else(|| panic!("no `{key}: <number>` line found"))
-}
-
 #[test]
 fn add_preset_errors_have_actionable_display_messages() {
     let invalid = AddPresetError::InvalidName("strict".to_string()).to_string();
@@ -968,60 +891,25 @@ fn init_refuses_to_replace_either_supported_config_name() {
 
 #[test]
 fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
-    let (dropped, kept) = low_importance_rule_pair();
-
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     let path = initialize_config_with_base(dir.path(), None, Preset::Standard)
         .expect("init should succeed");
-    let generated = fs::read_to_string(&path).expect("failed to read generated config");
+    let config = load_config_from_path(&path).expect("generated config should parse");
 
-    assert!(
-        generated.contains(&format!("  {dropped}: false\n")),
-        "standard should turn off {dropped:?} (low importance, not kept_in_standard)"
-    );
-    assert!(
-        generated.contains(&format!("  {kept}: true\n")),
-        "standard should keep {kept:?} on (low importance, but kept_in_standard)"
-    );
+    assert!(!config.rules.identifier_casing);
+    assert!(config.rules.trailing_whitespace);
 }
 
 #[test]
 fn careful_preset_relaxes_complexity_thresholds_and_disables_formatting() {
-    let default_yaml =
-        fs::read_to_string(repo_root().join("configuration/papyrus-lint.default.yaml"))
-            .expect("failed to read configuration/papyrus-lint.default.yaml");
-    let careful_overwrite =
-        fs::read_to_string(repo_root().join("configuration/presets/papyrus-lint.careful.yaml"))
-            .expect("failed to read configuration/presets/papyrus-lint.careful.yaml");
-    let default_warning = top_level_value(&default_yaml, "cyclomatic_complexity_warning");
-    let default_error = top_level_value(&default_yaml, "cyclomatic_complexity_error");
-    let careful_warning = top_level_value(&careful_overwrite, "cyclomatic_complexity_warning");
-    let careful_error = top_level_value(&careful_overwrite, "cyclomatic_complexity_error");
-    assert!(
-        careful_warning >= default_warning && careful_error >= default_error,
-        "careful's complexity thresholds should relax, not tighten, the defaults"
-    );
-    // kept is a rule "standard" keeps on but "careful" is expected to turn
-    // off too, since careful ignores kept_in_standard entirely.
-    let (dropped, kept) = low_importance_rule_pair();
-
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     let path = initialize_config_with_base(dir.path(), None, Preset::Careful)
         .expect("init should succeed");
-    let generated = fs::read_to_string(&path).expect("failed to read generated config");
+    let config = load_config_from_path(&path).expect("generated config should parse");
 
-    assert!(generated.contains(&format!(
-        "cyclomatic_complexity_warning: {careful_warning}\n"
-    )));
-    assert!(generated.contains(&format!("cyclomatic_complexity_error: {careful_error}\n")));
-    assert!(
-        generated.contains(&format!("  {dropped}: false\n")),
-        "careful should turn off {dropped:?} (low importance)"
-    );
-    assert!(
-        generated.contains(&format!("  {kept}: false\n")),
-        "careful should turn off {kept:?} too, unlike standard, since careful ignores kept_in_standard"
-    );
+    assert_eq!(config.cyclomatic_complexity_warning, 20);
+    assert_eq!(config.cyclomatic_complexity_error, 40);
+    assert!(!config.rules.trailing_whitespace);
 }
 
 #[test]

@@ -35,17 +35,7 @@ fn enabled_ids_hyphenates_names_sorts_and_omits_disabled_rules() {
 }
 
 #[test]
-fn all_rules_default_to_enabled() {
-    // Which individual rules default on/off is `shared/rules/<id>.json`'s
-    // own `enabled_by_default` field (single source of truth — see
-    // AGENTS.md), compiled into `Rules::default()` by build.rs. Asserting
-    // each rule's flag here by name would just re-duplicate that data in
-    // Rust, going stale (or silently missing newly added rules) every
-    // time a rule's default changes; `registry_tests.rs`'s
-    // `rule_defaults_match_shared_rules_json` cross-checks the generated
-    // defaults against that source file directly instead. This only
-    // pins the structural invariant: `Config::default()` carries
-    // `Rules::default()` unchanged.
+fn default_config_uses_the_generated_rule_defaults() {
     let config = Config::default();
     assert_eq!(config.rules, Rules::default());
 }
