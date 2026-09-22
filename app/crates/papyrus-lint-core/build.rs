@@ -116,7 +116,6 @@ fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
         }
         generated.push_str("];\n");
     }
-    generated.push_str("const NATIVE_GLOBALS: &[&str] = SKYRIM_NATIVE_GLOBALS;\n");
 
     let dest = Path::new(out_dir).join("native_globals_data.rs");
     fs::write(&dest, generated).unwrap_or_else(|err| {

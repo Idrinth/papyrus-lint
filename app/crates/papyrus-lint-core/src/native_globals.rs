@@ -73,7 +73,7 @@ mod tests {
     fn generated_native_globals_are_lowercase_and_unique() {
         let mut seen = HashSet::new();
 
-        for script in NATIVE_GLOBALS {
+        for script in SKYRIM_NATIVE_GLOBALS {
             assert_eq!(*script, script.to_ascii_lowercase());
             assert!(seen.insert(*script), "duplicate native global: {script}");
         }
