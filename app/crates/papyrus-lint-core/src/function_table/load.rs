@@ -119,8 +119,8 @@ impl FunctionTable {
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
-            || (self.game == "skyrim" && crate::ast_cache::contains_script_name(&name_lower))
-            || (self.game == "skyrim" && crate::native_globals::is_known_for(self.game, &name_lower))
+            || crate::ast_cache::contains_script_name(&name_lower)
+            || crate::native_globals::is_known_for(self.game, &name_lower)
     }
 
     fn resolve_script_path(&self, name_lower: &str) -> Option<PathBuf> {
