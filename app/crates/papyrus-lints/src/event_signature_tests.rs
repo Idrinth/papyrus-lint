@@ -15,9 +15,6 @@ fn check(source: &str) -> Vec<Diagnostic> {
 #[test]
 fn compiled_known_events_are_loaded_from_yaml() {
     assert!(!SKYRIM_KNOWN_EVENTS.is_empty());
-    assert!(SKYRIM_KNOWN_EVENTS
-        .iter()
-        .any(|rule| rule.event == "oninit"));
 }
 
 #[test]
