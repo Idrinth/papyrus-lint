@@ -51,10 +51,7 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
         vec![("active".to_string(), false)]
     );
     assert_eq!(shared.is_global_function("Helpers", "Run"), Some(true));
-    assert_eq!(
-        shared.deprecated_function("Helpers", "Run").unwrap().level,
-        "warning"
-    );
+    assert!(shared.deprecated_function("Helpers", "Run").is_some());
     assert_eq!(shared.is_nodiscard_function("Helpers", "Run"), Some(false));
     assert_eq!(
         shared.function_has_side_effects("Helpers", "Run"),

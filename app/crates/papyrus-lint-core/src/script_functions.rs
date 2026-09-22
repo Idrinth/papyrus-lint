@@ -265,7 +265,6 @@ fn deprecation_for(decl: &FunctionDecl, annotated: bool) -> Option<Deprecation> 
     decl.deprecation.clone().or_else(|| {
         annotated.then(|| Deprecation {
             replacement: None,
-            level: "warning".to_string(),
             message: format!("Function '{}' is marked deprecated", decl.name),
         })
     })
