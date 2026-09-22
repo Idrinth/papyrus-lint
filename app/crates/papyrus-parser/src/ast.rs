@@ -21,6 +21,16 @@ pub struct Script {
     pub variables: Vec<VariableDecl>,
     pub functions: Vec<FunctionDecl>,
     pub states: Vec<StateDecl>,
+    /// Fallout 4 only (`GameEdition::Fallout4`): the script's own custom
+    /// `Struct .. EndStruct` type declarations. Always empty when parsed
+    /// in Skyrim mode.
+    #[serde(default)]
+    pub structs: Vec<StructDecl>,
+    /// Fallout 4 only (`GameEdition::Fallout4`): `Group .. EndGroup`
+    /// property groupings. A property declared inside a group appears
+    /// here, not in `properties`. Always empty when parsed in Skyrim mode.
+    #[serde(default)]
+    pub groups: Vec<GroupDecl>,
     /// The line the `ScriptName` keyword itself starts on. Lets downstream
     /// tooling (see `property-sorting` in `papyrus-lints`) locate the
     /// `ScriptName` declaration without re-scanning the original source
@@ -63,6 +73,40 @@ pub struct VariableDecl {
     pub line: usize,
 }
 
+/// A single member of a Fallout 4 `Struct .. EndStruct` declaration.
+/// Struct members carry no `Hidden`/`Conditional` flags -- only a type,
+/// name, and optional default value.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StructMember {
+    pub type_name: TypeName,
+    pub name: String,
+    pub value: Option<Expr>,
+    pub line: usize,
+}
+
+/// A Fallout 4 only (`GameEdition::Fallout4`) custom `Struct .. EndStruct`
+/// type declaration. An instance of the struct is created with `New
+/// <StructName>` ([`Expr::NewStruct`]), not `New <StructName>[size]`
+/// (array creation, [`Expr::NewArray`]).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StructDecl {
+    pub name: String,
+    pub members: Vec<StructMember>,
+    pub line: usize,
+}
+
+/// A Fallout 4 only (`GameEdition::Fallout4`) `Group .. EndGroup` block:
+/// purely a Creation Kit organizational aid, wrapping one or more property
+/// declarations under a named, optionally-collapsed heading.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GroupDecl {
+    pub name: String,
+    pub is_collapsed_on_base: bool,
+    pub is_collapsed_on_ref: bool,
+    pub properties: Vec<PropertyDecl>,
+    pub line: usize,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Param {
     pub type_name: TypeName,
@@ -93,6 +137,14 @@ pub struct FunctionDecl {
     pub is_global: bool,
     pub is_native: bool,
     pub is_event: bool,
+    /// Fallout 4 only (`GameEdition::Fallout4`): the function is compiled
+    /// only into debug builds of the game's scripts.
+    #[serde(default)]
+    pub is_debug_only: bool,
+    /// Fallout 4 only (`GameEdition::Fallout4`): the function is compiled
+    /// only into beta builds of the game's scripts.
+    #[serde(default)]
+    pub is_beta_only: bool,
     /// The function's visibility. Unannotated functions use Papyrus's
     /// default public access level.
     #[serde(default)]
@@ -272,5 +324,11 @@ pub enum Expr {
     NewArray {
         type_name: TypeName,
         size: Box<Expr>,
+    },
+    /// Fallout 4 only (`GameEdition::Fallout4`): `New <StructName>`,
+    /// creating an instance of a custom `Struct .. EndStruct` type. Unlike
+    /// [`Expr::NewArray`], no `[size]` follows the type name.
+    NewStruct {
+        type_name: String,
     },
 }

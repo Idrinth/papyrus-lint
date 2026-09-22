@@ -54,8 +54,24 @@ impl From<ParseError> for PapyrusError {
 
 /// Parses Papyrus source text into a `Script` AST. Memoized against the
 /// most recently seen `source` -- see [`cache`].
+///
+/// Always parses Skyrim's Papyrus dialect. See [`parse_with_mode`] to
+/// parse Fallout 4's.
 pub fn parse(source: &str) -> Result<ast::Script, PapyrusError> {
     cache::parse(source)
+}
+
+/// Same as [`parse`], but accepting `mode`'s Papyrus dialect (see
+/// [`parser::GameEdition`]) rather than always parsing Skyrim's. Not
+/// memoized: [`cache`]'s single slot is keyed by source text alone, and
+/// caching it here too would return a stale result if the same source were
+/// ever parsed under both modes.
+pub fn parse_with_mode(
+    source: &str,
+    mode: parser::GameEdition,
+) -> Result<ast::Script, PapyrusError> {
+    let tokens = tokenize(source)?;
+    Ok(parser::Parser::new_with_mode(tokens, mode).parse_script()?)
 }
 
 /// Lexes Papyrus source text into tokens, the same as

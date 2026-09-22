@@ -130,7 +130,8 @@ fn collect_int_divisions(expr: &Expr, env: &TypeEnv, count: &mut usize) {
         | Expr::Call { .. }
         | Expr::Member { .. }
         | Expr::Index { .. }
-        | Expr::NewArray { .. } => {}
+        | Expr::NewArray { .. }
+        | Expr::NewStruct { .. } => {}
     }
 }
 

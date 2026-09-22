@@ -248,6 +248,7 @@ fn check_expr(
         }
         Expr::NamedArg { value, .. } => check_expr(value, sizes, diagnostics, line),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
     }
 }
 

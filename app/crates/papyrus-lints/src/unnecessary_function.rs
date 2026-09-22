@@ -390,6 +390,7 @@ fn collect_call_site_edits_in_expr(
             collect_call_site_edits_in_expr(size, wrapped_callees, ctx, edits);
         }
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
     }
 }
 

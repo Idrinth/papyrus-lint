@@ -348,6 +348,7 @@ fn check_expr(
             check_expr(value, unchecked_vars, guarded_casts, diagnostics, line)
         }
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
     }
 }
 

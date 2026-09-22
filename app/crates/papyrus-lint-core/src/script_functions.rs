@@ -432,6 +432,7 @@ fn writes_field(target: &Expr, locals: &HashSet<String>) -> bool {
 fn scan_expr(expr: &Expr, called: &mut HashSet<String>) {
     match expr {
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
         Expr::Binary { left, right, .. } => {
             scan_expr(left, called);
             scan_expr(right, called);

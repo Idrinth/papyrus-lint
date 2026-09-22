@@ -278,6 +278,7 @@ fn collect_expr(expr: &Expr, calls: &mut Vec<String>) {
         Expr::NewArray { size, .. } => collect_expr(size, calls),
         Expr::NamedArg { value, .. } => collect_expr(value, calls),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
     }
 }
 

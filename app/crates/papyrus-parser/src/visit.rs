@@ -5,8 +5,8 @@
 //! `walk_*` helper when it still wants the children visited.
 
 use crate::ast::{
-    Expr, FunctionDecl, IfBranch, ImportDecl, Param, PropertyDecl, Script, StateDecl, Stmt,
-    TypeName, VariableDecl,
+    Expr, FunctionDecl, GroupDecl, IfBranch, ImportDecl, Param, PropertyDecl, Script, StateDecl,
+    Stmt, StructDecl, TypeName, VariableDecl,
 };
 use crate::token::Token;
 
@@ -34,6 +34,18 @@ pub trait Visitor {
 
     fn visit_function(&mut self, function: &FunctionDecl) {
         walk_function(self, function);
+    }
+
+    /// Fallout 4 only: `script.structs` is always empty for a script
+    /// parsed in Skyrim mode.
+    fn visit_struct(&mut self, struct_decl: &StructDecl) {
+        walk_struct(self, struct_decl);
+    }
+
+    /// Fallout 4 only: `script.groups` is always empty for a script
+    /// parsed in Skyrim mode.
+    fn visit_group(&mut self, group: &GroupDecl) {
+        walk_group(self, group);
     }
 
     fn visit_param(&mut self, param: &Param) {
@@ -84,6 +96,12 @@ pub fn walk_script<V: Visitor + ?Sized>(visitor: &mut V, script: &Script) {
     for state in &script.states {
         visitor.visit_state(state);
     }
+    for struct_decl in &script.structs {
+        visitor.visit_struct(struct_decl);
+    }
+    for group in &script.groups {
+        visitor.visit_group(group);
+    }
 }
 
 pub fn walk_property<V: Visitor + ?Sized>(visitor: &mut V, property: &PropertyDecl) {
@@ -115,6 +133,21 @@ pub fn walk_function<V: Visitor + ?Sized>(visitor: &mut V, function: &FunctionDe
     }
     for stmt in &function.body {
         visitor.visit_stmt(stmt);
+    }
+}
+
+pub fn walk_struct<V: Visitor + ?Sized>(visitor: &mut V, struct_decl: &StructDecl) {
+    for member in &struct_decl.members {
+        visitor.visit_type_name(&member.type_name);
+        if let Some(value) = &member.value {
+            visitor.visit_expr(value);
+        }
+    }
+}
+
+pub fn walk_group<V: Visitor + ?Sized>(visitor: &mut V, group: &GroupDecl) {
+    for property in &group.properties {
+        visitor.visit_property(property);
     }
 }
 
@@ -195,6 +228,7 @@ pub fn walk_expr<V: Visitor + ?Sized>(visitor: &mut V, expr: &Expr) {
             visitor.visit_type_name(type_name);
             visitor.visit_expr(size);
         }
+        Expr::NewStruct { .. } => {}
     }
 }
 
@@ -228,6 +262,24 @@ mod tests {
                 self.0 += 1;
             }
         }
+    }
+
+    #[test]
+    fn ast_visitor_walks_fallout4_structs_groups_and_new_struct() {
+        let script = crate::parse_with_mode(
+            "ScriptName Fallout4Visit\n\n\
+             Struct Coordinates\n    Float X\n    Float Y = 1.0\nEndStruct\n\n\
+             Group Settings CollapsedOnBase\n    Int Property MaxCount = 5 Auto\nEndGroup\n\n\
+             Function Test()\n    Coordinates local = new Coordinates\nEndFunction\n",
+            crate::parser::GameEdition::Fallout4,
+        )
+        .unwrap();
+        let mut counter = ExprCounter(0);
+        counter.visit_script(&script);
+        // The struct member's default value, the grouped property's default
+        // value, and the `new Coordinates` struct instantiation: one visited
+        // expression each.
+        assert_eq!(counter.0, 3);
     }
 
     #[test]

@@ -164,6 +164,7 @@ pub fn infer_type(expr: &Expr, env: &TypeEnv) -> Option<TypeName> {
             name: type_name.name.clone(),
             is_array: true,
         }),
+        Expr::NewStruct { type_name } => Some(scalar(type_name)),
         Expr::Index { object, .. } => {
             let base = infer_type(object, env)?;
             base.is_array.then(|| scalar(&base.name))

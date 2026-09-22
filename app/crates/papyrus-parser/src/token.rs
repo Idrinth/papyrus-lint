@@ -52,6 +52,18 @@ pub enum Keyword {
     Length,
     DebugOnly,
     BetaOnly,
+    /// Fallout 4 only: introduces a custom `Struct .. EndStruct` type
+    /// declaration. See [`crate::parser::GameEdition::Fallout4`].
+    Struct,
+    EndStruct,
+    /// Fallout 4 only: introduces a `Group .. EndGroup` block that wraps
+    /// one or more property declarations for Creation Kit organization.
+    Group,
+    EndGroup,
+    /// Fallout 4 only: `Group` flags controlling the group's default
+    /// collapsed state in the Creation Kit's property list.
+    CollapsedOnBase,
+    CollapsedOnRef,
 }
 
 impl Keyword {
@@ -93,6 +105,12 @@ impl Keyword {
             "length" => Length,
             "debugonly" => DebugOnly,
             "betaonly" => BetaOnly,
+            "struct" => Struct,
+            "endstruct" => EndStruct,
+            "group" => Group,
+            "endgroup" => EndGroup,
+            "collapsedonbase" => CollapsedOnBase,
+            "collapsedonref" => CollapsedOnRef,
             _ => return Option::None,
         })
     }
@@ -202,6 +220,12 @@ mod tests {
             ("length", Length),
             ("debugonly", DebugOnly),
             ("betaonly", BetaOnly),
+            ("struct", Struct),
+            ("endstruct", EndStruct),
+            ("group", Group),
+            ("endgroup", EndGroup),
+            ("collapsedonbase", CollapsedOnBase),
+            ("collapsedonref", CollapsedOnRef),
         ];
 
         for (spelling, expected) in cases {

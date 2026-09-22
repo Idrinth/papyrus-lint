@@ -323,6 +323,7 @@ fn check_expr(
         Expr::NewArray { size, .. } => check_expr(size, unassigned, diagnostics, line),
         Expr::NamedArg { value, .. } => check_expr(value, unassigned, diagnostics, line),
         Expr::Literal(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
     }
 }
 
