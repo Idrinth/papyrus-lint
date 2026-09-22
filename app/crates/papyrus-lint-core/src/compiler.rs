@@ -48,8 +48,8 @@ fn flags_file(game: papyrus_lints::Game) -> &'static str {
 /// A script that fails to *compile* (a syntax error, a missing import,
 /// etc.) is still represented as `Ok` with `success: false` — the process
 /// ran and reported the failure, which is the normal case a caller needs
-//! to display, not an error running the compiler itself. See
-//! [`compile_psc_file`]'s `Err` cases for the difference.
+/// to display, not an error running the compiler itself. See
+/// [`compile_psc_file`]'s `Err` cases for the difference.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct CompileOutcome {
     pub success: bool,

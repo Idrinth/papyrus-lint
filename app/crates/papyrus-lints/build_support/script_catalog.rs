@@ -4,6 +4,10 @@
 //!
 //! This module is `include!`d (via `#[path]`) from more than one crate's
 //! `build.rs`, so it must not depend on other `build_support` modules.
+//! Each crate only calls a subset of the catalog helpers; allow unused
+//! items rather than duplicating the parser.
+
+#![allow(dead_code)]
 
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -117,11 +121,13 @@ pub fn known_events(scripts_dir: &Path, game: &str) -> Vec<KnownEvent> {
             continue;
         }
         for (event, args) in script.events {
-            by_name.entry(event.to_ascii_lowercase()).or_insert(KnownEvent {
-                event,
-                form: script.name.clone(),
-                args,
-            });
+            by_name
+                .entry(event.to_ascii_lowercase())
+                .or_insert(KnownEvent {
+                    event,
+                    form: script.name.clone(),
+                    args,
+                });
         }
     }
     by_name.entry("oninit".to_string()).or_insert(KnownEvent {
@@ -174,9 +180,9 @@ fn parse_archive(scripts_dir: &Path, archive_name: &str) -> Vec<ScriptHeader> {
             continue;
         }
         let mut bytes = Vec::new();
-        entry.read_to_end(&mut bytes).unwrap_or_else(|err| {
-            panic!("failed to read {name} from {}: {err}", path.display())
-        });
+        entry
+            .read_to_end(&mut bytes)
+            .unwrap_or_else(|err| panic!("failed to read {name} from {}: {err}", path.display()));
         let source = String::from_utf8_lossy(&bytes);
         if let Some(script) = parse_script(&source) {
             scripts.push(script);
@@ -230,10 +236,7 @@ fn parse_scriptname(line: &str) -> Option<(String, bool, bool)> {
     let flags: Vec<&str> = parts
         .filter(|part| !part.eq_ignore_ascii_case("extends"))
         .filter(|part| {
-            !part
-                .chars()
-                .next()
-                .is_some_and(|c| c.is_ascii_alphabetic())
+            !part.chars().next().is_some_and(|c| c.is_ascii_alphabetic())
                 || part.eq_ignore_ascii_case("Native")
                 || part.eq_ignore_ascii_case("Hidden")
                 || part.eq_ignore_ascii_case("Conditional")

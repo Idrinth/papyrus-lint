@@ -16,19 +16,34 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
     known_rule_ids(context, rules);
 }
 
-fn emit_game_tables(
-    context: &BuildContext,
-    filename: &str,
-    header: &str,
-    item_ty: &str,
-    const_name: &str,
-    selector: &str,
-    skyrim_rows: &[String],
-    fallout4_rows: &[String],
-) {
+struct GameTableSpec<'a> {
+    filename: &'a str,
+    header: &'a str,
+    item_ty: &'a str,
+    const_name: &'a str,
+    selector: &'a str,
+    skyrim_rows: &'a [String],
+    fallout4_rows: &'a [String],
+}
+
+fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
+    let GameTableSpec {
+        filename,
+        header,
+        item_ty,
+        const_name,
+        selector,
+        skyrim_rows,
+        fallout4_rows,
+    } = spec;
     let mut out = Renderer::new();
     out.line(generated_header(header));
-    emit_static(&mut out, &format!("SKYRIM_{const_name}"), item_ty, skyrim_rows);
+    emit_static(
+        &mut out,
+        &format!("SKYRIM_{const_name}"),
+        item_ty,
+        skyrim_rows,
+    );
     out.blank();
     emit_static(
         &mut out,
@@ -70,19 +85,21 @@ fn deprecated_functions(context: &BuildContext) {
     };
     emit_game_tables(
         context,
-        "deprecated_functions_data.rs",
-        "shared/rules/data/{skyrim,fallout4}/deprecated-functions.yaml",
-        "DeprecatedFunctionRule",
-        "DEPRECATED_FUNCTIONS",
-        "deprecated_functions_for",
-        &policy::deprecated_functions(context, "skyrim")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
-        &policy::deprecated_functions(context, "fallout4")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
+        GameTableSpec {
+            filename: "deprecated_functions_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/deprecated-functions.yaml",
+            item_ty: "DeprecatedFunctionRule",
+            const_name: "DEPRECATED_FUNCTIONS",
+            selector: "deprecated_functions_for",
+            skyrim_rows: &policy::deprecated_functions(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::deprecated_functions(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
     );
 }
 
@@ -90,7 +107,7 @@ fn forbidden_functions(context: &BuildContext) {
     let row = |rule: &policy::ForbiddenFunction| {
         if !matches!(rule.level.as_str(), "error" | "warning" | "info") {
             panic!(
-                "forbidden-functions.yaml: unknown level `{}` for {}.{} ",
+                "forbidden-functions.yaml: unknown level `{}` for {}.{}",
                 rule.level, rule.script, rule.function
             );
         }
@@ -101,19 +118,21 @@ fn forbidden_functions(context: &BuildContext) {
     };
     emit_game_tables(
         context,
-        "forbidden_functions_data.rs",
-        "shared/rules/data/{skyrim,fallout4}/forbidden-functions.yaml",
-        "ForbiddenFunctionRule",
-        "FORBIDDEN_FUNCTIONS",
-        "forbidden_functions_for",
-        &policy::forbidden_functions(context, "skyrim")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
-        &policy::forbidden_functions(context, "fallout4")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
+        GameTableSpec {
+            filename: "forbidden_functions_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/forbidden-functions.yaml",
+            item_ty: "ForbiddenFunctionRule",
+            const_name: "FORBIDDEN_FUNCTIONS",
+            selector: "forbidden_functions_for",
+            skyrim_rows: &policy::forbidden_functions(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::forbidden_functions(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
     );
 }
 
@@ -126,19 +145,21 @@ fn slow_functions(context: &BuildContext) {
     };
     emit_game_tables(
         context,
-        "slow_functions_data.rs",
-        "shared/rules/data/{skyrim,fallout4}/slow-functions.yaml",
-        "SlowFunctionRule",
-        "SLOW_FUNCTIONS",
-        "slow_functions_for",
-        &policy::slow_functions(context, "skyrim")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
-        &policy::slow_functions(context, "fallout4")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
+        GameTableSpec {
+            filename: "slow_functions_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/slow-functions.yaml",
+            item_ty: "SlowFunctionRule",
+            const_name: "SLOW_FUNCTIONS",
+            selector: "slow_functions_for",
+            skyrim_rows: &policy::slow_functions(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::slow_functions(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
     );
 }
 
@@ -152,19 +173,21 @@ fn native_methods(context: &BuildContext) {
     };
     emit_game_tables(
         context,
-        "native_methods_data.rs",
-        "bundled Creation Kit archives under shared/scripts",
-        "NativeMethodRule",
-        "NATIVE_METHODS",
-        "native_methods_for",
-        &script_catalog::native_methods(&scripts_dir, "skyrim")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
-        &script_catalog::native_methods(&scripts_dir, "fallout4")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
+        GameTableSpec {
+            filename: "native_methods_data.rs",
+            header: "bundled Creation Kit archives under shared/scripts",
+            item_ty: "NativeMethodRule",
+            const_name: "NATIVE_METHODS",
+            selector: "native_methods_for",
+            skyrim_rows: &script_catalog::native_methods(&scripts_dir, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &script_catalog::native_methods(&scripts_dir, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
     );
 }
 
@@ -172,19 +195,21 @@ fn actor_values(context: &BuildContext) {
     let row = |value: &String| format!("{value:?},");
     emit_game_tables(
         context,
-        "actor_values_data.rs",
-        "shared/rules/data/{skyrim,fallout4}/actor-values.yaml",
-        "&str",
-        "ACTOR_VALUES",
-        "actor_values_for",
-        &policy::actor_values(context, "skyrim")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
-        &policy::actor_values(context, "fallout4")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
+        GameTableSpec {
+            filename: "actor_values_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/actor-values.yaml",
+            item_ty: "&str",
+            const_name: "ACTOR_VALUES",
+            selector: "actor_values_for",
+            skyrim_rows: &policy::actor_values(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::actor_values(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
     );
 }
 
@@ -197,19 +222,21 @@ fn update_event_pairs(context: &BuildContext) {
     };
     emit_game_tables(
         context,
-        "update_event_pairs_data.rs",
-        "shared/rules/data/{skyrim,fallout4}/update-event-handlers.yaml",
-        "UpdateEventPairRule",
-        "UPDATE_EVENT_PAIRS",
-        "update_event_pairs_for",
-        &policy::update_event_pairs(context, "skyrim")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
-        &policy::update_event_pairs(context, "fallout4")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
+        GameTableSpec {
+            filename: "update_event_pairs_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/update-event-handlers.yaml",
+            item_ty: "UpdateEventPairRule",
+            const_name: "UPDATE_EVENT_PAIRS",
+            selector: "update_event_pairs_for",
+            skyrim_rows: &policy::update_event_pairs(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::update_event_pairs(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
     );
 }
 
@@ -233,19 +260,21 @@ fn known_events(context: &BuildContext) {
     let scripts_dir = context.input("shared/scripts");
     emit_game_tables(
         context,
-        "known_events_data.rs",
-        "bundled Creation Kit archives under shared/scripts",
-        "KnownEventRule",
-        "KNOWN_EVENTS",
-        "known_events_for",
-        &script_catalog::known_events(&scripts_dir, "skyrim")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
-        &script_catalog::known_events(&scripts_dir, "fallout4")
-            .iter()
-            .map(row)
-            .collect::<Vec<_>>(),
+        GameTableSpec {
+            filename: "known_events_data.rs",
+            header: "bundled Creation Kit archives under shared/scripts",
+            item_ty: "KnownEventRule",
+            const_name: "KNOWN_EVENTS",
+            selector: "known_events_for",
+            skyrim_rows: &script_catalog::known_events(&scripts_dir, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &script_catalog::known_events(&scripts_dir, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
     );
 }
 
