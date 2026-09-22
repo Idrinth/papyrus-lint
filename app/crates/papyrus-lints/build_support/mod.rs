@@ -3,7 +3,9 @@
 pub mod data_tables;
 pub mod dispatch;
 pub mod metadata;
+pub mod policy;
 pub mod renderer;
+pub mod script_catalog;
 
 use serde::de::DeserializeOwned;
 use std::env;
