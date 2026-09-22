@@ -1,0 +1,19 @@
+# Register-function/Event-handler pairs for the "Missing update event
+# handler" lint (see papyrus-lints/src/missing_update_handler.rs), which
+# flags a call to `register` with no matching `event` declared anywhere in
+# the same script, since the engine then has nothing to call once the
+# registered timer fires and the call has no effect.
+#
+# Fallout 4 replaced Skyrim's RegisterForUpdate/OnUpdate pair with
+# ScriptObject.StartTimer/OnTimer (and the game-time variants), per
+# `shared/scripts/fallout4-scripts.zip`.
+#
+# Each entry:
+#   register: the RegisterFor* / StartTimer* function name, as written in Papyrus source
+#   event:    the Event name the engine calls once `register`'s timer fires
+
+- register: StartTimer
+  event: OnTimer
+
+- register: StartTimerGameTime
+  event: OnTimerGameTime

@@ -1,0 +1,78 @@
+# Forbidden/discouraged function calls for the papyrus-lint "slow function
+# usage" rule.
+#
+# Each entry:
+#   script:   the script (native/global or object) the function is defined on
+#   function: the function name, as written in Papyrus source
+#   level:    severity of the finding - one of: error, warning, info
+#   message:  explanation shown to the user, including a suggested alternative
+#   global:   true if `script` is a native singleton that's always called
+#             through its literal name (e.g. `Game`, `Utility`) rather than
+#             a base type called through a variable of some subclass (e.g.
+#             `ObjectReference`, `ScriptObject`). Defaults to false. A
+#             qualified call to a `global: true` rule's function only
+#             matches when the qualifier is literally `script`, so
+#             e.g. `Utility.Wait()` is flagged but `MyScript.Wait()` is not.
+
+- script: Game
+  function: GetPlayer
+  level: error
+  message: A call to this function leads to significant performance drops and is likely easier handled with an `Actor Property PlayerRef Auto` addition without any drawbacks
+  global: true
+
+- script: Game
+  function: GetFormFromFile
+  level: warning
+  message: Resolving a form by file name and FormID is comparatively expensive and does not change at runtime; resolve it once and store it in a Property or cached variable instead of calling this repeatedly
+  global: true
+
+- script: Utility
+  function: Wait
+  level: warning
+  message: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at StartTimer/OnTimer for example
+  global: true
+
+- script: Utility
+  function: WaitMenuMode
+  level: warning
+  message: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at StartTimer/OnTimer for example
+  global: true
+
+- script: Utility
+  function: WaitGameTime
+  level: warning
+  message: Waiting inside a script that is called often can lead to significant numbers of waiting executions. If your code is likely to be called often it might be worthwhile to look at StartTimerGameTime/OnTimerGameTime for example
+  global: true
+
+- script: Debug
+  function: TraceStack
+  level: warning
+  message: TraceStack walks and prints the full script call stack, which is a heavy diagnostic operation; only use it temporarily while debugging and remove it before shipping
+  global: true
+
+- script: Debug
+  function: Trace
+  level: info
+  message: Trace calls left in shipped scripts add overhead and clutter the Papyrus log for end users; remove them or guard them behind a debug flag before release
+  global: true
+
+- script: Debug
+  function: Notification
+  level: info
+  message: Calling Notification from inside a loop or a recurring event (e.g. OnTimer) spams the player and queues expensive UI work every call; throttle or remove repeated calls
+  global: true
+
+- script: ObjectReference
+  function: GetLinkedRef
+  level: warning
+  message: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly
+
+- script: ScriptObject
+  function: StartTimer
+  level: warning
+  message: StartTimer creates a recurring-style wait that keeps the script scheduled until CancelTimer; prefer a single-shot timer and only StartTimer again when the next tick is actually needed, and always declare OnTimer
+
+- script: ObjectReference
+  function: MoveToWhenUnloaded
+  level: error
+  message: MoveToWhenUnloaded is marked DEPRECATED and must not be used; it busy-waits with Utility.Wait until both locations unload and can stall quest stage fragments. Call MoveTo() (or MoveToIfUnloaded() when the caller is already unloaded) instead
