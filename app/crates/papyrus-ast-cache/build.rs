@@ -28,7 +28,6 @@ struct DeprecatedFunction {
     script: String,
     function: String,
     replacement: Option<String>,
-    level: String,
     message: String,
 }
 
@@ -172,7 +171,6 @@ fn mark_deprecated_functions(
             if function.name.eq_ignore_ascii_case(&rule.function) {
                 function.deprecation = Some(papyrus_parser::ast::Deprecation {
                     replacement: rule.replacement.clone(),
-                    level: rule.level.clone(),
                     message: format!("{}.{}: {}", rule.script, rule.function, rule.message),
                 });
             }

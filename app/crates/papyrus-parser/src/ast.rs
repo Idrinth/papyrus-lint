@@ -82,7 +82,6 @@ pub enum AccessLevel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Deprecation {
     pub replacement: Option<String>,
-    pub level: String,
     pub message: String,
 }
 

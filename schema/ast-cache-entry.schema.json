@@ -354,10 +354,9 @@
     "deprecation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["replacement", "level", "message"],
+      "required": ["replacement", "message"],
       "properties": {
         "replacement": { "type": ["string", "null"] },
-        "level": { "enum": ["error", "warning", "info"] },
         "message": { "type": "string" }
       }
     },

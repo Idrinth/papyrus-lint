@@ -20,7 +20,6 @@ pub struct DeprecatedFunctionRule {
     pub function: &'static str,
     #[allow(dead_code)]
     pub replacement: Option<&'static str>,
-    pub level: &'static str,
     pub message: &'static str,
     /// Whether `script` is a native singleton that must be called through
     /// its literal script name rather than through an object instance.
@@ -100,10 +99,7 @@ impl TokenLint for Collect {
                 self.store.emit(
                     token.line,
                     token.col,
-                    format!(
-                        "[{}] {}.{}: {}",
-                        rule.level, rule.script, rule.function, rule.message
-                    ),
+                    format!("[warning] {}.{}: {}", rule.script, rule.function, rule.message),
                     RULE,
                 );
                 return;
@@ -137,7 +133,7 @@ impl TokenLint for Collect {
             self.store.emit(
                 token.line,
                 token.col,
-                format!("[{}] {}", deprecation.level, deprecation.message),
+                format!("[warning] {}", deprecation.message),
                 RULE,
             );
         }
@@ -244,7 +240,6 @@ fn generic_deprecation(function_name: &str, note: Option<String>) -> Deprecation
     };
     Deprecation {
         replacement: None,
-        level: "warning".to_string(),
         message,
     }
 }
