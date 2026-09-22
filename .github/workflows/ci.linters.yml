@@ -31,7 +31,7 @@ jobs:
         run: pip install yamllint==1.37.1
 
       - name: Lint YAML sources
-        run: yamllint shared/rules/data/*.yaml shared/links.yaml
+        run: yamllint shared/rules/data/*/*.yaml shared/links.yaml
 
   python-lint:
     name: CI / Linters / Python (ruff)
