@@ -93,3 +93,8 @@
   function: Unload
   level: warning
   message: Spell.Unload is documented as likely to be deprecated; misuse can unload in-use spell art and leak memory. Avoid calling it
+
+- script: ObjectReference
+  function: MoveToWhenUnloaded
+  level: error
+  message: MoveToWhenUnloaded is marked DEPRECATED and must not be used; it busy-waits with Utility.Wait until both locations unload and can stall quest stage fragments. Call MoveTo() (or MoveToIfUnloaded() when the caller is already unloaded) instead
