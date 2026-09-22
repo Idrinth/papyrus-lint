@@ -50,7 +50,7 @@ pub fn forbidden_functions(context: &BuildContext, game: &str) -> Vec<ForbiddenF
         context,
         game,
         "forbidden-functions.yaml",
-        "forbidden-functions rules"
+        "forbidden-functions rules",
     )
 }
 
