@@ -533,6 +533,7 @@ Scripts/Source/ObjectReference.psc:337:2: [strict-boolean] [warning] Condition m
 Scripts/Source/ObjectReference.psc:339:29: [forbidden-functions] [warning] ObjectReference.GetLinkedRef: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/ObjectReference.psc:422:9: [exclamation-spacing] [warning] '!' must be followed by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-exclamation-spacing)
 Scripts/Source/ObjectReference.psc:520:163: [trailing-whitespace] [warning] Line contains trailing whitespace (https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace)
+Scripts/Source/ObjectReference.psc:84:10: [forbidden-functions] [error] ObjectReference.MoveToWhenUnloaded: MoveToWhenUnloaded is marked DEPRECATED and must not be used; it busy-waits with Utility.Wait until both locations unload and can stall quest stage fragments. Call MoveTo() (or MoveToIfUnloaded() when the caller is already unloaded) instead (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/Quest.psc:17:1: [numeric-comparison] [warning] Comparison between Int and Float without an explicit cast; floating-point precision may make this inexact (https://papyrus-lint.idrinth.de/rules.html#rule-numeric-comparison)
 Scripts/Source/Quest.psc:18:63: [exclamation-spacing] [warning] '!' must be followed by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-exclamation-spacing)
 Scripts/Source/Quest.psc:64:1: [indentation] [warning] Line should be indented with 1 tab (https://papyrus-lint.idrinth.de/rules.html#rule-indentation)
@@ -609,4 +610,4 @@ Scripts/Source/Weather.psc:10:36: [assignment-operator-spacing] [warning] '=' mu
 Scripts/Source/Weather.psc:10:36: [assignment-operator-spacing] [warning] '=' must be followed by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-assignment-operator-spacing)
 Scripts/Source/Weather.psc:10:61: [assignment-operator-spacing] [warning] '=' must be preceded by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-assignment-operator-spacing)
 Scripts/Source/Weather.psc:10:61: [assignment-operator-spacing] [warning] '=' must be followed by exactly one space (https://papyrus-lint.idrinth.de/rules.html#rule-assignment-operator-spacing)
-PapyrusLinterCLI: 611 problem(s) found in 26 of 62 script(s).
+PapyrusLinterCLI: 612 problem(s) found in 26 of 62 script(s).

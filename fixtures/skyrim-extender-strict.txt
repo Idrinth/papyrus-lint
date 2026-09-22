@@ -2461,6 +2461,7 @@ Scripts/Source/ObjectReference.psc:828:1: [identifier-casing] [warning] Paramete
 Scripts/Source/ObjectReference.psc:828:1: [identifier-casing] [warning] Parameter 'durations' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/ObjectReference.psc:834:1: [identifier-casing] [warning] Parameter 'n' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/ObjectReference.psc:840:1: [identifier-casing] [warning] Parameter 'toFill' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
+Scripts/Source/ObjectReference.psc:84:10: [forbidden-functions] [error] ObjectReference.MoveToWhenUnloaded: MoveToWhenUnloaded is marked DEPRECATED and must not be used; it busy-waits with Utility.Wait until both locations unload and can stall quest stage fragments. Call MoveTo() (or MoveToIfUnloaded() when the caller is already unloaded) instead (https://papyrus-lint.idrinth.de/rules.html#rule-forbidden-functions)
 Scripts/Source/Outfit.psc:7:1: [identifier-casing] [warning] Parameter 'n' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/Perk.psc:9:1: [identifier-casing] [warning] Parameter 'n' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/Perk.psc:10:1: [identifier-casing] [warning] Parameter 'n' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
@@ -3074,4 +3075,4 @@ Scripts/Source/WornObject.psc:59:1: [identifier-casing] [warning] Parameter 'slo
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'akActor' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'handSlot' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
 Scripts/Source/WornObject.psc:62:1: [identifier-casing] [warning] Parameter 'slotMask' does not match the configured PascalCase casing style (https://papyrus-lint.idrinth.de/rules.html#rule-identifier-casing)
-PapyrusLinterCLI: 3076 problem(s) found in 59 of 62 script(s).
+PapyrusLinterCLI: 3077 problem(s) found in 59 of 62 script(s).
