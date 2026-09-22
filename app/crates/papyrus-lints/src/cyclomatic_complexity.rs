@@ -124,6 +124,7 @@ fn expr_complexity(expr: &Expr) -> usize {
         Expr::NewArray { size, .. } => expr_complexity(size),
         Expr::NamedArg { value, .. } => expr_complexity(value),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => 0,
+        Expr::NewStruct { .. } => 0,
     }
 }
 

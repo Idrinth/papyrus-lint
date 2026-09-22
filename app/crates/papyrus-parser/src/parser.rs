@@ -18,21 +18,51 @@ impl std::fmt::Display for ParseError {
 
 type PResult<T> = Result<T, ParseError>;
 
+/// Which game's Papyrus dialect a [`Parser`] accepts. Skyrim is the
+/// original language `papyrus-parser` was built for; Fallout 4 adds a
+/// handful of new constructs (custom `Struct`s, property `Group`s, and the
+/// `DebugOnly`/`BetaOnly` function flags) on top of it. A construct that's
+/// Fallout 4 only is rejected the same way an unrecognized token always
+/// is -- as an ordinary [`ParseError`] -- when parsed in [`Self::Skyrim`]
+/// mode.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum GameEdition {
+    #[default]
+    Skyrim,
+    Fallout4,
+}
+
 pub struct Parser {
     tokens: Vec<Token>,
     pos: usize,
+    mode: GameEdition,
 }
 
 impl Parser {
-    /// Creates a parser over a non-empty token stream.
+    /// Creates a parser over a non-empty token stream, accepting Skyrim's
+    /// Papyrus dialect. See [`Self::new_with_mode`] to parse Fallout 4's.
     ///
     /// # Panics
     ///
     /// Panics when `tokens` is empty. Lexer-produced streams always contain
     /// at least the final [`TokenKind::Eof`] token.
     pub fn new(tokens: Vec<Token>) -> Self {
+        Self::new_with_mode(tokens, GameEdition::default())
+    }
+
+    /// Same as [`Self::new`], but accepting `mode`'s Papyrus dialect.
+    ///
+    /// # Panics
+    ///
+    /// Panics when `tokens` is empty. Lexer-produced streams always contain
+    /// at least the final [`TokenKind::Eof`] token.
+    pub fn new_with_mode(tokens: Vec<Token>, mode: GameEdition) -> Self {
         assert!(!tokens.is_empty(), "parser token stream must not be empty");
-        Parser { tokens, pos: 0 }
+        Parser {
+            tokens,
+            pos: 0,
+            mode,
+        }
     }
 
     fn current(&self) -> &Token {
@@ -170,6 +200,8 @@ impl Parser {
             variables: Vec::new(),
             functions: Vec::new(),
             states: Vec::new(),
+            structs: Vec::new(),
+            groups: Vec::new(),
             line,
         };
 
@@ -185,6 +217,16 @@ impl Parser {
     }
 
     fn parse_member(&mut self, script: &mut Script) -> PResult<()> {
+        if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::Struct) {
+            script.structs.push(self.parse_struct()?);
+            return Ok(());
+        }
+
+        if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::Group) {
+            script.groups.push(self.parse_group()?);
+            return Ok(());
+        }
+
         if self.at_keyword(Keyword::Import) {
             let line = self.current().line;
             self.advance();
@@ -309,6 +351,104 @@ impl Parser {
         })
     }
 
+    /// Fallout 4 only: `Struct <Name>` .. `EndStruct`, a block of typed
+    /// member declarations with optional default values. Only called in
+    /// [`GameEdition::Fallout4`] mode.
+    fn parse_struct(&mut self) -> PResult<StructDecl> {
+        let line = self.current().line;
+        self.expect_keyword(Keyword::Struct)?;
+        let name = self.expect_identifier()?;
+        self.expect_terminator()?;
+
+        let mut members = Vec::new();
+        loop {
+            self.skip_newlines();
+            if self.at_keyword(Keyword::EndStruct) {
+                break;
+            }
+            if self.is_eof() {
+                return Err(self.error("expected EndStruct, found end of file"));
+            }
+            let member_line = self.current().line;
+            let type_name = self.parse_type_name()?;
+            let member_name = self.expect_identifier()?;
+            let mut value = None;
+            if matches!(self.kind(), TokenKind::Assign) {
+                self.advance();
+                value = Some(self.parse_expr()?);
+            }
+            self.expect_terminator()?;
+            members.push(StructMember {
+                type_name,
+                name: member_name,
+                value,
+                line: member_line,
+            });
+        }
+        self.expect_keyword(Keyword::EndStruct)?;
+        self.expect_terminator()?;
+
+        Ok(StructDecl {
+            name,
+            members,
+            line,
+        })
+    }
+
+    /// Fallout 4 only: `Group <Name> [CollapsedOnBase] [CollapsedOnRef]` ..
+    /// `EndGroup`, a block of property declarations. Only called in
+    /// [`GameEdition::Fallout4`] mode.
+    fn parse_group(&mut self) -> PResult<GroupDecl> {
+        let line = self.current().line;
+        self.expect_keyword(Keyword::Group)?;
+        let name = self.expect_identifier()?;
+
+        let mut is_collapsed_on_base = false;
+        let mut is_collapsed_on_ref = false;
+        loop {
+            if self.at_keyword(Keyword::CollapsedOnBase) {
+                self.advance();
+                is_collapsed_on_base = true;
+            } else if self.at_keyword(Keyword::CollapsedOnRef) {
+                self.advance();
+                is_collapsed_on_ref = true;
+            } else {
+                break;
+            }
+        }
+        self.expect_terminator()?;
+
+        let mut properties = Vec::new();
+        loop {
+            self.skip_newlines();
+            if self.at_keyword(Keyword::EndGroup) {
+                break;
+            }
+            if self.is_eof() {
+                return Err(self.error("expected EndGroup, found end of file"));
+            }
+            let prop_line = self.current().line;
+            let type_name = self.parse_type_name()?;
+            if !self.at_keyword(Keyword::Property) {
+                return Err(self.error(format!(
+                    "expected Property declaration inside Group, found {:?}",
+                    self.kind()
+                )));
+            }
+            properties.push(self.parse_property(type_name, prop_line)?);
+        }
+        self.expect_keyword(Keyword::EndGroup)?;
+        self.expect_terminator()?;
+
+        Ok(GroupDecl {
+            name,
+            is_collapsed_on_base,
+            is_collapsed_on_ref,
+            properties,
+            line,
+        })
+    }
+
     fn parse_variable_tail(
         &mut self,
         type_name: TypeName,
@@ -394,6 +534,8 @@ impl Parser {
 
         let mut is_global = false;
         let mut is_native = false;
+        let mut is_debug_only = false;
+        let mut is_beta_only = false;
         let mut access_level = AccessLevel::default();
         loop {
             if self.at_keyword(Keyword::Global) {
@@ -402,6 +544,12 @@ impl Parser {
             } else if self.at_keyword(Keyword::Native) {
                 self.advance();
                 is_native = true;
+            } else if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::DebugOnly) {
+                self.advance();
+                is_debug_only = true;
+            } else if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::BetaOnly) {
+                self.advance();
+                is_beta_only = true;
             } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 access_level = self.parse_access_level()?;
             } else {
@@ -429,6 +577,8 @@ impl Parser {
             is_global,
             is_native,
             is_event,
+            is_debug_only,
+            is_beta_only,
             access_level,
             deprecation: None,
             body,
@@ -903,6 +1053,12 @@ impl Parser {
             TokenKind::Keyword(Keyword::New) => {
                 self.advance();
                 let name = self.expect_identifier()?;
+                if self.mode == GameEdition::Fallout4 && !matches!(self.kind(), TokenKind::LBracket)
+                {
+                    // Fallout 4 only: `New <StructName>`, creating a struct
+                    // instance rather than an array.
+                    return Ok(Expr::NewStruct { type_name: name });
+                }
                 self.expect(TokenKind::LBracket)?;
                 let size = self.parse_expr()?;
                 self.expect(TokenKind::RBracket)?;

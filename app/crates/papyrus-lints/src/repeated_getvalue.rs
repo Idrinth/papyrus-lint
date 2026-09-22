@@ -136,6 +136,7 @@ fn collect_get_value_calls<'a>(expr: &'a Expr, out: &mut Vec<(&'a Expr, usize, u
 
     match expr {
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
         Expr::Binary { left, right, .. } => {
             collect_get_value_calls(left, out);
             collect_get_value_calls(right, out);

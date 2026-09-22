@@ -241,9 +241,12 @@ fn expr_contains_wait_call(expr: &Expr) -> bool {
     }
 
     match expr {
-        Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent | Expr::Call { .. } => {
-            false
-        }
+        Expr::Literal(_)
+        | Expr::Identifier(_)
+        | Expr::Self_
+        | Expr::Parent
+        | Expr::Call { .. }
+        | Expr::NewStruct { .. } => false,
         Expr::Binary { left, right, .. } => {
             expr_contains_wait_call(left) || expr_contains_wait_call(right)
         }

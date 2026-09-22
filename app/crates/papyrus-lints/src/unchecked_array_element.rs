@@ -418,6 +418,7 @@ fn check_expr(
             check_expr(value, object_arrays, checked, diagnostics, line)
         }
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
     }
 }
 

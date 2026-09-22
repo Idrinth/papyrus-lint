@@ -244,6 +244,7 @@ fn check_expr(
         Expr::NewArray { size, .. } => check_expr(size, unchecked, diagnostics, line),
         Expr::NamedArg { value, .. } => check_expr(value, unchecked, diagnostics, line),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
     }
 }
 

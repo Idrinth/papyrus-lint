@@ -236,6 +236,7 @@ fn walk_expr_as_read(expr: &Expr, usage: &mut HashMap<String, Usage>) {
         Expr::NewArray { size, .. } => walk_expr_as_read(size, usage),
         Expr::NamedArg { value, .. } => walk_expr_as_read(value, usage),
         Expr::Literal(_) | Expr::Self_ | Expr::Parent => {}
+        Expr::NewStruct { .. } => {}
     }
 }
 
