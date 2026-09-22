@@ -10,16 +10,11 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-const BASE_ARCHIVES: &[&str] = &["skyrim-scripts.zip", "fallout4-scripts.zip"];
-const EXTENDER_ARCHIVES: &[&str] = &[
-    "skyrim-extender-scripts.zip",
-    "fallout4-extender-scripts.zip",
-];
+pub const GAMES: &[&str] = &["skyrim", "fallout4"];
 
 /// Forms whose event declarations win when the same event name appears on
-/// more than one script. Walked first so a later `ScriptObject` overlay
-/// (Fallout 4) cannot replace a Skyrim `ObjectReference` / `Actor`
-/// signature that existing tests and Skyrim projects rely on.
+/// more than one script in a single game archive. Lower index is walked
+/// first so a later overlay cannot replace the preferred Form.
 const EVENT_FORM_PRIORITY: &[&str] = &[
     "ScriptObject",
     "Form",
@@ -61,11 +56,25 @@ struct ScriptHeader {
     has_global_native: bool,
 }
 
+fn base_archive(game: &str) -> &'static str {
+    match game {
+        "fallout4" => "fallout4-scripts.zip",
+        _ => "skyrim-scripts.zip",
+    }
+}
+
+fn extender_archive(game: &str) -> &'static str {
+    match game {
+        "fallout4" => "fallout4-extender-scripts.zip",
+        _ => "skyrim-extender-scripts.zip",
+    }
+}
+
 /// Lowercased singleton script names (`Game`, `Utility`, F4SE `UI`, …)
 /// referenced by literal type name rather than through a typed variable.
-pub fn native_global_names(scripts_dir: &Path) -> Vec<String> {
+pub fn native_global_names(scripts_dir: &Path, game: &str) -> Vec<String> {
     let mut names: BTreeMap<String, String> = BTreeMap::new();
-    for archive in BASE_ARCHIVES.iter().chain(EXTENDER_ARCHIVES) {
+    for archive in [base_archive(game), extender_archive(game)] {
         for script in parse_archive(scripts_dir, archive) {
             if is_singleton(&script) {
                 names
@@ -77,49 +86,42 @@ pub fn native_global_names(scripts_dir: &Path) -> Vec<String> {
     names.into_values().collect()
 }
 
-/// Base-game `Native` functions from the vanilla (non-extender) archives.
-/// First archive wins on a case-insensitive `(object, function)` pair so
-/// Skyrim names are preserved when Fallout 4 repeats them.
-pub fn native_methods(scripts_dir: &Path) -> Vec<NativeMethod> {
+/// Base-game `Native` functions from the vanilla (non-extender) archive.
+pub fn native_methods(scripts_dir: &Path, game: &str) -> Vec<NativeMethod> {
     let mut seen: BTreeMap<(String, String), NativeMethod> = BTreeMap::new();
-    for archive in BASE_ARCHIVES {
-        for script in parse_archive(scripts_dir, archive) {
-            for function in script.natives {
-                let key = (
-                    script.name.to_ascii_lowercase(),
-                    function.to_ascii_lowercase(),
-                );
-                seen.entry(key).or_insert(NativeMethod {
-                    object: script.name.clone(),
-                    function,
-                });
-            }
+    for script in parse_archive(scripts_dir, base_archive(game)) {
+        for function in script.natives {
+            let key = (
+                script.name.to_ascii_lowercase(),
+                function.to_ascii_lowercase(),
+            );
+            seen.entry(key).or_insert(NativeMethod {
+                object: script.name.clone(),
+                function,
+            });
         }
     }
     seen.into_values().collect()
 }
 
-/// Engine `Event` signatures from Hidden base-game scripts.
+/// Engine `Event` signatures from Hidden base-game scripts for `game`.
 ///
-/// Skyrim is scanned first; a later Fallout 4 declaration of the same
-/// event name is ignored. `OnInit` is injected when no Hidden header
-/// declares it, matching the curated Skyrim table.
-pub fn known_events(scripts_dir: &Path) -> Vec<KnownEvent> {
+/// `OnInit` is injected when no Hidden header declares it, matching the
+/// curated Skyrim table.
+pub fn known_events(scripts_dir: &Path, game: &str) -> Vec<KnownEvent> {
     let mut by_name: BTreeMap<String, KnownEvent> = BTreeMap::new();
-    for archive in BASE_ARCHIVES {
-        let mut scripts = parse_archive(scripts_dir, archive);
-        scripts.sort_by_key(|script| event_form_rank(&script.name));
-        for script in scripts {
-            if !script.hidden {
-                continue;
-            }
-            for (event, args) in script.events {
-                by_name.entry(event.to_ascii_lowercase()).or_insert(KnownEvent {
-                    event,
-                    form: script.name.clone(),
-                    args,
-                });
-            }
+    let mut scripts = parse_archive(scripts_dir, base_archive(game));
+    scripts.sort_by_key(|script| event_form_rank(&script.name));
+    for script in scripts {
+        if !script.hidden {
+            continue;
+        }
+        for (event, args) in script.events {
+            by_name.entry(event.to_ascii_lowercase()).or_insert(KnownEvent {
+                event,
+                form: script.name.clone(),
+                args,
+            });
         }
     }
     by_name.entry("oninit".to_string()).or_insert(KnownEvent {
@@ -225,15 +227,30 @@ fn parse_scriptname(line: &str) -> Option<(String, bool, bool)> {
     let rest = strip_prefix_ignore_ascii_case(line, "Scriptname ")?;
     let mut parts = rest.split_whitespace();
     let name = parts.next()?.to_string();
+    let flags: Vec<&str> = parts
+        .filter(|part| !part.eq_ignore_ascii_case("extends"))
+        .filter(|part| {
+            !part
+                .chars()
+                .next()
+                .is_some_and(|c| c.is_ascii_alphabetic())
+                || part.eq_ignore_ascii_case("Native")
+                || part.eq_ignore_ascii_case("Hidden")
+                || part.eq_ignore_ascii_case("Conditional")
+        })
+        .collect();
+    // `Extends Foo` consumes two tokens; treat remaining tokens as flags.
     let upper = rest.to_ascii_lowercase();
     let hidden = upper.split_whitespace().any(|t| t == "hidden");
     let native = upper.split_whitespace().any(|t| t == "native");
+    let _ = flags;
     Some((name, hidden, native))
 }
 
 fn parse_function_line(line: &str) -> Option<(String, String)> {
     let lowered = line.to_ascii_lowercase();
     let idx = lowered.find("function ")?;
+    // Ignore `EndFunction`.
     if lowered[..idx].contains("end") {
         return None;
     }
