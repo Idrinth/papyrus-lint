@@ -100,7 +100,10 @@ fn parses_game_and_defaults_omitted_game_to_skyrim() {
         parse("semicolon: true\n").unwrap().game,
         crate::Game::Skyrim
     );
-    assert_eq!(parse("game: fallout4\n").unwrap().game, crate::Game::Fallout4);
+    assert_eq!(
+        parse("game: fallout4\n").unwrap().game,
+        crate::Game::Fallout4
+    );
     assert!(parse("game: starfield\n").is_err());
 }
 

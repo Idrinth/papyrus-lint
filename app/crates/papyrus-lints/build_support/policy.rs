@@ -46,7 +46,12 @@ pub struct UpdateEventPair {
 }
 
 pub fn forbidden_functions(context: &BuildContext, game: &str) -> Vec<ForbiddenFunction> {
-    load_game(context, game, "forbidden-functions.yaml", "forbidden-functions rules")
+    load_game(
+        context,
+        game,
+        "forbidden-functions.yaml",
+        "forbidden-functions rules"
+    )
 }
 
 pub fn deprecated_functions(context: &BuildContext, game: &str) -> Vec<DeprecatedFunction> {
