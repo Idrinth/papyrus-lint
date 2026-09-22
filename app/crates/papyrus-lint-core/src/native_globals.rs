@@ -22,16 +22,9 @@ include!(concat!(env!("OUT_DIR"), "/native_globals_data.rs"));
 fn globals_for(game: &str) -> &'static [&'static str] {
     match game {
         "fallout4" => FALLOUT4_NATIVE_GLOBALS,
-        _ => SKYRIM_NATIVE_GLOBALS,
+        "skyrim" => SKYRIM_NATIVE_GLOBALS,
+        _ => panic("unsupported game {game} provided"),
     }
-}
-
-/// Whether `name_lower` is a known native singleton script for Skyrim,
-/// always called through its literal name. `name_lower` must already be
-/// lowercased (callers already work in lowercase for case-insensitive
-/// matching).
-pub fn is_known(name_lower: &str) -> bool {
-    is_known_for("skyrim", name_lower)
 }
 
 /// Whether `name_lower` is a known native singleton script for `game`.
@@ -47,26 +40,26 @@ mod tests {
 
     #[test]
     fn recognizes_common_native_singleton_scripts() {
-        assert!(is_known("game"));
-        assert!(is_known("utility"));
-        assert!(is_known("debug"));
+        assert!(is_known("skyrim", "game"));
+        assert!(is_known("skyrim", "utility"));
+        assert!(is_known("skyrim", "debug"));
     }
 
     #[test]
     fn is_case_sensitive_to_its_already_lowercased_input() {
         // Callers are expected to lowercase before calling; this only
         // documents that expectation.
-        assert!(!is_known("Game"));
+        assert!(!is_known("skyrim", "Game"));
     }
 
     #[test]
     fn returns_false_for_an_unknown_script() {
-        assert!(!is_known("somemodsquestscript"));
+        assert!(!is_known("skyrim", "somemodsquestscript"));
     }
 
     #[test]
     fn empty_script_name_is_not_a_native_global() {
-        assert!(!is_known(""));
+        assert!(!is_known("skyrim", ""));
     }
 
     #[test]
