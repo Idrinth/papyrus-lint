@@ -37,7 +37,7 @@ static GLOBAL_RULES: &[SlowFunctionRule] = &[SlowFunctionRule {
 
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
-    // Not a specific count: shared/rules/data/slow-functions.yaml's entry
+    // Not a specific count: shared/rules/data/skyrim/slow-functions.yaml's entry
     // list is expected to grow over time, so this only pins the loader's
     // shape (non-empty, each entry has its expected fields), not its
     // current content.

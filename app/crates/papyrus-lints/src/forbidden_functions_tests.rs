@@ -14,7 +14,7 @@ fn check(source: &str) -> Vec<Diagnostic> {
 
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
-    // Not a specific count: shared/rules/data/forbidden-functions.yaml's
+    // Not a specific count: shared/rules/data/skyrim/forbidden-functions.yaml's
     // entry list is expected to grow over time, so this only pins the
     // loader's shape (non-empty, each entry has its expected fields),
     // not its current content.

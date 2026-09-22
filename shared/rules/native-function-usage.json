@@ -11,5 +11,5 @@
   "enabled_by_default": false,
   "fixable": false,
   "description": "Flags a Native function/event whose name isn't one of the base game's own, a sign it needs SKSE/F4SE or another native extension. Disabled by default.",
-  "definition": "Flags, as a `[warning]`, a `Native` function/event declared on a script whose name isn't one of the base game's own native functions, listed in `shared/rules/data/native-methods.yaml` \u2014 a strong signal it's instead supplied by SKSE/F4SE or some other native extension the project depends on. Disabled by default, since plenty of mods intentionally depend on such an extension and don't need to be warned about it; opt in with `rules.native_function_usage`."
+  "definition": "Flags, as a `[warning]`, a `Native` function/event declared on a script whose name isn't one of the base game's own native functions, listed in `shared/rules/data/skyrim/native-methods.yaml` \u2014 a strong signal it's instead supplied by SKSE/F4SE or some other native extension the project depends on. Disabled by default, since plenty of mods intentionally depend on such an extension and don't need to be warned about it; opt in with `rules.native_function_usage`."
 }

@@ -2,7 +2,7 @@
 //! `SetActorValue`, `ModActorValue`, and the rest of that family — see
 //! [`ACTOR_VALUE_FUNCTIONS`]) whose Actor Value name argument doesn't match
 //! one of Skyrim's built-in Actor Values, listed in
-//! `shared/rules/data/actor-values.yaml`.
+//! `shared/rules/data/skyrim/actor-values.yaml`.
 //!
 //! Like [`crate::forbidden_functions`], this works on lexer tokens rather
 //! than the parsed AST, so it still runs on scripts that don't parse
@@ -15,7 +15,7 @@
 //!
 //! Disabled by default: a project's own plugin can define additional,
 //! custom Actor Values that have no way to appear in
-//! `shared/rules/data/actor-values.yaml`, which would otherwise be misreported here.
+//! `shared/rules/data/skyrim/actor-values.yaml`, which would otherwise be misreported here.
 
 use papyrus_parser::token::{Token, TokenKind};
 

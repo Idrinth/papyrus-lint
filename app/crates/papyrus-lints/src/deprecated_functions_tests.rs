@@ -46,7 +46,7 @@ impl crate::external_signatures::ExternalSignatures for DeprecatedExternal {
 
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
-    // Not a specific count: shared/rules/data/deprecated-functions.yaml's
+    // Not a specific count: shared/rules/data/skyrim/deprecated-functions.yaml's
     // entry list is expected to grow (and shrink, as entries move to
     // forbidden-functions.yaml) over time, so this only pins the loader's
     // shape (non-empty, each entry has its expected fields), not its

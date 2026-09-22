@@ -13,7 +13,7 @@
 //! script (the lexer/parser have no type/symbol resolution), so this
 //! matches by method name alone (`GetValue`, case-insensitively, with no
 //! arguments) rather than requiring the receiver's declared type — the only
-//! native method named `GetValue` (see `shared/rules/data/native-methods.yaml`) belongs
+//! native method named `GetValue` (see `shared/rules/data/skyrim/native-methods.yaml`) belongs
 //! to `GlobalVariable`.
 
 use papyrus_parser::ast::{Expr, IfBranch, Stmt};

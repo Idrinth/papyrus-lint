@@ -165,15 +165,15 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       ├── const_eval_tests.rs        # const_eval.rs's unit tests
 │       │       ├── trailing_whitespace.rs     # Flags trailing spaces/tabs per line
 │       │       ├── trailing_whitespace_tests.rs # trailing_whitespace.rs's unit tests
-│       │       ├── forbidden_functions.rs     # Reads shared/rules/data/forbidden-functions.yaml
+│       │       ├── forbidden_functions.rs     # Reads shared/rules/data/skyrim/forbidden-functions.yaml
 │       │       │                              # via a build-time-generated array
-│       │       ├── native_function_usage.rs   # Reads shared/rules/data/native-methods.yaml via a
+│       │       ├── native_function_usage.rs   # Reads shared/rules/data/skyrim/native-methods.yaml via a
 │       │       │                              # build-time-generated array; disabled by
 │       │       │                              # default
 │       │       └── actor_value.rs             # Flags a call to an Actor Value function
 │       │                                      # (GetActorValue, SetActorValue, ...) whose
 │       │                                      # argument isn't a known Actor Value; reads
-│       │                                      # shared/rules/data/actor-values.yaml via a build-time-
+│       │                                      # shared/rules/data/skyrim/actor-values.yaml via a build-time-
 │       │                                      # generated array; disabled by default
 │       ├── papyrus-lint-config/  # Locates/loads/saves a project's
 │       │   └── src/               # papyrus-lint.yaml (lint settings, compiler
@@ -250,7 +250,7 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       ├── native_globals.rs   # Known native singleton scripts (Game,
 │       │       │                       # Utility, Debug, ...) always called by
 │       │       │                       # literal name, with no .psc in the
-│       │       │                       # project; reads shared/rules/data/native-globals.yaml
+│       │       │                       # project; reads shared/rules/data/skyrim/native-globals.yaml
 │       │       │                       # via a build-time-generated array (build.rs)
 │       │       ├── presets.rs          # Label/description metadata for the desktop
 │       │       │                       # app's first-run preset picker, layered over
@@ -356,14 +356,15 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │   │   │                      # is generated from these by
 │   │   │                      # .github/scripts/build_rules_json.py and is
 │   │   │                      # git-ignored, not checked in
-│   │   └── data/             # YAML lookup tables compiled into the Rust crates:
-│   │       ├── forbidden-functions.yaml # Discouraged/forbidden calls
-│   │       ├── slow-functions.yaml      # Slow calls and faster alternatives
-│   │       ├── native-methods.yaml      # Base-game native functions
-│   │       ├── update-event-handlers.yaml # RegisterFor*/Event pairs
-│   │       ├── known-events.yaml        # Curated native Event signatures
-│   │       ├── native-globals.yaml      # Native singleton scripts
-│   │       └── actor-values.yaml        # Skyrim's built-in Actor Values
+│   │   └── data/             # Game-specific YAML lookup tables compiled into Rust crates
+│   │       └── skyrim/
+│   │           ├── forbidden-functions.yaml # Discouraged/forbidden calls
+│   │           ├── slow-functions.yaml      # Slow calls and faster alternatives
+│   │           ├── native-methods.yaml      # Base-game native functions
+│   │           ├── update-event-handlers.yaml # RegisterFor*/Event pairs
+│   │           ├── known-events.yaml        # Curated native Event signatures
+│   │           ├── native-globals.yaml      # Native singleton scripts
+│   │           └── actor-values.yaml        # Skyrim's built-in Actor Values
 │   └── theme.css             # Palette, canvas, and primitives shared by
 │                              # app/src/styles.css and pages/styles.css so
 │                              # the desktop app and the website cannot drift

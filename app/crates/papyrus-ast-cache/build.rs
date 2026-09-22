@@ -34,8 +34,8 @@ struct DeprecatedFunction {
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
-    let deprecated_path =
-        Path::new(&manifest_dir).join("../../../shared/rules/data/deprecated-functions.yaml");
+    let deprecated_path = Path::new(&manifest_dir)
+        .join("../../../shared/rules/data/skyrim/deprecated-functions.yaml");
     println!("cargo:rerun-if-changed={}", deprecated_path.display());
     let deprecated: Vec<DeprecatedFunction> =
         serde_norway::from_reader(File::open(&deprecated_path).unwrap_or_else(|err| {
