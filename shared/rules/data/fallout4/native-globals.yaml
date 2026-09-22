@@ -28,3 +28,4 @@
 - script: UI
 - script: F4SE
 - script: FavoritesManager
+- script: InstanceData
