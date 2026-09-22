@@ -64,7 +64,7 @@ fn bundled_script_cache() -> &'static Mutex<HashMap<String, Option<ScriptFunctio
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-fn bundled_script_functions(name_lower: &str) -> Option<ScriptFunctions> {
+fn bundled_script_functions(game: &str, name_lower: &str) -> Option<ScriptFunctions> {
     {
         let cache = bundled_script_cache()
             .lock()
@@ -73,7 +73,7 @@ fn bundled_script_functions(name_lower: &str) -> Option<ScriptFunctions> {
             return cached.clone();
         }
     }
-    let loaded = crate::ast_cache::ast_for_script_name(name_lower)
+    let loaded = crate::ast_cache::ast_for_script_name(game, name_lower)
         .map(|ast| ScriptFunctions::from_script(&ast, ""));
     let mut cache = bundled_script_cache()
         .lock()
@@ -83,8 +83,8 @@ fn bundled_script_functions(name_lower: &str) -> Option<ScriptFunctions> {
 }
 
 /// Parse `path` through [`crate::ast_cache`], the same path linted source
-/// files take via `ast_cache::ensure_primed`. Bundled Skyrim/SKSE scripts
-/// whose content matches `shared/skyrim-scripts.zip` or
+/// files take via `ast_cache::ensure_primed_for_game`. Bundled Skyrim/SKSE
+/// scripts whose content matches `shared/skyrim-scripts.zip` or
 /// `shared/skyrim-extender-scripts.zip` hit the cache's bundled blob and never
 /// take its disk lock, so parallel workers resolving the same base type do not
 /// serialize on that lookup.
@@ -119,7 +119,7 @@ impl FunctionTable {
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
-            || (self.game == "skyrim" && crate::ast_cache::contains_script_name(&name_lower))
+            || crate::ast_cache::contains_script_name(&self.game, &name_lower)
             || crate::native_globals::is_known(&name_lower)
     }
 
@@ -164,9 +164,9 @@ impl FunctionTable {
     /// without being listed. Otherwise, the lowercased name is looked up
     /// with [`find_psc_file`] as before `with_known_scripts` existed, then
     /// lookup roots. A name still unresolved after that is loaded from the
-    /// bundled vanilla/SKSE AST cache by `ScriptName`, so engine types
-    /// (`Actor`, `ObjectReference`, `Form`, …) resolve without game data
-    /// on disk. Reuses the on-disk [`crate::ast_cache`] when the
+    /// bundled vanilla/SKSE AST cache by `ScriptName` when `game` is Skyrim,
+    /// so engine types (`Actor`, `ObjectReference`, `Form`, …) resolve without
+    /// game data on disk. Reuses the on-disk [`crate::ast_cache`] when the
     /// script's content and modification time haven't changed since it was
     /// last parsed, so repeatedly resolving the same cross-script lookup
     /// (across separate CLI invocations, or separate desktop app commands)
@@ -208,8 +208,7 @@ impl FunctionTable {
                     load_script_functions(&self.game, &path)
                 }
             }
-            None if self.game == "skyrim" => bundled_script_functions(&name_lower),
-            None => None,
+            None => bundled_script_functions(&self.game, &name_lower),
         };
 
         self.scripts.insert(name_lower.clone(), script);
