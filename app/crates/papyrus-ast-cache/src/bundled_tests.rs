@@ -135,7 +135,10 @@ fn actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
     let ast = ast_for(&source).expect("Actor.psc should be in the bundled cache");
     assert_eq!(ast.name, "Actor");
     assert_eq!(ast.extends.as_deref(), Some("ObjectReference"));
-    assert_eq!(crate::get_for_game("skyrim", missing, &source), Some(ast.clone()));
+    assert_eq!(
+        crate::get_for_game("skyrim", missing, &source),
+        Some(ast.clone())
+    );
     assert_eq!(
         crate::get_tokens_for_game("skyrim", missing, &source),
         Some(papyrus_parser::tokenize(&source).unwrap())

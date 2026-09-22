@@ -53,7 +53,10 @@ fn public_put_tokens_then_get_tokens_returns_the_cached_tokens() {
 
     let tokens = papyrus_parser::tokenize(source).unwrap();
     put_tokens_for_game(SKYRIM, &source_path, source, &tokens);
-    assert_eq!(get_tokens_for_game(SKYRIM, &source_path, source), Some(tokens));
+    assert_eq!(
+        get_tokens_for_game(SKYRIM, &source_path, source),
+        Some(tokens)
+    );
 }
 
 #[test]
@@ -99,7 +102,10 @@ fn public_accessors_are_safe_under_concurrent_use() {
     });
 
     assert_eq!(get_for_game(SKYRIM, &source_path, source), Some(ast));
-    assert_eq!(get_tokens_for_game(SKYRIM, &source_path, source), Some(tokens));
+    assert_eq!(
+        get_tokens_for_game(SKYRIM, &source_path, source),
+        Some(tokens)
+    );
 }
 
 #[test]
