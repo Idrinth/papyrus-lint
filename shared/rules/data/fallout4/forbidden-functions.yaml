@@ -72,11 +72,6 @@
   level: warning
   message: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly
 
-- script: ScriptObject
-  function: StartTimer
-  level: warning
-  message: StartTimer creates a recurring-style wait that keeps the script scheduled until CancelTimer; prefer a single-shot timer and only StartTimer again when the next tick is actually needed, and always declare OnTimer
-
 - script: ObjectReference
   function: MoveToWhenUnloaded
   level: error
