@@ -43,20 +43,19 @@ pub use crate::named_arguments::NamedArguments;
 pub use crate::type_casing::Style as TypeCasing;
 
 /// The game whose Papyrus dialect and runtime APIs a project targets.
-///
-/// Only Skyrim is supported today, but representing the target as an enum
-/// keeps the configuration extensible as support for other games is added.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Game {
     #[default]
     Skyrim,
+    Fallout4,
 }
 
 impl Game {
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Skyrim => "skyrim",
+            Self::Fallout4 => "fallout4",
         }
     }
 }
