@@ -17,7 +17,6 @@ struct DeprecatedRule {
     script: String,
     function: String,
     replacement: Option<String>,
-    level: String,
     message: String,
     #[serde(default)]
     global: bool,
@@ -76,13 +75,7 @@ fn deprecated_functions(context: &BuildContext) {
     ));
     out.line("pub static DEPRECATED_FUNCTIONS: &[DeprecatedFunctionRule] = &[");
     for rule in values {
-        if !matches!(rule.level.as_str(), "error" | "warning" | "info") {
-            panic!(
-                "deprecated-functions.yaml: unknown level `{}` for {}.{}",
-                rule.level, rule.script, rule.function
-            );
-        }
-        out.line(format_args!("    DeprecatedFunctionRule {{ script: {:?}, function: {:?}, replacement: {:?}, level: {:?}, message: {:?}, global: {:?} }},", rule.script, rule.function, rule.replacement, rule.level, rule.message, rule.global));
+        out.line(format_args!("    DeprecatedFunctionRule {{ script: {:?}, function: {:?}, replacement: {:?}, message: {:?}, global: {:?} }},", rule.script, rule.function, rule.replacement, rule.message, rule.global));
     }
     out.line("];");
     context.write("deprecated_functions_data.rs", "rule data", &out.finish());

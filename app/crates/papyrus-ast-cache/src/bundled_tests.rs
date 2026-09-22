@@ -49,7 +49,6 @@ fn encode_then_parse_round_trips_a_synthetic_entry() {
     let mut ast = papyrus_parser::parse(source).unwrap();
     ast.functions[0].deprecation = Some(papyrus_parser::ast::Deprecation {
         replacement: Some("Current()".to_string()),
-        level: "warning".to_string(),
         message: "Use Current() instead".to_string(),
     });
     let tokens = papyrus_parser::tokenize(source).unwrap();
@@ -215,7 +214,6 @@ fn bundled_actor_carries_catalogued_deprecation_metadata() {
         .deprecation
         .as_ref()
         .expect("catalogued Actor.ModFavorPoints should be marked deprecated");
-    assert_eq!(deprecation.level, "warning");
     assert_eq!(
         deprecation.replacement.as_deref(),
         Some("MakePlayerFriend()")

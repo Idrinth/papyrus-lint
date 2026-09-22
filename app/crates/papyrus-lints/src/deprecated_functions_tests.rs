@@ -39,7 +39,6 @@ impl crate::external_signatures::ExternalSignatures for DeprecatedExternal {
             && function_name.eq_ignore_ascii_case("OldWay"))
         .then(|| papyrus_parser::ast::Deprecation {
             replacement: Some("NewWay()".to_string()),
-            level: "info".to_string(),
             message: "LegacyApi.OldWay: call NewWay() instead".to_string(),
         })
     }
@@ -55,12 +54,11 @@ fn compiled_rules_are_loaded_from_yaml() {
     assert!(!DEPRECATED_FUNCTIONS.is_empty());
     assert!(DEPRECATED_FUNCTIONS
         .iter()
-        .all(|r| !r.script.is_empty() && !r.function.is_empty() && !r.level.is_empty()));
+        .all(|r| !r.script.is_empty() && !r.function.is_empty() && !r.message.is_empty()));
     let rule = DEPRECATED_FUNCTIONS
         .iter()
         .find(|rule| rule.function == "MoveToWhenUnloaded")
         .expect("MoveToWhenUnloaded rule");
-    assert_eq!(rule.level, "error");
     assert_eq!(
         rule.replacement,
         Some("MoveTo(akTarget, afXOffset, afYOffset, afZOffset)")
@@ -75,6 +73,16 @@ fn flags_object_method_with_data_message_and_severity() {
     assert_eq!((diagnostics[0].line, diagnostics[0].column), (3, 11));
     assert!(diagnostics[0].message.starts_with("[warning] Actor.ModFavorPoints:"));
     assert!(diagnostics[0].message.contains("MakePlayerFriend()"));
+}
+
+#[test]
+fn every_catalogued_deprecation_is_a_warning() {
+    let diagnostics = check("ScriptName Example\nFunction Test(ObjectReference target)\n  target.MoveToWhenUnloaded(target)\nEndFunction\n");
+
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0]
+        .message
+        .starts_with("[warning] ObjectReference.MoveToWhenUnloaded:"));
 }
 
 #[test]
@@ -119,7 +127,6 @@ fn chained_call_to_a_same_named_method_does_not_match_its_own_ast_deprecation() 
     let mut ast = papyrus_parser::parse(source).unwrap();
     ast.functions[0].deprecation = Some(papyrus_parser::ast::Deprecation {
         replacement: None,
-        level: "warning".to_string(),
         message: "Game.GetSkillLegendaryLevel: deprecated SKSE wrapper".to_string(),
     });
     let tokens = papyrus_parser::tokenize(source).unwrap();
@@ -149,7 +156,7 @@ fn emits_structured_external_deprecation_guidance() {
     assert_eq!(diagnostics.len(), 1);
     assert_eq!(
         diagnostics[0].message,
-        "[info] LegacyApi.OldWay: call NewWay() instead"
+        "[warning] LegacyApi.OldWay: call NewWay() instead"
     );
 }
 

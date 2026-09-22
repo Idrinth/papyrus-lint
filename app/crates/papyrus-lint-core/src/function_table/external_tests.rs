@@ -59,10 +59,7 @@ fn function_table_forwards_every_external_signature_lookup() {
             access_level: papyrus_parser::ast::AccessLevel::Protected,
         })
     );
-    assert_eq!(
-        external.deprecated_function("Child", "Run").unwrap().level,
-        "warning"
-    );
+    assert!(external.deprecated_function("Child", "Run").is_some());
     assert_eq!(
         external.is_nodiscard_function("Child", "RegisterFoo"),
         Some(true)
