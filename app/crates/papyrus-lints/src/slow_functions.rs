@@ -44,7 +44,7 @@ impl Collect {
     fn from_game() -> Self {
         Self {
             store: Store::default(),
-            rules: SLOW_FUNCTIONS,
+            rules: &[],
             from_config: true,
         }
     }
