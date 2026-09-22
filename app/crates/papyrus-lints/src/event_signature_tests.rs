@@ -17,7 +17,7 @@ fn compiled_known_events_are_loaded_from_yaml() {
     assert!(!SKYRIM_KNOWN_EVENTS.is_empty());
     assert!(SKYRIM_KNOWN_EVENTS
         .iter()
-        .any(|rule| rule.event == "OnInit" && rule.form == "ScriptObject"));
+        .any(|rule| rule.event == "OnInit"));
 }
 
 #[test]

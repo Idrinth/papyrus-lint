@@ -130,11 +130,6 @@ pub fn known_events(scripts_dir: &Path, game: &str) -> Vec<KnownEvent> {
                 });
         }
     }
-    by_name.entry("oninit".to_string()).or_insert(KnownEvent {
-        event: "OnInit".to_string(),
-        form: "ScriptObject".to_string(),
-        args: Vec::new(),
-    });
     by_name.into_values().collect()
 }
 
