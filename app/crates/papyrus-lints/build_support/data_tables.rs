@@ -38,26 +38,34 @@ fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
     } = spec;
     let mut out = Renderer::new();
     out.line(generated_header(header));
+    // Statics default to `'static`; writing `&'static str` here trips
+    // clippy::redundant_static_lifetimes. The selector return type still
+    // needs an explicit inner `'static` so elision does not tie `&str`
+    // elements to the `game` argument.
+    let static_item_ty = match item_ty {
+        "&'static str" | "&str" => "&str",
+        other => other,
+    };
+    let selector_item_ty = match item_ty {
+        "&'static str" | "&str" => "&'static str",
+        other => other,
+    };
     emit_static(
         &mut out,
         &format!("SKYRIM_{const_name}"),
-        item_ty,
+        static_item_ty,
         skyrim_rows,
     );
     out.blank();
     emit_static(
         &mut out,
         &format!("FALLOUT4_{const_name}"),
-        item_ty,
+        static_item_ty,
         fallout4_rows,
     );
     out.blank();
-    out.line(format!(
-        "pub static {const_name}: &[{item_ty}] = SKYRIM_{const_name};"
-    ));
-    out.blank();
     out.block(
-        format!("pub fn {selector}(game: &str) -> &'static [{item_ty}]"),
+        format!("pub fn {selector}(game: &str) -> &'static [{selector_item_ty}]"),
         |out| {
             out.block("match game", |out| {
                 out.line(format!("\"fallout4\" => FALLOUT4_{const_name},"));
@@ -198,10 +206,7 @@ fn actor_values(context: &BuildContext) {
         GameTableSpec {
             filename: "actor_values_data.rs",
             header: "shared/rules/data/{skyrim,fallout4}/actor-values.yaml",
-            // Must be `&'static str` (not `&str`): otherwise lifetime elision
-            // on `fn actor_values_for(game: &str) -> &'static [&str]` ties the
-            // inner `&str` to `game` and forces the argument to be `'static`.
-            item_ty: "&'static str",
+            item_ty: "&str",
             const_name: "ACTOR_VALUES",
             selector: "actor_values_for",
             skyrim_rows: &policy::actor_values(context, "skyrim")
