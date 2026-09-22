@@ -1,4 +1,4 @@
-//! Flags calls to functions listed in `shared/rules/data/deprecated-functions.yaml`
+//! Flags calls to functions listed in `shared/rules/data/skyrim/deprecated-functions.yaml`
 //! or declared with `; @deprecated`.
 //!
 //! The data is compiled into `DEPRECATED_FUNCTIONS` by `build.rs`, so the

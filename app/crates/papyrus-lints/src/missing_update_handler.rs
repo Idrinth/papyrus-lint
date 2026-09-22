@@ -2,7 +2,7 @@
 //! `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or
 //! `RegisterForSingleUpdateGameTime` in a script that declares no matching
 //! `Event` (`OnUpdate` or `OnUpdateGameTime`, per
-//! `shared/rules/data/update-event-handlers.yaml`) anywhere in it, since the engine
+//! `shared/rules/data/skyrim/update-event-handlers.yaml`) anywhere in it, since the engine
 //! then has nothing to call once the registered timer fires and the
 //! registration has no effect.
 //!

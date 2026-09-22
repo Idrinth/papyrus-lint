@@ -11,7 +11,7 @@
 //! that doesn't exist.
 //!
 //! The `NATIVE_GLOBALS` table below is compiled from
-//! `shared/rules/data/native-globals.yaml` by `build.rs` at build time, so
+//! `shared/rules/data/skyrim/native-globals.yaml` by `build.rs` at build time, so
 //! extending the list doesn't need a code change. It is deliberately not
 //! exhaustive: a script this table doesn't
 //! know about (including one the linter simply has no data for, e.g. a

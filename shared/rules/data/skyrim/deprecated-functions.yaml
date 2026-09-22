@@ -15,7 +15,7 @@
 #                through its literal name (e.g. `Game`, `NetImmerse`) rather
 #                than a base type called through a variable of some subclass
 #                (e.g. `Actor`, `ObjectReference`). Defaults to false. See
-#                `shared/rules/data/forbidden-functions.yaml` for the full rationale.
+#                `shared/rules/data/skyrim/forbidden-functions.yaml` for the full rationale.
 
 - script: Actor
   function: ModFavorPoints

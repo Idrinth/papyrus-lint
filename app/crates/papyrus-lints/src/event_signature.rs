@@ -1,5 +1,5 @@
 //! Flags, as a `[warning]`, an `Event` declaration whose name matches one of
-//! the engine's own native events (per `shared/rules/data/known-events.yaml`, which also
+//! the engine's own native events (per `shared/rules/data/skyrim/known-events.yaml`, which also
 //! notes the Form that first declares each one) but whose parameter list
 //! doesn't match the signature the engine actually calls it with.
 //!
@@ -18,7 +18,7 @@
 //! Matches an `Event` by name alone (case-insensitively), regardless of
 //! which Form the enclosing script actually `Extends`, the same way
 //! [`crate::native_function_usage`] matches by (script, function) name
-//! alone. Disabled by default: `shared/rules/data/known-events.yaml` only lists a
+//! alone. Disabled by default: `shared/rules/data/skyrim/known-events.yaml` only lists a
 //! curated subset of the engine's native events, and a script that declares
 //! an `Event` sharing one of those names without actually extending the
 //! listed Form (e.g. its own unrelated event handler that happens to reuse
@@ -35,7 +35,7 @@ pub struct EventArg {
     pub name: &'static str,
 }
 
-/// One `shared/rules/data/known-events.yaml` entry: an event's name, the Form that
+/// One `shared/rules/data/skyrim/known-events.yaml` entry: an event's name, the Form that
 /// first declares it, and its exact expected parameter list.
 pub struct KnownEventRule {
     pub event: &'static str,

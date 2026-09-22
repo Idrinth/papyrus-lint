@@ -1,4 +1,4 @@
-//! Flags calls to functions listed in `shared/rules/data/slow-functions.yaml` that
+//! Flags calls to functions listed in `shared/rules/data/skyrim/slow-functions.yaml` that
 //! have a faster equivalent available, and suggests that replacement.
 //!
 //! Rules are compiled into the `SLOW_FUNCTIONS` array below by `build.rs`

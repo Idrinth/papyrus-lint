@@ -66,12 +66,12 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
 
 fn deprecated_functions(context: &BuildContext) {
     let values: Vec<DeprecatedRule> = context.load_yaml(
-        "shared/rules/data/deprecated-functions.yaml",
+        "shared/rules/data/skyrim/deprecated-functions.yaml",
         "deprecated-functions rules",
     );
     let mut out = Renderer::new();
     out.line(generated_header(
-        "shared/rules/data/deprecated-functions.yaml",
+        "shared/rules/data/skyrim/deprecated-functions.yaml",
     ));
     out.line("pub static DEPRECATED_FUNCTIONS: &[DeprecatedFunctionRule] = &[");
     for rule in values {
@@ -104,12 +104,12 @@ fn table<T>(
 
 fn forbidden_functions(context: &BuildContext) {
     let values: Vec<ForbiddenRule> = context.load_yaml(
-        "shared/rules/data/forbidden-functions.yaml",
+        "shared/rules/data/skyrim/forbidden-functions.yaml",
         "forbidden-functions rules",
     );
     let mut out = Renderer::new();
     out.line(generated_header(
-        "shared/rules/data/forbidden-functions.yaml",
+        "shared/rules/data/skyrim/forbidden-functions.yaml",
     ));
     out.line("pub static FORBIDDEN_FUNCTIONS: &[ForbiddenFunctionRule] = &[");
     for rule in values {
@@ -128,7 +128,7 @@ fn forbidden_functions(context: &BuildContext) {
 fn slow_functions(context: &BuildContext) {
     table(
         context,
-        "shared/rules/data/slow-functions.yaml",
+        "shared/rules/data/skyrim/slow-functions.yaml",
         "slow-functions rules",
         "slow_functions_data.rs",
         "pub static SLOW_FUNCTIONS: &[SlowFunctionRule] = &[",
@@ -140,7 +140,7 @@ fn slow_functions(context: &BuildContext) {
 fn native_methods(context: &BuildContext) {
     table(
         context,
-        "shared/rules/data/native-methods.yaml",
+        "shared/rules/data/skyrim/native-methods.yaml",
         "native-methods rules",
         "native_methods_data.rs",
         "pub static NATIVE_METHODS: &[NativeMethodRule] = &[",
@@ -155,7 +155,7 @@ fn native_methods(context: &BuildContext) {
 fn actor_values(context: &BuildContext) {
     table(
         context,
-        "shared/rules/data/actor-values.yaml",
+        "shared/rules/data/skyrim/actor-values.yaml",
         "actor-values rules",
         "actor_values_data.rs",
         "pub static ACTOR_VALUES: &[&str] = &[",
@@ -165,7 +165,7 @@ fn actor_values(context: &BuildContext) {
 fn update_event_pairs(context: &BuildContext) {
     table(
         context,
-        "shared/rules/data/update-event-handlers.yaml",
+        "shared/rules/data/skyrim/update-event-handlers.yaml",
         "update-event-handlers rules",
         "update_event_pairs_data.rs",
         "pub static UPDATE_EVENT_PAIRS: &[UpdateEventPairRule] = &[",
@@ -181,7 +181,7 @@ fn update_event_pairs(context: &BuildContext) {
 fn known_events(context: &BuildContext) {
     table(
         context,
-        "shared/rules/data/known-events.yaml",
+        "shared/rules/data/skyrim/known-events.yaml",
         "known-events rules",
         "known_events_data.rs",
         "pub static KNOWN_EVENTS: &[KnownEventRule] = &[",

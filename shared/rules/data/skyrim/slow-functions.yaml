@@ -9,7 +9,7 @@
 #                through its literal name (e.g. `Game`, `Utility`) rather
 #                than a base type called through a variable of some
 #                subclass (e.g. `GlobalVariable`). Defaults to false. See
-#                `shared/rules/data/forbidden-functions.yaml` for the full rationale.
+#                `shared/rules/data/skyrim/forbidden-functions.yaml` for the full rationale.
 
 - object: GlobalVariable
   function: GetValueInt

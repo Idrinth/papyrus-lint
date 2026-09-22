@@ -100,7 +100,8 @@ fn title_case(id: &str) -> String {
 }
 
 fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
-    let yaml_path = Path::new(manifest_dir).join("../../../shared/rules/data/native-globals.yaml");
+    let yaml_path =
+        Path::new(manifest_dir).join("../../../shared/rules/data/skyrim/native-globals.yaml");
     println!("cargo:rerun-if-changed={}", yaml_path.display());
 
     let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
@@ -118,7 +119,7 @@ fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
 
     let mut generated = String::new();
     generated.push_str(
-        "/// Compiled from `shared/rules/data/native-globals.yaml` by `build.rs`. Do not edit by hand.\n",
+        "/// Compiled from `shared/rules/data/skyrim/native-globals.yaml` by `build.rs`. Do not edit by hand.\n",
     );
     generated.push_str("const NATIVE_GLOBALS: &[&str] = &[\n");
     for rule in &rules {

@@ -255,7 +255,7 @@ EndFunction
 
 The **Forbidden/discouraged function usage** lint (`forbidden-functions`)
 flags every call to `Game.GetPlayer()` as an `[error]`, since
-`shared/rules/data/forbidden-functions.yaml` recommends caching the result in an
+`shared/rules/data/skyrim/forbidden-functions.yaml` recommends caching the result in an
 `Actor Property PlayerRef Auto` instead of calling it repeatedly. This
 function already does exactly that — `playerRef` is only assigned once,
 the first time it's still unset — but the lint can't see that the call is
