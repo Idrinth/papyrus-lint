@@ -23,7 +23,7 @@ fn globals_for(game: &str) -> &'static [&'static str] {
     match game {
         "fallout4" => FALLOUT4_NATIVE_GLOBALS,
         "skyrim" => SKYRIM_NATIVE_GLOBALS,
-        _ => panic("unsupported game {game} provided"),
+        _ => panic!("unsupported game {game} provided"),
     }
 }
 
