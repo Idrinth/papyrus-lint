@@ -15,6 +15,7 @@ papyrus-parser = { path = "../papyrus-parser" }
 serde = { version = "1", features = ["derive"] }
 serde_norway = "0.9"
 serde_json = "1"
+zip = { version = "2", default-features = false, features = ["deflate"] }
 
 [dev-dependencies]
 serde_norway = "0.9"
