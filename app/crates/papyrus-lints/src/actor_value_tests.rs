@@ -14,8 +14,8 @@ fn check(source: &str) -> Vec<Diagnostic> {
 
 #[test]
 fn compiled_actor_values_are_loaded_from_yaml() {
-    assert!(!ACTOR_VALUES.is_empty());
-    assert!(ACTOR_VALUES.contains(&"Health"));
+    assert!(!SKYRIM_ACTOR_VALUES.is_empty());
+    assert!(SKYRIM_ACTOR_VALUES.contains(&"Health"));
 }
 
 #[test]

@@ -14,8 +14,8 @@ fn check(source: &str) -> Vec<Diagnostic> {
 
 #[test]
 fn compiled_known_events_are_loaded_from_yaml() {
-    assert!(!KNOWN_EVENTS.is_empty());
-    assert!(KNOWN_EVENTS
+    assert!(!SKYRIM_KNOWN_EVENTS.is_empty());
+    assert!(SKYRIM_KNOWN_EVENTS
         .iter()
         .any(|rule| rule.event == "OnInit" && rule.form == "ScriptObject"));
 }
@@ -86,7 +86,7 @@ fn does_not_flag_a_function_with_the_same_name_as_an_event() {
 
 #[test]
 fn matches_every_known_event_with_its_own_correct_signature() {
-    for rule in KNOWN_EVENTS {
+    for rule in SKYRIM_KNOWN_EVENTS {
         let params = rule
             .args
             .iter()

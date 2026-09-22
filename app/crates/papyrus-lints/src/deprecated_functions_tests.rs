@@ -51,11 +51,11 @@ fn compiled_rules_are_loaded_from_yaml() {
     // forbidden-functions.yaml) over time, so this only pins the loader's
     // shape (non-empty, each entry has its expected fields), not its
     // current content.
-    assert!(!DEPRECATED_FUNCTIONS.is_empty());
-    assert!(DEPRECATED_FUNCTIONS
+    assert!(!SKYRIM_DEPRECATED_FUNCTIONS.is_empty());
+    assert!(SKYRIM_DEPRECATED_FUNCTIONS
         .iter()
         .all(|r| !r.script.is_empty() && !r.function.is_empty() && !r.message.is_empty()));
-    let rule = DEPRECATED_FUNCTIONS
+    let rule = SKYRIM_DEPRECATED_FUNCTIONS
         .iter()
         .find(|rule| rule.function == "MoveToWhenUnloaded")
         .expect("MoveToWhenUnloaded rule");
