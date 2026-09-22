@@ -124,7 +124,7 @@ project's optional `papyrus-lint.yaml`/`.yml`, so user-configurable behavior
 should be read from there rather than added as a separate parameter. Add tests
 for diagnostics, disable comments, configuration, and repairs as applicable,
 and update `shared/rules/<id>.json` and the configuration
-examples (`configuration/papyrus-lint.default.yaml`, `docs/nexuspage.bbcode`).
+examples (`configuration/papyrus-lint.default.yaml`, `templates/nexuspage.bbcode`).
 `registry.rs`'s `KNOWN_RULE_IDS`/`FIXABLE_RULE_IDS`, `tags.rs`'s
 `RULE_TAGS`, `config.rs`'s `Rules`, the check/repair dispatch, and
 `lib.rs`'s rule `mod`s are all compiled from the generated

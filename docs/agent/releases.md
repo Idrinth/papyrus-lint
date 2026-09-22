@@ -6,10 +6,10 @@ Pushing a tag matching `v*.*.*` triggers a `nexus-page` job that first
 regenerates `shared/rules.json` from that tagged commit's own
 `shared/rules/*.json` (`.github/scripts/build_rules_json.py`, since the
 combined file is git-ignored, not checked in — see AGENTS.md hard rule 4)
-and then fills in `docs/nexuspage.bbcode`'s five lint tables from it
+and then fills in `templates/nexuspage.bbcode`'s five lint tables from it
 (`.github/scripts/generate_nexuspage_tables.py shared/rules.json
-docs/nexuspage.bbcode`, rewriting the file in this job's own checkout) —
-the checked-in `docs/nexuspage.bbcode` carries no rows in those tables at
+templates/nexuspage.bbcode`, rewriting the file in this job's own checkout) —
+the checked-in `templates/nexuspage.bbcode` carries no rows in those tables at
 all, so this is the only place they're ever generated. It then
 downloads the coverage artifacts from the tagged commit's most recent
 successful `ci.yml` run and calls `.github/scripts/render_nexuspage.py` to
@@ -125,7 +125,7 @@ page; it additionally passes `mod_id` and the downloaded
 upload also posts the version's changelog entry to the mod page (the
 action requires `mod_id` whenever `changelog` is set). The Nexus API has
 no endpoint to update a mod's page description, so
-`docs/nexuspage.bbcode` is not synced by this job and still needs to be
+`templates/nexuspage.bbcode` is not synced by this job and still needs to be
 pasted onto the mod page by hand.
 
 A `virustotal-scan` job (after `release`, `sublime-plugin`, `vscode-plugin`,

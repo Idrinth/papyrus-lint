@@ -68,7 +68,7 @@ CI treats clippy warnings as errors.
 4. **`shared/rules/<id>.json` is the single source of truth for lint
    metadata.** Each rule is one file there (one JSON object: `id`, `name`,
    `definition` — the long text, `description` — a shorter blurb matching
-   `docs/nexuspage.bbcode`'s own style, `category`, `visitor` (`ast`,
+   `templates/nexuspage.bbcode`'s own style, `category`, `visitor` (`ast`,
    `tokens`, or `none` — how the rule would walk a script as a visitor),
    `tags`, `severity`,
    `importance`, `fixable`, optional `repair_order`). `shared/rules.json`
@@ -83,9 +83,9 @@ CI treats clippy warnings as errors.
    `collect_diagnostics`/`apply_repairs` dispatch, and each rule's `mod`
    in `src/lib.rs` from the generated `shared/rules.json` at build time;
    `pages/build.py` generates the website's searchable `rules.html`
-   straight from it; and release tooling fills in `docs/nexuspage.bbcode`'s
+   straight from it; and release tooling fills in `templates/nexuspage.bbcode`'s
    five lint tables from it (see Releases in `docs/agent/releases.md`) —
-   the checked-in `docs/nexuspage.bbcode` carries no rows itself. `README.md`'s own
+   the checked-in `templates/nexuspage.bbcode` carries no rows itself. `README.md`'s own
    "Implemented Lints" section only keeps a short per-category blurb and a
    link to `rules.html` — it carries no per-rule text to keep in sync.
 5. **Match the file you are in.** Don't invent a new module layout, naming
@@ -110,7 +110,7 @@ Minimum touch list (see also [`CONTRIBUTING.md`](CONTRIBUTING.md)):
 2. `shared/rules/<id>.json` — a new file, named after the rule's `id`,
    holding a single object: `id`, `name`, `definition` (the long,
    README-style description), a short `description` blurb matching
-   `docs/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
+   `templates/nexuspage.bbcode`'s style, `category` (one of `Formatting`,
    `Performance`, `Reliability`, `Bugprone`, `Other`), `visitor` (`ast`
    for a walk of parsed nodes, `tokens` for a walk of the lexer stream,
    `none` for a project-level/post-pass/raw-line rule that is neither),
@@ -152,12 +152,12 @@ If the rule introduces a new *kind* keyword (not `style` /
 
 - README lint tables → `shared/rules/<id>.json` (rule 4). `shared/rules/*.json` →
   the generated `shared/rules.json` (`.github/scripts/build_rules_json.py`,
-  also git-ignored) → `docs/nexuspage.bbcode`'s lint tables (filled in at
+  also git-ignored) → `templates/nexuspage.bbcode`'s lint tables (filled in at
   release time, never checked in — see Releases in
   `docs/agent/releases.md`) and `papyrus-lints`'s `registry.rs`/`tags.rs`/
   `lib.rs` rule `mod`s (via `build.rs`) — all generated, never hand-edited.
 - `docs/cli.md`/`docs/configuration.md` CLI usage / default config →
-  `docs/nexuspage.bbcode` CLI or configuration section (hand-edited; not
+  `templates/nexuspage.bbcode` CLI or configuration section (hand-edited; not
   covered by the generator above). Other README/`docs/*.md` edits do not
   need a Nexus update.
 - `CONTRIBUTING.md` development setup and this index's crate map are
