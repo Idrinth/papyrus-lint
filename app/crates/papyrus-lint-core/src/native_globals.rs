@@ -10,20 +10,34 @@
 //! flagged by the "Unresolved script reference" lint as calling a script
 //! that doesn't exist.
 //!
-//! The `NATIVE_GLOBALS` table below is compiled from
-//! `shared/rules/data/skyrim/native-globals.yaml` by `build.rs` at build time, so
-//! extending the list doesn't need a code change. It is deliberately not
-//! exhaustive: a script this table doesn't
-//! know about (including one the linter simply has no data for, e.g. a
-//! SKSE/F4SE plugin or community function library) is resolved by looking
-//! it up under the project instead, same as any other script name.
+//! The `NATIVE_GLOBALS` tables below are compiled from the bundled Creation
+//! Kit / script-extender archives by `build.rs` at build time, so extending
+//! the list doesn't need a code change. It is deliberately not exhaustive:
+//! a script this table doesn't know about (including one the linter simply
+//! has no data for, e.g. a SKSE/F4SE plugin or community function library)
+//! is resolved by looking it up under the project instead, same as any
+//! other script name.
 include!(concat!(env!("OUT_DIR"), "/native_globals_data.rs"));
 
-/// Whether `name_lower` is a known native singleton script, always called
-/// through its literal name. `name_lower` must already be lowercased
-/// (callers already work in lowercase for case-insensitive matching).
+fn globals_for(game: &str) -> &'static [&'static str] {
+    match game {
+        "fallout4" => FALLOUT4_NATIVE_GLOBALS,
+        _ => SKYRIM_NATIVE_GLOBALS,
+    }
+}
+
+/// Whether `name_lower` is a known native singleton script for Skyrim,
+/// always called through its literal name. `name_lower` must already be
+/// lowercased (callers already work in lowercase for case-insensitive
+/// matching).
 pub fn is_known(name_lower: &str) -> bool {
-    NATIVE_GLOBALS.contains(&name_lower)
+    is_known_for("skyrim", name_lower)
+}
+
+/// Whether `name_lower` is a known native singleton script for `game`.
+/// `name_lower` must already be lowercased.
+pub fn is_known_for(game: &str, name_lower: &str) -> bool {
+    globals_for(game).contains(&name_lower)
 }
 
 #[cfg(test)]

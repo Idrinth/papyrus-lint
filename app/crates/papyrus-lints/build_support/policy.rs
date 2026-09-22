@@ -10,8 +10,6 @@
 use super::BuildContext;
 use serde::Deserialize;
 
-const GAMES: &[&str] = &["skyrim", "fallout4"];
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct ForbiddenFunction {
     pub script: String,
@@ -47,103 +45,47 @@ pub struct UpdateEventPair {
     pub event: String,
 }
 
-pub fn forbidden_functions(context: &BuildContext) -> Vec<ForbiddenFunction> {
-    load_merged(context, "forbidden-functions.yaml", "forbidden-functions rules")
+pub fn forbidden_functions(context: &BuildContext, game: &str) -> Vec<ForbiddenFunction> {
+    load_game(context, game, "forbidden-functions.yaml", "forbidden-functions rules")
 }
 
-pub fn deprecated_functions(context: &BuildContext) -> Vec<DeprecatedFunction> {
-    load_merged(
+pub fn deprecated_functions(context: &BuildContext, game: &str) -> Vec<DeprecatedFunction> {
+    load_game(
         context,
+        game,
         "deprecated-functions.yaml",
         "deprecated-functions rules",
     )
 }
 
-pub fn slow_functions(context: &BuildContext) -> Vec<SlowFunction> {
-    load_merged(context, "slow-functions.yaml", "slow-functions rules")
+pub fn slow_functions(context: &BuildContext, game: &str) -> Vec<SlowFunction> {
+    load_game(context, game, "slow-functions.yaml", "slow-functions rules")
 }
 
-pub fn actor_values(context: &BuildContext) -> Vec<String> {
-    let mut seen = std::collections::BTreeMap::<String, String>::new();
-    for game in GAMES {
-        let relative = format!("shared/rules/data/{game}/actor-values.yaml");
-        if !context.input(&relative).exists() {
-            continue;
-        }
-        let values: Vec<String> = context.load_yaml(&relative, "actor-values rules");
-        for value in values {
-            seen.entry(value.to_ascii_lowercase()).or_insert(value);
-        }
+pub fn actor_values(context: &BuildContext, game: &str) -> Vec<String> {
+    let relative = format!("shared/rules/data/{game}/actor-values.yaml");
+    if !context.input(&relative).exists() {
+        return Vec::new();
     }
-    seen.into_values().collect()
+    context.load_yaml(&relative, "actor-values rules")
 }
 
-pub fn update_event_pairs(context: &BuildContext) -> Vec<UpdateEventPair> {
-    load_merged(
+pub fn update_event_pairs(context: &BuildContext, game: &str) -> Vec<UpdateEventPair> {
+    load_game(
         context,
+        game,
         "update-event-handlers.yaml",
         "update-event-handlers rules",
     )
 }
 
-fn load_merged<T>(context: &BuildContext, filename: &str, description: &str) -> Vec<T>
+fn load_game<T>(context: &BuildContext, game: &str, filename: &str, description: &str) -> Vec<T>
 where
-    T: serde::de::DeserializeOwned + Keyed,
+    T: serde::de::DeserializeOwned,
 {
-    let mut seen = std::collections::BTreeMap::<String, T>::new();
-    for game in GAMES {
-        let relative = format!("shared/rules/data/{game}/{filename}");
-        if !context.input(&relative).exists() {
-            continue;
-        }
-        let values: Vec<T> = context.load_yaml(&relative, description);
-        for value in values {
-            seen.entry(value.key()).or_insert(value);
-        }
+    let relative = format!("shared/rules/data/{game}/{filename}");
+    if !context.input(&relative).exists() {
+        return Vec::new();
     }
-    seen.into_values().collect()
-}
-
-trait Keyed {
-    fn key(&self) -> String;
-}
-
-impl Keyed for ForbiddenFunction {
-    fn key(&self) -> String {
-        format!(
-            "{}.{}",
-            self.script.to_ascii_lowercase(),
-            self.function.to_ascii_lowercase()
-        )
-    }
-}
-
-impl Keyed for DeprecatedFunction {
-    fn key(&self) -> String {
-        format!(
-            "{}.{}",
-            self.script.to_ascii_lowercase(),
-            self.function.to_ascii_lowercase()
-        )
-    }
-}
-
-impl Keyed for SlowFunction {
-    fn key(&self) -> String {
-        format!(
-            "{}.{}",
-            self.object.to_ascii_lowercase(),
-            self.function.to_ascii_lowercase()
-        )
-    }
-}
-
-impl Keyed for UpdateEventPair {
-    fn key(&self) -> String {
-        format!(
-            "{}.{}",
-            self.register.to_ascii_lowercase(),
-            self.event.to_ascii_lowercase()
-        )
-    }
+    context.load_yaml(&relative, description)
 }
