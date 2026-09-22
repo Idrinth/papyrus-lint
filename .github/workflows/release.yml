@@ -841,7 +841,7 @@ jobs:
           update_mod_version: true
           allow_mod_manager_download: false
           primary_mod_manager_download: true
-          description: "Windows GUI executable, for other operating systems see github release."
+          description: "Windows GUI executable, for other operating systems see github release. This is likely the main you are looking for."
           mod_id: ${{ env.MOD_ID }}
           changelog: ${{ steps.nexus_changelog.outputs.changelog }}
       - name: Upload to NexusMods (cli)
@@ -854,7 +854,7 @@ jobs:
           category: main
           display_name: "PapyrusLinterCLI (Windows)"
           allow_mod_manager_download: false
-          description: "Windows CLI executable, for other operating systems see github release."
+          description: "Windows CLI executable, for other operating systems see github release. Likely you are looking for the other main, PapyrusLinter (Windows)."
       - name: Upload to NexusMods (config)
         uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
@@ -865,7 +865,7 @@ jobs:
           category: miscellaneous
           display_name: "Papyrus Lint Default Config"
           allow_mod_manager_download: true
-          description: "If you want to create your own presets start from here."
+          description: "If you want to create your own presets start from here. Not required for normal use."
       - name: Upload to NexusMods (vscode)
         uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
@@ -876,7 +876,7 @@ jobs:
           category: optional
           display_name: "Papyrus Lint Vscode Extension"
           allow_mod_manager_download: false
-          description: "Requires one of the executables from main, if not provided will download one from the github release."
+          description: "Requires one of the executables from main, if not provided will download one from the github release. Also available on the VSCode Marketplace."
       - name: Upload to NexusMods (sublime)
         uses: Nexus-Mods/upload-action@v1.0.0-beta.10
         with:
