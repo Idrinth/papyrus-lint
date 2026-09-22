@@ -14,10 +14,8 @@ the [project website](https://papyrus-lint.idrinth.de) when available.
 1. Install [SublimeLinter](http://www.sublimelinter.com/en/stable/installation.html).
 2. Install a Papyrus syntax package, so `.psc` files get the `source.papyrus`
    scope this linter looks for.
-3. Install this package, either via
-   [Package Control](https://packagecontrol.io) (search for
-   `SublimeLinter-contrib-papyrus-lint`) or by cloning/copying this
-   directory into your Sublime Text `Packages` directory.
+3. Install this package, either via by cloning/copying this directory into your
+   Sublime Text `Packages` directory.
 4. The plugin automatically downloads and caches the platform-specific
    `PapyrusLinterCLI` from the GitHub release matching the plugin version.
    Updating the plugin downloads that new release's CLI (and drops the
