@@ -198,7 +198,10 @@ fn actor_values(context: &BuildContext) {
         GameTableSpec {
             filename: "actor_values_data.rs",
             header: "shared/rules/data/{skyrim,fallout4}/actor-values.yaml",
-            item_ty: "&str",
+            // Must be `&'static str` (not `&str`): otherwise lifetime elision
+            // on `fn actor_values_for(game: &str) -> &'static [&str]` ties the
+            // inner `&str` to `game` and forces the argument to be `'static`.
+            item_ty: "&'static str",
             const_name: "ACTOR_VALUES",
             selector: "actor_values_for",
             skyrim_rows: &policy::actor_values(context, "skyrim")
