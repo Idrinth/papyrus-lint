@@ -40,26 +40,26 @@ mod tests {
 
     #[test]
     fn recognizes_common_native_singleton_scripts() {
-        assert!(is_known("skyrim", "game"));
-        assert!(is_known("skyrim", "utility"));
-        assert!(is_known("skyrim", "debug"));
+        assert!(is_known_for("skyrim", "game"));
+        assert!(is_known_for("skyrim", "utility"));
+        assert!(is_known_for("skyrim", "debug"));
     }
 
     #[test]
     fn is_case_sensitive_to_its_already_lowercased_input() {
         // Callers are expected to lowercase before calling; this only
         // documents that expectation.
-        assert!(!is_known("skyrim", "Game"));
+        assert!(!is_known_for("skyrim", "Game"));
     }
 
     #[test]
     fn returns_false_for_an_unknown_script() {
-        assert!(!is_known("skyrim", "somemodsquestscript"));
+        assert!(!is_known_for("skyrim", "somemodsquestscript"));
     }
 
     #[test]
     fn empty_script_name_is_not_a_native_global() {
-        assert!(!is_known("skyrim", ""));
+        assert!(!is_known_for("skyrim", ""));
     }
 
     #[test]
