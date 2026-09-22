@@ -176,17 +176,6 @@ DOCS = [
         ),
         "blurb": "The JSON Schema for one entry in the on-disk ast-cache used to skip re-parsing unchanged scripts.",
     },
-    {
-        "filename": "nexuspage.bbcode",
-        "slug": "nexuspage-bbcode",
-        "kind": "bbcode",
-        "title": "Nexus Mods page description (BBCode source)",
-        "description": (
-            "The BBCode source used for the project's listing on Nexus Mods. Its lint tables are generated from "
-            "shared/rules.json; the rest is kept in sync with the README by hand."
-        ),
-        "blurb": "The BBCode source behind the project's Nexus Mods page listing.",
-    },
 ]
 
 def doc_url_prefix(doc: dict) -> str:

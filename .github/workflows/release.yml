@@ -140,12 +140,12 @@ jobs:
         run: python3 .github/scripts/build_rules_json.py
 
       - name: Regenerate Nexus page lint tables from rules.json
-        run: python3 .github/scripts/generate_nexuspage_tables.py shared/rules.json docs/nexuspage.bbcode
+        run: python3 .github/scripts/generate_nexuspage_tables.py shared/rules.json templates/nexuspage.bbcode
 
       - name: Generate version-specific Nexus page
         run: |
           python3 .github/scripts/render_nexuspage.py \
-            docs/nexuspage.bbcode \
+            templates/nexuspage.bbcode \
             coverage-artifacts \
             "nexuspage-${{ github.ref_name }}.bbcode" \
             "${{ github.ref_name }}"

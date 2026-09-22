@@ -133,8 +133,7 @@ via `actions/upload-pages-artifact`/`actions/deploy-pages`. Everything
 in `index.template.html` outside those placeholders — the hero pitch,
 the "what this is/isn't" cards, screenshots, editor integrations, "how
 to help" — is short, hand-authored prose kept in sync with `README.md`
-by hand, the same way `docs/nexuspage.bbcode`'s own intro prose is (see
-"Keeping agent instructions synchronized" below).
+by hand.
 
 The site is served from the custom domain `papyrus-lint.idrinth.de`, read
 from the checked-in `pages/CNAME` (just that domain, on its own line) at
@@ -172,9 +171,9 @@ able to inject markup into the built site), with its own top-level heading and
 first paragraph read back out as the subpage's title/description rather
 than duplicated in `DOCS`; a JSON Schema file renders its
 `title`/`description` fields plus the pretty-printed schema itself in a
-code block; anything else (`configuration/papyrus-lint.default.yaml`,
-`docs/nexuspage.bbcode`) renders as a plain code block under a
-hand-written title/description in `DOCS`. A link inside a rendered
+code block; anything else (`configuration/papyrus-lint.default.yaml`)
+renders as a plain code block under a hand-written title/description in
+`DOCS`. A link inside a rendered
 Markdown doc to another published doc (matched by filename) resolves to
 that doc's own subpage; a `../`-relative link into the rest of the
 repository resolves on GitHub instead — both via `docs_pages.resolve_doc_href`,

@@ -390,6 +390,8 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       ├── ignore.ts         # "Ignore this lint for the line/file/project" commands
 │       └── codeActions.ts    # "Fix this issue" / ignore CodeActionProvider
 │   └── test/                 # Node-based extension unit tests (per-module)
+├── templates/               # Release-time source templates, not published as documentation
+│   └── nexuspage.bbcode      # Nexus Mods description filled with rules, coverage, version, and links
 ├── pages/                   # Source for the GitHub Pages discoverability site
 │   ├── index.template.html    # (see GitHub Pages below): index.template.html is
 │   ├── docs.template.html      # styled to match the desktop app's frontend (Cinzel

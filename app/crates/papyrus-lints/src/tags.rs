@@ -6,7 +6,7 @@
 //! build time by `build.rs` from `shared/rules.json` — edit that file, not
 //! this one, to change a rule's tags, importance, or description.
 //! `shared/rules.json` is the source of truth for this metadata (see "Docs
-//! sync" in AGENTS.md); `docs/nexuspage.bbcode`'s lint tables and the
+//! sync" in AGENTS.md); `templates/nexuspage.bbcode`'s lint tables and the
 //! website's `rules.html` are both generated from it too. This module only
 //! exposes that metadata; [`crate::repair_filtered_by_tag`] and the CLI's
 //! `--tag <kind>` flag are what actually filter lints/fixes down to one
