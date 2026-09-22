@@ -1,6 +1,11 @@
 # Slow function calls for the papyrus-lint "slow function usage" rule
 # (see the "Planned Lints" section of README.md).
 #
+# HAND-MAINTAINED. Do not regenerate or remove this file from script comments.
+# Nearby comments in the Creation Kit sources are often attached to the wrong
+# function or mix performance notes with unrelated remarks, so scraping them
+# produces false positives and drops real entries. Edit this list by hand.
+#
 # Each entry:
 #   object:      the script (native/global or object) the function is defined on
 #   function:    the function name, as written in Papyrus source

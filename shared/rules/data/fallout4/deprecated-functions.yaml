@@ -1,5 +1,10 @@
 # Deprecated function calls for the papyrus-lint "deprecated functions" rule.
 #
+# HAND-MAINTAINED. Do not regenerate or remove this file from script comments.
+# Nearby comments in the Creation Kit sources are often attached to the wrong
+# function or mix deprecation notes with unrelated remarks, so scraping them
+# produces false positives and drops real entries. Edit this list by hand.
+#
 # Sourced from comments in the bundled Fallout 4 Creation Kit scripts
 # (`shared/scripts/fallout4-scripts.zip`). Only functions whose own
 # documentation marks them deprecated (or "will likely be deprecated")
