@@ -2,7 +2,7 @@
 //! `RegisterForSingleUpdate`, `RegisterForUpdateGameTime`, or
 //! `RegisterForSingleUpdateGameTime` in a script that declares no matching
 //! `Event` (`OnUpdate` or `OnUpdateGameTime`, per
-//! `shared/rules/data/skyrim/update-event-handlers.yaml`) anywhere in it, since the engine
+//! `shared/rules/data/{skyrim,fallout4}/update-event-handlers.yaml`) anywhere in it, since the engine
 //! then has nothing to call once the registered timer fires and the
 //! registration has no effect.
 //!
@@ -56,7 +56,7 @@ impl TokenLint for Collect {
         token: &Token,
         index: usize,
         tokens: &[Token],
-        _ctx: &mut VisitCtx<'_>,
+        ctx: &mut VisitCtx<'_>,
     ) {
         if matches!(token.kind, TokenKind::Keyword(Keyword::Event)) {
             if let Some(TokenKind::Identifier(name)) = tokens.get(index + 1).map(|token| &token.kind)
@@ -70,7 +70,7 @@ impl TokenLint for Collect {
         if !matches!(tokens.get(index + 1).map(|token| &token.kind), Some(TokenKind::LParen)) {
             return;
         }
-        let Some(rule) = find_rule(name) else {
+        let Some(rule) = find_rule(name, ctx.config.game.as_str()) else {
             return;
         };
         self.calls
@@ -117,8 +117,8 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn find_rule(name: &str) -> Option<&'static UpdateEventPairRule> {
-    UPDATE_EVENT_PAIRS
+fn find_rule(name: &str, game: &str) -> Option<&'static UpdateEventPairRule> {
+    update_event_pairs_for(game)
         .iter()
         .find(|rule| rule.register.eq_ignore_ascii_case(name))
 }

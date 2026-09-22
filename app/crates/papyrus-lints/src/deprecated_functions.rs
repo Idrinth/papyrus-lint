@@ -1,4 +1,4 @@
-//! Flags calls to functions listed in `shared/rules/data/skyrim/deprecated-functions.yaml`
+//! Flags calls to functions listed in `shared/rules/data/{skyrim,fallout4}/deprecated-functions.yaml`
 //! or declared with `; @deprecated`.
 //!
 //! The data is compiled into `DEPRECATED_FUNCTIONS` by `build.rs`, so the
@@ -94,7 +94,7 @@ impl TokenLint for Collect {
         if !matches!(tokens.get(index + 1).map(|token| &token.kind), Some(TokenKind::LParen)) {
             return;
         }
-        if let Some(rule) = find_rule(name) {
+        if let Some(rule) = find_rule(name, ctx.config.game.as_str()) {
             if !rule.global || qualifier_matches(tokens, index, rule.script) {
                 self.store.emit(
                     token.line,
@@ -309,8 +309,8 @@ fn line_has_deprecated(line: &str) -> bool {
     deprecated_note(line).is_some()
 }
 
-fn find_rule(name: &str) -> Option<&'static DeprecatedFunctionRule> {
-    DEPRECATED_FUNCTIONS
+fn find_rule(name: &str, game: &str) -> Option<&'static DeprecatedFunctionRule> {
+    deprecated_functions_for(game)
         .iter()
         .find(|rule| rule.function.eq_ignore_ascii_case(name))
 }

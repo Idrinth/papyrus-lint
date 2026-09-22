@@ -1,5 +1,5 @@
 //! Flags, as a `[warning]`, an `Event` declaration whose name matches one of
-//! the engine's own native events (per `shared/rules/data/skyrim/known-events.yaml`, which also
+//! the engine's own native events (per the target game's known-events table, which also
 //! notes the Form that first declares each one) but whose parameter list
 //! doesn't match the signature the engine actually calls it with.
 //!
@@ -18,7 +18,7 @@
 //! Matches an `Event` by name alone (case-insensitively), regardless of
 //! which Form the enclosing script actually `Extends`, the same way
 //! [`crate::native_function_usage`] matches by (script, function) name
-//! alone. Disabled by default: `shared/rules/data/skyrim/known-events.yaml` only lists a
+//! alone. Disabled by default: the known-events table only lists a
 //! curated subset of the engine's native events, and a script that declares
 //! an `Event` sharing one of those names without actually extending the
 //! listed Form (e.g. its own unrelated event handler that happens to reuse
@@ -58,11 +58,11 @@ impl AstLint for Collect {
         &mut self.store
     }
 
-    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+    fn visit_function(&mut self, function: &FunctionDecl, ctx: &mut VisitCtx<'_>) {
         if !function.is_event {
             return;
         }
-        let Some(rule) = find_rule(&function.name) else {
+        let Some(rule) = find_rule(&function.name, ctx.config.game.as_str()) else {
             return;
         };
         if signature_matches(&function.params, rule.args) {
@@ -103,8 +103,8 @@ pub fn check(
 
 /// Looks up a known event's signature by name, case-insensitively (Papyrus
 /// identifiers are case-insensitive).
-fn find_rule(name: &str) -> Option<&'static KnownEventRule> {
-    KNOWN_EVENTS
+fn find_rule(name: &str, game: &str) -> Option<&'static KnownEventRule> {
+    known_events_for(game)
         .iter()
         .find(|rule| rule.event.eq_ignore_ascii_case(name))
 }

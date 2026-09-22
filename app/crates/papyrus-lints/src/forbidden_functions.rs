@@ -1,4 +1,4 @@
-//! Flags calls to functions listed in `shared/rules/data/skyrim/forbidden-functions.yaml`
+//! Flags calls to functions listed in `shared/rules/data/{skyrim,fallout4}/forbidden-functions.yaml`
 //! (e.g. functions with known performance or reliability pitfalls).
 //!
 //! Rules are compiled into the `FORBIDDEN_FUNCTIONS` array below by
@@ -54,7 +54,7 @@ impl TokenLint for Collect {
         token: &Token,
         index: usize,
         tokens: &[Token],
-        _ctx: &mut VisitCtx<'_>,
+        ctx: &mut VisitCtx<'_>,
     ) {
         match &token.kind {
             TokenKind::Keyword(Keyword::If) => {
@@ -86,7 +86,7 @@ impl TokenLint for Collect {
                     .get(index + 1)
                     .is_some_and(|token| matches!(token.kind, TokenKind::LParen)) =>
             {
-                let Some(rule) = find_rule(name) else {
+                let Some(rule) = find_rule(name, ctx.config.game.as_str()) else {
                     return;
                 };
                 if rule.global && !qualifier_matches(tokens, index, rule.script) {
@@ -161,8 +161,8 @@ fn qualifier_matches(tokens: &[Token], call_index: usize, script: &str) -> bool 
     qualifier.eq_ignore_ascii_case(script)
 }
 
-fn find_rule(name: &str) -> Option<&'static ForbiddenFunctionRule> {
-    FORBIDDEN_FUNCTIONS
+fn find_rule(name: &str, game: &str) -> Option<&'static ForbiddenFunctionRule> {
+    forbidden_functions_for(game)
         .iter()
         .find(|rule| rule.function.eq_ignore_ascii_case(name))
 }
