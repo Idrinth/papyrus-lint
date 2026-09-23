@@ -1,11 +1,13 @@
-//! Compiles `shared/scripts/skyrim-scripts.zip` and
-//! `shared/scripts/skyrim-extender-scripts.zip` into a gzip-compressed AST/token
-//! blob (`skyrim-ast-cache.bin.gz` in `OUT_DIR`) that [`bundled`] embeds
-//! at compile time. Keyed by MD5 of decoded source *and* by lowercased
-//! `ScriptName`, so a known script hits regardless of extract path, and a
-//! vanilla type can resolve when no matching `.psc` is on disk. Scripts the
-//! parser cannot currently lex are skipped (a `cargo:warning`); an empty
-//! blob is a hard error.
+//! Compiles each supported game's vanilla/extender script archives under
+//! `shared/scripts/` (Skyrim: `skyrim-scripts.zip` +
+//! `skyrim-extender-scripts.zip`; Fallout 4: `fallout4-scripts.zip` +
+//! `fallout4-extender-scripts.zip`) into a gzip-compressed AST/token blob
+//! per game (`{game}-ast-cache.bin.gz` in `OUT_DIR`) that [`bundled`]
+//! embeds at compile time. Keyed by MD5 of decoded source *and* by
+//! lowercased `ScriptName`, so a known script hits regardless of extract
+//! path, and a vanilla type can resolve when no matching `.psc` is on
+//! disk. Scripts the parser cannot currently lex are skipped (a
+//! `cargo:warning`); an empty blob is a hard error.
 
 use std::collections::HashMap;
 use std::env;
@@ -16,6 +18,7 @@ use std::time::Instant;
 
 use flate2::write::GzEncoder;
 use flate2::Compression;
+use papyrus_parser::parser::GameEdition;
 use serde::Deserialize;
 
 #[path = "src/bundled_blob.rs"]
@@ -31,11 +34,47 @@ struct DeprecatedFunction {
     message: String,
 }
 
+/// One supported game's bundled-blob build inputs: its `shared/scripts`
+/// archives, its `deprecated-functions.yaml`, the parser dialect its
+/// scripts parse under, and the `OUT_DIR` filename [`bundled`] embeds.
+struct GameArchives {
+    display_name: &'static str,
+    archives: [&'static str; 2],
+    deprecated_data: &'static str,
+    mode: GameEdition,
+    out_file: &'static str,
+}
+
+const GAMES: [GameArchives; 2] = [
+    GameArchives {
+        display_name: "Skyrim",
+        archives: ["skyrim-scripts.zip", "skyrim-extender-scripts.zip"],
+        deprecated_data: "skyrim/deprecated-functions.yaml",
+        mode: GameEdition::Skyrim,
+        out_file: "skyrim-ast-cache.bin.gz",
+    },
+    GameArchives {
+        display_name: "Fallout 4",
+        archives: ["fallout4-scripts.zip", "fallout4-extender-scripts.zip"],
+        deprecated_data: "fallout4/deprecated-functions.yaml",
+        mode: GameEdition::Fallout4,
+        out_file: "fallout4-ast-cache.bin.gz",
+    },
+];
+
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
     let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
-    let deprecated_path = Path::new(&manifest_dir)
-        .join("../../../shared/rules/data/skyrim/deprecated-functions.yaml");
+
+    for game in &GAMES {
+        build_game_blob(&manifest_dir, &out_dir, game);
+    }
+}
+
+fn build_game_blob(manifest_dir: &str, out_dir: &str, game: &GameArchives) {
+    let deprecated_path = Path::new(manifest_dir)
+        .join("../../../shared/rules/data")
+        .join(game.deprecated_data);
     println!("cargo:rerun-if-changed={}", deprecated_path.display());
     let deprecated: Vec<DeprecatedFunction> =
         serde_norway::from_reader(File::open(&deprecated_path).unwrap_or_else(|err| {
@@ -51,28 +90,30 @@ fn main() {
             )
         });
     let started = Instant::now();
-    // Insertion order is zip order (vanilla, then SKSE). The name index
-    // last-write-wins, so an SKSE script of the same `ScriptName` as a
+    // Insertion order is zip order (vanilla, then extender). The name index
+    // last-write-wins, so an extender script of the same `ScriptName` as a
     // vanilla one is what a no-file lookup resolves. Duplicate digests
     // (identical decoded source) share one AST/token stream; the later
     // zip entry replaces the earlier in place so order stays stable.
     let mut packed: Vec<bundled_blob::PackedEntry> = Vec::new();
     let mut by_md5: HashMap<[u8; 16], usize> = HashMap::new();
     let mut skipped = 0u32;
-    for archive_name in ["skyrim-scripts.zip", "skyrim-extender-scripts.zip"] {
-        let zip_path = Path::new(&manifest_dir)
+    for archive_name in game.archives {
+        let zip_path = Path::new(manifest_dir)
             .join("../../../shared/scripts")
             .join(archive_name);
         println!("cargo:rerun-if-changed={}", zip_path.display());
         let file = File::open(&zip_path).unwrap_or_else(|err| {
             panic!(
-                "failed to open bundled Skyrim scripts at {}: {err}",
+                "failed to open bundled {} scripts at {}: {err}",
+                game.display_name,
                 zip_path.display()
             )
         });
         let mut archive = zip::ZipArchive::new(file).unwrap_or_else(|err| {
             panic!(
-                "failed to read bundled Skyrim scripts zip at {}: {err}",
+                "failed to read bundled {} scripts zip at {}: {err}",
+                game.display_name,
                 zip_path.display()
             )
         });
@@ -93,7 +134,7 @@ fn main() {
             });
             let source = psc_decode::decode_psc_bytes(&bytes);
             let (Ok(mut ast), Ok(tokens)) = (
-                papyrus_parser::parse(&source),
+                papyrus_parser::parse_with_mode(&source, game.mode),
                 papyrus_parser::tokenize(&source),
             ) else {
                 skipped += 1;
@@ -128,29 +169,40 @@ fn main() {
     }
 
     if packed.is_empty() {
-        panic!("bundled Skyrim AST cache is empty — papyrus-parser produced no usable scripts");
+        panic!(
+            "bundled {} AST cache is empty — papyrus-parser produced no usable scripts",
+            game.display_name
+        );
     }
 
     let count = packed.len();
     let raw = bundled_blob::encode_blob(&packed);
     let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
-    encoder
-        .write_all(&raw)
-        .unwrap_or_else(|err| panic!("failed to gzip bundled Skyrim AST cache: {err}"));
-    let compressed = encoder
-        .finish()
-        .unwrap_or_else(|err| panic!("failed to finish gzip of bundled Skyrim AST cache: {err}"));
+    encoder.write_all(&raw).unwrap_or_else(|err| {
+        panic!(
+            "failed to gzip bundled {} AST cache: {err}",
+            game.display_name
+        )
+    });
+    let compressed = encoder.finish().unwrap_or_else(|err| {
+        panic!(
+            "failed to finish gzip of bundled {} AST cache: {err}",
+            game.display_name
+        )
+    });
 
-    let dest = Path::new(&out_dir).join("skyrim-ast-cache.bin.gz");
+    let dest = Path::new(out_dir).join(game.out_file);
     std::fs::write(&dest, compressed).unwrap_or_else(|err| {
         panic!(
-            "failed to write bundled Skyrim AST cache to {}: {err}",
+            "failed to write bundled {} AST cache to {}: {err}",
+            game.display_name,
             dest.display()
         )
     });
 
     println!(
-        "cargo:warning=bundled Skyrim AST cache: {count} scripts ({skipped} skipped) in {:?}",
+        "cargo:warning=bundled {} AST cache: {count} scripts ({skipped} skipped) in {:?}",
+        game.display_name,
         started.elapsed()
     );
 }

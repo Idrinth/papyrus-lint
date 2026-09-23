@@ -15,6 +15,7 @@ fn parses_all_property_and_script_modifiers() {
 
     assert!(script.is_hidden);
     assert!(script.is_conditional);
+    assert!(!script.is_native);
     let read_only = &script.properties[0];
     assert!(read_only.is_auto_read_only);
     assert!(read_only.is_hidden);
@@ -23,6 +24,25 @@ fn parses_all_property_and_script_modifiers() {
     assert!(script.properties[1].is_auto);
     assert!(script.properties[1].is_conditional);
     assert!(script.variables[0].is_conditional);
+}
+
+#[test]
+fn parses_a_native_script_flag_in_any_order_with_the_other_flags() {
+    // Not Fallout 4 specific: a whole script implemented natively by the
+    // engine (e.g. Fallout 4's own `Actor.psc`/`ObjectReference.psc`) with
+    // no Papyrus body, distinct from a single native function.
+    let native_then_hidden = parse("ScriptName NativeThenHidden extends Form Native Hidden\n")
+        .expect("script should parse");
+    assert!(native_then_hidden.is_native);
+    assert!(native_then_hidden.is_hidden);
+
+    let hidden_then_native =
+        parse("ScriptName HiddenThenNative Hidden Native\n").expect("script should parse");
+    assert!(hidden_then_native.is_native);
+    assert!(hidden_then_native.is_hidden);
+
+    let no_flags = parse("ScriptName NoFlags\n").expect("script should parse");
+    assert!(!no_flags.is_native);
 }
 
 #[test]
