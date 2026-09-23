@@ -11,7 +11,7 @@ import { ruleTagsByRule } from "../results-filter";
 import { aiConfiguration } from "../results-export-ai";
 
 // Default backend behavior for the project-root discovery commands (see
-// project.ts's projectDirForAchlist/projectDirForDirectory/
+// project-io.ts's projectDirForAchlist/projectDirForDirectory/
 // projectDirForPscPath), for tests that drive handleDroppedPaths without
 // caring about the exact root a particular drop resolves to: just the
 // naive fallback each of those functions itself would use if the real

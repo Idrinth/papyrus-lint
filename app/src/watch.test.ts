@@ -20,7 +20,7 @@ import { isWatchModeEnabled, startWatchMode, stopWatchMode } from "./watch";
 // Drops a single .psc file, confirming the "select this project's
 // configuration" dialog if one comes up — it won't for a project directory
 // already confirmed earlier in the same test (see loadProjectConfig in
-// project.ts), the way dropping a second file from the same project root
+// project-settings.ts), the way dropping a second file from the same project root
 // does here.
 async function dropSingleFile(path: string, mtime: number | undefined): Promise<void> {
   invokeImplFor({

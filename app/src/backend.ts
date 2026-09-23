@@ -196,7 +196,7 @@ export async function getPscFileMtimes(paths: string[]): Promise<Record<string, 
 // Fetches every function/property available on an object of type
 // `typeName` (including those inherited via Extends), for the code
 // viewer's `.`-triggered autocompletion. `root` is the project root (see
-// projectDirForAchlist/projectDirForPscPath in project.ts), the same as
+// projectDirForAchlist/projectDirForPscPath in project-io.ts), the same as
 // every other command that resolves scripts across a project.
 export async function listScriptMembers(typeName: string): Promise<Member[]> {
   try {
