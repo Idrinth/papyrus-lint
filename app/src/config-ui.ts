@@ -179,7 +179,7 @@ export function handleLintConfigChanged(): Promise<void> {
 
 // Loads `dir`'s lint configuration (or the `overridePath` file instead, if
 // set) into currentLintConfig and reflects it onto the Settings tab. The
-// project.ts counterpart to handleLintConfigChanged: called by useProjectDir
+// project-settings.ts counterpart to handleLintConfigChanged: called by useProjectDir
 // when a project is (re)loaded, rather than in response to editing a
 // formatting control.
 export async function loadAndApplyLintConfig(dir: string, overridePath: string): Promise<void> {

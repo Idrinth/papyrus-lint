@@ -1,7 +1,7 @@
 // Path helpers: no state, no UI, no Tauri calls — pure string manipulation
 // shared by main.ts's drop handling and tests. Project-root discovery
 // itself (projectDirForAchlist/projectDirForDirectory/projectDirForPscPath)
-// lives in project.ts, since it now calls into the Rust backend.
+// lives in project-io.ts, since it now calls into the Rust backend.
 
 const ACHLIST_EXTENSION = ".achlist";
 const PPJ_EXTENSION = ".ppj";
