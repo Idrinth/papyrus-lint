@@ -141,7 +141,7 @@ fn event_form_rank(name: &str) -> usize {
 }
 
 fn is_singleton(script: &ScriptHeader) -> bool {
-    script.native && script.has_global_native && !script.has_instance_native
+    script.has_global_native && !script.has_instance_native
 }
 
 fn parse_archive(scripts_dir: &Path, archive_name: &str) -> Vec<ScriptHeader> {
