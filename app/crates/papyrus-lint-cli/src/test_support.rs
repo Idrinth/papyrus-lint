@@ -18,7 +18,8 @@ pub(crate) fn write_file(path: &Path, contents: &str) {
 fn with_required_subcommand(args: &[String]) -> Vec<String> {
     match args.first().map(String::as_str) {
         None | Some("init") | Some("preset") | Some("doctor") | Some("lint") | Some("fix")
-        | Some("help") | Some("version") => args.to_vec(),  _ => {
+        | Some("help") | Some("version") => args.to_vec(),
+        _ => {
             let mut prefixed = vec!["lint".to_string()];
             prefixed.extend(args.iter().cloned());
             prefixed
