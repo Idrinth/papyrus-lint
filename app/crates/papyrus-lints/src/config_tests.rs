@@ -104,7 +104,10 @@ fn parses_game_and_defaults_omitted_game_to_skyrim() {
         parse("game: fallout4\n").unwrap().game,
         crate::Game::Fallout4
     );
-    assert!(parse("game: starfield\n").is_err());
+    assert_eq!(
+        parse("game: starfield\n").unwrap().game,
+        crate::Game::Starfield
+    );
 }
 
 #[test]

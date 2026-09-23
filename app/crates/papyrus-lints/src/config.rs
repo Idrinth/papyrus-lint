@@ -41,24 +41,7 @@ use crate::Diagnostic;
 pub use crate::magic_numbers::MagicNumbers;
 pub use crate::named_arguments::NamedArguments;
 pub use crate::type_casing::Style as TypeCasing;
-
-/// The game whose Papyrus dialect and runtime APIs a project targets.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Game {
-    #[default]
-    Skyrim,
-    Fallout4,
-}
-
-impl Game {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Skyrim => "skyrim",
-            Self::Fallout4 => "fallout4",
-        }
-    }
-}
+pub use papyrus_lint_globals::Game;
 
 /// The indentation style a project expects, for the "Formatting checks"/
 /// "Indentation" lint and automatic fix described in README.md.

@@ -70,7 +70,7 @@ impl TokenLint for Collect {
         if !matches!(tokens.get(index + 1).map(|token| &token.kind), Some(TokenKind::LParen)) {
             return;
         }
-        let Some(rule) = find_rule(name, ctx.config.game.as_str()) else {
+        let Some(rule) = find_rule(name, ctx.config.game) else {
             return;
         };
         self.calls
@@ -117,7 +117,7 @@ pub fn check(
     crate::visitor::run(visitor(), source, ast, tokens, config, external)
 }
 
-fn find_rule(name: &str, game: &str) -> Option<&'static UpdateEventPairRule> {
+fn find_rule(name: &str, game: crate::Game) -> Option<&'static UpdateEventPairRule> {
     update_event_pairs_for(game)
         .iter()
         .find(|rule| rule.register.eq_ignore_ascii_case(name))

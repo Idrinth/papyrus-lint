@@ -143,10 +143,8 @@ impl FunctionTable {
 
     /// Selects the target game used to namespace on-disk AST cache entries.
     pub fn with_game(mut self, game: papyrus_lints::Game) -> Self {
-        self.game = match game {
-            papyrus_lints::Game::Skyrim => papyrus_lint_globals::Game::Skyrim,
-            papyrus_lints::Game::Fallout4 => papyrus_lint_globals::Game::Fallout4,
-        };
+        game.assert_supported();
+        self.game = game;
         self
     }
 
