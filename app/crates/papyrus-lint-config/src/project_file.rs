@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::comments::with_field_comments;
-use crate::skyrim::{detected_skyrim_script_lookup_dirs, merge_lookup_roots};
+use crate::game_install::{detected_script_lookup_dirs_for_game, merge_lookup_roots};
 
 /// Candidate config file names, checked in order, inside a project's
 /// directory (conventionally the directory containing its `.achlist`
@@ -42,7 +42,7 @@ pub(crate) struct ProjectFile {
     lookup_script_roots: Vec<String>,
     /// Whether the loaded YAML actually contained a `lookup_script_roots`
     /// key. Missing is treated as "not yet configured", so creating or
-    /// updating a config can fill Skyrim Special Edition's vanilla source
+    /// updating a config can fill the configured `game`'s vanilla source
     /// directories from the Windows registry. An explicit empty list is
     /// left empty rather than re-filled.
     #[serde(skip)]
@@ -105,10 +105,10 @@ fn load_project_file(dir: &Path) -> Result<ProjectFile, String> {
 
 /// Reads and parses the papyrus-lint YAML at `path`. Empty files become
 /// [`ProjectFile::default`]. A file that does not yet contain
-/// `lookup_script_roots` is seeded in memory with Skyrim Special Edition's
-/// vanilla source directories when those can be found (see
-/// [`crate::skyrim::detected_skyrim_script_lookup_dirs`]); an explicit empty
-/// list is kept.
+/// `lookup_script_roots` is seeded in memory with the project's configured
+/// game's vanilla source directories when those can be found (see
+/// [`crate::game_install::detected_script_lookup_dirs_for_game`]); an
+/// explicit empty list is kept.
 fn load_project_file_from_path(path: &Path) -> Result<ProjectFile, String> {
     let contents = fs::read_to_string(path).map_err(|err| format!("{}: {err}", path.display()))?;
     project_file_from_yaml(&contents).map_err(|err| format!("{}: {err}", path.display()))
@@ -124,7 +124,7 @@ fn project_file_from_yaml(contents: &str) -> Result<ProjectFile, String> {
     if !project.lookup_script_roots_explicit {
         merge_lookup_roots(
             &mut project.lookup_script_roots,
-            &detected_skyrim_script_lookup_dirs(),
+            &detected_script_lookup_dirs_for_game(project.lint.game),
         );
     }
     Ok(project)
@@ -363,9 +363,10 @@ pub fn save_script_roots(dir: &Path, roots: &[String]) -> Result<(), String> {
 /// searched only after the conventional and `additional_script_roots`
 /// directories, never linted, and never considered by
 /// `conflicting_script_versions`. Empty (or blank) entries are dropped. A
-/// config that does not yet set the key is seeded in memory with Skyrim
-/// Special Edition's vanilla source directories when those can be found
-/// (see [`crate::skyrim::detected_skyrim_script_lookup_dirs`]).
+/// config that does not yet set the key is seeded in memory with the
+/// project's configured game's vanilla source directories when those can
+/// be found (see
+/// [`crate::game_install::detected_script_lookup_dirs_for_game`]).
 pub fn load_lookup_script_roots(dir: &Path) -> Result<Vec<String>, String> {
     Ok(trimmed_roots(load_project_file(dir)?.lookup_script_roots))
 }
@@ -384,8 +385,8 @@ pub fn load_lookup_script_roots_from_path(path: &Path) -> Result<Vec<String>, St
 /// Persists `roots` as `dir`'s papyrus-lint config file's analysis-only
 /// lookup directories, preserving its other settings. Empty (or blank)
 /// entries are dropped. Setting this (including to an empty list) marks
-/// the key as explicit so a later save does not re-fill Skyrim's vanilla
-/// source directories from the registry.
+/// the key as explicit so a later save does not re-fill the configured
+/// game's vanilla source directories from the registry.
 pub fn save_lookup_script_roots(dir: &Path, roots: &[String]) -> Result<(), String> {
     let mut project = load_project_file(dir)?;
     project.lookup_script_roots = trimmed_roots(roots.iter().cloned());
@@ -401,18 +402,18 @@ fn trimmed_roots(roots: impl IntoIterator<Item = String>) -> Vec<String> {
         .collect()
 }
 
-/// Seeds `project`'s `lookup_script_roots` with detected Skyrim Special
-/// Edition vanilla source directories (see
-/// [`crate::skyrim::detected_skyrim_script_lookup_dirs`]) if it hasn't been
-/// set explicitly yet, and marks it explicit afterward either way so a
-/// later save never re-fills it again.
+/// Seeds `project`'s `lookup_script_roots` with the detected vanilla
+/// source directories for `project.lint.game` (see
+/// [`crate::game_install::detected_script_lookup_dirs_for_game`]) if it
+/// hasn't been set explicitly yet, and marks it explicit afterward either
+/// way so a later save never re-fills it again.
 pub(crate) fn seed_lookup_script_roots(project: &mut ProjectFile) {
     if project.lookup_script_roots_explicit {
         return;
     }
     merge_lookup_roots(
         &mut project.lookup_script_roots,
-        &detected_skyrim_script_lookup_dirs(),
+        &detected_script_lookup_dirs_for_game(project.lint.game),
     );
     project.lookup_script_roots_explicit = true;
 }

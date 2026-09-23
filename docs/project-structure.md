@@ -191,6 +191,12 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       ├── skyrim.rs       # Windows registry detection of a Skyrim
 │       │       │                  # Special Edition install and its vanilla
 │       │       │                  # script directories
+│       │       ├── fallout4.rs     # Windows registry detection of a
+│       │       │                  # Fallout 4 install and its vanilla
+│       │       │                  # script directories
+│       │       ├── game_install.rs # Dispatches to skyrim.rs/fallout4.rs by
+│       │       │                  # the project's configured game and merges
+│       │       │                  # the detected dirs into lookup_script_roots
 │       │       ├── compiler.rs     # PapyrusCompiler.exe auto-detection/
 │       │       │                  # resolution
 │       │       └── presets.rs      # Preset (built-in + user), user-preset
