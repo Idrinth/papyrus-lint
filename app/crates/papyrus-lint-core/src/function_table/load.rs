@@ -55,8 +55,8 @@ fn store_lookup_script(path: PathBuf, mtime: SystemTime, script: Option<ScriptFu
     cache.insert(path, LookupScriptEntry { mtime, script });
 }
 
-/// Process-wide cache of scripts loaded from the bundled vanilla/SKSE blob
-/// by `ScriptName`. Name lookups have no path or mtime, so this is the
+/// Process-wide cache of scripts loaded from the bundled vanilla/extender
+/// blob by `ScriptName`. Name lookups have no path or mtime, so this is the
 /// only reuse across `FunctionTable`s in the same process.
 fn bundled_script_cache() -> &'static Mutex<HashMap<String, Option<ScriptFunctions>>> {
     static CACHE: OnceLock<Mutex<HashMap<String, Option<ScriptFunctions>>>> = OnceLock::new();
@@ -85,11 +85,11 @@ fn bundled_script_functions(
 }
 
 /// Parse `path` through [`crate::ast_cache`], the same path linted source
-/// files take via `ast_cache::ensure_primed_for_game`. Bundled Skyrim/SKSE
-/// scripts whose content matches `shared/skyrim-scripts.zip` or
-/// `shared/skyrim-extender-scripts.zip` hit the cache's bundled blob and never
-/// take its disk lock, so parallel workers resolving the same base type do not
-/// serialize on that lookup.
+/// files take via `ast_cache::ensure_primed_for_game`. Bundled vanilla/
+/// extender scripts whose content matches `game`'s own
+/// `shared/scripts/*-scripts.zip`/`*-extender-scripts.zip` hit the cache's
+/// bundled blob and never take its disk lock, so parallel workers
+/// resolving the same base type do not serialize on that lookup.
 fn load_script_functions(game: papyrus_lint_globals::Game, path: &Path) -> Option<ScriptFunctions> {
     let source = read_psc_source(path).ok()?;
     let parsed = if let Some(cached) = crate::ast_cache::get_for_game(game, path, &source) {
@@ -108,7 +108,7 @@ fn load_script_functions(game: papyrus_lint_globals::Game, path: &Path) -> Optio
 impl FunctionTable {
     /// Whether a script named `type_name` can be located at all: either
     /// found under the project root (regardless of whether it parses
-    /// cleanly), known as a bundled vanilla/SKSE script (see
+    /// cleanly), known as a bundled vanilla/extender script (see
     /// [`papyrus_ast_cache::contains_script_name`]), or known as a native
     /// singleton script always called through its literal name (e.g.
     /// `Game`, `Utility`, `Debug`; see [`crate::native_globals`]). In
@@ -166,17 +166,19 @@ impl FunctionTable {
     /// without being listed. Otherwise, the lowercased name is looked up
     /// with [`find_psc_file`] as before `with_known_scripts` existed, then
     /// lookup roots. A name still unresolved after that is loaded from the
-    /// bundled vanilla/SKSE AST cache by `ScriptName` when `game` is Skyrim,
-    /// so engine types (`Actor`, `ObjectReference`, `Form`, …) resolve without
-    /// game data on disk. Reuses the on-disk [`crate::ast_cache`] when the
-    /// script's content and modification time haven't changed since it was
-    /// last parsed, so repeatedly resolving the same cross-script lookup
-    /// (across separate CLI invocations, or separate desktop app commands)
-    /// skips re-parsing it. Bundled scripts whose content still matches
-    /// `shared/skyrim-scripts.zip` or `shared/skyrim-extender-scripts.zip` hit
-    /// that crate's bundled blob instead of the on-disk cache, so the first
-    /// analysis of a project does not re-parse `Actor`/`Form`/… either, and
-    /// parallel workers resolving those base types do not serialize on the
+    /// bundled vanilla/extender AST cache by `ScriptName` for any game with
+    /// a bundled blob (Skyrim, Fallout 4), so engine types (`Actor`,
+    /// `ObjectReference`, `Form`, …) resolve without game data on disk.
+    /// Reuses the on-disk [`crate::ast_cache`] when the script's content
+    /// and modification time haven't changed since it was last parsed, so
+    /// repeatedly resolving the same cross-script lookup (across separate
+    /// CLI invocations, or separate desktop app commands) skips
+    /// re-parsing it. Bundled scripts whose content still matches that
+    /// game's own `shared/scripts/*-scripts.zip` or
+    /// `shared/scripts/*-extender-scripts.zip` hit that crate's bundled
+    /// blob instead of the on-disk cache, so the first analysis of a
+    /// project does not re-parse `Actor`/`Form`/… either, and parallel
+    /// workers resolving those base types do not serialize on the
     /// disk-cache lock. Scripts found only under lookup roots are also kept in
     /// a process-wide table keyed by path+mtime, so a later `FunctionTable` in
     /// this process does not re-read them either.

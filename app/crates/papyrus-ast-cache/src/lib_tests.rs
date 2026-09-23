@@ -110,11 +110,30 @@ fn public_accessors_are_safe_under_concurrent_use() {
 
 #[test]
 fn fallout4_does_not_hit_the_skyrim_bundled_blob() {
-    let source = "ScriptName Actor\n";
-    let missing = std::path::Path::new("/does/not/exist/Actor.psc");
+    // A source text that is a bundled hit in Skyrim's blob (a bare `Actor`
+    // declaration is never how the real Skyrim `Actor.psc` reads) would
+    // still need to independently be a Fallout 4 bundled script to hit
+    // here; an unrelated source is a miss for both.
+    let source = "ScriptName NotABundledScriptForEitherGame\n";
+    let missing = std::path::Path::new("/does/not/exist/NotABundledScriptForEitherGame.psc");
     assert!(get_for_game(FALLOUT4, missing, source).is_none());
     assert!(get_tokens_for_game(FALLOUT4, missing, source).is_none());
-    assert!(ast_for_script_name(FALLOUT4, "Actor").is_none());
-    assert!(!contains_script_name(FALLOUT4, "Actor"));
+    assert!(ast_for_script_name(FALLOUT4, "DefinitelyNotAVanillaScript").is_none());
+    assert!(!contains_script_name(
+        FALLOUT4,
+        "DefinitelyNotAVanillaScript"
+    ));
+}
+
+#[test]
+fn fallout4_has_its_own_bundled_blob_independent_of_skyrims() {
+    // Both games ship an `Actor.psc`; each game's lookup must resolve to
+    // its own game's bundled blob, not the other's.
     assert!(contains_script_name(SKYRIM, "Actor"));
+    assert!(contains_script_name(FALLOUT4, "Actor"));
+    let skyrim_actor = ast_for_script_name(SKYRIM, "Actor").expect("Skyrim Actor should resolve");
+    let fallout4_actor =
+        ast_for_script_name(FALLOUT4, "Actor").expect("Fallout 4 Actor should resolve");
+    assert_eq!(skyrim_actor.name, "Actor");
+    assert_eq!(fallout4_actor.name, "Actor");
 }
