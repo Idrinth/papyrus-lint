@@ -38,9 +38,7 @@ else
 fi
 
 if [ -n "$base_scripts" ]; then
-    set -- --script-root "$base_scripts" --script-root "/skyrim-scripts" "$@"
-else
-    set -- --script-root "/skyrim-scripts" "$@"
+    set -- --script-root "$base_scripts" "$@"
 fi
 
 has_config_flag=0
@@ -60,4 +58,4 @@ if [ "$has_config_flag" -eq 0 ] \
     set -- --config "$default_config" "$@"
 fi
 
-exec PapyrusLinterCLI "$@" /project
+exec PapyrusLinterCLI lint "$@" /project

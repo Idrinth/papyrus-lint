@@ -1,36 +1,38 @@
-PapyrusLinterCLI path/to/project.achlist
-PapyrusLinterCLI path/to/Project.ppj
-PapyrusLinterCLI init
-PapyrusLinterCLI init --preset standard
-PapyrusLinterCLI init --preset my-team
+PapyrusLinterCLI help
+PapyrusLinterCLI version
+PapyrusLinterCLI lint path/to/project.achlist
+PapyrusLinterCLI lint path/to/Project.ppj
+PapyrusLinterCLI init --game skyrim
+PapyrusLinterCLI init --game skyrim --preset standard
+PapyrusLinterCLI init --game fallout4 --preset my-team
 PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml
 PapyrusLinterCLI preset add my-team path/to/papyrus-lint.yaml --yes
 PapyrusLinterCLI preset list
 PapyrusLinterCLI doctor path/to/project.achlist
-PapyrusLinterCLI doctor --json path/to/project.achlist
+PapyrusLinterCLI doctor --format json path/to/project.achlist
 PapyrusLinterCLI doctor path/to/Project.ppj
-PapyrusLinterCLI path/to/Example.psc
-PapyrusLinterCLI path/to/scripts/source
+PapyrusLinterCLI lint path/to/Example.psc
+PapyrusLinterCLI lint path/to/scripts/source
 PapyrusLinterCLI fix path/to/project.achlist
 PapyrusLinterCLI fix path/to/Example.psc
 PapyrusLinterCLI fix --type trailing-whitespace path/to/Example.psc
 PapyrusLinterCLI fix --line 12 --type trailing-whitespace path/to/Example.psc
 PapyrusLinterCLI fix --dry-run path/to/project.achlist
-PapyrusLinterCLI --tag style path/to/project.achlist
+PapyrusLinterCLI lint --tag style path/to/project.achlist
 PapyrusLinterCLI fix --tag style path/to/project.achlist
-PapyrusLinterCLI --json path/to/project.achlist
-PapyrusLinterCLI --format ai path/to/project.achlist
-PapyrusLinterCLI --format ai --hash-source path/to/project.achlist
-PapyrusLinterCLI --json fix path/to/project.achlist
-PapyrusLinterCLI --config path/to/papyrus-lint.yaml path/to/Example.psc
-PapyrusLinterCLI --script-root path/to/SharedScripts path/to/project.achlist
-PapyrusLinterCLI --output path/to/report.txt path/to/project.achlist
-PapyrusLinterCLI --json --output path/to/report.json path/to/project.achlist
-PapyrusLinterCLI --short-paths path/to/project.achlist
-PapyrusLinterCLI --color never path/to/project.achlist
-PapyrusLinterCLI --progress --output path/to/report.txt path/to/project.achlist
-PapyrusLinterCLI --threads 8 path/to/project.achlist
-PapyrusLinterCLI --threads 1 path/to/project.achlist
-PapyrusLinterCLI --blob "ScriptName Example extends ObjectReference"
-PapyrusLinterCLI --json --blob "ScriptName Example extends ObjectReference"
-PapyrusLinterCLI --config path/to/papyrus-lint.yaml --blob "ScriptName Example extends ObjectReference"
+PapyrusLinterCLI lint --format json path/to/project.achlist
+PapyrusLinterCLI lint --format ai path/to/project.achlist
+PapyrusLinterCLI lint --format ai --hash-source path/to/project.achlist
+PapyrusLinterCLI fix --format json path/to/project.achlist
+PapyrusLinterCLI lint --config path/to/papyrus-lint.yaml path/to/Example.psc
+PapyrusLinterCLI lint --script-root path/to/SharedScripts path/to/project.achlist
+PapyrusLinterCLI lint --output path/to/report.txt path/to/project.achlist
+PapyrusLinterCLI lint --format json --output path/to/report.json path/to/project.achlist
+PapyrusLinterCLI lint --short-paths path/to/project.achlist
+PapyrusLinterCLI lint --color never path/to/project.achlist
+PapyrusLinterCLI lint --progress --output path/to/report.txt path/to/project.achlist
+PapyrusLinterCLI lint --threads 8 path/to/project.achlist
+PapyrusLinterCLI lint --threads 1 path/to/project.achlist
+PapyrusLinterCLI lint --blob "ScriptName Example extends ObjectReference"
+PapyrusLinterCLI lint --format json --blob "ScriptName Example extends ObjectReference"
+PapyrusLinterCLI lint --config path/to/papyrus-lint.yaml --blob "ScriptName Example extends ObjectReference"

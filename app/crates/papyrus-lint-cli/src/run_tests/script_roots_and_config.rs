@@ -218,8 +218,8 @@ fn config_flag_combines_with_fix_and_json_in_any_order() {
     let achlist_path = dir.path().join("sources.achlist");
 
     let (code, stdout, _stderr) = run_captured(&[
-        "--json".to_string(),
         "fix".to_string(),
+        "--format=json".to_string(),
         "--config".to_string(),
         override_path.to_string_lossy().into_owned(),
         achlist_path.to_string_lossy().into_owned(),

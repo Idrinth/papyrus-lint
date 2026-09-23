@@ -39,7 +39,7 @@ fn short_paths_strips_the_project_root_from_json_paths() {
     let achlist_path = dir.path().join("sources.achlist");
 
     let (code, stdout, _stderr) = run_captured(&[
-        "--json".to_string(),
+        "--format=json".to_string(),
         "--short-paths".to_string(),
         achlist_path.to_string_lossy().into_owned(),
     ]);

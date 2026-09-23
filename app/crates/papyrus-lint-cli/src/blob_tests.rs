@@ -38,7 +38,7 @@ fn blob_reports_errors_as_a_failure() {
 #[test]
 fn blob_json_report_uses_the_literal_blob_path() {
     let (code, stdout, stderr) = run_captured(&[
-        "--json".to_string(),
+        "--format=json".to_string(),
         "--blob".to_string(),
         "ScriptName Example   \n".to_string(),
     ]);

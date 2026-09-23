@@ -273,7 +273,7 @@ fn doctor_json_reports_the_full_check_list_and_success_flag() {
 
     let (code, stdout, stderr) = run_captured(&[
         "doctor".to_string(),
-        "--json".to_string(),
+        "--format=json".to_string(),
         script.to_string_lossy().into_owned(),
     ]);
 

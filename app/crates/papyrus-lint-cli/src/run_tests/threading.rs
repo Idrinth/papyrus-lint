@@ -36,13 +36,13 @@ fn threaded_and_sequential_runs_report_identical_results() {
     let (sequential_code, sequential_stdout, _) = run_captured(&[
         "--threads=1".to_string(),
         "--short-paths".to_string(),
-        "--json".to_string(),
+        "--format=json".to_string(),
         achlist_path.to_string_lossy().into_owned(),
     ]);
     let (parallel_code, parallel_stdout, _) = run_captured(&[
         "--threads=8".to_string(),
         "--short-paths".to_string(),
-        "--json".to_string(),
+        "--format=json".to_string(),
         achlist_path.to_string_lossy().into_owned(),
     ]);
 

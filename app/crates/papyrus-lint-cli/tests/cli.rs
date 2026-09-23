@@ -37,7 +37,7 @@ fn no_arguments_prints_usage_through_the_binary_entry_point() {
 
 #[test]
 fn version_is_written_to_stdout() {
-    let output = run_cli(&["--version"]);
+    let output = run_cli(&["version"]);
 
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
@@ -48,15 +48,14 @@ fn version_is_written_to_stdout() {
 }
 
 #[test]
-fn short_version_flag_is_written_to_stdout() {
+fn removed_short_version_flag_is_a_usage_error() {
     let output = run_cli(&["-V"]);
 
-    assert!(output.status.success());
-    assert!(output.stderr.is_empty());
-    assert_eq!(
-        String::from_utf8(output.stdout).expect("stdout should be UTF-8"),
-        format!("PapyrusLinterCLI {}\n", env!("CARGO_PKG_VERSION"))
-    );
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert!(String::from_utf8(output.stderr)
+        .expect("stderr should be UTF-8")
+        .contains("Usage: PapyrusLinterCLI"));
 }
 
 #[test]

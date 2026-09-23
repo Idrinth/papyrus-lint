@@ -211,6 +211,7 @@ fn init_creates_a_default_config() {
     let code = initialize_config(
         dir.path(),
         presets::Preset::default(),
+        papyrus_lints::Game::Skyrim,
         &mut stdout,
         &mut stderr,
     );
@@ -235,6 +236,7 @@ fn init_refuses_to_overwrite_an_existing_config() {
     let code = initialize_config(
         dir.path(),
         presets::Preset::default(),
+        papyrus_lints::Game::Skyrim,
         &mut stdout,
         &mut stderr,
     );
@@ -265,6 +267,7 @@ fn init_seeds_additional_script_roots_from_a_ppj_in_the_same_directory() {
     let code = initialize_config(
         dir.path(),
         presets::Preset::default(),
+        papyrus_lints::Game::Skyrim,
         &mut stdout,
         &mut stderr,
     );
@@ -293,6 +296,7 @@ fn init_does_not_seed_script_roots_without_a_ppj_file() {
     let code = initialize_config(
         dir.path(),
         presets::Preset::default(),
+        papyrus_lints::Game::Skyrim,
         &mut stdout,
         &mut stderr,
     );
@@ -336,6 +340,7 @@ fn init_uses_the_first_ppj_alphabetically_and_ignores_nested_projects() {
     let code = initialize_config(
         dir.path(),
         presets::Preset::default(),
+        papyrus_lints::Game::Skyrim,
         &mut stdout,
         &mut stderr,
     );
@@ -404,6 +409,7 @@ fn init_does_not_report_seeding_for_a_ppj_without_imports() {
     let code = initialize_config(
         dir.path(),
         presets::Preset::default(),
+        papyrus_lints::Game::Skyrim,
         &mut stdout,
         &mut stderr,
     );
@@ -428,6 +434,7 @@ fn init_warns_but_still_succeeds_on_an_unparseable_ppj() {
     let code = initialize_config(
         dir.path(),
         presets::Preset::default(),
+        papyrus_lints::Game::Skyrim,
         &mut stdout,
         &mut stderr,
     );
@@ -441,27 +448,74 @@ fn init_warns_but_still_succeeds_on_an_unparseable_ppj() {
 }
 
 #[test]
+fn parse_init_preset_accepts_fallout4_and_starfield() {
+    assert_eq!(
+        parse_init_preset(&["--game=fallout4".to_string()]),
+        Ok((presets::Preset::Strict, papyrus_lints::Game::Fallout4))
+    );
+    assert_eq!(
+        parse_init_preset(&["--game=Starfield".to_string()]),
+        Ok((presets::Preset::Strict, papyrus_lints::Game::Starfield))
+    );
+}
+
+#[test]
+fn init_writes_the_selected_game_into_the_generated_config() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = initialize_config(
+        dir.path(),
+        presets::Preset::default(),
+        papyrus_lints::Game::Fallout4,
+        &mut stdout,
+        &mut stderr,
+    );
+
+    assert_eq!(code, 0);
+    assert!(stderr.is_empty());
+    let config = config::load_config(dir.path()).expect("config should load");
+    assert_eq!(config.game, papyrus_lints::Game::Fallout4);
+    let generated = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
+        .expect("failed to read generated config");
+    assert!(generated.contains("\ngame: fallout4\n") || generated.starts_with("game: fallout4\n"));
+}
+
+#[test]
 fn parse_init_preset_defaults_to_strict_when_no_flag_is_given() {
-    assert_eq!(parse_init_preset(&[]), Ok(presets::Preset::Strict));
+    assert_eq!(
+        parse_init_preset(&["--game".to_string(), "skyrim".to_string()]),
+        Ok((presets::Preset::Strict, papyrus_lints::Game::Skyrim))
+    );
 }
 
 #[test]
 fn parse_init_preset_accepts_the_flag_and_its_equals_form() {
     assert_eq!(
-        parse_init_preset(&["--preset".to_string(), "careful".to_string()]),
-        Ok(presets::Preset::Careful)
+        parse_init_preset(&[
+            "--game".to_string(),
+            "skyrim".to_string(),
+            "--preset".to_string(),
+            "careful".to_string()
+        ]),
+        Ok((presets::Preset::Careful, papyrus_lints::Game::Skyrim))
     );
     assert_eq!(
-        parse_init_preset(&["--preset=standard".to_string()]),
-        Ok(presets::Preset::Standard)
+        parse_init_preset(&["--game=skyrim".to_string(), "--preset=standard".to_string()]),
+        Ok((presets::Preset::Standard, papyrus_lints::Game::Skyrim))
     );
 }
 
 #[test]
 fn parse_init_preset_matches_names_case_insensitively() {
     assert_eq!(
-        parse_init_preset(&["--preset".to_string(), "STANDARD".to_string()]),
-        Ok(presets::Preset::Standard)
+        parse_init_preset(&[
+            "--game=skyrim".to_string(),
+            "--preset".to_string(),
+            "STANDARD".to_string()
+        ]),
+        Ok((presets::Preset::Standard, papyrus_lints::Game::Skyrim))
     );
 }
 
@@ -471,8 +525,15 @@ fn parse_init_preset_accepts_a_name_that_is_not_a_built_in_as_a_custom_preset() 
     // checked once `init` runs (see `presets::Preset::yaml`), not during
     // argument parsing, so an arbitrary non-blank name parses fine here.
     assert_eq!(
-        parse_init_preset(&["--preset".to_string(), "lenient".to_string()]),
-        Ok(presets::Preset::Custom("lenient".to_string()))
+        parse_init_preset(&[
+            "--game=skyrim".to_string(),
+            "--preset".to_string(),
+            "lenient".to_string()
+        ]),
+        Ok((
+            presets::Preset::Custom("lenient".to_string()),
+            papyrus_lints::Game::Skyrim
+        ))
     );
 }
 
@@ -502,8 +563,11 @@ fn run_init_with_an_unresolvable_preset_name_reports_an_error_at_init_time() {
     // No `presets` directory exists next to the test binary, so a name
     // that isn't a built-in preset fails once `init` actually looks for
     // a matching file, rather than during argument parsing.
-    let (code, _stdout, stderr) =
-        run_captured(&["init".to_string(), "--preset=lenient".to_string()]);
+    let (code, _stdout, stderr) = run_captured(&[
+        "init".to_string(),
+        "--game=skyrim".to_string(),
+        "--preset=lenient".to_string(),
+    ]);
 
     assert_eq!(code, 2);
     assert!(stderr.contains("unknown preset 'lenient'"));
@@ -524,9 +588,10 @@ fn run_init_with_a_preset_flag_writes_the_selected_presets_config() {
     let mut stdout = Vec::new();
     let mut stderr = Vec::new();
 
-    let preset =
-        parse_init_preset(&["--preset=careful".to_string()]).expect("careful should parse");
-    let code = initialize_config(dir.path(), preset, &mut stdout, &mut stderr);
+    let (preset, game) =
+        parse_init_preset(&["--game=skyrim".to_string(), "--preset=careful".to_string()])
+            .expect("careful should parse");
+    let code = initialize_config(dir.path(), preset, game, &mut stdout, &mut stderr);
 
     assert_eq!(code, 0);
     let generated = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
