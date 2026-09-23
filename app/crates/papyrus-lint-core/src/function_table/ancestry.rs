@@ -67,6 +67,40 @@ impl FunctionTable {
         }
         None
     }
+
+    /// [`Self::member_access`] answered only from scripts already cached.
+    /// [`CacheProbe::Miss`] means some ancestor still needs
+    /// [`Self::ensure_loaded`].
+    pub(super) fn member_access_cached(
+        &self,
+        type_name: &str,
+        member_name: &str,
+        find: impl Fn(&ScriptFunctions, &str) -> Option<papyrus_parser::ast::AccessLevel>,
+    ) -> CacheProbe<Option<MemberAccess>> {
+        let key = member_name.to_ascii_lowercase();
+        let mut visited = Vec::new();
+        let mut current = Some(type_name.to_ascii_lowercase());
+        while let Some(name) = current {
+            if visited.contains(&name) {
+                return CacheProbe::Hit(None);
+            }
+            let script = match cached_script(self, &name) {
+                CacheProbe::Miss => return CacheProbe::Miss,
+                CacheProbe::Hit(None) => return CacheProbe::Hit(None),
+                CacheProbe::Hit(Some(script)) => script,
+            };
+            if let Some(access_level) = find(script, &key) {
+                return CacheProbe::Hit(Some(MemberAccess {
+                    declaring_type: name,
+                    access_level,
+                }));
+            }
+            current = parent_cache_key(script);
+            visited.push(name);
+        }
+        CacheProbe::Hit(None)
+    }
+
     /// Looks up the signature of `function_name` as callable on an object
     /// of type `type_name`, searching `type_name` and its ancestors in
     /// `Extends` order.

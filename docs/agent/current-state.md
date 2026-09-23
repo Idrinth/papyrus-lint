@@ -61,6 +61,13 @@ update the cited code *and* this list.
   AST cache by `ScriptName` (`FunctionTable::ensure_loaded` /
   `script_exists`). A project or lookup-root file of the same name still
   wins.
+- The CLI parse phase and desktop `preload_project_scripts` close over
+  type names in each parsed AST before linting
+  (`FunctionTable::parse_type_closure`). Referenced `.psc` files are
+  parsed and preloaded for analysis only — they are not lint targets.
+  Bundled names are loaded from the blob, and names that resolve nowhere
+  are cached unresolved so lint does not retry them. `SharedFunctionTable`
+  takes its write lock only for a name that closure never saw.
 
 ## Where to read
 

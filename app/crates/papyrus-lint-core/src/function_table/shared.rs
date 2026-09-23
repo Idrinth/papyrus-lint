@@ -78,10 +78,15 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         type_name: &str,
         function_name: &str,
     ) -> Option<papyrus_lints::MemberAccess> {
-        papyrus_lints::ExternalSignatures::function_access(
-            &mut *self.write(),
-            type_name,
-            function_name,
+        self.probe_or_load(
+            |table| {
+                table.member_access_cached(type_name, function_name, |script, key| {
+                    script.functions.get(key).map(|member| member.access_level)
+                })
+            },
+            |table| {
+                papyrus_lints::ExternalSignatures::function_access(table, type_name, function_name)
+            },
         )
     }
 
@@ -90,10 +95,15 @@ impl papyrus_lints::ExternalSignatures for SharedFunctionTable<'_> {
         type_name: &str,
         property_name: &str,
     ) -> Option<papyrus_lints::MemberAccess> {
-        papyrus_lints::ExternalSignatures::property_access(
-            &mut *self.write(),
-            type_name,
-            property_name,
+        self.probe_or_load(
+            |table| {
+                table.member_access_cached(type_name, property_name, |script, key| {
+                    script.properties.get(key).map(|member| member.access_level)
+                })
+            },
+            |table| {
+                papyrus_lints::ExternalSignatures::property_access(table, type_name, property_name)
+            },
         )
     }
 
