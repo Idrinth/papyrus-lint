@@ -354,6 +354,9 @@ jobs:
       - name: Bake contact links into the plugin README
         run: python3 .github/scripts/write_readme_links.py SublimeLinter-contrib-papyrus-lint/README.md
 
+      - name: Copy over License
+        run: cp LICENSE SublimeLinter-contrib-papyrus-lint/LICENSE
+
       - name: Sync plugin versions with release tag
         shell: bash
         run: |
