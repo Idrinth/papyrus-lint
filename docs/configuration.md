@@ -108,7 +108,7 @@ per line.
 ## Each key
 
 - `game`: the game whose Papyrus dialect and runtime APIs the project
-  targets. The supported values are `skyrim` and `fallout4`; omitted keys
+  targets. Accepts `skyrim`, `fallout4`, or `starfield`; omitted keys
   default to `skyrim` for compatibility with existing configuration files.
   The schema also recognizes `starfield`, but the linter does not support it
   yet and rejects configurations that select it.
@@ -145,14 +145,20 @@ per line.
   vanilla sources so a project can type-check against them without treating
   them as part of the project. Creating a new config (`init`, or the
   desktop app's first-run preset picker) or updating an existing config
-  that does not yet set this key fills Skyrim Special Edition's
-  `Data/Scripts/Source` and `Data/Source/Scripts` when those directories
-  exist and the install path can be read from the Windows registry
-  (`HKLM\Software\Bethesda Softworks\Skyrim Special Edition` or
-  `HKLM\Software\Wow6432Node\Bethesda Softworks\Skyrim Special Edition`,
-  value `installed path`). Fallout 4 install paths are not auto-detected yet,
-  so Fallout 4 projects must set their vanilla source directories explicitly.
-  An explicit empty list is left empty rather than re-filled.
+  that does not yet set this key fills the vanilla source directories for
+  the project's own `game` (above) when those directories exist and the
+  matching install path can be read from the Windows registry:
+  - `skyrim`: `Data/Scripts/Source` and `Data/Source/Scripts` under the
+    path from `HKLM\Software\Bethesda Softworks\Skyrim Special Edition` or
+    `HKLM\Software\Wow6432Node\Bethesda Softworks\Skyrim Special Edition`
+    (value `installed path`).
+  - `fallout4`: `Data/Scripts/Source/Base` and `Data/Scripts/Source/User`
+    under the path from `HKLM\Software\Bethesda Softworks\Fallout4` or
+    `HKLM\Software\Wow6432Node\Bethesda Softworks\Fallout4` (value
+    `installed path`).
+
+  A project targeting any other `game` (currently `starfield`) is left
+  unseeded. An explicit empty list is left empty rather than re-filled.
 - `compile_check`: whether the desktop app and the CLI also run
   PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
   app's Settings tab, alongside `compiler_path`. `false` by default, since

@@ -1,7 +1,9 @@
 use super::*;
 use papyrus_lints::config::Indentation;
 
+use crate::fallout4::detected_fallout4_script_lookup_dirs;
 use crate::presets::{initialize_default_config, Preset};
+use crate::skyrim::detected_skyrim_script_lookup_dirs;
 
 fn write_config(dir: &Path, name: &str, contents: &str) {
     fs::write(dir.join(name), contents).expect("failed to write test config file");
@@ -789,6 +791,36 @@ fn seed_lookup_script_roots_fills_only_when_the_key_was_missing() {
     };
     seed_lookup_script_roots(&mut explicit);
     assert!(explicit.lookup_script_roots.is_empty());
+}
+
+#[test]
+fn project_file_from_yaml_seeds_lookup_script_roots_from_the_configured_game_not_skyrim() {
+    let project = project_file_from_yaml("game: fallout4\n").expect("parsing should succeed");
+
+    assert_eq!(
+        project.lookup_script_roots,
+        detected_fallout4_script_lookup_dirs(),
+        "a fallout4 project must be seeded from Fallout 4's own detected install, \
+         never Skyrim's (see issue #1187)"
+    );
+}
+
+#[test]
+fn seed_lookup_script_roots_uses_the_projects_configured_game() {
+    let mut fallout4 = ProjectFile {
+        lint: papyrus_lints::Config {
+            game: papyrus_lints::Game::Fallout4,
+            ..papyrus_lints::Config::default()
+        },
+        ..ProjectFile::default()
+    };
+
+    seed_lookup_script_roots(&mut fallout4);
+
+    assert_eq!(
+        fallout4.lookup_script_roots,
+        detected_fallout4_script_lookup_dirs()
+    );
 }
 
 #[test]
