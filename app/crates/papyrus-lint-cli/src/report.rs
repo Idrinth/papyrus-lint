@@ -13,6 +13,7 @@ struct AggregatedReport {
     buf: Vec<u8>,
     json_files: Vec<JsonFileReport>,
     ai_files: Vec<AiFileReport>,
+    parse_failed: bool,
     should_fail: bool,
     files_with_diagnostics: usize,
     total_diagnostics: usize,
@@ -28,6 +29,7 @@ impl AggregatedReport {
         if let Some(ai_file) = outcome.ai_file {
             self.ai_files.push(ai_file);
         }
+        self.parse_failed = self.parse_failed || outcome.parse_failed;
         self.should_fail = self.should_fail || outcome.should_fail;
         if outcome.has_diagnostics {
             self.files_with_diagnostics += 1;
@@ -119,7 +121,7 @@ fn append_json_summary(
         total_diagnostics: report.total_diagnostics,
         files_fixed: fix.then_some(report.files_fixed),
         dry_run,
-        success: !report.should_fail,
+        success: !report.parse_failed && !report.should_fail,
     };
     write_json_report(&mut report.buf, &json_report);
 }

@@ -25,6 +25,17 @@ fn flags_statement_after_return_in_function_body() {
 }
 
 #[test]
+fn flags_statement_in_a_script_with_a_utf8_byte_order_mark() {
+    let source = "\u{feff}ScriptName BomProbe\nFunction F()\n    Int q = 1\n    Return\n    q = 2\nEndFunction\n";
+
+    let diagnostics = check(source);
+
+    assert_eq!(diagnostics.len(), 1);
+    assert_eq!(diagnostics[0].line, 5);
+    assert_eq!(diagnostics[0].rule, RULE);
+}
+
+#[test]
 fn flags_every_statement_after_the_first_return() {
     let source = "ScriptName Example\n\nFunction Test()\n    Return\n    Int i = 1\n    Int j = 2\nEndFunction\n";
 

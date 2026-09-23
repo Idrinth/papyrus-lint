@@ -117,6 +117,8 @@ per line.
 - `game`: the game whose Papyrus dialect and runtime APIs the project
   targets. Accepts `skyrim`, `fallout4`, or `starfield`; omitted keys
   default to `skyrim` for compatibility with existing configuration files.
+  The schema also recognizes `starfield`, but the linter does not support it
+  yet and rejects configurations that select it.
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
   app's Settings tab. When unset (or blank), the app auto-detects it at
   `PapyrusCompiler.exe` inside a `Papyrus Compiler` directory one level

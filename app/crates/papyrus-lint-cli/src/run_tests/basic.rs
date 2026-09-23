@@ -34,6 +34,23 @@ fn reports_no_problems_for_a_clean_project() {
 }
 
 #[test]
+fn json_reports_parse_failures_as_unsuccessful() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let script_path = dir.path().join("Example.psc");
+    write_file(&script_path, "ScriptName Example\nFunction Broken(\n");
+
+    let (code, stdout, stderr) = run_captured(&[
+        "--format=json".to_string(),
+        script_path.to_string_lossy().into_owned(),
+    ]);
+
+    assert_eq!(code, 0);
+    assert!(stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(report["success"], false);
+}
+
+#[test]
 fn reports_diagnostics_and_exits_1_for_a_dirty_project() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     write_file(

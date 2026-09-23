@@ -100,13 +100,29 @@ impl Parser {
     }
 
     fn skip_newlines(&mut self) {
-        while matches!(self.kind(), TokenKind::Newline) {
-            self.advance();
+        loop {
+            if matches!(self.kind(), TokenKind::Newline) {
+                self.advance();
+            } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
+                // `@public` / `@protected` / `@private` are tokens so a
+                // declaration header can record them. On a comment line of
+                // their own they are not syntax; rejecting them used to
+                // discard the whole script (#1180).
+                self.advance();
+            } else {
+                break;
+            }
         }
     }
 
     /// Consumes a single statement terminator (newline or end of file).
+    ///
+    /// Access-level annotations that ride along on the same line but were
+    /// not consumed as a function or property flag are comments, not code.
     fn expect_terminator(&mut self) -> PResult<()> {
+        while matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
+            self.advance();
+        }
         if self.is_eof() {
             return Ok(());
         }
@@ -177,6 +193,7 @@ impl Parser {
 
         let mut is_hidden = false;
         let mut is_conditional = false;
+        let mut is_native = false;
         loop {
             if self.at_keyword(Keyword::Hidden) {
                 self.advance();
@@ -184,6 +201,15 @@ impl Parser {
             } else if self.at_keyword(Keyword::Conditional) {
                 self.advance();
                 is_conditional = true;
+            } else if self.at_keyword(Keyword::Native) {
+                // A whole script implemented natively by the engine (e.g.
+                // Fallout 4's own `Actor.psc extends ObjectReference
+                // Native Hidden`) rather than one native function inside
+                // it. Accepted in any dialect: Skyrim's own vanilla
+                // archive never uses it, but nothing about the flag
+                // itself is Fallout 4 specific.
+                self.advance();
+                is_native = true;
             } else {
                 break;
             }
@@ -195,6 +221,7 @@ impl Parser {
             extends,
             is_hidden,
             is_conditional,
+            is_native,
             imports: Vec::new(),
             properties: Vec::new(),
             variables: Vec::new(),
@@ -654,7 +681,11 @@ impl Parser {
         }
         if self.at_keyword(Keyword::Return) {
             self.advance();
-            let value = if matches!(self.kind(), TokenKind::Newline) || self.is_eof() {
+            let value = if matches!(
+                self.kind(),
+                TokenKind::Newline | TokenKind::CommentAnnotation(_)
+            ) || self.is_eof()
+            {
                 None
             } else {
                 Some(self.parse_expr()?)

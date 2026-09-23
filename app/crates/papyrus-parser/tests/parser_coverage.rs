@@ -15,6 +15,7 @@ fn parses_all_property_and_script_modifiers() {
 
     assert!(script.is_hidden);
     assert!(script.is_conditional);
+    assert!(!script.is_native);
     let read_only = &script.properties[0];
     assert!(read_only.is_auto_read_only);
     assert!(read_only.is_hidden);
@@ -23,6 +24,25 @@ fn parses_all_property_and_script_modifiers() {
     assert!(script.properties[1].is_auto);
     assert!(script.properties[1].is_conditional);
     assert!(script.variables[0].is_conditional);
+}
+
+#[test]
+fn parses_a_native_script_flag_in_any_order_with_the_other_flags() {
+    // Not Fallout 4 specific: a whole script implemented natively by the
+    // engine (e.g. Fallout 4's own `Actor.psc`/`ObjectReference.psc`) with
+    // no Papyrus body, distinct from a single native function.
+    let native_then_hidden = parse("ScriptName NativeThenHidden extends Form Native Hidden\n")
+        .expect("script should parse");
+    assert!(native_then_hidden.is_native);
+    assert!(native_then_hidden.is_hidden);
+
+    let hidden_then_native =
+        parse("ScriptName HiddenThenNative Hidden Native\n").expect("script should parse");
+    assert!(hidden_then_native.is_native);
+    assert!(hidden_then_native.is_hidden);
+
+    let no_flags = parse("ScriptName NoFlags\n").expect("script should parse");
+    assert!(!no_flags.is_native);
 }
 
 #[test]
@@ -74,6 +94,83 @@ fn parses_access_level_annotations_on_functions_and_properties() {
         script.states[0].functions[0].access_level,
         AccessLevel::Private
     );
+}
+
+#[test]
+fn standalone_access_annotations_do_not_reject_the_script() {
+    // A `; @private` / `@protected` / `@public` line is a comment, not a
+    // header. v1.46 turned those into tokens the parser only accepted on a
+    // declaration, so one of them anywhere in the file failed the parse and
+    // the linter analysed nothing (#1180). The line-above form is not an
+    // access modifier; only the trailing header form is.
+    for annotation in [
+        "; @private",
+        ";@private",
+        "; @Private",
+        "; @private helper",
+        "    ; @private",
+        "; @protected",
+        "; @public",
+        ";/ @private /;",
+    ] {
+        let source = format!(
+            "{annotation}\n\
+             ScriptName Repro\n\
+             \n\
+             {annotation}\n\
+             Function G()\n\
+             EndFunction\n\
+             \n\
+             {annotation}\n\
+             Int Property C Auto\n\
+             Int Function Bump()\n\
+             \tC += 1\n\
+             \tReturn C\n\
+             EndFunction\n\
+             \n\
+             Function F()\n\
+             \tInt a = Utility.RandomInt(5, 5)\n\
+             \t{annotation}\n\
+             \tDebug.Trace(\"c=\" + Bump())\n\
+             \tInt q = 1 ; @private\n\
+             \tReturn ; @protected\n\
+             \t{annotation}\n\
+             \tq = 2\n\
+             EndFunction\n\
+             {annotation}\n"
+        );
+        let script = parse(&source).unwrap_or_else(|error| {
+            panic!("access annotation {annotation:?} should not reject the script: {error}")
+        });
+        assert_eq!(script.name, "Repro", "{annotation}");
+        assert_eq!(script.functions.len(), 3, "{annotation}");
+        assert_eq!(script.functions[0].name, "G");
+        assert_eq!(script.functions[0].access_level, AccessLevel::Public);
+        assert_eq!(script.properties.len(), 1, "{annotation}");
+        assert_eq!(script.properties[0].access_level, AccessLevel::Public);
+        assert_eq!(script.functions[1].name, "Bump");
+        assert_eq!(script.functions[1].body.len(), 2, "{annotation}");
+        let body = &script.functions[2].body;
+        assert_eq!(body.len(), 5, "{annotation}");
+        assert!(matches!(body[3], Stmt::Return { value: None, .. }));
+        assert!(matches!(body[4], Stmt::Assign { .. }));
+    }
+}
+
+#[test]
+fn access_annotations_on_a_continued_header_still_apply() {
+    let script = parse(
+        "ScriptName Continued\n\
+         Function HiddenOne() \\\n\
+             ; @private\n\
+         EndFunction\n\
+         Int Property HiddenTwo Auto \\\n\
+             ; @protected\n",
+    )
+    .expect("a continued header's access annotation should parse");
+
+    assert_eq!(script.functions[0].access_level, AccessLevel::Private);
+    assert_eq!(script.properties[0].access_level, AccessLevel::Protected);
 }
 
 #[test]
