@@ -61,6 +61,7 @@
       "required": [
         "path",
         "diagnostics",
+        "parser_errors",
         "diff"
       ],
       "properties": {
@@ -76,12 +77,47 @@
             "$ref": "#/$defs/diagnostic"
           }
         },
+        "parser_errors": {
+          "description": "Errors the lexer or parser raised while handling this script. Empty when the script lexed and parsed cleanly. Currently at most one entry, because parsing stops at the first error.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/parserError"
+          }
+        },
         "diff": {
           "description": "The standard unified diff between this script's original source and what fix would have written, or null unless run with fix --dry-run and this script would actually have changed.",
           "type": [
             "string",
             "null"
           ]
+        }
+      }
+    },
+    "parserError": {
+      "description": "One error raised while lexing or parsing this script.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "line", "column", "message"],
+      "properties": {
+        "kind": {
+          "description": "Whether this error came from the lexer or the recursive-descent parser.",
+          "type": "string",
+          "enum": ["lex", "parse"]
+        },
+        "line": {
+          "description": "The 1-indexed source line where the error was detected.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "description": "The 1-indexed source column where the error was detected.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "message": {
+          "description": "The human-readable parser or lexer error message.",
+          "type": "string",
+          "minLength": 1
         }
       }
     },
