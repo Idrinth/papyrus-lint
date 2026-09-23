@@ -5,9 +5,26 @@ fn args(values: &[&str]) -> Vec<String> {
     values.iter().map(|value| value.to_string()).collect()
 }
 
+fn parse_lint(values: &[String]) -> Result<ParsedCommand, ArgsError> {
+    parse_subcommand("lint", values)
+}
+
+fn parse_fix(values: &[String]) -> Result<ParsedCommand, ArgsError> {
+    parse_subcommand("fix", values)
+}
+
+fn parse_subcommand(subcommand: &str, values: &[String]) -> Result<ParsedCommand, ArgsError> {
+    let mut argv = vec![subcommand.to_string()];
+    argv.extend(values.iter().cloned());
+    match parse_cli(&argv)? {
+        ParsedCli::Run(command) => Ok(command),
+        other => panic!("expected a {subcommand} run, got {other:?}"),
+    }
+}
+
 #[test]
 fn no_arguments_is_a_usage_error() {
-    assert_eq!(parse_run_args(&[]), Err(ArgsError::Usage));
+    assert!(matches!(parse_cli(&[]), Err(ArgsError::Usage)));
 }
 
 #[test]
@@ -25,12 +42,12 @@ fn help_subcommand_is_a_usage_error() {
 
 #[test]
 fn too_many_positional_arguments_is_a_usage_error() {
-    assert_eq!(parse_run_args(&args(&["a", "b"])), Err(ArgsError::Usage));
+    assert_eq!(parse_lint(&args(&["a", "b"])), Err(ArgsError::Usage));
 }
 
 #[test]
 fn a_single_path_parses_to_a_non_fix_lint_run() {
-    let parsed = parse_run_args(&args(&["Example.psc"])).expect("should parse");
+    let parsed = parse_lint(&args(&["Example.psc"])).expect("should parse");
     match parsed {
         ParsedCommand::Lint(lint) => {
             assert!(!lint.fix);
@@ -42,7 +59,7 @@ fn a_single_path_parses_to_a_non_fix_lint_run() {
 
 #[test]
 fn fix_and_a_path_parses_to_a_fix_run() {
-    let parsed = parse_fix_args(&args(&["Example.psc"])).expect("should parse");
+    let parsed = parse_fix(&args(&["Example.psc"])).expect("should parse");
     match parsed {
         ParsedCommand::Lint(lint) => {
             assert!(lint.fix);
@@ -54,13 +71,13 @@ fn fix_and_a_path_parses_to_a_fix_run() {
 
 #[test]
 fn fix_without_a_path_is_a_usage_error() {
-    assert_eq!(parse_fix_args(&[]), Err(ArgsError::Usage));
+    assert_eq!(parse_fix(&[]), Err(ArgsError::Usage));
 }
 
 #[test]
 fn parse_rejects_an_unknown_type_filter_rule_id() {
     assert_eq!(
-        parse_fix_args(&args(&["--type=made-up-rule", "Example.psc"])),
+        parse_fix(&args(&["--type=made-up-rule", "Example.psc"])),
         Err(ArgsError::UnknownRule("made-up-rule".to_string()))
     );
 }
@@ -68,15 +85,15 @@ fn parse_rejects_an_unknown_type_filter_rule_id() {
 #[test]
 fn parse_rejects_a_type_filter_rule_with_no_automatic_fix() {
     assert_eq!(
-        parse_fix_args(&args(&["--type=forbidden-functions", "Example.psc"])),
+        parse_fix(&args(&["--type=forbidden-functions", "Example.psc"])),
         Err(ArgsError::RuleHasNoFix("forbidden-functions".to_string()))
     );
 }
 
 #[test]
 fn type_filter_accepts_the_hyphenated_or_underscored_form() {
-    let parsed = parse_fix_args(&args(&["--type=trailing_whitespace", "Example.psc"]))
-        .expect("should parse");
+    let parsed =
+        parse_fix(&args(&["--type=trailing_whitespace", "Example.psc"])).expect("should parse");
     match parsed {
         ParsedCommand::Lint(lint) => {
             assert_eq!(lint.rule_filter, Some("trailing-whitespace"));
@@ -88,7 +105,7 @@ fn type_filter_accepts_the_hyphenated_or_underscored_form() {
 #[test]
 fn type_filter_without_fix_is_a_usage_error() {
     assert_eq!(
-        parse_run_args(&args(&["--type=trailing-whitespace", "Example.psc"])),
+        parse_lint(&args(&["--type=trailing-whitespace", "Example.psc"])),
         Err(ArgsError::Usage)
     );
 }
@@ -96,7 +113,7 @@ fn type_filter_without_fix_is_a_usage_error() {
 #[test]
 fn line_filter_without_fix_is_a_usage_error() {
     assert_eq!(
-        parse_run_args(&args(&["--line=1", "Example.psc"])),
+        parse_lint(&args(&["--line=1", "Example.psc"])),
         Err(ArgsError::Usage)
     );
 }
@@ -104,7 +121,7 @@ fn line_filter_without_fix_is_a_usage_error() {
 #[test]
 fn parse_rejects_a_non_positive_line_filter() {
     assert_eq!(
-        parse_fix_args(&args(&["--line=0", "Example.psc"])),
+        parse_fix(&args(&["--line=0", "Example.psc"])),
         Err(ArgsError::InvalidLine("0".to_string()))
     );
 }
@@ -112,7 +129,7 @@ fn parse_rejects_a_non_positive_line_filter() {
 #[test]
 fn parse_rejects_dry_run_without_fix() {
     assert_eq!(
-        parse_run_args(&args(&["--dry-run", "Example.psc"])),
+        parse_lint(&args(&["--dry-run", "Example.psc"])),
         Err(ArgsError::Usage)
     );
 }
@@ -120,14 +137,14 @@ fn parse_rejects_dry_run_without_fix() {
 #[test]
 fn parse_rejects_an_unknown_tag_filter() {
     assert_eq!(
-        parse_run_args(&args(&["--tag=made-up-tag", "Example.psc"])),
+        parse_lint(&args(&["--tag=made-up-tag", "Example.psc"])),
         Err(ArgsError::UnknownTag("made-up-tag".to_string()))
     );
 }
 
 #[test]
 fn tag_filter_matches_case_insensitively() {
-    let parsed = parse_run_args(&args(&["--tag=STYLE", "Example.psc"])).expect("should parse");
+    let parsed = parse_lint(&args(&["--tag=STYLE", "Example.psc"])).expect("should parse");
     match parsed {
         ParsedCommand::Lint(lint) => {
             assert_eq!(lint.tag_filter.as_deref(), Some("style"));
@@ -139,7 +156,7 @@ fn tag_filter_matches_case_insensitively() {
 #[test]
 fn type_and_tag_filters_cannot_be_combined() {
     assert_eq!(
-        parse_fix_args(&args(&[
+        parse_fix(&args(&[
             "--type=trailing-whitespace",
             "--tag=style",
             "Example.psc"
@@ -151,14 +168,14 @@ fn type_and_tag_filters_cannot_be_combined() {
 #[test]
 fn progress_without_output_is_an_error() {
     assert_eq!(
-        parse_run_args(&args(&["--progress", "Example.psc"])),
+        parse_lint(&args(&["--progress", "Example.psc"])),
         Err(ArgsError::ProgressRequiresOutput)
     );
 }
 
 #[test]
 fn progress_with_output_parses() {
-    let parsed = parse_run_args(&args(&[
+    let parsed = parse_lint(&args(&[
         "--progress",
         "--output",
         "report.txt",
@@ -174,7 +191,7 @@ fn progress_with_output_parses() {
 #[test]
 fn parse_rejects_a_non_positive_threads_flag() {
     assert_eq!(
-        parse_run_args(&args(&["--threads=0", "Example.psc"])),
+        parse_lint(&args(&["--threads=0", "Example.psc"])),
         Err(ArgsError::InvalidThreads("0".to_string()))
     );
 }
@@ -182,7 +199,7 @@ fn parse_rejects_a_non_positive_threads_flag() {
 #[test]
 fn parse_rejects_a_non_numeric_threads_flag() {
     assert_eq!(
-        parse_run_args(&args(&["--threads", "many", "Example.psc"])),
+        parse_lint(&args(&["--threads", "many", "Example.psc"])),
         Err(ArgsError::InvalidThreads("many".to_string()))
     );
 }
@@ -190,7 +207,7 @@ fn parse_rejects_a_non_numeric_threads_flag() {
 #[test]
 fn format_flag_rejects_an_unknown_value() {
     assert_eq!(
-        parse_run_args(&args(&["--format=yaml", "Example.psc"])),
+        parse_lint(&args(&["--format=yaml", "Example.psc"])),
         Err(ArgsError::InvalidFormat("yaml".to_string()))
     );
 }
@@ -198,7 +215,7 @@ fn format_flag_rejects_an_unknown_value() {
 #[test]
 fn hash_source_without_ai_format_is_an_error() {
     assert_eq!(
-        parse_run_args(&args(&["--hash-source", "Example.psc"])),
+        parse_lint(&args(&["--hash-source", "Example.psc"])),
         Err(ArgsError::HashSourceRequiresAi)
     );
 }
@@ -206,7 +223,7 @@ fn hash_source_without_ai_format_is_an_error() {
 #[test]
 fn color_flag_rejects_an_unknown_value() {
     assert_eq!(
-        parse_run_args(&args(&["--color", "rainbow", "Example.psc"])),
+        parse_lint(&args(&["--color", "rainbow", "Example.psc"])),
         Err(ArgsError::InvalidColor("rainbow".to_string()))
     );
 }
@@ -214,7 +231,7 @@ fn color_flag_rejects_an_unknown_value() {
 #[test]
 fn blob_cannot_be_combined_with_a_path_argument() {
     assert_eq!(
-        parse_run_args(&args(&["--blob", "ScriptName Example", "some/path.psc"])),
+        parse_lint(&args(&["--blob", "ScriptName Example", "some/path.psc"])),
         Err(ArgsError::BlobWithPathArgument)
     );
 }
@@ -223,7 +240,7 @@ fn blob_cannot_be_combined_with_a_path_argument() {
 fn blob_cannot_be_combined_with_fix_type_line_or_dry_run() {
     for flag in ["--dry-run", "--type=trailing-whitespace", "--line=1"] {
         assert_eq!(
-            parse_run_args(&args(&[flag, "--blob", "ScriptName Example"])),
+            parse_lint(&args(&[flag, "--blob", "ScriptName Example"])),
             Err(ArgsError::BlobWithFixFlags),
             "flag {flag} should have been rejected"
         );
@@ -233,7 +250,7 @@ fn blob_cannot_be_combined_with_fix_type_line_or_dry_run() {
 #[test]
 fn blob_cannot_be_combined_with_script_root_progress_or_threads() {
     assert_eq!(
-        parse_run_args(&args(&[
+        parse_lint(&args(&[
             "--script-root",
             "other",
             "--blob",
@@ -242,7 +259,7 @@ fn blob_cannot_be_combined_with_script_root_progress_or_threads() {
         Err(ArgsError::BlobWithScriptRootProgressThreads)
     );
     assert_eq!(
-        parse_run_args(&args(&[
+        parse_lint(&args(&[
             "--progress",
             "--output",
             "out.txt",
@@ -252,7 +269,7 @@ fn blob_cannot_be_combined_with_script_root_progress_or_threads() {
         Err(ArgsError::BlobWithScriptRootProgressThreads)
     );
     assert_eq!(
-        parse_run_args(&args(&["--threads=2", "--blob", "ScriptName Example"])),
+        parse_lint(&args(&["--threads=2", "--blob", "ScriptName Example"])),
         Err(ArgsError::BlobWithScriptRootProgressThreads)
     );
 }
@@ -260,7 +277,7 @@ fn blob_cannot_be_combined_with_script_root_progress_or_threads() {
 #[test]
 fn blob_rejects_an_unknown_tag() {
     assert_eq!(
-        parse_run_args(&args(&[
+        parse_lint(&args(&[
             "--tag=made-up-tag",
             "--blob",
             "ScriptName Example"
@@ -271,7 +288,7 @@ fn blob_rejects_an_unknown_tag() {
 
 #[test]
 fn blob_parses_into_its_own_args() {
-    let parsed = parse_run_args(&args(&["--blob", "ScriptName Example"])).expect("should parse");
+    let parsed = parse_lint(&args(&["--blob", "ScriptName Example"])).expect("should parse");
     match parsed {
         ParsedCommand::Blob(blob) => assert_eq!(blob.source, "ScriptName Example"),
         other => panic!("expected a blob run, got {other:?}"),
@@ -282,7 +299,7 @@ fn blob_parses_into_its_own_args() {
 fn parse_reports_usage_when_separate_value_flags_are_missing() {
     for flag in ["--line", "--tag", "--format", "--threads"] {
         assert_eq!(
-            parse_run_args(&args(&[flag])),
+            parse_lint(&args(&[flag])),
             Err(ArgsError::Usage),
             "unexpected result for {flag}"
         );
@@ -291,26 +308,23 @@ fn parse_reports_usage_when_separate_value_flags_are_missing() {
 
 #[test]
 fn config_flag_without_a_value_is_a_usage_error() {
-    assert_eq!(parse_run_args(&args(&["--config"])), Err(ArgsError::Usage));
+    assert_eq!(parse_lint(&args(&["--config"])), Err(ArgsError::Usage));
 }
 
 #[test]
 fn script_root_flag_without_a_value_is_a_usage_error() {
-    assert_eq!(
-        parse_run_args(&args(&["--script-root"])),
-        Err(ArgsError::Usage)
-    );
+    assert_eq!(parse_lint(&args(&["--script-root"])), Err(ArgsError::Usage));
 }
 
 #[test]
 fn threads_flag_without_a_value_is_a_usage_error() {
-    assert_eq!(parse_run_args(&args(&["--threads"])), Err(ArgsError::Usage));
+    assert_eq!(parse_lint(&args(&["--threads"])), Err(ArgsError::Usage));
 }
 
 // Below: integration-level checks (via `run`, i.e. `crate::run`) of the
 // same usage errors covered by the pure unit tests above, moved
 // unchanged from `lib.rs`'s own test module so `run`'s actual wiring of
-// `parse_run_args`'s outcomes (the exact text written to stderr/stdout,
+// `parse_cli`'s outcomes (the exact text written to stderr/stdout,
 // and that a rejected `fix`/`--dry-run` never touches the file) stays
 // covered too.
 use crate::USAGE;

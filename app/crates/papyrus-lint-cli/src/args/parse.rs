@@ -173,32 +173,6 @@ pub(super) struct RawArgs {
     pub(super) positionals: Vec<String>,
 }
 
-/// Wrapper so [`parse_raw`] can keep parsing a lint/fix/`--blob` invocation
-/// on its own (without treating `init`/`preset`/`doctor`/`lint`/`fix` as
-/// subcommands), which is what the args tests exercise.
-#[cfg(test)]
-#[derive(Parser, Debug)]
-#[command(
-    no_binary_name = true,
-    disable_help_flag = true,
-    disable_version_flag = true,
-    disable_help_subcommand = true
-)]
-struct LintOnlyArgs {
-    #[command(flatten)]
-    run: RawArgs,
-}
-
-/// Parses `args` into a [`RawArgs`], mapping any `clap` failure (an
-/// unrecognized flag, or a value-taking flag given with no value) to
-/// [`ArgsError::Usage`].
-#[cfg(test)]
-pub(super) fn parse_raw(args: &[String]) -> Result<RawArgs, ArgsError> {
-    LintOnlyArgs::try_parse_from(args)
-        .map(|parsed| parsed.run)
-        .map_err(|_| ArgsError::Usage)
-}
-
 /// What [`parse_cli`] parsed a full invocation into, including the
 /// `init`/`preset add`/`doctor` subcommands that used to be peeled off by
 /// matching `args[0]` by hand.

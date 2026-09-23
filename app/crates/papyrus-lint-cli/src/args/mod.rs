@@ -97,19 +97,6 @@ pub(crate) enum ParsedCommand {
     Lint(LintArgs),
 }
 
-/// Parses and validates a lint/`--blob` invocation into a [`ParsedCommand`]
-/// without the `lint` subcommand word. Unit tests use this to exercise flag
-/// validation on its own; [`parse_cli`] is what [`crate::run`] calls.
-#[cfg(test)]
-pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError> {
-    validate::validate(parse::parse_raw(args)?, false)
-}
-
-#[cfg(test)]
-pub(crate) fn parse_fix_args(args: &[String]) -> Result<ParsedCommand, ArgsError> {
-    validate::validate(parse::parse_raw(args)?, true)
-}
-
 #[cfg(test)]
 #[path = "args_tests.rs"]
 mod tests;
