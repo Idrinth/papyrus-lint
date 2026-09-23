@@ -22,8 +22,8 @@ AI_EXPORT_V1_SCHEMA = "papyrus-lint-ai-export.v1.schema.json"
 AI_EXPORT_LEGACY_SCHEMA = "papyrus-lint-ai-export.schema.json"
 
 ASSETS = {
-    "logo-small.jpg": ROOT / "shared" / "images" / "logo-small.jpg",
-    "logo.jpg": ROOT / "shared" / "images" / "logo.jpg",
+    "logo.svg": ROOT / "shared" / "images" / "logo.svg",
+    "logo.png": ROOT / "shared" / "images" / "logo.png",
     "papyrus-lint-import.png": ROOT / "shared" / "images" / "papyrus-lint-import.png",
     "papyrus-lint-results.png": ROOT / "shared" / "images" / "papyrus-lint-results.png",
     "papyrus-lint-viewer.png": ROOT / "shared" / "images" / "papyrus-lint-viewer.png",
@@ -33,14 +33,11 @@ ASSETS = {
     "favicon.png": ROOT/ "shared" / "images" / "logo.png",
 }
 
-# The ASSETS entries actually rendered as <img> elements on the page (as
-# opposed to logo.jpg, only ever referenced as a raw og:image/twitter:image
-# URL, and favicon.png, only ever referenced via <link rel="icon">): these
-# get a WebP and an AVIF sibling generated alongside the original, so
-# wrap_images_with_modern_sources can offer them as smaller <picture>
-# alternatives.
+# The raster ASSETS entries rendered as <img> elements on the page (the five
+# screenshots) get WebP and AVIF siblings generated alongside the original.
+# The header logo is already an SVG, while logo.png and favicon.png are only
+# referenced as metadata and a <link rel="icon">, respectively.
 MODERN_FORMAT_ASSETS = {
-    "logo-small.jpg",
     "papyrus-lint-import.png",
     "papyrus-lint-results.png",
     "papyrus-lint-viewer.png",
