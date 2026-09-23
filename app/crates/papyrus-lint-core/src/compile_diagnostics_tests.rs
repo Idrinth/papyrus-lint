@@ -1,0 +1,244 @@
+use super::*;
+
+fn outcome(stdout: &str) -> CompileOutcome {
+    CompileOutcome {
+        success: false,
+        stdout: stdout.to_string(),
+        stderr: String::new(),
+        personal_data_stripped: false,
+    }
+}
+
+#[test]
+fn successful_compile_yields_no_diagnostics() {
+    let outcome = CompileOutcome {
+        success: true,
+        stdout: "Batch compile of 1 files finished. 1 succeeded, 0 failed.\n".to_string(),
+        stderr: String::new(),
+        personal_data_stripped: true,
+    };
+
+    assert!(parse_compile_errors(&outcome).is_empty());
+}
+
+#[test]
+fn successful_compile_ignores_location_shaped_status_output() {
+    let outcome = CompileOutcome {
+        success: true,
+        stdout: "Example.psc(8,3): informational compiler output\n".to_string(),
+        stderr: "Example.psc(9,4): stale output from a wrapper\n".to_string(),
+        personal_data_stripped: false,
+    };
+
+    assert!(parse_compile_errors(&outcome).is_empty());
+}
+
+#[test]
+fn parses_a_single_error_line() {
+    let outcome = outcome("MyScript.psc(12,4): no viable alternative at character ';'\n");
+
+    let diagnostics = parse_compile_errors(&outcome);
+
+    assert_eq!(
+        diagnostics,
+        vec![Diagnostic {
+            line: 12,
+            column: 4,
+            message: "[error] no viable alternative at character ';'".to_string(),
+            rule: RULE,
+        }]
+    );
+}
+
+#[test]
+fn ignores_summary_lines_with_no_location_marker() {
+    let outcome = outcome(
+        "Starting 1 compile threads for 1 files...\n\
+         Compiling \"C:\\Data\\SCRIPTS\\SOURCE\"...\n\
+         No output generated for C:\\Data\\SCRIPTS\\SOURCE, compilation failed.\n\
+         \n\
+         Batch compile of 1 files finished. 0 succeeded, 1 failed.\n\
+         Failed on C:\\Data\\SCRIPTS\\SOURCE\n",
+    );
+
+    assert!(parse_compile_errors(&outcome).is_empty());
+}
+
+#[test]
+fn is_not_confused_by_a_parenthesized_path_segment() {
+    let outcome = outcome(
+        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Skyrim Special Edition\\Data\\scripts\\source\\Example.PSC(1,63): no viable alternative at character ';'\n",
+    );
+
+    let diagnostics = parse_compile_errors(&outcome);
+
+    assert_eq!(
+        diagnostics,
+        vec![Diagnostic {
+            line: 1,
+            column: 63,
+            message: "[error] no viable alternative at character ';'".to_string(),
+            rule: RULE,
+        }]
+    );
+}
+
+#[test]
+fn clamps_a_zero_line_and_column_to_one() {
+    let outcome = outcome("<unknown>(0,0): unable to locate script C:\\Data\\SCRIPTS\\SOURCE\n");
+
+    let diagnostics = parse_compile_errors(&outcome);
+
+    assert_eq!(
+        diagnostics,
+        vec![Diagnostic {
+            line: 1,
+            column: 1,
+            message: "[error] unable to locate script C:\\Data\\SCRIPTS\\SOURCE".to_string(),
+            rule: RULE,
+        }]
+    );
+}
+
+#[test]
+fn parses_every_error_line_in_a_full_compiler_transcript() {
+    let outcome = outcome(
+        "Starting 1 compile threads for 1 files...\n\
+         Compiling \"C:\\Data\\SCRIPTS\\SOURCE\"...\n\
+         No output generated for C:\\Data\\SCRIPTS\\SOURCE, compilation failed.\n\
+         \n\
+         Batch compile of 1 files finished. 0 succeeded, 1 failed.\n\
+         Failed on C:\\Data\\SCRIPTS\\SOURCE\n\
+         \n\
+         C:\\Data\\scripts\\source\\Example.PSC(1,63): no viable alternative at character ';'\n\
+         C:\\Data\\scripts\\source\\Example.PSC(3,65): no viable alternative at character ';'\n\
+         C:\\Data\\scripts\\source\\Example.PSC(1,0): missing EOF at 'Scriptname'\n\
+         <unknown>(0,0): unable to locate script C:\\Data\\SCRIPTS\\SOURCE\n",
+    );
+
+    let diagnostics = parse_compile_errors(&outcome);
+
+    assert_eq!(diagnostics.len(), 4);
+    assert_eq!(diagnostics[0].line, 1);
+    assert_eq!(diagnostics[0].column, 63);
+    assert_eq!(diagnostics[1].line, 3);
+    assert_eq!(diagnostics[1].column, 65);
+    assert_eq!(diagnostics[2].line, 1);
+    assert_eq!(diagnostics[2].column, 1);
+    assert_eq!(diagnostics[3].line, 1);
+    assert_eq!(diagnostics[3].column, 1);
+    assert!(diagnostics.iter().all(|d| d.rule == RULE));
+    assert!(diagnostics
+        .iter()
+        .all(|d| d.message.starts_with("[error] ")));
+}
+
+#[test]
+fn checks_both_stdout_and_stderr() {
+    let outcome = CompileOutcome {
+        success: false,
+        stdout: "Example.psc(1,1): from stdout\n".to_string(),
+        stderr: "Example.psc(2,2): from stderr\n".to_string(),
+        personal_data_stripped: false,
+    };
+
+    let diagnostics = parse_compile_errors(&outcome);
+
+    assert_eq!(diagnostics.len(), 2);
+    assert!(diagnostics
+        .iter()
+        .any(|d| d.line == 1 && d.message == "[error] from stdout"));
+    assert!(diagnostics
+        .iter()
+        .any(|d| d.line == 2 && d.message == "[error] from stderr"));
+}
+
+#[test]
+fn ignores_a_line_with_no_marker_at_all() {
+    assert!(parse_line("just some unrelated text").is_none());
+}
+
+#[test]
+fn accepts_whitespace_around_coordinates_and_message() {
+    let diagnostic = parse_line("Example.psc( 12 , 4 ):   unexpected token   ")
+        .expect("whitespace should not invalidate a compiler location");
+
+    assert_eq!(diagnostic.line, 12);
+    assert_eq!(diagnostic.column, 4);
+    assert_eq!(diagnostic.message, "[error] unexpected token");
+}
+
+#[test]
+fn accepts_an_empty_compiler_message() {
+    let diagnostic =
+        parse_line("Example.psc(7,9):   ").expect("the location marker itself is still useful");
+
+    assert_eq!(diagnostic.line, 7);
+    assert_eq!(diagnostic.column, 9);
+    assert_eq!(diagnostic.message, "[error] ");
+}
+
+#[test]
+fn ignores_malformed_location_markers() {
+    for line in [
+        "Example.psc(1): missing column",
+        "Example.psc(,2): missing line",
+        "Example.psc(1,): missing column",
+        "Example.psc(one,2): non-numeric line",
+        "Example.psc(1,two): non-numeric column",
+        "Example.psc(1,2] wrong closing delimiter",
+        "Example.psc(1,2) missing colon",
+        "Example.psc(184467440737095516160,2): overflowing line",
+    ] {
+        assert!(parse_line(line).is_none(), "unexpectedly parsed {line:?}");
+    }
+}
+
+#[test]
+fn keeps_scanning_after_an_invalid_parenthesized_segment() {
+    let diagnostic = parse_line("C:\\Mods (portable)\\Example.psc(3,8): bad expression")
+        .expect("the valid marker after the path segment should be found");
+
+    assert_eq!(diagnostic.line, 3);
+    assert_eq!(diagnostic.column, 8);
+    assert_eq!(diagnostic.message, "[error] bad expression");
+}
+
+#[test]
+fn chooses_the_rightmost_valid_marker_when_a_path_contains_coordinates() {
+    let diagnostic = parse_line("C:\\Build (12,34): archive\\Example.psc(7,8): real error")
+        .expect("the source location should win over a marker-shaped path segment");
+
+    assert_eq!(diagnostic.line, 7);
+    assert_eq!(diagnostic.column, 8);
+    assert_eq!(diagnostic.message, "[error] real error");
+}
+
+#[test]
+fn accepts_the_largest_platform_coordinates_without_overflowing() {
+    let line = format!("Example.psc({0},{0}): boundary", usize::MAX);
+    let diagnostic = parse_line(&line).expect("usize::MAX is still a valid coordinate");
+
+    assert_eq!(diagnostic.line, usize::MAX);
+    assert_eq!(diagnostic.column, usize::MAX);
+}
+
+#[test]
+fn preserves_stream_order_across_windows_line_endings() {
+    let outcome = CompileOutcome {
+        success: false,
+        stdout: "One.psc(1,2): first\r\nTwo.psc(3,4): second\r\n".to_string(),
+        stderr: "Three.psc(5,6): third\r\n".to_string(),
+        personal_data_stripped: false,
+    };
+
+    let diagnostics = parse_compile_errors(&outcome);
+
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.message.as_str())
+            .collect::<Vec<_>>(),
+        ["[error] first", "[error] second", "[error] third"]
+    );
+}
