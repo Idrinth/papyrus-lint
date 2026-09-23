@@ -24,6 +24,19 @@ fn blob_with_no_diagnostics_reports_success() {
 }
 
 #[test]
+fn blob_json_reports_parse_failures_as_unsuccessful() {
+    let (code, stdout, stderr) = run_captured(&[
+        "--format=json".to_string(),
+        "--blob=ScriptName Example\nFunction Broken(\n".to_string(),
+    ]);
+
+    assert_eq!(code, 1);
+    assert!(stderr.is_empty());
+    let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    assert_eq!(report["success"], false);
+}
+
+#[test]
 fn blob_reports_errors_as_a_failure() {
     let (code, stdout, stderr) = run_captured(&[
         "--blob".to_string(),

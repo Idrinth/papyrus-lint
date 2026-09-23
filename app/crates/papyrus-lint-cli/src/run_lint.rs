@@ -104,13 +104,15 @@ pub(crate) fn lint_file(
             }
         }
     }
-    let should_fail = finalize_diagnostics(
+    let parse_failed = papyrus_parser::parse(source).is_err();
+    let diagnostics_should_fail = finalize_diagnostics(
         &mut diagnostics,
         ctx.lint_config,
         ctx.tag_filter,
         ctx.quiet_warnings,
         ctx.quiet_info,
     );
+    let should_fail = parse_failed || diagnostics_should_fail;
 
     let (plain_text, json_file, ai_file) =
         build_file_reports(ctx, &reported_path, source, file_diff, &diagnostics);

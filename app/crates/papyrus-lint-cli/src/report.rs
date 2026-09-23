@@ -42,8 +42,9 @@ impl AggregatedReport {
 /// Folds every script's [`FileOutcome`] (already checked for errors by the
 /// caller) into one report matching `output_format`, appends its summary
 /// line/object, and writes it to `output_path` or `stdout`. Returns the
-/// process exit code: `1` if any diagnostic crossed the configured failure
-/// threshold, `2` on an `--output` write failure, `0` otherwise.
+/// process exit code: `1` if any script failed to parse or any diagnostic
+/// crossed the configured failure threshold, `2` on an `--output` write
+/// failure, `0` otherwise.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn fold_and_flush_report(
     file_results: Vec<Result<FileOutcome, String>>,

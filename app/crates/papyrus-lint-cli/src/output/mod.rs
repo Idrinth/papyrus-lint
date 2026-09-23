@@ -132,8 +132,8 @@ pub(crate) struct FileOutcome {
     pub(crate) plain_text: Vec<u8>,
     pub(crate) json_file: Option<JsonFileReport>,
     pub(crate) ai_file: Option<AiFileReport>,
-    /// Whether any of this file's diagnostics (even one hidden by
-    /// `--quiet-warnings`/`--quiet-info`) crosses the configured
+    /// Whether this file failed to parse or any of its diagnostics (even one
+    /// hidden by `--quiet-warnings`/`--quiet-info`) crosses the configured
     /// `fail_on_warning`/`fail_on_info` threshold.
     pub(crate) should_fail: bool,
     /// Whether this file has at least one diagnostic left after quiet
