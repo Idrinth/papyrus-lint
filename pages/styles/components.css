@@ -1,0 +1,117 @@
+pre.code-block {
+  margin: 0;
+  padding: 1em;
+  border-radius: 8px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.code-block .kw {
+  color: var(--code-keyword);
+  font-weight: 600;
+}
+
+.code-block .ty {
+  color: var(--code-type);
+}
+
+.code-block .cm {
+  color: var(--code-comment);
+  font-style: italic;
+}
+
+.code-block .str {
+  color: var(--code-string);
+}
+
+.code-block .num {
+  color: var(--code-number);
+}
+
+.code-block .tag {
+  color: var(--code-keyword);
+}
+
+
+.lint-table-wrap {
+  overflow-x: auto;
+  /* overflow-x: auto computes overflow-y to auto as well; keep Y hidden so
+     this wrap does not become a second vertical scroller that can steal
+     clicks from the native <details> widgets after it is focused. Height
+     is auto, so in-flow row growth is not clipped. */
+  overflow-y: hidden;
+}
+
+table.lint-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+table.lint-rules-table {
+  table-layout: fixed;
+  /* The four fixed columns (name/severity/tags/auto-fix) already sum to
+     ~37em. Without a floor, table-layout:fixed assigns the leftover to
+     Description - which is 0 when the container is narrower than that
+     sum. The <details> summary still paints (td overflow is visible) so
+     "Full behavior" looks clickable, but its hit box is empty. */
+  min-width: 52em;
+}
+
+.lint-table th,
+.lint-table td {
+  padding: 0.5em 0.75em;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.lint-rules-table th:first-child,
+.lint-rules-table td:first-child {
+  width: 16em;
+}
+
+.lint-table th {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.lint-table td:last-child,
+.lint-table th:last-child {
+  text-align: center;
+  width: 4em;
+}
+
+.lint-table .fix-yes {
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.lint-table tbody tr:target {
+  background: var(--color-hover-bg);
+}
+
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .button--primary {
+    color: #10282b;
+  }
+
+  :root:not([data-theme="light"]) .button--primary:hover {
+    background-color: #1fb2c4;
+  }
+}
+
+:root[data-theme="dark"] .button--primary {
+  color: #10282b;
+}
+
+:root[data-theme="dark"] .button--primary:hover {
+  background-color: #1fb2c4;
+}

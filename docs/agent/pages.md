@@ -76,7 +76,12 @@ that job already carries.
 framework or bundler) styled to match the desktop app's frontend
 (`app/src/styles.css`): both import `shared/theme.css` for the Cinzel-headed,
 light/dark-aware palette (including the System/Light/Dark theme switch)
-so those tokens cannot drift apart. The
+so those tokens cannot drift apart. `pages/styles.css` is the import-only
+entry point for focused modules under `pages/styles/`: shared base,
+site chrome, reusable components, and the home, docs, coverage, and rules
+page families each keep their own styles. The builder recursively inlines
+that module graph, along with `shared/theme.css`, so this source-level split
+does not add deployment requests. The
 `<select id="theme-select">` control itself lives once in
 `pages/includes/header.html` (see GitHub Pages below), so it renders in
 every page's header; `pages/theme.js` (copied verbatim into the built
@@ -88,7 +93,7 @@ avoid a flash of the wrong theme — the same approach as
 `papyrus-lint:theme` `localStorage` key and `data-theme` root-element
 attribute scheme as the desktop app's theme switch
 (`applyTheme`/`loadStoredTheme` in `app/src/main.ts`).
-`pages/build.py` inlines `shared/theme.css` into the deployed
+`pages/build.py` inlines the full CSS module graph into the deployed
 `styles.css` so the site still ships a single stylesheet. Rather than
 hand-duplicating the README's CLI usage examples into that template (and
 having to keep them in sync by hand), it carries a `<!--CLI_EXAMPLES-->`

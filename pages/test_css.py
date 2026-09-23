@@ -8,8 +8,28 @@ from pathlib import Path
 
 from pages import css
 
+PAGES_DIR = Path(__file__).resolve().parent
+
 
 class InlineCssImportsTest(unittest.TestCase):
+    def test_site_entrypoint_inlines_all_style_modules(self) -> None:
+        entry = PAGES_DIR / "styles.css"
+
+        result = css.inline_css_imports(entry.read_text(encoding="utf-8"), entry)
+
+        self.assertNotIn("@import", result)
+        for selector in (
+            ":root",
+            ".site-header",
+            "pre.code-block",
+            ".hero",
+            ".doc-content",
+            ".coverage-content",
+            ".rules-content",
+        ):
+            with self.subTest(selector=selector):
+                self.assertIn(selector, result)
+
     def test_inlines_a_relative_import(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             directory_path = Path(directory)

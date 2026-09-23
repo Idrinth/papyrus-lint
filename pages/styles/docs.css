@@ -1,0 +1,111 @@
+.videos-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20em, 1fr));
+  gap: 1.5em;
+}
+
+.video-card {
+  margin: 0;
+}
+
+.video-card__frame {
+  position: relative;
+  padding-top: 56.25%;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.video-card__frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-card figcaption {
+  margin-top: 0.5em;
+  font-size: 0.95em;
+}
+
+.doc-hero {
+  text-align: left;
+  padding: 3em 0 1em;
+}
+
+.doc-hero h1 {
+  font-size: 1.8em;
+}
+
+.doc-breadcrumb {
+  margin: 0 0 1em;
+}
+
+.doc-breadcrumb a {
+  font-size: 0.9em;
+  text-decoration: none;
+}
+
+.doc-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.doc-content {
+  max-width: 46em;
+  margin: 0 auto;
+}
+
+.doc-content h2 {
+  font-size: 1.3em;
+  margin: 1.5em 0 0.6em;
+}
+
+.doc-content h2:first-child {
+  margin-top: 0;
+}
+
+.doc-content h3 {
+  font-size: 1.05em;
+  margin: 1.25em 0 0.5em;
+}
+
+.doc-content p {
+  color: var(--color-text-muted);
+}
+
+.doc-content ul {
+  margin: 0 0 1em;
+  padding-left: 1.4em;
+  color: var(--color-text-muted);
+}
+
+.doc-content li {
+  margin: 0.4em 0;
+}
+
+.doc-content pre.code-block {
+  margin: 1em 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  /* The largest doc pages (e.g. the ast-cache-entry schema) render as one
+     unbroken block many thousands of pixels tall, which the browser has to
+     fully lay out and paint since it starts inside the viewport - that's
+     what was blowing up LCP/TBT on those pages, and forced endless page
+     scrolling to boot. Capping the block's own height and scrolling inside
+     it keeps its rendered/painted footprint bounded no matter how much
+     source it holds. */
+  max-height: 34em;
+  overflow-y: auto;
+}
+
+.doc-content a {
+  color: var(--color-accent-toggle);
+}
+
+.doc-content .doc-raw-link {
+  display: inline-block;
+  margin-top: 1.5em;
+}
+
