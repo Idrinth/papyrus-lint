@@ -80,36 +80,6 @@ fn script_lookup_dirs_for_skyrim_install(install: &Path) -> Vec<String> {
         .collect()
 }
 
-/// Appends each of `extra`'s directories to `roots` that aren't already
-/// present there (compared with [`lookup_paths_equal`]), trimming and
-/// skipping blank entries. Used to seed a project's `lookup_script_roots`
-/// with detected Skyrim directories without duplicating ones it already
-/// lists.
-pub(crate) fn merge_lookup_roots(roots: &mut Vec<String>, extra: &[String]) {
-    for dir in extra {
-        let dir = dir.trim();
-        if dir.is_empty() {
-            continue;
-        }
-        if roots
-            .iter()
-            .any(|existing| lookup_paths_equal(existing, dir))
-        {
-            continue;
-        }
-        roots.push(dir.to_string());
-    }
-}
-
-fn lookup_paths_equal(left: &str, right: &str) -> bool {
-    fn normalize(path: &str) -> String {
-        path.replace('\\', "/")
-            .trim_end_matches('/')
-            .to_ascii_lowercase()
-    }
-    normalize(left) == normalize(right)
-}
-
 #[cfg(test)]
 mod tests {
     use std::fs;
@@ -144,25 +114,5 @@ mod tests {
         let dirs = script_lookup_dirs_for_skyrim_install(install.path());
 
         assert_eq!(dirs, vec![scripts_source.to_string_lossy().into_owned()]);
-    }
-
-    #[test]
-    fn merge_lookup_roots_appends_unique_paths_ignoring_slash_and_case() {
-        let mut roots = vec!["C:/Games/Skyrim Special Edition/Data/Scripts/Source".to_string()];
-        merge_lookup_roots(
-            &mut roots,
-            &[
-                r"c:\Games\Skyrim Special Edition\Data\Scripts\Source".to_string(),
-                "C:/Games/Skyrim Special Edition/Data/Source/Scripts".to_string(),
-            ],
-        );
-
-        assert_eq!(
-            roots,
-            vec![
-                "C:/Games/Skyrim Special Edition/Data/Scripts/Source".to_string(),
-                "C:/Games/Skyrim Special Edition/Data/Source/Scripts".to_string()
-            ]
-        );
     }
 }
