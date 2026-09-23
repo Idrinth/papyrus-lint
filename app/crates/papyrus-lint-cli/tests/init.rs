@@ -10,7 +10,7 @@ use std::fs;
 fn init_creates_a_config_in_the_process_working_directory() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
 
-    let output = run_cli_in(&["init"], dir.path());
+    let output = run_cli_in(&["init", "--game", "skyrim"], dir.path());
 
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
@@ -35,7 +35,11 @@ fn init_merges_a_config_placed_next_to_the_executable() {
     );
 
     let project_dir = tempfile::tempdir().expect("failed to create temp directory");
-    let output = run_copied_cli(exe_dir.path(), &["init"], project_dir.path());
+    let output = run_copied_cli(
+        exe_dir.path(),
+        &["init", "--game", "skyrim"],
+        project_dir.path(),
+    );
 
     assert!(output.status.success());
     let config = fs::read_to_string(project_dir.path().join("papyrus-lint.yaml"))
@@ -56,7 +60,7 @@ fn init_preset_flag_selects_a_user_preset_from_the_presets_directory() {
     let project_dir = tempfile::tempdir().expect("failed to create temp directory");
     let output = run_copied_cli(
         exe_dir.path(),
-        &["init", "--preset", "my-preset"],
+        &["init", "--game", "skyrim", "--preset", "my-preset"],
         project_dir.path(),
     );
 
@@ -78,7 +82,7 @@ fn init_preset_flag_reports_an_error_for_a_name_matching_no_built_in_or_user_pre
     let project_dir = tempfile::tempdir().expect("failed to create temp directory");
     let output = run_copied_cli(
         exe_dir.path(),
-        &["init", "--preset", "does-not-exist"],
+        &["init", "--game", "skyrim", "--preset", "does-not-exist"],
         project_dir.path(),
     );
 
@@ -133,7 +137,7 @@ fn preset_add_makes_the_preset_selectable_via_init() {
     let project_dir = tempfile::tempdir().expect("failed to create temp directory");
     let init_output = run_copied_cli(
         exe_dir.path(),
-        &["init", "--preset", "my-team"],
+        &["init", "--game", "skyrim", "--preset", "my-team"],
         project_dir.path(),
     );
 
@@ -271,7 +275,7 @@ fn preset_add_errors_when_the_source_file_does_not_exist() {
 fn init_defaults_to_the_strict_preset() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
 
-    let output = run_cli_in(&["init"], dir.path());
+    let output = run_cli_in(&["init", "--game", "skyrim"], dir.path());
 
     assert!(output.status.success());
     let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
@@ -285,7 +289,10 @@ fn init_defaults_to_the_strict_preset() {
 fn init_preset_flag_selects_the_standard_preset() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
 
-    let output = run_cli_in(&["init", "--preset", "standard"], dir.path());
+    let output = run_cli_in(
+        &["init", "--game", "skyrim", "--preset", "standard"],
+        dir.path(),
+    );
 
     assert!(output.status.success());
     let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
@@ -298,7 +305,10 @@ fn init_preset_flag_selects_the_standard_preset() {
 fn init_preset_flag_accepts_the_equals_form_case_insensitively() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
 
-    let output = run_cli_in(&["init", "--preset=CAREFUL"], dir.path());
+    let output = run_cli_in(
+        &["init", "--game", "skyrim", "--preset=CAREFUL"],
+        dir.path(),
+    );
 
     assert!(output.status.success());
     let config = fs::read_to_string(dir.path().join("papyrus-lint.yaml"))
@@ -311,7 +321,10 @@ fn init_preset_flag_accepts_the_equals_form_case_insensitively() {
 fn init_rejects_an_unknown_preset() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
 
-    let output = run_cli_in(&["init", "--preset", "lenient"], dir.path());
+    let output = run_cli_in(
+        &["init", "--game", "skyrim", "--preset", "lenient"],
+        dir.path(),
+    );
 
     assert_eq!(output.status.code(), Some(2));
     assert!(output.stdout.is_empty());
@@ -325,9 +338,9 @@ fn init_rejects_missing_blank_and_extra_preset_arguments() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
 
     for args in [
-        vec!["init", "--preset"],
-        vec!["init", "--preset="],
-        vec!["init", "--preset=strict", "unexpected"],
+        vec!["init", "--game", "skyrim", "--preset"],
+        vec!["init", "--game", "skyrim", "--preset="],
+        vec!["init", "--game", "skyrim", "--preset=strict", "unexpected"],
     ] {
         let output = run_cli_in(&args, dir.path());
 
@@ -389,7 +402,7 @@ fn init_refuses_to_replace_an_existing_config_through_the_binary() {
     let config_path = dir.path().join("papyrus-lint.yaml");
     write_file(&config_path, "rules:\n  semicolon: false\n");
 
-    let output = run_cli_in(&["init"], dir.path());
+    let output = run_cli_in(&["init", "--game", "skyrim"], dir.path());
 
     assert_eq!(output.status.code(), Some(2));
     assert!(output.stdout.is_empty());
