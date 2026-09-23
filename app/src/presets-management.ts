@@ -154,7 +154,9 @@ export async function handleResetToPresetClick(): Promise<void> {
 
   try {
     const config = await getPresetLintConfig(select.value);
-    applyLintConfigToUI(config);
+    // Game is a project target, not a formatting/rule preset. Resetting
+    // careful/strict must not switch a Fallout 4 project back to Skyrim.
+    applyLintConfigToUI({ ...config, game: currentLintConfig.game });
     handleLintConfigChanged();
   } catch (error) {
     console.error(error);

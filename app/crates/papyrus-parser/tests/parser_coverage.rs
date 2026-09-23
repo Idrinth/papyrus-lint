@@ -97,6 +97,83 @@ fn parses_access_level_annotations_on_functions_and_properties() {
 }
 
 #[test]
+fn standalone_access_annotations_do_not_reject_the_script() {
+    // A `; @private` / `@protected` / `@public` line is a comment, not a
+    // header. v1.46 turned those into tokens the parser only accepted on a
+    // declaration, so one of them anywhere in the file failed the parse and
+    // the linter analysed nothing (#1180). The line-above form is not an
+    // access modifier; only the trailing header form is.
+    for annotation in [
+        "; @private",
+        ";@private",
+        "; @Private",
+        "; @private helper",
+        "    ; @private",
+        "; @protected",
+        "; @public",
+        ";/ @private /;",
+    ] {
+        let source = format!(
+            "{annotation}\n\
+             ScriptName Repro\n\
+             \n\
+             {annotation}\n\
+             Function G()\n\
+             EndFunction\n\
+             \n\
+             {annotation}\n\
+             Int Property C Auto\n\
+             Int Function Bump()\n\
+             \tC += 1\n\
+             \tReturn C\n\
+             EndFunction\n\
+             \n\
+             Function F()\n\
+             \tInt a = Utility.RandomInt(5, 5)\n\
+             \t{annotation}\n\
+             \tDebug.Trace(\"c=\" + Bump())\n\
+             \tInt q = 1 ; @private\n\
+             \tReturn ; @protected\n\
+             \t{annotation}\n\
+             \tq = 2\n\
+             EndFunction\n\
+             {annotation}\n"
+        );
+        let script = parse(&source).unwrap_or_else(|error| {
+            panic!("access annotation {annotation:?} should not reject the script: {error}")
+        });
+        assert_eq!(script.name, "Repro", "{annotation}");
+        assert_eq!(script.functions.len(), 3, "{annotation}");
+        assert_eq!(script.functions[0].name, "G");
+        assert_eq!(script.functions[0].access_level, AccessLevel::Public);
+        assert_eq!(script.properties.len(), 1, "{annotation}");
+        assert_eq!(script.properties[0].access_level, AccessLevel::Public);
+        assert_eq!(script.functions[1].name, "Bump");
+        assert_eq!(script.functions[1].body.len(), 2, "{annotation}");
+        let body = &script.functions[2].body;
+        assert_eq!(body.len(), 5, "{annotation}");
+        assert!(matches!(body[3], Stmt::Return { value: None, .. }));
+        assert!(matches!(body[4], Stmt::Assign { .. }));
+    }
+}
+
+#[test]
+fn access_annotations_on_a_continued_header_still_apply() {
+    let script = parse(
+        "ScriptName Continued\n\
+         Function HiddenOne() \\\n\
+             ; @private\n\
+         EndFunction\n\
+         Int Property HiddenTwo Auto \\\n\
+             ; @protected\n",
+    )
+    .expect("a continued header's access annotation should parse");
+
+    assert_eq!(script.functions[0].access_level, AccessLevel::Private);
+    assert_eq!(script.properties[0].access_level, AccessLevel::Protected);
+}
+
+#[test]
 fn integer_literals_record_the_notation_they_were_written_with() {
     let script = parse(
         "ScriptName Notation\n\

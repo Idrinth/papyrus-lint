@@ -66,7 +66,7 @@ const HEADER = [
   'export type IdentifierCasingStyle = "camelCase" | "PascalCase" | "snake_case" | "CONSTANT_CASE";',
   'export type NamedArgumentsStyle = "always" | "instead_of_defaults" | "never";',
   'export type MagicNumbersMode = "loose" | "strict";',
-  'export type Game = "skyrim";',
+  'export type Game = "skyrim" | "fallout4";',
   "",
 ].join("\n");
 

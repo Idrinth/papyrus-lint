@@ -29,6 +29,9 @@ export function createHarness({
   versionResult,
   workspaceFolders,
   quickPickResult,
+  /** Ordered answers for successive `showQuickPick` calls. When set, replaces
+   * `quickPickResult` entirely (including letting a later call cancel). */
+  quickPickResults,
   inputBoxResult,
   workspaceFolderPickResult,
   /** Per-workspace-folder overrides for the `resource`-scoped settings
@@ -51,6 +54,7 @@ export function createHarness({
   const output = { lines: [], appendLine(line) { this.lines.push(line); }, dispose() {} };
   const codeActionProviders = [];
   const appliedEdits = [];
+  const quickPickQueue = Array.isArray(quickPickResults) ? [...quickPickResults] : null;
   const vscode = {
     CodeAction: class {
       constructor(title, kind) {
@@ -109,7 +113,18 @@ export function createHarness({
       showErrorMessage: (message) => messages.error.push(message),
       showInformationMessage: (message) => messages.information.push(message),
       showWarningMessage: (message) => messages.warning.push(message),
-      showQuickPick: async () => quickPickResult,
+      showQuickPick: async (items) => {
+        if (quickPickQueue) {
+          return quickPickQueue.shift();
+        }
+        // `initializeConfig` asks for a preset, then a game. Tests that only
+        // script the preset pick still need `init --game` to run; default
+        // that second prompt to Skyrim.
+        if (Array.isArray(items) && items.some((item) => item && Object.prototype.hasOwnProperty.call(item, 'game'))) {
+          return items.find((item) => item.game === 'skyrim');
+        }
+        return quickPickResult;
+      },
       showInputBox: async () => inputBoxResult,
       showWorkspaceFolderPick: async () => workspaceFolderPickResult,
     },

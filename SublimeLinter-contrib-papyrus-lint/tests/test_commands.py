@@ -534,16 +534,32 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
 
         run_init.assert_not_called()
 
-    def test_choosing_a_built_in_preset_runs_init_with_its_value(self):
+    def test_choosing_a_built_in_preset_prompts_for_a_game(self):
+        self.command._on_preset_chosen(1)
+
+        self.window.show_quick_panel.assert_called_once_with(
+            self.module.PapyrusLintInitCommand.GAME_LABELS,
+            self.command._on_game_chosen,
+        )
+        self.assertEqual(self.command._preset, 'standard')
+
+    def test_choosing_a_game_runs_init_with_the_preset_and_game(self):
+        self.command._preset = 'careful'
         with patch.object(self.command, '_run_init') as run_init:
-            self.command._on_preset_chosen(0)
-            self.command._on_preset_chosen(1)
-            self.command._on_preset_chosen(2)
+            self.command._on_game_chosen(0)
+            self.command._on_game_chosen(1)
 
         self.assertEqual(
             run_init.call_args_list,
-            [unittest.mock.call(None), unittest.mock.call('standard'), unittest.mock.call('careful')],
+            [unittest.mock.call('careful', 'skyrim'), unittest.mock.call('careful', 'fallout4')],
         )
+
+    def test_cancelling_the_game_panel_is_a_no_op(self):
+        self.command._preset = 'standard'
+        with patch.object(self.command, '_run_init') as run_init:
+            self.command._on_game_chosen(-1)
+
+        run_init.assert_not_called()
 
     def test_choosing_custom_preset_shows_an_input_panel(self):
         self.command._on_preset_chosen(3)
@@ -558,21 +574,26 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
 
         run_init.assert_not_called()
 
-    def test_custom_preset_is_trimmed_before_running_init(self):
+    def test_custom_preset_is_trimmed_before_asking_for_a_game(self):
         with patch.object(self.command, '_run_init') as run_init:
             self.command._on_custom_preset_entered('  team-style  ')
 
-        run_init.assert_called_once_with('team-style')
+        run_init.assert_not_called()
+        self.assertEqual(self.command._preset, 'team-style')
+        self.window.show_quick_panel.assert_called_once_with(
+            self.module.PapyrusLintInitCommand.GAME_LABELS,
+            self.command._on_game_chosen,
+        )
 
     def test_successful_init_without_a_preset_shows_the_created_path(self):
         self.command._directory = '/project'
         result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
 
         with patch.object(self.module.subprocess, 'run', return_value=result) as run:
-            self.command._run_init(None)
+            self.command._run_init(None, 'skyrim')
 
         run.assert_called_once_with(
-            ('/cache/PapyrusLinterCLI', 'init'),
+            ('/cache/PapyrusLinterCLI', 'init', '--game', 'skyrim'),
             capture_output=True,
             cwd='/project',
             startupinfo=None,
@@ -585,10 +606,10 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
 
         with patch.object(self.module.subprocess, 'run', return_value=result) as run:
-            self.command._run_init('careful')
+            self.command._run_init('careful', 'fallout4')
 
         run.assert_called_once_with(
-            ('/cache/PapyrusLinterCLI', 'init', '--preset', 'careful'),
+            ('/cache/PapyrusLinterCLI', 'init', '--game', 'fallout4', '--preset', 'careful'),
             capture_output=True,
             cwd='/project',
             startupinfo=None,
@@ -599,7 +620,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         result = Mock(returncode=2, stderr=b'error: config already exists')
 
         with patch.object(self.module.subprocess, 'run', return_value=result):
-            self.command._run_init(None)
+            self.command._run_init(None, 'skyrim')
 
         self.sublime.error_message.assert_called_once_with(
             'PapyrusLint: init failed:\nerror: config already exists'
@@ -611,7 +632,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         result = Mock(returncode=2, stderr=b'')
 
         with patch.object(self.module.subprocess, 'run', return_value=result):
-            self.command._run_init(None)
+            self.command._run_init(None, 'skyrim')
 
         self.sublime.error_message.assert_called_once_with(
             'PapyrusLint: init failed:\nunknown error'
@@ -623,7 +644,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         with patch.object(
             self.module.subprocess, 'run', side_effect=OSError('not found')
         ):
-            self.command._run_init(None)
+            self.command._run_init(None, 'skyrim')
 
         self.sublime.error_message.assert_called_once_with(
             'PapyrusLint: failed to download or run the CLI: not found'
@@ -635,7 +656,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         self.module.ensure_release_cli.side_effect = OSError('offline')
 
         with patch.object(self.module.subprocess, 'run') as run:
-            self.command._run_init(None)
+            self.command._run_init(None, 'skyrim')
 
         self.sublime.error_message.assert_called_once_with(
             'PapyrusLint: failed to download or run the CLI: offline'
@@ -652,10 +673,10 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
 
         with patch.object(module.subprocess, 'run', return_value=result) as run:
-            command._run_init(None)
+            command._run_init(None, 'skyrim')
 
         run.assert_called_once_with(
-            ('/tools/custom-linter', 'init'),
+            ('/tools/custom-linter', 'init', '--game', 'skyrim'),
             capture_output=True,
             cwd='/project',
             startupinfo=None,

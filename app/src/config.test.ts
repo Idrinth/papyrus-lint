@@ -16,7 +16,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 import { invokeImplFor } from "./test/harness";
 import { useProjectDir } from "./project-settings";
 import { applyLintConfigToUI, configKeyForRuleId, disableRulesInLintConfig, handleLintConfigChanged, lintConfigFromUI } from "./config-ui";
-import { DEFAULT_LINT_CONFIG, DEFAULT_RULES, type LintConfig } from "./config-types";
+import { DEFAULT_LINT_CONFIG, DEFAULT_RULES, type LintConfig, setCurrentLintConfig } from "./config-types";
 import { loadLintConfig, loadLintConfigFromPath, saveLintConfig, saveLintConfigToPath } from "./config-io";
 describe("lint config UI round trip", () => {
   it("applyLintConfigToUI followed by lintConfigFromUI reproduces the config", () => {
@@ -41,6 +41,38 @@ describe("lint config UI round trip", () => {
 
     applyLintConfigToUI(config);
     expect(lintConfigFromUI()).toEqual(config);
+  });
+
+  it("round-trips a Fallout 4 project through the target-game control", () => {
+    applyLintConfigToUI({ ...DEFAULT_LINT_CONFIG, game: "fallout4" });
+    expect(document.querySelector<HTMLSelectElement>("#game-select")!.value).toBe("fallout4");
+    expect(lintConfigFromUI().game).toBe("fallout4");
+
+    document.querySelector<HTMLSelectElement>("#game-select")!.value = "skyrim";
+    expect(lintConfigFromUI().game).toBe("skyrim");
+  });
+
+  it("keeps a CLI-only starfield project instead of rewriting it to Skyrim", () => {
+    const starfield = { ...DEFAULT_LINT_CONFIG, game: "starfield" as LintConfig["game"] };
+    setCurrentLintConfig(starfield);
+    applyLintConfigToUI(starfield);
+
+    const gameSelect = document.querySelector<HTMLSelectElement>("#game-select")!;
+    expect(gameSelect.value).toBe("starfield");
+    expect(gameSelect.selectedOptions[0]?.hasAttribute("data-unlisted-game")).toBe(true);
+    expect(lintConfigFromUI().game).toBe("starfield");
+
+    document.querySelector<HTMLSelectElement>("#semicolon-style")!.value = "require";
+    expect(lintConfigFromUI().game).toBe("starfield");
+
+    gameSelect.value = "fallout4";
+    expect(lintConfigFromUI().game).toBe("fallout4");
+
+    gameSelect.value = "starfield";
+    expect(lintConfigFromUI().game).toBe("starfield");
+
+    setCurrentLintConfig(DEFAULT_LINT_CONFIG);
+    applyLintConfigToUI(DEFAULT_LINT_CONFIG);
   });
 
   it("applyLintConfigToUI enables the width field only for space indentation", () => {
@@ -119,6 +151,24 @@ describe("lint config UI round trip", () => {
     expect(invokeMock).toHaveBeenCalledWith("save_lint_config", {
       dir: "/proj",
       config: expect.objectContaining({ semicolon: true }),
+    });
+  });
+
+  it("handleLintConfigChanged persists a changed target game", async () => {
+    invokeImplFor({
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      save_lint_config: () => undefined,
+    });
+    await useProjectDir("/proj");
+    invokeMock.mockClear();
+
+    document.querySelector<HTMLSelectElement>("#game-select")!.value = "fallout4";
+    handleLintConfigChanged();
+    await Promise.resolve();
+
+    expect(invokeMock).toHaveBeenCalledWith("save_lint_config", {
+      dir: "/proj",
+      config: expect.objectContaining({ game: "fallout4" }),
     });
   });
 

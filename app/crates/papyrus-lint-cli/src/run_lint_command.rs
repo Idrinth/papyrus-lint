@@ -410,6 +410,7 @@ fn process_script(
         plain_text,
         json_file: lint_outcome.json_file,
         ai_file: lint_outcome.ai_file,
+        parse_failed: lint_outcome.parse_failed,
         should_fail: lint_outcome.should_fail,
         has_diagnostics: lint_outcome.has_diagnostics,
         diagnostic_count: lint_outcome.diagnostic_count,

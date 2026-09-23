@@ -48,6 +48,7 @@ pub(crate) struct LintFileOutcome {
     pub(crate) plain_text: Vec<u8>,
     pub(crate) json_file: Option<JsonFileReport>,
     pub(crate) ai_file: Option<AiFileReport>,
+    pub(crate) parse_failed: bool,
     pub(crate) should_fail: bool,
     pub(crate) has_diagnostics: bool,
     pub(crate) diagnostic_count: usize,
@@ -108,6 +109,7 @@ pub(crate) fn lint_file(
             }
         }
     }
+    let parse_failed = papyrus_parser::parse(source).is_err();
     let should_fail = finalize_diagnostics(
         &mut diagnostics,
         ctx.lint_config,
@@ -126,6 +128,7 @@ pub(crate) fn lint_file(
         plain_text,
         json_file,
         ai_file,
+        parse_failed,
         should_fail,
         has_diagnostics,
         diagnostic_count,

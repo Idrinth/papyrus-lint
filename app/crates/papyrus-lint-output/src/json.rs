@@ -93,8 +93,8 @@ pub struct JsonReport {
     /// changed script's [`JsonFileReport::diff`] instead shows what would
     /// have changed. Always `false` outside `fix --dry-run`.
     pub dry_run: bool,
-    /// Whether the run would exit `0`: no diagnostics counted as a
-    /// failure per `fail_on_warning`/`fail_on_info` (see
+    /// Whether every script parsed and no diagnostics counted as a failure
+    /// per `fail_on_warning`/`fail_on_info` (see
     /// [`papyrus_lints::Config::should_fail_on`]).
     pub success: bool,
 }

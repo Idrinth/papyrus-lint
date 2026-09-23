@@ -34,6 +34,7 @@ describe("promptForConfigSelection", () => {
       "/proj/papyrus-lint.yaml",
     );
     expect(document.querySelector<HTMLElement>("#config-picker-none")!.hidden).toBe(true);
+    expect(document.querySelector<HTMLElement>("#config-picker-game")!.hidden).toBe(true);
     expect(document.querySelector<HTMLElement>("#config-picker-preset-list")!.hidden).toBe(true);
 
     document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
@@ -77,6 +78,8 @@ describe("promptForConfigSelection", () => {
 
     expect(document.querySelector<HTMLElement>("#config-picker-detected")!.hidden).toBe(true);
     expect(document.querySelector<HTMLElement>("#config-picker-none")!.hidden).toBe(false);
+    expect(document.querySelector<HTMLElement>("#config-picker-game")!.hidden).toBe(false);
+    expect(document.querySelector<HTMLSelectElement>("#config-picker-game-select")!.value).toBe("skyrim");
     const options = document.querySelectorAll<HTMLButtonElement>(
       "#config-picker-preset-list .config-picker__preset-option",
     );
@@ -171,7 +174,7 @@ describe("promptForConfigSelection", () => {
       .querySelectorAll<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")[1]
       .click();
 
-    await expect(pending).resolves.toEqual({ kind: "preset", preset: "careful" });
+    await expect(pending).resolves.toEqual({ kind: "preset", preset: "careful", game: "skyrim" });
     expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
   });
 
@@ -195,7 +198,33 @@ describe("promptForConfigSelection", () => {
     expect(option.textContent).toContain("A custom preset.");
     option.click();
 
-    await expect(pending).resolves.toEqual({ kind: "preset", preset: "Team Conventions" });
+    await expect(pending).resolves.toEqual({ kind: "preset", preset: "Team Conventions", game: "skyrim" });
+  });
+
+  it("includes the selected target game when a new project continues", async () => {
+    const continued = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
+    );
+    document.querySelector<HTMLSelectElement>("#config-picker-game-select")!.value = "fallout4";
+    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
+    await expect(continued).resolves.toEqual({ kind: "detected", game: "fallout4" });
+  });
+
+  it("includes the selected target game when a new project picks a preset", async () => {
+    invokeImplFor({
+      list_config_presets: () => [
+        { id: "strict", label: "Strict", description: "Catches everything." },
+      ],
+    });
+
+    const preset = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker-preset-list .config-picker__preset-option")).not.toBeNull(),
+    );
+    document.querySelector<HTMLSelectElement>("#config-picker-game-select")!.value = "fallout4";
+    document.querySelector<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")!.click();
+    await expect(preset).resolves.toEqual({ kind: "preset", preset: "strict", game: "fallout4" });
   });
 
   it("doesn't accumulate stale listeners on the static Continue/browse buttons across repeated calls", async () => {
@@ -487,6 +516,26 @@ describe("handleResetToPresetClick", () => {
     expect(invokeMock).toHaveBeenCalledWith("save_lint_config", {
       dir: "/proj",
       config: expect.objectContaining({ semicolon: false }),
+    });
+  });
+
+  it("keeps the project's target game when resetting rules to a preset", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    invokeImplFor({
+      get_preset_lint_config: () => ({ ...DEFAULT_LINT_CONFIG, game: "skyrim", semicolon: false }),
+      save_lint_config: () => undefined,
+    });
+    document.querySelector<HTMLSelectElement>("#game-select")!.value = "fallout4";
+    handleLintConfigChanged();
+    invokeMock.mockClear();
+
+    await handleResetToPresetClick();
+    await Promise.resolve();
+
+    expect(document.querySelector<HTMLSelectElement>("#game-select")!.value).toBe("fallout4");
+    expect(invokeMock).toHaveBeenCalledWith("save_lint_config", {
+      dir: "/proj",
+      config: expect.objectContaining({ game: "fallout4", semicolon: false }),
     });
   });
 

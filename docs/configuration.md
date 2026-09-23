@@ -70,8 +70,14 @@ preset found under the executable-adjacent `presets` directory — as its own
 first-run picker: the first time it opens a project directory with no
 `papyrus-lint.yaml`/`.yml` of its own yet (and no "Configuration file"
 override set), it asks which preset to start from instead of silently
-linting against the engine's defaults. Every setting a preset picks can
-still be changed afterward in the Settings tab. Closing the dialog without
+linting against the engine's defaults. That dialog also asks which game the
+new project targets (`skyrim` or `fallout4`). Choosing a preset writes that
+choice into the new file's `game` key, the same way `init --game` does.
+Picking Fallout 4 and continuing without a preset writes a config so the
+choice is kept; leaving Skyrim selected and continuing still writes nothing.
+A project that already has a configuration file keeps the `game` already in
+that file. Every setting a preset picks can still be changed afterward in
+the Settings tab, including the target game. Closing the dialog without
 choosing one leaves the project on the engine's built-in defaults without
 writing a config file, so it's asked again next time that directory is
 opened.
@@ -91,12 +97,13 @@ a new name with the same overwrite confirmation as saving one; Export
 downloads its `papyrus-lint.yaml` content as-is; Delete asks to confirm and
 removes it from the `presets` directory.
 
-The app's formatting controls (trailing semicolons, indentation style,
-indentation width) are backed by this file: on startup it reads the
-config file for the most recently opened project and pre-selects those
-controls accordingly, and any change made to them is written straight
-back to the file, so the project's formatting settings persist between
-sessions and can be shared/committed alongside the project. The
+The app's Target game control (`skyrim` or `fallout4`) and its formatting
+controls (trailing semicolons, indentation style, indentation width) are
+backed by this file: on startup it reads the config file for the most
+recently opened project and pre-selects those controls accordingly, and any
+change made to them is written straight back to the file, so the project's
+target game and formatting settings persist between sessions and can be
+shared/committed alongside the project. The
 PapyrusCompiler.exe path field on the Settings tab works the same way,
 except it's pre-filled with an auto-detected path (see `compiler_path`
 below) rather than a fixed default when the project has no explicit

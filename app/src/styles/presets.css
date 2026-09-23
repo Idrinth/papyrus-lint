@@ -61,6 +61,34 @@
   overflow-wrap: anywhere;
 }
 
+.config-picker__game {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+
+/* Author `display: flex` would otherwise beat the user-agent `[hidden]`
+   rule, the same way `.lint-progress` used to. */
+.config-picker__game[hidden] {
+  display: none;
+}
+
+.config-picker__game label {
+  color: var(--color-text-muted);
+  font-size: 0.85em;
+}
+
+.config-picker__game select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.4em 0.6em;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  background-color: var(--color-surface);
+  color: inherit;
+  font: inherit;
+}
+
 .config-picker__list {
   display: flex;
   flex-direction: column;
