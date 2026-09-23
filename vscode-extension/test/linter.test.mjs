@@ -226,6 +226,35 @@ describe('PapyrusLinter', () => {
     assert.match(harness.messages.error[0], /got "PapyrusLinterCLI 1\.2\.2"/);
   });
 
+  it('reports configured executable verification failures', async () => {
+    const errorFailure = createHarness({
+      verifyConfiguredExecutable: async () => { throw new Error('untrusted executable'); },
+    });
+    await errorFailure.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
+
+    assert.equal(errorFailure.execCalls.length, 0);
+    assert.match(errorFailure.messages.error[0], /untrusted executable/);
+
+    const stringFailure = createHarness({
+      verifyConfiguredExecutable: async () => { throw 'verification unavailable'; },
+    });
+    await stringFailure.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
+
+    assert.equal(stringFailure.execCalls.length, 0);
+    assert.match(stringFailure.messages.error[0], /verification unavailable/);
+  });
+
+  it('describes a configured CLI version check that produces no output', async () => {
+    const harness = createHarness({
+      versionResult: { error: Object.assign(new Error('failed'), { code: 1 }), stdout: '', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.lintFile')(uri('/project/Test.psc'));
+
+    assert.equal(harness.execCalls.length, 0);
+    assert.match(harness.messages.error[0], /got "no version output"/);
+  });
+
   it('retries an automatic CLI download after a non-Error rejection', async () => {
     let attempts = 0;
     const harness = createHarness({
