@@ -286,6 +286,60 @@ fn write_entry_in_round_trips_a_valid_entry() {
 }
 
 #[test]
+fn game_entry_round_trips_without_being_visible_to_another_game() {
+    let cache_dir = tempdir().unwrap();
+    let project_dir = tempdir().unwrap();
+    let source_path = project_dir.path().join("Example.psc");
+    let source = "ScriptName Example\n";
+    std::fs::write(&source_path, source).unwrap();
+    let entry = fresh_entry(&source_path, source);
+
+    write_entry_in_for_game(
+        cache_dir.path(),
+        papyrus_lint_globals::Game::Skyrim,
+        &source_path,
+        &entry,
+    );
+
+    let loaded = valid_entry_in_for_game(
+        cache_dir.path(),
+        papyrus_lint_globals::Game::Skyrim,
+        &source_path,
+        source,
+    )
+    .unwrap();
+    assert_eq!(loaded.ast, entry.ast);
+    assert_eq!(loaded.tokens, entry.tokens);
+    assert!(valid_entry_in_for_game(
+        cache_dir.path(),
+        papyrus_lint_globals::Game::Fallout4,
+        &source_path,
+        source,
+    )
+    .is_none());
+}
+
+#[test]
+fn game_entry_write_ignores_an_unusable_cache_directory() {
+    let cache_parent = tempdir().unwrap();
+    let cache_dir = cache_parent.path().join("not-a-directory");
+    std::fs::write(&cache_dir, "occupied").unwrap();
+    let project_dir = tempdir().unwrap();
+    let source_path = project_dir.path().join("Example.psc");
+    let source = "ScriptName Example\n";
+    std::fs::write(&source_path, source).unwrap();
+
+    write_entry_in_for_game(
+        &cache_dir,
+        papyrus_lint_globals::Game::Skyrim,
+        &source_path,
+        &fresh_entry(&source_path, source),
+    );
+
+    assert!(cache_dir.is_file());
+}
+
+#[test]
 fn unicode_source_paths_get_their_own_cache_file() {
     let dir = Path::new("/tmp/ast-cache");
     let ascii = cache_file_path(dir, Path::new("/mods/Scripts/Example.psc"));

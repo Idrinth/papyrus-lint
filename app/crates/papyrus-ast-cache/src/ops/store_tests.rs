@@ -455,3 +455,30 @@ fn unicode_source_paths_round_trip() {
         Some(tokens)
     );
 }
+
+#[test]
+fn game_puts_are_noops_when_the_source_file_is_missing() {
+    let cache_dir = tempdir().unwrap();
+    let source_path = cache_dir.path().join("Missing.psc");
+    let source = "ScriptName Missing\n";
+    let game = papyrus_lint_globals::Game::Skyrim;
+
+    put_in_for_game(
+        cache_dir.path(),
+        game,
+        &source_path,
+        source,
+        &sample_ast(),
+        COMPATIBLE_VERSION,
+    );
+    put_tokens_in_for_game(
+        cache_dir.path(),
+        game,
+        &source_path,
+        source,
+        &sample_tokens(),
+        COMPATIBLE_VERSION,
+    );
+
+    assert!(!crate::entry::cache_file_path_for_game(cache_dir.path(), game, &source_path).exists());
+}
