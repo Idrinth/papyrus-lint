@@ -5,6 +5,8 @@ use crate::ops::store::put_in;
 use crate::ops::test_support::{harness, sample_ast, sample_tokens, COMPATIBLE_VERSION};
 use tempfile::tempdir;
 
+const SKYRIM: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Skyrim;
+
 #[test]
 fn ensure_primed_populates_the_disk_cache_on_a_miss_and_is_a_hit_afterwards() {
     let cache_dir = tempdir().unwrap();
@@ -122,6 +124,40 @@ fn ensure_primed_caches_tokens_when_the_source_does_not_parse() {
     assert_eq!(
         get_tokens_in(cache_dir.path(), &source_path, source),
         Some(papyrus_parser::tokenize(source).unwrap())
+    );
+}
+
+#[test]
+fn game_ensure_primed_caches_tokens_when_the_source_does_not_parse() {
+    let h = harness(
+        "InvalidForGame.psc",
+        "ScriptName InvalidForGame\nFunction Broken(\n",
+    );
+    assert!(papyrus_parser::parse(h.source).is_err());
+
+    ensure_primed_in_for_game(
+        h.cache_dir.path(),
+        SKYRIM,
+        &h.source_path,
+        h.source,
+        COMPATIBLE_VERSION,
+    );
+
+    assert!(crate::ops::load::get_in_for_game(
+        h.cache_dir.path(),
+        SKYRIM,
+        &h.source_path,
+        h.source,
+    )
+    .is_none());
+    assert_eq!(
+        crate::ops::load::get_tokens_in_for_game(
+            h.cache_dir.path(),
+            SKYRIM,
+            &h.source_path,
+            h.source,
+        ),
+        Some(papyrus_parser::tokenize(h.source).unwrap())
     );
 }
 
