@@ -67,10 +67,15 @@
   level: warning
   message: Calling GetLinkedRef without a keyword filter walks every linked reference on the base object; pass the specific keyword you need or cache the result instead of calling it repeatedly
 
-- script: ScriptObject
+- script: Form
   function: RegisterForUpdate
   level: warning
   message: RegisterForUpdate creates a recurring timer that keeps firing until explicitly cancelled and can stack duplicate timers if called more than once; prefer RegisterForSingleUpdate and re-register only when the next tick is actually needed
+
+- script: Form
+  function: RegisterForUpdateGameTime
+  level: warning
+  message: RegisterForUpdateGameTime creates a recurring timer that keeps firing until explicitly cancelled and can stack duplicate timers if called more than once; prefer RegisterForSingleUpdateGameTime and re-register only when the next tick is actually needed
 
 - script: StorageUtil
   function: SetIntValue
