@@ -168,3 +168,121 @@ fn group_rejects_a_non_property_member() {
     .expect_err("a Group may only contain Property declarations");
     assert!(matches!(error, PapyrusError::Parse(_)));
 }
+
+#[test]
+fn parses_colon_qualified_names_in_fallout4_mode() {
+    let script = parse_with_mode(
+        r#"ScriptName DLC01:DLC01_TrackSystemTrap extends DLC01:DLC01_TrackSystemTrapBase
+
+Import DLC03:DLC03CoA_DiaNucVictorySermonScript
+
+Hardcore:HC_ManagerScript Property HC_Manager Auto
+WorkshopParentScript:WorkshopObjective[] Property WorkshopObjectives Auto
+
+InstanceData:Owner Function GetInstanceOwner(Hardcore:HC_ManagerScript manager)
+    InstanceData:Owner inst = new InstanceData:Owner
+    DLC01:DLC01_UnstableModActorScript:UnstableModData data = new DLC01:DLC01_UnstableModActorScript:UnstableModData
+    DLC01:DLC01_TrackSystemTrack[] active = new DLC01:DLC01_TrackSystemTrack[0]
+    CreationClub:RescuedDogScript named = inst as CreationClub:RescuedDogScript
+    DLC04:DLC04_RQ_ManagerScript.GetScript()
+    return inst
+EndFunction
+
+Namespace:Helper Function Run()
+EndFunction
+
+Function Namespace:DoThing()
+EndFunction
+"#,
+        GameEdition::Fallout4,
+    )
+    .expect("colon-qualified Fallout 4 names should parse");
+
+    assert_eq!(script.name, "DLC01:DLC01_TrackSystemTrap");
+    assert_eq!(
+        script.extends.as_deref(),
+        Some("DLC01:DLC01_TrackSystemTrapBase")
+    );
+    assert_eq!(
+        script.imports[0].name,
+        "DLC03:DLC03CoA_DiaNucVictorySermonScript"
+    );
+    assert_eq!(
+        script.properties[0].type_name.name,
+        "Hardcore:HC_ManagerScript"
+    );
+    assert!(!script.properties[0].type_name.is_array);
+    assert_eq!(
+        script.properties[1].type_name.name,
+        "WorkshopParentScript:WorkshopObjective"
+    );
+    assert!(script.properties[1].type_name.is_array);
+
+    let owner = &script.functions[0];
+    assert_eq!(owner.name, "GetInstanceOwner");
+    assert_eq!(
+        owner.return_type.as_ref().map(|ty| ty.name.as_str()),
+        Some("InstanceData:Owner")
+    );
+    assert_eq!(owner.params[0].type_name.name, "Hardcore:HC_ManagerScript");
+    assert_eq!(owner.params[0].name, "manager");
+    let Some(papyrus_parser::ast::Stmt::VarDecl(inst)) = owner.body.first() else {
+        panic!("expected a namespaced local");
+    };
+    assert_eq!(inst.type_name.name, "InstanceData:Owner");
+    assert_eq!(
+        inst.value,
+        Some(Expr::NewStruct {
+            type_name: "InstanceData:Owner".to_string()
+        })
+    );
+    let Some(papyrus_parser::ast::Stmt::VarDecl(data)) = owner.body.get(1) else {
+        panic!("expected a nested struct local");
+    };
+    assert_eq!(
+        data.value,
+        Some(Expr::NewStruct {
+            type_name: "DLC01:DLC01_UnstableModActorScript:UnstableModData".to_string()
+        })
+    );
+    let Some(papyrus_parser::ast::Stmt::VarDecl(active)) = owner.body.get(2) else {
+        panic!("expected a namespaced array local");
+    };
+    assert!(matches!(active.value, Some(Expr::NewArray { .. })));
+    assert_eq!(active.type_name.name, "DLC01:DLC01_TrackSystemTrack");
+    assert!(active.type_name.is_array);
+    let Some(papyrus_parser::ast::Stmt::VarDecl(named)) = owner.body.get(3) else {
+        panic!("expected a cast local");
+    };
+    assert_eq!(
+        named.value,
+        Some(Expr::Cast {
+            value: Box::new(Expr::Identifier("inst".to_string())),
+            type_name: "CreationClub:RescuedDogScript".to_string(),
+        })
+    );
+    let Some(papyrus_parser::ast::Stmt::Expr { value, .. }) = owner.body.get(4) else {
+        panic!("expected a namespaced call");
+    };
+    assert!(matches!(value, Expr::Call { .. }));
+    assert_eq!(script.functions[1].name, "Run");
+    assert_eq!(
+        script.functions[1]
+            .return_type
+            .as_ref()
+            .map(|ty| ty.name.as_str()),
+        Some("Namespace:Helper")
+    );
+    assert_eq!(script.functions[2].name, "Namespace:DoThing");
+}
+
+#[test]
+fn skyrim_mode_rejects_colon_qualified_types() {
+    let error = parse("ScriptName Plain extends Foo:Bar\n")
+        .expect_err("colon-qualified extends is Fallout 4 only");
+    assert!(matches!(error, PapyrusError::Parse(_)));
+
+    let error = parse("ScriptName Plain\nFoo:Bar Property X Auto\n")
+        .expect_err("colon-qualified property types are Fallout 4 only");
+    assert!(matches!(error, PapyrusError::Parse(_)));
+}
