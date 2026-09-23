@@ -76,9 +76,10 @@ fn supports_chained_casts_and_array_types() {
          Function Convert(Form value)\n\
              ObjectReference result = value as Alias as ObjectReference\n\
              Form[] copies = new Form[3]\n\
+             Form[] castCopies = (value as Form[])\n\
          EndFunction\n",
     )
-    .expect("casts and array creation should parse");
+    .expect("casts, array casts, and array creation should parse");
 
     let Stmt::VarDecl(result) = &script.functions[0].body[0] else {
         panic!("expected a result declaration");
@@ -100,6 +101,14 @@ fn supports_chained_casts_and_array_types() {
             if type_name.name == "Form"
                 && !type_name.is_array
                 && **size == Expr::Literal(Literal::int(3))
+    ));
+
+    let Stmt::VarDecl(cast_copies) = &script.functions[0].body[2] else {
+        panic!("expected an array cast declaration");
+    };
+    assert!(matches!(
+        cast_copies.value.as_ref(),
+        Some(Expr::Cast { type_name, .. }) if type_name == "Form[]"
     ));
 }
 

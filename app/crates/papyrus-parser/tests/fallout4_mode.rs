@@ -252,6 +252,7 @@ InstanceData:Owner Function GetInstanceOwner(Hardcore:HC_ManagerScript manager)
     DLC01:DLC01_UnstableModActorScript:UnstableModData data = new DLC01:DLC01_UnstableModActorScript:UnstableModData
     DLC01:DLC01_TrackSystemTrack[] active = new DLC01:DLC01_TrackSystemTrack[0]
     CreationClub:RescuedDogScript named = inst as CreationClub:RescuedDogScript
+    CreationClub:RescuedDogScript[] namedArray = active as CreationClub:RescuedDogScript[]
     DLC04:DLC04_RQ_ManagerScript.GetScript()
     return inst
 EndFunction
@@ -329,7 +330,17 @@ EndFunction
             type_name: "CreationClub:RescuedDogScript".to_string(),
         })
     );
-    let Some(papyrus_parser::ast::Stmt::Expr { value, .. }) = owner.body.get(4) else {
+    let Some(papyrus_parser::ast::Stmt::VarDecl(named_array)) = owner.body.get(4) else {
+        panic!("expected a namespaced array cast local");
+    };
+    assert_eq!(
+        named_array.value,
+        Some(Expr::Cast {
+            value: Box::new(Expr::Identifier("active".to_string())),
+            type_name: "CreationClub:RescuedDogScript[]".to_string(),
+        })
+    );
+    let Some(papyrus_parser::ast::Stmt::Expr { value, .. }) = owner.body.get(5) else {
         panic!("expected a namespaced call");
     };
     assert!(matches!(value, Expr::Call { .. }));
