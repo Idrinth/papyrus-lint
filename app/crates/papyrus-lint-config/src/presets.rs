@@ -634,5 +634,5 @@ pub fn preset_lint_config_default(preset: Preset) -> Result<papyrus_lints::Confi
 }
 
 #[cfg(test)]
-#[path = "presets_tests.rs"]
+#[path = "presets_tests/mod.rs"]
 mod tests;

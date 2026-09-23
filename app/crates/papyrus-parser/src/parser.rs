@@ -20,8 +20,9 @@ type PResult<T> = Result<T, ParseError>;
 
 /// Which game's Papyrus dialect a [`Parser`] accepts. Skyrim is the
 /// original language `papyrus-parser` was built for; Fallout 4 adds a
-/// handful of new constructs (custom `Struct`s, property `Group`s, and the
-/// `DebugOnly`/`BetaOnly` function flags) on top of it. A construct that's
+/// handful of new constructs (custom `Struct`s, property `Group`s, the
+/// `DebugOnly`/`BetaOnly` function flags, and colon-qualified names such
+/// as `DLC03:Foo` on types, `extends`, `new`, and calls) on top of it. A construct that's
 /// Fallout 4 only is rejected the same way an unrecognized token always
 /// is -- as an ordinary [`ParseError`] -- when parsed in [`Self::Skyrim`]
 /// mode.
@@ -174,6 +175,27 @@ impl Parser {
         Ok(name)
     }
 
+    /// Parses a Fallout 4 namespaced script name such as
+    /// `User:MyQuestScript` while retaining ordinary script names.
+    ///
+    /// Accepted in every [`GameEdition`]: project resolution looks up
+    /// namespaced `ScriptName`s without selecting Fallout 4 mode.
+    fn expect_script_name(&mut self) -> PResult<String> {
+        let name = self.expect_identifier()?;
+        self.append_colon_segments(name)
+    }
+
+    /// An identifier, or in [`GameEdition::Fallout4`] only a
+    /// colon-qualified name (`Namespace:Name`, including further segments).
+    fn expect_qualified_name(&mut self) -> PResult<String> {
+        let name = self.expect_identifier()?;
+        if self.mode == GameEdition::Fallout4 {
+            self.append_colon_segments(name)
+        } else {
+            Ok(name)
+        }
+    }
+
     /// Like `expect_identifier`, but also accepts the `Length` keyword,
     /// which is only ever meaningful as an array's `.Length` property.
     fn expect_property_name(&mut self) -> PResult<String> {
@@ -203,7 +225,7 @@ impl Parser {
         let mut extends = None;
         if self.at_keyword(Keyword::Extends) {
             self.advance();
-            extends = Some(self.expect_identifier()?);
+            extends = Some(self.expect_qualified_name()?);
         }
 
         let mut is_hidden = false;
@@ -272,7 +294,7 @@ impl Parser {
         if self.at_keyword(Keyword::Import) {
             let line = self.current().line;
             self.advance();
-            let name = self.expect_identifier()?;
+            let name = self.expect_qualified_name()?;
             self.expect_terminator()?;
             script.imports.push(ImportDecl { name, line });
             return Ok(());
@@ -324,7 +346,7 @@ impl Parser {
     }
 
     fn parse_type_name(&mut self) -> PResult<TypeName> {
-        let name = self.expect_identifier()?;
+        let name = self.expect_qualified_name()?;
         let mut is_array = false;
         if matches!(self.kind(), TokenKind::LBracket) {
             self.advance();
@@ -569,7 +591,7 @@ impl Parser {
         } else {
             self.expect_keyword(Keyword::Function)?;
         }
-        let name = self.expect_identifier()?;
+        let name = self.expect_qualified_name()?;
         self.expect(TokenKind::LParen)?;
         let params = self.parse_params()?;
         self.expect(TokenKind::RParen)?;
@@ -748,7 +770,9 @@ impl Parser {
 
     /// Disambiguates a local variable declaration (`Type name = ...`) from an
     /// expression statement / assignment by looking ahead for the
-    /// `Identifier [ '[' ']' ] Identifier` pattern, without consuming tokens.
+    /// `Identifier [ ':' Identifier ]* [ '[' ']' ] Identifier` pattern,
+    /// without consuming tokens. Colon segments are part of a type name
+    /// only in [`GameEdition::Fallout4`] mode.
     fn looks_like_var_decl(&self) -> bool {
         let mut i = self.pos;
         if !matches!(
@@ -758,6 +782,16 @@ impl Parser {
             return false;
         }
         i += 1;
+        if self.mode == GameEdition::Fallout4 {
+            while matches!(self.tokens.get(i).map(|t| &t.kind), Some(TokenKind::Colon))
+                && matches!(
+                    self.tokens.get(i + 1).map(|t| &t.kind),
+                    Some(TokenKind::Identifier(_))
+                )
+            {
+                i += 2;
+            }
+        }
         if matches!(
             self.tokens.get(i).map(|t| &t.kind),
             Some(TokenKind::LBracket)
@@ -977,7 +1011,7 @@ impl Parser {
         let mut left = self.parse_postfix()?;
         while self.at_keyword(Keyword::As) {
             self.advance();
-            let type_name = self.expect_identifier()?;
+            let type_name = self.expect_qualified_name()?;
             left = Expr::Cast {
                 value: Box::new(left),
                 type_name,
@@ -1098,7 +1132,7 @@ impl Parser {
             }
             TokenKind::Keyword(Keyword::New) => {
                 self.advance();
-                let name = self.expect_identifier()?;
+                let name = self.expect_qualified_name()?;
                 if self.mode == GameEdition::Fallout4 && !matches!(self.kind(), TokenKind::LBracket)
                 {
                     // Fallout 4 only: `New <StructName>`, creating a struct
@@ -1119,6 +1153,11 @@ impl Parser {
             TokenKind::Identifier(ref name) => {
                 let name = name.clone();
                 self.advance();
+                let name = if self.mode == GameEdition::Fallout4 {
+                    self.append_colon_segments(name)?
+                } else {
+                    name
+                };
                 Ok(Expr::Identifier(name))
             }
             TokenKind::LParen => {
