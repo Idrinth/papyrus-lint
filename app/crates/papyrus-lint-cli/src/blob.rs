@@ -30,10 +30,9 @@ pub(crate) const BLOB_PATH: &str = "<blob>";
 /// feeds `--color auto`'s terminal detection the same way [`run`] itself
 /// does.
 ///
-/// Returns `0` if the source parsed and no diagnostic counted as a failure
-/// (per `fail_on_warning`/`fail_on_info`), `1` if parsing failed or any
-/// diagnostic did, or `2` on a `--config` load failure or a failure to write
-/// `--output <path>`.
+/// Returns `0` if no diagnostic counted as a failure (per
+/// `fail_on_warning`/`fail_on_info`), `1` if any did, or `2` on a `--config`
+/// load failure or a failure to write `--output <path>`.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn run_blob(
     source: &str,
@@ -62,14 +61,13 @@ pub(crate) fn run_blob(
 
     let mut diagnostics = papyrus_lints::lint(source, &lint_config);
     let parse_failed = papyrus_parser::parse(source).is_err();
-    let diagnostics_should_fail = finalize_diagnostics(
+    let should_fail = finalize_diagnostics(
         &mut diagnostics,
         &lint_config,
         tag_filter,
         quiet_warnings,
         quiet_info,
     );
-    let should_fail = parse_failed || diagnostics_should_fail;
 
     let use_color = resolve_color(color_choice, output_path, stdout_is_terminal);
 
@@ -83,6 +81,7 @@ pub(crate) fn run_blob(
             &mut report_buf,
             json_diagnostics,
             total_diagnostics,
+            parse_failed,
             should_fail,
         ),
         OutputFormat::Ai => write_blob_ai(
@@ -118,6 +117,7 @@ fn write_blob_json(
     report_buf: &mut Vec<u8>,
     json_diagnostics: Vec<JsonDiagnostic>,
     total_diagnostics: usize,
+    parse_failed: bool,
     should_fail: bool,
 ) {
     let report = JsonReport {
@@ -131,7 +131,7 @@ fn write_blob_json(
         total_diagnostics,
         files_fixed: None,
         dry_run: false,
-        success: !should_fail,
+        success: !parse_failed && !should_fail,
     };
     write_json_report(report_buf, &report);
 }
