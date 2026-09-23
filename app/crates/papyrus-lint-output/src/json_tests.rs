@@ -78,3 +78,32 @@ fn to_json_diagnostics_works_directly_against_native_papyrus_lints_diagnostics()
     assert_eq!(json[0].rule, "trailing-whitespace");
     assert_eq!(json[0].line, 3);
 }
+
+#[test]
+fn json_file_report_serializes_parser_errors_alongside_diagnostics() {
+    let report = JsonFileReport {
+        path: "Broken.psc".to_string(),
+        diagnostics: Vec::new(),
+        parser_errors: vec![JsonParserError {
+            kind: ParserErrorKind::Parse,
+            line: 2,
+            column: 18,
+            message: "expected ')', found Newline".to_string(),
+        }],
+        diff: None,
+    };
+
+    let value = serde_json::to_value(&report).unwrap();
+    assert_eq!(value["path"], "Broken.psc");
+    assert_eq!(value["diagnostics"], serde_json::json!([]));
+    assert_eq!(
+        value["parser_errors"],
+        serde_json::json!([{
+            "kind": "parse",
+            "line": 2,
+            "column": 18,
+            "message": "expected ')', found Newline"
+        }])
+    );
+    assert!(value["diff"].is_null());
+}
