@@ -60,11 +60,11 @@ fn rejects_invalid_members_inside_fallout4_declaration_blocks() {
     for (source, expected) in [
         (
             "ScriptName Broken\nStruct Position\nFunction Run() Native\nEndStruct\n",
-            "expected something that won't match"
+            "expected identifier, found Keyword(Function)",
         ),
         (
             "ScriptName Broken\nGroup Settings\nInt value\nEndGroup\n",
-            "expected something else impossible"
+            "expected something else impossible",
         ),
     ] {
         assert_eq!(fallout4_parse_error(source), expected);
