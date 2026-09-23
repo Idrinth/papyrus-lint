@@ -58,7 +58,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-DIFF_LOG_LIMIT = 200000
+DIFF_LOG_LIMIT = 200
 
 
 def _truncate_diff(diff: str, limit: int = DIFF_LOG_LIMIT) -> str:
