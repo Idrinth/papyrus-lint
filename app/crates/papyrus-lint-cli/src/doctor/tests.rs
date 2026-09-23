@@ -173,6 +173,68 @@ fn doctor_reports_ok_for_an_existing_configured_additional_script_root() {
 }
 
 #[test]
+fn doctor_checks_each_configured_lookup_script_root() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let source_dir = dir.path().join("scripts/source");
+    let script = source_dir.join("Example.psc");
+    let existing_lookup_root = dir.path().join("ExistingLookup");
+    let missing_lookup_root = dir.path().join("MissingLookup");
+    write_file(&script, "ScriptName Example\n");
+    fs::create_dir_all(&existing_lookup_root).expect("failed to create lookup root");
+    write_file(
+        &dir.path().join("papyrus-lint.yaml"),
+        "lookup_script_roots:\n  - ExistingLookup\n  - MissingLookup\n",
+    );
+
+    let (code, stdout, stderr) =
+        run_captured(&["doctor".to_string(), script.to_string_lossy().into_owned()]);
+
+    assert_eq!(code, 1);
+    assert!(stderr.is_empty());
+    assert!(stdout.contains(&format!(
+        "[ok] lookup script root (analysis only) {} exists",
+        existing_lookup_root.display()
+    )));
+    assert!(stdout.contains(&format!(
+        "[warning] configured lookup script root {} does not exist",
+        missing_lookup_root.display()
+    )));
+    assert!(stdout.contains("PapyrusLinterCLI doctor: 1 problem(s) found."));
+}
+
+#[test]
+fn doctor_loads_lookup_script_roots_from_an_explicit_config() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let script = dir.path().join("scripts/source/Example.psc");
+    let lookup_root = dir.path().join("SharedLookup");
+    let config = dir.path().join("config/doctor.yaml");
+    write_file(&script, "ScriptName Example\n");
+    fs::create_dir_all(&lookup_root).expect("failed to create lookup root");
+    write_file(
+        &config,
+        &format!(
+            "lookup_script_roots:\n  - {}\n",
+            lookup_root.to_string_lossy()
+        ),
+    );
+
+    let (code, stdout, stderr) = run_captured(&[
+        "doctor".to_string(),
+        "--config".to_string(),
+        config.to_string_lossy().into_owned(),
+        script.to_string_lossy().into_owned(),
+    ]);
+
+    assert_eq!(code, 0);
+    assert!(stderr.is_empty());
+    assert!(stdout.contains(&format!(
+        "[ok] lookup script root (analysis only) {} exists",
+        lookup_root.display()
+    )));
+    assert!(stdout.contains("PapyrusLinterCLI doctor: no problems found."));
+}
+
+#[test]
 fn doctor_via_script_root_flag_is_checked_even_without_a_config_file() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     let source_dir = dir.path().join("scripts/source");
