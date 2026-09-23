@@ -10,7 +10,6 @@ fn write_config(dir: &Path, name: &str, contents: &str) {
 mod add;
 mod initialize;
 mod manage;
-mod merge;
 mod preset;
 mod preset_config;
 mod save;

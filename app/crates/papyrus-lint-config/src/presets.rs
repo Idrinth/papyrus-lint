@@ -32,6 +32,7 @@ use crate::project_file::{
     existing_config_path, game_key_first, non_lint_yaml, seed_lookup_script_roots, ProjectFile,
     CONFIG_FILE_NAMES,
 };
+use crate::yaml_merge::deep_merge;
 
 /// A named baseline `init` can generate `papyrus-lint.yaml` from, selected
 /// via the CLI's `--preset <name>` flag (see [`Preset::parse`]). See
@@ -503,29 +504,6 @@ fn read_user_preset_yaml_under(base_dir: Option<&Path>, name: &str) -> Result<St
     Preset::Custom(name.trim().to_string())
         .yaml(base_dir)
         .map(Cow::into_owned)
-}
-
-/// Deep-merges `over` onto `base`: a `Mapping` present in both merges key by
-/// key (recursively, so `rules:`'s own nested keys merge independently
-/// rather than one `rules:` block replacing the other outright), and
-/// anything else in `over` replaces `base`'s value for that key entirely.
-/// Used to layer an executable-adjacent base config over a selected
-/// [`Preset`]'s own YAML, the same key-by-key override semantics a project's
-/// own `papyrus-lint.yaml` already gets over the engine's built-in defaults.
-fn deep_merge(base: serde_norway::Value, over: serde_norway::Value) -> serde_norway::Value {
-    match (base, over) {
-        (serde_norway::Value::Mapping(mut base_map), serde_norway::Value::Mapping(over_map)) => {
-            for (key, value) in over_map {
-                let merged = match base_map.remove(&key) {
-                    Some(base_value) => deep_merge(base_value, value),
-                    None => value,
-                };
-                base_map.insert(key, merged);
-            }
-            serde_norway::Value::Mapping(base_map)
-        }
-        (_, over) => over,
-    }
 }
 
 /// Creates `papyrus-lint.yaml` in `dir` from `preset`'s baseline
