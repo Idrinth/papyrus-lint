@@ -43,6 +43,9 @@ pub(super) fn validate(raw: RawArgs, fix: bool) -> Result<ParsedCommand, ArgsErr
     let color_choice = parse_color_choice(color_flag.as_deref())?;
 
     if let Some(source) = blob_flag {
+        if fix {
+            return Err(ArgsError::BlobWithFixFlags);
+        }
         return parse_blob_command(
             source,
             &args,
