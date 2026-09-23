@@ -2,9 +2,12 @@ name: CI / Base scripts snapshot
 
 # Snapshot comparisons ignore line order but preserve duplicate counts. CLI exit
 # codes 0 (clean) and 1 (findings) are valid; 2+ indicates an execution error.
-# After an intentional output change, rebuild the CLI and regenerate fixtures:
+# After an intentional output change, rebuild the CLI and regenerate fixtures
+# locally:
 #   python3 .github/scripts/base_scripts_snapshot.py \
 #     --cli path/to/PapyrusLinterCLI --all --update
+# or run the manual Generate fixtures workflow
+# (.github/workflows/generate-fixtures.yml) from the Actions tab.
 # shared/rules.json is git-ignored, so it must be generated before building.
 
 on:

@@ -1,0 +1,241 @@
+name: Generate fixtures
+
+# Rebuilds the CLI and rewrites the unordered line-based snapshot fixtures
+# under fixtures/ via:
+#   python3 .github/scripts/base_scripts_snapshot.py --cli ... --update
+# Comparison of those fixtures still lives in ci.base-scripts.yml and runs on
+# push/PR. This workflow is manual so an intentional output change can land
+# as its own pull request instead of being mixed into every CI run.
+# shared/rules.json is git-ignored, so it must be generated before building.
+
+on:
+  workflow_dispatch:
+    inputs:
+      game:
+        description: Game whose snapshot fixtures to regenerate
+        type: choice
+        options: [all, skyrim, fallout4]
+        default: all
+      preset:
+        description: Preset whose snapshot fixtures to regenerate
+        type: choice
+        options: [all, strict, standard, careful]
+        default: all
+      scripts:
+        description: Which bundled script set to regenerate
+        type: choice
+        options: [all, base, extender]
+        default: all
+      open_pull_request:
+        description: Open a pull request with any fixture changes
+        type: boolean
+        default: true
+
+concurrency:
+  group: generate-fixtures
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  matrix:
+    name: Generate fixtures / Plan matrix
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.set.outputs.include }}
+    steps:
+      - name: Build generation matrix from inputs
+        id: set
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const game = '${{ inputs.game }}';
+            const preset = '${{ inputs.preset }}';
+            const scripts = '${{ inputs.scripts }}';
+            const games = game === 'all' ? ['skyrim', 'fallout4'] : [game];
+            const presets = preset === 'all' ? ['strict', 'standard', 'careful'] : [preset];
+            const extenders = scripts === 'all'
+              ? ['yes', 'no']
+              : [scripts === 'extender' ? 'yes' : 'no'];
+            const include = [];
+            for (const selectedGame of games) {
+              for (const selectedPreset of presets) {
+                for (const extender of extenders) {
+                  include.push({
+                    game: selectedGame,
+                    preset: selectedPreset,
+                    extender,
+                  });
+                }
+              }
+            }
+            if (include.length === 0) {
+              core.setFailed('generation matrix is empty');
+              return;
+            }
+            core.setOutput('include', JSON.stringify(include));
+
+  build-cli:
+    name: Generate fixtures / Build CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build rules.json from shared/rules/
+        run: python3 .github/scripts/build_rules_json.py
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/crates/papyrus-lint-cli
+
+      - name: Build release CLI binary
+        run: cargo build --release --manifest-path app/crates/papyrus-lint-cli/Cargo.toml
+
+      - name: Upload CLI binary
+        uses: actions/upload-artifact@v7
+        with:
+          name: papyrus-linter-cli-linux
+          path: app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI
+          if-no-files-found: error
+          retention-days: 1
+
+  generate:
+    name: Generate fixtures / ${{ matrix.preset }}, ${{ matrix.game }}, extender ${{ matrix.extender }}
+    needs: [matrix, build-cli]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.include) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Download CLI binary
+        uses: actions/download-artifact@v8
+        with:
+          name: papyrus-linter-cli-linux
+          path: cli-bin
+
+      - name: Make CLI executable
+        run: chmod +x cli-bin/PapyrusLinterCLI
+
+      - name: Lint bundled scripts and rewrite the baseline
+        id: generate
+        run: |
+          set -euo pipefail
+          kind=base
+          extra=()
+          if [ "${{ matrix.extender }}" = "yes" ]; then
+            kind=extender
+            extra+=(--extender)
+          fi
+          python3 .github/scripts/base_scripts_snapshot.py \
+            --cli cli-bin/PapyrusLinterCLI \
+            --preset "${{ matrix.preset }}" \
+            --game "${{ matrix.game }}" \
+            --work-dir base-scripts-work \
+            --update \
+            "${extra[@]}"
+          echo "kind=$kind" >> "$GITHUB_OUTPUT"
+          echo "path=fixtures/${{ matrix.game }}-${kind}-${{ matrix.preset }}.txt" >> "$GITHUB_OUTPUT"
+
+      - name: Upload generated fixture
+        uses: actions/upload-artifact@v7
+        with:
+          name: fixture-${{ matrix.game }}-${{ steps.generate.outputs.kind }}-${{ matrix.preset }}
+          path: ${{ steps.generate.outputs.path }}
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Generate fixtures / Publish changes
+    needs: generate
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Download generated fixtures
+        uses: actions/download-artifact@v8
+        with:
+          pattern: fixture-*
+          path: generated-fixtures
+          merge-multiple: true
+
+      - name: Copy generated fixtures into fixtures/
+        run: |
+          set -euo pipefail
+          mkdir -p fixtures
+          find generated-fixtures -type f -name '*.txt' -print -exec cp -f {} fixtures/ \;
+
+      - name: Detect fixture changes
+        id: changes
+        run: |
+          set -euo pipefail
+          git add fixtures
+          if git diff --cached --quiet -- fixtures; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No fixture files changed."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --cached --stat -- fixtures
+          fi
+
+      - name: Commit and push fixture updates
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          BRANCH: ci/regenerate-fixtures-${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git commit -m "test: regenerate base scripts snapshot fixtures"
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_ENV"
+
+      - name: Open pull request
+        if: steps.changes.outputs.changed == 'true' && inputs.open_pull_request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          BODY=$(cat <<'EOF'
+          ## Description
+
+          Regenerates the unordered line-based snapshot fixtures under `fixtures/`
+          from a manual `workflow_dispatch` run of `.github/workflows/generate-fixtures.yml`.
+
+          ## Reasoning
+
+          Snapshot comparison in `ci.base-scripts.yml` fails after an intentional
+          CLI output change until these baselines are rewritten. Generating them
+          in Actions keeps the rewrite on a dedicated branch.
+
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          Inputs: game=${{ inputs.game }}, preset=${{ inputs.preset }}, scripts=${{ inputs.scripts }}
+
+          ## Checklist
+
+          - [x] I confirm that I am not expecting any monetary reward for this contribution.
+          - [x] I understand that this contribution is permanent and cannot be withdrawn or revoked once merged.
+          EOF
+          )
+          gh pr create \
+            --base the-one \
+            --head "$BRANCH" \
+            --title "test: regenerate base scripts snapshot fixtures" \
+            --label "component: ci" \
+            --label "type: tests" \
+            --label "ai: grok-4.6" \
+            --body "$BODY"
