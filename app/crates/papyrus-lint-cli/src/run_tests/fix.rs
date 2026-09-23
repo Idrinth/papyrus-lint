@@ -271,7 +271,7 @@ fn fix_removes_an_unused_import_resolved_through_the_project_root() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     write_file(
         &dir.path().join("scripts/source/Helpers.psc"),
-        "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
     );
     let script_path = dir.path().join("scripts/source/Example.psc");
     write_file(
@@ -302,7 +302,7 @@ fn fix_type_filter_for_unused_import_only_touches_that_rule() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     write_file(
         &dir.path().join("scripts/source/Helpers.psc"),
-        "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
     );
     let script_path = dir.path().join("scripts/source/Example.psc");
     write_file(
@@ -333,7 +333,7 @@ fn fix_line_filter_errors_when_removing_an_unused_import_changes_the_line_count(
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     write_file(
         &dir.path().join("scripts/source/Helpers.psc"),
-        "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
     );
     let script_path = dir.path().join("scripts/source/Example.psc");
     write_file(

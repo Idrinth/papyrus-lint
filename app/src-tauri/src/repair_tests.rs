@@ -42,7 +42,7 @@ fn repair_psc_file_removes_an_unused_import_resolved_through_the_project() {
     std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
     std::fs::write(
         dir.path().join("scripts/source/Helpers.psc"),
-        "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
     )
     .unwrap();
     let path = dir.path().join("scripts/source/Example.psc");
@@ -232,7 +232,7 @@ fn repair_psc_finding_rejects_removing_an_unused_import_since_it_shifts_the_line
     std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
     std::fs::write(
         dir.path().join("scripts/source/Helpers.psc"),
-        "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
     )
     .unwrap();
     let path = dir.path().join("scripts/source/Example.psc");
@@ -317,7 +317,7 @@ fn repair_psc_file_rule_removes_an_unused_import_resolved_through_the_project() 
     std::fs::create_dir_all(dir.path().join("scripts/source")).unwrap();
     std::fs::write(
         dir.path().join("scripts/source/Helpers.psc"),
-        "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
     )
     .unwrap();
     let path = dir.path().join("scripts/source/Example.psc");
@@ -622,7 +622,7 @@ fn repair_psc_file_removes_an_unused_import_from_an_additional_script_root() {
     let extra = tempdir().unwrap();
     std::fs::write(
         extra.path().join("Helpers.psc"),
-        "ScriptName Helpers\n\nGlobal Function Assist()\nEndFunction\n",
+        "ScriptName Helpers\n\nFunction Assist() Global\nEndFunction\n",
     )
     .unwrap();
     let dir = tempdir().unwrap();
