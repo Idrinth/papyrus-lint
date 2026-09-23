@@ -60,6 +60,7 @@ rules:
   deprecated_functions: true
   formid_hex_notation: true
   get_form_from_file_skyrim_esm: true
+  get_form_from_file_load_index: true
   slow_functions: true
   unused_getter: true
   unused_nodiscard: true

@@ -1,0 +1,15 @@
+{
+  "id": "get-form-from-file-load-index",
+  "name": "Game.GetFormFromFile load index",
+  "category": "Reliability",
+  "visitor": "tokens",
+  "tags": [
+    "correctness",
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags a hex FormID literal passed to Game.GetFormFromFile that carries a non-zero load index, or leading zero digits, neither of which Game.GetFormFromFile ever uses.",
+  "definition": "Flags, as a `[warning]`, a hex FormID literal passed to a qualified `Game.GetFormFromFile` call (positionally or by name) whose bits go beyond the local FormID range its file name argument's own plugin type actually uses — up to `0xFFFFFF` for a normal plugin, or `0xFFF` for one whose file name literally ends in `.esl` — or that pads the value with leading zero digits beyond what's needed to write it. `Game.GetFormFromFile` always resolves the load index (a normal plugin's master index, or a light plugin's own index among other light plugins) from the file name argument itself at runtime and discards whatever the FormID argument's own high bits say instead, and a leading zero digit never changes a hex literal's value either way, so both serve no use and are easy to mistake for meaningful data. Only flags when both arguments are literals (the FormID argument itself, and a literal file name so the local range being checked is actually known); a runtime expression in either position is left unflagged rather than guessed at. Not automatically fixable."
+}
