@@ -34,6 +34,13 @@ fn blob_json_reports_parse_failures_as_unsuccessful() {
     assert!(stderr.is_empty());
     let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(report["success"], false);
+    let parser_errors = report["files"][0]["parser_errors"]
+        .as_array()
+        .expect("parser_errors should be an array");
+    assert_eq!(parser_errors.len(), 1);
+    assert_eq!(parser_errors[0]["kind"], "parse");
+    assert!(parser_errors[0]["line"].as_u64().unwrap() >= 1);
+    assert!(!parser_errors[0]["message"].as_str().unwrap().is_empty());
 }
 
 #[test]

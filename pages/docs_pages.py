@@ -141,12 +141,20 @@ DOCS = [
         "blurb": "The JSON Schema for the report PapyrusLinterCLI --json emits.",
     },
     {
+        "filename": "papyrus-lint-ai-export.v4.schema.json",
+        "source_dir": SCHEMA_DIR,
+        "repo_dir": "schema",
+        "slug": "papyrus-lint-ai-export-v4-schema",
+        "kind": "json-schema",
+        "blurb": "The current JSON Schema for documents produced by the desktop app's Export for AI feature.",
+    },
+    {
         "filename": "papyrus-lint-ai-export.v3.schema.json",
         "source_dir": SCHEMA_DIR,
         "repo_dir": "schema",
         "slug": "papyrus-lint-ai-export-v3-schema",
         "kind": "json-schema",
-        "blurb": "The current JSON Schema for documents produced by the desktop app's Export for AI feature.",
+        "blurb": "The frozen v3 JSON Schema for Export for AI documents, superseded by v4 above.",
     },
     {
         "filename": "papyrus-lint-ai-export.v2.schema.json",

@@ -296,7 +296,7 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       │                  # own OwnedDiagnostic, for a diagnostic that
 │       │       │                  # arrived as plain JSON over Tauri's IPC
 │       │       │                  # boundary), level_of, strip_severity_prefix
-│       │       ├── json.rs         # JsonDiagnostic/JsonFileReport/JsonReport,
+│       │       ├── json.rs         # JsonDiagnostic/JsonParserError/JsonFileReport/JsonReport,
 │       │       │                  # to_json_diagnostics, doc_url_for
 │       │       ├── ai.rs           # AiReport and friends, build_ai_report,
 │       │       │                  # ai_configuration

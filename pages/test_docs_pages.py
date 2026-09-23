@@ -15,7 +15,7 @@ from pages import docs_pages
 class PublishedSchemaTest(unittest.TestCase):
     def test_ai_export_rule_details_expose_auto_fixability(self) -> None:
         schema = json.loads(
-            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
+            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v4.schema.json").read_text(encoding="utf-8")
         )
 
         rule_detail = schema["$defs"]["ruleDetail"]
@@ -24,7 +24,7 @@ class PublishedSchemaTest(unittest.TestCase):
 
     def test_ai_export_external_diagnostic_fields_require_each_other(self) -> None:
         schema = json.loads(
-            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
+            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v4.schema.json").read_text(encoding="utf-8")
         )
 
         self.assertEqual(
@@ -34,7 +34,7 @@ class PublishedSchemaTest(unittest.TestCase):
 
     def test_ai_export_space_indentation_requires_positive_width(self) -> None:
         schema = json.loads(
-            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v3.schema.json").read_text(encoding="utf-8")
+            (docs_pages.SCHEMA_DIR / "papyrus-lint-ai-export.v4.schema.json").read_text(encoding="utf-8")
         )
 
         configuration = schema["$defs"]["configuration"]

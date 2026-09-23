@@ -310,6 +310,7 @@ An example valid report is:
       "diagnostics": [
         { "line": 3, "column": 1, "rule": "trailing-whitespace", "level": "warning", "message": "[warning] Line contains trailing whitespace", "doc_url": "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace" }
       ],
+      "parser_errors": [],
       "diff": null
     }
   ],
@@ -324,7 +325,11 @@ An example valid report is:
 
 Every resolved script gets a `files` entry, even one with no diagnostics,
 so a consumer can clear stale diagnostics for a file that's since become
-clean. `level` is always `"error"`, `"warning"`, or `"info"`. Every built-in lint
+clean. `parser_errors` collects any lexer or parser errors raised while
+handling that script — empty when it lexed and parsed cleanly, and
+separate from `diagnostics` so a consumer can tell a syntax error apart
+from a lint finding. Parsing currently stops at the first error, so the
+array holds at most one entry. `level` is always `"error"`, `"warning"`, or `"info"`. Every built-in lint
 sets a level; an untagged external diagnostic is conservatively reported as
 `"error"` — see `Diagnostic::level`. Each diagnostic's `doc_url` is that
 rule's own documentation link on the

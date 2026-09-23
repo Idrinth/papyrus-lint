@@ -30,6 +30,31 @@ fn json_mode_lints_a_script_through_the_binary_entry_point() {
         report["files"][0]["diagnostics"][0]["doc_url"],
         "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace"
     );
+    assert_eq!(report["files"][0]["parser_errors"], serde_json::json!([]));
+}
+
+#[test]
+fn json_mode_reports_parser_errors_as_a_first_class_file_field() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Broken.psc");
+    write_file(&script, "ScriptName Broken\nFunction Broken(\n");
+
+    let output = run_cli(&["--json", &script.to_string_lossy()]);
+
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain JSON");
+    let parser_errors = report["files"][0]["parser_errors"]
+        .as_array()
+        .expect("parser_errors should be an array");
+    assert_eq!(parser_errors.len(), 1);
+    assert_eq!(parser_errors[0]["kind"], "parse");
+    assert!(parser_errors[0]["line"].as_u64().unwrap() >= 1);
+    assert!(parser_errors[0]["column"].as_u64().unwrap() >= 1);
+    assert!(parser_errors[0]["message"]
+        .as_str()
+        .unwrap()
+        .contains("expected"));
 }
 
 #[test]
@@ -60,7 +85,7 @@ fn ai_format_includes_source_and_triggered_rule_details() {
         serde_json::from_slice(&output.stdout).expect("stdout should contain an AI export");
     assert_eq!(
         report["$schema"],
-        "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json"
+        "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v4.schema.json"
     );
     assert_eq!(report["header"]["tool"], "Papyrus Lint");
     assert_eq!(
@@ -94,6 +119,10 @@ fn ai_format_includes_source_and_triggered_rule_details() {
     assert_eq!(
         report["findings"]["severity_counts"],
         serde_json::json!({"errors": 0, "warnings": 1, "info": 0})
+    );
+    assert_eq!(
+        report["findings"]["files"][0]["parser_errors"],
+        serde_json::json!([])
     );
     assert_eq!(
         report["findings"]["files"][0]["diagnostics"][0]["rule"],
@@ -136,6 +165,32 @@ fn ai_format_omits_scripts_without_diagnostics() {
         .stdout
         .windows(b"Clean.psc".len())
         .any(|window| window == b"Clean.psc"));
+}
+
+#[test]
+fn ai_format_includes_parser_errors_on_the_file_report() {
+    let dir = tempfile::tempdir().expect("failed to create temp directory");
+    let script = dir.path().join("scripts/source/Broken.psc");
+    write_file(&script, "ScriptName Broken\nFunction Broken(\n");
+
+    let output = run_cli(&["--format", "ai", &script.to_string_lossy()]);
+
+    assert!(output.stderr.is_empty());
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should contain an AI export");
+    let files = report["findings"]["files"]
+        .as_array()
+        .expect("AI export files should be an array");
+    assert_eq!(files.len(), 1);
+    let parser_errors = files[0]["parser_errors"]
+        .as_array()
+        .expect("parser_errors should be an array");
+    assert_eq!(parser_errors.len(), 1);
+    assert_eq!(parser_errors[0]["kind"], "parse");
+    assert!(parser_errors[0]["message"]
+        .as_str()
+        .unwrap()
+        .contains("expected"));
 }
 
 #[test]
