@@ -391,7 +391,7 @@ fn parses_is_type_check_operator() {
 
 Event OnActivate(ObjectReference akActionRef)
     if akActionRef is Actor
-        gotoState(\"Off\")
+        gotoState("Off")
     endif
 EndEvent
 "#,
