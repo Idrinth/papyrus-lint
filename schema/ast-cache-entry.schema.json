@@ -64,6 +64,10 @@
         "extends": { "type": ["string", "null"] },
         "is_hidden": { "type": "boolean" },
         "is_conditional": { "type": "boolean" },
+        "is_native": {
+          "description": "Whether the ScriptName line itself carries the Native flag -- the whole script is implemented natively by the engine with no Papyrus body (e.g. Fallout 4's own Actor.psc/ObjectReference.psc/Form.psc). Distinct from a FunctionDecl's own is_native. Absent (defaults to false) on an entry written before this field existed.",
+          "type": "boolean"
+        },
         "imports": {
           "type": "array",
           "items": { "$ref": "#/$defs/importDecl" }
@@ -84,11 +88,71 @@
           "type": "array",
           "items": { "$ref": "#/$defs/stateDecl" }
         },
+        "structs": {
+          "description": "Fallout 4 only (GameEdition::Fallout4): the script's own custom Struct .. EndStruct type declarations. Always empty when parsed in Skyrim mode. Absent (defaults to empty) on an entry written before this field existed.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/structDecl" }
+        },
+        "groups": {
+          "description": "Fallout 4 only (GameEdition::Fallout4): Group .. EndGroup property groupings. A property declared inside a group appears here, not in properties. Always empty when parsed in Skyrim mode. Absent (defaults to empty) on an entry written before this field existed.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/groupDecl" }
+        },
         "line": {
           "description": "The 1-indexed line the ScriptName keyword itself starts on.",
           "type": "integer",
           "minimum": 1
         }
+      }
+    },
+    "structMember": {
+      "description": "A single member of a Fallout 4 Struct .. EndStruct declaration. Struct members carry no Hidden/Conditional flags -- only a type, name, and optional default value.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type_name", "name", "value", "line"],
+      "properties": {
+        "type_name": { "$ref": "#/$defs/typeName" },
+        "name": { "type": "string" },
+        "value": {
+          "anyOf": [{ "$ref": "#/$defs/expr" }, { "type": "null" }]
+        },
+        "line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "structDecl": {
+      "description": "A Fallout 4 only (GameEdition::Fallout4) custom Struct .. EndStruct type declaration.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "members", "line"],
+      "properties": {
+        "name": { "type": "string" },
+        "members": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/structMember" }
+        },
+        "line": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "groupDecl": {
+      "description": "A Fallout 4 only (GameEdition::Fallout4) Group .. EndGroup block: purely a Creation Kit organizational aid, wrapping one or more property declarations under a named, optionally-collapsed heading.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "is_collapsed_on_base",
+        "is_collapsed_on_ref",
+        "properties",
+        "line"
+      ],
+      "properties": {
+        "name": { "type": "string" },
+        "is_collapsed_on_base": { "type": "boolean" },
+        "is_collapsed_on_ref": { "type": "boolean" },
+        "properties": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/propertyDecl" }
+        },
+        "line": { "type": "integer", "minimum": 1 }
       }
     },
     "importDecl": {

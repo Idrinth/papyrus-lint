@@ -177,6 +177,7 @@ impl Parser {
 
         let mut is_hidden = false;
         let mut is_conditional = false;
+        let mut is_native = false;
         loop {
             if self.at_keyword(Keyword::Hidden) {
                 self.advance();
@@ -184,6 +185,15 @@ impl Parser {
             } else if self.at_keyword(Keyword::Conditional) {
                 self.advance();
                 is_conditional = true;
+            } else if self.at_keyword(Keyword::Native) {
+                // A whole script implemented natively by the engine (e.g.
+                // Fallout 4's own `Actor.psc extends ObjectReference
+                // Native Hidden`) rather than one native function inside
+                // it. Accepted in any dialect: Skyrim's own vanilla
+                // archive never uses it, but nothing about the flag
+                // itself is Fallout 4 specific.
+                self.advance();
+                is_native = true;
             } else {
                 break;
             }
@@ -195,6 +205,7 @@ impl Parser {
             extends,
             is_hidden,
             is_conditional,
+            is_native,
             imports: Vec::new(),
             properties: Vec::new(),
             variables: Vec::new(),
