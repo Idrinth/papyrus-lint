@@ -182,3 +182,7 @@ fn append_plain_summary(
         colorize(&summary, summary_color, use_color)
     );
 }
+
+#[cfg(test)]
+#[path = "report_tests.rs"]
+mod tests;
