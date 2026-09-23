@@ -88,7 +88,7 @@ fn bundled_script_functions(name_lower: &str) -> Option<ScriptFunctions> {
 /// `shared/skyrim-extender-scripts.zip` hit the cache's bundled blob and never
 /// take its disk lock, so parallel workers resolving the same base type do not
 /// serialize on that lookup.
-fn load_script_functions(game: &str, path: &Path) -> Option<ScriptFunctions> {
+fn load_script_functions(game: papyrus_lint_globals::Game, path: &Path) -> Option<ScriptFunctions> {
     let source = read_psc_source(path).ok()?;
     let parsed = if let Some(cached) = crate::ast_cache::get_for_game(game, path, &source) {
         cached
@@ -198,15 +198,15 @@ impl FunctionTable {
                         if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
                             cached
                         } else {
-                            let loaded = load_script_functions(self.game.as_str(), &path);
+                            let loaded = load_script_functions(self.game, &path);
                             store_lookup_script(path, mtime_secs, loaded.clone());
                             loaded
                         }
                     } else {
-                        load_script_functions(self.game.as_str(), &path)
+                        load_script_functions(self.game, &path)
                     }
                 } else {
-                    load_script_functions(self.game.as_str(), &path)
+                    load_script_functions(self.game, &path)
                 }
             }
             None if self.game == papyrus_lint_globals::Game::Skyrim => {

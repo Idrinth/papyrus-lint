@@ -5,6 +5,7 @@
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
+use papyrus_lint_globals::Game;
 use serde::{Deserialize, Serialize};
 
 use crate::version::is_compatible_version;
@@ -51,9 +52,9 @@ pub(crate) fn cache_file_path(dir: &Path, source_path: &Path) -> PathBuf {
     dir.join(format!("{digest:x}.json"))
 }
 
-pub(crate) fn cache_file_path_for_game(dir: &Path, game: &str, source_path: &Path) -> PathBuf {
+pub(crate) fn cache_file_path_for_game(dir: &Path, game: Game, source_path: &Path) -> PathBuf {
     let digest = md5::compute(source_path.to_string_lossy().as_bytes());
-    dir.join(format!("{game}-{digest:x}.json"))
+    dir.join(format!("{}-{digest:x}.json", game.as_str()))
 }
 
 pub(crate) fn file_modified_unix_secs(source_path: &Path) -> Option<u64> {
@@ -75,7 +76,7 @@ pub(crate) fn valid_entry_in(dir: &Path, source_path: &Path, source: &str) -> Op
 
 pub(crate) fn valid_entry_in_for_game(
     dir: &Path,
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
 ) -> Option<CacheEntry> {
@@ -109,7 +110,7 @@ pub(crate) fn write_entry_in(dir: &Path, source_path: &Path, entry: &CacheEntry)
 
 pub(crate) fn write_entry_in_for_game(
     dir: &Path,
-    game: &str,
+    game: Game,
     source_path: &Path,
     entry: &CacheEntry,
 ) {
@@ -201,13 +202,12 @@ mod tests {
     fn game_cache_file_path_prefixes_the_path_digest() {
         let dir = Path::new("/tmp/ast-cache");
         let source = Path::new("/mods/Scripts/Example.psc");
-        let name =
-            cache_file_path_for_game(dir, papyrus_lint_globals::Game::Skyrim.as_str(), source)
-                .file_name()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_string();
+        let name = cache_file_path_for_game(dir, papyrus_lint_globals::Game::Skyrim, source)
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
         assert!(name.starts_with("skyrim-"));
         assert_eq!(name.len(), "skyrim-".len() + 32 + ".json".len());
     }
@@ -228,7 +228,7 @@ mod tests {
 
         assert!(valid_entry_in_for_game(
             cache_dir.path(),
-            papyrus_lint_globals::Game::Skyrim.as_str(),
+            papyrus_lint_globals::Game::Skyrim,
             &source_path,
             source,
         )

@@ -63,7 +63,7 @@ impl TokenLint for Collect {
         ctx: &mut VisitCtx<'_>,
     ) {
         let rules = if self.from_config {
-            slow_functions_for(ctx.config.game.as_str())
+            slow_functions_for(ctx.config.game)
         } else {
             self.rules
         };
@@ -143,7 +143,7 @@ pub fn repair(
 ) -> String {
     let _ = (ast, tokens);
 
-    repair_with_rules(source, slow_functions_for(config.game.as_str()))
+    repair_with_rules(source, slow_functions_for(config.game))
 }
 
 fn repair_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> String {
