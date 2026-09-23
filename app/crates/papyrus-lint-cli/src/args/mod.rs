@@ -26,11 +26,11 @@ pub(crate) use parse::{
 
 use crate::output::{ColorChoice, OutputFormat};
 
-/// Why [`parse_run_args`] / [`parse_cli`] rejected `args`. `Usage` covers
-/// every case [`crate::run`] reports with the generic [`crate::USAGE`] text
-/// (a missing flag value, an unrecognized subcommand, or an unrecognized
-/// combination of positional arguments); every other variant carries
-/// whatever its own more specific message needs.
+/// Why [`parse_cli`] rejected `args`. `Usage` covers every case
+/// [`crate::run`] reports with the generic [`crate::USAGE`] text (a missing
+/// flag value, an unrecognized subcommand, or an unrecognized combination
+/// of positional arguments); every other variant carries whatever its own
+/// more specific message needs.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum ArgsError {
     Usage,
@@ -87,9 +87,9 @@ pub(crate) struct LintArgs {
     pub(crate) thread_count: usize,
 }
 
-/// What [`parse_run_args`] parsed `args` into: `--version`/`-V` (reported
-/// and exited before anything else is even looked at), `--blob <source>`,
-/// or a plain lint/fix run.
+/// What [`parse_cli`] parsed a lint, fix, or `--blob` invocation into:
+/// `version` (reported and exited before anything else is even looked at),
+/// `--blob <source>`, or a plain lint/fix run.
 #[derive(Debug, PartialEq)]
 pub(crate) enum ParsedCommand {
     Version,
@@ -97,11 +97,10 @@ pub(crate) enum ParsedCommand {
     Lint(LintArgs),
 }
 
-/// Parses and validates a lint/fix/`--blob` invocation into a
-/// [`ParsedCommand`]: [`parse::parse_raw`] recognizes clap's flag syntax,
-/// then [`validate::validate`] applies every usage check that run needs
-/// before any of the actual work begins. Subcommands (`init`, `preset`,
-/// `doctor`) are handled by [`parse_cli`] instead.
+/// Parses and validates a lint/`--blob` invocation into a [`ParsedCommand`]
+/// without the `lint` subcommand word. Unit tests use this to exercise flag
+/// validation on its own; [`parse_cli`] is what [`crate::run`] calls.
+#[cfg(test)]
 pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError> {
     validate::validate(parse::parse_raw(args)?, false)
 }

@@ -174,8 +174,9 @@ pub(super) struct RawArgs {
 }
 
 /// Wrapper so [`parse_raw`] can keep parsing a lint/fix/`--blob` invocation
-/// on its own (without treating `init`/`preset`/`doctor` as subcommands),
-/// which is what [`super::parse_run_args`]'s tests exercise.
+/// on its own (without treating `init`/`preset`/`doctor`/`lint`/`fix` as
+/// subcommands), which is what the args tests exercise.
+#[cfg(test)]
 #[derive(Parser, Debug)]
 #[command(
     no_binary_name = true,
@@ -191,6 +192,7 @@ struct LintOnlyArgs {
 /// Parses `args` into a [`RawArgs`], mapping any `clap` failure (an
 /// unrecognized flag, or a value-taking flag given with no value) to
 /// [`ArgsError::Usage`].
+#[cfg(test)]
 pub(super) fn parse_raw(args: &[String]) -> Result<RawArgs, ArgsError> {
     LintOnlyArgs::try_parse_from(args)
         .map(|parsed| parsed.run)
@@ -249,11 +251,11 @@ pub(crate) fn parse_init_preset(
     rest: &[String],
 ) -> Result<(presets::Preset, Game), InitPresetError> {
     let raw = InitRawArgs::try_parse_from(rest).map_err(|_| InitPresetError::Usage)?;
-    let game = match raw.game.to_ascii_lowercase().as_str() {
-        "skyrim" => Game::Skyrim,
-        "fallout4" => Game::Fallout4,
-        _ => return Err(InitPresetError::Usage),
-    };
+    let game = raw
+        .game
+        .to_ascii_lowercase()
+        .parse::<Game>()
+        .map_err(|_| InitPresetError::Usage)?;
     let preset = match raw.preset {
         Some(value) => presets::Preset::parse(&value).ok_or(InitPresetError::Usage)?,
         None => presets::Preset::default(),
