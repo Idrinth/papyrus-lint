@@ -14,7 +14,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
-import { type Diagnostic } from "./backend";
+import { type Diagnostic } from "./backend-types";
 import { handleDroppedPaths } from "./drop";
 import { DEFAULT_LINT_CONFIG } from "./config-types";
 import { openCodeViewer } from "./code-viewer-dialog";

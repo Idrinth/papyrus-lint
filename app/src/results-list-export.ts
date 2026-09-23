@@ -1,4 +1,5 @@
-import { type PscParseOutcome, loadAppVersion } from "./backend";
+import { type PscParseOutcome } from "./backend-types";
+import { loadAppVersion } from "./backend";
 import { type LintConfig, currentLintConfig } from "./config-types";
 import { currentPscOutcomes } from "./drop";
 import { downloadTextFile } from "./download-text-file";

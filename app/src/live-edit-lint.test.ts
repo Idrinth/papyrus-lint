@@ -14,7 +14,8 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
-import { lintPapyrusScript, type Diagnostic } from "./backend";
+import { type Diagnostic } from "./backend-types";
+import { lintPapyrusScript } from "./backend";
 import { openCodeViewer } from "./code-viewer-dialog";
 import {
   cancelCodeViewerEditMode,

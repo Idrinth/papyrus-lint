@@ -14,7 +14,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import "./test/harness";
-import { TAG_IMPORTANCES, type Diagnostic, type PscParseOutcome, type RuleTagsInfo } from "./backend";
+import { TAG_IMPORTANCES, type Diagnostic, type PscParseOutcome, type RuleTagsInfo } from "./backend-types";
 import { applyRuleTags } from "./main";
 import { collectFilteredIssues, filterOutcomes, matchesFilenameFilter, matchesTagFilters } from "./results-filter";
 describe("matchesFilenameFilter", () => {

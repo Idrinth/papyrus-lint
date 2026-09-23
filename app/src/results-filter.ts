@@ -1,4 +1,4 @@
-import { type Diagnostic, type PscParseOutcome, type RuleTagsInfo, type TagImportance, type TagKind, TAG_IMPORTANCES, TAG_KINDS } from "./backend";
+import { type Diagnostic, type PscParseOutcome, type RuleTagsInfo, type TagImportance, type TagKind, TAG_IMPORTANCES, TAG_KINDS } from "./backend-types";
 import { type Severity, SEVERITIES, severityOf } from "./main-severity";
 import { currentProjectDir } from "./project-state";
 import { relativePath } from "./path";

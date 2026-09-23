@@ -4,7 +4,8 @@
 // orchestration in main.ts, which this module calls back into to render its
 // results.
 import { invoke } from "@tauri-apps/api/core";
-import { lintPscFile, preloadProjectScripts, type PapyrusScript, type PscParseOutcome } from "./backend";
+import { type PapyrusScript, type PscParseOutcome } from "./backend-types";
+import { lintPscFile, preloadProjectScripts } from "./backend";
 import { currentLintConfig } from "./config-types";
 import { clearError, setDropZoneLoading, showError, showResult } from "./main";
 import { switchTab } from "./main-tabs";

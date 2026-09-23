@@ -1,4 +1,5 @@
-import { type PscParseOutcome, isFixableFinding } from "./backend";
+import { type PscParseOutcome } from "./backend-types";
+import { isFixableFinding } from "./finding-fixability";
 import { handleMassFixClick } from "./results-list-actions";
 import { pscResultMassFixEl, pscResultMassFixListEl } from "./results-list-state";
 // Human-readable names for FIXABLE_RULE_IDS, used to label each rule in the

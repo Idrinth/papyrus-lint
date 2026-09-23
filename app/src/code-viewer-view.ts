@@ -1,4 +1,6 @@
-import { type Diagnostic, findingMessageWithRule, isFixableFinding } from "./backend";
+import { type Diagnostic } from "./backend-types";
+import { isFixableFinding } from "./finding-fixability";
+import { findingMessageWithRule } from "./finding-message";
 import { configKeyForRuleId } from "./config-ui";
 import { highlightPapyrusLines } from "./highlight";
 import { escapeAttr, levelOf } from "./main-severity";

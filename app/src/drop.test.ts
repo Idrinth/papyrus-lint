@@ -16,7 +16,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
 import { switchTab } from "./main-tabs";
 import { handleDroppedPaths, parsePscFiles, relintCurrentFiles } from "./drop";
-import { type Diagnostic } from "./backend";
+import { type Diagnostic } from "./backend-types";
 import { DEFAULT_LINT_CONFIG, type LintConfig } from "./config-types";
 import { handleLintConfigChanged } from "./config-ui";
 import { handleConfigPathOverrideChanged } from "./project-settings";
