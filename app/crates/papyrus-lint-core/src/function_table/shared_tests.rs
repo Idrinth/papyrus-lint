@@ -102,6 +102,72 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
 }
 
 #[test]
+fn every_external_signature_lookup_can_fill_an_uncached_script() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let function_source = "ScriptName {name}\n\nFunction Run() Global ; @deprecated\nEndFunction\n\nInt Function RegisterFoo() ; @nodiscard\n    Return 1\nEndFunction\n";
+    for name in [
+        "Lookup",
+        "FunctionAccess",
+        "GlobalFunction",
+        "NodiscardFunction",
+        "DeprecatedFunction",
+        "SideEffects",
+    ] {
+        write_script(root.path(), name, &function_source.replace("{name}", name));
+    }
+    let property_source = "ScriptName {name}\n\nString Property Name Auto\nInt Age = 1\n";
+    for name in ["PropertyAccess", "HasProperty", "HasField", "PropertyTypes"] {
+        write_script(root.path(), name, &property_source.replace("{name}", name));
+    }
+    write_script(
+        root.path(),
+        "SubtypeChild",
+        "ScriptName SubtypeChild Extends SubtypeParent\n",
+    );
+    write_script(root.path(), "SubtypeParent", "ScriptName SubtypeParent\n");
+    for name in ["HasState", "AncestorStates"] {
+        write_script(
+            root.path(),
+            name,
+            &format!("ScriptName {name}\n\nState Active\nEndState\n"),
+        );
+    }
+    write_script(root.path(), "KnownAncestry", "ScriptName KnownAncestry\n");
+
+    let table = RwLock::new(FunctionTable::new(root.path().to_path_buf()));
+    let mut shared = SharedFunctionTable(&table);
+
+    assert_eq!(shared.lookup("Lookup", "Run"), Some(Vec::new()));
+    assert!(shared.function_access("FunctionAccess", "Run").is_some());
+    assert!(shared.property_access("PropertyAccess", "Name").is_some());
+    assert!(shared.is_subtype("SubtypeChild", "SubtypeParent"));
+    assert!(shared.has_property("HasProperty", "Name"));
+    assert!(shared.has_field("HasField", "Age"));
+    assert!(shared.has_state("HasState", "Active"));
+    assert_eq!(
+        shared.ancestor_states("AncestorStates"),
+        vec![("active".to_string(), false)]
+    );
+    assert_eq!(
+        shared.is_global_function("GlobalFunction", "Run"),
+        Some(true)
+    );
+    assert_eq!(
+        shared.is_nodiscard_function("NodiscardFunction", "RegisterFoo"),
+        Some(true)
+    );
+    assert!(shared
+        .deprecated_function("DeprecatedFunction", "Run")
+        .is_some());
+    assert_eq!(
+        shared.function_has_side_effects("SideEffects", "Run"),
+        Some(false)
+    );
+    assert!(shared.ancestry_fully_known("KnownAncestry"));
+    assert_eq!(shared.property_types("PropertyTypes"), vec!["String"]);
+}
+
+#[test]
 fn cached_negative_results_are_returned_without_a_write_lock() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(root.path(), "Known", "ScriptName Known\n");
