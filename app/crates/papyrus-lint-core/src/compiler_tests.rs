@@ -382,6 +382,24 @@ fn import_dirs_without_a_root_cannot_resolve_additional_roots() {
 }
 
 #[test]
+fn selects_the_flags_file_for_each_supported_game() {
+    assert_eq!(
+        flags_file(papyrus_lints::Game::Skyrim),
+        "TESV_Papyrus_Flags.flg"
+    );
+    assert_eq!(
+        flags_file(papyrus_lints::Game::Fallout4),
+        "Institute_Papyrus_Flags.flg"
+    );
+}
+
+#[test]
+#[should_panic(expected = "Starfield is not supported yet")]
+fn rejects_a_flags_file_for_starfield() {
+    let _ = flags_file(papyrus_lints::Game::Starfield);
+}
+
+#[test]
 fn resolve_locations_supports_relative_project_paths() {
     let (source_dir, output_dir) = resolve_locations(Path::new("Data/Scripts/Source/Example.psc"))
         .expect("nested script path should resolve");
