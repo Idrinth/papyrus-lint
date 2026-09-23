@@ -115,7 +115,7 @@ mod version;
 static CACHE_LOCK: Mutex<()> = Mutex::new(());
 
 fn uses_bundled_skyrim(game: &str) -> bool {
-    game.eq_ignore_ascii_case(Game::Skyrim.as_str())
+    game.to_ascii_lowercase().parse() == Ok(Game::Skyrim)
 }
 
 /// Returns the cached AST for `source_path` if the bundled-script cache knows

@@ -8,6 +8,7 @@
 //! [`super::script_catalog`] instead.
 
 use super::BuildContext;
+use papyrus_lint_globals::Game;
 use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
@@ -45,7 +46,7 @@ pub struct UpdateEventPair {
     pub event: String,
 }
 
-pub fn forbidden_functions(context: &BuildContext, game: &str) -> Vec<ForbiddenFunction> {
+pub fn forbidden_functions(context: &BuildContext, game: Game) -> Vec<ForbiddenFunction> {
     load_game(
         context,
         game,
@@ -54,7 +55,7 @@ pub fn forbidden_functions(context: &BuildContext, game: &str) -> Vec<ForbiddenF
     )
 }
 
-pub fn deprecated_functions(context: &BuildContext, game: &str) -> Vec<DeprecatedFunction> {
+pub fn deprecated_functions(context: &BuildContext, game: Game) -> Vec<DeprecatedFunction> {
     load_game(
         context,
         game,
@@ -63,11 +64,11 @@ pub fn deprecated_functions(context: &BuildContext, game: &str) -> Vec<Deprecate
     )
 }
 
-pub fn slow_functions(context: &BuildContext, game: &str) -> Vec<SlowFunction> {
+pub fn slow_functions(context: &BuildContext, game: Game) -> Vec<SlowFunction> {
     load_game(context, game, "slow-functions.yaml", "slow-functions rules")
 }
 
-pub fn actor_values(context: &BuildContext, game: &str) -> Vec<String> {
+pub fn actor_values(context: &BuildContext, game: Game) -> Vec<String> {
     let relative = format!("shared/rules/data/{game}/actor-values.yaml");
     if !context.input(&relative).exists() {
         return Vec::new();
@@ -75,7 +76,7 @@ pub fn actor_values(context: &BuildContext, game: &str) -> Vec<String> {
     context.load_yaml(&relative, "actor-values rules")
 }
 
-pub fn update_event_pairs(context: &BuildContext, game: &str) -> Vec<UpdateEventPair> {
+pub fn update_event_pairs(context: &BuildContext, game: Game) -> Vec<UpdateEventPair> {
     load_game(
         context,
         game,
@@ -84,7 +85,7 @@ pub fn update_event_pairs(context: &BuildContext, game: &str) -> Vec<UpdateEvent
     )
 }
 
-fn load_game<T>(context: &BuildContext, game: &str, filename: &str, description: &str) -> Vec<T>
+fn load_game<T>(context: &BuildContext, game: Game, filename: &str, description: &str) -> Vec<T>
 where
     T: serde::de::DeserializeOwned,
 {

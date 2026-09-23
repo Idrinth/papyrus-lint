@@ -21,18 +21,16 @@ include!(concat!(env!("OUT_DIR"), "/native_globals_data.rs"));
 
 use papyrus_lint_globals::Game;
 
-fn globals_for(game: &str) -> &'static [&'static str] {
-    if game == Game::Fallout4.as_str() {
-        FALLOUT4_NATIVE_GLOBALS
-    } else if game == Game::Skyrim.as_str() {
-        SKYRIM_NATIVE_GLOBALS
-    } else {
-        panic!("unsupported game {game} provided")
+fn globals_for(game: Game) -> &'static [&'static str] {
+    match game {
+        Game::Fallout4 => FALLOUT4_NATIVE_GLOBALS,
+        Game::Skyrim => SKYRIM_NATIVE_GLOBALS,
+        Game::Starfield => panic!("unsupported game {game} provided"),
     }
 }
 
 /// Whether `name_lower` is a known native singleton script for `game`.
 /// `name_lower` must already be lowercased.
-pub fn is_known_for(game: &str, name_lower: &str) -> bool {
+pub fn is_known_for(game: Game, name_lower: &str) -> bool {
     globals_for(game).contains(&name_lower)
 }

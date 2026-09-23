@@ -16,7 +16,7 @@ use std::path::Path;
 
 use papyrus_lint_globals::Game;
 
-pub const GAMES: &[&str] = &[Game::Skyrim.as_str(), Game::Fallout4.as_str()];
+pub const GAMES: &[Game] = &[Game::Skyrim, Game::Fallout4];
 
 /// Forms whose event declarations win when the same event name appears on
 /// more than one script in a single game archive. Lower index is walked
@@ -62,25 +62,23 @@ struct ScriptHeader {
     has_global_native: bool,
 }
 
-fn base_archive(game: &str) -> &'static str {
-    if game == Game::Fallout4.as_str() {
-        "fallout4-scripts.zip"
-    } else {
-        "skyrim-scripts.zip"
+fn base_archive(game: Game) -> &'static str {
+    match game {
+        Game::Fallout4 => "fallout4-scripts.zip",
+        Game::Skyrim | Game::Starfield => "skyrim-scripts.zip",
     }
 }
 
-fn extender_archive(game: &str) -> &'static str {
-    if game == Game::Fallout4.as_str() {
-        "fallout4-extender-scripts.zip"
-    } else {
-        "skyrim-extender-scripts.zip"
+fn extender_archive(game: Game) -> &'static str {
+    match game {
+        Game::Fallout4 => "fallout4-extender-scripts.zip",
+        Game::Skyrim | Game::Starfield => "skyrim-extender-scripts.zip",
     }
 }
 
 /// Lowercased singleton script names (`Game`, `Utility`, F4SE `UI`, …)
 /// referenced by literal type name rather than through a typed variable.
-pub fn native_global_names(scripts_dir: &Path, game: &str) -> Vec<String> {
+pub fn native_global_names(scripts_dir: &Path, game: Game) -> Vec<String> {
     let mut names: BTreeMap<String, String> = BTreeMap::new();
     for archive in [base_archive(game), extender_archive(game)] {
         for script in parse_archive(scripts_dir, archive) {
@@ -95,7 +93,7 @@ pub fn native_global_names(scripts_dir: &Path, game: &str) -> Vec<String> {
 }
 
 /// Base-game `Native` functions from the vanilla (non-extender) archive.
-pub fn native_methods(scripts_dir: &Path, game: &str) -> Vec<NativeMethod> {
+pub fn native_methods(scripts_dir: &Path, game: Game) -> Vec<NativeMethod> {
     let mut seen: BTreeMap<(String, String), NativeMethod> = BTreeMap::new();
     for script in parse_archive(scripts_dir, base_archive(game)) {
         for function in script.natives {
@@ -116,7 +114,7 @@ pub fn native_methods(scripts_dir: &Path, game: &str) -> Vec<NativeMethod> {
 ///
 /// `OnInit` is injected when no Hidden header declares it, matching the
 /// curated Skyrim table.
-pub fn known_events(scripts_dir: &Path, game: &str) -> Vec<KnownEvent> {
+pub fn known_events(scripts_dir: &Path, game: Game) -> Vec<KnownEvent> {
     let mut by_name: BTreeMap<String, KnownEvent> = BTreeMap::new();
     let mut scripts = parse_archive(scripts_dir, base_archive(game));
     scripts.sort_by_key(|script| event_form_rank(&script.name));
