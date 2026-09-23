@@ -131,7 +131,7 @@ fn quiet_info_hides_info_diagnostics_from_json_without_changing_the_exit_code() 
     );
 
     let (unfiltered_code, unfiltered_stdout, _) = run_captured(&[
-        "--json".to_string(),
+        "--format=json".to_string(),
         script_path.to_string_lossy().into_owned(),
     ]);
     let unfiltered: serde_json::Value = serde_json::from_str(&unfiltered_stdout).unwrap();
@@ -143,7 +143,7 @@ fn quiet_info_hides_info_diagnostics_from_json_without_changing_the_exit_code() 
         .any(|diagnostic| diagnostic["level"] == "info"));
 
     let (code, stdout, stderr) = run_captured(&[
-        "--json".to_string(),
+        "--format=json".to_string(),
         "--quiet-info".to_string(),
         script_path.to_string_lossy().into_owned(),
     ]);

@@ -44,7 +44,7 @@ fn output_flag_writes_the_json_report_to_a_file_instead_of_stdout() {
     let output_path = dir.path().join("report.json");
 
     let (code, stdout, stderr) = run_captured(&[
-        "--json".to_string(),
+        "--format=json".to_string(),
         "--output".to_string(),
         output_path.to_string_lossy().into_owned(),
         achlist_path.to_string_lossy().into_owned(),
@@ -161,7 +161,7 @@ fn progress_flag_requires_output_in_json_mode() {
     let achlist_path = dir.path().join("sources.achlist");
 
     let (code, stdout, stderr) = run_captured(&[
-        "--json".to_string(),
+        "--format=json".to_string(),
         "--progress".to_string(),
         achlist_path.to_string_lossy().into_owned(),
     ]);
@@ -229,7 +229,7 @@ fn output_replaces_an_existing_report_instead_of_appending() {
 }
 
 #[test]
-fn format_flag_rejects_unknown_values_and_conflicts_with_json() {
+fn format_flag_rejects_unknown_values_and_the_removed_json_alias() {
     let (unknown_code, unknown_stdout, unknown_stderr) =
         run_captured(&["--format=yaml".to_string(), "Example.psc".to_string()]);
     assert_eq!(unknown_code, 2);
@@ -239,15 +239,9 @@ fn format_flag_rejects_unknown_values_and_conflicts_with_json() {
         "error: --format must be 'plain', 'json', or 'ai', got 'yaml'\n"
     );
 
-    let (conflict_code, conflict_stdout, conflict_stderr) = run_captured(&[
-        "--json".to_string(),
-        "--format=json".to_string(),
-        "Example.psc".to_string(),
-    ]);
-    assert_eq!(conflict_code, 2);
-    assert!(conflict_stdout.is_empty());
-    assert_eq!(
-        conflict_stderr,
-        "error: --json and --format can't be combined\n"
-    );
+    let (json_code, json_stdout, json_stderr) =
+        run_captured(&["--json".to_string(), "Example.psc".to_string()]);
+    assert_eq!(json_code, 2);
+    assert!(json_stdout.is_empty());
+    assert!(json_stderr.contains("Usage: PapyrusLinterCLI"));
 }
