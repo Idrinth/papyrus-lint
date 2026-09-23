@@ -133,6 +133,39 @@ pub fn format_diagnostic_line<D: DiagnosticLike>(
     )
 }
 
+/// Renders one lexer/parser error as a plain-text report line
+/// (`<path>:<line>:<column>: [lex|parse] <message>`), matching the
+/// diagnostic line shape so terminals and log scrapers can treat both the
+/// same way. JSON/AI already expose these as `parser_errors`; this is the
+/// equivalent for `--format plain`.
+pub fn format_parser_error_line(
+    path_display: &str,
+    error: &crate::JsonParserError,
+    use_color: bool,
+) -> String {
+    let kind = match error.kind {
+        crate::ParserErrorKind::Lex => "lex",
+        crate::ParserErrorKind::Parse => "parse",
+    };
+    if !use_color {
+        return format!(
+            "{}:{}:{}: [{}] {}",
+            path_display, error.line, error.column, kind, error.message
+        );
+    }
+
+    format!(
+        "{}: {} {}",
+        colorize(
+            &format!("{path_display}:{}:{}", error.line, error.column),
+            ANSI_BOLD,
+            true
+        ),
+        colorize(&format!("[{kind}]"), ANSI_DIM, true),
+        error.message
+    )
+}
+
 #[cfg(test)]
 #[path = "plain_tests.rs"]
 mod tests;
