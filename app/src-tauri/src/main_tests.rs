@@ -1,0 +1,322 @@
+use super::*;
+use std::cell::Cell;
+
+#[test]
+fn no_arguments_launches_the_desktop_app() {
+    let launched = Cell::new(false);
+
+    let code = dispatch(&[], &mut Vec::new(), &mut Vec::new(), false, || {
+        launched.set(true)
+    });
+
+    assert_eq!(code, ExitCode::SUCCESS);
+    assert!(launched.get());
+}
+
+#[test]
+fn arguments_are_forwarded_to_the_cli() {
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+    let launched = Cell::new(false);
+
+    let code = dispatch(
+        &["version".to_string()],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || launched.set(true),
+    );
+
+    assert_eq!(code, ExitCode::SUCCESS);
+    assert_eq!(
+        String::from_utf8(stdout).unwrap(),
+        format!("PapyrusLinterCLI {}\n", papyrus_lint_cli::VERSION)
+    );
+    assert!(stderr.is_empty());
+    assert!(!launched.get());
+}
+
+#[test]
+fn removed_short_version_flag_is_a_usage_error() {
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(&["-V".to_string()], &mut stdout, &mut stderr, false, || {
+        panic!("desktop app must not launch in CLI mode")
+    });
+
+    assert_eq!(code, ExitCode::from(2));
+    assert!(stdout.is_empty());
+    assert_eq!(String::from_utf8(stderr).unwrap(), papyrus_lint_cli::USAGE);
+}
+
+#[test]
+fn short_help_flag_is_forwarded_to_the_cli() {
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(&["-h".to_string()], &mut stdout, &mut stderr, false, || {
+        panic!("desktop app must not launch in CLI mode")
+    });
+
+    assert_eq!(code, ExitCode::from(2));
+    assert!(stdout.is_empty());
+    assert_eq!(String::from_utf8(stderr).unwrap(), papyrus_lint_cli::USAGE);
+}
+
+#[test]
+fn inline_source_is_forwarded_to_the_cli() {
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &[
+            "lint".to_string(),
+            "--format=json".to_string(),
+            "--blob".to_string(),
+            "ScriptName Inline\n".to_string(),
+        ],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::SUCCESS);
+    let report: serde_json::Value = serde_json::from_slice(&stdout).unwrap();
+    assert_eq!(report["scripts_checked"], 1);
+    assert_eq!(report["files"][0]["path"], "<blob>");
+    assert_eq!(report["files"][0]["diagnostics"], serde_json::json!([]));
+    assert!(stderr.is_empty());
+}
+
+#[test]
+fn json_for_an_existing_script_is_forwarded_to_the_cli() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Existing.psc");
+    std::fs::write(&script, "ScriptName Existing\n").unwrap();
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &[
+            "lint".to_string(),
+            "--format=json".to_string(),
+            script.display().to_string(),
+        ],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::SUCCESS);
+    let report: serde_json::Value = serde_json::from_slice(&stdout).unwrap();
+    assert_eq!(report["scripts_checked"], 1);
+    assert_eq!(report["files"][0]["path"], script.display().to_string());
+    assert!(stderr.is_empty());
+}
+
+#[test]
+fn cli_failure_is_returned_as_the_process_exit_code() {
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &["--help".to_string()],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::from(2));
+    assert!(stdout.is_empty());
+    assert_eq!(String::from_utf8(stderr).unwrap(), papyrus_lint_cli::USAGE);
+}
+
+#[test]
+fn missing_input_error_is_forwarded_to_stderr() {
+    let temp = tempfile::tempdir().unwrap();
+    let missing_script = temp.path().join("Missing.psc");
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &["lint".to_string(), missing_script.display().to_string()],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::from(2));
+    assert!(stdout.is_empty());
+    let error = String::from_utf8(stderr).unwrap();
+    assert!(error.contains("failed to read"));
+    assert!(error.contains(&missing_script.display().to_string()));
+}
+
+#[test]
+fn terminal_status_is_forwarded_to_cli_color_detection() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Warning.psc");
+    std::fs::write(&script, "ScriptName Warning   \n").unwrap();
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &["lint".to_string(), script.display().to_string()],
+        &mut stdout,
+        &mut stderr,
+        true,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::SUCCESS);
+    let report = String::from_utf8(stdout).unwrap();
+    assert!(report.contains("[trailing-whitespace]"));
+    assert_eq!(
+        report.contains('\x1b'),
+        papyrus_lint_output::resolve_color(papyrus_lint_output::ColorChoice::Auto, None, true)
+    );
+    assert!(stderr.is_empty());
+}
+
+#[test]
+fn lint_findings_are_printed_and_return_the_cli_failure_code() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Findings.psc");
+    std::fs::write(
+        &script,
+        "ScriptName Findings\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+    )
+    .unwrap();
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &["lint".to_string(), script.display().to_string()],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::from(1));
+    let report = String::from_utf8(stdout).unwrap();
+    assert!(report.contains("forbidden-function"));
+    assert!(report.contains("Game.GetPlayer"));
+    assert!(stderr.is_empty());
+}
+
+#[test]
+fn invalid_cli_arguments_write_usage_to_stderr() {
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &[
+            "lint".to_string(),
+            "first.psc".to_string(),
+            "second.psc".to_string(),
+        ],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::from(2));
+    assert!(stdout.is_empty());
+    let error = String::from_utf8(stderr).unwrap();
+    assert_eq!(error, papyrus_lint_cli::USAGE);
+}
+
+#[test]
+fn doctor_is_forwarded_to_the_cli() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("scripts/source/Example.psc");
+    std::fs::create_dir_all(script.parent().unwrap()).unwrap();
+    std::fs::write(&script, "ScriptName Example\n").unwrap();
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &["doctor".to_string(), script.display().to_string()],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::SUCCESS);
+    let report = String::from_utf8(stdout).unwrap();
+    assert!(report.contains("[ok]"));
+    assert!(report.contains("no problems found"));
+    assert!(stderr.is_empty());
+}
+
+#[test]
+fn ai_format_is_forwarded_to_the_cli() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Example.psc");
+    std::fs::write(&script, "ScriptName Example   \n").unwrap();
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &[
+            "lint".to_string(),
+            "--format".to_string(),
+            "ai".to_string(),
+            script.display().to_string(),
+        ],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::SUCCESS);
+    let report: serde_json::Value = serde_json::from_slice(&stdout).unwrap();
+    assert_eq!(report["header"]["tool"], "Papyrus Lint");
+    assert!(report["findings"]["files"][0]["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|diagnostic| { diagnostic["rule"].as_str() == Some("trailing-whitespace") }));
+    assert!(stderr.is_empty());
+}
+
+#[test]
+fn tag_filter_is_forwarded_to_the_cli() {
+    let temp = tempfile::tempdir().unwrap();
+    let script = temp.path().join("Example.psc");
+    std::fs::write(
+        &script,
+        "ScriptName Example   \n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
+    )
+    .unwrap();
+    let mut stdout = Vec::new();
+    let mut stderr = Vec::new();
+
+    let code = dispatch(
+        &[
+            "lint".to_string(),
+            "--tag".to_string(),
+            "style".to_string(),
+            script.display().to_string(),
+        ],
+        &mut stdout,
+        &mut stderr,
+        false,
+        || panic!("desktop app must not launch in CLI mode"),
+    );
+
+    assert_eq!(code, ExitCode::SUCCESS);
+    let report = String::from_utf8(stdout).unwrap();
+    assert!(report.contains("[trailing-whitespace]"));
+    assert!(!report.contains("forbidden-function"));
+    assert!(stderr.is_empty());
+}
