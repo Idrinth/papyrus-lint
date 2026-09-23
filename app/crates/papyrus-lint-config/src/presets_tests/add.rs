@@ -1,6 +1,14 @@
 use super::*;
 
 #[test]
+fn add_user_preset_rejects_a_blank_name_through_the_public_api() {
+    let error = add_user_preset("   ", Path::new("unused.yaml"), false)
+        .expect_err("a blank name should be rejected");
+
+    assert_eq!(error, AddPresetError::InvalidName("   ".to_string()));
+}
+
+#[test]
 fn add_user_preset_creates_the_presets_dir_and_copies_the_source_file() {
     let base_dir = tempfile::tempdir().expect("failed to create temp dir");
     let source = base_dir.path().join("source.yaml");

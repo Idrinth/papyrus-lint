@@ -1,6 +1,14 @@
 use super::*;
 
 #[test]
+fn save_user_preset_rejects_a_blank_name_through_the_public_api() {
+    let error = save_user_preset("   ", &papyrus_lints::Config::default(), false)
+        .expect_err("blank name should be rejected");
+
+    assert!(error.contains("must not be blank"));
+}
+
+#[test]
 fn save_user_preset_rejects_a_blank_name() {
     let error = save_user_preset_under(None, "   ", &papyrus_lints::Config::default(), false)
         .expect_err("blank name should be rejected");
