@@ -38,10 +38,10 @@ site_assets.wrap_images_with_modern_sources, applied to every page by
 pages/site_chrome.py's finalize_page).
 Every generated HTML page, the stylesheet, and the site scripts are minified
 (see pages/minify.py) before being written into the output directory.
-`pages/styles.css` imports the shared visual identity from
-`shared/theme.css`; those `@import`s are inlined (see
-pages/css.py's inline_css_imports) so the deployed site still ships a
-single stylesheet.
+`pages/styles.css` imports focused modules from `pages/styles/` as well as
+the shared visual identity from `shared/theme.css`; those `@import`s are
+inlined (see pages/css.py's inline_css_imports) so the deployed site still
+ships a single stylesheet.
 Also renders action.html (via pages/action.template.html) and every doc's
 own subpage (via pages/docs.template.html) - see pages/docs_pages.py.
 Also renders rules.html (via pages/rules.template.html) - a searchable/
