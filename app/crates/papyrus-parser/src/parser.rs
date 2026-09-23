@@ -159,14 +159,17 @@ impl Parser {
         }
     }
 
-    /// Parses a Fallout 4 namespaced script name such as
-    /// `User:MyQuestScript` while retaining ordinary script names.
+    /// Parses a script name. Fallout 4 mode also accepts a colon-qualified
+    /// name such as `User:MyQuestScript`; Skyrim mode does not -- a `:`
+    /// there is not part of the name.
     fn expect_script_name(&mut self) -> PResult<String> {
         let mut name = self.expect_identifier()?;
-        while matches!(self.kind(), TokenKind::Colon) {
-            self.advance();
-            name.push(':');
-            name.push_str(&self.expect_identifier()?);
+        if self.mode == GameEdition::Fallout4 {
+            while matches!(self.kind(), TokenKind::Colon) {
+                self.advance();
+                name.push(':');
+                name.push_str(&self.expect_identifier()?);
+            }
         }
         Ok(name)
     }
