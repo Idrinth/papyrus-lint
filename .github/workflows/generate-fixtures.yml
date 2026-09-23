@@ -5,7 +5,11 @@ name: Generate fixtures
 #   python3 .github/scripts/base_scripts_snapshot.py --cli ... --update
 # Comparison of those fixtures still lives in ci.base-scripts.yml and runs on
 # push/PR. This workflow is manual so an intentional output change can land
-# as its own pull request instead of being mixed into every CI run.
+# as downloadable artifacts that can be reviewed and committed in a normal
+# pull request instead of being mixed into every CI run. GitHub's repository
+# setting can prohibit Actions from creating pull requests even when a workflow
+# requests pull-requests: write, so this workflow deliberately does not try to
+# create one itself.
 # shared/rules.json is git-ignored, so it must be generated before building.
 
 on:
@@ -26,18 +30,13 @@ on:
         type: choice
         options: [all, base, extender]
         default: all
-      open_pull_request:
-        description: Open a pull request with any fixture changes
-        type: boolean
-        default: true
 
 concurrency:
   group: generate-fixtures
   cancel-in-progress: true
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   matrix:
@@ -154,88 +153,3 @@ jobs:
           path: ${{ steps.generate.outputs.path }}
           if-no-files-found: error
           retention-days: 7
-
-  publish:
-    name: Generate fixtures / Publish changes
-    needs: generate
-    if: success()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Download generated fixtures
-        uses: actions/download-artifact@v8
-        with:
-          pattern: fixture-*
-          path: generated-fixtures
-          merge-multiple: true
-
-      - name: Copy generated fixtures into fixtures/
-        run: |
-          set -euo pipefail
-          mkdir -p fixtures
-          find generated-fixtures -type f -name '*.txt' -print -exec cp -f {} fixtures/ \;
-
-      - name: Detect fixture changes
-        id: changes
-        run: |
-          set -euo pipefail
-          git add fixtures
-          if git diff --cached --quiet -- fixtures; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "No fixture files changed."
-          else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            git diff --cached --stat -- fixtures
-          fi
-
-      - name: Commit and push fixture updates
-        if: steps.changes.outputs.changed == 'true'
-        env:
-          BRANCH: ci/regenerate-fixtures-${{ github.run_number }}
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
-          git commit -m "test: regenerate base scripts snapshot fixtures"
-          git push origin "$BRANCH"
-          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
-
-      - name: Open pull request
-        if: steps.changes.outputs.changed == 'true' && inputs.open_pull_request
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          BODY=$(cat <<'EOF'
-          ## Description
-
-          Regenerates the unordered line-based snapshot fixtures under `fixtures/`
-          from a manual `workflow_dispatch` run of `.github/workflows/generate-fixtures.yml`.
-
-          ## Reasoning
-
-          Snapshot comparison in `ci.base-scripts.yml` fails after an intentional
-          CLI output change until these baselines are rewritten. Generating them
-          in Actions keeps the rewrite on a dedicated branch.
-
-          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          Inputs: game=${{ inputs.game }}, preset=${{ inputs.preset }}, scripts=${{ inputs.scripts }}
-
-          ## Checklist
-
-          - [x] I confirm that I am not expecting any monetary reward for this contribution.
-          - [x] I understand that this contribution is permanent and cannot be withdrawn or revoked once merged.
-          EOF
-          )
-          gh pr create \
-            --base the-one \
-            --head "$BRANCH" \
-            --title "test: regenerate base scripts snapshot fixtures" \
-            --label "component: ci" \
-            --label "type: tests" \
-            --label "ai: grok-4.6" \
-            --body "$BODY"
