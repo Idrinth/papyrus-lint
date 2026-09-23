@@ -19,11 +19,15 @@
 //! other script name.
 include!(concat!(env!("OUT_DIR"), "/native_globals_data.rs"));
 
+use papyrus_lint_globals::Game;
+
 fn globals_for(game: &str) -> &'static [&'static str] {
-    match game {
-        "fallout4" => FALLOUT4_NATIVE_GLOBALS,
-        "skyrim" => SKYRIM_NATIVE_GLOBALS,
-        _ => panic!("unsupported game {game} provided"),
+    if game == Game::Fallout4.as_str() {
+        FALLOUT4_NATIVE_GLOBALS
+    } else if game == Game::Skyrim.as_str() {
+        SKYRIM_NATIVE_GLOBALS
+    } else {
+        panic!("unsupported game {game} provided")
     }
 }
 

@@ -23,6 +23,7 @@ walkdir = "2"
 roxmltree = "0.21.1"
 
 [build-dependencies]
+papyrus-lint-globals = { path = "../papyrus-lint-globals" }
 serde = { version = "1", features = ["derive"] }
 serde_norway = "0.9"
 zip = { version = "2", default-features = false, features = ["deflate"] }

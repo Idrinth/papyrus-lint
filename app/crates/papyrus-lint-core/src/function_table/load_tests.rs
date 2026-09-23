@@ -378,7 +378,8 @@ fn lookup_roots_write_through_the_ast_cache() {
 
     assert!(table.lookup_function("Actor", "DamageActorValue").is_some());
     assert!(
-        crate::ast_cache::get_for_game("skyrim", &path, source).is_some(),
+        crate::ast_cache::get_for_game(papyrus_lint_globals::Game::Skyrim.as_str(), &path, source,)
+            .is_some(),
         "a lookup-root script should be stored in ast_cache like a project source file"
     );
 }

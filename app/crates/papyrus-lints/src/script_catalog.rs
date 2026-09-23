@@ -14,7 +14,9 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-pub const GAMES: &[&str] = &["skyrim", "fallout4"];
+use papyrus_lint_globals::Game;
+
+pub const GAMES: &[&str] = &[Game::Skyrim.as_str(), Game::Fallout4.as_str()];
 
 /// Forms whose event declarations win when the same event name appears on
 /// more than one script in a single game archive. Lower index is walked
@@ -61,16 +63,18 @@ struct ScriptHeader {
 }
 
 fn base_archive(game: &str) -> &'static str {
-    match game {
-        "fallout4" => "fallout4-scripts.zip",
-        _ => "skyrim-scripts.zip",
+    if game == Game::Fallout4.as_str() {
+        "fallout4-scripts.zip"
+    } else {
+        "skyrim-scripts.zip"
     }
 }
 
 fn extender_archive(game: &str) -> &'static str {
-    match game {
-        "fallout4" => "fallout4-extender-scripts.zip",
-        _ => "skyrim-extender-scripts.zip",
+    if game == Game::Fallout4.as_str() {
+        "fallout4-extender-scripts.zip"
+    } else {
+        "skyrim-extender-scripts.zip"
     }
 }
 

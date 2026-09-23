@@ -26,7 +26,7 @@ impl Game {
     pub const ALL: [Game; 3] = [Game::Skyrim, Game::Fallout4, Game::Starfield];
 
     /// The lowercase key used in YAML, cache paths, and schema enums.
-    pub fn as_str(self) -> &'static str {
+    pub const fn as_str(self) -> &'static str {
         match self {
             Self::Skyrim => "skyrim",
             Self::Fallout4 => "fallout4",

@@ -3,6 +3,7 @@ use super::policy;
 use super::renderer::Renderer;
 use super::script_catalog;
 use super::{generated_header, BuildContext};
+use papyrus_lint_globals::Game;
 
 pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
     forbidden_functions(context);
@@ -99,11 +100,11 @@ fn deprecated_functions(context: &BuildContext) {
             item_ty: "DeprecatedFunctionRule",
             const_name: "DEPRECATED_FUNCTIONS",
             selector: "deprecated_functions_for",
-            skyrim_rows: &policy::deprecated_functions(context, "skyrim")
+            skyrim_rows: &policy::deprecated_functions(context, Game::Skyrim.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
-            fallout4_rows: &policy::deprecated_functions(context, "fallout4")
+            fallout4_rows: &policy::deprecated_functions(context, Game::Fallout4.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -132,11 +133,11 @@ fn forbidden_functions(context: &BuildContext) {
             item_ty: "ForbiddenFunctionRule",
             const_name: "FORBIDDEN_FUNCTIONS",
             selector: "forbidden_functions_for",
-            skyrim_rows: &policy::forbidden_functions(context, "skyrim")
+            skyrim_rows: &policy::forbidden_functions(context, Game::Skyrim.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
-            fallout4_rows: &policy::forbidden_functions(context, "fallout4")
+            fallout4_rows: &policy::forbidden_functions(context, Game::Fallout4.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -159,11 +160,11 @@ fn slow_functions(context: &BuildContext) {
             item_ty: "SlowFunctionRule",
             const_name: "SLOW_FUNCTIONS",
             selector: "slow_functions_for",
-            skyrim_rows: &policy::slow_functions(context, "skyrim")
+            skyrim_rows: &policy::slow_functions(context, Game::Skyrim.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
-            fallout4_rows: &policy::slow_functions(context, "fallout4")
+            fallout4_rows: &policy::slow_functions(context, Game::Fallout4.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -187,11 +188,11 @@ fn native_methods(context: &BuildContext) {
             item_ty: "NativeMethodRule",
             const_name: "NATIVE_METHODS",
             selector: "native_methods_for",
-            skyrim_rows: &script_catalog::native_methods(&scripts_dir, "skyrim")
+            skyrim_rows: &script_catalog::native_methods(&scripts_dir, Game::Skyrim.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
-            fallout4_rows: &script_catalog::native_methods(&scripts_dir, "fallout4")
+            fallout4_rows: &script_catalog::native_methods(&scripts_dir, Game::Fallout4.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -209,11 +210,11 @@ fn actor_values(context: &BuildContext) {
             item_ty: "&str",
             const_name: "ACTOR_VALUES",
             selector: "actor_values_for",
-            skyrim_rows: &policy::actor_values(context, "skyrim")
+            skyrim_rows: &policy::actor_values(context, Game::Skyrim.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
-            fallout4_rows: &policy::actor_values(context, "fallout4")
+            fallout4_rows: &policy::actor_values(context, Game::Fallout4.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -236,11 +237,11 @@ fn update_event_pairs(context: &BuildContext) {
             item_ty: "UpdateEventPairRule",
             const_name: "UPDATE_EVENT_PAIRS",
             selector: "update_event_pairs_for",
-            skyrim_rows: &policy::update_event_pairs(context, "skyrim")
+            skyrim_rows: &policy::update_event_pairs(context, Game::Skyrim.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
-            fallout4_rows: &policy::update_event_pairs(context, "fallout4")
+            fallout4_rows: &policy::update_event_pairs(context, Game::Fallout4.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
@@ -274,11 +275,11 @@ fn known_events(context: &BuildContext) {
             item_ty: "KnownEventRule",
             const_name: "KNOWN_EVENTS",
             selector: "known_events_for",
-            skyrim_rows: &script_catalog::known_events(&scripts_dir, "skyrim")
+            skyrim_rows: &script_catalog::known_events(&scripts_dir, Game::Skyrim.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),
-            fallout4_rows: &script_catalog::known_events(&scripts_dir, "fallout4")
+            fallout4_rows: &script_catalog::known_events(&scripts_dir, Game::Fallout4.as_str())
                 .iter()
                 .map(row)
                 .collect::<Vec<_>>(),

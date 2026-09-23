@@ -106,9 +106,10 @@ fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
     );
     for game in script_catalog::GAMES {
         let rules = script_catalog::native_global_names(&scripts_dir, game);
-        let const_name = match *game {
-            "fallout4" => "FALLOUT4_NATIVE_GLOBALS",
-            _ => "SKYRIM_NATIVE_GLOBALS",
+        let const_name = if *game == papyrus_lint_globals::Game::Fallout4.as_str() {
+            "FALLOUT4_NATIVE_GLOBALS"
+        } else {
+            "SKYRIM_NATIVE_GLOBALS"
         };
         generated.push_str(&format!("const {const_name}: &[&str] = &[\n"));
         for script in &rules {

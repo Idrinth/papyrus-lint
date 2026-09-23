@@ -201,12 +201,13 @@ mod tests {
     fn game_cache_file_path_prefixes_the_path_digest() {
         let dir = Path::new("/tmp/ast-cache");
         let source = Path::new("/mods/Scripts/Example.psc");
-        let name = cache_file_path_for_game(dir, "skyrim", source)
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string();
+        let name =
+            cache_file_path_for_game(dir, papyrus_lint_globals::Game::Skyrim.as_str(), source)
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string();
         assert!(name.starts_with("skyrim-"));
         assert_eq!(name.len(), "skyrim-".len() + 32 + ".json".len());
     }
@@ -225,9 +226,13 @@ mod tests {
             &fresh_entry(&source_path, source),
         );
 
-        assert!(
-            valid_entry_in_for_game(cache_dir.path(), "skyrim", &source_path, source).is_none()
-        );
+        assert!(valid_entry_in_for_game(
+            cache_dir.path(),
+            papyrus_lint_globals::Game::Skyrim.as_str(),
+            &source_path,
+            source,
+        )
+        .is_none());
         assert!(legacy.exists());
     }
 
