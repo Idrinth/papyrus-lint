@@ -195,6 +195,7 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
             path,
             Path::new(&context.root),
             &context.additional_roots,
+            false,
         ));
     }
     if context.config.rules.stale_compiled_output {

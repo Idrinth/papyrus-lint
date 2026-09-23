@@ -245,6 +245,7 @@ dependencies = [
  "encoding_rs",
  "flate2",
  "md5",
+ "papyrus-lint-globals",
  "papyrus-parser",
  "serde",
  "serde_json",
@@ -272,6 +273,7 @@ dependencies = [
  "md5",
  "papyrus-ast-cache",
  "papyrus-lint-config",
+ "papyrus-lint-globals",
  "papyrus-lints",
  "papyrus-parser",
  "rayon",
@@ -282,22 +284,33 @@ dependencies = [
  "similar",
  "tempfile",
  "walkdir",
+ "zip",
+]
+
+[[package]]
+name = "papyrus-lint-globals"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
 name = "papyrus-lints"
 version = "0.1.0"
 dependencies = [
+ "papyrus-lint-globals",
  "papyrus-parser",
  "serde",
  "serde_json",
  "serde_norway",
+ "zip",
 ]
 
 [[package]]
 name = "papyrus-parser"
 version = "0.1.0"
 dependencies = [
+ "papyrus-lint-globals",
  "serde",
 ]
 

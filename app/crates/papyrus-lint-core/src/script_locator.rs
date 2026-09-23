@@ -9,6 +9,8 @@ use std::time::UNIX_EPOCH;
 use papyrus_lints::Diagnostic;
 use walkdir::WalkDir;
 
+use crate::project_root::display_path;
+
 /// Rule id used when multiple search roots contain different versions of
 /// the same script.
 pub const CONFLICTING_SCRIPT_VERSIONS_RULE: &str = "conflicting-script-versions";
@@ -191,10 +193,14 @@ pub fn find_psc_files_recursively(dir: &Path) -> Vec<PathBuf> {
 /// Papyrus resolves a script by search-root precedence, so having multiple
 /// versions available makes the source used by the compiler dependent on its
 /// import-directory ordering. Identical copies are harmless and are ignored.
+/// With `short_paths`, the conflicting counterpart's path in the message is
+/// shortened relative to `root`, exactly like [`display_path`] shortens
+/// every other diagnostic's own reported path.
 pub fn conflicting_script_versions(
     script_path: &Path,
     root: &Path,
     additional_roots: &[String],
+    short_paths: bool,
 ) -> Vec<Diagnostic> {
     let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
         return Vec::new();
@@ -233,7 +239,7 @@ pub fn conflicting_script_versions(
             message: format!(
                 "[warning] A different version of {} is also available at {}; script resolution may depend on search-directory order",
                 file_name,
-                path.display()
+                display_path(&path, root, short_paths)
             ),
         })
         .collect()
@@ -347,10 +353,13 @@ fn index_psc_files(dirs: impl IntoIterator<Item = PathBuf>) -> ScriptIndex {
 /// pre-built [`ScriptIndex`] (see [`build_script_index`]) instead of
 /// scanning `root`'s search directories itself. Use this when checking many
 /// scripts from the same project in one run, so the directories are only
-/// scanned once for the whole batch rather than once per script.
+/// scanned once for the whole batch rather than once per script. `root` and
+/// `short_paths` are forwarded to [`conflicting_script_versions_among`].
 pub fn conflicting_script_versions_in_index(
     script_path: &Path,
     index: &ScriptIndex,
+    root: &Path,
+    short_paths: bool,
 ) -> Vec<Diagnostic> {
     let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
         return Vec::new();
@@ -359,7 +368,7 @@ pub fn conflicting_script_versions_in_index(
         return Vec::new();
     };
 
-    conflicting_script_versions_among(script_path, candidates)
+    conflicting_script_versions_among(script_path, candidates, root, short_paths)
 }
 
 /// Warns when `script_path` has a same-named, byte-different counterpart
@@ -375,10 +384,14 @@ pub fn conflicting_script_versions_in_index(
 /// name (see [`crate::function_table::FunctionTable::with_known_scripts`]
 /// for the matching resolution side of this), so checking every script in a
 /// large achlist stays proportional to how many of them actually collide by
-/// name rather than to the achlist's full size.
+/// name rather than to the achlist's full size. With `short_paths`, a
+/// conflict's reported path is shortened relative to `root`, exactly like
+/// [`conflicting_script_versions`]'s own.
 pub fn conflicting_script_versions_among(
     script_path: &Path,
     known_scripts: &[PathBuf],
+    root: &Path,
+    short_paths: bool,
 ) -> Vec<Diagnostic> {
     let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
         return Vec::new();
@@ -415,7 +428,7 @@ pub fn conflicting_script_versions_among(
             message: format!(
                 "[warning] A different version of {} is also available at {}; script resolution may depend on search-directory order",
                 file_name,
-                path.display()
+                display_path(&path, root, short_paths)
             ),
         })
         .collect()
