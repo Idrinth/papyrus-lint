@@ -249,7 +249,11 @@ pub(crate) fn parse_init_preset(
     rest: &[String],
 ) -> Result<(presets::Preset, Game), InitPresetError> {
     let raw = InitRawArgs::try_parse_from(rest).map_err(|_| InitPresetError::Usage)?;
-    let game = raw.game.parse().map_err(|_| InitPresetError::Usage)?;
+    let game = match raw.game.to_ascii_lowercase().as_str() {
+        "skyrim" => Game::Skyrim,
+        "fallout4" => Game::Fallout4,
+        _ => return Err(InitPresetError::Usage),
+    };
     let preset = match raw.preset {
         Some(value) => presets::Preset::parse(&value).ok_or(InitPresetError::Usage)?,
         None => presets::Preset::default(),

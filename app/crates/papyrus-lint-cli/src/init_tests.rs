@@ -442,26 +442,26 @@ fn init_warns_but_still_succeeds_on_an_unparseable_ppj() {
 
 #[test]
 fn parse_init_preset_defaults_to_strict_when_no_flag_is_given() {
-    assert_eq!(parse_init_preset(&[]), Ok(presets::Preset::Strict));
+    assert_eq!(parse_init_preset(&["--game".to_string(), "skyrim".to_string()]), Ok((presets::Preset::Strict, papyrus_lints::Game::Skyrim)));
 }
 
 #[test]
 fn parse_init_preset_accepts_the_flag_and_its_equals_form() {
     assert_eq!(
-        parse_init_preset(&["--preset".to_string(), "careful".to_string()]),
-        Ok(presets::Preset::Careful)
+        parse_init_preset(&["--game".to_string(), "skyrim".to_string(), "--preset".to_string(), "careful".to_string()]),
+        Ok((presets::Preset::Careful, papyrus_lints::Game::Skyrim))
     );
     assert_eq!(
-        parse_init_preset(&["--preset=standard".to_string()]),
-        Ok(presets::Preset::Standard)
+        parse_init_preset(&["--game=skyrim".to_string(), "--preset=standard".to_string()]),
+        Ok((presets::Preset::Standard, papyrus_lints::Game::Skyrim))
     );
 }
 
 #[test]
 fn parse_init_preset_matches_names_case_insensitively() {
     assert_eq!(
-        parse_init_preset(&["--preset".to_string(), "STANDARD".to_string()]),
-        Ok(presets::Preset::Standard)
+        parse_init_preset(&["--game=skyrim".to_string(), "--preset".to_string(), "STANDARD".to_string()]),
+        Ok((presets::Preset::Standard, papyrus_lints::Game::Skyrim))
     );
 }
 
@@ -471,8 +471,8 @@ fn parse_init_preset_accepts_a_name_that_is_not_a_built_in_as_a_custom_preset() 
     // checked once `init` runs (see `presets::Preset::yaml`), not during
     // argument parsing, so an arbitrary non-blank name parses fine here.
     assert_eq!(
-        parse_init_preset(&["--preset".to_string(), "lenient".to_string()]),
-        Ok(presets::Preset::Custom("lenient".to_string()))
+        parse_init_preset(&["--game=skyrim".to_string(), "--preset".to_string(), "lenient".to_string()]),
+        Ok((presets::Preset::Custom("lenient".to_string()), papyrus_lints::Game::Skyrim))
     );
 }
 
@@ -503,7 +503,7 @@ fn run_init_with_an_unresolvable_preset_name_reports_an_error_at_init_time() {
     // that isn't a built-in preset fails once `init` actually looks for
     // a matching file, rather than during argument parsing.
     let (code, _stdout, stderr) =
-        run_captured(&["init".to_string(), "--preset=lenient".to_string()]);
+        run_captured(&["init".to_string(), "--game=skyrim".to_string(), "--preset=lenient".to_string()]);
 
     assert_eq!(code, 2);
     assert!(stderr.contains("unknown preset 'lenient'"));
@@ -524,8 +524,8 @@ fn run_init_with_a_preset_flag_writes_the_selected_presets_config() {
     let mut stdout = Vec::new();
     let mut stderr = Vec::new();
 
-    let preset =
-        parse_init_preset(&["--preset=careful".to_string()]).expect("careful should parse");
+    let (preset, _game) =
+        parse_init_preset(&["--game=skyrim".to_string(), "--preset=careful".to_string()]).expect("careful should parse");
     let code = initialize_config(dir.path(), preset, &mut stdout, &mut stderr);
 
     assert_eq!(code, 0);

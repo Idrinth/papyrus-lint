@@ -11,17 +11,16 @@ fn no_arguments_is_a_usage_error() {
 }
 
 #[test]
-fn version_flag_parses_to_version() {
-    assert_eq!(
-        parse_run_args(&args(&["--version"])),
-        Ok(ParsedCommand::Version)
-    );
-    assert_eq!(parse_run_args(&args(&["-V"])), Ok(ParsedCommand::Version));
+fn version_subcommand_parses_via_cli() {
+    match parse_cli(&args(&["version"])) {
+        Ok(ParsedCli::Run(ParsedCommand::Version)) => {}
+        other => panic!("expected version, got {other:?}"),
+    }
 }
 
 #[test]
-fn help_flag_is_a_usage_error() {
-    assert_eq!(parse_run_args(&args(&["--help"])), Err(ArgsError::Usage));
+fn help_subcommand_is_a_usage_error() {
+    assert!(matches!(parse_cli(&args(&["help"])), Err(ArgsError::Usage)));
 }
 
 #[test]
@@ -43,7 +42,7 @@ fn a_single_path_parses_to_a_non_fix_lint_run() {
 
 #[test]
 fn fix_and_a_path_parses_to_a_fix_run() {
-    let parsed = parse_run_args(&args(&["fix", "Example.psc"])).expect("should parse");
+    let parsed = parse_fix_args(&args(&["Example.psc"])).expect("should parse");
     match parsed {
         ParsedCommand::Lint(lint) => {
             assert!(lint.fix);
@@ -55,13 +54,13 @@ fn fix_and_a_path_parses_to_a_fix_run() {
 
 #[test]
 fn fix_without_a_path_is_a_usage_error() {
-    assert_eq!(parse_run_args(&args(&["fix"])), Err(ArgsError::Usage));
+    assert_eq!(parse_fix_args(&[]), Err(ArgsError::Usage));
 }
 
 #[test]
 fn parse_rejects_an_unknown_type_filter_rule_id() {
     assert_eq!(
-        parse_run_args(&args(&["fix", "--type=made-up-rule", "Example.psc"])),
+        parse_fix_args(&args(&["--type=made-up-rule", "Example.psc"])),
         Err(ArgsError::UnknownRule("made-up-rule".to_string()))
     );
 }
@@ -69,14 +68,14 @@ fn parse_rejects_an_unknown_type_filter_rule_id() {
 #[test]
 fn parse_rejects_a_type_filter_rule_with_no_automatic_fix() {
     assert_eq!(
-        parse_run_args(&args(&["fix", "--type=forbidden-functions", "Example.psc"])),
+        parse_fix_args(&args(&["--type=forbidden-functions", "Example.psc"])),
         Err(ArgsError::RuleHasNoFix("forbidden-functions".to_string()))
     );
 }
 
 #[test]
 fn type_filter_accepts_the_hyphenated_or_underscored_form() {
-    let parsed = parse_run_args(&args(&["fix", "--type=trailing_whitespace", "Example.psc"]))
+    let parsed = parse_fix_args(&args(&["--type=trailing_whitespace", "Example.psc"]))
         .expect("should parse");
     match parsed {
         ParsedCommand::Lint(lint) => {
@@ -105,7 +104,7 @@ fn line_filter_without_fix_is_a_usage_error() {
 #[test]
 fn parse_rejects_a_non_positive_line_filter() {
     assert_eq!(
-        parse_run_args(&args(&["fix", "--line=0", "Example.psc"])),
+        parse_fix_args(&args(&["--line=0", "Example.psc"])),
         Err(ArgsError::InvalidLine("0".to_string()))
     );
 }
@@ -140,8 +139,7 @@ fn tag_filter_matches_case_insensitively() {
 #[test]
 fn type_and_tag_filters_cannot_be_combined() {
     assert_eq!(
-        parse_run_args(&args(&[
-            "fix",
+        parse_fix_args(&args(&[
             "--type=trailing-whitespace",
             "--tag=style",
             "Example.psc"
@@ -186,14 +184,6 @@ fn parse_rejects_a_non_numeric_threads_flag() {
     assert_eq!(
         parse_run_args(&args(&["--threads", "many", "Example.psc"])),
         Err(ArgsError::InvalidThreads("many".to_string()))
-    );
-}
-
-#[test]
-fn json_and_format_cannot_be_combined() {
-    assert_eq!(
-        parse_run_args(&args(&["--json", "--format=json", "Example.psc"])),
-        Err(ArgsError::JsonAndFormatConflict)
     );
 }
 
@@ -336,7 +326,7 @@ fn prints_usage_and_exits_2_with_no_arguments() {
 
 #[test]
 fn prints_version_for_version_flag() {
-    let (code, stdout, _stderr) = run_captured(&["--version".to_string()]);
+    let (code, stdout, _stderr) = run_captured(&["version".to_string()]);
 
     assert_eq!(code, 0);
     assert_eq!(stdout, format!("PapyrusLinterCLI {}\n", crate::VERSION));
@@ -344,7 +334,7 @@ fn prints_version_for_version_flag() {
 
 #[test]
 fn prints_version_for_short_version_flag() {
-    let (code, stdout, _stderr) = run_captured(&["-V".to_string()]);
+    let (code, stdout, _stderr) = run_captured(&["version".to_string()]);
 
     assert_eq!(code, 0);
     assert_eq!(stdout, format!("PapyrusLinterCLI {}\n", crate::VERSION));
@@ -352,12 +342,12 @@ fn prints_version_for_short_version_flag() {
 
 #[test]
 fn prints_usage_for_help_flag() {
-    let (code, _stdout, stderr) = run_captured(&["--help".to_string()]);
+    let (code, _stdout, stderr) = run_captured(&["help".to_string()]);
 
     assert_eq!(code, 2);
     assert!(stderr.contains("Usage: PapyrusLinterCLI"));
     assert!(stderr.contains("Examples:"));
-    assert!(stderr.contains("PapyrusLinterCLI --format ai path/to/project.achlist"));
+    assert!(stderr.contains("PapyrusLinterCLI lint --format ai path/to/project.achlist"));
 }
 
 #[test]
