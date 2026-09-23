@@ -61,7 +61,7 @@ jobs:
         run: cp app/crates/papyrus-lint-cli/target/release/PapyrusLinterCLI docker/PapyrusLinterCLI
 
       - name: Build container image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         env:
           # Buildx otherwise uploads a "*.dockerbuild" build-summary artifact
           # per matrix leg, which the coverage-comment/hall-of-shame jobs'
