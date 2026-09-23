@@ -147,3 +147,68 @@ fn format_issues_for_ai_base_leaves_source_null_when_none_was_attached() {
     let report: serde_json::Value = serde_json::from_str(&json).expect("valid JSON");
     assert!(report["findings"]["files"][0]["source"].is_null());
 }
+
+#[test]
+fn format_issues_as_text_preserves_file_order_and_skips_empty_findings() {
+    let text = format_issues_as_text(vec![
+        IssuesFileInput {
+            path: "Empty.psc".to_string(),
+            findings: Vec::new(),
+        },
+        IssuesFileInput {
+            path: "B.psc".to_string(),
+            findings: vec![finding(2, 4, "trailing-whitespace", "trailing whitespace")],
+        },
+        IssuesFileInput {
+            path: "A.psc".to_string(),
+            findings: vec![finding(1, 2, "identifier-casing", "identifier casing")],
+        },
+    ]);
+
+    let lines: Vec<&str> = text.lines().collect();
+    assert_eq!(lines.len(), 2);
+    assert!(lines[0].starts_with("B.psc:2:4:"));
+    assert!(lines[1].starts_with("A.psc:1:2:"));
+}
+
+#[test]
+fn format_issues_for_ai_base_aggregates_counts_across_files() {
+    let json = format_issues_for_ai_base(
+        vec![
+            AiIssuesFileInput {
+                path: "A.psc".to_string(),
+                findings: vec![finding(
+                    1,
+                    1,
+                    "trailing-whitespace",
+                    "[warning] trailing whitespace",
+                )],
+                source: Some(AiSource::Hash {
+                    algorithm: "md5".to_string(),
+                    hash: "0123456789abcdef0123456789abcdef".to_string(),
+                }),
+            },
+            AiIssuesFileInput {
+                path: "B.psc".to_string(),
+                findings: vec![finding(
+                    3,
+                    2,
+                    "forbidden-functions",
+                    "[error] forbidden function used",
+                )],
+                source: Some(AiSource::Error {
+                    message: "could not read source".to_string(),
+                }),
+            },
+        ],
+        papyrus_lints::Config::default(),
+        "1.2.3".to_string(),
+    );
+
+    let report: serde_json::Value = serde_json::from_str(&json).expect("valid JSON");
+    assert_eq!(report["findings"]["total_diagnostics"], 2);
+    assert_eq!(report["findings"]["severity_counts"]["warnings"], 1);
+    assert_eq!(report["findings"]["severity_counts"]["errors"], 1);
+    assert_eq!(report["findings"]["files"][0]["source"]["type"], "hash");
+    assert_eq!(report["findings"]["files"][1]["source"]["type"], "error");
+}
