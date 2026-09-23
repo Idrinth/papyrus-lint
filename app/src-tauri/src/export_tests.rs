@@ -69,6 +69,7 @@ fn format_issues_as_json_mirrors_the_cli_json_shape_restricted_to_the_given_file
     );
     assert_eq!(report["files"][0]["diagnostics"][0]["level"], "warning");
     assert!(report["files"][0]["diff"].is_null());
+    assert_eq!(report["files"][0]["parser_errors"], serde_json::json!([]));
     // Doesn't carry the CLI-only fields, which mean nothing for a filtered
     // export.
     assert!(report.get("scripts_checked").is_none());

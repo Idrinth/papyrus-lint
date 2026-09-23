@@ -281,7 +281,7 @@ mod run_lint;
 mod run_lint_command;
 mod run_scan;
 
-pub use output::{JsonDiagnostic, JsonFileReport, JsonReport};
+pub use output::{JsonDiagnostic, JsonFileReport, JsonParserError, JsonReport};
 
 use args::{parse_cli, write_args_error, ParsedCli, ParsedCommand};
 use blob::run_blob;

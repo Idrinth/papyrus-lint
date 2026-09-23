@@ -121,6 +121,7 @@ function fakeFormatIssuesAsJson(args: unknown): string {
     return {
       path: file.path,
       diagnostics: file.findings.map((finding) => fakeJsonDiagnostic(finding, false)),
+      parser_errors: [],
       diff: null,
     };
   });
@@ -144,6 +145,7 @@ function fakeFormatIssuesForAiBase(args: unknown): string {
       severity_counts: fakeSeverityCounts(diagnostics),
       rule_counts: fakeRuleCounts(diagnostics),
       diagnostics,
+      parser_errors: [],
       source: file.source ?? null,
     };
   });
@@ -164,7 +166,7 @@ function fakeFormatIssuesForAiBase(args: unknown): string {
     }));
 
   return JSON.stringify({
-    $schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
+    $schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v4.schema.json",
     header: {
       tool: "Papyrus Lint",
       version,

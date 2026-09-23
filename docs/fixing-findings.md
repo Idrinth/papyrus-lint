@@ -111,8 +111,9 @@ filtered findings as a single JSON document tailored for handing to an AI
 assistant alongside a question about the results, independent of the
 "Export format" selector above (this format is always JSON, with its
 contract published as a versioned JSON Schema:
-[v3](../schema/papyrus-lint-ai-export.v3.schema.json), the current format
-described below, and [v2](../schema/papyrus-lint-ai-export.v2.schema.json) and
+[v4](../schema/papyrus-lint-ai-export.v4.schema.json), the current format
+described below, and [v3](../schema/papyrus-lint-ai-export.v3.schema.json),
+[v2](../schema/papyrus-lint-ai-export.v2.schema.json) and
 [v1](../schema/papyrus-lint-ai-export.v1.schema.json), the frozen contracts
 older releases produced, kept around so a document from an older release
 can still be validated against the schema it was actually produced
@@ -138,7 +139,12 @@ issues"/"Export for AI" buttons can never produce an export with zero
 findings just by narrowing filters down to nothing; a
 `findings` section in the same shape the "Export issues" JSON format uses
 (minus its `files_with_diagnostics` count, always redundant here since every
-exported file already has at least one diagnostic),
+exported file already has at least one diagnostic or parser error),
+plus a `parser_errors` array on each file collecting any lexer or parser
+errors raised while handling that script (empty when it lexed and parsed
+cleanly; currently at most one entry, because parsing stops at the first
+error), so an assistant can see why a file failed to parse instead of only
+the lint findings that still ran;
 with a `summary` of error, warning, and info counts both for every individual
 file and for the complete export, while each file entry also carries a
 `source` field explicitly naming

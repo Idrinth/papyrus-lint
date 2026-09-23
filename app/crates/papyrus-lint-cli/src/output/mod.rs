@@ -7,10 +7,31 @@
 // writing the finished report to stdout or `--output <path>`.
 pub(crate) use papyrus_lint_output::{
     build_ai_report, colorize, format_diagnostic_line, generated_at, resolve_color, rule_counts,
-    severity_counts, to_json_diagnostics, AiFileReport, AiSource, ColorChoice, ANSI_GREEN,
-    ANSI_RED, ANSI_YELLOW,
+    severity_counts, to_json_diagnostics, AiFileReport, AiSource, ColorChoice, ParserErrorKind,
+    ANSI_GREEN, ANSI_RED, ANSI_YELLOW,
 };
-pub use papyrus_lint_output::{JsonDiagnostic, JsonFileReport, JsonReport};
+pub use papyrus_lint_output::{JsonDiagnostic, JsonFileReport, JsonParserError, JsonReport};
+
+/// Collects the lexer/parser errors raised while handling `source`. Empty
+/// when the script lexes and parses cleanly. Currently at most one entry
+/// because [`papyrus_parser::parse`] stops at the first error.
+pub(crate) fn collect_parser_errors(source: &str) -> Vec<JsonParserError> {
+    match papyrus_parser::parse(source) {
+        Ok(_) => Vec::new(),
+        Err(papyrus_parser::PapyrusError::Lex(error)) => vec![JsonParserError {
+            kind: ParserErrorKind::Lex,
+            line: error.line,
+            column: error.col,
+            message: error.message,
+        }],
+        Err(papyrus_parser::PapyrusError::Parse(error)) => vec![JsonParserError {
+            kind: ParserErrorKind::Parse,
+            line: error.line,
+            column: error.col,
+            message: error.message,
+        }],
+    }
+}
 
 /// Normalizes a raw `--tag <kind>` value to lowercase and checks it against
 /// every rule's own tagged kind(s) (see [`papyrus_lints::tags::RULE_TAGS`]),

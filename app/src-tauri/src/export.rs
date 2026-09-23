@@ -66,6 +66,7 @@ pub(crate) fn format_issues_as_json(files: Vec<IssuesFileInput>) -> String {
             JsonFileReport {
                 path: file.path,
                 diagnostics: to_json_diagnostics(&file.findings, false),
+                parser_errors: Vec::new(),
                 diff: None,
             }
         })
@@ -117,6 +118,7 @@ pub(crate) fn format_issues_for_ai_base(
                 severity_counts: severity_counts(&diagnostics),
                 rule_counts: rule_counts(&diagnostics),
                 diagnostics,
+                parser_errors: Vec::new(),
                 path: file.path,
                 source: file.source,
             }

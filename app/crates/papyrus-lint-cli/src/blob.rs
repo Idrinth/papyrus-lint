@@ -60,7 +60,8 @@ pub(crate) fn run_blob(
     };
 
     let mut diagnostics = papyrus_lints::lint(source, &lint_config);
-    let parse_failed = papyrus_parser::parse(source).is_err();
+    let parser_errors = collect_parser_errors(source);
+    let parse_failed = !parser_errors.is_empty();
     let should_fail = finalize_diagnostics(
         &mut diagnostics,
         &lint_config,
@@ -80,6 +81,7 @@ pub(crate) fn run_blob(
         OutputFormat::Json => write_blob_json(
             &mut report_buf,
             json_diagnostics,
+            parser_errors,
             total_diagnostics,
             parse_failed,
             should_fail,
@@ -88,6 +90,7 @@ pub(crate) fn run_blob(
             &mut report_buf,
             &lint_config,
             json_diagnostics,
+            parser_errors,
             source,
             hash_source,
             total_diagnostics,
@@ -116,6 +119,7 @@ pub(crate) fn run_blob(
 fn write_blob_json(
     report_buf: &mut Vec<u8>,
     json_diagnostics: Vec<JsonDiagnostic>,
+    parser_errors: Vec<JsonParserError>,
     total_diagnostics: usize,
     parse_failed: bool,
     should_fail: bool,
@@ -124,6 +128,7 @@ fn write_blob_json(
         files: vec![JsonFileReport {
             path: BLOB_PATH.to_string(),
             diagnostics: json_diagnostics,
+            parser_errors,
             diff: None,
         }],
         scripts_checked: 1,
@@ -140,11 +145,12 @@ fn write_blob_ai(
     report_buf: &mut Vec<u8>,
     lint_config: &papyrus_lints::Config,
     json_diagnostics: Vec<JsonDiagnostic>,
+    parser_errors: Vec<JsonParserError>,
     source: &str,
     hash_source: bool,
     total_diagnostics: usize,
 ) {
-    let ai_files = if json_diagnostics.is_empty() {
+    let ai_files = if json_diagnostics.is_empty() && parser_errors.is_empty() {
         Vec::new()
     } else {
         let rule_counts = rule_counts(&json_diagnostics);
@@ -164,6 +170,7 @@ fn write_blob_ai(
             severity_counts,
             rule_counts,
             diagnostics: json_diagnostics,
+            parser_errors,
             source: Some(ai_source),
         }]
     };

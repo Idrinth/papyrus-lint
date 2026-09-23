@@ -64,12 +64,38 @@ pub fn to_json_diagnostics<D: DiagnosticLike>(
         .collect()
 }
 
+/// Whether a [`JsonParserError`] came from the lexer or the recursive-descent
+/// parser. Serialized as `"lex"` / `"parse"`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ParserErrorKind {
+    Lex,
+    Parse,
+}
+
+/// One error raised while lexing or parsing a script, reported separately
+/// from lint [`JsonDiagnostic`]s so a consumer can tell "the file is not
+/// valid Papyrus" apart from "the file is valid and a lint rule fired".
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct JsonParserError {
+    pub kind: ParserErrorKind,
+    pub line: usize,
+    pub column: usize,
+    pub message: String,
+}
+
 /// One resolved script's diagnostics, as printed by the CLI's `--json` or
 /// returned by the desktop app's `format_issues_as_json` command.
 #[derive(Debug, Serialize)]
 pub struct JsonFileReport {
     pub path: String,
     pub diagnostics: Vec<JsonDiagnostic>,
+    /// Errors the lexer/parser raised while handling this script. Empty when
+    /// the script lexed and parsed cleanly. Currently at most one entry,
+    /// because parsing stops at the first error; kept as a list so additional
+    /// recovered errors can be appended later without another report-shape
+    /// change.
+    pub parser_errors: Vec<JsonParserError>,
     /// The standard unified diff between this script's original source and
     /// what `fix` would have written, only non-`null` under the CLI's `fix
     /// --dry-run`. Always `None` from the desktop app's own export

@@ -117,6 +117,7 @@ fn build_ai_report_derives_rule_details_only_for_rules_that_actually_triggered()
         severity_counts: severity_counts(&[diagnostic("trailing-whitespace", "warning")]),
         rule_counts: rule_counts(&[diagnostic("trailing-whitespace", "warning")]),
         diagnostics: vec![diagnostic("trailing-whitespace", "warning")],
+        parser_errors: Vec::new(),
         source: Some(AiSource::Content {
             content: "ScriptName Example\n".to_string(),
         }),

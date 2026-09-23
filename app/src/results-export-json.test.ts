@@ -47,6 +47,7 @@ describe("formatIssuesAsJson", () => {
               doc_url: null,
             },
           ],
+          parser_errors: [],
           diff: null,
         },
         {
@@ -62,6 +63,7 @@ describe("formatIssuesAsJson", () => {
             },
             { line: 6, column: 1, rule: "unknown", level: "info", message: "[info] consider renaming", doc_url: null },
           ],
+          parser_errors: [],
           diff: null,
         },
       ],

@@ -109,7 +109,8 @@ pub(crate) fn lint_file(
             }
         }
     }
-    let parse_failed = papyrus_parser::parse(source).is_err();
+    let parser_errors = collect_parser_errors(source);
+    let parse_failed = !parser_errors.is_empty();
     let should_fail = finalize_diagnostics(
         &mut diagnostics,
         ctx.lint_config,
@@ -118,8 +119,14 @@ pub(crate) fn lint_file(
         ctx.quiet_info,
     );
 
-    let (plain_text, json_file, ai_file) =
-        build_file_reports(ctx, &reported_path, source, file_diff, &diagnostics);
+    let (plain_text, json_file, ai_file) = build_file_reports(
+        ctx,
+        &reported_path,
+        source,
+        file_diff,
+        &diagnostics,
+        parser_errors,
+    );
 
     let has_diagnostics = !diagnostics.is_empty();
     let diagnostic_count = diagnostics.len();
@@ -193,6 +200,7 @@ fn build_file_reports(
     source: &str,
     file_diff: Option<String>,
     diagnostics: &[papyrus_lints::Diagnostic],
+    parser_errors: Vec<JsonParserError>,
 ) -> (Vec<u8>, Option<JsonFileReport>, Option<AiFileReport>) {
     let mut plain_text: Vec<u8> = Vec::new();
     for diagnostic in diagnostics {
@@ -209,7 +217,9 @@ fn build_file_reports(
     let mut ai_file = None;
     if ctx.json {
         let json_diagnostics = to_json_diagnostics(diagnostics, false);
-        if ctx.output_format == OutputFormat::Ai && !json_diagnostics.is_empty() {
+        if ctx.output_format == OutputFormat::Ai
+            && (!json_diagnostics.is_empty() || !parser_errors.is_empty())
+        {
             let rule_counts = rule_counts(&json_diagnostics);
             let severity_counts = severity_counts(&json_diagnostics);
             let ai_source = if ctx.hash_source {
@@ -227,12 +237,14 @@ fn build_file_reports(
                 severity_counts,
                 rule_counts,
                 diagnostics: json_diagnostics,
+                parser_errors,
                 source: Some(ai_source),
             });
         } else if ctx.output_format == OutputFormat::Json {
             json_file = Some(JsonFileReport {
                 path: reported_path.to_string(),
                 diagnostics: json_diagnostics,
+                parser_errors,
                 diff: file_diff,
             });
         }

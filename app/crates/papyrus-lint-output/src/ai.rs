@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::json::JsonDiagnostic;
+use crate::json::{JsonDiagnostic, JsonParserError};
 
 #[derive(Debug, Serialize)]
 pub struct AiHeader {
@@ -40,6 +40,10 @@ pub struct AiFileReport {
     pub severity_counts: AiSeverityCounts,
     pub rule_counts: BTreeMap<String, usize>,
     pub diagnostics: Vec<JsonDiagnostic>,
+    /// Errors the lexer/parser raised while handling this script. Empty when
+    /// the script lexed and parsed cleanly. See
+    /// [`crate::JsonFileReport::parser_errors`].
+    pub parser_errors: Vec<JsonParserError>,
     /// `None` when nothing was attached for this file at all (the desktop
     /// app's own export options, e.g. no source was requested); always
     /// `Some` from the CLI, which never omits it.
@@ -117,7 +121,7 @@ pub struct AiReport {
 /// point at the same schema version.
 pub const WEBSITE_URL: &str = "https://papyrus-lint.idrinth.de";
 pub const AI_EXPORT_SCHEMA_URL: &str =
-    "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json";
+    "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v4.schema.json";
 pub const TOOL_NAME: &str = "Papyrus Lint";
 /// The Papyrus dialect/engine version an AI export's findings were produced
 /// for, so an AI reading it doesn't have to guess whether a suggestion

@@ -46,7 +46,7 @@ describe("formatIssuesForAi", () => {
 
     const withSourceOmitted = JSON.parse(await formatIssuesForAi(files, "1.2.3"));
     expect(withSourceOmitted).toEqual({
-      $schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v3.schema.json",
+      $schema: "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v4.schema.json",
       header: {
         tool: "Papyrus Lint",
         version: "1.2.3",
@@ -78,6 +78,7 @@ describe("formatIssuesForAi", () => {
                 doc_url: "https://papyrus-lint.idrinth.de/rules.html#rule-trailing-whitespace",
               },
             ],
+            parser_errors: [],
             source: null,
           },
           {
@@ -104,6 +105,7 @@ describe("formatIssuesForAi", () => {
                 source: "compiler",
               },
             ],
+            parser_errors: [],
             source: null,
           },
         ],
