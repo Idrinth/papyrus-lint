@@ -23,6 +23,8 @@ fn with_required_subcommand(args: &[String]) -> Vec<String> {
         | Some("doctor")
         | Some("lint")
         | Some("fix")
+        | Some("help")
+        | Some("version")
         | Some("--version")
         | Some("-V")
         | Some("--help")
