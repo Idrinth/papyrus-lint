@@ -1,0 +1,9 @@
+[package]
+name = "papyrus-lint-globals"
+version = "0.1.0"
+description = "Shared constants and types used across Papyrus Lint crates"
+authors = ["Idrinth"]
+edition = "2021"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
