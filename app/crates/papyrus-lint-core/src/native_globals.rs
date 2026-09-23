@@ -19,16 +19,18 @@
 //! other script name.
 include!(concat!(env!("OUT_DIR"), "/native_globals_data.rs"));
 
-fn globals_for(game: &str) -> &'static [&'static str] {
+use papyrus_lint_globals::Game;
+
+fn globals_for(game: Game) -> &'static [&'static str] {
     match game {
-        "fallout4" => FALLOUT4_NATIVE_GLOBALS,
-        "skyrim" => SKYRIM_NATIVE_GLOBALS,
-        _ => panic!("unsupported game {game} provided"),
+        Game::Fallout4 => FALLOUT4_NATIVE_GLOBALS,
+        Game::Skyrim => SKYRIM_NATIVE_GLOBALS,
+        Game::Starfield => panic!("unsupported game {game} provided"),
     }
 }
 
 /// Whether `name_lower` is a known native singleton script for `game`.
 /// `name_lower` must already be lowercased.
-pub fn is_known_for(game: &str, name_lower: &str) -> bool {
+pub fn is_known_for(game: Game, name_lower: &str) -> bool {
     globals_for(game).contains(&name_lower)
 }

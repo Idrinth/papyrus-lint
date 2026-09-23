@@ -293,6 +293,14 @@ fn caches_scripts_under_a_single_lowercase_key() {
 fn reloads_a_script_when_its_mtime_changes() {
     let root = tempfile::tempdir().expect("failed to create temp dir");
     write_script(root.path(), "Foo", "this is not a Papyrus script\n");
+    let path = root.path().join("scripts/source/Foo.psc");
+    let initial = std::time::UNIX_EPOCH
+        + std::time::Duration::from_secs(1_700_000_000)
+        + std::time::Duration::from_millis(100);
+    fs::File::open(&path)
+        .expect("failed to open initial script")
+        .set_modified(initial)
+        .expect("failed to set initial script mtime");
 
     let mut table = FunctionTable::new(root.path().to_path_buf());
     assert!(table.lookup_function("Foo", "Bar").is_none());
@@ -303,16 +311,30 @@ fn reloads_a_script_when_its_mtime_changes() {
         "Foo",
         "ScriptName Foo\n\nFunction Bar()\nEndFunction\n",
     );
-    // `ensure_loaded` keys the cache by mtime-seconds; force a newer stamp
-    // so this rewrite is visible even on filesystems with 1s resolution.
-    let path = root.path().join("scripts/source/Foo.psc");
-    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(2);
+    // Keep both stamps within the same whole second to verify that the cache
+    // compares the complete filesystem timestamp.
+    let later = initial + std::time::Duration::from_millis(100);
     fs::File::open(&path)
         .expect("failed to open rewritten script")
         .set_modified(later)
         .expect("failed to bump script mtime");
 
     assert!(table.lookup_function("Foo", "Bar").is_some());
+}
+
+#[cfg(unix)]
+#[test]
+fn file_mtime_preserves_a_pre_epoch_timestamp() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let path = dir.path().join("Example.psc");
+    fs::write(&path, "ScriptName Example\n").expect("failed to write script");
+    let before_epoch = std::time::UNIX_EPOCH - std::time::Duration::from_secs(1);
+    fs::File::open(&path)
+        .expect("failed to open script")
+        .set_modified(before_epoch)
+        .expect("failed to set pre-epoch mtime");
+
+    assert_eq!(file_mtime(&path), Some(before_epoch));
 }
 
 #[test]
@@ -378,7 +400,8 @@ fn lookup_roots_write_through_the_ast_cache() {
 
     assert!(table.lookup_function("Actor", "DamageActorValue").is_some());
     assert!(
-        crate::ast_cache::get_for_game("skyrim", &path, source).is_some(),
+        crate::ast_cache::get_for_game(papyrus_lint_globals::Game::Skyrim.as_str(), &path, source,)
+            .is_some(),
         "a lookup-root script should be stored in ast_cache like a project source file"
     );
 }

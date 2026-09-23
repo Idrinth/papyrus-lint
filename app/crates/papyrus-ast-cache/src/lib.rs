@@ -100,6 +100,8 @@
 use std::path::Path;
 use std::sync::Mutex;
 
+use papyrus_lint_globals::Game;
+
 mod bundled;
 mod bundled_blob;
 mod entry;
@@ -113,7 +115,7 @@ mod version;
 static CACHE_LOCK: Mutex<()> = Mutex::new(());
 
 fn uses_bundled_skyrim(game: &str) -> bool {
-    game.eq_ignore_ascii_case("skyrim")
+    game.to_ascii_lowercase().parse() == Ok(Game::Skyrim)
 }
 
 /// Returns the cached AST for `source_path` if the bundled-script cache knows

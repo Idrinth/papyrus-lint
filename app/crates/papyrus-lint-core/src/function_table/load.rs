@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
-use std::time::UNIX_EPOCH;
+use std::time::SystemTime;
 
 use super::FunctionTable;
 use crate::script_functions::ScriptFunctions;
@@ -26,7 +26,7 @@ enum ScriptOrigin {
 /// earlier in the session, matching how the on-disk [`crate::ast_cache`]
 /// already reuses a previous CLI invocation.
 struct LookupScriptEntry {
-    mtime_secs: u64,
+    mtime: SystemTime,
     script: Option<ScriptFunctions>,
 }
 
@@ -35,25 +35,24 @@ fn lookup_script_cache() -> &'static Mutex<HashMap<PathBuf, LookupScriptEntry>> 
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-fn file_mtime_secs(path: &Path) -> Option<u64> {
-    let modified = std::fs::metadata(path).ok()?.modified().ok()?;
-    Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
+fn file_mtime(path: &Path) -> Option<SystemTime> {
+    std::fs::metadata(path).ok()?.modified().ok()
 }
 
-fn cached_lookup_script(path: &Path, mtime_secs: u64) -> Option<Option<ScriptFunctions>> {
+fn cached_lookup_script(path: &Path, mtime: SystemTime) -> Option<Option<ScriptFunctions>> {
     let cache = lookup_script_cache()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     cache
         .get(path)
-        .and_then(|entry| (entry.mtime_secs == mtime_secs).then(|| entry.script.clone()))
+        .and_then(|entry| (entry.mtime == mtime).then(|| entry.script.clone()))
 }
 
-fn store_lookup_script(path: PathBuf, mtime_secs: u64, script: Option<ScriptFunctions>) {
+fn store_lookup_script(path: PathBuf, mtime: SystemTime, script: Option<ScriptFunctions>) {
     let mut cache = lookup_script_cache()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    cache.insert(path, LookupScriptEntry { mtime_secs, script });
+    cache.insert(path, LookupScriptEntry { mtime, script });
 }
 
 /// Process-wide cache of scripts loaded from the bundled vanilla/SKSE blob
@@ -64,7 +63,10 @@ fn bundled_script_cache() -> &'static Mutex<HashMap<String, Option<ScriptFunctio
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-fn bundled_script_functions(game: &str, name_lower: &str) -> Option<ScriptFunctions> {
+fn bundled_script_functions(
+    game: papyrus_lint_globals::Game,
+    name_lower: &str,
+) -> Option<ScriptFunctions> {
     {
         let cache = bundled_script_cache()
             .lock()
@@ -73,7 +75,7 @@ fn bundled_script_functions(game: &str, name_lower: &str) -> Option<ScriptFuncti
             return cached.clone();
         }
     }
-    let loaded = crate::ast_cache::ast_for_script_name(game, name_lower)
+    let loaded = crate::ast_cache::ast_for_script_name(game.as_str(), name_lower)
         .map(|ast| ScriptFunctions::from_script(&ast, ""));
     let mut cache = bundled_script_cache()
         .lock()
@@ -88,15 +90,16 @@ fn bundled_script_functions(game: &str, name_lower: &str) -> Option<ScriptFuncti
 /// `shared/skyrim-extender-scripts.zip` hit the cache's bundled blob and never
 /// take its disk lock, so parallel workers resolving the same base type do not
 /// serialize on that lookup.
-fn load_script_functions(game: &str, path: &Path) -> Option<ScriptFunctions> {
+fn load_script_functions(game: papyrus_lint_globals::Game, path: &Path) -> Option<ScriptFunctions> {
     let source = read_psc_source(path).ok()?;
-    let parsed = if let Some(cached) = crate::ast_cache::get_for_game(game, path, &source) {
+    let parsed = if let Some(cached) = crate::ast_cache::get_for_game(game.as_str(), path, &source)
+    {
         cached
     } else {
         let parsed = papyrus_parser::parse(&source).ok()?;
-        crate::ast_cache::put_for_game(game, path, &source, &parsed);
+        crate::ast_cache::put_for_game(game.as_str(), path, &source, &parsed);
         if let Ok(tokens) = papyrus_parser::tokenize(&source) {
-            crate::ast_cache::put_tokens_for_game(game, path, &source, &tokens);
+            crate::ast_cache::put_tokens_for_game(game.as_str(), path, &source, &tokens);
         }
         parsed
     };
@@ -119,8 +122,8 @@ impl FunctionTable {
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
-            || crate::ast_cache::contains_script_name(&self.game, &name_lower)
-            || crate::native_globals::is_known_for(&self.game.to_string(), &name_lower)
+            || crate::ast_cache::contains_script_name(self.game.as_str(), &name_lower)
+            || crate::native_globals::is_known_for(self.game, &name_lower)
     }
 
     fn resolve_script_path(&self, name_lower: &str) -> Option<PathBuf> {
@@ -181,9 +184,7 @@ impl FunctionTable {
     pub(super) fn ensure_loaded(&mut self, type_name: &str) {
         let name_lower = type_name.to_ascii_lowercase();
         let resolved = self.resolve_script_path_kind(&name_lower);
-        let mtime = resolved
-            .as_ref()
-            .and_then(|(path, _)| file_mtime_secs(path));
+        let mtime = resolved.as_ref().and_then(|(path, _)| file_mtime(path));
         if self.scripts.contains_key(&name_lower)
             && self.script_mtimes.get(&name_lower) == Some(&mtime)
         {
@@ -193,8 +194,8 @@ impl FunctionTable {
         let script = match resolved {
             Some((path, origin)) => {
                 if origin == ScriptOrigin::Lookup {
-                    if let Some(mtime_secs) = file_mtime_secs(&path) {
-                        if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
+                    if let Some(mtime) = file_mtime(&path) {
+                        if let Some(cached) = cached_lookup_script(&path, mtime) {
                             cached
                         } else {
                             let loaded = load_script_functions(&self.game, &path);
@@ -202,13 +203,13 @@ impl FunctionTable {
                             loaded
                         }
                     } else {
-                        load_script_functions(&self.game, &path)
+                        load_script_functions(self.game, &path)
                     }
                 } else {
-                    load_script_functions(&self.game, &path)
+                    load_script_functions(self.game, &path)
                 }
             }
-            None => bundled_script_functions(&self.game, &name_lower),
+            None => bundled_script_functions(self.game, &name_lower),
         };
 
         self.scripts.insert(name_lower.clone(), script);
@@ -224,11 +225,9 @@ impl FunctionTable {
     pub(super) fn resolved_path_and_mtime(
         &self,
         name_lower: &str,
-    ) -> (Option<PathBuf>, Option<u64>) {
+    ) -> (Option<PathBuf>, Option<SystemTime>) {
         let resolved = self.resolve_script_path_kind(name_lower);
-        let mtime = resolved
-            .as_ref()
-            .and_then(|(path, _)| file_mtime_secs(path));
+        let mtime = resolved.as_ref().and_then(|(path, _)| file_mtime(path));
         (resolved.map(|(path, _)| path), mtime)
     }
 
@@ -237,9 +236,7 @@ impl FunctionTable {
     /// `Some(None)` is a cached unresolved type.
     pub(super) fn get_cached(&self, name: &str) -> Option<&Option<ScriptFunctions>> {
         let resolved = self.resolve_script_path_kind(name);
-        let mtime = resolved
-            .as_ref()
-            .and_then(|(path, _)| file_mtime_secs(path));
+        let mtime = resolved.as_ref().and_then(|(path, _)| file_mtime(path));
         (self.script_mtimes.get(name) == Some(&mtime)).then(|| self.scripts.get(name))?
     }
 }

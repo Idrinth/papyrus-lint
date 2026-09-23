@@ -17,6 +17,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::SystemTime;
 
 use crate::script_functions::ScriptFunctions;
 pub use crate::script_functions::{FunctionSignature, Member, PropertySignature};
@@ -57,7 +58,7 @@ impl<T> CacheProbe<T> {
 /// are cached. A type that can't be found or fails to parse is cached as
 /// unresolved so repeated lookups don't retry the filesystem or parser.
 pub struct FunctionTable {
-    game: String,
+    game: papyrus_lint_globals::Game,
     root: PathBuf,
     additional_roots: Vec<String>,
     /// Analysis-only fallback directories, searched after `root` /
@@ -87,13 +88,13 @@ pub struct FunctionTable {
     /// [`Self::with_lookup_roots`]), built the same way as `script_index`.
     lookup_index: Option<Arc<ScriptIndex>>,
     scripts: HashMap<String, Option<ScriptFunctions>>,
-    /// mtime (seconds) of the file each `scripts` entry was loaded from,
+    /// mtime of the file each `scripts` entry was loaded from,
     /// or `None` when that name was cached as unresolved. Compared on the
     /// next [`Self::ensure_loaded`] so a long-lived table (the desktop
     /// app's process-wide shared table, or a CLI table reused across a
     /// `fix` that rewrote a dependency) picks up an edited `.psc` instead
     /// of serving the previous parse.
-    script_mtimes: HashMap<String, Option<u64>>,
+    script_mtimes: HashMap<String, Option<SystemTime>>,
 }
 
 impl FunctionTable {
@@ -111,7 +112,7 @@ impl FunctionTable {
     /// `scripts/source` / `source/scripts` under `root`.
     pub fn new(root: PathBuf) -> Self {
         FunctionTable {
-            game: papyrus_lints::Game::default().as_str().to_string(),
+            game: papyrus_lint_globals::Game::default(),
             root,
             additional_roots: Vec::new(),
             lookup_roots: Vec::new(),
@@ -128,7 +129,7 @@ impl FunctionTable {
     /// alongside `scripts/source` / `source/scripts` under `root`.
     pub fn new_with_additional_roots(root: PathBuf, additional_roots: Vec<String>) -> Self {
         FunctionTable {
-            game: papyrus_lints::Game::default().as_str().to_string(),
+            game: papyrus_lint_globals::Game::default(),
             root,
             additional_roots,
             lookup_roots: Vec::new(),
@@ -142,7 +143,10 @@ impl FunctionTable {
 
     /// Selects the target game used to namespace on-disk AST cache entries.
     pub fn with_game(mut self, game: papyrus_lints::Game) -> Self {
-        self.game = game.as_str().to_string();
+        self.game = match game {
+            papyrus_lints::Game::Skyrim => papyrus_lint_globals::Game::Skyrim,
+            papyrus_lints::Game::Fallout4 => papyrus_lint_globals::Game::Fallout4,
+        };
         self
     }
 
