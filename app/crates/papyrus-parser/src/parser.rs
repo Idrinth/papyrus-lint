@@ -159,6 +159,18 @@ impl Parser {
         }
     }
 
+    /// Parses a Fallout 4 namespaced script name such as
+    /// `User:MyQuestScript` while retaining ordinary script names.
+    fn expect_script_name(&mut self) -> PResult<String> {
+        let mut name = self.expect_identifier()?;
+        while matches!(self.kind(), TokenKind::Colon) {
+            self.advance();
+            name.push(':');
+            name.push_str(&self.expect_identifier()?);
+        }
+        Ok(name)
+    }
+
     /// Like `expect_identifier`, but also accepts the `Length` keyword,
     /// which is only ever meaningful as an array's `.Length` property.
     fn expect_property_name(&mut self) -> PResult<String> {
@@ -183,7 +195,7 @@ impl Parser {
         self.skip_newlines();
         let line = self.current().line;
         self.expect_keyword(Keyword::ScriptName)?;
-        let name = self.expect_identifier()?;
+        let name = self.expect_script_name()?;
 
         let mut extends = None;
         if self.at_keyword(Keyword::Extends) {

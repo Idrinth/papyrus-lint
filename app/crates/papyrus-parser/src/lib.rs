@@ -129,6 +129,13 @@ mod tests {
     }
 
     #[test]
+    fn parses_a_namespaced_fallout_4_script_name() {
+        let script = parse("ScriptName User:Quests:MyQuestScript\n").unwrap();
+
+        assert_eq!(script.name, "User:Quests:MyQuestScript");
+    }
+
+    #[test]
     fn parses_imports_properties_and_variables() {
         let src = r#"
 ScriptName Example extends ObjectReference
