@@ -23,8 +23,7 @@ pub(crate) fn write_args_error(err: ArgsError, stderr: &mut impl Write) {
 fn args_error_message(err: &ArgsError) -> String {
     match err {
         ArgsError::Usage => unreachable!("Usage is reported via USAGE, not a one-line error"),
-        ArgsError::JsonAndFormatConflict
-        | ArgsError::InvalidFormat(_)
+        ArgsError::InvalidFormat(_)
         | ArgsError::HashSourceRequiresAi
         | ArgsError::InvalidColor(_) => format_flag_error(err),
         ArgsError::BlobWithPathArgument
@@ -42,9 +41,6 @@ fn args_error_message(err: &ArgsError) -> String {
 
 fn format_flag_error(err: &ArgsError) -> String {
     match err {
-        ArgsError::JsonAndFormatConflict => {
-            "error: --json and --format can't be combined".to_string()
-        }
         ArgsError::InvalidFormat(value) => {
             format!("error: --format must be 'plain', 'json', or 'ai', got '{value}'")
         }

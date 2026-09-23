@@ -3,8 +3,8 @@ use std::io::{self, IsTerminal};
 use std::process::ExitCode;
 
 /// Launched with no arguments, this binary starts the desktop app, same as
-/// always. Launched with an `.achlist` path (or a single `.psc` path, or
-/// `-h`/`--help`), it lints non-interactively instead, exactly like the
+/// always. Launched with `lint` (or `fix`/`doctor`/`init`/`version`, or
+/// `-h`/`--help`), it runs non-interactively instead, exactly like the
 /// standalone `PapyrusLinterCLI` binary (`app/crates/papyrus-lint-cli`), which
 /// stays available on its own for use cases (e.g. a CI pipeline) that
 /// shouldn't depend on the desktop app's binary at all.
@@ -85,7 +85,7 @@ mod tests {
         let launched = Cell::new(false);
 
         let code = dispatch(
-            &["--version".to_string()],
+            &["version".to_string()],
             &mut stdout,
             &mut stderr,
             false,
@@ -102,7 +102,7 @@ mod tests {
     }
 
     #[test]
-    fn short_version_flag_is_forwarded_to_the_cli() {
+    fn removed_short_version_flag_is_a_usage_error() {
         let mut stdout = Vec::new();
         let mut stderr = Vec::new();
 
@@ -110,12 +110,9 @@ mod tests {
             panic!("desktop app must not launch in CLI mode")
         });
 
-        assert_eq!(code, ExitCode::SUCCESS);
-        assert_eq!(
-            String::from_utf8(stdout).unwrap(),
-            format!("PapyrusLinterCLI {}\n", papyrus_lint_cli::VERSION)
-        );
-        assert!(stderr.is_empty());
+        assert_eq!(code, ExitCode::from(2));
+        assert!(stdout.is_empty());
+        assert_eq!(String::from_utf8(stderr).unwrap(), papyrus_lint_cli::USAGE);
     }
 
     #[test]
@@ -139,7 +136,8 @@ mod tests {
 
         let code = dispatch(
             &[
-                "--json".to_string(),
+                "lint".to_string(),
+                "--format=json".to_string(),
                 "--blob".to_string(),
                 "ScriptName Inline\n".to_string(),
             ],
@@ -166,7 +164,11 @@ mod tests {
         let mut stderr = Vec::new();
 
         let code = dispatch(
-            &["--json".to_string(), script.display().to_string()],
+            &[
+                "lint".to_string(),
+                "--format=json".to_string(),
+                script.display().to_string(),
+            ],
             &mut stdout,
             &mut stderr,
             false,
@@ -206,7 +208,7 @@ mod tests {
         let mut stderr = Vec::new();
 
         let code = dispatch(
-            &[missing_script.display().to_string()],
+            &["lint".to_string(), missing_script.display().to_string()],
             &mut stdout,
             &mut stderr,
             false,
@@ -229,7 +231,7 @@ mod tests {
         let mut stderr = Vec::new();
 
         let code = dispatch(
-            &[script.display().to_string()],
+            &["lint".to_string(), script.display().to_string()],
             &mut stdout,
             &mut stderr,
             true,
@@ -259,7 +261,7 @@ mod tests {
         let mut stderr = Vec::new();
 
         let code = dispatch(
-            &[script.display().to_string()],
+            &["lint".to_string(), script.display().to_string()],
             &mut stdout,
             &mut stderr,
             false,
@@ -279,7 +281,11 @@ mod tests {
         let mut stderr = Vec::new();
 
         let code = dispatch(
-            &["first.psc".to_string(), "second.psc".to_string()],
+            &[
+                "lint".to_string(),
+                "first.psc".to_string(),
+                "second.psc".to_string(),
+            ],
             &mut stdout,
             &mut stderr,
             false,
@@ -326,6 +332,7 @@ mod tests {
 
         let code = dispatch(
             &[
+                "lint".to_string(),
                 "--format".to_string(),
                 "ai".to_string(),
                 script.display().to_string(),
@@ -361,6 +368,7 @@ mod tests {
 
         let code = dispatch(
             &[
+                "lint".to_string(),
                 "--tag".to_string(),
                 "style".to_string(),
                 script.display().to_string(),
