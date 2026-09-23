@@ -11,7 +11,7 @@ import zipfile
 from pathlib import Path
 from unittest import mock
 
-from base_scripts_snapshot import main as entry_main
+import base_scripts_snapshot as entry
 from ci_lib import base_scripts_snapshot as snap
 
 
@@ -23,6 +23,11 @@ def _write_fake_cli(directory: Path, output: str, exit_code: int = 1) -> Path:
         f"OUTPUT = {output!r}\n"
         f"EXIT_CODE = {exit_code}\n"
         "args = sys.argv[1:]\n"
+        "if args[0] == 'init':\n"
+        "    from pathlib import Path\n"
+        "    Path('papyrus-lint.yaml').write_text('generated', encoding='utf-8')\n"
+        "    sys.exit(0)\n"
+        "assert args[0] == 'lint'\n"
         "assert '--format' in args and args[args.index('--format') + 1] == 'plain'\n"
         "assert '--json' not in args\n"
         "output_path = args[args.index('--output') + 1]\n"
@@ -51,6 +56,17 @@ def _write_repo(directory: Path) -> Path:
 
 
 class CompareOutputTests(unittest.TestCase):
+    def test_fixture_paths_distinguish_base_and_extender_runs(self) -> None:
+        root = Path("repo")
+        self.assertEqual(
+            root / "fixtures/skyrim-base-strict.txt",
+            snap.fixture_path(root, "strict", "skyrim", False),
+        )
+        self.assertEqual(
+            root / "fixtures/skyrim-extender-strict.txt",
+            snap.fixture_path(root, "strict", "skyrim", True),
+        )
+
     def test_ignores_line_order_and_preserves_duplicate_counts(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "strict.txt"
@@ -66,6 +82,66 @@ class CompareOutputTests(unittest.TestCase):
 
 
 class RenderAndMainTests(unittest.TestCase):
+    def test_extract_base_scripts_rejects_a_missing_archive(self) -> None:
+        with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(
+            snap.SnapshotError, "base scripts archive not found"
+        ):
+            snap.extract_base_scripts(Path(directory) / "missing.zip", Path(directory) / "out")
+
+    def test_run_cli_rejects_a_missing_binary(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            with self.assertRaisesRegex(snap.SnapshotError, "CLI binary not found"):
+                snap.run_cli(base / "missing", base, "strict", base / "report.txt", "skyrim")
+
+    def test_run_cli_reports_when_a_successful_cli_does_not_write_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            cli = base / "fake-cli"
+            cli.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+            cli.chmod(cli.stat().st_mode | stat.S_IEXEC)
+            with self.assertRaisesRegex(snap.SnapshotError, "failed to read CLI text report"):
+                snap.run_cli(cli, base, "strict", base / "report.txt", "skyrim")
+
+    def test_run_cli_replaces_existing_config_and_inserts_extra_arguments(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            project = base / "project"
+            project.mkdir()
+            (project / "papyrus-lint.yaml").write_text("stale", encoding="utf-8")
+            args_log = base / "args.txt"
+            cli = base / "fake-cli"
+            cli.write_text(
+                "#!/usr/bin/env python3\n"
+                "import pathlib, sys\n"
+                "if sys.argv[1] == 'init':\n"
+                "    pathlib.Path('papyrus-lint.yaml').write_text('fresh', encoding='utf-8')\n"
+                "else:\n"
+                f"    pathlib.Path({str(args_log)!r}).write_text('\\n'.join(sys.argv[1:]), encoding='utf-8')\n"
+                "    output = pathlib.Path(sys.argv[sys.argv.index('--output') + 1])\n"
+                "    output.write_text('report', encoding='utf-8')\n",
+                encoding="utf-8",
+            )
+            cli.chmod(cli.stat().st_mode | stat.S_IEXEC)
+
+            result = snap.run_cli(
+                cli,
+                project,
+                "standard",
+                base / "nested/report.txt",
+                "fallout4",
+                ["--threads", "2"],
+            )
+
+            self.assertEqual("report", result)
+            self.assertEqual(
+                "fresh", (project / "papyrus-lint.yaml").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                ["--threads", "2", "lint"],
+                args_log.read_text(encoding="utf-8").splitlines()[:3],
+            )
+
     def test_render_output_runs_cli_in_plain_text_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
@@ -82,7 +158,7 @@ class RenderAndMainTests(unittest.TestCase):
             snap.write_fixture(snap.fixture_path(root, "strict", "skyrim", True), "removed\nkept\n")
             stderr = io.StringIO()
             with mock.patch("sys.stderr", stderr):
-                status = entry_main(
+                status = entry.main(
                     [
                         "--cli",
                         str(cli),
@@ -118,11 +194,11 @@ class RenderAndMainTests(unittest.TestCase):
                 "--work-dir",
                 str(base / "work"),
             ]
-            self.assertEqual(0, entry_main([*common_args, "--update"]))
+            self.assertEqual(0, entry.main([*common_args, "--update"]))
             self.assertEqual("second\nfirst\n", snap.fixture_path(root, "careful", "skyrim", False).read_text())
 
             cli = _write_fake_cli(base, "first\nsecond\n")
-            self.assertEqual(0, entry_main(common_args))
+            self.assertEqual(0, entry.main(common_args))
 
     def test_unknown_preset_and_cli_crash(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -134,6 +210,43 @@ class RenderAndMainTests(unittest.TestCase):
             with self.assertRaises(snap.SnapshotError) as ctx:
                 snap.render_output(root, crashing, "strict", base / "work", "skyrim", False)
             self.assertIn("exited 2", str(ctx.exception))
+
+    def test_render_output_validates_game_and_handles_starfield_extender(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            root = _write_repo(base)
+            with self.assertRaisesRegex(snap.SnapshotError, "unknown game"):
+                snap.render_output(root, base / "unused", "strict", base / "work", "morrowind", False)
+            self.assertEqual(
+                "",
+                snap.render_output(root, base / "unused", "strict", base / "work", "starfield", True),
+            )
+
+
+class SelectionTests(unittest.TestCase):
+    def test_selection_defaults_deduplicate_and_all(self) -> None:
+        defaults = entry.parse_args(["--cli", "cli"])
+        self.assertEqual(snap.PRESETS, entry.selected_presets(defaults))
+        self.assertEqual(snap.GAMES, entry.selected_games(defaults))
+
+        selected = entry.parse_args(
+            ["--cli", "cli", "--preset", "strict", "--preset", "strict", "--game", "skyrim"]
+        )
+        self.assertEqual(("strict",), entry.selected_presets(selected))
+        self.assertEqual(("skyrim",), entry.selected_games(selected))
+
+        all_options = entry.parse_args(
+            ["--cli", "cli", "--all", "--preset", "strict", "--game", "skyrim"]
+        )
+        self.assertEqual(snap.PRESETS, entry.selected_presets(all_options))
+        self.assertEqual(snap.GAMES, entry.selected_games(all_options))
+
+    def test_diff_truncation_reports_omitted_line_count(self) -> None:
+        self.assertEqual("one\ntwo\n", entry._truncate_diff("one\ntwo\n", limit=2))
+        self.assertEqual(
+            "one\ntwo\n... (1 more diff lines omitted)\n",
+            entry._truncate_diff("one\ntwo\nthree\n", limit=2),
+        )
 
 
 if __name__ == "__main__":
