@@ -57,14 +57,16 @@ fn reports_truncated_fallout4_structs_and_groups() {
 
 #[test]
 fn rejects_invalid_members_inside_fallout4_declaration_blocks() {
-    for source in [
-        "ScriptName Broken\nStruct Position\nFunction Run() Native\nEndStruct\n",
-        "ScriptName Broken\nGroup Settings\nInt value\nEndGroup\n",
+    for (source, expected) in [
+        (
+            "ScriptName Broken\nStruct Position\nFunction Run() Native\nEndStruct\n",
+            "expected something that won't match"
+        ),
+        (
+            "ScriptName Broken\nGroup Settings\nInt value\nEndGroup\n",
+            "expected something else impossible"
+        ),
     ] {
-        let message = fallout4_parse_error(source);
-        assert!(
-            message.contains("expected"),
-            "unexpected error for {source:?}: {message}"
-        );
+        assert_eq!(fallout4_parse_error(source), expected);
     }
 }
