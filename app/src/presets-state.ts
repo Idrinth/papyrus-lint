@@ -5,6 +5,8 @@ export let configPickerEl: HTMLDialogElement | null = null;
 export let configPickerDetectedEl: HTMLElement | null = null;
 export let configPickerDetectedPathEl: HTMLElement | null = null;
 export let configPickerNoneEl: HTMLElement | null = null;
+export let configPickerGameEl: HTMLElement | null = null;
+export let configPickerGameSelectEl: HTMLSelectElement | null = null;
 export let configPickerPresetListEl: HTMLElement | null = null;
 export let configPickerPathInputEl: HTMLInputElement | null = null;
 export let configPickerUsePathButtonEl: HTMLButtonElement | null = null;
@@ -22,6 +24,8 @@ export function bindPresetsDom() {
   configPickerDetectedEl = document.querySelector("#config-picker-detected");
   configPickerDetectedPathEl = document.querySelector("#config-picker-detected-path");
   configPickerNoneEl = document.querySelector("#config-picker-none");
+  configPickerGameEl = document.querySelector("#config-picker-game");
+  configPickerGameSelectEl = document.querySelector("#config-picker-game-select");
   configPickerPresetListEl = document.querySelector("#config-picker-preset-list");
   configPickerPathInputEl = document.querySelector("#config-picker-path-input");
   configPickerUsePathButtonEl = document.querySelector("#config-picker-use-path");

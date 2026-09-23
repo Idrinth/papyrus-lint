@@ -47,6 +47,7 @@ describe("generate-config-types", () => {
     expect(rendered).toContain("  comma_spacing: true,\n  property_sorting: false,\n");
     expect(rendered).toContain('indentation: "tab"');
     expect(rendered).toContain('game: "skyrim"');
+    expect(rendered).toContain('export type Game = "skyrim" | "fallout4";');
     expect(rendered).toContain("app/scripts/generate-config-types.mjs");
   });
 

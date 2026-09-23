@@ -618,6 +618,108 @@ describe("loadProjectConfig", () => {
     expect(invokeMock).toHaveBeenCalledWith("apply_config_preset", { dir: "/my/project", preset: "careful" });
   });
 
+  it("writes the first-run picker's game into a new project", async () => {
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      list_config_presets: () => [
+        { id: "careful", label: "Careful", description: "The quietest option." },
+      ],
+      apply_config_preset: () => undefined,
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      save_lint_config: () => undefined,
+    });
+
+    const pending = loadProjectConfig("/fallout/project");
+    await vi.waitFor(() =>
+      expect(document.querySelector("#config-picker-preset-list .config-picker__preset-option")).not.toBeNull(),
+    );
+    document.querySelector<HTMLSelectElement>("#config-picker-game-select")!.value = "fallout4";
+    document.querySelector<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")!.click();
+    await pending;
+
+    expect(document.querySelector<HTMLSelectElement>("#game-select")!.value).toBe("fallout4");
+    expect(invokeMock).toHaveBeenCalledWith("save_lint_config", {
+      dir: "/fallout/project",
+      config: expect.objectContaining({ game: "fallout4" }),
+    });
+  });
+
+  it("does not overwrite an existing configuration's game from the picker", async () => {
+    invokeImplFor({
+      load_project_info: () => ({
+        detected_script_roots: [],
+        used_configuration_file: "/my/project/papyrus-lint.yaml",
+      }),
+      load_lint_config: () => ({ ...DEFAULT_LINT_CONFIG, game: "fallout4" }),
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      save_lint_config: () => undefined,
+    });
+
+    const pending = loadProjectConfig("/my/project");
+    await vi.waitFor(() => expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true));
+    expect(document.querySelector<HTMLElement>("#config-picker-game")!.hidden).toBe(true);
+    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
+    await pending;
+
+    expect(document.querySelector<HTMLSelectElement>("#game-select")!.value).toBe("fallout4");
+    expect(invokeMock).not.toHaveBeenCalledWith("save_lint_config", expect.anything());
+  });
+
+  it("writes a config when a new project continues as Fallout 4", async () => {
+    let saves = 0;
+    invokeImplFor({
+      load_project_info: () => ({
+        detected_script_roots: [],
+        used_configuration_file: saves > 0 ? "/fallout/project/papyrus-lint.yaml" : null,
+      }),
+      list_config_presets: () => [],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      save_lint_config: () => {
+        saves += 1;
+      },
+    });
+
+    const pending = loadProjectConfig("/fallout/project");
+    await vi.waitFor(() => expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true));
+    document.querySelector<HTMLSelectElement>("#config-picker-game-select")!.value = "fallout4";
+    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
+    await pending;
+
+    expect(saves).toBe(1);
+    expect(document.querySelector("#used-configuration-file")!.textContent).toBe(
+      "/fallout/project/papyrus-lint.yaml",
+    );
+    expect(document.querySelector<HTMLSelectElement>("#game-select")!.value).toBe("fallout4");
+  });
+
+  it("does not write a config when a new project continues as Skyrim", async () => {
+    invokeImplFor({
+      load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),
+      list_config_presets: () => [],
+      load_lint_config: () => DEFAULT_LINT_CONFIG,
+      load_compiler_path: () => null,
+      load_compile_check: () => false,
+      load_script_roots: () => [],
+      save_lint_config: () => undefined,
+    });
+
+    const pending = loadProjectConfig("/skyrim/project");
+    await vi.waitFor(() => expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true));
+    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
+    await pending;
+
+    expect(invokeMock).not.toHaveBeenCalledWith("save_lint_config", expect.anything());
+    expect(document.querySelector("#used-configuration-file")!.textContent).toBe("None (using defaults)");
+  });
+
   it("passes a custom preset id to the backend without normalizing it", async () => {
     invokeImplFor({
       load_project_info: () => ({ detected_script_roots: [], used_configuration_file: null }),

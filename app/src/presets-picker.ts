@@ -1,7 +1,7 @@
-import { type ConfigSelectionResult } from "./main-types";
+import { type ConfigSelectionResult, isSelectableGame } from "./main-types";
 import { type ProjectInfo } from "./project-state";
 import { loadConfigPresets } from "./presets-api";
-import { configPickerContinueEl, configPickerDetectedEl, configPickerDetectedPathEl, configPickerEl, configPickerNoneEl, configPickerPathInputEl, configPickerPresetListEl, configPickerUsePathButtonEl } from "./presets-state";
+import { configPickerContinueEl, configPickerDetectedEl, configPickerDetectedPathEl, configPickerEl, configPickerGameEl, configPickerGameSelectEl, configPickerNoneEl, configPickerPathInputEl, configPickerPresetListEl, configPickerUsePathButtonEl } from "./presets-state";
 // Shows the "select this project's configuration" dialog useProjectDir
 // opens for every not-yet-confirmed project directory (see
 // confirmedProjectDirs), so a project's configuration is always picked
@@ -17,7 +17,10 @@ import { configPickerContinueEl, configPickerDetectedEl, configPickerDetectedPat
 // shown only when the project has no configuration file yet, since
 // initializing from a preset requires there to be none (see
 // applyConfigPreset/papyrus_lint_config::initialize_default_config)
-// - is clicked. Resolves immediately with `{ kind: "detected" }` if the
+// - is clicked. A project with no configuration file also gets `game`
+// on Continue and on a preset choice, from the dialog's target-game
+// select, so loadProjectConfig can stamp that key into the new file.
+// Resolves immediately with `{ kind: "detected" }` if the
 // dialog isn't present in the DOM (e.g. a minimal test fixture).
 export async function promptForConfigSelection(projectInfo: ProjectInfo): Promise<ConfigSelectionResult> {
   if (!configPickerEl) {
@@ -37,6 +40,12 @@ export async function promptForConfigSelection(projectInfo: ProjectInfo): Promis
     }
     if (configPickerNoneEl) {
       configPickerNoneEl.hidden = Boolean(detectedPath);
+    }
+    if (configPickerGameEl) {
+      configPickerGameEl.hidden = Boolean(detectedPath);
+    }
+    if (!detectedPath && configPickerGameSelectEl) {
+      configPickerGameSelectEl.value = "skyrim";
     }
     if (configPickerPathInputEl) {
       configPickerPathInputEl.value = "";
@@ -67,7 +76,9 @@ export async function promptForConfigSelection(projectInfo: ProjectInfo): Promis
       resolve(result);
     };
     const handleClose = () => finish({ kind: "detected" });
-    const handleContinue = () => finish({ kind: "detected" });
+    const handleContinue = () => {
+      finish(detectedPath ? { kind: "detected" } : { kind: "detected", game: pickerGame() });
+    };
     const handleUsePath = () => {
       const path = configPickerPathInputEl?.value.trim();
       if (path) {
@@ -92,7 +103,9 @@ export async function promptForConfigSelection(projectInfo: ProjectInfo): Promis
         description.className = "config-picker__preset-option-description";
         description.textContent = preset.description;
         option.append(label, description);
-        option.addEventListener("click", () => finish({ kind: "preset", preset: preset.id }));
+        option.addEventListener("click", () => {
+          finish({ kind: "preset", preset: preset.id, game: pickerGame() });
+        });
         configPickerPresetListEl.appendChild(option);
       }
     }
@@ -100,4 +113,9 @@ export async function promptForConfigSelection(projectInfo: ProjectInfo): Promis
     dialog.addEventListener("close", handleClose, { once: true });
     dialog.showModal();
   });
+}
+
+function pickerGame() {
+  const value = configPickerGameSelectEl?.value;
+  return isSelectableGame(value) ? value : "skyrim";
 }

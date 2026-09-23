@@ -9,12 +9,24 @@ interface InitPresetQuickPickItem extends vscode.QuickPickItem {
   preset?: string;
 }
 
+interface InitGameQuickPickItem extends vscode.QuickPickItem {
+  /** The `--game` value. Starfield parses but is not supported by the linter yet. */
+  game: 'skyrim' | 'fallout4';
+}
+
 function initPresetQuickPickItems(): InitPresetQuickPickItem[] {
   return [
     { label: 'strict (default)', preset: '', description: 'Every lint rule enabled at its strictest' },
     { label: 'standard', preset: 'standard', description: 'A more relaxed baseline' },
     { label: 'careful', preset: 'careful', description: 'The most relaxed baseline' },
     { label: CUSTOM_INIT_PRESET_LABEL, description: 'A preset added via "preset add" or the desktop app' },
+  ];
+}
+
+function initGameQuickPickItems(): InitGameQuickPickItem[] {
+  return [
+    { label: 'Skyrim (default)', game: 'skyrim', description: 'Skyrim Special Edition / Anniversary Edition' },
+    { label: 'Fallout 4', game: 'fallout4', description: 'Fallout 4' },
   ];
 }
 
@@ -39,6 +51,15 @@ async function pickInitPreset(): Promise<string | undefined> {
   return custom?.trim() || undefined;
 }
 
+/** Prompts for the `--game` value `papyrusLint.initializeConfig` should pass.
+ * `init` requires `--game`. Returns `undefined` if the user cancels. */
+async function pickInitGame(): Promise<string | undefined> {
+  const picked = await vscode.window.showQuickPick(initGameQuickPickItems(), {
+    placeHolder: 'Select the game this project targets',
+  });
+  return picked?.game;
+}
+
 /** Resolves the project directory `papyrusLint.initializeConfig` should run `init` in:
  * the workspace's sole folder, a prompt when several are open, or `undefined` (after
  * showing an error) when no folder is open at all. */
@@ -57,9 +78,9 @@ async function resolveInitDirectory(): Promise<string | undefined> {
   return picked?.uri.fsPath;
 }
 
-/** Runs `PapyrusLinterCLI init [--preset <name>]` in `directory`, e.g. a right-clicked
- * explorer folder or a workspace folder resolved via `resolveInitDirectory`, prompting
- * for a preset first when `directory` isn't already given by the caller. */
+/** Runs `PapyrusLinterCLI init --game <name> [--preset <name>]` in `directory`, e.g. a
+ * right-clicked explorer folder or a workspace folder resolved via
+ * `resolveInitDirectory`, prompting for a preset and a target game first. */
 export async function initializeConfig(output: vscode.OutputChannel, uri?: vscode.Uri): Promise<void> {
   const directory = uri ? uri.fsPath : await resolveInitDirectory();
   if (!directory) {
@@ -69,8 +90,16 @@ export async function initializeConfig(output: vscode.OutputChannel, uri?: vscod
   if (preset === undefined) {
     return;
   }
+  const game = await pickInitGame();
+  if (!game) {
+    return;
+  }
 
-  const result = await runCli(preset ? ['init', '--preset', preset] : ['init'], directory);
+  const args = ['init', '--game', game];
+  if (preset) {
+    args.push('--preset', preset);
+  }
+  const result = await runCli(args, directory);
   if (result.code === -1) {
     showCliLaunchFailure(result);
     return;

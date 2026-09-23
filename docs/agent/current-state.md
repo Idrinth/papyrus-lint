@@ -54,6 +54,9 @@ update the cited code *and* this list.
   this: its `<Import>` entries land in `currentPpjImportRoots`
   (`project-state.ts`), folded into `effectiveScriptRoots()` the same way
   `currentAchlistScriptRoots` is.
+- The desktop Settings tab and first-run picker, and the VS Code / Sublime
+  `init` prompts, write `game` as `skyrim` or `fallout4`. Starfield stays
+  CLI-only (`init --game starfield`) until the linter supports it.
 - Vanilla engine types without an on-disk `.psc` resolve from the bundled
   AST cache by `ScriptName` (`FunctionTable::ensure_loaded` /
   `script_exists`). A project or lookup-root file of the same name still

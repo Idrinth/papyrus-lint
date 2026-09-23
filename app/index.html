@@ -91,6 +91,11 @@
               <output id="used-configuration-file">No project loaded</output>
             </div>
           </fieldset>
+          <label for="game-select" title="The game whose Papyrus dialect and runtime APIs this project targets. Saved as the configuration file's game key.">Target game</label>
+          <select id="game-select">
+            <option value="skyrim">Skyrim</option>
+            <option value="fallout4">Fallout 4</option>
+          </select>
           <div class="compiler-path-setting">
             <label for="config-path-override">Configuration file</label>
             <input
@@ -450,6 +455,13 @@
         continue with the engine's defaults — every setting can still be changed afterward in the
         Settings tab.
       </p>
+      <div id="config-picker-game" class="config-picker__game" hidden>
+        <label for="config-picker-game-select">Target game</label>
+        <select id="config-picker-game-select">
+          <option value="skyrim">Skyrim</option>
+          <option value="fallout4">Fallout 4</option>
+        </select>
+      </div>
       <div id="config-picker-preset-list" class="config-picker__list" hidden></div>
       <div class="config-picker__browse">
         <label for="config-picker-path-input">Use a different configuration file instead</label>

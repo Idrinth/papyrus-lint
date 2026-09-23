@@ -241,7 +241,7 @@ class PapyrusLintFixIssueCommand(_PapyrusLintCliCommand):
 
 
 class PapyrusLintInitCommand(_PapyrusLintCliSettings, sublime_plugin.WindowCommand):
-    """Runs `PapyrusLinterCLI init [--preset <name>]` to scaffold a config.
+    """Runs `PapyrusLinterCLI init --game <name> [--preset <name>]`.
 
     Unlike the fix commands above, this isn't scoped to any one file, so
     it's a `WindowCommand` (available from the Command Palette only, not
@@ -252,8 +252,10 @@ class PapyrusLintInitCommand(_PapyrusLintCliSettings, sublime_plugin.WindowComma
     prompts for the `--preset` to pass, mirroring the CLI's own built-in
     choices (`strict`, `standard`, `careful`) plus a free-form entry for a
     custom preset added via `PapyrusLinterCLI preset add` or the desktop
-    app's "Save current settings as preset..." button. Never overwrites an
-    existing papyrus-lint.yaml/.yml, the same as the CLI itself.
+    app's "Save current settings as preset..." button, and then for the
+    `--game` (`skyrim` or `fallout4`) the new config should target.
+    Never overwrites an existing papyrus-lint.yaml/.yml, the same as the
+    CLI itself.
     """
 
     #: Shown in the preset quick panel, in the same order as the CLI's own
@@ -266,6 +268,13 @@ class PapyrusLintInitCommand(_PapyrusLintCliSettings, sublime_plugin.WindowComma
     #: default). Has no entry for the trailing "Custom preset name…" label,
     #: which is handled separately via `_on_custom_preset_entered`.
     PRESET_VALUES = [None, 'standard', 'careful']
+
+    #: Shown after a preset is chosen. Starfield is accepted by the CLI but
+    #: not supported by the linter yet, so it is not offered here.
+    GAME_LABELS = ['Skyrim (default)', 'Fallout 4']
+
+    #: The `--game` value for each of `GAME_LABELS`, by index.
+    GAME_VALUES = ['skyrim', 'fallout4']
 
     def run(self):
         folders = self.window.folders()
@@ -302,15 +311,24 @@ class PapyrusLintInitCommand(_PapyrusLintCliSettings, sublime_plugin.WindowComma
                 'Custom preset name:', '', self._on_custom_preset_entered, None, None
             )
             return
-        self._run_init(self.PRESET_VALUES[index])
+        self._ask_for_game(self.PRESET_VALUES[index])
 
     def _on_custom_preset_entered(self, name):
         name = name.strip()
         if not name:
             return
-        self._run_init(name)
+        self._ask_for_game(name)
 
-    def _run_init(self, preset):
+    def _ask_for_game(self, preset):
+        self._preset = preset
+        self.window.show_quick_panel(self.GAME_LABELS, self._on_game_chosen)
+
+    def _on_game_chosen(self, index):
+        if index == -1:
+            return
+        self._run_init(self._preset, self.GAME_VALUES[index])
+
+    def _run_init(self, preset, game):
         startupinfo = _windows_startupinfo()
 
         try:
@@ -321,7 +339,7 @@ class PapyrusLintInitCommand(_PapyrusLintCliSettings, sublime_plugin.WindowComma
             )
             return
 
-        command = [executable, 'init']
+        command = [executable, 'init', '--game', game]
         if preset:
             command += ['--preset', preset]
 
