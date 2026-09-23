@@ -295,3 +295,16 @@ fn blob_output_flag_redirects_the_report_to_a_file() {
     let report = fs::read_to_string(&output_path).unwrap();
     assert!(report.contains("[trailing-whitespace]"));
 }
+
+#[test]
+fn blob_plain_reports_parser_errors() {
+    let (code, stdout, stderr) = run_captured(&[
+        "--blob=ScriptName Example\nFunction Broken(\n".to_string(),
+    ]);
+
+    assert!(stderr.is_empty());
+    assert_eq!(code, 0);
+    assert!(stdout.contains("<blob>:"));
+    assert!(stdout.contains("[parse]"));
+    assert!(stdout.contains("problem(s) found in the given blob"));
+}
