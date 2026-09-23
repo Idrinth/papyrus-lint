@@ -15,7 +15,7 @@ RUN apk add --no-cache gcompat libgcc unzip \
 
 COPY --chmod=755 PapyrusLinterCLI /usr/local/bin/PapyrusLinterCLI
 COPY --chmod=755 entrypoint.sh /usr/local/bin/papyrus-lint-entrypoint
-RUN PapyrusLinterCLI --version
+RUN PapyrusLinterCLI version
 
 # Generate the selected preset's config and point lookup roots at the
 # container paths documented in the README (/project, /cache, /base-scripts).
