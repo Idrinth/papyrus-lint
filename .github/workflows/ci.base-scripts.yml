@@ -55,7 +55,7 @@ jobs:
       fail-fast: false
       matrix:
         preset: [strict, standard, careful]
-        game: [skyrim]
+        game: [skyrim, fallout4]
         extender: [yes, no]
     steps:
       - uses: actions/checkout@v7

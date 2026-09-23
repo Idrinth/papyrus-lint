@@ -24,6 +24,10 @@ pub(crate) struct LintContext<'a> {
     /// [`crate::run_scan::ScanOutcome`]).
     pub(crate) scripts_by_name: &'a HashMap<String, Vec<PathBuf>>,
     pub(crate) script_index: &'a HashMap<String, Vec<PathBuf>>,
+    /// The project root `conflicting_script_versions_among`/`_in_index`
+    /// shorten a conflict's reported path against when `short_paths` is set.
+    pub(crate) project_root: &'a Path,
+    pub(crate) short_paths: bool,
     pub(crate) strict_achlist_scope: bool,
     pub(crate) compile_check: bool,
     pub(crate) compiler_path: &'a str,
@@ -151,6 +155,8 @@ fn collect_project_diagnostics(
                         papyrus_lint_core::script_locator::conflicting_script_versions_among(
                             script_path,
                             same_named,
+                            ctx.project_root,
+                            ctx.short_paths,
                         ),
                     );
                 }
@@ -160,6 +166,8 @@ fn collect_project_diagnostics(
                 papyrus_lint_core::script_locator::conflicting_script_versions_in_index(
                     script_path,
                     ctx.script_index,
+                    ctx.project_root,
+                    ctx.short_paths,
                 ),
             );
         }
