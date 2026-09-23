@@ -238,6 +238,11 @@ fn blob_cannot_be_combined_with_a_path_argument() {
 
 #[test]
 fn blob_cannot_be_combined_with_fix_type_line_or_dry_run() {
+    assert_eq!(
+        parse_fix(&args(&["--blob", "ScriptName Example"])),
+        Err(ArgsError::BlobWithFixFlags)
+    );
+
     for flag in ["--dry-run", "--type=trailing-whitespace", "--line=1"] {
         assert_eq!(
             parse_lint(&args(&[flag, "--blob", "ScriptName Example"])),
