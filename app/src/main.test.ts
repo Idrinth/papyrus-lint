@@ -18,7 +18,7 @@ import { DEFAULT_LINT_CONFIG } from "./config-types";
 import { buildPscResultItem } from "./results-list-item";
 import { openCodeViewer } from "./code-viewer-dialog";
 import { handleDroppedPaths } from "./drop";
-import { type RuleTagsInfo, type PscParseOutcome } from "./backend";
+import { type RuleTagsInfo, type PscParseOutcome } from "./backend-types";
 import { applyRuleTags, clearError, showError, showResult } from "./main";
 import { escapeAttr, levelOf, severityOf } from "./main-severity";
 import { switchTab } from "./main-tabs";

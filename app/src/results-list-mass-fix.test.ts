@@ -6,7 +6,7 @@ vi.mock("@tauri-apps/api/window", () => ({ getCurrentWindow: () => ({ show: show
 
 import { describe, expect, it } from "vitest";
 import "./test/harness";
-import { type Diagnostic, type PscParseOutcome } from "./backend";
+import { type Diagnostic, type PscParseOutcome } from "./backend-types";
 import { massFixRuleCounts, massFixRuleDisplayName, renderMassFixList } from "./results-list-mass-fix";
 
 describe("massFixRuleDisplayName", () => {

@@ -7,7 +7,7 @@ vi.mock("@tauri-apps/api/window", () => ({ getCurrentWindow: () => ({ show: show
 import { describe, expect, it } from "vitest";
 import { invokeImplFor } from "./test/harness";
 import { applyRuleTags } from "./main";
-import { type PscParseOutcome } from "./backend";
+import { type PscParseOutcome } from "./backend-types";
 import { DEFAULT_LINT_CONFIG } from "./config-types";
 import { useProjectDir } from "./project-settings";
 import { buildPscResultItem } from "./results-list-item";

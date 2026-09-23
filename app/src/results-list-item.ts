@@ -1,4 +1,5 @@
-import { type Diagnostic, type PscParseOutcome, hasFixableFindings, hasNoAutomaticFix, isFixableFinding } from "./backend";
+import { type Diagnostic, type PscParseOutcome } from "./backend-types";
+import { hasFixableFindings, hasNoAutomaticFix, isFixableFinding } from "./finding-fixability";
 import { openCodeViewer } from "./code-viewer-dialog";
 import { levelOf } from "./main-severity";
 import { relativePath } from "./path";

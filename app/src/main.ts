@@ -1,7 +1,8 @@
 import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { type RuleTagsInfo, loadAppVersion, loadRuleTags } from "./backend";
+import { type RuleTagsInfo } from "./backend-types";
+import { loadAppVersion, loadRuleTags } from "./backend";
 import { bindPresets } from "./presets";
 import { refreshPresetManagementTab } from "./presets-management";
 import { bindCodeViewer } from "./code-viewer";

@@ -1,4 +1,4 @@
-import { type Diagnostic, type TagImportance } from "./backend";
+import { type Diagnostic, type TagImportance } from "./backend-types";
 import { type Severity } from "./main-severity";
 // One file's worth of findings that currently pass every active filter
 // (filename search, severity, tag, rule), as gathered by

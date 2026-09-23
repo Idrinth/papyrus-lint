@@ -1,97 +1,13 @@
 // Thin wrappers around every Tauri `invoke()` call the frontend makes for
-// linting, repairing, compiling, and looking up script members, plus the
-// wire types they exchange with the Rust backend. Kept separate from the
-// orchestration in main.ts so that layer isn't tangled up with how each
-// individual command is dispatched.
+// linting, repairing, compiling, and looking up script members. Kept separate
+// from the orchestration in main.ts so that layer isn't tangled up with how
+// each individual command is dispatched.
 import { invoke } from "@tauri-apps/api/core";
 import { type Member } from "./autocomplete";
-import { currentLintConfig, type LintConfig } from "./config-types";
-import { currentCompileCheck, currentCompilerPath, currentLookupScriptRoots, currentProjectDir, effectiveScriptRoots } from "./project-state";
-export interface PapyrusScript {
-  name: string;
-}
-
-export interface Diagnostic {
-  line: number;
-  column: number;
-  message: string;
-  // The lint rule that raised this finding (e.g. "trailing-whitespace"),
-  // matching papyrus_lints::Diagnostic::rule. Optional here since not every
-  // test fixture needs one; the backend always sends it.
-  rule?: string;
-}
-
-// Appends the triggered rule id in parentheses at the end of a finding's
-// on-screen message. A finding with no rule id (typical of a test fixture)
-// is labelled `(unknown)`.
-export function findingMessageWithRule(finding: Diagnostic): string {
-  return `${finding.message} (${finding.rule ?? "unknown"})`;
-}
-
-export interface PscParseOutcome {
-  path: string;
-  ok: boolean;
-  detail: string;
-  findings: Diagnostic[];
-}
-
-// Mirrors papyrus_lints::tags::Importance's lowercase serde rename.
-export type TagImportance = "low" | "medium" | "high";
-export const TAG_IMPORTANCES: TagImportance[] = ["low", "medium", "high"];
-
-// The kind keyword(s) papyrus_lints::tags currently tags every rule with.
-// Kept in sync by hand with the "kinds" used across RULE_TAGS in
-// app/crates/papyrus-lints/src/tags.rs, the same convention FIXABLE_RULE_IDS
-// below follows.
-export type TagKind = "style" | "performance" | "correctness" | "maintainability";
-export const TAG_KINDS: TagKind[] = ["style", "performance", "correctness", "maintainability"];
-
-// One rule's tag metadata, as returned by the backend's list_rule_tags
-// command (papyrus_lints::tags::RuleTags, made JSON-friendly).
-export interface RuleTagsInfo {
-  rule: string;
-  // The rule's detailed description, copied from its row in README.md's
-  // Implemented Lints tables (see papyrus_lints::tags::RuleTags).
-  description: string;
-  kinds: string[];
-  importance: TagImportance;
-  auto_fixable: boolean;
-  // This rule's own documentation link (papyrus_lints::tags::RuleTags::doc_url),
-  // for linking a finding straight to its explanation on the project website.
-  doc_url: string;
-}
-
-export interface CompileOutcome {
-  success: boolean;
-  stdout: string;
-  stderr: string;
-  personal_data_stripped: boolean;
-}
-
-// Mirrors the backend's ProjectLintContext: the project-level inputs shared
-// by lint_psc_file and the mutating repair commands. Built once here so a
-// new project-level option only has to be added in one frontend helper
-// rather than every invoke() payload independently.
-export interface ProjectLintContext {
-  root: string;
-  config: LintConfig;
-  additional_roots: string[];
-  lookup_roots: string[];
-  compiler_path: string;
-  compile_check: boolean;
-}
-
-export function currentProjectLintContext(): ProjectLintContext {
-  return {
-    root: currentProjectDir ?? "",
-    config: currentLintConfig,
-    additional_roots: effectiveScriptRoots(),
-    lookup_roots: currentLookupScriptRoots,
-    compiler_path: currentCompilerPath,
-    compile_check: currentCompileCheck,
-  };
-}
-
+import { currentProjectLintContext } from "./backend-context";
+import { type CompileOutcome, type Diagnostic, type RuleTagsInfo } from "./backend-types";
+import { currentLintConfig } from "./config-types";
+import { currentCompilerPath, currentLookupScriptRoots, currentProjectDir, effectiveScriptRoots } from "./project-state";
 // Lints `source` directly, in-process (the same `lint_papyrus_script`
 // Tauri command `app/src-tauri/src/files.rs` wraps around
 // `papyrus_lints::lint`), instead of a `.psc` path on disk. Used by the
@@ -180,48 +96,6 @@ export async function previewRepairPscLine(path: string, rule: string, line: num
     console.error(error);
     return null;
   }
-}
-
-// Rule ids with an automatic fix (papyrus_lints::FIXABLE_RULE_IDS), used to
-// decide which findings offer the per-finding "Fix this issue" button. Kept
-// in sync by hand with FIXABLE_RULE_IDS in
-// app/crates/papyrus-lints/src/lib.rs.
-export const FIXABLE_RULE_IDS = new Set([
-  "identifier-casing",
-  "slow-functions",
-  "semicolon",
-  "indentation",
-  "property-sorting",
-  "comma-spacing",
-  "chain-whitespace",
-  "exclamation-spacing",
-  "operator-spacing",
-  "assignment-operator-spacing",
-  "type-casing",
-  "trailing-whitespace",
-  "global-variable-increment",
-  "unnecessary-function",
-  "unused-import",
-]);
-
-// A rule in FIXABLE_RULE_IDS can still report a violation it can't actually
-// repair without a substantive rename (e.g. type-casing on a name with
-// underscores, such as a compiler-generated fragment script's ScriptName) --
-// see papyrus_lints::type_casing::check, which appends this same note to
-// such a finding's own message rather than letting a caller assume every
-// finding from a "fixable" rule can be fixed.
-const NO_AUTOMATIC_FIX_NOTE = "no automatic fix";
-
-export function hasNoAutomaticFix(finding: Diagnostic): boolean {
-  return finding.message.includes(NO_AUTOMATIC_FIX_NOTE);
-}
-
-export function isFixableFinding(finding: Diagnostic): boolean {
-  return finding.rule !== undefined && FIXABLE_RULE_IDS.has(finding.rule) && !hasNoAutomaticFix(finding);
-}
-
-export function hasFixableFindings(findings: Diagnostic[]): boolean {
-  return findings.some((finding) => isFixableFinding(finding));
 }
 
 // Applies just `rule`'s own automatic fix, restricted to `line` (see

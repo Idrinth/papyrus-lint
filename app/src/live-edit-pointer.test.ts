@@ -14,7 +14,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 }));
 
 import { invokeImplFor } from "./test/harness";
-import { type Diagnostic } from "./backend";
+import { type Diagnostic } from "./backend-types";
 import { openCodeViewer } from "./code-viewer-dialog";
 import { enterCodeViewerEditMode } from "./live-edit-persist";
 

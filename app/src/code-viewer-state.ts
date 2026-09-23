@@ -1,4 +1,5 @@
-import { type Diagnostic, hasFixableFindings } from "./backend";
+import { type Diagnostic } from "./backend-types";
+import { hasFixableFindings } from "./finding-fixability";
 
 export interface CodeViewerState {
   path: string;

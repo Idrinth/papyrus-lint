@@ -1,14 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
-import {
-  type Diagnostic,
-  addDisableCommentToPscLine,
-  addDisableFileCommentToPscLine,
-  addNodiscardCommentToPscLine,
-  isFixableFinding,
-  lintPscFile,
-  repairPscFile,
-  repairPscFinding,
-} from "./backend";
+import { type Diagnostic } from "./backend-types";
+import { isFixableFinding } from "./finding-fixability";
+import { addDisableCommentToPscLine, addDisableFileCommentToPscLine, addNodiscardCommentToPscLine, lintPscFile, repairPscFile, repairPscFinding } from "./backend";
 import { disableRulesInLintConfig } from "./config-ui";
 import { currentPscOutcomes } from "./drop";
 import { renderPscResults } from "./results-list-render";

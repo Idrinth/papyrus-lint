@@ -9,7 +9,7 @@ import "./test/harness";
 import { applyRuleTags } from "./main";
 import { SEVERITIES } from "./main-severity";
 import { switchTab } from "./main-tabs";
-import { type PscParseOutcome } from "./backend";
+import { type PscParseOutcome } from "./backend-types";
 import { renderPscResults } from "./results-list-render";
 
 describe("renderPscResults", () => {

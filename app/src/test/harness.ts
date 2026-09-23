@@ -5,7 +5,7 @@ import { cancelLiveEditLint } from "../live-edit-lint";
 import { loadProjectConfig, resetConfirmedProjectDirs } from "../project-settings";
 import { dirnameOf } from "../path";
 import { stopWatchMode } from "../watch";
-import { type RuleTagsInfo } from "../backend";
+import { type RuleTagsInfo } from "../backend-types";
 import { type LintConfig } from "../config-types";
 import { ruleTagsByRule } from "../results-filter";
 import { aiConfiguration } from "../results-export-ai";

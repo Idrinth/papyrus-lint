@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import { currentProjectLintContext, type Diagnostic } from "./backend";
+import { type Diagnostic } from "./backend-types";
+import { currentProjectLintContext } from "./backend-context";
 import { isCodeViewerEditDirty } from "./live-edit-persist";
 import { hideCompileOutput } from "./code-viewer-compile";
 import { hideDiffOutput } from "./code-viewer-diff";

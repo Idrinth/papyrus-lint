@@ -6,7 +6,7 @@ vi.mock("@tauri-apps/api/window", () => ({ getCurrentWindow: () => ({ show: show
 
 import { describe, expect, it } from "vitest";
 import { invokeImplFor } from "./test/harness";
-import { type Diagnostic, type PscParseOutcome } from "./backend";
+import { type Diagnostic, type PscParseOutcome } from "./backend-types";
 import { handleCompileClick, handleFixClick, handleFixIssueClick, handleMassFixClick } from "./results-list-actions";
 
 describe("handleFixClick", () => {

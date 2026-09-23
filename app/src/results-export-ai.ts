@@ -1,5 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
-import { type PscParseOutcome, FIXABLE_RULE_IDS, hasNoAutomaticFix, previewRepairPscLine } from "./backend";
+import { type PscParseOutcome } from "./backend-types";
+import { FIXABLE_RULE_IDS, hasNoAutomaticFix } from "./finding-fixability";
+import { previewRepairPscLine } from "./backend";
 import { type LintConfig } from "./config-types";
 import { currentProjectDir } from "./project-state";
 import { relativePath } from "./path";

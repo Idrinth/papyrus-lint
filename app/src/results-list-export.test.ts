@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { confirmDetectedConfig, invokeImplFor } from "./test/harness";
 import { applyRuleTags } from "./main";
 import { handleDroppedPaths } from "./drop";
-import { type Diagnostic } from "./backend";
+import { type Diagnostic } from "./backend-types";
 import { DEFAULT_LINT_CONFIG } from "./config-types";
 import { aiConfiguration } from "./results-export-ai";
 import { formatIssuesForAi, handleExportAiClick, handleExportIssuesClick, updateExportIssuesButtonState } from "./results-list-export";

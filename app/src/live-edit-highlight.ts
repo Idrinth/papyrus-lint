@@ -1,4 +1,4 @@
-import type { Diagnostic } from "./backend";
+import type { Diagnostic } from "./backend-types";
 import { findingsGroupedByLine, lineSeverityOf } from "./code-viewer-view";
 import { codeViewerEditGutterEl, codeViewerEditHighlightEl, codeViewerEditTextareaEl } from "./code-viewer-state";
 import { highlightPapyrusLines } from "./highlight";

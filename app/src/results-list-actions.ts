@@ -1,4 +1,6 @@
-import { type Diagnostic, type PscParseOutcome, isFixableFinding, repairPscFile, repairPscFileRule, repairPscFinding } from "./backend";
+import { type Diagnostic, type PscParseOutcome } from "./backend-types";
+import { isFixableFinding } from "./finding-fixability";
+import { repairPscFile, repairPscFileRule, repairPscFinding } from "./backend";
 import { compileAndShowOutput } from "./code-viewer-compile";
 import { currentPscOutcomes } from "./drop";
 import { renderPscResults } from "./results-list-render";

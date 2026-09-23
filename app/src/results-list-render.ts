@@ -1,4 +1,4 @@
-import { type PscParseOutcome } from "./backend";
+import { type PscParseOutcome } from "./backend-types";
 import { filterOutcomes } from "./results-filter";
 import { updateExportIssuesButtonState } from "./results-list-export";
 import { buildPscResultItem } from "./results-list-item";
