@@ -185,3 +185,26 @@ fn load_compiler_path_auto_detects_an_adjacent_compiler_executable() {
         Some(compiler.to_string_lossy().into_owned())
     );
 }
+
+#[test]
+fn project_info_ignores_configured_roots_that_do_not_exist() {
+    let dir = tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("papyrus-lint.yaml"),
+        "additional_script_roots:\n  - missing-scripts\n",
+    )
+    .unwrap();
+
+    let info = load_project_info(dir.path().to_string_lossy().into_owned()).unwrap();
+
+    assert!(info.detected_script_roots.is_empty());
+    assert_eq!(
+        info.used_configuration_file,
+        Some(
+            dir.path()
+                .join("papyrus-lint.yaml")
+                .to_string_lossy()
+                .into_owned()
+        )
+    );
+}

@@ -449,3 +449,63 @@ fn achlist_command_returns_an_empty_list_for_an_empty_array() {
         Vec::<String>::new()
     );
 }
+
+#[test]
+fn ppj_command_resolves_explicit_script_names_and_keeps_missing_scripts_visible() {
+    let dir = tempdir().unwrap();
+    let imports = dir.path().join("Source/Scripts");
+    std::fs::create_dir_all(&imports).unwrap();
+    std::fs::write(imports.join("Example.psc"), "ScriptName Example\n").unwrap();
+    let path = dir.path().join("project.ppj");
+    std::fs::write(
+        &path,
+        r#"<PapyrusProject xmlns="PapyrusProject.xsd">
+            <Imports><Import>.\Source\Scripts</Import></Imports>
+            <Scripts>
+                <Script>Example</Script>
+                <Script>Generated.pex</Script>
+            </Scripts>
+        </PapyrusProject>"#,
+    )
+    .unwrap();
+
+    let result = parse_ppj_file(path.to_string_lossy().into_owned()).unwrap();
+
+    assert_eq!(
+        result.scripts,
+        vec![
+            dir.path()
+                .join("./Source/Scripts/Example.psc")
+                .to_string_lossy()
+                .into_owned(),
+            dir.path()
+                .join("./Source/Scripts/Generated.psc")
+                .to_string_lossy()
+                .into_owned(),
+        ]
+    );
+}
+
+#[test]
+fn get_psc_file_mtimes_keeps_existing_paths_when_another_path_is_missing() {
+    let dir = tempdir().unwrap();
+    let existing = dir.path().join("Existing.psc");
+    std::fs::write(&existing, "ScriptName Existing\n").unwrap();
+    let existing = existing.to_string_lossy().into_owned();
+    let missing = dir
+        .path()
+        .join("Missing.psc")
+        .to_string_lossy()
+        .into_owned();
+
+    let mtimes = get_psc_file_mtimes(vec![missing.clone(), existing.clone()]);
+
+    assert_eq!(mtimes.len(), 1);
+    assert!(mtimes.contains_key(&existing));
+    assert!(!mtimes.contains_key(&missing));
+}
+
+#[test]
+fn get_psc_file_mtimes_returns_an_empty_map_for_no_paths() {
+    assert!(get_psc_file_mtimes(Vec::new()).is_empty());
+}
