@@ -12,19 +12,10 @@ use super::{ArgsError, BlobArgs, LintArgs, ParsedCommand};
 use crate::output::{normalize_tag_filter, ColorChoice, OutputFormat};
 
 /// Validates `raw` into a [`ParsedCommand`], performing every usage check a
-/// plain lint/fix run or `--blob` needs before any of the actual work
-/// (resolving paths, loading config, linting) begins. Mirrors
-/// [`crate::run`]'s previous inline parsing exactly so behavior (including
-/// every error message) is unchanged.
-pub(super) fn validate(raw: RawArgs) -> Result<ParsedCommand, ArgsError> {
-    if raw.help {
-        return Err(ArgsError::Usage);
-    }
-    if raw.version {
-        return Ok(ParsedCommand::Version);
-    }
-
-    let json_flag = raw.json;
+/// lint/fix run or `--blob` needs before any of the actual work
+/// (resolving paths, loading config, linting) begins. `fix` is supplied by
+/// the `lint` vs `fix` subcommand rather than a positional token.
+pub(super) fn validate(raw: RawArgs, fix: bool) -> Result<ParsedCommand, ArgsError> {
     let quiet_warnings = raw.quiet_warnings;
     let quiet_info = raw.quiet_info;
     let short_paths = raw.short_paths;
@@ -43,10 +34,7 @@ pub(super) fn validate(raw: RawArgs) -> Result<ParsedCommand, ArgsError> {
     let blob_flag = raw.blob;
     let args = raw.positionals;
 
-    if json_flag && format_flag.is_some() {
-        return Err(ArgsError::JsonAndFormatConflict);
-    }
-    let output_format = parse_output_format(json_flag, format_flag.as_deref())?;
+    let output_format = parse_output_format(format_flag.as_deref())?;
 
     if hash_source && output_format != OutputFormat::Ai {
         return Err(ArgsError::HashSourceRequiresAi);
@@ -75,8 +63,9 @@ pub(super) fn validate(raw: RawArgs) -> Result<ParsedCommand, ArgsError> {
         );
     }
 
-    let (fix, input_path) = parse_lint_positionals(
+    let input_path = parse_lint_positionals(
         &args,
+        fix,
         type_filter.as_deref(),
         line_filter.as_deref(),
         dry_run,
@@ -119,27 +108,23 @@ pub(super) fn validate(raw: RawArgs) -> Result<ParsedCommand, ArgsError> {
 
 fn parse_lint_positionals(
     args: &[String],
+    fix: bool,
     type_filter: Option<&str>,
     line_filter: Option<&str>,
     dry_run: bool,
-) -> Result<(bool, PathBuf), ArgsError> {
-    let (fix, input_path) = match args {
-        [sub, path] if sub == "fix" => (true, PathBuf::from(path)),
-        [path] if path != "fix" => (false, PathBuf::from(path)),
+) -> Result<PathBuf, ArgsError> {
+    let input_path = match args {
+        [path] => PathBuf::from(path),
         _ => return Err(ArgsError::Usage),
     };
     if !fix && (type_filter.is_some() || line_filter.is_some() || dry_run) {
         return Err(ArgsError::Usage);
     }
-    Ok((fix, input_path))
+    Ok(input_path)
 }
 
-fn parse_output_format(
-    json_flag: bool,
-    format_flag: Option<&str>,
-) -> Result<OutputFormat, ArgsError> {
+fn parse_output_format(format_flag: Option<&str>) -> Result<OutputFormat, ArgsError> {
     match format_flag {
-        None if json_flag => Ok(OutputFormat::Json),
         None | Some("plain") => Ok(OutputFormat::Plain),
         Some("json") => Ok(OutputFormat::Json),
         Some("ai") => Ok(OutputFormat::Ai),

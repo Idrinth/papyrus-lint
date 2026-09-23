@@ -39,7 +39,7 @@ use crate::project::{is_psc_path, resolve_input_project_root};
 /// `error`. Usage errors are reported by [`crate::args::parse_cli`] before
 /// this is called.
 pub(crate) fn run_doctor(raw: DoctorRawArgs, stdout: &mut impl Write) -> u8 {
-    let json = raw.json;
+    let json = matches!(raw.format.as_deref(), Some("json"));
     let config_path: Option<PathBuf> = raw.config.map(PathBuf::from);
     let cli_script_roots: Vec<String> = raw.script_root;
     let input_path = raw.input_path;

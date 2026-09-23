@@ -369,7 +369,7 @@ fn unknown_format_is_a_usage_error_without_creating_an_output_file() {
 }
 
 #[test]
-fn json_flag_cannot_be_combined_with_an_explicit_format() {
+fn removed_json_alias_is_a_usage_error() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let script = dir.path().join("Example.psc");
     write_file(&script, "ScriptName Example\n");
@@ -378,10 +378,9 @@ fn json_flag_cannot_be_combined_with_an_explicit_format() {
 
     assert_eq!(output.status.code(), Some(2));
     assert!(output.stdout.is_empty());
-    assert_eq!(
-        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
-        "error: --json and --format can't be combined\n"
-    );
+    assert!(String::from_utf8(output.stderr)
+        .expect("stderr should be UTF-8")
+        .contains("Usage: PapyrusLinterCLI"));
 }
 
 #[test]

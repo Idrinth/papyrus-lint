@@ -7,7 +7,7 @@ use std::process::Command;
 #[test]
 fn desktop_binary_forwards_version_requests_to_the_cli() {
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .arg("--version")
+        .arg("version")
         .output()
         .expect("desktop binary should launch");
 
@@ -20,18 +20,18 @@ fn desktop_binary_forwards_version_requests_to_the_cli() {
 }
 
 #[test]
-fn desktop_binary_forwards_the_short_version_flag_to_the_cli() {
+fn desktop_binary_rejects_the_removed_short_version_flag() {
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
         .arg("-V")
         .output()
         .expect("desktop binary should launch");
 
-    assert!(output.status.success());
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
     assert_eq!(
-        String::from_utf8(output.stdout).unwrap(),
-        format!("PapyrusLinterCLI {}\n", papyrus_lint_cli::VERSION)
+        String::from_utf8(output.stderr).unwrap(),
+        papyrus_lint_cli::USAGE
     );
-    assert!(output.stderr.is_empty());
 }
 
 #[test]
@@ -56,7 +56,7 @@ fn desktop_binary_lints_a_single_script_as_json() {
     std::fs::write(&script, "ScriptName Clean\n").unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--json", script.to_str().unwrap()])
+        .args(["lint", "--format=json", script.to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -74,6 +74,7 @@ fn desktop_binary_propagates_an_invalid_input_error() {
     let missing = temp.path().join("Missing.psc");
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
+        .arg("lint")
         .arg(&missing)
         .output()
         .expect("desktop binary should launch");
@@ -99,7 +100,7 @@ fn desktop_binary_preserves_the_cli_failure_code_and_json_diagnostics() {
     .unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--json", script.to_str().unwrap()])
+        .args(["lint", "--format=json", script.to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -122,7 +123,7 @@ fn desktop_binary_preserves_plain_text_diagnostics() {
     std::fs::write(&script, "ScriptName Findings   \n").unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .arg(&script)
+        .args(["lint", script.to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -148,7 +149,7 @@ fn desktop_binary_lints_every_script_listed_in_an_achlist() {
     std::fs::write(&achlist, r#"["First.psc", "Second.psc"]"#).unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--json", achlist.to_str().unwrap()])
+        .args(["lint", "--format=json", achlist.to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -173,7 +174,7 @@ fn desktop_binary_reports_a_malformed_achlist() {
     std::fs::write(&achlist, r#"["Unclosed.psc""#).unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .arg(&achlist)
+        .args(["lint", achlist.to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -192,7 +193,7 @@ fn desktop_binary_reports_an_empty_directory_as_a_successful_lint_run() {
     let temp = tempfile::tempdir().unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--json", temp.path().to_str().unwrap()])
+        .args(["lint", "--format=json", temp.path().to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -207,7 +208,7 @@ fn desktop_binary_reports_an_empty_directory_as_a_successful_lint_run() {
 #[test]
 fn desktop_binary_rejects_extra_positional_arguments() {
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["First.psc", "Second.psc"])
+        .args(["lint", "First.psc", "Second.psc"])
         .output()
         .expect("desktop binary should launch");
 
@@ -227,7 +228,12 @@ fn desktop_binary_dry_run_reports_fixes_without_changing_the_script() {
     std::fs::write(&script, source).unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--json", "fix", "--dry-run", script.to_str().unwrap()])
+        .args([
+            "fix",
+            "--format=json",
+            "--dry-run",
+            script.to_str().unwrap(),
+        ])
         .output()
         .expect("desktop binary should launch");
 
@@ -252,7 +258,7 @@ fn desktop_binary_fix_writes_changes_to_the_script() {
     std::fs::write(&script, "ScriptName NeedsFix   \n").unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--json", "fix", script.to_str().unwrap()])
+        .args(["fix", "--format=json", script.to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -280,7 +286,7 @@ fn desktop_binary_recursively_lints_a_directory() {
     std::fs::write(nested.join("ignored.txt"), "ScriptName Ignored\n").unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--json", temp.path().to_str().unwrap()])
+        .args(["lint", "--format=json", temp.path().to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -302,7 +308,8 @@ fn desktop_binary_recursively_lints_a_directory() {
 fn desktop_binary_lints_inline_source_without_a_file() {
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
         .args([
-            "--json",
+            "lint",
+            "--format=json",
             "--blob",
             "ScriptName Inline\n\nFunction Run()\n    Game.GetPlayer()\nEndFunction\n",
         ])
@@ -327,7 +334,7 @@ fn desktop_binary_lints_inline_source_without_a_file() {
 #[test]
 fn desktop_binary_rejects_combining_inline_source_with_a_path() {
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--blob", "ScriptName Inline\n", "Example.psc"])
+        .args(["lint", "--blob", "ScriptName Inline\n", "Example.psc"])
         .output()
         .expect("desktop binary should launch");
 
@@ -351,8 +358,8 @@ fn desktop_binary_can_apply_one_fix_type_without_applying_others() {
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
         .args([
-            "--json",
             "fix",
+            "--format=json",
             "--type",
             "trailing-whitespace",
             script.to_str().unwrap(),
@@ -406,7 +413,7 @@ fn desktop_binary_forwards_ai_format_reports() {
     std::fs::write(&script, "ScriptName Example   \n").unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--format", "ai", script.to_str().unwrap()])
+        .args(["lint", "--format", "ai", script.to_str().unwrap()])
         .output()
         .expect("desktop binary should launch");
 
@@ -432,7 +439,13 @@ fn desktop_binary_forwards_a_tag_filter() {
     .unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .args(["--json", "--tag", "style", script.to_str().unwrap()])
+        .args([
+            "lint",
+            "--format=json",
+            "--tag",
+            "style",
+            script.to_str().unwrap(),
+        ])
         .output()
         .expect("desktop binary should launch");
 
@@ -453,7 +466,7 @@ fn desktop_binary_init_creates_a_config_in_the_working_directory() {
     let temp = tempfile::tempdir().unwrap();
 
     let output = Command::new(env!("CARGO_BIN_EXE_PapyrusLinter"))
-        .arg("init")
+        .args(["init", "--game", "skyrim"])
         .current_dir(temp.path())
         .output()
         .expect("desktop binary should launch");

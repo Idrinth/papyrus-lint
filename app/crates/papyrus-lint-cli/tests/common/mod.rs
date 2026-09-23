@@ -13,14 +13,14 @@ pub fn write_file(path: &Path, contents: &str) {
 
 pub fn run_cli(args: &[&str]) -> Output {
     Command::new(env!("CARGO_BIN_EXE_PapyrusLinterCLI"))
-        .args(args)
+        .args(normalize_args(args))
         .output()
         .expect("failed to run PapyrusLinterCLI")
 }
 
 pub fn run_cli_in(args: &[&str], current_dir: &Path) -> Output {
     Command::new(env!("CARGO_BIN_EXE_PapyrusLinterCLI"))
-        .args(args)
+        .args(normalize_args(args))
         .current_dir(current_dir)
         .output()
         .expect("failed to run PapyrusLinterCLI")
@@ -47,7 +47,7 @@ pub fn run_copied_cli(exe_dir: &Path, args: &[&str], current_dir: &Path) -> Outp
     let mut attempts_left = 20;
     loop {
         match Command::new(&exe_path)
-            .args(args)
+            .args(normalize_args(args))
             .current_dir(current_dir)
             .output()
         {
@@ -59,4 +59,50 @@ pub fn run_copied_cli(exe_dir: &Path, args: &[&str], current_dir: &Path) -> Outp
             Err(err) => panic!("failed to run the copied PapyrusLinterCLI binary: {err}"),
         }
     }
+}
+
+/// Integration tests still spell many lint runs without the `lint`
+/// subcommand and with the removed `--json` alias. Rewrite those into the
+/// current CLI (`lint`/`fix` plus `--format=json`) without changing tests
+/// that already name a subcommand.
+fn normalize_args(args: &[&str]) -> Vec<String> {
+    if args.is_empty() {
+        return Vec::new();
+    }
+    match args[0] {
+        "init" | "preset" | "doctor" | "lint" | "fix" | "help" | "version" => {
+            return rewrite_json_alias(args);
+        }
+        "--help" | "-h" => return args.iter().map(|arg| (*arg).to_string()).collect(),
+        _ => {}
+    }
+
+    let keep_removed_json_alias =
+        args.contains(&"--json") && args.iter().any(|arg| arg.starts_with("--format"));
+    let mut fix = false;
+    let mut rest = Vec::with_capacity(args.len());
+    for arg in args {
+        if *arg == "fix" {
+            fix = true;
+        } else if *arg == "--json" && !keep_removed_json_alias {
+            rest.push("--format=json".to_string());
+        } else {
+            rest.push((*arg).to_string());
+        }
+    }
+    let mut normalized = vec![if fix { "fix" } else { "lint" }.to_string()];
+    normalized.extend(rest);
+    normalized
+}
+
+fn rewrite_json_alias(args: &[&str]) -> Vec<String> {
+    args.iter()
+        .map(|arg| {
+            if *arg == "--json" {
+                "--format=json".to_string()
+            } else {
+                (*arg).to_string()
+            }
+        })
+        .collect()
 }

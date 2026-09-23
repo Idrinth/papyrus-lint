@@ -1,13 +1,13 @@
 //! Library backing the `PapyrusLinterCLI` command-line interface.
 //!
 //! ```text
-//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-ppj-or-psc-or-directory>
-//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--tag <kind>] --blob <source>
-//! PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] fix [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-ppj-or-psc-or-directory>
-//! PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]
+//! PapyrusLinterCLI lint [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--tag <kind>] <path-to-achlist-or-ppj-or-psc-or-directory>
+//! PapyrusLinterCLI lint [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--tag <kind>] --blob <source>
+//! PapyrusLinterCLI fix [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--type <rule-id> | --tag <kind>] [--line <n>] <path-to-achlist-or-ppj-or-psc-or-directory>
+//! PapyrusLinterCLI init --game <skyrim|fallout4|starfield> [--preset <strict|standard|careful|custom-name>]
 //! PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]
 //! PapyrusLinterCLI preset list
-//! PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-ppj-or-psc-or-directory>
+//! PapyrusLinterCLI doctor [--format <plain|json>] [--config <path>] [--script-root <path>]... <path-to-achlist-or-ppj-or-psc-or-directory>
 //! ```
 //!
 //! Resolves every `.psc` entry listed in the given `.achlist` file (see
@@ -297,13 +297,13 @@ use std::io::Write;
 /// Contact URLs are generated at compile time from `shared/links.yaml`,
 /// filtered by the `contact` tag rather than named individually.
 pub const USAGE: &str = concat!(
-    "Usage: PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-ppj-or-psc-or-directory>\n       ",
-    "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--output <path>] [--color <when>] [--tag <kind>] --blob <source>\n       ",
-    "PapyrusLinterCLI [--json | --format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] fix [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-ppj-or-psc-or-directory>\n\n",
-    "PapyrusLinterCLI init [--preset <strict|standard|careful|custom-name>]\n\n",
+    "Usage: PapyrusLinterCLI lint [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--tag <kind>] <path-to-achlist-or-ppj-or-psc-or-directory>\n       ",
+    "PapyrusLinterCLI lint [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--config <path>] [--output <path>] [--color <when>] [--tag <kind>] --blob <source>\n       ",
+    "PapyrusLinterCLI fix [--format <plain|json|ai>] [--hash-source] [--quiet-warnings] [--quiet-info] [--short-paths] [--config <path>] [--script-root <path>]... [--output <path>] [--progress] [--threads <n>] [--type <rule-id> | --tag <kind>] [--line <n>] [--dry-run] <path-to-achlist-or-ppj-or-psc-or-directory>\n\n",
+    "PapyrusLinterCLI init --game <skyrim|fallout4|starfield> [--preset <strict|standard|careful|custom-name>]\n\n",
     "PapyrusLinterCLI preset add <name> <path-to-papyrus-lint.yaml> [--yes]\n\n",
     "PapyrusLinterCLI preset list\n\n",
-    "PapyrusLinterCLI doctor [--json] [--config <path>] [--script-root <path>]... <path-to-achlist-or-ppj-or-psc-or-directory>\n\n",
+    "PapyrusLinterCLI doctor [--format <plain|json>] [--config <path>] [--script-root <path>]... <path-to-achlist-or-ppj-or-psc-or-directory>\n\n",
     "Examples:\n",
     include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
@@ -350,7 +350,7 @@ pub fn run(
             write_args_error(err, stderr);
             2
         }
-        Ok(ParsedCli::Init(preset)) => run_init(preset, stdout, stderr),
+        Ok(ParsedCli::Init { preset, game }) => run_init(preset, game, stdout, stderr),
         Ok(ParsedCli::PresetAdd {
             name,
             source_path,
@@ -394,8 +394,8 @@ mod usage_tests {
     fn usage_embeds_checked_in_cli_examples() {
         assert!(crate::USAGE.starts_with("Usage: PapyrusLinterCLI"));
         assert!(crate::USAGE.contains("Examples:"));
-        assert!(crate::USAGE.contains("PapyrusLinterCLI path/to/project.achlist"));
-        assert!(crate::USAGE.contains("PapyrusLinterCLI --blob"));
+        assert!(crate::USAGE.contains("PapyrusLinterCLI lint path/to/project.achlist"));
+        assert!(crate::USAGE.contains("PapyrusLinterCLI lint --blob"));
         assert!(crate::USAGE.contains("PapyrusLinterCLI doctor path/to/project.achlist"));
     }
 

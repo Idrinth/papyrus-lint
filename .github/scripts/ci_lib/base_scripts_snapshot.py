@@ -45,6 +45,7 @@ def run_cli(
     project: Path,
     preset: str,
     output: Path,
+    game: str,
     extra_args: Sequence[str] | None = None,
 ) -> str:
     """Run PapyrusLinterCLI in text mode and return the report.
@@ -59,6 +60,8 @@ def run_cli(
     command = [
         str(cli),
         "init",
+        "--game",
+        game,
         "--preset",
         preset
     ]
@@ -66,6 +69,7 @@ def run_cli(
     output.parent.mkdir(parents=True, exist_ok=True)
     command = [
         str(cli),
+        "lint",
         "--format",
         "plain",
         "--short-paths",
@@ -100,17 +104,24 @@ def render_output(
 ) -> str:
     if preset not in PRESETS:
         raise SnapshotError(f"unknown preset {preset!r}; expected one of {', '.join(PRESETS)}")
-    if game != "skyrim":
-        raise SnapshotError(f"unknown game {game}; expected one of skyrim")
-    path = root / SKYRIM_BASE_SCRIPTS_ZIP
-    if extender:
-        path = root / SKYRIM_EXTENDER_SCRIPTS_ZIP
+    if game != "skyrim" and game != "fallout4":
+        raise SnapshotError(f"unknown game {game!r}; expected one of {', '.join(GAMES)}")
+    path = Path(".")
+    if game == "skyrim":
+        path = root / SKYRIM_BASE_SCRIPTS_ZIP
+        if extender:
+            path = root / SKYRIM_EXTENDER_SCRIPTS_ZIP
+    if game == "fallout4":
+        path = root / FALLOUT4_BASE_SCRIPTS_ZIP
+        if extender:
+            path = root / FALLOUT4_EXTENDER_SCRIPTS_ZIP
     extracted = extract_base_scripts(path, work_dir / "scripts")
     return run_cli(
         cli,
         extracted,
         preset,
         work_dir / f"{preset}.txt",
+        game,
         extra_args,
     )
 
