@@ -16,6 +16,15 @@ pub struct Script {
     pub extends: Option<String>,
     pub is_hidden: bool,
     pub is_conditional: bool,
+    /// Whether the `ScriptName` line itself carries the `Native` flag,
+    /// meaning the whole script is implemented natively by the engine
+    /// with no Papyrus body of its own (e.g. Fallout 4's own `Actor.psc`,
+    /// `ObjectReference.psc`, `Form.psc`). Distinct from
+    /// [`FunctionDecl::is_native`], which flags one native function
+    /// rather than an entire native script. Defaults to `false` for ASTs
+    /// serialized before this field existed.
+    #[serde(default)]
+    pub is_native: bool,
     pub imports: Vec<ImportDecl>,
     pub properties: Vec<PropertyDecl>,
     pub variables: Vec<VariableDecl>,
