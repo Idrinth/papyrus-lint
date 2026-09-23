@@ -21,7 +21,7 @@ type PResult<T> = Result<T, ParseError>;
 /// Which game's Papyrus dialect a [`Parser`] accepts. Skyrim is the
 /// original language `papyrus-parser` was built for; Fallout 4 adds a
 /// handful of new constructs (custom `Struct`s, property `Group`s, the
-/// `DebugOnly`/`BetaOnly` function flags, colon-qualified names such
+/// `DebugOnly`/`BetaOnly` script and function flags, colon-qualified names such
 /// as `DLC03:Foo` on types, `extends`, `new`, and calls, and remote /
 /// custom events of the form `Event OtherScript.EventName(...)`) on top
 /// of it. A construct that's Fallout 4 only is rejected the same way an
@@ -247,6 +247,10 @@ impl Parser {
                 // itself is Fallout 4 specific.
                 self.advance();
                 is_native = true;
+            } else if self.mode == GameEdition::Fallout4
+                && (self.at_keyword(Keyword::DebugOnly) || self.at_keyword(Keyword::BetaOnly))
+            {
+                self.advance();
             } else {
                 break;
             }
