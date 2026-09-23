@@ -26,8 +26,8 @@ pub(crate) struct IssuesFileInput {
 
 /// Renders `files` the same way the CLI's plain-text report does, one
 /// finding per line, so the exported text stays familiar to anyone who's
-//! already used the CLI's output. Never colorized, unlike the CLI's own
-//! terminal output.
+/// already used the CLI's output. Never colorized, unlike the CLI's own
+/// terminal output.
 #[tauri::command(async)]
 pub(crate) fn format_issues_as_text(files: Vec<IssuesFileInput>) -> String {
     let mut lines = Vec::new();
