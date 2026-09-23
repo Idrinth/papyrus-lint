@@ -104,7 +104,7 @@ def render_output(
 ) -> str:
     if preset not in PRESETS:
         raise SnapshotError(f"unknown preset {preset!r}; expected one of {', '.join(PRESETS)}")
-    if game != "skyrim" and game != "fallout4":
+    if game not in GAMES:
         raise SnapshotError(f"unknown game {game!r}; expected one of {', '.join(GAMES)}")
     path = Path(".")
     if game == "skyrim":
@@ -115,6 +115,11 @@ def render_output(
         path = root / FALLOUT4_BASE_SCRIPTS_ZIP
         if extender:
             path = root / FALLOUT4_EXTENDER_SCRIPTS_ZIP
+    if game == "starfield":
+        path = root / STARFIELD_BASE_SCRIPTS_ZIP
+        if extender:
+            # Starfield Script Extender does not ship its own script definitions currently
+            return ""
     extracted = extract_base_scripts(path, work_dir / "scripts")
     return run_cli(
         cli,
