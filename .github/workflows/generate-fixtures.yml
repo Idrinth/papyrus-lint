@@ -202,7 +202,7 @@ jobs:
           git checkout -b "$BRANCH"
           git commit -m "test: regenerate base scripts snapshot fixtures"
           git push origin "$BRANCH"
-          echo "branch=$BRANCH" >> "$GITHUB_ENV"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
 
       - name: Open pull request
         if: steps.changes.outputs.changed == 'true' && inputs.open_pull_request
