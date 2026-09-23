@@ -17,7 +17,7 @@ pub(super) mod validate;
 use std::path::PathBuf;
 
 pub(crate) use help::write_args_error;
-pub(crate) use parse::{parse_cli, DoctorRawArgs, ParsedCli};
+pub(crate) use parse::{parse_cli, ParsedCli};
 
 #[cfg(test)]
 pub(crate) use parse::{
@@ -35,6 +35,7 @@ use crate::output::{ColorChoice, OutputFormat};
 pub(crate) enum ArgsError {
     Usage,
     InvalidFormat(String),
+    InvalidDoctorFormat(String),
     HashSourceRequiresAi,
     InvalidColor(String),
     BlobWithPathArgument,
@@ -47,6 +48,15 @@ pub(crate) enum ArgsError {
     RuleHasNoFix(String),
     InvalidLine(String),
     InvalidThreads(String),
+}
+
+/// `doctor`'s arguments after its output format has been validated.
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct DoctorArgs {
+    pub(crate) json: bool,
+    pub(crate) config: Option<String>,
+    pub(crate) script_root: Vec<String>,
+    pub(crate) input_path: PathBuf,
 }
 
 /// `--blob <source>`'s own arguments, already validated and normalized the

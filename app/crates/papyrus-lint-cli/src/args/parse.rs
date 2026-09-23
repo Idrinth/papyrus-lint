@@ -12,7 +12,7 @@ use clap::{Args, Parser, Subcommand};
 use papyrus_lint_config::presets;
 use papyrus_lints::Game;
 
-use super::{ArgsError, ParsedCommand};
+use super::{ArgsError, DoctorArgs, ParsedCommand};
 
 /// Top-level clap parser for a full `PapyrusLinterCLI` invocation. Every
 /// action (`init`/`preset`/`doctor`/`lint`/`fix`/`help`/`version`) is a
@@ -188,7 +188,7 @@ pub(crate) enum ParsedCli {
         overwrite: bool,
     },
     PresetList,
-    Doctor(DoctorRawArgs),
+    Doctor(DoctorArgs),
     Run(ParsedCommand),
 }
 
@@ -212,13 +212,27 @@ pub(crate) fn parse_cli(args: &[String]) -> Result<ParsedCli, ArgsError> {
         Some(RootCommand::Preset {
             command: PresetCommand::List,
         }) => Ok(ParsedCli::PresetList),
-        Some(RootCommand::Doctor(raw)) => Ok(ParsedCli::Doctor(raw)),
+        Some(RootCommand::Doctor(raw)) => validate_doctor(raw).map(ParsedCli::Doctor),
         Some(RootCommand::Lint(raw)) => super::validate::validate(raw, false).map(ParsedCli::Run),
         Some(RootCommand::Fix(raw)) => super::validate::validate(raw, true).map(ParsedCli::Run),
         Some(RootCommand::Help) => Err(ArgsError::Usage),
         Some(RootCommand::Version) => Ok(ParsedCli::Run(ParsedCommand::Version)),
         None => Err(ArgsError::Usage),
     }
+}
+
+fn validate_doctor(raw: DoctorRawArgs) -> Result<DoctorArgs, ArgsError> {
+    let json = match raw.format.as_deref() {
+        None | Some("plain") => false,
+        Some("json") => true,
+        Some(value) => return Err(ArgsError::InvalidDoctorFormat(value.to_string())),
+    };
+    Ok(DoctorArgs {
+        json,
+        config: raw.config,
+        script_root: raw.script_root,
+        input_path: raw.input_path,
+    })
 }
 
 pub(crate) fn parse_init_preset(
