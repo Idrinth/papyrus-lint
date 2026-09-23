@@ -45,7 +45,8 @@ impl AggregatedReport {
 /// caller) into one report matching `output_format`, appends its summary
 /// line/object, and writes it to `output_path` or `stdout`. Returns the
 /// process exit code: `1` if any diagnostic crossed the configured failure
-/// threshold, `2` on an `--output` write failure, `0` otherwise.
+/// threshold or any script failed to lex/parse, `2` on an `--output` write
+/// failure, `0` otherwise.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn fold_and_flush_report(
     file_results: Vec<Result<FileOutcome, String>>,
@@ -83,7 +84,7 @@ pub(crate) fn fold_and_flush_report(
         return write_status;
     }
 
-    if report.should_fail {
+    if report.should_fail || report.parse_failed {
         1
     } else {
         0
@@ -153,12 +154,11 @@ fn append_plain_summary(
     };
 
     // Green when clean, yellow when problems were found but none crossed
-    // the configured failure threshold (including a parse/lex error, which
-    // does not by itself change the CLI exit status), red when the run
-    // will exit 1.
+    // the configured failure threshold, red when the run will exit 1
+    // (a lint that fails the threshold, or a lex/parse error).
     let summary_color = if report.total_diagnostics == 0 && !report.parse_failed {
         ANSI_GREEN
-    } else if !report.should_fail {
+    } else if !report.should_fail && !report.parse_failed {
         ANSI_YELLOW
     } else {
         ANSI_RED
