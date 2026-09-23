@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+pub use papyrus_lint_globals::WEBSITE_URL;
 use serde::{Deserialize, Serialize};
 
 use crate::json::{JsonDiagnostic, JsonParserError};
@@ -119,7 +120,6 @@ pub struct AiReport {
 /// schema the export's top-level shape follows. Shared by every AI export
 /// (the CLI's `--format ai`, the desktop app's "Export for AI") so both
 /// point at the same schema version.
-pub const WEBSITE_URL: &str = "https://papyrus-lint.idrinth.de";
 pub const AI_EXPORT_SCHEMA_URL: &str =
     "https://papyrus-lint.idrinth.de/schema/papyrus-lint-ai-export.v4.schema.json";
 pub const TOOL_NAME: &str = "Papyrus Lint";

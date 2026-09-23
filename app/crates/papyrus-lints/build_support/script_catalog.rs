@@ -14,7 +14,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use papyrus_lint_globals::Game;
+use papyrus_lint_globals::{Game, UNSUPPORTED_GAME_MESSAGE};
 
 pub const GAMES: &[Game] = &[Game::Skyrim, Game::Fallout4];
 
@@ -66,7 +66,7 @@ fn base_archive(game: Game) -> &'static str {
     match game {
         Game::Fallout4 => "fallout4-scripts.zip",
         Game::Skyrim => "skyrim-scripts.zip",
-        Game::Starfield => panic!("Starfield is not supported yet"),
+        Game::Starfield => panic!("{UNSUPPORTED_GAME_MESSAGE}"),
     }
 }
 
@@ -74,7 +74,7 @@ fn extender_archive(game: Game) -> &'static str {
     match game {
         Game::Fallout4 => "fallout4-extender-scripts.zip",
         Game::Skyrim => "skyrim-extender-scripts.zip",
-        Game::Starfield => panic!("Starfield is not supported yet"),
+        Game::Starfield => panic!("{UNSUPPORTED_GAME_MESSAGE}"),
     }
 }
 

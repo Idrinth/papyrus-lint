@@ -7,4 +7,8 @@
 
 mod game;
 
-pub use game::Game;
+pub use game::{Game, UNSUPPORTED_GAME_MESSAGE};
+
+/// The project's canonical website root, shared by documentation links and
+/// machine-readable reports.
+pub const WEBSITE_URL: &str = "https://papyrus-lint.idrinth.de";
