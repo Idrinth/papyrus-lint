@@ -3,6 +3,7 @@
 import hashlib
 import importlib.util
 import os
+import subprocess
 import sys
 import tempfile
 import types
@@ -103,6 +104,27 @@ class CliDownloadTests(unittest.TestCase):
                 self.assertRaisesRegex(OSError, 'expected "PapyrusLinterCLI 0.1.0"'),
             ):
                 cli_download.verify_configured_cli(str(executable))
+
+    def test_reports_failures_while_querying_a_configured_cli_version(self):
+        body = b'official CLI'
+        failures = (
+            OSError('cannot execute'),
+            subprocess.CalledProcessError(2, ['PapyrusLinterCLI', '--version']),
+        )
+        with tempfile.TemporaryDirectory() as raw:
+            executable = Path(raw) / 'PapyrusLinterCLI'
+            executable.write_bytes(body)
+            _trust('PapyrusLinterCLI-linux', body)
+            for failure in failures:
+                with (
+                    self.subTest(failure=type(failure).__name__),
+                    patch.object(cli_download.platform, 'system', return_value='Linux'),
+                    patch.object(cli_download.subprocess, 'run', side_effect=failure),
+                    self.assertRaisesRegex(
+                        OSError, 'could not check configured CLI version'
+                    ),
+                ):
+                    cli_download.verify_configured_cli(str(executable))
 
     def test_selects_release_asset_for_each_supported_platform(self):
         self.assertEqual(cli_download._asset_name('Windows'), 'PapyrusLinterCLI-windows.exe')
@@ -398,6 +420,17 @@ class CliDownloadTests(unittest.TestCase):
         cli_download.CLI_SHA256.pop('PapyrusLinterCLI-linux', None)
         with self.assertRaisesRegex(OSError, 'no baked SHA-256'):
             cli_download.expected_sha256('PapyrusLinterCLI-linux')
+
+    def test_empty_baked_hash_list_is_an_error(self):
+        cli_download.CLI_SHA256['PapyrusLinterCLI-linux'] = []
+        with self.assertRaisesRegex(OSError, 'no baked SHA-256'):
+            cli_download.expected_sha256('PapyrusLinterCLI-linux')
+
+    def test_legacy_single_baked_hash_is_accepted(self):
+        cli_download.CLI_SHA256['PapyrusLinterCLI-linux'] = 'aaa'
+
+        self.assertEqual(cli_download.expected_sha256('PapyrusLinterCLI-linux'), 'aaa')
+        self.assertEqual(cli_download.accepted_sha256s('PapyrusLinterCLI-linux'), ['aaa'])
 
     def test_accepted_hashes_include_cli_and_gui_digests(self):
         cli_download.CLI_SHA256['PapyrusLinterCLI-linux'] = ['aaa', 'bbb']
