@@ -108,8 +108,10 @@ per line.
 ## Each key
 
 - `game`: the game whose Papyrus dialect and runtime APIs the project
-  targets. Currently the only accepted value is `skyrim`; omitted keys also
+  targets. The supported values are `skyrim` and `fallout4`; omitted keys
   default to `skyrim` for compatibility with existing configuration files.
+  The schema also recognizes `starfield`, but the linter does not support it
+  yet and rejects configurations that select it.
 - `compiler_path`: an explicit path to `PapyrusCompiler.exe`, set via the
   app's Settings tab. When unset (or blank), the app auto-detects it at
   `PapyrusCompiler.exe` inside a `Papyrus Compiler` directory one level
@@ -148,8 +150,9 @@ per line.
   exist and the install path can be read from the Windows registry
   (`HKLM\Software\Bethesda Softworks\Skyrim Special Edition` or
   `HKLM\Software\Wow6432Node\Bethesda Softworks\Skyrim Special Edition`,
-  value `installed path`). An explicit empty list is left empty rather
-  than re-filled.
+  value `installed path`). Fallout 4 install paths are not auto-detected yet,
+  so Fallout 4 projects must set their vanilla source directories explicitly.
+  An explicit empty list is left empty rather than re-filled.
 - `compile_check`: whether the desktop app and the CLI also run
   PapyrusCompiler.exe against a `.psc` as part of linting it — set via the
   app's Settings tab, alongside `compiler_path`. `false` by default, since
