@@ -25,6 +25,7 @@ export function createHarness({
   liveLintDebounceMs = 0,
   textDocuments = [],
   releaseCli = async () => '/downloaded/PapyrusLinterCLI',
+  verifyConfiguredExecutable = async () => undefined,
   result,
   versionResult,
   workspaceFolders,
@@ -198,7 +199,7 @@ export function createHarness({
     if (request === './cliDownload' || request.endsWith('/cliDownload')) {
       return {
         ensureReleaseCli: releaseCli,
-        verifyConfiguredExecutable: async () => undefined,
+        verifyConfiguredExecutable,
       };
     }
     if (request === 'child_process') {

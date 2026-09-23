@@ -136,6 +136,28 @@ describe('ensureReleaseCli', () => {
     assert.equal(await fs.readFile(current, 'utf8'), 'current');
   });
 
+  it('still uses a trusted cached CLI when pruning old versions fails', async () => {
+    const storage = await temporaryDirectory();
+    const current = path.join(storage, 'v2.0.0', 'PapyrusLinterCLI-linux');
+    await fs.mkdir(path.dirname(current), { recursive: true });
+    await fs.writeFile(current, 'current', { mode: 0o700 });
+    const { cliDownload } = loadCliDownload();
+    trust(cliDownload, 'PapyrusLinterCLI-linux', 'current');
+    const originalReaddir = fs.readdir;
+    fs.readdir = async (target, options) => {
+      if (target === storage && options?.withFileTypes) {
+        throw new Error('directory is temporarily unavailable');
+      }
+      return originalReaddir(target, options);
+    };
+
+    try {
+      assert.equal(await cliDownload.ensureReleaseCli(storage, '2.0.0', 'linux'), current);
+    } finally {
+      fs.readdir = originalReaddir;
+    }
+  });
+
   it('reports HTTP and request failures and removes partial downloads', async () => {
     const storage = await temporaryDirectory();
     let loaded = loadCliDownload([{ status: 503 }]);
