@@ -192,3 +192,46 @@ fn member_access_and_calls_are_unresolvable_without_other_scripts() {
     };
     assert_eq!(infer_type(&call, &env), None);
 }
+
+#[test]
+fn infers_new_struct_type() {
+    let script = parse("ScriptName Example\n").unwrap();
+    let env = TypeEnv::for_script(&script);
+    let expression = Expr::NewStruct {
+        type_name: "Point".into(),
+    };
+
+    assert_eq!(infer_type(&expression, &env), Some(scalar("Point")));
+}
+
+#[test]
+fn arithmetic_requires_both_operand_types_to_be_known() {
+    let script = parse("ScriptName Example\n").unwrap();
+    let env = TypeEnv::for_script(&script);
+    let add = |left, right| Expr::Binary {
+        left: Box::new(left),
+        op: BinaryOp::Add,
+        right: Box::new(right),
+    };
+
+    assert_eq!(
+        infer_type(
+            &add(
+                Expr::Identifier("missing".into()),
+                Expr::Literal(Literal::int(1)),
+            ),
+            &env,
+        ),
+        None
+    );
+    assert_eq!(
+        infer_type(
+            &add(
+                Expr::Literal(Literal::int(1)),
+                Expr::Identifier("missing".into()),
+            ),
+            &env,
+        ),
+        None
+    );
+}
