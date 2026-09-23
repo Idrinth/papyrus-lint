@@ -119,8 +119,9 @@ impl FunctionTable {
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
-            || (self.game == "skyrim" && crate::ast_cache::contains_script_name(&name_lower))
-            || crate::native_globals::is_known_for(&self.game, &name_lower)
+            || (self.game == papyrus_lint_globals::Game::Skyrim
+                && crate::ast_cache::contains_script_name(&name_lower))
+            || crate::native_globals::is_known_for(self.game, &name_lower)
     }
 
     fn resolve_script_path(&self, name_lower: &str) -> Option<PathBuf> {
@@ -197,18 +198,20 @@ impl FunctionTable {
                         if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
                             cached
                         } else {
-                            let loaded = load_script_functions(&self.game, &path);
+                            let loaded = load_script_functions(self.game.as_str(), &path);
                             store_lookup_script(path, mtime_secs, loaded.clone());
                             loaded
                         }
                     } else {
-                        load_script_functions(&self.game, &path)
+                        load_script_functions(self.game.as_str(), &path)
                     }
                 } else {
-                    load_script_functions(&self.game, &path)
+                    load_script_functions(self.game.as_str(), &path)
                 }
             }
-            None if self.game == "skyrim" => bundled_script_functions(&name_lower),
+            None if self.game == papyrus_lint_globals::Game::Skyrim => {
+                bundled_script_functions(&name_lower)
+            }
             None => None,
         };
 

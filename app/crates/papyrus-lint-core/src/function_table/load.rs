@@ -63,7 +63,10 @@ fn bundled_script_cache() -> &'static Mutex<HashMap<String, Option<ScriptFunctio
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-fn bundled_script_functions(game: &str, name_lower: &str) -> Option<ScriptFunctions> {
+fn bundled_script_functions(
+    game: papyrus_lint_globals::Game,
+    name_lower: &str,
+) -> Option<ScriptFunctions> {
     {
         let cache = bundled_script_cache()
             .lock()
@@ -72,7 +75,7 @@ fn bundled_script_functions(game: &str, name_lower: &str) -> Option<ScriptFuncti
             return cached.clone();
         }
     }
-    let loaded = crate::ast_cache::ast_for_script_name(game, name_lower)
+    let loaded = crate::ast_cache::ast_for_script_name(game.as_str(), name_lower)
         .map(|ast| ScriptFunctions::from_script(&ast, ""));
     let mut cache = bundled_script_cache()
         .lock()
@@ -87,15 +90,16 @@ fn bundled_script_functions(game: &str, name_lower: &str) -> Option<ScriptFuncti
 /// `shared/skyrim-extender-scripts.zip` hit the cache's bundled blob and never
 /// take its disk lock, so parallel workers resolving the same base type do not
 /// serialize on that lookup.
-fn load_script_functions(game: &str, path: &Path) -> Option<ScriptFunctions> {
+fn load_script_functions(game: papyrus_lint_globals::Game, path: &Path) -> Option<ScriptFunctions> {
     let source = read_psc_source(path).ok()?;
-    let parsed = if let Some(cached) = crate::ast_cache::get_for_game(game, path, &source) {
+    let parsed = if let Some(cached) = crate::ast_cache::get_for_game(game.as_str(), path, &source)
+    {
         cached
     } else {
         let parsed = papyrus_parser::parse(&source).ok()?;
-        crate::ast_cache::put_for_game(game, path, &source, &parsed);
+        crate::ast_cache::put_for_game(game.as_str(), path, &source, &parsed);
         if let Ok(tokens) = papyrus_parser::tokenize(&source) {
-            crate::ast_cache::put_tokens_for_game(game, path, &source, &tokens);
+            crate::ast_cache::put_tokens_for_game(game.as_str(), path, &source, &tokens);
         }
         parsed
     };
@@ -118,8 +122,8 @@ impl FunctionTable {
     pub fn script_exists(&self, type_name: &str) -> bool {
         let name_lower = type_name.to_ascii_lowercase();
         self.resolve_script_path(&name_lower).is_some()
-            || crate::ast_cache::contains_script_name(&self.game, &name_lower)
-            || crate::native_globals::is_known_for(&self.game.to_string(), &name_lower)
+            || crate::ast_cache::contains_script_name(self.game.as_str(), &name_lower)
+            || crate::native_globals::is_known_for(self.game, &name_lower)
     }
 
     fn resolve_script_path(&self, name_lower: &str) -> Option<PathBuf> {
@@ -195,17 +199,17 @@ impl FunctionTable {
                             cached
                         } else {
                             let loaded = load_script_functions(&self.game, &path);
-                            store_lookup_script(path, mtime, loaded.clone());
+                            store_lookup_script(path, mtime_secs, loaded.clone());
                             loaded
                         }
                     } else {
-                        load_script_functions(&self.game, &path)
+                        load_script_functions(self.game, &path)
                     }
                 } else {
-                    load_script_functions(&self.game, &path)
+                    load_script_functions(self.game, &path)
                 }
             }
-            None => bundled_script_functions(&self.game, &name_lower),
+            None => bundled_script_functions(self.game, &name_lower),
         };
 
         self.scripts.insert(name_lower.clone(), script);

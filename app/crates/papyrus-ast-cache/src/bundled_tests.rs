@@ -136,11 +136,19 @@ fn actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
     assert_eq!(ast.name, "Actor");
     assert_eq!(ast.extends.as_deref(), Some("ObjectReference"));
     assert_eq!(
-        crate::get_for_game("skyrim", missing, &source),
+        crate::get_for_game(
+            papyrus_lint_globals::Game::Skyrim.as_str(),
+            missing,
+            &source
+        ),
         Some(ast.clone())
     );
     assert_eq!(
-        crate::get_tokens_for_game("skyrim", missing, &source),
+        crate::get_tokens_for_game(
+            papyrus_lint_globals::Game::Skyrim.as_str(),
+            missing,
+            &source
+        ),
         Some(papyrus_parser::tokenize(&source).unwrap())
     );
     assert!(prime(&source));
@@ -227,13 +235,26 @@ fn bundled_actor_carries_catalogued_deprecation_metadata() {
 fn ensure_primed_skips_the_disk_cache_for_a_bundled_script() {
     let source = zip_script("skyrim-scripts.zip", "ObjectReference.psc");
     let missing = Path::new("/does/not/exist/ObjectReference.psc");
-    crate::ensure_primed_for_game("skyrim", missing, &source);
+    crate::ensure_primed_for_game(
+        papyrus_lint_globals::Game::Skyrim.as_str(),
+        missing,
+        &source,
+    );
     assert_eq!(
-        crate::get_for_game("skyrim", missing, &source).map(|script| script.name),
+        crate::get_for_game(
+            papyrus_lint_globals::Game::Skyrim.as_str(),
+            missing,
+            &source
+        )
+        .map(|script| script.name),
         Some("ObjectReference".to_string())
     );
     assert_eq!(
-        crate::get_tokens_for_game("skyrim", missing, &source),
+        crate::get_tokens_for_game(
+            papyrus_lint_globals::Game::Skyrim.as_str(),
+            missing,
+            &source
+        ),
         Some(papyrus_parser::tokenize(&source).unwrap())
     );
 }
@@ -267,9 +288,18 @@ fn actor_is_a_bundled_hit_by_script_name_without_source_bytes() {
     assert_eq!(ast.extends.as_deref(), Some("ObjectReference"));
     let tokens = tokens_for_name("actor").expect("Actor tokens should be in the name index");
     assert!(!tokens.is_empty());
-    assert_eq!(crate::ast_for_script_name("skyrim", "Actor"), Some(ast));
-    assert!(crate::contains_script_name("skyrim", "Form"));
-    assert!(!crate::contains_script_name("fallout4", "Form"));
+    assert_eq!(
+        crate::ast_for_script_name(papyrus_lint_globals::Game::Skyrim.as_str(), "Actor"),
+        Some(ast)
+    );
+    assert!(crate::contains_script_name(
+        papyrus_lint_globals::Game::Skyrim.as_str(),
+        "Form"
+    ));
+    assert!(!crate::contains_script_name(
+        papyrus_lint_globals::Game::Fallout4.as_str(),
+        "Form"
+    ));
 }
 
 #[test]

@@ -5,8 +5,8 @@
 use super::*;
 use tempfile::tempdir;
 
-const SKYRIM: &str = "skyrim";
-const FALLOUT4: &str = "fallout4";
+const SKYRIM: &str = papyrus_lint_globals::Game::Skyrim.as_str();
+const FALLOUT4: &str = papyrus_lint_globals::Game::Fallout4.as_str();
 
 #[test]
 fn public_get_and_put_do_not_panic() {
