@@ -1,4 +1,4 @@
-# Target game. Currently supported: skyrim
+# Target game. Currently supported: skyrim, fallout4
 game: skyrim
 # Path to PapyrusCompiler.exe, or null to auto-detect it
 compiler_path: null
@@ -10,7 +10,8 @@ additional_script_roots: []
 # Scripts found only here are never linted, and these directories are
 # ignored by conflicting-script-versions. Creating or updating a config
 # fills Skyrim Special Edition's Data/Scripts/Source and Data/Source/Scripts
-# when the install path can be read from the Windows registry
+# when the install path can be read from the Windows registry. Fallout 4
+# source directories must currently be configured explicitly
 lookup_script_roots: []
 # true, false; also runs PapyrusCompiler.exe (into a throwaway temporary
 # directory) as part of linting a dropped .psc, reporting its errors
