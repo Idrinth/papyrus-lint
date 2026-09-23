@@ -1,11 +1,11 @@
 //! Flags a `Native` function/event declared on a linted script whose
 //! (script, function) pair isn't one of the base-game native functions
-//! listed in `shared/rules/data/skyrim/native-methods.yaml`.
+//! listed in the target game's generated native-methods table.
 //!
 //! A `Native` declaration has no body of its own — its implementation is
 //! supplied by the engine (or, for a modder-authored header script, by an
-//! SKSE/F4SE plugin DLL). Since `shared/rules/data/skyrim/native-methods.yaml` only lists the
-//! functions Skyrim's own base-game scripts declare `Native`, a `Native`
+//! SKSE/F4SE plugin DLL). Since the native-methods table only lists the
+//! functions that game's own base-game scripts declare `Native`, a `Native`
 //! declaration that doesn't match an entry there is a strong signal the
 //! project depends on a native extension rather than anything the base game
 //! ships. Disabled by default, since plenty of mods intentionally depend on
@@ -49,11 +49,11 @@ impl AstLint for Collect {
         self.script_name = script.name.clone();
     }
 
-    fn visit_function(&mut self, function: &FunctionDecl, _ctx: &mut VisitCtx<'_>) {
+    fn visit_function(&mut self, function: &FunctionDecl, ctx: &mut VisitCtx<'_>) {
         if !function.is_native {
             return;
         }
-        if is_base_game_native(&self.script_name, &function.name) {
+        if is_base_game_native(&self.script_name, &function.name, ctx.config.game.as_str()) {
             return;
         }
         self.store.emit(
@@ -86,10 +86,10 @@ pub fn check(
 }
 
 /// Whether `(script_name, function_name)` matches a base-game native
-/// function listed in `shared/rules/data/skyrim/native-methods.yaml`, case-insensitively
-/// (Papyrus identifiers are case-insensitive).
-fn is_base_game_native(script_name: &str, function_name: &str) -> bool {
-    NATIVE_METHODS.iter().any(|rule| {
+/// function for `game`, case-insensitively (Papyrus identifiers are
+/// case-insensitive).
+fn is_base_game_native(script_name: &str, function_name: &str, game: &str) -> bool {
+    native_methods_for(game).iter().any(|rule| {
         rule.object.eq_ignore_ascii_case(script_name)
             && rule.function.eq_ignore_ascii_case(function_name)
     })

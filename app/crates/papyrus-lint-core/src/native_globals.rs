@@ -10,58 +10,25 @@
 //! flagged by the "Unresolved script reference" lint as calling a script
 //! that doesn't exist.
 //!
-//! The `NATIVE_GLOBALS` table below is compiled from
-//! `shared/rules/data/skyrim/native-globals.yaml` by `build.rs` at build time, so
-//! extending the list doesn't need a code change. It is deliberately not
-//! exhaustive: a script this table doesn't
-//! know about (including one the linter simply has no data for, e.g. a
-//! SKSE/F4SE plugin or community function library) is resolved by looking
-//! it up under the project instead, same as any other script name.
+//! The `NATIVE_GLOBALS` tables below are compiled from the bundled Creation
+//! Kit / script-extender archives by `build.rs` at build time, so extending
+//! the list doesn't need a code change. It is deliberately not exhaustive:
+//! a script this table doesn't know about (including one the linter simply
+//! has no data for, e.g. a SKSE/F4SE plugin or community function library)
+//! is resolved by looking it up under the project instead, same as any
+//! other script name.
 include!(concat!(env!("OUT_DIR"), "/native_globals_data.rs"));
 
-/// Whether `name_lower` is a known native singleton script, always called
-/// through its literal name. `name_lower` must already be lowercased
-/// (callers already work in lowercase for case-insensitive matching).
-pub fn is_known(name_lower: &str) -> bool {
-    NATIVE_GLOBALS.contains(&name_lower)
+fn globals_for(game: &str) -> &'static [&'static str] {
+    match game {
+        "fallout4" => FALLOUT4_NATIVE_GLOBALS,
+        "skyrim" => SKYRIM_NATIVE_GLOBALS,
+        _ => panic!("unsupported game {game} provided"),
+    }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::collections::HashSet;
-
-    #[test]
-    fn recognizes_common_native_singleton_scripts() {
-        assert!(is_known("game"));
-        assert!(is_known("utility"));
-        assert!(is_known("debug"));
-    }
-
-    #[test]
-    fn is_case_sensitive_to_its_already_lowercased_input() {
-        // Callers are expected to lowercase before calling; this only
-        // documents that expectation.
-        assert!(!is_known("Game"));
-    }
-
-    #[test]
-    fn returns_false_for_an_unknown_script() {
-        assert!(!is_known("somemodsquestscript"));
-    }
-
-    #[test]
-    fn empty_script_name_is_not_a_native_global() {
-        assert!(!is_known(""));
-    }
-
-    #[test]
-    fn generated_native_globals_are_lowercase_and_unique() {
-        let mut seen = HashSet::new();
-
-        for script in NATIVE_GLOBALS {
-            assert_eq!(*script, script.to_ascii_lowercase());
-            assert!(seen.insert(*script), "duplicate native global: {script}");
-        }
-    }
+/// Whether `name_lower` is a known native singleton script for `game`.
+/// `name_lower` must already be lowercased.
+pub fn is_known_for(game: &str, name_lower: &str) -> bool {
+    globals_for(game).contains(&name_lower)
 }

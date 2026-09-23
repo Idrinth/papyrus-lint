@@ -1,0 +1,39 @@
+# Deprecated function calls for the papyrus-lint "deprecated functions" rule.
+#
+# HAND-MAINTAINED. Do not regenerate or remove this file from script comments.
+# Nearby comments in the Creation Kit sources are often attached to the wrong
+# function or mix deprecation notes with unrelated remarks, so scraping them
+# produces false positives and drops real entries. Edit this list by hand.
+#
+# Sourced from comments in the bundled Fallout 4 Creation Kit scripts
+# (`shared/scripts/fallout4-scripts.zip`). Only functions whose own
+# documentation marks them deprecated (or "will likely be deprecated")
+# are listed; deprecated properties and quest-script internals are omitted.
+# The F4SE overlay (`shared/scripts/fallout4-extender-scripts.zip`) repeats
+# the same base-game deprecations and adds none of its own.
+#
+# Each entry:
+#   script:      the script (native/global or object) the function is defined on
+#   function:    the function name, as written in Papyrus source
+#   replacement: the call to use instead, when one exists
+#   message:     explanation shown to the user, including a suggested alternative
+#   global:      true if `script` is a native singleton that's always called
+#                through its literal name (e.g. `Game`, `NetImmerse`) rather
+#                than a base type called through a variable of some subclass
+#                (e.g. `Actor`, `ObjectReference`). Defaults to false. See
+#                `shared/rules/data/fallout4/forbidden-functions.yaml` for the full rationale.
+
+- script: Actor
+  function: ModFavorPoints
+  replacement: MakePlayerFriend()
+  message: ModFavorPoints is deprecated; it only ever promotes a unique, rank-0 actor to Friend and ignores non-positive values. Call MakePlayerFriend() instead
+
+- script: Actor
+  function: ModFavorPointsWithGlobal
+  replacement: MakePlayerFriend()
+  message: ModFavorPointsWithGlobal is deprecated along with ModFavorPoints; call MakePlayerFriend() instead of reading a GlobalVariable just to ignore its value
+
+- script: ObjectReference
+  function: MoveToWhenUnloaded
+  replacement: MoveTo(akTarget, afXOffset, afYOffset, afZOffset)
+  message: MoveToWhenUnloaded is marked DEPRECATED and must not be used; it busy-waits with Utility.Wait until both locations unload and can stall quest stage fragments. Call MoveTo() (or MoveToIfUnloaded() when the caller is already unloaded) instead

@@ -10,7 +10,8 @@
       "description": "Game whose Papyrus dialect and runtime APIs the project targets.",
       "type": "string",
       "enum": [
-        "skyrim"
+        "skyrim",
+        "fallout4"
       ],
       "default": "skyrim"
     },

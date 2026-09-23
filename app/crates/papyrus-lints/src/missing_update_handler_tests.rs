@@ -14,8 +14,8 @@ fn check(source: &str) -> Vec<Diagnostic> {
 
 #[test]
 fn compiled_pairs_are_loaded_from_yaml() {
-    assert!(!UPDATE_EVENT_PAIRS.is_empty());
-    assert!(UPDATE_EVENT_PAIRS
+    assert!(!SKYRIM_UPDATE_EVENT_PAIRS.is_empty());
+    assert!(SKYRIM_UPDATE_EVENT_PAIRS
         .iter()
         .any(|pair| pair.register == "RegisterForUpdate" && pair.event == "OnUpdate"));
 }

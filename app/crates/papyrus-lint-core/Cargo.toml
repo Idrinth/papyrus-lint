@@ -25,6 +25,7 @@ roxmltree = "0.21.1"
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_norway = "0.9"
+zip = { version = "2", default-features = false, features = ["deflate"] }
 
 # papyrus-ast-cache's build.rs parses the bundled Skyrim scripts; see that
 # crate's Cargo.toml for why the build-script profile is optimized.

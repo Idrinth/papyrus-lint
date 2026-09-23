@@ -14,8 +14,8 @@ fn check(source: &str) -> Vec<Diagnostic> {
 
 #[test]
 fn compiled_rules_are_loaded_from_yaml() {
-    assert!(!NATIVE_METHODS.is_empty());
-    assert!(NATIVE_METHODS
+    assert!(!SKYRIM_NATIVE_METHODS.is_empty());
+    assert!(SKYRIM_NATIVE_METHODS
         .iter()
         .any(|rule| rule.object == "Actor" && rule.function == "AddPerk"));
 }

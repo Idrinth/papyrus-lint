@@ -1,4 +1,4 @@
-//! Flags calls to functions listed in `shared/rules/data/skyrim/slow-functions.yaml` that
+//! Flags calls to functions listed in `shared/rules/data/{skyrim,fallout4}/slow-functions.yaml` that
 //! have a faster equivalent available, and suggests that replacement.
 //!
 //! Rules are compiled into the `SLOW_FUNCTIONS` array below by `build.rs`
@@ -29,6 +29,7 @@ pub const RULE: &str = "slow-functions";
 struct Collect {
     store: Store,
     rules: &'static [SlowFunctionRule],
+    from_config: bool,
 }
 
 impl Collect {
@@ -36,6 +37,15 @@ impl Collect {
         Self {
             store: Store::default(),
             rules,
+            from_config: false,
+        }
+    }
+
+    fn from_game() -> Self {
+        Self {
+            store: Store::default(),
+            rules: &[],
+            from_config: true,
         }
     }
 }
@@ -50,8 +60,13 @@ impl TokenLint for Collect {
         token: &papyrus_parser::token::Token,
         index: usize,
         tokens: &[papyrus_parser::token::Token],
-        _ctx: &mut VisitCtx<'_>,
+        ctx: &mut VisitCtx<'_>,
     ) {
+        let rules = if self.from_config {
+            slow_functions_for(ctx.config.game.as_str())
+        } else {
+            self.rules
+        };
         let TokenKind::Identifier(name) = &token.kind else {
             return;
         };
@@ -61,7 +76,7 @@ impl TokenLint for Collect {
         ) {
             return;
         }
-        let Some(rule) = find_rule(self.rules, name) else {
+        let Some(rule) = find_rule(rules, name) else {
             return;
         };
         if rule.global && !qualifier_matches(tokens, index, rule.object) {
@@ -80,7 +95,7 @@ impl TokenLint for Collect {
 }
 
 pub fn visitor() -> LintVisitor {
-    LintVisitor::Tokens(Box::new(Collect::new(SLOW_FUNCTIONS)))
+    LintVisitor::Tokens(Box::new(Collect::from_game()))
 }
 
 fn visitor_with_rules(rules: &'static [SlowFunctionRule]) -> LintVisitor {
@@ -126,9 +141,9 @@ pub fn repair(
     tokens: Option<&[papyrus_parser::token::Token]>,
     config: &crate::config::Config,
 ) -> String {
-    let _ = (ast, tokens, config);
+    let _ = (ast, tokens);
 
-    repair_with_rules(source, SLOW_FUNCTIONS)
+    repair_with_rules(source, slow_functions_for(config.game.as_str()))
 }
 
 fn repair_with_rules(source: &str, rules: &'static [SlowFunctionRule]) -> String {

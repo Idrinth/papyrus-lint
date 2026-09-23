@@ -1,56 +1,8 @@
 use super::metadata::RuleMetadata;
+use super::policy;
 use super::renderer::Renderer;
+use super::script_catalog;
 use super::{generated_header, BuildContext};
-use serde::Deserialize;
-
-#[derive(Deserialize)]
-struct ForbiddenRule {
-    script: String,
-    function: String,
-    level: String,
-    message: String,
-    #[serde(default)]
-    global: bool,
-}
-#[derive(Deserialize)]
-struct DeprecatedRule {
-    script: String,
-    function: String,
-    replacement: Option<String>,
-    message: String,
-    #[serde(default)]
-    global: bool,
-}
-#[derive(Deserialize)]
-struct SlowRule {
-    object: String,
-    function: String,
-    replacement: String,
-    #[serde(default)]
-    global: bool,
-}
-#[derive(Deserialize)]
-struct NativeMethod {
-    object: String,
-    function: String,
-}
-#[derive(Deserialize)]
-struct UpdateEventPair {
-    register: String,
-    event: String,
-}
-#[derive(Deserialize)]
-struct EventArg {
-    #[serde(rename = "type")]
-    type_name: String,
-    name: String,
-}
-#[derive(Deserialize)]
-struct KnownEvent {
-    event: String,
-    form: String,
-    args: Vec<EventArg>,
-}
 
 pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
     forbidden_functions(context);
@@ -64,142 +16,272 @@ pub fn compile(context: &BuildContext, rules: &[RuleMetadata]) {
     known_rule_ids(context, rules);
 }
 
-fn deprecated_functions(context: &BuildContext) {
-    let values: Vec<DeprecatedRule> = context.load_yaml(
-        "shared/rules/data/skyrim/deprecated-functions.yaml",
-        "deprecated-functions rules",
-    );
-    let mut out = Renderer::new();
-    out.line(generated_header(
-        "shared/rules/data/skyrim/deprecated-functions.yaml",
-    ));
-    out.line("pub static DEPRECATED_FUNCTIONS: &[DeprecatedFunctionRule] = &[");
-    for rule in values {
-        out.line(format_args!("    DeprecatedFunctionRule {{ script: {:?}, function: {:?}, replacement: {:?}, message: {:?}, global: {:?} }},", rule.script, rule.function, rule.replacement, rule.message, rule.global));
-    }
-    out.line("];");
-    context.write("deprecated_functions_data.rs", "rule data", &out.finish());
+struct GameTableSpec<'a> {
+    filename: &'a str,
+    header: &'a str,
+    item_ty: &'a str,
+    const_name: &'a str,
+    selector: &'a str,
+    skyrim_rows: &'a [String],
+    fallout4_rows: &'a [String],
 }
 
-fn table<T>(
-    context: &BuildContext,
-    input: &str,
-    description: &str,
-    output: &str,
-    declaration: &str,
-    render: impl Fn(&T) -> String,
-) where
-    T: serde::de::DeserializeOwned,
-{
-    let values: Vec<T> = context.load_yaml(input, description);
+fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
+    let GameTableSpec {
+        filename,
+        header,
+        item_ty,
+        const_name,
+        selector,
+        skyrim_rows,
+        fallout4_rows,
+    } = spec;
     let mut out = Renderer::new();
-    out.line(generated_header(input));
-    out.line(declaration);
-    for value in &values {
-        out.line(render(value));
+    out.line(generated_header(header));
+    // Statics default to `'static`; writing `&'static str` here trips
+    // clippy::redundant_static_lifetimes. The selector return type still
+    // needs an explicit inner `'static` so elision does not tie `&str`
+    // elements to the `game` argument.
+    let static_item_ty = match item_ty {
+        "&'static str" | "&str" => "&str",
+        other => other,
+    };
+    let selector_item_ty = match item_ty {
+        "&'static str" | "&str" => "&'static str",
+        other => other,
+    };
+    emit_static(
+        &mut out,
+        &format!("SKYRIM_{const_name}"),
+        static_item_ty,
+        skyrim_rows,
+    );
+    out.blank();
+    emit_static(
+        &mut out,
+        &format!("FALLOUT4_{const_name}"),
+        static_item_ty,
+        fallout4_rows,
+    );
+    out.blank();
+    out.block(
+        format!("pub fn {selector}(game: &str) -> &'static [{selector_item_ty}]"),
+        |out| {
+            out.block("match game", |out| {
+                out.line(format!("\"fallout4\" => FALLOUT4_{const_name},"));
+                out.line(format!("_ => SKYRIM_{const_name},"));
+            });
+        },
+    );
+    context.write(filename, "rule data", &out.finish());
+}
+
+fn emit_static(out: &mut Renderer, name: &str, item_ty: &str, rows: &[String]) {
+    out.line(format!("pub static {name}: &[{item_ty}] = &["));
+    for row in rows {
+        out.line(format!("    {row}"));
     }
     out.line("];");
-    context.write(output, "rule data", &out.finish());
+}
+
+fn deprecated_functions(context: &BuildContext) {
+    let row = |rule: &policy::DeprecatedFunction| {
+        format!(
+            "DeprecatedFunctionRule {{ script: {:?}, function: {:?}, replacement: {:?}, message: {:?}, global: {:?} }},",
+            rule.script, rule.function, rule.replacement, rule.message, rule.global
+        )
+    };
+    emit_game_tables(
+        context,
+        GameTableSpec {
+            filename: "deprecated_functions_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/deprecated-functions.yaml",
+            item_ty: "DeprecatedFunctionRule",
+            const_name: "DEPRECATED_FUNCTIONS",
+            selector: "deprecated_functions_for",
+            skyrim_rows: &policy::deprecated_functions(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::deprecated_functions(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
+    );
 }
 
 fn forbidden_functions(context: &BuildContext) {
-    let values: Vec<ForbiddenRule> = context.load_yaml(
-        "shared/rules/data/skyrim/forbidden-functions.yaml",
-        "forbidden-functions rules",
-    );
-    let mut out = Renderer::new();
-    out.line(generated_header(
-        "shared/rules/data/skyrim/forbidden-functions.yaml",
-    ));
-    out.line("pub static FORBIDDEN_FUNCTIONS: &[ForbiddenFunctionRule] = &[");
-    for rule in values {
+    let row = |rule: &policy::ForbiddenFunction| {
         if !matches!(rule.level.as_str(), "error" | "warning" | "info") {
             panic!(
                 "forbidden-functions.yaml: unknown level `{}` for {}.{}",
                 rule.level, rule.script, rule.function
             );
         }
-        out.line(format_args!("    ForbiddenFunctionRule {{ script: {:?}, function: {:?}, level: {:?}, message: {:?}, global: {:?} }},", rule.script, rule.function, rule.level, rule.message, rule.global));
-    }
-    out.line("];");
-    context.write("forbidden_functions_data.rs", "rule data", &out.finish());
+        format!(
+            "ForbiddenFunctionRule {{ script: {:?}, function: {:?}, level: {:?}, message: {:?}, global: {:?} }},",
+            rule.script, rule.function, rule.level, rule.message, rule.global
+        )
+    };
+    emit_game_tables(
+        context,
+        GameTableSpec {
+            filename: "forbidden_functions_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/forbidden-functions.yaml",
+            item_ty: "ForbiddenFunctionRule",
+            const_name: "FORBIDDEN_FUNCTIONS",
+            selector: "forbidden_functions_for",
+            skyrim_rows: &policy::forbidden_functions(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::forbidden_functions(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
+    );
 }
 
 fn slow_functions(context: &BuildContext) {
-    table(
+    let row = |rule: &policy::SlowFunction| {
+        format!(
+            "SlowFunctionRule {{ object: {:?}, function: {:?}, replacement: {:?}, global: {:?} }},",
+            rule.object, rule.function, rule.replacement, rule.global
+        )
+    };
+    emit_game_tables(
         context,
-        "shared/rules/data/skyrim/slow-functions.yaml",
-        "slow-functions rules",
-        "slow_functions_data.rs",
-        "pub static SLOW_FUNCTIONS: &[SlowFunctionRule] = &[",
-        |r: &SlowRule| {
-            format!("    SlowFunctionRule {{ object: {:?}, function: {:?}, replacement: {:?}, global: {:?} }},", r.object, r.function, r.replacement, r.global)
+        GameTableSpec {
+            filename: "slow_functions_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/slow-functions.yaml",
+            item_ty: "SlowFunctionRule",
+            const_name: "SLOW_FUNCTIONS",
+            selector: "slow_functions_for",
+            skyrim_rows: &policy::slow_functions(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::slow_functions(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
         },
     );
 }
+
 fn native_methods(context: &BuildContext) {
-    table(
+    let scripts_dir = context.input("shared/scripts");
+    let row = |rule: &script_catalog::NativeMethod| {
+        format!(
+            "NativeMethodRule {{ object: {:?}, function: {:?} }},",
+            rule.object, rule.function
+        )
+    };
+    emit_game_tables(
         context,
-        "shared/rules/data/skyrim/native-methods.yaml",
-        "native-methods rules",
-        "native_methods_data.rs",
-        "pub static NATIVE_METHODS: &[NativeMethodRule] = &[",
-        |r: &NativeMethod| {
-            format!(
-                "    NativeMethodRule {{ object: {:?}, function: {:?} }},",
-                r.object, r.function
-            )
+        GameTableSpec {
+            filename: "native_methods_data.rs",
+            header: "bundled Creation Kit archives under shared/scripts",
+            item_ty: "NativeMethodRule",
+            const_name: "NATIVE_METHODS",
+            selector: "native_methods_for",
+            skyrim_rows: &script_catalog::native_methods(&scripts_dir, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &script_catalog::native_methods(&scripts_dir, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
         },
     );
 }
+
 fn actor_values(context: &BuildContext) {
-    table(
+    let row = |value: &String| format!("{value:?},");
+    emit_game_tables(
         context,
-        "shared/rules/data/skyrim/actor-values.yaml",
-        "actor-values rules",
-        "actor_values_data.rs",
-        "pub static ACTOR_VALUES: &[&str] = &[",
-        |value: &String| format!("    {value:?},"),
+        GameTableSpec {
+            filename: "actor_values_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/actor-values.yaml",
+            item_ty: "&str",
+            const_name: "ACTOR_VALUES",
+            selector: "actor_values_for",
+            skyrim_rows: &policy::actor_values(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::actor_values(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+        },
     );
 }
+
 fn update_event_pairs(context: &BuildContext) {
-    table(
+    let row = |rule: &policy::UpdateEventPair| {
+        format!(
+            "UpdateEventPairRule {{ register: {:?}, event: {:?} }},",
+            rule.register, rule.event
+        )
+    };
+    emit_game_tables(
         context,
-        "shared/rules/data/skyrim/update-event-handlers.yaml",
-        "update-event-handlers rules",
-        "update_event_pairs_data.rs",
-        "pub static UPDATE_EVENT_PAIRS: &[UpdateEventPairRule] = &[",
-        |r: &UpdateEventPair| {
-            format!(
-                "    UpdateEventPairRule {{ register: {:?}, event: {:?} }},",
-                r.register, r.event
-            )
+        GameTableSpec {
+            filename: "update_event_pairs_data.rs",
+            header: "shared/rules/data/{skyrim,fallout4}/update-event-handlers.yaml",
+            item_ty: "UpdateEventPairRule",
+            const_name: "UPDATE_EVENT_PAIRS",
+            selector: "update_event_pairs_for",
+            skyrim_rows: &policy::update_event_pairs(context, "skyrim")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &policy::update_event_pairs(context, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
         },
     );
 }
 
 fn known_events(context: &BuildContext) {
-    table(
+    let row = |event: &script_catalog::KnownEvent| {
+        let args = event
+            .args
+            .iter()
+            .map(|arg| {
+                format!(
+                    "EventArg {{ type_name: {:?}, name: {:?} }}, ",
+                    arg.type_name, arg.name
+                )
+            })
+            .collect::<String>();
+        format!(
+            "KnownEventRule {{ event: {:?}, form: {:?}, args: &[{args}] }},",
+            event.event, event.form
+        )
+    };
+    let scripts_dir = context.input("shared/scripts");
+    emit_game_tables(
         context,
-        "shared/rules/data/skyrim/known-events.yaml",
-        "known-events rules",
-        "known_events_data.rs",
-        "pub static KNOWN_EVENTS: &[KnownEventRule] = &[",
-        |event: &KnownEvent| {
-            let args = event
-                .args
+        GameTableSpec {
+            filename: "known_events_data.rs",
+            header: "bundled Creation Kit archives under shared/scripts",
+            item_ty: "KnownEventRule",
+            const_name: "KNOWN_EVENTS",
+            selector: "known_events_for",
+            skyrim_rows: &script_catalog::known_events(&scripts_dir, "skyrim")
                 .iter()
-                .map(|arg| {
-                    format!(
-                        "EventArg {{ type_name: {:?}, name: {:?} }}, ",
-                        arg.type_name, arg.name
-                    )
-                })
-                .collect::<String>();
-            format!(
-                "    KnownEventRule {{ event: {:?}, form: {:?}, args: &[{args}] }},",
-                event.event, event.form
-            )
+                .map(row)
+                .collect::<Vec<_>>(),
+            fallout4_rows: &script_catalog::known_events(&scripts_dir, "fallout4")
+                .iter()
+                .map(row)
+                .collect::<Vec<_>>(),
         },
     );
 }

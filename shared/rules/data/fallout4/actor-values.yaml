@@ -1,0 +1,182 @@
+# Fallout 4's built-in Actor Values, per the Creation Kit / console AV
+# names and the hardcoded AVIF records shipped with the game. Compiled
+# in by papyrus-lint-core's build.rs for the "Unknown Actor Value" lint
+# (see ../app/crates/papyrus-lints/src/actor_value.rs), which flags a
+# string literal passed to an Actor Value function that doesn't match a
+# name listed here — a strong signal of a typo. Fallout 4's Papyrus API
+# usually takes an `ActorValue` form rather than a string (ObjectReference
+# GetValue/SetValue/ModValue/DamageValue/RestoreValue), so this lint is
+# disabled by default (see rules.unknown_actor_value). A mod-added Actor
+# Value defined by a project's own plugin has no way to appear here.
+#
+# Sourced from `shared/scripts/fallout4-scripts.zip` (Game.Get*AV helpers
+# and ActorValue property names on base scripts) together with the
+# engine's hardcoded AVIF editor IDs.
+#
+# Each entry is the Actor Value's own case-insensitive name, exactly as
+# passed to an Actor Value function or used as the AVIF editor ID.
+
+# S.P.E.C.I.A.L.
+- Strength
+- Perception
+- Endurance
+- Charisma
+- Intelligence
+- Agility
+- Luck
+
+# Primary statistics
+- Health
+- ActionPoints
+- Experience
+- CarryWeight
+- HealRate
+- ActionPointsRate
+- Rads
+- RadsRate
+- SpeedMult
+- CritChance
+- MeleeDamage
+- UnarmedDamage
+- Mass
+- InventoryWeight
+- UnusedStamina
+- ConditionRate
+- VoiceRate
+- AnimationMult
+- WeapReloadSpeedMult
+- WeaponSpeedMult
+- AttackDamageMult
+- LeftWeaponSpeedMult
+
+# AI data
+- Aggression
+- Confidence
+- Energy
+- Morality
+- Mood
+- Assistance
+- Suspicious
+- WaitingForPlayer
+- IgnorePlayerWhileFrenzied
+
+# Resistances
+- DamageResist
+- PoisonResist
+- FireResist
+- ElectricResist
+- FrostResist
+- MagicResist
+- EnergyResist
+- RadResistIngestion
+- RadResistExposure
+
+# Limb / condition values
+- PerceptionCondition
+- EnduranceCondition
+- LeftAttackCondition
+- RightAttackCondition
+- LeftMobilityCondition
+- RightMobilityCondition
+- BrainCondition
+- AttackConditionAlt1
+- AttackConditionAlt2
+- AttackConditionAlt3
+- AvailableCondition1
+- AvailableCondition2
+- AvailableCondition3
+- RotationSpeedCondition
+- IgnoreCrippledLimbs
+
+# Power armor
+- PowerArmorBattery
+- PowerArmorHeadCondition
+- PowerArmorTorsoCondition
+- PowerArmorLeftArmCondition
+- PowerArmorRightArmCondition
+- PowerArmorLeftLegCondition
+- PowerArmorRightLegCondition
+- PowerArmorVent
+
+# Status effects and leftover engine values
+- Paralysis
+- Invisibility
+- NightEye
+- DetectLifeRange
+- WaterBreathing
+- WaterWalking
+- BloodyMess
+- JumpingBonus
+- AbsorbChance
+- Blindness
+- Deafness
+- Fame
+- Infamy
+- FavorActive
+- FavorPointsBonus
+- FavorsPerDay
+- FavorsPerDayTimer
+- LastBribedIntimidated
+- LastFlattered
+- BypassVendorStolenCheck
+- BypassVendorKeywordCheck
+- MovementNoiseMult
+- ReflectDamage
+- ArmorPerks
+- ShieldPerks
+- WardPower
+- WardDeflection
+- RightItemCharge
+- LeftItemCharge
+- BowSpeedBonus
+- BowStaggerBonus
+- ShoutRecoveryMult
+- Telekinesis
+- DragonSouls
+- CombatHealthRegenMult
+- Fatigue
+- RadsRateMult
+- HealRateMult
+- ActionPointsRateMult
+- ConditionRateMult
+- AimStability
+- ArmorPenetration
+- CriticalHitDamageMult
+- IdleChatterTimeMin
+- IdleChatterTimeMax
+- RadHealthMax
+
+# Workshop / settlement
+- PowerGenerated
+- PowerRequired
+- PowerRadiation
+- Food
+- Water
+- Safety
+- Bed
+- Happiness
+- Artillery
+- WorkshopID
+- WorkshopPlayerOwned
+- WorkshopActorWounded
+- WorkshopActorAssigned
+- WorkshopResourceObject
+- WorkshopCurrentTriangles
+- WorkshopMaxTriangles
+- WorkshopCurrentDraws
+- WorkshopMaxDraws
+- WorkshopRatingPopulation
+- WorkshopRatingHappiness
+- WorkshopRatingHappinessTarget
+
+# User-defined Actor Values
+- Variable01
+- Variable02
+- Variable03
+- Variable04
+- Variable05
+- Variable06
+- Variable07
+- Variable08
+- Variable09
+- Variable10

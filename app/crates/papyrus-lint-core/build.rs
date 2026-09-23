@@ -4,10 +4,8 @@ use std::env;
 use std::fs;
 use std::path::Path;
 
-#[derive(serde::Deserialize)]
-struct RawNativeGlobal {
-    script: String,
-}
+#[path = "../papyrus-lints/build_support/script_catalog.rs"]
+mod script_catalog;
 
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
@@ -100,32 +98,24 @@ fn title_case(id: &str) -> String {
 }
 
 fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
-    let yaml_path =
-        Path::new(manifest_dir).join("../../../shared/rules/data/skyrim/native-globals.yaml");
-    println!("cargo:rerun-if-changed={}", yaml_path.display());
-
-    let yaml_src = fs::read_to_string(&yaml_path).unwrap_or_else(|err| {
-        panic!(
-            "failed to read native-globals rules at {}: {err}",
-            yaml_path.display()
-        )
-    });
-    let rules: Vec<RawNativeGlobal> = serde_norway::from_str(&yaml_src).unwrap_or_else(|err| {
-        panic!(
-            "failed to parse native-globals rules at {}: {err}",
-            yaml_path.display()
-        )
-    });
+    let scripts_dir = Path::new(manifest_dir).join("../../../shared/scripts");
 
     let mut generated = String::new();
     generated.push_str(
-        "/// Compiled from `shared/rules/data/skyrim/native-globals.yaml` by `build.rs`. Do not edit by hand.\n",
+        "/// Compiled from bundled Creation Kit / script-extender archives by `build.rs`. Do not edit by hand.\n",
     );
-    generated.push_str("const NATIVE_GLOBALS: &[&str] = &[\n");
-    for rule in &rules {
-        generated.push_str(&format!("    {:?},\n", rule.script.to_ascii_lowercase()));
+    for game in script_catalog::GAMES {
+        let rules = script_catalog::native_global_names(&scripts_dir, game);
+        let const_name = match *game {
+            "fallout4" => "FALLOUT4_NATIVE_GLOBALS",
+            _ => "SKYRIM_NATIVE_GLOBALS",
+        };
+        generated.push_str(&format!("const {const_name}: &[&str] = &[\n"));
+        for script in &rules {
+            generated.push_str(&format!("    {:?},\n", script));
+        }
+        generated.push_str("];\n");
     }
-    generated.push_str("];\n");
 
     let dest = Path::new(out_dir).join("native_globals_data.rs");
     fs::write(&dest, generated).unwrap_or_else(|err| {
