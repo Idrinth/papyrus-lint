@@ -86,7 +86,7 @@ impl TokenLint for Collect {
                     .get(index + 1)
                     .is_some_and(|token| matches!(token.kind, TokenKind::LParen)) =>
             {
-                let Some(rule) = find_rule(name, ctx.config.game.as_str()) else {
+                let Some(rule) = find_rule(name, ctx.config.game) else {
                     return;
                 };
                 if rule.global && !qualifier_matches(tokens, index, rule.script) {
@@ -161,7 +161,7 @@ fn qualifier_matches(tokens: &[Token], call_index: usize, script: &str) -> bool 
     qualifier.eq_ignore_ascii_case(script)
 }
 
-fn find_rule(name: &str, game: &str) -> Option<&'static ForbiddenFunctionRule> {
+fn find_rule(name: &str, game: crate::Game) -> Option<&'static ForbiddenFunctionRule> {
     forbidden_functions_for(game)
         .iter()
         .find(|rule| rule.function.eq_ignore_ascii_case(name))

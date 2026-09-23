@@ -4,6 +4,8 @@
 
 use std::path::Path;
 
+use papyrus_lint_globals::Game;
+
 use crate::entry::{
     file_modified_unix_secs, valid_entry_in_for_game, write_entry_in_for_game, CacheEntry,
 };
@@ -31,7 +33,7 @@ pub(crate) fn put_in(
 
 pub(crate) fn put_in_for_game(
     dir: &Path,
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
     ast: &papyrus_parser::ast::Script,
@@ -71,7 +73,7 @@ pub(crate) fn put_tokens_in(
 
 pub(crate) fn put_tokens_in_for_game(
     dir: &Path,
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
     tokens: &[papyrus_parser::token::Token],
@@ -91,7 +93,7 @@ pub(crate) fn put_tokens_in_for_game(
 
 fn write_stamped_entry_for_game(
     dir: &Path,
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
     linter_version: &str,

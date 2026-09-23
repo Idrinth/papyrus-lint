@@ -79,7 +79,7 @@ impl TokenLint for Collect {
         else {
             return;
         };
-        if is_known_actor_value(value, ctx.config.game.as_str()) {
+        if is_known_actor_value(value, ctx.config.game) {
             return;
         }
         self.store.emit(
@@ -116,7 +116,7 @@ fn is_actor_value_function(name: &str) -> bool {
         .any(|function| function.eq_ignore_ascii_case(name))
 }
 
-fn is_known_actor_value(value: &str, game: &str) -> bool {
+fn is_known_actor_value(value: &str, game: crate::Game) -> bool {
     actor_values_for(game)
         .iter()
         .any(|actor_value| actor_value.eq_ignore_ascii_case(value))

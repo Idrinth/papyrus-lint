@@ -3,6 +3,8 @@
 
 use std::path::Path;
 
+use papyrus_lint_globals::Game;
+
 #[cfg(test)]
 use super::load::{get_in, get_tokens_in};
 use super::load::{get_in_for_game, get_tokens_in_for_game};
@@ -36,7 +38,7 @@ pub(crate) fn ensure_primed_in(dir: &Path, source_path: &Path, source: &str, lin
 
 pub(crate) fn ensure_primed_in_for_game(
     dir: &Path,
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
     linter_version: &str,

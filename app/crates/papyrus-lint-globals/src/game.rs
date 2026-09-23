@@ -21,8 +21,8 @@ pub enum Game {
 }
 
 impl Game {
-    /// Every supported target, in the order they appear in configuration
-    /// docs and the JSON schema.
+    /// Every recognized target, including targets that are not supported yet,
+    /// in configuration and JSON-schema order.
     pub const ALL: [Game; 3] = [Game::Skyrim, Game::Fallout4, Game::Starfield];
 
     /// The lowercase key used in YAML, cache paths, and schema enums.
@@ -31,6 +31,13 @@ impl Game {
             Self::Skyrim => "skyrim",
             Self::Fallout4 => "fallout4",
             Self::Starfield => "starfield",
+        }
+    }
+
+    /// Panics when this target is not supported by the linter yet.
+    pub fn assert_supported(self) {
+        if self == Self::Starfield {
+            panic!("Starfield is not supported yet");
         }
     }
 
@@ -103,6 +110,12 @@ mod tests {
         assert!(!Game::Skyrim.has_fallout4_extensions());
         assert!(Game::Fallout4.has_fallout4_extensions());
         assert!(Game::Starfield.has_fallout4_extensions());
+    }
+
+    #[test]
+    #[should_panic(expected = "Starfield is not supported yet")]
+    fn starfield_is_not_supported_yet() {
+        Game::Starfield.assert_supported();
     }
 
     #[test]

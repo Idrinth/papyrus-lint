@@ -65,14 +65,16 @@ struct ScriptHeader {
 fn base_archive(game: Game) -> &'static str {
     match game {
         Game::Fallout4 => "fallout4-scripts.zip",
-        Game::Skyrim | Game::Starfield => "skyrim-scripts.zip",
+        Game::Skyrim => "skyrim-scripts.zip",
+        Game::Starfield => panic!("Starfield is not supported yet"),
     }
 }
 
 fn extender_archive(game: Game) -> &'static str {
     match game {
         Game::Fallout4 => "fallout4-extender-scripts.zip",
-        Game::Skyrim | Game::Starfield => "skyrim-extender-scripts.zip",
+        Game::Skyrim => "skyrim-extender-scripts.zip",
+        Game::Starfield => panic!("Starfield is not supported yet"),
     }
 }
 
