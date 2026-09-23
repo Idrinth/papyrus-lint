@@ -1,5 +1,5 @@
 //! Fallout 4's Papyrus dialect: custom `Struct`s, property `Group`s, and
-//! the `DebugOnly`/`BetaOnly` function flags. All are opt-in through
+//! the `DebugOnly`/`BetaOnly` script and function flags. All are opt-in through
 //! [`GameEdition::Fallout4`]; [`parse`] (always Skyrim mode) rejects them
 //! exactly as it would any other unrecognized construct.
 
@@ -116,6 +116,21 @@ fn parses_debug_only_and_beta_only_function_flags() {
 }
 
 #[test]
+fn parses_debug_only_and_beta_only_script_flags() {
+    parse_with_mode(
+        "ScriptName Debug Native DebugOnly Hidden\n",
+        GameEdition::Fallout4,
+    )
+    .expect("DebugOnly should parse as a Fallout 4 script flag");
+
+    parse_with_mode(
+        "ScriptName Beta Hidden BetaOnly Conditional\n",
+        GameEdition::Fallout4,
+    )
+    .expect("BetaOnly should parse as a Fallout 4 script flag");
+}
+
+#[test]
 fn skyrim_mode_leaves_debug_only_and_beta_only_unset() {
     // Skyrim mode never consumes DebugOnly/BetaOnly as flags, so a script
     // that never uses them (the common case) parses identically either
@@ -148,6 +163,12 @@ fn skyrim_mode_rejects_debug_only_and_beta_only_flags() {
     let error = parse("ScriptName Rejected\n\nFunction LogDebug() DebugOnly\nEndFunction\n")
         .expect_err("DebugOnly is Fallout 4 only");
     assert!(matches!(error, PapyrusError::Parse(_)));
+
+    for flag in ["DebugOnly", "BetaOnly"] {
+        let error = parse(&format!("ScriptName Rejected {flag}\n"))
+            .expect_err("Fallout 4 script flags must remain invalid in Skyrim mode");
+        assert!(matches!(error, PapyrusError::Parse(_)));
+    }
 }
 
 #[test]
