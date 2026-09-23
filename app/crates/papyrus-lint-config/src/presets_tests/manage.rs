@@ -1,6 +1,32 @@
 use super::*;
 
 #[test]
+fn executable_adjacent_public_apis_report_missing_presets() {
+    let missing_name = format!("missing-preset-{}", std::process::id());
+
+    assert_eq!(
+        user_presets_dir(),
+        executable_dir()
+            .map(|dir| dir.join(USER_PRESETS_DIR_NAME))
+            .filter(|dir| dir.is_dir())
+    );
+    assert!(delete_user_preset(&missing_name)
+        .expect_err("deleting a missing preset should fail")
+        .contains(&format!("no preset named '{missing_name}' exists")));
+    assert!(read_user_preset_yaml(&missing_name)
+        .expect_err("reading a missing preset should fail")
+        .contains(&format!("unknown preset '{missing_name}'")));
+}
+
+#[test]
+fn rename_user_preset_rejects_a_blank_name_through_the_public_api() {
+    let error =
+        rename_user_preset("unused", "   ", false).expect_err("blank new name should be rejected");
+
+    assert!(error.contains("must not be blank"));
+}
+
+#[test]
 fn delete_user_preset_removes_the_matching_file_case_insensitively() {
     let base_dir = tempfile::tempdir().expect("failed to create temp dir");
     let presets_dir = base_dir.path().join(USER_PRESETS_DIR_NAME);
