@@ -1,10 +1,10 @@
 //! Recognizes the CLI's raw argument syntax via `clap`: `init`, `preset add`,
-//! `doctor`, `lint`, and `fix` as real subcommands. A lint/`--blob` run
-//! requires the `lint` subcommand; `fix` is its own subcommand. `clap` owns
-//! `--flag`, `--flag=value`/`--flag value`, repeatable options, required
-//! positionals, and a missing value. Business-rule validation of a
-//! lint/fix/`--blob` run (mutually exclusive flags, enum coercion, numeric
-//! ranges) stays [`super::validate`]'s job.
+//! `doctor`, `lint`, `fix`, `help`, and `version` as real subcommands. A
+//! lint/`--blob` run requires the `lint` subcommand; `fix` is its own
+//! subcommand. `clap` owns `--flag`, `--flag=value`/`--flag value`,
+//! repeatable options, required positionals, and a missing value.
+//! Business-rule validation of a lint/fix/`--blob` run (mutually exclusive
+//! flags, enum coercion, numeric ranges) stays [`super::validate`]'s job.
 
 use std::path::PathBuf;
 
@@ -14,10 +14,10 @@ use papyrus_lints::Game;
 
 use super::{ArgsError, ParsedCommand};
 
-/// Top-level clap parser for a full `PapyrusLinterCLI` invocation. `-h` /
-/// `--help` and `-V`/`--version` live on the parent so they still work
-/// without a subcommand. Every real action (`init`/`preset`/`doctor`/`lint`/
-/// `fix`) is a subcommand.
+/// Top-level clap parser for a full `PapyrusLinterCLI` invocation. Every
+/// action (`init`/`preset`/`doctor`/`lint`/`fix`/`help`/`version`) is a
+/// subcommand. `help`/`version` also accept the usual flag spellings as
+/// aliases so `-h`/`--help` and `-V`/`--version` still work.
 #[derive(Parser, Debug)]
 #[command(
     no_binary_name = true,
@@ -26,10 +26,6 @@ use super::{ArgsError, ParsedCommand};
     disable_help_subcommand = true
 )]
 pub(super) struct Cli {
-    #[arg(long, short = 'h')]
-    pub(super) help: bool,
-    #[arg(long, short = 'V')]
-    pub(super) version: bool,
     #[command(subcommand)]
     pub(super) command: Option<RootCommand>,
 }
@@ -69,6 +65,22 @@ pub(super) enum RootCommand {
         disable_help_subcommand = true
     )]
     Fix(RawArgs),
+    #[command(
+        disable_help_flag = true,
+        disable_version_flag = true,
+        disable_help_subcommand = true,
+        visible_alias = "--help",
+        alias = "-h"
+    )]
+    Help,
+    #[command(
+        disable_help_flag = true,
+        disable_version_flag = true,
+        disable_help_subcommand = true,
+        visible_alias = "--version",
+        alias = "-V"
+    )]
+    Version,
 }
 
 #[derive(Subcommand, Debug)]
@@ -217,12 +229,6 @@ pub(crate) enum ParsedCli {
 /// through clap's subcommand tree, then — for `lint`/`fix` — [`super::validate`].
 pub(crate) fn parse_cli(args: &[String]) -> Result<ParsedCli, ArgsError> {
     let cli = Cli::try_parse_from(args).map_err(|_| ArgsError::Usage)?;
-    if cli.help {
-        return Err(ArgsError::Usage);
-    }
-    if cli.version {
-        return Ok(ParsedCli::Run(ParsedCommand::Version));
-    }
     match cli.command {
         Some(RootCommand::Init(_)) => parse_init_preset(&args[1..])
             .map(|(preset, game)| ParsedCli::Init { preset, game })
@@ -242,6 +248,8 @@ pub(crate) fn parse_cli(args: &[String]) -> Result<ParsedCli, ArgsError> {
         Some(RootCommand::Doctor(raw)) => Ok(ParsedCli::Doctor(raw)),
         Some(RootCommand::Lint(raw)) => super::validate::validate(raw, false).map(ParsedCli::Run),
         Some(RootCommand::Fix(raw)) => super::validate::validate(raw, true).map(ParsedCli::Run),
+        Some(RootCommand::Help) => Err(ArgsError::Usage),
+        Some(RootCommand::Version) => Ok(ParsedCli::Run(ParsedCommand::Version)),
         None => Err(ArgsError::Usage),
     }
 }
