@@ -150,6 +150,10 @@ impl Parser {
         matches!(self.kind(), TokenKind::Keyword(k) if *k == kw)
     }
 
+    fn at_identifier_ignore_ascii_case(&self, expected: &str) -> bool {
+        matches!(self.kind(), TokenKind::Identifier(name) if name.eq_ignore_ascii_case(expected))
+    }
+
     fn expect_identifier(&mut self) -> PResult<String> {
         match self.kind().clone() {
             TokenKind::Identifier(name) => {
@@ -244,7 +248,10 @@ impl Parser {
                 self.advance();
                 is_native = true;
             } else if self.mode == GameEdition::Fallout4
-                && (self.at_keyword(Keyword::DebugOnly) || self.at_keyword(Keyword::BetaOnly))
+                && (self.at_keyword(Keyword::DebugOnly)
+                    || self.at_keyword(Keyword::BetaOnly)
+                    || self.at_identifier_ignore_ascii_case("Const")
+                    || self.at_identifier_ignore_ascii_case("Default"))
             {
                 self.advance();
             } else {
@@ -384,6 +391,11 @@ impl Parser {
             } else if self.at_keyword(Keyword::Conditional) {
                 self.advance();
                 is_conditional = true;
+            } else if self.mode == GameEdition::Fallout4
+                && (self.at_identifier_ignore_ascii_case("Const")
+                    || self.at_identifier_ignore_ascii_case("Mandatory"))
+            {
+                self.advance();
             } else if matches!(self.kind(), TokenKind::CommentAnnotation(_)) {
                 access_level = self.parse_access_level()?;
             } else {
@@ -525,9 +537,17 @@ impl Parser {
             value = Some(self.parse_expr()?);
         }
         let mut is_conditional = false;
-        if self.at_keyword(Keyword::Conditional) {
-            self.advance();
-            is_conditional = true;
+        loop {
+            if self.at_keyword(Keyword::Conditional) {
+                self.advance();
+                is_conditional = true;
+            } else if self.mode == GameEdition::Fallout4
+                && self.at_identifier_ignore_ascii_case("Const")
+            {
+                self.advance();
+            } else {
+                break;
+            }
         }
         self.expect_terminator()?;
         Ok(VariableDecl {

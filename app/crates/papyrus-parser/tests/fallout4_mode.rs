@@ -1,5 +1,5 @@
 //! Fallout 4's Papyrus dialect: custom `Struct`s, property `Group`s,
-//! the `DebugOnly`/`BetaOnly` script and function flags, and remote / custom events
+//! Fallout-specific declaration flags, and remote / custom events
 //! (`Event OtherScript.EventName(...)`). All are opt-in through
 //! [`GameEdition::Fallout4`]; [`parse`] (always Skyrim mode) rejects them
 //! exactly as it would any other unrecognized construct.
@@ -129,6 +129,48 @@ fn parses_debug_only_and_beta_only_script_flags() {
         GameEdition::Fallout4,
     )
     .expect("BetaOnly should parse as a Fallout 4 script flag");
+}
+
+#[test]
+fn parses_const_default_and_mandatory_flags_case_insensitively() {
+    let script = parse_with_mode(
+        r#"ScriptName User:WorkshopBellNPCsScript extends ObjectReference default Const
+
+Scene Property CoreScene Auto Const
+Cell Property DLC03Nucleus Auto mandatory const
+
+Function StartTimer()
+    Int iFailSafeTimerID = 1 Const
+    Int lowercase = 2 const
+EndFunction
+"#,
+        GameEdition::Fallout4,
+    )
+    .expect("Fallout 4 declaration flags should parse regardless of case");
+
+    assert_eq!(script.name, "User:WorkshopBellNPCsScript");
+    assert_eq!(script.properties.len(), 2);
+    assert!(script.properties.iter().all(|property| property.is_auto));
+    assert_eq!(script.functions[0].body.len(), 2);
+}
+
+#[test]
+fn skyrim_mode_rejects_fallout_4_declaration_flags() {
+    for source in [
+        "ScriptName Example Const\n",
+        "ScriptName Example default\n",
+        "ScriptName Example\nInt Property Value Auto Mandatory\n",
+        "ScriptName Example\nFunction Test()\nInt value = 1 Const\nEndFunction\n",
+    ] {
+        let error = parse(source).expect_err("Fallout 4 flags must remain invalid in Skyrim mode");
+        assert!(matches!(error, PapyrusError::Parse(_)));
+    }
+
+    let script = parse("ScriptName Const\nInt Mandatory = 1\nInt Property Default Auto\n")
+        .expect("Fallout 4 flag spellings remain ordinary identifiers in Skyrim mode");
+    assert_eq!(script.name, "Const");
+    assert_eq!(script.variables[0].name, "Mandatory");
+    assert_eq!(script.properties[0].name, "Default");
 }
 
 #[test]
