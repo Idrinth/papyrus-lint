@@ -3,6 +3,9 @@ use crate::bundled_blob::{self, PackedEntry};
 use std::io::Read;
 use std::path::Path;
 
+const SKYRIM: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Skyrim;
+const FALLOUT4: papyrus_lint_globals::Game = papyrus_lint_globals::Game::Fallout4;
+
 fn zip_path(archive_name: &str) -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../../shared/scripts")
@@ -120,11 +123,27 @@ fn parse_blob_rejects_a_truncated_or_unknown_header() {
 }
 
 #[test]
-fn bundled_cache_covers_the_vanilla_script_archive() {
+fn bundled_cache_covers_the_skyrim_vanilla_script_archive() {
     assert!(
-        entry_count() >= 14_000,
+        entry_count(SKYRIM) >= 14_000,
         "expected the bundled cache to cover the Skyrim archive, got {}",
-        entry_count()
+        entry_count(SKYRIM)
+    );
+}
+
+#[test]
+fn bundled_cache_covers_the_fallout4_vanilla_script_archive() {
+    // Lower than Skyrim's threshold: a chunk of the Fallout 4 archive uses
+    // constructs `papyrus-parser` doesn't accept yet (e.g. the
+    // `Namespace:ScriptName` form used by Creation Club content), which
+    // `build.rs` skips with a `cargo:warning` rather than failing the
+    // build (see its module docs). This only needs to cover the base
+    // engine hierarchy (`Actor`, `ObjectReference`, `Form`, …) that
+    // `FunctionTable` actually walks without project data.
+    assert!(
+        entry_count(FALLOUT4) >= 700,
+        "expected the bundled cache to cover most of the Fallout 4 archive, got {}",
+        entry_count(FALLOUT4)
     );
 }
 
@@ -132,64 +151,104 @@ fn bundled_cache_covers_the_vanilla_script_archive() {
 fn actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
     let source = zip_script("skyrim-scripts.zip", "Actor.psc");
     let missing = Path::new("/does/not/exist/Actor.psc");
-    let ast = ast_for(&source).expect("Actor.psc should be in the bundled cache");
+    let ast = ast_for(SKYRIM, &source).expect("Actor.psc should be in the bundled cache");
     assert_eq!(ast.name, "Actor");
     assert_eq!(ast.extends.as_deref(), Some("ObjectReference"));
     assert_eq!(
-        crate::get_for_game(papyrus_lint_globals::Game::Skyrim, missing, &source),
+        crate::get_for_game(SKYRIM, missing, &source),
         Some(ast.clone())
     );
     assert_eq!(
-        crate::get_tokens_for_game(papyrus_lint_globals::Game::Skyrim, missing, &source),
+        crate::get_tokens_for_game(SKYRIM, missing, &source),
         Some(papyrus_parser::tokenize(&source).unwrap())
     );
-    assert!(prime(&source));
+    assert!(prime(SKYRIM, &source));
+}
+
+#[test]
+fn fallout4_actor_psc_is_a_bundled_hit_without_a_source_file_on_disk() {
+    let source = zip_script("fallout4-scripts.zip", "Actor.psc");
+    let missing = Path::new("/does/not/exist/Actor.psc");
+    let ast = ast_for(FALLOUT4, &source).expect("Actor.psc should be in the Fallout 4 bundle");
+    assert_eq!(ast.name, "Actor");
+    assert_eq!(
+        crate::get_for_game(FALLOUT4, missing, &source),
+        Some(ast.clone())
+    );
+    assert_eq!(
+        crate::get_tokens_for_game(FALLOUT4, missing, &source),
+        Some(papyrus_parser::tokenize(&source).unwrap())
+    );
+    assert!(prime(FALLOUT4, &source));
 }
 
 #[test]
 fn form_and_game_are_bundled_hits() {
     let form = zip_script("skyrim-scripts.zip", "Form.psc");
-    let ast = ast_for(&form).expect("Form.psc should be in the bundled cache");
+    let ast = ast_for(SKYRIM, &form).expect("Form.psc should be in the bundled cache");
     assert_eq!(ast.name, "Form");
     assert!(ast.extends.is_none());
 
     let game = zip_script("skyrim-scripts.zip", "Game.psc");
-    let ast = ast_for(&game).expect("Game.psc should be in the bundled cache");
+    let ast = ast_for(SKYRIM, &game).expect("Game.psc should be in the bundled cache");
     assert_eq!(ast.name, "Game");
 }
 
 #[test]
 fn skse_psc_is_a_bundled_hit() {
     let source = zip_script("skyrim-extender-scripts.zip", "SKSE.psc");
-    let ast = ast_for(&source).expect("SKSE.psc should be in the bundled cache");
+    let ast = ast_for(SKYRIM, &source).expect("SKSE.psc should be in the bundled cache");
     assert_eq!(ast.name, "SKSE");
-    assert_eq!(tokens_for(&source), papyrus_parser::tokenize(&source).ok());
-    assert!(prime(&source));
+    assert_eq!(
+        tokens_for(SKYRIM, &source),
+        papyrus_parser::tokenize(&source).ok()
+    );
+    assert!(prime(SKYRIM, &source));
+}
+
+#[test]
+fn f4se_psc_is_a_bundled_hit() {
+    let source = zip_script("fallout4-extender-scripts.zip", "F4SE.psc");
+    let ast = ast_for(FALLOUT4, &source).expect("F4SE.psc should be in the Fallout 4 bundle");
+    assert_eq!(ast.name, "F4SE");
+    assert_eq!(
+        tokens_for(FALLOUT4, &source),
+        papyrus_parser::tokenize(&source).ok()
+    );
+    assert!(prime(FALLOUT4, &source));
 }
 
 #[test]
 fn a_modified_vanilla_script_is_a_bundled_miss() {
     let mut source = zip_script("skyrim-scripts.zip", "Actor.psc");
     source.push_str("\n; user edit\n");
-    assert!(ast_for(&source).is_none());
-    assert!(tokens_for(&source).is_none());
-    assert!(!prime(&source));
+    assert!(ast_for(SKYRIM, &source).is_none());
+    assert!(tokens_for(SKYRIM, &source).is_none());
+    assert!(!prime(SKYRIM, &source));
 }
 
 #[test]
 fn unrelated_source_is_a_bundled_miss() {
     let source = "ScriptName NotAVanillaScript\n";
-    assert!(ast_for(source).is_none());
-    assert!(tokens_for(source).is_none());
-    assert!(!prime(source));
+    assert!(ast_for(SKYRIM, source).is_none());
+    assert!(tokens_for(SKYRIM, source).is_none());
+    assert!(!prime(SKYRIM, source));
+}
+
+#[test]
+fn a_skyrim_script_is_not_a_fallout4_bundled_hit() {
+    let source = zip_script("skyrim-extender-scripts.zip", "SKSE.psc");
+    assert!(ast_for(FALLOUT4, &source).is_none());
+    assert!(tokens_for(FALLOUT4, &source).is_none());
+    assert!(!prime(FALLOUT4, &source));
 }
 
 #[test]
 fn bundled_actor_matches_a_fresh_parse_and_tokenize() {
     let source = zip_script("skyrim-scripts.zip", "Actor.psc");
-    let mut ast = ast_for(&source).unwrap();
+    let mut ast = ast_for(SKYRIM, &source).unwrap();
     strip_deprecation(&mut ast);
-    let tokens = tokens_for(&source).unwrap();
+    let tokens = tokens_for(SKYRIM, &source).unwrap();
     // `ast_for`/`tokens_for` above prime `papyrus_parser`'s in-memory memo
     // cache with the catalog-enriched result for this exact source, so
     // `papyrus_parser::parse`/`tokenize` would just hand that same result
@@ -207,7 +266,7 @@ fn bundled_actor_matches_a_fresh_parse_and_tokenize() {
 
 #[test]
 fn bundled_actor_carries_catalogued_deprecation_metadata() {
-    let ast = ast_for_name("Actor").expect("Actor should be in the name index");
+    let ast = ast_for_name(SKYRIM, "Actor").expect("Actor should be in the name index");
     let favor = ast
         .functions
         .iter()
@@ -227,14 +286,13 @@ fn bundled_actor_carries_catalogued_deprecation_metadata() {
 fn ensure_primed_skips_the_disk_cache_for_a_bundled_script() {
     let source = zip_script("skyrim-scripts.zip", "ObjectReference.psc");
     let missing = Path::new("/does/not/exist/ObjectReference.psc");
-    crate::ensure_primed_for_game(papyrus_lint_globals::Game::Skyrim, missing, &source);
+    crate::ensure_primed_for_game(SKYRIM, missing, &source);
     assert_eq!(
-        crate::get_for_game(papyrus_lint_globals::Game::Skyrim, missing, &source)
-            .map(|script| script.name),
+        crate::get_for_game(SKYRIM, missing, &source).map(|script| script.name),
         Some("ObjectReference".to_string())
     );
     assert_eq!(
-        crate::get_tokens_for_game(papyrus_lint_globals::Game::Skyrim, missing, &source),
+        crate::get_tokens_for_game(SKYRIM, missing, &source),
         Some(papyrus_parser::tokenize(&source).unwrap())
     );
 }
@@ -246,48 +304,50 @@ fn bundled_lookups_are_safe_under_concurrent_use() {
         for _ in 0..8 {
             let source = &source;
             scope.spawn(move || {
-                assert!(ast_for(source).is_some());
-                assert!(tokens_for(source).is_some());
-                assert!(prime(source));
+                assert!(ast_for(SKYRIM, source).is_some());
+                assert!(tokens_for(SKYRIM, source).is_some());
+                assert!(prime(SKYRIM, source));
             });
         }
     });
-    let ast = ast_for(&source).unwrap();
+    let ast = ast_for(SKYRIM, &source).unwrap();
     assert_eq!(ast.name, "Quest");
 }
 
 #[test]
 fn actor_is_a_bundled_hit_by_script_name_without_source_bytes() {
-    assert!(contains_name("Actor"));
-    assert!(contains_name("actor"));
-    assert!(contains_name("OBJECTREFERENCE"));
-    assert!(!contains_name("DefinitelyNotAVanillaScript"));
+    assert!(contains_name(SKYRIM, "Actor"));
+    assert!(contains_name(SKYRIM, "actor"));
+    assert!(contains_name(SKYRIM, "OBJECTREFERENCE"));
+    assert!(!contains_name(SKYRIM, "DefinitelyNotAVanillaScript"));
 
-    let ast = ast_for_name("Actor").expect("Actor should be in the name index");
+    let ast = ast_for_name(SKYRIM, "Actor").expect("Actor should be in the name index");
     assert_eq!(ast.name, "Actor");
     assert_eq!(ast.extends.as_deref(), Some("ObjectReference"));
-    let tokens = tokens_for_name("actor").expect("Actor tokens should be in the name index");
+    let tokens =
+        tokens_for_name(SKYRIM, "actor").expect("Actor tokens should be in the name index");
     assert!(!tokens.is_empty());
-    assert_eq!(
-        crate::ast_for_script_name(papyrus_lint_globals::Game::Skyrim, "Actor"),
-        Some(ast)
-    );
-    assert!(crate::contains_script_name(
-        papyrus_lint_globals::Game::Skyrim,
-        "Form"
-    ));
-    assert!(!crate::contains_script_name(
-        papyrus_lint_globals::Game::Fallout4,
-        "Form"
-    ));
+    assert_eq!(crate::ast_for_script_name(SKYRIM, "Actor"), Some(ast));
+    assert!(crate::contains_script_name(SKYRIM, "Form"));
+}
+
+#[test]
+fn fallout4_is_a_bundled_hit_by_script_name_without_source_bytes() {
+    assert!(contains_name(FALLOUT4, "Actor"));
+    assert!(!contains_name(FALLOUT4, "DefinitelyNotAVanillaScript"));
+
+    let ast = ast_for_name(FALLOUT4, "Actor").expect("Actor should be in the Fallout 4 index");
+    assert_eq!(ast.name, "Actor");
+    assert_eq!(crate::ast_for_script_name(FALLOUT4, "Actor"), Some(ast));
+    assert!(crate::contains_script_name(FALLOUT4, "Form"));
 }
 
 #[test]
 fn name_lookup_walks_the_vanilla_extends_chain() {
-    let actor = ast_for_name("Actor").unwrap();
+    let actor = ast_for_name(SKYRIM, "Actor").unwrap();
     assert_eq!(actor.extends.as_deref(), Some("ObjectReference"));
-    let object_reference = ast_for_name(actor.extends.as_deref().unwrap()).unwrap();
+    let object_reference = ast_for_name(SKYRIM, actor.extends.as_deref().unwrap()).unwrap();
     assert_eq!(object_reference.extends.as_deref(), Some("Form"));
-    let form = ast_for_name(object_reference.extends.as_deref().unwrap()).unwrap();
+    let form = ast_for_name(SKYRIM, object_reference.extends.as_deref().unwrap()).unwrap();
     assert!(form.extends.is_none());
 }

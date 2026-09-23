@@ -13,24 +13,25 @@
 //! three is no longer valid, it's treated as a miss and the caller re-parses.
 //!
 //! Every public accessor takes the target `game` (`skyrim`, `fallout4`, …).
-//! There is no implicit Skyrim fallback: a Fallout 4 lookup never reads a
-//! Skyrim cache file or the bundled Skyrim/SKSE blob.
+//! There is no implicit cross-game fallback: a Fallout 4 lookup never reads
+//! a Skyrim cache file or Skyrim's bundled blob, and vice versa.
 //!
-//! Vanilla Skyrim and SKSE scripts shipped in `shared/skyrim-scripts.zip` and
-//! `shared/skyrim-extender-scripts.zip` are also compiled into the binary as
-//! a content-addressed AST/token blob (see [`bundled`]). [`get_for_game`]/
-//! [`get_tokens_for_game`]/[`ensure_primed_for_game`] consult that blob first
-//! when `game` is `skyrim`, keyed only by an MD5 of the decoded source, so a
-//! stock `Actor.psc` or `SKSE.psc` hits on the first analysis even when the
-//! file was just extracted to a new path (Docker, `--script-root`, the user's
-//! Skyrim install). [`ast_for_script_name`]/
-//! [`contains_script_name`] look the same blob up by `ScriptName` when no
-//! matching `.psc` is on disk *and* `game` is `skyrim`, so `FunctionTable` can
-//! still walk vanilla `Extends` chains without game data. A bundled hit does
-//! not take the disk-cache lock below, so parallel lint workers resolving the
-//! same base type do not serialize on each other for that lookup. A modified
-//! copy of a bundled script has a different digest and falls through to the
-//! on-disk cache / a fresh parse as before.
+//! Vanilla Skyrim/SKSE and Fallout 4/F4SE scripts shipped under
+//! `shared/scripts/` are also compiled into the binary as one
+//! content-addressed AST/token blob per game (see [`bundled`]).
+//! [`get_for_game`]/[`get_tokens_for_game`]/[`ensure_primed_for_game`]
+//! consult that game's blob first when `game` is `skyrim` or `fallout4`,
+//! keyed only by an MD5 of the decoded source, so a stock `Actor.psc` or
+//! `SKSE.psc`/`F4SE.psc` hits on the first analysis even when the file was
+//! just extracted to a new path (Docker, `--script-root`, the user's game
+//! install). [`ast_for_script_name`]/[`contains_script_name`] look the
+//! same game's blob up by `ScriptName` when no matching `.psc` is on disk
+//! and `game` has a bundled blob, so `FunctionTable` can still walk
+//! vanilla `Extends` chains without game data. A bundled hit does not take
+//! the disk-cache lock below, so parallel lint workers resolving the same
+//! base type do not serialize on each other for that lookup. A modified
+//! copy of a bundled script has a different digest and falls through to
+//! the on-disk cache / a fresh parse as before.
 //!
 //! The version check is a minimum-compatible-version check against
 //! [`version::MIN_COMPATIBLE_VERSION`], not an exact match against the
@@ -114,14 +115,14 @@ mod version;
 /// hits never take this lock.
 static CACHE_LOCK: Mutex<()> = Mutex::new(());
 
-fn uses_bundled_skyrim(game: Game) -> bool {
+fn has_bundled_blob(game: Game) -> bool {
     game.assert_supported();
-    game == Game::Skyrim
+    matches!(game, Game::Skyrim | Game::Fallout4)
 }
 
-/// Returns the cached AST for `source_path` if the bundled-script cache knows
-/// `source` (Skyrim only) or if the on-disk cache has a still-valid entry
-/// for `game`, `source`'s current content, `source_path`'s modification time,
+/// Returns the cached AST for `source_path` if `game`'s bundled-script cache
+/// knows `source` or if the on-disk cache has a still-valid entry for
+/// `game`, `source`'s current content, `source_path`'s modification time,
 /// and a linter version at or above [`version::MIN_COMPATIBLE_VERSION`].
 /// Returns `None` on any cache miss, mismatch, or error -- the caller
 /// should parse `source` fresh in that case. See [`ops::get_in`] for the
@@ -132,8 +133,8 @@ pub fn get_for_game(
     source_path: &Path,
     source: &str,
 ) -> Option<papyrus_parser::ast::Script> {
-    if uses_bundled_skyrim(game) {
-        if let Some(ast) = bundled::ast_for(source) {
+    if has_bundled_blob(game) {
+        if let Some(ast) = bundled::ast_for(game, source) {
             return Some(ast);
         }
     }
@@ -168,9 +169,9 @@ pub fn put_for_game(
     }
 }
 
-/// Returns the cached tokens for `source_path` if the bundled-script cache
-/// knows `source` (Skyrim only) or if the on-disk cache has a still-valid
-/// entry for `game`, `source`'s current content, `source_path`'s modification
+/// Returns the cached tokens for `source_path` if `game`'s bundled-script
+/// cache knows `source` or if the on-disk cache has a still-valid entry
+/// for `game`, `source`'s current content, `source_path`'s modification
 /// time, and a linter version at or above
 /// [`version::MIN_COMPATIBLE_VERSION`]. Returns `None` on any cache miss,
 /// mismatch, or error -- the caller should tokenize `source` fresh in that
@@ -181,8 +182,8 @@ pub fn get_tokens_for_game(
     source_path: &Path,
     source: &str,
 ) -> Option<Vec<papyrus_parser::token::Token>> {
-    if uses_bundled_skyrim(game) {
-        if let Some(tokens) = bundled::tokens_for(source) {
+    if has_bundled_blob(game) {
+        if let Some(tokens) = bundled::tokens_for(game, source) {
             return Some(tokens);
         }
     }
@@ -221,19 +222,20 @@ pub fn put_tokens_for_game(
 /// a token stream ready for `source` before something that parses/
 /// tokenizes `source` itself -- typically `papyrus_lints::lint()`/
 /// `repair()`, called with only the raw source text, never `source_path` --
-/// runs. A bundled-script hit (Skyrim only) primes both without touching the
-/// disk cache (or its lock). A disk cache hit for either already primes
-/// the matching in-memory cache as a side effect; a miss for either
-/// parses/tokenizes `source` once here instead (which populates the
-/// in-memory cache the same way a hit would) and writes the result to the
-/// disk cache for next time. Used by the desktop app's `lint_psc_file`/
-/// `repair_psc_file` commands and the CLI's own per-script lint loop, so
-/// relinting an unchanged script -- across separate desktop app commands
-/// or CLI invocations -- skips both re-parsing and re-tokenizing it there
-/// too, not just in `get_for_game`/`get_tokens_for_game`'s other existing
-/// callers. See [`ops::ensure_primed_in`].
+/// runs. A bundled-script hit (any game with a bundled blob) primes both
+/// without touching the disk cache (or its lock). A disk cache hit for
+/// either already primes the matching in-memory cache as a side effect; a
+/// miss for either parses/tokenizes `source` once here instead (which
+/// populates the in-memory cache the same way a hit would) and writes the
+/// result to the disk cache for next time. Used by the desktop app's
+/// `lint_psc_file`/`repair_psc_file` commands and the CLI's own per-script
+/// lint loop, so relinting an unchanged script -- across separate desktop
+/// app commands or CLI invocations -- skips both re-parsing and
+/// re-tokenizing it there too, not just in `get_for_game`/
+/// `get_tokens_for_game`'s other existing callers. See
+/// [`ops::ensure_primed_in`].
 pub fn ensure_primed_for_game(game: Game, source_path: &Path, source: &str) {
-    if uses_bundled_skyrim(game) && bundled::prime(source) {
+    if has_bundled_blob(game) && bundled::prime(game, source) {
         return;
     }
     let _guard = CACHE_LOCK
@@ -245,22 +247,24 @@ pub fn ensure_primed_for_game(game: Game, source_path: &Path, source: &str) {
     ops::ensure_primed_in_for_game(&dir, game, source_path, source, version::stamped_version());
 }
 
-/// Cached AST of a bundled vanilla/SKSE script looked up by `ScriptName`
-/// (case-insensitive) when `game` is Skyrim. Used by `FunctionTable` when no
-/// matching `.psc` is on disk. Returns `None` for any other game, including
-/// Fallout 4, and when the name is not in the bundled blob.
+/// Cached AST of a bundled vanilla/extender script looked up by
+/// `ScriptName` (case-insensitive) in `game`'s bundled blob. Used by
+/// `FunctionTable` when no matching `.psc` is on disk. Returns `None` for
+/// a game with no bundled blob (currently only Starfield), and when the
+/// name is not in that blob.
 pub fn ast_for_script_name(game: Game, name: &str) -> Option<papyrus_parser::ast::Script> {
-    if !uses_bundled_skyrim(game) {
+    if !has_bundled_blob(game) {
         return None;
     }
-    bundled::ast_for_name(name)
+    bundled::ast_for_name(game, name)
 }
 
-/// Whether the bundled vanilla/SKSE blob has a script whose `ScriptName`
-/// matches `name` (case-insensitive) when `game` is Skyrim. Always `false`
-/// for Fallout 4 and any other non-Skyrim game. Does not deserialize the AST.
+/// Whether `game`'s bundled vanilla/extender blob has a script whose
+/// `ScriptName` matches `name` (case-insensitive). Always `false` for a
+/// game with no bundled blob (currently only Starfield). Does not
+/// deserialize the AST.
 pub fn contains_script_name(game: Game, name: &str) -> bool {
-    uses_bundled_skyrim(game) && bundled::contains_name(name)
+    has_bundled_blob(game) && bundled::contains_name(game, name)
 }
 
 #[cfg(test)]
