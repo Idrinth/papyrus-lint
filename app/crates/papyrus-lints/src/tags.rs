@@ -13,6 +13,7 @@
 //! kind at a time, built on top of it.
 
 use crate::FIXABLE_RULE_IDS;
+pub use papyrus_lint_globals::WEBSITE_URL;
 
 /// How important fixing a rule's findings is to keeping a codebase
 /// maintainable over time. Independent of the `[error]`/`[warning]`/`[info]`
@@ -25,10 +26,6 @@ pub enum Importance {
     Medium,
     High,
 }
-
-/// The papyrus-lint website's own base URL, from which every rule's
-/// [`RuleTags::doc_url`] is built.
-pub const WEBSITE_URL: &str = "https://papyrus-lint.idrinth.de";
 
 /// Tags describing one rule, keyed by its [`Diagnostic::rule`](crate::Diagnostic::rule) id.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

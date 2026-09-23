@@ -71,7 +71,7 @@ fn emit_game_tables(context: &BuildContext, spec: GameTableSpec<'_>) {
             out.block("match game", |out| {
                 out.line(format!("papyrus_lint_globals::Game::Skyrim => SKYRIM_{const_name},"));
                 out.line(format!("papyrus_lint_globals::Game::Fallout4 => FALLOUT4_{const_name},"));
-                out.line("papyrus_lint_globals::Game::Starfield => panic!(\"Starfield is not supported yet\"),");
+                out.line("papyrus_lint_globals::Game::Starfield => panic!(\"{}\", papyrus_lint_globals::UNSUPPORTED_GAME_MESSAGE),");
             });
         },
     );

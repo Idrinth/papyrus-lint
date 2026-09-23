@@ -5,6 +5,9 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
+/// Error used when code reaches a recognized target that is not implemented.
+pub const UNSUPPORTED_GAME_MESSAGE: &str = "Starfield is not supported yet";
+
 /// The game whose Papyrus dialect and runtime APIs a project targets.
 ///
 /// Serialized as the lowercase config/cache key (`skyrim`, `fallout4`,
@@ -37,7 +40,7 @@ impl Game {
     /// Panics when this target is not supported by the linter yet.
     pub fn assert_supported(self) {
         if self == Self::Starfield {
-            panic!("Starfield is not supported yet");
+            panic!("{UNSUPPORTED_GAME_MESSAGE}");
         }
     }
 

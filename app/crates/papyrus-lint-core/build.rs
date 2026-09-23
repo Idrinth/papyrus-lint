@@ -109,7 +109,9 @@ fn compile_native_globals(manifest_dir: &str, out_dir: &str) {
         let const_name = match game {
             papyrus_lint_globals::Game::Fallout4 => "FALLOUT4_NATIVE_GLOBALS",
             papyrus_lint_globals::Game::Skyrim => "SKYRIM_NATIVE_GLOBALS",
-            papyrus_lint_globals::Game::Starfield => panic!("Starfield is not supported yet"),
+            papyrus_lint_globals::Game::Starfield => {
+                panic!("{}", papyrus_lint_globals::UNSUPPORTED_GAME_MESSAGE)
+            }
         };
         generated.push_str(&format!("const {const_name}: &[&str] = &[\n"));
         for script in &rules {
