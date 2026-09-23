@@ -24,11 +24,7 @@ fn with_required_subcommand(args: &[String]) -> Vec<String> {
         | Some("lint")
         | Some("fix")
         | Some("help")
-        | Some("version")
-        | Some("--version")
-        | Some("-V")
-        | Some("--help")
-        | Some("-h") => args.to_vec(),
+        | Some("version") => args.to_vec(),
         _ => {
             let mut prefixed = vec!["lint".to_string()];
             prefixed.extend(args.iter().cloned());
