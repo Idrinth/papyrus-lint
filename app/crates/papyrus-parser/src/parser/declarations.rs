@@ -265,6 +265,12 @@ impl Parser {
                 self.advance();
                 value = Some(self.parse_expr()?);
             }
+            while self.at_keyword(Keyword::Hidden)
+                || self.at_keyword(Keyword::Conditional)
+                || self.at_identifier_ignore_ascii_case("Const")
+            {
+                self.advance();
+            }
             self.expect_terminator()?;
             members.push(StructMember {
                 type_name,

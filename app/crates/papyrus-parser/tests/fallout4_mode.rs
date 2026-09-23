@@ -36,6 +36,31 @@ EndStruct
 }
 
 #[test]
+fn parses_struct_member_flags() {
+    let script = parse_with_mode(
+        r#"ScriptName FlaggedStruct
+
+Struct Tutorial
+    Int TimesDisplayed Hidden
+    Float LastTimeDisplayed = 1.0 Conditional
+    Bool IsEnabled = True const
+EndStruct
+"#,
+        GameEdition::Fallout4,
+    )
+    .expect("Fallout 4 struct member flags should parse");
+
+    let tutorial = &script.structs[0];
+    assert_eq!(tutorial.members.len(), 3);
+    assert_eq!(tutorial.members[0].name, "TimesDisplayed");
+    assert_eq!(tutorial.members[0].value, None);
+    assert_eq!(tutorial.members[1].name, "LastTimeDisplayed");
+    assert!(tutorial.members[1].value.is_some());
+    assert_eq!(tutorial.members[2].name, "IsEnabled");
+    assert!(tutorial.members[2].value.is_some());
+}
+
+#[test]
 fn parses_struct_member_named_parent() {
     let script = parse_with_mode(
         r#"ScriptName ObjectReference
