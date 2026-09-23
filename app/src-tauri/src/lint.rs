@@ -16,7 +16,8 @@ use serde::{Deserialize, Serialize};
 /// commands for the same project reuse one `RwLock`-guarded table through
 /// [`function_table::SharedFunctionTable`], matching the CLI's `--threads`
 /// workers rather than building an empty table per file. The exclusive lock
-/// is taken only when a lookup still has to parse a script.
+/// is taken only when a lookup still has to parse a script the parse-phase
+/// type closure did not already preload.
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct SharedTableKey {
     game: papyrus_lints::Game,
@@ -250,60 +251,50 @@ pub(crate) fn lint_psc_file(
     ))
 }
 
-/// Parses every one of `paths` up front (in parallel, mirroring
-/// `PapyrusLinterCLI`'s own parse phase — see
-/// `papyrus_lint_cli::run_lint_command`'s module docs) and preloads
-/// `context`'s shared function table ([`function_table::FunctionTable::preload`])
-/// from the result, before the frontend's own per-file `parse_psc_file`/
-/// [`lint_psc_file`] pair runs across the same batch (see `parsePscFiles` in
-/// `app/src/drop.ts`). Resolving an `Extends`/type reference to another
-/// script in `paths` is then a cache hit from the start for every one of
-/// those per-file calls, rather than a write-locked, on-demand parse the
-/// first one to need it triggers. A path that fails to read or parse is
-/// simply left out of the preload -- the frontend's own per-file call still
-/// reports that error as usual -- so this command never fails outright.
+/// Parses every one of `paths` up front and closes over the type names in
+/// those ASTs (mirroring `PapyrusLinterCLI`'s parse phase — see
+/// [`function_table::FunctionTable::parse_type_closure`]), then preloads
+/// `context`'s shared function table from the result. Referenced scripts
+/// that are not in `paths` — project files, lookup-root files, and bundled
+/// vanilla/extender scripts — are cached for analysis only and are not
+/// linted. Resolving one of them from a later per-file [`lint_psc_file`]
+/// is a cache hit rather than a write-locked on-demand parse. A path that
+/// fails to read or parse is simply left out of the seed preload (the
+/// frontend's own per-file call still reports that error); a referenced
+/// name that cannot be resolved is cached unresolved so lint does not
+/// retry it. This command never fails outright.
 #[tauri::command(async)]
 pub(crate) fn preload_project_scripts(paths: Vec<String>, context: ProjectLintContext) {
     let function_table = context.function_table();
     let script_paths: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
+    let game = context.config.game;
 
-    // Mirrors `parse_psc_file`'s own get-or-parse-and-cache logic (see
-    // `files.rs`), run for every script at once instead of one Tauri
-    // command per file, so this reuses whatever the disk-backed
-    // `ast_cache` already knows and only pays for a fresh parse on an
-    // actual cache miss.
-    let parsed: Vec<(PathBuf, Option<String>, Option<papyrus_parser::ast::Script>)> =
-        papyrus_lint_core::parallel::map_in_parallel(
-            script_paths,
-            papyrus_lint_core::parallel::default_thread_count(),
-            |path| {
-                let source = read_psc_source(&path).ok();
-                let ast = source.as_ref().and_then(|source| {
-                    if let Some(cached) =
-                        ast_cache::get_for_game(context.config.game, &path, source)
-                    {
-                        return Some(cached);
-                    }
-                    let parsed = papyrus_parser::parse(source).ok()?;
-                    ast_cache::put_for_game(context.config.game, &path, source, &parsed);
-                    if let Ok(tokens) = papyrus_parser::tokenize(source) {
-                        ast_cache::put_tokens_for_game(context.config.game, &path, source, &tokens);
-                    }
-                    Some(parsed)
-                });
-                (path, source, ast)
+    let closed = {
+        let table = function_table
+            .read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        table.parse_type_closure(
+            &script_paths,
+            function_table::TypeClosureOptions {
+                threads: papyrus_lint_core::parallel::default_thread_count(),
+                total_files: None,
             },
-        );
+            |path| parse_project_script(game, path),
+            |parsed| parsed.ast.as_ref(),
+            || {},
+        )
+    };
 
-    let entries: Vec<function_table::PreloadedScript> = parsed
+    let entries: Vec<function_table::PreloadedScript> = script_paths
         .iter()
-        .filter_map(|(path, source, ast)| {
-            let source = source.as_deref()?;
+        .zip(closed.seeds.iter())
+        .filter_map(|(path, parsed)| {
+            let source = parsed.source.as_deref()?;
             let name_lower = path.file_stem()?.to_str()?.to_ascii_lowercase();
             Some(function_table::PreloadedScript {
                 path,
                 name_lower,
-                ast: ast.as_ref(),
+                ast: parsed.ast.as_ref(),
                 source,
             })
         })
@@ -313,6 +304,29 @@ pub(crate) fn preload_project_scripts(paths: Vec<String>, context: ProjectLintCo
         .write()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     table.preload(entries);
+    table.preload_dependencies(&closed.dependencies);
+    table.preload_name_slots(&closed.bundled, &closed.unresolved);
+}
+
+struct ProjectScriptParse {
+    source: Option<String>,
+    ast: Option<papyrus_parser::ast::Script>,
+}
+
+fn parse_project_script(game: papyrus_lints::Game, path: &Path) -> ProjectScriptParse {
+    let source = read_psc_source(path).ok();
+    let ast = source.as_ref().and_then(|source| {
+        if let Some(cached) = ast_cache::get_for_game(game, path, source) {
+            return Some(cached);
+        }
+        let parsed = papyrus_parser::parse(source).ok()?;
+        ast_cache::put_for_game(game, path, source, &parsed);
+        if let Ok(tokens) = papyrus_parser::tokenize(source) {
+            ast_cache::put_tokens_for_game(game, path, source, &tokens);
+        }
+        Some(parsed)
+    });
+    ProjectScriptParse { source, ast }
 }
 
 /// Lists every function and property available on an object of type

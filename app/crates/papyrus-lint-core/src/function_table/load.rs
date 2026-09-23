@@ -14,7 +14,7 @@ use crate::source_encoding::read_psc_source;
 /// known-scripts map) or from analysis-only [`FunctionTable::with_lookup_roots`]
 /// directories.
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum ScriptOrigin {
+pub(super) enum ScriptOrigin {
     Project,
     Lookup,
 }
@@ -35,7 +35,7 @@ fn lookup_script_cache() -> &'static Mutex<HashMap<PathBuf, LookupScriptEntry>> 
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-fn file_mtime(path: &Path) -> Option<SystemTime> {
+pub(super) fn file_mtime(path: &Path) -> Option<SystemTime> {
     std::fs::metadata(path).ok()?.modified().ok()
 }
 
@@ -48,7 +48,11 @@ fn cached_lookup_script(path: &Path, mtime: SystemTime) -> Option<Option<ScriptF
         .and_then(|entry| (entry.mtime == mtime).then(|| entry.script.clone()))
 }
 
-fn store_lookup_script(path: PathBuf, mtime: SystemTime, script: Option<ScriptFunctions>) {
+pub(super) fn store_lookup_script(
+    path: PathBuf,
+    mtime: SystemTime,
+    script: Option<ScriptFunctions>,
+) {
     let mut cache = lookup_script_cache()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
@@ -130,7 +134,10 @@ impl FunctionTable {
             .map(|(path, _)| path)
     }
 
-    fn resolve_script_path_kind(&self, name_lower: &str) -> Option<(PathBuf, ScriptOrigin)> {
+    pub(super) fn resolve_script_path_kind(
+        &self,
+        name_lower: &str,
+    ) -> Option<(PathBuf, ScriptOrigin)> {
         let primary = match &self.known_scripts {
             Some(known) => known.get(&name_lower.to_ascii_lowercase()).cloned(),
             None => match &self.script_index {
@@ -215,6 +222,49 @@ impl FunctionTable {
 
         self.scripts.insert(name_lower.clone(), script);
         self.script_mtimes.insert(name_lower, mtime);
+    }
+
+    /// Caches bundled and known-missing names discovered while parsing, so
+    /// lint does not take the write lock to rediscover them.
+    ///
+    /// A name that now resolves to a `.psc` (or, for an "unresolved" name,
+    /// to the bundled blob) is left alone: [`Self::preload`] / a later
+    /// [`Self::ensure_loaded`] must win, so a same-stem file in a
+    /// higher-priority root is never overwritten by a blob or a negative
+    /// cache entry.
+    pub fn preload_name_slots(&mut self, bundled: &[String], unresolved: &[String]) {
+        for name_lower in bundled {
+            self.insert_bundled_slot(name_lower);
+        }
+        for name_lower in unresolved {
+            self.insert_unresolved_slot(name_lower);
+        }
+    }
+
+    fn insert_bundled_slot(&mut self, name_lower: &str) {
+        if self.scripts.contains_key(name_lower) {
+            return;
+        }
+        let (resolved_path, mtime) = self.resolved_path_and_mtime(name_lower);
+        if resolved_path.is_some() {
+            return;
+        }
+        let script = bundled_script_functions(self.game, name_lower);
+        self.scripts.insert(name_lower.to_string(), script);
+        self.script_mtimes.insert(name_lower.to_string(), mtime);
+    }
+
+    fn insert_unresolved_slot(&mut self, name_lower: &str) {
+        if self.scripts.contains_key(name_lower) {
+            return;
+        }
+        let (resolved_path, mtime) = self.resolved_path_and_mtime(name_lower);
+        if resolved_path.is_some() || crate::ast_cache::contains_script_name(self.game, name_lower)
+        {
+            return;
+        }
+        self.scripts.insert(name_lower.to_string(), None);
+        self.script_mtimes.insert(name_lower.to_string(), mtime);
     }
 
     /// Resolves `name_lower` to a path and that path's current mtime, the

@@ -7,15 +7,15 @@
 //! and folds the results into the final report (see
 //! [`crate::report::fold_and_flush_report`]).
 //!
-//! Parsing every script before linting any of them (rather than interleaving
-//! the two per file, as this pipeline did before) means [`FunctionTable`]'s
-//! cross-script cache can be filled from that first pass's own already-owned
-//! ASTs ([`FunctionTable::preload`]) instead of a lint worker parsing an
-//! `Extends` ancestor on demand under [`SharedFunctionTable`]'s exclusive
-//! write lock -- the parse phase touches no shared state at all (each
-//! script's read/parse is independent), so only the rare name [`preload`]
-//! doesn't cover (typically a vanilla ancestor outside the project) still
-//! takes that lock during the lint phase.
+//! Parsing does not stop at the lint targets. When a script's AST names
+//! another type, that type is resolved the same way
+//! [`papyrus_lint_core::function_table::FunctionTable::ensure_loaded`] would
+//! and, if it is a `.psc`, parsed too ([`FunctionTable::parse_type_closure`]).
+//! Those extra scripts are preloaded for analysis only — they are not
+//! linted. Bundled vanilla/extender scripts are loaded from the blob, and
+//! names that resolve nowhere are cached unresolved, so the lint phase's
+//! [`SharedFunctionTable`] takes its write lock only for a name the closure
+//! never saw.
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -24,7 +24,9 @@ use std::sync::Mutex;
 use std::sync::RwLock;
 
 use papyrus_lint_core::ast_cache;
-use papyrus_lint_core::function_table::{FunctionTable, PreloadedScript};
+use papyrus_lint_core::function_table::{
+    ClosedScripts, FunctionTable, PreloadedScript, TypeClosureOptions,
+};
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, PscEncoding};
 
 use crate::args::LintArgs;
@@ -117,43 +119,40 @@ struct ParsedFile {
     tokens: Option<Vec<papyrus_parser::token::Token>>,
 }
 
-/// Reads and parses every one of `script_paths`, optionally in parallel via
-/// `--threads`, reporting "Parsing: n/total" as each one finishes when
-/// `progress` is set. Goes through [`ast_cache::ensure_primed`] exactly as
-/// the lint phase used to right before linting each file, so the disk
-/// cache (and the bundled vanilla/SKSE blob) are still consulted first --
-/// this just does that once per file, up front, instead of interleaved with
-/// linting -- then reads back the now-current AST/tokens
-/// ([`ast_cache::get`]/[`ast_cache::get_tokens`]) to keep in memory for
-/// [`preload_function_table`] and the lint phase to reuse. A file that
-/// fails to read is reported as its own `Err`, same message as before this
-/// pipeline was split into two phases; one that reads but fails to parse
-/// still gets a `ParsedFile` (with `ast`/`tokens` left `None`), matching
-/// what [`crate::run_lint::lint_file`] already does with an unparseable
-/// script today.
+/// Reads and parses every lint target, then every script a type name in
+/// those ASTs resolves to, optionally in parallel via `--threads`.
+/// Reports "Parsing: n/total" as each on-disk file finishes when `progress`
+/// is set; `total` grows as referenced `.psc` files are enqueued. Lint
+/// targets keep their input order in [`ClosedScripts::seeds`]. Referenced
+/// scripts that are not lint targets are returned separately and must not
+/// be appended to `script_paths`.
 fn parse_scripts(
+    function_table: &FunctionTable,
     script_paths: &[PathBuf],
     game: papyrus_lints::Game,
     thread_count: usize,
     progress: bool,
     progress_stdout: &Mutex<&mut (dyn Write + Send)>,
-) -> Vec<Result<ParsedFile, String>> {
-    let total_scripts = script_paths.len();
+) -> ClosedScripts<Result<ParsedFile, String>> {
+    let total_scripts = AtomicUsize::new(script_paths.len());
     let progress_completed = AtomicUsize::new(0);
-    papyrus_lint_core::parallel::map_in_parallel(
-        (0..total_scripts).collect(),
-        thread_count,
-        |file_index| {
-            let result = parse_script(game, &script_paths[file_index]);
+    function_table.parse_type_closure(
+        script_paths,
+        TypeClosureOptions {
+            threads: thread_count,
+            total_files: progress.then_some(&total_scripts),
+        },
+        |script_path| parse_script(game, script_path),
+        |parsed| parsed.as_ref().ok().and_then(|parsed| parsed.ast.as_ref()),
+        || {
             if progress {
                 report_file_progress(
                     &progress_completed,
-                    total_scripts,
+                    &total_scripts,
                     progress_stdout,
                     "Parsing",
                 );
             }
-            result
         },
     )
 }
@@ -173,22 +172,23 @@ fn parse_script(game: papyrus_lints::Game, script_path: &Path) -> Result<ParsedF
 }
 
 /// Merges every successfully parsed script's AST into `function_table`
-/// ([`FunctionTable::preload`]) before it is shared read-write across lint
-/// workers, so resolving an `Extends`/type reference to another script in
-/// this same run is a cache hit from the start rather than a write-locked
-/// on-demand parse. A script that failed to read has nothing to preload
-/// (its `Err` is surfaced again, unchanged, when the lint phase re-indexes
-/// it); one that read but failed to parse still contributes a
-/// cached-unresolved entry, same as [`FunctionTable::ensure_loaded`] would
-/// cache for it on demand.
+/// ([`FunctionTable::preload`]), including referenced scripts that are not
+/// lint targets, before it is shared read-write across lint workers.
+/// Bundled names and names that resolved nowhere are cached too
+/// ([`FunctionTable::preload_name_slots`]), so resolving one of them during
+/// lint is a cache hit rather than a write-locked on-demand parse. A lint
+/// target that failed to read has nothing to preload (its `Err` is
+/// surfaced again, unchanged, when the lint phase re-indexes it); one that
+/// read but failed to parse still contributes a cached-unresolved entry,
+/// same as [`FunctionTable::ensure_loaded`] would cache for it on demand.
 fn preload_function_table(
     function_table: &mut FunctionTable,
     script_paths: &[PathBuf],
-    parsed_files: &[Result<ParsedFile, String>],
+    parsed: &ClosedScripts<Result<ParsedFile, String>>,
 ) {
     let entries: Vec<PreloadedScript> = script_paths
         .iter()
-        .zip(parsed_files.iter())
+        .zip(parsed.seeds.iter())
         .filter_map(|(path, parsed)| {
             let parsed = parsed.as_ref().ok()?;
             let name_lower = path.file_stem()?.to_str()?.to_ascii_lowercase();
@@ -201,6 +201,8 @@ fn preload_function_table(
         })
         .collect();
     function_table.preload(entries);
+    function_table.preload_dependencies(&parsed.dependencies);
+    function_table.preload_name_slots(&parsed.bundled, &parsed.unresolved);
 }
 
 /// Parses every resolved script up front (see [`parse_scripts`]), preloads
@@ -231,6 +233,7 @@ fn process_scripts<'a>(
     let progress_stdout: Mutex<&mut (dyn Write + Send)> = Mutex::new(stdout);
 
     let parsed_files = parse_scripts(
+        &function_table,
         &script_paths,
         lint_config.game,
         lint.thread_count,
@@ -251,6 +254,7 @@ fn process_scripts<'a>(
         share_function_table(function_table);
 
     let progress_completed = AtomicUsize::new(0);
+    let lint_total = AtomicUsize::new(total_scripts);
 
     let lint_context = LintContext {
         lint_config: &lint_config,
@@ -292,7 +296,7 @@ fn process_scripts<'a>(
                         progress: lint.progress,
                     },
                     &progress_completed,
-                    total_scripts,
+                    &lint_total,
                     &progress_stdout,
                 )
             },
@@ -307,15 +311,13 @@ fn process_scripts<'a>(
 /// Every script is otherwise independent, so this table's own cache (of
 /// other scripts' cross-referenced signatures) is the only thing
 /// `--threads` workers actually share -- through `SharedFunctionTable`,
-/// which, now that [`preload_function_table`] has already filled in every
-/// script this run itself resolved before this table is ever shared, takes
-/// a write lock only for a name that isn't one of them (typically a vanilla
-/// `Extends` ancestor outside the project), and a shared read lock for
-/// every other lookup. Progress ("--progress") is likewise reported through
-/// a shared counter rather than each worker's own position in
-/// `script_paths`, since completion order no longer matches input order
-/// once more than one thread is involved -- the final report still is, via
-/// `map_in_parallel`'s ordering guarantee.
+/// which, now that [`preload_function_table`] has already closed over the
+/// type names the parse phase saw, takes a write lock only for a name that
+/// closure missed. Progress ("--progress") is reported through a shared
+/// counter rather than each worker's own position in `script_paths`, since
+/// completion order no longer matches input order once more than one thread
+/// is involved -- the final report still is, via `map_in_parallel`'s
+/// ordering guarantee.
 fn share_function_table(
     function_table: FunctionTable,
 ) -> (PathBuf, Vec<String>, RwLock<FunctionTable>) {
@@ -330,15 +332,15 @@ fn share_function_table(
 fn process_script(
     lint_context: &LintContext,
     script_paths: &[PathBuf],
-    parsed_files: &[Result<ParsedFile, String>],
+    parsed_files: &ClosedScripts<Result<ParsedFile, String>>,
     function_table_root: &Path,
     job: ScriptJob,
     progress_completed: &AtomicUsize,
-    total_scripts: usize,
+    total_scripts: &AtomicUsize,
     progress_stdout: &Mutex<&mut (dyn Write + Send)>,
 ) -> Result<FileOutcome, String> {
     let script_path = &script_paths[job.file_index];
-    let parsed = parsed_files[job.file_index]
+    let parsed = parsed_files.seeds[job.file_index]
         .as_ref()
         .map_err(Clone::clone)?;
 
@@ -420,7 +422,7 @@ fn process_script(
 
 fn report_file_progress(
     progress_completed: &AtomicUsize,
-    total_scripts: usize,
+    total_scripts: &AtomicUsize,
     progress_stdout: &Mutex<&mut (dyn Write + Send)>,
     label: &str,
 ) {
@@ -428,6 +430,7 @@ fn report_file_progress(
     let mut stdout = progress_stdout
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let total_scripts = total_scripts.load(Ordering::SeqCst);
     let _ = write!(stdout, "\r{label}: {completed}/{total_scripts} files");
     let _ = stdout.flush();
 }

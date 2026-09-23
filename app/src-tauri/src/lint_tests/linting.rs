@@ -107,3 +107,38 @@ fn lint_psc_file_resolves_argument_types_through_additional_script_roots() {
             && diagnostic.message.contains("got String")
     }));
 }
+
+#[test]
+fn preload_project_scripts_closes_over_a_parent_that_was_not_in_the_batch() {
+    let dir = tempdir().unwrap();
+    let source_dir = dir.path().join("scripts/source");
+    std::fs::create_dir_all(&source_dir).unwrap();
+    let base_path = source_dir.join("BaseScript.psc");
+    std::fs::write(
+        &base_path,
+        "ScriptName BaseScript\n\nFunction DoIt()\nEndFunction\n",
+    )
+    .unwrap();
+    let derived_path = source_dir.join("DerivedScript.psc");
+    std::fs::write(
+        &derived_path,
+        "ScriptName DerivedScript extends BaseScript\n\nFunction DoIt()\nEndFunction\n",
+    )
+    .unwrap();
+
+    let context = ProjectLintContext {
+        root: dir.path().to_string_lossy().into_owned(),
+        ..Default::default()
+    };
+
+    preload_project_scripts(
+        vec![derived_path.to_string_lossy().into_owned()],
+        context.clone(),
+    );
+
+    let diagnostics = lint_psc_file(derived_path.to_string_lossy().into_owned(), context).unwrap();
+
+    assert!(diagnostics
+        .iter()
+        .any(|diagnostic| diagnostic.rule == "function-override"));
+}

@@ -25,10 +25,12 @@ pub use crate::script_functions::{FunctionSignature, Member, PropertySignature};
 use crate::script_locator::{cached_lookup_index, ScriptIndex};
 
 mod ancestry;
+mod closure;
 mod external;
 mod load;
 mod shared;
 
+pub use closure::{ClosedScripts, ParsedDependency, TypeClosureOptions};
 pub use shared::SharedFunctionTable;
 
 /// Result of answering a lookup from already-cached scripts, without
@@ -217,20 +219,33 @@ impl FunctionTable {
     /// search's own first-match-wins order).
     ///
     /// Once this returns, [`SharedFunctionTable`]'s exclusive write lock is
-    /// only ever needed afterward for a name never passed here -- typically
-    /// a vanilla `Extends` ancestor outside the project.
+    /// only ever needed afterward for a name never passed here and never
+    /// reached by [`Self::parse_type_closure`] — typically a typo, a dynamic
+    /// name, or a type introduced when `--fix` rewrote a file.
     pub fn preload(&mut self, entries: Vec<PreloadedScript<'_>>) {
         for entry in entries {
             if self.scripts.contains_key(&entry.name_lower) {
                 continue;
             }
-            let (resolved_path, mtime) = self.resolved_path_and_mtime(&entry.name_lower);
-            if resolved_path.as_deref() != Some(entry.path) {
+            let Some((resolved_path, origin)) = self.resolve_script_path_kind(&entry.name_lower)
+            else {
+                continue;
+            };
+            if resolved_path.as_path() != entry.path {
                 continue;
             }
+            let mtime = load::file_mtime(&resolved_path);
             let functions = entry
                 .ast
                 .map(|ast| ScriptFunctions::from_script(ast, entry.source));
+            // Lookup-root scripts used to reach this cache only through
+            // `ensure_loaded`. Preload is now the path that fills them, so a
+            // later table in this process still skips the re-read.
+            if origin == load::ScriptOrigin::Lookup {
+                if let Some(mtime) = mtime {
+                    load::store_lookup_script(resolved_path, mtime, functions.clone());
+                }
+            }
             self.scripts.insert(entry.name_lower.clone(), functions);
             self.script_mtimes.insert(entry.name_lower, mtime);
         }

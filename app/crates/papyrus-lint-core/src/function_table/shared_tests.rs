@@ -62,9 +62,12 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
         Some(true)
     );
     assert!(shared.ancestry_fully_known("Child"));
+    assert!(shared.function_access("Helpers", "Run").is_some());
+    assert!(shared.property_access("Properties", "Name").is_some());
 
     // After the write-path fills the cache, a second pass is a read-lock
-    // hit (no `ensure_loaded`).
+    // hit (no `ensure_loaded`). Holding the read guard across the calls
+    // below deadlocks if any of them still takes the write lock.
     assert!(matches!(
         table
             .read()
@@ -72,7 +75,12 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
             .lookup_function_cached("Helpers", "Run"),
         super::super::CacheProbe::Hit(Some(_))
     ));
+    let _held = table
+        .read()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     assert!(shared.lookup("Helpers", "Run").is_some());
+    assert!(shared.function_access("Helpers", "Run").is_some());
+    assert!(shared.property_access("Properties", "Name").is_some());
 }
 
 #[test]
@@ -90,6 +98,8 @@ fn cached_negative_results_are_returned_without_a_write_lock() {
     assert_eq!(shared.is_nodiscard_function("Known", "Missing"), None);
     assert_eq!(shared.deprecated_function("Known", "Missing"), None);
     assert_eq!(shared.function_has_side_effects("Known", "Missing"), None);
+    assert!(shared.function_access("Known", "Missing").is_none());
+    assert!(shared.property_access("Known", "Missing").is_none());
 
     // Every query above has a complete cached answer. Holding another read
     // guard proves that the adapter does not try to upgrade those hits to a
@@ -105,6 +115,8 @@ fn cached_negative_results_are_returned_without_a_write_lock() {
     assert_eq!(shared.is_nodiscard_function("Known", "Missing"), None);
     assert_eq!(shared.deprecated_function("Known", "Missing"), None);
     assert_eq!(shared.function_has_side_effects("Known", "Missing"), None);
+    assert!(shared.function_access("Known", "Missing").is_none());
+    assert!(shared.property_access("Known", "Missing").is_none());
     assert!(shared.list_members("Known").is_empty());
     assert!(shared.property_types("Known").is_empty());
     assert!(shared.ancestor_states("Known").is_empty());
