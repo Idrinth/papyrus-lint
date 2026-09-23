@@ -123,6 +123,106 @@ fn parse_blob_rejects_a_truncated_or_unknown_header() {
 }
 
 #[test]
+fn empty_blob_round_trips_without_entries() {
+    let blob = bundled_blob::encode_blob(&[]);
+    let parsed = bundled_blob::parse_blob(&blob).unwrap();
+
+    assert!(parsed.by_md5.is_empty());
+    assert!(parsed.by_name.is_empty());
+    assert_eq!(parsed.payload_start, blob.len());
+}
+
+#[test]
+fn parse_blob_rejects_each_truncated_index_boundary() {
+    let source = "ScriptName TruncatedIndex\n";
+    let entry = PackedEntry {
+        md5: md5::compute(source.as_bytes()).0,
+        name: "truncatedindex".to_string(),
+        ast: bundled_blob::serialize_ast(&papyrus_parser::parse(source).unwrap()).unwrap(),
+        tokens: bundled_blob::serialize_tokens(&papyrus_parser::tokenize(source).unwrap()).unwrap(),
+    };
+    let blob = bundled_blob::encode_blob(&[entry]);
+    let payload_start = bundled_blob::parse_blob(&blob).unwrap().payload_start;
+
+    for end in 12..payload_start {
+        assert!(
+            bundled_blob::parse_blob(&blob[..end]).is_none(),
+            "accepted an index truncated at byte {end}"
+        );
+    }
+}
+
+#[test]
+fn parse_blob_rejects_a_non_utf8_script_name() {
+    let source = "ScriptName InvalidName\n";
+    let entry = PackedEntry {
+        md5: md5::compute(source.as_bytes()).0,
+        name: "invalidname".to_string(),
+        ast: bundled_blob::serialize_ast(&papyrus_parser::parse(source).unwrap()).unwrap(),
+        tokens: bundled_blob::serialize_tokens(&papyrus_parser::tokenize(source).unwrap()).unwrap(),
+    };
+    let mut blob = bundled_blob::encode_blob(&[entry]);
+    // The first name starts after the 12-byte header, 16-byte MD5, and
+    // 2-byte name length.
+    blob[30] = 0xff;
+
+    assert!(bundled_blob::parse_blob(&blob).is_none());
+}
+
+#[test]
+fn empty_script_names_are_not_added_to_the_name_index() {
+    let source = "ScriptName UnnamedIndexEntry\n";
+    let ast = papyrus_parser::parse(source).unwrap();
+    let tokens = papyrus_parser::tokenize(source).unwrap();
+    let blob = bundled_blob::encode_blob(&[PackedEntry {
+        md5: md5::compute(source.as_bytes()).0,
+        name: String::new(),
+        ast: bundled_blob::serialize_ast(&ast).unwrap(),
+        tokens: bundled_blob::serialize_tokens(&tokens).unwrap(),
+    }]);
+    let parsed = bundled_blob::parse_blob(&blob).unwrap();
+
+    assert_eq!(parsed.by_md5.len(), 1);
+    assert!(parsed.by_name.is_empty());
+}
+
+#[test]
+fn decoders_reject_out_of_bounds_and_invalid_payloads() {
+    let out_of_bounds = bundled_blob::IndexEntry {
+        ast_offset: u64::MAX,
+        ast_len: 1,
+        tokens_offset: 0,
+        tokens_len: u32::MAX,
+    };
+    assert!(bundled_blob::decode_ast(&[], &out_of_bounds).is_none());
+    assert!(bundled_blob::decode_tokens(&[], &out_of_bounds).is_none());
+
+    let invalid_bincode = bundled_blob::IndexEntry {
+        ast_offset: 0,
+        ast_len: 1,
+        tokens_offset: 0,
+        tokens_len: 1,
+    };
+    assert!(bundled_blob::decode_ast(&[0xff], &invalid_bincode).is_none());
+    assert!(bundled_blob::decode_tokens(&[0xff], &invalid_bincode).is_none());
+}
+
+#[test]
+fn parse_cache_rejects_invalid_gzip_and_invalid_blob_contents() {
+    assert!(parse_cache(b"not gzip data").is_none());
+
+    use std::io::Write;
+    let mut compressed = Vec::new();
+    {
+        let mut encoder =
+            flate2::write::GzEncoder::new(&mut compressed, flate2::Compression::default());
+        encoder.write_all(b"not a bundled cache blob").unwrap();
+        encoder.finish().unwrap();
+    }
+    assert!(parse_cache(&compressed).is_none());
+}
+
+#[test]
 fn bundled_cache_covers_the_skyrim_vanilla_script_archive() {
     assert!(
         entry_count(SKYRIM) >= 14_000,
