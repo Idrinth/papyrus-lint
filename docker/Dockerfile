@@ -2,6 +2,8 @@ FROM alpine:3.24
 
 # One published image per built-in preset (strict/standard/careful).
 ARG PRESET=strict
+# One published image per supported game (skyrim,fallout4,starfield).
+ARG GAME=skyrim
 # Overwrite base files with extender files
 ARG EXTENDER=no
 
@@ -25,7 +27,7 @@ RUN case "$PRESET" in \
         strict|standard|careful) ;; \
         *) echo "unsupported PRESET '$PRESET' (expected strict, standard, or careful)" >&2; exit 1 ;; \
     esac \
-    && PapyrusLinterCLI init --preset "$PRESET" \
+    && PapyrusLinterCLI init --preset "$PRESET" --game "${GAME}" \
     && awk ' \
         BEGIN { replaced = 0 } \
         /^lookup_script_roots:/ { \
