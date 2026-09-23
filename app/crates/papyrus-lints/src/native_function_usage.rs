@@ -53,7 +53,7 @@ impl AstLint for Collect {
         if !function.is_native {
             return;
         }
-        if is_base_game_native(&self.script_name, &function.name, ctx.config.game.as_str()) {
+        if is_base_game_native(&self.script_name, &function.name, ctx.config.game) {
             return;
         }
         self.store.emit(
@@ -88,7 +88,7 @@ pub fn check(
 /// Whether `(script_name, function_name)` matches a base-game native
 /// function for `game`, case-insensitively (Papyrus identifiers are
 /// case-insensitive).
-fn is_base_game_native(script_name: &str, function_name: &str, game: &str) -> bool {
+fn is_base_game_native(script_name: &str, function_name: &str, game: crate::Game) -> bool {
     native_methods_for(game).iter().any(|rule| {
         rule.object.eq_ignore_ascii_case(script_name)
             && rule.function.eq_ignore_ascii_case(function_name)

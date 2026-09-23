@@ -161,9 +161,9 @@ fn parse_scripts(
 fn parse_script(game: papyrus_lints::Game, script_path: &Path) -> Result<ParsedFile, String> {
     let (source, encoding) = read_psc_source_with_encoding(script_path)
         .map_err(|err| format!("error: failed to read {}: {err}", script_path.display()))?;
-    ast_cache::ensure_primed_for_game(game.as_str(), script_path, &source);
-    let ast = ast_cache::get_for_game(game.as_str(), script_path, &source);
-    let tokens = ast_cache::get_tokens_for_game(game.as_str(), script_path, &source);
+    ast_cache::ensure_primed_for_game(game, script_path, &source);
+    let ast = ast_cache::get_for_game(game, script_path, &source);
+    let tokens = ast_cache::get_tokens_for_game(game, script_path, &source);
     Ok(ParsedFile {
         source,
         encoding,

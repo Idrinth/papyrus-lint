@@ -102,14 +102,14 @@ pub(crate) fn parse_psc_file(
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
 
-    if let Some(cached) = ast_cache::get_for_game(game.as_str(), path, &source) {
+    if let Some(cached) = ast_cache::get_for_game(game, path, &source) {
         return Ok(cached);
     }
 
     let script = papyrus_parser::parse(&source).map_err(|err| err.to_string())?;
-    ast_cache::put_for_game(game.as_str(), path, &source, &script);
+    ast_cache::put_for_game(game, path, &source, &script);
     if let Ok(tokens) = papyrus_parser::tokenize(&source) {
-        ast_cache::put_tokens_for_game(game.as_str(), path, &source, &tokens);
+        ast_cache::put_tokens_for_game(game, path, &source, &tokens);
     }
     Ok(script)
 }

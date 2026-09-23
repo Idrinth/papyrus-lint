@@ -114,8 +114,9 @@ mod version;
 /// hits never take this lock.
 static CACHE_LOCK: Mutex<()> = Mutex::new(());
 
-fn uses_bundled_skyrim(game: &str) -> bool {
-    game.to_ascii_lowercase().parse() == Ok(Game::Skyrim)
+fn uses_bundled_skyrim(game: Game) -> bool {
+    game.assert_supported();
+    game == Game::Skyrim
 }
 
 /// Returns the cached AST for `source_path` if the bundled-script cache knows
@@ -127,7 +128,7 @@ fn uses_bundled_skyrim(game: &str) -> bool {
 /// in-memory priming a disk hit also does (a bundled hit primes the same
 /// way).
 pub fn get_for_game(
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
 ) -> Option<papyrus_parser::ast::Script> {
@@ -146,11 +147,12 @@ pub fn get_for_game(
 /// for later [`get_for_game`] calls under the same `game`. Any failure
 /// (e.g. an unwritable install directory) is silently ignored.
 pub fn put_for_game(
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
     ast: &papyrus_parser::ast::Script,
 ) {
+    game.assert_supported();
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
@@ -175,7 +177,7 @@ pub fn put_for_game(
 /// case. See [`ops::get_tokens_in`] for the in-memory priming a disk hit
 /// also does (a bundled hit primes the same way).
 pub fn get_tokens_for_game(
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
 ) -> Option<Vec<papyrus_parser::token::Token>> {
@@ -194,11 +196,12 @@ pub fn get_tokens_for_game(
 /// cache for later [`get_tokens_for_game`] calls under the same `game`. Any
 /// failure (e.g. an unwritable install directory) is silently ignored.
 pub fn put_tokens_for_game(
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
     tokens: &[papyrus_parser::token::Token],
 ) {
+    game.assert_supported();
     let _guard = CACHE_LOCK
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
@@ -229,7 +232,7 @@ pub fn put_tokens_for_game(
 /// or CLI invocations -- skips both re-parsing and re-tokenizing it there
 /// too, not just in `get_for_game`/`get_tokens_for_game`'s other existing
 /// callers. See [`ops::ensure_primed_in`].
-pub fn ensure_primed_for_game(game: &str, source_path: &Path, source: &str) {
+pub fn ensure_primed_for_game(game: Game, source_path: &Path, source: &str) {
     if uses_bundled_skyrim(game) && bundled::prime(source) {
         return;
     }
@@ -246,7 +249,7 @@ pub fn ensure_primed_for_game(game: &str, source_path: &Path, source: &str) {
 /// (case-insensitive) when `game` is Skyrim. Used by `FunctionTable` when no
 /// matching `.psc` is on disk. Returns `None` for any other game, including
 /// Fallout 4, and when the name is not in the bundled blob.
-pub fn ast_for_script_name(game: &str, name: &str) -> Option<papyrus_parser::ast::Script> {
+pub fn ast_for_script_name(game: Game, name: &str) -> Option<papyrus_parser::ast::Script> {
     if !uses_bundled_skyrim(game) {
         return None;
     }
@@ -256,7 +259,7 @@ pub fn ast_for_script_name(game: &str, name: &str) -> Option<papyrus_parser::ast
 /// Whether the bundled vanilla/SKSE blob has a script whose `ScriptName`
 /// matches `name` (case-insensitive) when `game` is Skyrim. Always `false`
 /// for Fallout 4 and any other non-Skyrim game. Does not deserialize the AST.
-pub fn contains_script_name(game: &str, name: &str) -> bool {
+pub fn contains_script_name(game: Game, name: &str) -> bool {
     uses_bundled_skyrim(game) && bundled::contains_name(name)
 }
 

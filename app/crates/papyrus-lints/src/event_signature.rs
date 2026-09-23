@@ -62,7 +62,7 @@ impl AstLint for Collect {
         if !function.is_event {
             return;
         }
-        let Some(rule) = find_rule(&function.name, ctx.config.game.as_str()) else {
+        let Some(rule) = find_rule(&function.name, ctx.config.game) else {
             return;
         };
         if signature_matches(&function.params, rule.args) {
@@ -103,7 +103,7 @@ pub fn check(
 
 /// Looks up a known event's signature by name, case-insensitively (Papyrus
 /// identifiers are case-insensitive).
-fn find_rule(name: &str, game: &str) -> Option<&'static KnownEventRule> {
+fn find_rule(name: &str, game: crate::Game) -> Option<&'static KnownEventRule> {
     known_events_for(game)
         .iter()
         .find(|rule| rule.event.eq_ignore_ascii_case(name))

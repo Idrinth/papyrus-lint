@@ -238,7 +238,7 @@ pub(crate) fn lint_psc_file(
 ) -> Result<Vec<papyrus_lints::Diagnostic>, String> {
     let path = Path::new(&path);
     let source = read_psc_source(path).map_err(|err| err.to_string())?;
-    ast_cache::ensure_primed_for_game(context.config.game.as_str(), path, &source);
+    ast_cache::ensure_primed_for_game(context.config.game, path, &source);
     let function_table = context.function_table();
     let mut shared = function_table::SharedFunctionTable(function_table.as_ref());
     Ok(lint_with_compile_check(
@@ -279,19 +279,14 @@ pub(crate) fn preload_project_scripts(paths: Vec<String>, context: ProjectLintCo
                 let source = read_psc_source(&path).ok();
                 let ast = source.as_ref().and_then(|source| {
                     if let Some(cached) =
-                        ast_cache::get_for_game(context.config.game.as_str(), &path, source)
+                        ast_cache::get_for_game(context.config.game, &path, source)
                     {
                         return Some(cached);
                     }
                     let parsed = papyrus_parser::parse(source).ok()?;
-                    ast_cache::put_for_game(context.config.game.as_str(), &path, source, &parsed);
+                    ast_cache::put_for_game(context.config.game, &path, source, &parsed);
                     if let Ok(tokens) = papyrus_parser::tokenize(source) {
-                        ast_cache::put_tokens_for_game(
-                            context.config.game.as_str(),
-                            &path,
-                            source,
-                            &tokens,
-                        );
+                        ast_cache::put_tokens_for_game(context.config.game, &path, source, &tokens);
                     }
                     Some(parsed)
                 });

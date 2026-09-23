@@ -4,6 +4,8 @@
 
 use std::path::Path;
 
+use papyrus_lint_globals::Game;
+
 #[cfg(test)]
 use crate::entry::valid_entry_in;
 use crate::entry::valid_entry_in_for_game;
@@ -26,7 +28,7 @@ pub(crate) fn get_in(
 
 pub(crate) fn get_in_for_game(
     dir: &Path,
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
 ) -> Option<papyrus_parser::ast::Script> {
@@ -51,7 +53,7 @@ pub(crate) fn get_tokens_in(
 
 pub(crate) fn get_tokens_in_for_game(
     dir: &Path,
-    game: &str,
+    game: Game,
     source_path: &Path,
     source: &str,
 ) -> Option<Vec<papyrus_parser::token::Token>> {
