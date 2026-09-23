@@ -192,7 +192,7 @@ fn doctor_checks_each_configured_lookup_script_root() {
     assert_eq!(code, 1);
     assert!(stderr.is_empty());
     assert!(stdout.contains(&format!(
-        "[ok] lookup script root {} exists",
+        "[ok] lookup script root (analysis only) {} exists",
         existing_lookup_root.display()
     )));
     assert!(stdout.contains(&format!(
@@ -228,7 +228,7 @@ fn doctor_loads_lookup_script_roots_from_an_explicit_config() {
     assert_eq!(code, 0);
     assert!(stderr.is_empty());
     assert!(stdout.contains(&format!(
-        "[ok] lookup script root {} exists",
+        "[ok] lookup script root (analysis only) {} exists",
         lookup_root.display()
     )));
     assert!(stdout.contains("PapyrusLinterCLI doctor: no problems found."));
