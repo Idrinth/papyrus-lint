@@ -17,6 +17,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::time::SystemTime;
 
 use crate::script_functions::ScriptFunctions;
 pub use crate::script_functions::{FunctionSignature, Member, PropertySignature};
@@ -87,13 +88,13 @@ pub struct FunctionTable {
     /// [`Self::with_lookup_roots`]), built the same way as `script_index`.
     lookup_index: Option<Arc<ScriptIndex>>,
     scripts: HashMap<String, Option<ScriptFunctions>>,
-    /// mtime (seconds) of the file each `scripts` entry was loaded from,
+    /// mtime of the file each `scripts` entry was loaded from,
     /// or `None` when that name was cached as unresolved. Compared on the
     /// next [`Self::ensure_loaded`] so a long-lived table (the desktop
     /// app's process-wide shared table, or a CLI table reused across a
     /// `fix` that rewrote a dependency) picks up an edited `.psc` instead
     /// of serving the previous parse.
-    script_mtimes: HashMap<String, Option<u64>>,
+    script_mtimes: HashMap<String, Option<SystemTime>>,
 }
 
 impl FunctionTable {
