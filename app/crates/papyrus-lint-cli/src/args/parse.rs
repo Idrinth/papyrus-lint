@@ -16,8 +16,7 @@ use super::{ArgsError, ParsedCommand};
 
 /// Top-level clap parser for a full `PapyrusLinterCLI` invocation. Every
 /// action (`init`/`preset`/`doctor`/`lint`/`fix`/`help`/`version`) is a
-/// subcommand. `help`/`version` also accept the usual flag spellings as
-/// aliases so `-h`/`--help` and `-V`/`--version` still work.
+/// subcommand.
 #[derive(Parser, Debug)]
 #[command(
     no_binary_name = true,
@@ -68,17 +67,13 @@ pub(super) enum RootCommand {
     #[command(
         disable_help_flag = true,
         disable_version_flag = true,
-        disable_help_subcommand = true,
-        visible_alias = "--help",
-        alias = "-h"
+        disable_help_subcommand = true
     )]
     Help,
     #[command(
         disable_help_flag = true,
         disable_version_flag = true,
-        disable_help_subcommand = true,
-        visible_alias = "--version",
-        alias = "-V"
+        disable_help_subcommand = true
     )]
     Version,
 }
@@ -143,10 +138,6 @@ pub(crate) struct DoctorRawArgs {
 /// The main lint/fix/`--blob` invocation's flags and options.
 #[derive(Args, Debug)]
 pub(super) struct RawArgs {
-    #[arg(long, short = 'h')]
-    pub(super) help: bool,
-    #[arg(long, short = 'V')]
-    pub(super) version: bool,
     #[arg(long)]
     pub(super) quiet_warnings: bool,
     #[arg(long)]
