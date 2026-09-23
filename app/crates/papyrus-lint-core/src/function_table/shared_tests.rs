@@ -79,8 +79,26 @@ fn shared_function_table_forwards_every_external_signature_lookup() {
         .read()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     assert!(shared.lookup("Helpers", "Run").is_some());
+    assert!(shared.is_subtype("Child", "Helpers"));
+    assert!(shared.has_property("Properties", "Name"));
+    assert!(shared.has_field("Properties", "Age"));
+    assert!(shared.has_state("States", "Active"));
+    assert_eq!(
+        shared.ancestor_states("States"),
+        vec![("active".to_string(), false)]
+    );
+    assert_eq!(shared.is_global_function("Helpers", "Run"), Some(true));
+    assert_eq!(shared.is_nodiscard_function("Helpers", "Run"), Some(false));
+    assert!(shared.deprecated_function("Helpers", "Run").is_some());
+    assert_eq!(
+        shared.function_has_side_effects("Helpers", "Run"),
+        Some(false)
+    );
+    assert!(shared.ancestry_fully_known("Child"));
     assert!(shared.function_access("Helpers", "Run").is_some());
     assert!(shared.property_access("Properties", "Name").is_some());
+    assert_eq!(shared.property_types("Properties"), vec!["String"]);
+    assert_eq!(shared.list_members("Properties").len(), 1);
 }
 
 #[test]
