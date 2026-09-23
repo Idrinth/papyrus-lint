@@ -206,6 +206,22 @@ impl Parser {
         self.expect_identifier()
     }
 
+    /// Fallout 4 struct member names. Creation Kit accepts words the
+    /// lexer treats as keywords (`parent`, `self`) as field names —
+    /// F4SE's `ObjectReference.ConnectPoint` ships `string parent`.
+    /// Only used from [`Self::parse_struct`], which is Fallout 4 only.
+    fn expect_struct_member_name(&mut self) -> PResult<String> {
+        if matches!(self.kind(), TokenKind::Keyword(Keyword::Parent)) {
+            self.advance();
+            return Ok("parent".to_string());
+        }
+        if matches!(self.kind(), TokenKind::Keyword(Keyword::Self_)) {
+            self.advance();
+            return Ok("self".to_string());
+        }
+        self.expect_identifier()
+    }
+
     fn expect(&mut self, kind: TokenKind) -> PResult<Token> {
         if *self.kind() == kind {
             Ok(self.advance())
@@ -447,7 +463,7 @@ impl Parser {
             }
             let member_line = self.current().line;
             let type_name = self.parse_type_name()?;
-            let member_name = self.expect_identifier()?;
+            let member_name = self.expect_struct_member_name()?;
             let mut value = None;
             if matches!(self.kind(), TokenKind::Assign) {
                 self.advance();

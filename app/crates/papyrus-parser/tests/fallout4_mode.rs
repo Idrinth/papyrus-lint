@@ -35,6 +35,31 @@ EndStruct
 }
 
 #[test]
+fn parses_struct_member_named_parent() {
+    let script = parse_with_mode(
+        r#"ScriptName ObjectReference
+
+Struct ConnectPoint
+    string parent
+    string name
+    float roll
+    float pitch
+EndStruct
+"#,
+        GameEdition::Fallout4,
+    )
+    .expect("FO4 struct member named parent should parse");
+
+    assert_eq!(script.structs.len(), 1);
+    let connect = &script.structs[0];
+    assert_eq!(connect.name, "ConnectPoint");
+    assert_eq!(connect.members.len(), 4);
+    assert_eq!(connect.members[0].name, "parent");
+    assert_eq!(connect.members[0].type_name.name, "string");
+    assert_eq!(connect.members[1].name, "name");
+}
+
+#[test]
 fn parses_struct_instantiation_via_new_without_array_brackets() {
     let script = parse_with_mode(
         r#"ScriptName StructUsage
