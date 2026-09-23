@@ -12,7 +12,7 @@
 
 mod help;
 mod parse;
-mod validate;
+pub(super) mod validate;
 
 use std::path::PathBuf;
 
@@ -34,7 +34,6 @@ use crate::output::{ColorChoice, OutputFormat};
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum ArgsError {
     Usage,
-    JsonAndFormatConflict,
     InvalidFormat(String),
     HashSourceRequiresAi,
     InvalidColor(String),
@@ -104,7 +103,12 @@ pub(crate) enum ParsedCommand {
 /// before any of the actual work begins. Subcommands (`init`, `preset`,
 /// `doctor`) are handled by [`parse_cli`] instead.
 pub(crate) fn parse_run_args(args: &[String]) -> Result<ParsedCommand, ArgsError> {
-    validate::validate(parse::parse_raw(args)?)
+    validate::validate(parse::parse_raw(args)?, false)
+}
+
+#[cfg(test)]
+pub(crate) fn parse_fix_args(args: &[String]) -> Result<ParsedCommand, ArgsError> {
+    validate::validate(parse::parse_raw(args)?, true)
 }
 
 #[cfg(test)]

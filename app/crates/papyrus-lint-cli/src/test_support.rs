@@ -15,13 +15,34 @@ pub(crate) fn write_file(path: &Path, contents: &str) {
     fs::write(path, contents).expect("failed to write file");
 }
 
+fn with_required_subcommand(args: &[String]) -> Vec<String> {
+    match args.first().map(String::as_str) {
+        None
+        | Some("init")
+        | Some("preset")
+        | Some("doctor")
+        | Some("lint")
+        | Some("fix")
+        | Some("--version")
+        | Some("-V")
+        | Some("--help")
+        | Some("-h") => args.to_vec(),
+        _ => {
+            let mut prefixed = vec!["lint".to_string()];
+            prefixed.extend(args.iter().cloned());
+            prefixed
+        }
+    }
+}
+
 pub(crate) fn run_captured_with_terminal_stdout(
     args: &[String],
     stdout_is_terminal: bool,
 ) -> (u8, String, String) {
+    let args = with_required_subcommand(args);
     let mut stdout = Vec::new();
     let mut stderr = Vec::new();
-    let code = run(args, &mut stdout, &mut stderr, stdout_is_terminal);
+    let code = run(&args, &mut stdout, &mut stderr, stdout_is_terminal);
     (
         code,
         String::from_utf8(stdout).expect("stdout should be utf8"),
