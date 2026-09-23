@@ -24,6 +24,7 @@ fn args_error_message(err: &ArgsError) -> String {
     match err {
         ArgsError::Usage => unreachable!("Usage is reported via USAGE, not a one-line error"),
         ArgsError::InvalidFormat(_)
+        | ArgsError::InvalidDoctorFormat(_)
         | ArgsError::HashSourceRequiresAi
         | ArgsError::InvalidColor(_) => format_flag_error(err),
         ArgsError::BlobWithPathArgument
@@ -43,6 +44,9 @@ fn format_flag_error(err: &ArgsError) -> String {
     match err {
         ArgsError::InvalidFormat(value) => {
             format!("error: --format must be 'plain', 'json', or 'ai', got '{value}'")
+        }
+        ArgsError::InvalidDoctorFormat(value) => {
+            format!("error: doctor --format must be 'plain' or 'json', got '{value}'")
         }
         ArgsError::HashSourceRequiresAi => "error: --hash-source requires --format ai".to_string(),
         ArgsError::InvalidColor(value) => {

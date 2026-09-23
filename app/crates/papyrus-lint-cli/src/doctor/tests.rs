@@ -11,6 +11,24 @@ fn doctor_reports_usage_error_without_a_path() {
 }
 
 #[test]
+fn doctor_rejects_unknown_and_unsupported_formats() {
+    for format in ["xml", "ai"] {
+        let (code, stdout, stderr) = run_captured(&[
+            "doctor".to_string(),
+            format!("--format={format}"),
+            "Example.psc".to_string(),
+        ]);
+
+        assert_eq!(code, 2);
+        assert!(stdout.is_empty());
+        assert_eq!(
+            stderr,
+            format!("error: doctor --format must be 'plain' or 'json', got '{format}'\n")
+        );
+    }
+}
+
+#[test]
 fn doctor_reports_ok_for_an_existing_psc_with_no_config() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     let source_dir = dir.path().join("scripts/source");

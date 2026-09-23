@@ -23,6 +23,18 @@ fn doctor_reports_a_healthy_project_through_the_binary_entry_point() {
 }
 
 #[test]
+fn doctor_rejects_an_unknown_format_through_the_binary_entry_point() {
+    let output = run_cli(&["doctor", "--format=yaml", "Example.psc"]);
+
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    assert_eq!(
+        String::from_utf8(output.stderr).expect("stderr should be UTF-8"),
+        "error: doctor --format must be 'plain' or 'json', got 'yaml'\n"
+    );
+}
+
+#[test]
 fn doctor_json_reports_failed_checks_and_a_failure_status_through_the_binary() {
     let dir = tempfile::tempdir().expect("failed to create temp directory");
     let missing_script = dir.path().join("scripts/source/Missing.psc");
