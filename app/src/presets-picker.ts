@@ -1,5 +1,5 @@
 import { type ConfigSelectionResult, isSelectableGame } from "./main-types";
-import { type ProjectInfo } from "./project-state";
+import { type ProjectInfo } from "./backend-types";
 import { loadConfigPresets } from "./presets-api";
 import { configPickerContinueEl, configPickerDetectedEl, configPickerDetectedPathEl, configPickerEl, configPickerGameEl, configPickerGameSelectEl, configPickerNoneEl, configPickerPathInputEl, configPickerPresetListEl, configPickerUsePathButtonEl } from "./presets-state";
 // Shows the "select this project's configuration" dialog useProjectDir

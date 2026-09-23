@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
+import { type ProjectInfo } from "./backend-types";
 import { dirnameOf, isPscPath } from "./path";
-import { type ProjectInfo } from "./project-state";
 export async function loadProjectInfo(dir: string): Promise<ProjectInfo> {
   try {
     return await invoke<ProjectInfo>("load_project_info", { dir });

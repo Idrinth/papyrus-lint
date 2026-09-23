@@ -30,7 +30,7 @@ import {
   setSettingsLocked,
   useProjectDir,
 } from "./project-settings";
-import { configPathOverride } from "./project-state";
+import { configPathOverride } from "./project-settings-dom";
 
 describe("project settings handlers", () => {
   it("handleCompilerPathChanged persists the path once a project dir is known", async () => {
