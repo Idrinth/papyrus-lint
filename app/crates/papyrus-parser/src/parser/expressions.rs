@@ -138,7 +138,12 @@ impl Parser {
         loop {
             if self.at_keyword(Keyword::As) {
                 self.advance();
-                let type_name = self.expect_qualified_name()?;
+                let type_name = self.parse_type_name()?;
+                let type_name = if type_name.is_array {
+                    format!("{}[]", type_name.name)
+                } else {
+                    type_name.name
+                };
                 left = Expr::Cast {
                     value: Box::new(left),
                     type_name,
