@@ -1,11 +1,13 @@
 import { loadAndApplyLintConfig, selectGame } from "./config-ui";
+import { type ProjectInfo } from "./backend-types";
 import { currentLintConfig, type Game } from "./config-types";
 import { markLintResultsStale } from "./drop";
 import { type ConfigSelectionResult } from "./main-types";
 import { applyConfigPreset } from "./presets-api";
 import { promptForConfigSelection } from "./presets-picker";
 import { loadCompileCheck, loadCompilerPath, loadLookupScriptRoots, loadProjectInfo, loadScriptRoots, saveCompileCheck, saveCompilerPath, saveLookupScriptRoots, saveScriptRoots } from "./project-io";
-import { type ProjectInfo, bindProjectSettingsDom, compileCheckEl, compilerPathEl, configPathOverride, configPathOverrideEl, currentProjectDir, detectedScriptRootsEl, lookupScriptRootsEl, scriptRootsEl, setCurrentCompileCheck, setCurrentCompilerPath, setCurrentLookupScriptRoots, setCurrentProjectDir, setCurrentScriptRoots, settingsFieldsetEl, settingsLockedNoticeEl, usedConfigurationFileEl } from "./project-state";
+import { bindProjectSettingsDom, compileCheckEl, compilerPathEl, configPathOverride, configPathOverrideEl, detectedScriptRootsEl, lookupScriptRootsEl, scriptRootsEl, settingsFieldsetEl, settingsLockedNoticeEl, usedConfigurationFileEl } from "./project-settings-dom";
+import { currentProjectDir, setCurrentCompileCheck, setCurrentCompilerPath, setCurrentLookupScriptRoots, setCurrentProjectDir, setCurrentScriptRoots } from "./project-state";
 
 export function applyProjectInfoToUI(info: ProjectInfo) {
   if (detectedScriptRootsEl) {

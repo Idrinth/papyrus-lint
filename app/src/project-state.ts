@@ -1,8 +1,3 @@
-export interface ProjectInfo {
-  detected_script_roots: string[];
-  used_configuration_file: string | null;
-}
-
 // The project root (see projectDirForAchlist/projectDirForPscPath), also
 // used by the "Argument type check" lint to resolve calls to functions
 // declared on other scripts under it.
@@ -34,16 +29,6 @@ export let currentAchlistScriptRoots: string[] = [];
 // the project's additional_script_roots equivalent. Runtime-only, like
 // currentAchlistScriptRoots above.
 export let currentPpjImportRoots: string[] = [];
-
-export let configPathOverrideEl: HTMLInputElement | null = null;
-export let compilerPathEl: HTMLInputElement | null = null;
-export let compileCheckEl: HTMLInputElement | null = null;
-export let scriptRootsEl: HTMLTextAreaElement | null = null;
-export let lookupScriptRootsEl: HTMLTextAreaElement | null = null;
-export let detectedScriptRootsEl: HTMLOutputElement | null = null;
-export let usedConfigurationFileEl: HTMLOutputElement | null = null;
-export let settingsFieldsetEl: HTMLFieldSetElement | null = null;
-export let settingsLockedNoticeEl: HTMLElement | null = null;
 
 export function setCurrentProjectDir(dir: string | null) {
   currentProjectDir = dir;
@@ -84,23 +69,4 @@ export function setAchlistScriptRoots(roots: string[]) {
 // non-.ppj input is dropped.
 export function setPpjImportRoots(roots: string[]) {
   currentPpjImportRoots = roots;
-}
-
-// Reads the Settings tab's "Configuration file" override input, trimmed. An
-// empty string means no override is set, so the lint config is auto-detected
-// from the current project directory as usual.
-export function configPathOverride(): string {
-  return configPathOverrideEl?.value.trim() ?? "";
-}
-
-export function bindProjectSettingsDom() {
-  configPathOverrideEl = document.querySelector("#config-path-override");
-  compilerPathEl = document.querySelector("#compiler-path");
-  compileCheckEl = document.querySelector("#compile-check");
-  scriptRootsEl = document.querySelector("#script-roots");
-  lookupScriptRootsEl = document.querySelector("#lookup-script-roots");
-  detectedScriptRootsEl = document.querySelector("#detected-script-roots");
-  usedConfigurationFileEl = document.querySelector("#used-configuration-file");
-  settingsFieldsetEl = document.querySelector("#settings-fieldset");
-  settingsLockedNoticeEl = document.querySelector("#settings-locked-notice");
 }

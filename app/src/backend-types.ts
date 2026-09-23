@@ -21,6 +21,11 @@ export interface PscParseOutcome {
   findings: Diagnostic[];
 }
 
+export interface ProjectInfo {
+  detected_script_roots: string[];
+  used_configuration_file: string | null;
+}
+
 // Mirrors papyrus_lints::tags::Importance's lowercase serde rename.
 export type TagImportance = "low" | "medium" | "high";
 export const TAG_IMPORTANCES: TagImportance[] = ["low", "medium", "high"];
