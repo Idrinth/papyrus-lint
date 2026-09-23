@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
-use std::time::UNIX_EPOCH;
+use std::time::SystemTime;
 
 use super::FunctionTable;
 use crate::script_functions::ScriptFunctions;
@@ -26,7 +26,7 @@ enum ScriptOrigin {
 /// earlier in the session, matching how the on-disk [`crate::ast_cache`]
 /// already reuses a previous CLI invocation.
 struct LookupScriptEntry {
-    mtime_secs: u64,
+    mtime: SystemTime,
     script: Option<ScriptFunctions>,
 }
 
@@ -35,25 +35,24 @@ fn lookup_script_cache() -> &'static Mutex<HashMap<PathBuf, LookupScriptEntry>> 
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-fn file_mtime_secs(path: &Path) -> Option<u64> {
-    let modified = std::fs::metadata(path).ok()?.modified().ok()?;
-    Some(modified.duration_since(UNIX_EPOCH).ok()?.as_secs())
+fn file_mtime(path: &Path) -> Option<SystemTime> {
+    std::fs::metadata(path).ok()?.modified().ok()
 }
 
-fn cached_lookup_script(path: &Path, mtime_secs: u64) -> Option<Option<ScriptFunctions>> {
+fn cached_lookup_script(path: &Path, mtime: SystemTime) -> Option<Option<ScriptFunctions>> {
     let cache = lookup_script_cache()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     cache
         .get(path)
-        .and_then(|entry| (entry.mtime_secs == mtime_secs).then(|| entry.script.clone()))
+        .and_then(|entry| (entry.mtime == mtime).then(|| entry.script.clone()))
 }
 
-fn store_lookup_script(path: PathBuf, mtime_secs: u64, script: Option<ScriptFunctions>) {
+fn store_lookup_script(path: PathBuf, mtime: SystemTime, script: Option<ScriptFunctions>) {
     let mut cache = lookup_script_cache()
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    cache.insert(path, LookupScriptEntry { mtime_secs, script });
+    cache.insert(path, LookupScriptEntry { mtime, script });
 }
 
 /// Process-wide cache of scripts loaded from the bundled vanilla/SKSE blob
@@ -185,9 +184,7 @@ impl FunctionTable {
     pub(super) fn ensure_loaded(&mut self, type_name: &str) {
         let name_lower = type_name.to_ascii_lowercase();
         let resolved = self.resolve_script_path_kind(&name_lower);
-        let mtime = resolved
-            .as_ref()
-            .and_then(|(path, _)| file_mtime_secs(path));
+        let mtime = resolved.as_ref().and_then(|(path, _)| file_mtime(path));
         if self.scripts.contains_key(&name_lower)
             && self.script_mtimes.get(&name_lower) == Some(&mtime)
         {
@@ -197,11 +194,11 @@ impl FunctionTable {
         let script = match resolved {
             Some((path, origin)) => {
                 if origin == ScriptOrigin::Lookup {
-                    if let Some(mtime_secs) = file_mtime_secs(&path) {
-                        if let Some(cached) = cached_lookup_script(&path, mtime_secs) {
+                    if let Some(mtime) = file_mtime(&path) {
+                        if let Some(cached) = cached_lookup_script(&path, mtime) {
                             cached
                         } else {
-                            let loaded = load_script_functions(self.game, &path);
+                            let loaded = load_script_functions(&self.game, &path);
                             store_lookup_script(path, mtime_secs, loaded.clone());
                             loaded
                         }
@@ -228,11 +225,9 @@ impl FunctionTable {
     pub(super) fn resolved_path_and_mtime(
         &self,
         name_lower: &str,
-    ) -> (Option<PathBuf>, Option<u64>) {
+    ) -> (Option<PathBuf>, Option<SystemTime>) {
         let resolved = self.resolve_script_path_kind(name_lower);
-        let mtime = resolved
-            .as_ref()
-            .and_then(|(path, _)| file_mtime_secs(path));
+        let mtime = resolved.as_ref().and_then(|(path, _)| file_mtime(path));
         (resolved.map(|(path, _)| path), mtime)
     }
 
@@ -241,9 +236,7 @@ impl FunctionTable {
     /// `Some(None)` is a cached unresolved type.
     pub(super) fn get_cached(&self, name: &str) -> Option<&Option<ScriptFunctions>> {
         let resolved = self.resolve_script_path_kind(name);
-        let mtime = resolved
-            .as_ref()
-            .and_then(|(path, _)| file_mtime_secs(path));
+        let mtime = resolved.as_ref().and_then(|(path, _)| file_mtime(path));
         (self.script_mtimes.get(name) == Some(&mtime)).then(|| self.scripts.get(name))?
     }
 }
