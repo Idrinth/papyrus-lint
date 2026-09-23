@@ -247,10 +247,6 @@ impl Parser {
                 && (self.at_keyword(Keyword::DebugOnly) || self.at_keyword(Keyword::BetaOnly))
             {
                 self.advance();
-            } else if self.mode == GameEdition::Fallout4
-                && (self.at_keyword(Keyword::DebugOnly) || self.at_keyword(Keyword::BetaOnly))
-            {
-                self.advance();
             } else {
                 break;
             }
