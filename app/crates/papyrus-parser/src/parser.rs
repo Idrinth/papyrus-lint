@@ -21,12 +21,11 @@ type PResult<T> = Result<T, ParseError>;
 /// Which game's Papyrus dialect a [`Parser`] accepts. Skyrim is the
 /// original language `papyrus-parser` was built for; Fallout 4 adds a
 /// handful of new constructs (custom `Struct`s, property `Group`s, the
-/// `DebugOnly`/`BetaOnly` function flags, colon-qualified names such
-/// as `DLC03:Foo` on types, `extends`, `new`, and calls, and remote /
-/// custom events of the form `Event OtherScript.EventName(...)`) on top
-/// of it. A construct that's Fallout 4 only is rejected the same way an
-/// unrecognized token always is -- as an ordinary [`ParseError`] -- when
-/// parsed in [`Self::Skyrim`] mode.
+/// `DebugOnly`/`BetaOnly` script and function flags, and colon-qualified names such
+/// as `DLC03:Foo` on types, `extends`, `new`, and calls) on top of it. A construct that's
+/// Fallout 4 only is rejected the same way an unrecognized token always
+/// is -- as an ordinary [`ParseError`] -- when parsed in [`Self::Skyrim`]
+/// mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GameEdition {
     #[default]
@@ -175,14 +174,11 @@ impl Parser {
         Ok(name)
     }
 
-    /// Parses a Fallout 4 namespaced script name such as
-    /// `User:MyQuestScript` while retaining ordinary script names.
-    ///
-    /// Accepted in every [`GameEdition`]: project resolution looks up
-    /// namespaced `ScriptName`s without selecting Fallout 4 mode.
+    /// Parses a script name. Fallout 4 allows colon-qualified names such
+    /// as `User:MyQuestScript`; Skyrim script names stay a single
+    /// identifier, so a `:` is still unexpected there.
     fn expect_script_name(&mut self) -> PResult<String> {
-        let name = self.expect_identifier()?;
-        self.append_colon_segments(name)
+        self.expect_qualified_name()
     }
 
     /// An identifier, or in [`GameEdition::Fallout4`] only a
@@ -247,6 +243,10 @@ impl Parser {
                 // itself is Fallout 4 specific.
                 self.advance();
                 is_native = true;
+            } else if self.mode == GameEdition::Fallout4
+                && (self.at_keyword(Keyword::DebugOnly) || self.at_keyword(Keyword::BetaOnly))
+            {
+                self.advance();
             } else {
                 break;
             }
