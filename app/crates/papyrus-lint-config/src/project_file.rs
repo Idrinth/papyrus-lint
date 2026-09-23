@@ -419,5 +419,5 @@ pub(crate) fn seed_lookup_script_roots(project: &mut ProjectFile) {
 }
 
 #[cfg(test)]
-#[path = "project_file_tests.rs"]
+#[path = "project_file_tests/mod.rs"]
 mod tests;
