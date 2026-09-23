@@ -69,6 +69,7 @@ def run_cli(
     output.parent.mkdir(parents=True, exist_ok=True)
     command = [
         str(cli),
+        "lint",
         "--format",
         "plain",
         "--short-paths",
