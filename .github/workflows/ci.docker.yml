@@ -78,7 +78,7 @@ jobs:
 
       - name: Smoke test container image
         run: |
-          docker run --rm papyrus-lint:${{ matrix.preset }} --version
+          docker run --rm papyrus-lint:${{ matrix.preset }} version
 
           mkdir -p smoke-project
           cp app/crates/papyrus-lint-core/tests/fixtures/typea.psc smoke-project/
