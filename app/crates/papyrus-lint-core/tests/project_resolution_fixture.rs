@@ -46,7 +46,8 @@ fn indexed_resolution_uses_search_root_precedence_and_reports_later_conflicts() 
     let index = build_script_index(project.path(), &[]);
     let resolved = find_psc_file_in_index(&index, "EXAMPLE")
         .expect("case-insensitive indexed lookup should resolve");
-    let diagnostics = conflicting_script_versions_in_index(&resolved, &index);
+    let diagnostics =
+        conflicting_script_versions_in_index(&resolved, &index, project.path(), false);
 
     assert_eq!(resolved, preferred);
     assert_eq!(diagnostics.len(), 1);
@@ -90,7 +91,8 @@ fn direct_conflict_detection_scans_conventional_and_configured_roots() {
         "identical".to_string(),
         "missing".to_string(),
     ];
-    let diagnostics = conflicting_script_versions(&selected, project.path(), &additional_roots);
+    let diagnostics =
+        conflicting_script_versions(&selected, project.path(), &additional_roots, false);
     let mut expected_conflicts = [conventional_conflict, configured_conflict];
     expected_conflicts.sort();
 
@@ -167,8 +169,12 @@ fn identical_known_script_copies_do_not_report_a_conflict() {
     write_file(&first, "ScriptName Example\n");
     write_file(&second, "ScriptName Example\n");
 
-    let diagnostics =
-        conflicting_script_versions_among(&first, &[first.clone(), second.clone(), second]);
+    let diagnostics = conflicting_script_versions_among(
+        &first,
+        &[first.clone(), second.clone(), second],
+        project.path(),
+        false,
+    );
 
     assert!(diagnostics.is_empty());
 }
@@ -193,6 +199,8 @@ fn known_script_conflicts_are_sorted_and_deduplicated() {
             conflict_a.clone(),
             conflict_b.clone(),
         ],
+        project.path(),
+        false,
     );
 
     assert_eq!(diagnostics.len(), 2);

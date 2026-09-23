@@ -258,6 +258,8 @@ fn process_scripts<'a>(
         function_table_additional_roots: &function_table_additional_roots,
         scripts_by_name: &scripts_by_name,
         script_index: &script_index,
+        project_root: &function_table_root,
+        short_paths: lint.short_paths,
         strict_achlist_scope,
         compile_check,
         compiler_path: &compiler_path,
