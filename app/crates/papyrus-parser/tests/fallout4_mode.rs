@@ -1,5 +1,6 @@
-//! Fallout 4's Papyrus dialect: custom `Struct`s, property `Group`s, and
-//! the `DebugOnly`/`BetaOnly` script and function flags. All are opt-in through
+//! Fallout 4's Papyrus dialect: custom `Struct`s, property `Group`s,
+//! the `DebugOnly`/`BetaOnly` script and function flags, and remote / custom events
+//! (`Event OtherScript.EventName(...)`). All are opt-in through
 //! [`GameEdition::Fallout4`]; [`parse`] (always Skyrim mode) rejects them
 //! exactly as it would any other unrecognized construct.
 
@@ -295,6 +296,106 @@ EndFunction
         Some("Namespace:Helper")
     );
     assert_eq!(script.functions[2].name, "Namespace:DoThing");
+}
+
+#[test]
+fn parses_remote_events_in_fallout4_mode() {
+    let script = parse_with_mode(
+        r#"ScriptName BoS301Script
+
+Event WorkshopParentScript.WorkshopObjectBuilt(WorkshopParentScript akSender, Var[] akArgs)
+EndEvent
+
+Event Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLoc)
+EndEvent
+
+Event ObjectReference.OnLoad(ObjectReference akSender)
+EndEvent
+
+Event RoachScareScript.flee(RoachScareScript akSender, Var[] akArgs)
+EndEvent
+
+Event DLC03:SomeQuest.OnStageSet(DLC03:SomeQuest akSender, Var[] akArgs)
+EndEvent
+
+State Active
+    Event ObjectReference.OnActivate(ObjectReference akSender, ObjectReference akActionRef)
+    EndEvent
+EndState
+"#,
+        GameEdition::Fallout4,
+    )
+    .expect("Fallout 4 remote events should parse");
+
+    assert_eq!(script.functions.len(), 5);
+    assert!(script.functions.iter().all(|function| function.is_event));
+    assert_eq!(
+        script.functions[0].name,
+        "WorkshopParentScript.WorkshopObjectBuilt"
+    );
+    assert_eq!(script.functions[0].params.len(), 2);
+    assert_eq!(
+        script.functions[0].params[0].type_name.name,
+        "WorkshopParentScript"
+    );
+    assert_eq!(script.functions[0].params[0].name, "akSender");
+    assert_eq!(script.functions[0].params[1].type_name.name, "Var");
+    assert!(script.functions[0].params[1].type_name.is_array);
+    assert_eq!(script.functions[1].name, "Actor.OnLocationChange");
+    assert_eq!(script.functions[1].params.len(), 3);
+    assert_eq!(script.functions[2].name, "ObjectReference.OnLoad");
+    assert_eq!(script.functions[3].name, "RoachScareScript.flee");
+    assert_eq!(script.functions[4].name, "DLC03:SomeQuest.OnStageSet");
+    assert_eq!(
+        script.functions[4].params[0].type_name.name,
+        "DLC03:SomeQuest"
+    );
+
+    assert_eq!(script.states.len(), 1);
+    assert_eq!(script.states[0].functions.len(), 1);
+    assert!(script.states[0].functions[0].is_event);
+    assert_eq!(
+        script.states[0].functions[0].name,
+        "ObjectReference.OnActivate"
+    );
+    assert_eq!(
+        script.states[0].functions[0].state.as_deref(),
+        Some("Active")
+    );
+}
+
+#[test]
+fn fallout4_mode_still_parses_plain_events() {
+    let script = parse_with_mode(
+        "ScriptName LocalEvents\n\nEvent OnInit()\nEndEvent\n",
+        GameEdition::Fallout4,
+    )
+    .expect("plain events should still parse in Fallout 4 mode");
+    assert!(script.functions[0].is_event);
+    assert_eq!(script.functions[0].name, "OnInit");
+}
+
+#[test]
+fn skyrim_mode_rejects_remote_events() {
+    let error = parse(
+        "ScriptName Rejected\n\nEvent Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLoc)\nEndEvent\n",
+    )
+    .expect_err("remote events are Fallout 4 only");
+    assert!(matches!(error, PapyrusError::Parse(_)));
+    assert!(
+        error.to_string().contains("expected LParen, found Dot"),
+        "Skyrim mode should keep rejecting the `.` after an event name, got {error}"
+    );
+}
+
+#[test]
+fn fallout4_mode_rejects_dotted_function_names() {
+    let error = parse_with_mode(
+        "ScriptName Rejected\n\nFunction Actor.DoThing()\nEndFunction\n",
+        GameEdition::Fallout4,
+    )
+    .expect_err("dotted names are only valid on Event declarations");
+    assert!(matches!(error, PapyrusError::Parse(_)));
 }
 
 #[test]

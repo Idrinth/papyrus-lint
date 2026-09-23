@@ -130,9 +130,20 @@ mod tests {
 
     #[test]
     fn parses_a_namespaced_fallout_4_script_name() {
-        let script = parse("ScriptName User:Quests:MyQuestScript\n").unwrap();
+        let script = parse_with_mode(
+            "ScriptName User:Quests:MyQuestScript\n",
+            parser::GameEdition::Fallout4,
+        )
+        .unwrap();
 
         assert_eq!(script.name, "User:Quests:MyQuestScript");
+    }
+
+    #[test]
+    fn skyrim_mode_rejects_a_namespaced_script_name() {
+        let error = parse("ScriptName User:Quests:MyQuestScript\n")
+            .expect_err("Skyrim script names cannot contain a colon");
+        assert!(matches!(error, PapyrusError::Parse(_)));
     }
 
     #[test]

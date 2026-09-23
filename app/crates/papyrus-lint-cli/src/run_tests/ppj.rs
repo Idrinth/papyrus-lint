@@ -36,7 +36,7 @@ fn resolves_dotted_script_entries_against_imports() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     write_file(
         &dir.path().join("Source/Scripts/MyMod/MyQuestScript.psc"),
-        "ScriptName MyMod:MyQuestScript\n",
+        "ScriptName MyQuestScript\n",
     );
     write_file(
         &dir.path().join("Project.ppj"),
