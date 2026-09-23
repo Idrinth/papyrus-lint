@@ -453,3 +453,137 @@ fn preloading_a_lookup_root_script_fills_the_process_wide_cache() {
     );
     assert!(second.lookup_function("BaseScript", "FromSecond").is_none());
 }
+
+#[test]
+fn empty_closure_does_not_parse_or_report_progress() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let table = FunctionTable::new(root.path().to_path_buf());
+    let parsed = AtomicUsize::new(0);
+    let finished = AtomicUsize::new(0);
+
+    let closed = table.parse_type_closure(
+        &[],
+        TypeClosureOptions {
+            threads: 0,
+            total_files: None,
+        },
+        |_| {
+            parsed.fetch_add(1, Ordering::SeqCst);
+        },
+        |_| None,
+        || {
+            finished.fetch_add(1, Ordering::SeqCst);
+        },
+    );
+
+    assert!(closed.seeds.is_empty());
+    assert!(closed.dependencies.is_empty());
+    assert!(closed.bundled.is_empty());
+    assert!(closed.unresolved.is_empty());
+    assert_eq!(parsed.load(Ordering::SeqCst), 0);
+    assert_eq!(finished.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn closure_records_unreadable_and_unparseable_dependencies() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let source_dir = root.path().join("scripts/source");
+    std::fs::create_dir_all(&source_dir).unwrap();
+    std::fs::write(source_dir.join("Broken.psc"), "not valid Papyrus").unwrap();
+    write_script(
+        root.path(),
+        "Child",
+        "ScriptName Child\nBroken Property B Auto\n",
+    );
+    let table = FunctionTable::new(root.path().to_path_buf());
+    let child = source_dir.join("Child.psc");
+
+    let closed = close(&table, &[child], 1, None);
+
+    assert_eq!(closed.dependencies.len(), 1);
+    let broken = &closed.dependencies[0];
+    assert_eq!(broken.name_lower, "broken");
+    assert!(broken.ast.is_none());
+    assert_eq!(broken.source, "not valid Papyrus");
+
+    let unreadable = table.parse_dependency(
+        source_dir.join("DoesNotExist.psc"),
+        "doesnotexist".to_string(),
+    );
+    assert!(unreadable.source.is_empty());
+    assert!(unreadable.ast.is_none());
+}
+
+#[test]
+fn referenced_types_include_declarations_and_nested_expressions() {
+    let script = papyrus_parser::parse_with_mode(
+        "ScriptName Example Extends ParentType\n\
+         Import ImportedType\n\
+         PropertyType Property ExampleProperty = StaticPropertyType.Value Auto\n\
+         Group ExampleGroup\n\
+             GroupPropertyType Property GroupProperty Auto\n\
+         EndGroup\n\
+         VariableType ExampleVariable = StaticVariableType.Value\n\
+         Struct ExampleStruct\n\
+             MemberType Member = new ConstructedStructType\n\
+         EndStruct\n\
+         ReturnType Function Test(ParameterType value = DefaultType.Value)\n\
+             LocalType local = new ArrayType[SizeType.Value]\n\
+             local = value as CastType\n\
+             CallType.Invoke(argument = value is IsType)\n\
+             If ConditionType.Value\n\
+                 Return ReturnValueType.Value\n\
+             ElseIf OtherConditionType.Value\n\
+                 local[IndexType.Value] = UnaryType.Value + BinaryType.Value\n\
+             Else\n\
+                 Self.Invoke()\n\
+             EndIf\n\
+             While WhileType.Value\n\
+                 Parent.Invoke()\n\
+             EndWhile\n\
+         EndFunction\n\
+         State Active\n\
+             StateReturnType Function StateFunction(StateParameterType value)\n\
+                 Return value\n\
+             EndFunction\n\
+         EndState\n",
+        papyrus_parser::parser::GameEdition::Fallout4,
+    )
+    .expect("fixture should parse");
+
+    let names = referenced_type_names(&script);
+    for expected in [
+        "ParentType",
+        "ImportedType",
+        "PropertyType",
+        "StaticPropertyType",
+        "GroupPropertyType",
+        "VariableType",
+        "StaticVariableType",
+        "MemberType",
+        "ConstructedStructType",
+        "ReturnType",
+        "ParameterType",
+        "DefaultType",
+        "LocalType",
+        "ArrayType",
+        "SizeType",
+        "CastType",
+        "CallType",
+        "IsType",
+        "ConditionType",
+        "ReturnValueType",
+        "OtherConditionType",
+        "IndexType",
+        "UnaryType",
+        "BinaryType",
+        "WhileType",
+        "StateReturnType",
+        "StateParameterType",
+    ] {
+        assert!(
+            names.iter().any(|name| name == expected),
+            "missing {expected}"
+        );
+    }
+}
