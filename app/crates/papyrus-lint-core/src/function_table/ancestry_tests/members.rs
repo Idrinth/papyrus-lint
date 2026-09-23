@@ -1,4 +1,4 @@
-use super::super::test_support::write_script;
+use super::super::super::test_support::write_script;
 use super::super::*;
 use papyrus_parser::ast::TypeName;
 use std::collections::HashSet;
