@@ -350,7 +350,7 @@ pub fn run(
             write_args_error(err, stderr);
             2
         }
-        Ok(ParsedCli::Init { preset, game: _ }) => run_init(preset, stdout, stderr),
+        Ok(ParsedCli::Init { preset, game }) => run_init(preset, game, stdout, stderr),
         Ok(ParsedCli::PresetAdd {
             name,
             source_path,
