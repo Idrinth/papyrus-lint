@@ -60,6 +60,7 @@ pub(crate) fn run_blob(
     };
 
     let mut diagnostics = papyrus_lints::lint(source, &lint_config);
+    let parse_failed = papyrus_parser::parse(source).is_err();
     let should_fail = finalize_diagnostics(
         &mut diagnostics,
         &lint_config,
@@ -80,6 +81,7 @@ pub(crate) fn run_blob(
             &mut report_buf,
             json_diagnostics,
             total_diagnostics,
+            parse_failed,
             should_fail,
         ),
         OutputFormat::Ai => write_blob_ai(
@@ -115,6 +117,7 @@ fn write_blob_json(
     report_buf: &mut Vec<u8>,
     json_diagnostics: Vec<JsonDiagnostic>,
     total_diagnostics: usize,
+    parse_failed: bool,
     should_fail: bool,
 ) {
     let report = JsonReport {
@@ -128,7 +131,7 @@ fn write_blob_json(
         total_diagnostics,
         files_fixed: None,
         dry_run: false,
-        success: !should_fail,
+        success: !parse_failed && !should_fail,
     };
     write_json_report(report_buf, &report);
 }
