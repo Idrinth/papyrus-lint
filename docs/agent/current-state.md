@@ -68,7 +68,7 @@ update the cited code *and* this list.
 | Rule dispatch, visitors, tags, disable comments | `app/crates/papyrus-lints/src/` (`lib.rs`, generated `registry`/`tags`/`config`, `external_signatures.rs`, `const_eval.rs`) |
 | A single rule | `app/crates/papyrus-lints/src/<rule>.rs` + `shared/rules/<id>.json` |
 | Project root, achlist/ppj, script index, FunctionTable, compile/stale `.pex` | `app/crates/papyrus-lint-core/src/` |
-| `papyrus-lint.yaml`, presets, compiler/Skyrim detection | `app/crates/papyrus-lint-config/src/` |
+| `papyrus-lint.yaml`, presets, compiler/game-install detection | `app/crates/papyrus-lint-config/src/` |
 | CLI (`run`, `run_blob`, `fix`, `doctor`, `--tag`) | `app/crates/papyrus-lint-cli/src/` |
 | Text / JSON / AI report formatting | `app/crates/papyrus-lint-output/` and `schema/` |
 | Tauri commands | `app/src-tauri/src/` (`files.rs`, `lint.rs`, `repair.rs`, `export.rs`, `lint_config.rs`) |
