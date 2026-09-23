@@ -90,8 +90,10 @@ Papyrus Lint is automatically tested with
 [public coverage reports](https://papyrus-lint.idrinth.de/coverage.html)
 against a combination of real life examples and synthetic tests.
 
-Additionally it is regularly run against the Skyrim base game scripts and
-different mods whose authors permitted the usage explicitly.
+Papyrus Lint supports both Skyrim Special Edition and Fallout 4, including
+each game's Papyrus dialect and game-specific runtime APIs. It is also
+regularly run against the Skyrim base game scripts and different mods whose
+authors permitted the usage explicitly.
 
 ## Implemented Lints
 
