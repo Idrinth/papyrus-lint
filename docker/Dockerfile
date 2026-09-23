@@ -2,6 +2,8 @@ FROM alpine:3.24
 
 # One published image per built-in preset (strict/standard/careful).
 ARG PRESET=strict
+# One published image per supported game (skyrim,fallout4,starfield).
+ARG GAME=skyrim
 # Overwrite base files with extender files
 ARG EXTENDER=no
 
@@ -13,7 +15,7 @@ RUN apk add --no-cache gcompat libgcc unzip \
 
 COPY --chmod=755 PapyrusLinterCLI /usr/local/bin/PapyrusLinterCLI
 COPY --chmod=755 entrypoint.sh /usr/local/bin/papyrus-lint-entrypoint
-RUN PapyrusLinterCLI --version
+RUN PapyrusLinterCLI version
 
 # Generate the selected preset's config and point lookup roots at the
 # container paths documented in the README (/project, /cache, /base-scripts).
@@ -25,7 +27,7 @@ RUN case "$PRESET" in \
         strict|standard|careful) ;; \
         *) echo "unsupported PRESET '$PRESET' (expected strict, standard, or careful)" >&2; exit 1 ;; \
     esac \
-    && PapyrusLinterCLI init --preset "$PRESET" \
+    && PapyrusLinterCLI init --preset "$PRESET" --game "${GAME}" \
     && awk ' \
         BEGIN { replaced = 0 } \
         /^lookup_script_roots:/ { \

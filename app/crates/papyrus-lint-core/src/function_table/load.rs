@@ -197,8 +197,8 @@ impl FunctionTable {
                         if let Some(cached) = cached_lookup_script(&path, mtime) {
                             cached
                         } else {
-                            let loaded = load_script_functions(&self.game, &path);
-                            store_lookup_script(path, mtime_secs, loaded.clone());
+                            let loaded = load_script_functions(self.game, &path);
+                            store_lookup_script(path, mtime, loaded.clone());
                             loaded
                         }
                     } else {

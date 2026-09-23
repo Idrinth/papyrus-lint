@@ -8,6 +8,7 @@ use papyrus_lint_core::ppj;
 /// current directory from `preset`, without overwriting an existing config.
 pub(crate) fn run_init(
     preset: presets::Preset,
+    game: papyrus_lints::Game,
     stdout: &mut impl Write,
     stderr: &mut impl Write,
 ) -> u8 {
@@ -21,7 +22,7 @@ pub(crate) fn run_init(
             return 2;
         }
     };
-    initialize_config(&current_dir, preset, stdout, stderr)
+    initialize_config(&current_dir, preset, game, stdout, stderr)
 }
 
 /// The first `.ppj` (Papyrus Project XML) file directly inside `dir`, if any —
@@ -149,11 +150,16 @@ pub(crate) fn run_preset_list(stdout: &mut impl Write) -> u8 {
 pub(crate) fn initialize_config(
     dir: &Path,
     preset: presets::Preset,
+    game: papyrus_lints::Game,
     stdout: &mut impl Write,
     stderr: &mut impl Write,
 ) -> u8 {
     match presets::initialize_default_config(dir, preset) {
         Ok(path) => {
+            if let Err(err) = write_selected_game(&path, game) {
+                let _ = writeln!(stderr, "error: failed to initialize config: {err}");
+                return 2;
+            }
             let _ = writeln!(stdout, "Created {}", path.display());
             seed_additional_script_roots_from_ppj(dir, stdout, stderr);
             0
@@ -163,6 +169,41 @@ pub(crate) fn initialize_config(
             2
         }
     }
+}
+
+/// Stamps `game` onto the config `init` just wrote. Built-in presets are
+/// authored for Skyrim, so `--game` has to replace that key afterwards
+/// without reformatting the rest of the generated file.
+fn write_selected_game(path: &Path, game: papyrus_lints::Game) -> Result<(), String> {
+    let contents = std::fs::read_to_string(path).map_err(|err| err.to_string())?;
+    let updated = set_game_key(&contents, game);
+    if updated != contents {
+        std::fs::write(path, updated).map_err(|err| err.to_string())?;
+    }
+    Ok(())
+}
+
+fn set_game_key(contents: &str, game: papyrus_lints::Game) -> String {
+    let line = format!("game: {game}");
+    let mut found = false;
+    let mut out = String::with_capacity(contents.len());
+    for existing in contents.split_inclusive('\n') {
+        let without_newline = existing.trim_end_matches(['\n', '\r']);
+        if !found && without_newline.starts_with("game:") {
+            found = true;
+            out.push_str(&line);
+            out.push_str(&existing[without_newline.len()..]);
+        } else {
+            out.push_str(existing);
+        }
+    }
+    if found {
+        return out;
+    }
+    let mut prefixed = line;
+    prefixed.push('\n');
+    prefixed.push_str(contents);
+    prefixed
 }
 
 /// Reports the outcome of `preset add` (see [`presets::add_user_preset`]) to
