@@ -31,8 +31,9 @@ pub(crate) const BLOB_PATH: &str = "<blob>";
 /// does.
 ///
 /// Returns `0` if no diagnostic counted as a failure (per
-/// `fail_on_warning`/`fail_on_info`), `1` if any did, or `2` on a `--config`
-/// load failure or a failure to write `--output <path>`.
+/// `fail_on_warning`/`fail_on_info`) and the blob lexed and parsed, `1` if
+/// any diagnostic failed the threshold or the blob failed to lex/parse, or
+/// `2` on a `--config` load failure or a failure to write `--output <path>`.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn run_blob(
     source: &str,
@@ -100,7 +101,7 @@ pub(crate) fn run_blob(
             &diagnostics,
             &parser_errors,
             total_diagnostics,
-            should_fail,
+            should_fail || parse_failed,
             use_color,
         ),
     }
@@ -110,7 +111,7 @@ pub(crate) fn run_blob(
         return write_status;
     }
 
-    if should_fail {
+    if should_fail || parse_failed {
         1
     } else {
         0
