@@ -21,11 +21,12 @@ type PResult<T> = Result<T, ParseError>;
 /// Which game's Papyrus dialect a [`Parser`] accepts. Skyrim is the
 /// original language `papyrus-parser` was built for; Fallout 4 adds a
 /// handful of new constructs (custom `Struct`s, property `Group`s, the
-/// `DebugOnly`/`BetaOnly` function flags, and colon-qualified names such
-/// as `DLC03:Foo` on types, `extends`, `new`, and calls) on top of it. A construct that's
-/// Fallout 4 only is rejected the same way an unrecognized token always
-/// is -- as an ordinary [`ParseError`] -- when parsed in [`Self::Skyrim`]
-/// mode.
+/// `DebugOnly`/`BetaOnly` function flags, colon-qualified names such
+/// as `DLC03:Foo` on types, `extends`, `new`, and calls, and remote /
+/// custom events of the form `Event OtherScript.EventName(...)`) on top
+/// of it. A construct that's Fallout 4 only is rejected the same way an
+/// unrecognized token always is -- as an ordinary [`ParseError`] -- when
+/// parsed in [`Self::Skyrim`] mode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GameEdition {
     #[default]
@@ -160,17 +161,16 @@ impl Parser {
         }
     }
 
-    /// Parses a script name. Fallout 4 mode also accepts a colon-qualified
-    /// name such as `User:MyQuestScript`; Skyrim mode does not -- a `:`
-    /// there is not part of the name.
-    fn expect_script_name(&mut self) -> PResult<String> {
-        let mut name = self.expect_identifier()?;
-        if self.mode == GameEdition::Fallout4 {
-            while matches!(self.kind(), TokenKind::Colon) {
-                self.advance();
-                name.push(':');
-                name.push_str(&self.expect_identifier()?);
-            }
+    /// Appends any immediately following `:Segment` pieces onto `name`.
+    ///
+    /// Fallout 4 uses colon-qualified names (`DLC03:Foo`,
+    /// `InstanceData:Owner`, including further segments) for scripts,
+    /// types, `new`, and function names. The colon is not an operator.
+    fn append_colon_segments(&mut self, mut name: String) -> PResult<String> {
+        while matches!(self.kind(), TokenKind::Colon) {
+            self.advance();
+            name.push(':');
+            name.push_str(&self.expect_identifier()?);
         }
         Ok(name)
     }
@@ -591,7 +591,17 @@ impl Parser {
         } else {
             self.expect_keyword(Keyword::Function)?;
         }
-        let name = self.expect_qualified_name()?;
+        let mut name = self.expect_qualified_name()?;
+        // Fallout 4 remote / custom events are declared as
+        // `Event <Script>.<EventName>(...)`, optionally with a
+        // colon-qualified script (`Event DLC03:Foo.Bar(...)`). Skyrim
+        // events are a bare identifier; a `.` there is still
+        // `expected LParen, found Dot`.
+        if is_event && self.mode == GameEdition::Fallout4 && matches!(self.kind(), TokenKind::Dot) {
+            self.advance();
+            name.push('.');
+            name.push_str(&self.expect_identifier()?);
+        }
         self.expect(TokenKind::LParen)?;
         let params = self.parse_params()?;
         self.expect(TokenKind::RParen)?;
