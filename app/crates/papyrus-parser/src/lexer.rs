@@ -22,7 +22,7 @@ pub struct Lexer<'a> {
 impl<'a> Lexer<'a> {
     pub fn new(source: &'a str) -> Self {
         Lexer {
-            source: source.as_bytes(),
+            source: source.strip_prefix('\u{feff}').unwrap_or(source).as_bytes(),
             pos: 0,
             line: 1,
             col: 1,
@@ -411,6 +411,17 @@ mod tests {
                 TokenKind::Eof,
             ]
         );
+    }
+
+    #[test]
+    fn ignores_a_leading_utf8_byte_order_mark() {
+        let source = "ScriptName Example\n";
+        let with_bom = format!("\u{feff}{source}");
+
+        assert_eq!(kinds(&with_bom), kinds(source));
+
+        let tokens = Lexer::new(&with_bom).tokenize().unwrap();
+        assert_eq!((tokens[0].line, tokens[0].col), (1, 1));
     }
 
     #[test]
