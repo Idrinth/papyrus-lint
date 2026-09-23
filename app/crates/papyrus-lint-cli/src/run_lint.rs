@@ -203,8 +203,15 @@ fn build_file_reports(
     parser_errors: Vec<JsonParserError>,
 ) -> (Vec<u8>, Option<JsonFileReport>, Option<AiFileReport>) {
     let mut plain_text: Vec<u8> = Vec::new();
-    for diagnostic in diagnostics {
-        if !ctx.json {
+    if !ctx.json {
+        for error in &parser_errors {
+            let _ = writeln!(
+                plain_text,
+                "{}",
+                format_parser_error_line(reported_path, error, ctx.use_color)
+            );
+        }
+        for diagnostic in diagnostics {
             let _ = writeln!(
                 plain_text,
                 "{}",
