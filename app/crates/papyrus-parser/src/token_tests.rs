@@ -44,6 +44,7 @@ fn maps_every_keyword_spelling() {
         ("endstruct", EndStruct),
         ("group", Group),
         ("endgroup", EndGroup),
+        ("collapsed", Collapsed),
         ("collapsedonbase", CollapsedOnBase),
         ("collapsedonref", CollapsedOnRef),
     ];

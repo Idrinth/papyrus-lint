@@ -283,9 +283,9 @@ impl Parser {
         })
     }
 
-    /// Fallout 4 only: `Group <Name> [CollapsedOnBase] [CollapsedOnRef]` ..
-    /// `EndGroup`, a block of property declarations. Only called in
-    /// [`GameEdition::Fallout4`] mode.
+    /// Fallout 4 only: `Group <Name> [Collapsed|CollapsedOnBase]
+    /// [CollapsedOnRef]` .. `EndGroup`, a block of property declarations.
+    /// Only called in [`GameEdition::Fallout4`] mode.
     fn parse_group(&mut self) -> PResult<GroupDecl> {
         let line = self.current().line;
         self.expect_keyword(Keyword::Group)?;
@@ -294,7 +294,11 @@ impl Parser {
         let mut is_collapsed_on_base = false;
         let mut is_collapsed_on_ref = false;
         loop {
-            if self.at_keyword(Keyword::CollapsedOnBase) {
+            if self.at_keyword(Keyword::Collapsed) {
+                self.advance();
+                is_collapsed_on_base = true;
+                is_collapsed_on_ref = true;
+            } else if self.at_keyword(Keyword::CollapsedOnBase) {
                 self.advance();
                 is_collapsed_on_base = true;
             } else if self.at_keyword(Keyword::CollapsedOnRef) {

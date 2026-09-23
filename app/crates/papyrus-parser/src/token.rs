@@ -64,6 +64,7 @@ pub enum Keyword {
     EndGroup,
     /// Fallout 4 only: `Group` flags controlling the group's default
     /// collapsed state in the Creation Kit's property list.
+    Collapsed,
     CollapsedOnBase,
     CollapsedOnRef,
 }
@@ -112,6 +113,7 @@ impl Keyword {
             "endstruct" => EndStruct,
             "group" => Group,
             "endgroup" => EndGroup,
+            "collapsed" => Collapsed,
             "collapsedonbase" => CollapsedOnBase,
             "collapsedonref" => CollapsedOnRef,
             _ => return Option::None,

@@ -129,6 +129,28 @@ EndGroup
 }
 
 #[test]
+fn parses_a_property_group_with_short_collapsed_flag_case_insensitively() {
+    let script = parse_with_mode(
+        r#"ScriptName GroupedProperties
+
+Group Advanced cOlLaPsEd
+    Bool Property OnBegin = false Const Auto
+    Bool Property OnEnd = true Const Auto
+EndGroup
+"#,
+        GameEdition::Fallout4,
+    )
+    .expect("the short Fallout 4 Collapsed group flag should parse");
+
+    assert_eq!(script.groups.len(), 1);
+    let group = &script.groups[0];
+    assert_eq!(group.name, "Advanced");
+    assert!(group.is_collapsed_on_base);
+    assert!(group.is_collapsed_on_ref);
+    assert_eq!(group.properties.len(), 2);
+}
+
+#[test]
 fn parses_debug_only_and_beta_only_function_flags() {
     let script = parse_with_mode(
         "ScriptName FlaggedFunctions\n\nFunction LogDebug() DebugOnly\nEndFunction\n\nFunction LogBeta() BetaOnly\nEndFunction\n",
