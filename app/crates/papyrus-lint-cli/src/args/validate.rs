@@ -16,13 +16,6 @@ use crate::output::{normalize_tag_filter, ColorChoice, OutputFormat};
 /// (resolving paths, loading config, linting) begins. `fix` is supplied by
 /// the `lint` vs `fix` subcommand rather than a positional token.
 pub(super) fn validate(raw: RawArgs, fix: bool) -> Result<ParsedCommand, ArgsError> {
-    if raw.help {
-        return Err(ArgsError::Usage);
-    }
-    if raw.version {
-        return Ok(ParsedCommand::Version);
-    }
-
     let quiet_warnings = raw.quiet_warnings;
     let quiet_info = raw.quiet_info;
     let short_paths = raw.short_paths;
