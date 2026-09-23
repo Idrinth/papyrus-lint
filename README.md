@@ -1,7 +1,5 @@
 # Papyrus Lint
 
-[![Papyrus Lint logo](shared/images/logo-small.jpg)](https://papyrus-lint.idrinth.de)
-
 **Papyrus Lint goes far beyond style: it catches bugs that CreationKit's
 compiler lets through.**
 `PapyrusCompiler.exe` only checks that a script is syntactically valid — it
@@ -16,6 +14,9 @@ it. Papyrus Lint performs deep correctness, reliability, and performance
 checks across your `.psc` source (see the full list below), on top of the
 formatting and style checks a linter usually provides, so a mod author
 finds these problems at write time instead of from a bug report.
+
+See the [Documentation Website](https://papyrus-lint.idrinth.de) for the
+current version's documentation. The repo might be a bit ahead.
 
 ## Simple Example
 
