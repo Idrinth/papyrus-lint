@@ -298,9 +298,8 @@ fn blob_output_flag_redirects_the_report_to_a_file() {
 
 #[test]
 fn blob_plain_reports_parser_errors() {
-    let (code, stdout, stderr) = run_captured(&[
-        "--blob=ScriptName Example\nFunction Broken(\n".to_string(),
-    ]);
+    let (code, stdout, stderr) =
+        run_captured(&["--blob=ScriptName Example\nFunction Broken(\n".to_string()]);
 
     assert!(stderr.is_empty());
     assert_eq!(code, 1);
