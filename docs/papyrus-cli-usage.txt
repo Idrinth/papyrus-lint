@@ -1,3 +1,5 @@
+PapyrusLinterCLI help
+PapyrusLinterCLI version
 PapyrusLinterCLI lint path/to/project.achlist
 PapyrusLinterCLI lint path/to/Project.ppj
 PapyrusLinterCLI init --game skyrim
