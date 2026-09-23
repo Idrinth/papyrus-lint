@@ -52,6 +52,24 @@ function watchStatus(): string {
 }
 
 describe("watch mode", () => {
+  it("reports an empty watch set and clears the status when disabled", async () => {
+    vi.useFakeTimers();
+
+    startWatchMode();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(isWatchModeEnabled()).toBe(true);
+    expect(watchStatus()).toBe("Watching: no files loaded yet");
+
+    watchToggle().checked = false;
+    watchToggle().dispatchEvent(new Event("change"));
+
+    expect(isWatchModeEnabled()).toBe(false);
+    expect(watchStatus()).toBe("");
+
+    vi.useRealTimers();
+  });
+
   it("is off until the toggle is checked, and stopWatchMode turns it back off", async () => {
     await dropSingleFile("/proj/scripts/source/A.psc", 1000);
 
@@ -104,6 +122,53 @@ describe("watch mode", () => {
     await vi.advanceTimersByTimeAsync(1500);
 
     expect(invokeMock).not.toHaveBeenCalledWith("lint_psc_file", expect.anything());
+
+    vi.useRealTimers();
+  });
+
+  it("does not start a second timer or overlap polls while a backend request is pending", async () => {
+    vi.useFakeTimers();
+    const path = "/proj/scripts/source/A.psc";
+    await dropSingleFile(path, 1000);
+
+    let resolveMtimes: ((mtimes: Record<string, number>) => void) | undefined;
+    const pendingMtimes = new Promise<Record<string, number>>((resolve) => {
+      resolveMtimes = resolve;
+    });
+    invokeImplFor({ get_psc_file_mtimes: () => pendingMtimes });
+    invokeMock.mockClear();
+
+    startWatchMode();
+    startWatchMode();
+    await vi.advanceTimersByTimeAsync(3000);
+
+    expect(invokeMock.mock.calls.filter(([command]) => command === "get_psc_file_mtimes")).toHaveLength(1);
+
+    resolveMtimes?.({ [path]: 1000 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(watchStatus()).toBe("Watching 1 file for changes");
+
+    vi.useRealTimers();
+  });
+
+  it("re-lints a watched file when it disappears from the mtime response", async () => {
+    vi.useFakeTimers();
+    const path = "/proj/scripts/source/A.psc";
+    await dropSingleFile(path, 1000);
+
+    startWatchMode();
+    await vi.advanceTimersByTimeAsync(0);
+    invokeMock.mockClear();
+
+    invokeImplFor({
+      get_psc_file_mtimes: () => ({}),
+      parse_psc_file: () => ({ name: "Example" }),
+      lint_psc_file: () => [],
+    });
+    await vi.advanceTimersByTimeAsync(1500);
+
+    expect(invokeMock).toHaveBeenCalledWith("lint_psc_file", expect.objectContaining({ path }));
+    expect(watchStatus()).toBe("Watching 1 file for changes");
 
     vi.useRealTimers();
   });
