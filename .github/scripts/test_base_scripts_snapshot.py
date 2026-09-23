@@ -83,9 +83,10 @@ class CompareOutputTests(unittest.TestCase):
 
 class RenderAndMainTests(unittest.TestCase):
     def test_extract_base_scripts_rejects_a_missing_archive(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaisesRegex(snap.SnapshotError, "base scripts archive not found"):
-                snap.extract_base_scripts(Path(directory) / "missing.zip", Path(directory) / "out")
+        with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(
+            snap.SnapshotError, "base scripts archive not found"
+        ):
+            snap.extract_base_scripts(Path(directory) / "missing.zip", Path(directory) / "out")
 
     def test_run_cli_rejects_a_missing_binary(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
