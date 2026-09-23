@@ -34,3 +34,7 @@ fn globals_for(game: Game) -> &'static [&'static str] {
 pub fn is_known_for(game: Game, name_lower: &str) -> bool {
     globals_for(game).contains(&name_lower)
 }
+
+#[cfg(test)]
+#[path = "native_globals_tests.rs"]
+mod tests;

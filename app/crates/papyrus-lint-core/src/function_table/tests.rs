@@ -3,6 +3,15 @@ use std::fs;
 use std::path::PathBuf;
 
 #[test]
+fn cache_probe_map_transforms_hits_and_preserves_misses() {
+    let hit = CacheProbe::Hit(2).map(|value| value * 3);
+    assert!(matches!(hit, CacheProbe::Hit(6)));
+
+    let miss: CacheProbe<i32> = CacheProbe::Miss;
+    assert!(matches!(miss.map(|value| value * 3), CacheProbe::Miss));
+}
+
+#[test]
 fn exposes_the_configured_project_and_additional_roots() {
     let root = PathBuf::from("/example/project");
     let additional_roots = vec!["shared/scripts".to_string(), "/sdk/source".to_string()];
@@ -90,5 +99,62 @@ fn preload_ignores_a_caller_supplied_path_that_disagrees_with_the_tables_own_res
     assert!(matches!(
         table.lookup_function_cached("example", "doit"),
         CacheProbe::Hit(Some(_))
+    ));
+}
+
+#[test]
+fn preload_caches_an_unparseable_script_as_unresolved() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let source_dir = dir.path().join("scripts/source");
+    fs::create_dir_all(&source_dir).expect("failed to create scripts/source");
+    let path = source_dir.join("Broken.psc");
+    fs::write(&path, "not valid Papyrus").expect("failed to write script");
+
+    let mut table = FunctionTable::new(dir.path().to_path_buf());
+    table.preload(vec![PreloadedScript {
+        path: &path,
+        name_lower: "broken".to_string(),
+        ast: None,
+        source: "not valid Papyrus",
+    }]);
+
+    assert!(matches!(table.get_cached("broken"), Some(None)));
+}
+
+#[test]
+fn preload_keeps_the_first_entry_for_a_duplicate_name() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let source_dir = dir.path().join("scripts/source");
+    fs::create_dir_all(&source_dir).expect("failed to create scripts/source");
+    let path = source_dir.join("Example.psc");
+    let first_source = "ScriptName Example\n\nFunction First()\nEndFunction\n";
+    let second_source = "ScriptName Example\n\nFunction Second()\nEndFunction\n";
+    fs::write(&path, first_source).expect("failed to write script");
+    let first_ast = papyrus_parser::parse(first_source).expect("first fixture should parse");
+    let second_ast = papyrus_parser::parse(second_source).expect("second fixture should parse");
+
+    let mut table = FunctionTable::new(dir.path().to_path_buf());
+    table.preload(vec![
+        PreloadedScript {
+            path: &path,
+            name_lower: "example".to_string(),
+            ast: Some(&first_ast),
+            source: first_source,
+        },
+        PreloadedScript {
+            path: &path,
+            name_lower: "example".to_string(),
+            ast: Some(&second_ast),
+            source: second_source,
+        },
+    ]);
+
+    assert!(matches!(
+        table.lookup_function_cached("example", "first"),
+        CacheProbe::Hit(Some(_))
+    ));
+    assert!(matches!(
+        table.lookup_function_cached("example", "second"),
+        CacheProbe::Hit(None)
     ));
 }
