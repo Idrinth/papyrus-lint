@@ -1,12 +1,13 @@
 //! Fallout 4's Papyrus dialect: custom `Struct`s, property `Group`s,
-//! Fallout-specific declaration flags, and remote / custom events
+//! Fallout-specific declaration flags, colon-qualified names, the `is`
+//! type-check operator, and remote / custom events
 //! (`Event OtherScript.EventName(...)`). All are opt-in through
-//! [`GameEdition::Fallout4`]; [`parse`] (always Skyrim mode) rejects them
-//! exactly as it would any other unrecognized construct.
+//! [`GameEdition::Fallout4`]. Rejection of the same constructs in Skyrim
+//! mode lives in `skyrim_mode.rs`.
 
 use papyrus_parser::ast::Expr;
 use papyrus_parser::parser::GameEdition;
-use papyrus_parser::{parse, parse_with_mode, PapyrusError};
+use papyrus_parser::{parse_with_mode, PapyrusError};
 
 #[test]
 fn parses_a_struct_declaration_with_typed_members_and_defaults() {
@@ -177,75 +178,6 @@ EndFunction
     assert_eq!(script.properties.len(), 2);
     assert!(script.properties.iter().all(|property| property.is_auto));
     assert_eq!(script.functions[0].body.len(), 2);
-}
-
-#[test]
-fn skyrim_mode_rejects_fallout_4_declaration_flags() {
-    for source in [
-        "ScriptName Example Const\n",
-        "ScriptName Example default\n",
-        "ScriptName Example\nInt Property Value Auto Mandatory\n",
-        "ScriptName Example\nFunction Test()\nInt value = 1 Const\nEndFunction\n",
-    ] {
-        let error = parse(source).expect_err("Fallout 4 flags must remain invalid in Skyrim mode");
-        assert!(matches!(error, PapyrusError::Parse(_)));
-    }
-
-    let script = parse("ScriptName Const\nInt Mandatory = 1\nInt Property Default Auto\n")
-        .expect("Fallout 4 flag spellings remain ordinary identifiers in Skyrim mode");
-    assert_eq!(script.name, "Const");
-    assert_eq!(script.variables[0].name, "Mandatory");
-    assert_eq!(script.properties[0].name, "Default");
-}
-
-#[test]
-fn skyrim_mode_leaves_debug_only_and_beta_only_unset() {
-    // Skyrim mode never consumes DebugOnly/BetaOnly as flags, so a script
-    // that never uses them (the common case) parses identically either
-    // way, with both flags false.
-    let script = parse("ScriptName Plain\n\nFunction Ordinary()\nEndFunction\n").unwrap();
-    assert!(!script.functions[0].is_debug_only);
-    assert!(!script.functions[0].is_beta_only);
-    assert!(script.structs.is_empty());
-    assert!(script.groups.is_empty());
-}
-
-#[test]
-fn skyrim_mode_rejects_struct_declarations() {
-    let error = parse("ScriptName Rejected\n\nStruct Coordinates\n    Float X\nEndStruct\n")
-        .expect_err("Struct is Fallout 4 only");
-    assert!(matches!(error, PapyrusError::Parse(_)));
-}
-
-#[test]
-fn skyrim_mode_rejects_group_declarations() {
-    let error = parse(
-        "ScriptName Rejected\n\nGroup Settings\n    Int Property MaxCount = 10 Auto\nEndGroup\n",
-    )
-    .expect_err("Group is Fallout 4 only");
-    assert!(matches!(error, PapyrusError::Parse(_)));
-}
-
-#[test]
-fn skyrim_mode_rejects_debug_only_and_beta_only_flags() {
-    let error = parse("ScriptName Rejected\n\nFunction LogDebug() DebugOnly\nEndFunction\n")
-        .expect_err("DebugOnly is Fallout 4 only");
-    assert!(matches!(error, PapyrusError::Parse(_)));
-
-    for flag in ["DebugOnly", "BetaOnly"] {
-        let error = parse(&format!("ScriptName Rejected {flag}\n"))
-            .expect_err("Fallout 4 script flags must remain invalid in Skyrim mode");
-        assert!(matches!(error, PapyrusError::Parse(_)));
-    }
-}
-
-#[test]
-fn skyrim_mode_rejects_bare_new_struct_instantiation() {
-    // Without a `[size]`, `New <Name>` is only meaningful as Fallout 4's
-    // struct instantiation; Skyrim mode still expects array brackets.
-    let error = parse("ScriptName Rejected\n\nFunction Test()\n    Coordinates c = new Coordinates\nEndFunction\n")
-        .expect_err("bare `New` requires array brackets outside Fallout 4 mode");
-    assert!(matches!(error, PapyrusError::Parse(_)));
 }
 
 #[test]
@@ -443,36 +375,12 @@ fn fallout4_mode_still_parses_plain_events() {
 }
 
 #[test]
-fn skyrim_mode_rejects_remote_events() {
-    let error = parse(
-        "ScriptName Rejected\n\nEvent Actor.OnLocationChange(Actor akSender, Location akOldLoc, Location akNewLoc)\nEndEvent\n",
-    )
-    .expect_err("remote events are Fallout 4 only");
-    assert!(matches!(error, PapyrusError::Parse(_)));
-    assert!(
-        error.to_string().contains("expected LParen, found Dot"),
-        "Skyrim mode should keep rejecting the `.` after an event name, got {error}"
-    );
-}
-
-#[test]
 fn fallout4_mode_rejects_dotted_function_names() {
     let error = parse_with_mode(
         "ScriptName Rejected\n\nFunction Actor.DoThing()\nEndFunction\n",
         GameEdition::Fallout4,
     )
     .expect_err("dotted names are only valid on Event declarations");
-    assert!(matches!(error, PapyrusError::Parse(_)));
-}
-
-#[test]
-fn skyrim_mode_rejects_colon_qualified_types() {
-    let error = parse("ScriptName Plain extends Foo:Bar\n")
-        .expect_err("colon-qualified extends is Fallout 4 only");
-    assert!(matches!(error, PapyrusError::Parse(_)));
-
-    let error = parse("ScriptName Plain\nFoo:Bar Property X Auto\n")
-        .expect_err("colon-qualified property types are Fallout 4 only");
     assert!(matches!(error, PapyrusError::Parse(_)));
 }
 
@@ -527,25 +435,4 @@ EndFunction
         panic!("expected an `is` expression");
     };
     assert_eq!(type_name, "DLC03:WorkshopNPCScript");
-}
-
-#[test]
-fn skyrim_mode_rejects_is_type_check_operator() {
-    let error = parse(
-        r#"ScriptName Rejected
-
-Event OnActivate(ObjectReference akActionRef)
-    if akActionRef is Actor
-        return
-    endif
-EndEvent
-"#,
-    )
-    .expect_err("`is` is Fallout 4 only");
-    assert!(matches!(error, PapyrusError::Parse(_)));
-    assert!(
-        error.to_string().contains("found Keyword(Is)")
-            || error.to_string().contains("found Identifier(\"is\")"),
-        "Skyrim mode should reject `is` as an unexpected token, got {error}"
-    );
 }
