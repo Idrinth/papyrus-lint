@@ -153,8 +153,10 @@ fn append_plain_summary(
     };
 
     // Green when clean, yellow when problems were found but none crossed
-    // the configured failure threshold, red when the run will exit 1.
-    let summary_color = if report.total_diagnostics == 0 {
+    // the configured failure threshold (including a parse/lex error, which
+    // does not by itself change the CLI exit status), red when the run
+    // will exit 1.
+    let summary_color = if report.total_diagnostics == 0 && !report.parse_failed {
         ANSI_GREEN
     } else if !report.should_fail {
         ANSI_YELLOW
@@ -162,8 +164,12 @@ fn append_plain_summary(
         ANSI_RED
     };
 
-    let summary = if report.total_diagnostics == 0 {
+    let summary = if report.total_diagnostics == 0 && !report.parse_failed {
         format!("PapyrusLinterCLI: no problems found in {scripts_checked} script(s).{fixed_suffix}")
+    } else if report.total_diagnostics == 0 && report.parse_failed {
+        format!(
+            "PapyrusLinterCLI: parser/lexer error(s) found in {scripts_checked} script(s).{fixed_suffix}"
+        )
     } else {
         format!(
             "PapyrusLinterCLI: {} problem(s) found in {} of {scripts_checked} script(s).{fixed_suffix}",
