@@ -15,290 +15,10 @@ vi.mock("@tauri-apps/api/window", () => ({
 
 import { invokeImplFor } from "./test/harness";
 import { switchTab } from "./main-tabs";
-import { type ConfigSelectionResult } from "./main-types";
 import { DEFAULT_LINT_CONFIG } from "./config-types";
 import { handleLintConfigChanged } from "./config-ui";
 import { useProjectDir } from "./project-settings";
-import { applyConfigPreset, deleteUserPreset, exportUserPreset, getPresetLintConfig, isCustomPreset, loadConfigPresets, renameUserPreset } from "./presets-api";
 import { handleDeletePresetClick, handleExportPresetClick, handleRenamePresetClick, handleResetToPresetClick, handleSaveConfigAsPresetClick, populateResetPresetSelect, refreshPresetManagementTab, renderPresetManagementTab } from "./presets-management";
-import { promptForConfigSelection } from "./presets-picker";
-describe("promptForConfigSelection", () => {
-  it("shows the detected configuration and no preset list when one was found", async () => {
-    const pending = promptForConfigSelection({
-      detected_script_roots: [],
-      used_configuration_file: "/proj/papyrus-lint.yaml",
-    });
-
-    expect(document.querySelector<HTMLElement>("#config-picker-detected")!.hidden).toBe(false);
-    expect(document.querySelector("#config-picker-detected-path")!.textContent).toBe(
-      "/proj/papyrus-lint.yaml",
-    );
-    expect(document.querySelector<HTMLElement>("#config-picker-none")!.hidden).toBe(true);
-    expect(document.querySelector<HTMLElement>("#config-picker-game")!.hidden).toBe(true);
-    expect(document.querySelector<HTMLElement>("#config-picker-preset-list")!.hidden).toBe(true);
-
-    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
-    const result: ConfigSelectionResult = await pending;
-    expect(result).toEqual({ kind: "detected" });
-  });
-
-  it("does not fetch presets when the project already has a configuration", async () => {
-    invokeImplFor({
-      list_config_presets: () => {
-        throw new Error("presets should not be requested");
-      },
-    });
-    // Ignore the startup refresh kicked off by main.ts's DOMContentLoaded
-    // handler; this assertion is specifically about the picker invocation.
-    await Promise.resolve();
-    invokeMock.mockClear();
-
-    const pending = promptForConfigSelection({
-      detected_script_roots: [],
-      used_configuration_file: "/proj/papyrus-lint.yaml",
-    });
-    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
-
-    await expect(pending).resolves.toEqual({ kind: "detected" });
-    expect(invokeMock).not.toHaveBeenCalledWith("list_config_presets");
-  });
-
-  it("shows the no-configuration notice and lists every preset when none was found", async () => {
-    invokeImplFor({
-      list_config_presets: () => [
-        { id: "strict", label: "Strict", description: "Catches everything." },
-        { id: "careful", label: "Careful", description: "The quietest option." },
-      ],
-    });
-
-    void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
-    );
-
-    expect(document.querySelector<HTMLElement>("#config-picker-detected")!.hidden).toBe(true);
-    expect(document.querySelector<HTMLElement>("#config-picker-none")!.hidden).toBe(false);
-    expect(document.querySelector<HTMLElement>("#config-picker-game")!.hidden).toBe(false);
-    expect(document.querySelector<HTMLSelectElement>("#config-picker-game-select")!.value).toBe("skyrim");
-    const options = document.querySelectorAll<HTMLButtonElement>(
-      "#config-picker-preset-list .config-picker__preset-option",
-    );
-    expect(options).toHaveLength(2);
-    expect(options[1].textContent).toContain("Careful");
-    expect(options[1].textContent).toContain("The quietest option.");
-  });
-
-  it("hides the preset list entirely when there are no presets to offer", async () => {
-    invokeImplFor({ list_config_presets: () => [] });
-
-    void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
-    );
-
-    expect(document.querySelector<HTMLElement>("#config-picker-preset-list")!.hidden).toBe(true);
-  });
-
-  it("clears preset options left by an earlier selection", async () => {
-    invokeImplFor({
-      list_config_presets: () => [
-        { id: "team-style", label: "Team Style", description: "A custom preset." },
-      ],
-    });
-    const first = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option")).toHaveLength(1),
-    );
-    document.querySelector<HTMLDialogElement>("#config-picker")!.close();
-    await first;
-
-    const second = promptForConfigSelection({
-      detected_script_roots: [],
-      used_configuration_file: "/next/papyrus-lint.yaml",
-    });
-
-    expect(document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option")).toHaveLength(0);
-    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
-    await second;
-  });
-
-  it("resolves detected when closed without a choice (Escape or a backdrop click)", async () => {
-    const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
-    );
-
-    document.querySelector<HTMLDialogElement>("#config-picker")!.close();
-
-    await expect(pending).resolves.toEqual({ kind: "detected" });
-  });
-
-  it("resolves with the trimmed path once a different file is confirmed", async () => {
-    const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
-    );
-
-    document.querySelector<HTMLInputElement>("#config-picker-path-input")!.value = "  /profiles/strict.yaml  ";
-    document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
-
-    await expect(pending).resolves.toEqual({ kind: "path", path: "/profiles/strict.yaml" });
-  });
-
-  it("does not resolve when the different-file input is left blank", async () => {
-    void promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
-    );
-
-    document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
-
-    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true);
-  });
-
-  it("resolves with the chosen preset when one of the inline options is clicked", async () => {
-    invokeImplFor({
-      list_config_presets: () => [
-        { id: "strict", label: "Strict", description: "Catches everything." },
-        { id: "careful", label: "Careful", description: "The quietest option." },
-      ],
-    });
-
-    const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(
-        document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option").length,
-      ).toBe(2),
-    );
-    document
-      .querySelectorAll<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")[1]
-      .click();
-
-    await expect(pending).resolves.toEqual({ kind: "preset", preset: "careful", game: "skyrim" });
-    expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(false);
-  });
-
-  it("resolves with a user preset's id unchanged, not its label", async () => {
-    invokeImplFor({
-      list_config_presets: () => [
-        { id: "Team Conventions", label: "Team Conventions", description: "A custom preset." },
-      ],
-    });
-
-    const pending = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(
-        document.querySelectorAll("#config-picker-preset-list .config-picker__preset-option").length,
-      ).toBe(1),
-    );
-    const option = document.querySelector<HTMLButtonElement>(
-      "#config-picker-preset-list .config-picker__preset-option",
-    )!;
-    expect(option.textContent).toContain("Team Conventions");
-    expect(option.textContent).toContain("A custom preset.");
-    option.click();
-
-    await expect(pending).resolves.toEqual({ kind: "preset", preset: "Team Conventions", game: "skyrim" });
-  });
-
-  it("includes the selected target game when a new project continues", async () => {
-    const continued = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
-    );
-    document.querySelector<HTMLSelectElement>("#config-picker-game-select")!.value = "fallout4";
-    document.querySelector<HTMLButtonElement>("#config-picker-continue")!.click();
-    await expect(continued).resolves.toEqual({ kind: "detected", game: "fallout4" });
-  });
-
-  it("includes the selected target game when a new project picks a preset", async () => {
-    invokeImplFor({
-      list_config_presets: () => [
-        { id: "strict", label: "Strict", description: "Catches everything." },
-      ],
-    });
-
-    const preset = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker-preset-list .config-picker__preset-option")).not.toBeNull(),
-    );
-    document.querySelector<HTMLSelectElement>("#config-picker-game-select")!.value = "fallout4";
-    document.querySelector<HTMLButtonElement>("#config-picker-preset-list .config-picker__preset-option")!.click();
-    await expect(preset).resolves.toEqual({ kind: "preset", preset: "strict", game: "fallout4" });
-  });
-
-  it("doesn't accumulate stale listeners on the static Continue/browse buttons across repeated calls", async () => {
-    // Continue/the browse button are reused across every call (unlike the
-    // preset options, rebuilt fresh each time); a leaked listener from an
-    // earlier call resolving a different way would double-fire finish() on
-    // a later call's own click.
-    const first = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
-    );
-    document.querySelector<HTMLDialogElement>("#config-picker")!.close();
-    await first;
-
-    const second = promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null });
-    await vi.waitFor(() =>
-      expect(document.querySelector("#config-picker")!.hasAttribute("open")).toBe(true),
-    );
-    document.querySelector<HTMLInputElement>("#config-picker-path-input")!.value = "/profiles/strict.yaml";
-    document.querySelector<HTMLButtonElement>("#config-picker-use-path")!.click();
-
-    await expect(second).resolves.toEqual({ kind: "path", path: "/profiles/strict.yaml" });
-  });
-
-  it("resolves immediately with detected when the dialog isn't present in the DOM", async () => {
-    document.querySelector("#config-picker")!.remove();
-    document.dispatchEvent(new Event("DOMContentLoaded", { bubbles: true }));
-
-    await expect(
-      promptForConfigSelection({ detected_script_roots: [], used_configuration_file: null }),
-    ).resolves.toEqual({ kind: "detected" });
-  });
-});
-
-describe("loadConfigPresets / applyConfigPreset", () => {
-  it("fetches the list of built-in presets from the backend", async () => {
-    const presets = [
-      { id: "strict", label: "Strict", description: "Catches everything." },
-      { id: "standard", label: "Standard", description: "A middle ground." },
-    ];
-    invokeImplFor({ list_config_presets: () => presets });
-
-    await expect(loadConfigPresets()).resolves.toEqual(presets);
-  });
-
-  it("returns an empty array when fetching presets fails", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    invokeImplFor({});
-
-    await expect(loadConfigPresets()).resolves.toEqual([]);
-  });
-
-  it("normalizes a null backend response to an empty preset list", async () => {
-    invokeImplFor({ list_config_presets: () => null });
-
-    await expect(loadConfigPresets()).resolves.toEqual([]);
-  });
-
-  it("applies the chosen preset to the given project directory", async () => {
-    invokeImplFor({ apply_config_preset: () => undefined });
-
-    await applyConfigPreset("/my/project", "careful");
-
-    expect(invokeMock).toHaveBeenCalledWith("apply_config_preset", { dir: "/my/project", preset: "careful" });
-  });
-
-  it("logs and swallows an error applying a preset", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    invokeImplFor({});
-
-    await expect(applyConfigPreset("/my/project", "careful")).resolves.toBeUndefined();
-  });
-});
-
 describe("handleSaveConfigAsPresetClick", () => {
   beforeEach(async () => {
     invokeImplFor({
@@ -418,16 +138,6 @@ describe("handleSaveConfigAsPresetClick", () => {
 
     expect(window.alert).toHaveBeenCalledWith('Failed to save preset "my-preset": Error: disk full');
     expect(console.error).toHaveBeenCalled();
-  });
-});
-
-describe("getPresetLintConfig", () => {
-  it("fetches the named preset's lint settings from the backend", async () => {
-    const config = { ...DEFAULT_LINT_CONFIG, semicolon: false };
-    invokeImplFor({ get_preset_lint_config: () => config });
-
-    await expect(getPresetLintConfig("careful")).resolves.toEqual(config);
-    expect(invokeMock).toHaveBeenCalledWith("get_preset_lint_config", { preset: "careful" });
   });
 });
 
@@ -556,18 +266,6 @@ describe("handleResetToPresetClick", () => {
   });
 });
 
-describe("isCustomPreset", () => {
-  it("treats the three built-in preset ids as non-custom, case-insensitively", () => {
-    expect(isCustomPreset({ id: "strict", label: "Strict", description: "" })).toBe(false);
-    expect(isCustomPreset({ id: "Standard", label: "Standard", description: "" })).toBe(false);
-    expect(isCustomPreset({ id: "CAREFUL", label: "Careful", description: "" })).toBe(false);
-  });
-
-  it("treats any other id as a custom preset", () => {
-    expect(isCustomPreset({ id: "team-style", label: "Team Style", description: "" })).toBe(true);
-  });
-});
-
 describe("renderPresetManagementTab", () => {
   const builtIns = [
     { id: "strict", label: "Strict", description: "Catches everything." },
@@ -632,7 +330,7 @@ describe("renderPresetManagementTab", () => {
   });
 });
 
-describe("refreshPresetManagementTab / rename/delete/exportUserPreset", () => {
+describe("refreshPresetManagementTab", () => {
   it("refreshPresetManagementTab re-renders the tab from the backend's current preset list", async () => {
     invokeImplFor({
       list_config_presets: () => [{ id: "team-style", label: "Team Style", description: "" }],
@@ -647,33 +345,6 @@ describe("refreshPresetManagementTab / rename/delete/exportUserPreset", () => {
         (option) => option.value,
       ),
     ).toEqual(["team-style"]);
-  });
-
-  it("renameUserPreset invokes rename_user_preset with the given arguments", async () => {
-    invokeImplFor({ rename_user_preset: () => undefined });
-
-    await renameUserPreset("old-name", "new-name", true);
-
-    expect(invokeMock).toHaveBeenCalledWith("rename_user_preset", {
-      oldName: "old-name",
-      newName: "new-name",
-      overwrite: true,
-    });
-  });
-
-  it("deleteUserPreset invokes delete_user_preset with the given name", async () => {
-    invokeImplFor({ delete_user_preset: () => undefined });
-
-    await deleteUserPreset("team-style");
-
-    expect(invokeMock).toHaveBeenCalledWith("delete_user_preset", { name: "team-style" });
-  });
-
-  it("exportUserPreset invokes export_user_preset and returns its YAML", async () => {
-    invokeImplFor({ export_user_preset: () => "semicolon: true\n" });
-
-    await expect(exportUserPreset("team-style")).resolves.toBe("semicolon: true\n");
-    expect(invokeMock).toHaveBeenCalledWith("export_user_preset", { name: "team-style" });
   });
 });
 
