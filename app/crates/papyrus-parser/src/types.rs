@@ -160,6 +160,7 @@ pub fn infer_type(expr: &Expr, env: &TypeEnv) -> Option<TypeName> {
             arithmetic_result(*op, &left_ty, &right_ty)
         }
         Expr::Cast { type_name, .. } => Some(scalar(type_name)),
+        Expr::Is { .. } => Some(scalar("Bool")),
         Expr::NewArray { type_name, .. } => Some(TypeName {
             name: type_name.name.clone(),
             is_array: true,
@@ -343,6 +344,12 @@ EndFunction
             type_name: "Float".to_string(),
         };
         assert_eq!(infer_type(&cast, &env), Some(scalar("Float")));
+
+        let type_check = Expr::Is {
+            value: Box::new(Expr::Identifier("akActionRef".to_string())),
+            type_name: "Actor".to_string(),
+        };
+        assert_eq!(infer_type(&type_check, &env), Some(scalar("Bool")));
 
         let new_array = Expr::NewArray {
             type_name: scalar("Int"),

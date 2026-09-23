@@ -383,7 +383,7 @@ fn collect_call_site_edits_in_expr(
             collect_call_site_edits_in_expr(object, wrapped_callees, ctx, edits);
             collect_call_site_edits_in_expr(index, wrapped_callees, ctx, edits);
         }
-        Expr::Cast { value, .. } => {
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => {
             collect_call_site_edits_in_expr(value, wrapped_callees, ctx, edits);
         }
         Expr::NewArray { size, .. } => {

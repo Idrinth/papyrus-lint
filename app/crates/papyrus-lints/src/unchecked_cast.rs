@@ -338,7 +338,7 @@ fn check_expr(
             check_expr(object, unchecked_vars, guarded_casts, diagnostics, line);
             check_expr(index, unchecked_vars, guarded_casts, diagnostics, line);
         }
-        Expr::Cast { value, .. } => {
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => {
             check_expr(value, unchecked_vars, guarded_casts, diagnostics, line)
         }
         Expr::NewArray { size, .. } => {

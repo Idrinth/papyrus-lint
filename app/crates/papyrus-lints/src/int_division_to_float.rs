@@ -121,7 +121,7 @@ fn collect_int_divisions(expr: &Expr, env: &TypeEnv, count: &mut usize) {
             collect_int_divisions(right, env, count);
         }
         Expr::Unary { operand, .. } => collect_int_divisions(operand, env, count),
-        Expr::Cast { value, .. } => collect_int_divisions(value, env, count),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => collect_int_divisions(value, env, count),
         Expr::NamedArg { value, .. } => collect_int_divisions(value, env, count),
         Expr::Literal(_)
         | Expr::Identifier(_)

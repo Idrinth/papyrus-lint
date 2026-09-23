@@ -88,7 +88,9 @@ impl AstLint for Collect {
                     self.store.push(missing(*line, *col, name));
                 }
             }
-            Expr::Cast { type_name, .. } if !ctx.external.type_exists(type_name) => {
+            Expr::Cast { type_name, .. } | Expr::Is { type_name, .. }
+                if !ctx.external.type_exists(type_name) =>
+            {
                 self.store
                     .push(missing_type(ctx.line, 1, type_name, "Type"));
             }

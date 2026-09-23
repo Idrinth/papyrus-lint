@@ -232,7 +232,7 @@ fn walk_expr_as_read(expr: &Expr, usage: &mut HashMap<String, Usage>) {
             walk_expr_as_read(object, usage);
             walk_expr_as_read(index, usage);
         }
-        Expr::Cast { value, .. } => walk_expr_as_read(value, usage),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => walk_expr_as_read(value, usage),
         Expr::NewArray { size, .. } => walk_expr_as_read(size, usage),
         Expr::NamedArg { value, .. } => walk_expr_as_read(value, usage),
         Expr::Literal(_) | Expr::Self_ | Expr::Parent => {}

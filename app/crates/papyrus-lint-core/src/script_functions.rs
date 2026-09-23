@@ -453,7 +453,7 @@ fn scan_expr(expr: &Expr, called: &mut HashSet<String>) {
             scan_expr(object, called);
             scan_expr(index, called);
         }
-        Expr::Cast { value, .. } => scan_expr(value, called),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => scan_expr(value, called),
         Expr::NewArray { size, .. } => scan_expr(size, called),
     }
 }

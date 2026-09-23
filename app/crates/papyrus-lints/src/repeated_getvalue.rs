@@ -154,7 +154,7 @@ fn collect_get_value_calls<'a>(expr: &'a Expr, out: &mut Vec<(&'a Expr, usize, u
             collect_get_value_calls(object, out);
             collect_get_value_calls(index, out);
         }
-        Expr::Cast { value, .. } => collect_get_value_calls(value, out),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => collect_get_value_calls(value, out),
         Expr::NewArray { size, .. } => collect_get_value_calls(size, out),
     }
 }

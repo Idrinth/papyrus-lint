@@ -450,3 +450,77 @@ fn skyrim_mode_rejects_colon_qualified_types() {
         .expect_err("colon-qualified property types are Fallout 4 only");
     assert!(matches!(error, PapyrusError::Parse(_)));
 }
+
+#[test]
+fn parses_is_type_check_operator() {
+    let script = parse_with_mode(
+        r#"ScriptName WorkshopSwitchIntervalScript
+
+Event OnActivate(ObjectReference akActionRef)
+    if akActionRef is Actor
+        gotoState("Off")
+    endif
+EndEvent
+"#,
+        GameEdition::Fallout4,
+    )
+    .expect("Fallout 4 `is` type-check should parse");
+
+    let Some(papyrus_parser::ast::Stmt::If { branches, .. }) = script.functions[0].body.first()
+    else {
+        panic!("expected an If statement");
+    };
+    assert_eq!(
+        branches[0].condition,
+        Expr::Is {
+            value: Box::new(Expr::Identifier("akActionRef".to_string())),
+            type_name: "Actor".to_string(),
+        }
+    );
+}
+
+#[test]
+fn parses_is_with_colon_qualified_type() {
+    let script = parse_with_mode(
+        r#"ScriptName TypedCheck
+
+Function Test(ObjectReference akRef)
+    if akRef is DLC03:WorkshopNPCScript
+        return
+    endif
+EndFunction
+"#,
+        GameEdition::Fallout4,
+    )
+    .expect("colon-qualified `is` type names should parse in Fallout 4 mode");
+
+    let Some(papyrus_parser::ast::Stmt::If { branches, .. }) = script.functions[0].body.first()
+    else {
+        panic!("expected an If statement");
+    };
+    let Expr::Is { type_name, .. } = &branches[0].condition else {
+        panic!("expected an `is` expression");
+    };
+    assert_eq!(type_name, "DLC03:WorkshopNPCScript");
+}
+
+#[test]
+fn skyrim_mode_rejects_is_type_check_operator() {
+    let error = parse(
+        r#"ScriptName Rejected
+
+Event OnActivate(ObjectReference akActionRef)
+    if akActionRef is Actor
+        return
+    endif
+EndEvent
+"#,
+    )
+    .expect_err("`is` is Fallout 4 only");
+    assert!(matches!(error, PapyrusError::Parse(_)));
+    assert!(
+        error.to_string().contains("found Keyword(Is)")
+            || error.to_string().contains("found Identifier(\"is\")"),
+        "Skyrim mode should reject `is` as an unexpected token, got {error}"
+    );
+}

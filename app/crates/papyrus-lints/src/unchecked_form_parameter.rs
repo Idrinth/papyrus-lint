@@ -240,7 +240,7 @@ fn check_expr(
             check_expr(object, unchecked, diagnostics, line);
             check_expr(index, unchecked, diagnostics, line);
         }
-        Expr::Cast { value, .. } => check_expr(value, unchecked, diagnostics, line),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => check_expr(value, unchecked, diagnostics, line),
         Expr::NewArray { size, .. } => check_expr(size, unchecked, diagnostics, line),
         Expr::NamedArg { value, .. } => check_expr(value, unchecked, diagnostics, line),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}

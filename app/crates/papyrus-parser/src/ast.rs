@@ -330,6 +330,13 @@ pub enum Expr {
         value: Box<Expr>,
         type_name: String,
     },
+    /// Fallout 4 only (`GameEdition::Fallout4`): type-check operator
+    /// `expr is Type`. The right-hand side is a type name (possibly
+    /// colon-qualified), not a value expression. Evaluates to `Bool`.
+    Is {
+        value: Box<Expr>,
+        type_name: String,
+    },
     NewArray {
         type_name: TypeName,
         size: Box<Expr>,

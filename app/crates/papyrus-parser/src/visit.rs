@@ -221,7 +221,7 @@ pub fn walk_expr<V: Visitor + ?Sized>(visitor: &mut V, expr: &Expr) {
             visitor.visit_expr(object);
             visitor.visit_expr(index);
         }
-        Expr::Cast { value, .. } => visitor.visit_expr(value),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => visitor.visit_expr(value),
         Expr::NewArray {
             type_name, size, ..
         } => {

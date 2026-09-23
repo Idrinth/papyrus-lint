@@ -326,7 +326,7 @@ fn expr_contains_self_call(expr: &Expr, name_lower: &str) -> bool {
             expr_contains_self_call(object, name_lower)
                 || expr_contains_self_call(index, name_lower)
         }
-        Expr::Cast { value, .. } => expr_contains_self_call(value, name_lower),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => expr_contains_self_call(value, name_lower),
         Expr::NewArray { size, .. } => expr_contains_self_call(size, name_lower),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => false,
         Expr::NewStruct { .. } => false,
@@ -383,7 +383,7 @@ fn find_self_calls(expr: &Expr, name_lower: &str, diagnostics: &mut Vec<Diagnost
             find_self_calls(object, name_lower, diagnostics);
             find_self_calls(index, name_lower, diagnostics);
         }
-        Expr::Cast { value, .. } => find_self_calls(value, name_lower, diagnostics),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => find_self_calls(value, name_lower, diagnostics),
         Expr::NewArray { size, .. } => find_self_calls(size, name_lower, diagnostics),
         Expr::Literal(_) | Expr::Identifier(_) | Expr::Self_ | Expr::Parent => {}
         Expr::NewStruct { .. } => {}
