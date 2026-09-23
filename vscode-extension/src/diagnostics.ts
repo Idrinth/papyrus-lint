@@ -10,10 +10,19 @@ export interface JsonDiagnostic {
   doc_url: string | null;
 }
 
+/** Mirrors `papyrus_lint_output::JsonParserError`. */
+export interface JsonParserError {
+  kind: 'lex' | 'parse';
+  line: number;
+  column: number;
+  message: string;
+}
+
 /** Mirrors `papyrus_lint_cli::JsonFileReport`. */
 interface JsonFileReport {
   path: string;
   diagnostics: JsonDiagnostic[];
+  parser_errors?: JsonParserError[];
 }
 
 /** Mirrors `papyrus_lint_cli::JsonReport`, as printed by `PapyrusLinterCLI --json`. */
