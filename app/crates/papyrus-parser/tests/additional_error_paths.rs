@@ -64,7 +64,7 @@ fn rejects_invalid_members_inside_fallout4_declaration_blocks() {
         ),
         (
             "ScriptName Broken\nGroup Settings\nInt value\nEndGroup\n",
-            "expected something else impossible",
+            "expected Property declaration inside Group, found Identifier(\"value\")",
         ),
     ] {
         assert_eq!(fallout4_parse_error(source), expected);
