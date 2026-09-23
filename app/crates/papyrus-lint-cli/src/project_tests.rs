@@ -132,16 +132,17 @@ fn honors_the_project_yaml_config_two_directories_above_a_single_psc_file() {
 
 #[test]
 fn finds_the_project_root_for_a_psc_nested_under_a_namespaced_subfolder() {
-    // A Fallout 4-style namespaced script, e.g. `ScriptName User:MyScript`
-    // stored at `Scripts/Source/User/MyScript.psc`, sits three
-    // directories under the project root rather than the conventional
-    // two. A naive "two directories up" rule would land on `Scripts`
-    // instead of the real root, missing the project's config and
-    // breaking every cross-script lookup — this must still find the
-    // real root and pick up the config there.
+    // A Fallout 4-style layout stores `MyScript.psc` at
+    // `Scripts/Source/User/MyScript.psc`, three directories under the
+    // project root rather than the conventional two. A naive "two
+    // directories up" rule would land on `Scripts` instead of the real
+    // root, missing the project's config and breaking every cross-script
+    // lookup — this must still find the real root and pick up the config
+    // there. The declared name stays a single identifier: Skyrim mode,
+    // which `parse` always uses, rejects `User:MyScript`.
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     let script_path = dir.path().join("scripts/source/User/MyScript.psc");
-    write_file(&script_path, "ScriptName User:MyScript   \n");
+    write_file(&script_path, "ScriptName MyScript   \n");
     write_file(
         &dir.path().join("papyrus-lint.yaml"),
         "rules:\n  trailing_whitespace: false\n",

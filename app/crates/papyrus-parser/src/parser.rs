@@ -178,14 +178,11 @@ impl Parser {
         Ok(name)
     }
 
-    /// Parses a Fallout 4 namespaced script name such as
-    /// `User:MyQuestScript` while retaining ordinary script names.
-    ///
-    /// Accepted in every [`GameEdition`]: project resolution looks up
-    /// namespaced `ScriptName`s without selecting Fallout 4 mode.
+    /// Parses a script name. Fallout 4 allows colon-qualified names such
+    /// as `User:MyQuestScript`; Skyrim script names stay a single
+    /// identifier, so a `:` is still unexpected there.
     fn expect_script_name(&mut self) -> PResult<String> {
-        let name = self.expect_identifier()?;
-        self.append_colon_segments(name)
+        self.expect_qualified_name()
     }
 
     /// An identifier, or in [`GameEdition::Fallout4`] only a
@@ -614,7 +611,17 @@ impl Parser {
         } else {
             self.expect_keyword(Keyword::Function)?;
         }
-        let name = self.expect_qualified_name()?;
+        let mut name = self.expect_qualified_name()?;
+        // Fallout 4 remote / custom events are declared as
+        // `Event <Script>.<EventName>(...)`, optionally with a
+        // colon-qualified script (`Event DLC03:Foo.Bar(...)`). Skyrim
+        // events are a bare identifier; a `.` there is still
+        // `expected LParen, found Dot`.
+        if is_event && self.mode == GameEdition::Fallout4 && matches!(self.kind(), TokenKind::Dot) {
+            self.advance();
+            name.push('.');
+            name.push_str(&self.expect_identifier()?);
+        }
         self.expect(TokenKind::LParen)?;
         let params = self.parse_params()?;
         self.expect(TokenKind::RParen)?;
