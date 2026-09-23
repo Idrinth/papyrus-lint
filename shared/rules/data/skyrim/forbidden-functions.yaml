@@ -72,6 +72,11 @@
   level: warning
   message: RegisterForUpdate creates a recurring timer that keeps firing until explicitly cancelled and can stack duplicate timers if called more than once; prefer RegisterForSingleUpdate and re-register only when the next tick is actually needed
 
+- script: Form
+  function: RegisterForUpdateGameTime
+  level: warning
+  message: RegisterForUpdateGameTime creates a recurring timer that keeps firing until explicitly cancelled and can stack duplicate timers if called more than once; prefer RegisterForSingleUpdateGameTime and re-register only when the next tick is actually needed
+
 - script: StorageUtil
   function: SetIntValue
   level: warning
