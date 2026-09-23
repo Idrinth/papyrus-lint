@@ -65,7 +65,7 @@ jobs:
           python-version: '3.13'
 
       - name: Download CLI binary
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: papyrus-linter-cli-linux
           path: cli-bin

@@ -22,12 +22,12 @@ jobs:
       - name: Determine component label
         id: component
         run: |
-          # "component: ci" for a github-actions update (a workflow's own
-          # dependency); otherwise the component matching the directory
-          # dependabot.yml configured for this update, so it lines up with
-          # the same component labels release.yml groups PRs by.
-          case "${{ steps.metadata.outputs.package-ecosystem }}" in
-            github-actions)
+          # "component: ci" when Dependabot's github_actions label marks a
+          # workflow dependency; otherwise the component matching the directory
+          # dependabot.yml configured for this update, so it lines up with the
+          # same component labels release.yml groups PRs by.
+          case "${{ contains(github.event.pull_request.labels.*.name, 'github_actions') }}" in
+            true)
               echo "label=component: ci" >> "$GITHUB_OUTPUT"
               ;;
             *)
