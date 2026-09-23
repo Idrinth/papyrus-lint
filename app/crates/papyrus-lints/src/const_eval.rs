@@ -34,6 +34,7 @@ pub(crate) fn eval_const(expr: &Expr) -> Option<Literal> {
         | Expr::Member { .. }
         | Expr::Index { .. }
         | Expr::Cast { .. }
+        | Expr::Is { .. }
         | Expr::NewArray { .. }
         | Expr::NewStruct { .. }
         | Expr::NamedArg { .. } => None,

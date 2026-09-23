@@ -167,6 +167,7 @@ fn referenced_identifiers(expr: &Expr) -> Option<HashSet<String>> {
         | Expr::Member { .. }
         | Expr::Index { .. }
         | Expr::Cast { .. }
+        | Expr::Is { .. }
         | Expr::NewArray { .. }
         | Expr::NewStruct { .. }
         | Expr::NamedArg { .. } => None,

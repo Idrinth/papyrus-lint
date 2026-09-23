@@ -1039,13 +1039,26 @@ impl Parser {
 
     fn parse_cast(&mut self) -> PResult<Expr> {
         let mut left = self.parse_postfix()?;
-        while self.at_keyword(Keyword::As) {
-            self.advance();
-            let type_name = self.expect_qualified_name()?;
-            left = Expr::Cast {
-                value: Box::new(left),
-                type_name,
-            };
+        loop {
+            if self.at_keyword(Keyword::As) {
+                self.advance();
+                let type_name = self.expect_qualified_name()?;
+                left = Expr::Cast {
+                    value: Box::new(left),
+                    type_name,
+                };
+                continue;
+            }
+            if self.mode == GameEdition::Fallout4 && self.at_keyword(Keyword::Is) {
+                self.advance();
+                let type_name = self.expect_qualified_name()?;
+                left = Expr::Is {
+                    value: Box::new(left),
+                    type_name,
+                };
+                continue;
+            }
+            break;
         }
         Ok(left)
     }

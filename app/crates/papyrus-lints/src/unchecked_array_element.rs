@@ -412,7 +412,7 @@ fn check_expr(
             check_expr(object, object_arrays, checked, diagnostics, line);
             check_expr(index, object_arrays, checked, diagnostics, line);
         }
-        Expr::Cast { value, .. } => check_expr(value, object_arrays, checked, diagnostics, line),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => check_expr(value, object_arrays, checked, diagnostics, line),
         Expr::NewArray { size, .. } => check_expr(size, object_arrays, checked, diagnostics, line),
         Expr::NamedArg { value, .. } => {
             check_expr(value, object_arrays, checked, diagnostics, line)

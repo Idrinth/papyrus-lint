@@ -256,7 +256,7 @@ fn expr_contains_wait_call(expr: &Expr) -> bool {
         Expr::Index { object, index } => {
             expr_contains_wait_call(object) || expr_contains_wait_call(index)
         }
-        Expr::Cast { value, .. } => expr_contains_wait_call(value),
+        Expr::Cast { value, .. } | Expr::Is { value, .. } => expr_contains_wait_call(value),
         Expr::NewArray { size, .. } => expr_contains_wait_call(size),
     }
 }
