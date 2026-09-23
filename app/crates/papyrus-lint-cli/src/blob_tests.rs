@@ -30,7 +30,7 @@ fn blob_json_reports_parse_failures_as_unsuccessful() {
         "--blob=ScriptName Example\nFunction Broken(\n".to_string(),
     ]);
 
-    assert_eq!(code, 0);
+    assert_eq!(code, 1);
     assert!(stderr.is_empty());
     let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(report["success"], false);
@@ -303,7 +303,7 @@ fn blob_plain_reports_parser_errors() {
     ]);
 
     assert!(stderr.is_empty());
-    assert_eq!(code, 0);
+    assert_eq!(code, 1);
     assert!(stdout.contains("<blob>:"));
     assert!(stdout.contains("[parse]"));
     assert!(stdout.contains("problem(s) found in the given blob"));
