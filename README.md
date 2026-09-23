@@ -254,6 +254,8 @@ bugs and reporting them in the early development of the tool.
 Also thank you to Cobb from the r/skyrimmods discord for giving me critical
 feedback and encouraging me further to clean up the ai slop here.
 
+Vict over at [x.com/VictMangle](https://x.com/VictMangle) for the new logo.
+
 ## How to help
 
 You can help the project by:
