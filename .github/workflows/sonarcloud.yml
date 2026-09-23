@@ -25,7 +25,7 @@ jobs:
           distribution: temurin
           java-package: jre
       - name: Official SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v8.2.1
+        uses: SonarSource/sonarqube-scan-action@v8.2.2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
