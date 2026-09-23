@@ -16,7 +16,7 @@ describe('papyrusLint.initializeConfig', () => {
 
     assert.deepEqual(harness.execCalls[0], {
       executable: '/tools/PapyrusLinterCLI',
-      args: ['init'],
+      args: ['init', '--game', 'skyrim'],
       options: { cwd: '/project', maxBuffer: 10 * 1024 * 1024 },
     });
     assert.deepEqual(harness.messages.information, ['Papyrus Lint: Created /project/papyrus-lint.yaml']);
@@ -31,7 +31,7 @@ describe('papyrusLint.initializeConfig', () => {
 
     await harness.commands.get('papyrusLint.initializeConfig')();
 
-    assert.deepEqual(harness.execCalls[0].args, ['init', '--preset', 'careful']);
+    assert.deepEqual(harness.execCalls[0].args, ['init', '--game', 'skyrim', '--preset', 'careful']);
   });
 
   it('uses the default preset when a built-in quick-pick item omits its value', async () => {
@@ -43,7 +43,7 @@ describe('papyrusLint.initializeConfig', () => {
 
     await harness.commands.get('papyrusLint.initializeConfig')();
 
-    assert.deepEqual(harness.execCalls[0].args, ['init']);
+    assert.deepEqual(harness.execCalls[0].args, ['init', '--game', 'skyrim']);
   });
 
   it('prompts for and passes a custom preset name', async () => {
@@ -56,7 +56,34 @@ describe('papyrusLint.initializeConfig', () => {
 
     await harness.commands.get('papyrusLint.initializeConfig')();
 
-    assert.deepEqual(harness.execCalls[0].args, ['init', '--preset', 'team-style']);
+    assert.deepEqual(harness.execCalls[0].args, ['init', '--game', 'skyrim', '--preset', 'team-style']);
+  });
+
+  it('passes a chosen target game', async () => {
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri('/project') }],
+      quickPickResults: [
+        { label: 'standard', preset: 'standard' },
+        { label: 'Fallout 4', game: 'fallout4' },
+      ],
+      result: { error: null, stdout: 'Created /project/papyrus-lint.yaml\n', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.initializeConfig')();
+
+    assert.deepEqual(harness.execCalls[0].args, ['init', '--game', 'fallout4', '--preset', 'standard']);
+  });
+
+  it('does nothing when the game prompt is cancelled', async () => {
+    const harness = createHarness({
+      workspaceFolders: [{ uri: uri('/project') }],
+      quickPickResults: [{ label: 'strict (default)', preset: '' }],
+      result: { error: null, stdout: '', stderr: '' },
+    });
+
+    await harness.commands.get('papyrusLint.initializeConfig')();
+
+    assert.equal(harness.execCalls.length, 0);
   });
 
   it('prompts for a workspace folder when several are open', async () => {

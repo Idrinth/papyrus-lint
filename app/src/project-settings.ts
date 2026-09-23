@@ -1,5 +1,7 @@
-import { loadAndApplyLintConfig } from "./config-ui";
+import { loadAndApplyLintConfig, selectGame } from "./config-ui";
+import { currentLintConfig, type Game } from "./config-types";
 import { markLintResultsStale } from "./drop";
+import { type ConfigSelectionResult } from "./main-types";
 import { applyConfigPreset } from "./presets-api";
 import { promptForConfigSelection } from "./presets-picker";
 import { loadCompileCheck, loadCompilerPath, loadLookupScriptRoots, loadProjectInfo, loadScriptRoots, saveCompileCheck, saveCompilerPath, saveLookupScriptRoots, saveScriptRoots } from "./project-io";
@@ -177,6 +179,7 @@ export function resetConfirmedProjectDirs() {
 // dropping into the app, not one merely remembered from a previous
 // session.
 export async function loadProjectConfig(dir: string): Promise<void> {
+  let game: Game | undefined;
   if (!confirmedProjectDirs.has(dir)) {
     setSettingsLocked(true);
     const decision = await promptForConfigSelection(await loadProjectInfo(dir));
@@ -186,10 +189,28 @@ export async function loadProjectConfig(dir: string): Promise<void> {
     if (configPathOverrideEl) {
       configPathOverrideEl.value = decision.kind === "path" ? decision.path : "";
     }
+    game = gameChosenForNewConfig(decision);
     confirmedProjectDirs.add(dir);
   }
   await useProjectDir(dir);
+  // Built-in presets are authored for Skyrim. Stamp the game the first-run
+  // picker actually selected, the same way `init --game` rewrites the key
+  // after writing the preset, without touching a file the user pointed at
+  // directly or a project that already had a configuration.
+  if (game && game !== currentLintConfig.game) {
+    await selectGame(game);
+    // Continuing as Fallout 4 (with or without a preset) is what creates
+    // the config file. Reload project info so "Used Configuration File"
+    // doesn't stay on "None" after that write.
+    if (!configPathOverride()) {
+      applyProjectInfoToUI(await loadProjectInfo(dir));
+    }
+  }
   setSettingsLocked(false);
+}
+
+function gameChosenForNewConfig(decision: ConfigSelectionResult): Game | undefined {
+  return decision.kind === "path" ? undefined : decision.game;
 }
 
 // Called when the "Configuration file" override input changes: reloads the

@@ -2,6 +2,8 @@
 // tests can import them without pulling in the UI façade (or exporting
 // them from main.ts only so tests can reach them).
 
+import { type Game } from "./config-types";
+
 // One configuration preset's identity/description — a built-in one, or a
 // user preset found under a presets directory next to the executable — as
 // returned by the backend's list_config_presets command
@@ -14,13 +16,23 @@ export interface ConfigPreset {
   description: string;
 }
 
-// What promptForConfigSelection resolved to (see useProjectDir): stick with
-// whatever useProjectDir's own auto-detection would already do ("detected" —
-// the project's existing papyrus-lint.yaml/.yml, or the engine's silent
-// defaults if it has none), point at a specific configuration file instead
-// ("path"), or seed a fresh one from a preset ("preset", handled the same
-// way applyConfigPreset already is elsewhere).
+// Games the desktop picker, and the editor init prompts, can write. Starfield
+// parses as a config value but the linter does not support it yet, so it is
+// not offered here.
+export function isSelectableGame(value: string | null | undefined): value is Game {
+  return value === "skyrim" || value === "fallout4";
+}
+
+// What promptForConfigSelection resolved to (see loadProjectConfig): stick
+// with whatever useProjectDir's own auto-detection would already do
+// ("detected" — the project's existing papyrus-lint.yaml/.yml, or the
+// engine's silent defaults if it has none), point at a specific
+// configuration file instead ("path"), or seed a fresh one from a preset
+// ("preset", handled the same way applyConfigPreset already is elsewhere).
+// `game` is set only when the project has no configuration file yet, so a
+// choice made in the first-run picker can be written into that new file.
+// Closing the dialog (Escape, backdrop) omits it and leaves the defaults.
 export type ConfigSelectionResult =
-  | { kind: "detected" }
+  | { kind: "detected"; game?: Game }
   | { kind: "path"; path: string }
-  | { kind: "preset"; preset: string };
+  | { kind: "preset"; preset: string; game: Game };

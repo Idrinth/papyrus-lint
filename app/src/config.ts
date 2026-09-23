@@ -3,6 +3,7 @@
 // façade so callers don't have to know which slice they need.
 
 export type {
+  Game,
   IdentifierCasingStyle,
   LintConfig,
   LintRules,
@@ -21,4 +22,5 @@ export {
   disableRulesInLintConfig,
   handleLintConfigChanged,
   loadAndApplyLintConfig,
+  selectGame,
 } from "./config-ui";

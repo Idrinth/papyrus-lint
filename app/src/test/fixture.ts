@@ -47,6 +47,10 @@ export const FIXTURE_HTML = `
         <input id="compile-check" type="checkbox" />
         <textarea id="script-roots"></textarea>
         <textarea id="lookup-script-roots"></textarea>
+        <select id="game-select">
+          <option value="skyrim">Skyrim</option>
+          <option value="fallout4">Fallout 4</option>
+        </select>
         <select id="semicolon-style">
           <option value="forbid">Remove where possible</option>
           <option value="require">Add to non-empty lines</option>
@@ -258,6 +262,13 @@ export const FIXTURE_HTML = `
     <p id="config-picker-none" class="config-picker__none" hidden>
       This project doesn't have a papyrus-lint.yaml yet.
     </p>
+    <div id="config-picker-game" class="config-picker__game" hidden>
+      <label for="config-picker-game-select">Target game</label>
+      <select id="config-picker-game-select">
+        <option value="skyrim">Skyrim</option>
+        <option value="fallout4">Fallout 4</option>
+      </select>
+    </div>
     <div id="config-picker-preset-list" class="config-picker__list" hidden></div>
     <div class="config-picker__browse">
       <label for="config-picker-path-input">Use a different configuration file instead</label>

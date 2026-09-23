@@ -1,7 +1,9 @@
 import { markLintResultsStale } from "./drop";
 import { loadLintConfig, loadLintConfigFromPath, saveLintConfig, saveLintConfigToPath } from "./config-io";
-import { type IdentifierCasingStyle, type LintConfig, type LintRules, type MagicNumbersMode, type NamedArgumentsStyle, type TypeCasingStyle, DEFAULT_RULES, RULE_KEYS, currentLintConfig, setCurrentLintConfig } from "./config-types";
+import { type Game, type IdentifierCasingStyle, type LintConfig, type LintRules, type MagicNumbersMode, type NamedArgumentsStyle, type TypeCasingStyle, DEFAULT_RULES, RULE_KEYS, currentLintConfig, setCurrentLintConfig } from "./config-types";
+import { isSelectableGame } from "./main-types";
 import { configPathOverride, currentProjectDir } from "./project-state";
+let gameEl: HTMLSelectElement | null;
 let indentationStyleEl: HTMLSelectElement | null;
 let indentationWidthEl: HTMLInputElement | null;
 let typeCasingStyleEl: HTMLSelectElement | null;
@@ -21,6 +23,7 @@ let ruleEls: Partial<Record<keyof LintRules, HTMLInputElement>> = {};
 // Reflects `config` onto the formatting controls without firing their
 // `change` listeners (assigning `.value` does not dispatch `change`).
 export function applyLintConfigToUI(config: LintConfig) {
+  reflectGameControl(config.game);
   if (semicolonStyleEl) {
     semicolonStyleEl.value = config.semicolon ? "require" : "forbid";
   }
@@ -73,6 +76,54 @@ export function applyLintConfigToUI(config: LintConfig) {
 }
 
 // Reads the formatting controls' current values into a LintConfig.
+function gameFromControls(): Game {
+  const selected = gameEl?.value;
+  if (isSelectableGame(selected)) {
+    return selected;
+  }
+  // A loaded game the picker does not offer (CLI-only `starfield`) is shown
+  // as an extra option. Honor that option when it is the current selection
+  // so a later edit does not silently rewrite the key to Skyrim, and so
+  // switching back to it still round-trips.
+  const unlisted = gameEl?.selectedOptions[0]?.hasAttribute("data-unlisted-game") === true;
+  if (unlisted && selected) {
+    return selected as Game;
+  }
+  // The select isn't mounted, or it has no option for the loaded value yet.
+  return currentLintConfig.game;
+}
+
+// The Settings select only lists games the linter can actually check. A
+// project created with `init --game starfield` still has to display and
+// preserve that value until the user picks Skyrim or Fallout 4.
+function reflectGameControl(game: string) {
+  if (!gameEl) {
+    return;
+  }
+  for (const option of Array.from(gameEl.querySelectorAll("option[data-unlisted-game]"))) {
+    option.remove();
+  }
+  if (!Array.from(gameEl.options).some((option) => option.value === game)) {
+    const option = document.createElement("option");
+    option.value = game;
+    option.textContent = game === "starfield" ? "Starfield" : game;
+    option.setAttribute("data-unlisted-game", "");
+    gameEl.append(option);
+  }
+  gameEl.value = game;
+}
+
+// Sets the Settings tab's game control and persists it the same way a manual
+// change would. Used by the first-run picker after a preset (or a continue
+// that names a game) has been chosen for a project that had no config yet.
+export function selectGame(game: Game): Promise<void> {
+  if (!gameEl || !isSelectableGame(game)) {
+    return Promise.resolve();
+  }
+  gameEl.value = game;
+  return handleLintConfigChanged();
+}
+
 export function lintConfigFromUI(): LintConfig {
   const indentation = indentationStyleEl?.value === "spaces" ? "space" : "tab";
   const cyclomaticComplexityWarning = Math.max(1, cyclomaticComplexityWarningEl?.valueAsNumber || 10);
@@ -81,9 +132,7 @@ export function lintConfigFromUI(): LintConfig {
     rules[key] = ruleEls[key]?.checked ?? DEFAULT_RULES[key];
   }
   return {
-    // There is only one selectable game today, so preserve the loaded enum
-    // value until the Settings UI needs a game picker.
-    game: currentLintConfig.game,
+    game: gameFromControls(),
     semicolon: semicolonStyleEl?.value === "require",
     indentation,
     indentation_width: Math.min(16, Math.max(1, indentationWidthEl?.valueAsNumber || 4)),
@@ -115,15 +164,17 @@ export function lintConfigFromUI(): LintConfig {
 
 // Called whenever a formatting control changes: updates the in-memory
 // config and, if a project directory is known, persists it to disk.
-export function handleLintConfigChanged() {
+export function handleLintConfigChanged(): Promise<void> {
   setCurrentLintConfig(lintConfigFromUI());
   markLintResultsStale();
   const override = configPathOverride();
   if (override) {
-    void saveLintConfigToPath(override, currentLintConfig);
-  } else if (currentProjectDir) {
-    void saveLintConfig(currentProjectDir, currentLintConfig);
+    return saveLintConfigToPath(override, currentLintConfig);
   }
+  if (currentProjectDir) {
+    return saveLintConfig(currentProjectDir, currentLintConfig);
+  }
+  return Promise.resolve();
 }
 
 // Loads `dir`'s lint configuration (or the `overridePath` file instead, if
@@ -137,6 +188,7 @@ export async function loadAndApplyLintConfig(dir: string, overridePath: string):
 }
 
 export function bindConfigSettings() {
+  gameEl = document.querySelector("#game-select");
   semicolonStyleEl = document.querySelector("#semicolon-style");
   indentationStyleEl = document.querySelector("#indentation-style");
   indentationWidthEl = document.querySelector("#indentation-width");
@@ -155,6 +207,7 @@ export function bindConfigSettings() {
     RULE_KEYS.map((key) => [key, document.querySelector<HTMLInputElement>(`#rule-${key}`)]),
   ) as Partial<Record<keyof LintRules, HTMLInputElement>>;
 
+  gameEl?.addEventListener("change", handleLintConfigChanged);
   semicolonStyleEl?.addEventListener("change", handleLintConfigChanged);
   indentationStyleEl?.addEventListener("change", () => {
     if (indentationWidthEl) {
