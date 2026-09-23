@@ -107,3 +107,43 @@ fn diagnostic_formatter_works_directly_against_native_papyrus_lints_diagnostics(
     assert!(formatted.contains(&format!("{ANSI_CYAN}[info]{ANSI_RESET}")));
     assert!(formatted.contains(" informational diagnostic"));
 }
+
+#[test]
+fn parser_error_formatter_renders_lex_and_parse_lines_uncolored() {
+    let parse_err = crate::JsonParserError {
+        kind: crate::ParserErrorKind::Parse,
+        line: 2,
+        column: 18,
+        message: "expected ')'".to_string(),
+    };
+    assert_eq!(
+        format_parser_error_line("Broken.psc", &parse_err, false),
+        "Broken.psc:2:18: [parse] expected ')'"
+    );
+
+    let lex_err = crate::JsonParserError {
+        kind: crate::ParserErrorKind::Lex,
+        line: 1,
+        column: 3,
+        message: "unexpected character".to_string(),
+    };
+    assert_eq!(
+        format_parser_error_line("Broken.psc", &lex_err, false),
+        "Broken.psc:1:3: [lex] unexpected character"
+    );
+}
+
+#[test]
+fn parser_error_formatter_colorizes_location_and_kind() {
+    let error = crate::JsonParserError {
+        kind: crate::ParserErrorKind::Parse,
+        line: 2,
+        column: 18,
+        message: "expected ')'".to_string(),
+    };
+    let formatted = format_parser_error_line("Broken.psc", &error, true);
+    assert!(formatted.contains(ANSI_BOLD));
+    assert!(formatted.contains(ANSI_DIM));
+    assert!(formatted.contains("expected ')'"));
+    assert!(formatted.contains("[parse]"));
+}
