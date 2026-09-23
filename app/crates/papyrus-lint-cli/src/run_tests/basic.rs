@@ -44,7 +44,7 @@ fn json_reports_parse_failures_as_unsuccessful() {
         script_path.to_string_lossy().into_owned(),
     ]);
 
-    assert_eq!(code, 0);
+    assert_eq!(code, 1);
     assert!(stderr.is_empty());
     let report: serde_json::Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(report["success"], false);

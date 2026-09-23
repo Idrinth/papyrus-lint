@@ -31,8 +31,9 @@ pub(crate) const BLOB_PATH: &str = "<blob>";
 /// does.
 ///
 /// Returns `0` if no diagnostic counted as a failure (per
-/// `fail_on_warning`/`fail_on_info`), `1` if any did, or `2` on a `--config`
-/// load failure or a failure to write `--output <path>`.
+/// `fail_on_warning`/`fail_on_info`) and the blob lexed and parsed, `1` if
+/// any diagnostic failed the threshold or the blob failed to lex/parse, or
+/// `2` on a `--config` load failure or a failure to write `--output <path>`.
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn run_blob(
     source: &str,
@@ -98,8 +99,9 @@ pub(crate) fn run_blob(
         OutputFormat::Plain => write_blob_plain(
             &mut report_buf,
             &diagnostics,
+            &parser_errors,
             total_diagnostics,
-            should_fail,
+            should_fail || parse_failed,
             use_color,
         ),
     }
@@ -109,7 +111,7 @@ pub(crate) fn run_blob(
         return write_status;
     }
 
-    if should_fail {
+    if should_fail || parse_failed {
         1
     } else {
         0
@@ -187,10 +189,18 @@ fn write_blob_ai(
 fn write_blob_plain(
     report_buf: &mut Vec<u8>,
     diagnostics: &[papyrus_lints::Diagnostic],
+    parser_errors: &[JsonParserError],
     total_diagnostics: usize,
     should_fail: bool,
     use_color: bool,
 ) {
+    for error in parser_errors {
+        let _ = writeln!(
+            report_buf,
+            "{}",
+            format_parser_error_line(BLOB_PATH, error, use_color)
+        );
+    }
     for diagnostic in diagnostics {
         let _ = writeln!(
             report_buf,
@@ -198,17 +208,18 @@ fn write_blob_plain(
             format_diagnostic_line(BLOB_PATH, diagnostic, use_color)
         );
     }
-    let summary_color = if total_diagnostics == 0 {
+    let problem_count = total_diagnostics + parser_errors.len();
+    let summary_color = if problem_count == 0 {
         ANSI_GREEN
     } else if should_fail {
         ANSI_RED
     } else {
         ANSI_YELLOW
     };
-    let summary = if total_diagnostics == 0 {
+    let summary = if problem_count == 0 {
         "PapyrusLinterCLI: no problems found in the given blob.".to_string()
     } else {
-        format!("PapyrusLinterCLI: {total_diagnostics} problem(s) found in the given blob.")
+        format!("PapyrusLinterCLI: {problem_count} problem(s) found in the given blob.")
     };
     let _ = writeln!(
         report_buf,

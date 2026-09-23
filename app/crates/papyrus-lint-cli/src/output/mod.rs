@@ -6,9 +6,9 @@
 // selected, filtering/failure-threshold logic driven by CLI flags, and
 // writing the finished report to stdout or `--output <path>`.
 pub(crate) use papyrus_lint_output::{
-    build_ai_report, colorize, format_diagnostic_line, generated_at, resolve_color, rule_counts,
-    severity_counts, to_json_diagnostics, AiFileReport, AiSource, ColorChoice, ParserErrorKind,
-    ANSI_GREEN, ANSI_RED, ANSI_YELLOW,
+    build_ai_report, colorize, format_diagnostic_line, format_parser_error_line, generated_at,
+    resolve_color, rule_counts, severity_counts, to_json_diagnostics, AiFileReport, AiSource,
+    ColorChoice, ParserErrorKind, ANSI_GREEN, ANSI_RED, ANSI_YELLOW,
 };
 pub use papyrus_lint_output::{JsonDiagnostic, JsonFileReport, JsonParserError, JsonReport};
 
