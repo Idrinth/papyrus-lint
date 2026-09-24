@@ -371,14 +371,13 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │   │   │                      # .github/scripts/build_rules_json.py and is
 │   │   │                      # git-ignored, not checked in
 │   │   └── data/             # Game-specific YAML lookup tables compiled into Rust crates
-│   │       └── skyrim/
-│   │           ├── forbidden-functions.yaml # Discouraged/forbidden calls
-│   │           ├── slow-functions.yaml      # Slow calls and faster alternatives
-│   │           ├── native-methods.yaml      # Base-game native functions
+│   │       └── */
+│   │           ├── forbidden-functions.yaml   # Discouraged/forbidden calls
+│   │           ├── slow-functions.yaml        # Slow calls and faster alternatives
 │   │           ├── update-event-handlers.yaml # RegisterFor*/Event pairs
-│   │           ├── known-events.yaml        # Curated native Event signatures
-│   │           ├── native-globals.yaml      # Native singleton scripts
-│   │           └── actor-values.yaml        # Skyrim's built-in Actor Values
+│   │           |── actor-values.yaml          # the game's built-in Actor Values
+|   |           └── deprecated-functions.yaml  # manually collected functions marked as
+|   |                                          # deprecated in a hard to parse way
 │   └── theme.css             # Palette, canvas, and primitives shared by
 │                              # app/src/styles.css and pages/styles.css so
 │                              # the desktop app and the website cannot drift

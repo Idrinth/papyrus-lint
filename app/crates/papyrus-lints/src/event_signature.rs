@@ -35,7 +35,7 @@ pub struct EventArg {
     pub name: &'static str,
 }
 
-/// One `shared/rules/data/skyrim/known-events.yaml` entry: an event's name, the Form that
+/// One `shared/rules/data/*/known-events.yaml` entry: an event's name, the Form that
 /// first declares it, and its exact expected parameter list.
 pub struct KnownEventRule {
     pub event: &'static str,
