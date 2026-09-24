@@ -21,6 +21,10 @@ pub(crate) struct Documents {
 }
 
 impl Documents {
+    pub(crate) fn get(&self, uri: &str) -> Option<&OpenDocument> {
+        self.open.get(uri)
+    }
+
     pub(crate) fn did_open(&mut self, params: &Value, output: &mut impl Write) -> io::Result<()> {
         let Some(uri) = params["textDocument"]["uri"].as_str() else {
             return Ok(());

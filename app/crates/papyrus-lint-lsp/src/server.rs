@@ -2,6 +2,7 @@ use std::io::{self, BufRead, Write};
 
 use serde_json::{json, Value};
 
+use crate::code_actions;
 use crate::documents::Documents;
 use crate::framing::{read_message, write_message};
 use crate::SERVER_NAME;
@@ -89,7 +90,11 @@ pub fn serve(mut input: impl BufRead, mut output: impl Write) -> io::Result<i32>
                 shutdown = true;
                 write_result(&mut output, id.as_ref(), Value::Null)?;
             }
-            "textDocument/codeAction" => write_result(&mut output, id.as_ref(), json!([]))?,
+            "textDocument/codeAction" => write_result(
+                &mut output,
+                id.as_ref(),
+                code_actions::provide(&documents, &params),
+            )?,
             "workspace/executeCommand" => {
                 write_result(&mut output, id.as_ref(), Value::Null)?;
             }
