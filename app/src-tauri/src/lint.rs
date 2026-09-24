@@ -451,7 +451,7 @@ pub(crate) fn resolve_completion_query(
         byte_offset.get_or_insert(source.len());
     }
     let before = source.get(..byte_offset?)?;
-    let receiver = regex::Regex::new(r"([A-Za-z_]\w*)(?:\s*\[[^[\]]*\])?\s*\.(\w*)$")
+    let receiver = regex::Regex::new(r"([A-Za-z_]\w*)(?:\s*\[[^\[\]]*\])?\s*\.(\w*)$")
         .expect("valid completion receiver regex");
     let captures = receiver.captures(before)?;
     let prefix = captures[2].to_string();
