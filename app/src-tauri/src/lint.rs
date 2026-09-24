@@ -6,7 +6,8 @@ use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
 use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{
-    ast_cache, compile_diagnostics, compiler, function_table, script_locator, stale_pex,
+    ast_cache, collision_cache, compile_diagnostics, compiler, function_table, script_locator,
+    stale_pex,
 };
 use papyrus_lints::script_filename_mismatch;
 use serde::{Deserialize, Serialize};
@@ -195,6 +196,11 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     if context.config.rules.conflicting_script_versions {
         let index =
             script_locator::build_script_index(Path::new(&context.root), &context.additional_roots);
+        collision_cache::preload(
+            context.config.game,
+            index.values().flatten().chain(std::iter::once(path)),
+        );
+        collision_cache::remember_source(context.config.game, path, source);
         let files = script_locator::project_files(
             index.into_values().flatten(),
             Path::new(&context.root),
@@ -203,9 +209,10 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
         );
         project_diagnostics.extend(papyrus_lints::conflicting_script_versions::check(
             path,
-            &papyrus_lint_core::content_hash::md5_hex(source),
+            &papyrus_lint_core::content_hash::sha256_hex(source),
             &files,
         ));
+        collision_cache::flush();
     }
     if context.config.rules.stale_compiled_output {
         project_diagnostics.extend(stale_pex::check(path));
@@ -281,6 +288,7 @@ pub(crate) fn preload_project_scripts(paths: Vec<String>, context: ProjectLintCo
     let script_paths: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
     let game = context.config.game;
 
+    collision_cache::preload(game, &script_paths);
     let closed = {
         let table = function_table
             .read()
@@ -318,6 +326,7 @@ pub(crate) fn preload_project_scripts(paths: Vec<String>, context: ProjectLintCo
     table.preload(entries);
     table.preload_dependencies(&closed.dependencies);
     table.preload_name_slots(&closed.bundled, &closed.unresolved);
+    collision_cache::flush();
 }
 
 struct ProjectScriptParse {
@@ -477,6 +486,9 @@ pub(crate) fn resolve_completion_query(
 
 fn parse_project_script(game: papyrus_lints::Game, path: &Path) -> ProjectScriptParse {
     let source = read_psc_source(path).ok();
+    if let Some(source) = source.as_ref() {
+        collision_cache::remember_source(game, path, source);
+    }
     let ast = source.as_ref().and_then(|source| {
         if let Some(cached) = ast_cache::get_for_game(game, path, source) {
             return Some(cached);

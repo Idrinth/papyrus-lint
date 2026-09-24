@@ -2,11 +2,11 @@ use std::path::{Path, PathBuf};
 
 use super::{check, ProjectFile, RULE};
 
-fn file(path: &str, content_md5: &str) -> ProjectFile {
+fn file(path: &str, content_hash: &str) -> ProjectFile {
     ProjectFile {
         path: PathBuf::from(path),
         display_path: path.to_string(),
-        content_md5: content_md5.to_string(),
+        content_hash: content_hash.to_string(),
     }
 }
 

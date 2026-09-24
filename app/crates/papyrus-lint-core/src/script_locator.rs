@@ -10,8 +10,8 @@ use papyrus_lint_globals::Game;
 use papyrus_lints::conflicting_script_versions::ProjectFile;
 use walkdir::WalkDir;
 
+use crate::collision_cache;
 use crate::project_root::display_path;
-use crate::{ast_cache, content_hash, source_encoding};
 
 /// Rule id used when multiple search roots contain different versions of
 /// the same script.
@@ -19,8 +19,8 @@ pub const CONFLICTING_SCRIPT_VERSIONS_RULE: &str = "conflicting-script-versions"
 
 /// Reads a complete path snapshot for project-level lint rules. Files that
 /// disappear or become unreadable between discovery and linting are omitted.
-/// Prefers a still-fresh `content_md5` from the AST cache so a previously
-/// parsed `.psc` does not need to be opened again just to hash it.
+/// Prefers a still-fresh content hash from the script-collision cache so a
+/// previously seen `.psc` does not need to be opened again just to hash it.
 pub fn project_files(
     paths: impl IntoIterator<Item = PathBuf>,
     root: &Path,
@@ -30,28 +30,18 @@ pub fn project_files(
     paths
         .into_iter()
         .filter_map(|path| {
-            let content_md5 = file_content_md5(&path, game)?;
+            let content_hash = file_content_hash(&path, game)?;
             Some(ProjectFile {
                 display_path: display_path(&path, root, short_paths),
                 path,
-                content_md5,
+                content_hash,
             })
         })
         .collect()
 }
 
-/// The MD5 the AST cache stores for `path`, if a still-fresh entry exists;
-/// otherwise the file is read, decoded, hashed, and that digest is written
-/// back into the cache for the next lookup.
-fn file_content_md5(path: &Path, game: Game) -> Option<String> {
-    if let Some(digest) = ast_cache::content_md5_for_game(game, path) {
-        return Some(digest);
-    }
-    let contents = fs::read(path).ok()?;
-    let source = source_encoding::decode_psc_source(&contents);
-    let digest = content_hash::md5_hex(&source);
-    ast_cache::put_content_md5_for_game(game, path, &digest);
-    Some(digest)
+fn file_content_hash(path: &Path, game: Game) -> Option<String> {
+    collision_cache::content_hash_for(game, path)
 }
 
 /// Directories, relative to a project root, conventionally used to store
@@ -245,7 +235,7 @@ pub fn conflicting_script_versions(
     let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
         return Vec::new();
     };
-    let Some(current) = file_content_md5(script_path, game) else {
+    let Some(current) = file_content_hash(script_path, game) else {
         return Vec::new();
     };
     let mut paths = Vec::new();
@@ -421,7 +411,7 @@ pub fn conflicting_script_versions_among(
     short_paths: bool,
     game: Game,
 ) -> Vec<papyrus_lints::Diagnostic> {
-    let Some(current) = file_content_md5(script_path, game) else {
+    let Some(current) = file_content_hash(script_path, game) else {
         return Vec::new();
     };
     papyrus_lints::conflicting_script_versions::check(

@@ -270,6 +270,13 @@ pub fn contains_script_name(game: Game, name: &str) -> bool {
     has_bundled_blob(game) && bundled::contains_name(game, name)
 }
 
+/// Directory used for on-disk AST-cache entries and sibling collision-hash
+/// files. Honors `PAPYRUS_LINT_AST_CACHE_DIR`, otherwise `ast-cache` next
+/// to the running executable.
+pub fn cache_dir() -> Option<std::path::PathBuf> {
+    entry::cache_dir()
+}
+
 /// Returns the stored content MD5 for `game`/`source_path` when the on-disk
 /// entry is still mtime-fresh and version-compatible. Does not open the
 /// `.psc` itself — only its metadata — so a later

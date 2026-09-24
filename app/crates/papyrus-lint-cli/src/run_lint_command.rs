@@ -24,6 +24,7 @@ use std::sync::Mutex;
 use std::sync::RwLock;
 
 use papyrus_lint_core::ast_cache;
+use papyrus_lint_core::collision_cache;
 use papyrus_lint_core::function_table::{
     ClosedScripts, FunctionTable, PreloadedScript, TypeClosureOptions,
 };
@@ -168,6 +169,7 @@ fn parse_script(game: papyrus_lints::Game, script_path: &Path) -> Result<ParsedF
     let (source, encoding) = read_psc_source_with_encoding(script_path)
         .map_err(|err| format!("error: failed to read {}: {err}", script_path.display()))?;
     ast_cache::ensure_primed_for_game(game, script_path, &source);
+    collision_cache::remember_source(game, script_path, &source);
     let ast = ast_cache::get_for_game(game, script_path, &source);
     let tokens = ast_cache::get_tokens_for_game(game, script_path, &source);
     Ok(ParsedFile {
@@ -239,6 +241,13 @@ fn process_scripts<'a>(
 
     let progress_stdout: Mutex<&mut (dyn Write + Send)> = Mutex::new(stdout);
 
+    collision_cache::preload(
+        lint_config.game,
+        script_paths
+            .iter()
+            .chain(script_index.values().flatten())
+            .chain(scripts_by_name.values().flatten()),
+    );
     let parsed_files = parse_scripts(
         &function_table,
         &script_paths,
@@ -255,6 +264,7 @@ fn process_scripts<'a>(
             .unwrap_or_else(|poisoned| poisoned.into_inner());
         let _ = writeln!(stdout);
     }
+    collision_cache::flush();
 
     preload_function_table(&mut function_table, &script_paths, &parsed_files);
     let (function_table_root, function_table_additional_roots, function_table) =
@@ -309,6 +319,7 @@ fn process_scripts<'a>(
             },
         );
 
+    collision_cache::flush();
     let stdout = progress_stdout
         .into_inner()
         .unwrap_or_else(|poisoned| poisoned.into_inner());

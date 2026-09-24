@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://papyrus-lint.idrinth.de/schema/script-collisions.schema.json",
+  "title": "Papyrus Lint script collision cache",
+  "description": "One `{game}-{sha256-of-lowercase-filename}-collisions.json` file inside an ast-cache directory (see app/crates/papyrus-lint-core/src/collision_cache.rs). Lists every known implementer of a script file name so conflicting-script-versions can compare copies by SHA-256 without reopening a still-fresh `.psc`.",
+  "type": "array",
+  "items": { "$ref": "#/$defs/scriptCollisions" },
+  "$defs": {
+    "scriptCollisions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scriptname", "implementers"],
+      "properties": {
+        "scriptname": {
+          "description": "Lowercased `.psc` file name this document indexes, including the extension (e.g. `example.psc`).",
+          "type": "string",
+          "minLength": 1
+        },
+        "implementers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/implementer" }
+        }
+      }
+    },
+    "implementer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hash", "algorithm", "mtime", "path"],
+      "properties": {
+        "hash": {
+          "description": "Lowercase hex digest of the decoded source text using `algorithm`.",
+          "type": "string",
+          "pattern": "^[0-9a-f]+$"
+        },
+        "algorithm": {
+          "description": "Digest algorithm. Currently always `sha256`.",
+          "type": "string",
+          "const": "sha256"
+        },
+        "mtime": {
+          "description": "The implementer's last-modified time as a decimal string of whole seconds since the Unix epoch, captured when the hash was written. A cache hit requires this to still match the file's current mtime.",
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "path": {
+          "description": "Absolute path of this copy of the script.",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
