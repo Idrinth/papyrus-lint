@@ -316,3 +316,34 @@ fn not_a_papyrus_project_error_display() {
         "failed to parse ppj file: root element is not <PapyrusProject>"
     );
 }
+
+#[test]
+fn xml_error_display_includes_context_and_underlying_error() {
+    let error = PpjError::from(roxmltree::Document::parse("<broken>").unwrap_err());
+    let underlying = match &error {
+        PpjError::Xml(error) => error.to_string(),
+        other => panic!("expected an XML error, got {other:?}"),
+    };
+
+    assert_eq!(
+        error.to_string(),
+        format!("failed to parse ppj file: {underlying}")
+    );
+}
+
+#[test]
+fn empty_folder_and_script_elements_are_ignored() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let ppj_path = write_ppj(
+        dir.path(),
+        "Project.ppj",
+        r#"<PapyrusProject>
+    <Folders><Folder/></Folders>
+    <Scripts><Script/></Scripts>
+</PapyrusProject>"#,
+    );
+
+    let project = parse_ppj(&ppj_path).expect("parsing should succeed");
+
+    assert!(project.scripts.is_empty());
+}
