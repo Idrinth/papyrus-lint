@@ -22,6 +22,7 @@ fn parse_lint_yaml_applies_omitted_keys_as_defaults() {
     assert!(config.semicolon);
     assert_eq!(config.indentation, Indentation::Space);
     assert_eq!(config.indentation_width, 4);
+    assert_eq!(config.max_line_length, 120);
     assert!(!config.fail_on_warning);
     assert!(config.rules.trailing_whitespace);
 }

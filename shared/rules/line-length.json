@@ -1,0 +1,14 @@
+{
+  "id": "line-length",
+  "name": "Line length",
+  "category": "Formatting",
+  "visitor": "none",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags lines that exceed the configured maximum character count.",
+  "definition": "Flags, as a `[warning]`, every line longer than `max_line_length` characters (default 120). Unicode characters count once regardless of their UTF-8 byte length."
+}

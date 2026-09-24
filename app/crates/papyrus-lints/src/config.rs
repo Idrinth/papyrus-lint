@@ -11,6 +11,7 @@
 //! semicolon: false
 //! indentation: tab
 //! indentation_width: 4
+//! max_line_length: 120
 //! identifier_casing: PascalCase
 //! cyclomatic_complexity_warning: 10
 //! cyclomatic_complexity_error: 20
@@ -130,6 +131,9 @@ pub struct Config {
     /// The number of spaces per indentation level, used only when
     /// `indentation` is [`Indentation::Space`].
     pub indentation_width: usize,
+    /// The maximum number of characters allowed on a line before the
+    /// "Line length" lint emits a warning.
+    pub max_line_length: usize,
     /// The casing style enforced by the "Identifier casing" lint. See
     /// [`IdentifierCasing`].
     pub identifier_casing: IdentifierCasing,
@@ -205,6 +209,7 @@ impl Default for Config {
             semicolon: false,
             indentation: Indentation::default(),
             indentation_width: 4,
+            max_line_length: 120,
             identifier_casing: IdentifierCasing::default(),
             cyclomatic_complexity_warning: 10,
             cyclomatic_complexity_error: 20,

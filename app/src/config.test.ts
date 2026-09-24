@@ -25,6 +25,7 @@ describe("lint config UI round trip", () => {
       semicolon: true,
       indentation: "space",
       indentation_width: 8,
+      max_line_length: 100,
       identifier_casing: "snake_case",
       cyclomatic_complexity_warning: 5,
       cyclomatic_complexity_error: 15,
@@ -83,13 +84,15 @@ describe("lint config UI round trip", () => {
     expect(document.querySelector<HTMLInputElement>("#indentation-width")!.disabled).toBe(true);
   });
 
-  it("lintConfigFromUI clamps indentation width and complexity thresholds", () => {
+  it("lintConfigFromUI clamps widths and complexity thresholds", () => {
     document.querySelector<HTMLInputElement>("#indentation-width")!.value = "100";
     document.querySelector<HTMLInputElement>("#cyclomatic-complexity-warning")!.value = "-5";
     document.querySelector<HTMLInputElement>("#cyclomatic-complexity-error")!.value = "-5";
+    document.querySelector<HTMLInputElement>("#max-line-length")!.value = "-5";
 
     const config = lintConfigFromUI();
     expect(config.indentation_width).toBe(16);
+    expect(config.max_line_length).toBe(1);
     expect(config.cyclomatic_complexity_warning).toBe(1);
     expect(config.cyclomatic_complexity_error).toBe(1);
   });
