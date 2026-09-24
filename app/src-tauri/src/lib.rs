@@ -64,6 +64,7 @@ pub fn run() {
             add_disable_file_comment_to_psc_line,
             add_nodiscard_comment_to_psc_line,
             compile_psc_file,
+            resolve_completion_query,
             list_script_members,
             find_project_root,
             find_psc_project_root_for_path,

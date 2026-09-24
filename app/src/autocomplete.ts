@@ -136,46 +136,6 @@ export function declaredTypes(source: string): Map<string, string> {
   return types;
 }
 
-export interface CompletionQuery {
-  // The declared type of the expression before the ".", e.g. "ObjectReference".
-  receiverType: string;
-  // What's been typed of the member name so far (possibly empty, right
-  // after typing the ".").
-  prefix: string;
-  // Index into the source at which `prefix` starts, i.e. where an accepted
-  // completion should be spliced in.
-  prefixStart: number;
-}
-
-// Matches `receiver[index].prefix` - an array element access - ending at the
-// cursor. Tried before the plain identifier pattern below, since an indexed
-// receiver's own declared type (the array's element type, e.g. "Actor" for
-// an `Actor[]`) is what member completion should resolve against, not the
-// array itself.
-const ARRAY_ELEMENT_RECEIVER = new RegExp(`(${IDENTIFIER})\\s*\\[[^[\\]]*\\]\\s*\\.(\\w*)$`);
-
-const PLAIN_RECEIVER = new RegExp(`(${IDENTIFIER})\\.(\\w*)$`);
-
-// Looks for a `receiver.prefix` or `receiver[index].prefix` immediately
-// ending at `cursorIndex`, and, if `receiver`'s declared type is known,
-// returns enough to query and splice in its members. Returns null if the
-// text just before the cursor isn't a simple member access (nothing to
-// autocomplete: a compound receiver like `Foo().bar`, or an identifier
-// whose type isn't known) or its receiver's type can't be resolved.
-export function completionQueryAt(source: string, cursorIndex: number): CompletionQuery | null {
-  const before = source.slice(0, cursorIndex);
-  const match = ARRAY_ELEMENT_RECEIVER.exec(before) ?? PLAIN_RECEIVER.exec(before);
-  if (!match) {
-    return null;
-  }
-  const [, receiver, prefix] = match;
-  const receiverType = declaredTypes(source).get(receiver.toLowerCase());
-  if (!receiverType) {
-    return null;
-  }
-  return { receiverType, prefix, prefixStart: cursorIndex - prefix.length };
-}
-
 // Members whose name starts with `prefix` (case-insensitively), sorted
 // alphabetically.
 export function filterMembers(members: Member[], prefix: string): Member[] {

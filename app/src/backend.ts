@@ -212,6 +212,24 @@ export async function listScriptMembers(typeName: string): Promise<Member[]> {
   }
 }
 
+export interface CompletionQuery {
+  receiverType: string;
+  prefix: string;
+  prefixStart: number;
+}
+
+// Resolves the declared type on the left of the member-access dot in Rust,
+// where source-language analysis belongs. The frontend keeps only dropdown
+// rendering and insertion concerns.
+export async function resolveCompletionQuery(source: string, cursorIndex: number): Promise<CompletionQuery | null> {
+  try {
+    return await invoke<CompletionQuery | null>("resolve_completion_query", { source, cursorIndex });
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
 // Compiles the `.psc` file at `path` with the currently configured
 // PapyrusCompiler.exe path, reproducing the invocation Creation Kit
 // tooling uses to compile a single script out of its source directory.

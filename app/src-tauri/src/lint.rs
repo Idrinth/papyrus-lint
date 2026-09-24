@@ -313,6 +313,156 @@ struct ProjectScriptParse {
     ast: Option<papyrus_parser::ast::Script>,
 }
 
+#[derive(Debug, PartialEq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct CompletionQuery {
+    receiver_type: String,
+    prefix: String,
+    prefix_start: usize,
+}
+
+fn blank_comments(source: &str) -> String {
+    let block = regex::Regex::new(r"(?s);/.*?(?:/;|\z)").expect("valid block comment regex");
+    let brace = regex::Regex::new(r"(?s)\{.*?(?:\}|\z)").expect("valid brace comment regex");
+    let line = regex::Regex::new(r";[^\n]*").expect("valid line comment regex");
+    let blank = |captures: &regex::Captures<'_>| {
+        captures[0]
+            .chars()
+            .map(|character| if character == '\n' { '\n' } else { ' ' })
+            .collect::<String>()
+    };
+    let source = block.replace_all(source, &blank);
+    let source = brace.replace_all(&source, &blank);
+    line.replace_all(&source, blank).into_owned()
+}
+
+fn declared_type(source: &str, receiver: &str) -> Option<String> {
+    let identifier = r"[A-Za-z_]\w*";
+    let clean = blank_comments(source);
+    let receiver = receiver.to_ascii_lowercase();
+
+    let script = regex::Regex::new(&format!(
+        r"(?im)^\s*ScriptName\s+({identifier})(?:\s+Extends\s+({identifier}))?"
+    ))
+    .expect("valid script declaration regex");
+    if let Some(captures) = script.captures(&clean) {
+        if receiver == "self" {
+            return Some(captures[1].to_string());
+        }
+        if receiver == "parent" {
+            return captures.get(2).map(|parent| parent.as_str().to_string());
+        }
+    }
+
+    let declarations = regex::Regex::new(&format!(
+        r"(?im)^\s*({identifier})(?:\[\])?\s+(?:Property\s+)?({identifier})\s*(?:=|;|\bAuto\b|$)"
+    ))
+    .expect("valid variable declaration regex");
+    let is_keyword = |word: &str| {
+        matches!(
+            word.to_ascii_lowercase().as_str(),
+            "scriptname"
+                | "extends"
+                | "hidden"
+                | "conditional"
+                | "import"
+                | "function"
+                | "endfunction"
+                | "event"
+                | "endevent"
+                | "property"
+                | "endproperty"
+                | "auto"
+                | "autoreadonly"
+                | "global"
+                | "native"
+                | "return"
+                | "if"
+                | "elseif"
+                | "else"
+                | "endif"
+                | "while"
+                | "endwhile"
+                | "state"
+                | "endstate"
+                | "new"
+                | "as"
+                | "true"
+                | "false"
+                | "none"
+                | "self"
+                | "parent"
+                | "length"
+                | "debugonly"
+                | "betaonly"
+        )
+    };
+    for captures in declarations.captures_iter(&clean) {
+        if captures[2].eq_ignore_ascii_case(&receiver)
+            && !is_keyword(&captures[1])
+            && !is_keyword(&captures[2])
+        {
+            return Some(captures[1].to_string());
+        }
+    }
+
+    let headers = regex::Regex::new(&format!(
+        r"(?i)\b(?:Function|Event)\s+{identifier}\s*\(([^)]*)\)"
+    ))
+    .expect("valid function header regex");
+    let parameter = regex::Regex::new(&format!(r"^\s*({identifier})(?:\[\])?\s+({identifier})"))
+        .expect("valid parameter regex");
+    for header in headers.captures_iter(&clean) {
+        for value in header[1].split(',') {
+            if let Some(captures) = parameter.captures(value) {
+                if captures[2].eq_ignore_ascii_case(&receiver)
+                    && !is_keyword(&captures[1])
+                    && !is_keyword(&captures[2])
+                {
+                    return Some(captures[1].to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
+/// Resolves the type and member-name prefix immediately before `cursor_index`.
+/// This deliberately scans incomplete source instead of requiring a valid AST,
+/// because a trailing member-access dot is not valid Papyrus yet.
+#[tauri::command]
+pub(crate) fn resolve_completion_query(
+    source: String,
+    cursor_index: usize,
+) -> Option<CompletionQuery> {
+    // Browser selection offsets count UTF-16 code units; Rust string slices
+    // use UTF-8 byte offsets. Translate without letting non-ASCII comments or
+    // string literals before the cursor suppress otherwise valid completion.
+    let mut utf16_offset = 0;
+    let mut byte_offset = None;
+    for (index, character) in source.char_indices() {
+        if utf16_offset == cursor_index {
+            byte_offset = Some(index);
+            break;
+        }
+        utf16_offset += character.len_utf16();
+    }
+    if utf16_offset == cursor_index {
+        byte_offset.get_or_insert(source.len());
+    }
+    let before = source.get(..byte_offset?)?;
+    let receiver = regex::Regex::new(r"([A-Za-z_]\w*)(?:\s*\[[^[\]]*\])?\s*\.(\w*)$")
+        .expect("valid completion receiver regex");
+    let captures = receiver.captures(before)?;
+    let prefix = captures[2].to_string();
+    let receiver_type = declared_type(&source, &captures[1])?;
+    Some(CompletionQuery {
+        receiver_type,
+        prefix_start: cursor_index - prefix.len(),
+        prefix,
+    })
+}
+
 fn parse_project_script(game: papyrus_lints::Game, path: &Path) -> ProjectScriptParse {
     let source = read_psc_source(path).ok();
     let ast = source.as_ref().and_then(|source| {
