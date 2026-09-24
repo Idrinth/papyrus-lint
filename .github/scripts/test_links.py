@@ -59,9 +59,7 @@ class ParseLinksTests(unittest.TestCase):
         self.assertEqual(frozenset({"documentation"}), links[2].tags)
 
     def test_parse_skips_comments_and_blank_lines(self) -> None:
-        links = parse_links(
-            "# heading\n\nAlpha:\n  url: https://alpha.example\n  type:\n  - contact\n"
-        )
+        links = parse_links("# heading\n\nAlpha:\n  url: https://alpha.example\n  type:\n  - contact\n")
 
         self.assertEqual(["Alpha"], [link.label for link in links])
 
@@ -97,9 +95,7 @@ class ParseLinksTests(unittest.TestCase):
 
     def test_rejects_unknown_keys(self) -> None:
         with self.assertRaisesRegex(ValueError, "unknown key 'badge'"):
-            parse_links(
-                "Discord:\n  url: https://discord.example\n  badge: blue\n  type:\n  - contact\n"
-            )
+            parse_links("Discord:\n  url: https://discord.example\n  badge: blue\n  type:\n  - contact\n")
 
     def test_rejects_a_non_http_url(self) -> None:
         with self.assertRaisesRegex(ValueError, "must be an HTTP\\(S\\) URL"):
@@ -116,6 +112,18 @@ class ParseLinksTests(unittest.TestCase):
     def test_rejects_duplicate_type_tags(self) -> None:
         with self.assertRaisesRegex(ValueError, "duplicate type tag 'contact'"):
             parse_links("Discord:\n  url: https://discord.example\n  type:\n  - contact\n  - contact\n")
+
+    def test_rejects_malformed_labels_and_properties(self) -> None:
+        invalid_sources = {
+            "expected 'Label:'": "Discord\n",
+            "indented line is not under a label": "  url: https://example.test\n",
+            "expected 'key: value'": "Discord:\n  malformed\n",
+            "empty url": "Discord:\n  url:\n  type:\n  - contact\n",
+        }
+
+        for message, source in invalid_sources.items():
+            with self.subTest(message=message), self.assertRaisesRegex(ValueError, message):
+                parse_links(source, path="custom-links.yaml")
 
     def test_load_links_reads_an_explicit_path(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -137,9 +145,7 @@ class FilterAndRenderTests(unittest.TestCase):
         self.assertEqual(sample_links(), filter_by_tag(sample_links(), None))
 
     def test_render_html_anchors_escapes_label_and_url(self) -> None:
-        rendered = render_html_anchors(
-            [Link('A & B', 'https://example.test/?q=a&b="c"', frozenset({"contact"}))]
-        )
+        rendered = render_html_anchors([Link("A & B", 'https://example.test/?q=a&b="c"', frozenset({"contact"}))])
 
         self.assertIn("&" + "amp;", rendered)
         self.assertIn("&" + "quot;", rendered)
@@ -164,8 +170,7 @@ class FilterAndRenderTests(unittest.TestCase):
         rendered = render_markdown_list_items(filter_by_tag(sample_links(), "contact"))
 
         self.assertEqual(
-            "- [Discord](https://discord.example/invite)\n"
-            "- [Nexus Mods](https://nexus.example/mod)",
+            "- [Discord](https://discord.example/invite)\n- [Nexus Mods](https://nexus.example/mod)",
             rendered,
         )
 
@@ -173,8 +178,7 @@ class FilterAndRenderTests(unittest.TestCase):
         rendered = render_plain_text(filter_by_tag(sample_links(), "contact"))
 
         self.assertEqual(
-            "  Discord     https://discord.example/invite\n"
-            "  Nexus Mods  https://nexus.example/mod\n",
+            "  Discord     https://discord.example/invite\n  Nexus Mods  https://nexus.example/mod\n",
             rendered,
         )
 
@@ -198,9 +202,7 @@ class ReplaceMarkerTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            "Contact:\n"
-            "  Discord     https://discord.example/invite\n"
-            "  Nexus Mods  https://nexus.example/mod\n",
+            "Contact:\n  Discord     https://discord.example/invite\n  Nexus Mods  https://nexus.example/mod\n",
             result,
         )
         self.assertNotIn("https://docs.example/", result)
@@ -211,6 +213,10 @@ class ReplaceMarkerTests(unittest.TestCase):
     def test_unknown_tag_in_a_marker_is_an_error(self) -> None:
         with self.assertRaisesRegex(ValueError, "no links tagged 'forum'"):
             replace_html_link_markers("<!--FORUM-LINKS-->", render_html_anchors, sample_links())
+
+    def test_empty_unfiltered_marker_is_an_error(self) -> None:
+        with self.assertRaisesRegex(ValueError, "custom.yaml: no links"):
+            replace_html_link_markers("<!--LINKS-->", render_html_anchors, [], Path("custom.yaml"))
 
 
 if __name__ == "__main__":

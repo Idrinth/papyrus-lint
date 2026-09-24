@@ -83,8 +83,9 @@ class CompareOutputTests(unittest.TestCase):
 
 class RenderAndMainTests(unittest.TestCase):
     def test_extract_base_scripts_rejects_a_missing_archive(self) -> None:
-        with tempfile.TemporaryDirectory() as directory, self.assertRaisesRegex(
-            snap.SnapshotError, "base scripts archive not found"
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            self.assertRaisesRegex(snap.SnapshotError, "base scripts archive not found"),
         ):
             snap.extract_base_scripts(Path(directory) / "missing.zip", Path(directory) / "out")
 
@@ -134,9 +135,7 @@ class RenderAndMainTests(unittest.TestCase):
             )
 
             self.assertEqual("report", result)
-            self.assertEqual(
-                "fresh", (project / "papyrus-lint.yaml").read_text(encoding="utf-8")
-            )
+            self.assertEqual("fresh", (project / "papyrus-lint.yaml").read_text(encoding="utf-8"))
             self.assertEqual(
                 ["--threads", "2", "lint"],
                 args_log.read_text(encoding="utf-8").splitlines()[:3],
@@ -200,6 +199,50 @@ class RenderAndMainTests(unittest.TestCase):
             cli = _write_fake_cli(base, "first\nsecond\n")
             self.assertEqual(0, entry.main(common_args))
 
+    def test_main_reports_snapshot_errors_and_uses_a_temporary_work_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            stderr = io.StringIO()
+            with (
+                mock.patch.object(entry, "render_output", side_effect=snap.SnapshotError("broken")),
+                mock.patch("sys.stderr", stderr),
+            ):
+                status = entry.main(
+                    ["--cli", "fake-cli", "--root", str(root), "--preset", "strict", "--game", "skyrim"]
+                )
+
+            self.assertEqual(1, status)
+            self.assertIn("error (strict): broken", stderr.getvalue())
+
+    def test_all_runs_both_base_and_extender_variants(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            calls: list[bool] = []
+
+            def render(
+                _root: Path,
+                _cli: Path,
+                _preset: str,
+                _work_dir: Path,
+                _game: str,
+                extender: bool,
+            ) -> str:
+                calls.append(extender)
+                return "output\n"
+
+            with (
+                mock.patch.object(entry, "PRESETS", ("strict",)),
+                mock.patch.object(entry, "GAMES", ("skyrim",)),
+                mock.patch.object(entry, "render_output", side_effect=render),
+                mock.patch.object(entry, "write_fixture"),
+            ):
+                status = entry.main(
+                    ["--cli", "fake-cli", "--root", str(root), "--all", "--update", "--work-dir", str(root / "work")]
+                )
+
+            self.assertEqual(0, status)
+            self.assertEqual([True, False], calls)
+
     def test_unknown_preset_and_cli_crash(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
@@ -229,15 +272,11 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(snap.PRESETS, entry.selected_presets(defaults))
         self.assertEqual(snap.GAMES, entry.selected_games(defaults))
 
-        selected = entry.parse_args(
-            ["--cli", "cli", "--preset", "strict", "--preset", "strict", "--game", "skyrim"]
-        )
+        selected = entry.parse_args(["--cli", "cli", "--preset", "strict", "--preset", "strict", "--game", "skyrim"])
         self.assertEqual(("strict",), entry.selected_presets(selected))
         self.assertEqual(("skyrim",), entry.selected_games(selected))
 
-        all_options = entry.parse_args(
-            ["--cli", "cli", "--all", "--preset", "strict", "--game", "skyrim"]
-        )
+        all_options = entry.parse_args(["--cli", "cli", "--all", "--preset", "strict", "--game", "skyrim"])
         self.assertEqual(snap.PRESETS, entry.selected_presets(all_options))
         self.assertEqual(snap.GAMES, entry.selected_games(all_options))
 

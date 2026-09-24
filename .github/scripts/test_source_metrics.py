@@ -6,6 +6,7 @@ import io
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from ci_lib import source_metrics
 
@@ -25,6 +26,25 @@ class SourceMetricsTests(unittest.TestCase):
             self.assertEqual(3, source_metrics.count_lines(path))
             path.write_text("", encoding="utf-8")
             self.assertEqual(0, source_metrics.count_lines(path))
+
+    def test_file_metrics_tolerate_files_disappearing_during_collection(self) -> None:
+        missing = Path("missing.py")
+        with mock.patch.object(Path, "read_text", side_effect=OSError):
+            self.assertEqual(0, source_metrics.count_lines(missing))
+            self.assertEqual(0, source_metrics.count_exports(missing))
+
+        with (
+            mock.patch.object(source_metrics, "iter_source_files", return_value=[missing]),
+            mock.patch.object(Path, "stat", side_effect=OSError),
+        ):
+            self.assertEqual([], source_metrics.collect_file_metrics(Path(".")))
+
+    def test_relative_path_keeps_paths_outside_the_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory, "repo")
+            outside = Path(directory, "outside.py")
+
+            self.assertEqual(outside.as_posix(), source_metrics.relative_path(outside, root))
 
     def test_count_exports_for_rust_js_and_python(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -129,9 +149,7 @@ class SourceMetricsTests(unittest.TestCase):
                 "app/src/main.ts",
                 source_metrics.normalize_lcov_path(r"C:\runner\work\repo\app\src\main.ts", root),
             )
-            self.assertEqual(
-                "unrelated/file.py", source_metrics.normalize_lcov_path("./unrelated/file.py", root)
-            )
+            self.assertEqual("unrelated/file.py", source_metrics.normalize_lcov_path("./unrelated/file.py", root))
 
     def test_parse_uncovered_lines_normalizes_and_deduplicates(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -178,6 +196,23 @@ class SourceMetricsTests(unittest.TestCase):
                 },
                 uncovered,
             )
+
+    def test_parse_uncovered_lines_handles_missing_directories_and_unreadable_reports(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertEqual({}, source_metrics.parse_uncovered_lines(root / "missing", root))
+            report = root / "reports" / "lcov.info"
+            report.parent.mkdir()
+            report.touch()
+            original_read_text = Path.read_text
+
+            def fail_for_report(path: Path, *args: object, **kwargs: object) -> str:
+                if path == report:
+                    raise OSError("report disappeared")
+                return original_read_text(path, *args, **kwargs)
+
+            with mock.patch.object(Path, "read_text", fail_for_report):
+                self.assertEqual({}, source_metrics.parse_uncovered_lines(report.parent, root))
 
     def test_top_n_orders_by_value_then_path_and_drops_zeros(self) -> None:
         rows = [("b.rs", 4), ("a.rs", 4), ("c.rs", 0), ("d.rs", 9)]
