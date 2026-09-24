@@ -138,6 +138,7 @@ rules:
   unnecessary_function: true
   unknown_actor_value: false
   repeated_setoutfit: true
+  place_at_me: true
   missing_doc_comment: false
   invalid_random_range: true
   float_equality: false
