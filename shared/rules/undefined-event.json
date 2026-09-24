@@ -1,0 +1,14 @@
+{
+  "id": "undefined-event",
+  "name": "Undefined event",
+  "category": "Reliability",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "high",
+  "fixable": false,
+  "description": "Warns about event handlers whose names are not defined anywhere in the script's ancestry.",
+  "definition": "Flags an `Event` handler whose name is not declared as an event by the script it `Extends` or any of that script's ancestors. Papyrus accepts an arbitrary event name, but a misspelled or otherwise undefined handler is never invoked. The lint only reports a child script after its complete ancestry has been resolved; root scripts and unresolved external scripts are skipped rather than guessed at."
+}
