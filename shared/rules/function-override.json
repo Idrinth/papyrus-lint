@@ -9,6 +9,6 @@
   "severity": "info",
   "importance": "low",
   "fixable": false,
-  "description": "Informs about a function declared on this script that shares its name with a function declared on the script it.",
+  "description": "Informs about a function declared on this script that shares its name with a function declared on the script it extends.",
   "definition": "Flags, as an `[info]`, a function declared on this script that shares its name with a function declared on the script it `Extends` (directly or transitively) \u2014 the local declaration silently replaces the inherited one. This is often intentional (e.g. overriding an `Event OnInit()` handler), so it's informational rather than a warning. Only checked when linting a `.psc` file dropped in the app, by resolving the `Extends` chain from the project root; a function declared inside a `State` block is not checked (state-based override is a separate mechanism from `Extends`)."
 }
