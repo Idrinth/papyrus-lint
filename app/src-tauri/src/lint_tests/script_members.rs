@@ -3,7 +3,7 @@ use tempfile::tempdir;
 
 #[test]
 fn resolve_completion_query_finds_declared_receiver_types() {
-    let source = "ScriptName Example Extends Quest\nActor[] actors\nFunction Run(ObjectReference target)\nactors[0].Disa\nEndFunction";
+    let source = "ScriptName Example Extends Quest\nActor[] actors\nFunction Run(ObjectReference target)\ntarget.\nactors[0].Disa\nEndFunction";
     let cursor = source.find("Disa").unwrap() + 4;
 
     assert_eq!(
@@ -14,9 +14,12 @@ fn resolve_completion_query_finds_declared_receiver_types() {
             prefix_start: cursor - 4,
         })
     );
-    let target_cursor = source.find("target").unwrap() + "target".len();
+    // The command receives the complete editor buffer; only the cursor limits
+    // the member-access match. Keep the closing function header available so
+    // its parameter declaration can still be resolved.
+    let target_cursor = source.find("target.").unwrap() + "target.".len();
     assert_eq!(
-        resolve_completion_query(format!("{}.", &source[..target_cursor]), target_cursor + 1)
+        resolve_completion_query(source.to_string(), target_cursor)
             .unwrap()
             .receiver_type,
         "ObjectReference"
