@@ -11,6 +11,7 @@ use std::sync::Arc;
 use papyrus_lint_config as config;
 use papyrus_lint_core::achlist;
 use papyrus_lint_core::function_table::FunctionTable;
+use papyrus_lint_core::ignore_file::IgnoreFile;
 use papyrus_lint_core::ppj;
 use papyrus_lint_core::script_locator::find_psc_files_recursively;
 
@@ -31,6 +32,7 @@ pub(crate) struct ScanOutcome {
     pub(crate) strict_achlist_scope: bool,
     pub(crate) compile_check: bool,
     pub(crate) compiler_path: String,
+    pub(crate) ignores: Option<IgnoreFile>,
 }
 
 /// Resolves `input_path` (an achlist, a bare `.psc` file, or a directory to
@@ -74,7 +76,14 @@ pub(crate) fn scan_project(
         is_psc_file,
         &script_paths,
     )?;
-    Ok(assemble_scan_outcome(script_paths, project_root, settings))
+    let ignores = IgnoreFile::load_optional(&project_root)
+        .map_err(|err| format!("error: failed to load ignore file: {err}"))?;
+    Ok(assemble_scan_outcome(
+        script_paths,
+        project_root,
+        settings,
+        ignores,
+    ))
 }
 
 struct ScanSettings {
@@ -229,6 +238,7 @@ fn assemble_scan_outcome(
     script_paths: Vec<PathBuf>,
     project_root: PathBuf,
     settings: ScanSettings,
+    ignores: Option<IgnoreFile>,
 ) -> ScanOutcome {
     let mut function_table =
         FunctionTable::new_with_additional_roots(project_root, settings.additional_script_roots)
@@ -276,6 +286,7 @@ fn assemble_scan_outcome(
         strict_achlist_scope: settings.strict_achlist_scope,
         compile_check: settings.compile_check,
         compiler_path: settings.compiler_path,
+        ignores,
     }
 }
 

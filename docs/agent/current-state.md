@@ -44,6 +44,10 @@ update the cited code *and* this list.
   `*_with_external_arguments` siblings. Preview repair is resolver-less
   on purpose. Line-count-shifting fixes (`unused-import`,
   `property-sorting`) are rejected by per-line fix.
+- Project lint entry points load `.papyrus-lint-ignore` from the resolved
+  project root and suppress exact file/line/rule matches after collecting all
+  lint, project, and compiler diagnostics. Relative file paths start at that
+  root; repairs remain unaffected, matching in-source disable comments.
 - `--blob` is in-memory only: no project root, no `FunctionTable`, no
   fix. Editors use it for unsaved buffers; saved files use the full CLI.
 - `doc_url` is built in `papyrus-lint-output`. Do not invent a second

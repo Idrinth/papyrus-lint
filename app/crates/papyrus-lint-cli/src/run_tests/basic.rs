@@ -71,6 +71,41 @@ fn reports_diagnostics_and_exits_1_for_a_dirty_project() {
 }
 
 #[test]
+fn honors_project_line_ignores() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let script_path = dir.path().join("scripts/source/Example.psc");
+    write_file(&script_path, "ScriptName Example   \n");
+    write_file(
+        &dir.path().join(".papyrus-lint-ignore"),
+        "- file: scripts/source/Example.psc\n  line: 1\n  rule: trailing-whitespace\n",
+    );
+
+    let (code, stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+    assert_eq!(code, 0);
+    assert!(stderr.is_empty());
+    assert!(!stdout.contains("trailing-whitespace"));
+    assert!(stdout.contains("no problems found in 1 script"));
+}
+
+#[test]
+fn reports_a_malformed_project_ignore_file() {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let script_path = dir.path().join("scripts/source/Example.psc");
+    write_file(&script_path, "ScriptName Example\n");
+    write_file(
+        &dir.path().join(".papyrus-lint-ignore"),
+        "- file: scripts/source/Example.psc\n  line: zero\n  rule: trailing-whitespace\n",
+    );
+
+    let (code, _stdout, stderr) = run_captured(&[script_path.to_string_lossy().into_owned()]);
+
+    assert_eq!(code, 2);
+    assert!(stderr.contains("failed to load ignore file"));
+    assert!(stderr.contains(".papyrus-lint-ignore"));
+}
+
+#[test]
 fn does_not_fail_on_warning_level_diagnostics_by_default() {
     let dir = tempfile::tempdir().expect("failed to create temp dir");
     write_file(

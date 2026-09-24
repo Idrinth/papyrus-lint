@@ -240,6 +240,18 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     diagnostics
 }
 
+pub(crate) fn apply_project_ignores(
+    path: &Path,
+    project_root: &Path,
+    diagnostics: &mut Vec<papyrus_lints::Diagnostic>,
+) -> Result<(), String> {
+    if let Some(ignores) = papyrus_lint_core::ignore_file::IgnoreFile::load_optional(project_root)?
+    {
+        ignores.retain_diagnostics(path, diagnostics);
+    }
+    Ok(())
+}
+
 /// Reads the `.psc` file at `path` and runs every lint rule against it,
 /// honoring the semicolon style `context.config` selects. See
 /// [`ProjectLintContext`] for `root`/`additional_roots`/`lookup_roots`/
@@ -254,12 +266,9 @@ pub(crate) fn lint_psc_file(
     ast_cache::ensure_primed_for_game(context.config.game, path, &source);
     let function_table = context.function_table();
     let mut shared = function_table::SharedFunctionTable(function_table.as_ref());
-    Ok(lint_with_compile_check(
-        path,
-        &source,
-        &context,
-        &mut shared,
-    ))
+    let mut diagnostics = lint_with_compile_check(path, &source, &context, &mut shared);
+    apply_project_ignores(path, Path::new(&context.root), &mut diagnostics)?;
+    Ok(diagnostics)
 }
 
 /// Parses every one of `paths` up front and closes over the type names in
