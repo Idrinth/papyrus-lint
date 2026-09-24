@@ -194,3 +194,30 @@ fn deprecated_directive_is_tracked_on_function_signatures() {
     assert!(functions["oldway"].deprecation.is_some());
     assert!(functions["currentway"].deprecation.is_none());
 }
+
+#[test]
+fn side_effect_calls_nested_in_named_arguments_and_array_sizes_are_found() {
+    let source = "ScriptName Foo\n\nInt Property Count Auto\n\nInt Function Mutate()\n    Count = 1\n    Return 1\nEndFunction\n\nFunction ThroughNamedArgument()\n    Consume(value = Mutate())\nEndFunction\n\nFunction ThroughArraySize()\n    Int[] values = new Int[Mutate()]\nEndFunction\n";
+
+    assert!(has_side_effects(source, "ThroughNamedArgument"));
+    assert!(has_side_effects(source, "ThroughArraySize"));
+}
+
+#[test]
+fn scanning_a_new_struct_expression_does_not_invent_a_function_call() {
+    let mut called = HashSet::new();
+
+    scan_expr(
+        &Expr::NewStruct {
+            type_name: "ExampleStruct".to_string(),
+        },
+        &mut called,
+    );
+
+    assert!(called.is_empty());
+}
+
+#[test]
+fn a_zero_line_cannot_carry_a_function_directive() {
+    assert!(!function_directive("; @nodiscard", None, 0, "@nodiscard"));
+}
