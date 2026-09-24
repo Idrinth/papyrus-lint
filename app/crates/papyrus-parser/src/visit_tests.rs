@@ -2,11 +2,22 @@ use super::*;
 use crate::token::TokenKind;
 use crate::{parse, tokenize};
 
-struct ExprCounter(usize);
+#[derive(Default)]
+struct ExprCounter {
+    count: usize,
+    visited_values: Vec<String>,
+}
 
 impl Visitor for ExprCounter {
     fn visit_expr(&mut self, expr: &Expr) {
-        self.0 += 1;
+        self.count += 1;
+        match expr {
+            Expr::Identifier(name) => self.visited_values.push(format!("identifier:{name}")),
+            Expr::Literal(crate::ast::Literal::Int { value, .. }) => {
+                self.visited_values.push(format!("int:{value}"));
+            }
+            _ => {}
+        }
         walk_expr(self, expr);
     }
 }
@@ -63,12 +74,12 @@ fn ast_visitor_walks_fallout4_structs_groups_and_new_struct() {
         crate::parser::GameEdition::Fallout4,
     )
     .unwrap();
-    let mut counter = ExprCounter(0);
+    let mut counter = ExprCounter::default();
     counter.visit_script(&script);
     // The struct member's default value, the grouped property's default
     // value, and the `new Coordinates` struct instantiation: one visited
     // expression each.
-    assert_eq!(counter.0, 3);
+    assert_eq!(counter.count, 3);
 }
 
 #[test]
@@ -76,9 +87,9 @@ fn ast_visitor_walks_nested_expressions() {
     let script =
         parse("ScriptName Example\nFunction Add(Int a = 1)\n    Return a + 2\nEndFunction\n")
             .unwrap();
-    let mut counter = ExprCounter(0);
+    let mut counter = ExprCounter::default();
     counter.visit_script(&script);
-    assert_eq!(counter.0, 4);
+    assert_eq!(counter.count, 4);
 }
 
 #[test]
@@ -130,13 +141,17 @@ fn expression_walker_reaches_every_child_shape() {
             }),
         },
     ];
-    let mut counter = ExprCounter(0);
+    let mut counter = ExprCounter::default();
 
     for expression in &expressions {
         walk_expr(&mut counter, expression);
     }
 
-    assert_eq!(counter.0, 12);
+    assert_eq!(counter.count, 12);
+    assert!(counter
+        .visited_values
+        .windows(2)
+        .any(|values| values == ["identifier:values", "int:0"]));
 }
 
 #[test]
