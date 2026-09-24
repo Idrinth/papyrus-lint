@@ -119,6 +119,13 @@ struct ParsedFile {
     tokens: Option<Vec<papyrus_parser::token::Token>>,
 }
 
+struct PreparedSource {
+    source: String,
+    fixed: bool,
+    diff: Option<String>,
+    plain_text: Vec<u8>,
+}
+
 /// Reads and parses every lint target, then every script a type name in
 /// those ASTs resolves to, optionally in parallel via `--threads`.
 /// Reports "Parsing: n/total" as each on-disk file finishes when `progress`
@@ -346,58 +353,23 @@ fn process_script(
 
     let reported_path = display_path(script_path, function_table_root, job.short_paths);
 
-    // Primes `papyrus_parser`'s in-memory memoization from the parse
-    // phase's own already-owned AST/tokens, so neither `fix_file`'s own
-    // internal parse (below) nor `run_lint::lint_file`'s touches
-    // `ast_cache`'s disk cache (and its process-wide lock) again for a
-    // source string already known to be current.
-    if let Some(ast) = parsed.ast.clone() {
-        papyrus_parser::prime_cache(&parsed.source, ast);
-    }
-    if let Some(tokens) = parsed.tokens.clone() {
-        papyrus_parser::prime_tokenize_cache(&parsed.source, tokens);
-    }
-
-    // `fix` mutates (or, under `--dry-run`, previews) the source first;
-    // `run_lint::lint_file` then lints whatever source comes out of that
-    // (the original source, if `fix` didn't run or changed nothing).
-    let (source, fixed_this_file, file_diff, mut plain_text) = if job.fix {
-        let outcome = fix_file(
-            script_path,
-            &reported_path,
-            parsed.source.clone(),
-            parsed.encoding,
-            lint_context.lint_config,
-            lint_context.function_table,
-            lint_context.tag_filter,
-            job.rule_filter,
-            job.target_line,
-            job.dry_run,
-            lint_context.json,
-        )?;
-        (
-            outcome.source,
-            outcome.fixed,
-            outcome.diff,
-            outcome.plain_text,
-        )
-    } else {
-        (parsed.source.clone(), false, None, Vec::new())
-    };
+    prime_parser_cache(parsed);
+    let mut prepared = prepare_source(lint_context, script_path, &reported_path, parsed, &job)?;
 
     // `already_primed` is only trustworthy when `fix` left the source
     // exactly as parsed above; a fix that changed it falls back to
     // `lint_file`'s own `ast_cache::ensure_primed` for the new text.
-    let already_primed = !fixed_this_file;
     let lint_outcome = lint_file(
         lint_context,
         script_path,
         reported_path,
-        &source,
-        file_diff,
-        already_primed,
+        &prepared.source,
+        prepared.diff,
+        !prepared.fixed,
     );
-    plain_text.extend_from_slice(&lint_outcome.plain_text);
+    prepared
+        .plain_text
+        .extend_from_slice(&lint_outcome.plain_text);
 
     if job.progress {
         report_file_progress(
@@ -409,15 +381,69 @@ fn process_script(
     }
 
     Ok(FileOutcome {
-        plain_text,
+        plain_text: prepared.plain_text,
         json_file: lint_outcome.json_file,
         ai_file: lint_outcome.ai_file,
         parse_failed: lint_outcome.parse_failed,
         should_fail: lint_outcome.should_fail,
         has_diagnostics: lint_outcome.has_diagnostics,
         diagnostic_count: lint_outcome.diagnostic_count,
-        fixed: fixed_this_file,
+        fixed: prepared.fixed,
     })
+}
+
+fn prime_parser_cache(parsed: &ParsedFile) {
+    // Primes `papyrus_parser`'s in-memory memoization from the parse
+    // phase's own already-owned AST/tokens, so neither `fix_file`'s own
+    // internal parse (below) nor `run_lint::lint_file`'s touches
+    // `ast_cache`'s disk cache (and its process-wide lock) again for a
+    // source string already known to be current.
+    if let Some(ast) = parsed.ast.clone() {
+        papyrus_parser::prime_cache(&parsed.source, ast);
+    }
+    if let Some(tokens) = parsed.tokens.clone() {
+        papyrus_parser::prime_tokenize_cache(&parsed.source, tokens);
+    }
+}
+
+fn prepare_source(
+    lint_context: &LintContext,
+    script_path: &Path,
+    reported_path: &str,
+    parsed: &ParsedFile,
+    job: &ScriptJob,
+) -> Result<PreparedSource, String> {
+    // `fix` mutates (or, under `--dry-run`, previews) the source first;
+    // `run_lint::lint_file` then lints whatever source comes out of that
+    // (the original source, if `fix` didn't run or changed nothing).
+    if job.fix {
+        let outcome = fix_file(
+            script_path,
+            reported_path,
+            parsed.source.clone(),
+            parsed.encoding,
+            lint_context.lint_config,
+            lint_context.function_table,
+            lint_context.tag_filter,
+            job.rule_filter,
+            job.target_line,
+            job.dry_run,
+            lint_context.json,
+        )?;
+        Ok(PreparedSource {
+            source: outcome.source,
+            fixed: outcome.fixed,
+            diff: outcome.diff,
+            plain_text: outcome.plain_text,
+        })
+    } else {
+        Ok(PreparedSource {
+            source: parsed.source.clone(),
+            fixed: false,
+            diff: None,
+            plain_text: Vec::new(),
+        })
+    }
 }
 
 fn report_file_progress(
