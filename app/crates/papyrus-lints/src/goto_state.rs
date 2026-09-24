@@ -100,7 +100,7 @@ pub fn check_with<E: ExternalSignatures>(ast: Option<&Script>, external: &mut E)
 /// Whether `callee` is a bare `GoToState(...)` call, or one explicitly
 /// qualified with `self.GoToState(...)`. `GoToState` always acts on the
 /// script it's called from, so no other qualifier is recognized.
-fn is_goto_state_callee(callee: &Expr) -> bool {
+pub(crate) fn is_goto_state_callee(callee: &Expr) -> bool {
     match callee {
         Expr::Identifier(name) => name.eq_ignore_ascii_case("GoToState"),
         Expr::Member { object, property } => {

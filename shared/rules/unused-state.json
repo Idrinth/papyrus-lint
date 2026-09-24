@@ -1,0 +1,14 @@
+{
+  "id": "unused-state",
+  "name": "Unused states",
+  "category": "Other",
+  "visitor": "ast",
+  "tags": [
+    "maintainability"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": false,
+  "description": "Flags named states that are neither Auto nor targeted by a GoToState call.",
+  "definition": "Flags, as a `[warning]`, each named `State` that is neither marked `Auto` nor targeted by a literal `GoToState(\"Name\")` or `self.GoToState(\"Name\")` call in the same script. State names are matched case-insensitively. Calls through another object do not activate this script's state, and calls with a non-literal target are not guessed at."
+}
