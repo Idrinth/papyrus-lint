@@ -176,6 +176,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nFunction Test()\n    Int i = 1\n    Int j = i\nEndFunction\n",
             &default_config,
         ),
+        (
+            "self-assignment",
+            "ScriptName Example\n\nFunction Test()\n    Int a = 1\n    a = a\n    a = 2\nEndFunction\n",
+            "ScriptName Example\n\nFunction Test()\n    Int a = 1\n    a = 2\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();
