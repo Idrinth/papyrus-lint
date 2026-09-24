@@ -149,3 +149,24 @@ fn named_disable_file_distinguishes_unknown_and_untriggered_rules() {
         .message
         .contains("this file does not produce a diagnostic"));
 }
+
+#[test]
+fn repair_drops_an_unused_named_disable() {
+    let source = "ScriptName Example\nFunction Test()\n    Int x = 1 ; @disable mystery-rule, trailing-whitespace\nEndFunction\n";
+    let mut config = crate::config::Config::default();
+    config.rules.unused_disable = true;
+    let repaired = super::repair(source, None, None, &config);
+    assert!(!repaired.contains("mystery-rule"));
+    assert!(!repaired.contains("trailing-whitespace"));
+    assert!(!repaired.contains("@disable"));
+}
+
+#[test]
+fn repair_keeps_a_disable_that_still_applies() {
+    let source = "Call(1,2) ; @disable comma-spacing, mystery-rule\n";
+    let mut config = crate::config::Config::default();
+    config.rules.unused_disable = true;
+    let repaired = super::repair(source, None, None, &config);
+    assert!(repaired.contains("@disable comma-spacing"));
+    assert!(!repaired.contains("mystery-rule"));
+}

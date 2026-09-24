@@ -346,7 +346,12 @@ fn repair_with_external<E: ExternalSignatures>(
 /// whose ruleset is enabled in `config.rules` and whose rule id `applies`
 /// accepts.
 fn repair_with(source: &str, config: &Config, applies: impl Fn(&str) -> bool) -> String {
-    registry::apply_repairs(source, config, applies)
+    let source = registry::apply_repairs(source, config, &applies);
+    if config.rules.unused_disable && applies(unused_disable::RULE) {
+        unused_disable::repair(&source, None, None, config)
+    } else {
+        source
+    }
 }
 
 /// Rebuilds a repair result so only `target_line` (1-indexed) differs from
