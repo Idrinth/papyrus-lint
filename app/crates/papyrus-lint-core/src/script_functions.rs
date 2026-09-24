@@ -163,8 +163,13 @@ pub(crate) struct ScriptFunctions {
     /// [`crate::function_table::FunctionTable::descendant_targets_state`]
     /// so a parent state a child activates is not reported unused.
     pub(crate) goto_state_targets: HashSet<String>,
+    /// Lowercased `Event` names declared directly on this script, including
+    /// events that live only inside a `State`. Kept separate from
+    /// [`Self::functions`] so an event query is a set lookup: a same-named
+    /// ordinary function does not occupy the slot, and callers do not scan
+    /// signatures for [`FunctionSignature::is_event`].
+    pub(crate) events: HashSet<String>,
 }
-
 impl ScriptFunctions {
     pub(crate) fn from_script(script: &Script, source: &str) -> Self {
         let tokens = papyrus_parser::tokenize(source).ok();
@@ -199,11 +204,15 @@ impl ScriptFunctions {
         }
         let side_effects = side_effects_by_name(&canonical_decls);
 
+        let mut events = HashSet::new();
         let mut functions: HashMap<String, FunctionSignature> = script
             .functions
             .iter()
             .map(|f| {
                 let key = f.name.to_ascii_lowercase();
+                if f.is_event {
+                    events.insert(key.clone());
+                }
                 let has_side_effects = side_effects.get(&key).copied().unwrap_or(false);
                 (
                     key,
@@ -228,6 +237,9 @@ impl ScriptFunctions {
         for state in &script.states {
             for f in &state.functions {
                 let key = f.name.to_ascii_lowercase();
+                if f.is_event {
+                    events.insert(key.clone());
+                }
                 functions.entry(key.clone()).or_insert_with(|| {
                     let has_side_effects = side_effects.get(&key).copied().unwrap_or(false);
                     FunctionSignature::from_decl(
@@ -263,6 +275,7 @@ impl ScriptFunctions {
             variables,
             states,
             goto_state_targets: papyrus_lints::literal_goto_state_targets(script),
+            events,
         }
     }
 }
