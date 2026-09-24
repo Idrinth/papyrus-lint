@@ -170,6 +170,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x12345, \"Update.esm\")\nEndFunction\n",
             &default_config,
         ),
+        (
+            "useless-downcast",
+            "ScriptName Example\n\nFunction Test()\n    Int i = 1\n    Int j = i as Int\nEndFunction\n",
+            "ScriptName Example\n\nFunction Test()\n    Int i = 1\n    Int j = i\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();

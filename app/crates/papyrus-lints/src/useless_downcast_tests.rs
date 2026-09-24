@@ -226,3 +226,21 @@ fn check_with_flags_each_redundant_nested_cast() {
         .iter()
         .all(|diagnostic| diagnostic.line == 4 && diagnostic.rule == RULE));
 }
+
+fn repair(source: &str) -> String {
+    super::repair(
+        source,
+        None,
+        None,
+        &crate::config::Config::default(),
+    )
+}
+
+#[test]
+fn repair_removes_an_exact_type_cast() {
+    let source = "ScriptName Example\n\nFunction Test()\n    Int i = 1\n    Int j = i as Int\nEndFunction\n";
+    let repaired = repair(source);
+    assert!(repaired.contains("Int j = i"));
+    assert!(!repaired.contains("as Int"));
+    assert!(check(&repaired).is_empty());
+}
