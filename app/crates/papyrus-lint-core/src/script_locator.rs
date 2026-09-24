@@ -6,9 +6,11 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::UNIX_EPOCH;
 
+use papyrus_lint_globals::Game;
 use papyrus_lints::conflicting_script_versions::ProjectFile;
 use walkdir::WalkDir;
 
+use crate::collision_cache;
 use crate::project_root::display_path;
 
 /// Rule id used when multiple search roots contain different versions of
@@ -17,22 +19,29 @@ pub const CONFLICTING_SCRIPT_VERSIONS_RULE: &str = "conflicting-script-versions"
 
 /// Reads a complete path snapshot for project-level lint rules. Files that
 /// disappear or become unreadable between discovery and linting are omitted.
+/// Prefers a still-fresh content hash from the script-collision cache so a
+/// previously seen `.psc` does not need to be opened again just to hash it.
 pub fn project_files(
     paths: impl IntoIterator<Item = PathBuf>,
     root: &Path,
     short_paths: bool,
+    game: Game,
 ) -> Vec<ProjectFile> {
     paths
         .into_iter()
         .filter_map(|path| {
-            let contents = fs::read(&path).ok()?;
+            let content_hash = file_content_hash(&path, game)?;
             Some(ProjectFile {
                 display_path: display_path(&path, root, short_paths),
                 path,
-                contents,
+                content_hash,
             })
         })
         .collect()
+}
+
+fn file_content_hash(path: &Path, game: Game) -> Option<String> {
+    collision_cache::content_hash_for(game, path)
 }
 
 /// Directories, relative to a project root, conventionally used to store
@@ -221,11 +230,12 @@ pub fn conflicting_script_versions(
     root: &Path,
     additional_roots: &[String],
     short_paths: bool,
+    game: Game,
 ) -> Vec<papyrus_lints::Diagnostic> {
     let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
         return Vec::new();
     };
-    let Ok(current) = fs::read(script_path) else {
+    let Some(current) = file_content_hash(script_path, game) else {
         return Vec::new();
     };
     let mut paths = Vec::new();
@@ -247,7 +257,7 @@ pub fn conflicting_script_versions(
     papyrus_lints::conflicting_script_versions::check(
         script_path,
         &current,
-        &project_files(paths, root, short_paths),
+        &project_files(paths, root, short_paths, game),
     )
 }
 
@@ -366,6 +376,7 @@ pub fn conflicting_script_versions_in_index(
     index: &ScriptIndex,
     root: &Path,
     short_paths: bool,
+    game: Game,
 ) -> Vec<papyrus_lints::Diagnostic> {
     let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
         return Vec::new();
@@ -374,7 +385,7 @@ pub fn conflicting_script_versions_in_index(
         return Vec::new();
     };
 
-    conflicting_script_versions_among(script_path, candidates, root, short_paths)
+    conflicting_script_versions_among(script_path, candidates, root, short_paths, game)
 }
 
 /// Warns when `script_path` has a same-named, byte-different counterpart
@@ -398,14 +409,15 @@ pub fn conflicting_script_versions_among(
     known_scripts: &[PathBuf],
     root: &Path,
     short_paths: bool,
+    game: Game,
 ) -> Vec<papyrus_lints::Diagnostic> {
-    let Ok(current) = fs::read(script_path) else {
+    let Some(current) = file_content_hash(script_path, game) else {
         return Vec::new();
     };
     papyrus_lints::conflicting_script_versions::check(
         script_path,
         &current,
-        &project_files(known_scripts.iter().cloned(), root, short_paths),
+        &project_files(known_scripts.iter().cloned(), root, short_paths, game),
     )
 }
 

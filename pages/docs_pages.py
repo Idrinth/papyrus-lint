@@ -184,6 +184,21 @@ DOCS = [
         ),
         "blurb": "The JSON Schema for one entry in the on-disk ast-cache used to skip re-parsing unchanged scripts.",
     },
+    {
+        "filename": "script-collisions.schema.json",
+        "source_dir": SCHEMA_DIR,
+        "repo_dir": "schema",
+        "slug": "script-collisions-schema",
+        "kind": "json-schema",
+        "description": (
+            "The JSON Schema for one on-disk script-collision cache file used by conflicting-script-versions, "
+            "listing each known implementer of a script name with its SHA-256, mtime, and absolute path."
+        ),
+        "blurb": (
+            "The JSON Schema for the on-disk script-collision cache used to compare same-named scripts "
+            "without reopening them."
+        ),
+    },
 ]
 
 def doc_url_prefix(doc: dict) -> str:

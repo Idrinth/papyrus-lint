@@ -109,6 +109,28 @@ fn public_accessors_are_safe_under_concurrent_use() {
 }
 
 #[test]
+fn public_content_md5_round_trips_without_reopening_source_text() {
+    let project_dir = tempdir().unwrap();
+    let source_path = project_dir.path().join("PublicContentMd5.psc");
+    let source = "ScriptName PublicContentMd5\n";
+    std::fs::write(&source_path, source).unwrap();
+    let digest = format!("{:x}", md5::compute(source.as_bytes()));
+
+    put_content_md5_for_game(SKYRIM, &source_path, &digest);
+    assert_eq!(
+        content_md5_for_game(SKYRIM, &source_path),
+        Some(digest.clone())
+    );
+    put_for_game(
+        SKYRIM,
+        &source_path,
+        source,
+        &papyrus_parser::parse(source).unwrap(),
+    );
+    assert_eq!(content_md5_for_game(SKYRIM, &source_path), Some(digest));
+}
+
+#[test]
 fn fallout4_does_not_hit_the_skyrim_bundled_blob() {
     // A source text that is a bundled hit in Skyrim's blob (a bare `Actor`
     // declaration is never how the real Skyrim `Actor.psc` reads) would

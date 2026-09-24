@@ -12,9 +12,9 @@ mod load;
 mod prime;
 mod store;
 
-pub(crate) use load::{get_in_for_game, get_tokens_in_for_game};
+pub(crate) use load::{content_md5_in_for_game, get_in_for_game, get_tokens_in_for_game};
 pub(crate) use prime::ensure_primed_in_for_game;
-pub(crate) use store::{put_in_for_game, put_tokens_in_for_game};
+pub(crate) use store::{put_content_md5_in_for_game, put_in_for_game, put_tokens_in_for_game};
 
 #[cfg(test)]
 mod test_support;

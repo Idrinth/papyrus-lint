@@ -6,7 +6,7 @@ use std::path::Path;
 
 use papyrus_lint_globals::Game;
 
-use crate::entry::valid_entry_in_for_game;
+use crate::entry::{mtime_valid_entry_in_for_game, valid_entry_in_for_game};
 
 /// Also primes `papyrus_parser`'s own in-memory memoization (see
 /// [`papyrus_parser::prime_cache`]) with a hit, so anything that parses
@@ -36,6 +36,17 @@ pub(crate) fn get_tokens_in_for_game(
     let tokens = valid_entry_in_for_game(dir, game, source_path, source)?.tokens?;
     papyrus_parser::prime_tokenize_cache(source, tokens.clone());
     Some(tokens)
+}
+
+/// Returns the stored content MD5 when the on-disk entry is still
+/// mtime-fresh and version-compatible. Does not open `source_path` for
+/// reading — only `metadata` for the mtime check.
+pub(crate) fn content_md5_in_for_game(
+    dir: &Path,
+    game: Game,
+    source_path: &Path,
+) -> Option<String> {
+    Some(mtime_valid_entry_in_for_game(dir, game, source_path)?.content_md5)
 }
 
 #[cfg(test)]

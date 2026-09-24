@@ -8,6 +8,9 @@ use papyrus_lint_core::script_locator::{
     find_psc_file_in_index, find_psc_files_recursively, CONFLICTING_SCRIPT_VERSIONS_RULE,
 };
 use papyrus_lint_core::source_encoding::{read_psc_source_with_encoding, PscEncoding};
+use papyrus_lint_globals::Game;
+
+const GAME: Game = Game::Skyrim;
 
 fn write_file(path: &Path, contents: impl AsRef<[u8]>) {
     fs::create_dir_all(path.parent().expect("test file should have a parent"))
@@ -47,7 +50,7 @@ fn indexed_resolution_uses_search_root_precedence_and_reports_later_conflicts() 
     let resolved = find_psc_file_in_index(&index, "EXAMPLE")
         .expect("case-insensitive indexed lookup should resolve");
     let diagnostics =
-        conflicting_script_versions_in_index(&resolved, &index, project.path(), false);
+        conflicting_script_versions_in_index(&resolved, &index, project.path(), false, GAME);
 
     assert_eq!(resolved, preferred);
     assert_eq!(diagnostics.len(), 1);
@@ -92,7 +95,7 @@ fn direct_conflict_detection_scans_conventional_and_configured_roots() {
         "missing".to_string(),
     ];
     let diagnostics =
-        conflicting_script_versions(&selected, project.path(), &additional_roots, false);
+        conflicting_script_versions(&selected, project.path(), &additional_roots, false, GAME);
     let mut expected_conflicts = [conventional_conflict, configured_conflict];
     expected_conflicts.sort();
 
@@ -174,6 +177,7 @@ fn identical_known_script_copies_do_not_report_a_conflict() {
         &[first.clone(), second.clone(), second],
         project.path(),
         false,
+        GAME,
     );
 
     assert!(diagnostics.is_empty());
@@ -201,6 +205,7 @@ fn known_script_conflicts_are_sorted_and_deduplicated() {
         ],
         project.path(),
         false,
+        GAME,
     );
 
     assert_eq!(diagnostics.len(), 2);

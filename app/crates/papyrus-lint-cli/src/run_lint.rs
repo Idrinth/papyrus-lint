@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
 use papyrus_lint_core::function_table::{FunctionTable, SharedFunctionTable};
-use papyrus_lint_core::{ast_cache, compile_diagnostics, compiler, content_hash};
+use papyrus_lint_core::{ast_cache, collision_cache, compile_diagnostics, compiler, content_hash};
 
 use crate::output::*;
 
@@ -154,14 +154,16 @@ fn collect_project_diagnostics(
         } else {
             ctx.script_index.values().flatten().cloned().collect()
         };
+        collision_cache::remember_source(ctx.lint_config.game, script_path, source);
         let files = papyrus_lint_core::script_locator::project_files(
             paths,
             ctx.project_root,
             ctx.short_paths,
+            ctx.lint_config.game,
         );
         project_diagnostics.extend(papyrus_lints::conflicting_script_versions::check(
             script_path,
-            source.as_bytes(),
+            &content_hash::sha256_hex(source),
             &files,
         ));
     }

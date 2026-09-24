@@ -27,7 +27,12 @@ update the cited code *and* this list.
   `papyrus-lint-core`, not re-derived in a lint.
 - `conflicting-script-versions` owns its diagnostic policy in
   `papyrus-lints`; filesystem-aware callers provide a complete `ProjectFile`
-  snapshot discovered by `papyrus-lint-core::script_locator`.
+  snapshot discovered by `papyrus-lint-core::script_locator`. Each snapshot
+  entry carries a content hash; `script_locator` reads that digest from the
+  script-collision cache (`{game}-{sha256(filename)}-collisions.json` next
+  to the AST cache) when the stored mtime still matches, so the `.psc`
+  itself is not opened just to hash it. The parse phase records hashes from
+  source already in memory and flushes dirty collision files at parse-end.
 - `script-filename-mismatch` owns its diagnostic policy in `papyrus-lints`.
   Callers pass the `.psc` file stem and the lexer tokens (`ScriptName` plus
   its name segments). It is not dispatched from `collect_diagnostics`.

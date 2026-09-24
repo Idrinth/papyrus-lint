@@ -1,6 +1,6 @@
 use super::*;
 use crate::entry::{cache_file_path_for_game, file_modified_unix_secs, CacheEntry};
-use crate::ops::load::{get_in_for_game, get_tokens_in_for_game};
+use crate::ops::load::{content_md5_in_for_game, get_in_for_game, get_tokens_in_for_game};
 use crate::ops::test_support::{
     harness, sample_ast, sample_tokens, write_raw, COMPATIBLE_VERSION, GAME,
 };
@@ -544,4 +544,68 @@ fn game_puts_are_noops_when_the_source_file_is_missing() {
     );
 
     assert!(!crate::entry::cache_file_path_for_game(cache_dir.path(), game, &source_path).exists());
+}
+
+#[test]
+fn put_content_md5_writes_a_hash_only_entry_that_can_be_read_back() {
+    let h = harness("HashOnly.psc", "ScriptName HashOnly\n");
+    let digest = format!("{:x}", md5::compute(h.source.as_bytes()));
+
+    put_content_md5_in_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+        &digest,
+        COMPATIBLE_VERSION,
+    );
+
+    assert_eq!(
+        content_md5_in_for_game(h.cache_dir.path(), GAME, &h.source_path),
+        Some(digest)
+    );
+    assert!(get_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source).is_none());
+}
+
+#[test]
+fn put_content_md5_preserves_a_cached_ast() {
+    let h = harness("PreserveAst.psc", "ScriptName PreserveAst\n");
+    let ast = sample_ast();
+    put_in_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+        h.source,
+        &ast,
+        COMPATIBLE_VERSION,
+    );
+    let digest = format!("{:x}", md5::compute(h.source.as_bytes()));
+
+    put_content_md5_in_for_game(
+        h.cache_dir.path(),
+        GAME,
+        &h.source_path,
+        &digest,
+        COMPATIBLE_VERSION,
+    );
+
+    assert_eq!(
+        get_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
+        Some(ast)
+    );
+}
+
+#[test]
+fn put_content_md5_is_a_noop_when_the_source_file_does_not_exist() {
+    let cache_dir = tempdir().unwrap();
+    let missing = cache_dir.path().join("Missing.psc");
+
+    put_content_md5_in_for_game(
+        cache_dir.path(),
+        GAME,
+        &missing,
+        "d41d8cd98f00b204e9800998ecf8427e",
+        COMPATIBLE_VERSION,
+    );
+
+    assert!(!cache_file_path_for_game(cache_dir.path(), GAME, &missing).exists());
 }
