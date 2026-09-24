@@ -131,6 +131,11 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       └── version.rs       # MIN_COMPATIBLE_VERSION and the
 │       │                            # entry-vs-running-binary compatibility
 │       │                            # check
+│       ├── papyrus-collision-cache/ # Standalone crate: disk-backed script
+│       │   └── src/               # content hashes used to detect conflicting
+│       │       ├── lib.rs         # script versions without reopening unchanged
+│       │       │                  # .psc files; papyrus-lint-core re-exports it
+│       │       └── tests.rs       # as its collision_cache module
 │       ├── papyrus-lints/        # Lint rules, each inspecting raw source/tokens
 │       │   ├── build.rs           # (not the AST) so they still run on scripts
 │       │   └── src/                # that don't parse cleanly. Every file with
@@ -475,8 +480,9 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
                                    # lookups when no base-scripts volume is mounted
 ```
 
-`papyrus-parser`, `papyrus-ast-cache`, `papyrus-lints`, `papyrus-lint-config`,
-`papyrus-lint-core`, `papyrus-lint-output`, and `papyrus-lint-cli` are separate
+`papyrus-parser`, `papyrus-ast-cache`, `papyrus-collision-cache`, `papyrus-lints`,
+`papyrus-lint-config`, `papyrus-lint-core`, `papyrus-lint-output`, and
+`papyrus-lint-cli` are separate
 crates (not Cargo workspace members, just path dependencies of each other and of
 `app/src-tauri`) so the lint engine and project-resolution logic stay reusable
 independent of the Tauri app — which is what lets `papyrus-lint-cli` link against

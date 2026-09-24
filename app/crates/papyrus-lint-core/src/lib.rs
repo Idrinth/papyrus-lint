@@ -17,7 +17,8 @@ pub mod achlist;
 /// self-contained enough (only depending on [`papyrus_parser`]) to be
 /// reusable outside this crate too.
 pub use papyrus_ast_cache as ast_cache;
-pub mod collision_cache;
+/// Script-collision content-hash cache, re-exported from its standalone crate.
+pub use papyrus_collision_cache as collision_cache;
 pub mod compile_diagnostics;
 pub mod compiler;
 pub mod content_hash;

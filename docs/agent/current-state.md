@@ -28,8 +28,8 @@ update the cited code *and* this list.
 - `conflicting-script-versions` owns its diagnostic policy in
   `papyrus-lints`; filesystem-aware callers provide a complete `ProjectFile`
   snapshot discovered by `papyrus-lint-core::script_locator`. Each snapshot
-  entry carries a content hash; `script_locator` reads that digest from the
-  script-collision cache (`{game}-{sha256(filename)}.iplcc` next
+  entry carries a content hash; `script_locator` reads that digest from
+  the standalone   `papyrus-collision-cache` crate (`{game}-{sha256(filename)}.iplcc` next
   to the AST cache) when the stored mtime still matches, so the `.psc`
   itself is not opened just to hash it. The parse phase records hashes from
   source already in memory and flushes dirty collision files at parse-end.
@@ -87,6 +87,7 @@ update the cited code *and* this list.
 | --- | --- |
 | Parser / AST / lexer / in-memory memo | `app/crates/papyrus-parser/src/` (`ast.rs`, `parser.rs`, `lexer.rs`, `cache.rs`, `types.rs`) |
 | Disk AST/token cache, bundled vanilla scripts | `app/crates/papyrus-ast-cache/src/` |
+| Script-collision content-hash cache | `app/crates/papyrus-collision-cache/src/` |
 | Rule dispatch, visitors, tags, disable comments | `app/crates/papyrus-lints/src/` (`lib.rs`, generated `registry`/`tags`/`config`, `external_signatures.rs`, `const_eval.rs`) |
 | A single rule | `app/crates/papyrus-lints/src/<rule>.rs` + `shared/rules/<id>.json` |
 | Project root, achlist/ppj, script index, FunctionTable, compile/stale `.pex` | `app/crates/papyrus-lint-core/src/` |

@@ -25,7 +25,7 @@ Do not paste those files back into this index. Update the file you read.
 
 ## Crate map
 
-The seven reusable crates under `app/crates/` are **path dependencies, not
+The eight reusable linting crates under `app/crates/` are **path dependencies, not
 Cargo workspace members**. Run `cargo test` / `cargo fmt` / `cargo clippy`
 against each crate's own `Cargo.toml`. Only `app/src-tauri` needs Tauri
 system deps. Paths and roles live in
@@ -38,6 +38,7 @@ From the repo root, typical loops:
 
 - Parser: `cargo test --manifest-path app/crates/papyrus-parser/Cargo.toml`
 - AST cache: `cargo test --manifest-path app/crates/papyrus-ast-cache/Cargo.toml`
+- Collision cache: `cargo test --manifest-path app/crates/papyrus-collision-cache/Cargo.toml`
 - Lints: `cargo test --manifest-path app/crates/papyrus-lints/Cargo.toml`
 - Config: `cargo test --manifest-path app/crates/papyrus-lint-config/Cargo.toml`
 - Core: `cargo test --manifest-path app/crates/papyrus-lint-core/Cargo.toml`

@@ -4,7 +4,7 @@ use super::*;
 use papyrus_lints::ExternalSignatures;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::RwLock;
+use std::sync::{Condvar, Mutex, RwLock};
 
 struct SeedParse {
     source: String,
@@ -482,6 +482,87 @@ fn empty_closure_does_not_parse_or_report_progress() {
     assert!(closed.unresolved.is_empty());
     assert_eq!(parsed.load(Ordering::SeqCst), 0);
     assert_eq!(finished.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn seed_without_an_ast_is_returned_without_discovering_dependencies() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let seed = root.path().join("Broken.psc");
+    std::fs::write(&seed, "not valid Papyrus").unwrap();
+    let table = FunctionTable::new(root.path().to_path_buf());
+    let finished = AtomicUsize::new(0);
+
+    let closed = table.parse_type_closure(
+        std::slice::from_ref(&seed),
+        TypeClosureOptions {
+            threads: 1,
+            total_files: None,
+        },
+        parse_seed,
+        |parsed| parsed.ast.as_ref(),
+        || {
+            finished.fetch_add(1, Ordering::SeqCst);
+        },
+    );
+
+    assert_eq!(closed.seeds.len(), 1);
+    assert!(closed.seeds[0].ast.is_none());
+    assert!(closed.dependencies.is_empty());
+    assert!(closed.bundled.is_empty());
+    assert!(closed.unresolved.is_empty());
+    assert_eq!(finished.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn dropping_an_unfinished_job_guard_releases_its_inflight_slot() {
+    let state = QueueState {
+        inner: Mutex::new(QueueInner {
+            jobs: VecDeque::new(),
+            inflight: 1,
+        }),
+        cv: Condvar::new(),
+    };
+
+    drop(FinishGuard::new(&state, None));
+
+    assert_eq!(state.inner.lock().unwrap().inflight, 0);
+    assert!(pop_job(&state).is_none());
+}
+
+#[test]
+fn discovery_ignores_empty_and_already_seen_names() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let table = FunctionTable::new(root.path().to_path_buf());
+    let shared = Shared::<()> {
+        seen: Mutex::new(HashSet::new()),
+        seed_slots: Mutex::new(Vec::new()),
+        dependencies: Mutex::new(Vec::new()),
+        bundled: Mutex::new(Vec::new()),
+        unresolved: Mutex::new(Vec::new()),
+    };
+
+    let discovered = table.discover(
+        vec![String::new(), "Missing".into(), "missing".into()],
+        &shared,
+    );
+
+    assert!(discovered.jobs.is_empty());
+    assert_eq!(discovered.disk_jobs, 0);
+    assert_eq!(*shared.unresolved.lock().unwrap(), ["missing"]);
+}
+
+#[test]
+fn cached_parse_reuses_the_ast_cache_entry() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    let path = root.path().join("Cached.psc");
+    let source = "ScriptName Cached\n";
+    std::fs::write(&path, source).unwrap();
+
+    assert!(cached_or_parse(papyrus_lint_globals::Game::Skyrim, &path, source).is_some());
+    assert!(
+        crate::ast_cache::get_for_game(papyrus_lint_globals::Game::Skyrim, &path, source).is_some()
+    );
+    assert!(cached_or_parse(papyrus_lint_globals::Game::Skyrim, &path, source).is_some());
 }
 
 #[test]

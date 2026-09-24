@@ -2,11 +2,22 @@ use super::*;
 use crate::token::TokenKind;
 use crate::{parse, tokenize};
 
-struct ExprCounter(usize);
+#[derive(Default)]
+struct ExprCounter {
+    count: usize,
+    visited_values: Vec<String>,
+}
 
 impl Visitor for ExprCounter {
     fn visit_expr(&mut self, expr: &Expr) {
-        self.0 += 1;
+        self.count += 1;
+        match expr {
+            Expr::Identifier(name) => self.visited_values.push(format!("identifier:{name}")),
+            Expr::Literal(crate::ast::Literal::Int { value, .. }) => {
+                self.visited_values.push(format!("int:{value}"));
+            }
+            _ => {}
+        }
         walk_expr(self, expr);
     }
 }
@@ -22,6 +33,37 @@ impl TokenVisitor for TokenCounter {
     }
 }
 
+struct DefaultVisitor;
+
+impl Visitor for DefaultVisitor {}
+
+struct DefaultTokenVisitor;
+
+impl TokenVisitor for DefaultTokenVisitor {}
+
+#[test]
+fn default_visitors_walk_complete_inputs() {
+    let script = crate::parse_with_mode(
+        "ScriptName DefaultVisit\n\n\
+         Import Utility\n\
+         Int Property Count = 1 Auto\n\
+         Int total = 0\n\n\
+         Struct Entry\n    Int Value = 2\nEndStruct\n\n\
+         Group Settings\n    Int Property Limit = 3 Auto\nEndGroup\n\n\
+         Int Function Calculate(Int value = 4)\n\
+             If value > 0\n        Return value\n    EndIf\n\
+             Return 0\n\
+         EndFunction\n\n\
+         State Active\n    Event OnBeginState()\n    EndEvent\nEndState\n",
+        crate::parser::GameEdition::Fallout4,
+    )
+    .unwrap();
+    let tokens = tokenize("ScriptName DefaultVisit\n").unwrap();
+
+    DefaultVisitor.visit_script(&script);
+    DefaultTokenVisitor.visit_tokens(&tokens);
+}
+
 #[test]
 fn ast_visitor_walks_fallout4_structs_groups_and_new_struct() {
     let script = crate::parse_with_mode(
@@ -32,12 +74,12 @@ fn ast_visitor_walks_fallout4_structs_groups_and_new_struct() {
         crate::parser::GameEdition::Fallout4,
     )
     .unwrap();
-    let mut counter = ExprCounter(0);
+    let mut counter = ExprCounter::default();
     counter.visit_script(&script);
     // The struct member's default value, the grouped property's default
     // value, and the `new Coordinates` struct instantiation: one visited
     // expression each.
-    assert_eq!(counter.0, 3);
+    assert_eq!(counter.count, 3);
 }
 
 #[test]
@@ -45,9 +87,71 @@ fn ast_visitor_walks_nested_expressions() {
     let script =
         parse("ScriptName Example\nFunction Add(Int a = 1)\n    Return a + 2\nEndFunction\n")
             .unwrap();
-    let mut counter = ExprCounter(0);
+    let mut counter = ExprCounter::default();
     counter.visit_script(&script);
-    assert_eq!(counter.0, 4);
+    assert_eq!(counter.count, 4);
+}
+
+#[test]
+fn expression_walker_reaches_every_child_shape() {
+    use crate::ast::{BinaryOp, Literal, UnaryOp};
+
+    let expressions = [
+        Expr::Unary {
+            op: UnaryOp::Neg,
+            operand: Box::new(Expr::Literal(Literal::int(1))),
+        },
+        Expr::Call {
+            callee: Box::new(Expr::Identifier("Run".into())),
+            args: vec![Expr::NamedArg {
+                name: "value".into(),
+                value: Box::new(Expr::Literal(Literal::int(2))),
+            }],
+            line: 1,
+            col: 1,
+        },
+        Expr::Member {
+            object: Box::new(Expr::Self_),
+            property: "Value".into(),
+        },
+        Expr::Index {
+            object: Box::new(Expr::Identifier("values".into())),
+            index: Box::new(Expr::Literal(Literal::int(0))),
+        },
+        Expr::Cast {
+            value: Box::new(Expr::Identifier("value".into())),
+            type_name: "Int".into(),
+        },
+        Expr::Is {
+            value: Box::new(Expr::Identifier("value".into())),
+            type_name: "Int".into(),
+        },
+        Expr::NewArray {
+            type_name: TypeName {
+                name: "Int".into(),
+                is_array: true,
+            },
+            size: Box::new(Expr::Literal(Literal::int(3))),
+        },
+        Expr::Binary {
+            left: Box::new(Expr::Parent),
+            op: BinaryOp::Add,
+            right: Box::new(Expr::NewStruct {
+                type_name: "Entry".into(),
+            }),
+        },
+    ];
+    let mut counter = ExprCounter::default();
+
+    for expression in &expressions {
+        walk_expr(&mut counter, expression);
+    }
+
+    assert_eq!(counter.count, 12);
+    assert!(counter
+        .visited_values
+        .windows(2)
+        .any(|values| values == ["identifier:values", "int:0"]));
 }
 
 #[test]

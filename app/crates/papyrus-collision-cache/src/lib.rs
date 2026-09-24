@@ -22,9 +22,8 @@ use std::time::UNIX_EPOCH;
 use papyrus_lint_globals::Game;
 use serde::{Deserialize, Serialize};
 
-use crate::ast_cache;
-use crate::content_hash::{sha256_bytes, sha256_hex};
-use crate::source_encoding;
+use papyrus_ast_cache as ast_cache;
+use sha2::{Digest, Sha256};
 
 pub const ALGORITHM: &str = "sha256";
 const MAGIC: &[u8; 4] = b"IPLC";
@@ -262,7 +261,7 @@ pub(crate) fn content_hash_in(dir: &Path, game: Game, path: &Path) -> Option<Str
         }
     }
     let contents = std::fs::read(path).ok()?;
-    let source = source_encoding::decode_psc_source(&contents);
+    let source = decode_psc_source(&contents);
     let hash = sha256_hex(&source);
     if let Some(mtime) = file_mtime_secs(path) {
         let mut store = lock_store();
@@ -332,6 +331,25 @@ fn decode_collisions(raw: &[u8]) -> Result<Vec<ScriptCollisions>, ()> {
     bincode::deserialize(&raw[8..]).map_err(|_| ())
 }
 
+fn sha256_hex(content: &str) -> String {
+    sha256_bytes(content.as_bytes())
+}
+
+fn sha256_bytes(bytes: &[u8]) -> String {
+    let digest = Sha256::digest(bytes);
+    digest.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
+fn decode_psc_source(bytes: &[u8]) -> String {
+    match String::from_utf8(bytes.to_vec()) {
+        Ok(source) => source,
+        Err(err) => {
+            let (source, _encoding, _had_errors) = encoding_rs::WINDOWS_1252.decode(err.as_bytes());
+            source.into_owned()
+        }
+    }
+}
+
 #[cfg(test)]
-#[path = "collision_cache_tests.rs"]
+#[path = "tests.rs"]
 mod tests;
