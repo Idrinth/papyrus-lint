@@ -355,9 +355,20 @@ dependencies = [
  "papyrus-lint-globals",
  "papyrus-parser",
  "serde",
- "serde_json",
  "serde_norway",
  "zip",
+]
+
+[[package]]
+name = "papyrus-collision-cache"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "encoding_rs",
+ "papyrus-ast-cache",
+ "papyrus-lint-globals",
+ "serde",
+ "sha2",
 ]
 
 [[package]]
@@ -396,6 +407,7 @@ dependencies = [
  "encoding_rs",
  "md5",
  "papyrus-ast-cache",
+ "papyrus-collision-cache",
  "papyrus-lint-config",
  "papyrus-lint-globals",
  "papyrus-lints",
