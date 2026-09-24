@@ -198,7 +198,11 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
             script_locator::build_script_index(Path::new(&context.root), &context.additional_roots);
         collision_cache::preload(
             context.config.game,
-            index.values().flatten().chain(std::iter::once(path)),
+            index
+                .values()
+                .flatten()
+                .map(PathBuf::as_path)
+                .chain(std::iter::once(path)),
         );
         collision_cache::remember_source(context.config.game, path, source);
         let files = script_locator::project_files(
