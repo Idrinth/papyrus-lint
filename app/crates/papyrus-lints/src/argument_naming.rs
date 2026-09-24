@@ -21,8 +21,10 @@
 //! a separate mechanism from `Extends`.
 
 use papyrus_parser::ast::{FunctionDecl, Script};
+use papyrus_parser::token::{Keyword, TokenKind};
 
-use crate::external_signatures::ExternalSignatures;
+use crate::external_signatures::{ExternalSignatures, NoExternalSignatures};
+use crate::token_walk::line_starts;
 use crate::visitor::{AstLint, LintVisitor, Store, VisitCtx};
 use crate::Diagnostic;
 
@@ -139,6 +141,93 @@ pub fn check_with<E: ExternalSignatures + ?Sized>(
     }
 
     diagnostics
+}
+
+/// Does nothing: without an [`ExternalSignatures`] resolver there is no
+/// inherited declaration to rename toward. See [`repair_with`].
+#[allow(dead_code)]
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+    repair_with(source, &mut NoExternalSignatures)
+}
+
+/// Renames each overridden parameter [`check_with`] would flag to the
+/// inherited name, including references inside that function's body.
+pub fn repair_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) -> String {
+    let Ok(script) = papyrus_parser::parse(source) else {
+        return source.to_string();
+    };
+    let Some(extends) = &script.extends else {
+        return source.to_string();
+    };
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+        return source.to_string();
+    };
+    let line_starts = line_starts(source);
+    let mut edits = Vec::new();
+
+    for function in &script.functions {
+        let Some(parent_params) = external.lookup(extends, &function.name) else {
+            continue;
+        };
+        let mut renames = std::collections::HashMap::new();
+        for (local, parent) in function.params.iter().zip(&parent_params) {
+            if !local.name.eq_ignore_ascii_case(&parent.name) {
+                renames.insert(local.name.to_ascii_lowercase(), parent.name.clone());
+            }
+        }
+        if renames.is_empty() {
+            continue;
+        }
+        let Some(start_index) = tokens.iter().position(|token| token.line == function.line) else {
+            continue;
+        };
+        let end_index = tokens
+            .iter()
+            .enumerate()
+            .skip(start_index)
+            .find(|(_, token)| {
+                matches!(
+                    token.kind,
+                    TokenKind::Keyword(Keyword::EndFunction | Keyword::EndEvent)
+                )
+            })
+            .map(|(index, _)| index)
+            .unwrap_or(tokens.len().saturating_sub(1));
+
+        let mut skip_function_name = false;
+        for token in &tokens[start_index..=end_index] {
+            match &token.kind {
+                TokenKind::Keyword(Keyword::Function | Keyword::Event) => {
+                    skip_function_name = true;
+                }
+                TokenKind::Identifier(name) if skip_function_name => {
+                    skip_function_name = false;
+                }
+                TokenKind::Identifier(name) => {
+                    if let Some(replacement) = renames.get(&name.to_ascii_lowercase()) {
+                        if replacement != name {
+                            let start = line_starts[token.line - 1] + token.col - 1;
+                            edits.push((start, start + name.len(), replacement.clone()));
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.0));
+    let mut repaired = source.to_string();
+    for (start, end, replacement) in edits {
+        repaired.replace_range(start..end, &replacement);
+    }
+    repaired
 }
 
 #[cfg(test)]

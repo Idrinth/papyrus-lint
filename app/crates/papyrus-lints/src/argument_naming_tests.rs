@@ -143,3 +143,12 @@ fn does_not_crash_on_unparseable_source() {
 
     assert!(diagnostics.is_empty());
 }
+
+#[test]
+fn repair_renames_the_overridden_parameter_and_its_uses() {
+    let source = "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef, Int aiCount)\n    akRef.Disable()\nEndFunction\n";
+    let repaired = super::repair_with(source, &mut FakeExternal);
+    assert!(repaired.contains("ObjectReference akTarget"));
+    assert!(!repaired.contains("akRef"));
+    assert!(repaired.contains("akTarget.Disable()"));
+}

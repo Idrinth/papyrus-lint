@@ -333,12 +333,14 @@ fn repair_with_external<E: ExternalSignatures>(
     external: &mut E,
     applies: impl Fn(&str) -> bool,
 ) -> String {
-    let source = repair_with(source, config, &applies);
+    let mut source = repair_with(source, config, &applies);
     if config.rules.unused_import && applies(unused_import::RULE) {
-        unused_import::repair_with(&source, external)
-    } else {
-        source
+        source = unused_import::repair_with(&source, external);
     }
+    if config.rules.argument_naming && applies(argument_naming::RULE) {
+        source = argument_naming::repair_with(&source, external);
+    }
+    source
 }
 
 /// Shared implementation behind [`repair_filtered`] and

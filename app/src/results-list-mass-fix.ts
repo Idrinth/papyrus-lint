@@ -25,6 +25,7 @@ const FIXABLE_RULE_DISPLAY_NAMES: Record<string, string> = {
   "useless-downcast": "Useless downcast",
   "self-assignment": "Self-assignment",
   "unused-disable": "Unused disable directive",
+  "argument-naming": "Argument naming consistency",
 };
 
 export function massFixRuleDisplayName(rule: string): string {

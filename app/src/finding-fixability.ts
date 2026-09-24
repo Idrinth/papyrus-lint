@@ -24,6 +24,7 @@ export const FIXABLE_RULE_IDS = new Set([
   "useless-downcast",
   "self-assignment",
   "unused-disable",
+  "argument-naming",
 ]);
 
 // Some findings from a fixable rule still require a substantive rename and

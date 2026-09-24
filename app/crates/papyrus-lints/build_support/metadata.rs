@@ -44,7 +44,7 @@ pub const NO_SOURCE_CHECK_IDS: &[&str] = &[
     "stale-compiled-output",
     "script-filename-mismatch",
 ];
-const EXTERNAL_REPAIR_IDS: &[&str] = &["unused-import"];
+const EXTERNAL_REPAIR_IDS: &[&str] = &["unused-import", "argument-naming"];
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct ValidationError(String);
