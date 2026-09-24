@@ -170,3 +170,47 @@ fn does_not_flag_a_call_missing_the_file_name_argument() {
 fn does_not_crash_on_unparseable_source() {
     assert!(check("ScriptName Example\n\nFunction Test(\nEndFunction\n").is_empty());
 }
+
+fn repair(source: &str) -> String {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::repair(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+    )
+}
+
+#[test]
+fn repairs_a_non_zero_load_index_on_a_full_plugin() {
+    let source = "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x01012345, \"Update.esm\")\nEndFunction\n";
+    let repaired = repair(source);
+    assert!(repaired.contains("0x12345"));
+    assert!(!repaired.contains("0x01012345"));
+    assert!(check(&repaired).is_empty());
+}
+
+#[test]
+fn repairs_leading_zero_padding() {
+    let source = "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x00012345, \"Update.esm\")\nEndFunction\n";
+    let repaired = repair(source);
+    assert!(repaired.contains("0x12345"));
+    assert!(!repaired.contains("0x00012345"));
+    assert!(check(&repaired).is_empty());
+}
+
+#[test]
+fn repairs_a_light_plugin_load_index() {
+    let source = "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x1ABC, \"Light.esl\")\nEndFunction\n";
+    let repaired = repair(source);
+    assert!(repaired.contains("0xABC"));
+    assert!(!repaired.contains("0x1ABC"));
+    assert!(check(&repaired).is_empty());
+}
+
+#[test]
+fn repair_leaves_a_minimal_literal_alone() {
+    let source = "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x12345, \"Update.esm\")\nEndFunction\n";
+    assert_eq!(repair(source), source);
+}

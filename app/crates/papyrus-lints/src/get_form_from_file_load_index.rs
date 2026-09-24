@@ -130,6 +130,67 @@ fn matching_call(tokens: &[Token], call_index: usize) -> Option<(usize, usize)> 
     }
 }
 
+/// Rewrites every flagged hex FormID literal so it only carries the local
+/// FormID bits its file name argument's plugin type actually uses, written
+/// at the shortest hex length (`0x12345` rather than `0x00012345`).
+pub fn repair(
+    source: &str,
+    ast: Option<&papyrus_parser::ast::Script>,
+    tokens: Option<&[papyrus_parser::token::Token]>,
+    config: &crate::config::Config,
+) -> String {
+    let _ = (ast, tokens, config);
+
+    let Ok(tokens) = papyrus_parser::tokenize(source) else {
+        return source.to_string();
+    };
+    let line_starts = line_starts(source);
+
+    let mut edits = Vec::new();
+    for call_index in 0..tokens.len() {
+        let Some((literal_index, filename_index)) = matching_call(&tokens, call_index) else {
+            continue;
+        };
+        if diagnostic_for(
+            &tokens,
+            literal_index,
+            filename_index,
+            source,
+            &line_starts,
+        )
+        .is_none()
+        {
+            continue;
+        }
+        let TokenKind::IntLiteral(value, _) = tokens[literal_index].kind else {
+            continue;
+        };
+        let TokenKind::StringLiteral(ref filename) = tokens[filename_index].kind else {
+            continue;
+        };
+        let is_light_plugin = filename.trim_end().to_ascii_lowercase().ends_with(".esl");
+        let local_bits = if is_light_plugin {
+            LIGHT_PLUGIN_LOCAL_BITS
+        } else {
+            FULL_PLUGIN_LOCAL_BITS
+        };
+        let local_max = (1i64 << local_bits) - 1;
+        let local_value = value & local_max;
+        let literal = &tokens[literal_index];
+        let start = token_offset(&line_starts, literal);
+        let digits = hex_digits_text(source, &line_starts, literal);
+        let end = start + 2 + digits.len();
+        edits.push((start, end, format!("{local_value:#X}")));
+    }
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.0));
+
+    let mut repaired = source.to_string();
+    for (start, end, replacement) in edits {
+        repaired.replace_range(start..end, &replacement);
+    }
+    repaired
+}
+
 /// Builds the diagnostic for the FormID literal at `literal_index`, given
 /// the file name string literal at `filename_index`, or `None` when the
 /// literal isn't written in hexadecimal (a decimal one is

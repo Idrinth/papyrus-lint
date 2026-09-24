@@ -20,6 +20,7 @@ export const FIXABLE_RULE_IDS = new Set([
   "unnecessary-function",
   "unused-import",
   "final-newline",
+  "get-form-from-file-load-index",
 ]);
 
 // Some findings from a fixable rule still require a substantive rename and

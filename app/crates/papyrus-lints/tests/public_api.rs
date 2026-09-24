@@ -164,6 +164,12 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\n",
             &default_config,
         ),
+        (
+            "get-form-from-file-load-index",
+            "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x01012345, \"Update.esm\")\nEndFunction\n",
+            "ScriptName Example\n\nFunction Test()\n    Form theForm = Game.GetFormFromFile(0x12345, \"Update.esm\")\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();
