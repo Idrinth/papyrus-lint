@@ -8,6 +8,7 @@
 
 use std::marker::PhantomData;
 
+use crate::token_walk::line_starts;
 use crate::{fragment_code, Diagnostic};
 use papyrus_parser::token::{Token, TokenKind};
 
@@ -204,15 +205,4 @@ fn trailing_gap(bytes: &[u8], offset: usize) -> Option<(usize, usize)> {
         return None;
     }
     Some((offset, end))
-}
-
-fn line_starts(source: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(
-            source
-                .bytes()
-                .enumerate()
-                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
-        )
-        .collect()
 }

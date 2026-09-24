@@ -27,6 +27,7 @@
 use papyrus_parser::token::{IntFormat, Keyword, Token, TokenKind};
 
 use crate::Diagnostic;
+use crate::token_walk::{line_starts, is_identifier, is_game_get_form_from_file_call};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "formid-hex-notation";
@@ -148,23 +149,8 @@ fn diagnostic_for(literal: &Token, context: &str) -> Diagnostic {
     }
 }
 
-fn line_starts(source: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(
-            source
-                .bytes()
-                .enumerate()
-                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
-        )
-        .collect()
-}
-
 fn token_offset(line_starts: &[usize], token: &Token) -> usize {
     line_starts[token.line - 1] + token.col - 1
-}
-
-fn is_identifier(token: &Token, name: &str) -> bool {
-    matches!(&token.kind, TokenKind::Identifier(actual) if actual.eq_ignore_ascii_case(name))
 }
 
 fn is_comparison(kind: &TokenKind) -> bool {
@@ -190,27 +176,6 @@ fn is_get_form_id_call(tokens: &[Token], index: usize) -> bool {
             tokens.get(index + 2).map(|t| &t.kind),
             Some(TokenKind::RParen)
         )
-}
-
-/// Whether `tokens[index]` starts a `GetFormFromFile(...)` call qualified
-/// by the literal `Game` singleton, the same way [`crate::forbidden_functions`]
-/// only matches a `global` rule's function through its literal script
-/// name (`Game` is never subclassed, so this is the only way the call
-/// resolves to it).
-fn is_game_get_form_from_file_call(tokens: &[Token], index: usize) -> bool {
-    if !is_identifier(&tokens[index], "GetFormFromFile") {
-        return false;
-    }
-    if !matches!(
-        tokens.get(index + 1).map(|t| &t.kind),
-        Some(TokenKind::LParen)
-    ) {
-        return false;
-    }
-    if index < 2 || !matches!(tokens[index - 1].kind, TokenKind::Dot) {
-        return false;
-    }
-    is_identifier(&tokens[index - 2], "Game")
 }
 
 /// Flags a `GetFormID()` call directly compared (`==`, `!=`, `<`, `<=`,

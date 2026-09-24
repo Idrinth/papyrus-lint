@@ -2,6 +2,7 @@
 
 use crate::{fragment_code, Diagnostic};
 use papyrus_parser::token::{Token, TokenKind};
+use crate::token_walk::{line_starts};
 
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "comma-spacing";
@@ -137,17 +138,6 @@ fn comma_offsets_from_tokens(source: &str, tokens: &[Token]) -> Vec<(usize, usiz
         }
     }
     commas
-}
-
-fn line_starts(source: &str) -> Vec<usize> {
-    std::iter::once(0)
-        .chain(
-            source
-                .bytes()
-                .enumerate()
-                .filter_map(|(index, byte)| (byte == b'\n').then_some(index + 1)),
-        )
-        .collect()
 }
 
 #[cfg(test)]
