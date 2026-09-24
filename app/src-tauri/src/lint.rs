@@ -6,9 +6,9 @@ use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
 use papyrus_lint_core::source_encoding::read_psc_source;
 use papyrus_lint_core::{
-    ast_cache, compile_diagnostics, compiler, function_table, script_filename_mismatch,
-    script_locator, stale_pex,
+    ast_cache, compile_diagnostics, compiler, function_table, script_locator, stale_pex,
 };
+use papyrus_lints::script_filename_mismatch;
 use serde::{Deserialize, Serialize};
 
 /// Identity of one desktop-app [`function_table::FunctionTable`]: project
@@ -157,8 +157,9 @@ pub(crate) fn compile_psc_file(
 /// search roots (see [`script_locator::conflicting_script_versions`]); if
 /// `rules.stale_compiled_output` is enabled, `path`'s conventionally located
 /// compiled `.pex` being older than it (see [`stale_pex::check`]); if
-/// `rules.script_filename_mismatch` is enabled, `path`'s file name against
-/// `source`'s declared `ScriptName` (see [`script_filename_mismatch::check`])
+/// `rules.script_filename_mismatch` is enabled, `path`'s file stem against
+/// `source`'s declared `ScriptName` (see [`script_filename_mismatch::check`],
+/// which reads that name from the lexer tokens)
 /// — then runs every lint rule against `source` (via `function_table`, for
 /// cross-script lookups) with those project diagnostics merged in via
 /// [`papyrus_lints::lint_with_external_arguments_and_extra_diagnostics`],
@@ -209,7 +210,11 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
         project_diagnostics.extend(stale_pex::check(path));
     }
     if context.config.rules.script_filename_mismatch {
-        project_diagnostics.extend(script_filename_mismatch::check(path, source));
+        if let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) {
+            if let Ok(tokens) = papyrus_parser::tokenize(source) {
+                project_diagnostics.extend(script_filename_mismatch::check(stem, &tokens));
+            }
+        }
     }
     let mut diagnostics = papyrus_lints::lint_with_external_arguments_and_extra_diagnostics(
         source,

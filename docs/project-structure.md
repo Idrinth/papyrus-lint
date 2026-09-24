@@ -170,11 +170,14 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       ├── native_function_usage.rs   # Reads shared/rules/data/skyrim/native-methods.yaml via a
 │       │       │                              # build-time-generated array; disabled by
 │       │       │                              # default
-│       │       └── actor_value.rs             # Flags a call to an Actor Value function
+│       │       ├── actor_value.rs             # Flags a call to an Actor Value function
 │       │                                      # (GetActorValue, SetActorValue, ...) whose
 │       │                                      # argument isn't a known Actor Value; reads
 │       │                                      # shared/rules/data/skyrim/actor-values.yaml via a build-time-
 │       │                                      # generated array; disabled by default
+│       │       └── script_filename_mismatch.rs # ScriptName vs a caller-supplied file
+│       │                                      # stem, read from the lexer tokens.
+│       │                                      # Not dispatched by collect_diagnostics
 │       ├── papyrus-lint-config/  # Locates/loads/saves a project's
 │       │   └── src/               # papyrus-lint.yaml (lint settings, compiler
 │       │       ├── lib.rs          # path, script roots); depends only on
@@ -220,10 +223,6 @@ do not copy the tree into `CONTRIBUTING.md` or `AGENTS.md`.
 │       │       ├── project_root.rs # Discovers a project's root from a .psc
 │       │       │                   # file's position on disk, for the CLI and
 │       │       │                   # the find_project_root Tauri command
-│       │       ├── script_filename_mismatch.rs # The "ScriptName/filename
-│       │       │                   # mismatch" project lint (needs the .psc's
-│       │       │                   # own path, so it can't live in
-│       │       │                   # papyrus-lints with the source-only lints)
 │       │       ├── source_encoding.rs # Reads a .psc as UTF-8 or, when that's
 │       │       │                   # invalid, Windows-1252 (CP1252) — the
 │       │       │                   # Creation Kit/compiler's own encoding

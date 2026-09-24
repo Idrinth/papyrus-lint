@@ -162,11 +162,14 @@ pub fn lint_with_external_arguments<E: ExternalSignatures>(
 /// for unused ones, rather than a caller appending them to this function's
 /// own already-finalized result afterward.
 ///
-/// `papyrus-lint-core`'s path-dependent project diagnostics
-/// (`stale-compiled-output`, `conflicting-script-versions`,
-/// `script-filename-mismatch`) need a file path or project root this crate
-/// never sees, so a caller computes them separately and passes them in here
-/// as `extra_diagnostics` instead of extending
+/// `stale-compiled-output` still needs a compiled `.pex` this crate never
+/// sees. `conflicting-script-versions` and `script-filename-mismatch` own
+/// their diagnostic policy here (`conflicting_script_versions::check` takes
+/// a project snapshot; `script_filename_mismatch::check` takes the file stem
+/// and the `ScriptName` lexer tokens), but neither is dispatched from
+/// [`registry::collect_diagnostics`] — the stem and the snapshot aren't
+/// known there. A caller computes them and passes them in here as
+/// `extra_diagnostics` instead of extending
 /// [`lint_with_external_arguments`]'s own result with them. Appending them
 /// afterward would mean [`unused_disable`]'s validation — which only ever
 /// sees the diagnostics gathered before that result is returned — never
@@ -445,11 +448,11 @@ pub fn add_nodiscard_comment(source: &str, target_line: usize) -> String {
 /// [`lint_with_external_arguments_and_extra_diagnostics`] applies internally
 /// to every diagnostic (including the `extra_diagnostics` a caller merges
 /// in) for a caller that needs to ask about a single diagnostic in
-/// isolation instead — namely `papyrus-lint-core`'s project-level lints
-/// (`stale-compiled-output`, `conflicting-script-versions`,
-/// `script-filename-mismatch`), which need more than just `source` (a file
-/// path, or another script's contents) to run and so can't be dispatched
-/// from inside this crate at all. Prefer merging such a diagnostic in via
+/// isolation instead. `stale-compiled-output` needs a compiled `.pex`.
+/// `conflicting-script-versions` and `script-filename-mismatch` live in
+/// this crate, but they need a project snapshot or a file stem plus the
+/// `ScriptName` tokens, which [`registry::collect_diagnostics`] never has,
+/// so they can't be dispatched from there. Prefer merging such a diagnostic in via
 /// [`lint_with_external_arguments_and_extra_diagnostics`] over filtering it
 /// with this function by hand: only the former also validates the
 /// directive as used for the `unused-disable` lint.

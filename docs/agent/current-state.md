@@ -28,6 +28,9 @@ update the cited code *and* this list.
 - `conflicting-script-versions` owns its diagnostic policy in
   `papyrus-lints`; filesystem-aware callers provide a complete `ProjectFile`
   snapshot discovered by `papyrus-lint-core::script_locator`.
+- `script-filename-mismatch` owns its diagnostic policy in `papyrus-lints`.
+  Callers pass the `.psc` file stem and the lexer tokens (`ScriptName` plus
+  its name segments). It is not dispatched from `collect_diagnostics`.
 - `lint` / `repair` / `repair_filtered*` have no resolver.
   `unused-import` is a no-op there. Callers with a project use the
   `*_with_external_arguments` siblings. Preview repair is resolver-less
