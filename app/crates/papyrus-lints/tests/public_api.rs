@@ -191,6 +191,15 @@ fn every_published_fixable_rule_works_through_the_filtered_public_api() {
             "ScriptName Example\nFunction Test()\n    Int x = 1\nEndFunction\n",
             &unused_disable_config,
         ),
+        (
+            // Like "unused-import", "argument-naming" only resolves through
+            // `repair_with_external_arguments`, so the resolver-less public
+            // API this test exercises is a no-op.
+            "argument-naming",
+            "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef)\nEndFunction\n",
+            "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef)\nEndFunction\n",
+            &default_config,
+        ),
     ];
 
     let exercised: HashSet<_> = cases.iter().map(|(rule, ..)| *rule).collect();
