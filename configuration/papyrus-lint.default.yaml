@@ -58,6 +58,7 @@ assume_auto_properties_filled: false
 rules:
   line_length: true
   trailing_whitespace: true
+  final_newline: true
   comma_spacing: true
   forbidden_functions: true
   deprecated_functions: true

@@ -8,6 +8,7 @@ fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
     let config = load_config_from_path(&path).expect("generated config should parse");
 
     assert!(!config.rules.identifier_casing);
+    assert!(!config.rules.final_newline);
     assert!(config.rules.trailing_whitespace);
     assert!(config.rules.line_length);
 }
@@ -21,6 +22,7 @@ fn careful_preset_relaxes_complexity_thresholds_and_disables_formatting() {
 
     assert_eq!(config.cyclomatic_complexity_warning, 20);
     assert_eq!(config.cyclomatic_complexity_error, 40);
+    assert!(!config.rules.final_newline);
     assert!(!config.rules.trailing_whitespace);
 }
 
@@ -45,6 +47,8 @@ fn strict_preset_matches_the_built_in_default() {
             .rules
             .line_length
     );
+    let config = load_config_from_path(&path).expect("generated config should parse");
+    assert!(config.rules.final_newline);
 }
 
 #[test]

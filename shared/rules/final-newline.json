@@ -1,0 +1,14 @@
+{
+  "id": "final-newline",
+  "name": "Final newline",
+  "category": "Formatting",
+  "visitor": "none",
+  "tags": [
+    "style"
+  ],
+  "severity": "warning",
+  "importance": "low",
+  "fixable": false,
+  "description": "Requires non-empty files to end with a newline.",
+  "definition": "Requires, as a `[warning]`, every non-empty file to end with a newline. This rule is enabled only by the strict preset."
+}
