@@ -245,3 +245,103 @@ fn format_flag_rejects_unknown_values_and_the_removed_json_alias() {
     assert!(json_stdout.is_empty());
     assert!(json_stderr.contains("Usage: PapyrusLinterCLI"));
 }
+
+#[test]
+fn collect_parser_errors_distinguishes_lex_parse_and_valid_sources() {
+    assert!(super::collect_parser_errors("ScriptName Example\n").is_empty());
+
+    let lex_errors = super::collect_parser_errors("\"unterminated");
+    assert_eq!(lex_errors.len(), 1);
+    assert_eq!(lex_errors[0].kind, super::ParserErrorKind::Lex);
+    assert_eq!(lex_errors[0].line, 1);
+    assert!(lex_errors[0]
+        .message
+        .contains("unterminated string literal"));
+
+    let parse_errors = super::collect_parser_errors("ScriptName Example\nFunction Broken(\n");
+    assert_eq!(parse_errors.len(), 1);
+    assert_eq!(parse_errors[0].kind, super::ParserErrorKind::Parse);
+    assert_eq!(parse_errors[0].line, 2);
+}
+
+#[test]
+fn normalize_tag_filter_handles_absent_known_and_unknown_values() {
+    assert_eq!(super::normalize_tag_filter(None), Ok(None));
+    assert_eq!(
+        super::normalize_tag_filter(Some("StYlE".to_string())),
+        Ok(Some("style".to_string()))
+    );
+    assert_eq!(
+        super::normalize_tag_filter(Some("not-a-kind".to_string())),
+        Err("not-a-kind".to_string())
+    );
+}
+
+fn diagnostic(
+    line: usize,
+    column: usize,
+    message: &str,
+    rule: &'static str,
+) -> papyrus_lints::Diagnostic {
+    papyrus_lints::Diagnostic {
+        line,
+        column,
+        message: message.to_string(),
+        rule,
+    }
+}
+
+#[test]
+fn finalize_diagnostics_filters_tags_sorts_locations_and_hides_quiet_levels() {
+    let mut diagnostics = vec![
+        diagnostic(3, 4, "[warning] unused property", "unused-property"),
+        diagnostic(2, 8, "[warning] trailing whitespace", "trailing-whitespace"),
+        diagnostic(
+            1,
+            2,
+            "[warning] earlier trailing whitespace",
+            "trailing-whitespace",
+        ),
+    ];
+    let config = papyrus_lints::Config {
+        fail_on_warning: true,
+        ..papyrus_lints::Config::default()
+    };
+
+    let should_fail =
+        super::finalize_diagnostics(&mut diagnostics, &config, Some("STYLE"), true, false);
+
+    assert!(
+        should_fail,
+        "quiet diagnostics must still affect the exit status"
+    );
+    assert!(
+        diagnostics.is_empty(),
+        "warnings should be hidden after filtering"
+    );
+
+    let mut diagnostics = vec![
+        diagnostic(4, 9, "[error] later", "trailing-whitespace"),
+        diagnostic(2, 7, "[error] same line later", "trailing-whitespace"),
+        diagnostic(2, 3, "[error] same line earlier", "trailing-whitespace"),
+    ];
+    let should_fail = super::finalize_diagnostics(&mut diagnostics, &config, None, false, false);
+
+    assert!(should_fail);
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.line, diagnostic.column))
+            .collect::<Vec<_>>(),
+        vec![(2, 3), (2, 7), (4, 9)]
+    );
+}
+
+#[test]
+fn write_json_report_is_pretty_printed_and_newline_terminated() {
+    let mut output = Vec::new();
+    super::write_json_report(&mut output, &serde_json::json!({ "answer": 42 }));
+
+    let output = String::from_utf8(output).expect("JSON report should be UTF-8");
+    assert_eq!(output, "{\n  \"answer\": 42\n}\n");
+}
