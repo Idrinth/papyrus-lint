@@ -47,7 +47,7 @@ pub(in crate::ops) fn write_raw(h: &Harness, entry: CacheEntry) {
     std::fs::create_dir_all(h.cache_dir.path()).unwrap();
     std::fs::write(
         crate::entry::cache_file_path_for_game(h.cache_dir.path(), GAME, &h.source_path),
-        serde_json::to_vec(&entry).unwrap(),
+        crate::entry::encode_entry(&entry).unwrap(),
     )
     .unwrap();
 }

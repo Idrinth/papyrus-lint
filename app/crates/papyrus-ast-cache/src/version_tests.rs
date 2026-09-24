@@ -39,9 +39,9 @@ fn parse_version_accepts_leading_zeros_as_the_numeric_value() {
 #[test]
 fn is_compatible_version_accepts_the_minimum_and_anything_newer() {
     assert!(is_compatible_version(MIN_COMPATIBLE_VERSION));
-    assert!(is_compatible_version("1.47.1"));
+    assert!(is_compatible_version("1.48.1"));
     assert!(is_compatible_version("2.0.0"));
-    assert!(!is_compatible_version("1.45.99"));
+    assert!(!is_compatible_version("1.47.99"));
     assert!(!is_compatible_version("not-a-version"));
 }
 

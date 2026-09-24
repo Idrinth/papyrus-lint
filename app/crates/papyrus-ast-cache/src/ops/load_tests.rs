@@ -106,7 +106,7 @@ fn get_is_a_miss_when_the_cached_version_is_older_than_the_minimum_compatible_ve
     std::fs::create_dir_all(cache_dir.path()).unwrap();
     std::fs::write(
         cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
-        serde_json::to_vec(&entry).unwrap(),
+        crate::entry::encode_entry(&entry).unwrap(),
     )
     .unwrap();
 
@@ -134,7 +134,7 @@ fn get_is_a_miss_when_the_cached_version_does_not_parse() {
     std::fs::create_dir_all(cache_dir.path()).unwrap();
     std::fs::write(
         cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
-        serde_json::to_vec(&entry).unwrap(),
+        crate::entry::encode_entry(&entry).unwrap(),
     )
     .unwrap();
 
@@ -154,7 +154,7 @@ fn get_is_a_miss_on_malformed_cache_contents() {
     std::fs::create_dir_all(cache_dir.path()).unwrap();
     std::fs::write(
         cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
-        b"not json",
+        b"not a cache entry",
     )
     .unwrap();
 
@@ -422,27 +422,24 @@ fn get_tokens_is_a_miss_when_the_source_file_was_deleted() {
 }
 
 #[test]
-fn an_entry_missing_the_tokens_field_still_deserializes_as_a_miss_for_get_tokens() {
+fn an_entry_with_tokens_none_is_a_miss_for_get_tokens() {
     let cache_dir = tempdir().unwrap();
     let project_dir = tempdir().unwrap();
     let source_path = project_dir.path().join("Example.psc");
     let source = "ScriptName Example\n";
     std::fs::write(&source_path, source).unwrap();
 
-    // Simulates an entry written before the `tokens` field existed --
-    // #[serde(default)] should fill it in as `None` on read rather than
-    // failing to deserialize.
-    let raw = format!(
-        r#"{{"modified_unix_secs":{},"content_md5":"{:x}","linter_version":"{}","ast":{}}}"#,
-        file_modified_unix_secs(&source_path).unwrap(),
-        md5::compute(source.as_bytes()),
-        COMPATIBLE_VERSION,
-        serde_json::to_string(&sample_ast()).unwrap(),
-    );
+    let entry = CacheEntry {
+        modified_unix_secs: file_modified_unix_secs(&source_path).unwrap(),
+        content_md5: format!("{:x}", md5::compute(source.as_bytes())),
+        linter_version: COMPATIBLE_VERSION.to_string(),
+        ast: Some(sample_ast()),
+        tokens: None,
+    };
     std::fs::create_dir_all(cache_dir.path()).unwrap();
     std::fs::write(
         cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
-        raw,
+        crate::entry::encode_entry(&entry).unwrap(),
     )
     .unwrap();
 
@@ -502,7 +499,7 @@ fn get_tokens_is_a_miss_on_malformed_cache_contents() {
     std::fs::create_dir_all(h.cache_dir.path()).unwrap();
     std::fs::write(
         cache_file_path_for_game(h.cache_dir.path(), GAME, &h.source_path),
-        b"not json",
+        b"not a cache entry",
     )
     .unwrap();
 
@@ -602,7 +599,7 @@ fn get_is_a_miss_when_the_cache_file_is_a_directory() {
 }
 
 #[test]
-fn extra_json_fields_do_not_invalidate_a_fresh_entry() {
+fn a_legacy_json_cache_file_is_a_miss() {
     let h = harness("ExtraFields.psc", "ScriptName ExtraFields\n");
     let ast = papyrus_parser::parse(h.source).unwrap();
     put_in_for_game(
@@ -615,17 +612,15 @@ fn extra_json_fields_do_not_invalidate_a_fresh_entry() {
     );
 
     let file = cache_file_path_for_game(h.cache_dir.path(), GAME, &h.source_path);
-    let mut value: serde_json::Value =
-        serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
-    value
-        .as_object_mut()
-        .unwrap()
-        .insert("future_field".to_string(), serde_json::json!("ok"));
-    std::fs::write(&file, serde_json::to_vec(&value).unwrap()).unwrap();
+    std::fs::write(
+        &file,
+        br#"{"modified_unix_secs":1,"content_md5":"abc","linter_version":"1.48.0"}"#,
+    )
+    .unwrap();
 
     assert_eq!(
         get_in_for_game(h.cache_dir.path(), GAME, &h.source_path, h.source),
-        Some(ast)
+        None
     );
 }
 

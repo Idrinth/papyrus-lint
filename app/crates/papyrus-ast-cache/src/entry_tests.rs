@@ -55,11 +55,11 @@ fn cache_dir_is_none_when_no_override_or_executable_is_available() {
 }
 
 #[test]
-fn cache_file_path_is_a_32_hex_digit_json_file() {
+fn cache_file_path_is_a_32_hex_digit_iplatc_file() {
     let dir = Path::new("/tmp/ast-cache");
     let path = cache_file_path_for_game(dir, GAME, Path::new("/mods/Scripts/Example.psc"));
     let name = path.file_name().unwrap().to_str().unwrap();
-    let (game, digest) = name.trim_end_matches(".json").split_once('-').unwrap();
+    let (game, digest) = name.trim_end_matches(".iplatc").split_once('-').unwrap();
     assert_eq!(game, "skyrim");
     assert_eq!(digest.len(), 32);
     assert!(digest.chars().all(|c| c.is_ascii_hexdigit()));
@@ -87,7 +87,7 @@ fn game_cache_file_path_prefixes_the_path_digest() {
         .unwrap()
         .to_string();
     assert!(name.starts_with("skyrim-"));
-    assert_eq!(name.len(), "skyrim-".len() + 32 + ".json".len());
+    assert_eq!(name.len(), "skyrim-".len() + 32 + ".iplatc".len());
 }
 
 #[test]
@@ -104,7 +104,7 @@ fn game_read_does_not_consume_a_prefixless_cache_file() {
     std::fs::create_dir_all(cache_dir.path()).unwrap();
     std::fs::write(
         &legacy,
-        serde_json::to_vec(&fresh_entry(&source_path, source)).unwrap(),
+        encode_entry(&fresh_entry(&source_path, source)).unwrap(),
     )
     .unwrap();
 
@@ -150,7 +150,7 @@ fn file_modified_unix_secs_is_none_for_a_pre_epoch_mtime() {
 }
 
 #[test]
-fn valid_entry_in_is_a_miss_on_empty_or_truncated_json() {
+fn valid_entry_in_is_a_miss_on_empty_or_truncated_payload() {
     let cache_dir = tempdir().unwrap();
     let project_dir = tempdir().unwrap();
     let source_path = project_dir.path().join("Example.psc");
@@ -162,15 +162,15 @@ fn valid_entry_in_is_a_miss_on_empty_or_truncated_json() {
     std::fs::write(&file, b"").unwrap();
     assert!(valid_entry_in_for_game(cache_dir.path(), GAME, &source_path, source).is_none());
 
-    std::fs::write(&file, b"{\"modified_unix_secs\":1").unwrap();
+    std::fs::write(&file, b"IPLA\x01").unwrap();
     assert!(valid_entry_in_for_game(cache_dir.path(), GAME, &source_path, source).is_none());
 
-    std::fs::write(&file, b"[]").unwrap();
+    std::fs::write(&file, b"IPLA\x01\x00\x00\x00not-gzip").unwrap();
     assert!(valid_entry_in_for_game(cache_dir.path(), GAME, &source_path, source).is_none());
 }
 
 #[test]
-fn valid_entry_in_treats_a_missing_ast_field_as_none() {
+fn valid_entry_in_rejects_legacy_json_and_wrong_magic() {
     let cache_dir = tempdir().unwrap();
     let project_dir = tempdir().unwrap();
     let source_path = project_dir.path().join("Example.psc");
@@ -178,50 +178,40 @@ fn valid_entry_in_treats_a_missing_ast_field_as_none() {
     std::fs::write(&source_path, source).unwrap();
     std::fs::create_dir_all(cache_dir.path()).unwrap();
 
-    // Unlike a missing `tokens` field, `ast` is not marked
-    // `#[serde(default)]`, but `Option` still deserializes a missing
-    // field as `None` rather than failing the whole entry. Callers of
-    // `get_in_for_game` already treat `ast: None` as a miss.
+    let file = cache_file_path_for_game(cache_dir.path(), GAME, &source_path);
     let raw = format!(
         r#"{{"modified_unix_secs":{},"content_md5":"{:x}","linter_version":"{}"}}"#,
         file_modified_unix_secs(&source_path).unwrap(),
         md5::compute(source.as_bytes()),
         MIN_COMPATIBLE_VERSION,
     );
+    std::fs::write(&file, raw).unwrap();
+    assert!(valid_entry_in_for_game(cache_dir.path(), GAME, &source_path, source).is_none());
+
+    let mut binary = encode_entry(&fresh_entry(&source_path, source)).unwrap();
+    binary[..4].copy_from_slice(b"XXXX");
+    std::fs::write(&file, binary).unwrap();
+    assert!(valid_entry_in_for_game(cache_dir.path(), GAME, &source_path, source).is_none());
+}
+
+#[test]
+fn valid_entry_in_rejects_an_unknown_format_version() {
+    let cache_dir = tempdir().unwrap();
+    let project_dir = tempdir().unwrap();
+    let source_path = project_dir.path().join("Example.psc");
+    let source = "ScriptName Example\n";
+    std::fs::write(&source_path, source).unwrap();
+    std::fs::create_dir_all(cache_dir.path()).unwrap();
+
+    let mut raw = encode_entry(&fresh_entry(&source_path, source)).unwrap();
+    raw[4..8].copy_from_slice(&2u32.to_le_bytes());
     std::fs::write(
         cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
         raw,
     )
     .unwrap();
 
-    let entry = valid_entry_in_for_game(cache_dir.path(), GAME, &source_path, source).unwrap();
-    assert!(entry.ast.is_none());
-    assert!(entry.tokens.is_none());
-}
-
-#[test]
-fn valid_entry_in_ignores_unknown_fields() {
-    let cache_dir = tempdir().unwrap();
-    let project_dir = tempdir().unwrap();
-    let source_path = project_dir.path().join("Example.psc");
-    let source = "ScriptName Example\n";
-    std::fs::write(&source_path, source).unwrap();
-
-    let mut value = serde_json::to_value(fresh_entry(&source_path, source)).unwrap();
-    value
-        .as_object_mut()
-        .unwrap()
-        .insert("future_field".to_string(), serde_json::json!(true));
-    std::fs::create_dir_all(cache_dir.path()).unwrap();
-    std::fs::write(
-        cache_file_path_for_game(cache_dir.path(), GAME, &source_path),
-        serde_json::to_vec(&value).unwrap(),
-    )
-    .unwrap();
-
-    let entry = valid_entry_in_for_game(cache_dir.path(), GAME, &source_path, source).unwrap();
-    assert_eq!(entry.ast, Some(sample_ast()));
-    assert_eq!(entry.tokens, Some(sample_tokens()));
+    assert!(valid_entry_in_for_game(cache_dir.path(), GAME, &source_path, source).is_none());
 }
 
 #[test]
@@ -359,7 +349,7 @@ fn unicode_source_paths_get_their_own_cache_file() {
     let unicode = cache_file_path_for_game(dir, GAME, Path::new("/mods/Scripts/Привет.psc"));
     assert_ne!(ascii, unicode);
     let name = unicode.file_name().unwrap().to_str().unwrap();
-    let (game, digest) = name.trim_end_matches(".json").split_once('-').unwrap();
+    let (game, digest) = name.trim_end_matches(".iplatc").split_once('-').unwrap();
     assert_eq!(game, "skyrim");
     assert_eq!(digest.len(), 32);
 }

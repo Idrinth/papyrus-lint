@@ -172,33 +172,6 @@ DOCS = [
         "kind": "json-schema",
         "blurb": "The frozen v1 JSON Schema for Export for AI documents, superseded by v2 above.",
     },
-    {
-        "filename": "ast-cache-entry.schema.json",
-        "source_dir": SCHEMA_DIR,
-        "repo_dir": "schema",
-        "slug": "ast-cache-entry-schema",
-        "kind": "json-schema",
-        "description": (
-            "The JSON Schema for one entry in the on-disk ast-cache used to skip re-parsing unchanged scripts, "
-            "keyed by the cached script's content hash, modification time, and the linter version that wrote it."
-        ),
-        "blurb": "The JSON Schema for one entry in the on-disk ast-cache used to skip re-parsing unchanged scripts.",
-    },
-    {
-        "filename": "script-collisions.schema.json",
-        "source_dir": SCHEMA_DIR,
-        "repo_dir": "schema",
-        "slug": "script-collisions-schema",
-        "kind": "json-schema",
-        "description": (
-            "The JSON Schema for one on-disk script-collision cache file used by conflicting-script-versions, "
-            "listing each known implementer of a script name with its SHA-256, mtime, and absolute path."
-        ),
-        "blurb": (
-            "The JSON Schema for the on-disk script-collision cache used to compare same-named scripts "
-            "without reopening them."
-        ),
-    },
 ]
 
 def doc_url_prefix(doc: dict) -> str:
@@ -296,8 +269,8 @@ def render_doc(doc: dict) -> tuple[str, str, str]:
         data = json.loads(source)
         title = data.get("title", doc["filename"])
         # A schema's own "description" is written for JSON Schema consumers and can run
-        # much longer than a page tagline should be (see ast-cache-entry.schema.json,
-        # whose 800+ character description became this page's Largest Contentful Paint
+        # much longer than a page tagline should be (see the AI-export schemas,
+        # whose long descriptions should not become this page's Largest Contentful Paint
         # element); prefer a DOCS entry's own short "description" when it sets one.
         description = doc.get("description", data.get("description", ""))
         schema_html = highlight_code(json.dumps(data, indent=2), "json")

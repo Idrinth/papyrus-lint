@@ -29,7 +29,7 @@ update the cited code *and* this list.
   `papyrus-lints`; filesystem-aware callers provide a complete `ProjectFile`
   snapshot discovered by `papyrus-lint-core::script_locator`. Each snapshot
   entry carries a content hash; `script_locator` reads that digest from the
-  script-collision cache (`{game}-{sha256(filename)}-collisions.json` next
+  script-collision cache (`{game}-{sha256(filename)}.iplcc` next
   to the AST cache) when the stored mtime still matches, so the `.psc`
   itself is not opened just to hash it. The parse phase records hashes from
   source already in memory and flushes dirty collision files at parse-end.
@@ -50,10 +50,11 @@ update the cited code *and* this list.
   Drift is a CI failure in `papyrus-lint-config`.
 - Filesystem Tauri commands that parse, lint, repair, or compile are
   `#[tauri::command(async)]`. Only instant in-memory commands stay sync.
-- On-disk AST cache filenames are namespaced by target game and entries are
-  keyed by content MD5 + mtime +
-  `MIN_COMPATIBLE_VERSION`. Bump that floor only when the entry layout
-  or embedded AST changes, and update `schema/ast-cache-entry.schema.json`.
+- On-disk AST cache filenames are `{game}-{path-md5}.iplatc`, namespaced
+  by target game. Entries are keyed by content MD5 + mtime +
+  `MIN_COMPATIBLE_VERSION`. Bump that floor only when the binary entry
+  layout or embedded AST changes. The files are an internal cache, not a
+  published interchange format.
 - A `.ppj`'s own `<Import>` entries (`ppj::PpjProject::imports`) feed
   `additional_script_roots` for that run/`init` — never
   `lookup_script_roots`. `ppj::parse_ppj` normalizes `\` to `/` before

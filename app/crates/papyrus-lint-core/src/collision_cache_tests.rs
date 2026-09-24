@@ -31,8 +31,7 @@ fn flush_writes_the_documented_collision_document() {
     flush_in(cache.path());
 
     let file = collisions_path(cache.path(), GAME, "example.psc");
-    let groups: Vec<ScriptCollisions> =
-        serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
+    let groups = decode_collisions(&std::fs::read(&file).unwrap()).unwrap();
     assert_eq!(groups.len(), 1);
     assert_eq!(groups[0].scriptname, "example.psc");
     assert_eq!(groups[0].implementers.len(), 1);
@@ -43,6 +42,22 @@ fn flush_writes_the_documented_collision_document() {
     );
     assert!(!groups[0].implementers[0].path.is_empty());
     assert!(!groups[0].implementers[0].mtime.is_empty());
+    assert!(file.extension().and_then(|ext| ext.to_str()) == Some("iplcc"));
+    assert!(file.as_os_str().to_string_lossy().contains("skyrim-"));
+}
+
+#[test]
+fn load_group_ignores_legacy_json_and_wrong_magic() {
+    let cache = tempdir().unwrap();
+    let project = tempdir().unwrap();
+    let path = write_script(project.path(), "Legacy.psc", "ScriptName Legacy\n");
+    let file = collisions_path(cache.path(), GAME, "legacy.psc");
+    std::fs::write(&file, br#"[{"scriptname":"legacy.psc","implementers":[]}]"#).unwrap();
+    preload_in(cache.path(), GAME, [&path]);
+    assert_eq!(
+        content_hash_in(cache.path(), GAME, &path),
+        Some(sha256_hex("ScriptName Legacy\n"))
+    );
 }
 
 #[test]

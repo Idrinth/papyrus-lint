@@ -2,10 +2,14 @@
 //! `conflicting-script-versions`.
 //!
 //! Each file lives next to the AST cache as
-//! `{game}-{sha256(lowercase-filename)}-collisions.json` and holds every
+//! `{game}-{sha256(lowercase-filename)}.iplcc` and holds every
 //! known implementer of that script name: absolute path, mtime, and a
 //! SHA-256 of the decoded source. A still-fresh implementer lets a later
 //! run compare copies without opening the `.psc`.
+//!
+//! The on-disk document is an internal binary layout (magic `IPLC`, a
+//! little-endian format version, then bincode of the collision groups).
+//! It is not a public interchange format.
 //!
 //! Callers preload names they already know, record hashes while source is
 //! in memory (the parse phase), and [`flush`] dirty files at parse-end.
@@ -23,6 +27,8 @@ use crate::content_hash::{sha256_bytes, sha256_hex};
 use crate::source_encoding;
 
 pub const ALGORITHM: &str = "sha256";
+const MAGIC: &[u8; 4] = b"IPLC";
+const FORMAT_VERSION: u32 = 1;
 
 /// One on-disk implementer of a script name.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -75,7 +81,7 @@ fn group_key(dir: &Path, game: Game, scriptname: &str) -> GroupKey {
 
 fn collisions_path(dir: &Path, game: Game, scriptname: &str) -> PathBuf {
     let digest = sha256_bytes(scriptname.to_ascii_lowercase().as_bytes());
-    dir.join(format!("{}-{digest}-collisions.json", game.as_str()))
+    dir.join(format!("{}-{digest}.iplcc", game.as_str()))
 }
 
 fn file_mtime_secs(path: &Path) -> Option<u64> {
@@ -112,7 +118,7 @@ fn load_group(store: &mut Store, dir: &Path, game: Game, scriptname: &str) {
     let Ok(raw) = std::fs::read(collisions_path(dir, game, scriptname)) else {
         return;
     };
-    let Ok(groups) = serde_json::from_slice::<Vec<ScriptCollisions>>(&raw) else {
+    let Ok(groups) = decode_collisions(&raw) else {
         return;
     };
     for group in groups {
@@ -293,8 +299,7 @@ pub(crate) fn flush_in(dir: &Path) {
         }
         let path = collisions_path(dir, game_from_key(&key.1), &key.2);
         let payload = vec![group.clone()];
-        if serde_json::to_vec(&payload)
-            .ok()
+        if encode_collisions(&payload)
             .and_then(|raw| std::fs::write(&path, raw).ok())
             .is_none()
         {
@@ -305,6 +310,26 @@ pub(crate) fn flush_in(dir: &Path) {
 
 fn game_from_key(game: &str) -> Game {
     game.parse().unwrap_or(Game::Skyrim)
+}
+
+fn encode_collisions(groups: &[ScriptCollisions]) -> Option<Vec<u8>> {
+    let payload = bincode::serialize(groups).ok()?;
+    let mut out = Vec::with_capacity(8 + payload.len());
+    out.extend_from_slice(MAGIC);
+    out.extend_from_slice(&FORMAT_VERSION.to_le_bytes());
+    out.extend_from_slice(&payload);
+    Some(out)
+}
+
+fn decode_collisions(raw: &[u8]) -> Result<Vec<ScriptCollisions>, ()> {
+    if raw.len() < 8 || raw[..4] != *MAGIC {
+        return Err(());
+    }
+    let version = u32::from_le_bytes(raw[4..8].try_into().map_err(|_| ())?);
+    if version != FORMAT_VERSION {
+        return Err(());
+    }
+    bincode::deserialize(&raw[8..]).map_err(|_| ())
 }
 
 #[cfg(test)]

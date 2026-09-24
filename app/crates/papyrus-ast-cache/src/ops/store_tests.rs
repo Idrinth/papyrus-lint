@@ -477,14 +477,14 @@ fn putting_updates_the_stamped_linter_version() {
         "9.9.9",
     );
 
-    let raw = std::fs::read_to_string(cache_file_path_for_game(
+    let raw = std::fs::read(cache_file_path_for_game(
         h.cache_dir.path(),
         GAME,
         &h.source_path,
     ))
     .unwrap();
-    assert!(raw.contains("\"linter_version\":\"9.9.9\""));
-    assert!(!raw.contains(&format!("\"linter_version\":\"{COMPATIBLE_VERSION}\"")));
+    let entry = crate::entry::decode_entry(&raw).unwrap();
+    assert_eq!(entry.linter_version, "9.9.9");
 }
 
 #[test]
