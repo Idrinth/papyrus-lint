@@ -64,7 +64,7 @@
 - script: Debug
   function: Notification
   level: info
-  message: Calling Notification from inside a loop or a recurring event (e.g. OnTimer) spams the player and queues expensive UI work every call; throttle or remove repeated calls
+  message: Calling Notification from inside a loop or a recurring event (e.g. OnTimer) spams the player and queues expensive UI work every call; throttle or remove repeated calls. For actual user facing messages consider using a Message Form instead, it is even localizable.
   global: true
 
 - script: ObjectReference
