@@ -63,7 +63,8 @@
   `papyrus_lints` (project `papyrus-lint.yaml` when one is found by walking up
   from the file URI). `textDocument/codeAction` returns a workspace edit for
   the diagnostic's automatic fix, or for line, file, and project ignore.
-  `papyrusLint.fixFile` still returns null.
+  `workspace/executeCommand` `papyrusLint.fixFile` applies every automatic
+  fix through `workspace/applyEdit`.
 - CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --
   <path-to-achlist>`, or `cargo build --release --manifest-path
   app/crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`

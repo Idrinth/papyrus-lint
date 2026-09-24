@@ -25,6 +25,20 @@ impl Documents {
         self.open.get(uri)
     }
 
+    pub(crate) fn replace_text(
+        &mut self,
+        uri: &str,
+        text: String,
+        output: &mut impl Write,
+    ) -> io::Result<()> {
+        let Some(document) = self.open.get_mut(uri) else {
+            return Ok(());
+        };
+        document.text.clone_from(&text);
+        let version = document.version;
+        self.publish(uri, version, &text, output)
+    }
+
     pub(crate) fn did_open(&mut self, params: &Value, output: &mut impl Write) -> io::Result<()> {
         let Some(uri) = params["textDocument"]["uri"].as_str() else {
             return Ok(());
