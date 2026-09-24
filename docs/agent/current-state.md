@@ -25,6 +25,9 @@ update the cited code *and* this list.
 - Cross-script semantics go through `ExternalSignatures`
   (`external_signatures.rs`). Side-effect flags are computed in
   `papyrus-lint-core`, not re-derived in a lint.
+- `conflicting-script-versions` owns its diagnostic policy in
+  `papyrus-lints`; filesystem-aware callers provide a complete `ProjectFile`
+  snapshot discovered by `papyrus-lint-core::script_locator`.
 - `lint` / `repair` / `repair_filtered*` have no resolver.
   `unused-import` is a no-op there. Callers with a project use the
   `*_with_external_arguments` siblings. Preview repair is resolver-less

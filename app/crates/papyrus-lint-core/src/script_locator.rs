@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::UNIX_EPOCH;
 
-use papyrus_lints::Diagnostic;
+use papyrus_lints::conflicting_script_versions::ProjectFile;
 use walkdir::WalkDir;
 
 use crate::project_root::display_path;
@@ -14,6 +14,26 @@ use crate::project_root::display_path;
 /// Rule id used when multiple search roots contain different versions of
 /// the same script.
 pub const CONFLICTING_SCRIPT_VERSIONS_RULE: &str = "conflicting-script-versions";
+
+/// Reads a complete path snapshot for project-level lint rules. Files that
+/// disappear or become unreadable between discovery and linting are omitted.
+pub fn project_files(
+    paths: impl IntoIterator<Item = PathBuf>,
+    root: &Path,
+    short_paths: bool,
+) -> Vec<ProjectFile> {
+    paths
+        .into_iter()
+        .filter_map(|path| {
+            let contents = fs::read(&path).ok()?;
+            Some(ProjectFile {
+                display_path: display_path(&path, root, short_paths),
+                path,
+                contents,
+            })
+        })
+        .collect()
+}
 
 /// Directories, relative to a project root, conventionally used to store
 /// Papyrus script sources. Also used by the desktop app's `compiler`
@@ -201,16 +221,14 @@ pub fn conflicting_script_versions(
     root: &Path,
     additional_roots: &[String],
     short_paths: bool,
-) -> Vec<Diagnostic> {
+) -> Vec<papyrus_lints::Diagnostic> {
     let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
         return Vec::new();
     };
     let Ok(current) = fs::read(script_path) else {
         return Vec::new();
     };
-    let current_hash = md5::compute(&current);
-
-    let mut conflicts = Vec::new();
+    let mut paths = Vec::new();
     for search_root in detected_script_roots(root, additional_roots) {
         for candidate in dir_children(&search_root) {
             let same_name = candidate
@@ -220,29 +238,17 @@ pub fn conflicting_script_versions(
             if !same_name || !candidate.is_file() || candidate == script_path {
                 continue;
             }
-            let Ok(contents) = fs::read(&candidate) else {
-                continue;
-            };
-            if md5::compute(contents) != current_hash && !conflicts.contains(&candidate) {
-                conflicts.push(candidate);
+            if !paths.contains(&candidate) {
+                paths.push(candidate);
             }
         }
     }
 
-    conflicts.sort();
-    conflicts
-        .into_iter()
-        .map(|path| Diagnostic {
-            line: 1,
-            column: 1,
-            rule: CONFLICTING_SCRIPT_VERSIONS_RULE,
-            message: format!(
-                "[warning] A different version of {} is also available at {}; script resolution may depend on search-directory order",
-                file_name,
-                display_path(&path, root, short_paths)
-            ),
-        })
-        .collect()
+    papyrus_lints::conflicting_script_versions::check(
+        script_path,
+        &current,
+        &project_files(paths, root, short_paths),
+    )
 }
 
 /// Maps a script file name (case-insensitively lowercased, as returned by
@@ -360,7 +366,7 @@ pub fn conflicting_script_versions_in_index(
     index: &ScriptIndex,
     root: &Path,
     short_paths: bool,
-) -> Vec<Diagnostic> {
+) -> Vec<papyrus_lints::Diagnostic> {
     let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
         return Vec::new();
     };
@@ -392,46 +398,15 @@ pub fn conflicting_script_versions_among(
     known_scripts: &[PathBuf],
     root: &Path,
     short_paths: bool,
-) -> Vec<Diagnostic> {
-    let Some(file_name) = script_path.file_name().and_then(|name| name.to_str()) else {
-        return Vec::new();
-    };
+) -> Vec<papyrus_lints::Diagnostic> {
     let Ok(current) = fs::read(script_path) else {
         return Vec::new();
     };
-    let current_hash = md5::compute(&current);
-
-    let mut conflicts = Vec::new();
-    for candidate in known_scripts {
-        let same_name = candidate
-            .file_name()
-            .and_then(|name| name.to_str())
-            .is_some_and(|name| name.eq_ignore_ascii_case(file_name));
-        if !same_name || candidate == script_path {
-            continue;
-        }
-        let Ok(contents) = fs::read(candidate) else {
-            continue;
-        };
-        if md5::compute(contents) != current_hash && !conflicts.contains(candidate) {
-            conflicts.push(candidate.clone());
-        }
-    }
-
-    conflicts.sort();
-    conflicts
-        .into_iter()
-        .map(|path| Diagnostic {
-            line: 1,
-            column: 1,
-            rule: CONFLICTING_SCRIPT_VERSIONS_RULE,
-            message: format!(
-                "[warning] A different version of {} is also available at {}; script resolution may depend on search-directory order",
-                file_name,
-                display_path(&path, root, short_paths)
-            ),
-        })
-        .collect()
+    papyrus_lints::conflicting_script_versions::check(
+        script_path,
+        &current,
+        &project_files(known_scripts.iter().cloned(), root, short_paths),
+    )
 }
 
 #[cfg(test)]
