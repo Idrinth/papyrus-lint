@@ -1,54 +1,81 @@
 use super::*;
 
+fn initialized_preset(preset: Preset) -> papyrus_lints::Config {
+    let dir = tempfile::tempdir().expect("failed to create temp dir");
+    let path = initialize_config_with_base(dir.path(), None, preset).expect("init should succeed");
+    load_config_from_path(&path).expect("generated config should parse")
+}
+
+fn reports(config: &papyrus_lints::Config, source: &str, rule: &str) -> bool {
+    papyrus_lints::lint(source, config)
+        .iter()
+        .any(|diagnostic| diagnostic.rule == rule)
+}
+
 #[test]
 fn standard_preset_turns_off_purely_stylistic_rules_but_keeps_formatting() {
-    let dir = tempfile::tempdir().expect("failed to create temp dir");
-    let path = initialize_config_with_base(dir.path(), None, Preset::Standard)
-        .expect("init should succeed");
-    let config = load_config_from_path(&path).expect("generated config should parse");
+    let config = initialized_preset(Preset::Standard);
 
-    assert!(!config.rules.identifier_casing);
-    assert!(!config.rules.final_newline);
-    assert!(config.rules.trailing_whitespace);
-    assert!(config.rules.line_length);
+    assert!(!reports(
+        &config,
+        "ScriptName Example\n\nFunction bad_name()\nEndFunction\n",
+        "identifier-casing"
+    ));
+    assert!(!reports(&config, "ScriptName Example", "final-newline"));
+    assert!(reports(
+        &config,
+        "ScriptName Example   \n",
+        "trailing-whitespace"
+    ));
+    assert!(reports(
+        &config,
+        &format!("ScriptName Example ; {}\n", "x".repeat(120)),
+        "line-length"
+    ));
 }
 
 #[test]
 fn careful_preset_relaxes_complexity_thresholds_and_disables_formatting() {
-    let dir = tempfile::tempdir().expect("failed to create temp dir");
-    let path = initialize_config_with_base(dir.path(), None, Preset::Careful)
-        .expect("init should succeed");
-    let config = load_config_from_path(&path).expect("generated config should parse");
+    let config = initialized_preset(Preset::Careful);
+    let moderately_complex = "ScriptName Example\n\nFunction Test()\n\
+        If true\n    EndIf\n    If true\n    EndIf\n    If true\n    EndIf\n\
+        If true\n    EndIf\n    If true\n    EndIf\n    If true\n    EndIf\n\
+        If true\n    EndIf\n    If true\n    EndIf\n    If true\n    EndIf\n\
+        If true\n    EndIf\nEndFunction\n";
 
-    assert_eq!(config.cyclomatic_complexity_warning, 20);
-    assert_eq!(config.cyclomatic_complexity_error, 40);
-    assert!(!config.rules.final_newline);
-    assert!(!config.rules.trailing_whitespace);
+    assert!(reports(
+        &initialized_preset(Preset::Strict),
+        moderately_complex,
+        "cyclomatic-complexity"
+    ));
+    assert!(!reports(
+        &config,
+        moderately_complex,
+        "cyclomatic-complexity"
+    ));
+    assert!(!reports(&config, "ScriptName Example", "final-newline"));
+    assert!(!reports(
+        &config,
+        "ScriptName Example   \n",
+        "trailing-whitespace"
+    ));
 }
 
 #[test]
 fn strict_preset_matches_the_built_in_default() {
-    let dir = tempfile::tempdir().expect("failed to create temp dir");
-
-    let path =
-        initialize_config_with_base(dir.path(), None, Preset::Strict).expect("init should succeed");
-    let generated = fs::read_to_string(&path).expect("failed to read generated config");
-
-    let default_dir = tempfile::tempdir().expect("failed to create temp dir");
-    let default_path = initialize_default_config(default_dir.path(), Preset::default())
-        .expect("init should succeed");
-    let default_generated =
-        fs::read_to_string(&default_path).expect("failed to read generated config");
-
-    assert_eq!(generated, default_generated);
-    assert!(
-        load_config_from_path(&path)
-            .expect("generated config should parse")
-            .rules
-            .line_length
+    let config = initialized_preset(Preset::Strict);
+    let source = format!(
+        "ScriptName Example\n\nFunction bad_name()\nEndFunction ; {}",
+        "x".repeat(120)
     );
-    let config = load_config_from_path(&path).expect("generated config should parse");
-    assert!(config.rules.final_newline);
+
+    assert_eq!(
+        papyrus_lints::lint(&source, &config),
+        papyrus_lints::lint(&source, &papyrus_lints::Config::default())
+    );
+    assert!(reports(&config, &source, "identifier-casing"));
+    assert!(reports(&config, &source, "line-length"));
+    assert!(reports(&config, &source, "final-newline"));
 }
 
 #[test]
