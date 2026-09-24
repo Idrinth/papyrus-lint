@@ -216,6 +216,22 @@ class RepositoryConfigurationTest(unittest.TestCase):
                 for marker in markers:
                     self.assertIn(marker, template)
 
+    def test_homepage_thanks_every_named_contributor(self) -> None:
+        template = (page_builder.PAGES_DIR / "index.template.html").read_text(encoding="utf-8")
+
+        self.assertIn('<section id="thanks">', template)
+        for contributor in (
+            "WraithFallen",
+            "Scrivener07",
+            "s3ngine",
+            "wall416",
+            "DavidJCobb",
+            "Vict",
+        ):
+            with self.subTest(contributor=contributor):
+                self.assertIn(contributor, template)
+        self.assertIn('href="https://x.com/VictMangle"', template)
+
 
 class SitemapAndRobotsTest(unittest.TestCase):
     def test_sitemap_urls_lists_the_homepage_videos_page_and_every_doc(self) -> None:
