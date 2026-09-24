@@ -28,7 +28,6 @@ pub mod pex_header;
 pub mod ppj;
 pub mod presets;
 pub mod project_root;
-pub mod script_filename_mismatch;
 mod script_functions;
 pub mod script_locator;
 pub mod source_encoding;

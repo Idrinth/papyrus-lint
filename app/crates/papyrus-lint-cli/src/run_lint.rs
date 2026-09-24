@@ -169,10 +169,13 @@ fn collect_project_diagnostics(
         project_diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));
     }
     if ctx.lint_config.rules.script_filename_mismatch {
-        project_diagnostics.extend(papyrus_lint_core::script_filename_mismatch::check(
-            script_path,
-            source,
-        ));
+        if let Some(stem) = script_path.file_stem().and_then(|stem| stem.to_str()) {
+            if let Ok(tokens) = papyrus_parser::tokenize(source) {
+                project_diagnostics.extend(papyrus_lints::script_filename_mismatch::check(
+                    stem, &tokens,
+                ));
+            }
+        }
     }
     project_diagnostics
 }

@@ -46,7 +46,10 @@ fn lint_modules(context: &BuildContext, rules: &[RuleMetadata]) {
             panic!("{} is not valid UTF-8", path.display());
         };
         out.line(format_args!("#[path = {path:?}]"));
-        if rule.id == "conflicting-script-versions" {
+        if matches!(
+            rule.id.as_str(),
+            "conflicting-script-versions" | "script-filename-mismatch"
+        ) {
             out.line(format_args!("pub mod {name};"));
         } else {
             out.line(format_args!("mod {name};"));
