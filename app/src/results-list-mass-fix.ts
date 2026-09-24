@@ -21,6 +21,7 @@ const FIXABLE_RULE_DISPLAY_NAMES: Record<string, string> = {
   "global-variable-increment": "GlobalVariable increment via SetValue(GetValue() + x)",
   "unused-import": "Unused import",
   "final-newline": "Final newline",
+  "get-form-from-file-load-index": "Game.GetFormFromFile load index",
 };
 
 export function massFixRuleDisplayName(rule: string): string {
