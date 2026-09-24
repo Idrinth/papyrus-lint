@@ -215,3 +215,111 @@ fn repair_leaves_member_names_and_named_argument_labels() {
         "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akTarget = None, Int aiCount)\n    OtherRef.akRef.Disable()\n    Helper(akRef = akTarget)\n    Helper(aiCount, akRef = akTarget)\n    akTarget = akTarget\n    If (akTarget == akTarget)\n    EndIf\nEndFunction\n"
     );
 }
+
+struct MemberExternal {
+    property: Option<&'static str>,
+    field: Option<&'static str>,
+}
+
+impl ExternalSignatures for MemberExternal {
+    fn lookup(&mut self, type_name: &str, function_name: &str) -> Option<Vec<ParamInfo>> {
+        FakeExternal.lookup(type_name, function_name)
+    }
+
+    fn has_property(&mut self, type_name: &str, property_name: &str) -> bool {
+        type_name.eq_ignore_ascii_case("ParentScript")
+            && self
+                .property
+                .is_some_and(|name| name.eq_ignore_ascii_case(property_name))
+    }
+
+    fn has_field(&mut self, type_name: &str, field_name: &str) -> bool {
+        type_name.eq_ignore_ascii_case("ParentScript")
+            && self
+                .field
+                .is_some_and(|name| name.eq_ignore_ascii_case(field_name))
+    }
+}
+
+#[test]
+fn repair_skips_a_rename_that_would_shadow_an_own_property() {
+    let source = "ScriptName Example Extends ParentScript\n\nInt Property akTarget Auto\n\nFunction DoThing(ObjectReference akRef, Int aiCount)\n    akTarget = 1\nEndFunction\n";
+
+    assert_eq!(super::repair_with(source, &mut FakeExternal), source);
+    let diagnostics = check_with(source, &mut FakeExternal);
+    assert_eq!(diagnostics.len(), 1);
+    assert!(diagnostics[0].message.contains("named 'akRef'"));
+    assert!(diagnostics[0].message.contains("names it 'akTarget'"));
+}
+
+#[test]
+fn repair_skips_a_rename_that_would_shadow_an_own_variable() {
+    let source = "ScriptName Example Extends ParentScript\n\nObjectReference AkTarget\n\nFunction DoThing(ObjectReference akRef, Int aiCount)\n    AkTarget = akRef\nEndFunction\n";
+
+    assert_eq!(super::repair_with(source, &mut FakeExternal), source);
+    assert_eq!(check_with(source, &mut FakeExternal).len(), 1);
+}
+
+#[test]
+fn repair_keeps_a_safe_rename_when_another_would_shadow_a_property() {
+    let source = "ScriptName Example Extends ParentScript\n\nInt Property akTarget Auto\n\nFunction DoThing(ObjectReference akRef, Int aiTotal)\n    akTarget = 1\nEndFunction\n";
+    let repaired = super::repair_with(source, &mut FakeExternal);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example Extends ParentScript\n\nInt Property akTarget Auto\n\nFunction DoThing(ObjectReference akRef, Int aiCount)\n    akTarget = 1\nEndFunction\n"
+    );
+    let remaining = check_with(&repaired, &mut FakeExternal);
+    assert_eq!(remaining.len(), 1);
+    assert!(remaining[0].message.contains("Parameter 1"));
+}
+
+#[test]
+fn repair_does_not_treat_a_member_name_as_vacated() {
+    let source = "ScriptName Example Extends ParentScript\n\nInt Property akTarget Auto\n\nFunction DoThing(ObjectReference akRef, Int akTarget)\n    akRef.Disable()\n    akTarget = akTarget + 1\nEndFunction\n";
+    let repaired = super::repair_with(source, &mut FakeExternal);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example Extends ParentScript\n\nInt Property akTarget Auto\n\nFunction DoThing(ObjectReference akRef, Int aiCount)\n    akRef.Disable()\n    aiCount = aiCount + 1\nEndFunction\n"
+    );
+    let remaining = check_with(&repaired, &mut FakeExternal);
+    assert_eq!(remaining.len(), 1);
+    assert!(remaining[0].message.contains("Parameter 1"));
+    assert!(remaining[0].message.contains("names it 'akTarget'"));
+}
+
+#[test]
+fn repair_does_not_treat_an_inherited_property_as_vacated() {
+    let source = "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef, Int akTarget)\n    akRef.Disable()\n    akTarget = akTarget + 1\nEndFunction\n";
+    let mut external = MemberExternal {
+        property: Some("AkTarget"),
+        field: None,
+    };
+    let repaired = super::repair_with(source, &mut external);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef, Int aiCount)\n    akRef.Disable()\n    aiCount = aiCount + 1\nEndFunction\n"
+    );
+    assert_eq!(check_with(&repaired, &mut external).len(), 1);
+}
+
+#[test]
+fn repair_skips_a_rename_that_would_shadow_an_inherited_field() {
+    let source = "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akRef, Int aiTotal)\n    akRef.Disable()\nEndFunction\n";
+    let mut external = MemberExternal {
+        property: None,
+        field: Some("aiCount"),
+    };
+    let repaired = super::repair_with(source, &mut external);
+
+    assert_eq!(
+        repaired,
+        "ScriptName Example Extends ParentScript\n\nFunction DoThing(ObjectReference akTarget, Int aiTotal)\n    akTarget.Disable()\nEndFunction\n"
+    );
+    let remaining = check_with(&repaired, &mut external);
+    assert_eq!(remaining.len(), 1);
+    assert!(remaining[0].message.contains("Parameter 2"));
+    assert!(remaining[0].message.contains("names it 'aiCount'"));
+}

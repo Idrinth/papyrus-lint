@@ -163,8 +163,11 @@ pub fn repair(
 ///
 /// A rename whose new name is already a parameter or local in that
 /// function is skipped, unless another rename in the same function moves
-/// that name away (a swap or rotation). [`check_with`] still reports the
-/// mismatch, so a skipped rename can be corrected by hand. Member names
+/// that name away (a swap or rotation). A property or script variable on
+/// this script, or a property or field inherited through `Extends`, is not
+/// freed by that: an unqualified use binds to the parameter instead of the
+/// member, so those names are fixed blockers. [`check_with`] still reports
+/// the mismatch, so a skipped rename can be corrected by hand. Member names
 /// (`OtherRef.akRef`) and named-argument labels (`Helper(akRef = akRef)`)
 /// are not references to the parameter and are left unchanged.
 pub fn repair_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut E) -> String {
@@ -178,13 +181,15 @@ pub fn repair_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut 
         return source.to_string();
     };
     let line_starts = line_starts(source);
+    let script_names = script_member_names(&script);
     let mut edits = Vec::new();
 
     for function in &script.functions {
         let Some(parent_params) = external.lookup(extends, &function.name) else {
             continue;
         };
-        let renames = parameter_renames(function, &parent_params);
+        let renames =
+            parameter_renames(function, &parent_params, &script_names, extends, external);
         if renames.is_empty() {
             continue;
         }
@@ -246,12 +251,18 @@ pub fn repair_with<E: ExternalSignatures + ?Sized>(source: &str, external: &mut 
 /// Drifted parameters mapped from their current name (compared
 /// case-insensitively) to the inherited spelling.
 ///
-/// The inherited name is omitted when it is already declared on a
-/// parameter or local that no rename in this function moves away.
-/// Applying it would turn the warning into a duplicate-name compile error.
-fn parameter_renames(
+/// The inherited name is omitted when it matches a property or variable
+/// on this script, or a property or field on the `Extends` chain. Those
+/// names stay taken even if another parameter is renamed away from them.
+/// It is also omitted when it is already declared on a parameter or local
+/// that no rename in this function moves away. Applying either would turn
+/// the warning into a shadowed member or a duplicate-name compile error.
+fn parameter_renames<E: ExternalSignatures + ?Sized>(
     function: &FunctionDecl,
     parent_params: &[ParamInfo],
+    script_names: &HashSet<String>,
+    extends: &str,
+    external: &mut E,
 ) -> HashMap<String, String> {
     let declared = declared_names(function);
     let candidates: Vec<(&str, &str)> = function
@@ -259,6 +270,13 @@ fn parameter_renames(
         .iter()
         .zip(parent_params)
         .filter(|(local, parent)| !local.name.eq_ignore_ascii_case(&parent.name))
+        .filter(|(_, parent)| {
+            let target = parent.name.to_ascii_lowercase();
+            // A member is not a name another parameter can vacate.
+            !script_names.contains(&target)
+                && !external.has_property(extends, &target)
+                && !external.has_field(extends, &target)
+        })
         .map(|(local, parent)| (local.name.as_str(), parent.name.as_str()))
         .collect();
 
@@ -290,6 +308,20 @@ fn parameter_renames(
         }
     }
     renames
+}
+
+fn script_member_names(script: &Script) -> HashSet<String> {
+    script
+        .properties
+        .iter()
+        .map(|property| property.name.to_ascii_lowercase())
+        .chain(
+            script
+                .variables
+                .iter()
+                .map(|variable| variable.name.to_ascii_lowercase()),
+        )
+        .collect()
 }
 
 fn declared_names(function: &FunctionDecl) -> HashSet<String> {
