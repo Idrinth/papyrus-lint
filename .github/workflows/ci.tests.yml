@@ -229,6 +229,7 @@ jobs:
         - src-tauri
         - papyrus-parser
         - papyrus-ast-cache
+        - papyrus-collision-cache
         - papyrus-lints
         - papyrus-lint-core
         - papyrus-lint-output

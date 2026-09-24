@@ -1,0 +1,22 @@
+[package]
+name = "papyrus-collision-cache"
+version = "0.1.0"
+description = "Disk-backed cache of Papyrus script content hashes used to detect conflicting script versions"
+authors = ["Idrinth"]
+edition = "2021"
+
+[dependencies]
+bincode = "1"
+encoding_rs = "0.8"
+papyrus-ast-cache = { path = "../papyrus-ast-cache" }
+papyrus-lint-globals = { path = "../papyrus-lint-globals" }
+serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
+
+[dev-dependencies]
+tempfile = "3"
+
+# papyrus-ast-cache's build.rs parses the bundled Skyrim scripts; see that
+# crate's Cargo.toml for why the build-script profile is optimized.
+[profile.dev.build-override]
+opt-level = 3

@@ -36,7 +36,8 @@ the same checks locally first:
 - **VS Code extension job**: from `vscode-extension/`, runs `npm test`,
   `npm run lint`, and `npm run compile`.
 - **Rust test job**: a matrix over `app/src-tauri`, `app/crates/papyrus-parser`,
-  `app/crates/papyrus-ast-cache`, `app/crates/papyrus-lints`,
+  `app/crates/papyrus-ast-cache`, `app/crates/papyrus-collision-cache`,
+  `app/crates/papyrus-lints`,
   `app/crates/papyrus-lint-config`, `app/crates/papyrus-lint-core`,
   `app/crates/papyrus-lint-output`, and
   `app/crates/papyrus-lint-cli` runs each crate's tests via `cargo llvm-cov`.
