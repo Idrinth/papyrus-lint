@@ -1,12 +1,12 @@
 // Detects Papyrus function headers eligible for the code viewer's "Add
 // nodiscard" quick action - a function that returns a value or is Native -
 // and whether they already carry the `; @nodiscard` flag, working off raw
-// source text the same way autocomplete.ts's declaration scanner and the
+// source text the same way papyrus-source.ts's declaration scanner and the
 // highlighter do, rather than requiring an AST parse or a Tauri round-trip.
 // Mirrors papyrus_lints::unused_nodiscard's own header lookback (the
 // header line, or the line directly above it) by hand, since this
 // package doesn't share Rust's token/AST info.
-import { IDENTIFIER, stripComments } from "./autocomplete";
+import { IDENTIFIER, stripComments } from "./papyrus-source";
 
 const FUNCTION_HEADER = new RegExp(
   `^[ \\t]*(?:(${IDENTIFIER})(?:\\[\\])?\\s+)?Function\\s+${IDENTIFIER}\\s*\\([^)]*\\)(.*)$`,

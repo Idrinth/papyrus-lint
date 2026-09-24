@@ -3,7 +3,7 @@
 // from the orchestration in main.ts so that layer isn't tangled up with how
 // each individual command is dispatched.
 import { invoke } from "@tauri-apps/api/core";
-import { type Member } from "./autocomplete";
+import type { Member } from "./autocomplete-types";
 import { currentProjectLintContext } from "./backend-context";
 import { type CompileOutcome, type Diagnostic, type RuleTagsInfo } from "./backend-types";
 import { currentLintConfig } from "./config-types";

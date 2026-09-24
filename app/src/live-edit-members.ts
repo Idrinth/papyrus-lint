@@ -1,4 +1,4 @@
-import type { Member } from "./autocomplete";
+import type { Member } from "./autocomplete-types";
 import { listScriptMembers } from "./backend";
 
 // Shared by autocompletion and hover documentation (see live-edit-pointer.ts

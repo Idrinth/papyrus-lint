@@ -1,4 +1,6 @@
-import { declarationDocumentationOnLine, declaredTypes, documentationForIdentifier, identifierAt, type IdentifierAt } from "./autocomplete";
+import type { IdentifierAt } from "./autocomplete-types";
+import { declarationDocumentationOnLine, documentationForIdentifier } from "./member-documentation";
+import { declaredTypes, identifierAt } from "./papyrus-source";
 import { codeViewerAutocompleteEl, codeViewerEditTextareaEl } from "./code-viewer-state";
 import { findingsForEditorLine } from "./live-edit-highlight";
 import { cachedMembersForType, getCachedMembers } from "./live-edit-members";
