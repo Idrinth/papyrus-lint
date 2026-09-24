@@ -213,4 +213,99 @@ fn does_not_infinite_loop_on_circular_extends() {
     let mut table = FunctionTable::new(root.path().to_path_buf());
 
     assert!(table.lookup_function("A", "Anything").is_none());
+    assert_eq!(table.has_event("A", "Anything"), None);
+}
+
+#[test]
+fn event_index_sees_inherited_events_past_a_same_named_function() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "GrandScript",
+        "ScriptName GrandScript\n\nEvent OnReady()\nEndEvent\n",
+    );
+    write_script(
+        root.path(),
+        "ParentScript",
+        "ScriptName ParentScript Extends GrandScript\n\nFunction OnReady()\nEndFunction\n",
+    );
+    write_script(
+        root.path(),
+        "ChildScript",
+        "ScriptName ChildScript Extends ParentScript\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    assert_eq!(table.has_event("ChildScript", "OnReady"), Some(true));
+    assert_eq!(table.has_event("ParentScript", "onready"), Some(true));
+    assert_eq!(table.has_event("ChildScript", "OnMissing"), Some(false));
+    assert!(matches!(
+        table.has_event_cached("childscript", "OnReady"),
+        CacheProbe::Hit(Some(true))
+    ));
+    assert!(matches!(
+        table.has_event_cached("CHILDSCRIPT", "OnMissing"),
+        CacheProbe::Hit(Some(false))
+    ));
+}
+
+#[test]
+fn event_index_counts_a_state_event_hidden_from_the_function_map() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(
+        root.path(),
+        "ParentScript",
+        "ScriptName ParentScript\n\nFunction OnReady()\nEndFunction\n\nState Busy\nEvent OnReady()\nEndEvent\nEndState\n",
+    );
+    write_script(
+        root.path(),
+        "ChildScript",
+        "ScriptName ChildScript Extends ParentScript\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    let signature = table
+        .lookup_function("ParentScript", "OnReady")
+        .expect("empty-state function should win the function lookup");
+    assert!(!signature.is_event);
+    assert_eq!(table.has_event("ChildScript", "OnReady"), Some(true));
+}
+
+#[test]
+fn event_index_picks_up_an_edited_ancestor_and_a_script_that_appears_later() {
+    let root = tempfile::tempdir().expect("failed to create temp dir");
+    write_script(root.path(), "ParentScript", "ScriptName ParentScript\n");
+    write_script(
+        root.path(),
+        "ChildScript",
+        "ScriptName ChildScript Extends ParentScript\n",
+    );
+    write_script(
+        root.path(),
+        "OrphanScript",
+        "ScriptName OrphanScript Extends MissingParent\n",
+    );
+
+    let mut table = FunctionTable::new(root.path().to_path_buf());
+    assert_eq!(table.has_event("ChildScript", "OnReady"), Some(false));
+    assert_eq!(table.has_event("OrphanScript", "OnReady"), None);
+
+    let parent = root.path().join("scripts/source/ParentScript.psc");
+    std::fs::write(
+        &parent,
+        "ScriptName ParentScript\n\nEvent OnReady()\nEndEvent\n",
+    )
+    .expect("failed to rewrite parent");
+    let later = std::time::SystemTime::now() + std::time::Duration::from_secs(2);
+    let file = std::fs::File::open(&parent).expect("failed to reopen parent");
+    let _ = file.set_modified(later);
+    drop(file);
+    assert_eq!(table.has_event("ChildScript", "OnReady"), Some(true));
+
+    write_script(
+        root.path(),
+        "MissingParent",
+        "ScriptName MissingParent\n\nEvent OnReady()\nEndEvent\n",
+    );
+    assert_eq!(table.has_event("OrphanScript", "OnReady"), Some(true));
 }

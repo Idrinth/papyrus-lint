@@ -107,6 +107,16 @@ pub struct FunctionTable {
     /// index was built from. Inserts of other names — bundled vanilla
     /// scripts, unresolved lookups — must not drop that index.
     indexed_project_scripts: Option<HashSet<String>>,
+    /// Inherited event names for types whose `Extends` chain fully
+    /// resolved, keyed by lowercased type name. [`Self::has_event`] answers
+    /// from this set with one lookup after the chain has been walked once,
+    /// instead of re-resolving every ancestor on every event. Incomplete
+    /// chains are not stored.
+    event_index: HashMap<String, ancestry::ResolvedEvents>,
+    /// Mtimes of the source directories [`Self::event_index`] was built
+    /// against. `None` until the first event query. A change means a
+    /// script appeared or disappeared and the index is stale.
+    event_index_roots: Option<Vec<Option<SystemTime>>>,
 }
 
 impl FunctionTable {
@@ -135,6 +145,8 @@ impl FunctionTable {
             script_mtimes: HashMap::new(),
             descendant_goto_targets: None,
             indexed_project_scripts: None,
+            event_index: HashMap::new(),
+            event_index_roots: None,
         }
     }
 
@@ -154,6 +166,8 @@ impl FunctionTable {
             script_mtimes: HashMap::new(),
             descendant_goto_targets: None,
             indexed_project_scripts: None,
+            event_index: HashMap::new(),
+            event_index_roots: None,
         }
     }
 

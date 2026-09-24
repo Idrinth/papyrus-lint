@@ -40,6 +40,10 @@ fn cached_lookups_report_a_miss_before_a_script_is_loaded() {
         table.property_types_cached("Foo"),
         CacheProbe::Miss
     ));
+    assert!(matches!(
+        table.has_event_cached("Foo", "OnInit"),
+        CacheProbe::Miss
+    ));
 }
 
 #[test]

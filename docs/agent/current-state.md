@@ -83,6 +83,12 @@ update the cited code *and* this list.
   Bundled names are loaded from the blob, and names that resolve nowhere
   are cached unresolved so lint does not retry them. `SharedFunctionTable`
   takes its write lock only for a name that closure never saw.
+- `FunctionTable`'s event index answers `has_event` from the set of event
+  names on a fully resolved `Extends` chain (own events plus ancestors,
+  including state-only events). A same-named function does not hide an
+  event. The index is not used for an incomplete chain. It is dropped when
+  a chained script's mtime changes, or when a live search directory's mtime
+  changes because a script appeared or disappeared.
 
 ## Where to read
 
