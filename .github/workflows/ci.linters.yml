@@ -17,6 +17,25 @@ permissions:
   contents: read
 
 jobs:
+  rules-json:
+    name: CI / Linters / Rule metadata JSON
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install check-jsonschema
+        run: pip install check-jsonschema==0.35.0
+
+      - name: Validate rule metadata schema
+        run: check-jsonschema --schemafile schema/papyrus-lint-rule.schema.json shared/rules/*.json
+
+      - name: Check rule metadata invariants
+        run: python3 .github/scripts/build_rules_json.py --out /tmp/rules.json
+
   yaml:
     name: CI / Linters / Rules and links YAML
     runs-on: ubuntu-latest
