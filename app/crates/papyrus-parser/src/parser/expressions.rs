@@ -274,6 +274,14 @@ impl Parser {
                 self.advance();
                 Ok(Expr::Parent)
             }
+            TokenKind::Keyword(Keyword::Hidden) => {
+                self.advance();
+                Ok(Expr::Identifier("hidden".to_string()))
+            }
+            TokenKind::Keyword(Keyword::Conditional) => {
+                self.advance();
+                Ok(Expr::Identifier("conditional".to_string()))
+            }
             TokenKind::Keyword(Keyword::New) => {
                 self.advance();
                 let name = self.expect_qualified_name()?;

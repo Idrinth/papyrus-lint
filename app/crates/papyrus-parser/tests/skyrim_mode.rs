@@ -37,6 +37,23 @@ fn parse_and_skyrim_mode_agree_on_a_plain_script() {
 }
 
 #[test]
+fn accepts_declaration_flags_as_parameter_names() {
+    let source = r#"ScriptName CKKeywordParam extends Quest
+
+Int Function FlipConditionalState(Int conditional)
+    Return conditional
+EndFunction
+
+Bool Function GetHiddenState(Bool hidden)
+    Return hidden
+EndFunction
+"#;
+
+    parse_with_mode(source, GameEdition::Skyrim)
+        .expect("Skyrim permits Conditional and Hidden as parameter names");
+}
+
+#[test]
 fn rejects_struct_declarations() {
     assert_skyrim_rejects(
         "ScriptName Rejected\n\nStruct Coordinates\n    Float X\nEndStruct\n",

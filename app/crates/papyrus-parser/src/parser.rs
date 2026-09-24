@@ -167,6 +167,18 @@ impl Parser {
         }
     }
 
+    /// Parses an identifier used for a value, including declaration flags
+    /// that the Skyrim compiler permits as parameter names.
+    fn expect_value_identifier(&mut self) -> PResult<String> {
+        let name = match self.kind() {
+            TokenKind::Keyword(Keyword::Hidden) => "hidden",
+            TokenKind::Keyword(Keyword::Conditional) => "conditional",
+            _ => return self.expect_identifier(),
+        };
+        self.advance();
+        Ok(name.to_string())
+    }
+
     /// Appends any immediately following `:Segment` pieces onto `name`.
     ///
     /// Fallout 4 uses colon-qualified names (`DLC03:Foo`,

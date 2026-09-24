@@ -523,7 +523,7 @@ impl Parser {
         }
         loop {
             let type_name = self.parse_type_name()?;
-            let name = self.expect_identifier()?;
+            let name = self.expect_value_identifier()?;
             let mut default = None;
             if matches!(self.kind(), TokenKind::Assign) {
                 self.advance();
