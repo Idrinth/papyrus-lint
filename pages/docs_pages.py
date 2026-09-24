@@ -196,8 +196,8 @@ DOCS = [
         ),
         "blurb": (
             "The JSON Schema for the on-disk script-collision cache used to compare same-named scripts "
-            "without reopening them.",
-        )
+            "without reopening them."
+        ),
     },
 ]
 
