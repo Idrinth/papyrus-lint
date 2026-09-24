@@ -85,6 +85,33 @@ class MarkdownLinkLintTests(unittest.TestCase):
 
             self.assertEqual([expected], markdown_link_lint.markdown_files(root))
 
+    def test_markdown_files_accepts_a_single_markdown_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory, "README.MD")
+            text = Path(directory, "notes.txt")
+            markdown.touch()
+            text.touch()
+
+            self.assertEqual([markdown], markdown_link_lint.markdown_files(markdown))
+            self.assertEqual([], markdown_link_lint.markdown_files(text))
+
+    def test_anchors_disambiguate_a_slug_that_already_has_a_numeric_suffix(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory, "README.md")
+            markdown.write_text("# Name\n# Name-1\n# Name\n", encoding="utf-8")
+
+            self.assertEqual({"name", "name-1", "name-2"}, markdown_link_lint.anchors(markdown))
+
+    def test_anchors_ignore_headings_inside_code_fences(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory, "README.md")
+            markdown.write_text(
+                "# Visible\n```markdown\n# Hidden\n```\n## Also visible\n",
+                encoding="utf-8",
+            )
+
+            self.assertEqual({"visible", "also-visible"}, markdown_link_lint.anchors(markdown))
+
     def test_main_reports_broken_links(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             markdown = Path(directory, "README.md")
@@ -99,6 +126,20 @@ class MarkdownLinkLintTests(unittest.TestCase):
             self.assertEqual(1, result)
             self.assertIn("README.md:1: local link does not exist: missing.md", output.getvalue())
             self.assertTrue(output.getvalue().endswith("Markdown link lint failed with 1 issue(s).\n"))
+
+    def test_main_reports_success_for_all_unique_input_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            markdown = Path(directory, "README.md")
+            markdown.write_text("# Valid\n", encoding="utf-8")
+            output = io.StringIO()
+            with (
+                mock.patch("sys.argv", ["markdown_link_lint.py", directory, str(markdown)]),
+                redirect_stdout(output),
+            ):
+                result = markdown_link_lint.main()
+
+            self.assertEqual(0, result)
+            self.assertEqual("Markdown link lint passed for 1 file(s).\n", output.getvalue())
 
 
 if __name__ == "__main__":
