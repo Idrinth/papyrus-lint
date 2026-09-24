@@ -6,10 +6,8 @@
 //!
 //! This module owns [`Preset`] itself (its baseline YAML, name parsing, and
 //! the executable-adjacent base-config layering [`initialize_default_config`]/
-//! [`preset_lint_config`] apply on top of it), the executable-adjacent
-//! directory lookup ([`executable_dir`]) that base config and user presets
-//! are found relative to, and the user-preset management functions the
-//! CLI's `preset add` and the desktop app's Presets tab call
+//! [`preset_lint_config`] apply on top of it), and the user-preset management
+//! functions the CLI's `preset add` and the desktop app's Presets tab call
 //! ([`add_user_preset`], [`save_user_preset`], [`rename_user_preset`],
 //! [`delete_user_preset`], [`read_user_preset_yaml`],
 //! [`list_user_preset_names`]). `papyrus-lint-core`'s own `presets` module
@@ -25,14 +23,15 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-use walkdir::WalkDir;
-
 use crate::comments::with_field_comments;
+use crate::preset_files::{executable_dir, find_user_preset_file, user_presets_dir_under};
 use crate::project_file::{
     existing_config_path, game_key_first, non_lint_yaml, seed_lookup_script_roots, ProjectFile,
     CONFIG_FILE_NAMES,
 };
 use crate::yaml_merge::deep_merge;
+
+pub use crate::preset_files::{list_user_preset_names, user_presets_dir};
 
 /// A named baseline `init` can generate `papyrus-lint.yaml` from, selected
 /// via the CLI's `--preset <name>` flag (see [`Preset::parse`]). See
@@ -143,34 +142,6 @@ impl Preset {
     }
 }
 
-/// Directory next to the CLI's own running executable, if it can be
-/// determined. [`initialize_default_config`] looks here for an optional
-/// shared base config, and [`user_presets_dir`] for an optional user
-/// presets directory.
-fn executable_dir() -> Option<PathBuf> {
-    std::env::current_exe()
-        .ok()
-        .and_then(|path| path.parent().map(Path::to_path_buf))
-}
-
-/// The user presets directory next to the running executable (see
-/// [`USER_PRESETS_DIR_NAME`]), if the executable's location can be
-/// determined and it actually has such a directory.
-pub fn user_presets_dir() -> Option<PathBuf> {
-    user_presets_dir_under(executable_dir().as_deref())
-}
-
-/// Same as [`user_presets_dir`], but takes the executable-adjacent
-/// directory explicitly rather than assuming it's [`executable_dir`] — the
-/// same split used elsewhere in this module (see
-/// [`initialize_config_with_base`]) so tests can supply a controlled
-/// directory instead of depending on the test binary's own
-/// `current_exe()`.
-fn user_presets_dir_under(base_dir: Option<&Path>) -> Option<PathBuf> {
-    let dir = base_dir?.join(USER_PRESETS_DIR_NAME);
-    dir.is_dir().then_some(dir)
-}
-
 /// Why [`add_user_preset`] refused to add a user preset.
 #[derive(Debug, PartialEq, Eq)]
 pub enum AddPresetError {
@@ -275,59 +246,6 @@ fn add_user_preset_under(
     fs::write(&target_path, contents).map_err(|err| AddPresetError::Io(err.to_string()))?;
 
     Ok(target_path)
-}
-
-/// Whether `path`'s extension is `yaml`/`yml`, matched case-insensitively —
-/// the same two extensions a project's own `papyrus-lint.yaml`/`.yml`
-/// supports (see [`CONFIG_FILE_NAMES`]).
-fn has_yaml_extension(path: &Path) -> bool {
-    path.extension()
-        .and_then(|ext| ext.to_str())
-        .is_some_and(|ext| ext.eq_ignore_ascii_case("yaml") || ext.eq_ignore_ascii_case("yml"))
-}
-
-/// Immediate children of `dir`. An unreadable directory yields no entries,
-/// matching the previous `fs::read_dir` + `flatten` behavior.
-fn dir_children(dir: &Path) -> impl Iterator<Item = PathBuf> {
-    WalkDir::new(dir)
-        .min_depth(1)
-        .max_depth(1)
-        .into_iter()
-        .filter_map(Result::ok)
-        .map(walkdir::DirEntry::into_path)
-}
-
-/// Every user preset name available in `dir` (see [`user_presets_dir`]):
-/// each `.yaml`/`.yml` file's own file stem (the name it's selected by),
-/// sorted case-insensitively so listings (e.g. the desktop app's preset
-/// picker) are stable and predictable. Returns an empty `Vec` if `dir`
-/// can't be read at all.
-pub fn list_user_preset_names(dir: &Path) -> Vec<String> {
-    let mut names: Vec<String> = dir_children(dir)
-        .filter(|path| path.is_file() && has_yaml_extension(path))
-        .filter_map(|path| {
-            path.file_stem()
-                .and_then(|stem| stem.to_str())
-                .map(str::to_string)
-        })
-        .collect();
-    names.sort_by_key(|name| name.to_ascii_lowercase());
-    names
-}
-
-/// Finds the `.yaml`/`.yml` file in `dir` whose file stem matches `name`
-/// case-insensitively, e.g. `find_user_preset_file(dir, "ABC")` matching a
-/// file named `abc.yaml`. Returns `None` if `dir` can't be read or has no
-/// such file.
-fn find_user_preset_file(dir: &Path, name: &str) -> Option<PathBuf> {
-    dir_children(dir).find(|path| {
-        path.is_file()
-            && has_yaml_extension(path)
-            && path
-                .file_stem()
-                .and_then(|stem| stem.to_str())
-                .is_some_and(|stem| stem.eq_ignore_ascii_case(name))
-    })
 }
 
 /// Saves `config` as a new user preset named `name`, in a `presets`
