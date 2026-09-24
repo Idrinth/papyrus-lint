@@ -1,10 +1,11 @@
 //! Stdio Language Server Protocol adapter for Papyrus Lint.
 //!
 //! Document sync publishes diagnostics from `papyrus_lints`. Code actions
-//! offer the per-diagnostic fix and ignore edits. `workspace/executeCommand`
-//! is still empty.
+//! edit one diagnostic. `workspace/executeCommand` applies every automatic
+//! fix in the open file.
 
 mod code_actions;
+mod commands;
 mod diagnostics;
 mod documents;
 mod framing;

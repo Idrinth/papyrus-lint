@@ -195,3 +195,49 @@ fn string_ids_are_echoed() {
     })]);
     assert_eq!(responses[0]["id"], "abc");
 }
+
+#[test]
+fn fix_file_applies_every_automatic_fix() {
+    let uri = "file:///Quest.psc";
+    let (_code, responses) = exchange(&[
+        request(1, "initialize", json!({})),
+        json!({
+            "jsonrpc": "2.0",
+            "method": "textDocument/didOpen",
+            "params": { "textDocument": { "uri": uri, "version": 1, "text": "Scriptname Quest \n" } }
+        }),
+        request(
+            7,
+            "workspace/executeCommand",
+            json!({
+                "command": FIX_FILE_COMMAND,
+                "arguments": [uri]
+            }),
+        ),
+        json!({
+            "jsonrpc": "2.0",
+            "id": "papyrus-lint-1",
+            "result": { "applied": true }
+        }),
+    ]);
+    let edit = responses
+        .iter()
+        .find(|message| message["method"] == "workspace/applyEdit")
+        .unwrap();
+    let new_text = edit["params"]["edit"]["changes"][uri][0]["newText"]
+        .as_str()
+        .unwrap();
+    assert_eq!(new_text, "Scriptname Quest\n");
+    let command_result = responses.iter().find(|message| message["id"] == 7).unwrap();
+    assert!(command_result["result"].is_null());
+    let published: Vec<_> = responses
+        .iter()
+        .filter(|message| message["method"] == "textDocument/publishDiagnostics")
+        .collect();
+    let last = published.last().unwrap();
+    assert!(last["params"]["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|diagnostic| diagnostic["code"] != "trailing-whitespace"));
+}
