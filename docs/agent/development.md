@@ -61,7 +61,9 @@
   `cargo run --manifest-path app/crates/papyrus-lint-lsp/Cargo.toml` for the
   `PapyrusLinterLsp` stdio binary. Document sync publishes diagnostics from
   `papyrus_lints` (project `papyrus-lint.yaml` when one is found by walking up
-  from the file URI). Code actions and `papyrusLint.fixFile` still return empty.
+  from the file URI). `textDocument/codeAction` returns a workspace edit for
+  the diagnostic's automatic fix, or for line, file, and project ignore.
+  `papyrusLint.fixFile` still returns null.
 - CLI: `cargo run --manifest-path app/crates/papyrus-lint-cli/Cargo.toml --
   <path-to-achlist>`, or `cargo build --release --manifest-path
   app/crates/papyrus-lint-cli/Cargo.toml` for a standalone `PapyrusLinterCLI`
