@@ -13,6 +13,7 @@
 // Infrastructure and shared helpers that are not a rule stay listed below.
 include!(concat!(env!("OUT_DIR"), "/lint_modules.rs"));
 
+mod binary_operator_spacing;
 mod block_comment;
 pub mod config;
 mod const_eval;
