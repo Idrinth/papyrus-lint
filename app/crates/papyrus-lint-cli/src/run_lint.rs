@@ -149,38 +149,21 @@ fn collect_project_diagnostics(
 ) -> Vec<papyrus_lints::Diagnostic> {
     let mut project_diagnostics = Vec::new();
     if ctx.lint_config.rules.conflicting_script_versions {
-        if ctx.strict_achlist_scope {
-            // No directories were added to `additional_script_roots` in
-            // this mode (see `crate::run_scan`), so
-            // `conflicting_script_versions`'s own directory scan would find
-            // nothing among achlist entries anyway; comparing the
-            // achlist's own listed entries directly is what actually
-            // catches a same-named collision here, without re-reporting one
-            // directory scanning might otherwise also find (e.g. two
-            // entries whose directories both also happen to be configured
-            // `additional_script_roots`).
-            if let Some(name) = script_path.file_name().and_then(|name| name.to_str()) {
-                if let Some(same_named) = ctx.scripts_by_name.get(&name.to_ascii_lowercase()) {
-                    project_diagnostics.extend(
-                        papyrus_lint_core::script_locator::conflicting_script_versions_among(
-                            script_path,
-                            same_named,
-                            ctx.project_root,
-                            ctx.short_paths,
-                        ),
-                    );
-                }
-            }
+        let paths: Vec<PathBuf> = if ctx.strict_achlist_scope {
+            ctx.scripts_by_name.values().flatten().cloned().collect()
         } else {
-            project_diagnostics.extend(
-                papyrus_lint_core::script_locator::conflicting_script_versions_in_index(
-                    script_path,
-                    ctx.script_index,
-                    ctx.project_root,
-                    ctx.short_paths,
-                ),
-            );
-        }
+            ctx.script_index.values().flatten().cloned().collect()
+        };
+        let files = papyrus_lint_core::script_locator::project_files(
+            paths,
+            ctx.project_root,
+            ctx.short_paths,
+        );
+        project_diagnostics.extend(papyrus_lints::conflicting_script_versions::check(
+            script_path,
+            source.as_bytes(),
+            &files,
+        ));
     }
     if ctx.lint_config.rules.stale_compiled_output {
         project_diagnostics.extend(papyrus_lint_core::stale_pex::check(script_path));

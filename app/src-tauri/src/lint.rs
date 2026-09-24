@@ -192,11 +192,17 @@ pub(crate) fn lint_with_compile_check<E: papyrus_lints::ExternalSignatures>(
     // own docs).
     let mut project_diagnostics = Vec::new();
     if context.config.rules.conflicting_script_versions {
-        project_diagnostics.extend(script_locator::conflicting_script_versions(
-            path,
+        let index =
+            script_locator::build_script_index(Path::new(&context.root), &context.additional_roots);
+        let files = script_locator::project_files(
+            index.into_values().flatten(),
             Path::new(&context.root),
-            &context.additional_roots,
             false,
+        );
+        project_diagnostics.extend(papyrus_lints::conflicting_script_versions::check(
+            path,
+            source.as_bytes(),
+            &files,
         ));
     }
     if context.config.rules.stale_compiled_output {
