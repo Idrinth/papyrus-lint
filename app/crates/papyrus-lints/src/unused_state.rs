@@ -1,6 +1,5 @@
 //! Flags named states that can never become active because they are neither
-//! marked `Auto` nor targeted by a literal `GoToState` call in the script
-//! or in a script that extends it.
+//! marked `Auto` nor targeted by a literal `GoToState` call in the script.
 
 use std::collections::HashSet;
 
@@ -12,10 +11,18 @@ use crate::Diagnostic;
 /// This lint's [`Diagnostic::rule`] id, for `@disable` line comments.
 pub const RULE: &str = "unused-state";
 
+/// Just the fields this rule consults. Cloning a [`StateDecl`] would copy
+/// every function body in the state for no reason.
+struct RecordedState {
+    name: String,
+    is_auto: bool,
+    line: usize,
+}
+
 #[derive(Default)]
 struct Collect {
     store: Store,
-    states: Vec<StateDecl>,
+    states: Vec<RecordedState>,
     targets: HashSet<String>,
 }
 
@@ -25,7 +32,11 @@ impl AstLint for Collect {
     }
 
     fn visit_state(&mut self, state: &StateDecl, _ctx: &mut VisitCtx<'_>) {
-        self.states.push(state.clone());
+        self.states.push(RecordedState {
+            name: state.name.clone(),
+            is_auto: state.is_auto,
+            line: state.line,
+        });
     }
 
     fn visit_expr(&mut self, expr: &Expr, _ctx: &mut VisitCtx<'_>) {
@@ -41,16 +52,9 @@ impl AstLint for Collect {
         self.targets.insert(name.to_ascii_lowercase());
     }
 
-    fn finish(&mut self, ctx: &mut VisitCtx<'_>) {
-        let script_name = ctx.ast.map(|script| script.name.as_str());
+    fn finish(&mut self, _ctx: &mut VisitCtx<'_>) {
         for state in &self.states {
             if state.is_auto || self.targets.contains(&state.name.to_ascii_lowercase()) {
-                continue;
-            }
-            if script_name.is_some_and(|name| {
-                ctx.external
-                    .descendant_targets_state(name, &state.name)
-            }) {
                 continue;
             }
             self.store.emit(
