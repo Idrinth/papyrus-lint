@@ -207,6 +207,7 @@ jobs:
       - name: Open pull request
         if: steps.changes.outputs.changed == 'true' && inputs.open_pull_request
         env:
+          BASE_BRANCH: ${{ github.ref_name }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
@@ -232,7 +233,7 @@ jobs:
           EOF
           )
           gh pr create \
-            --base the-one \
+            --base "$BASE_BRANCH" \
             --head "$BRANCH" \
             --title "test: regenerate base scripts snapshot fixtures" \
             --label "component: ci" \
