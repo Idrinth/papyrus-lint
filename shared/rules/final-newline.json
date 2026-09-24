@@ -8,7 +8,8 @@
   ],
   "severity": "warning",
   "importance": "low",
-  "fixable": false,
+  "fixable": true,
+  "repair_order": 18,
   "description": "Requires non-empty files to end with a newline.",
-  "definition": "Requires, as a `[warning]`, every non-empty file to end with a newline. This rule is enabled only by the strict preset."
+  "definition": "Requires, as a `[warning]`, every non-empty file to end with a newline. This rule is enabled only by the strict preset. Automatically fixable: the fix appends a newline that matches the file's existing line endings (`\\n` or `\\r\\n`)."
 }

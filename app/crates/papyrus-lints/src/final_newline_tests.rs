@@ -56,3 +56,43 @@ fn disable_file_comment_suppresses_the_diagnostic() {
 
     assert!(crate::lint(source, &crate::config::Config::default()).is_empty());
 }
+
+fn repair(source: &str) -> String {
+    let ast = papyrus_parser::parse(source).ok();
+    let tokens = papyrus_parser::tokenize(source).ok();
+    super::repair(
+        source,
+        ast.as_ref(),
+        tokens.as_deref(),
+        &crate::config::Config::default(),
+    )
+}
+
+#[test]
+fn repair_appends_a_newline() {
+    assert_eq!(repair("ScriptName Example"), "ScriptName Example\n");
+}
+
+#[test]
+fn repair_preserves_crlf_by_appending_crlf() {
+    assert_eq!(
+        repair("ScriptName Example\r\nInt x = 1"),
+        "ScriptName Example\r\nInt x = 1\r\n"
+    );
+}
+
+#[test]
+fn repair_leaves_a_file_that_already_ends_with_a_newline() {
+    assert_eq!(repair("ScriptName Example\n"), "ScriptName Example\n");
+}
+
+#[test]
+fn repair_leaves_an_empty_file_alone() {
+    assert_eq!(repair(""), "");
+}
+
+#[test]
+fn repair_result_has_no_remaining_diagnostics() {
+    let repaired = repair("ScriptName Example");
+    assert!(check(&repaired).is_empty());
+}
