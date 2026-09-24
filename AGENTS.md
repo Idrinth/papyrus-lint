@@ -67,7 +67,7 @@ CI treats clippy warnings as errors.
    asking for merge.
 3. **Do not duplicate agent docs.** Edit `AGENTS.md` (this index) or a
    file under `docs/agent/`. `CLAUDE.md` must remain a pointer to this
-   file, not a copy of it.
+   file, not a copy of it and shall not be filled with further content.
 4. **`shared/rules/<id>.json` is the single source of truth for lint
    metadata.** Each rule is one file there (one JSON object: `id`, `name`,
    `definition` — the long text, `description` — a shorter blurb matching
