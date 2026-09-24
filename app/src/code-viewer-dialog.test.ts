@@ -16,6 +16,7 @@ vi.mock("@tauri-apps/api/window", () => ({
 import { invokeImplFor } from "./test/harness";
 import { enterCodeViewerEditMode } from "./live-edit-persist";
 import { openCodeViewer, requestCloseCodeViewer, toggleCodeViewerFullscreen } from "./code-viewer-dialog";
+import { setCurrentProjectDir } from "./project-state";
 
 describe("openCodeViewer", () => {
   it("loads and highlights the source, opening the dialog", async () => {
@@ -28,6 +29,17 @@ describe("openCodeViewer", () => {
     expect(document.querySelector("#code-viewer-title")!.textContent).toBe("/a.psc");
     expect(document.querySelector("#code-viewer-view table")).not.toBeNull();
     expect(document.querySelectorAll("#code-viewer-view tr")).toHaveLength(1);
+  });
+
+  it("shows the path relative to the current project dir, when known", async () => {
+    invokeImplFor({ read_psc_file: () => 'Debug.Trace("hi")' });
+    setCurrentProjectDir("/proj");
+    try {
+      await openCodeViewer("/proj/scripts/source/A.psc", []);
+      expect(document.querySelector("#code-viewer-title")!.textContent).toBe("scripts/source/A.psc");
+    } finally {
+      setCurrentProjectDir(null);
+    }
   });
 
   it("marks a line's severity from its highest-severity finding", async () => {

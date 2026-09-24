@@ -7,6 +7,8 @@ import { hideDiffOutput } from "./code-viewer-diff";
 import { setCodeViewerMode } from "./code-viewer-mode";
 import { codeViewerCompileOutputEl, codeViewerDiffOutputEl, codeViewerEl, codeViewerFullscreenEl, codeViewerTitleEl, codeViewerViewEl, setCodeViewerState, updateCodeViewerFixButtonsVisibility } from "./code-viewer-state";
 import { renderCodeViewerView } from "./code-viewer-view";
+import { relativePath } from "./path";
+import { currentProjectDir } from "./project-state";
 // Closes the code viewer, confirming first if edit mode has unsaved changes.
 export function requestCloseCodeViewer() {
   if (isCodeViewerEditDirty() && !window.confirm("Discard unsaved changes?")) {
@@ -45,7 +47,9 @@ export async function openCodeViewer(path: string, findings: Diagnostic[], focus
   setCodeViewerMode("view");
   hideCompileOutput(codeViewerCompileOutputEl);
   hideDiffOutput(codeViewerDiffOutputEl);
-  codeViewerTitleEl.textContent = path;
+  // Display the path relative to the project root, matching the Lint results
+  // list. Backend calls below still use the absolute `path`.
+  codeViewerTitleEl.textContent = relativePath(path, currentProjectDir);
   codeViewerViewEl.textContent = "Loading…";
   codeViewerEl.showModal();
 

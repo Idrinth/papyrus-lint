@@ -26,8 +26,9 @@ export function dirnameOf(path: string): string {
 
 // Formats `path` relative to `base` (the project root; see
 // projectDirForAchlist/projectDirForPscPath) for display in the lint
-// results list, so long absolute paths stay readable. Falls back to the
-// absolute path if `base` isn't known yet or `path` doesn't live under it.
+// results list and the code viewer title, so long absolute paths stay
+// readable. Falls back to the absolute path if `base` isn't known yet or
+// `path` doesn't live under it.
 export function relativePath(path: string, base: string | null): string {
   if (!base) {
     return path;
