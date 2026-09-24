@@ -496,6 +496,11 @@
           "type": "boolean",
           "default": true
         },
+        "array_used_before_new": {
+          "description": "Whether the array-used-before-new lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
+          "type": "boolean",
+          "default": true
+        },
         "readonly_property_write": {
           "description": "Whether the readonly-property-write lint (and its automatic fix, if it has one) is enabled. Omitted keys fall back to this default.",
           "type": "boolean",
@@ -641,6 +646,7 @@
         "script_name_collision": true,
         "array_bounds": true,
         "array_size_range": true,
+        "array_used_before_new": true,
         "readonly_property_write": true,
         "default_property_value": false,
         "unguarded_self_recursion": true,

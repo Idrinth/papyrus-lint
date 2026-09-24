@@ -194,6 +194,7 @@
         "invariant_loop_condition",
         "script_name_collision",
         "array_bounds",
+        "array_used_before_new",
         "readonly_property_write",
         "default_property_value",
         "unguarded_self_recursion",
@@ -369,6 +370,9 @@
           "type": "boolean"
         },
         "array_bounds": {
+          "type": "boolean"
+        },
+        "array_used_before_new": {
           "type": "boolean"
         },
         "readonly_property_write": {

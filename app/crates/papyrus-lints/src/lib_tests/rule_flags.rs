@@ -349,6 +349,12 @@ fn each_rule_flag_gates_only_its_own_lint() {
                 config_with(|c| c.rules.array_size_range = false),
             ),
             (
+                "ScriptName Example\n\nFunction Test()\n    Int[] a\n    a[0] = 1\nEndFunction\n",
+                array_used_before_new::RULE,
+                Config::default(),
+                config_with(|c| c.rules.array_used_before_new = false),
+            ),
+            (
                 "ScriptName Example\n\nFloat Property a = 0.1 AutoReadOnly\n\nFunction Test()\n    a = 0.2\nEndFunction\n",
                 readonly_property_write::RULE,
                 Config::default(),
