@@ -113,6 +113,7 @@ rules:
   state_function_signature: true
   goto_state: true
   get_state_comparison: true
+  unused_state: true
   too_many_states: true
   multiple_auto_states: true
   conflicting_script_versions: true

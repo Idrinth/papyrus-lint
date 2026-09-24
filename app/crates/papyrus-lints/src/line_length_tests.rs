@@ -60,5 +60,5 @@ fn rule_switch_disables_the_check() {
     };
     config.rules.line_length = false;
 
-    assert!(crate::lint("ScriptName Example", &config).is_empty());
+    assert!(crate::lint("ScriptName Example\n", &config).is_empty());
 }
