@@ -1,0 +1,14 @@
+{
+  "id": "place-at-me",
+  "name": "Unsafe ObjectReference.PlaceAtMe() calls",
+  "category": "Reliability",
+  "visitor": "ast",
+  "tags": [
+    "correctness"
+  ],
+  "severity": "warning",
+  "importance": "medium",
+  "fixable": false,
+  "description": "Flags PlaceAtMe/PlaceActorAtMe calls whose returned reference is not stored, and PlaceAtMe calls that create multiple objects at once, because either pattern prevents reliable cleanup of every created object.",
+  "definition": "Flags, as a `[warning]`, an `ObjectReference.PlaceAtMe(...)` or `ObjectReference.PlaceActorAtMe(...)` call used as a standalone statement, because discarding the returned reference makes the created object difficult to retrieve and clean up later. It also flags `PlaceAtMe` when its count argument is a compile-time-constant value greater than one: the function creates every requested object but returns only one reference, leaving no easy way to retrieve the others. Spawn one object per call and store every returned reference instead. Receiver types cannot always be resolved locally, so the rule matches these method names case-insensitively on any explicitly qualified call; a non-constant count is left unflagged rather than guessed at."
+}
