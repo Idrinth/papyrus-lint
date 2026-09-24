@@ -24,6 +24,7 @@ mod comments {
 mod compiler;
 mod fallout4;
 mod game_install;
+mod preset_files;
 pub mod presets;
 mod project_file;
 mod skyrim;
