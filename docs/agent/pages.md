@@ -78,8 +78,8 @@ framework or bundler) styled to match the desktop app's frontend
 light/dark-aware palette (including the System/Light/Dark theme switch)
 so those tokens cannot drift apart. `pages/styles.css` is the import-only
 entry point for focused modules under `pages/styles/`: shared base,
-site chrome, reusable components, and the home, docs, coverage, and rules
-page families each keep their own styles. The builder recursively inlines
+site chrome, reusable components, a print stylesheet, and the home, docs,
+coverage, and rules page families each keep their own styles. The builder recursively inlines
 that module graph, along with `shared/theme.css`, so this source-level split
 does not add deployment requests. The
 `<select id="theme-select">` control itself lives once in
