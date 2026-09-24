@@ -22,6 +22,9 @@ class FakeWindowCommand:
 
 
 def load_commands_module(settings=None):
+    for name in list(sys.modules):
+        if name.startswith('papyrus_lint_plugin.'):
+            del sys.modules[name]
     if settings is None:
         settings = Mock()
         settings.get.side_effect = lambda _key, default=None: default
@@ -50,8 +53,18 @@ def load_commands_module(settings=None):
         )
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        module.ensure_release_cli = Mock(return_value='/cache/PapyrusLinterCLI')
-        module.verify_configured_cli = Mock()
+        helpers = sys.modules['papyrus_lint_plugin.command_helpers']
+        helpers.ensure_release_cli = Mock(return_value='/cache/PapyrusLinterCLI')
+        helpers.verify_configured_cli = Mock()
+        module.command_helpers = helpers
+        module.implementation_modules = {
+            name: sys.modules[name]
+            for name in (
+                'papyrus_lint_plugin.fix_command',
+                'papyrus_lint_plugin.fix_issue_command',
+                'papyrus_lint_plugin.init_command',
+            )
+        }
     return module, sublime
 
 
@@ -62,6 +75,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
         self.view.file_name.return_value = '/scripts/Example.psc'
         self.view.is_dirty.return_value = False
         self.command = self.module.PapyrusLintFixCommand(self.view)
+        self.impl = self.module.implementation_modules[self.command.__class__.__module__]
 
     def test_visibility_and_enabled_state_require_a_saved_clean_psc_file(self):
         self.assertTrue(self.command.is_visible())
@@ -81,7 +95,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
 
     def test_successful_fix_reverts_and_relints(self):
         result = Mock(returncode=1)
-        with patch.object(self.module.subprocess, 'run', return_value=result) as run:
+        with patch.object(self.impl.subprocess, 'run', return_value=result) as run:
             self.command.run(None)
 
         run.assert_called_once_with(
@@ -97,26 +111,26 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
 
     def test_windows_fix_hides_the_cli_window(self):
         startupinfo = Mock(dwFlags=4)
-        self.module.subprocess.STARTUPINFO = Mock(return_value=startupinfo)
-        self.module.subprocess.STARTF_USESHOWWINDOW = 2
+        self.module.command_helpers.subprocess.STARTUPINFO = Mock(return_value=startupinfo)
+        self.module.command_helpers.subprocess.STARTF_USESHOWWINDOW = 2
 
         with (
-            patch.object(self.module.os, 'name', 'nt'),
+            patch.object(self.module.command_helpers.os, 'name', 'nt'),
             patch.object(
-                self.module.subprocess,
+                self.impl.subprocess,
                 'run',
                 return_value=Mock(returncode=0),
             ) as run,
         ):
             self.command.run(None)
 
-        self.module.subprocess.STARTUPINFO.assert_called_once_with()
+        self.module.command_helpers.subprocess.STARTUPINFO.assert_called_once_with()
         self.assertEqual(startupinfo.dwFlags, 6)
         self.assertIs(run.call_args.kwargs['startupinfo'], startupinfo)
 
     def test_usage_or_io_failure_shows_decoded_stderr(self):
         result = Mock(returncode=2, stderr=b'bad arguments\xff')
-        with patch.object(self.module.subprocess, 'run', return_value=result):
+        with patch.object(self.impl.subprocess, 'run', return_value=result):
             self.command.run(None)
 
         self.sublime.error_message.assert_called_once_with(
@@ -126,7 +140,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
 
     def test_empty_failure_message_has_a_fallback(self):
         result = Mock(returncode=2, stderr=b'')
-        with patch.object(self.module.subprocess, 'run', return_value=result):
+        with patch.object(self.impl.subprocess, 'run', return_value=result):
             self.command.run(None)
 
         self.sublime.error_message.assert_called_once_with(
@@ -135,7 +149,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
 
     def test_os_error_is_reported_without_reloading(self):
         with patch.object(
-            self.module.subprocess, 'run', side_effect=OSError('not found')
+            self.impl.subprocess, 'run', side_effect=OSError('not found')
         ):
             self.command.run(None)
 
@@ -145,8 +159,8 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
         self.view.run_command.assert_not_called()
 
     def test_download_error_is_reported_without_running_or_reloading(self):
-        self.module.ensure_release_cli.side_effect = OSError('offline')
-        with patch.object(self.module.subprocess, 'run') as run:
+        self.module.command_helpers.ensure_release_cli.side_effect = OSError('offline')
+        with patch.object(self.impl.subprocess, 'run') as run:
             self.command.run(None)
 
         self.sublime.error_message.assert_called_once_with(
@@ -157,7 +171,7 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
 
     def test_missing_file_is_a_no_op(self):
         self.view.file_name.return_value = None
-        with patch.object(self.module.subprocess, 'run') as run:
+        with patch.object(self.impl.subprocess, 'run') as run:
             self.command.run(None)
 
         run.assert_not_called()
@@ -205,7 +219,8 @@ class PapyrusLintFixCommandTests(unittest.TestCase):
         command = module.PapyrusLintFixCommand(self.view)
         result = Mock(returncode=0)
 
-        with patch.object(module.subprocess, 'run', return_value=result) as run:
+        impl = module.implementation_modules[command.__class__.__module__]
+        with patch.object(impl.subprocess, 'run', return_value=result) as run:
             command.run(None)
 
         run.assert_called_once_with(
@@ -237,6 +252,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
         # Caret on line 4 (0-based row 3), column 7 (0-based col 6).
         self.view.rowcol.return_value = (3, 6)
         self.command = self.module.PapyrusLintFixIssueCommand(self.view)
+        self.impl = self.module.implementation_modules[self.command.__class__.__module__]
         self.report = {
             'files': [
                 {
@@ -268,7 +284,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
         report_result = _json_result(self.report)
         fix_result = Mock(returncode=0)
         with patch.object(
-            self.module.subprocess, 'run', side_effect=[report_result, fix_result]
+            self.impl.subprocess, 'run', side_effect=[report_result, fix_result]
         ) as run:
             self.command.run(None)
 
@@ -318,7 +334,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
         report_result = _json_result(report)
         fix_result = Mock(returncode=0)
         with patch.object(
-            self.module.subprocess, 'run', side_effect=[report_result, fix_result]
+            self.impl.subprocess, 'run', side_effect=[report_result, fix_result]
         ) as run:
             self.command.run(None)
 
@@ -328,7 +344,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
         report = {'files': [{'path': '/scripts/Example.psc', 'diagnostics': []}]}
         report_result = _json_result(report, returncode=0)
         with patch.object(
-            self.module.subprocess, 'run', return_value=report_result
+            self.impl.subprocess, 'run', return_value=report_result
         ) as run:
             self.command.run(None)
 
@@ -340,14 +356,14 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
 
     def test_no_selection_is_a_no_op(self):
         self.view.sel.return_value = []
-        with patch.object(self.module.subprocess, 'run') as run:
+        with patch.object(self.impl.subprocess, 'run') as run:
             self.command.run(None)
 
         run.assert_not_called()
 
     def test_missing_file_is_a_no_op(self):
         self.view.file_name.return_value = None
-        with patch.object(self.module.subprocess, 'run') as run:
+        with patch.object(self.impl.subprocess, 'run') as run:
             self.command.run(None)
 
         run.assert_not_called()
@@ -355,7 +371,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
     def test_invalid_json_report_is_treated_as_no_issue(self):
         report_result = Mock(returncode=0, stdout=b'not JSON')
         with patch.object(
-            self.module.subprocess, 'run', return_value=report_result
+            self.impl.subprocess, 'run', return_value=report_result
         ):
             self.command.run(None)
 
@@ -367,7 +383,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
     def test_report_read_failure_shows_decoded_stderr_without_fixing(self):
         report_result = Mock(returncode=2, stderr=b'bad arguments')
         with patch.object(
-            self.module.subprocess, 'run', return_value=report_result
+            self.impl.subprocess, 'run', return_value=report_result
         ) as run:
             self.command.run(None)
 
@@ -381,7 +397,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
         report_result = _json_result(self.report)
         fix_result = Mock(returncode=2, stderr=b'bad arguments')
         with patch.object(
-            self.module.subprocess, 'run', side_effect=[report_result, fix_result]
+            self.impl.subprocess, 'run', side_effect=[report_result, fix_result]
         ):
             self.command.run(None)
 
@@ -392,7 +408,7 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
 
     def test_os_error_reading_diagnostics_is_reported_without_fixing(self):
         with patch.object(
-            self.module.subprocess, 'run', side_effect=OSError('not found')
+            self.impl.subprocess, 'run', side_effect=OSError('not found')
         ) as run:
             self.command.run(None)
 
@@ -403,8 +419,8 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
         self.view.run_command.assert_not_called()
 
     def test_download_error_is_reported_without_running(self):
-        self.module.ensure_release_cli.side_effect = OSError('offline')
-        with patch.object(self.module.subprocess, 'run') as run:
+        self.module.command_helpers.ensure_release_cli.side_effect = OSError('offline')
+        with patch.object(self.impl.subprocess, 'run') as run:
             self.command.run(None)
 
         self.sublime.error_message.assert_called_once_with(
@@ -424,7 +440,9 @@ class PapyrusLintFixIssueCommandTests(unittest.TestCase):
         fix_result = Mock(returncode=0)
 
         with patch.object(
-            module.subprocess, 'run', side_effect=[report_result, fix_result]
+            module.implementation_modules[command.__class__.__module__].subprocess,
+            'run',
+            side_effect=[report_result, fix_result],
         ) as run:
             command.run(None)
 
@@ -467,6 +485,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         self.module, self.sublime = load_commands_module()
         self.window = Mock()
         self.command = self.module.PapyrusLintInitCommand(self.window)
+        self.impl = self.module.implementation_modules[self.command.__class__.__module__]
 
     def test_starts_directly_when_a_single_folder_is_open(self):
         self.window.folders.return_value = ['/project']
@@ -589,7 +608,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         self.command._directory = '/project'
         result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
 
-        with patch.object(self.module.subprocess, 'run', return_value=result) as run:
+        with patch.object(self.impl.subprocess, 'run', return_value=result) as run:
             self.command._run_init(None, 'skyrim')
 
         run.assert_called_once_with(
@@ -605,7 +624,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         self.command._directory = '/project'
         result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
 
-        with patch.object(self.module.subprocess, 'run', return_value=result) as run:
+        with patch.object(self.impl.subprocess, 'run', return_value=result) as run:
             self.command._run_init('careful', 'fallout4')
 
         run.assert_called_once_with(
@@ -619,7 +638,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         self.command._directory = '/project'
         result = Mock(returncode=2, stderr=b'error: config already exists')
 
-        with patch.object(self.module.subprocess, 'run', return_value=result):
+        with patch.object(self.impl.subprocess, 'run', return_value=result):
             self.command._run_init(None, 'skyrim')
 
         self.sublime.error_message.assert_called_once_with(
@@ -631,7 +650,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         self.command._directory = '/project'
         result = Mock(returncode=2, stderr=b'')
 
-        with patch.object(self.module.subprocess, 'run', return_value=result):
+        with patch.object(self.impl.subprocess, 'run', return_value=result):
             self.command._run_init(None, 'skyrim')
 
         self.sublime.error_message.assert_called_once_with(
@@ -642,7 +661,7 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         self.command._directory = '/project'
 
         with patch.object(
-            self.module.subprocess, 'run', side_effect=OSError('not found')
+            self.impl.subprocess, 'run', side_effect=OSError('not found')
         ):
             self.command._run_init(None, 'skyrim')
 
@@ -653,9 +672,9 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
 
     def test_download_error_is_reported_without_running(self):
         self.command._directory = '/project'
-        self.module.ensure_release_cli.side_effect = OSError('offline')
+        self.module.command_helpers.ensure_release_cli.side_effect = OSError('offline')
 
-        with patch.object(self.module.subprocess, 'run') as run:
+        with patch.object(self.impl.subprocess, 'run') as run:
             self.command._run_init(None, 'skyrim')
 
         self.sublime.error_message.assert_called_once_with(
@@ -672,7 +691,8 @@ class PapyrusLintInitCommandTests(unittest.TestCase):
         command._directory = '/project'
         result = Mock(returncode=0, stdout=b'Created /project/papyrus-lint.yaml\n')
 
-        with patch.object(module.subprocess, 'run', return_value=result) as run:
+        impl = module.implementation_modules[command.__class__.__module__]
+        with patch.object(impl.subprocess, 'run', return_value=result) as run:
             command._run_init(None, 'skyrim')
 
         run.assert_called_once_with(
