@@ -26,13 +26,16 @@ update the cited code *and* this list.
   (`external_signatures.rs`). Side-effect flags are computed in
   `papyrus-lint-core`, not re-derived in a lint.
 - `conflicting-script-versions` owns its diagnostic policy in
-  `papyrus-lints`; filesystem-aware callers provide a complete `ProjectFile`
-  snapshot discovered by `papyrus-lint-core::script_locator`. Each snapshot
-  entry carries a content hash; `script_locator` reads that digest from
-  the standalone   `papyrus-collision-cache` crate (`{game}-{sha256(filename)}.iplcc` next
+  `papyrus-lints`; filesystem-aware callers provide a `ProjectFile`
+  snapshot of the same-named copies, not every script in the project.
+  `script_locator` reads each digest from the standalone
+  `papyrus-collision-cache` crate (`{game}-{sha256(filename)}.iplcc` next
   to the AST cache) when the stored mtime still matches, so the `.psc`
   itself is not opened just to hash it. The parse phase records hashes from
   source already in memory and flushes dirty collision files at parse-end.
+  A name that appears only once is not hashed. The desktop app reuses
+  `cached_script_index` across per-file commands while the source
+  directories' mtimes are unchanged.
 - `script-filename-mismatch` owns its diagnostic policy in `papyrus-lints`.
   Callers pass the `.psc` file stem and the lexer tokens (`ScriptName` plus
   its name segments). It is not dispatched from `collect_diagnostics`.
