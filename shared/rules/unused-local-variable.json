@@ -9,6 +9,6 @@
   "severity": "warning",
   "importance": "low",
   "fixable": false,
-  "description": "Flags a local variable inside a function/event) whose value is never read: either it's never referenced again at all.",
+  "description": "Flags a local variable inside a function/event whose value is never read: either it's never referenced again at all or only written to.",
   "definition": "Flags a local variable (declared with `Type name = ...` inside a function/event) whose value is never read: either it's never referenced again at all, or it's only ever reassigned (`name = ...`) without that new value ever being read back. Reading a variable via a compound assignment (`name += ...`, etc.) or through a member/index expression built from it (`name.Foo`, `name[0]`) counts as a use. Function parameters and script properties aren't locals and are never flagged by this lint."
 }
