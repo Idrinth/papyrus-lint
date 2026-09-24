@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, RwLock};
 
@@ -12,7 +13,7 @@ use papyrus_lint_core::{
 };
 use papyrus_lints::script_filename_mismatch;
 use serde::{Deserialize, Serialize};
-use tauri::ipc::Channel;
+use tauri::ipc::{Channel, CommandArg, CommandItem, InvokeError, JavaScriptChannelId};
 
 /// Identity of one desktop-app [`function_table::FunctionTable`]: project
 /// root plus the two configured search-root lists. Concurrent Tauri
@@ -293,6 +294,40 @@ fn emit_preload_progress(channel: Option<&Channel<PreloadProgress>>, progress: P
     }
 }
 
+/// Optional progress channel for [`preload_project_scripts`].
+///
+/// `Channel<T>` is a [`CommandArg`] by itself, but `Option<Channel<T>>` is
+/// not: the blanket impl then requires `Channel<T>: Deserialize`, which it
+/// does not implement. A missing or null `onProgress` means "no channel",
+/// which is what the frontend sends when it cannot construct one.
+pub(crate) struct OptionalPreloadChannel(Option<Channel<PreloadProgress>>);
+
+impl From<Option<Channel<PreloadProgress>>> for OptionalPreloadChannel {
+    fn from(channel: Option<Channel<PreloadProgress>>) -> Self {
+        Self(channel)
+    }
+}
+
+impl<'de, R: tauri::Runtime> CommandArg<'de, R> for OptionalPreloadChannel {
+    fn from_command(command: CommandItem<'de, R>) -> Result<Self, InvokeError> {
+        let name = command.name;
+        let key = command.key;
+        let webview = command.message.webview();
+        let value: Option<String> = Deserialize::deserialize(command).map_err(|error| {
+            InvokeError::from_error(tauri::Error::InvalidArgs(name, key, error))
+        })?;
+        let Some(value) = value else {
+            return Ok(Self(None));
+        };
+        let id = JavaScriptChannelId::from_str(&value).map_err(|_| {
+            InvokeError::from(format!(
+                "invalid channel value `{value}`, expected a string in the `__CHANNEL__:ID` format"
+            ))
+        })?;
+        Ok(Self(Some(id.channel_on(webview))))
+    }
+}
+
 /// Parses every one of `paths` up front and closes over the type names in
 /// those ASTs (mirroring `PapyrusLinterCLI`'s parse phase — see
 /// [`function_table::FunctionTable::parse_type_closure`]), then preloads
@@ -313,8 +348,9 @@ fn emit_preload_progress(channel: Option<&Channel<PreloadProgress>>, progress: P
 pub(crate) fn preload_project_scripts(
     paths: Vec<String>,
     context: ProjectLintContext,
-    on_progress: Option<Channel<PreloadProgress>>,
+    on_progress: OptionalPreloadChannel,
 ) {
+    let on_progress = on_progress.0;
     let function_table = context.function_table();
     let script_paths: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
     let game = context.config.game;

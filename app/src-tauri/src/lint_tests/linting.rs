@@ -54,7 +54,7 @@ fn preload_project_scripts_lets_lint_psc_file_resolve_a_sibling_immediately() {
             derived_path.to_string_lossy().into_owned(),
         ],
         context.clone(),
-        None,
+        None.into(),
     );
 
     let diagnostics = lint_psc_file(derived_path.to_string_lossy().into_owned(), context).unwrap();
@@ -135,7 +135,7 @@ fn preload_project_scripts_closes_over_a_parent_that_was_not_in_the_batch() {
     preload_project_scripts(
         vec![derived_path.to_string_lossy().into_owned()],
         context.clone(),
-        None,
+        None.into(),
     );
 
     let diagnostics = lint_psc_file(derived_path.to_string_lossy().into_owned(), context).unwrap();
@@ -162,12 +162,13 @@ fn preload_project_scripts_reports_resolving_progress_including_parents_outside_
     )
     .unwrap();
 
-    let seen = std::sync::Mutex::new(Vec::new());
-    let channel = tauri::ipc::Channel::new(|body| {
+    let seen = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let captured = std::sync::Arc::clone(&seen);
+    let channel = tauri::ipc::Channel::new(move |body| {
         let tauri::ipc::InvokeResponseBody::Json(json) = body else {
             return Ok(());
         };
-        seen.lock().unwrap().push(json);
+        captured.lock().unwrap().push(json);
         Ok(())
     });
 
@@ -177,7 +178,7 @@ fn preload_project_scripts_reports_resolving_progress_including_parents_outside_
             root: dir.path().to_string_lossy().into_owned(),
             ..Default::default()
         },
-        Some(channel),
+        Some(channel).into(),
     );
 
     let seen = seen.lock().unwrap();
