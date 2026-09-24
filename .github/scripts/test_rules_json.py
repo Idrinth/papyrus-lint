@@ -36,6 +36,14 @@ class AssembleRulesTests(unittest.TestCase):
         ):
             assemble_rules(Path(directory))
 
+    def test_rejects_duplicate_repair_orders(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            self.write_rule(directory, "first-rule", id="first-rule", repair_order=1)
+            self.write_rule(directory, "second-rule", id="second-rule", repair_order=1)
+
+            with self.assertRaisesRegex(ValueError, "`repair_order` 1 is already used"):
+                assemble_rules(Path(directory))
+
 
 class RenderRulesJsonTests(unittest.TestCase):
     def test_renders_an_indented_array_with_trailing_newline(self) -> None:

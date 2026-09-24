@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://papyrus-lint.idrinth.de/schema/papyrus-lint-rule.schema.json",
+  "title": "Papyrus Lint rule metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "category",
+    "visitor",
+    "tags",
+    "severity",
+    "importance",
+    "fixable",
+    "description",
+    "definition"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "enum": ["Formatting", "Performance", "Reliability", "Bugprone", "Other"]
+    },
+    "visitor": {
+      "enum": ["ast", "tokens", "none"]
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["style", "performance", "correctness", "maintainability"]
+      }
+    },
+    "severity": {
+      "enum": ["error", "warning", "info"]
+    },
+    "importance": {
+      "enum": ["high", "medium", "low"]
+    },
+    "fixable": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "definition": {
+      "type": "string",
+      "minLength": 1
+    },
+    "enabled_by_default": {
+      "type": "boolean"
+    },
+    "kept_in_standard": {
+      "type": "boolean"
+    },
+    "repair_order": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "dependentSchemas": {
+    "repair_order": {
+      "properties": {
+        "fixable": {
+          "const": true
+        }
+      }
+    }
+  }
+}
